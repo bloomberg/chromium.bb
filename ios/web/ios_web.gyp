@@ -349,8 +349,8 @@
       ],
     },
     {
-      # GN version: //ios/web:web_bundle_ui
-      'target_name': 'ios_web_js_bundle_ui',
+      # GN version: //ios/web:web_bundle
+      'target_name': 'ios_web_js_bundle',
       'type': 'none',
       'variables': {
         'closure_entry_point': '__crWeb.webBundle',
@@ -359,51 +359,17 @@
           'web_state/js/resources/common.js',
           'web_state/js/resources/console.js',
           'web_state/js/resources/core.js',
-          'web_state/js/resources/core_dynamic_ui.js',
           'web_state/js/resources/dialog_overrides.js',
           'web_state/js/resources/message.js',
-          'web_state/js/resources/message_dynamic_ui.js',
-          'web_state/js/resources/web_bundle_ui.js',
-          'web_state/js/resources/window_open_ui.js',
+          'web_state/js/resources/web_bundle.js',
         ],
       },
       'sources': [
-        'web_state/js/resources/web_bundle_ui.js',
+        'web_state/js/resources/web_bundle.js',
       ],
       'link_settings': {
         'mac_bundle_resources': [
-          '<(SHARED_INTERMEDIATE_DIR)/web_bundle_ui.js',
-        ],
-      },
-      'includes': [
-        'js_compile_bundle.gypi'
-      ],
-    },
-    {
-      # GN version: //ios/web:web_bundle_wk
-      'target_name': 'ios_web_js_bundle_wk',
-      'type': 'none',
-      'variables': {
-        'closure_entry_point': '__crWeb.webBundle',
-        'js_bundle_files': [
-          'web_state/js/resources/base.js',
-          'web_state/js/resources/common.js',
-          'web_state/js/resources/console.js',
-          'web_state/js/resources/core.js',
-          'web_state/js/resources/core_dynamic_wk.js',
-          'web_state/js/resources/dialog_overrides.js',
-          'web_state/js/resources/message.js',
-          'web_state/js/resources/message_dynamic_wk.js',
-          'web_state/js/resources/web_bundle_wk.js',
-          'web_state/js/resources/window_open_wk.js',
-        ],
-      },
-      'sources': [
-        'web_state/js/resources/web_bundle_wk.js',
-      ],
-      'link_settings': {
-        'mac_bundle_resources': [
-          '<(SHARED_INTERMEDIATE_DIR)/web_bundle_wk.js',
+          '<(SHARED_INTERMEDIATE_DIR)/web_bundle.js',
         ],
       },
       'includes': [
@@ -415,8 +381,7 @@
       'target_name': 'js_resources',
       'type': 'none',
       'dependencies': [
-        'ios_web_js_bundle_ui',
-        'ios_web_js_bundle_wk',
+        'ios_web_js_bundle',
       ],
       'sources': [
         'web_state/js/resources/post_request.js',

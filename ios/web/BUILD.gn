@@ -447,7 +447,7 @@ test("ios_web_unittests") {
   ]
 }
 
-js_compile_bundle("web_bundle_ui") {
+js_compile_bundle("web_bundle") {
   visibility = [ ":js_resources" ]
   closure_entry_point = "__crWeb.webBundle"
 
@@ -456,37 +456,15 @@ js_compile_bundle("web_bundle_ui") {
     "web_state/js/resources/common.js",
     "web_state/js/resources/console.js",
     "web_state/js/resources/core.js",
-    "web_state/js/resources/core_dynamic_ui.js",
     "web_state/js/resources/dialog_overrides.js",
     "web_state/js/resources/message.js",
-    "web_state/js/resources/message_dynamic_ui.js",
-    "web_state/js/resources/web_bundle_ui.js",
-    "web_state/js/resources/window_open_ui.js",
-  ]
-}
-
-js_compile_bundle("web_bundle_wk") {
-  visibility = [ ":js_resources" ]
-  closure_entry_point = "__crWeb.webBundle"
-
-  sources = [
-    "web_state/js/resources/base.js",
-    "web_state/js/resources/common.js",
-    "web_state/js/resources/console.js",
-    "web_state/js/resources/core.js",
-    "web_state/js/resources/core_dynamic_wk.js",
-    "web_state/js/resources/dialog_overrides.js",
-    "web_state/js/resources/message.js",
-    "web_state/js/resources/message_dynamic_wk.js",
-    "web_state/js/resources/web_bundle_wk.js",
-    "web_state/js/resources/window_open_wk.js",
+    "web_state/js/resources/web_bundle.js",
   ]
 }
 
 js_compile_checked("js_resources") {
   deps = [
-    ":web_bundle_ui",
-    ":web_bundle_wk",
+    ":web_bundle",
   ]
 
   sources = [

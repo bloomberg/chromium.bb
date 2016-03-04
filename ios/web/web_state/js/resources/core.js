@@ -11,17 +11,24 @@
 goog.provide('__crWeb.core');
 
 goog.require('__crWeb.common');
-goog.require('__crWeb.coreDynamic');
 goog.require('__crWeb.message');
-
-/**
- * The Chrome object is populated in an anonymous object defined at
- * initialization to prevent polluting the global namespace.
- */
 
 /* Beginning of anonymous object. */
 (function() {
   __gCrWeb['core'] = {};
+
+  /**
+   * Handles document load completion tasks. Invoked from
+   * [WKNavigationDelegate webView:didFinishNavigation:], when document load is
+   * complete.
+   */
+  __gCrWeb.didFinishNavigation = function() {
+    // Send the favicons to the browser.
+    __gCrWeb.sendFaviconsToHost();
+    // Add placeholders for plugin content.
+    if (__gCrWeb.common.updatePluginPlaceholders())
+      __gCrWeb.message.invokeOnHost({'command': 'addPluginPlaceholders'});
+  }
 
   // JavaScript errors are logged on the main application side. The handler is
   // added ASAP to catch any errors in startup. Note this does not appear to
@@ -464,8 +471,6 @@ goog.require('__crWeb.message');
     invokeOnHost_({'command': 'window.hashchange'});
   });
 
-  __gCrWeb.core_dynamic.addEventListeners();
-
   // Returns if a frame with |name| is found in |currentWindow|.
   // Note frame.name is undefined for cross domain frames.
   var hasFrame_ = function(currentWindow, name) {
@@ -580,10 +585,10 @@ goog.require('__crWeb.message');
    * the window-level overrides can be applied as soon as possible.
    */
   __gCrWeb.core.documentInject = function() {
-    // Perform web view specific operations requiring document.body presence.
-    // If necessary returns and waits for document to be present.
-    if (!__gCrWeb.core_dynamic.documentInject())
-      return;
+    // Flush the message queue.
+    if (__gCrWeb.message) {
+      __gCrWeb.message.invokeQueues();
+    }
 
     document.addEventListener('click', function(evt) {
       var node = getTargetLink_(evt.target);
@@ -619,14 +624,6 @@ goog.require('__crWeb.message');
         return;
 
       if (isInternaLink_(node)) {
-        if (evt['defaultPrevented'])
-          return;
-        // Internal link. The web view will handle navigation, but register
-        // the anchor for UIWebView to start the progress indicator ASAP and
-        // notify web controller as soon as possible of impending navigation.
-        if (__gCrWeb.core_dynamic.handleInternalClickEvent) {
-          __gCrWeb.core_dynamic.handleInternalClickEvent(node);
-        }
         return;
       } else {
         // Resets the external request if it has been canceled, otherwise
@@ -660,10 +657,6 @@ goog.require('__crWeb.message');
     }, false);
 
     addFormEventListeners_();
-
-   // Handle or wait for and handle document load completion, if applicable.
-   if (__gCrWeb.core_dynamic.handleDocumentLoaded)
-     __gCrWeb.core_dynamic.handleDocumentLoaded();
 
     return true;
   };

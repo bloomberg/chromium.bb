@@ -5,9 +5,6 @@
 goog.provide('__crWeb.dialogOverrides');
 
 goog.require('__crWeb.core');
-// window.open override for dialog suppression must be performed after the rest
-// of window.open overrides which are done in __crWeb.windowOpen module.
-goog.require('__crWeb.windowOpen');
 
 // Namespace for this module.
 __gCrWeb.dialogOverrides = {};
