@@ -36,6 +36,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=478572)
     self.Fail('conformance/extensions/ext-sRGB.html',
         bug=540900)
+
+    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1520.
+    self.Fail('conformance/extensions/oes-vertex-array-object.html',
+        bug=295792)
+
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',

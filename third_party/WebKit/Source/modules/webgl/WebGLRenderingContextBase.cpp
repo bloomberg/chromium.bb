@@ -3315,6 +3315,8 @@ GLboolean WebGLRenderingContextBase::isBuffer(WebGLBuffer* buffer)
 
     if (!buffer->hasEverBeenBound())
         return 0;
+    if (buffer->isDeleted())
+        return 0;
 
     return webContext()->isBuffer(buffer->object());
 }
@@ -3340,6 +3342,8 @@ GLboolean WebGLRenderingContextBase::isFramebuffer(WebGLFramebuffer* framebuffer
 
     if (!framebuffer->hasEverBeenBound())
         return 0;
+    if (framebuffer->isDeleted())
+        return 0;
 
     return webContext()->isFramebuffer(framebuffer->object());
 }
@@ -3359,6 +3363,8 @@ GLboolean WebGLRenderingContextBase::isRenderbuffer(WebGLRenderbuffer* renderbuf
 
     if (!renderbuffer->hasEverBeenBound())
         return 0;
+    if (renderbuffer->isDeleted())
+        return 0;
 
     return webContext()->isRenderbuffer(renderbuffer->object());
 }
@@ -3377,6 +3383,8 @@ GLboolean WebGLRenderingContextBase::isTexture(WebGLTexture* texture)
         return 0;
 
     if (!texture->hasEverBeenBound())
+        return 0;
+    if (texture->isDeleted())
         return 0;
 
     return webContext()->isTexture(texture->object());
@@ -3774,6 +3782,8 @@ GLboolean WebGLRenderingContextBase::isValuebufferCHROMIUM(CHROMIUMValuebuffer* 
     if (!valuebuffer || isContextLost())
         return 0;
     if (!valuebuffer->hasEverBeenBound())
+        return 0;
+    if (valuebuffer->isDeleted())
         return 0;
     return webContext()->isValuebufferCHROMIUM(valuebuffer->object());
 }

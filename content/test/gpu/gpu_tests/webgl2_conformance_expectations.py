@@ -66,6 +66,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
+
+    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1520.
+    self.Fail('conformance2/vertex_arrays/vertex-array-object.html',
+        bug=295792)
+
     # Note that this test fails on ['win', 'intel'] with bug=483282
     self.Fail('conformance2/buffers/uniform-buffers.html', bug=577368)
     self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
