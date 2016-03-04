@@ -52,6 +52,8 @@ namespace {
 const char kHostJid[] = "host_jid@example.com/host";
 const char kHostOwner[] = "jane.doe@example.com";
 const char kClientJid[] = "jane.doe@example.com/client";
+const char kHostId[] = "ABC123";
+const char kHostPin[] = "123456";
 
 struct NetworkPerformanceParams {
   NetworkPerformanceParams(int bandwidth,
@@ -347,12 +349,11 @@ class ProtocolPerfTest
     scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::FromString(key_base64);
     ASSERT_TRUE(key_pair.get());
 
-    protocol::SharedSecretHash host_secret;
-    host_secret.hash_function = protocol::AuthenticationMethod::NONE;
-    host_secret.value = "123456";
+    std::string host_pin_hash = protocol::ApplySharedSecretHashFunction(
+        protocol::HashFunction::HMAC_SHA256, kHostId, kHostPin);
     scoped_ptr<protocol::AuthenticatorFactory> auth_factory =
-        protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
-            true, kHostOwner, host_cert, key_pair, "", host_secret, nullptr);
+        protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
+            true, kHostOwner, host_cert, key_pair, "", host_pin_hash, nullptr);
     host_->SetAuthenticatorFactory(std::move(auth_factory));
 
     host_->AddStatusObserver(this);
@@ -387,13 +388,13 @@ class ProtocolPerfTest
             network_settings, protocol::TransportRole::CLIENT));
 
     std::vector<protocol::AuthenticationMethod> auth_methods;
-    auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
-        protocol::AuthenticationMethod::NONE));
+    auth_methods.push_back(
+        protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC);
     scoped_ptr<protocol::Authenticator> client_authenticator(
         new protocol::NegotiatingClientAuthenticator(
             std::string(),  // client_pairing_id
             std::string(),  // client_pairing_secret
-            std::string(),  // authentication_tag
+            kHostId,
             base::Bind(&ProtocolPerfTest::FetchPin, base::Unretained(this)),
             nullptr, auth_methods));
     client_.reset(
@@ -406,7 +407,7 @@ class ProtocolPerfTest
   void FetchPin(
       bool pairing_supported,
       const protocol::SecretFetchedCallback& secret_fetched_callback) {
-    secret_fetched_callback.Run("123456");
+    secret_fetched_callback.Run(kHostPin);
   }
 
   void MeasureTotalLatency(bool webrtc) {

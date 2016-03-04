@@ -85,7 +85,7 @@ class NegotiatingAuthenticatorBase : public Authenticator {
 
   explicit NegotiatingAuthenticatorBase(Authenticator::State initial_state);
 
-  void AddMethod(const AuthenticationMethod& method);
+  void AddMethod(AuthenticationMethod method);
 
   // Updates |state_| to reflect the current underlying authenticator state.
   // |resume_callback| is called after the state is updated.
@@ -96,10 +96,10 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   virtual scoped_ptr<buzz::XmlElement> GetNextMessageInternal();
 
   std::vector<AuthenticationMethod> methods_;
-  AuthenticationMethod current_method_;
+  AuthenticationMethod current_method_ = AuthenticationMethod::INVALID;
   scoped_ptr<Authenticator> current_authenticator_;
   State state_;
-  RejectionReason rejection_reason_;
+  RejectionReason rejection_reason_ = INVALID_CREDENTIALS;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NegotiatingAuthenticatorBase);

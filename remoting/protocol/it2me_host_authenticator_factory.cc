@@ -16,16 +16,14 @@ namespace protocol {
 It2MeHostAuthenticatorFactory::It2MeHostAuthenticatorFactory(
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    const std::string& shared_secret,
+    const std::string& access_code,
     const std::string& required_client_domain)
     : local_cert_(local_cert),
       key_pair_(key_pair),
-      shared_secret_(shared_secret),
-      required_client_domain_(required_client_domain) {
-}
+      access_code_(access_code),
+      required_client_domain_(required_client_domain) {}
 
-It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() {
-}
+It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() {}
 
 scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
@@ -48,9 +46,8 @@ scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
     }
   }
 
-  return NegotiatingHostAuthenticator::CreateWithSharedSecret(
-      local_cert_, key_pair_, shared_secret_, AuthenticationMethod::NONE,
-      nullptr);
+  return NegotiatingHostAuthenticator::CreateForIt2Me(local_cert_, key_pair_,
+                                                      access_code_);
 }
 
 }  // namespace protocol

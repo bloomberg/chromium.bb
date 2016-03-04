@@ -28,13 +28,9 @@ const char NegotiatingAuthenticatorBase::kSupportedMethodsSeparator = ',';
 
 NegotiatingAuthenticatorBase::NegotiatingAuthenticatorBase(
     Authenticator::State initial_state)
-    : current_method_(AuthenticationMethod::Invalid()),
-      state_(initial_state),
-      rejection_reason_(INVALID_CREDENTIALS) {
-}
+    : state_(initial_state) {}
 
-NegotiatingAuthenticatorBase::~NegotiatingAuthenticatorBase() {
-}
+NegotiatingAuthenticatorBase::~NegotiatingAuthenticatorBase() {}
 
 Authenticator::State NegotiatingAuthenticatorBase::state() const {
   return state_;
@@ -83,7 +79,7 @@ void NegotiatingAuthenticatorBase::UpdateState(
 scoped_ptr<buzz::XmlElement>
 NegotiatingAuthenticatorBase::GetNextMessageInternal() {
   DCHECK_EQ(state(), MESSAGE_READY);
-  DCHECK(current_method_.is_valid());
+  DCHECK(current_method_ != AuthenticationMethod::INVALID);
 
   scoped_ptr<buzz::XmlElement> result;
   if (current_authenticator_->state() == MESSAGE_READY) {
@@ -93,13 +89,13 @@ NegotiatingAuthenticatorBase::GetNextMessageInternal() {
   }
   state_ = current_authenticator_->state();
   DCHECK(state_ == ACCEPTED || state_ == WAITING_MESSAGE);
-  result->AddAttr(kMethodAttributeQName, current_method_.ToString());
+  result->AddAttr(kMethodAttributeQName,
+                  AuthenticationMethodToString(current_method_));
   return result;
 }
 
-void NegotiatingAuthenticatorBase::AddMethod(
-    const AuthenticationMethod& method) {
-  DCHECK(method.is_valid());
+void NegotiatingAuthenticatorBase::AddMethod(AuthenticationMethod method) {
+  DCHECK(method != AuthenticationMethod::INVALID);
   methods_.push_back(method);
 }
 

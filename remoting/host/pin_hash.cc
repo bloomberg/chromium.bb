@@ -11,10 +11,33 @@
 
 namespace remoting {
 
+bool ParsePinHashFromConfig(const std::string& value,
+                            const std::string& host_id,
+                            std::string* pin_hash_out) {
+  size_t separator = value.find(':');
+  if (separator == std::string::npos)
+    return false;
+
+  if (!base::Base64Decode(value.substr(separator + 1), pin_hash_out))
+    return false;
+
+  std::string function_name = value.substr(0, separator);
+  if (function_name == "plain") {
+    *pin_hash_out = protocol::ApplySharedSecretHashFunction(
+        protocol::HashFunction::HMAC_SHA256, host_id, *pin_hash_out);
+    return true;
+  } else if (function_name == "hmac") {
+    return true;
+  }
+
+  pin_hash_out->clear();
+  return false;
+}
+
 std::string MakeHostPinHash(const std::string& host_id,
                             const std::string& pin) {
-  std::string hash = protocol::AuthenticationMethod::ApplyHashFunction(
-      protocol::AuthenticationMethod::HMAC_SHA256, host_id, pin);
+  std::string hash = protocol::ApplySharedSecretHashFunction(
+      protocol::HashFunction::HMAC_SHA256, host_id, pin);
   std::string hash_base64;
   base::Base64Encode(hash, &hash_base64);
   return "hmac:" + hash_base64;
@@ -23,15 +46,14 @@ std::string MakeHostPinHash(const std::string& host_id,
 bool VerifyHostPinHash(const std::string& hash,
                        const std::string& host_id,
                        const std::string& pin) {
-  remoting::protocol::SharedSecretHash hash_parsed;
-  if (!hash_parsed.Parse(hash)) {
-    LOG(FATAL) << "Invalid hash.";
+  std::string hash_parsed;
+  if (!ParsePinHashFromConfig(hash, host_id, &hash_parsed)) {
+    LOG(FATAL) << "Failed to parse PIN hash.";
     return false;
   }
-  std::string hash_calculated =
-      remoting::protocol::AuthenticationMethod::ApplyHashFunction(
-          hash_parsed.hash_function, host_id, pin);
-  return hash_calculated == hash_parsed.value;
+  std::string hash_calculated = protocol::ApplySharedSecretHashFunction(
+      protocol::HashFunction::HMAC_SHA256, host_id, pin);
+  return hash_calculated == hash_parsed;
 }
 
 }  // namespace remoting

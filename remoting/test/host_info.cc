@@ -91,15 +91,13 @@ ConnectionSetupInfo HostInfo::GenerateConnectionSetupInfo(
   connection_setup_info.user_name = user_name;
 
   connection_setup_info.auth_methods.push_back(
-      protocol::AuthenticationMethod::Spake2Pair());
+      protocol::AuthenticationMethod::SPAKE2_PAIR);
   connection_setup_info.auth_methods.push_back(
-      protocol::AuthenticationMethod::Spake2(
-          protocol::AuthenticationMethod::HashFunction::NONE));
+      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN);
   connection_setup_info.auth_methods.push_back(
-      protocol::AuthenticationMethod::Spake2(
-          protocol::AuthenticationMethod::HashFunction::HMAC_SHA256));
+      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC);
   connection_setup_info.auth_methods.push_back(
-      protocol::AuthenticationMethod::ThirdParty());
+      protocol::AuthenticationMethod::THIRD_PARTY);
 
   return connection_setup_info;
 }

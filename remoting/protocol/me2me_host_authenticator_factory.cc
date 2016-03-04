@@ -20,14 +20,13 @@ namespace remoting {
 namespace protocol {
 
 // static
-scoped_ptr<AuthenticatorFactory>
-Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
+scoped_ptr<AuthenticatorFactory> Me2MeHostAuthenticatorFactory::CreateWithPin(
     bool use_service_account,
     const std::string& host_owner,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     const std::string& required_client_domain,
-    const SharedSecretHash& shared_secret_hash,
+    const std::string& pin_hash,
     scoped_refptr<PairingRegistry> pairing_registry) {
   scoped_ptr<Me2MeHostAuthenticatorFactory> result(
       new Me2MeHostAuthenticatorFactory());
@@ -36,7 +35,7 @@ Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
   result->required_client_domain_ = required_client_domain;
-  result->shared_secret_hash_ = shared_secret_hash;
+  result->pin_hash_ = pin_hash;
   result->pairing_registry_ = pairing_registry;
   return std::move(result);
 }
@@ -128,9 +127,8 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
               local_jid, remote_jid));
     }
 
-    return NegotiatingHostAuthenticator::CreateWithSharedSecret(
-        local_cert_, key_pair_, shared_secret_hash_.value,
-        shared_secret_hash_.hash_function, pairing_registry_);
+    return NegotiatingHostAuthenticator::CreateWithPin(
+        local_cert_, key_pair_, pin_hash_, pairing_registry_);
   }
 
   return make_scoped_ptr(

@@ -69,6 +69,7 @@
 #include "remoting/host/me2me_desktop_environment.h"
 #include "remoting/host/oauth_token_getter_impl.h"
 #include "remoting/host/pairing_registry_delegate.h"
+#include "remoting/host/pin_hash.h"
 #include "remoting/host/policy_watcher.h"
 #include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/host/security_key/gnubby_extension.h"
@@ -404,7 +405,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   scoped_ptr<ConfigWatcher> config_watcher_;
 
   std::string host_id_;
-  protocol::SharedSecretHash host_secret_hash_;
+  std::string pin_hash_;
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string oauth_refresh_token_;
   std::string serialized_config_;
@@ -795,9 +796,9 @@ void HostProcess::CreateAuthenticatorFactory() {
       pairing_registry = pairing_registry_;
     }
 
-    factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
+    factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
         use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_, host_secret_hash_, pairing_registry);
+        client_domain_, pin_hash_, pairing_registry);
 
     host_->set_pairing_registry(pairing_registry);
   } else {
@@ -1034,13 +1035,9 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
   }
 
   std::string host_secret_hash_string;
-  if (!config.GetString(kHostSecretHashConfigPath,
-                        &host_secret_hash_string)) {
-    host_secret_hash_string = "plain:";
-  }
-
-  if (!host_secret_hash_.Parse(host_secret_hash_string)) {
-    LOG(ERROR) << "Invalid host_secret_hash.";
+  if (!config.GetString(kHostSecretHashConfigPath, &host_secret_hash_string) ||
+      !ParsePinHashFromConfig(host_secret_hash_string, host_id_, &pin_hash_)) {
+    LOG(ERROR) << "Cannot parse host_secret_hash configuration value.";
     return false;
   }
 

@@ -13,6 +13,14 @@ namespace remoting {
 // hashed host ID and PIN.
 std::string MakeHostPinHash(const std::string& host_id, const std::string& pin);
 
+// Parse string representation of a shared secret hash. The value can be either
+// "plain:<pin_in_base64>" or "hmac:<pin_hmac_in_base64>". In the first case the
+// returned value is automatically hashed. False is returned if |value| is in
+// invalid format.
+bool ParsePinHashFromConfig(const std::string& value,
+                            const std::string& host_id,
+                            std::string* pin_hash_out);
+
 // Extracts the hash function from the given hash, uses it to calculate the
 // hash of the given host ID and PIN, and compares that hash to the given hash.
 // Returns true if the calculated and given hashes are equal.

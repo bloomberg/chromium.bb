@@ -62,9 +62,8 @@ void PairingClientAuthenticator::OnPinFetched(
     const SetAuthenticatorCallback& callback,
     const std::string& pin) {
   callback.Run(V2Authenticator::CreateForClient(
-      AuthenticationMethod::ApplyHashFunction(
-          AuthenticationMethod::HMAC_SHA256,
-          authentication_tag_, pin),
+      ApplySharedSecretHashFunction(HashFunction::HMAC_SHA256,
+                                    authentication_tag_, pin),
       initial_state));
 }
 

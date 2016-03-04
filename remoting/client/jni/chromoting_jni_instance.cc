@@ -81,12 +81,12 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
           host_pubkey));
 
   std::vector<protocol::AuthenticationMethod> auth_methods;
-  auth_methods.push_back(protocol::AuthenticationMethod::Spake2Pair());
-  auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
-      protocol::AuthenticationMethod::HMAC_SHA256));
-  auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
-      protocol::AuthenticationMethod::NONE));
-  auth_methods.push_back(protocol::AuthenticationMethod::ThirdParty());
+  auth_methods.push_back(protocol::AuthenticationMethod::THIRD_PARTY);
+  auth_methods.push_back(protocol::AuthenticationMethod::SPAKE2_PAIR);
+  auth_methods.push_back(
+      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC);
+  auth_methods.push_back(
+      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN);
 
   authenticator_.reset(new protocol::NegotiatingClientAuthenticator(
       pairing_id, pairing_secret, host_id_,

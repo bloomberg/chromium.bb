@@ -4,63 +4,60 @@
 
 #include "remoting/protocol/authentication_method.h"
 
-#include <stddef.h>
-
-#include "base/base64.h"
 #include "base/logging.h"
 #include "crypto/hmac.h"
 #include "remoting/protocol/auth_util.h"
+#include "remoting/protocol/name_value_map.h"
 
 namespace remoting {
 namespace protocol {
 
-// static
-AuthenticationMethod AuthenticationMethod::Invalid() {
-  return AuthenticationMethod();
+const NameMapElement<AuthenticationMethod> kAuthenticationMethodStrings[] = {
+    {AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN, "spake2_plain"},
+    {AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC, "spake2_hmac"},
+    {AuthenticationMethod::SPAKE2_PAIR, "spake2_pair"},
+    {AuthenticationMethod::THIRD_PARTY, "third_party"}};
+
+AuthenticationMethod ParseAuthenticationMethodString(const std::string& value) {
+  AuthenticationMethod result;
+  if (!NameToValue(kAuthenticationMethodStrings, value, &result))
+    return AuthenticationMethod::INVALID;
+  return result;
 }
 
-// static
-AuthenticationMethod AuthenticationMethod::Spake2(HashFunction hash_function) {
-  return AuthenticationMethod(SPAKE2, hash_function);
+const std::string AuthenticationMethodToString(
+    AuthenticationMethod method) {
+  return ValueToName(kAuthenticationMethodStrings, method);
 }
 
-// static
-AuthenticationMethod AuthenticationMethod::Spake2Pair() {
-  return AuthenticationMethod(SPAKE2_PAIR, HMAC_SHA256);
-}
+HashFunction GetHashFunctionForAuthenticationMethod(
+    AuthenticationMethod method) {
+  switch (method) {
+    case AuthenticationMethod::INVALID:
+      NOTREACHED();
+      return HashFunction::NONE;
 
-// static
-AuthenticationMethod AuthenticationMethod::ThirdParty() {
-  return AuthenticationMethod(THIRD_PARTY, NONE);
-}
+    case AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN:
+    case AuthenticationMethod::THIRD_PARTY:
+      return HashFunction::NONE;
 
-// static
-AuthenticationMethod AuthenticationMethod::FromString(
-    const std::string& value) {
-  if (value == "spake2_pair") {
-    return Spake2Pair();
-  } else if (value == "spake2_plain") {
-    return Spake2(NONE);
-  } else if (value == "spake2_hmac") {
-    return Spake2(HMAC_SHA256);
-  } else if (value == "third_party") {
-    return ThirdParty();
-  } else {
-    return AuthenticationMethod::Invalid();
+    case AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC:
+    case AuthenticationMethod::SPAKE2_PAIR:
+      return HashFunction::HMAC_SHA256;
   }
+
+  NOTREACHED();
+  return HashFunction::NONE;
 }
 
-// static
-std::string AuthenticationMethod::ApplyHashFunction(
-    HashFunction hash_function,
-    const std::string& tag,
-    const std::string& shared_secret) {
+std::string ApplySharedSecretHashFunction(HashFunction hash_function,
+                                          const std::string& tag,
+                                          const std::string& shared_secret) {
   switch (hash_function) {
-    case NONE:
+    case HashFunction::NONE:
       return shared_secret;
-      break;
 
-    case HMAC_SHA256: {
+    case HashFunction::HMAC_SHA256: {
       crypto::HMAC response(crypto::HMAC::SHA256);
       if (!response.Init(tag)) {
         LOG(FATAL) << "HMAC::Init failed";
@@ -77,77 +74,6 @@ std::string AuthenticationMethod::ApplyHashFunction(
 
   NOTREACHED();
   return shared_secret;
-}
-
-AuthenticationMethod::AuthenticationMethod()
-    : type_(INVALID),
-      hash_function_(NONE) {
-}
-
-AuthenticationMethod::AuthenticationMethod(MethodType type,
-                                           HashFunction hash_function)
-    : type_(type),
-      hash_function_(hash_function) {
-  DCHECK_NE(type_, INVALID);
-}
-
-AuthenticationMethod::HashFunction AuthenticationMethod::hash_function() const {
-  DCHECK(is_valid());
-  return hash_function_;
-}
-
-const std::string AuthenticationMethod::ToString() const {
-  DCHECK(is_valid());
-
-  switch (type_) {
-    case INVALID:
-      NOTREACHED();
-      break;
-
-    case SPAKE2_PAIR:
-      return "spake2_pair";
-
-    case SPAKE2:
-      switch (hash_function_) {
-        case NONE:
-          return "spake2_plain";
-        case HMAC_SHA256:
-          return "spake2_hmac";
-      }
-      break;
-
-    case THIRD_PARTY:
-      return "third_party";
-  }
-
-  return "invalid";
-}
-
-bool AuthenticationMethod::operator ==(
-    const AuthenticationMethod& other) const {
-  return type_ == other.type_ &&
-      hash_function_ == other.hash_function_;
-}
-
-bool SharedSecretHash::Parse(const std::string& as_string) {
-  size_t separator = as_string.find(':');
-  if (separator == std::string::npos)
-    return false;
-
-  std::string function_name = as_string.substr(0, separator);
-  if (function_name == "plain") {
-    hash_function = AuthenticationMethod::NONE;
-  } else if (function_name == "hmac") {
-    hash_function = AuthenticationMethod::HMAC_SHA256;
-  } else {
-    return false;
-  }
-
-  if (!base::Base64Decode(as_string.substr(separator + 1), &value)) {
-    return false;
-  }
-
-  return true;
 }
 
 }  // namespace protocol

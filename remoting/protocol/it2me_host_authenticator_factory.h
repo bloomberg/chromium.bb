@@ -23,11 +23,10 @@ namespace protocol {
 // understands both the V2 and legacy V1 authentication mechanisms.
 class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  public:
-  It2MeHostAuthenticatorFactory(
-      const std::string& local_cert,
-      scoped_refptr<RsaKeyPair> key_pair,
-      const std::string& shared_secret,
-      const std::string& required_client_domain);
+  It2MeHostAuthenticatorFactory(const std::string& local_cert,
+                                scoped_refptr<RsaKeyPair> key_pair,
+                                const std::string& access_code,
+                                const std::string& required_client_domain);
   ~It2MeHostAuthenticatorFactory() override;
 
   // AuthenticatorFactory interface.
@@ -39,7 +38,7 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  private:
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> key_pair_;
-  std::string shared_secret_;
+  std::string access_code_;
   std::string required_client_domain_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHostAuthenticatorFactory);

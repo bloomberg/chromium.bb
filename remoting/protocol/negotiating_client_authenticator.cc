@@ -51,13 +51,13 @@ void NegotiatingClientAuthenticator::ProcessMessage(
   DCHECK_EQ(state(), WAITING_MESSAGE);
 
   std::string method_attr = message->Attr(kMethodAttributeQName);
-  AuthenticationMethod method = AuthenticationMethod::FromString(method_attr);
+  AuthenticationMethod method = ParseAuthenticationMethodString(method_attr);
 
   // The host picked a method different from the one the client had selected.
   if (method != current_method_) {
     // The host must pick a method that is valid and supported by the client,
     // and it must not change methods after it has picked one.
-    if (method_set_by_host_ || !method.is_valid() ||
+    if (method_set_by_host_ || method == AuthenticationMethod::INVALID ||
         std::find(methods_.begin(), methods_.end(), method) == methods_.end()) {
       state_ = REJECTED;
       rejection_reason_ = PROTOCOL_ERROR;
@@ -84,7 +84,7 @@ scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
 
   // This is the first message to the host, send a list of supported methods.
-  if (!current_method_.is_valid()) {
+  if (current_method_ == AuthenticationMethod::INVALID) {
     // If no authentication method has been chosen, see if we can optimistically
     // choose one.
     scoped_ptr<buzz::XmlElement> result;
@@ -97,14 +97,13 @@ scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
     }
 
     // Include a list of supported methods.
-    std::stringstream supported_methods(std::stringstream::out);
-    for (std::vector<AuthenticationMethod>::iterator it = methods_.begin();
-         it != methods_.end(); ++it) {
-      if (it != methods_.begin())
-        supported_methods << kSupportedMethodsSeparator;
-      supported_methods << it->ToString();
+    std::string supported_methods;
+    for (AuthenticationMethod method : methods_) {
+      if (!supported_methods.empty())
+        supported_methods += kSupportedMethodsSeparator;
+      supported_methods += AuthenticationMethodToString(method);
     }
-    result->AddAttr(kSupportedMethodsAttributeQName, supported_methods.str());
+    result->AddAttr(kSupportedMethodsAttributeQName, supported_methods);
     state_ = WAITING_MESSAGE;
     return result;
   }
@@ -114,8 +113,8 @@ scoped_ptr<buzz::XmlElement> NegotiatingClientAuthenticator::GetNextMessage() {
 void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     Authenticator::State preferred_initial_state,
     const base::Closure& resume_callback) {
-  DCHECK(current_method_.is_valid());
-  if (current_method_.type() == AuthenticationMethod::THIRD_PARTY) {
+  DCHECK(current_method_ != AuthenticationMethod::INVALID);
+  if (current_method_ == AuthenticationMethod::THIRD_PARTY) {
     // |ThirdPartyClientAuthenticator| takes ownership of |token_fetcher_|.
     // The authentication method negotiation logic should guarantee that only
     // one |ThirdPartyClientAuthenticator| will need to be created per session.
@@ -124,10 +123,12 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
         std::move(token_fetcher_)));
     resume_callback.Run();
   } else {
-    DCHECK(current_method_.type() == AuthenticationMethod::SPAKE2 ||
-           current_method_.type() == AuthenticationMethod::SPAKE2_PAIR);
+    DCHECK(current_method_ ==
+               AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN ||
+           current_method_ == AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC ||
+           current_method_ == AuthenticationMethod::SPAKE2_PAIR);
     bool pairing_supported =
-        (current_method_.type() == AuthenticationMethod::SPAKE2_PAIR);
+        (current_method_ == AuthenticationMethod::SPAKE2_PAIR);
     SecretFetchedCallback callback = base::Bind(
         &NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret,
         weak_factory_.GetWeakPtr(), preferred_initial_state, resume_callback);
@@ -138,13 +139,13 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
 void NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
   if (!client_pairing_id_.empty() && !shared_secret_.empty() &&
       std::find(methods_.begin(), methods_.end(),
-                AuthenticationMethod::Spake2Pair()) != methods_.end()) {
+                AuthenticationMethod::SPAKE2_PAIR) != methods_.end()) {
     // If the client specified a pairing id and shared secret, then create a
     // PairingAuthenticator.
     current_authenticator_.reset(new PairingClientAuthenticator(
         client_pairing_id_, shared_secret_, fetch_secret_callback_,
         authentication_tag_));
-    current_method_ = AuthenticationMethod::Spake2Pair();
+    current_method_ = AuthenticationMethod::SPAKE2_PAIR;
   }
 }
 
@@ -153,8 +154,9 @@ void NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret(
     const base::Closure& resume_callback,
     const std::string& shared_secret) {
   current_authenticator_ = V2Authenticator::CreateForClient(
-      AuthenticationMethod::ApplyHashFunction(
-          current_method_.hash_function(), authentication_tag_, shared_secret),
+      ApplySharedSecretHashFunction(
+          GetHashFunctionForAuthenticationMethod(current_method_),
+          authentication_tag_, shared_secret),
       initial_state);
   resume_callback.Run();
 }

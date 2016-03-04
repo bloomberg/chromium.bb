@@ -29,14 +29,19 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
  public:
   ~NegotiatingHostAuthenticator() override;
 
-  // Creates a host authenticator, using a fixed shared secret/PIN hash.
-  // If |pairing_registry| is non-nullptr then the Spake2Pair method will
-  // be offered, supporting PIN-less authentication.
-  static scoped_ptr<Authenticator> CreateWithSharedSecret(
+  // Creates a host authenticator for It2Me host.
+  static scoped_ptr<Authenticator> CreateForIt2Me(
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
-      const std::string& shared_secret_hash,
-      AuthenticationMethod::HashFunction hash_function,
+      const std::string& access_code);
+
+  // Creates a host authenticator, using a fixed PIN.
+  // If |pairing_registry| is non-nullptr then the spake2_pair method will
+  // be offered, supporting PIN-less authentication.
+  static scoped_ptr<Authenticator> CreateWithPin(
+      const std::string& local_cert,
+      scoped_refptr<RsaKeyPair> key_pair,
+      const std::string& pin_hash,
       scoped_refptr<PairingRegistry> pairing_registry);
 
   // Creates a host authenticator, using third party authentication.

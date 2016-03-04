@@ -28,23 +28,33 @@ NegotiatingHostAuthenticator::NegotiatingHostAuthenticator(
     scoped_refptr<RsaKeyPair> key_pair)
     : NegotiatingAuthenticatorBase(WAITING_MESSAGE),
       local_cert_(local_cert),
-      local_key_pair_(key_pair) {
+      local_key_pair_(key_pair) {}
+
+// static
+scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateForIt2Me(
+    const std::string& local_cert,
+    scoped_refptr<RsaKeyPair> key_pair,
+    const std::string& access_code) {
+  scoped_ptr<NegotiatingHostAuthenticator> result(
+      new NegotiatingHostAuthenticator(local_cert, key_pair));
+  result->shared_secret_hash_ = access_code;
+  result->AddMethod(AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN);
+  return std::move(result);
 }
 
 // static
-scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithSharedSecret(
+scoped_ptr<Authenticator> NegotiatingHostAuthenticator::CreateWithPin(
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    const std::string& shared_secret_hash,
-    AuthenticationMethod::HashFunction hash_function,
+    const std::string& pin_hash,
     scoped_refptr<PairingRegistry> pairing_registry) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_cert, key_pair));
-  result->shared_secret_hash_ = shared_secret_hash;
+  result->shared_secret_hash_ = pin_hash;
   result->pairing_registry_ = pairing_registry;
-  result->AddMethod(AuthenticationMethod::Spake2(hash_function));
+  result->AddMethod(AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC);
   if (pairing_registry.get()) {
-    result->AddMethod(AuthenticationMethod::Spake2Pair());
+    result->AddMethod(AuthenticationMethod::SPAKE2_PAIR);
   }
   return std::move(result);
 }
@@ -58,7 +68,7 @@ NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
   scoped_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_cert, key_pair));
   result->token_validator_ = std::move(token_validator);
-  result->AddMethod(AuthenticationMethod::ThirdParty());
+  result->AddMethod(AuthenticationMethod::THIRD_PARTY);
   return std::move(result);
 }
 
@@ -71,10 +81,11 @@ void NegotiatingHostAuthenticator::ProcessMessage(
   DCHECK_EQ(state(), WAITING_MESSAGE);
 
   std::string method_attr = message->Attr(kMethodAttributeQName);
-  AuthenticationMethod method = AuthenticationMethod::FromString(method_attr);
+  AuthenticationMethod method = ParseAuthenticationMethodString(method_attr);
 
   // If the host has already chosen a method, it can't be changed by the client.
-  if (current_method_.is_valid() && method != current_method_) {
+  if (current_method_ != AuthenticationMethod::INVALID &&
+      method != current_method_) {
     state_ = REJECTED;
     rejection_reason_ = PROTOCOL_ERROR;
     resume_callback.Run();
@@ -84,9 +95,9 @@ void NegotiatingHostAuthenticator::ProcessMessage(
   // If the client did not specify a preferred auth method, or specified an
   // unknown or unsupported method, then select the first known method from
   // the supported-methods attribute.
-  if (!method.is_valid() ||
+  if (method == AuthenticationMethod::INVALID ||
       std::find(methods_.begin(), methods_.end(), method) == methods_.end()) {
-    method = AuthenticationMethod::Invalid();
+    method = AuthenticationMethod::INVALID;
 
     std::string supported_methods_attr =
         message->Attr(kSupportedMethodsAttributeQName);
@@ -105,17 +116,17 @@ void NegotiatingHostAuthenticator::ProcessMessage(
                            std::string(1, kSupportedMethodsSeparator),
                            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       AuthenticationMethod list_value =
-          AuthenticationMethod::FromString(method_str);
-      if (list_value.is_valid() &&
-          std::find(methods_.begin(),
-                    methods_.end(), list_value) != methods_.end()) {
+          ParseAuthenticationMethodString(method_str);
+      if (list_value != AuthenticationMethod::INVALID &&
+          std::find(methods_.begin(), methods_.end(), list_value) !=
+              methods_.end()) {
         // Found common method.
         method = list_value;
         break;
       }
     }
 
-    if (!method.is_valid()) {
+    if (method == AuthenticationMethod::INVALID) {
       // Failed to find a common auth method.
       state_ = REJECTED;
       rejection_reason_ = PROTOCOL_ERROR;
@@ -134,7 +145,7 @@ void NegotiatingHostAuthenticator::ProcessMessage(
 
   // If the client specified a supported method, and the host hasn't chosen a
   // method yet, use the client's preferred method and process the message.
-  if (!current_method_.is_valid()) {
+  if (current_method_ == AuthenticationMethod::INVALID) {
     current_method_ = method;
     state_ = PROCESSING_MESSAGE;
     // Copy the message since the authenticator may process it asynchronously.
@@ -156,16 +167,16 @@ scoped_ptr<buzz::XmlElement> NegotiatingHostAuthenticator::GetNextMessage() {
 void NegotiatingHostAuthenticator::CreateAuthenticator(
     Authenticator::State preferred_initial_state,
     const base::Closure& resume_callback) {
-  DCHECK(current_method_.is_valid());
+  DCHECK(current_method_ != AuthenticationMethod::INVALID);
 
-  if (current_method_.type() == AuthenticationMethod::THIRD_PARTY) {
+  if (current_method_ == AuthenticationMethod::THIRD_PARTY) {
     // |ThirdPartyHostAuthenticator| takes ownership of |token_validator_|.
     // The authentication method negotiation logic should guarantee that only
     // one |ThirdPartyHostAuthenticator| will need to be created per session.
     DCHECK(token_validator_);
     current_authenticator_.reset(new ThirdPartyHostAuthenticator(
         local_cert_, local_key_pair_, std::move(token_validator_)));
-  } else if (current_method_ == AuthenticationMethod::Spake2Pair() &&
+  } else if (current_method_ == AuthenticationMethod::SPAKE2_PAIR &&
              preferred_initial_state == WAITING_MESSAGE) {
     // If the client requested Spake2Pair and sent an initial message, attempt
     // the paired connection protocol.
@@ -178,8 +189,10 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
     // Spake2Pair so that the client knows that the host supports pairing and
     // that it can therefore present the option to the user when they enter
     // the PIN.
-    DCHECK(current_method_.type() == AuthenticationMethod::SPAKE2 ||
-           current_method_.type() == AuthenticationMethod::SPAKE2_PAIR);
+    DCHECK(current_method_ ==
+               AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN ||
+           current_method_ == AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC ||
+           current_method_ == AuthenticationMethod::SPAKE2_PAIR);
     current_authenticator_ = V2Authenticator::CreateForHost(
         local_cert_, local_key_pair_, shared_secret_hash_,
         preferred_initial_state);

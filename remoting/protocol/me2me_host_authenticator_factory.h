@@ -27,13 +27,13 @@ class PairingRegistry;
 class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  public:
   // Create a factory that dispenses shared secret authenticators.
-  static scoped_ptr<AuthenticatorFactory> CreateWithSharedSecret(
+  static scoped_ptr<AuthenticatorFactory> CreateWithPin(
       bool use_service_account,
       const std::string& host_owner,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& required_client_domain,
-      const SharedSecretHash& shared_secret_hash,
+      const std::string& pin_hash,
       scoped_refptr<PairingRegistry> pairing_registry);
 
   // Create a factory that dispenses third party authenticators.
@@ -62,8 +62,8 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string required_client_domain_;
 
-  // Used only for shared secret host authenticators.
-  SharedSecretHash shared_secret_hash_;
+  // Used only for PIN-based host authenticators.
+  std::string pin_hash_;
 
   // Used only for third party host authenticators.
   scoped_ptr<TokenValidatorFactory> token_validator_factory_;
