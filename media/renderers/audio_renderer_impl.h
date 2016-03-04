@@ -280,6 +280,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // Used to determine how long to delay playback.
   base::TimeDelta first_packet_timestamp_;
 
+  // Set by CurrentMediaTime(), used to prevent the current media time value as
+  // reported to JavaScript from going backwards in time.
+  base::TimeDelta last_media_timestamp_;
+
   // End variables which must be accessed under |lock_|. ----------------------
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

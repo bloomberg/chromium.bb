@@ -158,20 +158,36 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
   ended_timestamp_ = kInfiniteDuration();
   last_render_time_ = stop_rendering_time_ = base::TimeTicks();
   first_packet_timestamp_ = kNoTimestamp();
+  last_media_timestamp_ = base::TimeDelta();
   audio_clock_.reset(new AudioClock(time, audio_parameters_.sample_rate()));
 }
 
 base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
-  // In practice the Render() method is called with a high enough frequency
-  // that returning only the front timestamp is good enough and also prevents
-  // returning values that go backwards in time.
-  base::TimeDelta current_media_time;
-  {
-    base::AutoLock auto_lock(lock_);
-    current_media_time = audio_clock_->front_timestamp();
+  base::AutoLock auto_lock(lock_);
+
+  // Return the current time based on the known extents of the rendered audio
+  // data plus an estimate based on the last time those values were calculated.
+  base::TimeDelta current_media_time = audio_clock_->front_timestamp();
+  if (!last_render_time_.is_null()) {
+    current_media_time += tick_clock_->NowTicks() - last_render_time_;
+    if (current_media_time > audio_clock_->back_timestamp())
+      current_media_time = audio_clock_->back_timestamp();
+  }
+
+  // Clamp current media time to the last reported value, this prevents higher
+  // level clients from seeing time go backwards based on inaccurate or spurious
+  // delay values reported to the AudioClock.
+  //
+  // It is expected that such events are transient and will be recovered as
+  // rendering continues over time.
+  if (current_media_time < last_media_timestamp_) {
+    DVLOG(2) << __FUNCTION__ << ": " << last_media_timestamp_
+             << " (clamped), actual: " << current_media_time;
+    return last_media_timestamp_;
   }
 
   DVLOG(2) << __FUNCTION__ << ": " << current_media_time;
+  last_media_timestamp_ = current_media_time;
   return current_media_time;
 }
 
