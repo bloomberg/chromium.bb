@@ -203,12 +203,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Checks if the resize lock can be released because we received an new frame.
   void CheckResizeLock();
 
-  // Run all on compositing commit callbacks.
-  void RunOnCommitCallbacks();
-
-  // Add on compositing commit callback.
-  void AddOnCommitCallbackAndDisableLocks(const base::Closure& callback);
-
   // Called after async thumbnailer task completes.  Scales and crops the result
   // of the copy.
   static void CopyFromCompositingSurfaceHasResultForVideo(
@@ -238,8 +232,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   DelegatedFrameHostClient* const client_;
   ui::Compositor* compositor_;
-
-  std::vector<base::Closure> on_compositing_did_commit_callbacks_;
 
   // The vsync manager we are observing for changes, if any.
   scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;

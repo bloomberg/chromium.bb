@@ -456,7 +456,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   if (!compositor_ || skip_frame) {
     SendDelegatedFrameAck(output_surface_id);
   } else {
-    AddOnCommitCallbackAndDisableLocks(base::Closure());
+    can_lock_compositor_ = NO_PENDING_COMMIT;
   }
   if (!surface_id_.is_null())
     delegated_frame_evictor_->SwappedFrame(
@@ -699,7 +699,6 @@ void DelegatedFrameHost::OnCompositingDidCommit(
     if (resize_lock_.get() && resize_lock_->GrabDeferredLock())
       can_lock_compositor_ = YES_DID_LOCK;
   }
-  RunOnCommitCallbacks();
   if (resize_lock_ &&
       resize_lock_->expected_size() == current_frame_size_in_dip_) {
     resize_lock_.reset();
@@ -771,24 +770,6 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   DCHECK(!vsync_manager_.get());
 }
 
-void DelegatedFrameHost::RunOnCommitCallbacks() {
-  for (std::vector<base::Closure>::const_iterator
-      it = on_compositing_did_commit_callbacks_.begin();
-      it != on_compositing_did_commit_callbacks_.end(); ++it) {
-    it->Run();
-  }
-  on_compositing_did_commit_callbacks_.clear();
-}
-
-void DelegatedFrameHost::AddOnCommitCallbackAndDisableLocks(
-    const base::Closure& callback) {
-  DCHECK(compositor_);
-
-  can_lock_compositor_ = NO_PENDING_COMMIT;
-  if (!callback.is_null())
-    on_compositing_did_commit_callbacks_.push_back(callback);
-}
-
 void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
   DCHECK(!compositor_);
   if (!compositor)
@@ -803,7 +784,6 @@ void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
 void DelegatedFrameHost::ResetCompositor() {
   if (!compositor_)
     return;
-  RunOnCommitCallbacks();
   if (resize_lock_) {
     resize_lock_.reset();
     client_->DelegatedFrameHostResizeLockWasReleased();
