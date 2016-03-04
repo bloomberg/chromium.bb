@@ -25,7 +25,7 @@ public:
 
     DictionaryIterator(v8::Local<v8::Object> iterator, v8::Isolate*);
 
-    bool isValid() const { return !m_iterator.IsEmpty(); }
+    bool isNull() const { return m_iterator.IsEmpty(); }
 
     // Returns true if the iterator is still not done.
     bool next(ExecutionContext*, ExceptionState&);
@@ -34,7 +34,6 @@ public:
     bool valueAsDictionary(Dictionary& result, ExceptionState&);
 
 private:
-
     v8::Isolate* m_isolate;
     v8::Local<v8::Object> m_iterator;
     v8::Local<v8::String> m_nextKey;

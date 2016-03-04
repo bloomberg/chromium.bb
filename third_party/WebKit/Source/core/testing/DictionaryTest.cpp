@@ -152,7 +152,7 @@ String DictionaryTest::stringFromIterable(ExecutionContext* executionContext, Di
 {
     StringBuilder result;
     DictionaryIterator iterator = iterable.getIterator(executionContext);
-    if (!iterator.isValid())
+    if (iterator.isNull())
         return emptyString();
 
     bool firstLoop = true;

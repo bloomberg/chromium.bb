@@ -24,7 +24,7 @@ DictionaryIterator::DictionaryIterator(v8::Local<v8::Object> iterator, v8::Isola
 
 bool DictionaryIterator::next(ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
-    ASSERT(isValid());
+    ASSERT(!isNull());
 
     v8::Local<v8::Value> next;
     // TODO(alancutter): Support callable objects as well as functions.
@@ -56,7 +56,7 @@ bool DictionaryIterator::next(ExecutionContext* executionContext, ExceptionState
 
 bool DictionaryIterator::valueAsDictionary(Dictionary& result, ExceptionState& exceptionState)
 {
-    ASSERT(isValid());
+    ASSERT(!isNull());
     ASSERT(!m_done);
 
     v8::Local<v8::Value> value;

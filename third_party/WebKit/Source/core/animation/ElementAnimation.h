@@ -50,17 +50,17 @@ class Dictionary;
 class ElementAnimation {
     STATIC_ONLY(ElementAnimation);
 public:
-    static Animation* animate(Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, double duration, ExceptionState& exceptionState)
+    static Animation* animate(ExecutionContext* executionContext, Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, double duration, ExceptionState& exceptionState)
     {
-        EffectModel* effect = EffectInput::convert(&element, effectInput, exceptionState);
+        EffectModel* effect = EffectInput::convert(&element, effectInput, executionContext, exceptionState);
         if (exceptionState.hadException())
             return 0;
         return animateInternal(element, effect, TimingInput::convert(duration));
     }
 
-    static Animation* animate(Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& options, ExceptionState& exceptionState)
+    static Animation* animate(ExecutionContext* executionContext, Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& options, ExceptionState& exceptionState)
     {
-        EffectModel* effect = EffectInput::convert(&element, effectInput, exceptionState);
+        EffectModel* effect = EffectInput::convert(&element, effectInput, executionContext, exceptionState);
         if (exceptionState.hadException())
             return 0;
 
@@ -69,9 +69,9 @@ public:
         return animation;
     }
 
-    static Animation* animate(Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
+    static Animation* animate(ExecutionContext* executionContext, Element& element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
     {
-        EffectModel* effect = EffectInput::convert(&element, effectInput, exceptionState);
+        EffectModel* effect = EffectInput::convert(&element, effectInput, executionContext, exceptionState);
         if (exceptionState.hadException())
             return 0;
         return animateInternal(element, effect, Timing());

@@ -57,9 +57,9 @@ public:
 
     static KeyframeEffect* create(Element*, EffectModel*, const Timing&, Priority = DefaultPriority, EventDelegate* = nullptr);
     // Web Animations API Bindings constructors.
-    static KeyframeEffect* create(Element*, const EffectModelOrDictionarySequenceOrDictionary& effectInput, double duration, ExceptionState&);
-    static KeyframeEffect* create(Element*, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState&);
-    static KeyframeEffect* create(Element*, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState&);
+    static KeyframeEffect* create(ExecutionContext*, Element*, const EffectModelOrDictionarySequenceOrDictionary& effectInput, double duration, ExceptionState&);
+    static KeyframeEffect* create(ExecutionContext*, Element*, const EffectModelOrDictionarySequenceOrDictionary& effectInput, const KeyframeEffectOptions& timingInput, ExceptionState&);
+    static KeyframeEffect* create(ExecutionContext*, Element*, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState&);
 
     ~KeyframeEffect() override;
 

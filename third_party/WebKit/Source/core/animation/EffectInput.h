@@ -17,16 +17,17 @@ class EffectModelOrDictionarySequenceOrDictionary;
 class Dictionary;
 class Element;
 class ExceptionState;
+class ExecutionContext;
 
 class CORE_EXPORT EffectInput {
     STATIC_ONLY(EffectInput);
 public:
     // TODO(alancutter): Replace Element* parameter with Document&.
-    static EffectModel* convert(Element*, const EffectModelOrDictionarySequenceOrDictionary&, ExceptionState&);
+    static EffectModel* convert(Element*, const EffectModelOrDictionarySequenceOrDictionary&, ExecutionContext*, ExceptionState&);
 
 private:
-    static EffectModel* convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
-    static EffectModel* convert(Element*, const Dictionary& keyframeDictionary, ExceptionState&);
+    static EffectModel* convertArrayForm(Element&, const Vector<Dictionary>& keyframes, ExceptionState&);
+    static EffectModel* convertObjectForm(Element&, const Dictionary& keyframe, ExceptionState&);
 };
 
 } // namespace blink

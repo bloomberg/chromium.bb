@@ -128,30 +128,53 @@ EffectModel* createEffectModelFromKeyframes(Element& element, const StringKeyfra
     return keyframeEffectModel;
 }
 
+bool exhaustDictionaryIterator(DictionaryIterator& iterator, ExecutionContext* executionContext, ExceptionState& exceptionState, Vector<Dictionary>& result)
+{
+    while (iterator.next(executionContext, exceptionState)) {
+        Dictionary dictionary;
+        if (!iterator.valueAsDictionary(dictionary, exceptionState)) {
+            exceptionState.throwTypeError("Keyframes must be objects.");
+            return false;
+        }
+        result.append(dictionary);
+    }
+    return true;
+}
+
 } // namespace
 
-EffectModel* EffectInput::convert(Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExceptionState& exceptionState)
+// Spec: http://w3c.github.io/web-animations/#processing-a-frames-argument
+EffectModel* EffectInput::convert(Element* element, const EffectModelOrDictionarySequenceOrDictionary& effectInput, ExecutionContext* executionContext, ExceptionState& exceptionState)
 {
     if (effectInput.isEffectModel())
         return effectInput.getAsEffectModel();
-    if (effectInput.isDictionarySequence())
-        return convert(element, effectInput.getAsDictionarySequence(), exceptionState);
-    if (effectInput.isDictionary()) {
-        return convert(element, effectInput.getAsDictionary(), exceptionState);
-    }
-    return nullptr;
-}
 
-EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
-{
-    if (!element)
+    if (effectInput.isNull() || !element)
         return nullptr;
 
+    if (effectInput.isDictionarySequence())
+        return convertArrayForm(*element, effectInput.getAsDictionarySequence(), exceptionState);
+
+    const Dictionary& dictionary = effectInput.getAsDictionary();
+    DictionaryIterator iterator = dictionary.getIterator(executionContext);
+    if (!iterator.isNull()) {
+        // TODO(alancutter): Convert keyframes during iteration rather than after to match spec.
+        Vector<Dictionary> keyframeDictionaries;
+        if (exhaustDictionaryIterator(iterator, executionContext, exceptionState, keyframeDictionaries))
+            return convertArrayForm(*element, keyframeDictionaries, exceptionState);
+        return nullptr;
+    }
+
+    return convertObjectForm(*element, dictionary, exceptionState);
+}
+
+EffectModel* EffectInput::convertArrayForm(Element& element, const Vector<Dictionary>& keyframeDictionaries, ExceptionState& exceptionState)
+{
     StringKeyframeVector keyframes;
     double lastOffset = 0;
     bool encounteredCompositableProperty = false;
 
-    for (const auto& keyframeDictionary : keyframeDictionaryVector) {
+    for (const Dictionary& keyframeDictionary : keyframeDictionaries) {
         RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
 
         ScriptValue scriptValue;
@@ -195,19 +218,19 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
             String value;
             DictionaryHelper::get(keyframeDictionary, property, value);
 
-            encounteredCompositableProperty |= setKeyframeValue(*element, *keyframe.get(), property, value);
+            encounteredCompositableProperty |= setKeyframeValue(element, *keyframe.get(), property, value);
         }
         keyframes.append(keyframe);
     }
 
-    return createEffectModelFromKeyframes(*element, keyframes, encounteredCompositableProperty, exceptionState);
-}
-
-EffectModel* EffectInput::convert(Element* element, const Dictionary& keyframeDictionary, ExceptionState& exceptionState)
-{
-    if (!element)
+    if (exceptionState.hadException())
         return nullptr;
 
+    return createEffectModelFromKeyframes(element, keyframes, encounteredCompositableProperty, exceptionState);
+}
+
+EffectModel* EffectInput::convertObjectForm(Element& element, const Dictionary& keyframeDictionary, ExceptionState& exceptionState)
+{
     StringKeyframeVector keyframes;
     bool encounteredCompositableProperty = false;
 
@@ -260,14 +283,14 @@ EffectModel* EffectInput::convert(Element* element, const Dictionary& keyframeDi
                 keyframe->setComposite(EffectModel::CompositeAdd);
             // TODO(alancutter): Support "accumulate" keyframe composition.
 
-            encounteredCompositableProperty |= setKeyframeValue(*element, *keyframe.get(), property, values[i]);
+            encounteredCompositableProperty |= setKeyframeValue(element, *keyframe.get(), property, values[i]);
             keyframes.append(keyframe);
         }
     }
 
     std::sort(keyframes.begin(), keyframes.end(), compareKeyframes);
 
-    return createEffectModelFromKeyframes(*element, keyframes, encounteredCompositableProperty, exceptionState);
+    return createEffectModelFromKeyframes(element, keyframes, encounteredCompositableProperty, exceptionState);
 }
 
 } // namespace blink

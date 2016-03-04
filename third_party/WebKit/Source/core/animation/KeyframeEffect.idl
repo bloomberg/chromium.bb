@@ -34,6 +34,7 @@
     // TODO(dstockwell): the third argument should be "optional (unrestricted double or KeyframeEffectOptions) timing".
     Constructor(Element? target, (EffectModel or sequence<Dictionary> or Dictionary)? effect, optional unrestricted double timing),
     Constructor(Element? target, (EffectModel or sequence<Dictionary> or Dictionary)? effect, KeyframeEffectOptions timing),
+    ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI,
 ] interface KeyframeEffect : AnimationEffectReadOnly {
