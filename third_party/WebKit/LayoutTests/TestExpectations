@@ -457,7 +457,6 @@ crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-no-alpha.html [ Pass
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
 # Use crbug.com/490511 for untriaged failures.
-crbug.com/490511 imported/web-platform-tests/html/browsers/history/the-location-interface/location_assign.html [ Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type.html [ Failure ]
 crbug.com/526898 imported/web-platform-tests/html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-x.xhtml [ Failure ]
 crbug.com/108417 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-1.html [ Failure ]

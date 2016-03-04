@@ -63,8 +63,8 @@ public:
     void setHref(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
     String href() const;
 
-    void assign(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
-    void replace(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void assign(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
+    void replace(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     void reload(LocalDOMWindow* currentWindow);
 
     void setProtocol(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
@@ -96,7 +96,7 @@ private:
     explicit Location(Frame*);
 
     enum class SetLocation { Normal, ReplaceThisFrame };
-    void setLocation(const String&, LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, SetLocation = SetLocation::Normal);
+    void setLocation(const String&, LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, ExceptionState* = nullptr, SetLocation = SetLocation::Normal);
 
     const KURL& url() const;
 

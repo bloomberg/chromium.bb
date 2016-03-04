@@ -217,18 +217,18 @@ void Location::setHash(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWin
     setLocation(url.getString(), currentWindow, enteredWindow);
 }
 
-void Location::assign(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& url)
+void Location::assign(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& url, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
-    setLocation(url, currentWindow, enteredWindow);
+    setLocation(url, currentWindow, enteredWindow, &exceptionState);
 }
 
-void Location::replace(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& url)
+void Location::replace(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String& url, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return;
-    setLocation(url, currentWindow, enteredWindow, SetLocation::ReplaceThisFrame);
+    setLocation(url, currentWindow, enteredWindow, &exceptionState, SetLocation::ReplaceThisFrame);
 }
 
 void Location::reload(LocalDOMWindow* currentWindow)
@@ -240,7 +240,7 @@ void Location::reload(LocalDOMWindow* currentWindow)
     m_frame->reload(FrameLoadTypeReload, ClientRedirect);
 }
 
-void Location::setLocation(const String& url, LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, SetLocation locationPolicy)
+void Location::setLocation(const String& url, LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, ExceptionState* exceptionState, SetLocation locationPolicy)
 {
     ASSERT(m_frame);
     if (!m_frame || !m_frame->host())
@@ -256,6 +256,10 @@ void Location::setLocation(const String& url, LocalDOMWindow* currentWindow, Loc
     KURL completedURL = enteredDocument->completeURL(url);
     if (completedURL.isNull())
         return;
+    if (exceptionState && !completedURL.isValid()) {
+        exceptionState->throwDOMException(SyntaxError, "'" + url + "' is not a valid URL.");
+        return;
+    }
 
     if (m_frame->domWindow()->isInsecureScriptAccess(*currentWindow, completedURL))
         return;

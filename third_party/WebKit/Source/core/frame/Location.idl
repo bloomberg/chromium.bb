@@ -38,8 +38,8 @@
     // property of an *existing* document at a different origin.
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
-    [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity] void assign(DOMString url);
-    [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity] void replace(DOMString url);
+    [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity, RaisesException] void assign(DOMString url);
+    [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity, RaisesException] void replace(DOMString url);
     [CallWith=CurrentWindow] void reload();
 
     // TODO(philipj): ancestorOrigins should have [SameObject] and be of type
