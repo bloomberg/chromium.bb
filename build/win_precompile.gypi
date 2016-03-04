@@ -11,7 +11,7 @@
   'conditions': [
     ['OS=="win" and chromium_win_pch==1', {
         'target_defaults': {
-          'msvs_precompiled_header': '<(DEPTH)/build/precompile.h',
+          'msvs_precompiled_header': 'build/precompile.h',
           'msvs_precompiled_source': '<(DEPTH)/build/precompile.cc',
           'sources': ['<(DEPTH)/build/precompile.cc'],
         }
