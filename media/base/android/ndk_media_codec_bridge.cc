@@ -67,7 +67,7 @@ void NdkMediaCodecBridge::Stop() {
   AMediaCodec_stop(media_codec_.get());
 }
 
-void NdkMediaCodecBridge::GetOutputFormat(int* width, int* height) {
+MediaCodecStatus NdkMediaCodecBridge::GetOutputSize(gfx::Size* size) {
   AMediaFormat* format = AMediaCodec_getOutputFormat(media_codec_.get());
   int left, right, bottom, top;
   bool has_left = AMediaFormat_getInt32(format, kMediaFormatKeyCropLeft, &left);
@@ -76,22 +76,26 @@ void NdkMediaCodecBridge::GetOutputFormat(int* width, int* height) {
   bool has_bottom =
       AMediaFormat_getInt32(format, kMediaFormatKeyCropBottom, &bottom);
   bool has_top = AMediaFormat_getInt32(format, kMediaFormatKeyCropTop, &top);
+  int width, height;
   if (has_left && has_right && has_bottom && has_top) {
     // Use crop size as it is more accurate. right and bottom are inclusive.
-    *width = right - left + 1;
-    *height = top - bottom + 1;
+    width = right - left + 1;
+    height = top - bottom + 1;
   } else {
-    AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_WIDTH, width);
-    AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_HEIGHT, height);
+    AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_WIDTH, &width);
+    AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_HEIGHT, &height);
   }
+  size->SetSize(width, height);
+  return MEDIA_CODEC_OK;
 }
 
-int NdkMediaCodecBridge::GetOutputSamplingRate() {
+MediaCodecStatus NdkMediaCodecBridge::GetOutputSamplingRate(
+    int* sampling_rate) {
   AMediaFormat* format = AMediaCodec_getOutputFormat(media_codec_.get());
-  int sample_rate = 0;
-  AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_SAMPLE_RATE, &sample_rate);
-  DCHECK(sample_rate != 0);
-  return sample_rate;
+  *sampling_rate = 0;
+  AMediaFormat_getInt32(format, AMEDIAFORMAT_KEY_SAMPLE_RATE, sampling_rate);
+  DCHECK_NE(*sampling_rate, 0);
+  return MEDIA_CODEC_OK;
 }
 
 MediaCodecStatus NdkMediaCodecBridge::QueueInputBuffer(
@@ -213,22 +217,24 @@ void NdkMediaCodecBridge::ReleaseOutputBuffer(int index, bool render) {
   AMediaCodec_releaseOutputBuffer(media_codec_.get(), index, render);
 }
 
-void NdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
-                                         uint8_t** data,
-                                         size_t* capacity) {
+MediaCodecStatus NdkMediaCodecBridge::GetInputBuffer(int input_buffer_index,
+                                                     uint8_t** data,
+                                                     size_t* capacity) {
   *data = AMediaCodec_getInputBuffer(media_codec_.get(), input_buffer_index,
                                      capacity);
+  return MEDIA_CODEC_OK;
 }
 
-void NdkMediaCodecBridge::CopyFromOutputBuffer(int index,
-                                               size_t offset,
-                                               void* dst,
-                                               size_t num) {
+MediaCodecStatus NdkMediaCodecBridge::CopyFromOutputBuffer(int index,
+                                                           size_t offset,
+                                                           void* dst,
+                                                           size_t num) {
   size_t capacity;
   const uint8_t* src_data =
       AMediaCodec_getOutputBuffer(media_codec_.get(), index, &capacity);
   CHECK_GE(capacity, offset + num);
   memcpy(dst, src_data + offset, num);
+  return MEDIA_CODEC_OK;
 }
 
 }  // namespace media

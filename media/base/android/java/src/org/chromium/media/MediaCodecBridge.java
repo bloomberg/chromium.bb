@@ -143,6 +143,48 @@ class MediaCodecBridge {
         }
     }
 
+    /** A wrapper around a MediaFormat. */
+    @MainDex
+    private static class GetOutputFormatResult {
+        private final int mStatus;
+        // May be null if mStatus is not MEDIA_CODEC_OK.
+        private final MediaFormat mFormat;
+
+        private GetOutputFormatResult(int status, MediaFormat format) {
+            mStatus = status;
+            mFormat = format;
+        }
+
+        private boolean formatHasCropValues() {
+            return mFormat.containsKey(KEY_CROP_RIGHT) && mFormat.containsKey(KEY_CROP_LEFT)
+                    && mFormat.containsKey(KEY_CROP_BOTTOM) && mFormat.containsKey(KEY_CROP_TOP);
+        }
+
+        @CalledByNative("GetOutputFormatResult")
+        private int status() {
+            return mStatus;
+        }
+
+        @CalledByNative("GetOutputFormatResult")
+        private int width() {
+            return formatHasCropValues()
+                    ? mFormat.getInteger(KEY_CROP_RIGHT) - mFormat.getInteger(KEY_CROP_LEFT) + 1
+                    : mFormat.getInteger(MediaFormat.KEY_WIDTH);
+        }
+
+        @CalledByNative("GetOutputFormatResult")
+        private int height() {
+            return formatHasCropValues()
+                    ? mFormat.getInteger(KEY_CROP_BOTTOM) - mFormat.getInteger(KEY_CROP_TOP) + 1
+                    : mFormat.getInteger(MediaFormat.KEY_HEIGHT);
+        }
+
+        @CalledByNative("GetOutputFormatResult")
+        private int sampleRate() {
+            return mFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+        }
+    }
+
     private MediaCodecBridge(
             MediaCodec mediaCodec, String mime, boolean adaptivePlaybackSupported) {
         assert mediaCodec != null;
@@ -255,45 +297,43 @@ class MediaCodecBridge {
         }
     }
 
-    private boolean outputFormatHasCropValues(MediaFormat format) {
-        return format.containsKey(KEY_CROP_RIGHT) && format.containsKey(KEY_CROP_LEFT)
-                && format.containsKey(KEY_CROP_BOTTOM) && format.containsKey(KEY_CROP_TOP);
-    }
-
     @CalledByNative
-    private int getOutputHeight() {
-        MediaFormat format = mMediaCodec.getOutputFormat();
-        return outputFormatHasCropValues(format)
-                ? format.getInteger(KEY_CROP_BOTTOM) - format.getInteger(KEY_CROP_TOP) + 1
-                : format.getInteger(MediaFormat.KEY_HEIGHT);
+    private GetOutputFormatResult getOutputFormat() {
+        MediaFormat format = null;
+        int status = MEDIA_CODEC_OK;
+        try {
+            format = mMediaCodec.getOutputFormat();
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Failed to get output format", e);
+            status = MEDIA_CODEC_ERROR;
+        }
+        return new GetOutputFormatResult(status, format);
     }
 
-    @CalledByNative
-    private int getOutputWidth() {
-        MediaFormat format = mMediaCodec.getOutputFormat();
-        return outputFormatHasCropValues(format)
-                ? format.getInteger(KEY_CROP_RIGHT) - format.getInteger(KEY_CROP_LEFT) + 1
-                : format.getInteger(MediaFormat.KEY_WIDTH);
-    }
-
-    @CalledByNative
-    private int getOutputSamplingRate() {
-        MediaFormat format = mMediaCodec.getOutputFormat();
-        return format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-    }
-
+    /** Returns null if MediaCodec throws IllegalStateException. */
     @CalledByNative
     private ByteBuffer getInputBuffer(int index) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            return mMediaCodec.getInputBuffer(index);
+            try {
+                return mMediaCodec.getInputBuffer(index);
+            } catch (IllegalStateException e) {
+                Log.e(TAG, "Failed to get input buffer", e);
+                return null;
+            }
         }
         return mInputBuffers[index];
     }
 
+    /** Returns null if MediaCodec throws IllegalStateException. */
     @CalledByNative
     private ByteBuffer getOutputBuffer(int index) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            return mMediaCodec.getOutputBuffer(index);
+            try {
+                return mMediaCodec.getOutputBuffer(index);
+            } catch (IllegalStateException e) {
+                Log.e(TAG, "Failed to get output buffer", e);
+                return null;
+            }
         }
         return mOutputBuffers[index];
     }

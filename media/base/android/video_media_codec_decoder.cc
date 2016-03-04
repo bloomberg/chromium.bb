@@ -210,7 +210,7 @@ void VideoMediaCodecDecoder::OnOutputFormatChanged() {
 
   gfx::Size prev_size = video_size_;
 
-  // See b/18224769. The values reported from MediaCodecBridge::GetOutputFormat
+  // See b/18224769. The values reported from MediaCodecBridge::GetOutputSize
   // correspond to the actual video frame size, but this is not necessarily the
   // size that should be output.
   video_size_ = configs_.video_size;

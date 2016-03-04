@@ -507,9 +507,13 @@ void MediaCodecAudioDecoder::OnDecodedFrame(const OutputBufferInfo& out) {
   // Copy data into AudioBuffer.
   CHECK_LE(out.size, audio_buffer->data_size());
 
-  media_codec_->CopyFromOutputBuffer(out.buf_index, out.offset,
-                                     audio_buffer->channel_data()[0],
-                                     audio_buffer->data_size());
+  MediaCodecStatus status = media_codec_->CopyFromOutputBuffer(
+      out.buf_index, out.offset, audio_buffer->channel_data()[0],
+      audio_buffer->data_size());
+  // TODO(timav,watk): This CHECK maintains the behavior of this call before
+  // we started catching CodecException and returning it as MEDIA_CODEC_ERROR.
+  // It needs to be handled some other way. http://crbug.com/585978
+  CHECK_EQ(status, MEDIA_CODEC_OK);
 
   // Release MediaCodec output buffer.
   media_codec_->ReleaseOutputBuffer(out.buf_index, false);
@@ -521,9 +525,14 @@ void MediaCodecAudioDecoder::OnDecodedFrame(const OutputBufferInfo& out) {
 void MediaCodecAudioDecoder::OnOutputFormatChanged() {
   DVLOG(2) << __FUNCTION__;
 
-  // We do not support the change of sampling rate on the fly
-  int new_sampling_rate = media_codec_->GetOutputSamplingRate();
-  if (new_sampling_rate != config_.samples_per_second()) {
+  int new_sampling_rate;
+  MediaCodecStatus status =
+      media_codec_->GetOutputSamplingRate(&new_sampling_rate);
+  if (status != MEDIA_CODEC_OK) {
+    DVLOG(0) << "GetOutputSamplingRate failed.";
+    SetState(STATE_ERROR);
+  } else if (new_sampling_rate != config_.samples_per_second()) {
+    // We do not support the change of sampling rate on the fly
     DVLOG(0) << "Sampling rate change is not supported by" << GetDisplayName()
              << " (detected change " << config_.samples_per_second() << "->"
              << new_sampling_rate << ")";

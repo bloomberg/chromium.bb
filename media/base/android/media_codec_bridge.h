@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/media_export.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -49,7 +50,7 @@ class MEDIA_EXPORT MediaCodecBridge {
   // DequeueInputBuffer() and DequeueOutputBuffer() become invalid.
   // Please note that this clears all the inputs in the media codec. In other
   // words, there will be no outputs until new input is provided.
-  // Returns MEDIA_CODEC_ERROR if an unexpected error happens, or Media_CODEC_OK
+  // Returns MEDIA_CODEC_ERROR if an unexpected error happens, or MEDIA_CODEC_OK
   // otherwise.
   virtual MediaCodecStatus Reset() = 0;
 
@@ -64,13 +65,15 @@ class MEDIA_EXPORT MediaCodecBridge {
   // instance -> StartAudio/Video() is recommended.
   virtual void Stop() = 0;
 
-  // Used for getting output format. This is valid after DequeueInputBuffer()
-  // returns a format change by returning INFO_OUTPUT_FORMAT_CHANGED
-  virtual void GetOutputFormat(int* width, int* height) = 0;
+  // Used for getting the output size. This is valid after DequeueInputBuffer()
+  // returns a format change by returning INFO_OUTPUT_FORMAT_CHANGED.
+  // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
+  virtual MediaCodecStatus GetOutputSize(gfx::Size* size) = 0;
 
   // Used for checking for new sampling rate after DequeueInputBuffer() returns
   // INFO_OUTPUT_FORMAT_CHANGED
-  virtual int GetOutputSamplingRate() = 0;
+  // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
+  virtual MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) = 0;
 
   // Submits a byte array to the given input buffer. Call this after getting an
   // available buffer from DequeueInputBuffer(). If |data| is NULL, assume the
@@ -144,17 +147,18 @@ class MEDIA_EXPORT MediaCodecBridge {
   virtual void ReleaseOutputBuffer(int index, bool render) = 0;
 
   // Returns an input buffer's base pointer and capacity.
-  virtual void GetInputBuffer(int input_buffer_index,
-                              uint8_t** data,
-                              size_t* capacity) = 0;
+  virtual MediaCodecStatus GetInputBuffer(int input_buffer_index,
+                                          uint8_t** data,
+                                          size_t* capacity) = 0;
 
   // Copy |num| bytes from output buffer |index|'s |offset| into the memory
-  // region pointed to by |*dst|. To avoid overflows, the size of both source
+  // region pointed to by |dst|. To avoid overflows, the size of both source
   // and destination must be at least |num| bytes, and should not overlap.
-  virtual void CopyFromOutputBuffer(int index,
-                                    size_t offset,
-                                    void* dst,
-                                    size_t num) = 0;
+  // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
+  virtual MediaCodecStatus CopyFromOutputBuffer(int index,
+                                                size_t offset,
+                                                void* dst,
+                                                size_t num) = 0;
 
  protected:
   MediaCodecBridge();

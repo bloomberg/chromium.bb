@@ -47,7 +47,10 @@ bool MediaCodecBridge::FillInputBuffer(int index,
                                        size_t size) {
   uint8_t* dst = nullptr;
   size_t capacity = 0;
-  GetInputBuffer(index, &dst, &capacity);
+  if (GetInputBuffer(index, &dst, &capacity) != MEDIA_CODEC_OK) {
+    LOG(ERROR) << "GetInputBuffer failed";
+    return false;
+  }
   CHECK(dst);
 
   if (size > capacity) {

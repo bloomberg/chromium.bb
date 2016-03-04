@@ -335,7 +335,9 @@ void AndroidVideoEncodeAccelerator::QueueInput() {
 
   uint8_t* buffer = NULL;
   size_t capacity = 0;
-  media_codec_->GetInputBuffer(input_buf_index, &buffer, &capacity);
+  status = media_codec_->GetInputBuffer(input_buf_index, &buffer, &capacity);
+  RETURN_ON_FAILURE(status == media::MEDIA_CODEC_OK, "GetInputBuffer failed.",
+                    kPlatformFailureError);
 
   size_t queued_size =
       VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420, frame->coded_size());
@@ -429,7 +431,10 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
                                                  << shm->mapped_size(),
                     kPlatformFailureError);
 
-  media_codec_->CopyFromOutputBuffer(buf_index, offset, shm->memory(), size);
+  media::MediaCodecStatus status = media_codec_->CopyFromOutputBuffer(
+      buf_index, offset, shm->memory(), size);
+  RETURN_ON_FAILURE(status == media::MEDIA_CODEC_OK,
+                    "CopyFromOutputBuffer failed", kPlatformFailureError);
   media_codec_->ReleaseOutputBuffer(buf_index, false);
   --num_buffers_at_codec_;
 

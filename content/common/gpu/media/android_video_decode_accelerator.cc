@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
@@ -592,10 +593,12 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
           DismissPictureBuffers();
         }
 
+        if (media_codec_->GetOutputSize(&size_) != media::MEDIA_CODEC_OK) {
+          POST_ERROR(PLATFORM_FAILURE, "GetOutputSize failed.");
+          return false;
+        }
+
         picturebuffers_requested_ = true;
-        int32_t width, height;
-        media_codec_->GetOutputFormat(&width, &height);
-        size_ = gfx::Size(width, height);
         base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(&AndroidVideoDecodeAccelerator::RequestPictureBuffers,

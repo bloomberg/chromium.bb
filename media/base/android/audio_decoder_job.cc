@@ -105,9 +105,16 @@ void AudioDecoderJob::ReleaseOutputBuffer(
   render_output = render_output && (size != 0u);
   bool is_audio_underrun = false;
   if (render_output) {
-    int64_t head_position =
+    bool postpone = false;
+    int64_t head_position;
+    MediaCodecStatus status =
         (static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))
-            ->PlayOutputBuffer(output_buffer_index, size, offset);
+            ->PlayOutputBuffer(output_buffer_index, size, offset, postpone,
+                               &head_position);
+    // TODO(timav,watk): This CHECK maintains the behavior of this call before
+    // we started catching CodecException and returning it as MEDIA_CODEC_ERROR.
+    // It needs to be handled some other way. http://crbug.com/585978
+    CHECK_EQ(status, MEDIA_CODEC_OK);
 
     base::TimeTicks current_time = base::TimeTicks::Now();
 
@@ -191,7 +198,12 @@ void AudioDecoderJob::OnOutputFormatChanged() {
   DCHECK(media_codec_bridge_);
 
   int old_sampling_rate = output_sampling_rate_;
-  output_sampling_rate_ = media_codec_bridge_->GetOutputSamplingRate();
+  MediaCodecStatus status =
+      media_codec_bridge_->GetOutputSamplingRate(&output_sampling_rate_);
+  // TODO(timav,watk): This CHECK maintains the behavior of this call before
+  // we started catching CodecException and returning it as MEDIA_CODEC_ERROR.
+  // It needs to be handled some other way. http://crbug.com/585978
+  CHECK_EQ(status, MEDIA_CODEC_OK);
   if (output_sampling_rate_ != old_sampling_rate)
     ResetTimestampHelper();
 }

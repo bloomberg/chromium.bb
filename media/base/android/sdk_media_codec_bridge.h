@@ -32,8 +32,8 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
   MediaCodecStatus Reset() override;
   bool Start() override;
   void Stop() override;
-  void GetOutputFormat(int* width, int* height) override;
-  int GetOutputSamplingRate() override;
+  MediaCodecStatus GetOutputSize(gfx::Size* size) override;
+  MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) override;
   MediaCodecStatus QueueInputBuffer(
       int index,
       const uint8_t* data,
@@ -60,13 +60,13 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
                                        bool* end_of_stream,
                                        bool* key_frame) override;
   void ReleaseOutputBuffer(int index, bool render) override;
-  void GetInputBuffer(int input_buffer_index,
-                      uint8_t** data,
-                      size_t* capacity) override;
-  void CopyFromOutputBuffer(int index,
-                            size_t offset,
-                            void* dst,
-                            size_t num) override;
+  MediaCodecStatus GetInputBuffer(int input_buffer_index,
+                                  uint8_t** data,
+                                  size_t* capacity) override;
+  MediaCodecStatus CopyFromOutputBuffer(int index,
+                                        size_t offset,
+                                        void* dst,
+                                        size_t num) override;
 
   static bool RegisterSdkMediaCodecBridge(JNIEnv* env);
 
@@ -76,9 +76,13 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
                       MediaCodecDirection direction);
 
   // Called to get the buffer address given the output buffer index and offset.
-  // This function returns the size of available data to read and |addr| is the
-  // pointer to the address to read.
-  size_t GetOutputBufferAddress(int index, size_t offset, void** addr);
+  // The size of available data to read is written to |*capacity| and the
+  // address to read from is written to |*addr|.
+  // Returns MEDIA_CODEC_ERROR if a error occurs, or MEDIA_CODEC_OK otherwise.
+  MediaCodecStatus GetOutputBufferAddress(int index,
+                                          size_t offset,
+                                          void** addr,
+                                          size_t* capacity);
 
   jobject media_codec() { return j_media_codec_.obj(); }
   MediaCodecDirection direction_;
@@ -125,15 +129,17 @@ class MEDIA_EXPORT AudioCodecBridge : public SdkMediaCodecBridge {
   // Plays the output buffer right away or save for later playback if |postpone|
   // is set to true. This call must be called after DequeueOutputBuffer() and
   // before ReleaseOutputBuffer. The data is extracted from the output buffers
-  // using |index|, |size| and |offset|. Returns the playback head position
-  // expressed in frames.
+  // using |index|, |size| and |offset|. The playback head position in frames is
+  // output in |*playback_pos|.
   // When |postpone| is set to true, the next PlayOutputBuffer() should have
   // postpone == false, and it will play two buffers: the postponed one and
   // the one identified by |index|.
-  int64_t PlayOutputBuffer(int index,
-                           size_t size,
-                           size_t offset,
-                           bool postpone = false);
+  // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
+  MediaCodecStatus PlayOutputBuffer(int index,
+                                    size_t size,
+                                    size_t offset,
+                                    bool postpone,
+                                    int64_t* playback_pos);
 
   // Set the volume of the audio output.
   void SetVolume(double volume);

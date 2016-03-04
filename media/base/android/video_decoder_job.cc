@@ -151,7 +151,7 @@ bool VideoDecoderJob::UpdateOutputFormat() {
     return false;
   int prev_output_width = output_width_;
   int prev_output_height = output_height_;
-  // See b/18224769. The values reported from MediaCodecBridge::GetOutputFormat
+  // See b/18224769. The values reported from MediaCodecBridge::GetOutputSize
   // correspond to the actual video frame size, but this is not necessarily the
   // size that should be output.
   output_width_ = config_width_;

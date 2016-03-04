@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/media_export.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -25,8 +26,8 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
   MediaCodecStatus Reset() override;
   bool Start() override;
   void Stop() override;
-  void GetOutputFormat(int* width, int* height) override;
-  int GetOutputSamplingRate() override;
+  MediaCodecStatus GetOutputSize(gfx::Size* size) override;
+  MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) override;
   MediaCodecStatus QueueInputBuffer(
       int index,
       const uint8_t* data,
@@ -53,13 +54,13 @@ class MEDIA_EXPORT NdkMediaCodecBridge : public MediaCodecBridge {
                                        bool* end_of_stream,
                                        bool* key_frame) override;
   void ReleaseOutputBuffer(int index, bool render) override;
-  void GetInputBuffer(int input_buffer_index,
-                      uint8_t** data,
-                      size_t* capacity) override;
-  void CopyFromOutputBuffer(int index,
-                            size_t offset,
-                            void* dst,
-                            size_t num) override;
+  MediaCodecStatus GetInputBuffer(int input_buffer_index,
+                                  uint8_t** data,
+                                  size_t* capacity) override;
+  MediaCodecStatus CopyFromOutputBuffer(int index,
+                                        size_t offset,
+                                        void* dst,
+                                        size_t num) override;
 
  protected:
   NdkMediaCodecBridge(const std::string& mime,

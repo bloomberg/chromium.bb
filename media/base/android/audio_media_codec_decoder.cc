@@ -175,8 +175,9 @@ void AudioMediaCodecDecoder::OnOutputFormatChanged() {
   DCHECK(media_codec_bridge_);
 
   int old_sampling_rate = output_sampling_rate_;
-  output_sampling_rate_ = media_codec_bridge_->GetOutputSamplingRate();
-  if (output_sampling_rate_ != old_sampling_rate)
+  MediaCodecStatus status =
+      media_codec_bridge_->GetOutputSamplingRate(&output_sampling_rate_);
+  if (status != MEDIA_CODEC_OK || output_sampling_rate_ != old_sampling_rate)
     ResetTimestampHelper();
 }
 
@@ -201,8 +202,13 @@ void AudioMediaCodecDecoder::Render(int buffer_index,
 
     const bool postpone = (render_mode == kRenderAfterPreroll);
 
-    int64_t head_position =
-        audio_codec->PlayOutputBuffer(buffer_index, size, offset, postpone);
+    int64_t head_position;
+    MediaCodecStatus status = audio_codec->PlayOutputBuffer(
+        buffer_index, size, offset, postpone, &head_position);
+    // TODO(timav,watk): This CHECK maintains the behavior of this call before
+    // we started catching CodecException and returning it as MEDIA_CODEC_ERROR.
+    // It needs to be handled some other way. http://crbug.com/585978
+    CHECK_EQ(status, MEDIA_CODEC_OK);
 
     base::TimeTicks current_time = base::TimeTicks::Now();
 
