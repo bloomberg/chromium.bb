@@ -121,7 +121,7 @@ source_set("fuzzer_support") {
 }
 
 # Tests the import of PKCS8 formatted EC keys.
-fuzzer_test("ec_import_key_pkcs8_fuzzer") {
+fuzzer_test("webcrypto_ec_import_key_pkcs8_fuzzer") {
   sources = [
     "ec_import_key_pkcs8_fuzzer.cc",
   ]
@@ -133,7 +133,7 @@ fuzzer_test("ec_import_key_pkcs8_fuzzer") {
 }
 
 # Tests the import of SPKI formatted EC keys.
-fuzzer_test("ec_import_key_spki_fuzzer") {
+fuzzer_test("webcrypto_ec_import_key_spki_fuzzer") {
   sources = [
     "ec_import_key_spki_fuzzer.cc",
   ]
@@ -145,7 +145,7 @@ fuzzer_test("ec_import_key_spki_fuzzer") {
 }
 
 # Tests the import of PKCS8 formatted RSA keys.
-fuzzer_test("rsa_import_key_pkcs8_fuzzer") {
+fuzzer_test("webcrypto_rsa_import_key_pkcs8_fuzzer") {
   sources = [
     "rsa_import_key_pkcs8_fuzzer.cc",
   ]
@@ -157,7 +157,7 @@ fuzzer_test("rsa_import_key_pkcs8_fuzzer") {
 }
 
 # Tests the import of SPKI formatted RSA keys.
-fuzzer_test("rsa_import_key_spki_fuzzer") {
+fuzzer_test("webcrypto_rsa_import_key_spki_fuzzer") {
   sources = [
     "rsa_import_key_pkcs8_fuzzer.cc",
   ]
