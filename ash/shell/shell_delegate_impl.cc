@@ -225,10 +225,9 @@ ash::MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {
 }
 
 ui::MenuModel* ShellDelegateImpl::CreateContextMenu(
-    aura::Window* root,
-    ash::ShelfItemDelegate* item_delegate,
-    ash::ShelfItem* item) {
-  return new ContextMenu(root);
+    aura::Window* root_window,
+    const ash::ShelfItem* item) {
+  return new ContextMenu(root_window);
 }
 
 GPUSupport* ShellDelegateImpl::CreateGPUSupport() {

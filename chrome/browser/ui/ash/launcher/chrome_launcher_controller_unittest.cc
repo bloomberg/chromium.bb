@@ -260,9 +260,6 @@ class TestV2AppLauncherItemController : public LauncherItemController {
         new ChromeLauncherAppMenuItem(base::string16(), NULL, false));
     return items;
   }
-  ui::MenuModel* CreateContextMenu(aura::Window* root_window) override {
-    return NULL;
-  }
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override {
     return NULL;
   }

@@ -16,10 +16,6 @@
 class Browser;
 class URLPattern;
 
-namespace aura {
-class Window;
-}
-
 namespace extensions {
 class Extension;
 }
@@ -48,7 +44,6 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
   base::string16 GetTitle() override;
-  ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   bool IsDraggable() override;
   bool CanPin() const override;

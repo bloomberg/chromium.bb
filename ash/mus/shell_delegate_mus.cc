@@ -197,10 +197,8 @@ MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
   return new MediaDelegateStub;
 }
 
-ui::MenuModel* ShellDelegateMus::CreateContextMenu(
-    aura::Window* root_window,
-    ShelfItemDelegate* item_delegate,
-    ShelfItem* item) {
+ui::MenuModel* ShellDelegateMus::CreateContextMenu(aura::Window* root_window,
+                                                   const ShelfItem* item) {
   NOTIMPLEMENTED();
   return nullptr;
 }

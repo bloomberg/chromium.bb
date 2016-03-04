@@ -136,7 +136,7 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
   SetShelfItemDetailsForShelfItem(&item, *item_details);
   SetShelfIDForWindow(id, window);
   scoped_ptr<ShelfItemDelegate> item_delegate(
-      new ShelfWindowWatcherItemDelegate(window, model_));
+      new ShelfWindowWatcherItemDelegate(window));
   // |item_delegate| is owned by |item_delegate_manager_|.
   item_delegate_manager_->SetShelfItemDelegate(id, std::move(item_delegate));
   model_->Add(item);

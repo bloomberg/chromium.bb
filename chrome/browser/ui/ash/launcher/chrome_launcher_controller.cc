@@ -850,8 +850,7 @@ bool ChromeLauncherController::HasShelfIDToAppIDMapping(ash::ShelfID id) const {
 const std::string& ChromeLauncherController::GetAppIDForShelfID(
     ash::ShelfID id) {
   LauncherItemController* controller = GetLauncherItemController(id);
-  CHECK(controller);
-  return controller->app_id();
+  return controller ? controller->app_id() : base::EmptyString();
 }
 
 void ChromeLauncherController::OnAppImageUpdated(const std::string& id,

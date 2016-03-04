@@ -51,11 +51,6 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
 
   base::string16 GetTitle() override { return title_; }
 
-  ui::MenuModel* CreateContextMenu(aura::Window* root_window) override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
   bool CanPin() const override {
     NOTIMPLEMENTED();
     return false;

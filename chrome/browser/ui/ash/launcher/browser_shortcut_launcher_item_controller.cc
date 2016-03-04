@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
@@ -253,13 +252,6 @@ BrowserShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
 
 base::string16 BrowserShortcutLauncherItemController::GetTitle() {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-}
-
-ui::MenuModel* BrowserShortcutLauncherItemController::CreateContextMenu(
-    aura::Window* root_window) {
-  ash::ShelfItem item =
-      *(launcher_controller()->model()->ItemByID(shelf_id()));
-  return new LauncherContextMenu(launcher_controller(), &item, root_window);
 }
 
 ash::ShelfMenuModel*

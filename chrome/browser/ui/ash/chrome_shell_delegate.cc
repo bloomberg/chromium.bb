@@ -142,18 +142,14 @@ ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
 }
 
 ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
-    aura::Window* root,
-    ash::ShelfItemDelegate* item_delegate,
-    ash::ShelfItem* item) {
+    aura::Window* root_window,
+    const ash::ShelfItem* item) {
   DCHECK(shelf_delegate_);
   // Don't show context menu for exclusive app runtime mode.
   if (chrome::IsRunningInAppMode())
-    return NULL;
+    return nullptr;
 
-  if (item_delegate && item)
-    return new LauncherContextMenu(shelf_delegate_, item_delegate, item, root);
-
-  return new LauncherContextMenu(shelf_delegate_, root);
+  return new LauncherContextMenu(shelf_delegate_, item, root_window);
 }
 
 ash::GPUSupport* ChromeShellDelegate::CreateGPUSupport() {

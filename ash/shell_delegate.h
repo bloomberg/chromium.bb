@@ -17,12 +17,7 @@ class AppListViewDelegate;
 }
 
 namespace aura {
-class RootWindow;
 class Window;
-}
-
-namespace content {
-class BrowserContext;
 }
 
 namespace gfx {
@@ -31,10 +26,6 @@ class Image;
 
 namespace ui {
 class MenuModel;
-}
-
-namespace views {
-class Widget;
 }
 
 namespace keyboard {
@@ -48,7 +39,6 @@ class MediaDelegate;
 class NewWindowDelegate;
 class SessionStateDelegate;
 class ShelfDelegate;
-class ShelfItemDelegate;
 class ShelfModel;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
@@ -142,13 +132,10 @@ class ASH_EXPORT ShellDelegate {
   // Creates a media delegate. Shell takes ownership of the delegate.
   virtual MediaDelegate* CreateMediaDelegate() = 0;
 
-  // Creates a menu model of the context for the |root_window|.
-  // When a ContextMenu is used for an item created by ShelfWindowWatcher,
-  // passes its ShelfItemDelegate and ShelfItem.
-  virtual ui::MenuModel* CreateContextMenu(
-      aura::Window* root_window,
-      ash::ShelfItemDelegate* item_delegate,
-      ash::ShelfItem* item) = 0;
+  // Creates a menu model for the |root_window| and optional shelf |item|.
+  // If |item| is null, this creates a context menu for the desktop or shelf.
+  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window,
+                                           const ash::ShelfItem* item) = 0;
 
   // Creates a GPU support object. Shell takes ownership of the object.
   virtual GPUSupport* CreateGPUSupport() = 0;

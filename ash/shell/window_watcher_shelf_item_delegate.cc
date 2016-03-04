@@ -36,14 +36,9 @@ base::string16 WindowWatcherShelfItemDelegate::GetTitle() {
   return watcher_->GetWindowByID(id_)->title();
 }
 
-ui::MenuModel* WindowWatcherShelfItemDelegate::CreateContextMenu(
-    aura::Window* root_window) {
-  return NULL;
-}
-
 ShelfMenuModel* WindowWatcherShelfItemDelegate::CreateApplicationMenu(
     int event_flags) {
-  return NULL;
+  return nullptr;
 }
 
 bool WindowWatcherShelfItemDelegate::IsDraggable() {

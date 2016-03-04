@@ -26,6 +26,7 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "base/auto_reset.h"
 #include "base/memory/scoped_ptr.h"
@@ -1796,10 +1797,9 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     return;
   }
 
-  ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
-      model_->items()[view_index].id);
-  context_menu_model_.reset(item_delegate->CreateContextMenu(
-      source->GetWidget()->GetNativeView()->GetRootWindow()));
+  context_menu_model_.reset(Shell::GetInstance()->delegate()->CreateContextMenu(
+      source->GetWidget()->GetNativeView()->GetRootWindow(),
+      &model_->items()[view_index]));
   if (!context_menu_model_)
     return;
 

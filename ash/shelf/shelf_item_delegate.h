@@ -8,10 +8,6 @@
 #include "ash/ash_export.h"
 #include "base/strings/string16.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ui {
 class Event;
 class MenuModel;
@@ -51,11 +47,6 @@ class ASH_EXPORT ShelfItemDelegate {
 
   // Returns the title to display.
   virtual base::string16 GetTitle() = 0;
-
-  // Returns the context menumodel for the specified item on
-  // |root_window|.  Return NULL if there should be no context
-  // menu. The caller takes ownership of the returned model.
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) = 0;
 
   // Returns whether the user can change the pin status of this item.
   // Pinning may be disallowed by policy if this app is pinned by pre-defined

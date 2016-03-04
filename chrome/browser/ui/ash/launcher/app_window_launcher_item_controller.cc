@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 
-#include "ash/shelf/shelf_model.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
@@ -229,12 +228,6 @@ base::string16 AppWindowLauncherItemController::GetTitle() {
     }
   }
   return GetAppTitle();
-}
-
-ui::MenuModel* AppWindowLauncherItemController::CreateContextMenu(
-    aura::Window* root_window) {
-  ash::ShelfItem item = *(launcher_controller()->model()->ItemByID(shelf_id()));
-  return new LauncherContextMenu(launcher_controller(), &item, root_window);
 }
 
 ash::ShelfMenuModel* AppWindowLauncherItemController::CreateApplicationMenu(

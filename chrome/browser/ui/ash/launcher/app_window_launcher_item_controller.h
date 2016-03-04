@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "ui/aura/window_observer.h"
@@ -22,10 +21,6 @@ class Window;
 
 namespace extensions {
 class AppWindow;
-}
-
-namespace gfx {
-class Image;
 }
 
 class ChromeLauncherController;
@@ -65,7 +60,6 @@ class AppWindowLauncherItemController : public LauncherItemController,
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& eent) override;
   base::string16 GetTitle() override;
-  ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   bool IsDraggable() override;
   bool CanPin() const override;

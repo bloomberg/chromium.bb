@@ -13,8 +13,7 @@ namespace test {
 TestShelfItemDelegate::TestShelfItemDelegate(aura::Window* window)
     : window_(window), is_draggable_(true) {}
 
-TestShelfItemDelegate::~TestShelfItemDelegate() {
-}
+TestShelfItemDelegate::~TestShelfItemDelegate() {}
 
 ShelfItemDelegate::PerformedAction TestShelfItemDelegate::ItemSelected(
     const ui::Event& event) {
@@ -32,13 +31,8 @@ base::string16 TestShelfItemDelegate::GetTitle() {
   return window_ ? window_->title() : base::string16();
 }
 
-ui::MenuModel* TestShelfItemDelegate::CreateContextMenu(
-    aura::Window* root_window) {
-  return NULL;
-}
-
 ShelfMenuModel* TestShelfItemDelegate::CreateApplicationMenu(int event_flags) {
-  return NULL;
+  return nullptr;
 }
 
 bool TestShelfItemDelegate::IsDraggable() {
@@ -53,7 +47,7 @@ bool TestShelfItemDelegate::ShouldShowTooltip() {
   return true;
 }
 
-void TestShelfItemDelegate::Close() {
-}
+void TestShelfItemDelegate::Close() {}
+
 }  // namespace test
 }  // namespace ash

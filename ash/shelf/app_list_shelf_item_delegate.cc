@@ -6,7 +6,6 @@
 
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "grit/ash_strings.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,13 +43,6 @@ base::string16 AppListShelfItemDelegate::GetTitle() {
                    : IDS_ASH_SHELF_APP_LIST_TITLE;
   }
   return l10n_util::GetStringUTF16(title_id);
-}
-
-ui::MenuModel* AppListShelfItemDelegate::CreateContextMenu(
-    aura::Window* root_window) {
-  return Shell::GetInstance()->delegate()->CreateContextMenu(root_window,
-                                                             NULL,
-                                                             NULL);
 }
 
 ShelfMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(

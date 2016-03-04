@@ -55,9 +55,8 @@ class TestShellDelegate : public ShellDelegate {
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   NewWindowDelegate* CreateNewWindowDelegate() override;
   MediaDelegate* CreateMediaDelegate() override;
-  ui::MenuModel* CreateContextMenu(aura::Window* root,
-                                   ash::ShelfItemDelegate* item_delegate,
-                                   ash::ShelfItem* item) override;
+  ui::MenuModel* CreateContextMenu(aura::Window* root_window,
+                                   const ash::ShelfItem* item) override;
   GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;
   gfx::Image GetDeprecatedAcceleratorImage() const override;

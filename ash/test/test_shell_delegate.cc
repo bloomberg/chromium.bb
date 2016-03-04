@@ -31,10 +31,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #endif
 
-namespace content {
-class BrowserContext;
-}
-
 namespace ash {
 namespace test {
 namespace {
@@ -179,10 +175,9 @@ MediaDelegate* TestShellDelegate::CreateMediaDelegate() {
 }
 
 ui::MenuModel* TestShellDelegate::CreateContextMenu(
-    aura::Window* root,
-    ash::ShelfItemDelegate* item_delegate,
-    ash::ShelfItem* item) {
-  return NULL;
+    aura::Window* root_window,
+    const ash::ShelfItem* item) {
+  return nullptr;
 }
 
 GPUSupport* TestShellDelegate::CreateGPUSupport() {

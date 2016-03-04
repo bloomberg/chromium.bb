@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "ash/shelf/shelf_item_types.h"
 #include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -17,16 +16,6 @@
 #include "chrome/browser/ui/ash/metrics/chrome_user_metrics_recorder.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-
-class Browser;
-
-namespace ash {
-class ShelfItemDelegate;
-}
-
-namespace content {
-class WebContents;
-}
 
 namespace keyboard {
 class KeyboardUI;
@@ -72,9 +61,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   ash::NewWindowDelegate* CreateNewWindowDelegate() override;
   ash::MediaDelegate* CreateMediaDelegate() override;
-  ui::MenuModel* CreateContextMenu(aura::Window* root,
-                                   ash::ShelfItemDelegate* item_delegate,
-                                   ash::ShelfItem* item) override;
+  ui::MenuModel* CreateContextMenu(aura::Window* root_window,
+                                   const ash::ShelfItem* item) override;
   ash::GPUSupport* CreateGPUSupport() override;
   base::string16 GetProductName() const override;
   void OpenKeyboardShortcutHelpPage() const override;

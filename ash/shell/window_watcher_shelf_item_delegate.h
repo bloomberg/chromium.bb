@@ -25,7 +25,6 @@ class WindowWatcherShelfItemDelegate : public ShelfItemDelegate {
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
   base::string16 GetTitle() override;
-  ui::MenuModel* CreateContextMenu(aura::Window* root_window) override;
   ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
   bool IsDraggable() override;
   bool CanPin() const override;

@@ -10,14 +10,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "build/build_config.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class ChromeLauncherController;
-
-namespace ash {
-class ShelfItemDelegate;
-}
 
 namespace aura {
 class Window;
@@ -31,21 +26,11 @@ class ContextMenuMatcher;
 class LauncherContextMenu : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
-  // |item| is NULL if the context menu is for the launcher (the user right
-  // |clicked on an area with no icons).
+  // Creates a context menu for the desktop, or shelf |item|, in |root_window|.
   LauncherContextMenu(ChromeLauncherController* controller,
                       const ash::ShelfItem* item,
                       aura::Window* root_window);
 
-  // Creates a menu used by item created by ShelfWindowWatcher.
-  LauncherContextMenu(ChromeLauncherController* controller,
-                      ash::ShelfItemDelegate* item_delegate,
-                      ash::ShelfItem* item,
-                      aura::Window* root_window);
-
-  // Creates a menu used as a desktop context menu on |root_window|.
-  LauncherContextMenu(ChromeLauncherController* controller,
-                      aura::Window* root_window);
   ~LauncherContextMenu() override;
 
   void Init();
@@ -85,9 +70,8 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_NEW_WINDOW,
     MENU_NEW_INCOGNITO_WINDOW,
     MENU_ALIGNMENT_MENU,
-#if defined(OS_CHROMEOS)
     MENU_CHANGE_WALLPAPER,
-#endif
+    MENU_ITEM_COUNT
   };
 
   // Does |item_| represent a valid item? See description of constructor for
@@ -103,9 +87,6 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
 
   aura::Window* root_window_;
-
-  // Not owned.
-  ash::ShelfItemDelegate* item_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

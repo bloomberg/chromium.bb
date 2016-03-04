@@ -39,59 +39,27 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
 
 LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                                          const ash::ShelfItem* item,
-                                         aura::Window* root)
-    : ui::SimpleMenuModel(NULL),
+                                         aura::Window* root_window)
+    : ui::SimpleMenuModel(nullptr),
       controller_(controller),
-      item_(*item),
-      shelf_alignment_menu_(root),
-      root_window_(root),
-      item_delegate_(NULL) {
-  DCHECK(item);
-  DCHECK(root_window_);
-  Init();
-}
-
-LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
-                                         ash::ShelfItemDelegate* item_delegate,
-                                         ash::ShelfItem* item,
-                                         aura::Window* root)
-    : ui::SimpleMenuModel(NULL),
-      controller_(controller),
-      item_(*item),
-      shelf_alignment_menu_(root),
-      root_window_(root),
-      item_delegate_(item_delegate) {
-  DCHECK(item);
-  DCHECK(root_window_);
-  Init();
-}
-
-LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
-                                         aura::Window* root)
-    : ui::SimpleMenuModel(NULL),
-      controller_(controller),
-      item_(ash::ShelfItem()),
-      shelf_alignment_menu_(root),
-      extension_items_(new extensions::ContextMenuMatcher(
-          controller->profile(), this, this,
-          base::Bind(MenuItemHasLauncherContext))),
-      root_window_(root),
-      item_delegate_(NULL) {
+      item_(item ? *item : ash::ShelfItem()),
+      shelf_alignment_menu_(root_window),
+      root_window_(root_window) {
   DCHECK(root_window_);
   Init();
 }
 
 void LauncherContextMenu::Init() {
-  extension_items_.reset(new extensions::ContextMenuMatcher(
-      controller_->profile(), this, this,
-      base::Bind(MenuItemHasLauncherContext)));
   set_delegate(this);
 
   if (is_valid_item()) {
+    extension_items_.reset(new extensions::ContextMenuMatcher(
+        controller_->profile(), this, this,
+        base::Bind(MenuItemHasLauncherContext)));
     if (item_.type == ash::TYPE_APP_SHORTCUT ||
         item_.type == ash::TYPE_WINDOWED_APP) {
       // V1 apps can be started from the menu - but V2 apps should not.
-      if  (!controller_->IsPlatformApp(item_.id)) {
+      if (!controller_->IsPlatformApp(item_.id)) {
         AddItem(MENU_OPEN_NEW, base::string16());
         AddSeparator(ui::NORMAL_SEPARATOR);
       }
@@ -178,10 +146,9 @@ void LauncherContextMenu::Init() {
       }
     }
   }
-  // In fullscreen, the launcher is either hidden or autohidden depending on
-  // the type of fullscreen. Do not show the auto-hide menu item while in
-  // fullscreen because it is confusing when the preference appears not to
-  // apply.
+  // In fullscreen, the launcher is either hidden or autohidden depending on the
+  // type of fullscreen. Do not show the auto-hide menu item while in fullscreen
+  // because it is confusing when the preference appears not to apply.
   if (!IsFullScreenMode() &&
       controller_->CanUserModifyShelfAutoHideBehavior(root_window_)) {
     AddCheckItemWithStringId(MENU_AUTO_HIDE,
@@ -193,12 +160,10 @@ void LauncherContextMenu::Init() {
                            IDS_ASH_SHELF_CONTEXT_MENU_POSITION,
                            &shelf_alignment_menu_);
   }
-#if defined(OS_CHROMEOS)
   if (!controller_->IsLoggedInAsGuest()) {
     AddItem(MENU_CHANGE_WALLPAPER,
-         l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
+            l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
   }
-#endif
 }
 
 LauncherContextMenu::~LauncherContextMenu() {
@@ -247,7 +212,10 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
       return controller_->GetShelfAutoHideBehavior(root_window_) ==
           ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
     default:
-      return extension_items_->IsCommandIdChecked(command_id);
+      if (command_id < MENU_ITEM_COUNT)
+        return false;
+      return (extension_items_ &&
+              extension_items_->IsCommandIdChecked(command_id));
   }
 }
 
@@ -255,11 +223,9 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case MENU_PIN:
       return controller_->IsPinnable(item_.id);
-#if defined(OS_CHROMEOS)
     case MENU_CHANGE_WALLPAPER:
       return ash::Shell::GetInstance()->user_wallpaper_delegate()->
           CanOpenSetWallpaperPage();
-#endif
     case MENU_NEW_WINDOW:
       // "Normal" windows are not allowed when incognito is enforced.
       return IncognitoModePrefs::GetAvailability(
@@ -271,7 +237,10 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
       return IncognitoModePrefs::GetAvailability(
           controller_->profile()->GetPrefs()) != IncognitoModePrefs::DISABLED;
     default:
-      return extension_items_->IsCommandIdEnabled(command_id);
+      if (command_id < MENU_ITEM_COUNT)
+        return true;
+      return (extension_items_ &&
+              extension_items_->IsCommandIdEnabled(command_id));
   }
 }
 
@@ -288,8 +257,12 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
     case MENU_CLOSE:
       if (item_.type == ash::TYPE_DIALOG) {
-        DCHECK(item_delegate_);
-        item_delegate_->Close();
+        ash::ShelfItemDelegate* item_delegate =
+            ash::Shell::GetInstance()
+                ->shelf_item_delegate_manager()
+                ->GetShelfItemDelegate(item_.id);
+        DCHECK(item_delegate);
+        item_delegate->Close();
       } else {
         // TODO(simonhong): Use ShelfItemDelegate::Close().
         controller_->Close(item_.id);
@@ -333,14 +306,14 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
     case MENU_ALIGNMENT_MENU:
       break;
-#if defined(OS_CHROMEOS)
     case MENU_CHANGE_WALLPAPER:
       ash::Shell::GetInstance()->user_wallpaper_delegate()->
           OpenSetWallpaperPage();
       break;
-#endif
     default:
-      extension_items_->ExecuteCommand(command_id, NULL,
-                                       content::ContextMenuParams());
+      if (extension_items_) {
+        extension_items_->ExecuteCommand(command_id, nullptr,
+                                         content::ContextMenuParams());
+      }
   }
 }
