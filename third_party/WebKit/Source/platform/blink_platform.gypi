@@ -822,6 +822,8 @@
       'image-encoders/skia/WEBPImageEncoder.h',
       'inspector_protocol/Allocator.h',
       'inspector_protocol/Array.h',
+      'inspector_protocol/Collections.h',
+      'inspector_protocol/CollectionsWTF.h',
       'inspector_protocol/ErrorSupport.cpp',
       'inspector_protocol/ErrorSupport.h',
       'inspector_protocol/Maybe.h',

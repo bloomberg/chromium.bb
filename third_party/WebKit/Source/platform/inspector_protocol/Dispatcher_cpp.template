@@ -44,12 +44,13 @@ public:
 {% endfor %}
 
         // Initialize common errors.
-        m_commonErrors.insert(ParseError, -32700);
-        m_commonErrors.insert(InvalidRequest, -32600);
-        m_commonErrors.insert(MethodNotFound, -32601);
-        m_commonErrors.insert(InvalidParams, -32602);
-        m_commonErrors.insert(InternalError, -32603);
-        m_commonErrors.insert(ServerError, -32000);
+        m_commonErrors.resize(LastEntry);
+        m_commonErrors[ParseError] = -32700;
+        m_commonErrors[InvalidRequest] = -32600;
+        m_commonErrors[MethodNotFound] = -32601;
+        m_commonErrors[InvalidParams] = -32602;
+        m_commonErrors[InternalError] = -32603;
+        m_commonErrors[ServerError] = -32000;
     }
 
     ~DispatcherImpl() { clearFrontend(); }

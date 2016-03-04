@@ -57,7 +57,7 @@ public:
     void setFrontend(protocol::Frontend::Debugger* frontend) override { m_frontend = frontend; }
     void clearFrontend() override;
     void restore() override;
-    void disable(ErrorString*);
+    void disable(ErrorString*) override;
 
     bool isPaused() override;
 

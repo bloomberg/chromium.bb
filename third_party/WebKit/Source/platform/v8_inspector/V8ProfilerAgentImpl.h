@@ -38,8 +38,8 @@ public:
     void consoleProfile(const String& title) override;
     void consoleProfileEnd(const String& title) override;
 
-    void idleStarted();
-    void idleFinished();
+    void idleStarted() override;
+    void idleFinished() override;
 
 private:
     String nextProfileId();

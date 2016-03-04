@@ -2,14 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CollectionsWTF_h
-#define CollectionsWTF_h
+#ifndef CollectionsSTL_h
+#define CollectionsSTL_h
 
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/VectorTraits.h"
+#include "wtf/text/StringHash.h"
+
+#include <algorithm>
+#include <unordered_map>
+#include <vector>
+
+namespace std {
+template<>
+struct hash<String> {
+    std::size_t operator()(const String& k) const { return StringHash::hash(k); }
+};
+}
 
 namespace blink {
 namespace protocol {
@@ -19,8 +29,8 @@ class Vector {
 public:
     Vector() { }
     Vector(size_t capacity) : m_impl(capacity) { }
-    typedef T* iterator;
-    typedef const T* const_iterator;
+    typedef typename std::vector<T>::iterator iterator;
+    typedef typename std::vector<T>::const_iterator const_iterator;
 
     iterator begin() { return m_impl.begin(); }
     iterator end() { return m_impl.end(); }
@@ -29,22 +39,22 @@ public:
 
     void resize(size_t s) { m_impl.resize(s); }
     size_t size() const { return m_impl.size(); }
-    bool isEmpty() const { return m_impl.isEmpty(); }
+    bool isEmpty() const { return !m_impl.size(); }
     T& operator[](size_t i) { return at(i); }
     const T& operator[](size_t i) const { return at(i); }
-    T& at(size_t i) { return m_impl.at(i); }
+    T& at(size_t i) { return m_impl[i]; }
     const T& at(size_t i) const { return m_impl.at(i); }
-    T& last() { return m_impl.last(); }
-    const T& last() const { return m_impl.last(); }
-    void append(const T& t) { m_impl.append(t); }
-    void prepend(const T& t) { m_impl.prepend(t); }
-    void remove(size_t i) { m_impl.remove(i); }
+    T& last() { return m_impl[m_impl.size() - 1]; }
+    const T& last() const { return m_impl[m_impl.size() - 1]; }
+    void append(const T& t) { m_impl.push_back(t); }
+    void prepend(const T& t) { m_impl.insert(m_impl.begin(), t); }
+    void remove(size_t i) { m_impl.erase(m_impl.begin() + i); }
     void clear() { m_impl.clear(); }
     void swap(Vector& other) { m_impl.swap(other.m_impl); }
-    void removeLast() { m_impl.removeLast(); }
+    void removeLast() { m_impl.pop_back(); }
 
 private:
-    WTF::Vector<T> m_impl;
+    std::vector<T> m_impl;
 };
 
 template <typename T>
@@ -55,8 +65,8 @@ public:
     Vector(size_t capacity) : m_impl(capacity) { }
     ~Vector() { }
 
-    typedef OwnPtr<T>* iterator;
-    typedef const OwnPtr<T>* const_iterator;
+    typedef typename std::vector<OwnPtr<T>>::iterator iterator;
+    typedef typename std::vector<OwnPtr<T>>::const_iterator const_iterator;
 
     iterator begin() { return m_impl.begin(); }
     iterator end() { return m_impl.end(); }
@@ -65,22 +75,22 @@ public:
 
     void resize(size_t s) { m_impl.resize(s); }
     size_t size() const { return m_impl.size(); }
-    bool isEmpty() const { return m_impl.isEmpty(); }
-    OwnPtr<T>& operator[](size_t i) { return m_impl.at(i); }
-    const OwnPtr<T>& operator[](size_t i) const { return m_impl.at(i); }
-    OwnPtr<T>& at(size_t i) { return m_impl.at(i); }
+    bool isEmpty() const { return !m_impl.size(); }
+    OwnPtr<T>& operator[](size_t i) { return at(i); }
+    const OwnPtr<T>& operator[](size_t i) const { return at(i); }
+    OwnPtr<T>& at(size_t i) { return m_impl[i]; }
     const OwnPtr<T>& at(size_t i) const { return m_impl.at(i); }
-    OwnPtr<T>& last() { return m_impl.last(); }
-    const OwnPtr<T>& last() const { return m_impl.last(); }
-    void append(PassOwnPtr<T> t) { m_impl.append(t); }
-    void prepend(PassOwnPtr<T> t) { m_impl.prepend(t); }
-    void remove(size_t i) { m_impl.remove(i); }
+    OwnPtr<T>& last() { return m_impl[m_impl.size() - 1]; }
+    const OwnPtr<T>& last() const { return m_impl[m_impl.size() - 1]; }
+    void append(const PassOwnPtr<T>& t) { m_impl.push_back(t); }
+    void prepend(const PassOwnPtr<T>& t) { m_impl.insert(m_impl.begin(), t); }
+    void remove(size_t i) { m_impl.erase(m_impl.begin() + i); }
     void clear() { m_impl.clear(); }
     void swap(Vector& other) { m_impl.swap(other.m_impl); }
-    void removeLast() { m_impl.removeLast(); }
+    void removeLast() { m_impl.pop_back(); }
 
 private:
-    WTF::Vector<OwnPtr<T>> m_impl;
+    std::vector<OwnPtr<T>> m_impl;
 };
 
 template <typename K, typename V, typename I>
@@ -88,7 +98,7 @@ class HashMapIterator {
     STACK_ALLOCATED();
 public:
     HashMapIterator(const I& impl) : m_impl(impl) { }
-    std::pair<K, V*>* get() const { m_pair = std::make_pair(m_impl->key, &m_impl->value); return &m_pair; }
+    std::pair<K, V*>* get() const { m_pair.first = m_impl->first; m_pair.second = &m_impl->second; return &m_pair; }
     std::pair<K, V*>& operator*() const { return *get(); }
     std::pair<K, V*>* operator->() const { return get(); }
 
@@ -107,7 +117,7 @@ class HashMapIterator<K, OwnPtr<V>, I> {
     STACK_ALLOCATED();
 public:
     HashMapIterator(const I& impl) : m_impl(impl) { }
-    std::pair<K, V*>* get() const { m_pair = std::make_pair(m_impl->key, m_impl->value.get()); return &m_pair; }
+    std::pair<K, V*>* get() const { m_pair.first = m_impl->first; m_pair.second = m_impl->second.get(); return &m_pair; }
     std::pair<K, V*>& operator*() const { return *get(); }
     std::pair<K, V*>* operator->() const { return get(); }
 
@@ -127,8 +137,8 @@ public:
     HashMap() { }
     ~HashMap() { }
 
-    using iterator = HashMapIterator<K, V, typename WTF::HashMap<K, V>::iterator>;
-    using const_iterator = HashMapIterator<K, const V, typename WTF::HashMap<K, V>::const_iterator>;
+    using iterator = HashMapIterator<K, V, typename std::unordered_map<K, V>::iterator>;
+    using const_iterator = HashMapIterator<K, const V, typename std::unordered_map<K, V>::const_iterator>;
 
     iterator begin() { return iterator(m_impl.begin()); }
     iterator end() { return iterator(m_impl.end()); }
@@ -138,16 +148,26 @@ public:
     const_iterator find(const K& k) const { return const_iterator(m_impl.find(k)); }
 
     size_t size() const { return m_impl.size(); }
-    bool isEmpty() const { return m_impl.isEmpty(); }
-    bool set(const K& k, const V& v) { return m_impl.set(k, v).isNewEntry; }
-    bool contains(const K& k) const { return m_impl.contains(k); }
-    V get(const K& k) const { return m_impl.get(k); }
-    void remove(const K& k) { m_impl.remove(k); }
+    bool isEmpty() const { return !m_impl.size(); }
+    bool set(const K& k, const V& v)
+    {
+        bool isNew = m_impl.find(k) == m_impl.end();
+        m_impl[k] = v;
+        return isNew;
+    }
+    bool contains(const K& k) const { return m_impl.find(k) != m_impl.end(); }
+    V get(const K& k) const { return m_impl.find(k)->second; }
+    void remove(const K& k) { m_impl.erase(k); }
     void clear() { m_impl.clear(); }
-    V take(const K& k) { return m_impl.take(k); }
+    V take(const K& k)
+    {
+        V result = m_impl[k];
+        m_impl.erase(k);
+        return result;
+    }
 
 private:
-    WTF::HashMap<K, V> m_impl;
+    std::unordered_map<K, V> m_impl;
 };
 
 template <typename K, typename V>
@@ -156,8 +176,8 @@ public:
     HashMap() { }
     ~HashMap() { }
 
-    using iterator = HashMapIterator<K, OwnPtr<V>, typename WTF::HashMap<K, OwnPtr<V>>::iterator>;
-    using const_iterator = HashMapIterator<K, OwnPtr<V>, typename WTF::HashMap<K, OwnPtr<V>>::const_iterator>;
+    using iterator = HashMapIterator<K, OwnPtr<V>, typename std::unordered_map<K, OwnPtr<V>>::iterator>;
+    using const_iterator = HashMapIterator<K, OwnPtr<V>, typename std::unordered_map<K, OwnPtr<V>>::const_iterator>;
 
     iterator begin() { return iterator(m_impl.begin()); }
     iterator end() { return iterator(m_impl.end()); }
@@ -167,16 +187,28 @@ public:
     const_iterator find(const K& k) const { return const_iterator(m_impl.find(k)); }
 
     size_t size() const { return m_impl.size(); }
-    bool isEmpty() const { return m_impl.isEmpty(); }
-    bool set(const K& k, PassOwnPtr<V> v) { return m_impl.set(k, v).isNewEntry; }
-    bool contains(const K& k) const { return m_impl.contains(k); }
-    V* get(const K& k) const { return m_impl.get(k); }
-    PassOwnPtr<V> take(const K& k) { return m_impl.take(k); }
-    void remove(const K& k) { m_impl.remove(k); }
+    bool isEmpty() const { return !m_impl.size(); }
+    bool set(const K& k, PassOwnPtr<V> v)
+    {
+        bool isNew = m_impl.find(k) == m_impl.end();
+        m_impl[k] = v;
+        return isNew;
+    }
+    bool contains(const K& k) const { return m_impl.find(k) != m_impl.end(); }
+    V* get(const K& k) const { return m_impl.find(k)->second.get(); }
+    PassOwnPtr<V> take(const K& k)
+    {
+        if (!contains(k))
+            return nullptr;
+        OwnPtr<V> result = std::move(m_impl[k]);
+        m_impl.erase(k);
+        return result.release();
+    }
+    void remove(const K& k) { m_impl.erase(k); }
     void clear() { m_impl.clear(); }
 
 private:
-    WTF::HashMap<K, OwnPtr<V>> m_impl;
+    std::unordered_map<K, OwnPtr<V>> m_impl;
 };
 
 template <typename K>
@@ -188,4 +220,4 @@ public:
 } // namespace platform
 } // namespace blink
 
-#endif // !defined(CollectionsWTF_h)
+#endif // !defined(CollectionsSTL_h)
