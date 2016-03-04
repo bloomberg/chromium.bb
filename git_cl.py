@@ -1604,7 +1604,7 @@ def DownloadGerritHook(force):
                    'chmod +x .git/hooks/commit-msg' % src)
 
 # TODO(tandrii): remove this once repos which call this method directly are
-# upgraded.
+# upgraded. See http://crbug.com/579176.
 DownloadHooks = DownloadGerritHook
 
 @subcommand.usage('[repo root containing codereview.settings]')
