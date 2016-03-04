@@ -15,9 +15,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "components/cookie_config/cookie_store_util.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
@@ -25,9 +22,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_constants.h"
-#include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_io_data.h"
-#include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings.h"
-#include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/net/cookie_util.h"
 #include "ios/chrome/browser/net/http_server_properties_manager_factory.h"
@@ -165,11 +159,6 @@ ChromeBrowserStateImplIOData::Handle::~Handle() {
   if (io_data_->http_server_properties_manager_)
     io_data_->http_server_properties_manager_->ShutdownOnPrefThread();
 
-  // io_data_->data_reduction_proxy_io_data() might be NULL if Init() was
-  // never called.
-  if (io_data_->data_reduction_proxy_io_data())
-    io_data_->data_reduction_proxy_io_data()->ShutdownOnUIThread();
-
   io_data_->ShutdownOnUIThread(GetAllContextGetters());
 }
 
@@ -197,32 +186,11 @@ void ChromeBrowserStateImplIOData::Handle::Init(
 
   io_data_->InitializeMetricsEnabledStateOnUIThread();
 
-  // TODO(tbansal): Move this to IO thread once the data reduction proxy
-  // params are unified into a single object.
-  bool enable_quic_for_data_reduction_proxy =
-      IOSChromeIOThread::ShouldEnableQuicForDataReductionProxy();
-
-  io_data_->set_data_reduction_proxy_io_data(
-      CreateIOSChromeDataReductionProxyIOData(
-          GetApplicationContext()->GetIOSChromeIOThread()->net_log(),
-          browser_state_->GetPrefs(),
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
-          enable_quic_for_data_reduction_proxy));
-
   base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
       pool->GetSequencedTaskRunnerWithShutdownBehavior(
           pool->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  scoped_ptr<data_reduction_proxy::DataStore> store(
-      new data_reduction_proxy::DataStoreImpl(profile_path));
-  IOSChromeDataReductionProxySettingsFactory::GetForBrowserState(browser_state_)
-      ->InitDataReductionProxySettings(
-          io_data_->data_reduction_proxy_io_data(), browser_state_->GetPrefs(),
-          browser_state_->GetRequestContext(), std::move(store),
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
-          db_task_runner);
 }
 
 scoped_refptr<IOSChromeURLRequestContextGetter>
@@ -356,8 +324,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
 
   main_context->set_net_log(io_thread->net_log());
 
-  network_delegate_ = data_reduction_proxy_io_data()->CreateNetworkDelegate(
-      std::move(chrome_network_delegate), true);
+  network_delegate_ = std::move(chrome_network_delegate);
 
   main_context->set_network_delegate(network_delegate_.get());
 
@@ -426,12 +393,9 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
       new net::URLRequestJobFactoryImpl());
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
 
-  // The data reduction proxy interceptor should be as close to the network as
-  // possible.
+  // TODO(crbug.com/592012): Delete request_interceptor and its handling if
+  // it's not needed in the future.
   URLRequestInterceptorScopedVector request_interceptors;
-  request_interceptors.insert(
-      request_interceptors.begin(),
-      data_reduction_proxy_io_data()->CreateInterceptor().release());
   main_job_factory_ = SetUpJobFactoryDefaults(std::move(main_job_factory),
                                               std::move(request_interceptors),
                                               main_context->network_delegate());
@@ -475,12 +439,9 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
 
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
-  // The data reduction proxy interceptor should be as close to the network as
-  // possible.
+  // TODO(crbug.com/592012): Delete request_interceptor and its handling if
+  // it's not needed in the future.
   URLRequestInterceptorScopedVector request_interceptors;
-  request_interceptors.insert(
-      request_interceptors.begin(),
-      data_reduction_proxy_io_data()->CreateInterceptor().release());
   scoped_ptr<net::URLRequestJobFactory> top_job_factory(SetUpJobFactoryDefaults(
       std::move(job_factory), std::move(request_interceptors),
       main_context->network_delegate()));

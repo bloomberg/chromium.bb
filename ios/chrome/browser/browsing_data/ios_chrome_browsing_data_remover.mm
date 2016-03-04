@@ -16,9 +16,6 @@
 #include "base/metrics/user_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
@@ -29,8 +26,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings.h"
-#include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -236,22 +231,6 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask,
         data_manager->Refresh();
     }
 
-    data_reduction_proxy::DataReductionProxySettings*
-        data_reduction_proxy_settings =
-            IOSChromeDataReductionProxySettingsFactory::GetForBrowserState(
-                browser_state_);
-
-    // |data_reduction_proxy_settings| is null if |browser_state_| is off the
-    // record.
-    if (data_reduction_proxy_settings) {
-      data_reduction_proxy::DataReductionProxyService*
-          data_reduction_proxy_service =
-              data_reduction_proxy_settings->data_reduction_proxy_service();
-      if (data_reduction_proxy_service) {
-        data_reduction_proxy_service->compression_stats()
-            ->DeleteBrowsingHistory(delete_begin_, delete_end_);
-      }
-    }
   }
 
   if (remove_mask & REMOVE_COOKIES) {

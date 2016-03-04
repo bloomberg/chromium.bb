@@ -36,10 +36,6 @@ namespace content_settings {
 class CookieSettings;
 }
 
-namespace data_reduction_proxy {
-class DataReductionProxyIOData;
-}
-
 namespace ios {
 class ChromeBrowserState;
 enum class ChromeBrowserStateType;
@@ -128,13 +124,6 @@ class ChromeBrowserStateIOData {
   // thread, and should only be called from there.
   bool GetMetricsEnabledStateOnIOThread() const;
 
-  bool IsDataReductionProxyEnabled() const;
-
-  data_reduction_proxy::DataReductionProxyIOData* data_reduction_proxy_io_data()
-      const {
-    return data_reduction_proxy_io_data_.get();
-  }
-
  protected:
   // A URLRequestContext for apps that owns its cookie store and HTTP factory,
   // to ensure they are deleted.
@@ -203,10 +192,6 @@ class ChromeBrowserStateIOData {
   // ChromeBrowserStateIOData, and the derived class calls this method to set
   // the channel_id_service_ member and transfers ownership to the base class.
   void set_channel_id_service(net::ChannelIDService* channel_id_service) const;
-
-  void set_data_reduction_proxy_io_data(
-      scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
-          data_reduction_proxy_io_data) const;
 
   net::ProxyService* proxy_service() const { return proxy_service_.get(); }
 
@@ -292,9 +277,6 @@ class ChromeBrowserStateIOData {
 
   // Pointed to by URLRequestContext.
   mutable scoped_ptr<net::ChannelIDService> channel_id_service_;
-
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
-      data_reduction_proxy_io_data_;
 
   mutable scoped_ptr<net::ProxyService> proxy_service_;
   mutable scoped_ptr<net::TransportSecurityState> transport_security_state_;

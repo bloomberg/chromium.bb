@@ -28,8 +28,6 @@
 #include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings.h"
-#include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings_factory.h"
 #include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_manager_setting_migrator_service_factory.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -203,10 +201,6 @@ void ChromeBrowserStateManagerImpl::DoFinalInit(
 
 void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
     ios::ChromeBrowserState* browser_state) {
-  // Activate data reduction proxy. This creates a request context and makes a
-  // URL request to check if the data reduction proxy server is reachable.
-  IOSChromeDataReductionProxySettingsFactory::GetForBrowserState(browser_state)
-      ->MaybeActivateDataReductionProxy(true);
   ios::GaiaCookieManagerServiceFactory::GetForBrowserState(browser_state)
       ->Init();
   ios::AccountConsistencyServiceFactory::GetForBrowserState(browser_state);

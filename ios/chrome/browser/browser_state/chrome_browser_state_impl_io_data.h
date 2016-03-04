@@ -14,10 +14,6 @@
 
 class JsonPrefStore;
 
-namespace data_reduction_proxy {
-class DataReductionProxyNetworkDelegate;
-}
-
 namespace ios {
 class ChromeBrowserState;
 }
@@ -131,8 +127,7 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
   void ClearNetworkingHistorySinceOnIOThread(base::Time time,
                                              const base::Closure& completion);
 
-  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyNetworkDelegate>
-      network_delegate_;
+  mutable scoped_ptr<IOSChromeNetworkDelegate> network_delegate_;
 
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;

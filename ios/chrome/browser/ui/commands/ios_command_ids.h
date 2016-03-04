@@ -66,7 +66,6 @@
 #define IDC_PRELOAD_VOICE_SEARCH                       40937
 #define IDC_SHOW_BACK_HISTORY                          40938
 #define IDC_SHOW_FORWARD_HISTORY                       40939
-#define IDC_SHOW_PROXY_SETTINGS                        40940
 #define IDC_CLOSE_SETTINGS_AND_OPEN_NEW_INCOGNITO_TAB  40942
 #define IDC_SHOW_ACCOUNTS_SETTINGS                     40943
 #define IDC_CLOSE_SETTINGS                             40944

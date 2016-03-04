@@ -27,7 +27,6 @@
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/pref_service.h"
@@ -301,17 +300,6 @@ bool ChromeBrowserStateIOData::GetMetricsEnabledStateOnIOThread() const {
   return enable_metrics_.GetValue();
 }
 
-bool ChromeBrowserStateIOData::IsDataReductionProxyEnabled() const {
-  return data_reduction_proxy_io_data() &&
-         data_reduction_proxy_io_data()->IsEnabled();
-}
-
-void ChromeBrowserStateIOData::set_data_reduction_proxy_io_data(
-    scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
-        data_reduction_proxy_io_data) const {
-  data_reduction_proxy_io_data_ = std::move(data_reduction_proxy_io_data);
-}
-
 base::WeakPtr<net::HttpServerProperties>
 ChromeBrowserStateIOData::http_server_properties() const {
   return http_server_properties_->GetWeakPtr();
@@ -470,8 +458,6 @@ ChromeBrowserStateIOData::CreateHttpNetworkSession(
     params.socket_performance_watcher_factory =
         io_thread->globals()->network_quality_estimator.get();
   }
-  if (data_reduction_proxy_io_data_.get())
-    params.proxy_delegate = data_reduction_proxy_io_data_->proxy_delegate();
 
   return scoped_ptr<net::HttpNetworkSession>(
       new net::HttpNetworkSession(params));
