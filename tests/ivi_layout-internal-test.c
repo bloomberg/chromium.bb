@@ -96,17 +96,10 @@ static void
 test_surface_bad_dimension(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_surface *ivisurf = NULL;
-	int32_t dest_width;
-	int32_t dest_height;
 
 	iassert(lyt->surface_set_dimension(NULL, 200, 300) == IVI_FAILED);
 
 	lyt->commit_changes();
-
-	iassert(lyt->surface_get_dimension(NULL, &dest_width, &dest_height) == IVI_FAILED);
-	iassert(lyt->surface_get_dimension(ivisurf, NULL, &dest_height) == IVI_FAILED);
-	iassert(lyt->surface_get_dimension(ivisurf, &dest_width, NULL) == IVI_FAILED);
 }
 
 static void

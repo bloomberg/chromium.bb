@@ -88,11 +88,8 @@ surface_configure_notify(struct wl_listener *listener, void *data)
 			     struct ivi_shell_surface,
 			     configured_listener);
 
-	int32_t dest_width = 0;
-	int32_t dest_height = 0;
-
-	ivi_layout_surface_get_dimension(layout_surf,
-					 &dest_width, &dest_height);
+	int32_t dest_width = layout_surf->prop.dest_width;
+	int32_t dest_height = layout_surf->prop.dest_height;
 
 	if (shell_surf->resource)
 		ivi_surface_send_configure(shell_surf->resource,

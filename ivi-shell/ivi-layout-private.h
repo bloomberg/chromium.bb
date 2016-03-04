@@ -171,9 +171,6 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 			  uint32_t id_surface);
 void
 ivi_layout_init_with_compositor(struct weston_compositor *ec);
-int32_t
-ivi_layout_surface_get_dimension(struct ivi_layout_surface *ivisurf,
-				 int32_t *dest_width, int32_t *dest_height);
 void
 ivi_layout_surface_add_configured_listener(struct ivi_layout_surface* ivisurf,
 					   struct wl_listener* listener);
