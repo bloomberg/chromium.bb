@@ -75,6 +75,10 @@ lakitu_next-release
 leon-paladin
 link-depthcharge-full-firmware
 link-paladin
+[llvm-toolchain-group]
+  daisy-toolchain-llvm
+  peppy-toolchain-llvm
+  x86-alex-toolchain-llvm
 lumpy-chrome-pfq
 lumpy-incremental-paladin
 lumpy-paladin
@@ -83,7 +87,7 @@ master-android-pfq
 master-chromium-pfq
 master-paladin
 master-release
-master-toolchain-release
+master-toolchain
 monroe-paladin
 nyan-chrome-pfq
 nyan-full-compile-paladin
@@ -231,10 +235,6 @@ daisy-incremental
 gizmo-paladin
 oak-full
 panther_embedded-minimal-paladin
-[toolchain-llvm]
-  daisy-toolchain-llvm
-  peppy-toolchain-llvm
-  x86-alex-toolchain-llvm
 x86-generic-asan
 x86-generic-full
 x86-generic-incremental

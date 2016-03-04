@@ -594,8 +594,6 @@ _waterfall_config_map = {
         # Utility
         'chromiumos-sdk',
 
-        # LLVM
-        'toolchain-llvm',
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
@@ -629,6 +627,9 @@ _waterfall_config_map = {
 
         # Toolchain Builders.
         'internal-toolchain-minor',
+
+        # LLVM
+        'llvm-toolchain-group',
     ]),
 
     constants.WATERFALL_RELEASE: frozenset([
@@ -2027,6 +2028,41 @@ def GetConfig():
           'TOC-Canaries',
   )
 
+  _toolchain = site_config.AddTemplate(
+      'toolchain',
+      full,
+      official,
+      internal,
+      default_hw_tests_override,
+      build_type=constants.TOOLCHAIN_TYPE,
+      build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
+      useflags=append_useflags(['-cros-debug']),
+      afdo_use=True,
+      manifest=constants.OFFICIAL_MANIFEST,
+      manifest_version=True,
+      images=['base', 'recovery', 'test', 'factory_install'],
+      sign_types=['recovery'],
+      push_image=True,
+      upload_symbols=True,
+      binhost_bucket='gs://chromeos-dev-installer',
+      binhost_key='RELEASE_BINHOST',
+      binhost_base_url='https://commondatastorage.googleapis.com/'
+                       'chromeos-dev-installer',
+      dev_installer_prebuilts=True,
+      git_sync=False,
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
+                constants.DEV_MODE_TEST_TYPE,
+                constants.CROS_VM_TEST_TYPE],
+      hw_tests=HWTestList.SharedPoolCanary(),
+      paygen=True,
+      signer_tests=True,
+      trybot_list=True,
+      hwqual=True,
+      description="Toolchain Builds (internal)",
+      chrome_sdk=True,
+      image_test=True,
+  )
+
   _grouped_config = config_lib.BuildConfig(
       build_packages_in_background=True,
       chrome_sdk_build_chrome=False,
@@ -2043,8 +2079,8 @@ def GetConfig():
   ### Master toolchain config.
 
   site_config.Add(
-      'master-toolchain-release', _release,
-      build_type=constants.TOOLCHAIN_TYPE,
+      'master-toolchain',
+      _toolchain,
       boards=[],
       description='Toolchain master (all others are slaves).',
       master=True,
@@ -2062,7 +2098,7 @@ def GetConfig():
       'llvm',
       # Use release builder as a base. Make sure that we are doing a full
       # build and that we are using AFDO.
-      _release,
+      _toolchain,
       no_vmtest_builder,
       profile='llvm',
       hw_tests=HWTestList.AsanTest(),
@@ -2086,7 +2122,7 @@ def GetConfig():
   _llvm_grouped = llvm.derive(_grouped_toolchain_llvm)
 
   site_config.AddGroup(
-      'toolchain-llvm',
+      'llvm-toolchain-group',
       site_config.Add(
           'peppy-toolchain-llvm', llvm,
           boards=['peppy'],
