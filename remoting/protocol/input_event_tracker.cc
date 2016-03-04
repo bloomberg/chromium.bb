@@ -10,9 +10,10 @@
 namespace remoting {
 namespace protocol {
 
+InputEventTracker::InputEventTracker() {}
+
 InputEventTracker::InputEventTracker(InputStub* input_stub)
-    : input_stub_(input_stub),
-      mouse_button_state_(0) {
+    : input_stub_(input_stub) {
 }
 
 InputEventTracker::~InputEventTracker() {}
@@ -26,6 +27,8 @@ int InputEventTracker::PressedKeyCount() const {
 }
 
 void InputEventTracker::ReleaseAll() {
+  DCHECK(input_stub_);
+
   // Release all pressed keys.
   for (auto keycode : pressed_keys_) {
     KeyEvent event;
@@ -91,6 +94,8 @@ void InputEventTracker::ReleaseAllIfModifiersStuck(bool alt_expected,
 }
 
 void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
+  DCHECK(input_stub_);
+
   // We don't need to track the keyboard lock states of key down events.
   // Pressed keys will be released with |lock_states| set to 0.
   // The lock states of auto generated key up events don't matter as long as
@@ -108,10 +113,13 @@ void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
 }
 
 void InputEventTracker::InjectTextEvent(const TextEvent& event) {
+  DCHECK(input_stub_);
   input_stub_->InjectTextEvent(event);
 }
 
 void InputEventTracker::InjectMouseEvent(const MouseEvent& event) {
+  DCHECK(input_stub_);
+
   if (event.has_x() && event.has_y()) {
     mouse_pos_ = webrtc::DesktopVector(event.x(), event.y());
   }
@@ -130,6 +138,7 @@ void InputEventTracker::InjectMouseEvent(const MouseEvent& event) {
 }
 
 void InputEventTracker::InjectTouchEvent(const TouchEvent& event) {
+  DCHECK(input_stub_);
   // We only need the IDs to cancel all touch points in ReleaseAll(). Other
   // fields do not have to be tracked here as long as the host keeps track of
   // them.

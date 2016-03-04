@@ -263,10 +263,10 @@ class ChromotingInstance : public ClientUserInterface,
 
   // Input pipeline components, in reverse order of distance from input source.
   protocol::MouseInputFilter mouse_input_filter_;
-  protocol::InputEventTracker input_tracker_;
   TouchInputScaler touch_input_scaler_;
   KeyEventMapper key_mapper_;
   scoped_ptr<protocol::InputFilter> normalizing_input_filter_;
+  protocol::InputEventTracker input_tracker_;
   PepperInputHandler input_handler_;
 
   // Cursor shape handling components, in reverse order to that in which they

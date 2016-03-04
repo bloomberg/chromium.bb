@@ -151,8 +151,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       initialized_(false),
       plugin_task_runner_(new PepperMainThreadTaskRunner()),
       context_(plugin_task_runner_.get()),
-      input_tracker_(&mouse_input_filter_),
-      touch_input_scaler_(&input_tracker_),
+      touch_input_scaler_(&mouse_input_filter_),
       key_mapper_(&touch_input_scaler_),
       input_handler_(&input_tracker_),
       cursor_setter_(this),
@@ -649,7 +648,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
     DCHECK(key_filter.empty());
     normalizing_input_filter_.reset(new protocol::InputFilter(&key_mapper_));
   }
-  input_handler_.set_input_stub(normalizing_input_filter_.get());
+  input_tracker_.set_input_stub(normalizing_input_filter_.get());
 
   // Try initializing 3D video renderer.
   video_renderer_.reset(new PepperVideoRenderer3D());

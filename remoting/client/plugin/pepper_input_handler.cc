@@ -111,8 +111,7 @@ protocol::MouseEvent MakeMouseEvent(const pp::MouseInputEvent& pp_mouse_event,
 
 PepperInputHandler::PepperInputHandler(
     protocol::InputEventTracker* input_tracker)
-    : input_stub_(nullptr),
-      input_tracker_(input_tracker),
+    : input_tracker_(input_tracker),
       has_focus_(false),
       send_mouse_input_when_unfocused_(false),
       send_mouse_move_deltas_(false),
@@ -133,10 +132,8 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_TOUCHMOVE:
     case PP_INPUTEVENT_TYPE_TOUCHEND:
     case PP_INPUTEVENT_TYPE_TOUCHCANCEL: {
-      if (!input_stub_)
-        return true;
       pp::TouchInputEvent pp_touch_event(event);
-      input_stub_->InjectTouchEvent(MakeTouchEvent(pp_touch_event));
+      input_tracker_->InjectTouchEvent(MakeTouchEvent(pp_touch_event));
       return true;
     }
 
@@ -148,10 +145,8 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
 
     case PP_INPUTEVENT_TYPE_KEYDOWN:
     case PP_INPUTEVENT_TYPE_KEYUP: {
-      if (!input_stub_)
-        return true;
       pp::KeyboardInputEvent pp_key_event(event);
-      input_stub_->InjectKeyEvent(MakeKeyEvent(pp_key_event));
+      input_tracker_->InjectKeyEvent(MakeKeyEvent(pp_key_event));
       return true;
     }
 
@@ -159,8 +154,6 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_MOUSEUP: {
       if (!has_focus_ && !send_mouse_input_when_unfocused_)
         return false;
-      if (!input_stub_)
-        return true;
 
       pp::MouseInputEvent pp_mouse_event(event);
       protocol::MouseEvent mouse_event(
@@ -181,7 +174,7 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
       if (mouse_event.has_button()) {
         bool is_down = (event.GetType() == PP_INPUTEVENT_TYPE_MOUSEDOWN);
         mouse_event.set_button_down(is_down);
-        input_stub_->InjectMouseEvent(mouse_event);
+        input_tracker_->InjectMouseEvent(mouse_event);
       }
 
       return true;
@@ -192,11 +185,9 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_MOUSELEAVE: {
       if (!has_focus_ && !send_mouse_input_when_unfocused_)
         return false;
-      if (!input_stub_)
-        return true;
 
       pp::MouseInputEvent pp_mouse_event(event);
-      input_stub_->InjectMouseEvent(
+      input_tracker_->InjectMouseEvent(
           MakeMouseEvent(pp_mouse_event, send_mouse_move_deltas_));
 
       return true;
@@ -205,8 +196,6 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_WHEEL: {
       if (!has_focus_ && !send_mouse_input_when_unfocused_)
         return false;
-      if (!input_stub_)
-        return true;
 
       pp::WheelInputEvent pp_wheel_event(event);
 
@@ -246,7 +235,7 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
         mouse_event.set_wheel_ticks_x(ticks_x);
         mouse_event.set_wheel_ticks_y(ticks_y);
 
-        input_stub_->InjectMouseEvent(mouse_event);
+        input_tracker_->InjectMouseEvent(mouse_event);
       }
       return true;
     }

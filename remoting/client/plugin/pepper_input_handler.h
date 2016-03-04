@@ -26,11 +26,6 @@ class PepperInputHandler {
   // for the lifetime of the PepperInputHandler.
   explicit PepperInputHandler(protocol::InputEventTracker* input_tracker);
 
-  // Sets the input stub to which processed events will be passed.
-  void set_input_stub(protocol::InputStub* input_stub) {
-    input_stub_ = input_stub;
-  }
-
   // Enable or disable sending mouse input when the plugin does not have input
   // focus.
   void set_send_mouse_input_when_unfocused(bool send) {
@@ -46,7 +41,7 @@ class PepperInputHandler {
     detect_stuck_modifiers_ = detect;
   }
 
-  // Processes PPAPI events and dispatches them to |input_stub_|.
+  // Processes PPAPI events and dispatches them to |input_tracker_|.
   bool HandleInputEvent(const pp::InputEvent& event);
 
   // Must be called when the plugin receives or loses focus.
@@ -59,10 +54,8 @@ class PepperInputHandler {
   // are not indicated as active on |event|, release all keys.
   void ReleaseAllIfModifiersStuck(const pp::InputEvent& event);
 
-  // Receives input events generated from PPAPI input.
-  protocol::InputStub* input_stub_;
-
-  // Tracks input events to manage auto-release in ReleaseAllIfModifiersStuck.
+  // Tracks input events to manage auto-release in ReleaseAllIfModifiersStuck
+  // and receives input events generated from PPAPI input.
   protocol::InputEventTracker* input_tracker_;
 
   // True if the plugin has focus.

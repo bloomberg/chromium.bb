@@ -23,8 +23,13 @@ namespace protocol {
 // |input_stub| for all currently-pressed keys and buttons when necessary.
 class InputEventTracker : public InputStub {
  public:
-  explicit InputEventTracker(protocol::InputStub* input_stub);
+  InputEventTracker();
+  explicit InputEventTracker(InputStub* input_stub);
   ~InputEventTracker() override;
+
+  void set_input_stub(InputStub* input_stub) {
+    input_stub_ = input_stub;
+  }
 
   // Returns true if the key with the specified USB code is currently pressed.
   bool IsKeyPressed(ui::DomCode usb_keycode) const;
@@ -49,12 +54,12 @@ class InputEventTracker : public InputStub {
   void InjectTouchEvent(const TouchEvent& event) override;
 
  private:
-  protocol::InputStub* input_stub_;
+  InputStub* input_stub_ = nullptr;
 
   std::set<ui::DomCode> pressed_keys_;
 
   webrtc::DesktopVector mouse_pos_;
-  uint32_t mouse_button_state_;
+  uint32_t mouse_button_state_ = 0;
 
   std::set<uint32_t> touch_point_ids_;
 
