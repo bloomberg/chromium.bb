@@ -582,7 +582,10 @@ class TestGitCl(TestCase):
 
   @classmethod
   def _gerrit_upload_calls(cls, description, reviewers, squash,
-                           expected_upstream_ref='origin/refs/heads/master'):
+                           expected_upstream_ref='origin/refs/heads/master',
+                           post_amend_description=None):
+    if post_amend_description is None:
+      post_amend_description = description
     calls = [
         ((['git', 'config', '--bool', 'gerrit.squash-uploads'],), 'false'),
         ((['git', 'log', '--pretty=format:%s\n\n%b',
@@ -590,7 +593,12 @@ class TestGitCl(TestCase):
          description)
         ]
     if not git_footers.get_footer_change_id(description) and not squash:
+      # TODOOOOO
       calls += [
+          # DownloadGerritHook(False)
+          ((False, ),
+            ''),
+          # Amending of commit message to get the Change-Id.
           ((['git', 'log', '--pretty=format:%s\n\n%b',
              'fake_ancestor_sha..HEAD'],),
            description),
@@ -598,7 +606,7 @@ class TestGitCl(TestCase):
            ''),
           ((['git', 'log', '--pretty=format:%s\n\n%b',
              'fake_ancestor_sha..HEAD'],),
-           description)
+           post_amend_description)
           ]
     if squash:
       ref_to_push = 'abcdef0123456789'
@@ -655,21 +663,25 @@ class TestGitCl(TestCase):
       description,
       reviewers,
       squash=False,
-      expected_upstream_ref='origin/refs/heads/master'):
+      expected_upstream_ref='origin/refs/heads/master',
+      post_amend_description=None):
     """Generic gerrit upload test framework."""
     self.calls = self._gerrit_base_calls()
     self.calls += self._gerrit_upload_calls(
         description, reviewers, squash,
-        expected_upstream_ref=expected_upstream_ref)
+        expected_upstream_ref=expected_upstream_ref,
+        post_amend_description=post_amend_description)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
 
   def test_gerrit_upload_without_change_id(self):
+    self.mock(git_cl, 'DownloadGerritHook', self._mocked_call)
     self._run_gerrit_upload_test(
         [],
         'desc\n\nBUG=\n',
-        [])
+        [],
+        post_amend_description='desc\n\nBUG=\n\nChange-Id: Ixxx')
 
   def test_gerrit_no_reviewer(self):
     self._run_gerrit_upload_test(
@@ -818,14 +830,6 @@ class TestGitCl(TestCase):
         ((['git', 'config', '--unset-all',
            'rietveld.run-post-upload-hook'],), ''),
         ((['git', 'config', 'gerrit.host', 'True'],), ''),
-        # DownloadHooks(False)
-        ((['git', 'config', 'gerrit.host'],), 'True'),
-        ((['git', 'rev-parse', '--show-cdup'],), ''),
-        ((commit_msg_path, os.X_OK,), False),
-        (('https://gerrit-review.googlesource.com/tools/hooks/commit-msg',
-          commit_msg_path,), ''),
-        ((commit_msg_path,), True),
-        ((commit_msg_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR,), ''),
         # GetCodereviewSettingsInteractively
         ((['git', 'config', 'rietveld.server'],),
          'gerrit.chromium.org'),
@@ -839,12 +843,18 @@ class TestGitCl(TestCase):
         (('Tree status URL:',), ''),
         ((['git', 'config', 'rietveld.viewvc-url'],), ''),
         (('ViewVC URL:',), ''),
-        # DownloadHooks(True)
         ((['git', 'config', 'rietveld.bug-prefix'],), ''),
         (('Bug Prefix:',), ''),
         ((['git', 'config', 'rietveld.run-post-upload-hook'],), ''),
         (('Run Post Upload Hook:',), ''),
-        ((commit_msg_path, os.X_OK,), True),
+        # DownloadGerritHook(False)
+        ((['git', 'config', 'gerrit.host'],), 'True'),
+        ((['git', 'rev-parse', '--show-cdup'],), ''),
+        ((commit_msg_path, os.X_OK,), False),
+        (('https://gerrit-review.googlesource.com/tools/hooks/commit-msg',
+          commit_msg_path,), ''),
+        ((commit_msg_path,), True),
+        ((commit_msg_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR,), ''),
         ]
     git_cl.main(['config'])
 

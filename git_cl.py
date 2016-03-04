@@ -600,10 +600,6 @@ class Settings(object):
       cr_settings_file = FindCodereviewSettingsFile()
       if autoupdate != 'false' and cr_settings_file:
         LoadCodereviewSettingsFromFile(cr_settings_file)
-        # set updated to True to avoid infinite calling loop
-        # through DownloadGerritHook
-        self.updated = True
-        DownloadGerritHook(False)
       self.updated = True
 
   def GetDefaultServerUrl(self, error_ok=False):
@@ -2244,6 +2240,7 @@ def GerritUpload(options, args, cl, change):
                           '-m', message]).strip()
   else:
     if not git_footers.get_footer_change_id(change_desc.description):
+      DownloadGerritHook(False)
       AddChangeIdToCommitMessage(options, args)
     ref_to_push = 'HEAD'
     parent = '%s/%s' % (gerrit_remote, branch)
