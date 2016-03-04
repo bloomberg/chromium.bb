@@ -462,8 +462,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
 
   scoped_refptr<CacheStorageContextImpl> cache_storage_context =
       new CacheStorageContextImpl(context);
-  cache_storage_context->Init(path, quota_manager->proxy(),
-                              context->GetSpecialStoragePolicy());
+  cache_storage_context->Init(path, make_scoped_refptr(quota_manager->proxy()));
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
       new ServiceWorkerContextWrapper(context);

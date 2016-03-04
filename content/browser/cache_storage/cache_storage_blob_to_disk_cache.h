@@ -43,12 +43,11 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
   // Writes the body of |blob_data_handle| to |entry| with index
   // |disk_cache_body_index|. |entry| is passed to the callback once complete.
   // Only call this once per instantiation of CacheStorageBlobToDiskCache.
-  void StreamBlobToCache(
-      disk_cache::ScopedEntryPtr entry,
-      int disk_cache_body_index,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle,
-      const EntryAndBoolCallback& callback);
+  void StreamBlobToCache(disk_cache::ScopedEntryPtr entry,
+                         int disk_cache_body_index,
+                         net::URLRequestContextGetter* request_context_getter,
+                         scoped_ptr<storage::BlobDataHandle> blob_data_handle,
+                         const EntryAndBoolCallback& callback);
 
   // net::URLRequest::Delegate overrides for reading blobs.
   void OnResponseStarted(net::URLRequest* request) override;
@@ -80,7 +79,10 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
 
   int cache_entry_offset_;
   disk_cache::ScopedEntryPtr entry_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+
+  // Owned by CacheStorageCache which owns this.
+  net::URLRequestContextGetter* request_context_getter_;
+
   int disk_cache_body_index_;
   scoped_ptr<net::URLRequest> blob_request_;
   EntryAndBoolCallback callback_;

@@ -40,8 +40,8 @@ class CONTENT_EXPORT CacheStorageManager {
  public:
   static scoped_ptr<CacheStorageManager> Create(
       const base::FilePath& path,
-      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy);
+      scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   static scoped_ptr<CacheStorageManager> Create(
       CacheStorageManager* old_manager);
@@ -76,7 +76,7 @@ class CONTENT_EXPORT CacheStorageManager {
   // This must be called before creating any of the public *Cache functions
   // above.
   void SetBlobParametersForCache(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
 
   base::WeakPtr<CacheStorageManager> AsWeakPtr() {
@@ -95,8 +95,8 @@ class CONTENT_EXPORT CacheStorageManager {
 
   CacheStorageManager(
       const base::FilePath& path,
-      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy);
+      scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   // The returned CacheStorage* is owned by this manager.
   CacheStorage* FindOrCreateCacheStorage(const GURL& origin);
@@ -132,7 +132,7 @@ class CONTENT_EXPORT CacheStorageManager {
     return blob_context_;
   }
 
-  const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner() const {
+  scoped_refptr<base::SequencedTaskRunner> cache_task_runner() const {
     return cache_task_runner_;
   }
 

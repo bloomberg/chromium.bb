@@ -81,7 +81,7 @@ class CacheStorageTest : public testing::Test {
   }
 
   void OpenCacheCallback(bool* callback_called,
-                         const scoped_refptr<CacheStorageCache>& cache,
+                         scoped_refptr<CacheStorageCache> cache,
                          CacheStorageError error) {
     *callback_called = true;
     callback_cache_ = cache;

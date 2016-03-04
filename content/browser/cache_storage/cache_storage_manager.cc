@@ -123,16 +123,16 @@ void OneOriginSizeReported(const base::Closure& callback,
 // static
 scoped_ptr<CacheStorageManager> CacheStorageManager::Create(
     const base::FilePath& path,
-    const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy) {
+    scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
   base::FilePath root_path = path;
   if (!path.empty()) {
     root_path = path.Append(ServiceWorkerContextCore::kServiceWorkerDirectory)
                     .AppendASCII("CacheStorage");
   }
 
-  return make_scoped_ptr(new CacheStorageManager(root_path, cache_task_runner,
-                                                 quota_manager_proxy));
+  return make_scoped_ptr(new CacheStorageManager(
+      root_path, std::move(cache_task_runner), std::move(quota_manager_proxy)));
 }
 
 // static
@@ -211,14 +211,14 @@ void CacheStorageManager::MatchAllCaches(
 }
 
 void CacheStorageManager::SetBlobParametersForCache(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cache_storage_map_.empty());
   DCHECK(!request_context_getter_ ||
          request_context_getter_.get() == request_context_getter.get());
   DCHECK(!blob_context_ || blob_context_.get() == blob_storage_context.get());
-  request_context_getter_ = request_context_getter;
+  request_context_getter_ = std::move(request_context_getter);
   blob_context_ = blob_storage_context;
 }
 
@@ -380,11 +380,11 @@ void CacheStorageManager::DeleteOriginDidClose(
 
 CacheStorageManager::CacheStorageManager(
     const base::FilePath& path,
-    const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy)
+    scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy)
     : root_path_(path),
-      cache_task_runner_(cache_task_runner),
-      quota_manager_proxy_(quota_manager_proxy),
+      cache_task_runner_(std::move(cache_task_runner)),
+      quota_manager_proxy_(std::move(quota_manager_proxy)),
       weak_ptr_factory_(this) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->RegisterClient(

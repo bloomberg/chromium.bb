@@ -334,14 +334,14 @@ void CacheStorageDispatcherHost::OnCacheStorageHasCallback(
 void CacheStorageDispatcherHost::OnCacheStorageOpenCallback(
     int thread_id,
     int request_id,
-    const scoped_refptr<CacheStorageCache>& cache,
+    scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error) {
   if (error != CACHE_STORAGE_OK) {
     Send(new CacheStorageMsg_CacheStorageOpenError(
         thread_id, request_id, ToWebServiceWorkerCacheError(error)));
     return;
   }
-  CacheID cache_id = StoreCacheReference(cache);
+  CacheID cache_id = StoreCacheReference(std::move(cache));
   Send(new CacheStorageMsg_CacheStorageOpenSuccess(thread_id, request_id,
                                                    cache_id));
 }
@@ -400,7 +400,7 @@ void CacheStorageDispatcherHost::OnCacheStorageMatchCallback(
 void CacheStorageDispatcherHost::OnCacheMatchCallback(
     int thread_id,
     int request_id,
-    const scoped_refptr<CacheStorageCache>& cache,
+    scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
@@ -419,7 +419,7 @@ void CacheStorageDispatcherHost::OnCacheMatchCallback(
 void CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter(
     int thread_id,
     int request_id,
-    const scoped_refptr<CacheStorageCache>& cache,
+    scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
@@ -433,14 +433,14 @@ void CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter(
     if (blob_data_handle)
       blob_data_handles->push_back(*blob_data_handle);
   }
-  OnCacheMatchAllCallback(thread_id, request_id, cache, error,
+  OnCacheMatchAllCallback(thread_id, request_id, std::move(cache), error,
                           std::move(responses), std::move(blob_data_handles));
 }
 
 void CacheStorageDispatcherHost::OnCacheMatchAllCallback(
     int thread_id,
     int request_id,
-    const scoped_refptr<CacheStorageCache>& cache,
+    scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error,
     scoped_ptr<CacheStorageCache::Responses> responses,
     scoped_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles) {
@@ -460,7 +460,7 @@ void CacheStorageDispatcherHost::OnCacheMatchAllCallback(
 void CacheStorageDispatcherHost::OnCacheKeysCallback(
     int thread_id,
     int request_id,
-    const scoped_refptr<CacheStorageCache>& cache,
+    scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error,
     scoped_ptr<CacheStorageCache::Requests> requests) {
   if (error != CACHE_STORAGE_OK) {
@@ -484,7 +484,7 @@ void CacheStorageDispatcherHost::OnCacheKeysCallback(
 void CacheStorageDispatcherHost::OnCacheBatchCallback(
     int thread_id,
     int request_id,
-    const scoped_refptr<CacheStorageCache>& cache,
+    scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error) {
   if (error != CACHE_STORAGE_OK) {
     Send(new CacheStorageMsg_CacheBatchError(
@@ -497,9 +497,9 @@ void CacheStorageDispatcherHost::OnCacheBatchCallback(
 
 CacheStorageDispatcherHost::CacheID
 CacheStorageDispatcherHost::StoreCacheReference(
-    const scoped_refptr<CacheStorageCache>& cache) {
+    scoped_refptr<CacheStorageCache> cache) {
   int cache_id = next_cache_id_++;
-  id_to_cache_map_[cache_id] = cache;
+  id_to_cache_map_[cache_id] = std::move(cache);
   return cache_id;
 }
 

@@ -42,7 +42,7 @@ namespace {
 class CacheStorageCacheDataHandle
     : public storage::BlobDataBuilder::DataHandle {
  public:
-  CacheStorageCacheDataHandle(const scoped_refptr<CacheStorageCache>& cache,
+  CacheStorageCacheDataHandle(scoped_refptr<CacheStorageCache> cache,
                               disk_cache::ScopedEntryPtr entry)
       : cache_(cache), entry_(std::move(entry)) {}
 
@@ -106,11 +106,10 @@ CacheResponse::ResponseType WebResponseTypeToProtoResponseType(
 // Copy headers out of a cache entry and into a protobuf. The callback is
 // guaranteed to be run.
 void ReadMetadata(disk_cache::Entry* entry, const MetadataCallback& callback);
-void ReadMetadataDidReadMetadata(
-    disk_cache::Entry* entry,
-    const MetadataCallback& callback,
-    const scoped_refptr<net::IOBufferWithSize>& buffer,
-    int rv);
+void ReadMetadataDidReadMetadata(disk_cache::Entry* entry,
+                                 const MetadataCallback& callback,
+                                 scoped_refptr<net::IOBufferWithSize> buffer,
+                                 int rv);
 
 bool VaryMatches(const ServiceWorkerHeaderMap& request,
                  const ServiceWorkerHeaderMap& cached_request,
@@ -166,11 +165,10 @@ void ReadMetadata(disk_cache::Entry* entry, const MetadataCallback& callback) {
     read_header_callback.Run(read_rv);
 }
 
-void ReadMetadataDidReadMetadata(
-    disk_cache::Entry* entry,
-    const MetadataCallback& callback,
-    const scoped_refptr<net::IOBufferWithSize>& buffer,
-    int rv) {
+void ReadMetadataDidReadMetadata(disk_cache::Entry* entry,
+                                 const MetadataCallback& callback,
+                                 scoped_refptr<net::IOBufferWithSize> buffer,
+                                 int rv) {
   if (rv != buffer->size()) {
     callback.Run(scoped_ptr<CacheMetadata>());
     return;
@@ -286,23 +284,24 @@ struct CacheStorageCache::PutContext {
 // static
 scoped_refptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
     const GURL& origin,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_refptr(
-      new CacheStorageCache(origin, base::FilePath(), request_context_getter,
-                            quota_manager_proxy, blob_context));
+  return make_scoped_refptr(new CacheStorageCache(
+      origin, base::FilePath(), std::move(request_context_getter),
+      std::move(quota_manager_proxy), blob_context));
 }
 
 // static
 scoped_refptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     const GURL& origin,
     const base::FilePath& path,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_refptr(new CacheStorageCache(
-      origin, path, request_context_getter, quota_manager_proxy, blob_context));
+  return make_scoped_refptr(
+      new CacheStorageCache(origin, path, std::move(request_context_getter),
+                            std::move(quota_manager_proxy), blob_context));
 }
 
 CacheStorageCache::~CacheStorageCache() {
@@ -480,18 +479,17 @@ void CacheStorageCache::GetSizeThenClose(const SizeCallback& callback) {
 CacheStorageCache::CacheStorageCache(
     const GURL& origin,
     const base::FilePath& path,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context)
     : origin_(origin),
       path_(path),
-      request_context_getter_(request_context_getter),
-      quota_manager_proxy_(quota_manager_proxy),
+      request_context_getter_(std::move(request_context_getter)),
+      quota_manager_proxy_(std::move(quota_manager_proxy)),
       blob_storage_context_(blob_context),
       scheduler_(new CacheStorageScheduler()),
       memory_only_(path.empty()),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 bool CacheStorageCache::LazyInitialize() {
   switch (backend_state_) {
@@ -972,7 +970,7 @@ void CacheStorageCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
       std::move(put_context->blob_data_handle);
 
   blob_to_cache->StreamBlobToCache(
-      std::move(entry), INDEX_RESPONSE_BODY, request_context_getter_,
+      std::move(entry), INDEX_RESPONSE_BODY, request_context_getter_.get(),
       std::move(blob_data_handle),
       base::Bind(&CacheStorageCache::PutDidWriteBlobToCache,
                  weak_ptr_factory_.GetWeakPtr(),

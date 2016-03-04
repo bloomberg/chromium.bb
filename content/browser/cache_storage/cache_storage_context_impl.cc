@@ -28,8 +28,7 @@ CacheStorageContextImpl::~CacheStorageContextImpl() {
 
 void CacheStorageContextImpl::Init(
     const base::FilePath& user_data_directory,
-    storage::QuotaManagerProxy* quota_manager_proxy,
-    storage::SpecialStoragePolicy* special_storage_policy) {
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   is_incognito_ = user_data_directory.empty();
@@ -45,7 +44,7 @@ void CacheStorageContextImpl::Init(
   // TODO: Fix the tests to let the quota manager initialize normally.
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     CreateCacheStorageManager(user_data_directory, cache_task_runner,
-                              quota_manager_proxy, special_storage_policy);
+                              std::move(quota_manager_proxy));
     return;
   }
 
@@ -53,8 +52,7 @@ void CacheStorageContextImpl::Init(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&CacheStorageContextImpl::CreateCacheStorageManager, this,
                  user_data_directory, cache_task_runner,
-                 make_scoped_refptr(quota_manager_proxy),
-                 make_scoped_refptr(special_storage_policy)));
+                 std::move(quota_manager_proxy)));
 }
 
 void CacheStorageContextImpl::Shutdown() {
@@ -103,15 +101,13 @@ void CacheStorageContextImpl::DeleteForOrigin(const GURL& origin) {
 
 void CacheStorageContextImpl::CreateCacheStorageManager(
     const base::FilePath& user_data_directory,
-    const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-    storage::QuotaManagerProxy* quota_manager_proxy,
-    storage::SpecialStoragePolicy* special_storage_policy) {
+    scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!cache_manager_);
-  cache_manager_ =
-      CacheStorageManager::Create(user_data_directory, cache_task_runner.get(),
-                                  make_scoped_refptr(quota_manager_proxy));
+  cache_manager_ = CacheStorageManager::Create(
+      user_data_directory, cache_task_runner, std::move(quota_manager_proxy));
 }
 
 void CacheStorageContextImpl::ShutdownOnIO() {

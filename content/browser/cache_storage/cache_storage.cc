@@ -67,16 +67,15 @@ const char CacheStorage::kIndexFileName[] = "index.txt";
 // Handles the loading and clean up of CacheStorageCache objects.
 class CacheStorage::CacheLoader {
  public:
-  typedef base::Callback<void(const scoped_refptr<CacheStorageCache>&)>
-      CacheCallback;
+  typedef base::Callback<void(scoped_refptr<CacheStorageCache>)> CacheCallback;
   typedef base::Callback<void(bool)> BoolCallback;
   typedef base::Callback<void(scoped_ptr<std::vector<std::string>>)>
       StringVectorCallback;
 
   CacheLoader(
       base::SequencedTaskRunner* cache_task_runner,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      storage::QuotaManagerProxy* quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       const GURL& origin)
       : cache_task_runner_(cache_task_runner),
@@ -114,7 +113,10 @@ class CacheStorage::CacheLoader {
  protected:
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+
+  // Owned by CacheStorage which owns this.
+  storage::QuotaManagerProxy* quota_manager_proxy_;
+
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
   GURL origin_;
 };
@@ -125,12 +127,11 @@ class CacheStorage::CacheLoader {
 // cache is deleted.
 class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
  public:
-  MemoryLoader(
-      base::SequencedTaskRunner* cache_task_runner,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
-      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
-      base::WeakPtr<storage::BlobStorageContext> blob_context,
-      const GURL& origin)
+  MemoryLoader(base::SequencedTaskRunner* cache_task_runner,
+               scoped_refptr<net::URLRequestContextGetter> request_context,
+               storage::QuotaManagerProxy* quota_manager_proxy,
+               base::WeakPtr<storage::BlobStorageContext> blob_context,
+               const GURL& origin)
       : CacheLoader(cache_task_runner,
                     request_context,
                     quota_manager_proxy,
@@ -147,7 +148,7 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
                                   const CacheCallback& callback) override {
     scoped_refptr<CacheStorageCache> cache = CreateCache(cache_name);
     cache_refs_.insert(std::make_pair(cache_name, cache));
-    callback.Run(cache);
+    callback.Run(std::move(cache));
   }
 
   void CleanUpDeletedCache(const std::string& cache_name,
@@ -180,13 +181,12 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
 
 class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
  public:
-  SimpleCacheLoader(
-      const base::FilePath& origin_path,
-      base::SequencedTaskRunner* cache_task_runner,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
-      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
-      base::WeakPtr<storage::BlobStorageContext> blob_context,
-      const GURL& origin)
+  SimpleCacheLoader(const base::FilePath& origin_path,
+                    base::SequencedTaskRunner* cache_task_runner,
+                    scoped_refptr<net::URLRequestContextGetter> request_context,
+                    storage::QuotaManagerProxy* quota_manager_proxy,
+                    base::WeakPtr<storage::BlobStorageContext> blob_context,
+                    const GURL& origin)
       : CacheLoader(cache_task_runner,
                     request_context,
                     quota_manager_proxy,
@@ -262,7 +262,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
   static void CleanUpDeleteCacheDirInPool(
       const base::FilePath& cache_path,
       const BoolCallback& callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& original_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> original_task_runner) {
     bool rv = base::DeleteFile(cache_path, true);
     original_task_runner->PostTask(FROM_HERE, base::Bind(callback, rv));
   }
@@ -304,7 +304,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
       const base::FilePath& index_path,
       const std::string& data,
       const BoolCallback& callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& original_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> original_task_runner) {
     int bytes_written = base::WriteFile(tmp_path, data.c_str(), data.size());
     if (bytes_written != base::checked_cast<int>(data.size())) {
       base::DeleteFile(tmp_path, /* recursive */ false);
@@ -451,8 +451,8 @@ CacheStorage::CacheStorage(
     const base::FilePath& path,
     bool memory_only,
     base::SequencedTaskRunner* cache_task_runner,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+    scoped_refptr<net::URLRequestContextGetter> request_context,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     const GURL& origin)
     : initialized_(false),
@@ -465,13 +465,13 @@ CacheStorage::CacheStorage(
       origin_(origin),
       weak_factory_(this) {
   if (memory_only)
-    cache_loader_.reset(new MemoryLoader(cache_task_runner_.get(),
-                                         request_context, quota_manager_proxy,
-                                         blob_context, origin));
+    cache_loader_.reset(
+        new MemoryLoader(cache_task_runner_.get(), std::move(request_context),
+                         quota_manager_proxy.get(), blob_context, origin));
   else
     cache_loader_.reset(new SimpleCacheLoader(
-        origin_path_, cache_task_runner_.get(), request_context,
-        quota_manager_proxy, blob_context, origin));
+        origin_path_, cache_task_runner_.get(), std::move(request_context),
+        quota_manager_proxy.get(), blob_context, origin));
 }
 
 CacheStorage::~CacheStorage() {
@@ -657,7 +657,7 @@ void CacheStorage::OpenCacheImpl(const std::string& cache_name,
                                  const CacheAndErrorCallback& callback) {
   scoped_refptr<CacheStorageCache> cache = GetLoadedCache(cache_name);
   if (cache.get()) {
-    callback.Run(cache, CACHE_STORAGE_OK);
+    callback.Run(std::move(cache), CACHE_STORAGE_OK);
     return;
   }
 
@@ -669,7 +669,7 @@ void CacheStorage::OpenCacheImpl(const std::string& cache_name,
 void CacheStorage::CreateCacheDidCreateCache(
     const std::string& cache_name,
     const CacheAndErrorCallback& callback,
-    const scoped_refptr<CacheStorageCache>& cache) {
+    scoped_refptr<CacheStorageCache> cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.CreateCacheStorageResult",
@@ -689,19 +689,19 @@ void CacheStorage::CreateCacheDidCreateCache(
   cache_loader_->WriteIndex(
       ordered_cache_names_,
       base::Bind(&CacheStorage::CreateCacheDidWriteIndex,
-                 weak_factory_.GetWeakPtr(), callback, cache));
+                 weak_factory_.GetWeakPtr(), callback, std::move(cache)));
 }
 
 void CacheStorage::CreateCacheDidWriteIndex(
     const CacheAndErrorCallback& callback,
-    const scoped_refptr<CacheStorageCache>& cache,
+    scoped_refptr<CacheStorageCache> cache,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cache.get());
 
   // TODO(jkarlin): Handle !success.
 
-  callback.Run(cache, CACHE_STORAGE_OK);
+  callback.Run(std::move(cache), CACHE_STORAGE_OK);
 }
 
 void CacheStorage::HasCacheImpl(const std::string& cache_name,
@@ -733,12 +733,11 @@ void CacheStorage::DeleteCacheImpl(const std::string& cache_name,
                                      callback, ordered_cache_names_, cache));
 }
 
-void CacheStorage::DeleteCacheDidClose(
-    const std::string& cache_name,
-    const BoolAndErrorCallback& callback,
-    const StringVector& ordered_cache_names,
-    const scoped_refptr<CacheStorageCache>& cache,
-    int64_t cache_size) {
+void CacheStorage::DeleteCacheDidClose(const std::string& cache_name,
+                                       const BoolAndErrorCallback& callback,
+                                       const StringVector& ordered_cache_names,
+                                       scoped_refptr<CacheStorageCache> cache,
+                                       int64_t cache_size) {
   cache_loader_->WriteIndex(
       ordered_cache_names,
       base::Bind(&CacheStorage::DeleteCacheDidWriteIndex,
@@ -794,7 +793,7 @@ void CacheStorage::MatchCacheImpl(
 }
 
 void CacheStorage::MatchCacheDidMatch(
-    const scoped_refptr<CacheStorageCache>& cache,
+    scoped_refptr<CacheStorageCache> cache,
     const CacheStorageCache::ResponseCallback& callback,
     CacheStorageError error,
     scoped_ptr<ServiceWorkerResponse> response,
@@ -876,7 +875,7 @@ scoped_refptr<CacheStorageCache> CacheStorage::GetLoadedCache(
 }
 
 void CacheStorage::TemporarilyPreserveCache(
-    const scoped_refptr<CacheStorageCache>& cache) {
+    scoped_refptr<CacheStorageCache> cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!ContainsKey(preserved_caches_, cache.get()));
 
@@ -961,11 +960,11 @@ void CacheStorage::PendingBoolAndErrorCallback(
 
 void CacheStorage::PendingCacheAndErrorCallback(
     const CacheAndErrorCallback& callback,
-    const scoped_refptr<CacheStorageCache>& cache,
+    scoped_refptr<CacheStorageCache> cache,
     CacheStorageError error) {
   base::WeakPtr<CacheStorage> cache_storage = weak_factory_.GetWeakPtr();
 
-  callback.Run(cache, error);
+  callback.Run(std::move(cache), error);
   if (cache_storage)
     scheduler_->CompleteOperationAndRunNext();
 }

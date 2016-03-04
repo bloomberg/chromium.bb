@@ -32,13 +32,14 @@ CacheStorageBlobToDiskCache::~CacheStorageBlobToDiskCache() {
 void CacheStorageBlobToDiskCache::StreamBlobToCache(
     disk_cache::ScopedEntryPtr entry,
     int disk_cache_body_index,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    net::URLRequestContextGetter* request_context_getter,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle,
     const EntryAndBoolCallback& callback) {
   DCHECK(entry);
   DCHECK_LE(0, disk_cache_body_index);
   DCHECK(blob_data_handle);
   DCHECK(!blob_request_);
+  DCHECK(request_context_getter);
 
   if (!request_context_getter->GetURLRequestContext()) {
     callback.Run(std::move(entry), false /* success */);

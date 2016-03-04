@@ -44,8 +44,7 @@ class CONTENT_EXPORT CacheStorageContextImpl
   // Init and Shutdown are for use on the UI thread when the profile,
   // storagepartition is being setup and torn down.
   void Init(const base::FilePath& user_data_directory,
-            storage::QuotaManagerProxy* quota_manager_proxy,
-            storage::SpecialStoragePolicy* special_storage_policy);
+            scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
   void Shutdown();
 
   // Only callable on the IO thread.
@@ -73,9 +72,8 @@ class CONTENT_EXPORT CacheStorageContextImpl
  private:
   void CreateCacheStorageManager(
       const base::FilePath& user_data_directory,
-      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
-      storage::QuotaManagerProxy* quota_manager_proxy,
-      storage::SpecialStoragePolicy* special_storage_policy);
+      scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   void ShutdownOnIO();
 

@@ -41,8 +41,9 @@ class CONTENT_EXPORT CacheStorage {
  public:
   typedef std::vector<std::string> StringVector;
   typedef base::Callback<void(bool, CacheStorageError)> BoolAndErrorCallback;
-  typedef base::Callback<void(const scoped_refptr<CacheStorageCache>&,
-                              CacheStorageError)> CacheAndErrorCallback;
+  typedef base::Callback<void(scoped_refptr<CacheStorageCache>,
+                              CacheStorageError)>
+      CacheAndErrorCallback;
   typedef base::Callback<void(const StringVector&, CacheStorageError)>
       StringsAndErrorCallback;
   using SizeCallback = base::Callback<void(int64_t)>;
@@ -53,8 +54,8 @@ class CONTENT_EXPORT CacheStorage {
       const base::FilePath& origin_path,
       bool memory_only,
       base::SequencedTaskRunner* cache_task_runner,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       const GURL& origin);
 
@@ -120,7 +121,7 @@ class CONTENT_EXPORT CacheStorage {
       const std::string& cache_name);
 
   // Holds a reference to a cache for thirty seconds.
-  void TemporarilyPreserveCache(const scoped_refptr<CacheStorageCache>& cache);
+  void TemporarilyPreserveCache(scoped_refptr<CacheStorageCache> cache);
   virtual void SchedulePreservedCacheRemoval(
       const base::Closure& callback);  // Virtual for testing.
   void RemovePreservedCache(const CacheStorageCache* cache);
@@ -136,9 +137,9 @@ class CONTENT_EXPORT CacheStorage {
                      const CacheAndErrorCallback& callback);
   void CreateCacheDidCreateCache(const std::string& cache_name,
                                  const CacheAndErrorCallback& callback,
-                                 const scoped_refptr<CacheStorageCache>& cache);
+                                 scoped_refptr<CacheStorageCache> cache);
   void CreateCacheDidWriteIndex(const CacheAndErrorCallback& callback,
-                                const scoped_refptr<CacheStorageCache>& cache,
+                                scoped_refptr<CacheStorageCache> cache,
                                 bool success);
 
   // The HasCache callbacks are below.
@@ -152,7 +153,7 @@ class CONTENT_EXPORT CacheStorage {
   void DeleteCacheDidClose(const std::string& cache_name,
                            const BoolAndErrorCallback& callback,
                            const StringVector& ordered_cache_names,
-                           const scoped_refptr<CacheStorageCache>& cache,
+                           scoped_refptr<CacheStorageCache> cache,
                            int64_t cache_size);
   void DeleteCacheDidWriteIndex(const std::string& cache_name,
                                 const BoolAndErrorCallback& callback,
@@ -168,7 +169,7 @@ class CONTENT_EXPORT CacheStorage {
   void MatchCacheImpl(const std::string& cache_name,
                       scoped_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCache::ResponseCallback& callback);
-  void MatchCacheDidMatch(const scoped_refptr<CacheStorageCache>& cache,
+  void MatchCacheDidMatch(scoped_refptr<CacheStorageCache> cache,
                           const CacheStorageCache::ResponseCallback& callback,
                           CacheStorageError error,
                           scoped_ptr<ServiceWorkerResponse> response,
@@ -194,10 +195,9 @@ class CONTENT_EXPORT CacheStorage {
   void PendingBoolAndErrorCallback(const BoolAndErrorCallback& callback,
                                    bool found,
                                    CacheStorageError error);
-  void PendingCacheAndErrorCallback(
-      const CacheAndErrorCallback& callback,
-      const scoped_refptr<CacheStorageCache>& cache,
-      CacheStorageError error);
+  void PendingCacheAndErrorCallback(const CacheAndErrorCallback& callback,
+                                    scoped_refptr<CacheStorageCache> cache,
+                                    CacheStorageError error);
   void PendingStringsAndErrorCallback(const StringsAndErrorCallback& callback,
                                       const StringVector& strings,
                                       CacheStorageError error);
