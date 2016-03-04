@@ -49,6 +49,9 @@ class ServiceWorkerContext {
   //  * |script_url| fails to parse or its top-level execution fails.
   //    TODO: The error message for this needs to be available to developers.
   //  * Something unexpected goes wrong, like a renderer crash or a full disk.
+  //
+  // This function can be called from any thread, but the callback will always
+  // be called on the UI thread.
   virtual void RegisterServiceWorker(const Scope& pattern,
                                      const GURL& script_url,
                                      const ResultCallback& callback) = 0;
@@ -61,11 +64,19 @@ class ServiceWorkerContext {
   // Unregistration can fail if:
   //  * No Service Worker was registered for |pattern|.
   //  * Something unexpected goes wrong, like a renderer crash.
+  //
+  // This function can be called from any thread, but the callback will always
+  // be called on the UI thread.
   virtual void UnregisterServiceWorker(const Scope& pattern,
                                        const ResultCallback& callback) = 0;
 
   // Methods used in response to browsing data and quota manager requests.
+
+  // Must be called from the IO thread.
   virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) = 0;
+
+  // This function can be called from any thread, but the callback will always
+  // be called on the IO thread.
   virtual void DeleteForOrigin(const GURL& origin_url,
                                const ResultCallback& callback) = 0;
 
@@ -73,6 +84,7 @@ class ServiceWorkerContext {
   // and if |other_url| falls inside the scope of the same registration. Note
   // this still returns true even if there is a Service Worker registration
   // which has a longer match for |other_url|.
+  //
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.
   virtual void CheckHasServiceWorker(
@@ -81,11 +93,16 @@ class ServiceWorkerContext {
       const CheckHasServiceWorkerCallback& callback) = 0;
 
   // Stops all running workers on the given |origin|.
+  //
+  // This function can be called from any thread.
   virtual void StopAllServiceWorkersForOrigin(const GURL& origin) = 0;
 
   // Stops all running service workers and unregisters all service worker
   // registrations. This method is used in LayoutTests to make sure that the
   // existing service worker will not affect the succeeding tests.
+  //
+  // This function can be called from any thread, but the callback will always
+  // be called on the UI thread.
   virtual void ClearAllServiceWorkersForTest(const base::Closure& callback) = 0;
 
  protected:
