@@ -18,8 +18,8 @@ This test passes if there are three green squares below:<br>
   onload = function() {
     // Wait until first layout is finished.
     window.requestAnimationFrame(function() {
-      document.getElementById('use2').removeAttribute('width');
-      document.getElementById('use3').setAttribute('height', '100');
+      document.getElementById('use2').setAttribute('width', '100');
+      document.getElementById('use3').removeAttribute('height');
     });
   }
 </script>
