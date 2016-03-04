@@ -117,6 +117,9 @@ class AvSettings {
 
     // This event should be fired when the device is disconnected to HDMI sinks.
     HDMI_DISCONNECTED = 101,
+
+    // This event should be fired when an HDMI error occurs.
+    HDMI_ERROR = 102,
   };
 
   // Delegate to inform the caller events. As a subclass of TaskRunner,
