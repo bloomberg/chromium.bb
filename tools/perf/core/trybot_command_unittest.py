@@ -180,6 +180,9 @@ class TrybotCommandTest(unittest.TestCase):
         'linux_perf_bisect': 'otherstuff3',
         'win_x64_perf_bisect': 'otherstuff4',
         'win_perf_bisect_builder': 'not a trybot',
+        'win_x64_10_perf_bisect': 'otherstuff4',
+        'winx64ati_perf_bisect': 'not a trybot',
+        'winx64nvidia_perf_bisect': 'not a trybot',
     })
     command = trybot_command.Trybot()
     command._InitializeBuilderNames('all-win')
@@ -189,8 +192,13 @@ class TrybotCommandTest(unittest.TestCase):
     self.assertEquals(
         ['win_8_perf_bisect', 'win_perf_bisect'],
         sorted(command._builder_names.get('win')))
+    self.assertNotIn(
+        'win_x64_perf_bisect',
+        sorted(command._builder_names.get('win')))
     self.assertEquals(
-        ['win_x64_perf_bisect'], sorted(command._builder_names.get('win-x64')))
+        sorted(['win_x64_perf_bisect', 'win_x64_10_perf_bisect',
+                'winx64ati_perf_bisect', 'winx64nvidia_perf_bisect']),
+        sorted(command._builder_names.get('win-x64')))
 
   def testConstructorTrybotAllAndroid(self):
     self._MockTryserverJson({

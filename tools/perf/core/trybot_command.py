@@ -97,9 +97,11 @@ def _GetBuilderNames(trybot_name, builders):
   # Special case for Windows x64, consider it as separate platform
   # config config should contain target_arch=x64 and --browser=release_x64.
   win_x64_bots = [
-      platform_and_bots['win'].pop(i)
-      for i, win_bot in enumerate(platform_and_bots['win'])
+      win_bot for win_bot in platform_and_bots['win']
       if 'x64' in win_bot]
+  # Separate out non x64 bits win bots
+  platform_and_bots['win'] = list(
+      set(platform_and_bots['win']) - set(win_x64_bots))
   platform_and_bots['win-x64'] = win_x64_bots
 
   if 'all-win' in trybot_name:
