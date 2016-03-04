@@ -67,7 +67,8 @@ void InspectorTracingAgent::end(ErrorString* errorString, PassOwnPtr<EndCallback
 String InspectorTracingAgent::sessionId()
 {
     String result;
-    m_state->getString(TracingAgentState::sessionId, &result);
+    if (m_state)
+        m_state->getString(TracingAgentState::sessionId, &result);
     return result;
 }
 
