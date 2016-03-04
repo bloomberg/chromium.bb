@@ -312,15 +312,6 @@ struct ivi_layout_interface {
 						     int32_t width, int32_t height);
 
 	/**
-	 * \brief Set the horizontal and vertical dimension of the surface.
-	 *
-	 * \return IVI_SUCCEEDED if the method call was successful
-	 * \return IVI_FAILED if the method call was failed
-	 */
-	int32_t (*surface_set_dimension)(struct ivi_layout_surface *ivisurf,
-					 int32_t dest_width, int32_t dest_height);
-
-	/**
 	 * \brief Sets the orientation of a ivi_surface.
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful

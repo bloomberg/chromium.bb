@@ -91,16 +91,6 @@ test_surface_bad_orientation(struct test_context *ctx)
 }
 
 static void
-test_surface_bad_dimension(struct test_context *ctx)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-
-	iassert(lyt->surface_set_dimension(NULL, 200, 300) == IVI_FAILED);
-
-	lyt->commit_changes();
-}
-
-static void
 test_surface_bad_source_rectangle(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
@@ -1001,7 +991,6 @@ run_internal_tests(void *data)
 	test_surface_bad_visibility(ctx);
 	test_surface_bad_destination_rectangle(ctx);
 	test_surface_bad_orientation(ctx);
-	test_surface_bad_dimension(ctx);
 	test_surface_bad_source_rectangle(ctx);
 	test_surface_bad_properties(ctx);
 

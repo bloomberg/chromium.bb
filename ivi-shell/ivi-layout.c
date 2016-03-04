@@ -2030,30 +2030,6 @@ ivi_layout_surface_set_destination_rectangle(struct ivi_layout_surface *ivisurf,
 }
 
 static int32_t
-ivi_layout_surface_set_dimension(struct ivi_layout_surface *ivisurf,
-				 int32_t dest_width, int32_t dest_height)
-{
-	struct ivi_layout_surface_properties *prop = NULL;
-
-	if (ivisurf == NULL) {
-		weston_log("ivi_layout_surface_set_dimension: invalid argument\n");
-		return IVI_FAILED;
-	}
-
-	prop = &ivisurf->pending.prop;
-	prop->dest_width  = dest_width;
-	prop->dest_height = dest_height;
-
-	if (ivisurf->prop.dest_width != dest_width ||
-	    ivisurf->prop.dest_height != dest_height)
-		ivisurf->event_mask |= IVI_NOTIFICATION_DIMENSION;
-	else
-		ivisurf->event_mask &= ~IVI_NOTIFICATION_DIMENSION;
-
-	return IVI_SUCCEEDED;
-}
-
-static int32_t
 ivi_layout_surface_set_orientation(struct ivi_layout_surface *ivisurf,
 				   enum wl_output_transform orientation)
 {
@@ -2576,7 +2552,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.surface_set_opacity			= ivi_layout_surface_set_opacity,
 	.surface_set_source_rectangle		= ivi_layout_surface_set_source_rectangle,
 	.surface_set_destination_rectangle	= ivi_layout_surface_set_destination_rectangle,
-	.surface_set_dimension			= ivi_layout_surface_set_dimension,
 	.surface_set_orientation		= ivi_layout_surface_set_orientation,
 	.surface_set_content_observer		= ivi_layout_surface_set_content_observer,
 	.surface_add_notification		= ivi_layout_surface_add_notification,
