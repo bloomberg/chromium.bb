@@ -924,9 +924,15 @@ void RenderWidget::WillBeginCompositorFrame() {
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetInputHandlerDelegate
 
-void RenderWidget::FocusChangeComplete() {}
+void RenderWidget::FocusChangeComplete() {
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetFocusChangeComplete();
+}
 
 bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
+  if (owner_delegate_)
+    return owner_delegate_->DoesRenderWidgetHaveTouchEventHandlersAt(point);
+
   return true;
 }
 
@@ -951,7 +957,10 @@ void RenderWidget::ObserveWheelEventAndResult(
   }
 }
 
-void RenderWidget::OnDidHandleKeyEvent() {}
+void RenderWidget::OnDidHandleKeyEvent() {
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidHandleKeyEvent();
+}
 
 void RenderWidget::OnDidOverscroll(const DidOverscrollParams& params) {
   Send(new InputHostMsg_DidOverscroll(routing_id_, params));
@@ -1045,10 +1054,16 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
 }
 
 bool RenderWidget::WillHandleGestureEvent(const blink::WebGestureEvent& event) {
+  if (owner_delegate_)
+    return owner_delegate_->RenderWidgetWillHandleGestureEvent(event);
+
   return false;
 }
 
 bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
+  if (owner_delegate_)
+    return owner_delegate_->RenderWidgetWillHandleMouseEvent(event);
+
   return false;
 }
 

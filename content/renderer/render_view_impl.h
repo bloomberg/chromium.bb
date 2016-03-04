@@ -317,15 +317,6 @@ class CONTENT_EXPORT RenderViewImpl
                                   const gfx::Size& max_size);
   void DisableAutoResizeForTesting(const gfx::Size& new_size);
 
-  // RenderWidgetInputHandlerDelegate implementation ---------------------------
-
-  // Most methods are handled by RenderWidget
-  void FocusChangeComplete() override;
-  bool HasTouchEventHandlersAt(const gfx::Point& point) const override;
-  void OnDidHandleKeyEvent() override;
-  bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
-  bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
-
   // IPC::Listener implementation ----------------------------------------------
 
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -585,6 +576,14 @@ class CONTENT_EXPORT RenderViewImpl
 
   void RenderWidgetDidSetColorProfile(
       const std::vector<char>& color_profile) override;
+  void RenderWidgetFocusChangeComplete() override;
+  bool DoesRenderWidgetHaveTouchEventHandlersAt(
+      const gfx::Point& point) const override;
+  void RenderWidgetDidHandleKeyEvent() override;
+  bool RenderWidgetWillHandleGestureEvent(
+      const blink::WebGestureEvent& event) override;
+  bool RenderWidgetWillHandleMouseEvent(
+      const blink::WebMouseEvent& event) override;
 
   // Old WebFrameClient implementations ----------------------------------------
 

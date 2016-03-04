@@ -1280,22 +1280,22 @@ void RenderViewImpl::TransferActiveWheelFlingAnimation(
 
 // RenderWidgetInputHandlerDelegate -----------------------------------------
 
-void RenderViewImpl::FocusChangeComplete() {
-  RenderWidget::FocusChangeComplete();
+void RenderViewImpl::RenderWidgetFocusChangeComplete() {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusChangeComplete());
 }
 
-bool RenderViewImpl::HasTouchEventHandlersAt(const gfx::Point& point) const {
+bool RenderViewImpl::DoesRenderWidgetHaveTouchEventHandlersAt(
+    const gfx::Point& point) const {
   if (!webview())
     return false;
   return webview()->hasTouchEventHandlersAt(point);
 }
 
-void RenderViewImpl::OnDidHandleKeyEvent() {
+void RenderViewImpl::RenderWidgetDidHandleKeyEvent() {
   ClearEditCommands();
 }
 
-bool RenderViewImpl::WillHandleGestureEvent(
+bool RenderViewImpl::RenderWidgetWillHandleGestureEvent(
     const blink::WebGestureEvent& event) {
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
@@ -1304,7 +1304,8 @@ bool RenderViewImpl::WillHandleGestureEvent(
   return false;
 }
 
-bool RenderViewImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
+bool RenderViewImpl::RenderWidgetWillHandleMouseEvent(
+    const blink::WebMouseEvent& event) {
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
   possible_drag_event_info_.event_location =
@@ -1474,7 +1475,7 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
   if (has_scrolled_focused_editable_node_into_rect_ &&
       rect == rect_for_scrolled_focused_editable_node_) {
-    FocusChangeComplete();
+    GetWidget()->FocusChangeComplete();
     return;
   }
 
@@ -1487,7 +1488,7 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
   }
 
   if (!will_animate)
-    FocusChangeComplete();
+    GetWidget()->FocusChangeComplete();
 }
 
 void RenderViewImpl::OnSetEditCommandsForNextKeyEvent(
@@ -3144,7 +3145,7 @@ bool RenderViewImpl::CanComposeInline() {
 }
 
 void RenderViewImpl::DidCompletePageScaleAnimation() {
-  FocusChangeComplete();
+  GetWidget()->FocusChangeComplete();
 }
 
 void RenderViewImpl::OnDeviceScaleFactorChanged() {

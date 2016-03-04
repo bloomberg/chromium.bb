@@ -7,6 +7,15 @@
 
 #include "content/common/content_export.h"
 
+namespace blink {
+class WebGestureEvent;
+class WebMouseEvent;
+}
+
+namespace gfx {
+class Point;
+}
+
 namespace content {
 
 //
@@ -20,6 +29,16 @@ class CONTENT_EXPORT RenderWidgetOwnerDelegate {
   // The RenderWidget set a color profile.
   virtual void RenderWidgetDidSetColorProfile(
       const std::vector<char>& color_profile) = 0;
+
+  // As in RenderWidgetInputHandlerDelegate.
+  virtual void RenderWidgetFocusChangeComplete() = 0;
+  virtual bool DoesRenderWidgetHaveTouchEventHandlersAt(
+      const gfx::Point& point) const = 0;
+  virtual void RenderWidgetDidHandleKeyEvent() = 0;
+  virtual bool RenderWidgetWillHandleGestureEvent(
+      const blink::WebGestureEvent& event) = 0;
+  virtual bool RenderWidgetWillHandleMouseEvent(
+      const blink::WebMouseEvent& event) = 0;
 
  protected:
   virtual ~RenderWidgetOwnerDelegate() {}
