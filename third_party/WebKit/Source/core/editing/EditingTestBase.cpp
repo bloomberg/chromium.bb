@@ -35,20 +35,18 @@ PassRefPtrWillBeRawPtr<ShadowRoot> EditingTestBase::createShadowRootForElementWi
 {
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
     shadowRoot->setInnerHTML(String::fromUTF8(shadowRootContent), ASSERT_NO_EXCEPTION);
-    scope.document().view()->updateAllLifecyclePhases();
     return shadowRoot.release();
 }
 
 void EditingTestBase::setBodyContent(const char* bodyContent)
 {
     document().body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
-    updateLayoutAndStyleForPainting();
 }
 
 PassRefPtrWillBeRawPtr<ShadowRoot> EditingTestBase::setShadowContent(const char* shadowContent, const char* host)
 {
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), host, shadowContent);
-    updateLayoutAndStyleForPainting();
+    document().updateDistribution();
     return shadowRoot.release();
 }
 
