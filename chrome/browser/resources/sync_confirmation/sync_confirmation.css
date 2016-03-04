@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 body {
-  font-size: 100%;
   margin: 0;
   padding: 0;
 }
@@ -32,8 +31,8 @@ a {
   border-bottom: 1px solid lightgray;
   color: #333;
   display: flex;
-  font-size: 1em;
-  height: 56px;
+  font-size: 16px;
+  height: 52px;
 }
 
 .details {
@@ -43,7 +42,6 @@ a {
 
 .sync-message {
   color: #595959;
-  font-size: 0.8125em;
   line-height: 150%;
   padding-bottom: 32px;
 }
@@ -74,9 +72,14 @@ a {
 }
 
 paper-button {
-  font-size:  0.8125em;
-  padding-left: 12px;
-  padding-right: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  margin: 0;
+  padding: 8px 16px;
+}
+
+paper-button + paper-button {
+  -webkit-margin-start: 8px;
 }
 
 #confirmButton {
