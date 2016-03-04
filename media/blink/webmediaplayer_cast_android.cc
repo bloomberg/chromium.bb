@@ -221,7 +221,7 @@ void WebMediaPlayerCast::OnSeekComplete(const base::TimeDelta& current_time) {
   DVLOG(1) << __FUNCTION__;
   remote_time_at_ = base::TimeTicks::Now();
   remote_time_ = current_time;
-  webmediaplayer_->OnPipelineSeeked(true, PIPELINE_OK);
+  webmediaplayer_->OnPipelineSeeked(true);
 }
 
 void WebMediaPlayerCast::OnMediaError(int error_type) {

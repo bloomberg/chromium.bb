@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -143,20 +144,21 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       worker_task_runner_(params.worker_task_runner()),
       media_log_(params.media_log()),
       pipeline_(media_task_runner_, media_log_.get()),
+      pipeline_controller_(
+          &pipeline_,
+          base::Bind(&WebMediaPlayerImpl::CreateRenderer,
+                     base::Unretained(this)),
+          base::Bind(&WebMediaPlayerImpl::OnPipelineSeeked, AsWeakPtr()),
+          base::Bind(&WebMediaPlayerImpl::OnPipelineSuspended, AsWeakPtr()),
+          base::Bind(&WebMediaPlayerImpl::OnPipelineResumed, AsWeakPtr()),
+          base::Bind(&WebMediaPlayerImpl::OnPipelineError, AsWeakPtr())),
       load_type_(LoadTypeURL),
       opaque_(false),
       playback_rate_(0.0),
       paused_(true),
       seeking_(false),
-      pending_suspend_(false),
-      pending_time_change_(false),
-      pending_resume_(false),
-      suspending_(false),
-      suspended_(false),
-      resuming_(false),
       pending_suspend_resume_cycle_(false),
       ended_(false),
-      pending_seek_(false),
       should_notify_time_changed_(false),
       fullscreen_(false),
       decoder_requires_restart_for_fullscreen_(false),
@@ -230,7 +232,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
     data_source_->Abort();
   if (chunk_demuxer_) {
     chunk_demuxer_->Shutdown();
-    chunk_demuxer_ = NULL;
+    chunk_demuxer_ = nullptr;
   }
 
   renderer_factory_.reset();
@@ -342,21 +344,21 @@ void WebMediaPlayerImpl::play() {
 #endif
 
   paused_ = false;
-
   pipeline_.SetPlaybackRate(playback_rate_);
+
   if (data_source_)
     data_source_->MediaIsPlaying();
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
 
   if (playback_rate_ > 0) {
-    // Resume the player if playback was initiated in the foreground.
-    if (suspended_ && !resuming_ && delegate_ && !delegate_->IsHidden()) {
-      ScheduleResume();
-      return;
-    }
-
     NotifyPlaybackStarted();
+
+    // Resume the player if playback was initiated in the foreground. Resume()
+    // will do nothing if the pipeline is not suspended state, but will clear
+    // some internal pending state, so it should always be called.
+    if (delegate_ && !delegate_->IsHidden())
+      pipeline_controller_.Resume();
   }
 }
 
@@ -375,7 +377,13 @@ void WebMediaPlayerImpl::pause() {
 #endif
 
   pipeline_.SetPlaybackRate(0.0);
-  UpdatePausedTime();
+
+  // pause() may be called after playback has ended and the HTMLMediaElement
+  // requires that currentTime() == duration() after ending.  We want to ensure
+  // |paused_time_| matches currentTime() in this case or a future seek() may
+  // incorrectly discard what it thinks is a seek to the existing time.
+  paused_time_ =
+      ended_ ? pipeline_.GetMediaDuration() : pipeline_.GetMediaTime();
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
 
@@ -391,14 +399,17 @@ bool WebMediaPlayerImpl::supportsSave() const {
 void WebMediaPlayerImpl::seek(double seconds) {
   DVLOG(1) << __FUNCTION__ << "(" << seconds << "s)";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DoSeek(base::TimeDelta::FromSecondsD(seconds), true);
+}
+
+void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   ended_ = false;
 
-  base::TimeDelta new_seek_time = base::TimeDelta::FromSecondsD(seconds);
-
 #if defined(OS_ANDROID)  // WMPI_CAST
   if (isRemote()) {
-    cast_impl_.seek(new_seek_time);
+    cast_impl_.seek(time);
     return;
   }
 #endif
@@ -407,86 +418,39 @@ void WebMediaPlayerImpl::seek(double seconds) {
   if (ready_state_ > WebMediaPlayer::ReadyStateHaveMetadata)
     SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
-  if (seeking_ || suspended_) {
-    // Once resuming, it's too late to change the resume time and so the
-    // implementation is a little different.
-    bool is_suspended = suspended_ && !resuming_;
-
-    // If we are currently seeking or resuming to |new_seek_time|, skip the
-    // seek (except for MSE, which always seeks).
-    if (!is_suspended && new_seek_time == seek_time_) {
-      if (chunk_demuxer_) {
-        // Don't suppress any redundant in-progress MSE seek. There could have
-        // been changes to the underlying buffers after seeking the demuxer and
-        // before receiving OnPipelineSeeked() for the currently in-progress
-        // seek.
-        MEDIA_LOG(DEBUG, media_log_)
-            << "Detected MediaSource seek to same time as in-progress seek to "
-            << seek_time_ << ".";
-      } else {
-        // Suppress all redundant seeks if unrestricted by media source demuxer
-        // API.
-        pending_seek_ = false;
-        pending_seek_time_ = base::TimeDelta();
-        return;
-      }
-    }
-
-    // If |chunk_demuxer_| is already seeking, cancel that seek and schedule the
-    // new one.
-    if (!is_suspended && chunk_demuxer_)
-      chunk_demuxer_->CancelPendingSeek(new_seek_time);
-
-    // Schedule a seek once the current suspend or seek finishes.
-    pending_seek_ = true;
-    pending_seek_time_ = new_seek_time;
-
-    // In the case of seeking while suspended, the seek is considered to have
-    // started immediately (but won't complete until the pipeline is resumed).
-    if (is_suspended) {
-      seeking_ = true;
-      seek_time_ = new_seek_time;
-
-      // Resume the pipeline if the seek is initiated in the foreground so that
-      // the correct frame is displayed.
-      if (delegate_ && !delegate_->IsHidden())
-        ScheduleResume();
-    }
-
-    return;
-  }
-
-  media_log_->AddEvent(media_log_->CreateSeekEvent(seconds));
-
-  // Update our paused time.
-  // For non-MSE playbacks, in paused state ignore the seek operations to
-  // current time if the loading is completed and generate
-  // OnPipelineBufferingStateChanged event to eventually fire seeking and seeked
-  // events. We don't short-circuit MSE seeks in this logic because the
-  // underlying buffers around the seek time might have changed (or even been
-  // removed) since previous seek/preroll/pause action, and the pipeline might
-  // need to flush so the new buffers are decoded and rendered instead of the
-  // old ones.
-  if (paused_) {
-    if (paused_time_ != new_seek_time || chunk_demuxer_) {
-      paused_time_ = new_seek_time;
-    } else if (old_state == ReadyStateHaveEnoughData) {
+  // When paused, we know exactly what the current time is and can elide seeks
+  // to it. However, there are two cases that are not elided:
+  //   1) When the pipeline state is not stable.
+  //      In this case we just let |pipeline_controller_| decide what to do, as
+  //      it has complete information.
+  //   2) For MSE.
+  //      Because the buffers may have changed between seeks, MSE seeks are
+  //      never elided.
+  if (paused_ && pipeline_controller_.IsStable() && paused_time_ == time &&
+      !chunk_demuxer_) {
+    // If the ready state was high enough before, we can indicate that the seek
+    // completed just by restoring it. Otherwise we will just wait for the real
+    // ready state change to eventually happen.
+    if (old_state == ReadyStateHaveEnoughData) {
       main_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged,
                      AsWeakPtr(), BUFFERING_HAVE_ENOUGH));
-      return;
     }
+    return;
   }
 
   seeking_ = true;
-  seek_time_ = new_seek_time;
+  seek_time_ = time;
+  if (paused_)
+    paused_time_ = time;
+  pipeline_controller_.Seek(time, time_updated);
 
-  if (chunk_demuxer_)
-    chunk_demuxer_->StartWaitingForSeek(seek_time_);
-
-  pipeline_.Seek(seek_time_, BIND_TO_RENDER_LOOP1(
-                                 &WebMediaPlayerImpl::OnPipelineSeeked, true));
+  // Resume the pipeline if the seek is initiated in the foreground so that
+  // the correct frame is displayed. If the pipeline is not suspended, Resume()
+  // will do nothing but clear some pending state.
+  if (delegate_ && !delegate_->IsHidden())
+    pipeline_controller_.Resume();
 }
 
 void WebMediaPlayerImpl::setRate(double rate) {
@@ -635,23 +599,16 @@ double WebMediaPlayerImpl::currentTime() const {
   if (ended_)
     return duration();
 
-  // We know the current seek time better than pipeline: pipeline may processing
-  // an earlier seek before a pending seek has been started, or it might not yet
-  // have the current seek time returnable via GetMediaTime().
-  if (seeking()) {
-    return pending_seek_ ? pending_seek_time_.InSecondsF()
-                         : seek_time_.InSecondsF();
-  }
+  if (seeking())
+    return seek_time_.InSecondsF();
 
 #if defined(OS_ANDROID)  // WMPI_CAST
-  if (isRemote()) {
+  if (isRemote())
     return cast_impl_.currentTime();
-  }
 #endif
 
-  if (paused_) {
+  if (paused_)
     return paused_time_.InSecondsF();
-  }
 
   return pipeline_.GetMediaTime().InSecondsF();
 }
@@ -884,68 +841,16 @@ void WebMediaPlayerImpl::OnCdmAttached(bool success) {
   set_cdm_result_.reset();
 }
 
-void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
-                                          PipelineStatus status) {
-  DVLOG(1) << __FUNCTION__ << "(" << time_changed << ", " << status << ")";
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  if (status != PIPELINE_OK) {
-    OnPipelineError(status);
-    return;
-  }
-
-  // Whether or not the seek was caused by a resume, we're not suspended now.
-  const bool was_resuming = resuming_;
-  resuming_ = false;
-  suspended_ = false;
-
-  // If we we're resuming into the playing state, notify the delegate.
-  if (was_resuming && playback_rate_ > 0 && !paused_)
-    NotifyPlaybackStarted();
-
-  // If there is a pending suspend, the seek does not complete until after the
-  // next resume.
-  if (pending_suspend_) {
-    pending_suspend_ = false;
-    pending_time_change_ = time_changed;
-    Suspend();
-    return;
-  }
-
-  // Clear seek state. Note that if the seek was caused by a resume, then
-  // |seek_time_| is always set but |seeking_| is only set if there was a
-  // pending seek at the time.
+void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   seeking_ = false;
   seek_time_ = base::TimeDelta();
-
-  if (pending_seek_) {
-    double pending_seek_seconds = pending_seek_time_.InSecondsF();
-    pending_seek_ = false;
-    pending_seek_time_ = base::TimeDelta();
-    seek(pending_seek_seconds);
-    return;
-  }
-
-  // Update our paused time.
   if (paused_)
-    UpdatePausedTime();
-
-  should_notify_time_changed_ = time_changed;
+    paused_time_ = pipeline_.GetMediaTime();
+  if (time_updated)
+    should_notify_time_changed_ = true;
 }
 
-void WebMediaPlayerImpl::OnPipelineSuspended(PipelineStatus status) {
-  DVLOG(1) << __FUNCTION__ << "(" << status << ")";
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  if (status != PIPELINE_OK) {
-    OnPipelineError(status);
-    return;
-  }
-
-  suspending_ = false;
-  if (delegate_)
-    delegate_->PlayerGone(delegate_id_);
-
+void WebMediaPlayerImpl::OnPipelineSuspended() {
 #if defined(OS_ANDROID)
   if (isRemote()) {
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
@@ -955,20 +860,27 @@ void WebMediaPlayerImpl::OnPipelineSuspended(PipelineStatus status) {
   }
 #endif
 
-  if (pending_resume_ || pending_suspend_resume_cycle_) {
-    pending_resume_ = false;
+  if (delegate_)
+    delegate_->PlayerGone(delegate_id_);
+
+  if (pending_suspend_resume_cycle_) {
     pending_suspend_resume_cycle_ = false;
-    Resume();
+    pipeline_controller_.Resume();
     return;
   }
+}
+
+void WebMediaPlayerImpl::OnPipelineResumed() {
+  if (playback_rate_ > 0 && !paused_)
+    NotifyPlaybackStarted();
 }
 
 void WebMediaPlayerImpl::OnPipelineEnded() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  // Ignore state changes until we've completed all outstanding seeks.
-  if (seeking_ || pending_seek_)
+  // Ignore state changes until we've completed all outstanding operations.
+  if (!pipeline_controller_.IsStable())
     return;
 
   ended_ = true;
@@ -1032,8 +944,9 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
     BufferingState buffering_state) {
   DVLOG(1) << __FUNCTION__ << "(" << buffering_state << ")";
 
-  // Ignore buffering state changes until we've completed all outstanding seeks.
-  if (seeking_ || pending_seek_)
+  // Ignore buffering state changes until we've completed all outstanding
+  // operations.
+  if (!pipeline_controller_.IsStable())
     return;
 
   // TODO(scherkus): Handle other buffering states when Pipeline starts using
@@ -1107,38 +1020,7 @@ void WebMediaPlayerImpl::OnHidden(bool must_suspend) {
 #endif
 
   if (must_suspend || (paused_ && ended_) || hasVideo())
-    ScheduleSuspend();
-}
-
-void WebMediaPlayerImpl::ScheduleSuspend() {
-  if (!pipeline_.IsRunning())
-    return;
-
-  if (resuming_ || seeking_) {
-    pending_suspend_ = true;
-    return;
-  }
-
-  if (pending_resume_) {
-    pending_resume_ = false;
-    return;
-  }
-
-  Suspend();
-}
-
-void WebMediaPlayerImpl::Suspend() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  // Since Pipeline::IsRunning() may be set on the media thread there are cases
-  // where two suspends might be issued concurrently.
-  if (suspended_)
-    return;
-
-  suspended_ = true;
-  suspending_ = true;
-  pipeline_.Suspend(
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSuspended));
+    pipeline_controller_.Suspend();
 }
 
 void WebMediaPlayerImpl::OnShown() {
@@ -1164,26 +1046,7 @@ void WebMediaPlayerImpl::OnShown() {
 #endif
 
   if (!ended_ && !paused_)
-    ScheduleResume();
-}
-
-void WebMediaPlayerImpl::ScheduleResume() {
-  if (!pipeline_.IsRunning())
-    return;
-
-  if (suspending_) {
-    pending_resume_ = true;
-    return;
-  }
-
-  if (pending_suspend_) {
-    pending_suspend_ = false;
-    return;
-  }
-
-  // Might already be resuming iff we came back from remote playback recently.
-  if (suspended_ && !resuming_)
-    Resume();
+    pipeline_controller_.Resume();
 }
 
 void WebMediaPlayerImpl::OnPlay() {
@@ -1201,57 +1064,14 @@ void WebMediaPlayerImpl::OnVolumeMultiplierUpdate(double multiplier) {
   setVolume(volume_);
 }
 
-void WebMediaPlayerImpl::Resume() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  CHECK(suspended_);
-  CHECK(!resuming_);
-
-  // If there was a time change pending when we suspended (which can happen when
-  // we suspend immediately after a seek), surface it after resuming.
-  bool time_changed = pending_time_change_;
-  pending_time_change_ = false;
-
-  if (seeking_ || pending_seek_) {
-    if (pending_seek_) {
-      seek_time_ = pending_seek_time_;
-      pending_seek_ = false;
-      pending_seek_time_ = base::TimeDelta();
-    }
-    time_changed = true;
-  } else {
-    // It is safe to call GetCurrentFrameTimestamp() because VFC is stopped
-    // during Suspend(). It won't be started again until after Resume() is
-    // called.  Use the pipeline time if there's no video.
-    if (!data_source_ || !data_source_->IsStreaming()) {
-      seek_time_ = hasVideo() ? compositor_->GetCurrentFrameTimestamp()
-                              : pipeline_.GetMediaTime();
-    } else {
-      // Resume from zero if a resource does not support range requests; this
-      // avoids a painful "read-the-whole-file" seek penalty.
-      seek_time_ = base::TimeDelta();
-    }
-  }
-
-  if (chunk_demuxer_)
-    chunk_demuxer_->StartWaitingForSeek(seek_time_);
-
-  resuming_ = true;
-  pipeline_.Resume(CreateRenderer(), seek_time_,
-                   BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked,
-                                        time_changed));
-}
-
 void WebMediaPlayerImpl::ScheduleRestart() {
-  // If we're suspended but not resuming there is no need to restart because
-  // there is no renderer to kill.
-  if (!suspended_ || resuming_) {
+  if (!pipeline_controller_.IsSuspended()) {
     pending_suspend_resume_cycle_ = true;
-    ScheduleSuspend();
+    pipeline_controller_.Suspend();
   }
 }
 
 #if defined(OS_ANDROID)  // WMPI_CAST
-
 bool WebMediaPlayerImpl::isRemote() const {
   return cast_impl_.isRemote();
 }
@@ -1278,28 +1098,26 @@ void WebMediaPlayerImpl::OnRemotePlaybackEnded() {
 }
 
 void WebMediaPlayerImpl::OnDisconnectedFromRemoteDevice(double t) {
-  paused_time_ = base::TimeDelta::FromSecondsD(t);
-  pending_seek_ = true;
-  pending_seek_time_ = paused_time_;
+  DoSeek(base::TimeDelta::FromSecondsD(t), false);
+  if (delegate_ && !delegate_->IsHidden())
+    pipeline_controller_.Resume();
 
-  ScheduleResume();
-
-  if (paused_time_ == pipeline_.GetMediaDuration()) {
-    ended_ = true;
-  }
   // We already told the delegate we're paused when remoting started.
   client_->playbackStateChanged();
   client_->disconnectedFromRemoteDevice();
 }
 
 void WebMediaPlayerImpl::SuspendForRemote() {
-  if (suspended_ && !suspending_) {
+  if (!pipeline_controller_.IsSuspended()) {
+    pipeline_controller_.Suspend();
+  } else {
+    // TODO(sandersd): If PipelineController::Suspend() called |suspended_cb|
+    // when already suspended, we wouldn't need this case.
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
     if (frame) {
       compositor_->PaintFrameUsingOldRenderingPath(frame);
     }
   }
-  ScheduleSuspend();
 }
 
 gfx::Size WebMediaPlayerImpl::GetCanvasSize() const {
@@ -1410,11 +1228,10 @@ void WebMediaPlayerImpl::StartPipeline() {
   seeking_ = true;
 
   // TODO(sandersd): On Android, defer Start() if the tab is not visible.
-  pipeline_.Start(
-      demuxer_.get(), CreateRenderer(),
+  bool is_streaming = (data_source_ && data_source_->IsStreaming());
+  pipeline_controller_.Start(
+      chunk_demuxer_, demuxer_.get(), is_streaming,
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
-      BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked, false),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineMetadata),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChanged),
@@ -1522,17 +1339,6 @@ WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
   return video_frame;
 }
 
-void WebMediaPlayerImpl::UpdatePausedTime() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  // pause() may be called after playback has ended and the HTMLMediaElement
-  // requires that currentTime() == duration() after ending.  We want to ensure
-  // |paused_time_| matches currentTime() in this case or a future seek() may
-  // incorrectly discard what it thinks is a seek to the existing time.
-  paused_time_ =
-      ended_ ? pipeline_.GetMediaDuration() : pipeline_.GetMediaTime();
-}
-
 void WebMediaPlayerImpl::NotifyPlaybackStarted() {
 #if defined(OS_ANDROID)  // WMPI_CAST
   // We do not tell our delegates about remote playback, because that would
@@ -1541,10 +1347,13 @@ void WebMediaPlayerImpl::NotifyPlaybackStarted() {
     return;
 #endif
 
-  // Don't send delegate notifications when suspended; upon suspend we send
-  // PlayerGone() to the delegate -- no more notifications should be sent until
-  // after resume.
-  if (suspended_)
+  // NotifyPlaybackStarted() may be called by interactions while suspended,
+  // (play/pause in particular). Those actions won't have any effect until the
+  // pipeline is resumed.
+  // TODO(dalecurtis): Should these be dropped at the call sites instead?
+  // Alternatively, rename this method to include Maybe or Changed, and handle
+  // multiple calls safely.
+  if (pipeline_controller_.IsSuspended())
     return;
 
   if (delegate_) {
@@ -1563,10 +1372,14 @@ void WebMediaPlayerImpl::NotifyPlaybackPaused() {
   if (isRemote())
     return;
 #endif
-  // Don't send delegate notifications when suspended; upon suspend we send
-  // PlayerGone() to the delegate -- no more notifications should be sent until
-  // after resume.
-  if (!suspended_ && delegate_)
+
+  // Same as above, NotifyPlaybackPaused() may be called by interactions while
+  // suspended, but those actions won't have any effect until the pipeline is
+  // resumed.
+  if (pipeline_controller_.IsSuspended())
+    return;
+
+  if (delegate_)
     delegate_->DidPause(delegate_id_, ended_);
   memory_usage_reporting_timer_.Stop();
   ReportMemoryUsage();
