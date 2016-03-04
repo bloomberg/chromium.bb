@@ -405,6 +405,9 @@ void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Transf
 
     if (mode & TraverseDocumentBoundaries) {
         if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
+            // A LayoutView is a containing block for fixed-position elements, so don't carry this state across frames.
+            mode &= !IsFixed;
+
             parentDocLayoutObject->mapAncestorToLocal(ancestor, transformState, mode);
             transformState.move(parentDocLayoutObject->contentBoxOffset());
             transformState.move(-frame()->view()->scrollOffset());

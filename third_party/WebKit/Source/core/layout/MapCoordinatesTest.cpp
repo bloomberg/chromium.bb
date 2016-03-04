@@ -12,6 +12,8 @@ namespace blink {
 
 class MapCoordinatesTest : public RenderingTest {
 public:
+    MapCoordinatesTest()
+        : RenderingTest(SingleChildFrameLoaderClient::create()) {}
     FloatPoint mapLocalToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestor, FloatPoint, MapCoordinatesFlags = 0) const;
     FloatQuad mapLocalToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestor, FloatQuad, MapCoordinatesFlags = 0) const;
     FloatPoint mapAncestorToLocal(const LayoutObject*, const LayoutBoxModelObject* ancestor, FloatPoint, MapCoordinatesFlags = 0) const;
@@ -446,6 +448,31 @@ TEST_F(MapCoordinatesTest, FixedPosInFixedPos)
 
     mappedPoint = mapAncestorToLocal(target, outerFixed, mappedPoint);
     EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
+// TODO(chrishtr): add more multi-frame tests.
+TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrame)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div style='width: 200; height: 8000px'></div>"
+        "<iframe id=frame src='http://test.com' width='500' height='500' frameBorder='0'>"
+        "</iframe>");
+
+    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 0; } #target { width: 200px; height: 200px; position:fixed}</style><div id=target></div>");
+
+    document().view()->setScrollPosition(DoublePoint(0.0, 1000), ProgrammaticScroll);
+    document().view()->updateAllLifecyclePhases();
+
+    Element* target = frameDocument.getElementById("target");
+    ASSERT_TRUE(target);
+    FloatPoint mappedPoint = mapAncestorToLocal(target->layoutObject(), nullptr, FloatPoint(10, 70), TraverseDocumentBoundaries);
+
+    // y = 70 - 8000, since the iframe is offset by 8000px from the main frame.
+    // The scroll is not taken into account because the element is not fixed to the root LayoutView,
+    // and the space of the root LayoutView does not include scroll.
+    EXPECT_EQ(FloatPoint(10, -7930), mappedPoint);
 }
 
 TEST_F(MapCoordinatesTest, MulticolWithText)
