@@ -205,7 +205,6 @@ const char * const surface_property_commit_changes_test_names[] = {
 	"commit_changes_after_opacity_set_surface_destroy",
 	"commit_changes_after_orientation_set_surface_destroy",
 	"commit_changes_after_dimension_set_surface_destroy",
-	"commit_changes_after_position_set_surface_destroy",
 	"commit_changes_after_source_rectangle_set_surface_destroy",
 	"commit_changes_after_destination_rectangle_set_surface_destroy",
 };

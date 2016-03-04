@@ -2077,29 +2077,6 @@ ivi_layout_surface_set_dimension(struct ivi_layout_surface *ivisurf,
 }
 
 static int32_t
-ivi_layout_surface_set_position(struct ivi_layout_surface *ivisurf,
-				int32_t dest_x, int32_t dest_y)
-{
-	struct ivi_layout_surface_properties *prop = NULL;
-
-	if (ivisurf == NULL) {
-		weston_log("ivi_layout_surface_set_position: invalid argument\n");
-		return IVI_FAILED;
-	}
-
-	prop = &ivisurf->pending.prop;
-	prop->dest_x = dest_x;
-	prop->dest_y = dest_y;
-
-	if (ivisurf->prop.dest_x != dest_x || ivisurf->prop.dest_y != dest_y)
-		ivisurf->event_mask |= IVI_NOTIFICATION_POSITION;
-	else
-		ivisurf->event_mask &= ~IVI_NOTIFICATION_POSITION;
-
-	return IVI_SUCCEEDED;
-}
-
-static int32_t
 ivi_layout_surface_set_orientation(struct ivi_layout_surface *ivisurf,
 				   enum wl_output_transform orientation)
 {
@@ -2622,7 +2599,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.surface_set_opacity			= ivi_layout_surface_set_opacity,
 	.surface_set_source_rectangle		= ivi_layout_surface_set_source_rectangle,
 	.surface_set_destination_rectangle	= ivi_layout_surface_set_destination_rectangle,
-	.surface_set_position			= ivi_layout_surface_set_position,
 	.surface_set_dimension			= ivi_layout_surface_set_dimension,
 	.surface_set_orientation		= ivi_layout_surface_set_orientation,
 	.surface_set_content_observer		= ivi_layout_surface_set_content_observer,

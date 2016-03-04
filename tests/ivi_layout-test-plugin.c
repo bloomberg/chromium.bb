@@ -458,8 +458,9 @@ RUNNER_TEST(surface_position)
 	runner_assert(prop->dest_x == 0);
 	runner_assert(prop->dest_y == 0);
 
-	runner_assert(lyt->surface_set_position(
-		      ivisurf, 20, 30) == IVI_SUCCEEDED);
+	runner_assert(lyt->surface_set_destination_rectangle(
+		      ivisurf, 20, 30,
+		      prop->dest_width, prop->dest_height) == IVI_SUCCEEDED);
 
 	runner_assert(prop->dest_x == 0);
 	runner_assert(prop->dest_y == 0);
@@ -629,17 +630,6 @@ RUNNER_TEST(commit_changes_after_dimension_set_surface_destroy)
 	runner_assert(ivisurf != NULL);
 	runner_assert(lyt->surface_set_dimension(
 		      ivisurf, 200, 300) == IVI_SUCCEEDED);
-}
-
-RUNNER_TEST(commit_changes_after_position_set_surface_destroy)
-{
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_surface *ivisurf;
-
-	ivisurf = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
-	runner_assert(ivisurf != NULL);
-	runner_assert(lyt->surface_set_position(
-		      ivisurf, 20, 30) == IVI_SUCCEEDED);
 }
 
 RUNNER_TEST(commit_changes_after_source_rectangle_set_surface_destroy)
