@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
-#include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 
@@ -20,7 +19,7 @@ const char* const* g_application_runner_argv;
 
 ApplicationRunner::ApplicationRunner(ShellClient* client)
     : client_(scoped_ptr<ShellClient>(client)),
-      message_loop_type_(base::MessageLoop::TYPE_CUSTOM),
+      message_loop_type_(base::MessageLoop::TYPE_DEFAULT),
       has_run_(false) {}
 
 ApplicationRunner::~ApplicationRunner() {}
@@ -49,10 +48,7 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
 
   {
     scoped_ptr<base::MessageLoop> loop;
-    if (message_loop_type_ == base::MessageLoop::TYPE_CUSTOM)
-      loop.reset(new base::MessageLoop(common::MessagePumpMojo::Create()));
-    else
-      loop.reset(new base::MessageLoop(message_loop_type_));
+    loop.reset(new base::MessageLoop(message_loop_type_));
 
     connection_.reset(new ShellConnection(
         client_.get(),

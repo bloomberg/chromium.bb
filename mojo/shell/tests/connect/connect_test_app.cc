@@ -110,7 +110,13 @@ class ConnectTestApp : public ShellClient,
     test_service->GetTitle(
         base::Bind(&ConnectTestApp::OnGotTitle, base::Unretained(this),
                    callback, &run_loop));
-    run_loop.Run();
+    {
+      // This message is dispatched as a task on the same run loop, so we need
+      // to allow nesting in order to pump additional signals.
+      base::MessageLoop::ScopedNestableTaskAllower allow(
+          base::MessageLoop::current());
+      run_loop.Run();
+    }
   }
 
   // test::mojom::BlockedInterface:

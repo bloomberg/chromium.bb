@@ -74,8 +74,8 @@
     },
     {
       # GN version: //mojo/public/cpp/system
-      'target_name': 'mojo_system_cpp_headers',
-      'type': 'none',
+      'target_name': 'mojo_cpp_system',
+      'type': 'static_library',
       'sources': [
         'public/cpp/system/buffer.h',
         'public/cpp/system/core.h',
@@ -84,8 +84,11 @@
         'public/cpp/system/handle.h',
         'public/cpp/system/macros.h',
         'public/cpp/system/message_pipe.h',
+        'public/cpp/system/watcher.cc',
+        'public/cpp/system/watcher.h',
       ],
       'dependencies': [
+        '../base/base.gyp:base',
         'mojo_system_headers',
       ],
     },
@@ -187,7 +190,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        'mojo_message_pump_lib',
+        'mojo_cpp_system',
         'mojo_interface_bindings_cpp_sources',
       ],
     },
