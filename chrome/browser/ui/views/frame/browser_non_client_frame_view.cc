@@ -23,10 +23,17 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/resources/grit/views_resources.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
@@ -49,6 +56,20 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {}
 
+gfx::ImageSkia BrowserNonClientFrameView::GetOTRAvatarIcon() const {
+  if (!ui::MaterialDesignController::IsModeMaterial())
+    return *GetThemeProviderForProfile()->GetImageSkiaNamed(IDR_OTR_ICON);
+  SkColor icon_color = SK_ColorWHITE;
+#if defined(OS_WIN)
+  // On Windows 10+, we assume the native frame color is white.
+  // TODO(pkasting): Read the correct frame color from the registry or APIs.
+  if (GetWidget() && GetWidget()->ShouldUseNativeFrame() &&
+      (base::win::GetVersion() >= base::win::VERSION_WIN10))
+    icon_color = gfx::kChromeIconGrey;
+#endif
+  return gfx::CreateVectorIcon(gfx::VectorIconId::INCOGNITO, 24, icon_color);
+}
+
 void BrowserNonClientFrameView::UpdateToolbar() {
 }
 
@@ -62,29 +83,12 @@ views::View* BrowserNonClientFrameView::GetProfileSwitcherView() const {
 
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
-  if (!is_visible)
-    return;
-
-#if defined(OS_CHROMEOS)
-  // On ChromeOS we always need to give the old avatar button a chance to update
-  // in case we're in a teleported window. On desktop, the old avatar button
-  // only shows up when in incognito mode.
-  UpdateOldAvatarButton();
-  OnProfileAvatarChanged(base::FilePath());
-#else
-  if (!browser_view_->IsRegularOrGuestSession()) {
-    // The first time UpdateOldAvatarButton() is called the window is not
-    // visible so DrawTaskBarDecoration() has no effect. Therefore we need to
-    // call it again once the window is visible.
-    UpdateOldAvatarButton();
-  }
-
-  // Call OnProfileAvatarChanged() in this case to make sure the task bar icon
-  // is correctly updated. Guest profiles don't badge the icon so no need to do
-  // this in guest mode.
-  if (!browser_view_->IsGuestSession())
+  // UpdateTaskbarDecoration() calls DrawTaskbarDecoration(), but that does
+  // nothing if the window is not visible.  So even if we've already gotten the
+  // up-to-date decoration, we need to run the update procedure again here when
+  // the window becomes visible.
+  if (is_visible)
     OnProfileAvatarChanged(base::FilePath());
-#endif
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
@@ -167,11 +171,9 @@ void BrowserNonClientFrameView::UpdateOldAvatarButton() {
   bool should_show_avatar_menu =
       avatar_button_ || AvatarMenu::ShouldShowAvatarMenu();
 
-  if (!AvatarMenuButton::GetAvatarImages(browser_view_, should_show_avatar_menu,
-                                         &avatar, &taskbar_badge_avatar,
-                                         &is_rectangle)) {
+  if (!AvatarMenuButton::GetAvatarImages(this, should_show_avatar_menu, &avatar,
+                                         &taskbar_badge_avatar, &is_rectangle))
     return;
-  }
 
   // Disable the menu when we should not show the menu.
   if (avatar_button_ && !AvatarMenu::ShouldShowAvatarMenu())
@@ -182,26 +184,26 @@ void BrowserNonClientFrameView::UpdateOldAvatarButton() {
 
 void BrowserNonClientFrameView::OnProfileAdded(
     const base::FilePath& profile_path) {
-  UpdateTaskbarDecoration();
-  UpdateAvatar();
+  OnProfileAvatarChanged(profile_path);
 }
 
 void BrowserNonClientFrameView::OnProfileWasRemoved(
     const base::FilePath& profile_path,
     const base::string16& profile_name) {
-  UpdateTaskbarDecoration();
-  UpdateAvatar();
+  OnProfileAvatarChanged(profile_path);
 }
 
 void BrowserNonClientFrameView::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   UpdateTaskbarDecoration();
-  // Profile avatars are only displayed in incognito or on ChromeOS teleported
-  // windows.
-#if !defined(OS_CHROMEOS)
-  if (!browser_view()->IsGuestSession() && browser_view()->IsOffTheRecord())
-#endif
-    UpdateOldAvatarButton();
+  UpdateAvatar();
+}
+
+const ui::ThemeProvider*
+BrowserNonClientFrameView::GetThemeProviderForProfile() const {
+  // Because the frame's accessor reads the ThemeProvider from the profile and
+  // not the widget, it can be called even before we're in a view hierarchy.
+  return frame_->GetThemeProvider();
 }
 
 void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
@@ -213,7 +215,7 @@ void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
   // the returned images are not initialized.  This can happen if the user
   // deletes the current profile.
   if (AvatarMenuButton::GetAvatarImages(
-          browser_view_, AvatarMenu::ShouldShowAvatarMenu(), &avatar,
+          this, AvatarMenu::ShouldShowAvatarMenu(), &avatar,
           &taskbar_badge_avatar, &is_rectangle)) {
     // For popups and panels which don't have the avatar button, we still
     // need to draw the taskbar decoration. Even though we have an icon on the

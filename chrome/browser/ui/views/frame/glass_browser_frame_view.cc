@@ -529,15 +529,7 @@ void GlassBrowserFrameView::LayoutNewStyleAvatar() {
 void GlassBrowserFrameView::LayoutIncognitoIcon() {
   const bool md = ui::MaterialDesignController::IsModeMaterial();
   const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
-  gfx::Size size;
-  // During startup it's possible to reach here before the browser view has been
-  // added to the view hierarchy.  In this case it won't have a widget and thus
-  // can't access the theme provider, which is required to get the incognito
-  // icon.  Use an empty size in this case, which will still place the tabstrip
-  // at the correct coordinates for a non-incognito window.  We should get
-  // another layout call after the browser view has a widget anyway.
-  if (browser_view()->GetWidget())
-    size = browser_view()->GetOTRAvatarIcon().size();
+  const gfx::Size size(GetOTRAvatarIcon().size());
   int x = NonClientBorderThickness(false);
   // In RTL, the icon needs to start after the caption buttons.
   if (base::i18n::IsRTL()) {

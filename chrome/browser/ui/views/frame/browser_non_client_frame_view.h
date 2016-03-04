@@ -42,6 +42,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns the amount that the theme background should be inset.
   virtual int GetThemeBackgroundXInset() const = 0;
 
+  // Retrieves the icon to use in the frame to indicate an OTR window.
+  gfx::ImageSkia GetOTRAvatarIcon() const;
+
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
@@ -83,11 +86,15 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void UpdateOldAvatarButton();
 
  private:
-  // Overriden from ProfileAttributesStorage::Observer.
+  // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const base::string16& profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
+
+  // Gets a theme provider that should be non-null even before we're added to a
+  // view hierarchy.
+  const ui::ThemeProvider* GetThemeProviderForProfile() const;
 
   // Draws a taskbar icon if avatars are enabled, erases it otherwise.
   void UpdateTaskbarDecoration();
@@ -101,6 +108,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Menu button that displays the incognito icon. May be null for some frame
   // styles. TODO(anthonyvd): simplify/rename.
   AvatarMenuButton* avatar_button_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameView);
 };
 
 namespace chrome {

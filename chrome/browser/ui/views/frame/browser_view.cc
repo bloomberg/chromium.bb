@@ -139,10 +139,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -166,7 +164,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #include "chrome/browser/jumplist_win.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme_dark_win.h"
@@ -671,24 +668,6 @@ bool BrowserView::IsAcceleratorRegistered(const ui::Accelerator& accelerator) {
 
 WebContents* BrowserView::GetActiveWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
-}
-
-gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SkColor icon_color = SK_ColorWHITE;
-#if defined(OS_WIN)
-    // On Windows 10+, we assume the native frame color is white.
-    // TODO(pkasting): Read the correct frame color from the registry or APIs.
-    if (GetWidget() && GetWidget()->ShouldUseNativeFrame() &&
-        (base::win::GetVersion() >= base::win::VERSION_WIN10))
-      icon_color = gfx::kChromeIconGrey;
-#endif
-    return gfx::CreateVectorIcon(gfx::VectorIconId::INCOGNITO, 24, icon_color);
-  }
-
-  // GetThemeProvider() can return null if this view is not yet part of the
-  // widget hierarchy, but the frame's theme provider is always valid.
-  return *frame_->GetThemeProvider()->GetImageSkiaNamed(IDR_OTR_ICON);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

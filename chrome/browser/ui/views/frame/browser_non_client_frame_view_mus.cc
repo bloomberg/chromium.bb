@@ -411,9 +411,7 @@ bool BrowserNonClientFrameViewMus::DoesIntersectRect(
 int BrowserNonClientFrameViewMus::GetTabStripLeftInset() const {
   const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
   const int avatar_right =
-      avatar_button()
-          ? (insets.left() + browser_view()->GetOTRAvatarIcon().width())
-          : 0;
+      avatar_button() ? (insets.left() + GetOTRAvatarIcon().width()) : 0;
   return avatar_right + insets.right() + frame_values().normal_insets.left();
 }
 
@@ -462,7 +460,7 @@ void BrowserNonClientFrameViewMus::LayoutIncognitoButton() {
   // ChromeOS shows avatar on V1 app.
   DCHECK(browser_view()->IsTabStripVisible());
 #endif
-  gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
+  gfx::ImageSkia incognito_icon = GetOTRAvatarIcon();
   gfx::Insets avatar_insets = GetLayoutInsets(AVATAR_ICON);
   int avatar_bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
                       avatar_insets.bottom();

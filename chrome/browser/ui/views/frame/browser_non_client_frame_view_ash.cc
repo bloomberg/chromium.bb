@@ -419,8 +419,8 @@ bool BrowserNonClientFrameViewAsh::DoesIntersectRect(
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
   const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
-  const int avatar_right = avatar_button() ?
-      (insets.left() + browser_view()->GetOTRAvatarIcon().width()) : 0;
+  const int avatar_right =
+      avatar_button() ? (insets.left() + GetOTRAvatarIcon().width()) : 0;
   return avatar_right + insets.right();
 }
 
@@ -457,7 +457,7 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(browser_view()->IsTabStripVisible());
 #endif
 
-  const gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
+  const gfx::ImageSkia incognito_icon = GetOTRAvatarIcon();
   const gfx::Insets avatar_insets = GetLayoutInsets(AVATAR_ICON);
   const int avatar_bottom = GetTopInset(false) +
       browser_view()->GetTabStripHeight() - avatar_insets.bottom();

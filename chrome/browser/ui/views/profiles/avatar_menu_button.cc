@@ -97,17 +97,18 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
 }
 
 // static
-bool AvatarMenuButton::GetAvatarImages(const BrowserView* browser_view,
-                                       bool should_show_avatar_menu,
-                                       gfx::Image* avatar,
-                                       gfx::Image* taskbar_badge_avatar,
-                                       bool* is_rectangle) {
-  const Profile* profile = browser_view->browser()->profile();
+bool AvatarMenuButton::GetAvatarImages(
+    const BrowserNonClientFrameView* frame_view,
+    bool should_show_avatar_menu,
+    gfx::Image* avatar,
+    gfx::Image* taskbar_badge_avatar,
+    bool* is_rectangle) {
+  const Profile* profile = frame_view->browser_view()->browser()->profile();
   if (profile->GetProfileType() == Profile::GUEST_PROFILE) {
     *avatar = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         profiles::GetPlaceholderAvatarIconResourceID());
   } else if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE) {
-    *avatar = gfx::Image(browser_view->GetOTRAvatarIcon());
+    *avatar = gfx::Image(frame_view->GetOTRAvatarIcon());
     // TODO(nkostylev): Allow this on ChromeOS once the ChromeOS test
     // environment handles profile directories correctly.
 #if !defined(OS_CHROMEOS)

@@ -18,6 +18,7 @@ namespace gfx {
 class Canvas;
 class Image;
 }
+class BrowserNonClientFrameView;
 class BrowserView;
 class Profile;
 
@@ -46,12 +47,12 @@ class AvatarMenuButton : public views::MenuButton,
   // to Chrome avatar icons, will be resized and modified for the title bar.
   virtual void SetAvatarIcon(const gfx::Image& icon, bool is_rectangle);
 
-  // Get avatar images for the BrowserView. |avatar| is used in the browser
-  // window whereas |taskbar_badge_avatar| is used for the OS taskbar. If
+  // Get avatar images. |avatar| is used in the browser window whereas
+  // |taskbar_badge_avatar| is used for the OS taskbar. If
   // |taskbar_badge_avatar| is empty then |avatar| should be used for the
   // taskbar as well. Returns false if the cache doesn't have an entry for a
   // Profile::REGULAR_PROFILE type Profile, otherwise return true.
-  static bool GetAvatarImages(const BrowserView* browser_view,
+  static bool GetAvatarImages(const BrowserNonClientFrameView* frame_view,
                               bool should_show_avatar_menu,
                               gfx::Image* avatar,
                               gfx::Image* taskbar_badge_avatar,

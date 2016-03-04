@@ -392,7 +392,7 @@ bool OpaqueBrowserFrameView::IsRegularOrGuestSession() const {
 }
 
 gfx::ImageSkia OpaqueBrowserFrameView::GetOTRAvatarIcon() const {
-  return browser_view()->GetOTRAvatarIcon();
+  return BrowserNonClientFrameView::GetOTRAvatarIcon();
 }
 
 bool OpaqueBrowserFrameView::IsMaximized() const {
