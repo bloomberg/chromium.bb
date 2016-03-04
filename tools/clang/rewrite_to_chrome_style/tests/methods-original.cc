@@ -68,6 +68,18 @@ void Task::doTheWork() {
   reallyDoTheWork();
 }
 
+template <typename T>
+class Testable {
+ public:
+  typedef T Testable::*UnspecifiedBoolType;
+  // This method has a reference to a member in a "member context" and a
+  // "non-member context" to verify both are rewritten.
+  operator UnspecifiedBoolType() { return m_ptr ? &Testable::m_ptr : 0; }
+
+ private:
+  int m_ptr;
+};
+
 }  // namespace blink
 
 // Test that overrides from outside the Blink namespace are also updated.
@@ -94,6 +106,12 @@ void F() {
   void (blink::Task::*p2)() = &BovineTask::doTheWork;
   void (blink::Task::*p3)() = &blink::Task::reallyDoTheWork;
   void (BovineTask::*p4)() = &BovineTask::reallyDoTheWork;
+}
+
+bool G() {
+  // Use the Testable class to rewrite the method.
+  blink::Testable<int> tt;
+  return tt;
 }
 
 namespace blink {

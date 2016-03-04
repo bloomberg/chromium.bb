@@ -382,6 +382,7 @@ struct TargetNodeTraits<clang::NamedDecl> {
   static clang::SourceLocation GetLoc(const clang::NamedDecl& decl) {
     return decl.getLocation();
   }
+  static const char* GetType() { return "NamedDecl"; }
 };
 const char TargetNodeTraits<clang::NamedDecl>::kName[] = "decl";
 
@@ -391,6 +392,7 @@ struct TargetNodeTraits<clang::MemberExpr> {
   static clang::SourceLocation GetLoc(const clang::MemberExpr& expr) {
     return expr.getMemberLoc();
   }
+  static const char* GetType() { return "MemberExpr"; }
 };
 const char TargetNodeTraits<clang::MemberExpr>::kName[] = "expr";
 
@@ -400,6 +402,7 @@ struct TargetNodeTraits<clang::DeclRefExpr> {
   static clang::SourceLocation GetLoc(const clang::DeclRefExpr& expr) {
     return expr.getLocation();
   }
+  static const char* GetType() { return "DeclRefExpr"; }
 };
 const char TargetNodeTraits<clang::DeclRefExpr>::kName[] = "expr";
 
@@ -410,6 +413,7 @@ struct TargetNodeTraits<clang::CXXCtorInitializer> {
     assert(init.isWritten());
     return init.getSourceLocation();
   }
+  static const char* GetType() { return "CXXCtorInitializer"; }
 };
 const char TargetNodeTraits<clang::CXXCtorInitializer>::kName[] = "initializer";
 
@@ -459,6 +463,7 @@ using FieldDeclRewriter = RewriterBase<clang::FieldDecl, clang::NamedDecl>;
 using VarDeclRewriter = RewriterBase<clang::VarDecl, clang::NamedDecl>;
 using MemberRewriter = RewriterBase<clang::FieldDecl, clang::MemberExpr>;
 using DeclRefRewriter = RewriterBase<clang::VarDecl, clang::DeclRefExpr>;
+using FieldDeclRefRewriter = RewriterBase<clang::FieldDecl, clang::DeclRefExpr>;
 using FunctionDeclRewriter =
     RewriterBase<clang::FunctionDecl, clang::NamedDecl>;
 using FunctionRefRewriter =
@@ -557,6 +562,19 @@ int main(int argc, const char* argv[]) {
 
   EnumConstantDeclRefRewriter enum_member_ref_rewriter(&replacements);
   match_finder.addMatcher(enum_member_ref_matcher, &enum_member_ref_rewriter);
+
+  // Member references in a non-member context ========
+  // Given
+  //   struct S {
+  //     typedef int U::*UnspecifiedBoolType;
+  //     operator UnspecifiedBoolType() { return s_ ? &U::s_ : 0; }
+  //     int s_;
+  //   };
+  // matches |&U::s_| but not |s_|.
+  auto member_ref_matcher = id("expr", declRefExpr(to(field_decl_matcher)));
+
+  FieldDeclRefRewriter member_ref_rewriter(&replacements);
+  match_finder.addMatcher(member_ref_matcher, &member_ref_rewriter);
 
   // Non-method function declarations ========
   // Given
