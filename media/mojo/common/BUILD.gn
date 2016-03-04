@@ -11,6 +11,8 @@ source_set("common") {
   sources = [
     "media_type_converters.cc",
     "media_type_converters.h",
+    "mojo_shared_buffer_video_frame.cc",
+    "mojo_shared_buffer_video_frame.h",
   ]
 
   deps = [
@@ -21,6 +23,7 @@ source_set("common") {
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
+    "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
   ]
 }
@@ -28,6 +31,7 @@ source_set("common") {
 test("media_mojo_unittests") {
   sources = [
     "media_type_converters_unittest.cc",
+    "mojo_shared_buffer_video_frame_unittest.cc",
   ]
 
   deps = [

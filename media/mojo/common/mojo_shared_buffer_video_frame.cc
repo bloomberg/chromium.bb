@@ -1,0 +1,147 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
+
+#include "base/bind.h"
+#include "base/compiler_specific.h"
+#include "base/logging.h"
+
+namespace media {
+
+// static
+scoped_refptr<MojoSharedBufferVideoFrame>
+MojoSharedBufferVideoFrame::CreateDefaultI420(const gfx::Size& dimensions,
+                                              base::TimeDelta timestamp) {
+  const VideoPixelFormat format = PIXEL_FORMAT_I420;
+  const gfx::Rect visible_rect(dimensions);
+
+  // Since we're allocating memory for the new frame, pad the requested
+  // size if necessary so that the requested size does line up on sample
+  // boundaries. See related discussion in VideoFrame::CreateFrameInternal().
+  const gfx::Size coded_size = DetermineAlignedSize(format, dimensions);
+  if (!IsValidConfig(format, STORAGE_MOJO_SHARED_BUFFER, coded_size,
+                     visible_rect, dimensions)) {
+    LOG(DFATAL) << __FUNCTION__ << " Invalid config. "
+                << ConfigToString(format, STORAGE_MOJO_SHARED_BUFFER,
+                                  dimensions, visible_rect, dimensions);
+    return nullptr;
+  }
+
+  // Allocate a shared memory buffer big enough to hold the desired frame.
+  const size_t allocation_size = VideoFrame::AllocationSize(format, coded_size);
+  mojo::ScopedSharedBufferHandle handle;
+  const MojoResult result =
+      mojo::CreateSharedBuffer(nullptr, allocation_size, &handle);
+  if (result != MOJO_RESULT_OK)
+    return nullptr;
+
+  // Create and initialize the frame. As this is I420 format, the U and V
+  // planes have samples for each 2x2 block. The memory is laid out as follows:
+  //  - Yplane, full size (each element represents a 1x1 block)
+  //  - Uplane, quarter size (each element represents a 2x2 block)
+  //  - Vplane, quarter size (each element represents a 2x2 block)
+  DCHECK((coded_size.width() % 2 == 0) && (coded_size.height() % 2 == 0));
+  return Create(format, coded_size, visible_rect, dimensions, std::move(handle),
+                allocation_size, 0 /* y_offset */, coded_size.GetArea(),
+                coded_size.GetArea() * 5 / 4, coded_size.width(),
+                coded_size.width() / 2, coded_size.width() / 2, timestamp);
+}
+
+// static
+scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
+    VideoPixelFormat format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    mojo::ScopedSharedBufferHandle handle,
+    size_t data_size,
+    size_t y_offset,
+    size_t u_offset,
+    size_t v_offset,
+    int32_t y_stride,
+    int32_t u_stride,
+    int32_t v_stride,
+    base::TimeDelta timestamp) {
+  if (!IsValidConfig(format, STORAGE_MOJO_SHARED_BUFFER, coded_size,
+                     visible_rect, natural_size)) {
+    LOG(DFATAL) << __FUNCTION__ << " Invalid config. "
+                << ConfigToString(format, STORAGE_MOJO_SHARED_BUFFER,
+                                  coded_size, visible_rect, natural_size);
+    return nullptr;
+  }
+
+  // Now allocate the frame and initialize it.
+  scoped_refptr<MojoSharedBufferVideoFrame> frame(
+      new MojoSharedBufferVideoFrame(format, coded_size, visible_rect,
+                                     natural_size, std::move(handle), data_size,
+                                     timestamp));
+  if (!frame->Init(y_stride, u_stride, v_stride, y_offset, u_offset, v_offset))
+    return nullptr;
+
+  return frame;
+}
+
+MojoSharedBufferVideoFrame::MojoSharedBufferVideoFrame(
+    VideoPixelFormat format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    mojo::ScopedSharedBufferHandle handle,
+    size_t mapped_size,
+    base::TimeDelta timestamp)
+    : VideoFrame(format,
+                 STORAGE_MOJO_SHARED_BUFFER,
+                 coded_size,
+                 visible_rect,
+                 natural_size,
+                 timestamp),
+      shared_buffer_handle_(std::move(handle)),
+      shared_buffer_size_(mapped_size),
+      shared_buffer_data_(nullptr) {
+  DCHECK(shared_buffer_handle_.is_valid());
+}
+
+bool MojoSharedBufferVideoFrame::Init(int32_t y_stride,
+                                      int32_t u_stride,
+                                      int32_t v_stride,
+                                      size_t y_offset,
+                                      size_t u_offset,
+                                      size_t v_offset) {
+  DCHECK(!shared_buffer_data_);
+  void* memory = nullptr;
+  const MojoResult result =
+      mojo::MapBuffer(shared_buffer_handle_.get(), 0 /* offset */,
+                      shared_buffer_size_, &memory, MOJO_MAP_BUFFER_FLAG_NONE);
+  if (result != MOJO_RESULT_OK || !memory)
+    return false;
+  shared_buffer_data_ = static_cast<uint8_t*>(memory);
+
+  set_stride(kYPlane, y_stride);
+  set_stride(kUPlane, u_stride);
+  set_stride(kVPlane, v_stride);
+  offsets_[kYPlane] = y_offset;
+  offsets_[kUPlane] = u_offset;
+  offsets_[kVPlane] = v_offset;
+  set_data(kYPlane, shared_buffer_data_ + y_offset);
+  set_data(kUPlane, shared_buffer_data_ + u_offset);
+  set_data(kVPlane, shared_buffer_data_ + v_offset);
+  return true;
+}
+
+MojoSharedBufferVideoFrame::~MojoSharedBufferVideoFrame() {
+  // If MapBuffer() was called, we need to have a matching call to unmap it.
+  if (shared_buffer_data_) {
+    const MojoResult result = mojo::UnmapBuffer(shared_buffer_data_);
+    ALLOW_UNUSED_LOCAL(result);
+    DCHECK_EQ(result, MOJO_RESULT_OK);
+  }
+}
+
+size_t MojoSharedBufferVideoFrame::PlaneOffset(size_t plane) const {
+  DCHECK(IsValidPlane(plane, format()));
+  return offsets_[plane];
+}
+
+}  // namespace media

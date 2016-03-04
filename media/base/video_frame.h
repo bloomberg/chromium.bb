@@ -73,7 +73,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     STORAGE_HOLE = 6,
 #endif
     STORAGE_GPU_MEMORY_BUFFERS = 7,
-    STORAGE_LAST = STORAGE_GPU_MEMORY_BUFFERS,
+    STORAGE_MOJO_SHARED_BUFFER = 8,
+    STORAGE_LAST = STORAGE_MOJO_SHARED_BUFFER,
   };
 
   // CB to be called on the mailbox backing this frame when the frame is
@@ -413,28 +414,40 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns a human-readable string describing |*this|.
   std::string AsHumanReadableString();
 
- private:
+ protected:
   friend class base::RefCountedThreadSafe<VideoFrame>;
 
-  static scoped_refptr<VideoFrame> WrapExternalStorage(
-      VideoPixelFormat format,
-      StorageType storage_type,
-      const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      uint8_t* data,
-      size_t data_size,
-      base::TimeDelta timestamp,
-      base::SharedMemoryHandle handle,
-      size_t data_offset);
-
   // Clients must use the static factory/wrapping methods to create a new frame.
+  // Derived classes should create their own factory/wrapping methods, and use
+  // this constructor to do basic initialization.
   VideoFrame(VideoPixelFormat format,
              StorageType storage_type,
              const gfx::Size& coded_size,
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
              base::TimeDelta timestamp);
+
+  virtual ~VideoFrame();
+
+  // Creates a summary of the configuration settings provided as parameters.
+  static std::string ConfigToString(const VideoPixelFormat format,
+                                    const VideoFrame::StorageType storage_type,
+                                    const gfx::Size& coded_size,
+                                    const gfx::Rect& visible_rect,
+                                    const gfx::Size& natural_size);
+
+  // Returns true if |plane| is a valid plane index for the given |format|.
+  static bool IsValidPlane(size_t plane, VideoPixelFormat format);
+
+  // Returns |dimensions| adjusted to appropriate boundaries based on |format|.
+  static gfx::Size DetermineAlignedSize(VideoPixelFormat format,
+                                        const gfx::Size& dimensions);
+
+  void set_data(size_t plane, uint8_t* ptr);
+  void set_stride(size_t plane, int stride);
+
+ private:
+  // Clients must use the static factory/wrapping methods to create a new frame.
   VideoFrame(VideoPixelFormat format,
              StorageType storage_type,
              const gfx::Size& coded_size,
@@ -451,7 +464,18 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              const gpu::MailboxHolder(&mailbox_holders)[kMaxPlanes],
              const ReleaseMailboxCB& mailbox_holder_release_cb,
              base::TimeDelta timestamp);
-  virtual ~VideoFrame();
+
+  static scoped_refptr<VideoFrame> WrapExternalStorage(
+      VideoPixelFormat format,
+      StorageType storage_type,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint8_t* data,
+      size_t data_size,
+      base::TimeDelta timestamp,
+      base::SharedMemoryHandle handle,
+      size_t data_offset);
 
   static scoped_refptr<VideoFrame> CreateFrameInternal(
       VideoPixelFormat format,
@@ -460,6 +484,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& natural_size,
       base::TimeDelta timestamp,
       bool zero_initialize_memory);
+
+  // Returns the pixel size of each subsample for a given |plane| and |format|.
+  // E.g. 2x2 for the U-plane in PIXEL_FORMAT_I420.
+  static gfx::Size SampleSize(VideoPixelFormat format, size_t plane);
+
+  // Returns the number of bytes per element for given |plane| and |format|.
+  static int BytesPerElement(VideoPixelFormat format, size_t plane);
+
+  // Return the alignment for the whole frame, calculated as the max of the
+  // alignment for each individual plane.
+  static gfx::Size CommonAlignment(VideoPixelFormat format);
 
   void AllocateYUV(bool zero_initialize_memory);
 
