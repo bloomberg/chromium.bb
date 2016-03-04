@@ -775,8 +775,7 @@ public:
     void* operator new(size_t size)
     {
         ThreadState* state = ThreadState::current();
-        const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(IntNode);
-        return Heap::allocateOnArenaIndex(state, size, BlinkGC::NodeArenaIndex, GCInfoTrait<IntNode>::index(), typeName);
+        return Heap::allocateOnArenaIndex(state, size, BlinkGC::NodeArenaIndex, GCInfoTrait<IntNode>::index());
     }
 
     static IntNode* create(int i)
