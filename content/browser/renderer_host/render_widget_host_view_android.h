@@ -292,13 +292,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const base::TimeTicks& start_time,
       const ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
-  static void PrepareTextureCopyOutputResultForDelegatedReadback(
-      const gfx::Size& dst_size_in_pixel,
-      SkColorType color_type,
-      const base::TimeTicks& start_time,
-      scoped_refptr<cc::Layer> readback_layer,
-      const ReadbackRequestCallback& callback,
-      scoped_ptr<cc::CopyOutputResult> result);
 
   // DevTools ScreenCast support for Android WebView.
   void SynchronousCopyContents(const gfx::Rect& src_subrect_in_pixel,

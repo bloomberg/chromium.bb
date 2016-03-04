@@ -616,10 +616,6 @@ void CompositorImpl::DidCommit() {
   root_window_->OnCompositingDidCommit();
 }
 
-void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {
-  root_layer_->AddChild(layer);
-}
-
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
     scoped_ptr<cc::CopyOutputRequest> request) {
   root_layer_->RequestCopyOfOutput(std::move(request));

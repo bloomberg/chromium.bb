@@ -891,8 +891,6 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     return;
   }
 
-  scoped_ptr<cc::CopyOutputRequest> request;
-  scoped_refptr<cc::Layer> readback_layer;
   if (!content_view_core_ || !(content_view_core_->GetWindowAndroid())) {
     callback.Run(SkBitmap(), READBACK_FAILED);
     return;
@@ -901,20 +899,14 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
       content_view_core_->GetWindowAndroid()->GetCompositor();
   DCHECK(compositor);
   DCHECK(!surface_id_.is_null());
-  scoped_refptr<cc::Layer> layer = CreateDelegatedLayer();
-  DCHECK(layer);
-  layer->SetHideLayerAndSubtree(true);
-  compositor->AttachLayerForReadback(layer);
-
-  readback_layer = layer;
-  request = cc::CopyOutputRequest::CreateRequest(
-      base::Bind(&RenderWidgetHostViewAndroid::
-                     PrepareTextureCopyOutputResultForDelegatedReadback,
-                 dst_size_in_pixel, preferred_color_type, start_time,
-                 readback_layer, callback));
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateRequest(
+          base::Bind(&PrepareTextureCopyOutputResult,
+                     dst_size_in_pixel, preferred_color_type, start_time,
+                     callback));
   if (!src_subrect_in_pixel.IsEmpty())
     request->set_area(src_subrect_in_pixel);
-  readback_layer->RequestCopyOfOutput(std::move(request));
+  layer_->RequestCopyOfOutput(std::move(request));
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
@@ -1926,20 +1918,6 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
   if (layer_.get())
     DestroyDelegatedContent();
   DCHECK(ack_callbacks_.empty());
-}
-
-// static
-void RenderWidgetHostViewAndroid::
-    PrepareTextureCopyOutputResultForDelegatedReadback(
-        const gfx::Size& dst_size_in_pixel,
-        SkColorType color_type,
-        const base::TimeTicks& start_time,
-        scoped_refptr<cc::Layer> readback_layer,
-        const ReadbackRequestCallback& callback,
-        scoped_ptr<cc::CopyOutputResult> result) {
-  readback_layer->RemoveFromParent();
-  PrepareTextureCopyOutputResult(dst_size_in_pixel, color_type, start_time,
-                                 callback, std::move(result));
 }
 
 // TODO(wjmaclean): There is significant overlap between
