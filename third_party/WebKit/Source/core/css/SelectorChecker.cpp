@@ -831,7 +831,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoFullPageMedia:
         return element.document().isMediaDocument();
     case CSSSelector::PseudoDefault:
-        return element.isDefaultButtonForForm();
+        return element.matchesDefaultPseudoClass();
     case CSSSelector::PseudoDisabled:
         // TODO(esprehn): Why not just always return isDisabledFormControl()?
         // Can it be true for elements not in the list below?

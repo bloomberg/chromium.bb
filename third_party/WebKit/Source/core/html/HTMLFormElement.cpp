@@ -673,18 +673,16 @@ bool HTMLFormElement::wasUserSubmitted() const
     return m_wasUserSubmitted;
 }
 
-HTMLFormControlElement* HTMLFormElement::defaultButton() const
+HTMLFormControlElement* HTMLFormElement::findDefaultButton() const
 {
-    const FormAssociatedElement::List& elements = associatedElements();
-    for (unsigned i = 0; i < elements.size(); ++i) {
-        if (!elements[i]->isFormControlElement())
+    for (const auto& element : associatedElements()) {
+        if (!element->isFormControlElement())
             continue;
-        HTMLFormControlElement* control = toHTMLFormControlElement(elements[i]);
+        HTMLFormControlElement* control = toHTMLFormControlElement(element);
         if (control->canBeSuccessfulSubmitButton())
             return control;
     }
-
-    return 0;
+    return nullptr;
 }
 
 bool HTMLFormElement::checkValidity()

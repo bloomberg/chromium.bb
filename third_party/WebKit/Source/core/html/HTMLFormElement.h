@@ -91,7 +91,9 @@ public:
 
     bool wasUserSubmitted() const;
 
-    HTMLFormControlElement* defaultButton() const;
+    // Find the 'default button.'
+    // https://html.spec.whatwg.org/multipage/forms.html#default-button
+    HTMLFormControlElement* findDefaultButton() const;
 
     bool checkValidity();
     bool reportValidity();

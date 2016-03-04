@@ -462,6 +462,7 @@ public:
     PseudoElement* pseudoElement(PseudoId) const;
     LayoutObject* pseudoElementLayoutObject(PseudoId) const;
 
+    virtual bool matchesDefaultPseudoClass() const { return false; }
     virtual bool matchesReadOnlyPseudoClass() const { return false; }
     virtual bool matchesReadWritePseudoClass() const { return false; }
     virtual bool matchesValidityPseudoClasses() const { return false; }
@@ -484,7 +485,6 @@ public:
     virtual bool isTextFormControl() const { return false; }
     virtual bool isOptionalFormControl() const { return false; }
     virtual bool isRequiredFormControl() const { return false; }
-    virtual bool isDefaultButtonForForm() const { return false; }
     virtual bool willValidate() const { return false; }
     virtual bool isValidElement() { return false; }
     virtual bool isInRange() const { return false; }

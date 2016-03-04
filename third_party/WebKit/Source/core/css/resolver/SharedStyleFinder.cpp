@@ -76,7 +76,7 @@ bool SharedStyleFinder::canShareStyleWithControl(Element& candidate) const
     if (candidate.isDisabledFormControl() != element().isDisabledFormControl())
         return false;
 
-    if (candidate.isDefaultButtonForForm() != element().isDefaultButtonForForm())
+    if (candidate.matchesDefaultPseudoClass() != element().matchesDefaultPseudoClass())
         return false;
 
     if (document().containsValidityStyleRules()) {
