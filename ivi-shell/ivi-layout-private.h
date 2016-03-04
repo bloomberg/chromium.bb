@@ -191,8 +191,6 @@ ivi_layout_surface_set_destination_rectangle(struct ivi_layout_surface *ivisurf,
 int32_t
 ivi_layout_surface_set_opacity(struct ivi_layout_surface *ivisurf,
 			       wl_fixed_t opacity);
-wl_fixed_t
-ivi_layout_surface_get_opacity(struct ivi_layout_surface *ivisurf);
 int32_t
 ivi_layout_surface_set_visibility(struct ivi_layout_surface *ivisurf,
 				  bool newVisibility);

@@ -375,27 +375,21 @@ RUNNER_TEST(surface_opacity)
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 	struct ivi_layout_surface *ivisurf;
 	int32_t ret;
-	wl_fixed_t opacity;
 	const struct ivi_layout_surface_properties *prop;
 
 	ivisurf = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
 	runner_assert(ivisurf);
 
-	runner_assert(lyt->surface_get_opacity(ivisurf) ==
-		      wl_fixed_from_double(1.0));
+	prop = lyt->get_properties_of_surface(ivisurf);
+	runner_assert(prop->opacity == wl_fixed_from_double(1.0));
 
 	ret = lyt->surface_set_opacity(ivisurf, wl_fixed_from_double(0.5));
 	runner_assert(ret == IVI_SUCCEEDED);
 
-	runner_assert(lyt->surface_get_opacity(ivisurf) ==
-		      wl_fixed_from_double(1.0));
+	runner_assert(prop->opacity == wl_fixed_from_double(1.0));
 
 	lyt->commit_changes();
 
-	opacity = lyt->surface_get_opacity(ivisurf);
-	runner_assert(opacity == wl_fixed_from_double(0.5));
-
-	prop = lyt->get_properties_of_surface(ivisurf);
 	runner_assert(prop->opacity == wl_fixed_from_double(0.5));
 }
 
@@ -590,7 +584,7 @@ RUNNER_TEST(surface_bad_opacity)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 	struct ivi_layout_surface *ivisurf;
-	wl_fixed_t opacity;
+	const struct ivi_layout_surface_properties *prop;
 
 	ivisurf = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
 	runner_assert(ivisurf != NULL);
@@ -606,24 +600,20 @@ RUNNER_TEST(surface_bad_opacity)
 
 	lyt->commit_changes();
 
-	opacity = lyt->surface_get_opacity(ivisurf);
-	runner_assert(opacity == wl_fixed_from_double(0.3));
+	prop = lyt->get_properties_of_surface(ivisurf);
+	runner_assert(prop->opacity == wl_fixed_from_double(0.3));
 
 	runner_assert(lyt->surface_set_opacity(
 		      ivisurf, wl_fixed_from_double(1.1)) == IVI_FAILED);
 
 	lyt->commit_changes();
 
-	opacity = lyt->surface_get_opacity(ivisurf);
-	runner_assert(opacity == wl_fixed_from_double(0.3));
+	runner_assert(prop->opacity == wl_fixed_from_double(0.3));
 
 	runner_assert(lyt->surface_set_opacity(
 		      NULL, wl_fixed_from_double(0.5)) == IVI_FAILED);
 
 	lyt->commit_changes();
-
-	opacity = lyt->surface_get_opacity(NULL);
-	runner_assert(opacity == wl_fixed_from_double(0.0));
 }
 
 RUNNER_TEST(ivi_layout_commit_changes)

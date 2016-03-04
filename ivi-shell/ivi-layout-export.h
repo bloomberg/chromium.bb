@@ -289,14 +289,6 @@ struct ivi_layout_interface {
 				       wl_fixed_t opacity);
 
 	/**
-	 * \brief Get the opacity of a ivi_surface.
-	 *
-	 * \return opacity if the method call was successful
-	 * \return wl_fixed_from_double(0.0) if the method call was failed
-	 */
-	wl_fixed_t (*surface_get_opacity)(struct ivi_layout_surface *ivisurf);
-
-	/**
 	 * \brief Set the area of a ivi_surface which should be used for the rendering.
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful

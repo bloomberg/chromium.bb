@@ -540,7 +540,7 @@ ivi_layout_transition_visibility_on(struct ivi_layout_surface *surface,
 {
 	struct ivi_layout_transition *transition;
 	bool is_visible = surface->prop.visibility;
-	wl_fixed_t dest_alpha = ivi_layout_surface_get_opacity(surface);
+	wl_fixed_t dest_alpha = surface->prop.opacity;
 	struct store_alpha *user_data = NULL;
 	wl_fixed_t start_alpha = 0.0;
 	struct fade_view_data *data = NULL;
@@ -549,7 +549,7 @@ ivi_layout_transition_visibility_on(struct ivi_layout_surface *surface,
 					IVI_LAYOUT_TRANSITION_VIEW_FADE,
 					surface);
 	if (transition) {
-		start_alpha = ivi_layout_surface_get_opacity(surface);
+		start_alpha = surface->prop.opacity;
 		user_data = transition->user_data;
 		data = transition->private_data;
 
@@ -604,7 +604,7 @@ ivi_layout_transition_visibility_off(struct ivi_layout_surface *surface,
 				     uint32_t duration)
 {
 	struct ivi_layout_transition *transition;
-	wl_fixed_t start_alpha = ivi_layout_surface_get_opacity(surface);
+	wl_fixed_t start_alpha = surface->prop.opacity;
 	struct store_alpha* user_data = NULL;
 	struct fade_view_data* data = NULL;
 
