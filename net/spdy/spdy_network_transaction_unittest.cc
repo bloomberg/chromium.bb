@@ -2845,20 +2845,18 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
-  if (spdy_util_.spdy_version() == HTTP2) {
-    // PUSH_PROMISE with stream id 0 is connection-level error.
-    // TODO(baranovich): Test session going away.
-    return;
-  }
-
   scoped_ptr<SpdyFrame> stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  scoped_ptr<SpdyFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  scoped_ptr<SpdyFrame> stream2_rst(
-      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
+  scoped_ptr<SpdyFrame> goaway;
+  if (spdy_util_.spdy_version() == SPDY3) {
+    goaway.reset(spdy_util_.ConstructSpdyGoAway(0, GOAWAY_PROTOCOL_ERROR,
+                                                "Push on even stream id."));
+  } else {
+    goaway.reset(spdy_util_.ConstructSpdyGoAway(
+        0, GOAWAY_PROTOCOL_ERROR, "Framer error: 1 (INVALID_CONTROL_FRAME)."));
+  }
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*stream2_rst, 3),
+      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*goaway, 3),
   };
 
   scoped_ptr<SpdyFrame>
@@ -2868,8 +2866,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
   MockRead reads[] = {
       CreateMockRead(*stream1_reply, 1),
       CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream1_body, 4),
-      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5)  // Force a pause
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -2999,6 +2995,142 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
   HttpResponseInfo response = *trans->GetResponseInfo();
   EXPECT_TRUE(response.headers.get() != NULL);
   EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
+}
+
+// PUSH_PROMISE on a server-initiated stream should trigger GOAWAY.
+TEST_P(SpdyNetworkTransactionTest, ServerPushOnPushedStream) {
+  scoped_ptr<SpdyFrame> stream1_syn(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+      2, GOAWAY_PROTOCOL_ERROR, "Push on even stream id."));
+  MockWrite writes[] = {
+      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*goaway, 4),
+  };
+
+  scoped_ptr<SpdyFrame> stream1_reply(
+      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+  scoped_ptr<SpdyFrame> stream3_syn(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 4, 2, GetDefaultUrlWithPath("/bar.dat").c_str()));
+  MockRead reads[] = {
+      CreateMockRead(*stream1_reply, 1), CreateMockRead(*stream2_syn, 2),
+      CreateMockRead(*stream3_syn, 3),
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     BoundNetLog(), GetParam(), nullptr);
+  helper.RunToCompletion(&data);
+}
+
+// PUSH_PROMISE on a closed client-initiated stream should trigger RST_STREAM.
+TEST_P(SpdyNetworkTransactionTest, ServerPushOnClosedStream) {
+  scoped_ptr<SpdyFrame> stream1_syn(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_INVALID_STREAM));
+  MockWrite writes[] = {
+      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*rst, 5),
+  };
+
+  scoped_ptr<SpdyFrame> stream1_reply(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  scoped_ptr<SpdyFrame> stream1_body(
+      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+  MockRead reads[] = {
+      CreateMockRead(*stream1_reply, 1), CreateMockRead(*stream1_body, 2),
+      CreateMockRead(*stream2_syn, 3), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     BoundNetLog(), GetParam(), nullptr);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  HttpNetworkTransaction* trans = helper.trans();
+
+  TestCompletionCallback callback;
+  int rv =
+      trans->Start(&CreateGetRequest(), callback.callback(), BoundNetLog());
+  rv = callback.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+  HttpResponseInfo response = *trans->GetResponseInfo();
+  EXPECT_TRUE(response.headers.get());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
+
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  VerifyStreamsClosed(helper);
+}
+
+// PUSH_PROMISE on a server-initiated stream should trigger GOAWAY even if
+// stream is closed.
+TEST_P(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
+  scoped_ptr<SpdyFrame> stream1_syn(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+      2, GOAWAY_PROTOCOL_ERROR, "Push on even stream id."));
+  MockWrite writes[] = {
+      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*goaway, 7),
+  };
+
+  scoped_ptr<SpdyFrame> stream1_reply(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+  scoped_ptr<SpdyFrame> stream1_body(
+      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  const char kPushedData[] = "pushed";
+  scoped_ptr<SpdyFrame> stream2_body(spdy_util_.ConstructSpdyBodyFrame(
+      2, kPushedData, strlen(kPushedData), true));
+  scoped_ptr<SpdyFrame> stream3_syn(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 4, 2, GetDefaultUrlWithPath("/bar.dat").c_str()));
+
+  MockRead reads[] = {
+      CreateMockRead(*stream1_reply, 1),  CreateMockRead(*stream2_syn, 2),
+      CreateMockRead(*stream1_body, 3),   CreateMockRead(*stream2_body, 4),
+      MockRead(ASYNC, ERR_IO_PENDING, 5), CreateMockRead(*stream3_syn, 6),
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     BoundNetLog(), GetParam(), nullptr);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  HttpNetworkTransaction* trans1 = helper.trans();
+  TestCompletionCallback callback1;
+  int rv =
+      trans1->Start(&CreateGetRequest(), callback1.callback(), BoundNetLog());
+  rv = callback1.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+  HttpResponseInfo response = *trans1->GetResponseInfo();
+  EXPECT_TRUE(response.headers.get());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
+
+  scoped_ptr<HttpNetworkTransaction> trans2(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, helper.session()));
+  TestCompletionCallback callback2;
+  rv = trans2->Start(&CreateGetPushRequest(), callback2.callback(),
+                     BoundNetLog());
+  rv = callback2.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+  response = *trans2->GetResponseInfo();
+  EXPECT_TRUE(response.headers.get());
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
+  std::string result;
+  ReadResult(trans2.get(), &result);
+  EXPECT_EQ(kPushedData, result);
+
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
 // Verify that various SynReply headers parse correctly through the
