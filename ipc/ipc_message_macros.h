@@ -402,8 +402,7 @@
 }
 
 // This corresponds to an enum value from IPCMessageStart.
-#define IPC_MESSAGE_CLASS(message) \
-  IPC_MESSAGE_ID_CLASS(message.type())
+#define IPC_MESSAGE_CLASS(message) IPC_MESSAGE_ID_CLASS((message).type())
 
 // Deprecated legacy macro names.
 // TODO(mdempsky): Replace uses with generic names.

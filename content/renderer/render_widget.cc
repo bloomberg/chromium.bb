@@ -1546,6 +1546,15 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
   Send(new ViewHostMsg_UpdateScreenRects_ACK(routing_id()));
 }
 
+void RenderWidget::OnUpdateWindowScreenRect(
+    const gfx::Rect& window_screen_rect) {
+  if (screen_metrics_emulator_) {
+    screen_metrics_emulator_->OnUpdateWindowScreenRect(window_screen_rect);
+  } else {
+    window_screen_rect_ = window_screen_rect;
+  }
+}
+
 void RenderWidget::OnSetSurfaceIdNamespace(uint32_t surface_id_namespace) {
   if (compositor_)
     compositor_->SetSurfaceIdNamespace(surface_id_namespace);

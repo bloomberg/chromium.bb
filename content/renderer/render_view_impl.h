@@ -696,6 +696,9 @@ class CONTENT_EXPORT RenderViewImpl
                             const gfx::Rect& view_frame);
 #endif
 
+  // Page message handlers -----------------------------------------------------
+  void OnUpdateWindowScreenRect(gfx::Rect window_screen_rect);
+
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.
 

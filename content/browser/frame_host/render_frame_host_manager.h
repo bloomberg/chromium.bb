@@ -487,6 +487,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Returns the number of RenderFrameProxyHosts for this frame.
   int GetProxyCount();
 
+  // Sends an IPC message to every process in the FrameTree. This should only be
+  // called in the top-level RenderFrameHostManager.
+  void SendPageMessage(IPC::Message* msg);
+
   // Returns a const reference to the map of proxy hosts. The keys are
   // SiteInstance IDs, the values are RenderFrameProxyHosts.
   const std::unordered_map<int32_t, scoped_ptr<RenderFrameProxyHost>>&

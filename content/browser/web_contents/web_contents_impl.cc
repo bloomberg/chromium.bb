@@ -45,6 +45,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/host_zoom_map_impl.h"
@@ -72,6 +73,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
+#include "content/common/page_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -777,6 +779,10 @@ int WebContentsImpl::SendToAllFrames(IPC::Message* message) {
   }
   delete message;
   return number_of_messages;
+}
+
+void WebContentsImpl::SendPageMessage(IPC::Message* msg) {
+  frame_tree_.root()->render_manager()->SendPageMessage(msg);
 }
 
 RenderViewHostImpl* WebContentsImpl::GetRenderViewHost() const {
@@ -2218,6 +2224,13 @@ void WebContentsImpl::OnMoveValidationMessage(
 void WebContentsImpl::SendScreenRects() {
   RenderWidgetHostImpl::From(GetRenderViewHost()->GetWidget())
       ->SendScreenRects();
+
+  RenderWidgetHostViewBase* rwhv =
+      static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
+  if (rwhv) {
+    SendPageMessage(new PageMsg_UpdateWindowScreenRect(
+        MSG_ROUTING_NONE, rwhv->GetBoundsInRootWindow()));
+  }
 
   if (browser_plugin_embedder_)
     browser_plugin_embedder_->DidSendScreenRects();

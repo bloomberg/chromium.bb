@@ -50,6 +50,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input/input_event_utils.h"
 #include "content/common/input_messages.h"
+#include "content/common/page_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
@@ -1404,6 +1405,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnReleaseDisambiguationPopupBitmap)
     IPC_MESSAGE_HANDLER(ViewMsg_ForceRedraw, OnForceRedraw)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectWordAroundCaret, OnSelectWordAroundCaret)
+    IPC_MESSAGE_HANDLER(PageMsg_UpdateWindowScreenRect,
+                        OnUpdateWindowScreenRect)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
@@ -1509,6 +1512,10 @@ void RenderViewImpl::OnSetInitialFocus(bool reverse) {
   if (!webview())
     return;
   webview()->setInitialFocus(reverse);
+}
+
+void RenderViewImpl::OnUpdateWindowScreenRect(gfx::Rect window_screen_rect) {
+  RenderWidget::OnUpdateWindowScreenRect(window_screen_rect);
 }
 
 #if defined(OS_MACOSX)

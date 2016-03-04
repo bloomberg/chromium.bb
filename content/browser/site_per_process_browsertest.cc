@@ -5820,8 +5820,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     std::string frame_title;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
         root->child_at(0)->current_frame_host(),
-        "domAutomationController.send(document.title)",
-        &frame_title));
+        "domAutomationController.send(document.title)", &frame_title));
     EXPECT_EQ("", frame_title);
 
     // Navigate the subframe to another cross-origin page and ensure that this
@@ -5840,6 +5839,35 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
               root->child_at(0)->current_origin().Serialize() + "/");
     EXPECT_EQ(blink::WebSandboxFlags::None,
               root->child_at(0)->effective_sandbox_flags());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScreenCoordinates) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  NavigateToURL(shell(), main_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  const char* properties[] = {"screenX", "screenY", "outerWidth",
+                              "outerHeight"};
+
+  for (const char* property : properties) {
+    std::string script = "window.domAutomationController.send(window.";
+    script += property;
+    script += ");";
+    int root_value = 1;
+    int child_value = 2;
+    EXPECT_TRUE(ExecuteScriptAndExtractInt(root->current_frame_host(),
+                                           script.c_str(), &root_value));
+
+    EXPECT_TRUE(ExecuteScriptAndExtractInt(child->current_frame_host(),
+                                           script.c_str(), &child_value));
+
+    EXPECT_EQ(root_value, child_value);
   }
 }
 

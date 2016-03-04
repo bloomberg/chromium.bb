@@ -139,6 +139,14 @@ void RenderWidgetScreenMetricsEmulator::OnResize(const ResizeParams& params) {
     delegate_->Redraw();
 }
 
+void RenderWidgetScreenMetricsEmulator::OnUpdateWindowScreenRect(
+    const gfx::Rect& window_screen_rect) {
+  original_window_screen_rect_ = window_screen_rect;
+  if (emulation_params_.screenPosition ==
+      blink::WebDeviceEmulationParams::Desktop)
+    Apply();
+}
+
 void RenderWidgetScreenMetricsEmulator::OnUpdateScreenRects(
     const gfx::Rect& view_screen_rect,
     const gfx::Rect& window_screen_rect) {

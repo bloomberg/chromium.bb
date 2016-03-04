@@ -54,6 +54,7 @@ class RenderWidgetScreenMetricsEmulator {
   // The following methods alter handlers' behavior for messages related to
   // widget size and position.
   void OnResize(const ResizeParams& params);
+  void OnUpdateWindowScreenRect(const gfx::Rect& window_screen_rect);
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
   void OnShowContextMenu(ContextMenuParams* params);

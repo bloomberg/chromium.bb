@@ -468,6 +468,7 @@ class CONTENT_EXPORT RenderWidget
   void OnGetFPS();
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
+  void OnUpdateWindowScreenRect(const gfx::Rect& window_screen_rect);
   void OnShowImeIfNeeded();
   void OnSetSurfaceIdNamespace(uint32_t surface_id_namespace);
   void OnHandleCompositorProto(const std::vector<uint8_t>& proto);

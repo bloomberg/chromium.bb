@@ -11,6 +11,7 @@
 enum IPCMessageStart {
   AutomationMsgStart = 0,
   FrameMsgStart,
+  PageMsgStart,
   ViewMsgStart,
   InputMsgStart,
   PluginMsgStart,

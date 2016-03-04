@@ -2514,4 +2514,36 @@ int RenderFrameHostManager::GetOpenerRoutingID(SiteInstance* instance) {
       ->GetRoutingIdForSiteInstance(instance);
 }
 
+void RenderFrameHostManager::SendPageMessage(IPC::Message* msg) {
+  DCHECK(IPC_MESSAGE_CLASS(*msg) == PageMsgStart);
+
+  // We should always deliver page messages through the main frame.
+  DCHECK(!frame_tree_node_->parent());
+
+  if ((IPC_MESSAGE_CLASS(*msg) != PageMsgStart) || frame_tree_node_->parent()) {
+    delete msg;
+    return;
+  }
+
+  auto send_msg = [](IPC::Sender* sender, int routing_id, IPC::Message* msg) {
+    IPC::Message* copy = new IPC::Message(*msg);
+    copy->set_routing_id(routing_id);
+    sender->Send(copy);
+  };
+
+  for (const auto& pair : proxy_hosts_)
+    send_msg(pair.second.get(), pair.second->GetRoutingID(), msg);
+
+  if (speculative_render_frame_host_) {
+    send_msg(speculative_render_frame_host_.get(),
+             speculative_render_frame_host_->GetRoutingID(), msg);
+  } else if (pending_render_frame_host_) {
+    send_msg(pending_render_frame_host_.get(),
+             pending_render_frame_host_->GetRoutingID(), msg);
+  }
+
+  msg->set_routing_id(render_frame_host_->GetRoutingID());
+  render_frame_host_->Send(msg);
+}
+
 }  // namespace content

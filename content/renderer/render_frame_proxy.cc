@@ -14,6 +14,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
+#include "content/common/page_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
@@ -22,6 +23,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
+#include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -251,6 +253,14 @@ void RenderFrameProxy::OnDidUpdateSandboxFlags(blink::WebSandboxFlags flags) {
 }
 
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
+  // Forward Page IPCs to the RenderView.
+  if ((IPC_MESSAGE_CLASS(msg) == PageMsgStart)) {
+    if (render_view())
+      return render_view()->OnMessageReceived(msg);
+
+    return false;
+  }
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_DeleteProxy, OnDeleteProxy)

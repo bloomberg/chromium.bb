@@ -53,6 +53,7 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/navigation_params.h"
+#include "content/common/page_messages.h"
 #include "content/common/savable_subframe.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/site_isolation_policy.h"
@@ -1350,6 +1351,14 @@ void RenderFrameImpl::DidHideExternalPopupMenu() {
 #endif
 
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
+  // Forward Page IPCs to the RenderView.
+  if ((IPC_MESSAGE_CLASS(msg) == PageMsgStart)) {
+    if (render_view())
+      return render_view()->OnMessageReceived(msg);
+
+    return false;
+  }
+
   // We may get here while detaching, when the WebFrame has been deleted.  Do
   // not process any messages in this state.
   if (!frame_)

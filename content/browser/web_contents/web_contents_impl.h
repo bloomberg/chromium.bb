@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -979,6 +980,9 @@ class CONTENT_EXPORT WebContentsImpl
   // renderer-initiated creation, and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.
   WebContentsImpl* GetCreatedWindow(int route_id);
+
+  // Sends a Page message IPC.
+  void SendPageMessage(IPC::Message* msg);
 
   // Tracking loading progress -------------------------------------------------
 
