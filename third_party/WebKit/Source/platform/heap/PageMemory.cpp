@@ -6,6 +6,7 @@
 
 #include "platform/heap/Heap.h"
 #include "wtf/Assertions.h"
+#include "wtf/Atomics.h"
 #include "wtf/PageAllocator.h"
 
 namespace blink {
@@ -42,6 +43,13 @@ PageMemoryRegion::~PageMemoryRegion()
 {
     Heap::removePageMemoryRegion(this);
     release();
+}
+
+void PageMemoryRegion::pageDeleted(Address page)
+{
+    markPageUnused(page);
+    if (!atomicDecrement(&m_numPages))
+        delete this;
 }
 
 // TODO(haraken): Like partitionOutOfMemoryWithLotsOfUncommitedPages(),

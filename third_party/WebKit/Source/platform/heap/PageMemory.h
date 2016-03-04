@@ -59,12 +59,7 @@ class PageMemoryRegion : public MemoryRegion {
 public:
     ~PageMemoryRegion();
 
-    void pageDeleted(Address page)
-    {
-        markPageUnused(page);
-        if (!--m_numPages)
-            delete this;
-    }
+    void pageDeleted(Address);
 
     void markPageUsed(Address page)
     {
@@ -100,7 +95,7 @@ public:
 private:
     PageMemoryRegion(Address base, size_t, unsigned numPages);
 
-    unsigned index(Address address)
+    unsigned index(Address address) const
     {
         ASSERT(contains(address));
         if (m_isLargePage)
@@ -112,9 +107,11 @@ private:
 
     static PageMemoryRegion* allocate(size_t, unsigned numPages);
 
-    bool m_isLargePage;
+    const bool m_isLargePage;
+    // A thread owns a page, but not a region. Represent the in-use
+    // bitmap such that thread non-interference comes for free.
     bool m_inUse[blinkPagesPerRegion];
-    unsigned m_numPages;
+    int m_numPages;
 };
 
 // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
