@@ -40,8 +40,6 @@
           'installer/util/create_dir_work_item.h',
           'installer/util/create_reg_key_work_item.cc',
           'installer/util/create_reg_key_work_item.h',
-          'installer/util/delete_old_versions.cc',
-          'installer/util/delete_old_versions.h',
           'installer/util/delete_reg_key_work_item.cc',
           'installer/util/delete_reg_key_work_item.h',
           'installer/util/delete_reg_value_work_item.cc',

@@ -553,6 +553,13 @@ InstallStatus InstallOrUpdateProduct(
             installer_state.target_path().Append(installer::kChromeExe));
       }
     }
+
+    installer_state.UpdateStage(installer::REMOVING_OLD_VERSIONS);
+
+    installer_state.RemoveOldVersionDirectories(
+        new_version,
+        existing_version.get(),
+        install_temp_path);
   }
 
   return result;

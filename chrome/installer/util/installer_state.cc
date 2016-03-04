@@ -11,6 +11,8 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/file_version_info.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -510,6 +512,69 @@ bool InstallerState::AnyExistsAndIsInUse(const InstallationState& machine_state,
       return true;
   }
   return false;
+}
+
+void InstallerState::GetExistingExeVersions(
+    std::set<std::string>* existing_versions) const {
+
+  static const wchar_t* const kChromeFilenames[] = {
+    installer::kChromeExe,
+    installer::kChromeNewExe,
+    installer::kChromeOldExe,
+  };
+
+  for (size_t i = 0; i < arraysize(kChromeFilenames); ++i) {
+    base::FilePath chrome_exe(target_path().Append(kChromeFilenames[i]));
+    scoped_ptr<FileVersionInfo> file_version_info(
+        FileVersionInfo::CreateFileVersionInfo(chrome_exe));
+    if (file_version_info) {
+      base::string16 version_string = file_version_info->file_version();
+      if (!version_string.empty() && base::IsStringASCII(version_string))
+        existing_versions->insert(base::UTF16ToASCII(version_string));
+    }
+  }
+}
+
+void InstallerState::RemoveOldVersionDirectories(
+    const Version& new_version,
+    Version* existing_version,
+    const base::FilePath& temp_path) const {
+  Version version;
+  scoped_ptr<WorkItem> item;
+
+  std::set<std::string> existing_version_strings;
+  existing_version_strings.insert(new_version.GetString());
+  if (existing_version)
+    existing_version_strings.insert(existing_version->GetString());
+
+  // Make sure not to delete any version dir that is "referenced" by an existing
+  // Chrome executable.
+  GetExistingExeVersions(&existing_version_strings);
+
+  // Try to delete all directories that are not in the set we care to keep.
+  base::FileEnumerator version_enum(target_path(), false,
+                                    base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath next_version = version_enum.Next(); !next_version.empty();
+       next_version = version_enum.Next()) {
+    base::FilePath dir_name(next_version.BaseName());
+    version = Version(base::UTF16ToASCII(dir_name.value()));
+    // Delete the version folder if it is less than the new version and not
+    // equal to the old version (if we have an old version).
+    if (version.IsValid() &&
+        existing_version_strings.count(version.GetString()) == 0) {
+      // Note: temporarily log old version deletion at ERROR level to make it
+      // more likely we see this in the installer log.
+      LOG(ERROR) << "Deleting old version directory: " << next_version.value();
+
+      // Attempt to recursively delete the old version dir.
+      bool delete_succeeded = base::DeleteFile(next_version, true);
+
+      // Note: temporarily log old version deletion at ERROR level to make it
+      // more likely we see this in the installer log.
+      LOG_IF(ERROR, !delete_succeeded)
+          << "Failed to delete old version directory: " << next_version.value();
+    }
+  }
 }
 
 void InstallerState::AddComDllList(
