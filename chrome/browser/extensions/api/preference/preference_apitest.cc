@@ -345,12 +345,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, OnChangeSplit) {
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_WIN)  // http://crbug.com/477844
-#define MAYBE_DataReductionProxy DISABLED_DataReductionProxy
-#else
-#define MAYBE_DataReductionProxy DataReductionProxy
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_DataReductionProxy) {
+IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, DataReductionProxy) {
   EXPECT_TRUE(RunExtensionTest("preference/data_reduction_proxy")) <<
       message_;
 }
