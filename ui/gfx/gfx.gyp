@@ -318,6 +318,8 @@
         'win/hwnd_util.h',
         "win/physical_size.cc",
         "win/physical_size.h",
+        'win/rendering_window_manager.cc',
+        'win/rendering_window_manager.h',
         'win/scoped_set_map_mode.h',
         'win/screen_win_display.cc',
         'win/screen_win_display.h',

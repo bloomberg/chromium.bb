@@ -62,6 +62,7 @@
 #include "content/common/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/win/rendering_window_manager.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -662,7 +663,11 @@ void GpuProcessHost::OnAcceleratedSurfaceCreatedChildWindow(
     }
   }
 
-  ::SetParent(window_handle, parent_handle);
+  if (!gfx::RenderingWindowManager::GetInstance()->RegisterChild(
+          parent_handle, window_handle)) {
+    process_->TerminateOnBadMessageReceived(
+        GpuHostMsg_AcceleratedSurfaceCreatedChildWindow::ID);
+  }
 }
 #endif
 

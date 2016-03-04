@@ -206,6 +206,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Updates the window style to reflect whether it can be resized or maximized.
   void SizeConstraintsChanged();
 
+  // Returns true if content is rendered to a child window instead of directly
+  // to this window.
+  bool HasChildRenderingWindow();
+
  private:
   typedef std::set<DWORD> TouchIDs;
 

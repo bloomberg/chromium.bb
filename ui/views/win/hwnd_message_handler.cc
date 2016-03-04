@@ -39,6 +39,7 @@
 #include "ui/gfx/win/direct_manipulation.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
+#include "ui/gfx/win/rendering_window_manager.h"
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/monitor_win.h"
@@ -859,6 +860,13 @@ void HWNDMessageHandler::SizeConstraintsChanged() {
     style &= ~WS_MINIMIZEBOX;
   }
   SetWindowLong(hwnd(), GWL_STYLE, style);
+}
+
+bool HWNDMessageHandler::HasChildRenderingWindow() {
+  // This can change dynamically if the system switches between GPU and
+  // software rendering.
+  return gfx::RenderingWindowManager::GetInstance()->HasValidChildWindow(
+      hwnd());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1909,8 +1917,18 @@ void HWNDMessageHandler::OnPaint(HDC dc) {
                << ", GDI peak count: " << peak_gdi_objects;
   }
 
-  if (!IsRectEmpty(&ps.rcPaint))
+  if (!IsRectEmpty(&ps.rcPaint)) {
+    if (HasChildRenderingWindow()) {
+      // If there's a child window that's being rendered to then clear the
+      // area outside it (as WS_CLIPCHILDREN is set) with transparent black.
+      // Otherwise, other portions of the backing store for the window can
+      // flicker opaque black. http://crbug.com/586454
+
+      FillRect(ps.hdc, &ps.rcPaint,
+               reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+    }
     delegate_->HandlePaintAccelerated(gfx::Rect(ps.rcPaint));
+  }
 
   EndPaint(hwnd(), &ps);
 }

@@ -62,6 +62,7 @@
 
 #if defined(OS_WIN)
 #include "content/browser/compositor/software_output_device_win.h"
+#include "ui/gfx/win/rendering_window_manager.h"
 #elif defined(USE_OZONE)
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
@@ -218,6 +219,11 @@ void GpuProcessTransportFactory::CreateOutputSurface(
     data->surface = nullptr;
   }
 
+#if defined(OS_WIN)
+  gfx::RenderingWindowManager::GetInstance()->UnregisterParent(
+      compositor->widget());
+#endif
+
   bool create_gpu_output_surface =
       ShouldCreateGpuOutputSurface(compositor.get());
   if (create_gpu_output_surface) {
@@ -255,6 +261,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #endif
     create_gpu_output_surface = false;
   }
+
+#if defined(OS_WIN)
+  gfx::RenderingWindowManager::GetInstance()->RegisterParent(
+      compositor->widget());
+#endif
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (create_gpu_output_surface) {
@@ -355,6 +366,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (data->reflector)
     data->reflector->OnSourceSurfaceReady(data->surface);
 
+#if defined(OS_WIN)
+  gfx::RenderingWindowManager::GetInstance()->DoSetParentOnChild(
+      compositor->widget());
+#endif
+
   // This gets a bit confusing. Here we have a ContextProvider in the |surface|
   // configured to render directly to this widget. We need to make an
   // OnscreenDisplayClient associated with that context, then return a
@@ -431,6 +447,10 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
     DCHECK(!gl_helper_) << "Destroying the GLHelper should not cause a new "
                            "GLHelper to be created.";
   }
+#if defined(OS_WIN)
+  gfx::RenderingWindowManager::GetInstance()->UnregisterParent(
+      compositor->widget());
+#endif
 }
 
 bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }
