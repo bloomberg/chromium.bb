@@ -48,7 +48,6 @@ source_set("libsystem_java") {
     "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/message_pump",
-    "//mojo/public/cpp/environment",
   ]
 }
 

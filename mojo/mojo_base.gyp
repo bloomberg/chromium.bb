@@ -342,6 +342,7 @@
             'mojo_edk.gyp:mojo_system_impl',
             'mojo_environment_chromium',
             'mojo_jni_headers',
+            'mojo_public.gyp:mojo_message_pump_lib',
           ],
           'sources': [
             'android/system/core_impl.cc',
