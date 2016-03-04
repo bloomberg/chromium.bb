@@ -513,7 +513,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     visible_layer_rect_ = rect;
   }
 
-  void set_clip_rect_in_target_space(const gfx::Rect& rect) {}
+  void set_clip_rect(const gfx::Rect& rect) {}
 
   // This should only be called during BeginMainFrame since it does not trigger
   // a Commit. This is called right after property tree being built and should

@@ -2257,22 +2257,28 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   EXPECT_TRUE(grand_child->has_render_surface());
   EXPECT_FALSE(leaf_node1->has_render_surface());
   EXPECT_FALSE(leaf_node2->has_render_surface());
-  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
-  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
-  EXPECT_EQ(gfx::Rect(800, 800), child1->clip_rect());
-  EXPECT_EQ(gfx::Rect(5, 5, 800, 800), child2->clip_rect());
-  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child->clip_rect());
-  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node1->clip_rect());
-  EXPECT_EQ(gfx::Rect(14, 14, 2000, 2000), leaf_node2->clip_rect());
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_FALSE(parent->is_clipped());
+  EXPECT_FALSE(child1->is_clipped());
+  EXPECT_FALSE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_FALSE(leaf_node1->is_clipped());
+  EXPECT_FALSE(leaf_node2->is_clipped());
+  EXPECT_TRUE(root->render_surface()->is_clipped());
+  EXPECT_FALSE(child1->render_surface()->is_clipped());
+  EXPECT_FALSE(grand_child->render_surface()->is_clipped());
+  EXPECT_EQ(gfx::Rect(100, 100), root->render_surface()->clip_rect());
 
   ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
-  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
-  EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
-  EXPECT_EQ(gfx::Rect(6, 6, 800, 800), child1->clip_rect());
-  EXPECT_EQ(gfx::Rect(5, 5, 800, 800), child2->clip_rect());
-  EXPECT_EQ(gfx::Rect(14, 14, 1500, 1500), grand_child->clip_rect());
-  EXPECT_EQ(gfx::Rect(30, 30, 2000, 2000), leaf_node1->clip_rect());
-  EXPECT_EQ(gfx::Rect(14, 14, 2000, 2000), leaf_node2->clip_rect());
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_FALSE(parent->is_clipped());
+  EXPECT_FALSE(child1->is_clipped());
+  EXPECT_FALSE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_FALSE(leaf_node1->is_clipped());
+  EXPECT_FALSE(leaf_node2->is_clipped());
+  EXPECT_TRUE(root->render_surface()->is_clipped());
+  EXPECT_EQ(gfx::Rect(100, 100), root->render_surface()->clip_rect());
 
   // Case 2: The root is clipped. In this case, layers that draw into the root
   // render surface are clipped by the root's bounds.
@@ -2289,15 +2295,29 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   EXPECT_TRUE(grand_child->has_render_surface());
   EXPECT_FALSE(leaf_node1->has_render_surface());
   EXPECT_FALSE(leaf_node2->has_render_surface());
+  EXPECT_TRUE(root->is_clipped());
+  EXPECT_TRUE(parent->is_clipped());
+  EXPECT_FALSE(child1->is_clipped());
+  EXPECT_TRUE(child1->render_surface()->is_clipped());
+  EXPECT_TRUE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_FALSE(grand_child->render_surface()->is_clipped());
+  EXPECT_FALSE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
   EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
   EXPECT_EQ(gfx::Rect(100, 100), parent->clip_rect());
-  EXPECT_EQ(gfx::Rect(800, 800), child1->clip_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), child1->render_surface()->clip_rect());
   EXPECT_EQ(gfx::Rect(100, 100), child2->clip_rect());
-  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child->clip_rect());
-  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node1->clip_rect());
   EXPECT_EQ(gfx::Rect(100, 100), leaf_node2->clip_rect());
 
   ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_TRUE(root->is_clipped());
+  EXPECT_TRUE(parent->is_clipped());
+  EXPECT_TRUE(child1->is_clipped());
+  EXPECT_TRUE(child2->is_clipped());
+  EXPECT_TRUE(grand_child->is_clipped());
+  EXPECT_TRUE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
   EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
   EXPECT_EQ(gfx::Rect(100, 100), parent->clip_rect());
   EXPECT_EQ(gfx::Rect(100, 100), child1->clip_rect());
@@ -2328,16 +2348,32 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   EXPECT_TRUE(grand_child->has_render_surface());
   EXPECT_FALSE(leaf_node1->has_render_surface());
   EXPECT_FALSE(leaf_node2->has_render_surface());
-  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_TRUE(root->render_surface()->is_clipped());
+  EXPECT_TRUE(parent->is_clipped());
+  EXPECT_TRUE(child1->is_clipped());
+  EXPECT_TRUE(child2->is_clipped());
+  EXPECT_FALSE(grand_child->is_clipped());
+  EXPECT_TRUE(grand_child->render_surface()->is_clipped());
+  EXPECT_FALSE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
+  EXPECT_EQ(gfx::Rect(100, 100), root->render_surface()->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
   EXPECT_EQ(gfx::Rect(800, 800), child1->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), child2->clip_rect());
-  EXPECT_EQ(gfx::Rect(1500, 1500), grand_child->clip_rect());
-  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node1->clip_rect());
+  EXPECT_EQ(gfx::Rect(800, 800), grand_child->render_surface()->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), leaf_node2->clip_rect());
 
   ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
-  EXPECT_EQ(gfx::Rect(100, 100), root->clip_rect());
+  EXPECT_FALSE(root->is_clipped());
+  EXPECT_TRUE(root->render_surface()->is_clipped());
+  EXPECT_TRUE(parent->is_clipped());
+  EXPECT_TRUE(child1->is_clipped());
+  EXPECT_TRUE(child2->is_clipped());
+  EXPECT_TRUE(grand_child->is_clipped());
+  EXPECT_TRUE(leaf_node1->is_clipped());
+  EXPECT_TRUE(leaf_node2->is_clipped());
+  EXPECT_EQ(gfx::Rect(100, 100), root->render_surface()->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), parent->clip_rect());
   EXPECT_EQ(gfx::Rect(6, 6, 396, 396), child1->clip_rect());
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), child2->clip_rect());
@@ -2394,7 +2430,8 @@ TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
   expected_leaf_draw_transform_without_surfaces.Translate(30.0, 30.0);
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->clip_rect());
+  EXPECT_FALSE(leaf_node->is_clipped());
+  EXPECT_TRUE(leaf_node->render_target()->render_surface()->is_clipped());
   EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->drawable_content_rect());
   EXPECT_EQ(expected_leaf_draw_transform_with_surfaces,
             leaf_node->DrawTransform());
@@ -2404,6 +2441,7 @@ TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
   grand_child->SetHasRenderSurface(true);
 
   ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  EXPECT_TRUE(leaf_node->is_clipped());
   EXPECT_EQ(gfx::Rect(6, 6, 396, 396), leaf_node->clip_rect());
   EXPECT_EQ(gfx::Rect(30, 30, 372, 372), leaf_node->drawable_content_rect());
   EXPECT_EQ(expected_leaf_draw_transform_without_surfaces,
@@ -2414,7 +2452,8 @@ TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
   grand_child->SetHasRenderSurface(true);
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->clip_rect());
+  EXPECT_FALSE(leaf_node->is_clipped());
+  EXPECT_TRUE(leaf_node->render_target()->render_surface()->is_clipped());
   EXPECT_EQ(gfx::Rect(16, 16, 2000, 2000), leaf_node->drawable_content_rect());
   EXPECT_EQ(expected_leaf_draw_transform_with_surfaces,
             leaf_node->DrawTransform());
@@ -6280,9 +6319,10 @@ TEST_F(LayerTreeHostCommonTest,
             render_surface1->render_surface()->content_rect().ToString());
 
   // This render surface should clip. It has no unclipped descendants.
-  EXPECT_EQ(gfx::Rect(0, 0, 5, 5).ToString(),
-            render_surface2->clip_rect().ToString());
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10).ToString(),
+            render_surface2->render_surface()->clip_rect().ToString());
   EXPECT_TRUE(render_surface2->render_surface()->is_clipped());
+  EXPECT_FALSE(render_surface2->is_clipped());
 
   // It also shouldn't have grown to accomodate the clip child.
   EXPECT_EQ(gfx::Rect(0, 0, 5, 5).ToString(),
@@ -9391,9 +9431,10 @@ TEST_F(LayerTreeHostCommonTest,
   LayerImpl* test_layer = AddChild<LayerImpl>(render_surface);
 
   const gfx::Transform identity_matrix;
-  gfx::Transform transform;
-  transform.Translate(2.0, 2.0);
+  gfx::Transform translate;
+  translate.Translate(2.0, 2.0);
 
+  clip_parent->SetMasksToBounds(true);
   test_layer->SetDrawsContent(true);
   render_surface->SetClipParent(clip_parent);
   scoped_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
@@ -9402,10 +9443,10 @@ TEST_F(LayerTreeHostCommonTest,
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(30, 30), true, false,
                                true);
-  SetLayerPropertiesForTesting(clip_parent, transform, gfx::Point3F(),
+  SetLayerPropertiesForTesting(clip_parent, translate, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(30, 30), true, false,
                                false);
-  SetLayerPropertiesForTesting(between_clip_parent_and_child, transform,
+  SetLayerPropertiesForTesting(between_clip_parent_and_child, translate,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
                                true, false, false);
   SetLayerPropertiesForTesting(render_surface, identity_matrix, gfx::Point3F(),
@@ -9417,7 +9458,10 @@ TEST_F(LayerTreeHostCommonTest,
 
   ExecuteCalculateDrawProperties(root);
 
-  EXPECT_EQ(gfx::Rect(30, 30), test_layer->clip_rect());
+  EXPECT_TRUE(test_layer->is_clipped());
+  EXPECT_FALSE(test_layer->render_target()->render_surface()->is_clipped());
+  EXPECT_EQ(gfx::Rect(-2, -2, 28, 28), test_layer->clip_rect());
+  EXPECT_EQ(gfx::Rect(26, 26), test_layer->drawable_content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,

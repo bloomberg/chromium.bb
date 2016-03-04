@@ -176,13 +176,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return offset_to_transform_parent_;
   }
 
-  gfx::Rect clip_rect_in_target_space() const {
-    return clip_rect_in_target_space_;
-  }
-  void set_clip_rect_in_target_space(const gfx::Rect& clip_rect) {
-    clip_rect_in_target_space_ = clip_rect;
-  }
-
   void set_should_flatten_transform_from_property_tree(bool should_flatten) {
     should_flatten_transform_from_property_tree_ = should_flatten;
     SetNeedsPushProperties();
@@ -408,6 +401,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Setter for draw_properties_.
   void set_visible_layer_rect(const gfx::Rect& visible_rect) {
     draw_properties_.visible_layer_rect = visible_rect;
+  }
+  void set_clip_rect(const gfx::Rect& clip_rect) {
+    draw_properties_.clip_rect = clip_rect;
   }
 
   // The following are shortcut accessors to get various information from

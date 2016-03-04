@@ -67,7 +67,6 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       // The entire layer is visible if it has copy requests.
       if (layer->HasCopyRequest()) {
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
-        layer->set_clip_rect_in_target_space(gfx::Rect());
         continue;
       }
 
@@ -80,7 +79,6 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       // this clip rect should be mapped to the current layer's target space.
       gfx::Rect clip_rect_in_target_space;
       gfx::Rect combined_clip_rect_in_target_space;
-      bool success = true;
 
       // When we only have a root surface, the clip node and the layer must
       // necessarily have the same target (the root).
@@ -92,9 +90,9 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
         // target has unclippped descendants, it is unclippped.
         if (!clip_node->data.layers_are_clipped) {
           layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
-          layer->set_clip_rect_in_target_space(gfx::Rect());
           continue;
         }
+        bool success = true;
         gfx::Transform clip_to_target;
         if (clip_node->data.target_id > target_node->id) {
           // In this case, layer has a scroll parent. We need to keep the scale
@@ -117,7 +115,6 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
           // animation, so we still need to compute a visible rect. In this
           // situation, we treat the entire layer as visible.
           layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
-          layer->set_clip_rect_in_target_space(gfx::Rect());
           continue;
         }
         // We use the clip node's clip_in_target_space (and not
@@ -130,17 +127,12 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
           combined_clip_rect_in_target_space =
               gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
                   clip_to_target, clip_node->data.clip_in_target_space));
-          clip_rect_in_target_space =
-              gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-                  clip_to_target, clip_node->data.clip_in_target_space));
         } else {
           combined_clip_rect_in_target_space =
               gfx::ToEnclosingRect(MathUtil::MapClippedRect(
                   clip_to_target, clip_node->data.clip_in_target_space));
-          clip_rect_in_target_space =
-              gfx::ToEnclosingRect(MathUtil::MapClippedRect(
-                  clip_to_target, clip_node->data.clip_in_target_space));
         }
+        clip_rect_in_target_space = combined_clip_rect_in_target_space;
 
       } else {
         clip_rect_in_target_space =
@@ -153,9 +145,7 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       }
 
       if (!clip_rect_in_target_space.IsEmpty()) {
-        layer->set_clip_rect_in_target_space(clip_rect_in_target_space);
-      } else {
-        layer->set_clip_rect_in_target_space(gfx::Rect());
+        layer->set_clip_rect(clip_rect_in_target_space);
       }
 
       // The clip rect should be intersected with layer rect in target space.
@@ -188,12 +178,11 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
 
       gfx::Transform target_to_content;
       gfx::Transform target_to_layer;
-
+      bool success = true;
       if (transform_node->data.ancestors_are_invertible) {
         target_to_layer = non_root_surfaces_enabled
                               ? transform_node->data.from_target
                               : transform_node->data.from_screen;
-        success = true;
       } else {
         success = transform_tree.ComputeTransformWithSourceSublayerScale(
             target_node->id, transform_node->id, &target_to_layer);
@@ -219,9 +208,6 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       layer->set_visible_layer_rect(visible_rect);
     } else {
       layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
-      // As the layer is unclipped, the clip rect in target space of this layer
-      // is not used. So, we set it to an empty rect.
-      layer->set_clip_rect_in_target_space(gfx::Rect());
     }
   }
 }
@@ -974,14 +960,6 @@ static gfx::Transform ReplicaToSurfaceTransform(
   return replica_to_surface;
 }
 
-static gfx::Rect LayerClipRect(const LayerImpl* layer,
-                               const gfx::Rect& layer_bounds_in_target_space) {
-  if (layer->is_clipped())
-    return layer->clip_rect_in_target_space();
-
-  return layer_bounds_in_target_space;
-}
-
 void ComputeLayerDrawProperties(LayerImpl* layer,
                                 const PropertyTrees* property_trees,
                                 bool layers_always_allowed_lcd_text,
@@ -1031,8 +1009,6 @@ void ComputeLayerDrawProperties(LayerImpl* layer,
   gfx::Rect bounds_in_target_space = MathUtil::MapEnclosingClippedRect(
       layer->draw_properties().target_space_transform,
       gfx::Rect(layer->bounds()));
-  layer->draw_properties().clip_rect =
-      LayerClipRect(layer, bounds_in_target_space);
   layer->draw_properties().drawable_content_rect = LayerDrawableContentRect(
       layer, bounds_in_target_space, layer->draw_properties().clip_rect);
 }
