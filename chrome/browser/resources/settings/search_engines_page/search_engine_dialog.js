@@ -68,6 +68,10 @@ Polymer({
           loadTimeData.getString('searchEnginesAddSearchEngine');
       this.actionButtonText_ = loadTimeData.getString('add');
     }
+
+    this.addEventListener('iron-overlay-canceled', function() {
+      this.browserProxy_.searchEngineEditCancelled();
+    }.bind(this));
   },
 
   /** @override */
@@ -80,8 +84,7 @@ Polymer({
 
   /** @private */
   cancel_: function() {
-    this.browserProxy_.searchEngineEditCancelled();
-    this.$.dialog.close();
+    this.$.dialog.cancel();
   },
 
   /** @private */

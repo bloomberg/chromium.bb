@@ -172,7 +172,7 @@ cr.define('settings_search_engines_page', function() {
       test('DialogOpenAndClose', function() {
         return browserProxy.whenCalled('searchEngineEditStarted').then(
             function() {
-              MockInteractions.tap(dialog.$.close);
+              MockInteractions.tap(dialog.$.dialog.getCloseButton());
               return browserProxy.whenCalled('searchEngineEditCancelled');
             });
       });

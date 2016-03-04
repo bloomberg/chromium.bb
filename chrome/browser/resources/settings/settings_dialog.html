@@ -1,0 +1,83 @@
+<link rel="import" href="chrome://resources/html/polymer_config.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog-behavior/paper-dialog-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog-behavior/paper-dialog-shared-styles.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+
+<dom-module id="settings-dialog">
+  <template>
+    <style include="paper-dialog-shared-styles"></style>
+    <style>
+      .dialog-content {
+        -webkit-padding-end: 0;
+        -webkit-padding-start: 0;
+        margin-bottom: 0;
+        margin-top: 0;
+      }
+
+      .footer-container {
+        margin: 0;
+        padding: 0;
+      }
+
+      .top-row {
+        align-items: center;
+        border-bottom: 1px solid gainsboro;
+        display: flex;
+        padding-bottom: 5px;
+        padding-top: 5px;
+      }
+
+      .body-content {
+        font-size: 1em;
+        margin: 20px 0;
+      }
+
+      :host {
+        max-width: 800px;
+        min-width: 500px;
+      }
+
+      :host ::content .title {
+        flex: 1;
+        font-size: 1.13em;
+      }
+
+      :host ::content .title,
+      .body-content {
+        -webkit-padding-end: 24px;
+        -webkit-padding-start: 24px;
+      }
+
+      :host ::content .body {
+        margin-bottom: 35px;
+      }
+
+      :host ::content .button-container {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      :host ::content .button-container .cancel-button {
+        color: rgb(109, 109, 109);
+        font-weight: 500;
+      }
+    </style>
+    <div class="dialog-content">
+      <div class="top-row">
+        <content select=".title"></content>
+        <paper-icon-button icon="clear" on-tap="cancel" id="close">
+        </paper-icon-button>
+      </div>
+      <div class="body-content">
+        <content select=".body"></content>
+        <content select=".button-container"></content>
+      </div>
+    </div>
+    <div class="footer-container">
+      <content select=".footer"></content>
+    </div>
+  </template>
+  <script src="settings_dialog.js"></script>
+</dom-module>

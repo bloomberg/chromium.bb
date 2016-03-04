@@ -17,6 +17,7 @@ Polymer({
     feedbackInfo_: String,
   },
 
+  /** @override */
   attached: function() {
     cr.define('SettingsResetPage', function() {
       return {
@@ -33,6 +34,13 @@ Polymer({
     }.bind(this));
   },
 
+  /** @override */
+  ready: function() {
+    this.addEventListener('iron-overlay-canceled', function() {
+      chrome.send('onHideResetProfileDialog');
+    });
+  },
+
   dispatchResetDoneEvent: function() {
     this.dispatchEvent(new CustomEvent('reset-done'));
   },
@@ -44,8 +52,7 @@ Polymer({
 
   /** @private */
   onCancelTap_: function() {
-    this.$.dialog.close();
-    chrome.send('onHideResetProfileDialog');
+    this.$.dialog.cancel();
   },
 
   /** @private */
