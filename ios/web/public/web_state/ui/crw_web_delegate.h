@@ -35,26 +35,6 @@ struct WebLoadParams;
 // Callback for -presentSSLError:forSSLStatus:onUrl:recoverable:callback:
 typedef void (^SSLErrorCallback)(BOOL);
 
-// Interface to perform cross window scripting on CRWWebController.
-@protocol CRWWebControllerScripting
-
-// Loads the HTML into the page.
-- (void)loadHTML:(NSString*)html;
-
-// Loads HTML in the page and presents it as if it was originating from the
-// URL itself. Should be used only in specific cases, where the injected html
-// is guaranteed to be some derived representation of the original content.
-- (void)loadHTMLForCurrentURL:(NSString*)html;
-
-// Stops loading the page.
-- (void)stopLoading;
-
-// TODO(eugenebut): rename -[CRWWebController close] method to avoid confusion.
-// Asks the delegate to be closed.
-- (void)orderClose;
-
-@end
-
 // Methods implemented by the delegate of the CRWWebController.
 @protocol CRWWebDelegate<NSObject>
 
@@ -233,10 +213,6 @@ typedef void (^SSLErrorCallback)(BOOL);
 // Called when CRWWebController did suppress a dialog (only if kSuppressDialogs
 // policy is set via -[CRWWebController setPageDialogsOpenPolicy:] method).
 - (void)webControllerDidSuppressDialog:(CRWWebController*)webController;
-
-// Called to get CRWWebController of a child window by name.
-- (id<CRWWebControllerScripting>)webController:(CRWWebController*)webController
-              scriptingInterfaceForWindowNamed:(NSString*)windowName;
 
 // Called to retrieve the height of any header that is overlaying on top of the
 // web view. This can be used to implement, for e.g. a toolbar that changes

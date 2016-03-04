@@ -262,12 +262,6 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_TYPED
         rendererInitiated:NO];
-    // Set up child CRWWebController.
-    mockChildWebController_.reset([[OCMockObject
-        mockForProtocol:@protocol(CRWWebControllerScripting)] retain]);
-    [[[mockDelegate_ stub] andReturn:mockChildWebController_.get()]
-                           webController:webController_
-        scriptingInterfaceForWindowNamed:@"http://www.google.com/#newtab"];
   }
 
   void TearDown() override {

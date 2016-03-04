@@ -2005,7 +2005,9 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (void)webViewDidClose:(WKWebView*)webView {
-  [self orderClose];
+  if (self.sessionController.openedByDOM) {
+    [self.delegate webPageOrderedClose];
+  }
 }
 
 - (void)webView:(WKWebView*)webView

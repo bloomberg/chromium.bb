@@ -3741,16 +3741,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-#pragma mark CRWWebControllerScripting Methods
-
-- (void)loadHTML:(NSString*)html {
-  [self loadHTML:html forURL:GURL(url::kAboutBlankURL)];
-}
-
-- (void)loadHTMLForCurrentURL:(NSString*)html {
-  [self loadHTML:html forURL:self.currentURL];
-}
-
 - (void)loadHTML:(NSString*)html forURL:(const GURL&)url {
   // Remove the transient content view.
   [self clearTransientContentView];
@@ -3766,6 +3756,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self loadHTML:HTML forURL:URL];
 }
 
+- (void)loadHTMLForCurrentURL:(NSString*)HTML {
+  [self loadHTML:HTML forURL:self.currentURL];
+}
+
 - (void)stopLoading {
   web::RecordAction(UserMetricsAction("Stop"));
   // Discard the pending and transient entried before notifying the tab model
@@ -3777,12 +3771,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!self.nativeController &&
       [self shouldLoadURLInNativeView:[self currentNavigationURL]]) {
     [self loadCurrentURLInNativeView];
-  }
-}
-
-- (void)orderClose {
-  if (self.sessionController.openedByDOM) {
-    [_delegate webPageOrderedClose];
   }
 }
 

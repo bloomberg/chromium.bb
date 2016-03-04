@@ -79,7 +79,6 @@ class WebStateImpl;
 @interface CRWWebController : NSObject<CRWJSInjectionEvaluator,
                                        CRWRequestTrackerDelegate,
                                        CRWTouchTrackingDelegate,
-                                       CRWWebControllerScripting,
                                        UIGestureRecognizerDelegate>
 
 // Whether or not a UIWebView is allowed to exist in this CRWWebController.
@@ -184,11 +183,18 @@ class WebStateImpl;
 
 // Loads the URL indicated by current session state.
 - (void)loadCurrentURL;
-// Loads the HTML into the page.
-- (void)loadHTML:(NSString*)html;
+
 // Loads HTML in the page and presents it as if it was originating from an
 // application specific URL.
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL;
+
+// Loads HTML in the page and presents it as if it was originating from the
+// URL itself. Should be used only in specific cases, where the injected html
+// is guaranteed to be some derived representation of the original content.
+- (void)loadHTMLForCurrentURL:(NSString*)HTML;
+
+// Stops loading the page.
+- (void)stopLoading;
 
 // Causes the page to start loading immediately if there is a pending load;
 // normally if the web view has been paged out for memory reasons, loads are
