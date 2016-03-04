@@ -585,7 +585,7 @@ class ManifestVersionedSyncStage(SyncStage):
           'Android version was found in the manifest: %s', android_version)
       # Update the metadata dictionary. This is necessary because the
       # metadata dictionary is preserved through re-executions, so
-      # SyncAndroidStage can read the version from the dictionary
+      # UprevAndroidStage can read the version from the dictionary
       # later. This is easier than parsing the manifest again after
       # the re-execution.
       self._run.attrs.metadata.UpdateKeyDictWithDict(

@@ -155,7 +155,7 @@ class RunAttributes(object):
   """
 
   REGULAR_ATTRS = frozenset((
-      'android_version',  # Set by SyncAndroidStage, if it runs.
+      'android_version',  # Set by UprevAndroidStage, if it runs.
       'chrome_version',   # Set by SyncChromeStage, if it runs.
       'manifest_manager', # Set by ManifestVersionedSyncStage.
       'release_tag',      # Set by cbuildbot after sync stage.

@@ -73,7 +73,7 @@ class AndroidPFQBuilder(simple_builders.SimpleBuilder):
     was_build_successful = False
     try:
       self.RunEarlySyncAndSetupStages()
-      self._RunStage(android_stages.SyncAndroidStage)
+      self._RunStage(android_stages.UprevAndroidStage)
       self.RunBuildTestStages()
       self.RunBuildStages()
       was_build_successful = results_lib.Results.BuildSucceededSoFar()
@@ -112,10 +112,10 @@ class AndroidPFQMasterBuilder(simple_builders.DistributedBuilder):
     try:
       self._RunStage(build_stages.UprevStage)
       self._RunStage(build_stages.InitSDKStage)
-      # The PFQ master will not actually run the SyncChrome/SyncAndroid stages,
+      # The PFQ master will not actually run the SyncChrome/UprevAndroid stages,
       # but we want the logic that gets triggered when the stages are skipped.
       self._RunStage(chrome_stages.SyncChromeStage)
-      self._RunStage(android_stages.SyncAndroidStage)
+      self._RunStage(android_stages.UprevAndroidStage)
       self._RunStage(test_stages.BinhostTestStage)
       self._RunStage(test_stages.BranchUtilTestStage)
       was_build_successful = results_lib.Results.BuildSucceededSoFar()

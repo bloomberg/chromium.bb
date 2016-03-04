@@ -24,13 +24,13 @@ ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
                                     'package.mask', 'androidpin')
 
 
-class SyncAndroidStage(generic_stages.BuilderStage,
-                       generic_stages.ArchivingStageMixin):
-  """Stage that syncs Android sources if needed."""
+class UprevAndroidStage(generic_stages.BuilderStage,
+                        generic_stages.ArchivingStageMixin):
+  """Stage that uprevs Android container if needed."""
   # TODO: Consider merging this with SyncChromeStage.
 
   def __init__(self, builder_run, **kwargs):
-    super(SyncAndroidStage, self).__init__(builder_run, **kwargs)
+    super(UprevAndroidStage, self).__init__(builder_run, **kwargs)
     # PerformStage() will fill this out for us.
     self.android_version = None
 
@@ -44,7 +44,7 @@ class SyncAndroidStage(generic_stages.BuilderStage,
       self._WriteAndroidVersionToMetadata()
     except cbuildbot_run.NoAndroidVersionError as ex:
       logging.warn('Unable to determine Android version (%s)', ex)
-    super(SyncAndroidStage, self).HandleSkip()
+    super(UprevAndroidStage, self).HandleSkip()
 
   def _GetAndroidVersionFromMetadata(self):
     """Return the Android version from metadata; None if is does not exist."""
@@ -117,4 +117,4 @@ class SyncAndroidStage(generic_stages.BuilderStage,
     # means something.  In other words, this stage tried to run.
     self._run.attrs.android_version = self.android_version
     self._WriteAndroidVersionToMetadata()
-    super(SyncAndroidStage, self)._Finish()
+    super(UprevAndroidStage, self)._Finish()
