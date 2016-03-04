@@ -31,13 +31,18 @@ class MojoMediaClient {
 
   // Called exactly once before any other method.
   virtual void Initialize();
-  // Returns the RendererFactory to be used by MojoRendererService. If returns
-  // null, a RendererImpl will be used with audio/video decoders provided in
-  // CreateAudioDecoders() and CreateVideoDecoders().
+
+  // TODO(xhwang): Consider creating Renderer and CDM directly in the client
+  // instead of creating factories. See http://crbug.com/586211
+
+  // Returns the RendererFactory to be used by MojoRendererService.
   virtual scoped_ptr<RendererFactory> CreateRendererFactory(
       const scoped_refptr<MediaLog>& media_log);
-  // The output sink used for rendering audio or video respectively. These
-  // sinks must be owned by the client.
+
+  // The output sink used for rendering audio or video respectively. They will
+  // be used in the CreateRenderer() call on the RendererFactory returned by
+  // CreateRendererFactory(). May be null if the RendererFactory doesn't need an
+  // audio or video sink. If not null, the sink must be owned by the client.
   virtual AudioRendererSink* CreateAudioRendererSink();
   virtual VideoRendererSink* CreateVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
