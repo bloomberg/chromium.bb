@@ -860,8 +860,13 @@ void FrameSelection::selectAll()
     if (!root || editingIgnoresContent(root.get()))
         return;
 
-    if (selectStartTarget && selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart)) != DispatchEventResult::NotCanceled)
-        return;
+    if (selectStartTarget) {
+        if (selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart)) != DispatchEventResult::NotCanceled)
+            return;
+        // |root| may be detached due to selectstart event.
+        if (!root->inDocument() || root->document() != document)
+            return;
+    }
 
     VisibleSelection newSelection(VisibleSelection::selectionFromContentsOfNode(root.get()));
     setSelection(newSelection);
