@@ -20,10 +20,10 @@
 
 
 int compute_level_from_index(int global_level, int gi) {
-  static const double dering_gains[4] = {0, .7, 1, 1.4};
+  static const int dering_gains[4] = {0, 11, 16, 22};
   int level;
   if (global_level == 0) return 0;
-  level = (int)floor(.5 + global_level*dering_gains[gi]);
+  level = (global_level*dering_gains[gi] + 8) >> 4;
   return clamp(level, gi, MAX_DERING_LEVEL-1);
 }
 
@@ -112,7 +112,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
 #endif
         /* FIXME: This is a temporary hack that uses more conservative
            deringing for chroma. */
-        if (pli) level = level*2/3;
+        if (pli) level = (level*5 + 4) >> 3;
         if (sb_all_skip(cm, sbr*MI_BLOCK_SIZE, sbc*MI_BLOCK_SIZE)) level = 0;
         threshold = level << coeff_shift;
         od_dering(
