@@ -746,6 +746,22 @@ class TestGitCl(TestCase):
     self.assertEquals(5, record_calls.times_called)
     self.assertEquals(0, ret)
 
+  def test_gerrit_change_id(self):
+    self.calls = [
+        ((['git', 'write-tree'], ),
+          'hashtree'),
+        ((['git', 'rev-parse', 'HEAD~0'], ),
+          'branch-parent'),
+        ((['git', 'var', 'GIT_AUTHOR_IDENT'], ),
+          'A B <a@b.org> 1456848326 +0100'),
+        ((['git', 'var', 'GIT_COMMITTER_IDENT'], ),
+          'C D <c@d.org> 1456858326 +0100'),
+        ((['git', 'hash-object', '-t', 'commit', '--stdin'], ),
+          'hashchange'),
+    ]
+    change_id = git_cl.GenerateGerritChangeId('line1\nline2\n')
+    self.assertEqual(change_id, 'Ihashchange')
+
   def test_config_gerrit_download_hook(self):
     self.mock(git_cl, 'FindCodereviewSettingsFile', CodereviewSettingsFileMock)
     def ParseCodereviewSettingsContent(content):

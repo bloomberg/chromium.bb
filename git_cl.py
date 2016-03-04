@@ -2148,6 +2148,36 @@ def AddChangeIdToCommitMessage(options, args):
     print >> sys.stderr, 'ERROR: Gerrit commit-msg hook not available.'
 
 
+def GenerateGerritChangeId(message):
+  """Returns Ixxxxxx...xxx change id.
+
+  Works the same way as
+  https://gerrit-review.googlesource.com/tools/hooks/commit-msg
+  but can be called on demand on all platforms.
+
+  The basic idea is to generate git hash of a state of the tree, original commit
+  message, author/committer info and timestamps.
+  """
+  lines = []
+  tree_hash = RunGitSilent(['write-tree'])
+  lines.append('tree %s' % tree_hash.strip())
+  code, parent = RunGitWithCode(['rev-parse', 'HEAD~0'], suppress_stderr=False)
+  if code == 0:
+    lines.append('parent %s' % parent.strip())
+  author = RunGitSilent(['var', 'GIT_AUTHOR_IDENT'])
+  lines.append('author %s' % author.strip())
+  committer = RunGitSilent(['var', 'GIT_COMMITTER_IDENT'])
+  lines.append('committer %s' % committer.strip())
+  lines.append('')
+  # Note: Gerrit's commit-hook actually cleans message of some lines and
+  # whitespace. This code is not doing this, but it clearly won't decrease
+  # entropy.
+  lines.append(message)
+  change_hash = RunCommand(['git', 'hash-object', '-t', 'commit', '--stdin'],
+                           stdin='\n'.join(lines))
+  return 'I%s' % change_hash.strip()
+
+
 def GerritUpload(options, args, cl, change):
   """upload the current branch to gerrit."""
   # We assume the remote called "origin" is the one we want.
