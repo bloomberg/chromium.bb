@@ -70,6 +70,28 @@ is stretch (the default)</p>
   </div>
 </div>
 
+<p>Tests that we get an definite size in a nested flexbox where only the outer one has an explicit height</p>
+<div class="flexbox" style="height: 50px;" data-expected-height="50">
+  <div class="flexbox" data-expected-height="50">
+    <div data-expected-height="50">
+      <div style="height: 50%" data-expected-height="25">
+        <div class="rect" data-expected-height="50"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p>Tests that we get an definite size in a nested flexbox where only the outer one has an explicit height and has an opposite direction. TODO: This is currently considered indefinite pending crbug.com/346275</p>
+<div class="flexbox" style="height: 50px;" data-expected-height="50">
+  <div class="flexbox column flex-one" data-expected-height="50">
+    <div data-expected-height="50">
+      <div style="height: 50%" data-expected-height="50"> <!-- TODO: should be 25 pending the above bug -->
+        <div class="rect" data-expected-height="50"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <p>Tests that we respect min-height</p>
 <div class="flexbox" style="height: 50px;" data-expected-height="50">
   <div data-expected-height="50">
