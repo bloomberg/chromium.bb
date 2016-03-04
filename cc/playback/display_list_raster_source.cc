@@ -6,187 +6,21 @@
 
 #include <stddef.h>
 
-#include "base/containers/adapters.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
-#include "cc/playback/discardable_image_map.h"
 #include "cc/playback/display_item_list.h"
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/playback/image_hijack_canvas.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkTLazy.h"
-#include "third_party/skia/include/utils/SkNWayCanvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
-
-namespace {
-
-SkIRect RoundOutRect(const SkRect& rect) {
-  SkIRect result;
-  rect.roundOut(&result);
-  return result;
-}
-
-class ImageHijackCanvas : public SkNWayCanvas {
- public:
-  ImageHijackCanvas(int width,
-                    int height,
-                    ImageDecodeController* image_decode_controller)
-      : SkNWayCanvas(width, height),
-        image_decode_controller_(image_decode_controller) {}
-
- protected:
-  // Ensure that pictures are unpacked by this canvas, instead of being
-  // forwarded to the raster canvas.
-  void onDrawPicture(const SkPicture* picture,
-                     const SkMatrix* matrix,
-                     const SkPaint* paint) override {
-    SkCanvas::onDrawPicture(picture, matrix, paint);
-  }
-
-  void onDrawImage(const SkImage* image,
-                   SkScalar x,
-                   SkScalar y,
-                   const SkPaint* paint) override {
-    if (!image->isLazyGenerated()) {
-      SkNWayCanvas::onDrawImage(image, x, y, paint);
-      return;
-    }
-
-    SkMatrix ctm = getTotalMatrix();
-
-    SkSize scale;
-    bool is_decomposable = ExtractScale(ctm, &scale);
-    ScopedDecodedImageLock scoped_lock(
-        image_decode_controller_, image,
-        SkRect::MakeIWH(image->width(), image->height()), scale,
-        is_decomposable, ctm.hasPerspective(), paint);
-    const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
-    if (!decoded_image.image())
-      return;
-
-    DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().width()));
-    DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().height()));
-    const SkPaint* decoded_paint = scoped_lock.decoded_paint();
-
-    bool need_scale = !decoded_image.is_scale_adjustment_identity();
-    if (need_scale) {
-      SkNWayCanvas::save();
-      SkNWayCanvas::scale(1.f / (decoded_image.scale_adjustment().width()),
-                          1.f / (decoded_image.scale_adjustment().height()));
-    }
-    SkNWayCanvas::onDrawImage(decoded_image.image(), x, y, decoded_paint);
-    if (need_scale)
-      SkNWayCanvas::restore();
-  }
-
-  void onDrawImageRect(const SkImage* image,
-                       const SkRect* src,
-                       const SkRect& dst,
-                       const SkPaint* paint,
-                       SrcRectConstraint constraint) override {
-    if (!image->isLazyGenerated()) {
-      SkNWayCanvas::onDrawImageRect(image, src, dst, paint, constraint);
-      return;
-    }
-
-    SkRect src_storage;
-    if (!src) {
-      src_storage = SkRect::MakeIWH(image->width(), image->height());
-      src = &src_storage;
-    }
-    SkMatrix matrix;
-    matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
-    matrix.postConcat(getTotalMatrix());
-
-    SkSize scale;
-    bool is_decomposable = ExtractScale(matrix, &scale);
-    ScopedDecodedImageLock scoped_lock(image_decode_controller_, image, *src,
-                                       scale, is_decomposable,
-                                       matrix.hasPerspective(), paint);
-    const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
-    if (!decoded_image.image())
-      return;
-
-    const SkPaint* decoded_paint = scoped_lock.decoded_paint();
-
-    SkRect adjusted_src =
-        src->makeOffset(decoded_image.src_rect_offset().width(),
-                        decoded_image.src_rect_offset().height());
-    if (!decoded_image.is_scale_adjustment_identity()) {
-      float x_scale = decoded_image.scale_adjustment().width();
-      float y_scale = decoded_image.scale_adjustment().height();
-      adjusted_src = SkRect::MakeXYWH(
-          adjusted_src.x() * x_scale, adjusted_src.y() * y_scale,
-          adjusted_src.width() * x_scale, adjusted_src.height() * y_scale);
-    }
-    SkNWayCanvas::onDrawImageRect(decoded_image.image(), &adjusted_src, dst,
-                                  decoded_paint, constraint);
-  }
-
-  void onDrawImageNine(const SkImage* image,
-                       const SkIRect& center,
-                       const SkRect& dst,
-                       const SkPaint* paint) override {
-    // No cc embedder issues image nine calls.
-    NOTREACHED();
-  }
-
- private:
-  class ScopedDecodedImageLock {
-   public:
-    ScopedDecodedImageLock(ImageDecodeController* image_decode_controller,
-                           const SkImage* image,
-                           const SkRect& src_rect,
-                           const SkSize& scale,
-                           bool is_decomposable,
-                           bool has_perspective,
-                           const SkPaint* paint)
-        : image_decode_controller_(image_decode_controller),
-          draw_image_(image,
-                      RoundOutRect(src_rect),
-                      scale,
-                      paint ? paint->getFilterQuality() : kNone_SkFilterQuality,
-                      has_perspective,
-                      is_decomposable),
-          decoded_draw_image_(
-              image_decode_controller_->GetDecodedImageForDraw(draw_image_)) {
-      DCHECK(image->isLazyGenerated());
-      if (paint)
-        decoded_paint_.set(*paint)->setFilterQuality(
-            decoded_draw_image_.filter_quality());
-    }
-
-    ~ScopedDecodedImageLock() {
-      image_decode_controller_->DrawWithImageFinished(draw_image_,
-                                                      decoded_draw_image_);
-    }
-
-    const DecodedDrawImage& decoded_image() const {
-      return decoded_draw_image_;
-    }
-    const SkPaint* decoded_paint() const {
-      return decoded_paint_.getMaybeNull();
-    }
-
-   private:
-    ImageDecodeController* image_decode_controller_;
-    DrawImage draw_image_;
-    DecodedDrawImage decoded_draw_image_;
-    // TODO(fmalita): use base::Optional when it becomes available
-    SkTLazy<SkPaint> decoded_paint_;
-  };
-
-  ImageDecodeController* image_decode_controller_;
-};
-
-}  // namespace
 
 scoped_refptr<DisplayListRasterSource>
 DisplayListRasterSource::CreateFromDisplayListRecordingSource(

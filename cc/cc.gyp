@@ -369,6 +369,8 @@
         'playback/filter_display_item.h',
         'playback/float_clip_display_item.cc',
         'playback/float_clip_display_item.h',
+        'playback/image_hijack_canvas.cc',
+        'playback/image_hijack_canvas.h',
         'playback/largest_display_item.cc',
         'playback/largest_display_item.h',
         'playback/transform_display_item.cc',
