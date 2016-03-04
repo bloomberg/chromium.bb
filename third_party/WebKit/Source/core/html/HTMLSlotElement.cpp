@@ -45,7 +45,7 @@ using namespace HTMLNames;
 
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(slotTag, document)
-    , m_distributionState(DistributionUnchanged)
+    , m_distributionState(DistributionDone)
 {
     setHasCustomStyleCallbacks();
 }
@@ -71,7 +71,7 @@ const WillBeHeapVector<RefPtrWillBeMember<Node>>& HTMLSlotElement::getDistribute
     // TODO(hayato): If this path causes a performance issue, we should move
     // ShadowRootRaraDate::m_descendantSlots into TreeScopreRareData-ish and
     // update the distribution code so it considers a document tree too.
-    clearDistribution();
+    willUpdateDistribution();
     for (Node& child : NodeTraversal::childrenOf(*this)) {
         if (!child.isSlotAssignable())
             continue;
@@ -80,16 +80,19 @@ const WillBeHeapVector<RefPtrWillBeMember<Node>>& HTMLSlotElement::getDistribute
         else
             m_distributedNodes.append(&child);
     }
+    didUpdateDistribution();
     return m_distributedNodes;
 }
 
 void HTMLSlotElement::appendAssignedNode(Node& node)
 {
+    ASSERT(m_distributionState == DistributionOnGoing);
     m_assignedNodes.append(&node);
 }
 
 void HTMLSlotElement::appendDistributedNode(Node& node)
 {
+    ASSERT(m_distributionState == DistributionOnGoing);
     size_t size = m_distributedNodes.size();
     m_distributedNodes.append(&node);
     m_distributedIndices.set(&node, size);
@@ -97,19 +100,21 @@ void HTMLSlotElement::appendDistributedNode(Node& node)
 
 void HTMLSlotElement::appendDistributedNodesFrom(const HTMLSlotElement& other)
 {
+    ASSERT(m_distributionState == DistributionOnGoing);
     size_t index = m_distributedNodes.size();
     m_distributedNodes.appendVector(other.m_distributedNodes);
     for (const auto& node : other.m_distributedNodes)
         m_distributedIndices.set(node.get(), index++);
 }
 
-void HTMLSlotElement::clearDistribution()
+void HTMLSlotElement::willUpdateDistribution()
 {
+    ASSERT(m_distributionState != DistributionOnGoing);
+    m_distributionState = DistributionOnGoing;
     m_assignedNodes.clear();
     m_oldDistributedNodes.swap(m_distributedNodes);
     m_distributedNodes.clear();
     m_distributedIndices.clear();
-    m_distributionState = DistributionReset;
 }
 
 bool HTMLSlotElement::hasSlotChangeEventListener()
@@ -246,13 +251,16 @@ void HTMLSlotElement::updateDistributedNodesWithFallback()
 
 bool HTMLSlotElement::distributionChanged()
 {
-    if (m_distributionState == DistributionReset)
+    ASSERT(m_distributionState != DistributionOnGoing);
+    if (m_distributionState == DistributionDone)
         m_distributionState = m_oldDistributedNodes == m_distributedNodes ? DistributionUnchanged : DistributionChanged;
     return m_distributionState == DistributionChanged;
 }
 
 void HTMLSlotElement::didUpdateDistribution()
 {
+    ASSERT(m_distributionState == DistributionOnGoing);
+    m_distributionState = DistributionDone;
     if (isChildOfV1ShadowHost()) {
         ElementShadow* shadow = parentElementShadow();
         ASSERT(shadow);
@@ -263,6 +271,12 @@ void HTMLSlotElement::didUpdateDistribution()
         // TODO(hayato): Do not enqueue a slotchange event for the same slot twice in the microtask queue
         Microtask::enqueueMicrotask(WTF::bind(&HTMLSlotElement::dispatchSlotChangeEvent, PassRefPtrWillBeRawPtr<HTMLSlotElement>(this)));
     }
+}
+
+void HTMLSlotElement::clearDistribution()
+{
+    willUpdateDistribution();
+    didUpdateDistribution();
 }
 
 DEFINE_TRACE(HTMLSlotElement)

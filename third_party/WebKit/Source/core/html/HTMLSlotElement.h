@@ -56,7 +56,7 @@ public:
     void appendAssignedNode(Node&);
     void appendDistributedNode(Node&);
     void appendDistributedNodesFrom(const HTMLSlotElement& other);
-    void clearDistribution();
+    void willUpdateDistribution();
 
     bool hasSlotChangeEventListener();
 
@@ -74,11 +74,13 @@ private:
     HTMLSlotElement(Document&);
 
     enum DistributionState {
-        DistributionReset,
+        DistributionOnGoing,
+        DistributionDone,
         DistributionChanged,
         DistributionUnchanged
     };
 
+    void clearDistribution();
     void childrenChanged(const ChildrenChange&) final;
     InsertionNotificationRequest insertedInto(ContainerNode*) final;
     void removedFrom(ContainerNode*) final;

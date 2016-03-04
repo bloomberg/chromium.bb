@@ -41,7 +41,7 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
     const WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& slots = shadowRoot.descendantSlots();
 
     for (RefPtrWillBeMember<HTMLSlotElement> slot : slots) {
-        slot->clearDistribution();
+        slot->willUpdateDistribution();
         AtomicString name = slot->fastGetAttribute(HTMLNames::nameAttr);
         if (isDefaultSlotName(name)) {
             if (!defaultSlot)
