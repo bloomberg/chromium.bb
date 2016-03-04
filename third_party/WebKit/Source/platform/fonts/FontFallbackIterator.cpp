@@ -13,17 +13,24 @@
 
 namespace blink {
 
-PassRefPtr<FontFallbackIterator> FontFallbackIterator::create(const FontDescription& description, PassRefPtr<FontFallbackList> fallbackList)
+PassRefPtr<FontFallbackIterator> FontFallbackIterator::create(
+    const FontDescription& description,
+    PassRefPtr<FontFallbackList> fallbackList,
+    FontFallbackPriority fontFallbackPriority)
 {
-    return adoptRef(new FontFallbackIterator(description, fallbackList));
+    return adoptRef(new FontFallbackIterator(
+        description, fallbackList, fontFallbackPriority));
 }
 
-FontFallbackIterator::FontFallbackIterator(const FontDescription& description, PassRefPtr<FontFallbackList> fallbackList)
+FontFallbackIterator::FontFallbackIterator(const FontDescription& description,
+    PassRefPtr<FontFallbackList> fallbackList,
+    FontFallbackPriority fontFallbackPriority)
     : m_fontDescription(description)
     , m_fontFallbackList(fallbackList)
     , m_currentFontDataIndex(0)
     , m_segmentedIndex(0)
     , m_fallbackStage(FontGroupFonts)
+    , m_fontFallbackPriority(fontFallbackPriority)
 {
 }
 
@@ -71,12 +78,17 @@ const FontDataRange FontFallbackIterator::next(const Vector<UChar32>& hintList)
     if (m_fallbackStage == OutOfLuck)
         return FontDataRange();
 
-    const FontData* fontData = m_fontFallbackList->fontDataAt(m_fontDescription, m_currentFontDataIndex);
-
-    // If there is no fontData coming from the fallback list, it means
-    // we have reached the system fallback stage.
-    if (!fontData) {
+    if (m_fallbackStage == FallbackPriorityFonts) {
+        // Only try one fallback priority font,
+        // then proceed to regular system fallback.
         m_fallbackStage = SystemFonts;
+        FontDataRange fallbackPriorityFontRange(fallbackPriorityFont(hintList[0]));
+        if (fallbackPriorityFontRange.hasFontData())
+            return fallbackPriorityFontRange;
+        return next(hintList);
+    }
+
+    if (m_fallbackStage == SystemFonts) {
         // We've reached pref + system fallback.
         ASSERT(hintList.size());
         RefPtr<SimpleFontData> systemFont = uniqueSystemFontForHint(hintList[0]);
@@ -93,6 +105,21 @@ const FontDataRange FontFallbackIterator::next(const Vector<UChar32>& hintList)
         RefPtr<SimpleFontData> lastResort = fontCache->getLastResortFallbackFont(m_fontDescription).get();
         RELEASE_ASSERT(lastResort);
         return FontDataRange(lastResort);
+    }
+
+    ASSERT(m_fallbackStage == FontGroupFonts
+        || m_fallbackStage == SegmentedFace);
+    const FontData* fontData = m_fontFallbackList->fontDataAt(
+        m_fontDescription, m_currentFontDataIndex);
+
+    if (!fontData) {
+        // If there is no fontData coming from the fallback list, it means
+        // we are now looking at system fonts, either for prioritized symbol
+        // or emoji fonts or by calling system fallback API.
+        m_fallbackStage = isNonTextFallbackPriority(m_fontFallbackPriority)
+            ? FallbackPriorityFonts
+            : SystemFonts;
+        return next(hintList);
     }
 
     // Otherwise we've received a fontData from the font-family: set of fonts,
@@ -135,6 +162,16 @@ const FontDataRange FontFallbackIterator::next(const Vector<UChar32>& hintList)
     }
 
     return next(hintList);
+}
+
+const PassRefPtr<SimpleFontData> FontFallbackIterator::fallbackPriorityFont(
+    UChar32 hint)
+{
+    return FontCache::fontCache()->fallbackFontForCharacter(
+        m_fontDescription,
+        hint,
+        m_fontFallbackList->primarySimpleFontData(m_fontDescription),
+        m_fontFallbackPriority);
 }
 
 const PassRefPtr<SimpleFontData> FontFallbackIterator::uniqueSystemFontForHint(UChar32 hint)
