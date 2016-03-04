@@ -745,7 +745,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
     ASSERT(document->documentElement());
 
     Element* current = start;
-    if (!current)
+    if (!current && !initialFocus)
         current = document->sequentialFocusNavigationStartingPoint(type);
 
     // FIXME: Not quite correct when it comes to focus transitions leaving/entering the WebView itself
