@@ -1825,13 +1825,8 @@ struct FuzzTraits<ui::LatencyInfo> {
         RandInRange(ui::LatencyInfo::kMaxInputCoordinates + 1));
     ui::LatencyInfo::InputCoordinate
         input_coordinates[ui::LatencyInfo::kMaxInputCoordinates];
-    uint32_t event_timestamps_size = static_cast<uint32_t>(
-        RandInRange(ui::LatencyInfo::kMaxCoalescedEventTimestamps + 1));
-    double event_timestamps[ui::LatencyInfo::kMaxCoalescedEventTimestamps];
     if (!FuzzParamArray(
         input_coordinates, input_coordinates_size, fuzzer))
-      return false;
-    if (!FuzzParamArray(event_timestamps, event_timestamps_size, fuzzer))
       return false;
     if (!FuzzParam(&trace_id, fuzzer))
       return false;
@@ -1841,9 +1836,6 @@ struct FuzzTraits<ui::LatencyInfo> {
     ui::LatencyInfo latency(trace_id, terminated);
     for (size_t i = 0; i < input_coordinates_size; i++) {
       latency.AddInputCoordinate(input_coordinates[i]);
-    }
-    for (size_t i = 0; i < event_timestamps_size; i++) {
-      latency.AddCoalescedEventTimestamp(event_timestamps[i]);
     }
     *p = latency;
 
