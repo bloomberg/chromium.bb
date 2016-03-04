@@ -236,8 +236,6 @@ fi
 eval $(sed -e "s/^\([^=]\+\)=\(.*\)$/export \1='\2'/" \
   "${BUILDDIR}/installer/theme/BRANDING")
 
-REPOCONFIG="deb http://dl.google.com/linux/chrome/deb/ stable main"
-SSLREPOCONFIG="deb https://dl.google.com/linux/chrome/deb/ stable main"
 verify_channel
 
 # Some Debian packaging tools want these set.
@@ -323,11 +321,9 @@ cd "${OUTPUTDIR}"
 case "$TARGETARCH" in
   ia32 )
     export ARCHITECTURE="i386"
-    stage_install_debian
     ;;
   x64 )
     export ARCHITECTURE="amd64"
-    stage_install_debian
     ;;
   * )
     echo
@@ -336,5 +332,14 @@ case "$TARGETARCH" in
     exit 1
     ;;
 esac
+BASEREPOCONFIG="dl.google.com/linux/chrome/deb/ stable main"
+# Only use the default REPOCONFIG if it's unset (e.g. verify_channel might have
+# set it to an empty string)
+REPOCONFIG="${REPOCONFIG-deb [arch=${ARCHITECTURE}] http://${BASEREPOCONFIG}}"
+# Allowed configs include optional HTTPS support and explicit multiarch
+# platforms.
+REPOCONFIGREGEX="deb (\\\\[arch=[^]]*\\\\b${ARCHITECTURE}\\\\b[^]]*\\\\]" \
+"[[:space:]]*)?https?://${BASEREPOCONFIG}"
+stage_install_debian
 
 do_package

@@ -87,7 +87,7 @@ update_bad_sources() {
   ACTIVECONFIGS=$(grep -v "^[[:space:]]*\(#.*\)\?$" "$SOURCELIST" 2>/dev/null)
 
   # Check if the correct repository configuration is in there.
-  REPOMATCH=$(grep -E "^[[:space:]#]*\b($REPOCONFIG|$SSLREPOCONFIG)\b" "$SOURCELIST" \
+  REPOMATCH=$(grep -E "^[[:space:]#]*\b$REPOCONFIGREGEX\b" "$SOURCELIST" \
     2>/dev/null)
 
   # Check if the correct repository is disabled.
@@ -174,9 +174,9 @@ handle_distro_upgrade() {
   find_apt_sources
   SOURCELIST="$APT_SOURCESDIR/@@PACKAGE@@.list"
   if [ -r "$SOURCELIST" ]; then
-    REPOLINE=$(grep -E "^[[:space:]]*#[[:space:]]*($REPOCONFIG|$SSLREPOCONFIG)[[:space:]]*# disabled on upgrade to .*" "$SOURCELIST")
+    REPOLINE=$(grep -E "^[[:space:]]*#[[:space:]]*$REPOCONFIGREGEX[[:space:]]*# disabled on upgrade to .*" "$SOURCELIST")
     if [ $? -eq 0 ]; then
-      sed -i -e "s,^[[:space:]]*#[[:space:]]*\($REPOCONFIG\|$SSLREPOCONFIG\)[[:space:]]*# disabled on upgrade to .*,\1," \
+      sed -i -e "s,^[[:space:]]*#[[:space:]]*\(.*\)[[:space:]]*# disabled on upgrade to .*,\1," \
         "$SOURCELIST"
       LOGGER=$(which logger 2> /dev/null)
       if [ "$LOGGER" ]; then

@@ -314,7 +314,6 @@ eval $(sed -e "s/^\([^=]\+\)=\(.*\)$/export \1='\2'/" \
   "${BUILDDIR}/installer/theme/BRANDING")
 
 REPOCONFIG="http://dl.google.com/linux/${PACKAGE#google-}/rpm/stable"
-SSLREPOCONFIG="https://dl.google.com/linux/${PACKAGE#google-}/rpm/stable"
 verify_channel
 export USR_BIN_SYMLINK_NAME="${PACKAGE}-${CHANNEL}"
 

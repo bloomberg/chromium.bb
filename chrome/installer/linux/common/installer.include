@@ -73,7 +73,7 @@ process_template() (
     -e "s#@@MAINTNAME@@#${MAINTNAME}#g" \
     -e "s#@@MAINTMAIL@@#${MAINTMAIL}#g" \
     -e "s#@@REPOCONFIG@@#${REPOCONFIG}#g" \
-    -e "s#@@SSLREPOCONFIG@@#${SSLREPOCONFIG}#g" \
+    -e "s#@@REPOCONFIGREGEX@@#${REPOCONFIGREGEX}#g" \
     -e "s#@@SHORTDESC@@#${SHORTDESC}#g" \
     -e "s#@@FULLDESC@@#${FULLDESC}#g" \
     -e "s#@@DEFAULT_FLAGS@@#${DEFAULT_FLAGS:-}#g" \
