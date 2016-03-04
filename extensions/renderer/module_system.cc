@@ -399,7 +399,7 @@ void ModuleSystem::LazyFieldGetterInner(
       v8::Local<v8::External>::Cast(module_system_value)->Value());
 
   v8::Local<v8::Value> v8_module_name;
-  if (!GetProperty(context, parameters, kModuleName, &v8_module_name)) {
+  if (!GetPrivateProperty(context, parameters, kModuleName, &v8_module_name)) {
     Warn(isolate, "Cannot find module.");
     return;
   }
@@ -419,7 +419,7 @@ void ModuleSystem::LazyFieldGetterInner(
 
   v8::Local<v8::Object> module = v8::Local<v8::Object>::Cast(module_value);
   v8::Local<v8::Value> field_value;
-  if (!GetProperty(context, parameters, kModuleField, &field_value)) {
+  if (!GetPrivateProperty(context, parameters, kModuleField, &field_value)) {
     module_system->HandleException(try_catch);
     return;
   }
@@ -479,9 +479,9 @@ void ModuleSystem::SetLazyField(v8::Local<v8::Object> object,
   v8::HandleScope handle_scope(GetIsolate());
   v8::Local<v8::Object> parameters = v8::Object::New(GetIsolate());
   v8::Local<v8::Context> context = context_->v8_context();
-  SetProperty(context, parameters, kModuleName,
+  SetPrivateProperty(context, parameters, kModuleName,
               ToV8StringUnsafe(GetIsolate(), module_name.c_str()));
-  SetProperty(context, parameters, kModuleField,
+  SetPrivateProperty(context, parameters, kModuleField,
               ToV8StringUnsafe(GetIsolate(), module_field.c_str()));
   auto maybe = object->SetAccessor(
       context, ToV8StringUnsafe(GetIsolate(), field.c_str()), getter, NULL,
