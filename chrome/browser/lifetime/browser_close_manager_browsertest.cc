@@ -1016,7 +1016,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
 // Check that closing all browsers with no browser windows open suspends
 // background mode but does not cause Chrome to quit.
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
-                       CloseAllBrowsersWithNoOpenBrowsersWithBackgroundMode) {
+                       DISABLED_CloseAllBrowsersWithNoOpenBrowsersWithBackgroundMode) {
   RepeatedNotificationObserver close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   EXPECT_FALSE(IsBackgroundModeSuspended());
