@@ -17,7 +17,7 @@ namespace blink {
 
 namespace {
 
-const char kTrialMetaTagName[] = "origin-trials";
+const char kTrialHeaderName[] = "origin-trial";
 
 String getCurrentOrigin(ExecutionContext* executionContext)
 {
@@ -39,7 +39,7 @@ bool hasValidToken(ExecutionContext* executionContext, const String& featureName
     if (executionContext->isDocument()) {
         HTMLHeadElement* head = toDocument(executionContext)->head();
         for (HTMLMetaElement* metaElement = head ? Traversal<HTMLMetaElement>::firstChild(*head) : 0; metaElement; metaElement = Traversal<HTMLMetaElement>::nextSibling(*metaElement)) {
-            if (equalIgnoringCase(metaElement->name(), kTrialMetaTagName)) {
+            if (equalIgnoringCase(metaElement->httpEquiv(), kTrialHeaderName)) {
                 foundAnyToken = true;
                 String tokenString = metaElement->content();
                 // Check with the validator service to verify the signature.
