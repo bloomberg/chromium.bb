@@ -25,6 +25,11 @@ static void detachNotAssignedNode(Node& node)
         node.lazyReattachIfAttached();
 }
 
+inline static bool isDefaultSlotName(const AtomicString& name)
+{
+    return name.isNull() || name.isEmpty();
+}
+
 void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
 {
     m_assignment.clear();
@@ -38,7 +43,7 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
     for (RefPtrWillBeMember<HTMLSlotElement> slot : slots) {
         slot->clearDistribution();
         AtomicString name = slot->fastGetAttribute(HTMLNames::nameAttr);
-        if (name.isNull() || name.isEmpty()) {
+        if (isDefaultSlotName(name)) {
             if (!defaultSlot)
                 defaultSlot = slot.get();
         } else {
@@ -54,7 +59,7 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
                 continue;
             }
             AtomicString slotName = toElement(child).fastGetAttribute(HTMLNames::slotAttr);
-            if (slotName.isNull() || slotName.isEmpty()) {
+            if (isDefaultSlotName(slotName)) {
                 if (defaultSlot)
                     assign(child, *defaultSlot);
                 else
