@@ -33,15 +33,15 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
 
   ChooseSink(web_contents, kTestSinkName);
 
-// Linux bots run browser tests without a physical display, which is causing
-// flaky event dispatching of mouseenter and mouseleave events. This causes
-// the dialog to sometimes close prematurely even though a mouseenter event
-// is explicitly dispatched in the test.
-// Here, we still dispatch the mouseenter event for OSX and Windows, but close
-// the dialog and reopen it on Linux.
+// Linux and Windows bots run browser tests without a physical display, which
+// is causing flaky event dispatching of mouseenter and mouseleave events. This
+// causes the dialog to sometimes close prematurely even though a mouseenter
+// event is explicitly dispatched in the test.
+// Here, we still dispatch the mouseenter event for OSX, but close
+// the dialog and reopen it on Linux and Windows.
 // The test succeeds fine when run with a physical display.
-// http://crbug.com/577943
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// http://crbug.com/577943 http://crbug.com/591779
+#if defined(OS_MACOSX)
   // Simulate keeping the mouse on the dialog to prevent it from automatically
   // closing after the route has been created. Then, check that the dialog
   // remains open.
@@ -53,9 +53,9 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
 #endif
   WaitUntilRouteCreated();
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
   CheckDialogRemainsOpen(web_contents);
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_WIN)
   Wait(base::TimeDelta::FromSeconds(5));
   WaitUntilDialogClosed(web_contents);
   dialog_contents = OpenMRDialog(web_contents);
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
       dialog_contents, sink_name_script);
   ASSERT_EQ(kTestSinkName, sink_name);
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
   // Simulate moving the mouse off the dialog. Confirm that the dialog closes
   // automatically after the route is closed.
   // In tests, it sometimes takes too long to CloseRouteOnUI() to finish so
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, mouse_leave_script));
 #endif
   CloseRouteOnUI();
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
   WaitUntilDialogClosed(web_contents);
 #endif
 }
