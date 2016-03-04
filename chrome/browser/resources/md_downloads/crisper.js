@@ -1061,25 +1061,6 @@ function announceAccessibleMessage(msg) {
 }
 
 /**
- * Calls chrome.send with a callback and restores the original afterwards.
- * @param {string} name The name of the message to send.
- * @param {!Array} params The parameters to send.
- * @param {string} callbackName The name of the function that the backend calls.
- * @param {!Function} callback The function to call.
- */
-function chromeSend(name, params, callbackName, callback) {
-  var old = global[callbackName];
-  global[callbackName] = function() {
-    // restore
-    global[callbackName] = old;
-
-    var args = Array.prototype.slice.call(arguments);
-    return callback.apply(global, args);
-  };
-  chrome.send(name, params);
-}
-
-/**
  * Returns the scale factors supported by this platform for webui
  * resources.
  * @return {Array} The supported scale factors.

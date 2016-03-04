@@ -41,6 +41,7 @@ _VULCANIZE_ARGS = [
   '--exclude', 'load_time_data.js',
   '--exclude', 'strings.js',
   '--exclude', 'text_defaults.css',
+  '--exclude', 'text_defaults_md.css',
 
   '--inline-css',
   '--inline-scripts',
