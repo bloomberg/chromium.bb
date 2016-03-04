@@ -660,6 +660,8 @@ class TestGitCl(TestCase):
     self.calls += self._gerrit_upload_calls(
         description, reviewers, squash,
         expected_upstream_ref=expected_upstream_ref)
+    # Uncomment when debugging.
+    # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
 
   def test_gerrit_upload_without_change_id(self):
@@ -671,20 +673,20 @@ class TestGitCl(TestCase):
   def test_gerrit_no_reviewer(self):
     self._run_gerrit_upload_test(
         [],
-        'desc\n\nBUG=\nChange-Id:123456789\n',
+        'desc\n\nBUG=\n\nChange-Id: I123456789\n',
         [])
 
   def test_gerrit_reviewers_cmd_line(self):
     self._run_gerrit_upload_test(
         ['-r', 'foo@example.com'],
-        'desc\n\nBUG=\nChange-Id:123456789',
+        'desc\n\nBUG=\n\nChange-Id: I123456789',
         ['foo@example.com'])
 
   def test_gerrit_reviewer_multiple(self):
     self._run_gerrit_upload_test(
         [],
-        'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n'
-        'Change-Id:123456789\n',
+        'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n\n'
+        'Change-Id: 123456789\n',
         ['reviewer@example.com', 'another@example.com'])
 
   def test_gerrit_upload_squash(self):

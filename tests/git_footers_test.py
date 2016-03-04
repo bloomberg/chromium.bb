@@ -73,6 +73,10 @@ My commit message is my best friend. It is my life. I must master it.
                      '',  # Above is ignored because of this empty line.
                      'Change-Id: Ideadbeaf'])
     self.assertEqual(['Ideadbeaf'], git_footers.get_footer_change_id(msg))
+    self.assertEqual([], git_footers.get_footer_change_id(
+        'desc\nBUG=not-a-valid-footer\nChange-Id: Ixxx'))
+    self.assertEqual(['Ixxx'], git_footers.get_footer_change_id(
+        'desc\nBUG=not-a-valid-footer\n\nChange-Id: Ixxx'))
 
   def testAddFooterChangeId(self):
     self.assertEqual(

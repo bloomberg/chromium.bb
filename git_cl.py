@@ -48,7 +48,7 @@ import dart_format
 import fix_encoding
 import gclient_utils
 import git_common
-from git_footers import get_footer_svn_id
+import git_footers
 import owners
 import owners_finder
 import presubmit_support
@@ -2146,7 +2146,7 @@ def AddChangeIdToCommitMessage(options, args):
   git_command = ['commit', '--amend', '-m', log_desc]
   RunGit(git_command)
   new_log_desc = CreateDescriptionFromLog(args)
-  if CHANGE_ID in new_log_desc:
+  if git_footers.get_footer_change_id(new_log_desc):
     print 'git-cl: Added Change-Id to commit message.'
   else:
     print >> sys.stderr, 'ERROR: Gerrit commit-msg hook not available.'
@@ -2264,7 +2264,7 @@ def GerritUpload(options, args, cl, change):
     ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
                           '-m', message]).strip()
   else:
-    if CHANGE_ID not in change_desc.description:
+    if not git_footers.get_footer_change_id(change_desc.description):
       AddChangeIdToCommitMessage(options, args)
     ref_to_push = 'HEAD'
     parent = '%s/%s' % (gerrit_remote, branch)
@@ -3076,7 +3076,7 @@ def IsFatalPushFailure(push_stdout):
 def CMDdcommit(parser, args):
   """Commits the current changelist via git-svn."""
   if not settings.GetIsGitSvn():
-    if get_footer_svn_id():
+    if git_footers.get_footer_svn_id():
       # If it looks like previous commits were mirrored with git-svn.
       message = """This repository appears to be a git-svn mirror, but no
 upstream SVN master is set. You probably need to run 'git auto-svn' once."""
@@ -3098,7 +3098,7 @@ proceed, please verify that the commit lands upstream as expected."""
 @subcommand.usage('[upstream branch to apply against]')
 def CMDland(parser, args):
   """Commits the current changelist via git."""
-  if settings.GetIsGitSvn() or get_footer_svn_id():
+  if settings.GetIsGitSvn() or git_footers.get_footer_svn_id():
     print('This appears to be an SVN repository.')
     print('Are you sure you didn\'t mean \'git cl dcommit\'?')
     print('(Ignore if this is the first commit after migrating from svn->git)')
