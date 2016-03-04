@@ -13,8 +13,6 @@ namespace cc {
 
 class ImageDecodeController;
 
-// TODO(vmpstr): Convert this to SkCanvas override and plumb through the raster
-// pipeline.
 class ImageHijackCanvas : public SkNWayCanvas {
  public:
   ImageHijackCanvas(int width,
