@@ -1082,27 +1082,9 @@ void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, L
 void LayoutBlock::simplifiedNormalFlowLayout()
 {
     if (childrenInline()) {
-        ListHashSet<RootInlineBox*> lineBoxes;
         ASSERT_WITH_SECURITY_IMPLICATION(isLayoutBlockFlow());
-        for (InlineWalker walker(toLayoutBlockFlow(this)); !walker.atEnd(); walker.advance()) {
-            LayoutObject* o = walker.current();
-            if (!o->isOutOfFlowPositioned() && (o->isAtomicInlineLevel() || o->isFloating())) {
-                o->layoutIfNeeded();
-                if (toLayoutBox(o)->inlineBoxWrapper()) {
-                    RootInlineBox& box = toLayoutBox(o)->inlineBoxWrapper()->root();
-                    lineBoxes.add(&box);
-                }
-            } else if (o->isText() || (o->isLayoutInline() && !walker.atEndOfInline())) {
-                o->clearNeedsLayout();
-            }
-        }
-
-        // FIXME: Glyph overflow will get lost in this case, but not really a big deal.
-        GlyphOverflowAndFallbackFontsMap textBoxDataMap;
-        for (ListHashSet<RootInlineBox*>::const_iterator it = lineBoxes.begin(); it != lineBoxes.end(); ++it) {
-            RootInlineBox* box = *it;
-            box->computeOverflow(box->lineTop(), box->lineBottom(), textBoxDataMap);
-        }
+        LayoutBlockFlow* blockFlow = toLayoutBlockFlow(this);
+        blockFlow->simplifiedNormalFlowInlineLayout();
     } else {
         for (LayoutBox* box = firstChildBox(); box; box = box->nextSiblingBox()) {
             if (!box->isOutOfFlowPositioned()) {
@@ -1758,12 +1740,12 @@ Position LayoutBlock::positionForBox(InlineBox *box, bool start) const
     return Position::editingPositionOf(box->getLineLayoutItem().nonPseudoNode(), start ? textBox->start() : textBox->start() + textBox->len());
 }
 
-static inline bool isEditingBoundary(LayoutObject* ancestor, LayoutObject* child)
+static inline bool isEditingBoundary(LayoutObject* ancestor, LineLayoutBox child)
 {
     ASSERT(!ancestor || ancestor->nonPseudoNode());
-    ASSERT(child && child->nonPseudoNode());
+    ASSERT(child && child.nonPseudoNode());
     return !ancestor || !ancestor->parent() || (ancestor->hasLayer() && ancestor->parent()->isLayoutView())
-        || ancestor->nonPseudoNode()->hasEditableStyle() == child->nonPseudoNode()->hasEditableStyle();
+        || ancestor->nonPseudoNode()->hasEditableStyle() == child.nonPseudoNode()->hasEditableStyle();
 }
 
 // FIXME: This function should go on LayoutObject as an instance method. Then
@@ -2777,7 +2759,7 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(const LayoutObject
     return newBox;
 }
 
-static bool recalcNormalFlowChildOverflowIfNeeded(LayoutObject* layoutObject)
+bool LayoutBlock::recalcNormalFlowChildOverflowIfNeeded(LayoutObject* layoutObject)
 {
     if (layoutObject->isOutOfFlowPositioned() || !layoutObject->needsOverflowRecalcAfterStyleChange())
         return false;
@@ -2794,23 +2776,8 @@ bool LayoutBlock::recalcChildOverflowAfterStyleChange()
     bool childrenOverflowChanged = false;
 
     if (childrenInline()) {
-        ListHashSet<RootInlineBox*> lineBoxes;
         ASSERT_WITH_SECURITY_IMPLICATION(isLayoutBlockFlow());
-        for (InlineWalker walker(toLayoutBlockFlow(this)); !walker.atEnd(); walker.advance()) {
-            LayoutObject* layoutObject = walker.current();
-            if (recalcNormalFlowChildOverflowIfNeeded(layoutObject)) {
-                childrenOverflowChanged = true;
-                if (InlineBox* inlineBoxWrapper = toLayoutBlock(layoutObject)->inlineBoxWrapper())
-                    lineBoxes.add(&inlineBoxWrapper->root());
-            }
-        }
-
-        // FIXME: Glyph overflow will get lost in this case, but not really a big deal.
-        GlyphOverflowAndFallbackFontsMap textBoxDataMap;
-        for (ListHashSet<RootInlineBox*>::const_iterator it = lineBoxes.begin(); it != lineBoxes.end(); ++it) {
-            RootInlineBox* box = *it;
-            box->computeOverflow(box->lineTop(), box->lineBottom(), textBoxDataMap);
-        }
+        childrenOverflowChanged = toLayoutBlockFlow(this)->recalcInlineChildrenOverflowAfterStyleChange();
     } else {
         for (LayoutBox* box = firstChildBox(); box; box = box->nextSiblingBox()) {
             if (recalcNormalFlowChildOverflowIfNeeded(box))

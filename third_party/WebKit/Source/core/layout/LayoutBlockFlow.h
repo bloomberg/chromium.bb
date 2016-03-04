@@ -279,6 +279,9 @@ public:
 
     void invalidateDisplayItemClientsOfFirstLine();
 
+    void simplifiedNormalFlowInlineLayout();
+    bool recalcInlineChildrenOverflowAfterStyleChange();
+
 protected:
     void rebuildFloatsFromIntruding();
     void layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge);

@@ -45,6 +45,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/api/SelectionState.h"
+#include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
@@ -2860,6 +2861,54 @@ void LayoutBlockFlow::positionDialog()
         top += (visibleHeight - size().height()) / 2;
     setY(top);
     dialog->setCentered(top);
+}
+
+void LayoutBlockFlow::simplifiedNormalFlowInlineLayout()
+{
+    ASSERT(childrenInline());
+    ListHashSet<RootInlineBox*> lineBoxes;
+    for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
+        LayoutObject* o = walker.current().layoutObject();
+        if (!o->isOutOfFlowPositioned() && (o->isAtomicInlineLevel() || o->isFloating())) {
+            o->layoutIfNeeded();
+            if (toLayoutBox(o)->inlineBoxWrapper()) {
+                RootInlineBox& box = toLayoutBox(o)->inlineBoxWrapper()->root();
+                lineBoxes.add(&box);
+            }
+        } else if (o->isText() || (o->isLayoutInline() && !walker.atEndOfInline())) {
+            o->clearNeedsLayout();
+        }
+    }
+
+    // FIXME: Glyph overflow will get lost in this case, but not really a big deal.
+    GlyphOverflowAndFallbackFontsMap textBoxDataMap;
+    for (ListHashSet<RootInlineBox*>::const_iterator it = lineBoxes.begin(); it != lineBoxes.end(); ++it) {
+        RootInlineBox* box = *it;
+        box->computeOverflow(box->lineTop(), box->lineBottom(), textBoxDataMap);
+    }
+}
+
+bool LayoutBlockFlow::recalcInlineChildrenOverflowAfterStyleChange()
+{
+    ASSERT(childrenInline());
+    bool childrenOverflowChanged = false;
+    ListHashSet<RootInlineBox*> lineBoxes;
+    for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
+        LayoutObject* layoutObject = walker.current().layoutObject();
+        if (recalcNormalFlowChildOverflowIfNeeded(layoutObject)) {
+            childrenOverflowChanged = true;
+            if (InlineBox* inlineBoxWrapper = toLayoutBlock(layoutObject)->inlineBoxWrapper())
+                lineBoxes.add(&inlineBoxWrapper->root());
+        }
+    }
+
+    // FIXME: Glyph overflow will get lost in this case, but not really a big deal.
+    GlyphOverflowAndFallbackFontsMap textBoxDataMap;
+    for (ListHashSet<RootInlineBox*>::const_iterator it = lineBoxes.begin(); it != lineBoxes.end(); ++it) {
+        RootInlineBox* box = *it;
+        box->computeOverflow(box->lineTop(), box->lineBottom(), textBoxDataMap);
+    }
+    return childrenOverflowChanged;
 }
 
 } // namespace blink

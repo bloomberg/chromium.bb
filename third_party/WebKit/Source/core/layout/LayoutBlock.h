@@ -266,6 +266,9 @@ public:
     void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr) const;
 #endif
 
+protected:
+    bool recalcNormalFlowChildOverflowIfNeeded(LayoutObject*);
+public:
     bool recalcChildOverflowAfterStyleChange();
     bool recalcOverflowAfterStyleChange();
 
