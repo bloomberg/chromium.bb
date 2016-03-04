@@ -21,6 +21,7 @@ crbug.com/24182 editing/selection/move-by-word-visually-inline-block-positioned-
 crbug.com/24182 editing/selection/move-by-word-visually-multi-space.html [ Slow ]
 crbug.com/24182 editing/selection/move-by-word-visually-crash-test-5.html [ Slow ]
 crbug.com/24182 fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Slow ]
+crbug.com/24182 fast/dynamic/window-resize-scrollbars-test.html [ Slow ]
 crbug.com/24182 fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer.html [ Slow ]
 crbug.com/24182 fast/frames/cached-frame-counter.html [ Slow ]
 crbug.com/24182 fast/frames/frame-limit.html [ Slow ]

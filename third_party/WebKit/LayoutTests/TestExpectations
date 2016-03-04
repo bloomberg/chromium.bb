@@ -205,7 +205,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scro
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
-crbug.com/518972 [ Linux ] http/tests/navigation/navigation-redirect-schedule-crash.html [ Failure Pass ]
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Failure Pass ]
 crbug.com/518974 http/tests/navigatorconnect/postmessage.html [ Failure Pass Timeout ]
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
@@ -940,7 +939,6 @@ crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 
 # Temporary until we start generating Trusty baselines.
 crbug.com/498021 [ Linux ] fast/text/unicode-fallback-font.html [ Failure ]
-crbug.com/498021 [ Linux ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/forms/month/month-appearance-l10n.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/ellipsis-stroked.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emphasis-complex.html [ Failure ]
@@ -1085,43 +1083,17 @@ crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/o
 # Form controls need rebaseline because of the default font change.
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
 # rebaseline. See crbug.com/508768#c6
-crbug.com/509025 [ Mac10.10 ] compositing/layer-creation/compositing-reason-removed.html [ Failure ]
 # TODO(chrishtr): uncomment after fixing crbug.com/529038
 #crbug.com/509025 [ Mac10.10 ] compositing/layer-creation/should-invoke-deferred-compositing.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/overflow/fixed-scroll-in-empty-root-layer.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/overflow/text-color-change.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/overflow/updating-scrolling-container-and-content.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/overflow/updating-scrolling-container.html [ Failure ]
 # TODO(chrishtr): uncomment/inspect rebaseline of this after fixing crbug.com/516016
 # crbug.com/509025 [ Mac10.10 ] compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/invalidate-when-leaving-squashed-layer.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/invalidation-for-subpixel-offset-of-squashed-layer.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/invalidations-with-large-negative-margin.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/remove-squashed-layer-plus-move.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/repaint-overflow-scrolled-squashed-content.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/repaint-squashed-layer-in-rect.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/repaint-via-layout-offset.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/resize-squashing-layer-that-needs-full-repaint.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/squash-partial-repaint-inside-squashed-layer.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] compositing/squashing/squashing-inside-preserve-3d-element.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] css3/flexbox/repaint-rtl-column.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/css/css2-system-fonts.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/css/font-face-data-uri-invalid.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/css/fontfaceset-download-error.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/dom/adopt-attribute-crash.svg [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/forms/select/hidden-listbox.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/forms/textarea/textarea-newline.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/images/style-access-during-imageChanged-crash.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/parser/xml-colon-entity.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/parser/xml-declaration-missing-ending-mark.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/text/custom-font-data-crash.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/text/custom-font-data-crash2.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/text/glyph-reordering.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/text/large-text-composed-char.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] http/tests/navigation/navigation-redirect-schedule-crash.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
 
-crbug.com/545140 [ Mac10.10 ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
+crbug.com/545140 [ Mac10.10 Mac10.11 Retina ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
 crbug.com/545141 [ Mac10.10 ] fast/writing-mode/text-orientation-basic.html [ Failure ]
 
 crbug.com/509025 [ Mac10.10 ] fast/text/international/complex-character-based-fallback.html [ Failure ]
@@ -1371,8 +1343,6 @@ crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-sta
 
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
 
-crbug.com/587779 [ Retina Mac10.10 ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
-
 crbug.com/587950 [ Mac Win ] virtual/threaded/animations/background-shorthand-crash.html [ Failure Crash ]
 
 crbug.com/588061 [ Debug ] inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Pass Failure ]
@@ -1429,18 +1399,23 @@ crbug.com/591825 [ Mac10.11 Debug ] fast/text/selection-multiple-runs.html [ Fai
 
 crbug.com/591832 [ Mac10.11 Retina ] compositing/layer-creation/compositing-reason-removed.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/fixed-scroll-in-empty-root-layer.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/text-color-change.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/fixed-scroll-in-empty-root-layer.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/text-color-change.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/updating-scrolling-container-and-content.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/updating-scrolling-container.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/updating-scrolling-container-and-content.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/updating-scrolling-container.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/shadows/shadow-drawing.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/invalidate-when-leaving-squashed-layer.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/invalidation-for-subpixel-offset-of-squashed-layer.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/invalidations-with-large-negative-margin.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/repaint-overflow-scrolled-squashed-content.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/repaint-squashed-layer-in-rect.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/repaint-via-layout-offset.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/resize-squashing-layer-that-needs-full-repaint.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/squash-partial-repaint-inside-squashed-layer.html [ Failure ]
-crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/squashing-inside-preserve-3d-element.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/invalidate-when-leaving-squashed-layer.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/invalidation-for-subpixel-offset-of-squashed-layer.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/invalidations-with-large-negative-margin.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/repaint-overflow-scrolled-squashed-content.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/repaint-squashed-layer-in-rect.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/repaint-via-layout-offset.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/resize-squashing-layer-that-needs-full-repaint.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/squash-partial-repaint-inside-squashed-layer.html [ Failure ]
+crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/squashing-inside-preserve-3d-element.html [ Failure ]
+
+crbug.com/591901 [ Mac10.11 Retina ] fast/images/color-profile-background-clip-text.html [ Failure ]
+crbug.com/591901 [ Mac10.11 Retina ] fast/images/color-profile-svg-fill-text.html [ Failure ]
+
+crbug.com/591902 [ Linux Mac10.10 Mac10.11 Retina ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
