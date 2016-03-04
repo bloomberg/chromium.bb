@@ -34,6 +34,7 @@
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/HashMap.h"
+#include <utility>
 #include <v8-util.h>
 #include <v8.h>
 
@@ -77,7 +78,7 @@ public:
         }
         v8::Global<v8::Object> global(m_isolate, wrapper);
         wrapperTypeInfo->configureWrapper(&global);
-        m_map.Set(key, global.Pass());
+        m_map.Set(key, std::move(global));
         return true;
     }
 

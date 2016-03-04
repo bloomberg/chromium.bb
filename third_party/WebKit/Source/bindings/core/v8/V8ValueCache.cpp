@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "wtf/text/StringHash.h"
+#include <utility>
 
 namespace blink {
 
@@ -185,7 +186,7 @@ v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(v8::Isolate* i
 
     stringImpl->ref();
     wrapper.MarkIndependent();
-    m_stringCache.Set(stringImpl, wrapper.Pass(), &m_lastV8String);
+    m_stringCache.Set(stringImpl, std::move(wrapper), &m_lastV8String);
     m_lastStringImpl = stringImpl;
 
     return newString;
@@ -211,7 +212,7 @@ v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(v8::Isolate* i
     // object in a CompressibleStringImpl, uncompressed string will exists even
     // when compressing the string.
     CompressibleStringCacheMapTraits::MapType::PersistentValueReference unused;
-    m_compressibleStringCache.Set(stringImpl, wrapper.Pass(), &unused);
+    m_compressibleStringCache.Set(stringImpl, std::move(wrapper), &unused);
 
     return newString;
 }
