@@ -62,6 +62,44 @@ def get_footer_svn_id(branch=None):
   return svn_id
 
 
+def get_footer_change_id(message):
+  """Returns a list of Gerrit's ChangeId from given commit message."""
+  return parse_footers(message).get(normalize_name('Change-Id'), [])
+
+
+def add_footer_change_id(message, change_id):
+  """Returns message with Change-ID footer in it.
+
+  Assumes that Change-Id is not yet in footers, which is then
+  inserted after any of these footers: Bug|Issue|Test|Feature.
+  """
+  assert 0 == len(get_footer_change_id(message))
+  change_id_line = 'Change-Id: %s' % change_id
+  # This code does the same as parse_footers, but keeps track of line
+  # numbers so that ChangeId is inserted in the right place.
+  lines = message.splitlines()
+  footer_lines = []
+  for line in reversed(lines):
+    if line == '' or line.isspace():
+      break
+    footer_lines.append(line)
+  # footers order is from end to start of the message.
+  footers = map(parse_footer, footer_lines)
+  if not all(footers):
+    lines.append('')
+    lines.append(change_id_line)
+  else:
+    after = set(map(normalize_name, ['Bug', 'Issue', 'Test', 'Feature']))
+    for i, (key, _) in enumerate(footers):
+      if normalize_name(key) in after:
+        insert_at = len(lines) - i
+        break
+    else:
+      insert_at = len(lines) - len(footers)
+    lines.insert(insert_at, change_id_line)
+  return '\n'.join(lines)
+
+
 def get_unique(footers, key):
   key = normalize_name(key)
   values = footers[key]

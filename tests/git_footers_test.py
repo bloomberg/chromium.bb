@@ -66,5 +66,35 @@ My commit message is my best friend. It is my life. I must master it.
         git_footers.get_position(footers),
         ('refs/branch-heads/blabble', None))
 
+  def testGetFooterChangeId(self):
+    msg = '\n'.join(['whatever',
+                     '',
+                     'Change-Id: ignored',
+                     '',  # Above is ignored because of this empty line.
+                     'Change-Id: Ideadbeaf'])
+    self.assertEqual(['Ideadbeaf'], git_footers.get_footer_change_id(msg))
+
+  def testAddFooterChangeId(self):
+    self.assertEqual(
+        git_footers.add_footer_change_id('header-only', 'Ixxx'),
+        'header-only\n\nChange-Id: Ixxx')
+
+    self.assertEqual(
+        git_footers.add_footer_change_id('header\n\nsome: footter', 'Ixxx'),
+        'header\n\nChange-Id: Ixxx\nsome: footter')
+
+    self.assertEqual(
+        git_footers.add_footer_change_id('header\n\nBUG: yy', 'Ixxx'),
+        'header\n\nBUG: yy\nChange-Id: Ixxx')
+
+    self.assertEqual(
+        git_footers.add_footer_change_id('header\n\nBUG: yy\nPos: 1', 'Ixxx'),
+        'header\n\nBUG: yy\nChange-Id: Ixxx\nPos: 1')
+
+    self.assertEqual(
+        git_footers.add_footer_change_id('header\n\nBUG: yy\n\nPos: 1', 'Ixxx'),
+        'header\n\nBUG: yy\n\nChange-Id: Ixxx\nPos: 1')
+
+
 if __name__ == '__main__':
   unittest.main()
