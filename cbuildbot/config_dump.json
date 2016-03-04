@@ -17800,6 +17800,7 @@
     },
     "smaug-cheets-release": {
         "_template": "cheets-release",
+        "active_waterfall": "chromeos",
         "boards": [
             "smaug-cheets"
         ],

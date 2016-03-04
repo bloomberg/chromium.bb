@@ -613,6 +613,7 @@ _waterfall_config_map = {
         'lakitu_next-release',
         'nyan_freon-release',
         'smaug-release',
+        'smaug-cheets-release',
         'strago-c-release-group',
         'guado_moblab-release',
 
