@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x94
-  LayoutBlockFlow {HTML} at (0,0) size 800x94
-    LayoutBlockFlow {BODY} at (8,16) size 784x70
+layer at (0,0) size 800x97
+  LayoutBlockFlow {HTML} at (0,0) size 800x97
+    LayoutBlockFlow {BODY} at (8,16) size 784x73
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 237x17
           text run at (0,0) width 237: "The following two lines should look "
@@ -83,17 +83,17 @@ layer at (0,0) size 800x94
             LayoutCounter (anonymous) at (300,0) size 24x17
               text run at (300,0) width 24: "\x{25A0}.\x{25A0}"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 380x17
-          text run at (0,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (32,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (64,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (96,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (128,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (160,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (192,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (224,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (256,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (288,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (320,0) width 32: "\x{25FE}.\x{25FE} "
-          text run at (352,0) width 28: "\x{25FE}.\x{25FE}"
+      LayoutBlockFlow {DIV} at (0,52) size 784x21
+        LayoutText {#text} at (0,3) size 423x17
+          text run at (0,3) width 36: "\x{25FE}.\x{25FE} "
+          text run at (35,3) width 37: "\x{25FE}.\x{25FE} "
+          text run at (71,3) width 36: "\x{25FE}.\x{25FE} "
+          text run at (106,3) width 37: "\x{25FE}.\x{25FE} "
+          text run at (142,3) width 36: "\x{25FE}.\x{25FE} "
+          text run at (177,3) width 37: "\x{25FE}.\x{25FE} "
+          text run at (213,3) width 36: "\x{25FE}.\x{25FE} "
+          text run at (248,3) width 37: "\x{25FE}.\x{25FE} "
+          text run at (284,3) width 37: "\x{25FE}.\x{25FE} "
+          text run at (320,3) width 36: "\x{25FE}.\x{25FE} "
+          text run at (355,3) width 37: "\x{25FE}.\x{25FE} "
+          text run at (391,3) width 32: "\x{25FE}.\x{25FE}"

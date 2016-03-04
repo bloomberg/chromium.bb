@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x94
-  LayoutBlockFlow {HTML} at (0,0) size 800x94
-    LayoutBlockFlow {BODY} at (8,16) size 784x70
+layer at (0,0) size 800x97
+  LayoutBlockFlow {HTML} at (0,0) size 800x97
+    LayoutBlockFlow {BODY} at (8,16) size 784x73
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 237x17
           text run at (0,0) width 237: "The following two lines should look "
@@ -83,17 +83,17 @@ layer at (0,0) size 800x94
             LayoutCounter (anonymous) at (150,0) size 10x17
               text run at (150,0) width 10: "\x{25A0}"
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {DIV} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 188x17
-          text run at (0,0) width 16: "\x{25FE} "
-          text run at (16,0) width 16: "\x{25FE} "
-          text run at (32,0) width 16: "\x{25FE} "
-          text run at (48,0) width 16: "\x{25FE} "
-          text run at (64,0) width 16: "\x{25FE} "
-          text run at (80,0) width 16: "\x{25FE} "
-          text run at (96,0) width 16: "\x{25FE} "
-          text run at (112,0) width 16: "\x{25FE} "
-          text run at (128,0) width 16: "\x{25FE} "
-          text run at (144,0) width 16: "\x{25FE} "
-          text run at (160,0) width 16: "\x{25FE} "
-          text run at (176,0) width 12: "\x{25FE}"
+      LayoutBlockFlow {DIV} at (0,52) size 784x21
+        LayoutText {#text} at (0,3) size 210x17
+          text run at (0,3) width 18: "\x{25FE} "
+          text run at (17,3) width 19: "\x{25FE} "
+          text run at (35,3) width 19: "\x{25FE} "
+          text run at (53,3) width 19: "\x{25FE} "
+          text run at (71,3) width 18: "\x{25FE} "
+          text run at (88,3) width 19: "\x{25FE} "
+          text run at (106,3) width 19: "\x{25FE} "
+          text run at (124,3) width 19: "\x{25FE} "
+          text run at (142,3) width 19: "\x{25FE} "
+          text run at (160,3) width 18: "\x{25FE} "
+          text run at (177,3) width 19: "\x{25FE} "
+          text run at (195,3) width 15: "\x{25FE}"

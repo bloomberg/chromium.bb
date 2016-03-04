@@ -77,10 +77,10 @@ layer at (0,0) size 785x1250 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (325,542) width 1: " "
           text run at (0,564) width 340: "U+26Fx \x{26F0} \x{26F1} \x{26F2} \x{26F3} \x{26F4} \x{26F5} \x{26F6} \x{26F7} \x{26F8} \x{26F9} \x{26FA} \x{26FB} \x{26FC} \x{26FD} \x{26FE} \x{26FF}"
           text run at (339,564) width 1: " "
-        LayoutText {#text} at (0,581) size 357x229
+        LayoutText {#text} at (0,581) size 359x229
           text run at (0,581) width 0: " "
-          text run at (0,600) width 353: "U+270x \x{2700} \x{2701} \x{2702} \x{2703} \x{2704} \x{2705} \x{2706} \x{2707} \x{2708} \x{2709} \x{270A} \x{270B} \x{270C} \x{270D} \x{270E} \x{270F}"
-          text run at (352,600) width 1: " "
+          text run at (0,600) width 359: "U+270x \x{2700} \x{2701} \x{2702} \x{2703} \x{2704} \x{2705} \x{2706} \x{2707} \x{2708} \x{2709} \x{270A} \x{270B} \x{270C} \x{270D} \x{270E} \x{270F}"
+          text run at (358,600) width 1: " "
           text run at (0,617) width 326: "U+271x \x{2710} \x{2711} \x{2712} \x{2713} \x{2714} \x{2715} \x{2716} \x{2717} \x{2718} \x{2719} \x{271A} \x{271B} \x{271C} \x{271D} \x{271E} \x{271F}"
           text run at (325,617) width 1: " "
           text run at (0,636) width 338: "U+272x \x{2720} \x{2721} \x{2722} \x{2723} \x{2724} \x{2725} \x{2726} \x{2727} \x{2728} \x{2729} \x{272A} \x{272B} \x{272C} \x{272D} \x{272E} \x{272F}"
