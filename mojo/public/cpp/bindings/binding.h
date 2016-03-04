@@ -31,7 +31,7 @@ class AssociatedGroup;
 //   class FooImpl : public Foo {
 //    public:
 //     explicit FooImpl(InterfaceRequest<Foo> request)
-//         : binding_(this, request.Pass()) {}
+//         : binding_(this, std::move(request)) {}
 //
 //     // Foo implementation here.
 //
@@ -42,7 +42,7 @@ class AssociatedGroup;
 //   class MyFooFactory : public InterfaceFactory<Foo> {
 //    public:
 //     void Create(..., InterfaceRequest<Foo> request) override {
-//       auto f = new FooImpl(request.Pass());
+//       auto f = new FooImpl(std::move(request));
 //       // Do something to manage the lifetime of |f|. Use StrongBinding<> to
 //       // delete FooImpl on connection errors.
 //     }

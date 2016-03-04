@@ -192,7 +192,7 @@ class BindingState<Interface, true> {
         MakeRequest<GenericInterface>(router_->PassMessagePipe());
     router_ = nullptr;
     connection_error_handler_.reset();
-    return request.Pass();
+    return request;
   }
 
   void set_connection_error_handler(const Closure& error_handler) {

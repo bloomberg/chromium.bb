@@ -110,7 +110,7 @@ class AssociatedBinding {
     endpoint_client_.reset();
     connection_error_handler_.reset();
 
-    return request.Pass();
+    return request;
   }
 
   // Sets an error handler that will be called if a connection error occurs.

@@ -97,7 +97,7 @@ class AssociatedInterfacePtrState {
     AssociatedInterfacePtrInfo<GenericInterface> result;
     result.set_version(version_);
     AssociatedInterfacePtrInfoHelper::SetHandle(&result, std::move(handle));
-    return result.Pass();
+    return result;
   }
 
   bool is_bound() const { return !!endpoint_client_; }

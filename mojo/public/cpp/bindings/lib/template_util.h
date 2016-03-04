@@ -46,7 +46,7 @@ struct NoType {
 };
 
 // A helper template to determine if given type is non-const move-only-type,
-// i.e. if a value of the given type should be passed via .Pass() in a
+// i.e. if a value of the given type should be passed via std::move() in a
 // destructive way.
 template <typename T>
 struct IsMoveOnlyType {

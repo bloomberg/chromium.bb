@@ -47,7 +47,7 @@ namespace mojo {
 //       geometry::PointPtr result;
 //       result->x = input.x();
 //       result->y = input.y();
-//       return result.Pass();
+//       return result;
 //     }
 //   };
 //   template <>

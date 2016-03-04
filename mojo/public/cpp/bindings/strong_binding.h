@@ -28,7 +28,7 @@ namespace mojo {
 //   class StronglyBound : public Foo {
 //    public:
 //     explicit StronglyBound(InterfaceRequest<Foo> request)
-//         : binding_(this, request.Pass()) {}
+//         : binding_(this, std::move(request)) {}
 //
 //     // Foo implementation here
 //
@@ -39,8 +39,8 @@ namespace mojo {
 //   class MyFooFactory : public InterfaceFactory<Foo> {
 //    public:
 //     void Create(..., InterfaceRequest<Foo> request) override {
-//       new StronglyBound(request.Pass());  // The binding now owns the
-//                                           // instance of StronglyBound.
+//       new StronglyBound(std::move(request));  // The binding now owns the
+//                                               // instance of StronglyBound.
 //     }
 //   };
 //

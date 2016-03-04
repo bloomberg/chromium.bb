@@ -156,8 +156,7 @@ class Map {
   // Removes all contents from the Map and places them into parallel key/value
   // arrays. Each key will be copied from the source to the destination, and
   // values will be copied unless their type is designated move-only, in which
-  // case they will be passed by calling their Pass() method. Either way, the
-  // Map will be left in a null state.
+  // case they will be moved. Either way, the Map will be left in a null state.
   void DecomposeMapTo(mojo::Array<Key>* keys, mojo::Array<Value>* values) {
     std::vector<Key> key_vector;
     key_vector.reserve(map_.size());
