@@ -285,7 +285,6 @@ config("compiler") {
       # crashing on the bots: crbug.com/161942.
       #"-Wl,--threads",
       #"-Wl,--thread-count=4",
-      "-Wl,--gdb-index",
     ]
 
     if (!using_sanitizer && !(is_android && use_order_profiling)) {
