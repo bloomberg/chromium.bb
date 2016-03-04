@@ -2,9 +2,5 @@ include_rules = [
   "-mojo",
   "+mojo/common",
   "+mojo/public",
-  "+jni",
-
-  # TODO(abarth) Instead of having the services depend on the shell, we
-  # probably should create a layer below the services.
-  "+mojo/shell",
+  "+mojo/shell/public",
 ]

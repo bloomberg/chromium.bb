@@ -29,7 +29,6 @@
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
     '../mojo/mojo_public.gyp:mojo_js_bindings',
     '../mojo/mojo_services.gyp:network_service_bindings_lib',
-    '../mojo/mojo_services.gyp:updater_bindings_lib',
     '../mojo/mojo_shell.gyp:mojo_runner_host_lib',
     '../mojo/mojo_shell.gyp:mojo_shell_lib',
     '../net/net.gyp:http_server',

@@ -82,26 +82,5 @@
         'tracing_service_bindings_mojom',
       ],
     },
-    {
-      'target_name': 'updater_bindings_mojom',
-      'type': 'none',
-      'variables': {
-        'mojom_files': [
-          'services/updater/updater.mojom',
-        ],
-        'mojom_include_path': '<(DEPTH)/mojo/services',
-      },
-      'includes': [
-        'mojom_bindings_generator_explicit.gypi',
-      ],
-    },
-    {
-      # GN version: //mojo/services/updater
-      'target_name': 'updater_bindings_lib',
-      'type': 'static_library',
-      'dependencies': [
-        'updater_bindings_mojom',
-      ],
-    },
   ],
 }
