@@ -16,12 +16,12 @@ zh-HK: 誤過骨
 ja: 誤過骨
 #ja:
 "Times New Roman" : 4,
-"MS PGothic" : 3
+"Meiryo" : 3
 
 ja-JP: 誤過骨
 #ja-JP:
 "Times New Roman" : 7,
-"MS PGothic" : 3
+"Meiryo" : 3
 
 ko: 誤過骨
 #ko:
@@ -41,7 +41,7 @@ en-CN: 誤過骨
 en-JP: 誤過骨
 #en-JP:
 "Times New Roman" : 7,
-"MS PGothic" : 3
+"Meiryo" : 3
 
 en-KR: 誤過骨
 #en-KR:

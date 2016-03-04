@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x600
-  LayoutBlockFlow {HTML} at (0,0) size 800x600
-    LayoutBlockFlow {BODY} at (8,8) size 784x584
+layer at (664,0) size 136x600
+  LayoutBlockFlow {HTML} at (0,0) size 136x600
+    LayoutBlockFlow {BODY} at (16,8) size 112x584
       LayoutBlockFlow {P} at (0,0) size 18x584
         LayoutText {#text} at (0,0) size 17x230
           text run at (0,0) width 230: "These two lines should be identical:"
