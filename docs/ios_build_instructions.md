@@ -92,13 +92,13 @@ out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/ios_web_shell.app
 
 ## Converting an existing Mac checkout into an iOS checkout
 
-If you want to convert your Mac checkout into an iOS checkout, you can
-follow those steps:
+If you want to convert your Mac checkout into an iOS checkout, follow the steps
+below:
 
-1. Add `target_os = [ "ios" ]` to the bottom of your `chromium/.gclient`
+1.  Add `target_os = [ "ios" ]` to the bottom of your `chromium/.gclient`
 file.
 
-2. Make sure you have the following in your `chromium/chromium.gyp_env`
+1.  Make sure you have the following in your `chromium/chromium.gyp_env`
 file (removing the `chromium_ios_signing=0` if you want to make
 developer-signed builds):
 
@@ -109,9 +109,8 @@ developer-signed builds):
 }
 ```
 
-Then make sure you sync again to get all the new files like the following. At
-the end it will run `build/gyp_chromium` which will regenerate all the build
-files according to the new settings.
+1.  Make sure to sync again to fetch the iOS specific dependencies and
+regenerate build rules using:
 
 ```shell
 gclient sync
@@ -120,6 +119,6 @@ gclient sync
 ## Troubleshooting
 
 If your build fails, check the iOS columns of [the Mac
-waterfall](http://build.chromium.org/p/chromium.mac/console) (the last
-two) to see if the bots are green. In general they should be, since
-failures on those bots will close the tree.
+waterfall](http://build.chromium.org/p/chromium.mac/console) (the last two) to
+see if the bots are green. In general they should be, since failures on those
+bots will close the tree.
