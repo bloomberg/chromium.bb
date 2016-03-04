@@ -454,26 +454,20 @@ TEST_F(FileUtilTest, ExtensionURLToRelativeFilePath) {
     const char* url;
     const char* expected_relative_path;
   } test_cases[] = {
-    { URL_PREFIX "simple.html",
-      "simple.html" },
-    { URL_PREFIX "directory/to/file.html",
-      "directory/to/file.html" },
-    { URL_PREFIX "escape%20spaces.html",
-      "escape spaces.html" },
-    { URL_PREFIX "%C3%9Cber.html",
-      "\xC3\x9C" "ber.html" },
+    {URL_PREFIX "simple.html", "simple.html"},
+    {URL_PREFIX "directory/to/file.html", "directory/to/file.html"},
+    {URL_PREFIX "escape%20spaces.html", "escape spaces.html"},
+    {URL_PREFIX "%C3%9Cber.html",
+     "\xC3\x9C"
+     "ber.html"},
 #if defined(OS_WIN)
-    { URL_PREFIX "C%3A/simple.html",
-      "" },
+    {URL_PREFIX "C%3A/simple.html", ""},
 #endif
-    { URL_PREFIX "////simple.html",
-      "simple.html" },
-    { URL_PREFIX "/simple.html",
-      "simple.html" },
-    { URL_PREFIX "\\simple.html",
-      "simple.html" },
-    { URL_PREFIX "\\\\foo\\simple.html",
-      "foo/simple.html" },
+    {URL_PREFIX "////simple.html", "simple.html"},
+    {URL_PREFIX "/simple.html", "simple.html"},
+    {URL_PREFIX "\\simple.html", "simple.html"},
+    {URL_PREFIX "\\\\foo\\simple.html", "foo/simple.html"},
+    {URL_PREFIX "..%2f..%2fsimple.html", "..%2f..%2fsimple.html"},
   };
 #undef URL_PREFIX
 
@@ -506,6 +500,10 @@ TEST_F(FileUtilTest, ExtensionResourceURLToFilePath) {
   ASSERT_TRUE(base::WriteFile(resource_path, data, sizeof(data)));
   resource_path = api_path.Append(FILE_PATH_LITERAL("escape spaces.js"));
   ASSERT_TRUE(base::WriteFile(resource_path, data, sizeof(data)));
+  resource_path = api_path.Append(FILE_PATH_LITERAL("escape spaces.js"));
+  ASSERT_TRUE(base::WriteFile(resource_path, data, sizeof(data)));
+  resource_path = api_path.Append(FILE_PATH_LITERAL("..%2f..%2fsimple.html"));
+  ASSERT_TRUE(base::WriteFile(resource_path, data, sizeof(data)));
 
 #ifdef FILE_PATH_USES_WIN_SEPARATORS
 #define SEP "\\"
@@ -517,27 +515,21 @@ TEST_F(FileUtilTest, ExtensionResourceURLToFilePath) {
     const char* url;
     const base::FilePath::CharType* expected_path;
   } test_cases[] = {
-    { URL_PREFIX "apiname/test.js",
-      FILE_PATH_LITERAL("test.js") },
-    { URL_PREFIX "/apiname/test.js",
-      FILE_PATH_LITERAL("test.js") },
-    // Test % escape
-    { URL_PREFIX "apiname/%74%65st.js",
-      FILE_PATH_LITERAL("test.js") },
-    { URL_PREFIX "apiname/escape%20spaces.js",
-      FILE_PATH_LITERAL("escape spaces.js") },
-    // Test file does not exist.
-    { URL_PREFIX "apiname/directory/to/file.js",
-      NULL },
-    // Test apiname/../../test.js
-    { URL_PREFIX "apiname/../../test.js",
-      FILE_PATH_LITERAL("test.js") },
-    { URL_PREFIX "apiname/..%2F../test.js",
-      NULL },
-    { URL_PREFIX "apiname/f/../../../test.js",
-      FILE_PATH_LITERAL("test.js") },
-    { URL_PREFIX "apiname/f%2F..%2F..%2F../test.js",
-      NULL },
+      {URL_PREFIX "apiname/test.js", FILE_PATH_LITERAL("test.js")},
+      {URL_PREFIX "/apiname/test.js", FILE_PATH_LITERAL("test.js")},
+      // Test % escape
+      {URL_PREFIX "apiname/%74%65st.js", FILE_PATH_LITERAL("test.js")},
+      {URL_PREFIX "apiname/escape%20spaces.js",
+       FILE_PATH_LITERAL("escape spaces.js")},
+      // Test file does not exist.
+      {URL_PREFIX "apiname/directory/to/file.js", NULL},
+      // Test apiname/../../test.js
+      {URL_PREFIX "apiname/../../test.js", FILE_PATH_LITERAL("test.js")},
+      {URL_PREFIX "apiname/..%2F../test.js", NULL},
+      {URL_PREFIX "apiname/f/../../../test.js", FILE_PATH_LITERAL("test.js")},
+      {URL_PREFIX "apiname/f%2F..%2F..%2F../test.js", NULL},
+      {URL_PREFIX "apiname/..%2f..%2fsimple.html",
+       FILE_PATH_LITERAL("..%2f..%2fsimple.html")},
   };
 #undef SEP
 #undef URL_PREFIX

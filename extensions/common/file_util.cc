@@ -441,8 +441,10 @@ base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
     return base::FilePath();
 
   // Drop the leading slashes and convert %-encoded UTF8 to regular UTF8.
-  std::string file_path = net::UnescapeURLComponent(url_path,
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
+  std::string file_path = net::UnescapeURLComponent(
+      url_path,
+      net::UnescapeRule::SPACES |
+          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
   size_t skip = file_path.find_first_not_of("/\\");
   if (skip != file_path.npos)
     file_path = file_path.substr(skip);
@@ -460,8 +462,10 @@ base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
 
 base::FilePath ExtensionResourceURLToFilePath(const GURL& url,
                                               const base::FilePath& root) {
-  std::string host = net::UnescapeURLComponent(url.host(),
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
+  std::string host = net::UnescapeURLComponent(
+      url.host(),
+      net::UnescapeRule::SPACES |
+          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
   if (host.empty())
     return base::FilePath();
 
