@@ -5,7 +5,7 @@
 // https://html.spec.whatwg.org/#imagebitmapoptions
 
 [RuntimeEnabled=ExperimentalCanvasFeatures] enum ImageOrientation { "none", "flipY" };
-[RuntimeEnabled=ExperimentalCanvasFeatures] enum PremultiplyAlpha { "none", "default" };
+[RuntimeEnabled=ExperimentalCanvasFeatures] enum PremultiplyAlpha { "none", "premultiply", "default" };
 dictionary ImageBitmapOptions {
     [RuntimeEnabled=ExperimentalCanvasFeatures] PremultiplyAlpha premultiplyAlpha = "default";
     [RuntimeEnabled=ExperimentalCanvasFeatures] ImageOrientation imageOrientation = "none";

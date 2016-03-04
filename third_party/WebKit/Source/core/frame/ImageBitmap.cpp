@@ -429,7 +429,7 @@ void ImageBitmap::parseOptions(const ImageBitmapOptions& options, bool& flipY)
     if (options.premultiplyAlpha() == imageBitmapOptionNone) {
         m_isPremultiplied = false;
     } else {
-        ASSERT(options.premultiplyAlpha() == "default");
+        ASSERT(options.premultiplyAlpha() == "default" || options.premultiplyAlpha() == "premultiply");
     }
 }
 

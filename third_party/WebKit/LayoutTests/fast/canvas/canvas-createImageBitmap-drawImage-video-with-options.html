@@ -51,10 +51,10 @@ function clearContext() {
 var bitmap;
 var video;
 var imageOrientationOptions = ["none", "flipY", "invalid"];
-var premultiplyAlphaOptions = ["default", "none", "invalid"];
-var optionIndexArray = [[0, 0], [0, 1], [0, 2],
-                        [1, 0], [1, 1], [1, 2],
-                        [2, 0], [2, 1], [2, 2]];
+var premultiplyAlphaOptions = ["default", "none", "premultiply", "invalid"];
+var optionIndexArray = [[0, 0], [0, 1], [0, 2], [0, 3],
+                        [1, 0], [1, 1], [1, 2], [1, 3],
+                        [2, 0], [2, 1], [2, 2], [2, 3]];
 var optionIndex = 0;
 
 var canvas = document.createElement("canvas");
@@ -98,8 +98,7 @@ function videoLoaded() {
         videoLoaded();
     }, function(ex) {
         // when the options are invalid, we expect the promise to be rejected.
-        if ((imageOrientationOptions[optionIndex1] != "none" && imageOrientationOptions[optionIndex1] != "flipY") ||
-            (premultiplyAlphaOptions[optionIndex2] != "default" && premultiplyAlphaOptions[optionIndex2] != "none")) {
+        if (imageOrientationOptions[optionIndex1] == "invalid" || premultiplyAlphaOptions[optionIndex2] == "invalid") {
             testPassed("createImageBitmap with invalid options are rejected");
             optionIndex++;
             videoLoaded();
