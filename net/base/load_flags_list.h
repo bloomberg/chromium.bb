@@ -80,3 +80,7 @@ LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 16)
 // by the "Cache-Control: stale-while-revalidate" directive and is able to issue
 // an async revalidation to update the cache.
 LOAD_FLAG(SUPPORT_ASYNC_REVALIDATION, 1 << 17)
+
+// Indicates that this request is not to be migrated to a new network when QUIC
+// connection migration is enabled.
+LOAD_FLAG(DISABLE_CONNECTION_MIGRATION, 1 << 18)
