@@ -403,10 +403,7 @@ source_set("browser") {
       "//third_party/sudden_motion_sensor",
       "//ui/accelerated_widget_mac",
     ]
-    libs += [
-      "bsm",
-      "QTKit.framework",
-    ]
+    libs += [ "QTKit.framework" ]
   }
 
   if (is_chromeos) {

@@ -5,15 +5,11 @@
 #ifndef CONTENT_BROWSER_MACH_BROKER_MAC_H_
 #define CONTENT_BROWSER_MACH_BROKER_MAC_H_
 
-#include <mach/mach.h>
-
 #include <map>
 #include <string>
 
-#include "base/mac/dispatch_source_mach.h"
-#include "base/mac/scoped_mach_port.h"
+#include "base/mac/mach_port_broker.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/port_provider_mac.h"
 #include "base/process/process_handle.h"
@@ -24,19 +20,8 @@
 
 namespace content {
 
-// On OS X, the task port of a process is required to collect metrics about the
-// process, and to insert Mach ports into the process. Running |task_for_pid()|
-// is only allowed for privileged code. However, a process has port rights to
-// all its subprocesses, so let the browser's child processes send their Mach
-// port to the browser over IPC.
-//
-// Mach ports can only be sent over Mach IPC, not over the |socketpair()| that
-// the regular IPC system uses. Hence, the child processes open a Mach
-// connection shortly after launching and ipc their mach data to the browser
-// process. This data is kept in a global |MachBroker| object.
-//
-// Since this data arrives over a separate channel, it is not available
-// immediately after a child process has been started.
+// A global |MachBroker| singleton is used by content embedders to provide
+// access to mach task ports for content child processes.
 class CONTENT_EXPORT MachBroker : public base::PortProvider,
                                   public BrowserChildProcessObserver,
                                   public NotificationObserver {
@@ -51,8 +36,7 @@ class CONTENT_EXPORT MachBroker : public base::PortProvider,
   static MachBroker* GetInstance();
 
   // The lock that protects this MachBroker object.  Clients MUST acquire and
-  // release this lock around calls to EnsureRunning(), PlaceholderForPid(),
-  // and FinalizePid().
+  // release this lock around calls to EnsureRunning() and PlaceholderForPid().
   base::Lock& GetLock();
 
   // Performs any necessary setup that cannot happen in the constructor.
@@ -61,9 +45,8 @@ class CONTENT_EXPORT MachBroker : public base::PortProvider,
   void EnsureRunning();
 
   // Adds a placeholder to the map for the given pid with MACH_PORT_NULL.
-  // Callers are expected to later update the port with FinalizePid().  Callers
-  // MUST acquire the lock given by GetLock() before calling this method (and
-  // release the lock afterwards).
+  // Callers MUST acquire the lock given by GetLock() before calling this method
+  // (and release the lock afterwards).
   void AddPlaceholderForPid(base::ProcessHandle pid, int child_process_id);
 
   // Implement |base::PortProvider|.
@@ -91,19 +74,6 @@ class CONTENT_EXPORT MachBroker : public base::PortProvider,
   MachBroker();
   ~MachBroker() override;
 
-  // Performs any initialization work.
-  bool Init();
-
-  // Message handler that is invoked on |dispatch_source_| when an
-  // incoming message needs to be received.
-  void HandleRequest();
-
-  // Updates the mapping for |pid| to include the given |mach_info|.  Does
-  // nothing if PlaceholderForPid() has not already been called for the given
-  // |pid|.  Callers MUST acquire the lock given by GetLock() before calling
-  // this method (and release the lock afterwards).
-  void FinalizePid(base::ProcessHandle pid, mach_port_t task_port);
-
   // Removes all mappings belonging to |child_process_id| from the broker.
   void InvalidateChildProcessId(int child_process_id);
 
@@ -117,23 +87,13 @@ class CONTENT_EXPORT MachBroker : public base::PortProvider,
   // Accessed only on the UI thread.
   NotificationRegistrar registrar_;
 
-  // The Mach port on which the server listens.
-  base::mac::ScopedMachReceiveRight server_port_;
-
-  // The dispatch source and queue on which Mach messages will be received.
-  scoped_ptr<base::DispatchSourceMach> dispatch_source_;
-
-  // Stores mach info for every process in the broker.
-  typedef std::map<base::ProcessHandle, mach_port_t> MachMap;
-  MachMap mach_map_;
-
   // Stores the Child process unique id (RenderProcessHost ID) for every
-  // process.
+  // process. Protected by base::MachPortBroker::GetLock().
   typedef std::map<int, base::ProcessHandle> ChildProcessIdMap;
   ChildProcessIdMap child_process_id_map_;
 
-  // Mutex that guards |mach_map_| and |child_process_id_map_|.
-  mutable base::Lock lock_;
+  // Underlying port broker that receives and manages mach ports.
+  base::MachPortBroker broker_;
 
   DISALLOW_COPY_AND_ASSIGN(MachBroker);
 };

@@ -413,6 +413,8 @@ component("base") {
     "mac/mac_util.mm",
     "mac/mach_logging.cc",
     "mac/mach_logging.h",
+    "mac/mach_port_broker.h",
+    "mac/mach_port_broker.mm",
     "mac/objc_property_releaser.h",
     "mac/objc_property_releaser.mm",
     "mac/os_crash_dumps.cc",
@@ -1182,6 +1184,7 @@ component("base") {
       "trace_event/malloc_dump_provider.cc",
       "trace_event/malloc_dump_provider.h",
     ]
+    libs = [ "bsm" ]
   }
 
   # Mac or iOS.
@@ -1626,6 +1629,7 @@ test("base_unittests") {
     "mac/foundation_util_unittest.mm",
     "mac/libdispatch_task_runner_unittest.cc",
     "mac/mac_util_unittest.mm",
+    "mac/mach_port_broker_unittest.cc",
     "mac/objc_property_releaser_unittest.mm",
     "mac/scoped_nsobject_unittest.mm",
     "mac/scoped_objc_class_swizzler_unittest.mm",

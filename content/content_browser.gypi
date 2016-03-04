@@ -2092,11 +2092,6 @@
         '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
         '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac',
       ],
-      'link_settings': {
-        'libraries': [
-          '$(SDKROOT)/usr/lib/libbsm.dylib',
-        ],
-      },
     }],
     ['chromeos==1', {
       'dependencies': [
