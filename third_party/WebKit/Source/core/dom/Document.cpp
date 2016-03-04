@@ -1287,18 +1287,29 @@ void Document::updateTitle(const String& title)
 void Document::setTitle(const String& title)
 {
     // Title set by JavaScript -- overrides any title elements.
-    if (!isHTMLDocument() && !isXHTMLDocument()) {
-        m_titleElement = nullptr;
-    } else if (!m_titleElement) {
-        HTMLElement* headElement = head();
-        if (!headElement)
-            return;
-        m_titleElement = HTMLTitleElement::create(*this);
-        headElement->appendChild(m_titleElement.get());
+    if (!m_titleElement) {
+        if (isHTMLDocument() || isXHTMLDocument()) {
+            HTMLElement* headElement = head();
+            if (!headElement)
+                return;
+            m_titleElement = HTMLTitleElement::create(*this);
+            headElement->appendChild(m_titleElement.get());
+        } else if (isSVGDocument()) {
+            Element* element = documentElement();
+            if (!isSVGSVGElement(element))
+                return;
+            m_titleElement = SVGTitleElement::create(*this);
+            element->insertBefore(m_titleElement.get(), element->firstChild());
+        }
+    } else {
+        if (!isHTMLDocument() && !isXHTMLDocument() && !isSVGDocument())
+            m_titleElement = nullptr;
     }
 
     if (isHTMLTitleElement(m_titleElement))
         toHTMLTitleElement(m_titleElement)->setText(title);
+    else if (isSVGTitleElement(m_titleElement))
+        toSVGTitleElement(m_titleElement)->setText(title);
     else
         updateTitle(title);
 }
@@ -1314,6 +1325,25 @@ void Document::setTitleElement(Element* titleElement)
         }
     } else {
         m_titleElement = titleElement;
+    }
+
+
+    if (isSVGDocument()) {
+        // If the root element that is <svg> element in the svg namespace is not the parent of <title> element,
+        // ignore <title> element.
+        if (isSVGSVGElement(documentElement()) && documentElement() != m_titleElement->parentNode()) {
+            m_titleElement = nullptr;
+            return;
+        }
+
+        // If the root element is not <svg> element in the svg namespace and <title> element is in the svg namespace,
+        // or the root element is <svg> element in the svg namespace and <title> element is not in the svg namespace,
+        // ignore <title> element.
+        if ((!isSVGSVGElement(m_titleElement->parentNode()) && isSVGTitleElement(m_titleElement))
+            || (isSVGSVGElement(m_titleElement->parentNode()) && !isSVGTitleElement(m_titleElement))) {
+            m_titleElement = nullptr;
+            return;
+        }
     }
 
     if (isHTMLTitleElement(m_titleElement))
