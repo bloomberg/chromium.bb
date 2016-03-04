@@ -1138,6 +1138,9 @@
         "test": "blink_heap_unittests"
       },
       {
+        "args": [
+          "--isolate_file_path=src/third_party/WebKit/Source/platform/blink_platform_unittests.isolate"
+        ],
         "test": "blink_platform_unittests"
       },
       {
