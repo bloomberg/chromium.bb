@@ -159,16 +159,11 @@ void DownloadRequestLimiter::TabDownloadState::SetContentSetting(
     return;
   HostContentSettingsMap* settings =
     DownloadRequestLimiter::GetContentSettings(web_contents_);
-  ContentSettingsPattern pattern(
-      ContentSettingsPattern::FromURL(web_contents_->GetURL()));
-  if (!settings || !pattern.IsValid())
+  if (!settings)
     return;
-  settings->SetContentSetting(
-      pattern,
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-      std::string(),
-      setting);
+  settings->SetContentSettingDefaultScope(
+      web_contents_->GetURL(), GURL(),
+      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string(), setting);
 }
 
 void DownloadRequestLimiter::TabDownloadState::Cancel() {

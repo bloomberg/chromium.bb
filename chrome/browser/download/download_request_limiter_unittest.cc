@@ -224,12 +224,9 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SetHostContentSetting(WebContents* contents, ContentSetting setting) {
-    content_settings_->SetContentSetting(
-        ContentSettingsPattern::FromURL(contents->GetURL()),
-        ContentSettingsPattern::Wildcard(),
-        CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-        std::string(),
-        setting);
+    content_settings_->SetContentSettingDefaultScope(
+        contents->GetURL(), GURL(), CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+        std::string(), setting);
   }
 
   void LoadCompleted() { testing_delegate_.LoadCompleted(web_contents()); }
