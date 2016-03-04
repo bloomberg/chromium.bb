@@ -747,9 +747,11 @@ void OfflinePageModel::OnRemoveAllFilesDoneForClearAll(
 void OfflinePageModel::OnResetStoreDoneForClearAll(
     const base::Closure& callback, bool success) {
   DCHECK(success);
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.ClearAllStatus",
-                            STORE_RESET_FAILED,
-                            CLEAR_ALL_STATUS_COUNT);
+  if (!success) {
+    UMA_HISTOGRAM_ENUMERATION("OfflinePages.ClearAllStatus2",
+                              STORE_RESET_FAILED,
+                              CLEAR_ALL_STATUS_COUNT);
+  }
 
   offline_pages_.clear();
   store_->Load(base::Bind(&OfflinePageModel::OnReloadStoreDoneForClearAll,
@@ -763,7 +765,7 @@ void OfflinePageModel::OnReloadStoreDoneForClearAll(
     const std::vector<OfflinePageItem>& offline_pages) {
   DCHECK_EQ(OfflinePageMetadataStore::LOAD_SUCCEEDED, load_status);
   UMA_HISTOGRAM_ENUMERATION(
-      "OfflinePages.ClearAllStatus",
+      "OfflinePages.ClearAllStatus2",
       load_status == OfflinePageMetadataStore::LOAD_SUCCEEDED ?
           CLEAR_ALL_SUCCEEDED : STORE_RELOAD_FAILED,
       CLEAR_ALL_STATUS_COUNT);

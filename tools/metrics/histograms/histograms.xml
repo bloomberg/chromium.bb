@@ -32205,6 +32205,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.ClearAllStatus" enum="OfflinePagesClearAllStatus">
+  <obsolete>
+    Deprecated 3/2016, and replaced by OfflinePages.ClearAllStatus2.
+  </obsolete>
+  <owner>jianli@chromium.org</owner>
+  <summary>Status code of wiping out the offline page data.</summary>
+</histogram>
+
+<histogram name="OfflinePages.ClearAllStatus2"
+    enum="OfflinePagesClearAllStatus">
   <owner>jianli@chromium.org</owner>
   <summary>Status code of wiping out the offline page data.</summary>
 </histogram>
