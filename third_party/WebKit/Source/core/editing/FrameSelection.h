@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
-#include "core/editing/CaretBase.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/VisiblePosition.h"
@@ -43,8 +42,10 @@
 
 namespace blink {
 
+class CaretBase;
 class CharacterData;
 class CullRect;
+class LayoutBlock;
 class LocalFrame;
 class GranularityStrategy;
 class GraphicsContext;
@@ -64,7 +65,9 @@ enum RevealExtentOption {
 
 enum class SelectionDirectionalMode { NonDirectional, Directional };
 
-class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection>, private CaretBase {
+enum class CaretVisibility;
+
+class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection> {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
     USING_FAST_MALLOC_WILL_BE_REMOVED(FrameSelection);
 public:
@@ -182,7 +185,7 @@ public:
     bool isAppearanceDirty() const;
     void commitAppearanceIfNeeded(LayoutView&);
     void updateAppearance();
-    void setCaretVisible(bool caretIsVisible) { setCaretVisibility(caretIsVisible ? Visible : Hidden); }
+    void setCaretVisible(bool caretIsVisible);
     bool isCaretBoundsDirty() const { return m_caretRectDirty; }
     void setCaretRectNeedsUpdate();
     void scheduleVisualUpdate() const;
@@ -315,6 +318,8 @@ private:
 
     // Controls text granularity used to adjust the selection's extent in moveRangeSelectionExtent.
     OwnPtr<GranularityStrategy> m_granularityStrategy;
+
+    OwnPtr<CaretBase> m_caretBase;
 };
 
 inline EditingStyle* FrameSelection::typingStyle() const

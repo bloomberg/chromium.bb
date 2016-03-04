@@ -36,6 +36,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
+#include "core/editing/CaretBase.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/GranularityStrategy.h"
@@ -95,13 +96,14 @@ FrameSelection::FrameSelection(LocalFrame* frame)
     , m_pendingSelection(PendingSelection::create(*this))
     , m_selectionEditor(SelectionEditor::create(*this))
     , m_granularity(CharacterGranularity)
-    , m_previousCaretVisibility(Hidden)
+    , m_previousCaretVisibility(CaretVisibility::Hidden)
     , m_caretBlinkTimer(this, &FrameSelection::caretBlinkTimerFired)
     , m_caretRectDirty(true)
     , m_shouldPaintCaret(true)
     , m_isCaretBlinkingSuspended(false)
     , m_focused(frame && frame->page() && frame->page()->focusController().focusedFrame() == frame)
     , m_shouldShowBlockCursor(false)
+    , m_caretBase(adoptPtr(new CaretBase))
 {
     if (shouldAlwaysUseDirectionalSelection(m_frame))
         m_selectionEditor->setIsDirectional(true);
@@ -409,10 +411,10 @@ void FrameSelection::nodeWillBeRemoved(Node& node)
     if (node == m_previousCaretNode) {
         // Hits in ManualTests/caret-paint-after-last-text-is-removed.html
         DisableCompositingQueryAsserts disabler;
-        invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
+        m_caretBase->invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
         m_previousCaretNode = nullptr;
         m_previousCaretRect = LayoutRect();
-        m_previousCaretVisibility = Hidden;
+        m_previousCaretVisibility = CaretVisibility::Hidden;
     }
 }
 
@@ -692,14 +694,14 @@ IntRect FrameSelection::absoluteCaretBounds()
     ASSERT(m_frame->document()->lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
     if (!isCaret()) {
-        clearCaretRect();
+        m_caretBase->clearCaretRect();
     } else {
         if (isTextFormControl(selection()))
-            updateCaretRect(PositionWithAffinity(isVisuallyEquivalentCandidate(selection().start()) ? selection().start() : Position(), selection().affinity()));
+            m_caretBase->updateCaretRect(PositionWithAffinity(isVisuallyEquivalentCandidate(selection().start()) ? selection().start() : Position(), selection().affinity()));
         else
-            updateCaretRect(createVisiblePosition(selection().start(), selection().affinity()));
+            m_caretBase->updateCaretRect(createVisiblePosition(selection().start(), selection().affinity()));
     }
-    return absoluteBoundsForLocalRect(selection().start().anchorNode(), localCaretRectWithoutUpdate());
+    return m_caretBase->absoluteBoundsForLocalRect(selection().start().anchorNode(), m_caretBase->localCaretRectWithoutUpdate());
 }
 
 void FrameSelection::invalidateCaretRect()
@@ -718,24 +720,24 @@ void FrameSelection::invalidateCaretRect()
     if (!m_caretBlinkTimer.isActive()
         && newNode == m_previousCaretNode
         && newRect == m_previousCaretRect
-        && getCaretVisibility() == m_previousCaretVisibility)
+        && m_caretBase->getCaretVisibility() == m_previousCaretVisibility)
         return;
 
     LayoutView* view = m_frame->document()->layoutView();
-    if (m_previousCaretNode && (shouldRepaintCaret(*m_previousCaretNode) || shouldRepaintCaret(view)))
-        invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
-    if (newNode && (shouldRepaintCaret(*newNode) || shouldRepaintCaret(view)))
-        invalidateLocalCaretRect(newNode, newRect);
+    if (m_previousCaretNode && (m_caretBase->shouldRepaintCaret(*m_previousCaretNode) || m_caretBase->shouldRepaintCaret(view)))
+        m_caretBase->invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
+    if (newNode && (m_caretBase->shouldRepaintCaret(*newNode) || m_caretBase->shouldRepaintCaret(view)))
+        m_caretBase->invalidateLocalCaretRect(newNode, newRect);
     m_previousCaretNode = newNode;
     m_previousCaretRect = newRect;
-    m_previousCaretVisibility = getCaretVisibility();
+    m_previousCaretVisibility = m_caretBase->getCaretVisibility();
 }
 
 void FrameSelection::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset)
 {
     if (selection().isCaret() && m_shouldPaintCaret) {
-        updateCaretRect(PositionWithAffinity(selection().start(), selection().affinity()));
-        CaretBase::paintCaret(selection().start().anchorNode(), context, paintOffset);
+        m_caretBase->updateCaretRect(PositionWithAffinity(selection().start(), selection().affinity()));
+        m_caretBase->paintCaret(selection().start().anchorNode(), context, paintOffset);
     }
 }
 
@@ -936,7 +938,7 @@ void FrameSelection::focusedOrActiveStateChanged()
         setSelectionFromNone();
     else
         m_frame->spellChecker().spellCheckAfterBlur();
-    setCaretVisibility(activeAndFocused ? Visible : Hidden);
+    setCaretVisibility(activeAndFocused ? CaretVisibility::Visible : CaretVisibility::Hidden);
 
     // Update for caps lock state
     m_frame->eventHandler().capsLockStateMayHaveChanged();
@@ -1025,17 +1027,17 @@ void FrameSelection::updateAppearance()
 
 void FrameSelection::setCaretVisibility(CaretVisibility visibility)
 {
-    if (getCaretVisibility() == visibility)
+    if (m_caretBase->getCaretVisibility() == visibility)
         return;
 
-    CaretBase::setCaretVisibility(visibility);
+    m_caretBase->setCaretVisibility(visibility);
 
     updateAppearance();
 }
 
 bool FrameSelection::shouldBlinkCaret() const
 {
-    if (!caretIsVisible() || !isCaret())
+    if (!m_caretBase->caretIsVisible() || !isCaret())
         return false;
 
     if (m_frame->settings() && m_frame->settings()->caretBrowsingEnabled())
@@ -1054,7 +1056,7 @@ bool FrameSelection::shouldBlinkCaret() const
 
 void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
 {
-    ASSERT(caretIsVisible());
+    ASSERT(m_caretBase->caretIsVisible());
     ASSERT(isCaret());
     if (isCaretBlinkingSuspended() && m_shouldPaintCaret)
         return;
@@ -1397,6 +1399,11 @@ void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition, con
 void FrameSelection::updateIfNeeded()
 {
     m_selectionEditor->updateIfNeeded();
+}
+
+void FrameSelection::setCaretVisible(bool caretIsVisible)
+{
+    setCaretVisibility(caretIsVisible ? CaretVisibility::Visible : CaretVisibility::Hidden);
 }
 
 } // namespace blink

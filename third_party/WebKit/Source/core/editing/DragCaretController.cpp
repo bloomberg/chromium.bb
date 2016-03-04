@@ -32,7 +32,7 @@
 namespace blink {
 
 DragCaretController::DragCaretController()
-    : CaretBase(Visible)
+    : CaretBase(CaretVisibility::Visible)
 {
 }
 
