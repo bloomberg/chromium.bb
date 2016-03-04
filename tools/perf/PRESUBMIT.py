@@ -30,9 +30,12 @@ def _GetPathsToPrepend(input_api):
   chromium_src_dir = input_api.os_path.join(perf_dir, '..', '..')
   telemetry_dir = input_api.os_path.join(
       chromium_src_dir, 'third_party', 'catapult', 'telemetry')
+  experimental_dir = input_api.os_path.join(
+      chromium_src_dir, 'third_party', 'catapult', 'experimental')
   return [
       telemetry_dir,
       input_api.os_path.join(telemetry_dir, 'third_party', 'mock'),
+      experimental_dir,
   ]
 
 
