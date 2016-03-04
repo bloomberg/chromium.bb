@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebSocketChannelClientProxy_h
-#define WebSocketChannelClientProxy_h
+#ifndef WebPepperSocketChannelClientProxy_h
+#define WebPepperSocketChannelClientProxy_h
 
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
-#include "web/WebSocketImpl.h"
+#include "web/WebPepperSocketImpl.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -15,17 +15,17 @@
 
 namespace blink {
 
-// Ideally we want to simply make WebSocketImpl inherit from
-// WebSocketChannelClient, but we cannot do that because WebSocketChannelClient
-// needs to be on Oilpan's heap whereas WebSocketImpl cannot be on Oilpan's
-// heap. Thus we need to introduce a proxy class to decouple WebSocketImpl
-// from WebSocketChannelClient.
-class WebSocketChannelClientProxy final : public GarbageCollectedFinalized<WebSocketChannelClientProxy>, public WebSocketChannelClient {
-    USING_GARBAGE_COLLECTED_MIXIN(WebSocketChannelClientProxy)
+// Ideally we want to simply make WebPepperSocketImpl inherit from
+// WebPepperSocketChannelClient, but we cannot do that because
+// WebSocketChannelClient needs to be on Oilpan's heap whereas
+// WebPepperSocketImpl cannot be on Oilpan's heap. Thus we need to introduce a
+// proxy class to decouple WebPepperSocketImpl from WebSocketChannelClient.
+class WebPepperSocketChannelClientProxy final : public GarbageCollectedFinalized<WebPepperSocketChannelClientProxy>, public WebSocketChannelClient {
+    USING_GARBAGE_COLLECTED_MIXIN(WebPepperSocketChannelClientProxy)
 public:
-    static WebSocketChannelClientProxy* create(WebSocketImpl* impl)
+    static WebPepperSocketChannelClientProxy* create(WebPepperSocketImpl* impl)
     {
-        return new WebSocketChannelClientProxy(impl);
+        return new WebPepperSocketChannelClientProxy(impl);
     }
 
     void didConnect(const String& subprotocol, const String& extensions) override
@@ -54,7 +54,7 @@ public:
     }
     void didClose(ClosingHandshakeCompletionStatus status, unsigned short code, const String& reason) override
     {
-        WebSocketImpl* impl = m_impl;
+        WebPepperSocketImpl* impl = m_impl;
         m_impl = nullptr;
         impl->didClose(status, code, reason);
     }
@@ -65,14 +65,14 @@ public:
     }
 
 private:
-    explicit WebSocketChannelClientProxy(WebSocketImpl* impl)
+    explicit WebPepperSocketChannelClientProxy(WebPepperSocketImpl* impl)
         : m_impl(impl)
     {
     }
 
-    WebSocketImpl* m_impl;
+    WebPepperSocketImpl* m_impl;
 };
 
 } // namespace blink
 
-#endif // WebSocketChannelClientProxy_h
+#endif // WebPepperSocketChannelClientProxy_h

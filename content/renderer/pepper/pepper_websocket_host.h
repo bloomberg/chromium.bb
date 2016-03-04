@@ -16,8 +16,8 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
-#include "third_party/WebKit/public/web/WebSocket.h"
-#include "third_party/WebKit/public/web/WebSocketClient.h"
+#include "third_party/WebKit/public/web/WebPepperSocket.h"
+#include "third_party/WebKit/public/web/WebPepperSocketClient.h"
 
 namespace ppapi {
 class StringVar;
@@ -30,7 +30,7 @@ class RendererPpapiHost;
 
 class CONTENT_EXPORT PepperWebSocketHost
     : public ppapi::host::ResourceHost,
-      public NON_EXPORTED_BASE(::blink::WebSocketClient) {
+      public NON_EXPORTED_BASE(::blink::WebPepperSocketClient) {
  public:
   explicit PepperWebSocketHost(RendererPpapiHost* host,
                                PP_Instance instance,
@@ -41,7 +41,7 @@ class CONTENT_EXPORT PepperWebSocketHost
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
-  // WebSocketClient implementation.
+  // WebPepperSocketClient implementation.
   void didConnect() override;
   void didReceiveMessage(const blink::WebString& message) override;
   void didReceiveArrayBuffer(const blink::WebArrayBuffer& binaryData) override;
@@ -93,7 +93,7 @@ class CONTENT_EXPORT PepperWebSocketHost
 
   // Keeps the WebKit side WebSocket object. This is used for calling WebKit
   // side functions via WebKit API.
-  scoped_ptr<blink::WebSocket> websocket_;
+  scoped_ptr<blink::WebPepperSocket> websocket_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperWebSocketHost);
 };

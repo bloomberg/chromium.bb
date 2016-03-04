@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocket_h
-#define WebSocket_h
+#ifndef WebPepperSocket_h
+#define WebPepperSocket_h
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
@@ -39,10 +39,10 @@ namespace blink {
 
 class WebArrayBuffer;
 class WebDocument;
+class WebPepperSocketClient;
 class WebURL;
-class WebSocketClient;
 
-class WebSocket {
+class WebPepperSocket {
 public:
     enum CloseEventCode {
         CloseEventCodeNotSpecified = -1,
@@ -68,8 +68,8 @@ public:
         BinaryTypeArrayBuffer = 1
     };
 
-    BLINK_EXPORT static WebSocket* create(const WebDocument&, WebSocketClient*);
-    virtual ~WebSocket() { }
+    BLINK_EXPORT static WebPepperSocket* create(const WebDocument&, WebPepperSocketClient*);
+    virtual ~WebPepperSocket() { }
 
     // These functions come from binaryType attribute of the WebSocket API
     // specification. It specifies binary object type for receiving binary
@@ -94,4 +94,4 @@ public:
 
 } // namespace blink
 
-#endif // WebSocket_h
+#endif // WebPepperSocket_h

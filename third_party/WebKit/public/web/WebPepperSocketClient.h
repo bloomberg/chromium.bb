@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2011, 2012 Google Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,21 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebSocket.h"
+#ifndef WebPepperSocketClient_h
+#define WebPepperSocketClient_h
 
-#include "web/WebSocketImpl.h"
+#include "../platform/WebCommon.h"
 
 namespace blink {
 
-WebSocket* WebSocket::create(const WebDocument& document, WebSocketClient* client)
-{
-    if (!client)
-        return 0;
+class WebArrayBuffer;
+class WebString;
 
-    OwnPtr<WebSocketImpl> websocket = adoptPtr(new WebSocketImpl(document, client));
-    if (websocket && websocket->isNull())
-        return 0;
-    return websocket.leakPtr();
-}
+class WebPepperSocketClient {
+public:
+    enum ClosingHandshakeCompletionStatus {
+        ClosingHandshakeIncomplete,
+        ClosingHandshakeComplete
+    };
+
+    virtual ~WebPepperSocketClient() { }
+    virtual void didConnect(const WebString& subprotocol, const WebString& extensions) { }
+    virtual void didReceiveMessage(const WebString& message) { }
+    virtual void didReceiveArrayBuffer(const WebArrayBuffer& arrayBuffer) { }
+    virtual void didReceiveMessageError() { }
+    virtual void didConsumeBufferedAmount(unsigned long consumed) { }
+    virtual void didStartClosingHandshake() { }
+    virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
+
+    // FIXME: Deperecate these methods.
+    virtual void didConnect() { }
+    virtual void didUpdateBufferedAmount(unsigned long bufferedAmount) { }
+    virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const WebString& reason) { }
+};
 
 } // namespace blink
+
+#endif // WebPepperSocketClient_h

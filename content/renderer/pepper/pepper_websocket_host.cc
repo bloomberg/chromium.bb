@@ -19,21 +19,21 @@
 #include "third_party/WebKit/public/web/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebPepperSocket.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "third_party/WebKit/public/web/WebSocket.h"
 
 using blink::WebArrayBuffer;
 using blink::WebDocument;
 using blink::WebString;
-using blink::WebSocket;
+using blink::WebPepperSocket;
 using blink::WebURL;
 
 namespace content {
 
-#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name)                   \
-  static_assert(                                                             \
-      static_cast<int>(WebSocket::webkit_name) == static_cast<int>(np_name), \
-      "WebSocket enums must match PPAPI's")
+#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name)        \
+  static_assert(static_cast<int>(WebPepperSocket::webkit_name) == \
+                    static_cast<int>(np_name),                    \
+                "WebSocket enums must match PPAPI's")
 
 COMPILE_ASSERT_MATCHING_ENUM(CloseEventCodeNormalClosure,
                              PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE);
@@ -176,7 +176,7 @@ void PepperWebSocketHost::didClose(unsigned long unhandled_buffered_amount,
   // Set close_was_clean_.
   bool was_clean = (initiating_close_ || accepting_close_) &&
                    !unhandled_buffered_amount &&
-                   status == WebSocketClient::ClosingHandshakeComplete;
+                   status == WebPepperSocketClient::ClosingHandshakeComplete;
 
   if (initiating_close_) {
     initiating_close_ = false;
@@ -259,13 +259,13 @@ int32_t PepperWebSocketHost::OnHostMsgConnect(
     return PP_ERROR_BADARGUMENT;
   // TODO(toyoshim) Remove following WebDocument object copy.
   WebDocument document = container->element().document();
-  websocket_.reset(WebSocket::create(document, this));
+  websocket_.reset(WebPepperSocket::create(document, this));
   DCHECK(websocket_.get());
   if (!websocket_)
     return PP_ERROR_NOTSUPPORTED;
 
   // Set receiving binary object type.
-  websocket_->setBinaryType(WebSocket::BinaryTypeArrayBuffer);
+  websocket_->setBinaryType(WebPepperSocket::BinaryTypeArrayBuffer);
   websocket_->connect(web_url, web_protocols);
 
   connect_reply_ = context->MakeReplyMessageContext();
@@ -282,13 +282,13 @@ int32_t PepperWebSocketHost::OnHostMsgClose(
   close_reply_ = context->MakeReplyMessageContext();
   initiating_close_ = true;
 
-  blink::WebSocket::CloseEventCode event_code =
-      static_cast<blink::WebSocket::CloseEventCode>(code);
+  blink::WebPepperSocket::CloseEventCode event_code =
+      static_cast<blink::WebPepperSocket::CloseEventCode>(code);
   if (code == PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED) {
     // PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED and CloseEventCodeNotSpecified are
     // assigned to different values. A conversion is needed if
     // PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED is specified.
-    event_code = blink::WebSocket::CloseEventCodeNotSpecified;
+    event_code = blink::WebPepperSocket::CloseEventCodeNotSpecified;
   }
 
   WebString web_reason = WebString::fromUTF8(reason);

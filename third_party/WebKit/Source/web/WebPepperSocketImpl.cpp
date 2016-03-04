@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebSocketImpl.h"
+#include "web/WebPepperSocketImpl.h"
 
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
@@ -39,15 +39,15 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebArrayBuffer.h"
 #include "public/web/WebDocument.h"
-#include "web/WebSocketChannelClientProxy.h"
+#include "web/WebPepperSocketChannelClientProxy.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* client)
+WebPepperSocketImpl::WebPepperSocketImpl(const WebDocument& document, WebPepperSocketClient* client)
     : m_client(client)
-    , m_channelProxy(WebSocketChannelClientProxy::create(this))
+    , m_channelProxy(WebPepperSocketChannelClientProxy::create(this))
     , m_binaryType(BinaryTypeBlob)
     , m_isClosingOrClosed(false)
     , m_bufferedAmount(0)
@@ -57,17 +57,17 @@ WebSocketImpl::WebSocketImpl(const WebDocument& document, WebSocketClient* clien
     m_private = DocumentWebSocketChannel::create(coreDocument.get(), m_channelProxy.get());
 }
 
-WebSocketImpl::~WebSocketImpl()
+WebPepperSocketImpl::~WebPepperSocketImpl()
 {
     m_private->disconnect();
 }
 
-WebSocket::BinaryType WebSocketImpl::binaryType() const
+WebPepperSocket::BinaryType WebPepperSocketImpl::binaryType() const
 {
     return m_binaryType;
 }
 
-bool WebSocketImpl::setBinaryType(BinaryType binaryType)
+bool WebPepperSocketImpl::setBinaryType(BinaryType binaryType)
 {
     if (binaryType > BinaryTypeArrayBuffer)
         return false;
@@ -75,22 +75,22 @@ bool WebSocketImpl::setBinaryType(BinaryType binaryType)
     return true;
 }
 
-void WebSocketImpl::connect(const WebURL& url, const WebString& protocol)
+void WebPepperSocketImpl::connect(const WebURL& url, const WebString& protocol)
 {
     m_private->connect(url, protocol);
 }
 
-WebString WebSocketImpl::subprotocol()
+WebString WebPepperSocketImpl::subprotocol()
 {
     return m_subprotocol;
 }
 
-WebString WebSocketImpl::extensions()
+WebString WebPepperSocketImpl::extensions()
 {
     return m_extensions;
 }
 
-bool WebSocketImpl::sendText(const WebString& message)
+bool WebPepperSocketImpl::sendText(const WebString& message)
 {
     String coreMessage = message;
     CString encodedMessage = coreMessage.utf8();
@@ -109,7 +109,7 @@ bool WebSocketImpl::sendText(const WebString& message)
     return true;
 }
 
-bool WebSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
+bool WebPepperSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
 {
     size_t size = webArrayBuffer.byteLength();
     m_bufferedAmount += size;
@@ -127,29 +127,29 @@ bool WebSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
     return true;
 }
 
-unsigned long WebSocketImpl::bufferedAmount() const
+unsigned long WebPepperSocketImpl::bufferedAmount() const
 {
     return m_bufferedAmount;
 }
 
-void WebSocketImpl::close(int code, const WebString& reason)
+void WebPepperSocketImpl::close(int code, const WebString& reason)
 {
     m_isClosingOrClosed = true;
     m_private->close(code, reason);
 }
 
-void WebSocketImpl::fail(const WebString& reason)
+void WebPepperSocketImpl::fail(const WebString& reason)
 {
     m_private->fail(reason, ErrorMessageLevel, String(), 0);
 }
 
-void WebSocketImpl::disconnect()
+void WebPepperSocketImpl::disconnect()
 {
     m_private->disconnect();
     m_client = nullptr;
 }
 
-void WebSocketImpl::didConnect(const String& subprotocol, const String& extensions)
+void WebPepperSocketImpl::didConnect(const String& subprotocol, const String& extensions)
 {
     m_client->didConnect(subprotocol, extensions);
 
@@ -159,12 +159,12 @@ void WebSocketImpl::didConnect(const String& subprotocol, const String& extensio
     m_client->didConnect();
 }
 
-void WebSocketImpl::didReceiveTextMessage(const String& payload)
+void WebPepperSocketImpl::didReceiveTextMessage(const String& payload)
 {
     m_client->didReceiveMessage(WebString(payload));
 }
 
-void WebSocketImpl::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload)
+void WebPepperSocketImpl::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload)
 {
     switch (m_binaryType) {
     case BinaryTypeBlob:
@@ -176,12 +176,12 @@ void WebSocketImpl::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload)
     }
 }
 
-void WebSocketImpl::didError()
+void WebPepperSocketImpl::didError()
 {
     m_client->didReceiveMessageError();
 }
 
-void WebSocketImpl::didConsumeBufferedAmount(unsigned long consumed)
+void WebPepperSocketImpl::didConsumeBufferedAmount(unsigned long consumed)
 {
     m_client->didConsumeBufferedAmount(consumed);
 
@@ -190,18 +190,18 @@ void WebSocketImpl::didConsumeBufferedAmount(unsigned long consumed)
     m_client->didUpdateBufferedAmount(m_bufferedAmount);
 }
 
-void WebSocketImpl::didStartClosingHandshake()
+void WebPepperSocketImpl::didStartClosingHandshake()
 {
     m_client->didStartClosingHandshake();
 }
 
-void WebSocketImpl::didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus status, unsigned short code, const String& reason)
+void WebPepperSocketImpl::didClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus status, unsigned short code, const String& reason)
 {
     m_isClosingOrClosed = true;
-    m_client->didClose(static_cast<WebSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
+    m_client->didClose(static_cast<WebPepperSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
 
     // FIXME: Deprecate this call.
-    m_client->didClose(m_bufferedAmount - m_bufferedAmountAfterClose, static_cast<WebSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
+    m_client->didClose(m_bufferedAmount - m_bufferedAmountAfterClose, static_cast<WebPepperSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
 }
 
 } // namespace blink

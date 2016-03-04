@@ -28,29 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocketImpl_h
-#define WebSocketImpl_h
+#ifndef WebPepperSocketImpl_h
+#define WebPepperSocketImpl_h
 
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebSocket.h"
-#include "public/web/WebSocketClient.h"
+#include "public/web/WebPepperSocket.h"
+#include "public/web/WebPepperSocketClient.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class WebDocument;
+class WebPepperSocketChannelClientProxy;
 class WebSocketChannel;
-class WebSocketChannelClientProxy;
 class WebURL;
 
-class WebSocketImpl final : public WebSocket {
+class WebPepperSocketImpl final : public WebPepperSocket {
 public:
-    WebSocketImpl(const WebDocument&, WebSocketClient*);
-    ~WebSocketImpl() override;
+    WebPepperSocketImpl(const WebDocument&, WebPepperSocketClient*);
+    ~WebPepperSocketImpl() override;
 
     bool isNull() const { return !m_private; }
 
@@ -66,7 +66,7 @@ public:
     void fail(const WebString& reason) override;
     void disconnect() override;
 
-    // WebSocketChannelClient methods proxied by WebSocketChannelClientProxy.
+    // WebSocketChannelClient methods proxied by WebPepperSocketChannelClientProxy.
     void didConnect(const String& subprotocol, const String& extensions);
     void didReceiveTextMessage(const String& payload);
     void didReceiveBinaryMessage(PassOwnPtr<Vector<char>> payload);
@@ -77,8 +77,8 @@ public:
 
 private:
     Persistent<WebSocketChannel> m_private;
-    WebSocketClient* m_client;
-    Persistent<WebSocketChannelClientProxy> m_channelProxy;
+    WebPepperSocketClient* m_client;
+    Persistent<WebPepperSocketChannelClientProxy> m_channelProxy;
     BinaryType m_binaryType;
     WebString m_subprotocol;
     WebString m_extensions;
@@ -90,4 +90,4 @@ private:
 
 } // namespace blink
 
-#endif // WebWebSocketChannelImpl_h
+#endif // WebPepperSocketImpl_h
