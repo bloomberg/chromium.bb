@@ -49,7 +49,6 @@
       ],
       'sources': [
         'gurl_unittest.cc',
-        'mojo/url_gurl_struct_traits_unittest.cc',
         'origin_unittest.cc',
         'run_all_unittests.cc',
         'scheme_host_port_unittest.cc',
@@ -58,6 +57,13 @@
         'url_parse_unittest.cc',
         'url_test_utils.h',
         'url_util_unittest.cc',
+      ],
+      'conditions': [
+        ['OS!="ios"', {
+          'sources': [
+            'mojo/url_gurl_struct_traits_unittest.cc',
+          ],
+        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],

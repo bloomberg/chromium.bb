@@ -8,12 +8,15 @@
 #include "base/test/test_io_thread.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "base/test/test_file_util.h"
+#endif
+
+#if !defined(OS_IOS)
+#include "mojo/edk/embedder/embedder.h"  // nogncheck
+#include "mojo/edk/test/scoped_ipc_support.h"  // nogncheck
 #endif
 
 int main(int argc, char** argv) {
@@ -23,11 +26,13 @@ int main(int argc, char** argv) {
 #endif
   base::TestSuite test_suite(argc, argv);
 
+#if !defined(OS_IOS)
   mojo::edk::Init();
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
   scoped_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support;
   ipc_support.reset(
       new mojo::edk::test::ScopedIPCSupport(test_io_thread.task_runner()));
+#endif
 
   return base::LaunchUnitTests(
       argc, argv,
