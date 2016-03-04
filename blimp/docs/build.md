@@ -12,18 +12,8 @@ Create an out-directory and set the GN args:
 
 ```bash
 mkdir -p out-android/Debug
-gn args out-android/Debug
-```
-
-This will bring up an editor, where you can type in the following:
-
-```bash
-target_os = "android"
-is_debug = true
-is_clang = true
-is_component_build = true
-symbol_level = 1  # Use -g1 instead of -g2
-use_goma = true
+echo "import(\"//build/args/blimp_client.gn\")" > out-android/Debug/args.gn
+gn gen out-android/Debug
 ```
 
 To build:
@@ -39,62 +29,28 @@ ninja -C out-android/Debug blimp blimp_apk_incremental &&
     out-android/Debug/bin/install_blimp_apk_incremental
 ```
 
-## Engine inside a Docker container
-
-Create another out-directory and set the GN args. Note, when building to run
-inside a [Docker container](container.md) you'll need to turn off several
-dependencies:
-
+To add your own build preferences
 ```bash
-mkdir -p out-docker/Debug
-gn args out-docker/Debug
+gn args out-android/Debug
 ```
 
-This will bring an editor, where you can type in the following:
-
-```bash
-target_os = "linux"
-is_debug = true
-is_clang = true
-symbol_level = 1  # Use -g1 instead of -g2
-use_goma = true
-use_aura = true
-use_ozone = true
-use_alsa = false
-use_pulseaudio = false
-use_cups = false
-use_glib = false
-```
-
-To build:
-
-```bash
-ninja -C out-docker/Debug blimp
-```
-
-## "Bare" engine, no Docker container
+## Engine
 
 Create another out-directory and set the GN args:
 
 ```bash
 mkdir -p out-linux/Debug
-gn args out-linux/Debug
-```
-
-This will bring an editor, where you can type in the following:
-
-```bash
-is_debug = true
-is_clang = true
-is_component_build = true
-symbol_level = 1  # Use -g1 instead of -g2
-use_goma = true
-use_aura = true
-use_ozone = true
+echo "import(\"//build/args/blimp_engine.gn\")" > out-linux/Debug/args.gn
+gn gen out-linux/Debug
 ```
 
 To build:
 
 ```bash
 ninja -C out-linux/Debug blimp
+```
+
+To add your own build preferences
+```bash
+gn args out-android/Debug
 ```
