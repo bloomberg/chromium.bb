@@ -17,7 +17,7 @@ namespace mojo {
 // interface implementation, which could be used to construct an InterfacePtr.
 template <typename Interface>
 class InterfacePtrInfo {
-  MOJO_MOVE_ONLY_TYPE(InterfacePtrInfo);
+  MOVE_ONLY_TYPE_FOR_CPP_03(InterfacePtrInfo);
 
  public:
   InterfacePtrInfo() : version_(0u) {}

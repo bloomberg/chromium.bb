@@ -56,70 +56,10 @@ TEST(MacrosCppTest, Override) {
   x.AlsoToBeOverridden();
 }
 
-// Note: MSVS is very strict (and arguably buggy) about warnings for classes
-// defined in a local scope, so define these globally.
-class MoveOnlyInt {
-  MOJO_MOVE_ONLY_TYPE(MoveOnlyInt)
-
- public:
-  MoveOnlyInt() : is_set_(false), value_() {}
-  explicit MoveOnlyInt(int value) : is_set_(true), value_(value) {}
-  ~MoveOnlyInt() {}
-
-  // Move-only constructor and operator=.
-  MoveOnlyInt(MoveOnlyInt&& other) { *this = std::move(other); }
-  MoveOnlyInt& operator=(MoveOnlyInt&& other) {
-    if (&other != this) {
-      is_set_ = other.is_set_;
-      value_ = other.value_;
-      other.is_set_ = false;
-    }
-    return *this;
-  }
-
-  int value() const {
-    assert(is_set());
-    return value_;
-  }
-  bool is_set() const { return is_set_; }
-
- private:
-  bool is_set_;
-  int value_;
-};
-
-TEST(MacrosCppTest, MoveOnlyType) {
-  MoveOnlyInt x(123);
-  EXPECT_TRUE(x.is_set());
-  EXPECT_EQ(123, x.value());
-  MoveOnlyInt y;
-  EXPECT_FALSE(y.is_set());
-  y = std::move(x);
-  EXPECT_FALSE(x.is_set());
-  EXPECT_TRUE(y.is_set());
-  EXPECT_EQ(123, y.value());
-  MoveOnlyInt z(std::move(y));
-  EXPECT_FALSE(y.is_set());
-  EXPECT_TRUE(z.is_set());
-  EXPECT_EQ(123, z.value());
-}
-
 // Use it, to make sure things get linked in and to avoid any warnings about
 // unused things.
 TEST(MacrosCppTest, StaticConstMemberDefinition) {
   EXPECT_EQ(123, StructWithStaticConstMember::kStaticConstMember);
-}
-
-// The test for |ignore_result()| is also just a compilation test. (Note that
-// |WARN_UNUSED_RESULT| can only be used in the prototype.
-int ReturnsIntYouMustUse() WARN_UNUSED_RESULT;
-
-int ReturnsIntYouMustUse() {
-  return 123;
-}
-
-TEST(MacrosCppTest, IgnoreResult) {
-  ignore_result(ReturnsIntYouMustUse());
 }
 
 }  // namespace

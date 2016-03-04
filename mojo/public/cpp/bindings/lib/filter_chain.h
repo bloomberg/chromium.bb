@@ -15,7 +15,7 @@ namespace mojo {
 namespace internal {
 
 class FilterChain {
-  MOJO_MOVE_ONLY_TYPE(FilterChain)
+  MOVE_ONLY_TYPE_FOR_CPP_03(FilterChain)
 
  public:
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while

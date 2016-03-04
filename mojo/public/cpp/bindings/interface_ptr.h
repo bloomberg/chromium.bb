@@ -33,7 +33,7 @@ class AssociatedGroup;
 // any thread.
 template <typename Interface>
 class InterfacePtr {
-  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(InterfacePtr)
+  DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(InterfacePtr);
 
  public:
   using GenericInterface = typename Interface::GenericInterface;

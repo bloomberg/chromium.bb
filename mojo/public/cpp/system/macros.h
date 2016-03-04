@@ -13,20 +13,6 @@
 
 #include "mojo/public/c/system/macros.h"  // Symbols exposed.
 
-// Used to make a type non-copyable. See Chromium's base/move.h for more
-// details. The MoveOnlyTypeForCPP03 typedef is for Chromium's base/callback.h
-// to tell that this type is move-only, allowing these types to be bound or
-// passed to Callbacks.
-#define MOJO_MOVE_ONLY_TYPE(type)                                              \
- private:                                                                      \
-  type(const type&) = delete;                                                  \
-  void operator=(const type&) = delete;                                        \
-                                                                               \
- public:                                                                       \
-  typedef void MoveOnlyTypeForCPP03;                                           \
-                                                                               \
- private:
-
 // The C++ standard requires that static const members have an out-of-class
 // definition (in a single compilation unit), but MSVC chokes on this (when
 // language extensions, which are required, are enabled). (You're only likely to
@@ -49,16 +35,5 @@
 #else
 #define MOJO_STATIC_CONST_MEMBER_DEFINITION
 #endif
-
-namespace mojo {
-
-// Used to explicitly mark the return value of a function as unused. (You this
-// if you are really sure you don't want to do anything with the return value of
-// a function marked with |WARN_UNUSED_RESULT|.
-template <typename T>
-inline void ignore_result(const T&) {
-}
-
-}  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_

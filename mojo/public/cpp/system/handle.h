@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/move.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -72,7 +73,7 @@ namespace mojo {
 // like the C++11 |unique_ptr|.
 template <class HandleType>
 class ScopedHandleBase {
-  MOJO_MOVE_ONLY_TYPE(ScopedHandleBase)
+  MOVE_ONLY_TYPE_FOR_CPP_03(ScopedHandleBase);
 
  public:
   ScopedHandleBase() {}

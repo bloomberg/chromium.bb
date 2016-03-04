@@ -26,7 +26,7 @@ namespace mojo {
 //     using the insert() method.
 template <typename Key, typename Value>
 class Map {
-  MOJO_MOVE_ONLY_TYPE(Map)
+  MOVE_ONLY_TYPE_FOR_CPP_03(Map);
 
  public:
   // Map keys cannot be move only classes.

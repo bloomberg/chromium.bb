@@ -25,7 +25,7 @@ namespace mojo {
 // meaning that no value has been assigned to it. Null is distinct from empty.
 template <typename T>
 class Array {
-  MOJO_MOVE_ONLY_TYPE(Array)
+  MOVE_ONLY_TYPE_FOR_CPP_03(Array);
  public:
   using ConstRefType = typename std::vector<T>::const_reference;
   using RefType = typename std::vector<T>::reference;

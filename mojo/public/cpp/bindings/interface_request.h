@@ -19,7 +19,7 @@ namespace mojo {
 // if the client did not provide a message pipe.
 template <typename Interface>
 class InterfaceRequest {
-  MOJO_MOVE_ONLY_TYPE(InterfaceRequest)
+  MOVE_ONLY_TYPE_FOR_CPP_03(InterfaceRequest);
  public:
   // Constructs an empty InterfaceRequest, representing that the client is not
   // requesting an implementation of Interface.

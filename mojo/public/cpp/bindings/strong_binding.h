@@ -48,7 +48,7 @@ namespace mojo {
 // bound, it may be bound or destroyed on any thread.
 template <typename Interface>
 class StrongBinding {
-  MOJO_MOVE_ONLY_TYPE(StrongBinding)
+  MOVE_ONLY_TYPE_FOR_CPP_03(StrongBinding);
 
  public:
   explicit StrongBinding(Interface* impl) : binding_(impl) {}

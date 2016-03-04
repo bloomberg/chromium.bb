@@ -28,7 +28,7 @@ class StructHelper {
 // Smart pointer wrapping a mojom structure with move-only semantics.
 template <typename Struct>
 class StructPtr {
-  MOJO_MOVE_ONLY_TYPE(StructPtr)
+  MOVE_ONLY_TYPE_FOR_CPP_03(StructPtr);
 
  public:
 
@@ -117,7 +117,7 @@ class StructPtr {
 // Designed to be used when Struct is small and copyable.
 template <typename Struct>
 class InlinedStructPtr {
-  MOJO_MOVE_ONLY_TYPE(InlinedStructPtr);
+  MOVE_ONLY_TYPE_FOR_CPP_03(InlinedStructPtr);
 
  public:
 
