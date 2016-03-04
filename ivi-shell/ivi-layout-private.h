@@ -206,9 +206,6 @@ int32_t
 ivi_layout_layer_set_position(struct ivi_layout_layer *ivilayer,
 			      int32_t dest_x, int32_t dest_y);
 int32_t
-ivi_layout_layer_get_position(struct ivi_layout_layer *ivilayer,
-			      int32_t *dest_x, int32_t *dest_y);
-int32_t
 ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 				  struct ivi_layout_surface **pSurface,
 				  int32_t number);

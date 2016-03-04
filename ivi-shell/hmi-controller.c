@@ -1417,6 +1417,7 @@ move_workspace_grab_end(struct move_grab *move, struct wl_resource* resource,
 {
 	struct hmi_controller *hmi_ctrl = wl_resource_get_user_data(resource);
 	int32_t width = hmi_ctrl->workspace_background_layer.width;
+	const struct ivi_layout_layer_properties *prop;
 
 	struct timespec time = {0};
 	double grab_time = 0.0;
@@ -1443,8 +1444,9 @@ move_workspace_grab_end(struct move_grab *move, struct wl_resource* resource,
 	if (200 < from_motion_time)
 		pointer_v = 0.0;
 
-	ivi_layout_interface->layer_get_position(layer, &pos_x, &pos_y);
-
+	prop = ivi_layout_interface->get_properties_of_layer(layer);
+	pos_x = prop->dest_x;
+	pos_y = prop->dest_y;
 
 	if (is_flick) {
 		int orgx = wl_fixed_to_int(move->dst[0] + grab_x);
@@ -1733,6 +1735,7 @@ move_grab_init_workspace(struct move_grab* move,
 {
 	struct hmi_controller *hmi_ctrl = wl_resource_get_user_data(resource);
 	struct ivi_layout_layer *layer = hmi_ctrl->workspace_layer.ivilayer;
+	const struct ivi_layout_layer_properties *prop;
 	int32_t workspace_count = hmi_ctrl->workspace_count;
 	int32_t workspace_width = hmi_ctrl->workspace_background_layer.width;
 	int32_t layer_pos_x = 0;
@@ -1741,7 +1744,9 @@ move_grab_init_workspace(struct move_grab* move,
 	wl_fixed_t rgn[2][2] = {{0}};
 	wl_fixed_t grab_pos[2] = { grab_x, grab_y };
 
-	ivi_layout_interface->layer_get_position(layer, &layer_pos_x, &layer_pos_y);
+	prop = ivi_layout_interface->get_properties_of_layer(layer);
+	layer_pos_x = prop->dest_x;
+	layer_pos_y = prop->dest_y;
 
 	start_pos[0] = wl_fixed_from_int(layer_pos_x);
 	start_pos[1] = wl_fixed_from_int(layer_pos_y);

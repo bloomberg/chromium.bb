@@ -736,11 +736,9 @@ ivi_layout_transition_move_layer(struct ivi_layout_layer *layer,
 				 int32_t dest_x, int32_t dest_y,
 				 uint32_t duration)
 {
-	int32_t start_pos_x = 0;
-	int32_t start_pos_y = 0;
+	int32_t start_pos_x = layer->prop.dest_x;
+	int32_t start_pos_y = layer->prop.dest_y;
 	struct ivi_layout_transition *transition = NULL;
-
-	ivi_layout_layer_get_position(layer, &start_pos_x, &start_pos_y);
 
 	transition = create_move_layer_transition(
 		layer,

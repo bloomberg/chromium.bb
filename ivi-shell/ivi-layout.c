@@ -1907,21 +1907,6 @@ ivi_layout_layer_set_dimension(struct ivi_layout_layer *ivilayer,
 }
 
 int32_t
-ivi_layout_layer_get_position(struct ivi_layout_layer *ivilayer,
-			      int32_t *dest_x, int32_t *dest_y)
-{
-	if (ivilayer == NULL || dest_x == NULL || dest_y == NULL) {
-		weston_log("ivi_layout_layer_get_position: invalid argument\n");
-		return IVI_FAILED;
-	}
-
-	*dest_x = ivilayer->prop.dest_x;
-	*dest_y = ivilayer->prop.dest_y;
-
-	return IVI_SUCCEEDED;
-}
-
-int32_t
 ivi_layout_layer_set_position(struct ivi_layout_layer *ivilayer,
 			      int32_t dest_x, int32_t dest_y)
 {
@@ -2721,7 +2706,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.layer_set_source_rectangle		= ivi_layout_layer_set_source_rectangle,
 	.layer_set_destination_rectangle	= ivi_layout_layer_set_destination_rectangle,
 	.layer_set_position			= ivi_layout_layer_set_position,
-	.layer_get_position			= ivi_layout_layer_get_position,
 	.layer_set_dimension			= ivi_layout_layer_set_dimension,
 	.layer_get_dimension			= ivi_layout_layer_get_dimension,
 	.layer_set_orientation			= ivi_layout_layer_set_orientation,

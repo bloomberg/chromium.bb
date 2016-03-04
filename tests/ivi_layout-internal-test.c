@@ -281,30 +281,20 @@ test_layer_position(struct test_context *ctx)
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 	struct ivi_layout_layer *ivilayer;
 	const struct ivi_layout_layer_properties *prop;
-	int32_t dest_x;
-	int32_t dest_y;
 
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
 
-	iassert(lyt->layer_get_position(
-		ivilayer, &dest_x, &dest_y) == IVI_SUCCEEDED);
-	iassert(dest_x == 0);
-	iassert(dest_y == 0);
+	prop = lyt->get_properties_of_layer(ivilayer);
+	iassert(prop->dest_x == 0);
+	iassert(prop->dest_y == 0);
 
 	iassert(lyt->layer_set_position(ivilayer, 20, 30) == IVI_SUCCEEDED);
 
-	iassert(lyt->layer_get_position(
-		ivilayer, &dest_x, &dest_y) == IVI_SUCCEEDED);
-	iassert(dest_x == 0);
-	iassert(dest_y == 0);
+	iassert(prop->dest_x == 0);
+	iassert(prop->dest_y == 0);
 
 	lyt->commit_changes();
-
-	iassert(lyt->layer_get_position(
-		ivilayer, &dest_x, &dest_y) == IVI_SUCCEEDED);
-	iassert(dest_x == 20);
-	iassert(dest_y == 30);
 
 	prop = lyt->get_properties_of_layer(ivilayer);
 	iassert(prop->dest_x == 20);
@@ -321,8 +311,6 @@ test_layer_destination_rectangle(struct test_context *ctx)
 	const struct ivi_layout_layer_properties *prop;
 	int32_t dest_width;
 	int32_t dest_height;
-	int32_t dest_x;
-	int32_t dest_y;
 
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
@@ -348,11 +336,6 @@ test_layer_destination_rectangle(struct test_context *ctx)
 		ivilayer, &dest_width, &dest_height) == IVI_SUCCEEDED);
 	iassert(dest_width == 400);
 	iassert(dest_height == 600);
-
-	iassert(lyt->layer_get_position(
-		ivilayer, &dest_x, &dest_y) == IVI_SUCCEEDED);
-	iassert(dest_x == 20);
-	iassert(dest_y == 30);
 
 	prop = lyt->get_properties_of_layer(ivilayer);
 	iassert(prop->dest_width == 400);
@@ -507,8 +490,6 @@ test_layer_bad_position(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 	struct ivi_layout_layer *ivilayer;
-	int32_t dest_x;
-	int32_t dest_y;
 
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
@@ -516,10 +497,6 @@ test_layer_bad_position(struct test_context *ctx)
 	iassert(lyt->layer_set_position(NULL, 20, 30) == IVI_FAILED);
 
 	lyt->commit_changes();
-
-	iassert(lyt->layer_get_position(NULL, &dest_x, &dest_y) == IVI_FAILED);
-	iassert(lyt->layer_get_position(ivilayer, NULL, &dest_y) == IVI_FAILED);
-	iassert(lyt->layer_get_position(ivilayer, &dest_x, NULL) == IVI_FAILED);
 
 	lyt->layer_destroy(ivilayer);
 }
