@@ -61,7 +61,7 @@ TEST_F(ContentSecurityPolicyTest, ParseMonitorInsecureRequestsEnabled)
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled)
 {
     RuntimeEnabledFeatures::setCorsRFC1918Enabled(false);
-    document->setHostedInReservedIPRange(true);
+    document->setAddressSpace(WebURLRequest::AddressSpacePrivate);
     EXPECT_EQ(WebURLRequest::AddressSpacePrivate, document->addressSpace());
 
     csp->didReceiveHeader("treat-as-public-address", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
@@ -72,7 +72,7 @@ TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled)
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled)
 {
     RuntimeEnabledFeatures::setCorsRFC1918Enabled(true);
-    document->setHostedInReservedIPRange(true);
+    document->setAddressSpace(WebURLRequest::AddressSpacePrivate);
     EXPECT_EQ(WebURLRequest::AddressSpacePrivate, document->addressSpace());
 
     csp->didReceiveHeader("treat-as-public-address", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);

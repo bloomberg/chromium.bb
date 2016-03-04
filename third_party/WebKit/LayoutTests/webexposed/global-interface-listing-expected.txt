@@ -956,6 +956,7 @@ interface DeviceOrientationEvent : Event
 interface Document : Node
     getter URL
     getter activeElement
+    getter addressSpace
     getter anchors
     getter applets
     getter body

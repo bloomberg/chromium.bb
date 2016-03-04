@@ -629,7 +629,7 @@ TEST_F(FrameFetchContextTest, SetIsExternalRequestForPublicDocument)
 
 TEST_F(FrameFetchContextTest, SetIsExternalRequestForPrivateDocument)
 {
-    document->setHostedInReservedIPRange(true);
+    document->setAddressSpace(WebURLRequest::AddressSpacePrivate);
     EXPECT_EQ(WebURLRequest::AddressSpacePrivate, document->addressSpace());
 
     struct TestCase {
@@ -677,8 +677,7 @@ TEST_F(FrameFetchContextTest, SetIsExternalRequestForPrivateDocument)
 
 TEST_F(FrameFetchContextTest, SetIsExternalRequestForLocalDocument)
 {
-    document->setSecurityOrigin(SecurityOrigin::create(KURL(KURL(), "http://localhost/")));
-    document->setHostedInReservedIPRange(true);
+    document->setAddressSpace(WebURLRequest::AddressSpaceLocal);
     EXPECT_EQ(WebURLRequest::AddressSpaceLocal, document->addressSpace());
 
     struct TestCase {

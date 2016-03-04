@@ -34,7 +34,7 @@ namespace blink {
 
 SecurityContext::SecurityContext()
     : m_sandboxFlags(SandboxNone)
-    , m_hostedInReservedIPRange(false)
+    , m_addressSpace(WebURLRequest::AddressSpacePublic)
     , m_insecureRequestsPolicy(InsecureRequestsDoNotUpgrade)
     , m_enforceStrictMixedContentChecking(false)
 {
@@ -69,12 +69,20 @@ void SecurityContext::enforceSandboxFlags(SandboxFlags mask)
     }
 }
 
-WebURLRequest::AddressSpace SecurityContext::addressSpace() const
+String SecurityContext::addressSpaceForBindings() const
 {
-    if (m_hostedInReservedIPRange)
-        return securityOrigin()->isLocalhost() ? WebURLRequest::AddressSpaceLocal : WebURLRequest::AddressSpacePrivate;
+    switch (m_addressSpace) {
+    case WebURLRequest::AddressSpacePublic:
+        return "public";
 
-    return WebURLRequest::AddressSpacePublic;
+    case WebURLRequest::AddressSpacePrivate:
+        return "private";
+
+    case WebURLRequest::AddressSpaceLocal:
+        return "local";
+    }
+    ASSERT_NOT_REACHED();
+    return "public";
 }
 
 bool SecurityContext::hasSuborigin()

@@ -177,7 +177,7 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         if (m_enforceStrictMixedContentChecking)
             document->enforceStrictMixedContentChecking();
         if (m_treatAsPublicAddress)
-            document->setHostedInReservedIPRange(false);
+            document->setAddressSpace(WebURLRequest::AddressSpacePublic);
         if (m_insecureRequestsPolicy == SecurityContext::InsecureRequestsUpgrade) {
             UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
             document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);

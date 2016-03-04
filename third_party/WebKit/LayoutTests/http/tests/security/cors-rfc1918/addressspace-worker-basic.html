@@ -1,0 +1,14 @@
+<!doctype html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="./resources/addressspace-test.js"></script>
+<script>
+    window.onload = function () {
+        // TODO(mkwst): These return "public" because we're not passing data into workers correctly.
+        // Will be fixed in https://codereview.chromium.org/1760523004
+        addressSpaceTest("http://localhost:8000", "worker", "local");
+        addressSpaceTest("http://127.0.0.1:8000", "worker", "local");
+        addressSpaceTest("http://example.test:8000", "worker", "private");
+    };
+</script>
+

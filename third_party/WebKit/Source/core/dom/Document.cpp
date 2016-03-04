@@ -4917,8 +4917,6 @@ void Document::initSecurityContext(const DocumentInit& initializer)
 {
     ASSERT(!securityOrigin());
 
-    setHostedInReservedIPRange(initializer.isHostedInReservedIPRange());
-
     if (!initializer.hasSecurityContext()) {
         // No source for a security context.
         // This can occur via document.implementation.createDocument().
@@ -4957,6 +4955,15 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     } else {
         m_cookieURL = m_url;
         setSecurityOrigin(SecurityOrigin::create(m_url));
+    }
+
+    // Set the address space before setting up CSP, as the latter may override
+    // the former via the 'treat-as-public-address' directive (see
+    // https://mikewest.github.io/cors-rfc1918/#csp).
+    if (initializer.isHostedInReservedIPRange()) {
+        setAddressSpace(securityOrigin()->isLocalhost() ? WebURLRequest::AddressSpaceLocal : WebURLRequest::AddressSpacePrivate);
+    } else {
+        setAddressSpace(WebURLRequest::AddressSpacePublic);
     }
 
     if (importsController()) {

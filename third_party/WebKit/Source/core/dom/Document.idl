@@ -26,6 +26,9 @@ enum DocumentReadyState { "loading", "interactive", "complete" };
 // http://www.w3.org/TR/page-visibility/#VisibilityState
 enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 
+// https://mikewest.github.io/cors-rfc1918/#feature-detect
+enum AddressSpace { "local", "private", "public" };
+
 // https://dom.spec.whatwg.org/#interface-document
 
 // FIXME: Document should have a constructor. crbug.com/238234
@@ -193,6 +196,10 @@ interface Document : Node {
     // http://www.w3.org/TR/page-visibility/#sec-document-interface
     readonly attribute boolean hidden;
     readonly attribute VisibilityState visibilityState;
+
+    // CORS and RFC1918
+    // https://mikewest.github.io/cors-rfc1918/#feature-detect
+    [RuntimeEnabled=CorsRFC1918, ImplementedAs=addressSpaceForBindings] readonly attribute AddressSpace addressSpace;
 
     // Non-standard APIs
     [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([Default=Undefined] optional long x, [Default=Undefined] optional long y);

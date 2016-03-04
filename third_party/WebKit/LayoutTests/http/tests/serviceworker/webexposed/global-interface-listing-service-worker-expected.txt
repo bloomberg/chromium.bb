@@ -702,6 +702,7 @@ interface WindowClient : Client
     method focus
     method navigate
 interface WorkerGlobalScope : EventTarget
+    getter addressSpace
     getter console
     getter crypto
     getter indexedDB

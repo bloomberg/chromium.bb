@@ -70,8 +70,9 @@ public:
     bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
     void enforceSandboxFlags(SandboxFlags mask);
 
-    void setHostedInReservedIPRange(bool value) { m_hostedInReservedIPRange = value; }
-    WebURLRequest::AddressSpace addressSpace() const;
+    void setAddressSpace(WebURLRequest::AddressSpace space) { m_addressSpace = space; }
+    WebURLRequest::AddressSpace addressSpace() const { return m_addressSpace; }
+    String addressSpaceForBindings() const;
 
     void setInsecureRequestsPolicy(InsecureRequestsPolicy policy) { m_insecureRequestsPolicy = policy; }
     InsecureRequestsPolicy getInsecureRequestsPolicy() const { return m_insecureRequestsPolicy; }
@@ -98,7 +99,7 @@ private:
 
     SandboxFlags m_sandboxFlags;
 
-    bool m_hostedInReservedIPRange;
+    WebURLRequest::AddressSpace m_addressSpace;
     InsecureRequestsPolicy m_insecureRequestsPolicy;
     InsecureNavigationsSet m_insecureNavigationsToUpgrade;
     bool m_enforceStrictMixedContentChecking;

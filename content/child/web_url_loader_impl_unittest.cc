@@ -26,6 +26,7 @@
 #include "content/public/child/request_peer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response_info.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -708,6 +709,33 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   DoCompleteRequest();
   EXPECT_FALSE(dispatcher()->canceled());
   EXPECT_EQ(kTestData, client()->received_data());
+}
+
+TEST_F(WebURLLoaderImplTest, ResponseIPAddress) {
+  GURL url("http://example.test/");
+
+  struct TestCase {
+    const char* ip;
+    const char* expected;
+  } cases[] = {
+      {"127.0.0.1", "127.0.0.1"},
+      {"123.123.123.123", "123.123.123.123"},
+      {"::1", "[::1]"},
+      {"2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+       "[2001:0db8:85a3:0000:0000:8a2e:0370:7334]"},
+      {"2001:db8:85a3:0:0:8a2e:370:7334", "[2001:db8:85a3:0:0:8a2e:370:7334]"},
+      {"2001:db8:85a3::8a2e:370:7334", "[2001:db8:85a3::8a2e:370:7334]"},
+      {"::ffff:192.0.2.128", "[::ffff:192.0.2.128]"}};
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(test.ip);
+    content::ResourceResponseInfo info;
+    info.socket_address = net::HostPortPair(test.ip, 443);
+    blink::WebURLResponse response;
+    response.initialize();
+    WebURLLoaderImpl::PopulateURLResponse(url, info, &response, true);
+    EXPECT_EQ(test.expected, response.remoteIPAddress().utf8());
+  };
 }
 
 }  // namespace

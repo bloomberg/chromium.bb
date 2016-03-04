@@ -943,7 +943,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setWasCached(!info.load_timing.request_start_time.is_null() &&
       info.response_time < info.load_timing.request_start_time);
   response->setRemoteIPAddress(
-      WebString::fromUTF8(info.socket_address.host()));
+      WebString::fromUTF8(info.socket_address.HostForURL()));
   response->setRemotePort(info.socket_address.port());
   response->setConnectionID(info.load_timing.socket_log_id);
   response->setConnectionReused(info.load_timing.socket_reused);
