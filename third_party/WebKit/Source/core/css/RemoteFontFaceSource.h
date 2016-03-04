@@ -46,7 +46,7 @@ public:
 
     // For UMA reporting
     bool hadBlankText() override { return m_histograms.hadBlankText(); }
-    void paintRequested() { m_histograms.fallbackFontPainted(); }
+    void paintRequested() { m_histograms.fallbackFontPainted(m_period); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -59,19 +59,19 @@ private:
     class FontLoadHistograms {
         DISALLOW_NEW();
     public:
-        FontLoadHistograms() : m_loadStartTime(0), m_fallbackPaintTime(0), m_isLongLimitExceeded(false) { }
+        FontLoadHistograms() : m_loadStartTime(0), m_blankPaintTime(0), m_isLongLimitExceeded(false) { }
         void loadStarted();
-        void fallbackFontPainted();
+        void fallbackFontPainted(DisplayPeriod);
         void fontLoaded(bool isInterventionTriggered);
         void longLimitExceeded(bool isInterventionTriggered);
         void recordFallbackTime(const FontResource*);
         void recordRemoteFont(const FontResource*);
-        bool hadBlankText() { return m_fallbackPaintTime; }
+        bool hadBlankText() { return m_blankPaintTime; }
     private:
         void recordLoadTimeHistogram(const FontResource*, int duration);
         void recordInterventionResult(bool triggered);
         double m_loadStartTime;
-        double m_fallbackPaintTime;
+        double m_blankPaintTime;
         bool m_isLongLimitExceeded;
     };
 

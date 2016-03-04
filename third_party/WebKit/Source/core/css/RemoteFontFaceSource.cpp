@@ -199,10 +199,10 @@ void RemoteFontFaceSource::FontLoadHistograms::loadStarted()
         m_loadStartTime = currentTimeMS();
 }
 
-void RemoteFontFaceSource::FontLoadHistograms::fallbackFontPainted()
+void RemoteFontFaceSource::FontLoadHistograms::fallbackFontPainted(DisplayPeriod period)
 {
-    if (!m_fallbackPaintTime)
-        m_fallbackPaintTime = currentTimeMS();
+    if (period == BlockPeriod && !m_blankPaintTime)
+        m_blankPaintTime = currentTimeMS();
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::fontLoaded(bool isInterventionTriggered)
@@ -219,12 +219,12 @@ void RemoteFontFaceSource::FontLoadHistograms::longLimitExceeded(bool isInterven
 
 void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontResource* font)
 {
-    if (m_fallbackPaintTime <= 0)
+    if (m_blankPaintTime <= 0)
         return;
-    int duration = static_cast<int>(currentTimeMS() - m_fallbackPaintTime);
+    int duration = static_cast<int>(currentTimeMS() - m_blankPaintTime);
     DEFINE_STATIC_LOCAL(CustomCountHistogram, blankTextShownTimeHistogram, ("WebFont.BlankTextShownTime", 0, 10000, 50));
     blankTextShownTimeHistogram.count(duration);
-    m_fallbackPaintTime = -1;
+    m_blankPaintTime = -1;
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResource* font)
