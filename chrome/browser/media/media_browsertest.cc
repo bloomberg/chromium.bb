@@ -17,10 +17,15 @@
 #include "media/base/test_data_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-// Common test results.
-const char MediaBrowserTest::kEnded[] = "ENDED";
-const char MediaBrowserTest::kError[] = "ERROR";
+// Normal failure title.
 const char MediaBrowserTest::kFailed[] = "FAILED";
+
+// Capitalized event name set by Utils.installTitleEventHandler().
+const char MediaBrowserTest::kEnded[] = "ENDED";
+
+// Uncapitalized event name as set by Utils.failTest().
+// TODO(sandersd): Change the tests to use a more unique message.
+const char MediaBrowserTest::kError[] = "error";
 
 MediaBrowserTest::MediaBrowserTest() : ignore_plugin_crash_(false) {}
 
