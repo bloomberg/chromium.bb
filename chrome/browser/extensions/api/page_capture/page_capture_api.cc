@@ -157,7 +157,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnFailure(const std::string& error) {
 
   SendResponse(false);
 
-  Release();  // Balanced in Run()
+  // Must not Release() here, OnMessageReceived will call it eventually.
 }
 
 void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64_t file_size) {
