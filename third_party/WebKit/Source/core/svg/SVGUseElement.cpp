@@ -389,9 +389,11 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
 
     // SVG specification does not say a word about <use> & cycles. My view on this is: just ignore it!
     // Non-appearing <use> content is easier to debug, then half-appearing content.
-    buildShadowTree(target, *m_targetElementInstance, false);
+    buildShadowTree(target, *m_targetElementInstance);
 
-    if (instanceTreeIsLoading(m_targetElementInstance.get())) {
+    addReferencesToFirstDegreeNestedUseElements(target);
+
+    if (instanceTreeIsLoading()) {
         cloneNonMarkupEventListeners();
         return;
     }
@@ -480,20 +482,23 @@ SVGGraphicsElement* SVGUseElement::targetGraphicsElementForClipping() const
     return &toSVGGraphicsElement(element);
 }
 
-void SVGUseElement::buildShadowTree(SVGElement& target, SVGElement& targetInstance, bool foundUse)
+void SVGUseElement::addReferencesToFirstDegreeNestedUseElements(SVGElement& target)
+{
+    // Don't track references to external documents.
+    if (isStructurallyExternal())
+        return;
+    // We only need to track first degree <use> dependencies. Indirect
+    // references are handled as the invalidation bubbles up the dependency
+    // chain.
+    SVGUseElement* useElement =
+        isSVGUseElement(target) ? toSVGUseElement(&target) : Traversal<SVGUseElement>::firstWithin(target);
+    for (; useElement; useElement = Traversal<SVGUseElement>::nextSkippingChildren(*useElement, &target))
+        addReferenceTo(useElement);
+}
+
+void SVGUseElement::buildShadowTree(SVGElement& target, SVGElement& targetInstance)
 {
     ASSERT(!isDisallowedElement(target));
-
-    // Spec: If the referenced object is itself a 'use', or if there are 'use' subelements within the referenced
-    // object, the instance tree will contain recursive expansion of the indirect references to form a complete tree.
-    if (isSVGUseElement(target)) {
-        // We only need to track first degree <use> dependencies. Indirect references are handled
-        // as the invalidation bubbles up the dependency chain.
-        if (!foundUse && !isStructurallyExternal()) {
-            addReferenceTo(&target);
-            foundUse = true;
-        }
-    }
 
     targetInstance.setCorrespondingElement(&target);
 
@@ -506,7 +511,7 @@ void SVGUseElement::buildShadowTree(SVGElement& target, SVGElement& targetInstan
         targetInstance.appendChild(newChild.get());
         if (newChild->isSVGElement()) {
             // Enter recursion, appending new instance tree nodes to the "instance" object.
-            buildShadowTree(toSVGElement(*child), toSVGElement(*newChild), foundUse);
+            buildShadowTree(toSVGElement(*child), toSVGElement(*newChild));
         }
     }
 }
@@ -770,10 +775,10 @@ bool SVGUseElement::resourceIsValid() const
         && m_resource->document();
 }
 
-bool SVGUseElement::instanceTreeIsLoading(const SVGElement* targetInstance)
+bool SVGUseElement::instanceTreeIsLoading() const
 {
-    for (const SVGElement* element = targetInstance; element; element = Traversal<SVGElement>::next(*element, targetInstance)) {
-        if (isSVGUseElement(*element) && toSVGUseElement(*element).resourceIsStillLoading())
+    for (const SVGUseElement& useElement : Traversal<SVGUseElement>::descendantsOf(*userAgentShadowRoot())) {
+        if (useElement.resourceIsStillLoading())
             return true;
     }
     return false;

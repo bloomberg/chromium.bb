@@ -91,19 +91,20 @@ private:
     // Instance tree handling
     void buildShadowAndInstanceTree(SVGElement& target);
     void clearInstanceRoot();
-    void buildShadowTree(SVGElement& target, SVGElement& targetInstance, bool foundUse);
+    void buildShadowTree(SVGElement& target, SVGElement& targetInstance);
     void clearShadowTree();
     bool hasCycleUseReferencing(const SVGUseElement&, const ContainerNode& targetInstance, SVGElement*& newTarget) const;
     bool expandUseElementsInShadowTree();
     void expandSymbolElementsInShadowTree();
     void cloneNonMarkupEventListeners();
+    void addReferencesToFirstDegreeNestedUseElements(SVGElement& target);
 
     void invalidateDependentShadowTrees();
 
     bool resourceIsStillLoading() const;
     bool resourceIsValid() const;
     Document* externalDocument() const;
-    bool instanceTreeIsLoading(const SVGElement*);
+    bool instanceTreeIsLoading() const;
     void notifyFinished(Resource*) override;
     String debugName() const override { return "SVGUseElement"; }
     void setDocumentResource(PassRefPtrWillBeRawPtr<DocumentResource>);
