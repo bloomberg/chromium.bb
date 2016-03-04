@@ -90,6 +90,8 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
 
 bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     const QuicPacketPublicHeader& header) {
+  current_connection_id_ = header.connection_id;
+
   // Port zero is only allowed for unidirectional UDP, so is disallowed by QUIC.
   // Given that we can't even send a reply rejecting the packet, just drop the
   // packet.
@@ -137,12 +139,24 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     if (framer_.IsSupportedVersion(packet_version)) {
       version = packet_version;
     } else {
-      // Packets set to be processed but having an unsupported version will
-      // cause a connection to be created.  The connection will handle
-      // sending a version negotiation packet.
-      // TODO(ianswett): This will malfunction if the full header of the packet
-      // causes a parsing error when parsed using the server's preferred
-      // version.
+      if (FLAGS_quic_stateless_version_negotiation) {
+        if (ShouldCreateSessionForUnknownVersion(framer_.last_version_tag())) {
+          return true;
+        }
+        // Since the version is not supported, send a version negotiation
+        // packet and stop processing the current packet.
+        time_wait_list_manager()->SendVersionNegotiationPacket(
+            connection_id, supported_versions_, current_server_address_,
+            current_client_address_);
+        return false;
+      } else {
+        // Packets set to be processed but having an unsupported version will
+        // cause a connection to be created.  The connection will handle
+        // sending a version negotiation packet.
+        // TODO(ianswett): This will malfunction if the full header of the
+        // packet causes a parsing error when parsed using the server's
+        // preferred version.
+      }
     }
   }
   // Set the framer's version and continue processing.
@@ -334,8 +348,21 @@ void QuicDispatcher::OnError(QuicFramer* framer) {
   DVLOG(1) << QuicUtils::ErrorToString(error);
 }
 
+bool QuicDispatcher::ShouldCreateSessionForUnknownVersion(QuicTag version_tag) {
+  return false;
+}
+
 bool QuicDispatcher::OnProtocolVersionMismatch(
     QuicVersion /*received_version*/) {
+  if (FLAGS_quic_stateless_version_negotiation) {
+    QUIC_BUG_IF(
+        !time_wait_list_manager_->IsConnectionIdInTimeWait(
+            current_connection_id_) &&
+        !ShouldCreateSessionForUnknownVersion(framer_.last_version_tag()))
+        << "Unexpected version mismatch: "
+        << QuicUtils::TagToString(framer_.last_version_tag());
+  }
+
   // Keep processing after protocol mismatch - this will be dealt with by the
   // time wait list or connection that we will create.
   return true;

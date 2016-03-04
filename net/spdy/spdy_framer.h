@@ -119,6 +119,10 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
                                  size_t len,
                                  bool fin) = 0;
 
+  // Called when the other side has finished sending data on this stream.
+  // |stream_id| The stream that was receivin data.
+  virtual void OnStreamEnd(SpdyStreamId stream_id) = 0;
+
   // Called when padding is received (padding length field or padding octets).
   // |stream_id| The stream receiving data.
   // |len| The number of padding octets.

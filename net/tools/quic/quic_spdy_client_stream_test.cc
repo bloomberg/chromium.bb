@@ -144,8 +144,6 @@ TEST_F(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
 TEST_F(QuicSpdyClientStreamTest, ReceivingTrailers) {
   // Test that receiving trailing headers, containing a final offset, results in
   // the stream being closed at that byte offset.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
-
   // Send headers as usual.
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());

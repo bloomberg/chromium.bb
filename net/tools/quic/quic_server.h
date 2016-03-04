@@ -43,7 +43,7 @@ class QuicServer : public EpollCallbackInterface {
   ~QuicServer() override;
 
   // Start listening on the specified address.
-  bool Listen(const IPEndPoint& address);
+  bool CreateUDPSocketAndListen(const IPEndPoint& address);
 
   // Wait up to 50ms, and handle any events which occur.
   void WaitForEvents();
@@ -130,6 +130,8 @@ class QuicServer : public EpollCallbackInterface {
   // skipped as necessary).
   QuicVersionVector supported_versions_;
 
+  // Point to a QuicPacketReader object on the heap. The reader allocates more
+  // space than allowed on the stack.
   scoped_ptr<QuicPacketReader> packet_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServer);

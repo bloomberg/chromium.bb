@@ -136,7 +136,9 @@ class TestSession : public QuicSpdySession {
                                                    "Too many streams!");
       return nullptr;
     } else {
-      return new TestStream(id, this);
+      TestStream* stream = new TestStream(id, this);
+      ActivateStream(stream);
+      return stream;
     }
   }
 

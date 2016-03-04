@@ -218,6 +218,21 @@ TEST_F(QuicTimeWaitListManagerTest, CheckStatelessConnectionIdInTimeWait) {
   EXPECT_TRUE(IsConnectionIdInTimeWait(connection_id_));
 }
 
+TEST_F(QuicTimeWaitListManagerTest, SendVersionNegotiationPacket) {
+  scoped_ptr<QuicEncryptedPacket> packet(
+      QuicFramer::BuildVersionNegotiationPacket(connection_id_,
+                                                QuicSupportedVersions()));
+  EXPECT_CALL(writer_,
+              WritePacket(_, packet->length(), server_address_.address(),
+                          client_address_, _))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
+
+  time_wait_list_manager_.SendVersionNegotiationPacket(
+      connection_id_, QuicSupportedVersions(), server_address_,
+      client_address_);
+  EXPECT_EQ(0u, time_wait_list_manager_.num_connections());
+}
+
 TEST_F(QuicTimeWaitListManagerTest, SendConnectionClose) {
   const size_t kConnectionCloseLength = 100;
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));

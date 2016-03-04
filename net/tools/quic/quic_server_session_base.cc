@@ -71,13 +71,6 @@ void QuicServerSessionBase::OnConfigNegotiated() {
       }
     }
   }
-
-  if (FLAGS_enable_quic_fec &&
-      ContainsQuicTag(config()->ReceivedConnectionOptions(), kFHDR)) {
-    // kFHDR config maps to FEC protection always for headers stream.
-    // TODO(jri): Add crypto stream in addition to headers for kHDR.
-    headers_stream()->set_fec_policy(FEC_PROTECT_ALWAYS);
-  }
 }
 
 void QuicServerSessionBase::OnConnectionClosed(QuicErrorCode error,

@@ -72,6 +72,12 @@ class QuicSocketUtils {
   // Returns the length of the packet info structure used.
   static size_t SetIpInfoInCmsg(const IPAddress& self_address, cmsghdr* cmsg);
 
+  // Creates a UDP socket and sets appropriate socket options for QUIC.
+  // Returns the created FD if successful, -1 otherwise.
+  // |overflow_supported| is set to true if the socket supports it.
+  static int CreateUDPSocket(const IPEndPoint& address,
+                             bool* overflow_supported);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSocketUtils);
 };

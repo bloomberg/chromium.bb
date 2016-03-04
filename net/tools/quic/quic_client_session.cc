@@ -110,6 +110,7 @@ QuicSpdyStream* QuicClientSession::CreateIncomingDynamicStream(
   }
   QuicSpdyStream* stream = new QuicSpdyClientStream(id, this);
   stream->CloseWriteSide();
+  ActivateStream(stream);
   return stream;
 }
 

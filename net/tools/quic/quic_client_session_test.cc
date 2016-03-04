@@ -69,7 +69,9 @@ class TestQuicClientSession : public QuicClientSession {
 
   MockQuicSpdyClientStream* CreateIncomingDynamicStream(
       QuicStreamId id) override {
-    return new MockQuicSpdyClientStream(id, this);
+    MockQuicSpdyClientStream* stream = new MockQuicSpdyClientStream(id, this);
+    ActivateStream(stream);
+    return stream;
   }
 };
 
@@ -229,28 +231,6 @@ TEST_P(QuicClientSessionTest, GoAwayReceived) {
   session_->connection()->OnGoAwayFrame(
       QuicGoAwayFrame(QUIC_PEER_GOING_AWAY, 1u, "Going away."));
   EXPECT_EQ(nullptr, session_->CreateOutgoingDynamicStream(kDefaultPriority));
-}
-
-TEST_P(QuicClientSessionTest, SetFecProtectionFromConfig) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
-
-  // Set FEC config in client's connection options.
-  QuicTagVector copt;
-  copt.push_back(kFHDR);
-  session_->config()->SetConnectionOptionsToSend(copt);
-
-  // Doing the handshake should set up FEC config correctly.
-  CompleteCryptoHandshake();
-
-  // Verify that headers stream is always protected and data streams are
-  // optionally protected.
-  EXPECT_EQ(
-      FEC_PROTECT_ALWAYS,
-      QuicSpdySessionPeer::GetHeadersStream(session_.get())->fec_policy());
-  QuicSpdyClientStream* stream =
-      session_->CreateOutgoingDynamicStream(kDefaultPriority);
-  ASSERT_TRUE(stream);
-  EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream->fec_policy());
 }
 
 static bool CheckForDecryptionError(QuicFramer* framer) {

@@ -160,8 +160,6 @@ int main(int argc, char* argv[]) {
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   CHECK(logging::InitLogging(settings));
 
-  FLAGS_quic_supports_trailers = true;
-
   if (line->HasSwitch("h") || line->HasSwitch("help") || urls.empty()) {
     const char* help_str =
         "Usage: quic_client [options] <url>\n"

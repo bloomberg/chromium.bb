@@ -181,7 +181,9 @@ QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                      config,
                                      supported_versions,
                                      &epoll_server_)),
-      allow_bidirectional_data_(false) {
+      allow_bidirectional_data_(false),
+      num_requests_(0),
+      num_responses_(0) {
   Initialize();
 }
 
@@ -273,6 +275,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       spdy_headers[":authority"] = client_->server_id().host();
     }
     ret = stream->SendRequest(spdy_headers, body, fin);
+    ++num_requests_;
   } else {
     stream->SendBody(body.as_string(), fin, delegate);
     ret = body.length();
@@ -576,6 +579,7 @@ void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   response_header_size_ = headers_.GetSizeForWriteBuffer();
   response_body_size_ = stream_->data().size();
   stream_ = nullptr;
+  ++num_responses_;
 }
 
 bool QuicTestClient::CheckVary(const SpdyHeaderBlock& client_request,

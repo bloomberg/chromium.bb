@@ -55,6 +55,7 @@ QuicP2PStream* QuicP2PSession::CreateIncomingDynamicStream(QuicStreamId id) {
   if (delegate_) {
     delegate_->OnIncomingStream(stream);
   }
+  ActivateStream(stream);
   return stream;
 }
 

@@ -15,7 +15,7 @@ namespace test {
 // static
 size_t QuicStreamSequencerPeer::GetNumBufferedBytes(
     QuicStreamSequencer* sequencer) {
-  return sequencer->buffered_frames_->BytesBuffered();
+  return sequencer->buffered_frames_.BytesBuffered();
 }
 
 // static

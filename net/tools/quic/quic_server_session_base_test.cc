@@ -83,7 +83,9 @@ class TestServerSession : public QuicServerSessionBase {
     if (!ShouldCreateIncomingDynamicStream(id)) {
       return nullptr;
     }
-    return new QuicSimpleServerStream(id, this);
+    QuicSpdyStream* stream = new QuicSimpleServerStream(id, this);
+    ActivateStream(stream);
+    return stream;
   }
 
   QuicSpdyStream* CreateOutgoingDynamicStream(SpdyPriority priority) override {
@@ -323,27 +325,6 @@ TEST_P(QuicServerSessionBaseTest, GetStreamDisconnected) {
   EXPECT_DFATAL(
       QuicServerSessionBasePeer::GetOrCreateDynamicStream(session_.get(), 5),
       "ShouldCreateIncomingDynamicStream called when disconnected");
-}
-
-TEST_P(QuicServerSessionBaseTest, SetFecProtectionFromConfig) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
-
-  // Set received config to have FEC connection option.
-  QuicTagVector copt;
-  copt.push_back(kFHDR);
-  QuicConfigPeer::SetReceivedConnectionOptions(session_->config(), copt);
-  session_->OnConfigNegotiated();
-
-  // Verify that headers stream is always protected and data streams are
-  // optionally protected.
-  EXPECT_EQ(
-      FEC_PROTECT_ALWAYS,
-      QuicSpdySessionPeer::GetHeadersStream(session_.get())->fec_policy());
-  ReliableQuicStream* stream =
-      QuicServerSessionBasePeer::GetOrCreateDynamicStream(session_.get(),
-                                                          kClientDataStreamId1);
-  ASSERT_TRUE(stream);
-  EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream->fec_policy());
 }
 
 class MockQuicCryptoServerStream : public QuicCryptoServerStream {

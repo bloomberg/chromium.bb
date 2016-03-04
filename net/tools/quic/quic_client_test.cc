@@ -88,9 +88,9 @@ TEST(QuicClientTest, CreateAndCleanUpUDPSockets) {
       CreateAndInitializeQuicClient(&eps, net::test::kTestPort));
   EXPECT_EQ(number_of_open_fds + 1, NumOpenFDs());
   // Create more UDP sockets.
-  EXPECT_TRUE(QuicClientPeer::CreateUDPSocket(client.get()));
+  EXPECT_TRUE(QuicClientPeer::CreateUDPSocketAndBind(client.get()));
   EXPECT_EQ(number_of_open_fds + 2, NumOpenFDs());
-  EXPECT_TRUE(QuicClientPeer::CreateUDPSocket(client.get()));
+  EXPECT_TRUE(QuicClientPeer::CreateUDPSocketAndBind(client.get()));
   EXPECT_EQ(number_of_open_fds + 3, NumOpenFDs());
 
   // Clean up UDP sockets.

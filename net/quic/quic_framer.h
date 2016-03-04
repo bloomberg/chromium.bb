@@ -369,6 +369,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Called when a PATH_CLOSED frame has been sent/received on |path_id|.
   void OnPathClosed(QuicPathId path_id);
 
+  QuicTag last_version_tag() { return last_version_tag_; }
+
  private:
   friend class test::QuicFramerPeer;
 
@@ -536,6 +538,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicPathId last_path_id_;
   // Updated by WritePacketHeader.
   QuicConnectionId last_serialized_connection_id_;
+  // The last QUIC version tag received.
+  QuicTag last_version_tag_;
   // Version of the protocol being used.
   QuicVersion quic_version_;
   // This vector contains QUIC versions which we currently support.

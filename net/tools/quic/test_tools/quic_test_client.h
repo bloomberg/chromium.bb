@@ -199,6 +199,10 @@ class QuicTestClient : public test::SimpleClient,
 
   bool allow_bidirectional_data() const { return allow_bidirectional_data_; }
 
+  size_t num_requests() const { return num_requests_; }
+
+  size_t num_responses() const { return num_responses_; }
+
  protected:
   QuicTestClient();
 
@@ -269,6 +273,9 @@ class QuicTestClient : public test::SimpleClient,
   // For async push promise rendezvous, validation may fail in which
   // case the request should be retried.
   std::unique_ptr<TestClientDataToResend> push_promise_data_to_resend_;
+  // Number of requests/responses this client has sent/received.
+  size_t num_requests_;
+  size_t num_responses_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicTestClient);
 };

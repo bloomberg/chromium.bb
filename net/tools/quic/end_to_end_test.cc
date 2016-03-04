@@ -266,7 +266,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
-    FLAGS_enable_quic_fec = GetParam().use_fec;
 
     VLOG(1) << "Using Configuration: " << GetParam();
 
@@ -371,10 +370,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     StartServer();
 
     client_.reset(CreateQuicClient(client_writer_));
-    if (GetParam().use_fec) {
-      // Set FecPolicy to always protect data on all streams.
-      client_->SetFecPolicy(FEC_PROTECT_ALWAYS);
-    }
     static EpollEvent event(EPOLLOUT, false);
     client_writer_->Initialize(
         reinterpret_cast<QuicEpollConnectionHelper*>(
@@ -998,8 +993,7 @@ TEST_P(EndToEndTest, CorrectlyConfiguredFec) {
   client_->client()->WaitForCryptoHandshakeConfirmed();
   server_thread_->WaitForCryptoHandshakeConfirmed();
 
-  FecPolicy expected_policy =
-      GetParam().use_fec ? FEC_PROTECT_ALWAYS : FEC_PROTECT_OPTIONAL;
+  FecPolicy expected_policy = FEC_PROTECT_OPTIONAL;
 
   // Verify that server's FEC configuration is correct.
   server_thread_->Pause();
@@ -1508,7 +1502,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
 
   // Create a new socket before closing the old one, which will result in a new
   // ephemeral port.
-  QuicClientPeer::CreateUDPSocket(client_->client());
+  QuicClientPeer::CreateUDPSocketAndBind(client_->client());
 
   // The packet writer needs to be updated to use the new FD.
   client_->client()->CreateQuicPacketWriter();
@@ -2153,7 +2147,6 @@ TEST_P(EndToEndTest, LargePostEarlyResponse) {
 
 TEST_P(EndToEndTest, Trailers) {
   // Test sending and receiving HTTP/2 Trailers (trailing HEADERS frames).
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
@@ -2180,8 +2173,55 @@ TEST_P(EndToEndTest, Trailers) {
   EXPECT_EQ(trailers, client_->response_trailers());
 }
 
-TEST_P(EndToEndTest, ServerPush) {
-  FLAGS_quic_supports_push_promise = true;
+class EndToEndTestServerPush : public EndToEndTest {
+ protected:
+  const size_t kNumMaxStreams = 10;
+
+  EndToEndTestServerPush() : EndToEndTest() {
+    FLAGS_quic_supports_push_promise = true;
+    FLAGS_quic_different_max_num_open_streams = true;
+    client_config_.SetMaxStreamsPerConnection(kNumMaxStreams, kNumMaxStreams);
+  }
+
+  // Add a request with its response and |num_resources| push resources into
+  // cache.
+  // If |resource_size| == 0, response body of push resources use default string
+  // concatenating with resource url. Otherwise, generate a string of
+  // |resource_size| as body.
+  void AddRequestAndResponseWithServerPush(string host,
+                                           string path,
+                                           string response_body,
+                                           string* push_urls,
+                                           const size_t num_resources,
+                                           const size_t resource_size) {
+    bool use_large_response = resource_size != 0;
+    string large_resource;
+    if (use_large_response) {
+      // Generate a response common body larger than flow control window for
+      // push response.
+      test::GenerateBody(&large_resource, resource_size);
+    }
+    list<QuicInMemoryCache::ServerPushInfo> push_resources;
+    for (size_t i = 0; i < num_resources; ++i) {
+      string url = push_urls[i];
+      GURL resource_url(url);
+      string body = use_large_response
+                        ? large_resource
+                        : "This is server push response body for " + url;
+      SpdyHeaderBlock response_headers;
+      response_headers[":version"] = "HTTP/1.1";
+      response_headers[":status"] = "200";
+      response_headers["content-length"] = IntToString(body.size());
+      push_resources.push_back(QuicInMemoryCache::ServerPushInfo(
+          resource_url, response_headers, kV3LowestPriority, body));
+    }
+
+    QuicInMemoryCache::GetInstance()->AddSimpleResponseWithServerPushResources(
+        host, path, 200, response_body, push_resources);
+  }
+};
+
+TEST_P(EndToEndTestServerPush, ServerPush) {
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
@@ -2189,34 +2229,21 @@ TEST_P(EndToEndTest, ServerPush) {
   SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
   SetReorderPercentage(30);
 
-  // Add a response with headers, body, and trailers.
+  // Add a response with headers, body, and push resources.
   const string kBody = "body content";
-
-  list<QuicInMemoryCache::ServerPushInfo> push_resources;
-
+  size_t kNumResources = 4;
   string push_urls[] = {
       "https://google.com/font.woff", "https://google.com/script.js",
       "https://fonts.google.com/font.woff", "https://google.com/logo-hires.jpg",
   };
-  for (const string& url : push_urls) {
-    GURL resource_url(url);
-    string body = "This is server push response body for " + url;
-    SpdyHeaderBlock response_headers;
-    response_headers[":version"] = "HTTP/1.1";
-    response_headers[":status"] = "200";
-    response_headers["content-length"] = IntToString(body.size());
-    push_resources.push_back(QuicInMemoryCache::ServerPushInfo(
-        resource_url, response_headers, kV3LowestPriority, body));
-  }
-
-  QuicInMemoryCache::GetInstance()->AddSimpleResponseWithServerPushResources(
-      "google.com", "/push_example", 200, kBody, push_resources);
+  AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
+                                      push_urls, kNumResources, 0);
 
   client_->client()->set_response_listener(new TestResponseListener);
 
   DVLOG(1) << "send request for /push_example";
-  EXPECT_EQ(kBody,
-            client_->SendSynchronousRequest("https://google.com/push_example"));
+  EXPECT_EQ(kBody, client_->SendSynchronousRequest(
+                       "https://example.com/push_example"));
   for (const string& url : push_urls) {
     DVLOG(1) << "send request for pushed stream on url " << url;
     string expected_body = "This is server push response body for " + url;
@@ -2224,6 +2251,176 @@ TEST_P(EndToEndTest, ServerPush) {
     DVLOG(1) << "response body " << response_body;
     EXPECT_EQ(expected_body, response_body);
   }
+}
+
+TEST_P(EndToEndTestServerPush, ServerPushUnderLimit) {
+  // Tests that sending a request which has 4 push resources will trigger server
+  // to push those 4 resources and client can handle pushed resources and match
+  // them with requests later.
+  ASSERT_TRUE(Initialize());
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // Set reordering to ensure that body arriving before PUSH_PROMISE is ok.
+  SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
+  SetReorderPercentage(30);
+
+  // Add a response with headers, body, and push resources.
+  const string kBody = "body content";
+  size_t const kNumResources = 4;
+  string push_urls[] = {
+      "https://example.com/font.woff", "https://example.com/script.js",
+      "https://fonts.example.com/font.woff",
+      "https://example.com/logo-hires.jpg",
+  };
+  AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
+                                      push_urls, kNumResources, 0);
+  client_->client()->set_response_listener(new TestResponseListener);
+
+  // Send the first request: this will trigger the server to send all the push
+  // resources associated with this request, and these will be cached by the
+  // client.
+  EXPECT_EQ(kBody, client_->SendSynchronousRequest(
+                       "https://example.com/push_example"));
+  EXPECT_EQ(1u + kNumResources, client_->num_responses());
+
+  for (string url : push_urls) {
+    // Sending subsequent requesets will not actually send anything on the wire,
+    // as the responses are already in the client's cache.
+    DVLOG(1) << "send request for pushed stream on url " << url;
+    string expected_body = "This is server push response body for " + url;
+    string response_body = client_->SendSynchronousRequest(url);
+    DVLOG(1) << "response body " << response_body;
+    EXPECT_EQ(expected_body, response_body);
+  }
+  // Expect only original request has been sent and push responses have been
+  // received as normal response.
+  EXPECT_EQ(1u, client_->num_requests());
+}
+
+TEST_P(EndToEndTestServerPush, ServerPushOverLimitNonBlocking) {
+  // Tests that when streams are not blocked by flow control or congestion
+  // control, pushing even more resources than max number of open outgoing
+  // streams should still work because all response streams get closed
+  // immediately after pushing resources.
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // Set reordering to ensure that body arriving before PUSH_PROMISE is ok.
+  SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
+  SetReorderPercentage(30);
+
+  // Add a response with headers, body, and push resources.
+  const string kBody = "body content";
+
+  // One more resource than max number of outgoing stream of this session.
+  const size_t kNumResources = 1 + kNumMaxStreams;  // 11.
+  string push_urls[11];
+  for (uint32_t i = 0; i < kNumResources; ++i) {
+    push_urls[i] = "https://example.com/push_resources" + base::UintToString(i);
+  }
+  AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
+                                      push_urls, kNumResources, 0);
+  client_->client()->set_response_listener(new TestResponseListener);
+
+  // Send the first request: this will trigger the server to send all the push
+  // resources associated with this request, and these will be cached by the
+  // client.
+  EXPECT_EQ(kBody, client_->SendSynchronousRequest(
+                       "https://example.com/push_example"));
+  // The responses to the original request and all the promised resources
+  // should have been received.
+  EXPECT_EQ(12u, client_->num_responses());
+
+  for (const string& url : push_urls) {
+    // Sending subsequent requesets will not actually send anything on the wire,
+    // as the responses are already in the client's cache.
+    EXPECT_EQ("This is server push response body for " + url,
+              client_->SendSynchronousRequest(url));
+  }
+
+  // Only 1 request should have been sent.
+  EXPECT_EQ(1u, client_->num_requests());
+}
+
+TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
+  // Tests that when server tries to send more large resources(large enough to
+  // be blocked by flow control window or congestion control window) than max
+  // open outgoing streams , server can open upto max number of outgoing
+  // streams for them, and the rest will be queued up.
+
+  // Reset flow control windows.
+  size_t kFlowControlWnd = 20 * 1024;  // 20KB.
+  // Response body is larger than 1 flow controlblock window.
+  size_t kBodySize = kFlowControlWnd * 2;
+  set_client_initial_stream_flow_control_receive_window(kFlowControlWnd);
+  // Make sure conntection level flow control window is large enough not to
+  // block data being sent out though they will be blocked by stream level one.
+  set_client_initial_session_flow_control_receive_window(
+      kBodySize * kNumMaxStreams + 1024);
+
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // Set reordering to ensure that body arriving before PUSH_PROMISE is ok.
+  SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
+  SetReorderPercentage(30);
+
+  // Add a response with headers, body, and push resources.
+  const string kBody = "body content";
+
+  const size_t kNumResources = kNumMaxStreams + 1;
+  string push_urls[11];
+  for (uint32_t i = 0; i < kNumResources; ++i) {
+    push_urls[i] = "http://example.com/push_resources" + base::UintToString(i);
+  }
+  AddRequestAndResponseWithServerPush("example.com", "/push_example", kBody,
+                                      push_urls, kNumResources, kBodySize);
+
+  client_->client()->set_response_listener(new TestResponseListener);
+
+  client_->SendRequest("https://example.com/push_example");
+
+  // Pause after the first response arrives.
+  while (!client_->response_complete()) {
+    // Because of priority, the first response arrived should be to original
+    // request.
+    client_->WaitForResponse();
+  }
+
+  // Check server session to see if it has max number of outgoing streams opened
+  // though more resources need to be pushed.
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(1u, dispatcher->session_map().size());
+  QuicSession* session = dispatcher->session_map().begin()->second;
+  EXPECT_EQ(kNumMaxStreams, session->GetNumOpenOutgoingStreams());
+  server_thread_->Resume();
+
+  EXPECT_EQ(1u, client_->num_requests());
+  EXPECT_EQ(1u, client_->num_responses());
+  EXPECT_EQ(kBody, client_->response_body());
+
+  // "Send" request for a promised resources will not really send out it because
+  // its response is being pushed(but blocked). And the following ack and
+  // flow control behavior of SendSynchronousRequests()
+  // will unblock the stream to finish receiving response.
+  client_->SendSynchronousRequest(push_urls[0]);
+  EXPECT_EQ(1u, client_->num_requests());
+  EXPECT_EQ(2u, client_->num_responses());
+
+  // Do same thing for the rest 10 resources.
+  for (uint32_t i = 1; i < kNumResources; ++i) {
+    client_->SendSynchronousRequest(push_urls[i]);
+  }
+
+  // Because of server push, client gets all pushed resources without actually
+  // sending requests for them.
+  EXPECT_EQ(1u, client_->num_requests());
+  // Including response to original request, 12 responses in total were
+  // recieved.
+  EXPECT_EQ(12u, client_->num_responses());
 }
 
 }  // namespace

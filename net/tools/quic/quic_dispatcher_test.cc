@@ -164,6 +164,9 @@ class QuicDispatcherTest : public ::testing::Test {
     return reinterpret_cast<MockConnection*>(session2_->connection());
   }
 
+  // Process a packet with an 8 byte connection id,
+  // 6 byte packet number, default path id, and packet number 1,
+  // using the first supported version.
   void ProcessPacket(IPEndPoint client_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
@@ -174,6 +177,8 @@ class QuicDispatcherTest : public ::testing::Test {
                   PACKET_6BYTE_PACKET_NUMBER);
   }
 
+  // Process a packet with a default path id, and packet number 1,
+  // using the first supported version.
   void ProcessPacket(IPEndPoint client_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
@@ -186,6 +191,7 @@ class QuicDispatcherTest : public ::testing::Test {
                   packet_number_length, kDefaultPathId, 1);
   }
 
+  // Process a packet using the first supported version.
   void ProcessPacket(IPEndPoint client_address,
                      QuicConnectionId connection_id,
                      bool has_version_flag,
@@ -195,9 +201,25 @@ class QuicDispatcherTest : public ::testing::Test {
                      QuicPacketNumberLength packet_number_length,
                      QuicPathId path_id,
                      QuicPacketNumber packet_number) {
+    ProcessPacket(client_address, connection_id, has_version_flag,
+                  QuicSupportedVersions().front(), data, connection_id_length,
+                  packet_number_length, packet_number);
+  }
+
+  // Processes a packet.
+  void ProcessPacket(IPEndPoint client_address,
+                     QuicConnectionId connection_id,
+                     bool has_version_flag,
+                     QuicVersion version,
+                     const string& data,
+                     QuicConnectionIdLength connection_id_length,
+                     QuicPacketNumberLength packet_number_length,
+                     QuicPacketNumber packet_number) {
+    QuicVersionVector versions(SupportedVersions(version));
     scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-        connection_id, has_version_flag, has_multipath_flag, false, path_id,
-        packet_number, data, connection_id_length, packet_number_length));
+        connection_id, has_version_flag, false, false, 0, packet_number, data,
+        connection_id_length, packet_number_length, &versions));
+
     data_ = string(packet->data(), packet->length());
     dispatcher_.ProcessPacket(server_address_, client_address, *packet);
   }
@@ -252,6 +274,31 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
       .WillOnce(testing::WithArgs<2>(
           Invoke(this, &QuicDispatcherTest::ValidatePacket)));
   ProcessPacket(client_address, 1, false, false, "eep");
+}
+
+TEST_F(QuicDispatcherTest, StatelessVersionNegotiation) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_stateless_version_negotiation, true);
+  IPEndPoint client_address(net::test::Loopback4(), 1);
+  server_address_ = IPEndPoint(net::test::Any4(), 5);
+
+  EXPECT_CALL(dispatcher_, CreateQuicSession(1, client_address)).Times(0);
+  QuicVersion version = static_cast<QuicVersion>(QuicVersionMin() - 1);
+  ProcessPacket(client_address, 1, true, version, "foo",
+                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER, 1);
+}
+
+TEST_F(QuicDispatcherTest, StatefulVersionNegotiation) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_stateless_version_negotiation, false);
+  IPEndPoint client_address(net::test::Loopback4(), 1);
+  server_address_ = IPEndPoint(net::test::Any4(), 5);
+
+  EXPECT_CALL(dispatcher_, CreateQuicSession(1, client_address))
+      .WillOnce(testing::Return(CreateSession(&dispatcher_, config_, 1,
+                                              client_address, &mock_helper_,
+                                              &crypto_config_, &session1_)));
+  QuicVersion version = static_cast<QuicVersion>(QuicVersionMin() - 1);
+  ProcessPacket(client_address, 1, true, version, "foo",
+                PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER, 1);
 }
 
 TEST_F(QuicDispatcherTest, Shutdown) {

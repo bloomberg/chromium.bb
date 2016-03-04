@@ -44,7 +44,9 @@ class CustomStreamSession : public QuicSimpleServerSession {
       return nullptr;
     }
     if (stream_factory_) {
-      return stream_factory_->CreateStream(id, this);
+      QuicSpdyStream* stream = stream_factory_->CreateStream(id, this);
+      ActivateStream(stream);
+      return stream;
     }
     return QuicSimpleServerSession::CreateIncomingDynamicStream(id);
   }

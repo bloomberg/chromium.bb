@@ -19,7 +19,7 @@ namespace test {
 
 class QuicClientPeer {
  public:
-  static bool CreateUDPSocket(QuicClient* client);
+  static bool CreateUDPSocketAndBind(QuicClient* client);
   static void CleanUpUDPSocket(QuicClient* client, int fd);
   static void SetClientPort(QuicClient* client, int port);
 

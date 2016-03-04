@@ -190,6 +190,17 @@ void QuicTimeWaitListManager::ProcessPacket(
   SendPublicReset(server_address, client_address, connection_id, packet_number);
 }
 
+void QuicTimeWaitListManager::SendVersionNegotiationPacket(
+    QuicConnectionId connection_id,
+    const QuicVersionVector& supported_versions,
+    const IPEndPoint& server_address,
+    const IPEndPoint& client_address) {
+  QueuedPacket* packet = new QueuedPacket(
+      server_address, client_address, QuicFramer::BuildVersionNegotiationPacket(
+                                          connection_id, supported_versions));
+  SendOrQueuePacket(packet);
+}
+
 // Returns true if the number of packets received for this connection_id is a
 // power of 2 to throttle the number of public reset packets we send to a
 // client.

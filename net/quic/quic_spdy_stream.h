@@ -107,8 +107,8 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
 
   // Writes the trailers contained in |trailer_block| to the dedicated
   // headers stream. Trailers will always have the FIN set.
-  virtual size_t WriteTrailers(SpdyHeaderBlock trailer_block,
-                               QuicAckListenerInterface* ack_notifier_delegate);
+  size_t WriteTrailers(SpdyHeaderBlock trailer_block,
+                       QuicAckListenerInterface* ack_notifier_delegate);
 
   // Marks |bytes_consumed| of the headers data as consumed.
   void MarkHeadersConsumed(size_t bytes_consumed);

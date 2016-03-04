@@ -79,9 +79,6 @@ size_t QuicSpdyStream::WriteHeaders(
 size_t QuicSpdyStream::WriteTrailers(
     SpdyHeaderBlock trailer_block,
     QuicAckListenerInterface* ack_notifier_delegate) {
-  if (!FLAGS_quic_supports_trailers) {
-    return 0;
-  }
   if (fin_sent()) {
     QUIC_BUG << "Trailers cannot be sent after a FIN.";
     return 0;
@@ -134,8 +131,7 @@ bool QuicSpdyStream::IsDoneReading() const {
 bool QuicSpdyStream::HasBytesToRead() const {
   bool headers_to_read = !decompressed_headers_.empty();
   bool body_to_read = sequencer()->HasBytesToRead();
-  bool trailers_to_read =
-      (FLAGS_quic_supports_trailers && !decompressed_trailers_.empty());
+  bool trailers_to_read = !decompressed_trailers_.empty();
   return headers_to_read || body_to_read || trailers_to_read;
 }
 
@@ -157,7 +153,7 @@ void QuicSpdyStream::SetPriority(SpdyPriority priority) {
 }
 
 void QuicSpdyStream::OnStreamHeaders(StringPiece headers_data) {
-  if (!FLAGS_quic_supports_trailers || !headers_decompressed_) {
+  if (!headers_decompressed_) {
     headers_data.AppendToString(&decompressed_headers_);
   } else {
     DCHECK(!trailers_decompressed_);
@@ -171,7 +167,7 @@ void QuicSpdyStream::OnStreamHeadersPriority(SpdyPriority priority) {
 }
 
 void QuicSpdyStream::OnStreamHeadersComplete(bool fin, size_t frame_len) {
-  if (!FLAGS_quic_supports_trailers || !headers_decompressed_) {
+  if (!headers_decompressed_) {
     OnInitialHeadersComplete(fin, frame_len);
   } else {
     OnTrailingHeadersComplete(fin, frame_len);
@@ -251,9 +247,6 @@ bool QuicSpdyStream::FinishedReadingHeaders() const {
 }
 
 bool QuicSpdyStream::FinishedReadingTrailers() const {
-  if (!FLAGS_quic_supports_trailers) {
-    return true;
-  }
   // If no further trailing headers are expected, and the decompressed trailers
   // (if any) have been consumed, then reading of trailers is finished.
   bool no_more_trailers = fin_received() || trailers_decompressed_;

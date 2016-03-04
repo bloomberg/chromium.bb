@@ -42,6 +42,12 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
                     QuicConnectionId connection_id,
                     QuicPacketNumber packet_number,
                     const QuicEncryptedPacket& packet));
+
+  MOCK_METHOD4(SendVersionNegotiationPacket,
+               void(QuicConnectionId connection_id,
+                    const QuicVersionVector& supported_versions,
+                    const IPEndPoint& server_address,
+                    const IPEndPoint& client_address));
 };
 
 }  // namespace test

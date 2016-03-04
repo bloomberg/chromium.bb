@@ -223,4 +223,39 @@ WriteResult QuicSocketUtils::WritePacket(int fd,
                      errno);
 }
 
+// static
+int QuicSocketUtils::CreateUDPSocket(const IPEndPoint& address,
+                                     bool* overflow_supported) {
+  int address_family = address.GetSockAddrFamily();
+  int fd = socket(address_family, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
+  if (fd < 0) {
+    LOG(ERROR) << "socket() failed: " << strerror(errno);
+    return -1;
+  }
+
+  int get_overflow = 1;
+  int rc = setsockopt(fd, SOL_SOCKET, SO_RXQ_OVFL, &get_overflow,
+                      sizeof(get_overflow));
+  if (rc < 0) {
+    DLOG(WARNING) << "Socket overflow detection not supported";
+  } else {
+    *overflow_supported = true;
+  }
+
+  if (!QuicSocketUtils::SetReceiveBufferSize(fd, kDefaultSocketReceiveBuffer)) {
+    return -1;
+  }
+
+  if (!QuicSocketUtils::SetSendBufferSize(fd, kDefaultSocketReceiveBuffer)) {
+    return -1;
+  }
+
+  rc = QuicSocketUtils::SetGetAddressInfo(fd, address_family);
+  if (rc < 0) {
+    LOG(ERROR) << "IP detection not supported" << strerror(errno);
+    return -1;
+  }
+  return fd;
+}
+
 }  // namespace net

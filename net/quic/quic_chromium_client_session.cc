@@ -651,6 +651,7 @@ QuicChromiumClientSession::CreateIncomingReliableStreamImpl(QuicStreamId id) {
   QuicChromiumClientStream* stream =
       new QuicChromiumClientStream(id, this, net_log_);
   stream->CloseWriteSide();
+  ActivateStream(stream);
   ++num_total_streams_;
   return stream;
 }

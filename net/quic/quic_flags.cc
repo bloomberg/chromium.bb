@@ -11,11 +11,6 @@ bool FLAGS_quic_use_time_loss_detection = false;
 // CHLO.
 bool FLAGS_use_early_return_when_verifying_chlo = true;
 
-// If true, QUIC connections will support FEC protection of data while sending
-// packets, to reduce latency of data delivery to the application. The client
-// must also request FEC protection for the server to use FEC.
-bool FLAGS_enable_quic_fec = true;
-
 // When true, defaults to BBR congestion control instead of Cubic.
 bool FLAGS_quic_use_bbr_congestion_control = false;
 
@@ -71,10 +66,6 @@ bool FLAGS_quic_disable_pacing = false;
 // even if they are being sent.
 bool FLAGS_quic_use_new_idle_timeout = true;
 
-// If true, replace QuicFrameList with StreamSequencerBuffer as underlying data
-// structure for QuicStreamSequencer bufferring.
-bool FLAGS_quic_use_stream_sequencer_buffer = true;
-
 // If true, don't send QUIC packets if the send alarm is set.
 bool FLAGS_quic_respect_send_alarm2 = true;
 
@@ -96,15 +87,8 @@ bool FLAGS_quic_no_unencrypted_fec = true;
 // If true, reject any incoming QUIC which does not have the FIXD tag.
 bool FLAGS_quic_require_fix = true;
 
-// If true, QUIC supports sending trailers from Server to Client.
-bool FLAGS_quic_supports_trailers = true;
-
 // If true, headers stream will support receiving PUSH_PROMISE frames.
 bool FLAGS_quic_supports_push_promise = false;
-
-// Enable counters for incoming/outgoing streams which are used as condition
-// check while creating a new stream.
-bool FLAGS_quic_distinguish_incoming_outgoing_streams = true;
 
 // If true, QUIC servers will attempt to validate a client's source
 // address token using the primary config, even if no server config id
@@ -153,3 +137,7 @@ bool FLAGS_quic_use_new_tcp_sender = true;
 // Saves the initial subkey secret in QUIC crypto when deriving keys from the
 // initial premaster secret.
 bool FLAGS_quic_save_initial_subkey_secret = true;
+
+// If true, the QUIC dispatcher will directly send version negotiation packets
+// without needing to create a QUIC session first.
+bool FLAGS_quic_stateless_version_negotiation = false;

@@ -618,7 +618,6 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlFinNotBlocked) {
 TEST_P(QuicSpdyStreamTest, ReceivingTrailers) {
   // Test that receiving trailing headers from the peer works, and can be read
   // from the stream and consumed.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
 
   // Receive initial headers.
@@ -648,7 +647,6 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailers) {
 
 TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutFin) {
   // Test that received Trailers must always have the FIN set.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
 
   // Receive initial headers.
@@ -669,7 +667,6 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutFin) {
 
 TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterFin) {
   // If Trailers are sent, neither Headers nor Body should contain a FIN.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
 
   // Receive initial headers with FIN set.
@@ -690,7 +687,6 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterFin) {
 
 TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterBodyWithFin) {
   // If body data are received with a FIN, no trailers should then arrive.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
 
   // Receive initial headers without FIN set.
@@ -716,7 +712,6 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterBodyWithFin) {
 TEST_P(QuicSpdyStreamTest, ClosingStreamWithNoTrailers) {
   // Verify that a stream receiving headers, body, and no trailers is correctly
   // marked as done reading on consumption of headers and body.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
 
   // Receive and consume initial headers with FIN not set.
@@ -736,7 +731,6 @@ TEST_P(QuicSpdyStreamTest, ClosingStreamWithNoTrailers) {
 TEST_P(QuicSpdyStreamTest, WritingTrailersSendsAFin) {
   // Test that writing trailers will send a FIN, as Trailers are the last thing
   // to be sent on a stream.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
@@ -758,7 +752,6 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersSendsAFin) {
 TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
   // Test that when writing trailers, the trailers that are actually sent to the
   // peer contain the final offset field indicating last byte of data.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
@@ -786,7 +779,6 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
 TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
   // Test that if trailers are written after all other data has been written
   // (headers and body), that this closes the stream for writing.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
@@ -812,7 +804,6 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
 TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
   // Test that the stream is not closed for writing when trailers are sent
   // while there are still body bytes queued.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())
@@ -840,7 +831,6 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
 
 TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
   // Test that it is not possible to write Trailers after a FIN has been sent.
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_trailers, true);
   Initialize(kShouldProcessData);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
       .Times(AnyNumber())

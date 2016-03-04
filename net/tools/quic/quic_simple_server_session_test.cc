@@ -282,9 +282,9 @@ TEST_P(QuicSimpleServerSessionTest, CreateEvenIncomingDynamicStream) {
 }
 
 TEST_P(QuicSimpleServerSessionTest, CreateIncomingDynamicStream) {
-  std::unique_ptr<QuicSpdyStream> stream(
+  QuicSpdyStream* stream =
       QuicSimpleServerSessionPeer::CreateIncomingDynamicStream(
-          session_.get(), kClientDataStreamId1));
+          session_.get(), kClientDataStreamId1);
   EXPECT_NE(nullptr, stream);
   EXPECT_EQ(kClientDataStreamId1, stream->id());
 }

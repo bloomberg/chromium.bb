@@ -181,6 +181,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                          const char* data,
                          size_t len,
                          bool fin) override;
+  void OnStreamEnd(SpdyStreamId stream_id) override;
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
   SpdyHeadersHandlerInterface* OnHeaderFrameStart(
       SpdyStreamId stream_id) override;

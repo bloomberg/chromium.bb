@@ -227,16 +227,16 @@ SpdyHeaderBlock SpdyBalsaUtils::RequestHeadersToSpdyHeaders(
   if (url.empty() || url[0] == '/') {
     path = url;
   } else {
-    GURL request_uri(url);
+    std::unique_ptr<GURL> request_uri(new GURL(url));
     if (request_headers.request_method() == "CONNECT") {
       path = url;
     } else {
-      path = request_uri.path();
-      if (!request_uri.query().empty()) {
-        path = path + "?" + request_uri.query();
+      path = request_uri->path();
+      if (!request_uri->query().empty()) {
+        path = path + "?" + request_uri->query();
       }
-      host_and_port = request_uri.host();
-      scheme = request_uri.scheme();
+      host_and_port = request_uri->host();
+      scheme = request_uri->scheme();
     }
   }
 

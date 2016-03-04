@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
       net::QuicSupportedVersions());
   server.SetStrikeRegisterNoStartupPeriod();
 
-  int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
+  int rc = server.CreateUDPSocketAndListen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {
     return 1;
   }

@@ -107,43 +107,10 @@ void QuicServer::Initialize() {
 
 QuicServer::~QuicServer() {}
 
-bool QuicServer::Listen(const IPEndPoint& address) {
-  port_ = address.port();
-  int address_family = address.GetSockAddrFamily();
-  fd_ = socket(address_family, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
+bool QuicServer::CreateUDPSocketAndListen(const IPEndPoint& address) {
+  fd_ = QuicSocketUtils::CreateUDPSocket(address, &overflow_supported_);
   if (fd_ < 0) {
     LOG(ERROR) << "CreateSocket() failed: " << strerror(errno);
-    return false;
-  }
-
-  // Enable the socket option that allows the local address to be
-  // returned if the socket is bound to more than one address.
-  int rc = QuicSocketUtils::SetGetAddressInfo(fd_, address_family);
-
-  if (rc < 0) {
-    LOG(ERROR) << "IP detection not supported" << strerror(errno);
-    return false;
-  }
-
-  int get_overflow = 1;
-  rc = setsockopt(fd_, SOL_SOCKET, SO_RXQ_OVFL, &get_overflow,
-                  sizeof(get_overflow));
-
-  if (rc < 0) {
-    DLOG(WARNING) << "Socket overflow detection not supported";
-  } else {
-    overflow_supported_ = true;
-  }
-
-  // These send and receive buffer sizes are sized for a single connection,
-  // because the default usage of QuicServer is as a test server with one or
-  // two clients.  Adjust higher for use with many clients.
-  if (!QuicSocketUtils::SetReceiveBufferSize(fd_,
-                                             kDefaultSocketReceiveBuffer)) {
-    return false;
-  }
-
-  if (!QuicSocketUtils::SetSendBufferSize(fd_, kDefaultSocketReceiveBuffer)) {
     return false;
   }
 
@@ -151,7 +118,7 @@ bool QuicServer::Listen(const IPEndPoint& address) {
   socklen_t raw_addr_len = sizeof(raw_addr);
   CHECK(address.ToSockAddr(reinterpret_cast<sockaddr*>(&raw_addr),
                            &raw_addr_len));
-  rc =
+  int rc =
       bind(fd_, reinterpret_cast<const sockaddr*>(&raw_addr), sizeof(raw_addr));
   if (rc < 0) {
     LOG(ERROR) << "Bind failed: " << strerror(errno);

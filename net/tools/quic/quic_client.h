@@ -25,6 +25,7 @@
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client_base.h"
 #include "net/tools/quic/quic_client_session.h"
+#include "net/tools/quic/quic_packet_reader.h"
 #include "net/tools/quic/quic_process_packet_interface.h"
 
 namespace net {
@@ -32,7 +33,6 @@ namespace net {
 class QuicServerId;
 
 class QuicEpollConnectionHelper;
-class QuicPacketReader;
 
 namespace test {
 class QuicClientPeer;
@@ -193,14 +193,7 @@ class QuicClient : public QuicClientBase,
     return &push_promise_index_;
   }
 
- protected:
   virtual QuicPacketWriter* CreateQuicPacketWriter();
-  virtual QuicPacketReader* CreateQuicPacketReader();
-
-  virtual int ReadPacket(char* buffer,
-                         int buffer_len,
-                         IPEndPoint* server_address,
-                         IPAddress* client_ip);
 
   // If |fd| is an open UDP socket, unregister and close it. Otherwise, do
   // nothing.
@@ -243,18 +236,10 @@ class QuicClient : public QuicClientBase,
 
   // Used during initialization: creates the UDP socket FD, sets socket options,
   // and binds the socket to our address.
-  bool CreateUDPSocket();
+  bool CreateUDPSocketAndBind();
 
   // Actually clean up |fd|.
   void CleanUpUDPSocketImpl(int fd);
-
-  // Read a UDP packet and hand it to the framer.
-  bool ReadAndProcessPacket();
-
-  // Read available UDP packets up to kNumPacketsPerReadCall
-  // and hand them to the connection.
-  // TODO(rtenneti): Add support for ReadAndProcessPackets().
-  // bool ReadAndProcessPackets();
 
   // If the request URL matches a push promise, bypass sending the
   // request.
@@ -296,6 +281,9 @@ class QuicClient : public QuicClientBase,
   // because the socket would otherwise overflow.
   bool overflow_supported_;
 
+  // If true, use recvmmsg for reading.
+  bool use_recvmmsg_;
+
   // If true, store the latest response code, headers, and body.
   bool store_response_;
   // HTTP response code from most recent response.
@@ -319,7 +307,7 @@ class QuicClient : public QuicClientBase,
   //
   // TODO(rtenneti): Chromium code doesn't use |packet_reader_|. Add support for
   // QuicPacketReader
-  QuicPacketReader* packet_reader_;
+  scoped_ptr<QuicPacketReader> packet_reader_;
 
   std::unique_ptr<ClientQuicDataToResend> push_promise_data_to_resend_;
 

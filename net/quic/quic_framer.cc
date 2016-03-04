@@ -975,6 +975,7 @@ bool QuicFramer::ProcessPublicHeader(QuicDataReader* reader,
     // If the version from the new packet is the same as the version of this
     // framer, then the public flags should be set to something we understand.
     // If not, this raises an error.
+    last_version_tag_ = version_tag;
     QuicVersion version = QuicTagToQuicVersion(version_tag);
     if (version == quic_version_ && public_flags > PACKET_PUBLIC_FLAGS_MAX) {
       set_detailed_error("Illegal public flags value.");
@@ -1487,6 +1488,7 @@ bool QuicFramer::ProcessTimestampsInAckFrame(QuicDataReader* reader,
   }
 
   if (num_received_packets > 0) {
+    ack_frame->received_packet_times.reserve(num_received_packets);
     uint8_t delta_from_largest_observed;
     if (!reader->ReadBytes(&delta_from_largest_observed,
                            PACKET_1BYTE_PACKET_NUMBER)) {

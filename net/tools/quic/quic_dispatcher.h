@@ -203,6 +203,10 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // cleaned up for bug 16950226.)
   virtual QuicPacketWriter* CreatePerConnectionWriter();
 
+  // Returns true if a session should be created for a connection with an
+  // unknown version identified by |version_tag|.
+  virtual bool ShouldCreateSessionForUnknownVersion(QuicTag version_tag);
+
   void SetLastError(QuicErrorCode error);
 
  private:
@@ -249,6 +253,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   IPEndPoint current_client_address_;
   IPEndPoint current_server_address_;
   const QuicEncryptedPacket* current_packet_;
+  QuicConnectionId current_connection_id_;
 
   QuicFramer framer_;
 

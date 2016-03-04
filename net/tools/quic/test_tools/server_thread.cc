@@ -36,7 +36,7 @@ void ServerThread::Initialize() {
     return;
   }
 
-  server_->Listen(address_);
+  server_->CreateUDPSocketAndListen(address_);
 
   port_lock_.Acquire();
   port_ = server_->port();

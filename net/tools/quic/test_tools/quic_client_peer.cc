@@ -10,8 +10,8 @@ namespace net {
 namespace test {
 
 // static
-bool QuicClientPeer::CreateUDPSocket(QuicClient* client) {
-  return client->CreateUDPSocket();
+bool QuicClientPeer::CreateUDPSocketAndBind(QuicClient* client) {
+  return client->CreateUDPSocketAndBind();
 }
 
 // static

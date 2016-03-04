@@ -228,13 +228,14 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
  protected:
   typedef std::unordered_map<QuicStreamId, ReliableQuicStream*> StreamMap;
 
-  // Creates a new stream, owned by the caller, to handle a peer-initiated
-  // stream.  Returns nullptr and does error handling if the stream can not be
-  // created.
+  // Creates a new stream to handle a peer-initiated stream.
+  // Caller does not own the returned stream.
+  // Returns nullptr and does error handling if the stream can not be created.
   virtual ReliableQuicStream* CreateIncomingDynamicStream(QuicStreamId id) = 0;
 
-  // Create a new stream, owned by the caller, to handle a locally-initiated
-  // stream.  Returns nullptr if max streams have already been opened.
+  // Create a new stream to handle a locally-initiated stream.
+  // Caller does not own the returned stream.
+  // Returns nullptr if max streams have already been opened.
   virtual ReliableQuicStream* CreateOutgoingDynamicStream(
       SpdyPriority priority) = 0;
 
@@ -253,6 +254,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // and |stream_id| is a peer-created id, then a new stream is created and
   // returned. However if |stream_id| is a locally-created id and no such stream
   // exists, the connection is closed.
+  // Caller does not own the returned stream.
   ReliableQuicStream* GetOrCreateDynamicStream(QuicStreamId stream_id);
 
   // Performs the work required to close |stream_id|.  If |locally_reset|

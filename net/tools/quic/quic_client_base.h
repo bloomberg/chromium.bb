@@ -170,6 +170,14 @@ class QuicClientBase {
 
   QuicConnectionHelperInterface* helper() { return helper_.get(); }
 
+  void set_num_sent_client_hellos(int num_sent_client_hellos) {
+    num_sent_client_hellos_ = num_sent_client_hellos;
+  }
+
+  void set_num_stateless_rejects_received(int num_stateless_rejects_received) {
+    num_stateless_rejects_received_ = num_stateless_rejects_received;
+  }
+
  private:
   // |server_id_| is a tuple (hostname, port, is_https) of the server.
   QuicServerId server_id_;

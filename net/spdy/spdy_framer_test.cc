@@ -97,6 +97,8 @@ class SpdyFramerTestUtil {
       LOG(FATAL);
     }
 
+    void OnStreamEnd(SpdyStreamId stream_id) override { LOG(FATAL); }
+
     void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
       LOG(FATAL);
     }
@@ -323,6 +325,10 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       }
     }
     LOG(INFO) << "\", " << len << ")\n";
+  }
+
+  void OnStreamEnd(SpdyStreamId stream_id) override {
+    LOG(DFATAL) << "Unimplemented.";
   }
 
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {

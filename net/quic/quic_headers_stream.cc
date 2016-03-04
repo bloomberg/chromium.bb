@@ -65,6 +65,10 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY DATA frame received.");
   }
 
+  void OnStreamEnd(SpdyStreamId stream_id) override {
+    LOG(DFATAL) << "Unimplemented.";
+  }
+
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
     CloseConnection("SPDY frame padding received.");
   }

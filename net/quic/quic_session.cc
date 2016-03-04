@@ -675,12 +675,7 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
   }
   // Check if the new number of open streams would cause the number of
   // open streams to exceed the limit.
-  size_t num_open_incoming_streams =
-      FLAGS_quic_distinguish_incoming_outgoing_streams
-          ? GetNumOpenIncomingStreams()
-          : dynamic_stream_map_.size() - draining_streams_.size() +
-                locally_closed_streams_highest_offset_.size();
-  if (num_open_incoming_streams >= max_open_incoming_streams()) {
+  if (GetNumOpenIncomingStreams() >= max_open_incoming_streams()) {
     if (connection()->version() <= QUIC_VERSION_27) {
       connection()->SendConnectionCloseWithDetails(
           QUIC_TOO_MANY_OPEN_STREAMS, "Old style stream rejection");
@@ -691,12 +686,7 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
     return nullptr;
   }
 
-  ReliableQuicStream* stream = CreateIncomingDynamicStream(stream_id);
-  if (stream == nullptr) {
-    return nullptr;
-  }
-  ActivateStream(stream);
-  return stream;
+  return CreateIncomingDynamicStream(stream_id);
 }
 
 void QuicSession::set_max_open_incoming_streams(

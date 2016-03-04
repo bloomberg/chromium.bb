@@ -73,7 +73,9 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingDynamicStream(
     return nullptr;
   }
 
-  return new QuicSimpleServerStream(id, this);
+  QuicSpdyStream* stream = new QuicSimpleServerStream(id, this);
+  ActivateStream(stream);
+  return stream;
 }
 
 QuicSimpleServerStream* QuicSimpleServerSession::CreateOutgoingDynamicStream(

@@ -14,8 +14,6 @@ using base::StringPiece;
 
 namespace net {
 
-class QuicAckNotifier;
-
 QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
                                          QuicFramer* framer,
                                          QuicRandom* random_generator,
