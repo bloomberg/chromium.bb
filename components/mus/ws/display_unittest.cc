@@ -15,9 +15,9 @@
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/connection_manager_delegate.h"
-#include "components/mus/ws/display_manager.h"
-#include "components/mus/ws/display_manager_factory.h"
 #include "components/mus/ws/ids.h"
+#include "components/mus/ws/platform_display.h"
+#include "components/mus/ws/platform_display_factory.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_state.h"
@@ -48,10 +48,10 @@ class TestWindowManagerFactory : public mojom::WindowManagerFactory {
 
 // -----------------------------------------------------------------------------
 
-class WindowTreeHostTest : public testing::Test {
+class DisplayTest : public testing::Test {
  public:
-  WindowTreeHostTest() : cursor_id_(0), display_manager_factory_(&cursor_id_) {}
-  ~WindowTreeHostTest() override {}
+  DisplayTest() : cursor_id_(0), platform_display_factory_(&cursor_id_) {}
+  ~DisplayTest() override {}
 
   // WindowTreeImpl for the window manager.
   WindowTreeImpl* wm_connection() {
@@ -84,7 +84,7 @@ class WindowTreeHostTest : public testing::Test {
  protected:
   // testing::Test:
   void SetUp() override {
-    DisplayManager::set_factory_for_testing(&display_manager_factory_);
+    PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
     connection_manager_.reset(new ConnectionManager(
         &connection_manager_delegate_, scoped_refptr<SurfacesState>()));
     connection_manager_delegate_.set_connection_manager(
@@ -93,18 +93,18 @@ class WindowTreeHostTest : public testing::Test {
 
  protected:
   int32_t cursor_id_;
-  TestDisplayManagerFactory display_manager_factory_;
+  TestPlatformDisplayFactory platform_display_factory_;
   TestConnectionManagerDelegate connection_manager_delegate_;
   scoped_ptr<ConnectionManager> connection_manager_;
   base::MessageLoop message_loop_;
   TestWindowManagerFactory test_window_manager_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostTest);
+  DISALLOW_COPY_AND_ASSIGN(DisplayTest);
 };
 
-TEST_F(WindowTreeHostTest, CallsCreateDefaultWindowTreeHosts) {
+TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
   const int kNumHostsToCreate = 2;
-  connection_manager_delegate_.set_num_tree_hosts_to_create(kNumHostsToCreate);
+  connection_manager_delegate_.set_num_displays_to_create(kNumHostsToCreate);
 
   const UserId kTestId1 = 2;
   const UserId kTestId2 = 21;
@@ -112,28 +112,28 @@ TEST_F(WindowTreeHostTest, CallsCreateDefaultWindowTreeHosts) {
       connection_manager_->window_manager_factory_registry())
       .AddService(kTestId1, &test_window_manager_factory_);
   // The first register should trigger creation of the default
-  // WindowTreeHosts. There should be kNumHostsToCreate WindowTreeHosts.
+  // Displays. There should be kNumHostsToCreate Displays.
   EXPECT_EQ(static_cast<size_t>(kNumHostsToCreate),
-            connection_manager_->hosts().size());
+            connection_manager_->displays().size());
 
   // Each host should have a WindowManagerState for kTestId1.
-  for (WindowTreeHostImpl* tree_host : connection_manager_->hosts()) {
-    EXPECT_EQ(1u, tree_host->num_window_manger_states());
-    EXPECT_TRUE(tree_host->GetWindowManagerStateForUser(kTestId1));
-    EXPECT_FALSE(tree_host->GetWindowManagerStateForUser(kTestId2));
+  for (Display* display : connection_manager_->displays()) {
+    EXPECT_EQ(1u, display->num_window_manger_states());
+    EXPECT_TRUE(display->GetWindowManagerStateForUser(kTestId1));
+    EXPECT_FALSE(display->GetWindowManagerStateForUser(kTestId2));
   }
 
   // Add another registry, should trigger creation of another wm.
   WindowManagerFactoryRegistryTestApi(
       connection_manager_->window_manager_factory_registry())
       .AddService(kTestId2, &test_window_manager_factory_);
-  for (WindowTreeHostImpl* tree_host : connection_manager_->hosts()) {
-    ASSERT_EQ(2u, tree_host->num_window_manger_states());
+  for (Display* display : connection_manager_->displays()) {
+    ASSERT_EQ(2u, display->num_window_manger_states());
     WindowManagerState* state1 =
-        tree_host->GetWindowManagerStateForUser(kTestId1);
+        display->GetWindowManagerStateForUser(kTestId1);
     ASSERT_TRUE(state1);
     WindowManagerState* state2 =
-        tree_host->GetWindowManagerStateForUser(kTestId2);
+        display->GetWindowManagerStateForUser(kTestId2);
     ASSERT_TRUE(state2);
     // Verify the two states have different roots.
     EXPECT_NE(state1, state2);
@@ -141,8 +141,8 @@ TEST_F(WindowTreeHostTest, CallsCreateDefaultWindowTreeHosts) {
   }
 }
 
-TEST_F(WindowTreeHostTest, Destruction) {
-  connection_manager_delegate_.set_num_tree_hosts_to_create(1);
+TEST_F(DisplayTest, Destruction) {
+  connection_manager_delegate_.set_num_displays_to_create(1);
 
   const UserId kTestId1 = 2;
   const UserId kTestId2 = 21;
@@ -154,27 +154,26 @@ TEST_F(WindowTreeHostTest, Destruction) {
   WindowManagerFactoryRegistryTestApi(
       connection_manager_->window_manager_factory_registry())
       .AddService(kTestId2, &test_window_manager_factory_);
-  ASSERT_EQ(1u, connection_manager_->hosts().size());
-  WindowTreeHostImpl* tree_host = *connection_manager_->hosts().begin();
-  ASSERT_EQ(2u, tree_host->num_window_manger_states());
+  ASSERT_EQ(1u, connection_manager_->displays().size());
+  Display* display = *connection_manager_->displays().begin();
+  ASSERT_EQ(2u, display->num_window_manger_states());
   // There should be two trees, one for each windowmanager.
   EXPECT_EQ(2u, connection_manager_->num_trees());
 
   {
-    WindowManagerState* state =
-        tree_host->GetWindowManagerStateForUser(kTestId1);
+    WindowManagerState* state = display->GetWindowManagerStateForUser(kTestId1);
     // Destroy the tree associated with |state|. Should result in deleting
     // |state|.
     connection_manager_->DestroyTree(state->tree());
-    ASSERT_EQ(1u, tree_host->num_window_manger_states());
-    EXPECT_FALSE(tree_host->GetWindowManagerStateForUser(kTestId1));
-    EXPECT_EQ(1u, connection_manager_->hosts().size());
+    ASSERT_EQ(1u, display->num_window_manger_states());
+    EXPECT_FALSE(display->GetWindowManagerStateForUser(kTestId1));
+    EXPECT_EQ(1u, connection_manager_->displays().size());
     EXPECT_EQ(1u, connection_manager_->num_trees());
   }
 
   EXPECT_FALSE(connection_manager_delegate_.got_on_no_more_connections());
-  // Destroy the WindowTreeHost, which should shutdown the trees.
-  connection_manager_->DestroyHost(tree_host);
+  // Destroy the Display, which should shutdown the trees.
+  connection_manager_->DestroyDisplay(display);
   EXPECT_EQ(0u, connection_manager_->num_trees());
   EXPECT_TRUE(connection_manager_delegate_.got_on_no_more_connections());
 }

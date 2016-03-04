@@ -19,13 +19,13 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
+#include "components/mus/ws/display.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/user_id_tracker.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
-#include "components/mus/ws/window_tree_host_impl.h"
 #include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -39,22 +39,20 @@ class ClientConnection;
 class ConnectionManagerDelegate;
 class ServerWindow;
 class WindowManagerState;
-class WindowTreeHostConnection;
 class WindowTreeImpl;
 
-struct WindowManagerAndHost {
-  WindowManagerAndHost()
-      : window_manager_state(nullptr), window_tree_host(nullptr) {}
+struct WindowManagerAndDisplay {
+  WindowManagerAndDisplay() : window_manager_state(nullptr), display(nullptr) {}
 
   WindowManagerState* window_manager_state;
-  WindowTreeHostImpl* window_tree_host;
+  Display* display;
 };
 
-struct WindowManagerAndHostConst {
-  WindowManagerAndHostConst()
-      : window_manager_state(nullptr), window_tree_host(nullptr) {}
+struct WindowManagerAndDisplayConst {
+  WindowManagerAndDisplayConst()
+      : window_manager_state(nullptr), display(nullptr) {}
   const WindowManagerState* window_manager_state;
-  const WindowTreeHostImpl* window_tree_host;
+  const Display* display;
 };
 
 // ConnectionManager manages the set of connections to the window server (all
@@ -74,11 +72,10 @@ class ConnectionManager : public ServerWindowDelegate,
 
   UserIdTracker* user_id_tracker() { return &user_id_tracker_; }
 
-  // Adds/removes a WindowTreeHost. ConnectionManager owns the
-  // WindowTreeHostImpls.
-  void AddHost(WindowTreeHostImpl* host);
-  void DestroyHost(WindowTreeHostImpl* host);
-  std::set<WindowTreeHostImpl*> hosts() { return hosts_; }
+  // Adds/removes a Display. ConnectionManager owns the Displays.
+  void AddDisplay(Display* display);
+  void DestroyDisplay(Display* display);
+  std::set<Display*> displays() { return displays_; }
 
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before ConnectionManager.
@@ -89,8 +86,9 @@ class ConnectionManager : public ServerWindowDelegate,
   // Returns the id for the next WindowTreeImpl.
   ConnectionSpecificId GetAndAdvanceNextConnectionId();
 
-  // Returns the id for the next WindowTreeHostImpl.
-  uint16_t GetAndAdvanceNextHostId();
+  // Returns the id for the next root window (both for the root of a Display
+  // as well as the root of WindowManagers).
+  uint16_t GetAndAdvanceNextRootId();
 
   // See description of WindowTree::Embed() for details. This assumes
   // |transport_window_id| is valid.
@@ -104,7 +102,7 @@ class ConnectionManager : public ServerWindowDelegate,
                           scoped_ptr<ClientConnection> connection,
                           mojom::WindowTreePtr tree_ptr);
   WindowTreeImpl* CreateTreeForWindowManager(
-      WindowTreeHostImpl* host,
+      Display* display,
       mojom::WindowManagerFactory* factory,
       ServerWindow* root);
   // Invoked when a WindowTreeImpl's connection encounters an error.
@@ -126,11 +124,11 @@ class ConnectionManager : public ServerWindowDelegate,
                               : OperationType::NONE;
   }
 
-  // Invoked when the WindowTreeHostImpl's display is closed.
+  // Invoked when the Display's PlatformDisplay is closed.
   void OnDisplayClosed();
 
-  // Called when the AcceleratedWidget is available for |host|.
-  void OnWindowTreeHostDisplayAvailable(WindowTreeHostImpl* host);
+  // Called when the AcceleratedWidget is available for |display|.
+  void OnDisplayAcceleratedWidgetAvailable(Display* display);
 
   // Invoked when a connection messages a client about the change. This is used
   // to avoid sending ServerChangeIdAdvanced() unnecessarily.
@@ -152,17 +150,19 @@ class ConnectionManager : public ServerWindowDelegate,
   }
   const WindowTreeImpl* GetConnectionWithRoot(const ServerWindow* window) const;
 
-  WindowTreeHostImpl* GetWindowTreeHostByWindow(const ServerWindow* window);
-  const WindowTreeHostImpl* GetWindowTreeHostByWindow(
+  // Returns the Display that contains |window|, or null if |window| is not
+  // attached to a display.
+  Display* GetDisplayContaining(const ServerWindow* window);
+  const Display* GetDisplayContaining(const ServerWindow* window) const;
+
+  WindowManagerAndDisplayConst GetWindowManagerAndDisplay(
       const ServerWindow* window) const;
+  WindowManagerAndDisplay GetWindowManagerAndDisplay(
+      const ServerWindow* window);
 
-  WindowManagerAndHostConst GetWindowManagerAndHost(
-      const ServerWindow* window) const;
-  WindowManagerAndHost GetWindowManagerAndHost(const ServerWindow* window);
+  Display* GetActiveDisplay();
 
-  WindowTreeHostImpl* GetActiveWindowTreeHost();
-
-  bool has_tree_host_connections() const { return !hosts_.empty(); }
+  bool has_displays() const { return !displays_.empty(); }
 
   void AddDisplayManagerBinding(
       mojo::InterfaceRequest<mojom::DisplayManager> request);
@@ -193,8 +193,8 @@ class ConnectionManager : public ServerWindowDelegate,
   // TODO(sky): decide what we want to do here.
   void WindowManagerSentBogusMessage() {}
 
-  // Returns the Display for |host|.
-  mojom::DisplayPtr DisplayForHost(WindowTreeHostImpl* host);
+  // Returns the Display for |display|.
+  mojom::DisplayPtr DisplayToMojomDisplay(Display* display);
 
   // These functions trivially delegate to all WindowTreeImpls, which in
   // term notify their clients.
@@ -206,7 +206,7 @@ class ConnectionManager : public ServerWindowDelegate,
       const gfx::Insets& new_client_area,
       const std::vector<gfx::Rect>& new_additional_client_areas);
   void ProcessLostCapture(const ServerWindow* window);
-  void ProcessViewportMetricsChanged(WindowTreeHostImpl* host,
+  void ProcessViewportMetricsChanged(Display* display,
                                      const mojom::ViewportMetrics& old_metrics,
                                      const mojom::ViewportMetrics& new_metrics);
   void ProcessWillChangeWindowHierarchy(const ServerWindow* window,
@@ -221,15 +221,13 @@ class ConnectionManager : public ServerWindowDelegate,
   void ProcessWindowDeleted(const ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                int32_t cursor_id);
-  void ProcessFrameDecorationValuesChanged(WindowTreeHostImpl* host);
+  void ProcessFrameDecorationValuesChanged(Display* display);
 
  private:
   friend class Operation;
 
   using WindowTreeMap =
       std::map<ConnectionSpecificId, scoped_ptr<WindowTreeImpl>>;
-  using HostConnectionMap =
-      std::map<WindowTreeHostImpl*, WindowTreeHostConnection*>;
 
   struct InFlightWindowManagerChange {
     // Identifies the client that initiated the change.
@@ -269,9 +267,9 @@ class ConnectionManager : public ServerWindowDelegate,
   // Calls OnDisplays() on |observer|.
   void CallOnDisplays(mojom::DisplayManagerObserver* observer);
 
-  // Calls observer->OnDisplaysChanged() with the display for |host|.
+  // Calls observer->OnDisplaysChanged() with the display for |display|.
   void CallOnDisplayChanged(mojom::DisplayManagerObserver* observer,
-                            WindowTreeHostImpl* host);
+                            Display* display);
 
   // Overridden from ServerWindowDelegate:
   mus::SurfacesState* GetSurfacesState() override;
@@ -328,17 +326,17 @@ class ConnectionManager : public ServerWindowDelegate,
   // ID to use for next WindowTreeImpl.
   ConnectionSpecificId next_connection_id_;
 
-  // ID to use for next WindowTreeHostImpl.
-  uint16_t next_host_id_;
+  // ID to use for next root node.
+  uint16_t next_root_id_;
 
   // Set of WindowTreeImpls.
   WindowTreeMap tree_map_;
 
-  // WindowTreeHostImpls are initially added to |pending_hosts_|. When the
-  // display is initialized it is moved to |hosts_|.
-  // ConnectionManager owns the WindowTreeHostImpls.
-  std::set<WindowTreeHostImpl*> pending_hosts_;
-  std::set<WindowTreeHostImpl*> hosts_;
+  // Displays are initially added to |pending_displays_|. When the display is
+  // initialized it is moved to |displays_|. ConnectionManager owns the
+  // Displays.
+  std::set<Display*> pending_displays_;
+  std::set<Display*> displays_;
 
   // If non-null then we're processing a client operation. The Operation is
   // not owned by us (it's created on the stack by WindowTreeImpl).

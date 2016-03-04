@@ -1872,8 +1872,8 @@ TEST_F(WindowTreeAppTest, Ids) {
 TEST_F(WindowTreeAppTest, ExplicitCaptureWithoutInput) {
   Id window_1_1 = ws_client1()->NewWindow(1);
 
-  // Add the window to the root, so that they have a WindowTreeHostImpl to
-  // handle input capture.
+  // Add the window to the root, so that they have a Display to handle input
+  // capture.
   ASSERT_TRUE(ws_client1()->AddWindow(root_window_id(), window_1_1));
   changes1()->clear();
 
@@ -1895,8 +1895,8 @@ TEST_F(WindowTreeAppTest, DISABLED_ExplicitCapturePropagation) {
   Id window_1_1 = ws_client1()->NewWindow(1);
   Id window_1_2 = ws_client1()->NewWindow(2);
 
-  // Add the windows to the root, so that they have a WindowTreeHostImpl to
-  // handle input capture.
+  // Add the windows to the root, so that they have a Display to handle input
+  // capture.
   ASSERT_TRUE(ws_client1()->AddWindow(root_window_id(), window_1_1));
   ASSERT_TRUE(ws_client1()->AddWindow(root_window_id(), window_1_2));
 

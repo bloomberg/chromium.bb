@@ -6,8 +6,8 @@
 
 #include "cc/output/copy_output_request.h"
 #include "components/mus/surfaces/surfaces_state.h"
+#include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/window_manager_factory_service.h"
-#include "components/mus/ws/window_tree_host_connection.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace mus {
@@ -16,21 +16,21 @@ namespace test {
 namespace {
 
 // -----------------------------------------------------------------------------
-// Empty implementation of DisplayManager.
-class TestDisplayManager : public DisplayManager {
+// Empty implementation of PlatformDisplay.
+class TestPlatformDisplay : public PlatformDisplay {
  public:
-  explicit TestDisplayManager(int32_t* cursor_id_storage)
+  explicit TestPlatformDisplay(int32_t* cursor_id_storage)
       : cursor_id_storage_(cursor_id_storage) {
     display_metrics_.size_in_pixels = mojo::Size::From(gfx::Size(400, 300));
     display_metrics_.device_pixel_ratio = 1.f;
   }
-  ~TestDisplayManager() override {}
+  ~TestPlatformDisplay() override {}
 
-  // DisplayManager:
-  void Init(DisplayManagerDelegate* delegate) override {
+  // PlatformDisplay:
+  void Init(PlatformDisplayDelegate* delegate) override {
     // It is necessary to tell the delegate about the ViewportMetrics to make
-    // sure that the WindowTreeHostConnection is correctly initialized (and a
-    // root-window is created).
+    // sure that the DisplayBinding is correctly initialized (and a root-window
+    // is created).
     delegate->OnViewportMetricsChanged(mojom::ViewportMetrics(),
                                        display_metrics_);
   }
@@ -56,7 +56,7 @@ class TestDisplayManager : public DisplayManager {
 
   int32_t* cursor_id_storage_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayManager);
+  DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
 };
 
 }  // namespace
@@ -79,18 +79,19 @@ void WindowManagerFactoryRegistryTestApi::AddService(
   service->SetWindowManagerFactoryImpl(factory);
 }
 
-// TestDisplayManagerFactory  -------------------------------------------------
+// TestPlatformDisplayFactory  -------------------------------------------------
 
-TestDisplayManagerFactory::TestDisplayManagerFactory(int32_t* cursor_id_storage)
+TestPlatformDisplayFactory::TestPlatformDisplayFactory(
+    int32_t* cursor_id_storage)
     : cursor_id_storage_(cursor_id_storage) {}
 
-TestDisplayManagerFactory::~TestDisplayManagerFactory() {}
+TestPlatformDisplayFactory::~TestPlatformDisplayFactory() {}
 
-DisplayManager* TestDisplayManagerFactory::CreateDisplayManager(
+PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay(
     mojo::Connector* connector,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<mus::SurfacesState>& surfaces_state) {
-  return new TestDisplayManager(cursor_id_storage_);
+  return new TestPlatformDisplay(cursor_id_storage_);
 }
 
 // WindowTreeTestApi  ---------------------------------------------------------
@@ -98,11 +99,10 @@ DisplayManager* TestDisplayManagerFactory::CreateDisplayManager(
 WindowTreeTestApi::WindowTreeTestApi(WindowTreeImpl* tree) : tree_(tree) {}
 WindowTreeTestApi::~WindowTreeTestApi() {}
 
-// WindowTreeHostTestApi  -----------------------------------------------------
+// DisplayTestApi  ------------------------------------------------------------
 
-WindowTreeHostTestApi::WindowTreeHostTestApi(WindowTreeHostImpl* tree_host)
-    : tree_host_(tree_host) {}
-WindowTreeHostTestApi::~WindowTreeHostTestApi() {}
+DisplayTestApi::DisplayTestApi(Display* display) : display_(display) {}
+DisplayTestApi::~DisplayTestApi() {}
 
 // TestWindowTreeClient -------------------------------------------------------
 
@@ -262,16 +262,16 @@ TestConnectionManagerDelegate::CreateClientConnectionForEmbedAtWindow(
   return std::move(connection);
 }
 
-void TestConnectionManagerDelegate::CreateDefaultWindowTreeHosts() {
-  DCHECK(num_tree_hosts_to_create_);
+void TestConnectionManagerDelegate::CreateDefaultDisplays() {
+  DCHECK(num_displays_to_create_);
   DCHECK(connection_manager_);
 
-  for (int i = 0; i < num_tree_hosts_to_create_; ++i) {
-    // WindowTreeHostImpl manages its own lifetime.
-    WindowTreeHostImpl* host_impl = new WindowTreeHostImpl(
-        connection_manager_, nullptr, scoped_refptr<GpuState>(),
-        scoped_refptr<mus::SurfacesState>());
-    host_impl->Init(nullptr);
+  for (int i = 0; i < num_displays_to_create_; ++i) {
+    // Display manages its own lifetime.
+    Display* display =
+        new Display(connection_manager_, nullptr, scoped_refptr<GpuState>(),
+                    scoped_refptr<mus::SurfacesState>());
+    display->Init(nullptr);
   }
 }
 

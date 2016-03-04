@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_WINDOW_TREE_HOST_IMPL_H_
-#define COMPONENTS_MUS_WS_WINDOW_TREE_HOST_IMPL_H_
+#ifndef COMPONENTS_MUS_WS_DISPLAY_H_
+#define COMPONENTS_MUS_WS_DISPLAY_H_
 
 #include <stdint.h>
 
@@ -16,11 +16,11 @@
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
-#include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/event_dispatcher.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/focus_controller_observer.h"
+#include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/server_window_tracker.h"
@@ -31,49 +31,45 @@ namespace mus {
 namespace ws {
 
 class ConnectionManager;
+class DisplayBinding;
 class FocusController;
 class WindowManagerState;
-class WindowTreeHostConnection;
 class WindowTreeImpl;
 
 namespace test {
-class WindowTreeHostTestApi;
+class DisplayTestApi;
 }
 
-// WindowTreeHostImpl is an implementation of the WindowTreeHost interface.
-// It serves as a top level root window for a window. Its lifetime is managed by
-// ConnectionManager. If the connection to the client breaks or if the user
-// closes the associated window, then this object and related state will be
-// deleted.
-//
-// WindowTreeHost has a single root window whose children are the roots for
-// a per-user WindowManager. WindowTreeHost is configured in two distinct
+// Displays manages the state associated with a single display. Display has a
+// single root window whose children are the roots for a per-user
+// WindowManager. Display is configured in two distinct
 // ways:
-// . with a WindowTreeHostConnection. In this mode there is only ever one
-//   WindowManager for the host, which comes from the client that created
-//   the WindowTreeHost.
-// . without a WindowTreeHostConnection. In this mode a WindowManager is
-//   automatically created per user.
-class WindowTreeHostImpl : public DisplayManagerDelegate,
-                           public mojom::WindowTreeHost,
-                           public FocusControllerObserver,
-                           public FocusControllerDelegate,
-                           public EventDispatcherDelegate,
-                           public ServerWindowObserver,
-                           public UserIdTrackerObserver,
-                           public WindowManagerFactoryRegistryObserver {
+// . with a DisplayBinding. In this mode there is only ever one WindowManager
+//   for the display, which comes from the client that created the
+//   Display.
+// . without a DisplayBinding. In this mode a WindowManager is automatically
+//   created per user.
+class Display : public PlatformDisplayDelegate,
+                public mojom::WindowTreeHost,
+                public FocusControllerObserver,
+                public FocusControllerDelegate,
+                public EventDispatcherDelegate,
+                public ServerWindowObserver,
+                public UserIdTrackerObserver,
+                public WindowManagerFactoryRegistryObserver {
  public:
   // TODO(fsamuel): All these parameters are just plumbing for creating
-  // DisplayManagers. We should probably just store these common parameters
-  // in the DisplayManagerFactory and pass them along on DisplayManager::Create.
-  WindowTreeHostImpl(ConnectionManager* connection_manager,
-                     mojo::Connector* connector,
-                     const scoped_refptr<GpuState>& gpu_state,
-                     const scoped_refptr<SurfacesState>& surfaces_state);
-  ~WindowTreeHostImpl() override;
+  // PlatformDisplays. We should probably just store these common parameters
+  // in the PlatformDisplayFactory and pass them along on
+  // PlatformDisplay::Create.
+  Display(ConnectionManager* connection_manager,
+          mojo::Connector* connector,
+          const scoped_refptr<GpuState>& gpu_state,
+          const scoped_refptr<SurfacesState>& surfaces_state);
+  ~Display() override;
 
-  // Initializes state that depends on the existence of a WindowTreeHostImpl.
-  void Init(scoped_ptr<WindowTreeHostConnection> connection);
+  // Initializes state that depends on the existence of a Display.
+  void Init(scoped_ptr<DisplayBinding> binding);
 
   uint32_t id() const { return id_; }
 
@@ -103,7 +99,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   EventDispatcher* event_dispatcher() { return &event_dispatcher_; }
 
-  // Returns the root of the WindowTreeHost. The root's children are the roots
+  // Returns the root of the Display. The root's children are the roots
   // of the corresponding WindowManagers.
   ServerWindow* root_window() { return root_.get(); }
   const ServerWindow* root_window() const { return root_.get(); }
@@ -153,7 +149,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // known pointer location changed.
   void MaybeChangeCursorOnWindowTreeChange();
 
-  // WindowTreeHost:
+  // mojom::WindowTreeHost:
   void SetSize(mojo::SizePtr size) override;
   void SetTitle(const mojo::String& title) override;
 
@@ -161,14 +157,14 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
  private:
   class ProcessedEventTarget;
-  friend class test::WindowTreeHostTestApi;
+  friend class test::DisplayTestApi;
 
   using WindowManagerStateMap =
       std::map<uint32_t, scoped_ptr<WindowManagerState>>;
 
   // There are two types of events that may be queued, both occur only when
   // waiting for an ack from a client.
-  // . We get an event from the DisplayManager. This results in |event| being
+  // . We get an event from the PlatformDisplay. This results in |event| being
   //   set, but |processed_target| is null.
   // . We get an event from the EventDispatcher. In this case both |event| and
   //   |processed_target| are valid.
@@ -210,7 +206,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   void UpdateNativeCursor(int32_t cursor_id);
 
-  // DisplayManagerDelegate:
+  // PlatformDisplayDelegate:
   ServerWindow* GetRootWindow() override;
   void OnEvent(const ui::Event& event) override;
   void OnNativeCaptureLost() override;
@@ -254,13 +250,13 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void OnWindowManagerFactorySet(WindowManagerFactoryService* service) override;
 
   const uint32_t id_;
-  scoped_ptr<WindowTreeHostConnection> window_tree_host_connection_;
+  scoped_ptr<DisplayBinding> binding_;
   // Set once Init() has been called.
   bool init_called_ = false;
   ConnectionManager* const connection_manager_;
   EventDispatcher event_dispatcher_;
   scoped_ptr<ServerWindow> root_;
-  scoped_ptr<DisplayManager> display_manager_;
+  scoped_ptr<PlatformDisplay> platform_display_;
   scoped_ptr<FocusController> focus_controller_;
   mojom::WindowTree* tree_awaiting_input_ack_;
 
@@ -280,10 +276,10 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostImpl);
+  DISALLOW_COPY_AND_ASSIGN(Display);
 };
 
 }  // namespace ws
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_WS_WINDOW_TREE_HOST_IMPL_H_
+#endif  // COMPONENTS_MUS_WS_DISPLAY_H_

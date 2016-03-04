@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_DISPLAY_MANAGER_FACTORY_H_
-#define COMPONENTS_MUS_WS_DISPLAY_MANAGER_FACTORY_H_
+#ifndef COMPONENTS_MUS_WS_PLATFORM_DISPLAY_FACTORY_H_
+#define COMPONENTS_MUS_WS_PLATFORM_DISPLAY_FACTORY_H_
 
 #include "components/mus/gles2/gpu_state.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -16,13 +16,13 @@ namespace mus {
 
 namespace ws {
 
-class DisplayManager;
+class PlatformDisplay;
 
-// Abstract factory for DisplayManagers. Used by tests to construct test
-// DisplayManagers.
-class DisplayManagerFactory {
+// Abstract factory for PlatformDisplays. Used by tests to construct test
+// PlatformDisplays.
+class PlatformDisplayFactory {
  public:
-  virtual DisplayManager* CreateDisplayManager(
+  virtual PlatformDisplay* CreatePlatformDisplay(
       mojo::Connector* connector,
       const scoped_refptr<mus::GpuState>& gpu_state,
       const scoped_refptr<mus::SurfacesState>& surfaces_state) = 0;
@@ -32,4 +32,4 @@ class DisplayManagerFactory {
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_WS_DISPLAY_MANAGER_FACTORY_H_
+#endif  // COMPONENTS_MUS_WS_PLATFORM_DISPLAY_FACTORY_H_

@@ -10,11 +10,11 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager_delegate.h"
-#include "components/mus/ws/display_manager.h"
-#include "components/mus/ws/display_manager_factory.h"
+#include "components/mus/ws/display.h"
+#include "components/mus/ws/platform_display.h"
+#include "components/mus/ws/platform_display_factory.h"
 #include "components/mus/ws/test_change_tracker.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
-#include "components/mus/ws/window_tree_host_impl.h"
 #include "components/mus/ws/window_tree_impl.h"
 
 namespace mus {
@@ -55,33 +55,33 @@ class WindowTreeTestApi {
 
 // -----------------------------------------------------------------------------
 
-class WindowTreeHostTestApi {
+class DisplayTestApi {
  public:
-  explicit WindowTreeHostTestApi(WindowTreeHostImpl* tree_host);
-  ~WindowTreeHostTestApi();
+  explicit DisplayTestApi(Display* display);
+  ~DisplayTestApi();
 
-  void OnEvent(const ui::Event& event) { tree_host_->OnEvent(event); }
+  void OnEvent(const ui::Event& event) { display_->OnEvent(event); }
 
   mojom::WindowTree* tree_awaiting_input_ack() {
-    return tree_host_->tree_awaiting_input_ack_;
+    return display_->tree_awaiting_input_ack_;
   }
 
  private:
-  WindowTreeHostImpl* tree_host_;
+  Display* display_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostTestApi);
+  DISALLOW_COPY_AND_ASSIGN(DisplayTestApi);
 };
 
 // -----------------------------------------------------------------------------
 
-// Factory that dispenses TestDisplayManagers.
-class TestDisplayManagerFactory : public DisplayManagerFactory {
+// Factory that dispenses TestPlatformDisplays.
+class TestPlatformDisplayFactory : public PlatformDisplayFactory {
  public:
-  explicit TestDisplayManagerFactory(int32_t* cursor_id_storage);
-  ~TestDisplayManagerFactory();
+  explicit TestPlatformDisplayFactory(int32_t* cursor_id_storage);
+  ~TestPlatformDisplayFactory();
 
-  // DisplayManagerFactory:
-  DisplayManager* CreateDisplayManager(
+  // PlatformDisplayFactory:
+  PlatformDisplay* CreatePlatformDisplay(
       mojo::Connector* connector,
       const scoped_refptr<GpuState>& gpu_state,
       const scoped_refptr<mus::SurfacesState>& surfaces_state) override;
@@ -89,7 +89,7 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
  private:
   int32_t* cursor_id_storage_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayManagerFactory);
+  DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplayFactory);
 };
 
 // -----------------------------------------------------------------------------
@@ -202,8 +202,8 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
     connection_manager_ = connection_manager;
   }
 
-  void set_num_tree_hosts_to_create(int count) {
-    num_tree_hosts_to_create_ = count;
+  void set_num_displays_to_create(int count) {
+    num_displays_to_create_ = count;
   }
 
   TestWindowTreeClient* last_client() {
@@ -222,14 +222,14 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
       ws::WindowTreeImpl* tree,
       mojom::WindowTreeRequest tree_request,
       mojom::WindowTreeClientPtr client) override;
-  void CreateDefaultWindowTreeHosts() override;
+  void CreateDefaultDisplays() override;
 
  private:
-  // If CreateDefaultWindowTreeHosts() this is the number of WindowTreeHosts
-  // that are created. The default is 0, which results in a DCHECK.
-  int num_tree_hosts_to_create_ = 0;
+  // If CreateDefaultDisplays() this is the number of Displays that are
+  // created. The default is 0, which results in a DCHECK.
+  int num_displays_to_create_ = 0;
   TestClientConnection* last_connection_ = nullptr;
-  WindowTreeHostImpl* window_tree_host_ = nullptr;
+  Display* display_ = nullptr;
   ConnectionManager* connection_manager_ = nullptr;
   bool got_on_no_more_connections_ = false;
 

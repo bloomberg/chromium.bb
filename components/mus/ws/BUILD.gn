@@ -19,10 +19,10 @@ source_set("lib") {
     "connection_manager_delegate.h",
     "default_access_policy.cc",
     "default_access_policy.h",
-    "display_manager.cc",
-    "display_manager.h",
-    "display_manager_delegate.h",
-    "display_manager_factory.h",
+    "display.cc",
+    "display.h",
+    "display_binding.cc",
+    "display_binding.h",
     "event_dispatcher.cc",
     "event_dispatcher.h",
     "event_dispatcher_delegate.h",
@@ -32,6 +32,10 @@ source_set("lib") {
     "focus_controller_observer.h",
     "operation.cc",
     "operation.h",
+    "platform_display.cc",
+    "platform_display.h",
+    "platform_display_delegate.h",
+    "platform_display_factory.h",
     "server_window.cc",
     "server_window.h",
     "server_window_delegate.h",
@@ -63,10 +67,6 @@ source_set("lib") {
     "window_manager_state.h",
     "window_tree_factory.cc",
     "window_tree_factory.h",
-    "window_tree_host_connection.cc",
-    "window_tree_host_connection.h",
-    "window_tree_host_impl.cc",
-    "window_tree_host_impl.h",
     "window_tree_impl.cc",
     "window_tree_impl.h",
   ]
@@ -138,6 +138,7 @@ group("tests") {
 
 test("window_manager_unittests") {
   sources = [
+    "display_unittest.cc",
     "event_dispatcher_unittest.cc",
     "focus_controller_unittest.cc",
     "server_window_drawn_tracker_unittest.cc",
@@ -150,7 +151,6 @@ test("window_manager_unittests") {
     "transient_windows_unittest.cc",
     "window_coordinate_conversions_unittest.cc",
     "window_finder_unittest.cc",
-    "window_tree_host_unittest.cc",
     "window_tree_unittest.cc",
   ]
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/ws/display_manager.h"
+#include "components/mus/ws/platform_display.h"
 
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
@@ -17,7 +17,7 @@
 #include "components/mus/public/interfaces/quads.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/surfaces/top_level_display_client.h"
-#include "components/mus/ws/display_manager_factory.h"
+#include "components/mus/ws/platform_display_factory.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface.h"
 #include "components/mus/ws/server_window_surface_manager.h"
@@ -151,19 +151,20 @@ void DrawWindowTree(cc::RenderPass* pass,
 }  // namespace
 
 // static
-DisplayManagerFactory* DisplayManager::factory_ = nullptr;
+PlatformDisplayFactory* PlatformDisplay::factory_ = nullptr;
 
 // static
-DisplayManager* DisplayManager::Create(
+PlatformDisplay* PlatformDisplay::Create(
     mojo::Connector* connector,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state) {
   if (factory_)
-    return factory_->CreateDisplayManager(connector, gpu_state, surfaces_state);
-  return new DefaultDisplayManager(connector, gpu_state, surfaces_state);
+    return factory_->CreatePlatformDisplay(connector, gpu_state,
+                                           surfaces_state);
+  return new DefaultPlatformDisplay(connector, gpu_state, surfaces_state);
 }
 
-DefaultDisplayManager::DefaultDisplayManager(
+DefaultPlatformDisplay::DefaultPlatformDisplay(
     mojo::Connector* connector,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
@@ -182,7 +183,7 @@ DefaultDisplayManager::DefaultDisplayManager(
   metrics_.size_in_pixels->height = 768;
 }
 
-void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
+void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
   delegate_ = delegate;
 
   gfx::Rect bounds(metrics_.size_in_pixels.To<gfx::Size>());
@@ -191,7 +192,7 @@ void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
 #elif defined(USE_X11)
   platform_window_.reset(new ui::X11Window(this));
 #elif defined(OS_ANDROID)
-  platform_window_. reset(new ui::PlatformWindowAndroid(this));
+  platform_window_.reset(new ui::PlatformWindowAndroid(this));
 #elif defined(USE_OZONE)
   platform_window_ =
       ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
@@ -202,10 +203,10 @@ void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
   platform_window_->Show();
 }
 
-DefaultDisplayManager::~DefaultDisplayManager() {
+DefaultPlatformDisplay::~DefaultPlatformDisplay() {
   delegate_->OnTopLevelSurfaceChanged(cc::SurfaceId());
   // Invalidate WeakPtrs now to avoid callbacks back into the
-  // DefaultDisplayManager during destruction of |top_level_display_client_|.
+  // DefaultPlatformDisplay during destruction of |top_level_display_client_|.
   weak_factory_.InvalidateWeakPtrs();
   top_level_display_client_.reset();
   // Destroy the PlatformWindow early on as it may call us back during
@@ -214,8 +215,8 @@ DefaultDisplayManager::~DefaultDisplayManager() {
   platform_window_.reset();
 }
 
-void DefaultDisplayManager::SchedulePaint(const ServerWindow* window,
-                                          const gfx::Rect& bounds) {
+void DefaultPlatformDisplay::SchedulePaint(const ServerWindow* window,
+                                           const gfx::Rect& bounds) {
   DCHECK(window);
   if (!window->IsDrawn())
     return;
@@ -227,23 +228,23 @@ void DefaultDisplayManager::SchedulePaint(const ServerWindow* window,
   WantToDraw();
 }
 
-void DefaultDisplayManager::SetViewportSize(const gfx::Size& size) {
+void DefaultPlatformDisplay::SetViewportSize(const gfx::Size& size) {
   platform_window_->SetBounds(gfx::Rect(size));
 }
 
-void DefaultDisplayManager::SetTitle(const base::string16& title) {
+void DefaultPlatformDisplay::SetTitle(const base::string16& title) {
   platform_window_->SetTitle(title);
 }
 
-void DefaultDisplayManager::SetCapture() {
+void DefaultPlatformDisplay::SetCapture() {
   platform_window_->SetCapture();
 }
 
-void DefaultDisplayManager::ReleaseCapture() {
+void DefaultPlatformDisplay::ReleaseCapture() {
   platform_window_->ReleaseCapture();
 }
 
-void DefaultDisplayManager::SetCursorById(int32_t cursor_id) {
+void DefaultPlatformDisplay::SetCursorById(int32_t cursor_id) {
 #if !defined(OS_ANDROID)
   // TODO(erg): This still isn't sufficient, and will only use native cursors
   // that chrome would use, not custom image cursors. For that, we should
@@ -256,29 +257,29 @@ void DefaultDisplayManager::SetCursorById(int32_t cursor_id) {
 #endif
 }
 
-const mojom::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
+const mojom::ViewportMetrics& DefaultPlatformDisplay::GetViewportMetrics() {
   return metrics_;
 }
 
-mojom::Rotation DefaultDisplayManager::GetRotation() {
+mojom::Rotation DefaultPlatformDisplay::GetRotation() {
   // TODO(sky): implement me.
   return mojom::Rotation::VALUE_0;
 }
 
-void DefaultDisplayManager::UpdateTextInputState(
+void DefaultPlatformDisplay::UpdateTextInputState(
     const ui::TextInputState& state) {
   ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();
   if (ime)
     ime->UpdateTextInputState(state);
 }
 
-void DefaultDisplayManager::SetImeVisibility(bool visible) {
+void DefaultPlatformDisplay::SetImeVisibility(bool visible) {
   ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();
   if (ime)
     ime->SetImeVisibility(visible);
 }
 
-void DefaultDisplayManager::Draw() {
+void DefaultPlatformDisplay::Draw() {
   if (!delegate_->GetRootWindow()->visible())
     return;
 
@@ -287,34 +288,34 @@ void DefaultDisplayManager::Draw() {
   frame_pending_ = true;
   if (top_level_display_client_) {
     top_level_display_client_->SubmitCompositorFrame(
-        std::move(frame), base::Bind(&DefaultDisplayManager::DidDraw,
+        std::move(frame), base::Bind(&DefaultPlatformDisplay::DidDraw,
                                      weak_factory_.GetWeakPtr()));
   }
   dirty_rect_ = gfx::Rect();
 }
 
-void DefaultDisplayManager::DidDraw() {
+void DefaultPlatformDisplay::DidDraw() {
   frame_pending_ = false;
   delegate_->OnCompositorFrameDrawn();
   if (!dirty_rect_.IsEmpty())
     WantToDraw();
 }
 
-bool DefaultDisplayManager::IsFramePending() const {
+bool DefaultPlatformDisplay::IsFramePending() const {
   return frame_pending_;
 }
 
-void DefaultDisplayManager::WantToDraw() {
+void DefaultPlatformDisplay::WantToDraw() {
   if (draw_timer_.IsRunning() || frame_pending_)
     return;
 
   draw_timer_.Start(
       FROM_HERE, base::TimeDelta(),
-      base::Bind(&DefaultDisplayManager::Draw, weak_factory_.GetWeakPtr()));
+      base::Bind(&DefaultPlatformDisplay::Draw, weak_factory_.GetWeakPtr()));
 }
 
-void DefaultDisplayManager::UpdateMetrics(const gfx::Size& size,
-                                          float device_pixel_ratio) {
+void DefaultPlatformDisplay::UpdateMetrics(const gfx::Size& size,
+                                           float device_pixel_ratio) {
   if (gfx::Display::HasForceDeviceScaleFactor())
     device_pixel_ratio = gfx::Display::GetForcedDeviceScaleFactor();
   if (metrics_.size_in_pixels.To<gfx::Size>() == size &&
@@ -331,7 +332,7 @@ void DefaultDisplayManager::UpdateMetrics(const gfx::Size& size,
 }
 
 scoped_ptr<cc::CompositorFrame>
-DefaultDisplayManager::GenerateCompositorFrame() {
+DefaultPlatformDisplay::GenerateCompositorFrame() {
   scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->damage_rect = dirty_rect_;
   render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels.To<gfx::Size>());
@@ -349,16 +350,16 @@ DefaultDisplayManager::GenerateCompositorFrame() {
   return frame;
 }
 
-void DefaultDisplayManager::OnBoundsChanged(const gfx::Rect& new_bounds) {
+void DefaultPlatformDisplay::OnBoundsChanged(const gfx::Rect& new_bounds) {
   UpdateMetrics(new_bounds.size(), metrics_.device_pixel_ratio);
 }
 
-void DefaultDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {
+void DefaultPlatformDisplay::OnDamageRect(const gfx::Rect& damaged_region) {
   dirty_rect_.Union(damaged_region);
   WantToDraw();
 }
 
-void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
+void DefaultPlatformDisplay::DispatchEvent(ui::Event* event) {
   // TODO(moshayedi): crbug.com/590226. Enable this after we support wheel
   // events in mus event dispatcher.
   if (event->IsMouseWheelEvent())
@@ -397,22 +398,22 @@ void DefaultDisplayManager::DispatchEvent(ui::Event* event) {
 #endif
 }
 
-void DefaultDisplayManager::OnCloseRequest() {
+void DefaultPlatformDisplay::OnCloseRequest() {
   platform_window_->Close();
 }
 
-void DefaultDisplayManager::OnClosed() {
+void DefaultPlatformDisplay::OnClosed() {
   delegate_->OnDisplayClosed();
 }
 
-void DefaultDisplayManager::OnWindowStateChanged(
+void DefaultPlatformDisplay::OnWindowStateChanged(
     ui::PlatformWindowState new_state) {}
 
-void DefaultDisplayManager::OnLostCapture() {
+void DefaultPlatformDisplay::OnLostCapture() {
   delegate_->OnNativeCaptureLost();
 }
 
-void DefaultDisplayManager::OnAcceleratedWidgetAvailable(
+void DefaultPlatformDisplay::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
   if (widget != gfx::kNullAcceleratedWidget) {
@@ -424,13 +425,13 @@ void DefaultDisplayManager::OnAcceleratedWidgetAvailable(
   UpdateMetrics(metrics_.size_in_pixels.To<gfx::Size>(), device_pixel_ratio);
 }
 
-void DefaultDisplayManager::OnAcceleratedWidgetDestroyed() {
+void DefaultPlatformDisplay::OnAcceleratedWidgetDestroyed() {
   NOTREACHED();
 }
 
-void DefaultDisplayManager::OnActivationChanged(bool active) {}
+void DefaultPlatformDisplay::OnActivationChanged(bool active) {}
 
-void DefaultDisplayManager::RequestCopyOfOutput(
+void DefaultPlatformDisplay::RequestCopyOfOutput(
     scoped_ptr<cc::CopyOutputRequest> output_request) {
   if (top_level_display_client_)
     top_level_display_client_->RequestCopyOfOutput(std::move(output_request));

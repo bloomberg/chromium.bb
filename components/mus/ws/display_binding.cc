@@ -2,28 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/ws/window_tree_host_connection.h"
+#include "components/mus/ws/display_binding.h"
 
 #include "components/mus/ws/connection_manager.h"
-#include "components/mus/ws/window_tree_host_impl.h"
+#include "components/mus/ws/display.h"
 #include "components/mus/ws/window_tree_impl.h"
 
 namespace mus {
 namespace ws {
 
-WindowTreeHostConnectionImpl::WindowTreeHostConnectionImpl(
-    mojo::InterfaceRequest<mojom::WindowTreeHost> request,
-    WindowTreeHostImpl* host_impl,
-    mojom::WindowTreeClientPtr client,
-    ConnectionManager* manager)
+DisplayBindingImpl::DisplayBindingImpl(mojom::WindowTreeHostRequest request,
+                                       Display* display,
+                                       mojom::WindowTreeClientPtr client,
+                                       ConnectionManager* manager)
     : connection_manager_(manager),
-      binding_(host_impl, std::move(request)),
+      binding_(display, std::move(request)),
       client_(std::move(client)) {}
 
-WindowTreeHostConnectionImpl::~WindowTreeHostConnectionImpl() {}
+DisplayBindingImpl::~DisplayBindingImpl() {}
 
-WindowTreeImpl* WindowTreeHostConnectionImpl::CreateWindowTree(
-    ServerWindow* root) {
+WindowTreeImpl* DisplayBindingImpl::CreateWindowTree(ServerWindow* root) {
   WindowTreeImpl* tree = connection_manager_->EmbedAtWindow(
       root, mojom::WindowTree::kAccessPolicyEmbedRoot, std::move(client_));
   tree->ConfigureWindowManager();

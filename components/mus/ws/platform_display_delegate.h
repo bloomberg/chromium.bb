@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_DISPLAY_MANAGER_DELEGATE_H_
-#define COMPONENTS_MUS_WS_DISPLAY_MANAGER_DELEGATE_H_
+#ifndef COMPONENTS_MUS_WS_PLATFORM_DISPLAY_DELEGATE_H_
+#define COMPONENTS_MUS_WS_PLATFORM_DISPLAY_DELEGATE_H_
 
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"
@@ -22,15 +22,15 @@ namespace ws {
 
 class ServerWindow;
 
-// A DisplayManagerDelegate an interface to be implemented by an object that
-// manages the lifetime of a DisplayManager, forwards events to the appropriate
-// windows, and responses to changes in viewport size.
-class DisplayManagerDelegate {
+// PlatformDisplayDelegate is implemented by an object that manages the
+// lifetime of a PlatformDisplay, forwards events to the appropriate windows,
+/// and responses to changes in viewport size.
+class PlatformDisplayDelegate {
  public:
   // Returns the root window of this display.
   virtual ServerWindow* GetRootWindow() = 0;
 
-  // Called when the window managed by the DisplayManager is closed.
+  // Called when the window managed by the PlatformDisplay is closed.
   virtual void OnDisplayClosed() = 0;
 
   // Called when an event arrives.
@@ -50,11 +50,11 @@ class DisplayManagerDelegate {
   virtual void OnCompositorFrameDrawn() = 0;
 
  protected:
-  virtual ~DisplayManagerDelegate() {}
+  virtual ~PlatformDisplayDelegate() {}
 };
 
 }  // namespace ws
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_WS_DISPLAY_MANAGER_DELEGATE_H_
+#endif  // COMPONENTS_MUS_WS_PLATFORM_DISPLAY_DELEGATE_H_

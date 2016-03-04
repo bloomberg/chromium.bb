@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_WS_DISPLAY_MANAGER_H_
-#define COMPONENTS_MUS_WS_DISPLAY_MANAGER_H_
+#ifndef COMPONENTS_MUS_WS_PLATFORM_DISPLAY_H_
+#define COMPONENTS_MUS_WS_PLATFORM_DISPLAY_H_
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "components/mus/ws/display_manager_delegate.h"
+#include "components/mus/ws/platform_display_delegate.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -52,22 +52,21 @@ class TopLevelDisplayClient;
 
 namespace ws {
 
-class DisplayManagerFactory;
 class EventDispatcher;
+class PlatformDisplayFactory;
 class ServerWindow;
 
-// DisplayManager is used to connect the root ServerWindow to a display.
-// TODO(sky): rename this given we have a mojom type with the same name now.
-class DisplayManager {
+// PlatformDisplay is used to connect the root ServerWindow to a display.
+class PlatformDisplay {
  public:
-  virtual ~DisplayManager() {}
+  virtual ~PlatformDisplay() {}
 
-  static DisplayManager* Create(
+  static PlatformDisplay* Create(
       mojo::Connector* connector,
       const scoped_refptr<GpuState>& gpu_state,
       const scoped_refptr<SurfacesState>& surfaces_state);
 
-  virtual void Init(DisplayManagerDelegate* delegate) = 0;
+  virtual void Init(PlatformDisplayDelegate* delegate) = 0;
 
   // Schedules a paint for the specified region in the coordinates of |window|.
   virtual void SchedulePaint(const ServerWindow* window,
@@ -98,27 +97,27 @@ class DisplayManager {
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
-  static void set_factory_for_testing(DisplayManagerFactory* factory) {
-    DisplayManager::factory_ = factory;
+  static void set_factory_for_testing(PlatformDisplayFactory* factory) {
+    PlatformDisplay::factory_ = factory;
   }
 
  private:
   // Static factory instance (always NULL for non-test).
-  static DisplayManagerFactory* factory_;
+  static PlatformDisplayFactory* factory_;
 };
 
-// DisplayManager implementation that connects to the services necessary to
+// PlatformDisplay implementation that connects to the services necessary to
 // actually display.
-class DefaultDisplayManager : public DisplayManager,
-                              public ui::PlatformWindowDelegate {
+class DefaultPlatformDisplay : public PlatformDisplay,
+                               public ui::PlatformWindowDelegate {
  public:
-  DefaultDisplayManager(mojo::Connector* connector,
-                        const scoped_refptr<GpuState>& gpu_state,
-                        const scoped_refptr<SurfacesState>& surfaces_state);
-  ~DefaultDisplayManager() override;
+  DefaultPlatformDisplay(mojo::Connector* connector,
+                         const scoped_refptr<GpuState>& gpu_state,
+                         const scoped_refptr<SurfacesState>& surfaces_state);
+  ~DefaultPlatformDisplay() override;
 
-  // DisplayManager:
-  void Init(DisplayManagerDelegate* delegate) override;
+  // PlatformDisplay:
+  void Init(PlatformDisplayDelegate* delegate) override;
   void SchedulePaint(const ServerWindow* window,
                      const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
@@ -165,7 +164,7 @@ class DefaultDisplayManager : public DisplayManager,
   mojo::Connector* connector_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;
-  DisplayManagerDelegate* delegate_;
+  PlatformDisplayDelegate* delegate_;
 
   mojom::ViewportMetrics metrics_;
   gfx::Rect dirty_rect_;
@@ -179,13 +178,13 @@ class DefaultDisplayManager : public DisplayManager,
   scoped_ptr<ui::CursorLoader> cursor_loader_;
 #endif
 
-  base::WeakPtrFactory<DefaultDisplayManager> weak_factory_;
+  base::WeakPtrFactory<DefaultPlatformDisplay> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultDisplayManager);
+  DISALLOW_COPY_AND_ASSIGN(DefaultPlatformDisplay);
 };
 
 }  // namespace ws
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_WS_DISPLAY_MANAGER_H_
+#endif  // COMPONENTS_MUS_WS_PLATFORM_DISPLAY_H_

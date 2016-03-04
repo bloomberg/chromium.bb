@@ -7,7 +7,7 @@
 namespace mus {
 namespace ws {
 
-void ConnectionManagerDelegate::OnFirstRootConnectionCreated() {}
+void ConnectionManagerDelegate::OnFirstDisplayReady() {}
 
 }  // namespace ws
 }  // namespace mus

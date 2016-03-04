@@ -34,9 +34,9 @@ namespace ws {
 
 class AccessPolicy;
 class ConnectionManager;
+class Display;
 class ServerWindow;
 class TargetedEvent;
-class WindowTreeHostImpl;
 class WindowTreeTest;
 
 namespace test {
@@ -98,16 +98,16 @@ class WindowTreeImpl : public mojom::WindowTree,
 
   bool is_embed_root() const { return is_embed_root_; }
 
-  const WindowTreeHostImpl* GetHost(const ServerWindow* window) const;
-  WindowTreeHostImpl* GetHost(const ServerWindow* window) {
-    return const_cast<WindowTreeHostImpl*>(
-        const_cast<const WindowTreeImpl*>(this)->GetHost(window));
+  const Display* GetDisplay(const ServerWindow* window) const;
+  Display* GetDisplay(const ServerWindow* window) {
+    return const_cast<Display*>(
+        const_cast<const WindowTreeImpl*>(this)->GetDisplay(window));
   }
 
   // Invoked when a connection is about to be destroyed.
   void OnWindowDestroyingTreeImpl(WindowTreeImpl* connection);
 
-  void OnWillDestroyWindowTreeHost(WindowTreeHostImpl* tree_host);
+  void OnWillDestroyDisplay(Display* display);
 
   // These functions are synchronous variants of those defined in the mojom. The
   // WindowTree implementations all call into these. See the mojom for details.
@@ -147,7 +147,7 @@ class WindowTreeImpl : public mojom::WindowTree,
       const gfx::Insets& new_client_area,
       const std::vector<gfx::Rect>& new_additional_client_areas,
       bool originated_change);
-  void ProcessViewportMetricsChanged(WindowTreeHostImpl* host,
+  void ProcessViewportMetricsChanged(Display* display,
                                      const mojom::ViewportMetrics& old_metrics,
                                      const mojom::ViewportMetrics& new_metrics,
                                      bool originated_change);
@@ -208,8 +208,8 @@ class WindowTreeImpl : public mojom::WindowTree,
     EMBED,
   };
 
-  // Used when this connection is associated with the window manager.
-  WindowTreeHostImpl* GetHostForWindowManager();
+  // Used when this tree is the window manager.
+  Display* GetDisplayForWindowManager();
 
   bool ShouldRouteToWindowManager(const ServerWindow* window) const;
 
@@ -396,8 +396,8 @@ class WindowTreeImpl : public mojom::WindowTree,
 
   uint32_t event_ack_id_;
 
-  // WindowTreeHostImpl the current event came from.
-  WindowTreeHostImpl* event_source_host_;
+  // Display the current event came from.
+  Display* event_source_display_;
 
   bool is_embed_root_;
 

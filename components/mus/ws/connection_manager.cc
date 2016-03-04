@@ -8,12 +8,12 @@
 #include "base/stl_util.h"
 #include "components/mus/ws/client_connection.h"
 #include "components/mus/ws/connection_manager_delegate.h"
+#include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_manager_state.h"
-#include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -30,7 +30,7 @@ ConnectionManager::ConnectionManager(
     : delegate_(delegate),
       surfaces_state_(surfaces_state),
       next_connection_id_(1),
-      next_host_id_(0),
+      next_root_id_(0),
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
@@ -40,37 +40,37 @@ ConnectionManager::ConnectionManager(
 ConnectionManager::~ConnectionManager() {
   in_destructor_ = true;
 
-  while (!pending_hosts_.empty())
-    DestroyHost(*pending_hosts_.begin());
-  DCHECK(pending_hosts_.empty());
+  while (!pending_displays_.empty())
+    DestroyDisplay(*pending_displays_.begin());
+  DCHECK(pending_displays_.empty());
 
-  // DestroyHost() removes from |hosts_| and deletes the WindowTreeHostImpl.
-  while (!hosts_.empty())
-    DestroyHost(*hosts_.begin());
-  DCHECK(hosts_.empty());
+  // DestroyDisplay() removes from |displays_| and deletes the Display.
+  while (!displays_.empty())
+    DestroyDisplay(*displays_.begin());
+  DCHECK(displays_.empty());
 
   tree_map_.clear();
 }
 
-void ConnectionManager::AddHost(WindowTreeHostImpl* host) {
-  DCHECK_EQ(0u, pending_hosts_.count(host));
-  pending_hosts_.insert(host);
+void ConnectionManager::AddDisplay(Display* display) {
+  DCHECK_EQ(0u, pending_displays_.count(display));
+  pending_displays_.insert(display);
 }
 
-void ConnectionManager::DestroyHost(WindowTreeHostImpl* host) {
+void ConnectionManager::DestroyDisplay(Display* display) {
   for (auto& pair : tree_map_)
-    pair.second->OnWillDestroyWindowTreeHost(host);
+    pair.second->OnWillDestroyDisplay(display);
 
-  if (pending_hosts_.count(host)) {
-    pending_hosts_.erase(host);
+  if (pending_displays_.count(display)) {
+    pending_displays_.erase(display);
   } else {
-    DCHECK(hosts_.count(host));
-    hosts_.erase(host);
+    DCHECK(displays_.count(display));
+    displays_.erase(display);
   }
-  delete host;
+  delete display;
 
   // If we have no more roots left, let the app know so it can terminate.
-  if (!hosts_.size() && !pending_hosts_.size())
+  if (!displays_.size() && !pending_displays_.size())
     delegate_->OnNoMoreRootConnections();
 }
 
@@ -88,9 +88,10 @@ ConnectionSpecificId ConnectionManager::GetAndAdvanceNextConnectionId() {
   return id;
 }
 
-uint16_t ConnectionManager::GetAndAdvanceNextHostId() {
-  const uint16_t id = next_host_id_++;
-  DCHECK_LT(id, next_host_id_);
+uint16_t ConnectionManager::GetAndAdvanceNextRootId() {
+  // TODO(sky): handle wrapping!
+  const uint16_t id = next_root_id_++;
+  DCHECK_LT(id, next_root_id_);
   return id;
 }
 
@@ -125,12 +126,12 @@ WindowTreeImpl* ConnectionManager::AddTree(
 }
 
 WindowTreeImpl* ConnectionManager::CreateTreeForWindowManager(
-    WindowTreeHostImpl* host,
+    Display* display,
     mojom::WindowManagerFactory* factory,
     ServerWindow* root) {
-  mojom::DisplayPtr display = DisplayForHost(host);
+  mojom::DisplayPtr display_ptr = DisplayToMojomDisplay(display);
   mojom::WindowTreeClientPtr tree_client;
-  factory->CreateWindowManager(std::move(display), GetProxy(&tree_client));
+  factory->CreateWindowManager(std::move(display_ptr), GetProxy(&tree_client));
   scoped_ptr<ws::WindowTreeImpl> tree_ptr(new ws::WindowTreeImpl(
       this, root, mojom::WindowTree::kAccessPolicyEmbedRoot));
   ws::WindowTreeImpl* tree = tree_ptr.get();
@@ -159,12 +160,12 @@ void ConnectionManager::DestroyTree(WindowTreeImpl* tree) {
     pair.second->OnWindowDestroyingTreeImpl(tree);
 
   // Notify the hosts, taking care to only notify each host once.
-  std::set<WindowTreeHostImpl*> hosts_notified;
+  std::set<Display*> displays_notified;
   for (auto* root : tree->roots()) {
-    WindowTreeHostImpl* host = GetWindowTreeHostByWindow(root);
-    if (host && hosts_notified.count(host) == 0) {
-      host->OnWindowTreeConnectionError(tree);
-      hosts_notified.insert(host);
+    Display* display = GetDisplayContaining(root);
+    if (display && displays_notified.count(display) == 0) {
+      display->OnWindowTreeConnectionError(tree);
+      displays_notified.insert(display);
     }
   }
 
@@ -186,11 +187,10 @@ WindowTreeImpl* ConnectionManager::GetConnection(
 }
 
 ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
-  // kInvalidConnectionId is used for WindowTreeHost and WindowManager root
-  // nodes.
+  // kInvalidConnectionId is used for Display and WindowManager nodes.
   if (id.connection_id == kInvalidConnectionId) {
-    for (WindowTreeHostImpl* host : hosts_) {
-      ServerWindow* window = host->GetRootWithId(id);
+    for (Display* display : displays_) {
+      ServerWindow* window = display->GetRootWithId(id);
       if (window)
         return window;
     }
@@ -201,21 +201,20 @@ ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
 
 void ConnectionManager::SchedulePaint(const ServerWindow* window,
                                       const gfx::Rect& bounds) {
-  for (WindowTreeHostImpl* host : hosts_) {
-    if (host->SchedulePaintIfInViewport(window, bounds))
+  for (Display* display : displays_) {
+    if (display->SchedulePaintIfInViewport(window, bounds))
       return;
   }
 }
 
-void ConnectionManager::OnWindowTreeHostDisplayAvailable(
-    WindowTreeHostImpl* host) {
-  DCHECK_NE(0u, pending_hosts_.count(host));
-  DCHECK_EQ(0u, hosts_.count(host));
-  const bool is_first_connection = hosts_.empty();
-  hosts_.insert(host);
-  pending_hosts_.erase(host);
-  if (is_first_connection)
-    delegate_->OnFirstRootConnectionCreated();
+void ConnectionManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {
+  DCHECK_NE(0u, pending_displays_.count(display));
+  DCHECK_EQ(0u, displays_.count(display));
+  const bool is_first_display = displays_.empty();
+  displays_.insert(display);
+  pending_displays_.erase(display);
+  if (is_first_display)
+    delegate_->OnFirstDisplayReady();
 }
 
 void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
@@ -230,12 +229,12 @@ bool ConnectionManager::DidConnectionMessageClient(
 
 mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
     const ServerWindow* window) {
-  WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
-  if (host)
-    return host->GetViewportMetrics().Clone();
+  Display* display = GetDisplayContaining(window);
+  if (display)
+    return display->GetViewportMetrics().Clone();
 
-  if (!hosts_.empty())
-    return (*hosts_.begin())->GetViewportMetrics().Clone();
+  if (!displays_.empty())
+    return (*displays_.begin())->GetViewportMetrics().Clone();
 
   mojom::ViewportMetricsPtr metrics = mojom::ViewportMetrics::New();
   metrics->size_in_pixels = mojo::Size::New();
@@ -253,58 +252,57 @@ const WindowTreeImpl* ConnectionManager::GetConnectionWithRoot(
   return nullptr;
 }
 
-WindowManagerAndHostConst ConnectionManager::GetWindowManagerAndHost(
+WindowManagerAndDisplayConst ConnectionManager::GetWindowManagerAndDisplay(
     const ServerWindow* window) const {
   const ServerWindow* last = window;
   while (window && window->parent()) {
     last = window;
     window = window->parent();
   }
-  for (WindowTreeHostImpl* host : hosts_) {
-    if (window == host->root_window()) {
-      WindowManagerAndHostConst result;
-      result.window_tree_host = host;
-      result.window_manager_state = host->GetWindowManagerStateWithRoot(last);
+  for (Display* display : displays_) {
+    if (window == display->root_window()) {
+      WindowManagerAndDisplayConst result;
+      result.display = display;
+      result.window_manager_state =
+          display->GetWindowManagerStateWithRoot(last);
       return result;
     }
   }
-  return WindowManagerAndHostConst();
+  return WindowManagerAndDisplayConst();
 }
 
-WindowManagerAndHost ConnectionManager::GetWindowManagerAndHost(
+WindowManagerAndDisplay ConnectionManager::GetWindowManagerAndDisplay(
     const ServerWindow* window) {
-  WindowManagerAndHostConst result_const =
-      const_cast<const ConnectionManager*>(this)->GetWindowManagerAndHost(
+  WindowManagerAndDisplayConst result_const =
+      const_cast<const ConnectionManager*>(this)->GetWindowManagerAndDisplay(
           window);
-  WindowManagerAndHost result;
-  result.window_tree_host =
-      const_cast<WindowTreeHostImpl*>(result_const.window_tree_host);
+  WindowManagerAndDisplay result;
+  result.display = const_cast<Display*>(result_const.display);
   result.window_manager_state =
       const_cast<WindowManagerState*>(result_const.window_manager_state);
   return result;
 }
 
-WindowTreeHostImpl* ConnectionManager::GetWindowTreeHostByWindow(
-    const ServerWindow* window) {
-  return const_cast<WindowTreeHostImpl*>(
-      static_cast<const ConnectionManager*>(this)
-          ->GetWindowTreeHostByWindow(window));
+Display* ConnectionManager::GetDisplayContaining(const ServerWindow* window) {
+  return const_cast<Display*>(
+      static_cast<const ConnectionManager*>(this)->GetDisplayContaining(
+          window));
 }
 
-const WindowTreeHostImpl* ConnectionManager::GetWindowTreeHostByWindow(
+const Display* ConnectionManager::GetDisplayContaining(
     const ServerWindow* window) const {
   while (window && window->parent())
     window = window->parent();
-  for (WindowTreeHostImpl* host : hosts_) {
-    if (window == host->root_window())
-      return host;
+  for (Display* display : displays_) {
+    if (window == display->root_window())
+      return display;
   }
   return nullptr;
 }
 
-WindowTreeHostImpl* ConnectionManager::GetActiveWindowTreeHost() {
+Display* ConnectionManager::GetActiveDisplay() {
   // TODO(sky): this isn't active, but first. Make it active.
-  return hosts_.size() ? *hosts_.begin() : nullptr;
+  return displays_.size() ? *displays_.begin() : nullptr;
 }
 
 void ConnectionManager::AddDisplayManagerBinding(
@@ -313,13 +311,13 @@ void ConnectionManager::AddDisplayManagerBinding(
 }
 
 void ConnectionManager::OnFirstWindowManagerFactorySet() {
-  if (!hosts_.empty() || !pending_hosts_.empty())
+  if (!displays_.empty() || !pending_displays_.empty())
     return;
 
-  // We've been supplied a WindowManagerFactory and no windowtreehosts have been
-  // created yet. Treat this as a signal to create a WindowTreeHost.
+  // We've been supplied a WindowManagerFactory and no displays have been
+  // created yet. Treat this as a signal to create a Display.
   // TODO(sky): we need a better way to determine this, most likely a switch.
-  delegate_->CreateDefaultWindowTreeHosts();
+  delegate_->CreateDefaultDisplays();
 }
 
 uint32_t ConnectionManager::GenerateWindowManagerChangeId(
@@ -371,32 +369,32 @@ void ConnectionManager::WindowManagerCreatedTopLevelWindow(
       window_manager_change_id, change.client_change_id, window);
 }
 
-mojom::DisplayPtr ConnectionManager::DisplayForHost(WindowTreeHostImpl* host) {
+mojom::DisplayPtr ConnectionManager::DisplayToMojomDisplay(Display* display) {
   size_t i = 0;
   int next_x = 0;
-  for (WindowTreeHostImpl* host2 : hosts_) {
-    const ServerWindow* root = host->root_window();
-    if (host == host2) {
-      mojom::DisplayPtr display = mojom::Display::New();
-      display = mojom::Display::New();
-      display->id = host->id();
-      display->bounds = mojo::Rect::New();
-      display->bounds->x = next_x;
-      display->bounds->y = 0;
-      display->bounds->width = root->bounds().size().width();
-      display->bounds->height = root->bounds().size().height();
+  for (Display* display2 : displays_) {
+    const ServerWindow* root = display->root_window();
+    if (display == display2) {
+      mojom::DisplayPtr display_ptr = mojom::Display::New();
+      display_ptr = mojom::Display::New();
+      display_ptr->id = display->id();
+      display_ptr->bounds = mojo::Rect::New();
+      display_ptr->bounds->x = next_x;
+      display_ptr->bounds->y = 0;
+      display_ptr->bounds->width = root->bounds().size().width();
+      display_ptr->bounds->height = root->bounds().size().height();
       // TODO(sky): window manager needs an API to set the work area.
-      display->work_area = display->bounds.Clone();
-      display->device_pixel_ratio =
-          host->GetViewportMetrics().device_pixel_ratio;
-      display->rotation = host->GetRotation();
+      display_ptr->work_area = display_ptr->bounds.Clone();
+      display_ptr->device_pixel_ratio =
+          display->GetViewportMetrics().device_pixel_ratio;
+      display_ptr->rotation = display->GetRotation();
       // TODO(sky): make this real.
-      display->is_primary = i == 0;
+      display_ptr->is_primary = i == 0;
       // TODO(sky): make this real.
-      display->touch_support = mojom::TouchSupport::UNKNOWN;
-      display->frame_decoration_values =
-          host->frame_decoration_values().Clone();
-      return display;
+      display_ptr->touch_support = mojom::TouchSupport::UNKNOWN;
+      display_ptr->frame_decoration_values =
+          display->frame_decoration_values().Clone();
+      return display_ptr;
     }
     next_x += root->bounds().size().width();
     ++i;
@@ -483,26 +481,25 @@ void ConnectionManager::ProcessWillChangeWindowPredefinedCursor(
   }
 
   // Pass the cursor change to the native window.
-  WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
-  if (host)
-    host->OnCursorUpdated(window);
+  Display* display = GetDisplayContaining(window);
+  if (display)
+    display->OnCursorUpdated(window);
 }
 
 void ConnectionManager::ProcessViewportMetricsChanged(
-    WindowTreeHostImpl* host,
+    Display* display,
     const mojom::ViewportMetrics& old_metrics,
     const mojom::ViewportMetrics& new_metrics) {
   for (auto& pair : tree_map_) {
-    pair.second->ProcessViewportMetricsChanged(host, old_metrics, new_metrics,
-                                               IsOperationSource(pair.first));
+    pair.second->ProcessViewportMetricsChanged(
+        display, old_metrics, new_metrics, IsOperationSource(pair.first));
   }
 
   if (!got_valid_frame_decorations_)
     return;
 }
 
-void ConnectionManager::ProcessFrameDecorationValuesChanged(
-    WindowTreeHostImpl* host) {
+void ConnectionManager::ProcessFrameDecorationValuesChanged(Display* display) {
   if (!got_valid_frame_decorations_) {
     got_valid_frame_decorations_ = true;
     display_manager_observers_.ForAllPtrs([this](
@@ -511,8 +508,8 @@ void ConnectionManager::ProcessFrameDecorationValuesChanged(
   }
 
   display_manager_observers_.ForAllPtrs(
-      [this, &host](mojom::DisplayManagerObserver* observer) {
-        CallOnDisplayChanged(observer, host);
+      [this, &display](mojom::DisplayManagerObserver* observer) {
+        CallOnDisplayChanged(observer, display);
       });
 }
 
@@ -545,19 +542,19 @@ void ConnectionManager::FinishOperation() {
 
 void ConnectionManager::MaybeUpdateNativeCursor(ServerWindow* window) {
   // This can be null in unit tests.
-  WindowTreeHostImpl* impl = GetWindowTreeHostByWindow(window);
-  if (impl)
-    impl->MaybeChangeCursorOnWindowTreeChange();
+  Display* display = GetDisplayContaining(window);
+  if (display)
+    display->MaybeChangeCursorOnWindowTreeChange();
 }
 
 void ConnectionManager::CallOnDisplays(
     mojom::DisplayManagerObserver* observer) {
-  mojo::Array<mojom::DisplayPtr> displays(hosts_.size());
+  mojo::Array<mojom::DisplayPtr> displays(displays_.size());
   {
     size_t i = 0;
     // TODO(sky): need ordering!
-    for (WindowTreeHostImpl* host : hosts_) {
-      displays[i] = DisplayForHost(host);
+    for (Display* display : displays_) {
+      displays[i] = DisplayToMojomDisplay(display);
       ++i;
     }
   }
@@ -566,9 +563,9 @@ void ConnectionManager::CallOnDisplays(
 
 void ConnectionManager::CallOnDisplayChanged(
     mojom::DisplayManagerObserver* observer,
-    WindowTreeHostImpl* host) {
+    Display* display) {
   mojo::Array<mojom::DisplayPtr> displays(1);
-  displays[0] = DisplayForHost(host);
+  displays[0] = DisplayToMojomDisplay(display);
   display_manager_observers_.ForAllPtrs(
       [&displays](mojom::DisplayManagerObserver* observer) {
         observer->OnDisplaysChanged(displays.Clone());
@@ -586,14 +583,14 @@ void ConnectionManager::OnScheduleWindowPaint(const ServerWindow* window) {
 
 const ServerWindow* ConnectionManager::GetRootWindow(
     const ServerWindow* window) const {
-  const WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
-  return host ? host->root_window() : nullptr;
+  const Display* display = GetDisplayContaining(window);
+  return display ? display->root_window() : nullptr;
 }
 
 void ConnectionManager::ScheduleSurfaceDestruction(ServerWindow* window) {
-  for (WindowTreeHostImpl* host : hosts_) {
-    if (host->root_window()->Contains(window)) {
-      host->ScheduleSurfaceDestruction(window);
+  for (Display* display : displays_) {
+    if (display->root_window()->Contains(window)) {
+      display->ScheduleSurfaceDestruction(window);
       break;
     }
   }
@@ -605,9 +602,10 @@ ServerWindow* ConnectionManager::FindWindowForSurface(
     const ClientWindowId& client_window_id) {
   WindowTreeImpl* window_tree;
   if (ancestor->id().connection_id == kInvalidConnectionId) {
-    WindowManagerAndHost wm_and_host = GetWindowManagerAndHost(ancestor);
-    window_tree = wm_and_host.window_manager_state
-                      ? wm_and_host.window_manager_state->tree()
+    WindowManagerAndDisplay wm_and_display =
+        GetWindowManagerAndDisplay(ancestor);
+    window_tree = wm_and_display.window_manager_state
+                      ? wm_and_display.window_manager_state->tree()
                       : nullptr;
   } else {
     window_tree = GetConnection(ancestor->id().connection_id);
@@ -730,8 +728,8 @@ void ConnectionManager::OnWindowSharedPropertyChanged(
 void ConnectionManager::OnWindowTextInputStateChanged(
     ServerWindow* window,
     const ui::TextInputState& state) {
-  WindowTreeHostImpl* host = GetWindowTreeHostByWindow(window);
-  host->UpdateTextInputState(window, state);
+  Display* display = GetDisplayContaining(window);
+  display->UpdateTextInputState(window, state);
 }
 
 void ConnectionManager::OnTransientWindowAdded(ServerWindow* window,

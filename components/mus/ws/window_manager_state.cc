@@ -10,31 +10,30 @@
 namespace mus {
 namespace ws {
 
-WindowManagerState::WindowManagerState(WindowTreeHostImpl* tree_host)
-    : WindowManagerState(tree_host, false, 0u) {}
+WindowManagerState::WindowManagerState(Display* display)
+    : WindowManagerState(display, false, 0u) {}
 
-WindowManagerState::WindowManagerState(WindowTreeHostImpl* tree_host,
-                                       uint32_t user_id)
-    : WindowManagerState(tree_host, true, user_id) {}
+WindowManagerState::WindowManagerState(Display* display, uint32_t user_id)
+    : WindowManagerState(display, true, user_id) {}
 
 WindowManagerState::~WindowManagerState() {}
 
-WindowManagerState::WindowManagerState(WindowTreeHostImpl* tree_host,
+WindowManagerState::WindowManagerState(Display* display,
                                        bool is_user_id_valid,
                                        uint32_t user_id)
-    : tree_host_(tree_host),
+    : display_(display),
       is_user_id_valid_(is_user_id_valid),
       user_id_(user_id) {
-  ConnectionManager* connection_manager = tree_host_->connection_manager();
+  ConnectionManager* connection_manager = display_->connection_manager();
   root_.reset(connection_manager->CreateServerWindow(
-      RootWindowId(connection_manager->GetAndAdvanceNextHostId()),
+      RootWindowId(connection_manager->GetAndAdvanceNextRootId()),
       ServerWindow::Properties()));
-  // Our root is always a child of the WindowTreeHostImpl's root. Do this
+  // Our root is always a child of the Display's root. Do this
   // before the WindowTree has been created so that the client doesn't get
   // notified of the add, bounds change and visibility change.
-  root_->SetBounds(gfx::Rect(tree_host->root_window()->bounds().size()));
+  root_->SetBounds(gfx::Rect(display->root_window()->bounds().size()));
   root_->SetVisible(true);
-  tree_host->root_window()->Add(root_.get());
+  display->root_window()->Add(root_.get());
 }
 
 }  // namespace ws

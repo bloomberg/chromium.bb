@@ -26,13 +26,14 @@ namespace ws {
 
 class ClientConnection;
 class ConnectionManager;
+class Display;
 class ServerWindow;
-class WindowTreeHostImpl;
 class WindowTreeImpl;
 
 class ConnectionManagerDelegate {
  public:
-  virtual void OnFirstRootConnectionCreated();
+  // Called once when the AcceleratedWidget of a Display is available.
+  virtual void OnFirstDisplayReady();
 
   virtual void OnNoMoreRootConnections() = 0;
 
@@ -44,9 +45,9 @@ class ConnectionManagerDelegate {
       mojom::WindowTreeRequest tree_request,
       mojom::WindowTreeClientPtr client) = 0;
 
-  // Called if no WindowTreeHosts have been created, but a
-  // WindowManagerFactory has been set.
-  virtual void CreateDefaultWindowTreeHosts() = 0;
+  // Called if no Displays have been created, but a WindowManagerFactory has
+  // been set.
+  virtual void CreateDefaultDisplays() = 0;
 
  protected:
   virtual ~ConnectionManagerDelegate() {}
