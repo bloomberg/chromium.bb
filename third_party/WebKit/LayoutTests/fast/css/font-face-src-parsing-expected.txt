@@ -7,11 +7,9 @@ Valid rules form the stylesheet:
 @font-face { src: url("font.svg#id"); }
 @font-face { src: url("font.ttf") format("truetype"); }
 @font-face { src: url("font.woff") format("woff"), local("font2"); }
-@font-face { src: url("font2.ttf"); }
-@font-face { src: url("font2.ttf") format("truetype"); }
-@font-face { src: url("font3.otf") format("opentype"), local("foo bar"); }
-@font-face { src: url("http://w/%EA%AA%AA/1b%EA%AA%AA.ttf"); }
-@font-face { src: url("http://w/%EA%AA%AA/1b%EA%AA%AA.ttf"); }
+@font-face { src: url("font.ttf") format("truetype"), url("font2.ttf"); }
+@font-face { src: url("font.ttf"), url("font2.ttf") format("truetype"); }
+@font-face { src: url("font.ttf"), local("font2"), url("font3.otf") format("opentype"), local("foo bar"); }
 @font-face { src: local("foo"); }
 @font-face { src: local("font"), local("foo bar"); }
 @font-face { src: local("foo"); }
@@ -30,11 +28,10 @@ Expected result for valid rules:
 @font-face { src: url("font.svg#id"); }
 @font-face { src: url("font.ttf") format("truetype"); }
 @font-face { src: url("font.woff") format("woff"), local("font2"); }
-@font-face { src: url("font2.ttf"); }
-@font-face { src: url("font2.ttf") format("truetype"); }
+@font-face { src: url("font.ttf") format("truetype"), url("font2.ttf"); }
+@font-face { src: url("font.ttf"), url("font2.ttf") format("truetype"); }
+@font-face { src: url("font.ttf"), local("font2"), url("font3.otf") format("opentype"), local("foo bar"); }
 @font-face { src: url("font3.otf") format("opentype"), local("foo bar"); }
-@font-face { src: url("http://w/%EA%AA%AA/1b%EA%AA%AA.ttf"); }
-@font-face { src: url("http://w/%EA%AA%AA/1b%EA%AA%AA.ttf"); }
 @font-face { src: local("foo"); }
 @font-face { src: local("font"), local("foo bar"); }
 @font-face { src: local("foo"); }

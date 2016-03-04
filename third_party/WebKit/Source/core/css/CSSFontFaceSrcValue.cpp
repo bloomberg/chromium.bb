@@ -47,7 +47,7 @@ bool CSSFontFaceSrcValue::isSupportedFormat() const
     // Normally we would just check the format, but in order to avoid conflicts with the old WinIE style of font-face,
     // we will also check to see if the URL ends with .eot.  If so, we'll go ahead and assume that we shouldn't load it.
     if (m_format.isEmpty())
-        return m_resource.startsWith("data:", TextCaseInsensitive) || !m_resource.endsWith(".eot", TextCaseInsensitive);
+        return m_absoluteResource.startsWith("data:", TextCaseInsensitive) || !m_absoluteResource.endsWith(".eot", TextCaseInsensitive);
 
     return FontCustomPlatformData::supportsFormat(m_format);
 }
@@ -57,10 +57,10 @@ String CSSFontFaceSrcValue::customCSSText() const
     StringBuilder result;
     if (isLocal()) {
         result.appendLiteral("local(");
-        result.append(serializeString(m_resource));
+        result.append(serializeString(m_absoluteResource));
         result.appendLiteral(")");
     } else {
-        result.append(serializeURI(m_resource));
+        result.append(serializeURI(m_specifiedResource));
     }
     if (!m_format.isEmpty()) {
         result.appendLiteral(" format(");
@@ -88,7 +88,7 @@ static void setCrossOriginAccessControl(FetchRequest& request, SecurityOrigin* s
 FontResource* CSSFontFaceSrcValue::fetch(Document* document)
 {
     if (!m_fetched) {
-        FetchRequest request(ResourceRequest(document->completeURL(m_resource)), FetchInitiatorTypeNames::css);
+        FetchRequest request(ResourceRequest(m_absoluteResource), FetchInitiatorTypeNames::css);
         request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
         SecurityOrigin* securityOrigin = document->securityOrigin();
         setCrossOriginAccessControl(request, securityOrigin);
@@ -110,7 +110,7 @@ void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(Document* document)
     ASSERT(m_fetched);
     ASSERT(document && document->fetcher());
 
-    const String resourceURL = document->completeURL(m_resource);
+    const String resourceURL = document->completeURL(m_absoluteResource);
     if (document->fetcher()->cachedResource(KURL(ParsedURLString, resourceURL)))
         return;
 
@@ -123,7 +123,7 @@ void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(Document* document)
 
 bool CSSFontFaceSrcValue::equals(const CSSFontFaceSrcValue& other) const
 {
-    return m_isLocal == other.m_isLocal && m_format == other.m_format && m_resource == other.m_resource;
+    return m_isLocal == other.m_isLocal && m_format == other.m_format && m_specifiedResource == other.m_specifiedResource && m_absoluteResource == other.m_absoluteResource;
 }
 
 } // namespace blink

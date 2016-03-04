@@ -3928,7 +3928,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontFaceSrcURI(CSSParserTokenRang
     String url = consumeUrl(range);
     if (url.isNull())
         return nullptr;
-    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(context.completeURL(url), context.shouldCheckContentSecurityPolicy()));
+    RefPtrWillBeRawPtr<CSSFontFaceSrcValue> uriValue(CSSFontFaceSrcValue::create(url, context.completeURL(url), context.shouldCheckContentSecurityPolicy()));
     uriValue->setReferrer(context.referrer());
 
     if (range.peek().functionId() != CSSValueFormat)

@@ -39,16 +39,16 @@ class Document;
 
 class CSSFontFaceSrcValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> create(const String& resource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
+    static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> create(const String& specifiedResource, const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
     {
-        return adoptRefWillBeNoop(new CSSFontFaceSrcValue(resource, false, shouldCheckContentSecurityPolicy));
+        return adoptRefWillBeNoop(new CSSFontFaceSrcValue(specifiedResource, absoluteResource, false, shouldCheckContentSecurityPolicy));
     }
-    static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> createLocal(const String& resource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
+    static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> createLocal(const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
     {
-        return adoptRefWillBeNoop(new CSSFontFaceSrcValue(resource, true, shouldCheckContentSecurityPolicy));
+        return adoptRefWillBeNoop(new CSSFontFaceSrcValue(emptyString(), absoluteResource, true, shouldCheckContentSecurityPolicy));
     }
 
-    const String& resource() const { return m_resource; }
+    const String& resource() const { return m_absoluteResource; }
     const String& format() const { return m_format; }
     bool isLocal() const { return m_isLocal; }
 
@@ -72,9 +72,10 @@ public:
     }
 
 private:
-    CSSFontFaceSrcValue(const String& resource, bool local, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
+    CSSFontFaceSrcValue(const String& specifiedResource, const String& absoluteResource, bool local, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
         : CSSValue(FontFaceSrcClass)
-        , m_resource(resource)
+        , m_absoluteResource(absoluteResource)
+        , m_specifiedResource(specifiedResource)
         , m_isLocal(local)
         , m_shouldCheckContentSecurityPolicy(shouldCheckContentSecurityPolicy)
     {
@@ -82,7 +83,8 @@ private:
 
     void restoreCachedResourceIfNeeded(Document*);
 
-    String m_resource;
+    String m_absoluteResource;
+    String m_specifiedResource;
     String m_format;
     Referrer m_referrer;
     bool m_isLocal;
