@@ -18,6 +18,7 @@ _RESOURCES_DIR = os.path.join(_SRC_DIR, "ui", "webui", "resources", "js")
 _ASSERT_JS = os.path.join(_RESOURCES_DIR, "assert.js")
 _CR_JS = os.path.join(_RESOURCES_DIR, "cr.js")
 _CR_UI_JS = os.path.join(_RESOURCES_DIR, "cr", "ui.js")
+_PROMISE_RESOLVER_JS = os.path.join(_RESOURCES_DIR, "promise_resolver.js")
 _POLYMER_EXTERNS = os.path.join(_SRC_DIR, "third_party", "polymer", "v1_0",
                                 "components-chromium", "polymer-externs",
                                 "polymer.externs.js")
@@ -31,7 +32,8 @@ _COMMON_CLOSURE_ARGS = _GYPI_DICT["closure_args"] + \
 
 class CompilerTest(unittest.TestCase):
   _ASSERT_DEFINITION = Processor(_ASSERT_JS).contents
-  _CR_DEFINE_DEFINITION = Processor(_CR_JS).contents
+  _CR_DEFINE_DEFINITION = (Processor(_PROMISE_RESOLVER_JS).contents +
+                           Processor(_CR_JS).contents)
   _CR_UI_DECORATE_DEFINITION = Processor(_CR_UI_JS).contents
 
   def setUp(self):
