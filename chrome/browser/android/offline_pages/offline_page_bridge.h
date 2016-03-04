@@ -33,7 +33,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
   void OfflinePageModelChanged(OfflinePageModel* model) override;
-  void OfflinePageDeleted(int64_t bookmark_id) override;
+  void OfflinePageDeleted(int64_t offline_id) override;
 
   void GetAllPages(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
@@ -43,10 +43,16 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_result_obj);
 
-  base::android::ScopedJavaLocalRef<jobject> GetPageByBookmarkId(
+  base::android::ScopedJavaLocalRef<jlongArray> GetOfflineIdsForClientId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jlong bookmark_id);
+      const base::android::JavaParamRef<jstring>& j_client_id_namespace,
+      const base::android::JavaParamRef<jstring>& j_client_id);
+
+  base::android::ScopedJavaLocalRef<jobject> GetPageByOfflineId(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong offline_id);
 
   base::android::ScopedJavaLocalRef<jobject> GetPageByOnlineURL(
       JNIEnv* env,
@@ -58,26 +64,28 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_offline_url);
 
-  void SavePage(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& obj,
-                const base::android::JavaParamRef<jobject>& j_callback_obj,
-                const base::android::JavaParamRef<jobject>& j_web_contents,
-                jlong bookmark_id);
+  void SavePage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_callback_obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents,
+      const base::android::JavaParamRef<jstring>& j_client_id_namespace,
+      const base::android::JavaParamRef<jstring>& j_client_id);
 
   void MarkPageAccessed(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        jlong bookmark_id);
+                        jlong offline_id);
 
   void DeletePage(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
                   const base::android::JavaParamRef<jobject>& j_callback_obj,
-                  jlong bookmark_id);
+                  jlong offline_id);
 
   void DeletePages(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_callback_obj,
-      const base::android::JavaParamRef<jlongArray>& bookmark_ids_array);
+      const base::android::JavaParamRef<jlongArray>& j_offline_ids_array);
 
   void CheckMetadataConsistency(
       JNIEnv* env,

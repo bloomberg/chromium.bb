@@ -108,8 +108,6 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         OfflinePageItem offlinePage = allPages.get(0);
         assertEquals("Offline pages count incorrect.", 1, allPages.size());
         assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
-        assertEquals("Offline page item bookmark ID incorrect.", BOOKMARK_ID,
-                offlinePage.getBookmarkId());
         assertTrue("Offline page item offline file url doesn't start properly.",
                 offlinePage.getOfflineUrl().startsWith("file:///"));
         assertTrue("Offline page item offline file doesn't have the right name.",
@@ -227,8 +225,6 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         savePage(SavePageResult.SUCCESS, mTestPage);
         OfflinePageItem offlinePage = mOfflinePageBridge.getPageByBookmarkId(BOOKMARK_ID);
         assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
-        assertEquals("Offline page item bookmark ID incorrect.", BOOKMARK_ID,
-                offlinePage.getBookmarkId());
         assertTrue("Offline page item offline file url doesn't start properly.",
                 offlinePage.getOfflineUrl().startsWith("file:///"));
         assertTrue("Offline page item offline file doesn't have the right name.",
@@ -277,7 +273,8 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                 mOfflinePageBridge.savePage(getActivity().getActivityTab().getWebContents(),
                         BOOKMARK_ID, new SavePageCallback() {
                             @Override
-                            public void onSavePageDone(int savePageResult, String url) {
+                            public void onSavePageDone(
+                                    int savePageResult, String url, long offlineId) {
                                 assertEquals(
                                         "Requested and returned URLs differ.", expectedUrl, url);
                                 assertEquals(

@@ -40,19 +40,19 @@ void OfflinePageTestStore::AddOrUpdateOfflinePage(
   last_saved_page_ = offline_page;
   bool result = scenario_ != TestScenario::WRITE_FAILED;
   if (result)
-    offline_pages_[offline_page.bookmark_id] = offline_page;
+    offline_pages_[offline_page.offline_id] = offline_page;
   if (!callback.is_null())
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
 void OfflinePageTestStore::RemoveOfflinePages(
-    const std::vector<int64_t>& bookmark_ids,
+    const std::vector<int64_t>& offline_ids,
     const UpdateCallback& callback) {
-  ASSERT_FALSE(bookmark_ids.empty());
+  ASSERT_FALSE(offline_ids.empty());
   bool result = false;
   if (scenario_ != TestScenario::REMOVE_FAILED) {
-    for (const auto& bookmark_id : bookmark_ids) {
-      auto iter = offline_pages_.find(bookmark_id);
+    for (const auto& offline_id : offline_ids) {
+      auto iter = offline_pages_.find(offline_id);
       if (iter != offline_pages_.end()) {
         offline_pages_.erase(iter);
         result = true;
@@ -69,9 +69,9 @@ void OfflinePageTestStore::Reset(const ResetCallback& callback) {
 }
 
 void OfflinePageTestStore::UpdateLastAccessTime(
-    int64_t bookmark_id,
+    int64_t offline_id,
     const base::Time& last_access_time) {
-  auto iter = offline_pages_.find(bookmark_id);
+  auto iter = offline_pages_.find(offline_id);
   if (iter == offline_pages_.end())
     return;
   iter->second.last_access_time = last_access_time;

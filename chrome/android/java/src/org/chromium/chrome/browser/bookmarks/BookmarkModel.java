@@ -235,7 +235,7 @@ public class BookmarkModel extends BookmarkBridge {
                     webContents.isIncognito());
             mOfflinePageBridge.savePage(webContents, bookmarkId, new SavePageCallback() {
                 @Override
-                public void onSavePageDone(int savePageResult, String url) {
+                public void onSavePageDone(int savePageResult, String url, long offlineId) {
                     int saveResult;
                     if (savePageResult == SavePageResult.SUCCESS) {
                         saveResult = AddBookmarkCallback.SAVED;

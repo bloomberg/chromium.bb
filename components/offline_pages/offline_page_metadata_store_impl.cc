@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/proto/offline_pages.pb.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -41,7 +42,7 @@ void OfflinePageItemToEntry(const OfflinePageItem& item,
                             offline_pages::OfflinePageEntry* item_proto) {
   DCHECK(item_proto);
   item_proto->set_url(item.url.spec());
-  item_proto->set_bookmark_id(item.bookmark_id);
+  item_proto->set_offline_id(item.offline_id);
   item_proto->set_version(item.version);
   std::string path_string;
 #if defined(OS_POSIX)
@@ -56,17 +57,21 @@ void OfflinePageItemToEntry(const OfflinePageItem& item,
   item_proto->set_access_count(item.access_count);
   item_proto->set_flags(
       static_cast<::offline_pages::OfflinePageEntry_Flags>(item.flags));
+  item_proto->set_client_id_name_space(item.client_id.name_space);
+  item_proto->set_client_id(item.client_id.id);
 }
 
 bool OfflinePageItemFromEntry(const offline_pages::OfflinePageEntry& item_proto,
                               OfflinePageItem* item) {
   DCHECK(item);
-  if (!item_proto.has_url() || !item_proto.has_bookmark_id() ||
-      !item_proto.has_version() || !item_proto.has_file_path()) {
+  bool has_offline_id =
+      item_proto.has_offline_id() || item_proto.has_deprecated_bookmark_id();
+  if (!item_proto.has_url() || !has_offline_id || !item_proto.has_version() ||
+      !item_proto.has_file_path()) {
     return false;
   }
   item->url = GURL(item_proto.url());
-  item->bookmark_id = item_proto.bookmark_id();
+  item->offline_id = item_proto.offline_id();
   item->version = item_proto.version();
 #if defined(OS_POSIX)
   item->file_path = base::FilePath(item_proto.file_path());
@@ -90,6 +95,9 @@ bool OfflinePageItemFromEntry(const offline_pages::OfflinePageEntry& item_proto,
   if (item_proto.has_flags()) {
     item->flags = static_cast<OfflinePageItem::Flags>(item_proto.flags());
   }
+  item->client_id.name_space = item_proto.client_id_name_space();
+  item->client_id.id = item_proto.client_id();
+
   return true;
 }
 
@@ -140,16 +148,39 @@ void OfflinePageMetadataStoreImpl::LoadDone(
   DCHECK(entries);
 
   std::vector<OfflinePageItem> result;
+  scoped_ptr<ProtoDatabase<OfflinePageEntry>::KeyEntryVector> entries_to_update(
+      new ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
+  scoped_ptr<std::vector<std::string>> keys_to_remove(
+      new std::vector<std::string>());
+
   LoadStatus status = LOAD_SUCCEEDED;
 
   if (success) {
-    for (const auto& entry : *entries) {
+    for (auto& entry : *entries) {
       OfflinePageItem item;
       // We don't want to fail the entire database if one item is corrupt,
       // so log error and keep going.
       if (!OfflinePageItemFromEntry(entry, &item)) {
         LOG(ERROR) << "failed to parse entry: " << entry.url() << " skipping.";
         continue;
+      }
+      // Legacy storage.  We upgrade them to the new offline_id keyed storage.
+      // TODO(bburns): Remove this eventually when we are sure everyone is
+      // upgraded.
+      if (!entry.has_offline_id()) {
+        entry.set_offline_id(OfflinePageModel::GenerateOfflineId());
+        item.offline_id = entry.offline_id();
+
+        if (!entry.has_deprecated_bookmark_id()) {
+          LOG(ERROR) << "unexpected entry missing bookmark id";
+          continue;
+        }
+        item.client_id.name_space = offline_pages::BOOKMARK_NAMESPACE;
+        item.client_id.id = base::Int64ToString(entry.deprecated_bookmark_id());
+
+        entries_to_update->push_back(
+            std::make_pair(base::Int64ToString(entry.offline_id()), entry));
+        keys_to_remove->push_back(item.client_id.id);
       }
       result.push_back(item);
     }
@@ -162,7 +193,14 @@ void OfflinePageMetadataStoreImpl::LoadDone(
     status = DATA_PARSING_FAILED;
   }
 
-  NotifyLoadResult(callback, status, result);
+  if (status == LOAD_SUCCEEDED && entries_to_update->size() > 0) {
+    UpdateEntries(std::move(entries_to_update), std::move(keys_to_remove),
+                  base::Bind(&OfflinePageMetadataStoreImpl::DatabaseUpdateDone,
+                             weak_ptr_factory_.GetWeakPtr(), callback, status,
+                             std::move(result)));
+  } else {
+    NotifyLoadResult(callback, status, result);
+  }
 }
 
 void OfflinePageMetadataStoreImpl::NotifyLoadResult(
@@ -191,23 +229,23 @@ void OfflinePageMetadataStoreImpl::AddOrUpdateOfflinePage(
 
   OfflinePageEntry offline_page_proto;
   OfflinePageItemToEntry(offline_page_item, &offline_page_proto);
-  entries_to_save->push_back(
-      std::make_pair(base::Int64ToString(offline_page_item.bookmark_id),
-                     offline_page_proto));
+
+  entries_to_save->push_back(std::make_pair(
+      base::Int64ToString(offline_page_item.offline_id), offline_page_proto));
 
   UpdateEntries(std::move(entries_to_save), std::move(keys_to_remove),
                 callback);
 }
 
 void OfflinePageMetadataStoreImpl::RemoveOfflinePages(
-    const std::vector<int64_t>& bookmark_ids,
+    const std::vector<int64_t>& offline_ids,
     const UpdateCallback& callback) {
   scoped_ptr<ProtoDatabase<OfflinePageEntry>::KeyEntryVector> entries_to_save(
       new ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
   scoped_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
 
-  for (int64_t id : bookmark_ids)
+  for (int64_t id : offline_ids)
     keys_to_remove->push_back(base::Int64ToString(id));
 
   UpdateEntries(std::move(entries_to_save), std::move(keys_to_remove),
@@ -259,6 +297,19 @@ void OfflinePageMetadataStoreImpl::ResetDone(
   database_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
   callback.Run(success);
+}
+
+void OfflinePageMetadataStoreImpl::DatabaseUpdateDone(
+    const OfflinePageMetadataStore::LoadCallback& cb,
+    LoadStatus status,
+    const std::vector<OfflinePageItem>& result,
+    bool success) {
+  // If the update failed, log and keep going.  We'll try to
+  // update next time.
+  if (!success) {
+    LOG(ERROR) << "Failed to update database";
+  }
+  NotifyLoadResult(cb, status, result);
 }
 
 }  // namespace offline_pages

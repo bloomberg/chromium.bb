@@ -16,8 +16,12 @@ message OfflinePageEntry {
   // URL of the offline page.
   optional string url = 1;
 
-  // Bookmark ID of the offline page.
-  optional int64 bookmark_id = 2;
+  // Bookmark ID of the offline page, this is deprecated in favor of the
+  // more generic ClientID below.  No new pages should have this field.
+  optional int64 deprecated_bookmark_id = 2 [default = -1];
+
+  // Offline ID of the page.  Every page entry has a unique offline_id.
+  optional int64 offline_id = 10;
 
   // Version of the offline page metadata.
   optional int32 version = 3;
@@ -48,4 +52,14 @@ message OfflinePageEntry {
 
   // Flags for the offline page.
   optional Flags flags = 9;
+
+  // Information about this offline page in the namespace/id of the client that
+  // requested that it be saved. Useful for reverse lookups.
+
+  // Namespace (e.g. client name) to separate the (possibly identical) ids
+  // from two different clients.
+  optional string client_id_name_space = 11;
+  // Identifier that has meaning for clients of the offline page API.
+  // This is provided by consumers of the offline pages API and is opaque to us.
+  optional string client_id = 12;
 }

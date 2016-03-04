@@ -16,6 +16,18 @@
 
 namespace offline_pages {
 
+struct ClientId {
+  // The namespace for the id (of course 'namespace' is a reserved word, so...)
+  std::string name_space;
+  // The id in the client's namespace.  Opaque to us.
+  std::string id;
+
+  ClientId();
+  ClientId(std::string name_space, std::string id);
+
+  bool operator==(const ClientId& client_id) const;
+};
+
 // Metadata of the offline page.
 struct OfflinePageItem {
  public:
@@ -27,11 +39,13 @@ struct OfflinePageItem {
 
   OfflinePageItem();
   OfflinePageItem(const GURL& url,
-                  int64_t bookmark_id,
+                  int64_t offline_id,
+                  const ClientId& client_id,
                   const base::FilePath& file_path,
                   int64_t file_size);
   OfflinePageItem(const GURL& url,
-                  int64_t bookmark_id,
+                  int64_t offline_id,
+                  const ClientId& client_id,
                   const base::FilePath& file_path,
                   int64_t file_size,
                   const base::Time& creation_time);
@@ -51,8 +65,14 @@ struct OfflinePageItem {
 
   // The URL of the page.
   GURL url;
-  // The Bookmark ID related to the offline page.
-  int64_t bookmark_id;
+  // The primary key/ID for this page in offline pages internal database.
+  int64_t offline_id;
+
+  // The Client ID (external) related to the offline page. This is opaque
+  // to our system, but useful for users of offline pages who want to map
+  // their ids to our saved pages.
+  ClientId client_id;
+
   // Version of the offline page item.
   int version;
   // The file path to the archive with a local copy of the page.

@@ -15,6 +15,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/proto/offline_pages.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +26,8 @@ namespace offline_pages {
 namespace {
 
 const char kTestURL[] = "https://example.com";
-const int64_t kTestBookmarkId = 1234LL;
+const ClientId kTestBookmarkId(BOOKMARK_NAMESPACE, "1234");
+const ClientId kTestBookmarkId2(BOOKMARK_NAMESPACE, "5678");
 const base::FilePath::CharType kFilePath[] =
     FILE_PATH_LITERAL("/offline_pages/example_com.mhtml");
 int64_t kFileSize = 234567;
@@ -124,7 +126,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadEmptyStore) {
 TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePage) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
-  OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestBookmarkId,
                                base::FilePath(kFilePath), kFileSize);
   store->AddOrUpdateOfflinePage(
       offline_page,
@@ -145,13 +147,14 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePage) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(1U, offline_pages_.size());
   EXPECT_EQ(offline_page.url, offline_pages_[0].url);
-  EXPECT_EQ(offline_page.bookmark_id, offline_pages_[0].bookmark_id);
+  EXPECT_EQ(offline_page.offline_id, offline_pages_[0].offline_id);
   EXPECT_EQ(offline_page.version, offline_pages_[0].version);
   EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
   EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
   EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
   EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
   EXPECT_EQ(offline_page.access_count, offline_pages_[0].access_count);
+  EXPECT_EQ(offline_page.client_id, offline_pages_[0].client_id);
 }
 
 // Tests removing offline page metadata from the store, for which it first adds
@@ -160,7 +163,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Add an offline page.
-  OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestBookmarkId,
                                base::FilePath(kFilePath), kFileSize);
   store->AddOrUpdateOfflinePage(
       offline_page,
@@ -181,7 +184,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
 
   // Remove the offline page.
   std::vector<int64_t> ids_to_remove;
-  ids_to_remove.push_back(offline_page.bookmark_id);
+  ids_to_remove.push_back(offline_page.offline_id);
   store->RemoveOfflinePages(
       ids_to_remove,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
@@ -214,12 +217,13 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Add an offline page.
-  OfflinePageItem offline_page_1(GURL(kTestURL), kTestBookmarkId,
+  OfflinePageItem offline_page_1(GURL(kTestURL), 12345LL, kTestBookmarkId,
                                  base::FilePath(kFilePath), kFileSize);
   base::FilePath file_path_2 =
       base::FilePath(FILE_PATH_LITERAL("//other.page.com.mhtml"));
   OfflinePageItem offline_page_2(GURL("https://other.page.com"), 5678LL,
-                                 file_path_2, 12345, base::Time::Now());
+                                 kTestBookmarkId2, file_path_2, 12345,
+                                 base::Time::Now());
   store->AddOrUpdateOfflinePage(
       offline_page_1,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
@@ -252,7 +256,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
 
   // Remove the offline page.
   std::vector<int64_t> ids_to_remove;
-  ids_to_remove.push_back(offline_page_1.bookmark_id);
+  ids_to_remove.push_back(offline_page_1.offline_id);
   store->RemoveOfflinePages(
       ids_to_remove,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
@@ -274,7 +278,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(1U, offline_pages_.size());
   EXPECT_EQ(offline_page_2.url, offline_pages_[0].url);
-  EXPECT_EQ(offline_page_2.bookmark_id, offline_pages_[0].bookmark_id);
+  EXPECT_EQ(offline_page_2.offline_id, offline_pages_[0].offline_id);
   EXPECT_EQ(offline_page_2.version, offline_pages_[0].version);
   EXPECT_EQ(offline_page_2.file_path, offline_pages_[0].file_path);
   EXPECT_EQ(offline_page_2.file_size, offline_pages_[0].file_size);
@@ -282,6 +286,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(offline_page_2.last_access_time,
             offline_pages_[0].last_access_time);
   EXPECT_EQ(offline_page_2.access_count, offline_pages_[0].access_count);
+  EXPECT_EQ(offline_page_2.client_id, offline_pages_[0].client_id);
 }
 
 // Tests updating offline page metadata from the store.
@@ -289,7 +294,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, UpdateOfflinePage) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // First, adds a fresh page.
-  OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestBookmarkId,
                                base::FilePath(kFilePath), kFileSize);
   store->AddOrUpdateOfflinePage(
       offline_page,
@@ -308,13 +313,14 @@ TEST_F(OfflinePageMetadataStoreImplTest, UpdateOfflinePage) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(1U, offline_pages_.size());
   EXPECT_EQ(offline_page.url, offline_pages_[0].url);
-  EXPECT_EQ(offline_page.bookmark_id, offline_pages_[0].bookmark_id);
+  EXPECT_EQ(offline_page.offline_id, offline_pages_[0].offline_id);
   EXPECT_EQ(offline_page.version, offline_pages_[0].version);
   EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
   EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
   EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
   EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
   EXPECT_EQ(offline_page.access_count, offline_pages_[0].access_count);
+  EXPECT_EQ(offline_page.client_id, offline_pages_[0].client_id);
 
   // Then updates some data.
   offline_page.file_size = kFileSize + 1;
@@ -336,13 +342,14 @@ TEST_F(OfflinePageMetadataStoreImplTest, UpdateOfflinePage) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(1U, offline_pages_.size());
   EXPECT_EQ(offline_page.url, offline_pages_[0].url);
-  EXPECT_EQ(offline_page.bookmark_id, offline_pages_[0].bookmark_id);
+  EXPECT_EQ(offline_page.offline_id, offline_pages_[0].offline_id);
   EXPECT_EQ(offline_page.version, offline_pages_[0].version);
   EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
   EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
   EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
   EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
   EXPECT_EQ(offline_page.access_count, offline_pages_[0].access_count);
+  EXPECT_EQ(offline_page.client_id, offline_pages_[0].client_id);
 }
 
 }  // namespace
@@ -354,7 +361,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadCorruptedStore) {
   scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
 
   // Write one ok page.
-  OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
+  OfflinePageItem offline_page(GURL(kTestURL), 1234LL, kTestBookmarkId,
                                base::FilePath(kFilePath), kFileSize);
   store->AddOrUpdateOfflinePage(
       offline_page,
@@ -395,7 +402,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, LoadCorruptedStore) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(1U, offline_pages_.size());
   EXPECT_EQ(offline_page.url, offline_pages_[0].url);
-  EXPECT_EQ(offline_page.bookmark_id, offline_pages_[0].bookmark_id);
+  EXPECT_EQ(offline_page.offline_id, offline_pages_[0].offline_id);
   EXPECT_EQ(offline_page.version, offline_pages_[0].version);
   EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
   EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);

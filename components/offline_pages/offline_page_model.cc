@@ -12,12 +12,15 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/proto/offline_pages.pb.h"
 #include "url/gurl.h"
 
 using ArchiverResult = offline_pages::OfflinePageArchiver::ArchiverResult;
@@ -154,7 +157,7 @@ void OfflinePageModel::RemoveObserver(Observer* observer) {
 }
 
 void OfflinePageModel::SavePage(const GURL& url,
-                                int64_t bookmark_id,
+                                const ClientId& client_id,
                                 scoped_ptr<OfflinePageArchiver> archiver,
                                 const SavePageCallback& callback) {
   DCHECK(is_loaded_);
@@ -162,21 +165,24 @@ void OfflinePageModel::SavePage(const GURL& url,
   // Skip saving the page that is not intended to be saved, like local file
   // page.
   if (!CanSavePage(url)) {
-    InformSavePageDone(callback, SavePageResult::SKIPPED);
+    InformSavePageDone(callback, SavePageResult::SKIPPED, INVALID_OFFLINE_ID);
     return;
   }
 
   DCHECK(archiver.get());
-  archiver->CreateArchive(archives_dir_,
-                          base::Bind(&OfflinePageModel::OnCreateArchiveDone,
-                                     weak_ptr_factory_.GetWeakPtr(), url,
-                                     bookmark_id, base::Time::Now(), callback));
+
+  int64_t offline_id = GenerateOfflineId();
+
+  archiver->CreateArchive(
+      archives_dir_, base::Bind(&OfflinePageModel::OnCreateArchiveDone,
+                                weak_ptr_factory_.GetWeakPtr(), url, offline_id,
+                                client_id, base::Time::Now(), callback));
   pending_archivers_.push_back(std::move(archiver));
 }
 
-void OfflinePageModel::MarkPageAccessed(int64_t bookmark_id) {
+void OfflinePageModel::MarkPageAccessed(int64_t offline_id) {
   DCHECK(is_loaded_);
-  auto iter = offline_pages_.find(bookmark_id);
+  auto iter = offline_pages_.find(offline_id);
   if (iter == offline_pages_.end())
     return;
 
@@ -213,10 +219,10 @@ void OfflinePageModel::MarkPageAccessed(int64_t bookmark_id) {
                  weak_ptr_factory_.GetWeakPtr(), offline_page_item));
 }
 
-void OfflinePageModel::MarkPageForDeletion(int64_t bookmark_id,
+void OfflinePageModel::MarkPageForDeletion(int64_t offline_id,
                                            const DeletePageCallback& callback) {
   DCHECK(is_loaded_);
-  auto iter = offline_pages_.find(bookmark_id);
+  auto iter = offline_pages_.find(offline_id);
   if (iter == offline_pages_.end()) {
     InformDeletePageDone(callback, DeletePageResult::NOT_FOUND);
     return;
@@ -232,23 +238,23 @@ void OfflinePageModel::MarkPageForDeletion(int64_t bookmark_id,
                  weak_ptr_factory_.GetWeakPtr(), offline_page_item, callback));
 }
 
-void OfflinePageModel::DeletePageByBookmarkId(
-    int64_t bookmark_id,
+void OfflinePageModel::DeletePageByOfflineId(
+    int64_t offline_id,
     const DeletePageCallback& callback) {
   DCHECK(is_loaded_);
-  std::vector<int64_t> bookmark_ids_to_delete;
-  bookmark_ids_to_delete.push_back(bookmark_id);
-  DeletePagesByBookmarkId(bookmark_ids_to_delete, callback);
+  std::vector<int64_t> offline_ids_to_delete;
+  offline_ids_to_delete.push_back(offline_id);
+  DeletePagesByOfflineId(offline_ids_to_delete, callback);
 }
 
-void OfflinePageModel::DeletePagesByBookmarkId(
-    const std::vector<int64_t>& bookmark_ids,
+void OfflinePageModel::DeletePagesByOfflineId(
+    const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback) {
   DCHECK(is_loaded_);
 
   std::vector<base::FilePath> paths_to_delete;
-  for (const auto& bookmark_id : bookmark_ids) {
-    auto iter = offline_pages_.find(bookmark_id);
+  for (const auto& offline_id : offline_ids) {
+    auto iter = offline_pages_.find(offline_id);
     if (iter != offline_pages_.end()) {
       paths_to_delete.push_back(iter->second.file_path);
     }
@@ -261,26 +267,22 @@ void OfflinePageModel::DeletePagesByBookmarkId(
 
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&DeleteArchiveFiles, paths_to_delete, success),
+      FROM_HERE, base::Bind(&DeleteArchiveFiles, paths_to_delete, success),
       base::Bind(&OfflinePageModel::OnDeleteArchiveFilesDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 bookmark_ids,
-                 callback,
+                 weak_ptr_factory_.GetWeakPtr(), offline_ids, callback,
                  base::Owned(success)));
 }
 
 void OfflinePageModel::ClearAll(const base::Closure& callback) {
   DCHECK(is_loaded_);
 
-  std::vector<int64_t> bookmark_ids;
+  std::vector<int64_t> offline_ids;
   for (const auto& id_page_pair : offline_pages_)
-    bookmark_ids.push_back(id_page_pair.first);
-  DeletePagesByBookmarkId(
-      bookmark_ids,
+    offline_ids.push_back(id_page_pair.first);
+  DeletePagesByOfflineId(
+      offline_ids,
       base::Bind(&OfflinePageModel::OnRemoveAllFilesDoneForClearAll,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 bool OfflinePageModel::HasOfflinePages() const {
@@ -318,9 +320,25 @@ const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
   return offline_pages;
 }
 
-const OfflinePageItem* OfflinePageModel::GetPageByBookmarkId(
-    int64_t bookmark_id) const {
-  const auto iter = offline_pages_.find(bookmark_id);
+const std::vector<int64_t> OfflinePageModel::GetOfflineIdsForClientId(
+    const ClientId& cid) const {
+  std::vector<int64_t> results;
+
+  // TODO(bburns): actually use an index rather than linear scan.
+  const std::vector<OfflinePageItem> offline_pages = GetAllPages();
+
+  for (size_t i = 0; i < offline_pages.size(); i++) {
+    if (offline_pages[i].client_id.name_space == cid.name_space &&
+        offline_pages[i].client_id.id == cid.id) {
+      results.push_back(offline_pages[i].offline_id);
+    }
+  }
+  return results;
+}
+
+const OfflinePageItem* OfflinePageModel::GetPageByOfflineId(
+    int64_t offline_id) const {
+  const auto iter = offline_pages_.find(offline_id);
   return iter != offline_pages_.end() && !iter->second.IsMarkedForDeletion()
              ? &(iter->second)
              : nullptr;
@@ -373,7 +391,8 @@ OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
 }
 
 void OfflinePageModel::OnCreateArchiveDone(const GURL& requested_url,
-                                           int64_t bookmark_id,
+                                           int64_t offline_id,
+                                           const ClientId& client_id,
                                            const base::Time& start_time,
                                            const SavePageCallback& callback,
                                            OfflinePageArchiver* archiver,
@@ -385,20 +404,20 @@ void OfflinePageModel::OnCreateArchiveDone(const GURL& requested_url,
     DVLOG(1) << "Saved URL does not match requested URL.";
     // TODO(fgorski): We have created an archive for a wrong URL. It should be
     // deleted from here, once archiver has the right functionality.
-    InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED);
+    InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED,
+                       offline_id);
     DeletePendingArchiver(archiver);
     return;
   }
 
   if (archiver_result != ArchiverResult::SUCCESSFULLY_CREATED) {
     SavePageResult result = ToSavePageResult(archiver_result);
-    InformSavePageDone(callback, result);
+    InformSavePageDone(callback, result, offline_id);
     DeletePendingArchiver(archiver);
     return;
   }
-
-  OfflinePageItem offline_page_item(url, bookmark_id, file_path, file_size,
-                                    start_time);
+  OfflinePageItem offline_page_item(url, offline_id, client_id, file_path,
+                                    file_size, start_time);
   store_->AddOrUpdateOfflinePage(
       offline_page_item,
       base::Bind(&OfflinePageModel::OnAddOfflinePageDone,
@@ -412,7 +431,7 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
                                             bool success) {
   SavePageResult result;
   if (success) {
-    offline_pages_[offline_page.bookmark_id] = offline_page;
+    offline_pages_[offline_page.offline_id] = offline_page;
     result = SavePageResult::SUCCESS;
     UMA_HISTOGRAM_TIMES(
         "OfflinePages.SavePageTime",
@@ -422,7 +441,7 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
   } else {
     result = SavePageResult::STORE_FAILURE;
   }
-  InformSavePageDone(callback, result);
+  InformSavePageDone(callback, result, offline_page.offline_id);
   DeletePendingArchiver(archiver);
 
   FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(this));
@@ -432,7 +451,7 @@ void OfflinePageModel::OnMarkPageAccesseDone(
     const OfflinePageItem& offline_page_item, bool success) {
   // Update the item in the cache only upon success.
   if (success)
-    offline_pages_[offline_page_item.bookmark_id] = offline_page_item;
+    offline_pages_[offline_page_item.offline_id] = offline_page_item;
 
   // No need to fire OfflinePageModelChanged event since updating access info
   // should not have any impact to the UI.
@@ -444,7 +463,7 @@ void OfflinePageModel::OnMarkPageForDeletionDone(
     bool success) {
   // Update the item in the cache only upon success.
   if (success)
-    offline_pages_[offline_page_item.bookmark_id] = offline_page_item;
+    offline_pages_[offline_page_item.offline_id] = offline_page_item;
 
   InformDeletePageDone(callback, success ? DeletePageResult::SUCCESS
                                          : DeletePageResult::STORE_FAILURE);
@@ -459,31 +478,31 @@ void OfflinePageModel::OnMarkPageForDeletionDone(
                  weak_ptr_factory_.GetWeakPtr()),
       kFinalDeletionDelay);
 
-  FOR_EACH_OBSERVER(
-      Observer, observers_, OfflinePageDeleted(offline_page_item.bookmark_id));
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OfflinePageDeleted(offline_page_item.offline_id));
 }
 
 void OfflinePageModel::OnUndoOfflinePageDone(
     const OfflinePageItem& offline_page, bool success) {
   if (!success)
     return;
-  offline_pages_[offline_page.bookmark_id] = offline_page;
+  offline_pages_[offline_page.offline_id] = offline_page;
 
   FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(this));
 }
 
 void OfflinePageModel::FinalizePageDeletion() {
-  std::vector<int64_t> bookmark_ids_pending_deletion;
+  std::vector<int64_t> offline_ids_pending_deletion;
   for (const auto& id_page_pair : offline_pages_) {
     if (!id_page_pair.second.IsMarkedForDeletion())
       continue;
-    bookmark_ids_pending_deletion.push_back(id_page_pair.second.bookmark_id);
+    offline_ids_pending_deletion.push_back(id_page_pair.second.offline_id);
   }
-  DeletePagesByBookmarkId(bookmark_ids_pending_deletion, DeletePageCallback());
+  DeletePagesByOfflineId(offline_ids_pending_deletion, DeletePageCallback());
 }
 
-void OfflinePageModel::UndoPageDeletion(int64_t bookmark_id) {
-  auto iter = offline_pages_.find(bookmark_id);
+void OfflinePageModel::UndoPageDeletion(int64_t offline_id) {
+  auto iter = offline_pages_.find(offline_id);
   if (iter == offline_pages_.end())
     return;
 
@@ -509,7 +528,18 @@ void OfflinePageModel::BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                                          int index) {
   const bookmarks::BookmarkNode* node = parent->GetChild(index);
   DCHECK(node);
-  UndoPageDeletion(node->id());
+  ClientId client_id(BOOKMARK_NAMESPACE, base::Int64ToString(node->id()));
+  std::vector<int64_t> ids;
+  // In this case we want only all pages, including those marked for deletion.
+  for (const auto& id_page_pair : offline_pages_) {
+    if (id_page_pair.second.client_id == client_id) {
+      ids.push_back(id_page_pair.second.offline_id);
+    }
+  }
+
+  for (size_t i = 0; i < ids.size(); i++) {
+    UndoPageDeletion(ids[i]);
+  }
 }
 
 void OfflinePageModel::BookmarkNodeRemoved(
@@ -518,15 +548,22 @@ void OfflinePageModel::BookmarkNodeRemoved(
     int old_index,
     const bookmarks::BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
+  ClientId cid;
+  cid.name_space = BOOKMARK_NAMESPACE;
+  cid.id = base::Int64ToString(node->id());
+  std::vector<int64_t> ids = GetOfflineIdsForClientId(cid);
   if (!is_loaded_) {
-    delayed_tasks_.push_back(
-        base::Bind(&OfflinePageModel::MarkPageForDeletion,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   node->id(),
-                   base::Bind(&EmptyDeleteCallback)));
+    for (size_t i = 0; i < ids.size(); i++) {
+      delayed_tasks_.push_back(
+          base::Bind(&OfflinePageModel::MarkPageForDeletion,
+                     weak_ptr_factory_.GetWeakPtr(), ids[i],
+                     base::Bind(&EmptyDeleteCallback)));
+    }
     return;
   }
-  MarkPageForDeletion(node->id(), base::Bind(&EmptyDeleteCallback));
+  for (size_t i = 0; i < ids.size(); i++) {
+    MarkPageForDeletion(ids[i], base::Bind(&EmptyDeleteCallback));
+  }
 }
 
 void OfflinePageModel::BookmarkNodeChanged(
@@ -534,9 +571,15 @@ void OfflinePageModel::BookmarkNodeChanged(
     const bookmarks::BookmarkNode* node) {
   // BookmarkNodeChanged could be triggered if title or URL gets changed. If
   // the latter, we need to invalidate the offline copy.
-  auto iter = offline_pages_.find(node->id());
-  if (iter != offline_pages_.end() && iter->second.url != node->url())
-    DeletePageByBookmarkId(node->id(), DeletePageCallback());
+  ClientId cid;
+  cid.name_space = BOOKMARK_NAMESPACE;
+  cid.id = base::Int64ToString(node->id());
+  std::vector<int64_t> ids = GetOfflineIdsForClientId(cid);
+  for (size_t i = 0; i < ids.size(); i++) {
+    auto iter = offline_pages_.find(ids[i]);
+    if (iter != offline_pages_.end() && iter->second.url != node->url())
+      DeletePageByOfflineId(ids[i], DeletePageCallback());
+  }
 }
 
 void OfflinePageModel::OnEnsureArchivesDirCreatedDone() {
@@ -570,12 +613,13 @@ void OfflinePageModel::OnLoadDone(
 }
 
 void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
-                                          SavePageResult result) {
+                                          SavePageResult result,
+                                          int64_t offline_id) {
   UMA_HISTOGRAM_ENUMERATION(
       "OfflinePages.SavePageResult",
       static_cast<int>(result),
       static_cast<int>(SavePageResult::RESULT_COUNT));
-  callback.Run(result);
+  callback.Run(result, offline_id);
 }
 
 void OfflinePageModel::DeletePendingArchiver(OfflinePageArchiver* archiver) {
@@ -584,7 +628,7 @@ void OfflinePageModel::DeletePendingArchiver(OfflinePageArchiver* archiver) {
 }
 
 void OfflinePageModel::OnDeleteArchiveFilesDone(
-    const std::vector<int64_t>& bookmark_ids,
+    const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback,
     const bool* success) {
   DCHECK(success);
@@ -595,21 +639,21 @@ void OfflinePageModel::OnDeleteArchiveFilesDone(
   }
 
   store_->RemoveOfflinePages(
-      bookmark_ids,
+      offline_ids,
       base::Bind(&OfflinePageModel::OnRemoveOfflinePagesDone,
-                 weak_ptr_factory_.GetWeakPtr(), bookmark_ids, callback));
+                 weak_ptr_factory_.GetWeakPtr(), offline_ids, callback));
 }
 
 void OfflinePageModel::OnRemoveOfflinePagesDone(
-    const std::vector<int64_t>& bookmark_ids,
+    const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback,
     bool success) {
   // Delete the offline page from the in memory cache regardless of success in
   // store.
   base::Time now = base::Time::Now();
   int64_t total_size = 0;
-  for (int64_t bookmark_id : bookmark_ids) {
-    auto iter = offline_pages_.find(bookmark_id);
+  for (int64_t offline_id : offline_ids) {
+    auto iter = offline_pages_.find(offline_id);
     if (iter == offline_pages_.end())
       continue;
     total_size += iter->second.file_size;
@@ -640,21 +684,19 @@ void OfflinePageModel::OnRemoveOfflinePagesDone(
     // yet informed the observer that the offline page is deleted.
     if (!iter->second.IsMarkedForDeletion()) {
       FOR_EACH_OBSERVER(Observer, observers_,
-                        OfflinePageDeleted(iter->second.bookmark_id));
+                        OfflinePageDeleted(iter->second.offline_id));
     }
     offline_pages_.erase(iter);
   }
-  if (bookmark_ids.size() > 1) {
-    UMA_HISTOGRAM_COUNTS(
-        "OfflinePages.BatchDelete.Count", bookmark_ids.size());
+  if (offline_ids.size() > 1) {
+    UMA_HISTOGRAM_COUNTS("OfflinePages.BatchDelete.Count", offline_ids.size());
     UMA_HISTOGRAM_MEMORY_KB(
         "OfflinePages.BatchDelete.TotalPageSize", total_size / 1024);
   }
   // Deleting multiple pages always succeeds when it gets to this point.
-  InformDeletePageDone(
-      callback,
-      (success || bookmark_ids.size() > 1) ? DeletePageResult::SUCCESS
-                                           : DeletePageResult::STORE_FAILURE);
+  InformDeletePageDone(callback, (success || offline_ids.size() > 1)
+                                     ? DeletePageResult::SUCCESS
+                                     : DeletePageResult::STORE_FAILURE);
 }
 
 void OfflinePageModel::InformDeletePageDone(const DeletePageCallback& callback,
@@ -687,10 +729,10 @@ void OfflinePageModel::OnFindPagesMissingArchiveFile(
 }
 
 void OfflinePageModel::OnRemoveOfflinePagesMissingArchiveFileDone(
-    const std::vector<int64_t>& bookmark_ids,
+    const std::vector<int64_t>& offline_ids,
     OfflinePageModel::DeletePageResult /* result */) {
-  for (int64_t bookmark_id : bookmark_ids) {
-    FOR_EACH_OBSERVER(Observer, observers_, OfflinePageDeleted(bookmark_id));
+  for (int64_t offline_id : offline_ids) {
+    FOR_EACH_OBSERVER(Observer, observers_, OfflinePageDeleted(offline_id));
   }
 }
 
@@ -734,7 +776,11 @@ void OfflinePageModel::CacheLoadedData(
     const std::vector<OfflinePageItem>& offline_pages) {
   offline_pages_.clear();
   for (const auto& offline_page : offline_pages)
-    offline_pages_[offline_page.bookmark_id] = offline_page;
+    offline_pages_[offline_page.offline_id] = offline_page;
+}
+
+int64_t OfflinePageModel::GenerateOfflineId() {
+  return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 }
 
 }  // namespace offline_pages

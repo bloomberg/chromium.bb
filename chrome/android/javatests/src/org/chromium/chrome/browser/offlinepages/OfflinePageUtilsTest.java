@@ -207,7 +207,8 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
                 mOfflinePageBridge.savePage(getActivity().getActivityTab().getWebContents(),
                         BOOKMARK_ID, new SavePageCallback() {
                             @Override
-                            public void onSavePageDone(int savePageResult, String url) {
+                            public void onSavePageDone(
+                                    int savePageResult, String url, long offlineId) {
                                 assertEquals(
                                         "Requested and returned URLs differ.", expectedUrl, url);
                                 assertEquals(

@@ -304,7 +304,8 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                 mModel.getOfflinePageBridge().savePage(
                         mWebContents, mBookmarkId, new SavePageCallback() {
                             @Override
-                            public void onSavePageDone(int savePageResult, String url) {
+                            public void onSavePageDone(
+                                    int savePageResult, String url, long offlineId) {
                                 // TODO(fgorski): Add snackbar upon failure.
                                 // Always update UI, as buttons might be disabled.
                                 updateOfflineSection();
