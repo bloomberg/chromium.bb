@@ -67,8 +67,6 @@ public:
 
     void setVisibleScrollerThumbRect(const IntRect&);
 
-    static bool canUseCoordinatedScrollbar();
-
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         ScrollAnimatorBase::trace(visitor);

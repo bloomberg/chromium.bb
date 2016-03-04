@@ -286,6 +286,8 @@
           ['include', 'mac/VersionUtilMac\\.mm$'],
           ['include', 'mac/WebCoreNSCellExtras\\.h$'],
           ['include', 'mac/WebCoreNSCellExtras\\.mm$'],
+          ['include', 'scroll/ScrollbarThemeMac\\.h$'],
+          ['include', 'scroll/ScrollbarThemeMac\\.mm$'],
 
           # Mac uses only ScrollAnimatorMac.
           ['exclude', 'scroll/ScrollbarThemeNonMacCommon\\.(cpp|h)$'],

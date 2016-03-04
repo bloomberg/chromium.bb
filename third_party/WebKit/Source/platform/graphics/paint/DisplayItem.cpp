@@ -98,11 +98,9 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(ScrollbarForwardButtonEnd);
         DEBUG_STRING_CASE(ScrollbarForwardButtonStart);
         DEBUG_STRING_CASE(ScrollbarForwardTrack);
-        DEBUG_STRING_CASE(ScrollbarHorizontal);
         DEBUG_STRING_CASE(ScrollbarThumb);
         DEBUG_STRING_CASE(ScrollbarTickmarks);
         DEBUG_STRING_CASE(ScrollbarTrackBackground);
-        DEBUG_STRING_CASE(ScrollbarVertical);
         DEBUG_STRING_CASE(SelectionTint);
         DEBUG_STRING_CASE(TableCellBackgroundFromColumnGroup);
         DEBUG_STRING_CASE(TableCellBackgroundFromColumn);

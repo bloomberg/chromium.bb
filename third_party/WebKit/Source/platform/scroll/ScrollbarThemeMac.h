@@ -23,11 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeMacCommon_h
-#define ScrollbarThemeMacCommon_h
+#ifndef ScrollbarThemeMac_h
+#define ScrollbarThemeMac_h
 
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarTheme.h"
+
+typedef id ScrollbarPainter;
 
 class SkCanvas;
 
@@ -35,9 +37,9 @@ namespace blink {
 
 class Pattern;
 
-class PLATFORM_EXPORT ScrollbarThemeMacCommon : public ScrollbarTheme {
+class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 public:
-    ~ScrollbarThemeMacCommon() override;
+    ~ScrollbarThemeMac() override;
 
     void registerScrollbar(ScrollbarThemeClient&) override;
     void unregisterScrollbar(ScrollbarThemeClient&) override;
@@ -50,11 +52,24 @@ public:
 
     void paintTickmarks(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
 
+    bool shouldRepaintAllPartsOnInvalidation() const override { return false; }
+    ScrollbarPart invalidateOnThumbPositionChange(
+        const ScrollbarThemeClient&, float oldPosition, float newPosition) const override;
+    void updateEnabledState(const ScrollbarThemeClient&) override;
+    int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
+    bool usesOverlayScrollbars() const override;
+    void updateScrollbarOverlayStyle(const ScrollbarThemeClient&) override;
+    WebScrollbarButtonsPlacement buttonsPlacement() const override;
+
+    void setNewPainterForScrollbar(ScrollbarThemeClient&, ScrollbarPainter);
+    ScrollbarPainter painterForScrollbar(const ScrollbarThemeClient&) const;
+
+    void paintTrackBackground(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+
+    float thumbOpacity(const ScrollbarThemeClient&) const override;
+
     static NSScrollerStyle recommendedScrollerStyle();
-
-    static bool isOverlayAPIAvailable();
-
-    static bool scrollAnimationEnabledForSystem();
 
 protected:
     int maxOverlapBetweenPages() override { return 40; }
@@ -66,9 +81,18 @@ protected:
 
     void paintGivenTickmarks(SkCanvas*, const ScrollbarThemeClient&, const IntRect&, const Vector<IntRect>&);
 
+    IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
+    IntRect backButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
+    IntRect forwardButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
+
+    bool hasButtons(const ScrollbarThemeClient&) override { return false; }
+    bool hasThumb(const ScrollbarThemeClient&) override;
+
+    int minimumThumbLength(const ScrollbarThemeClient&) override;
+
     RefPtr<Pattern> m_overhangPattern;
 };
 
 }
 
-#endif // ScrollbarThemeMacCommon_h
+#endif // ScrollbarThemeMac_h

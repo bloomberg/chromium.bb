@@ -89,11 +89,9 @@ public:
         ScrollbarForwardButtonEnd,
         ScrollbarForwardButtonStart,
         ScrollbarForwardTrack,
-        ScrollbarHorizontal, // For ScrollbarThemeMacNonOverlayAPI only.
         ScrollbarThumb,
         ScrollbarTickmarks,
         ScrollbarTrackBackground,
-        ScrollbarVertical, // For ScrollbarThemeMacNonOverlayAPI only.
         SelectionTint,
         TableCellBackgroundFromColumnGroup,
         TableCellBackgroundFromColumn,

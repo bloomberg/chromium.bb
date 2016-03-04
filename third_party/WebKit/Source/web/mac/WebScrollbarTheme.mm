@@ -33,7 +33,7 @@
 #import <AppKit/AppKit.h>
 
 #include "platform/mac/NSScrollerImpDetails.h"
-#include "platform/scroll/ScrollbarThemeMacCommon.h"
+#include "platform/scroll/ScrollbarThemeMac.h"
 
 using namespace blink;
 
@@ -50,7 +50,7 @@ void WebScrollbarTheme::updateScrollbarsWithNSDefaults(
     if (theme.isMockTheme())
         return;
 
-    static_cast<ScrollbarThemeMacCommon&>(theme).preferencesChanged(
+    static_cast<ScrollbarThemeMac&>(theme).preferencesChanged(
         initialButtonDelay, autoscrollButtonDelay,
         static_cast<NSScrollerStyle>(preferredScrollerStyle),
         redraw, buttonPlacement);
