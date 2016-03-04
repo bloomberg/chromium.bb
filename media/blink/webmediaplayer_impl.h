@@ -30,6 +30,7 @@
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/blink/webmediaplayer_util.h"
+#include "media/filters/pipeline_controller.h"
 #include "media/renderers/skcanvas_video_renderer.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
@@ -165,16 +166,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void enteredFullscreen() override;
   void exitedFullscreen() override;
 
-  void OnPipelineSeeked(bool time_changed, PipelineStatus status);
-  void OnPipelineSuspended(PipelineStatus status);
-  void OnPipelineEnded();
-  void OnPipelineError(PipelineStatus error);
-  void OnPipelineMetadata(PipelineMetadata metadata);
-  void OnPipelineBufferingStateChanged(BufferingState buffering_state);
-  void OnDemuxerOpened();
-  void OnAddTextTrack(const TextTrackConfig& config,
-                      const AddTextTrackDoneCB& done_cb);
-
   // WebMediaPlayerDelegate::Observer implementation.
   void OnHidden(bool must_suspend) override;
   void OnShown() override;
@@ -198,20 +189,24 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetDeviceScaleFactor(float scale_factor);
 #endif
 
+  // Called from WebMediaPlayerCast.
+  // TODO(hubbe): WMPI_CAST make private.
+  void OnPipelineSeeked(bool time_updated);
+
  private:
-  // Ask for the pipeline to be suspended, will call Suspend() when ready.
-  // (Possibly immediately.)
-  void ScheduleSuspend();
+  void OnPipelineSuspended();
+  void OnPipelineResumed();
+  void OnPipelineEnded();
+  void OnPipelineError(PipelineStatus error);
+  void OnPipelineMetadata(PipelineMetadata metadata);
+  void OnPipelineBufferingStateChanged(BufferingState buffering_state);
+  void OnDemuxerOpened();
+  void OnAddTextTrack(const TextTrackConfig& config,
+                      const AddTextTrackDoneCB& done_cb);
 
-  // Initiate suspending the pipeline.
-  void Suspend();
-
-  // Ask for the pipeline to be resumed, will call Resume() when ready.
-  // (Possibly immediately.)
-  void ScheduleResume();
-
-  // Initiate resuming the pipeline.
-  void Resume();
+  // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
+  // |time_updated| is false.
+  void DoSeek(base::TimeDelta time, bool time_updated);
 
   // Ask for the renderer to be restarted (destructed and recreated).
   void ScheduleRestart();
@@ -272,10 +267,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Called when a CDM has been attached to the |pipeline_|.
   void OnCdmAttached(bool success);
 
-  // Updates |paused_time_| to the current media time with consideration for the
-  // |ended_| state by clamping current time to duration upon |ended_|.
-  void UpdatePausedTime();
-
   // Notifies |delegate_| that playback has started or was paused; also starts
   // or stops the memory usage reporting timer respectively.
   void NotifyPlaybackStarted();
@@ -308,7 +299,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
   scoped_refptr<MediaLog> media_log_;
+
+  // |pipeline_controller_| references |pipeline_| and therefore must be
+  // constructed after and destructed before |pipeline_|.
   PipelineImpl pipeline_;
+  PipelineController pipeline_controller_;
 
   // The LoadType passed in the |load_type| parameter of the load() call.
   LoadType load_type_;
@@ -332,31 +327,15 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // clock can creep forward a little bit while the asynchronous
   // SetPlaybackRate(0) is being executed.
   double playback_rate_;
+
+  // Set while paused. |paused_time_| is only valid when |paused_| is true.
   bool paused_;
   base::TimeDelta paused_time_;
+
+  // Set when starting, seeking, and resuming (all of which require a Pipeline
+  // seek). |seek_time_| is only valid when |seeking_| is true.
   bool seeking_;
-
-  // Set when seeking (|seeking_| is true) or resuming.
   base::TimeDelta seek_time_;
-
-  // Set when a suspend is required but another suspend or seek is in progress.
-  bool pending_suspend_;
-
-  // Set when suspending immediately after a seek. The time change will happen
-  // after Resume().
-  bool pending_time_change_;
-
-  // Set when a resume is required but suspending is in progress.
-  bool pending_resume_;
-
-  // Set for the entire period between suspend starting and resume completing.
-  bool suspending_;
-
-  // Set while suspending to detect double-suspend.
-  bool suspended_;
-
-  // Set while resuming to detect double-resume.
-  bool resuming_;
 
   // Set when doing a restart (a suspend and resume in sequence) of the pipeline
   // in order to destruct and reinitialize the decoders. This is separate from
@@ -368,14 +347,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // TODO(scherkus): Replace with an explicit ended signal to HTMLMediaElement,
   // see http://crbug.com/409280
   bool ended_;
-
-  // Indicates that a seek is queued after the current seek completes or, if the
-  // pipeline is suspended, after it resumes. Only the last queued seek will
-  // have any effect.
-  bool pending_seek_;
-
-  // |pending_seek_time_| is meaningless when |pending_seek_| is false.
-  base::TimeDelta pending_seek_time_;
 
   // Tracks whether to issue time changed notifications during buffering state
   // changes.
