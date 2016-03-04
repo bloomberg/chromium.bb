@@ -36,9 +36,7 @@ namespace mojo {
 class ShellConnection;
 namespace shell {
 
-class ApplicationManager : public ShellClient,
-                           public InterfaceFactory<mojom::ApplicationManager>,
-                           public mojom::ApplicationManager {
+class ApplicationManager : public ShellClient {
  public:
   // API for testing.
   class TestAPI {
@@ -101,18 +99,6 @@ class ApplicationManager : public ShellClient,
   // ShellClient:
   bool AcceptConnection(Connection* connection) override;
 
-  // InterfaceFactory<mojom::ApplicationManager>:
-  void Create(Connection* connection,
-              InterfaceRequest<mojom::ApplicationManager> request) override;
-
-  // mojom::ApplicationManager:
-  void CreateInstanceForFactory(
-      mojom::ShellClientFactoryPtr factory,
-      const String& name,
-      mojom::CapabilityFilterPtr filter,
-      mojom::PIDReceiverRequest pid_receiver) override;
-  void AddInstanceListener(mojom::InstanceListenerPtr listener) override;
-
   void InitPackageManager(
       scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
 
@@ -135,6 +121,18 @@ class ApplicationManager : public ShellClient,
 
   Instance* CreateInstance(const Identity& target_id,
                            mojom::ShellClientRequest* request);
+
+  // Called from the instance implementing mojom::ApplicationManager. |user_id|
+  // must be resolved by the instance (i.e. must not be
+  // mojom::Connector::kUserInherit).
+  void CreateInstanceForFactory(
+      mojom::ShellClientFactoryPtr factory,
+      const String& name,
+      uint32_t user_id,
+      mojom::CapabilityFilterPtr filter,
+      mojom::PIDReceiverRequest pid_receiver);
+  // Called from the instance implementing mojom::ApplicationManager.
+  void AddInstanceListener(mojom::InstanceListenerPtr listener);
 
   void CreateShellClient(const Identity& source,
                          const Identity& shell_client_factory,
@@ -194,7 +192,6 @@ class ApplicationManager : public ShellClient,
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   std::vector<scoped_ptr<NativeRunner>> native_runners_;
   scoped_ptr<ShellConnection> shell_connection_;
-  BindingSet<mojom::ApplicationManager> bindings_;
   base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationManager);

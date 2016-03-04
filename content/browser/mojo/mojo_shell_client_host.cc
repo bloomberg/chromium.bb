@@ -123,8 +123,8 @@ std::string RegisterChildWithExternalShell(
       std::move(request_pipe), 0u));
 
   application_manager->CreateInstanceForFactory(
-      std::move(factory), url, CreateCapabilityFilterForRenderer(),
-      std::move(request));
+      std::move(factory), url, mojo::shell::mojom::Connector::kUserInherit,
+      CreateCapabilityFilterForRenderer(), std::move(request));
 
   // Store the URL on the RPH so client code can access it later via
   // GetMojoApplicationInstanceURL().

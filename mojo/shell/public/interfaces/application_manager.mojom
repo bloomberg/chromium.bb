@@ -48,9 +48,12 @@ interface PIDReceiver {
 interface ApplicationManager {
   // Instructs the ApplicationManager to create an instance for an existing
   // process at the other end of |factory|, and perform applicable
-  // initialization.
+  // initialization. |user_id| is the user the instance should be created as.
+  // This is typically set to Connector::kUserInherit, unless the application
+  // has the ability to connect as other users.
   CreateInstanceForFactory(ShellClientFactory factory,
                            string name,
+                           uint32 user_id,
                            CapabilityFilter filter,
                            PIDReceiver& pid_receiver);
 

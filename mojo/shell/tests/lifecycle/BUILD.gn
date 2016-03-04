@@ -17,13 +17,16 @@ source_set("lifecycle") {
     ":manifest",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//mojo/shell/public/cpp:shell_test_support",
     "//mojo/shell/public/cpp:sources",
     "//mojo/shell/public/interfaces",
+    "//mojo/shell/runner/common",
   ]
 
   data_deps = [
     ":lifecycle_unittest_app",
+    ":lifecycle_unittest_exe",
     ":lifecycle_unittest_package",
   ]
 }
@@ -107,4 +110,24 @@ mojo_native_application("lifecycle_unittest_app") {
 mojo_application_manifest("lifecycle_unittest_app_manifest") {
   application_name = "lifecycle_unittest_app"
   source = "app_manifest.json"
+}
+
+executable("lifecycle_unittest_exe") {
+  testonly = true
+  sources = [
+    "lifecycle_exe.cc",
+  ]
+  deps = [
+    ":app_client",
+    ":lifecycle_unittest_exe_manifest",
+    "//base",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/runner/child:test_native_main",
+  ]
+}
+
+mojo_application_manifest("lifecycle_unittest_exe_manifest") {
+  type = "exe"
+  application_name = "lifecycle_unittest_exe"
+  source = "exe_manifest.json"
 }

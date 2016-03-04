@@ -27,6 +27,7 @@
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/runner/init.h"
@@ -100,7 +101,8 @@ class Driver : public mojo::ShellClient,
     connector->ConnectToInterface("mojo:shell", &application_manager);
     application_manager->CreateInstanceForFactory(
         std::move(factory), "exe:application_manager_unittest_target",
-        std::move(filter), std::move(request));
+        mojo::shell::mojom::Connector::kUserInherit, std::move(filter),
+        std::move(request));
 
     base::LaunchOptions options;
   #if defined(OS_WIN)

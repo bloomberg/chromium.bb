@@ -2,12 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base_paths.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/path_service.h"
+#include "base/process/process.h"
 #include "base/run_loop.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/shell/public/cpp/shell_test.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 
 namespace mojo {
@@ -15,6 +23,7 @@ namespace shell {
 namespace {
 
 const char kTestAppName[] = "mojo:lifecycle_unittest_app";
+const char kTestExeName[] = "exe:lifecycle_unittest_exe";
 const char kTestPackageName[] = "mojo:lifecycle_unittest_package";
 const char kTestPackageAppNameA[] = "mojo:lifecycle_unittest_package_app_a";
 const char kTestPackageAppNameB[] = "mojo:lifecycle_unittest_package_app_b";
@@ -153,6 +162,77 @@ class LifecycleTest : public mojo::test::ShellTest {
     connector()->ConnectToInterface(name, &lifecycle);
     PingPong(lifecycle.get());
     return lifecycle;
+  }
+
+  base::Process LaunchProcess() {
+    base::FilePath target_path;
+    CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
+  #if defined(OS_WIN)
+    target_path = target_path.Append(
+        FILE_PATH_LITERAL("lifecycle_unittest_exe.exe"));
+  #else
+    target_path = target_path.Append(
+        FILE_PATH_LITERAL("lifecycle_unittest_exe"));
+  #endif
+
+    base::CommandLine child_command_line(target_path);
+    // Forward the wait-for-debugger flag but nothing else - we don't want to
+    // stamp on the platform-channel flag.
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kWaitForDebugger)) {
+      child_command_line.AppendSwitch(switches::kWaitForDebugger);
+    }
+
+    mojo::shell::mojom::PIDReceiverPtr receiver;
+    mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =
+        GetProxy(&receiver);
+
+    // Create the channel to be shared with the target process. Pass one end
+    // on the command line.
+    mojo::edk::PlatformChannelPair platform_channel_pair;
+    mojo::edk::HandlePassingInformation handle_passing_info;
+    platform_channel_pair.PrepareToPassClientHandleToChildProcess(
+        &child_command_line, &handle_passing_info);
+
+    // Generate a token for the child to find and connect to a primordial pipe
+    // and pass that as well.
+    std::string primordial_pipe_token = mojo::edk::GenerateRandomToken();
+    child_command_line.AppendSwitchASCII(switches::kPrimordialPipeToken,
+                                         primordial_pipe_token);
+
+    // Allocate the pipe locally.
+    mojo::ScopedMessagePipeHandle pipe =
+        mojo::edk::CreateParentMessagePipe(primordial_pipe_token);
+
+    mojo::shell::mojom::CapabilityFilterPtr filter(
+        mojo::shell::mojom::CapabilityFilter::New());
+    mojo::Array<mojo::String> test_interfaces;
+    test_interfaces.push_back("*");
+    filter->filter.insert("*", std::move(test_interfaces));
+
+    mojo::shell::mojom::ApplicationManagerPtr application_manager;
+    connector()->ConnectToInterface("mojo:shell", &application_manager);
+
+    mojo::shell::mojom::ShellClientFactoryPtr factory;
+    factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
+        std::move(pipe), 0u));
+
+    application_manager->CreateInstanceForFactory(
+        std::move(factory), kTestExeName, mojom::Connector::kUserInherit,
+        std::move(filter), std::move(request));
+
+    base::LaunchOptions options;
+  #if defined(OS_WIN)
+    options.handles_to_inherit = &handle_passing_info;
+  #elif defined(OS_POSIX)
+    options.fds_to_remap = &handle_passing_info;
+  #endif
+    base::Process process = base::LaunchProcess(child_command_line, options);
+    DCHECK(process.IsValid());
+    receiver->SetPID(process.Pid());
+    mojo::edk::ChildProcessLaunched(process.Handle(),
+                                    platform_channel_pair.PassServerHandle());
+    return process;
   }
 
   void PingPong(test::mojom::LifecycleControl* lifecycle) {
@@ -383,6 +463,45 @@ TEST_F(LifecycleTest, PackagedApp_GracefulQuitPackageQuitsAll) {
   EXPECT_FALSE(instances()->HasInstanceForName(kTestPackageAppNameB));
   EXPECT_EQ(0u, instances()->GetNewInstanceCount());
 }
+
+TEST_F(LifecycleTest, Exe_GracefulQuit) {
+  base::Process process = LaunchProcess();
+
+  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestExeName);
+
+  EXPECT_TRUE(instances()->HasInstanceForName(kTestExeName));
+  EXPECT_EQ(1u, instances()->GetNewInstanceCount());
+
+  base::RunLoop loop;
+  lifecycle.set_connection_error_handler(base::Bind(&QuitLoop, &loop));
+  lifecycle->GracefulQuit();
+  loop.Run();
+
+  WaitForInstanceDestruction();
+  EXPECT_FALSE(instances()->HasInstanceForName(kTestExeName));
+  EXPECT_EQ(0u, instances()->GetNewInstanceCount());
+
+  process.Terminate(9, true);
+}
+
+TEST_F(LifecycleTest, Exe_TerminateProcess) {
+  base::Process process = LaunchProcess();
+
+  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestExeName);
+
+  EXPECT_TRUE(instances()->HasInstanceForName(kTestExeName));
+  EXPECT_EQ(1u, instances()->GetNewInstanceCount());
+
+  base::RunLoop loop;
+  lifecycle.set_connection_error_handler(base::Bind(&QuitLoop, &loop));
+  process.Terminate(9, true);
+  loop.Run();
+
+  WaitForInstanceDestruction();
+  EXPECT_FALSE(instances()->HasInstanceForName(kTestExeName));
+  EXPECT_EQ(0u, instances()->GetNewInstanceCount());
+}
+
 
 }  // namespace shell
 }  // namespace mojo

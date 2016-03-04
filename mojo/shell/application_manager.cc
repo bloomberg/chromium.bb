@@ -44,11 +44,15 @@ void EmptyResolverCallback(const String& resolved_name,
 
 // Encapsulates a connection to an instance of an application, tracked by the
 // shell's ApplicationManager.
-class ApplicationManager::Instance : public mojom::Connector,
-                                     public mojom::PIDReceiver {
+class ApplicationManager::Instance
+    : public mojom::Connector,
+      public mojom::PIDReceiver,
+      public ShellClient,
+      public InterfaceFactory<mojom::ApplicationManager>,
+      public mojom::ApplicationManager {
  public:
   Instance(mojom::ShellClientPtr shell_client,
-           ApplicationManager* manager,
+           mojo::shell::ApplicationManager* manager,
            const Identity& identity)
     : manager_(manager),
       id_(GenerateUniqueID()),
@@ -67,11 +71,11 @@ class ApplicationManager::Instance : public mojom::Connector,
 
   ~Instance() override {}
 
-  void Initialize() {
+  void InitializeClient() {
     shell_client_->Initialize(connectors_.CreateInterfacePtrAndBind(this),
                               identity_.name(), id_, identity_.user_id());
     connectors_.set_connection_error_handler(
-        base::Bind(&ApplicationManager::OnInstanceError,
+        base::Bind(&mojo::shell::ApplicationManager::OnInstanceError,
                    base::Unretained(manager_), base::Unretained(this)));
   }
 
@@ -100,7 +104,7 @@ class ApplicationManager::Instance : public mojom::Connector,
     runner_->Start(path, identity_, start_sandboxed, std::move(request),
                    base::Bind(&Instance::PIDAvailable,
                               weak_factory_.GetWeakPtr()),
-                   base::Bind(&ApplicationManager::CleanupRunner,
+                   base::Bind(&mojo::shell::ApplicationManager::CleanupRunner,
                               manager_->weak_ptr_factory_.GetWeakPtr(),
                               runner_));
     return runner;
@@ -132,13 +136,21 @@ class ApplicationManager::Instance : public mojom::Connector,
   const Identity& identity() const { return identity_; }
   uint32_t id() const { return id_; }
 
+  // ShellClient:
+  bool AcceptConnection(Connection* connection) override {
+    connection->AddInterface<mojom::ApplicationManager>(this);
+    return true;
+  }
+
  private:
-  // Connector implementation:
+  // mojom::Connector implementation:
   void Connect(const String& app_name,
                uint32_t user_id,
                shell::mojom::InterfaceProviderRequest remote_interfaces,
                shell::mojom::InterfaceProviderPtr local_interfaces,
                const ConnectCallback& callback) override {
+    // TODO(beng): perform checking on policy of whether this instance is
+    // allowed to pass different user_ids.
     if (!IsValidName(app_name)) {
       LOG(ERROR) << "Error: invalid Name: " << app_name;
       callback.Run(kInvalidApplicationID, kUserInherit);
@@ -164,9 +176,36 @@ class ApplicationManager::Instance : public mojom::Connector,
     connectors_.AddBinding(this, std::move(request));
   }
 
-  // PIDReceiver implementation:
+  // mojom::PIDReceiver:
   void SetPID(uint32_t pid) override {
     PIDAvailable(pid);
+  }
+
+  // InterfaceFactory<mojom::ApplicationManager>:
+  void Create(Connection* connection,
+              mojom::ApplicationManagerRequest request) override {
+    application_manager_bindings_.AddBinding(this, std::move(request));
+  }
+
+  // mojom::ApplicationManager implementation:
+  void CreateInstanceForFactory(
+      mojom::ShellClientFactoryPtr factory,
+      const String& name,
+      uint32_t user_id,
+      mojom::CapabilityFilterPtr filter,
+      mojom::PIDReceiverRequest pid_receiver) override {
+    // TODO(beng): perform checking on policy of whether this instance is
+    // allowed to pass different user_ids.
+    if (user_id == mojom::Connector::kUserInherit)
+      user_id = identity_.user_id();
+    manager_->CreateInstanceForFactory(std::move(factory), name, user_id,
+                                       std::move(filter),
+                                       std::move(pid_receiver));
+  }
+  void AddInstanceListener(mojom::InstanceListenerPtr listener) override {
+    // TODO(beng): this should only track the instances matching this user, and
+    // root.
+    manager_->AddInstanceListener(std::move(listener));
   }
 
   uint32_t GenerateUniqueID() const {
@@ -181,7 +220,7 @@ class ApplicationManager::Instance : public mojom::Connector,
     manager_->NotifyPIDAvailable(id_, pid_);
   }
 
-  ApplicationManager* const manager_;
+  mojo::shell::ApplicationManager* const manager_;
   // An id that identifies this instance. Distinct from pid, as a single process
   // may vend multiple application instances, and this object may exist before a
   // process is launched.
@@ -191,6 +230,7 @@ class ApplicationManager::Instance : public mojom::Connector,
   mojom::ShellClientPtr shell_client_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
   BindingSet<mojom::Connector> connectors_;
+  BindingSet<mojom::ApplicationManager> application_manager_bindings_;
   NativeRunner* runner_ = nullptr;
   base::ProcessId pid_ = base::kNullProcessId;
   base::WeakPtrFactory<Instance> weak_factory_;
@@ -295,50 +335,21 @@ void ApplicationManager::SetLoaderForName(scoped_ptr<Loader> loader,
 // ApplicationManager, ShellClient implementation:
 
 bool ApplicationManager::AcceptConnection(Connection* connection) {
-  connection->AddInterface<mojom::ApplicationManager>(this);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ApplicationManager, InterfaceFactory<mojom::ApplicationManager>
-//     implementation:
-
-void ApplicationManager::Create(Connection* connection,
-                                mojom::ApplicationManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ApplicationManager, mojom::ApplicationManager implemetation:
-
-void ApplicationManager::CreateInstanceForFactory(
-    mojom::ShellClientFactoryPtr factory,
-    const String& name,
-    mojom::CapabilityFilterPtr filter,
-    mojom::PIDReceiverRequest pid_receiver) {
-  // We don't call ConnectToClient() here since the instance was created
-  // manually by other code, not in response to a Connect() request. The newly
-  // created instance is identified by |name| and may be subsequently reached by
-  // client code using this identity.
-  // TODO(beng): obtain userid from the inbound connection.
-  Identity target_id(name, std::string(), mojom::Connector::kUserInherit);
-  target_id.set_filter(filter->filter.To<CapabilityFilter>());
-  mojom::ShellClientRequest request;
-  Instance* instance = CreateInstance(target_id, &request);
-  native_runners_.push_back(
-      instance->StartWithFactory(std::move(factory), name, std::move(request),
-                                 std::move(pid_receiver),
-                                 native_runner_factory_.get()));
-}
-
-void ApplicationManager::AddInstanceListener(
-    mojom::InstanceListenerPtr listener) {
-  Array<mojom::InstanceInfoPtr> instances;
-  for (auto& instance : identity_to_instance_)
-    instances.push_back(instance.second->CreateInstanceInfo());
-  listener->SetExistingInstances(std::move(instances));
-
-  instance_listeners_.AddInterfacePtr(std::move(listener));
+  // The only interface we expose is mojom::ApplicationManager, and access to
+  // this interface is brokered by a policy specific to each caller, managed by
+  // the caller's instance. Here we look to see who's calling, and forward to
+  // the caller's instance to continue.
+  uint32_t caller_instance_id = mojom::Connector::kInvalidApplicationID;
+  CHECK(connection->GetRemoteApplicationID(&caller_instance_id));
+  Instance* instance = nullptr;
+  for (const auto& entry : identity_to_instance_) {
+    if (entry.second->id() == caller_instance_id) {
+      instance = entry.second;
+      break;
+    }
+  }
+  DCHECK(instance);
+  return instance->AcceptConnection(connection);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -424,8 +435,40 @@ ApplicationManager::Instance* ApplicationManager::CreateInstance(
       [this, &info](mojom::InstanceListener* listener) {
         listener->InstanceCreated(info.Clone());
       });
-  instance->Initialize();
+  instance->InitializeClient();
   return instance;
+}
+
+void ApplicationManager::CreateInstanceForFactory(
+    mojom::ShellClientFactoryPtr factory,
+    const String& name,
+    uint32_t user_id,
+    mojom::CapabilityFilterPtr filter,
+    mojom::PIDReceiverRequest pid_receiver) {
+  DCHECK(user_id != mojom::Connector::kUserInherit);
+  // We don't call ConnectToClient() here since the instance was created
+  // manually by other code, not in response to a Connect() request. The newly
+  // created instance is identified by |name| and may be subsequently reached by
+  // client code using this identity.
+  Identity target_id(name, std::string(), mojom::Connector::kUserRoot);
+  target_id.set_filter(filter->filter.To<CapabilityFilter>());
+  mojom::ShellClientRequest request;
+  Instance* instance = CreateInstance(target_id, &request);
+  native_runners_.push_back(
+      instance->StartWithFactory(std::move(factory), name, std::move(request),
+                                 std::move(pid_receiver),
+                                 native_runner_factory_.get()));
+}
+
+void ApplicationManager::AddInstanceListener(
+    mojom::InstanceListenerPtr listener) {
+  // TODO(beng): filter instances provided by those visible to this client.
+  Array<mojom::InstanceInfoPtr> instances;
+  for (auto& instance : identity_to_instance_)
+    instances.push_back(instance.second->CreateInstanceInfo());
+  listener->SetExistingInstances(std::move(instances));
+
+  instance_listeners_.AddInterfacePtr(std::move(listener));
 }
 
 void ApplicationManager::CreateShellClient(
