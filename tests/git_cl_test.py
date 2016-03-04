@@ -17,6 +17,7 @@ from testing_support.auto_stub import TestCase
 
 import git_cl
 import git_common
+import git_footers
 import subprocess2
 
 class PresubmitMock(object):
@@ -588,7 +589,7 @@ class TestGitCl(TestCase):
            'fake_ancestor_sha..HEAD'],),
          description)
         ]
-    if git_cl.CHANGE_ID not in description:
+    if not git_footers.get_footer_change_id(description) and not squash:
       calls += [
           ((['git', 'log', '--pretty=format:%s\n\n%b',
              'fake_ancestor_sha..HEAD'],),

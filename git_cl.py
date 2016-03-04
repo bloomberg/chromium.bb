@@ -64,7 +64,6 @@ DEFAULT_SERVER = 'https://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 GIT_INSTRUCTIONS_URL = 'http://code.google.com/p/chromium/wiki/UsingGit'
-CHANGE_ID = 'Change-Id:'
 REFS_THAT_ALIAS_TO_OTHER_REFS = {
     'refs/remotes/origin/lkgr': 'refs/remotes/origin/master',
     'refs/remotes/origin/lkcr': 'refs/remotes/origin/master',
@@ -2212,40 +2211,17 @@ def GerritUpload(options, args, cl, change):
     if not message:
       if not options.force:
         change_desc.prompt()
-
-      if CHANGE_ID not in change_desc.description:
-        # Run the commit-msg hook without modifying the head commit by writing
-        # the commit message to a temporary file and running the hook over it,
-        # then reading the file back in.
-        commit_msg_hook = os.path.join(settings.GetRoot(), '.git', 'hooks',
-                                       'commit-msg')
-        file_handle, msg_file = tempfile.mkstemp(text=True,
-                                                 prefix='commit_msg')
-        logging.debug("%s %s", file_handle, msg_file)
-        try:
-          try:
-            try:
-              fileobj = os.fdopen(file_handle, 'w')
-            except OSError:
-              # if fdopen fails, file_handle remains open.
-              # See https://docs.python.org/2/library/os.html#os.fdopen.
-              os.close(file_handle)
-              raise
-            with fileobj:
-              # This will close the file_handle.
-              fileobj.write(change_desc.description)
-            logging.debug("%s %s finish editing", file_handle, msg_file)
-          finally:
-            RunCommand([commit_msg_hook, msg_file])
-            change_desc.set_description(gclient_utils.FileRead(msg_file))
-        finally:
-          os.remove(msg_file)
-
       if not change_desc.description:
         print "Description is empty; aborting."
         return 1
-
       message = change_desc.description
+      change_ids = git_footers.get_footer_change_id(message)
+      if len(change_ids) > 1:
+        DieWithError('too many Change-Id footers in %s branch' % shadow_branch)
+      if not change_ids:
+        message = git_footers.add_footer_change_id(
+            message, GenerateGerritChangeId(message))
+        change_desc.set_description(message)
 
     remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
     if remote is '.':
