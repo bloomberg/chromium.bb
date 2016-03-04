@@ -242,6 +242,8 @@
           'type': 'none',
           'variables': {
             'filters': [
+              # ComponentDeathTest is unable to fork processes on Android
+              'cast_base_unittests_apk --gtest_filter=*:-ComponentDeathTest.*',
               # LayerTreeHost has dozens of separate crashing test cases on Fugu. (b/22512618)
               'cc_unittests_apk --gtest_filter=*:-LayerTreeHost*',
               # The following tests all crash on fugu.
