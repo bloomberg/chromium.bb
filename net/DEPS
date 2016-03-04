@@ -61,11 +61,7 @@ specific_include_rules = {
     "+third_party/brotli",
   ],
 
-  "get_domain_and_registry_fuzzer.cc": [
-    "+base/i18n",
-  ],
-
-  "ftp_directory_listing_fuzzer.cc": [
+  "fuzzer_test_support.cc": [
     "+base/i18n",
   ],
 }

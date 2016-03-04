@@ -5,19 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/at_exit.h"
-#include "base/i18n/icu_util.h"
 #include "base/strings/string_piece.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
-
-// Initialize ICU.
-struct InitICU {
-  InitICU() { CHECK(base::i18n::InitializeICU()); }
-  base::AtExitManager at_exit_manager;
-};
-
-InitICU* init_icu = new InitICU();
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
