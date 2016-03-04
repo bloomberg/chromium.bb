@@ -114,6 +114,18 @@ protected:
         : m_prev(0)
         , m_next(0) { }
 
+    LinkedHashSetNodeBase(LinkedHashSetNodeBase&& other)
+        : m_prev(other.m_prev)
+        , m_next(other.m_next)
+    {
+        other.m_prev = nullptr;
+        other.m_next = nullptr;
+        if (m_next) {
+            m_prev->m_next = this;
+            m_next->m_prev = this;
+        }
+    }
+
 private:
     // Should not be used.
     LinkedHashSetNodeBase& operator=(const LinkedHashSetNodeBase& other);
@@ -121,7 +133,7 @@ private:
 
 template<typename ValueArg, typename Allocator>
 class LinkedHashSetNode : public LinkedHashSetNodeBase {
-    DISALLOW_NEW();
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     LinkedHashSetNode(const ValueArg& value, LinkedHashSetNodeBase* prev, LinkedHashSetNodeBase* next)
         : LinkedHashSetNodeBase(prev, next)
@@ -129,11 +141,16 @@ public:
     {
     }
 
+    LinkedHashSetNode(LinkedHashSetNode&& other)
+        : LinkedHashSetNodeBase(std::move(other))
+        , m_value(std::move(other.m_value))
+    {
+    }
+
     ValueArg m_value;
 
 private:
-    // Not used.
-    LinkedHashSetNode(const LinkedHashSetNode&);
+    WTF_MAKE_NONCOPYABLE(LinkedHashSetNode);
 };
 
 template<

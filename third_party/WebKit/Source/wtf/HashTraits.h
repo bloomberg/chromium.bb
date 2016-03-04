@@ -66,6 +66,18 @@ template <typename T> struct GenericHashTraitsBase<false, T> {
     struct NeedsTracingLazily {
         static const bool value = NeedsTracing<T>::value;
     };
+
+    // The NeedsToForbidGCOnMove flag is used to make the hash table move
+    // operations safe when GC is enabled: if a move constructor invokes
+    // an allocation triggering the GC then it should be invoked within GC
+    // forbidden scope.
+    template <typename U = void>
+    struct NeedsToForbidGCOnMove {
+        // TODO(yutak): Consider using of std:::is_trivially_move_constructible
+        // when it is accessible.
+        static const bool value = !std::is_pod<T>::value;
+    };
+
     static const WeakHandlingFlag weakHandlingFlag = IsWeak<T>::value ? WeakHandlingInCollections : NoWeakHandlingInCollections;
 };
 
@@ -138,6 +150,10 @@ template <typename P> struct HashTraits<P*> : GenericHashTraits<P*> {
 
 template <typename T> struct SimpleClassHashTraits : GenericHashTraits<T> {
     static const bool emptyValueIsZero = true;
+    template <typename U = void>
+    struct NeedsToForbidGCOnMove {
+        static const bool value = false;
+    };
     static void constructDeletedValue(T& slot, bool) { new (NotNull, &slot) T(HashTableDeletedValue); }
     static bool isDeletedValue(const T& value) { return value.isHashTableDeletedValue(); }
 };
@@ -255,9 +271,9 @@ struct KeyValuePair {
     }
 
     template <typename OtherKeyType, typename OtherValueType>
-    KeyValuePair(const KeyValuePair<OtherKeyType, OtherValueType>& other)
-        : key(other.key)
-        , value(other.value)
+    KeyValuePair(KeyValuePair<OtherKeyType, OtherValueType>&& other)
+        : key(std::move(other.key))
+        , value(std::move(other.value))
     {
     }
 
@@ -279,6 +295,12 @@ struct KeyValuePairHashTraits : GenericHashTraits<KeyValuePair<typename KeyTrait
     struct NeedsTracingLazily {
         static const bool value = NeedsTracingTrait<KeyTraits>::value || NeedsTracingTrait<ValueTraits>::value;
     };
+
+    template <typename U = void>
+    struct NeedsToForbidGCOnMove {
+        static const bool value = KeyTraits::template NeedsToForbidGCOnMove<>::value || ValueTraits::template NeedsToForbidGCOnMove<>::value;
+    };
+
     static const WeakHandlingFlag weakHandlingFlag = (KeyTraits::weakHandlingFlag == WeakHandlingInCollections || ValueTraits::weakHandlingFlag == WeakHandlingInCollections) ? WeakHandlingInCollections : NoWeakHandlingInCollections;
 
     static const unsigned minimumTableSize = KeyTraits::minimumTableSize;

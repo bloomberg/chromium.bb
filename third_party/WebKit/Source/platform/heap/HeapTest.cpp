@@ -5879,7 +5879,8 @@ public:
 
     AllocatesOnAssignment(const AllocatesOnAssignment& other)
     {
-        conservativelyCollectGarbage();
+        if (!ThreadState::current()->isGCForbidden())
+            conservativelyCollectGarbage();
         m_value = new IntWrapper(other.m_value->value());
     }
 

@@ -249,37 +249,24 @@ private:
 
 using std::swap;
 
-// Work around MSVC's standard library, whose swap for pairs does not swap by component.
-template <typename T> inline void hashTableSwap(T& a, T& b)
-{
-    swap(a, b);
-}
-
-template <typename T, typename U> inline void hashTableSwap(KeyValuePair<T, U>& a, KeyValuePair<T, U>& b)
-{
-    swap(a.key, b.key);
-    swap(a.value, b.value);
-}
-
-template <typename T, typename Allocator, bool useSwap = !IsTriviallyDestructible<T>::value>
-struct Mover;
-template <typename T, typename Allocator> struct Mover<T, Allocator, true> {
+template <typename T, typename Allocator, bool enterGCForbiddenScope> struct Mover {
     STATIC_ONLY(Mover);
-    static void move(T& from, T& to)
+    static void move(T&& from, T& to)
     {
-        // The key and value cannot be swapped atomically, and it would be wrong
-        // to have a GC when only one was swapped and the other still contained
-        // garbage (eg. from a previous use of the same slot).  Therefore we
-        // forbid a GC until both the key and the value are swapped.
-        Allocator::enterGCForbiddenScope();
-        hashTableSwap(from, to);
-        Allocator::leaveGCForbiddenScope();
+        to.~T();
+        new (NotNull, &to) T(std::move(from));
     }
 };
 
-template <typename T, typename Allocator> struct Mover<T, Allocator, false> {
+template <typename T, typename Allocator> struct Mover<T, Allocator, true> {
     STATIC_ONLY(Mover);
-    static void move(T& from, T& to) { to = from; }
+    static void move(T&& from, T& to)
+    {
+        to.~T();
+        Allocator::enterGCForbiddenScope();
+        new (NotNull, &to) T(std::move(from));
+        Allocator::leaveGCForbiddenScope();
+    }
 };
 
 template <typename HashFunctions> class IdentityHashTranslator {
@@ -544,7 +531,7 @@ private:
     ValueType* expandBuffer(unsigned newTableSize, ValueType* entry, bool&);
     ValueType* rehashTo(ValueType* newTable, unsigned newTableSize, ValueType* entry);
     ValueType* rehash(unsigned newTableSize, ValueType* entry);
-    ValueType* reinsert(ValueType&);
+    ValueType* reinsert(ValueType&&);
 
     static void initializeBucket(ValueType& bucket);
     static void deleteBucket(ValueType& bucket)
@@ -908,7 +895,7 @@ typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allo
 }
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::reinsert(ValueType& entry)
+Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::reinsert(ValueType&& entry)
 {
     ASSERT(m_table);
     registerModification();
@@ -921,7 +908,7 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
     ++m_stats->numReinserts;
 #endif
     Value* newEntry = lookupForWriting(Extractor::extract(entry)).first;
-    Mover<ValueType, Allocator>::move(entry, *newEntry);
+    Mover<ValueType, Allocator, Traits::template NeedsToForbidGCOnMove<>::value>::move(std::move(entry), *newEntry);
 
     return newEntry;
 }
@@ -1098,7 +1085,7 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
                 initializeBucket(temporaryTable[i]);
             }
         } else {
-            Mover<ValueType, Allocator>::move(m_table[i], temporaryTable[i]);
+            Mover<ValueType, Allocator, Traits::template NeedsToForbidGCOnMove<>::value>::move(std::move(m_table[i]), temporaryTable[i]);
         }
     }
     m_table = temporaryTable;
@@ -1148,7 +1135,7 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
             ASSERT(&oldTable[i] != entry);
             continue;
         }
-        Value* reinsertedEntry = reinsert(oldTable[i]);
+        Value* reinsertedEntry = reinsert(std::move(oldTable[i]));
         if (&oldTable[i] == entry) {
             ASSERT(!newEntry);
             newEntry = reinsertedEntry;
