@@ -69,7 +69,7 @@ function test()
     function scssUISourceCodeAdded(uiSourceCode)
     {
         InspectorTest.addResult("Added SCSS uiSourceCode: " + uiSourceCode.url());
-        setImmediate(afterStyleSheetAdded);
+        InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "pushSourceMapping", afterStyleSheetAdded);
     }
 
     function rawLocationToUILocation(line, column)
