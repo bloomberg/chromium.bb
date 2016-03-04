@@ -338,8 +338,8 @@ BASEREPOCONFIG="dl.google.com/linux/chrome/deb/ stable main"
 REPOCONFIG="${REPOCONFIG-deb [arch=${ARCHITECTURE}] http://${BASEREPOCONFIG}}"
 # Allowed configs include optional HTTPS support and explicit multiarch
 # platforms.
-REPOCONFIGREGEX="deb (\\\\[arch=[^]]*\\\\b${ARCHITECTURE}\\\\b[^]]*\\\\]" \
-"[[:space:]]*)?https?://${BASEREPOCONFIG}"
+REPOCONFIGREGEX="deb (\\\\[arch=[^]]*\\\\b${ARCHITECTURE}\\\\b[^]]*\\\\]"
+REPOCONFIGREGEX+="[[:space:]]*)?https?://${BASEREPOCONFIG}"
 stage_install_debian
 
 do_package
