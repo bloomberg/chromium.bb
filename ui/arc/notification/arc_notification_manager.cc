@@ -37,40 +37,45 @@ void ArcNotificationManager::OnNotificationsInstanceReady() {
 void ArcNotificationManager::OnNotificationsInstanceClosed() {
   DCHECK(ready_);
   while (!items_.empty()) {
-    auto item = items_.begin();
-    item->second->OnClosedFromAndroid(false /* by_user */);
-    items_.erase(item);
+    auto it = items_.begin();
+    items_.erase(it);
+    it->second->OnClosedFromAndroid(false /* by_user */);
   }
   ready_ = false;
 }
 
 void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
-  ArcNotificationItem* item = items_.get(data->key);
-  if (!item) {
+  const std::string& key = data->key;
+  auto it = items_.find(key);
+  if (it == items_.end()) {
     // Show a notification on the primary loged-in user's desktop.
     // TODO(yoshiki): Reconsider when ARC supports multi-user.
-    item = new ArcNotificationItem(this, message_center::MessageCenter::Get(),
-                                   data->key, main_profile_id_);
-    items_.set(data->key, make_scoped_ptr(item));
+    ArcNotificationItem* item = new ArcNotificationItem(
+        this, message_center::MessageCenter::Get(), key, main_profile_id_);
+    // TODO(yoshiki): Use emplacement for performance when it's available.
+    auto result = items_.insert(std::make_pair(key, make_scoped_ptr(item)));
+    DCHECK(result.second);
+    it = result.first;
   }
-  item->UpdateWithArcNotificationData(*data);
+  it->second->UpdateWithArcNotificationData(*data);
 }
 
 void ArcNotificationManager::OnNotificationRemoved(const mojo::String& key) {
-  ItemMap::iterator it = items_.find(key.get());
+  auto it = items_.find(key.get());
   if (it == items_.end()) {
     VLOG(3) << "Android requests to remove a notification (key: " << key
             << "), but it is already gone.";
     return;
   }
 
-  scoped_ptr<ArcNotificationItem> item(items_.take_and_erase(it));
+  scoped_ptr<ArcNotificationItem> item = std::move(it->second);
+  items_.erase(it);
   item->OnClosedFromAndroid(true /* by_user */);
 }
 
 void ArcNotificationManager::SendNotificationRemovedFromChrome(
     const std::string& key) {
-  ItemMap::iterator it = items_.find(key);
+  auto it = items_.find(key);
   if (it == items_.end()) {
     VLOG(3) << "Chrome requests to remove a notification (key: " << key
             << "), but it is already gone.";
@@ -79,7 +84,8 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
 
   // The removed ArcNotificationItem needs to live in this scope, since the
   // given argument |key| may be a part of the removed item.
-  scoped_ptr<ArcNotificationItem> item(items_.take_and_erase(it));
+  scoped_ptr<ArcNotificationItem> item = std::move(it->second);
+  items_.erase(it);
 
   auto notifications_instance = arc_bridge_service()->notifications_instance();
 
@@ -96,7 +102,7 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
 
 void ArcNotificationManager::SendNotificationClickedOnChrome(
     const std::string& key) {
-  if (!items_.contains(key)) {
+  if (items_.find(key) == items_.end()) {
     VLOG(3) << "Chrome requests to fire a click event on notification (key: "
             << key << "), but it is gone.";
     return;
@@ -117,7 +123,7 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
 
 void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
     const std::string& key, int button_index) {
-  if (!items_.contains(key)) {
+  if (items_.find(key) == items_.end()) {
     VLOG(3) << "Chrome requests to fire a click event on notification (key: "
             << key << "), but it is gone.";
     return;

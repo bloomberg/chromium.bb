@@ -5,10 +5,9 @@
 #ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_MANAGER_H_
 #define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_MANAGER_H_
 
-#include <map>
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/notifications.mojom.h"
@@ -45,7 +44,7 @@ class ArcNotificationManager : public ArcService,
   const AccountId main_profile_id_;
 
   using ItemMap =
-      base::ScopedPtrHashMap<std::string, scoped_ptr<ArcNotificationItem>>;
+      std::unordered_map<std::string, scoped_ptr<ArcNotificationItem>>;
   ItemMap items_;
 
   bool ready_ = false;
