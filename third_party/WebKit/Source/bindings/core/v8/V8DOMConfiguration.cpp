@@ -138,7 +138,7 @@ void installAccessorInternal(v8::Isolate* isolate, v8::Local<ObjectOrTemplate> i
     }
 }
 
-void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> functionDescriptor, v8::Local<v8::ObjectTemplate> prototypeTemplate, const V8DOMConfiguration::ConstantConfiguration& constant)
+void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const V8DOMConfiguration::ConstantConfiguration& constant)
 {
     v8::Local<v8::String> constantName = v8AtomicString(isolate, constant.name);
     v8::PropertyAttribute attributes =
@@ -160,7 +160,7 @@ void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::FunctionTemplat
     default:
         ASSERT_NOT_REACHED();
     }
-    functionDescriptor->Set(constantName, value, attributes);
+    interfaceTemplate->Set(constantName, value, attributes);
     prototypeTemplate->Set(constantName, value, attributes);
 }
 
@@ -259,23 +259,23 @@ void V8DOMConfiguration::installAccessor(v8::Isolate* isolate, v8::Local<v8::Obj
     installAccessorInternal(isolate, instance, prototype, interface, signature, accessor, world);
 }
 
-void V8DOMConfiguration::installConstants(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> functionDescriptor, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration* constants, size_t constantCount)
+void V8DOMConfiguration::installConstants(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration* constants, size_t constantCount)
 {
     for (size_t i = 0; i < constantCount; ++i)
-        installConstantInternal(isolate, functionDescriptor, prototypeTemplate, constants[i]);
+        installConstantInternal(isolate, interfaceTemplate, prototypeTemplate, constants[i]);
 }
 
-void V8DOMConfiguration::installConstant(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> functionDescriptor, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration& constant)
+void V8DOMConfiguration::installConstant(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration& constant)
 {
-    installConstantInternal(isolate, functionDescriptor, prototypeTemplate, constant);
+    installConstantInternal(isolate, interfaceTemplate, prototypeTemplate, constant);
 }
 
-void V8DOMConfiguration::installConstantWithGetter(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> functionDescriptor, v8::Local<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorNameGetterCallback getter)
+void V8DOMConfiguration::installConstantWithGetter(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorNameGetterCallback getter)
 {
     v8::Local<v8::String> constantName = v8AtomicString(isolate, name);
     v8::PropertyAttribute attributes =
         static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete);
-    functionDescriptor->SetNativeDataProperty(constantName, getter, 0, v8::Local<v8::Value>(), attributes);
+    interfaceTemplate->SetNativeDataProperty(constantName, getter, 0, v8::Local<v8::Value>(), attributes);
     prototypeTemplate->SetNativeDataProperty(constantName, getter, 0, v8::Local<v8::Value>(), attributes);
 }
 
@@ -304,31 +304,26 @@ void V8DOMConfiguration::installMethod(v8::Isolate* isolate, v8::Local<v8::Objec
     installMethodInternal(isolate, v8::Local<v8::ObjectTemplate>(), prototypeTemplate, v8::Local<v8::FunctionTemplate>(), signature, method, world);
 }
 
-v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Local<v8::FunctionTemplate> parentClass, size_t fieldCount,
-    const AttributeConfiguration* attributes, size_t attributeCount,
-    const AccessorConfiguration* accessors, size_t accessorCount,
-    const MethodConfiguration* methods, size_t methodCount)
+void V8DOMConfiguration::initializeDOMInterfaceTemplate(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> interfaceTemplate, const char* interfaceName, v8::Local<v8::FunctionTemplate> parentInterfaceTemplate, size_t v8InternalFieldCount)
 {
-    functionDescriptor->SetClassName(v8AtomicString(isolate, interfaceName));
-    v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
-    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionDescriptor->PrototypeTemplate();
-    instanceTemplate->SetInternalFieldCount(fieldCount);
-    if (!parentClass.IsEmpty()) {
-        functionDescriptor->Inherit(parentClass);
+    interfaceTemplate->SetClassName(v8AtomicString(isolate, interfaceName));
+    interfaceTemplate->ReadOnlyPrototype();
+    v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
+    instanceTemplate->SetInternalFieldCount(v8InternalFieldCount);
+    // TODO(yukishiino): We should set the class string to the platform object
+    // (|instanceTemplate|), too.  The reason that we don't set it is that
+    // it prevents minor GC to collect unreachable DOM objects (a layout test
+    // fast/dom/minor-dom-gc.html fails if we set the class string).
+    // See also http://heycam.github.io/webidl/#es-platform-objects
+    setClassString(isolate, prototypeTemplate, interfaceName);
+    if (!parentInterfaceTemplate.IsEmpty()) {
+        interfaceTemplate->Inherit(parentInterfaceTemplate);
         // Marks the prototype object as one of native-backed objects.
         // This is needed since bug 110436 asks WebKit to tell native-initiated prototypes from pure-JS ones.
         // This doesn't mark kinds "root" classes like Node, where setting this changes prototype chain structure.
         prototypeTemplate->SetInternalFieldCount(v8PrototypeInternalFieldcount);
     }
-
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, functionDescriptor);
-    if (attributeCount)
-        installAttributes(isolate, instanceTemplate, prototypeTemplate, attributes, attributeCount);
-    if (accessorCount)
-        installAccessors(isolate, instanceTemplate, prototypeTemplate, functionDescriptor, defaultSignature, accessors, accessorCount);
-    if (methodCount)
-        installMethods(isolate, instanceTemplate, prototypeTemplate, functionDescriptor, defaultSignature, methods, methodCount);
-    return defaultSignature;
 }
 
 v8::Local<v8::FunctionTemplate> V8DOMConfiguration::domClassTemplate(v8::Isolate* isolate, WrapperTypeInfo* wrapperTypeInfo, void (*configureDOMClassTemplate)(v8::Local<v8::FunctionTemplate>, v8::Isolate*))

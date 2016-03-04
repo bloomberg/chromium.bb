@@ -268,87 +268,83 @@ const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {% from 'attributes.cpp' import attribute_configuration with context %}
 {% from 'constants.cpp' import install_constants with context %}
 {% if has_partial_interface or is_partial %}
-void {{v8_class_or_partial}}::install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+void {{v8_class_or_partial}}::install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
 {% else %}
-static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
+static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Isolate* isolate)
 {% endif %}
 {
+    {% set newline = '' %}
+    // Initialize the interface object's template.
     {% if is_partial %}
-    {{v8_class}}::install{{v8_class}}Template(functionTemplate, isolate);
+    {{v8_class}}::install{{v8_class}}Template(interfaceTemplate, isolate);
     {% else %}
-    functionTemplate->ReadOnlyPrototype();
-    {% endif %}
-
-    v8::Local<v8::Signature> defaultSignature;
-    {% set parent_template =
+    {% set parent_interface_template =
            '%s::domTemplateForNamedPropertiesObject(isolate)' % v8_class
            if has_named_properties_object else
            'V8%s::domTemplate(isolate)' % parent_interface
-           if parent_interface else 'v8::Local<v8::FunctionTemplate>()' %}
-    {% if runtime_enabled_function %}
-    if (!{{runtime_enabled_function}}())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName, {{parent_template}}, {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0);
-    else
-    {% endif %}
-    {% set runtime_enabled_indent = 4 if runtime_enabled_function else 0 %}
-    {% filter indent(runtime_enabled_indent, true) %}
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName, {{parent_template}}, {{v8_class}}::internalFieldCount,
-        {# Test needed as size 0 arrays definitions are not allowed per standard
-           (so objects have distinct addresses), which is enforced by MSVC.
-           8.5.1 Aggregates [dcl.init.aggr]
-           An array of unknown size initialized with a brace-enclosed
-           initializer-list containing n initializer-clauses, where n shall be
-           greater than zero, is defined as having n elements (8.3.4). #}
-        {% set attributes_name, attributes_length =
-               ('%sAttributes' % v8_class,
-                'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class)
-           if has_attribute_configuration else (0, 0) %}
-        {% set accessors_name, accessors_length =
-               ('%sAccessors' % v8_class,
-                'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class)
-           if has_accessor_configuration else (0, 0) %}
-        {% set methods_name, methods_length =
-               ('%sMethods' % v8_class,
-                'WTF_ARRAY_LENGTH(%sMethods)' % v8_class)
-           if method_configuration_methods else (0, 0) %}
-        {{attributes_name}}, {{attributes_length}},
-        {{accessors_name}}, {{accessors_length}},
-        {{methods_name}}, {{methods_length}});
-    {% endfilter %}
-
+           if parent_interface else
+           'v8::Local<v8::FunctionTemplate>()' %}
+    V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName, {{parent_interface_template}}, {{v8_class}}::internalFieldCount);
     {% if constructors or has_custom_constructor or has_event_constructor %}
-    functionTemplate->SetCallHandler({{v8_class}}::constructorCallback);
-    functionTemplate->SetLength({{interface_length}});
+    interfaceTemplate->SetCallHandler({{v8_class}}::constructorCallback);
+    interfaceTemplate->SetLength({{interface_length}});
     {% endif %}
-    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
+    {% endif %}{# is_partial #}
+    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+    ALLOW_UNUSED_LOCAL(signature);
+    v8::Local<v8::ObjectTemplate> instanceTemplate = interfaceTemplate->InstanceTemplate();
     ALLOW_UNUSED_LOCAL(instanceTemplate);
-    v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
+    v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
-    {% if not is_partial %}
-    {# TODO(yukishiino): We should set the class string to the platform object
-       (|instanceTemplate|), too.  The reason that we don\'t set it is that
-       it prevents minor GC to collect unreachable DOM objects (a layout test
-       fast/dom/minor-dom-gc.html fails if we set the class string).
-       See also http://heycam.github.io/webidl/#es-platform-objects #}
-    V8DOMConfiguration::setClassString(isolate, prototypeTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName);
+
+    {%- if not is_partial %}
+    {% if interface_name == 'Window' %}{{newline}}
+    prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
     {% endif %}
-    {% if custom_registration_methods %}
-    ExecutionContext* context = currentExecutionContext(isolate);
-    ALLOW_UNUSED_LOCAL(context);
+    {% if is_global or interface_name == 'HTMLDocument' %}{{newline}}
+    interfaceTemplate->SetHiddenPrototype(true);
     {% endif %}
-    {% if has_access_check_callbacks %}
+    {% endif %}
+
+    // Register DOM constants, attributes and operations.
+    {% if runtime_enabled_function %}
+    if ({{runtime_enabled_function}}()) {
+    {% endif %}
+    {% filter indent(4 if runtime_enabled_function else 0, true) %}
+    {% if constants %}
+    {{install_constants() | indent}}
+    {% endif %}
+    {% if has_attribute_configuration %}
+    V8DOMConfiguration::installAttributes(isolate, instanceTemplate, prototypeTemplate, {{'%sAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class}});
+    {% endif %}
+    {% if has_accessor_configuration %}
+    V8DOMConfiguration::installAccessors(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sAccessors' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class}});
+    {% endif %}
+    {% if method_configuration_methods %}
+    V8DOMConfiguration::installMethods(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sMethods' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sMethods)' % v8_class}});
+    {% endif %}
+    {% endfilter %}{{newline}}
+    {% if runtime_enabled_function %}
+    } // if ({{runtime_enabled_function}}())
+    {% endif %}
+
+    {%- if has_access_check_callbacks %}{{newline}}
+    // Cross-origin access check
     instanceTemplate->SetAccessCheckCallback({{cpp_class}}V8Internal::securityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
-    {% if has_array_iterator %}
+
+    {%- if has_array_iterator %}{{newline}}
+    // Array iterator
     {% filter runtime_enabled('RuntimeEnabledFeatures::iterableCollectionsEnabled') %}
     {% if is_global %}
     instanceTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
     {% else %}
     prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
     {% endif %}
-    {% endfilter %}{# runtime_enabled() #}
+    {% endfilter %}
     {% endif %}
-    {% set runtime_enabled_features = dict() %}
+
+    {%- set runtime_enabled_features = dict() %}
     {% for attribute in attributes
        if attribute.runtime_enabled_function and
           not attribute.exposed_test %}
@@ -357,7 +353,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
         {% endif %}
         {% set unused = runtime_enabled_features.get(attribute.runtime_enabled_function).append(attribute) %}
     {% endfor %}
-    {% for runtime_enabled_feature in runtime_enabled_features | sort %}
+    {% for runtime_enabled_feature in runtime_enabled_features | sort %}{{newline}}
     if ({{runtime_enabled_feature}}()) {
         {% set distinct_attributes = [] %}
         {% for attribute in runtime_enabled_features.get(runtime_enabled_feature) | sort
@@ -370,37 +366,41 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
         {% else %}
         const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration = \
         {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessor{{attribute.name}}Configuration);
+        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessor{{attribute.name}}Configuration);
         {% endif %}
         {% endfor %}
     }
     {% endfor %}
-    {% if constants %}
-    {{install_constants() | indent}}
-    {% endif %}
-    {# Special operations #}
-    {% if indexed_property_getter %}
+
+    {%- if indexed_property_getter %}{{newline}}
+    // Indexed properties
     {{install_indexed_property_handler('instanceTemplate') | indent}}
     {% endif %}
     {% if named_property_getter and not has_named_properties_object %}
+    // Named properties
     {{install_named_property_handler('instanceTemplate') | indent}}
     {% endif %}
-    {% if iterator_method %}
+
+    {%- if iterator_method %}{{newline}}
     {% filter exposed(iterator_method.exposed_test) %}
     {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
+    // Iterator (@@iterator)
     const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, v8::DontDelete, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
-    V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, symbolKeyedIteratorConfiguration);
-    {% endfilter %}{# runtime_enabled() #}
-    {% endfilter %}{# exposed() #}
+    V8DOMConfiguration::installMethod(isolate, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
+    {% endfilter %}
+    {% endfilter %}
     {% endif %}
-    {# End special operations #}
-    {% if has_custom_legacy_call_as_function %}
-    functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
+
+    {%- if has_custom_legacy_call_as_function %}{{newline}}
+    instanceTemplate->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
     {% endif %}
-    {% if interface_name == 'HTMLAllCollection' %}
-    {# Needed for legacy support of document.all #}
-    functionTemplate->InstanceTemplate()->MarkAsUndetectable();
+
+    {%- if interface_name == 'HTMLAllCollection' %}{{newline}}
+    // Needed for legacy support of document.all
+    instanceTemplate->MarkAsUndetectable();
     {% endif %}
+
+    {%- if custom_registration_methods %}{{newline}}
     {% for method in custom_registration_methods %}
     {# install_custom_signature #}
     {% filter exposed(method.overloads.exposed_test_all
@@ -411,23 +411,13 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
                               method.runtime_enabled_function) %}
     {% if method.is_do_not_check_security %}
     {{install_do_not_check_security_method(method, '', 'instanceTemplate', 'prototypeTemplate') | indent}}
-    {% else %}{# is_do_not_check_security #}
-    {% set signature = 'v8::Local<v8::Signature>()' if method.is_do_not_check_signature else 'defaultSignature' %}
-    {{install_custom_signature(method, 'instanceTemplate', 'prototypeTemplate', 'functionTemplate', signature) | indent}}
-    {% endif %}{# is_do_not_check_security #}
-    {% endfilter %}{# runtime_enabled() #}
-    {% endfilter %}{# exposed() #}
+    {% else %}
+    {% set signature = 'v8::Local<v8::Signature>()' if method.is_do_not_check_signature else 'signature' %}
+    {{install_custom_signature(method, 'instanceTemplate', 'prototypeTemplate', 'interfaceTemplate', signature) | indent}}
+    {% endif %}
+    {% endfilter %}
+    {% endfilter %}
     {% endfor %}
-    {# Special interfaces #}
-    {% if not is_partial %}
-    {% if interface_name == 'Window' %}
-
-    instanceTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
-    prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
-    {% endif %}
-    {% if is_global or interface_name == 'HTMLDocument' %}
-    functionTemplate->SetHiddenPrototype(true);
-    {% endif %}
     {% endif %}
 }
 

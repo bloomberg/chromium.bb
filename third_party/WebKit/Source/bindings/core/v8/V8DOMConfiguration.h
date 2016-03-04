@@ -37,8 +37,7 @@
 namespace blink {
 
 class CORE_EXPORT V8DOMConfiguration final {
-    DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(V8DOMConfiguration);
+    STATIC_ONLY(V8DOMConfiguration);
 public:
     // The following Configuration structs and install methods are used for
     // setting multiple properties on ObjectTemplate / FunctionTemplate, used
@@ -138,11 +137,11 @@ public:
     // installConstantWithGetter is used when some C++ code needs to be executed
     // when the constant is accessed, e.g. to handle deprecation or measuring
     // usage. The property appears the same to scripts, but is slower to access.
-    static void installConstants(v8::Isolate*, v8::Local<v8::FunctionTemplate> functionDescriptor, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration*, size_t constantCount);
+    static void installConstants(v8::Isolate*, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration*, size_t constantCount);
 
-    static void installConstant(v8::Isolate*, v8::Local<v8::FunctionTemplate> functionDescriptor, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration&);
+    static void installConstant(v8::Isolate*, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration&);
 
-    static void installConstantWithGetter(v8::Isolate*, v8::Local<v8::FunctionTemplate> functionDescriptor, v8::Local<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorNameGetterCallback);
+    static void installConstantWithGetter(v8::Isolate*, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorNameGetterCallback);
 
     // MethodConfiguration translates into calls to Set() for setting up an
     // object's callbacks. It sets the method on both the FunctionTemplate or
@@ -191,10 +190,7 @@ public:
 
     static void installMethod(v8::Isolate*, v8::Local<v8::ObjectTemplate>, v8::Local<v8::Signature>, const SymbolKeyedMethodConfiguration&);
 
-    static v8::Local<v8::Signature> installDOMClassTemplate(v8::Isolate*, v8::Local<v8::FunctionTemplate>, const char* interfaceName, v8::Local<v8::FunctionTemplate> parentClass, size_t fieldCount,
-        const AttributeConfiguration*, size_t attributeCount,
-        const AccessorConfiguration*, size_t accessorCount,
-        const MethodConfiguration*, size_t methodCount);
+    static void initializeDOMInterfaceTemplate(v8::Isolate*, v8::Local<v8::FunctionTemplate> interfaceTemplate, const char* interfaceName, v8::Local<v8::FunctionTemplate> parentInterfaceTemplate, size_t v8InternalFieldCount);
 
     static v8::Local<v8::FunctionTemplate> domClassTemplate(v8::Isolate*, WrapperTypeInfo*, void (*)(v8::Local<v8::FunctionTemplate>, v8::Isolate*));
 
