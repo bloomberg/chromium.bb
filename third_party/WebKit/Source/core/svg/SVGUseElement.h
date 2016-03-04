@@ -91,6 +91,7 @@ private:
     // Instance tree handling
     void buildShadowAndInstanceTree(SVGElement& target);
     void clearInstanceRoot();
+    PassRefPtrWillBeRawPtr<Element> createInstanceTree(SVGElement& targetRoot) const;
     void clearShadowTree();
     bool hasCycleUseReferencing(const SVGUseElement&, const ContainerNode& targetInstance, SVGElement*& newTarget) const;
     bool expandUseElementsInShadowTree();

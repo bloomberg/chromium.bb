@@ -245,20 +245,14 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
-static bool isDisallowedElement(const Node& node)
+static bool isDisallowedElement(const Element& element)
 {
     // Spec: "Any 'svg', 'symbol', 'g', graphics element or other 'use' is potentially a template object that can be re-used
     // (i.e., "instanced") in the SVG document via a 'use' element."
     // "Graphics Element" is defined as 'circle', 'ellipse', 'image', 'line', 'path', 'polygon', 'polyline', 'rect', 'text'
     // Excluded are anything that is used by reference or that only make sense to appear once in a document.
-    // We must also allow the shadow roots of other use elements.
-    if (node.isShadowRoot() || node.isTextNode())
-        return false;
-
-    if (!node.isSVGElement())
+    if (!element.isSVGElement())
         return true;
-
-    const Element& element = toElement(node);
 
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, allowedElementTags, ());
     if (allowedElementTags.isEmpty()) {
@@ -386,6 +380,15 @@ static inline void removeDisallowedElementsFromSubtree(SVGElement& subtree)
     }
 }
 
+PassRefPtrWillBeRawPtr<Element> SVGUseElement::createInstanceTree(SVGElement& targetRoot) const
+{
+    RefPtrWillBeRawPtr<Element> instanceRoot = targetRoot.cloneElementWithChildren();
+    ASSERT(instanceRoot->isSVGElement());
+    associateCorrespondingElements(targetRoot, toSVGElement(*instanceRoot));
+    removeDisallowedElementsFromSubtree(toSVGElement(*instanceRoot));
+    return instanceRoot.release();
+}
+
 void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
 {
     ASSERT(!m_targetElementInstance);
@@ -403,11 +406,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
 
     // Set up root SVG element in shadow tree.
     // Clone the target subtree into the shadow tree, not handling <use> and <symbol> yet.
-    RefPtrWillBeRawPtr<Element> instanceRoot = target.cloneElementWithChildren();
-    ASSERT(instanceRoot->isSVGElement());
-    associateCorrespondingElements(target, toSVGElement(*instanceRoot));
-    removeDisallowedElementsFromSubtree(toSVGElement(*instanceRoot));
-
+    RefPtrWillBeRawPtr<Element> instanceRoot = createInstanceTree(target);
     m_targetElementInstance = toSVGElement(instanceRoot.get());
     ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
     shadowTreeRootElement->appendChild(instanceRoot.release());
@@ -606,11 +605,8 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         moveChildrenToReplacementElement(*use, *cloneParent);
 
         if (target) {
-            RefPtrWillBeRawPtr<Element> instanceRoot = target->cloneElementWithChildren();
-            ASSERT(instanceRoot->isSVGElement());
-            associateCorrespondingElements(*target, toSVGElement(*instanceRoot));
+            RefPtrWillBeRawPtr<Element> instanceRoot = use->createInstanceTree(*target);
             transferUseWidthAndHeightIfNeeded(*use, toSVGElement(*instanceRoot), *target);
-            removeDisallowedElementsFromSubtree(toSVGElement(*instanceRoot));
             cloneParent->appendChild(instanceRoot.release());
         }
 
@@ -642,8 +638,6 @@ void SVGUseElement::expandSymbolElementsInShadowTree()
 
         // Move already cloned elements to the new <svg> element.
         moveChildrenToReplacementElement(*symbol, *svgElement);
-
-        removeDisallowedElementsFromSubtree(*svgElement);
 
         RefPtrWillBeRawPtr<SVGElement> replacingElement(svgElement.get());
 
