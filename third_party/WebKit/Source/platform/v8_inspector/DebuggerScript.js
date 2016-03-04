@@ -398,9 +398,9 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         scopeTypes[i] = scopeDetails.type();
         scopeObjects[i] = scopeDetails.object();
         scopeNames[i] = scopeDetails.name();
-        scopeStartPositions[i] = scopeDetails.startPosition();
-        scopeEndPositions[i] = scopeDetails.endPosition();
-        scopeFunctions[i] = scopeDetails.func();
+        scopeStartPositions[i] = scopeDetails.startPosition ? scopeDetails.startPosition() : 0;
+        scopeEndPositions[i] = scopeDetails.endPosition ? scopeDetails.endPosition() : 0;
+        scopeFunctions[i] = scopeDetails.func ? scopeDetails.func() : null;
     }
 
     // Calculated lazily.
@@ -436,8 +436,8 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
                     scopeNames[j] = scopeNames[i];
                     scopeChain[j] = scopeObject;
 
-                    var funcMirror = MakeMirror(scopeFunctions[i]);
-                    if (!funcMirror.isFunction())
+                    var funcMirror = scopeFunctions ? MakeMirror(scopeFunctions[i]) : null;
+                    if (!funcMirror || !funcMirror.isFunction())
                         funcMirror = new UnresolvedFunctionMirror(funcObject);
 
                     var script = funcMirror.script();
