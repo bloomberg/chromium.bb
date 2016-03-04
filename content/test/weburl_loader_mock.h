@@ -52,10 +52,12 @@ class WebURLLoaderMock : public blink::WebURLLoader {
                           blink::WebURLLoaderClient* client) override;
   void cancel() override;
   void setDefersLoading(bool defer) override;
-
-  bool isDeferred() { return is_deferred_; }
-
   void setLoadingTaskRunner(blink::WebTaskRunner*) override;
+
+  bool is_deferred() { return is_deferred_; }
+  bool is_cancelled() { return !client_; }
+
+  base::WeakPtr<WebURLLoaderMock> GetWeakPtr();
 
  private:
   WebURLLoaderMockFactory* factory_;

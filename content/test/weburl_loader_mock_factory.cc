@@ -76,8 +76,10 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
   // pending_loaders_ as it might get modified.
   while (!pending_loaders_.empty()) {
     LoaderToRequestMap::iterator iter = pending_loaders_.begin();
-    WebURLLoaderMock* loader = iter->first;
-    const WebURLRequest& request = iter->second;
+    base::WeakPtr<WebURLLoaderMock> loader(iter->first->GetWeakPtr());
+    const WebURLRequest request = iter->second;
+    pending_loaders_.erase(loader.get());
+
     WebURLResponse response;
     WebURLError error;
     WebData data;
@@ -86,15 +88,13 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
     while (response.httpStatusCode() >= 300 &&
            response.httpStatusCode() < 400) {
       WebURLRequest newRequest = loader->ServeRedirect(request, response);
-      if (!IsPending(loader) || loader->isDeferred())
+      if (!loader || loader->is_cancelled() || loader->is_deferred())
         break;
       LoadRequest(newRequest, &response, &error, &data);
     }
     // Serve the request if the loader is still active.
-    if (IsPending(loader) && !loader->isDeferred())
+    if (loader && !loader->is_cancelled() && !loader->is_deferred())
       loader->ServeAsynchronousRequest(delegate_, response, data, error);
-    // The loader might have already been removed.
-    pending_loaders_.erase(loader);
   }
   base::RunLoop().RunUntilIdle();
 }
@@ -150,11 +150,6 @@ void WebURLLoaderMockFactory::LoadRequest(const WebURLRequest& request,
   }
 
   *response = iter->second.response;
-}
-
-bool WebURLLoaderMockFactory::IsPending(WebURLLoaderMock* loader) {
-  LoaderToRequestMap::iterator iter = pending_loaders_.find(loader);
-  return iter != pending_loaders_.end();
 }
 
 // static

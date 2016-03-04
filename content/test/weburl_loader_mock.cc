@@ -46,7 +46,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
 
   // didReceiveResponse() and didReceiveData() might end up getting ::cancel()
   // to be called which will make the ResourceLoader to delete |this|.
-  base::WeakPtr<WebURLLoaderMock> self(weak_factory_.GetWeakPtr());
+  base::WeakPtr<WebURLLoaderMock> self(GetWeakPtr());
 
   delegate->didReceiveResponse(client_, this, response);
   if (!self)
@@ -84,7 +84,7 @@ blink::WebURLRequest WebURLLoaderMock::ServeRedirect(
       request.skipServiceWorker(),
       &newRequest);
 
-  base::WeakPtr<WebURLLoaderMock> self(weak_factory_.GetWeakPtr());
+  base::WeakPtr<WebURLLoaderMock> self(GetWeakPtr());
 
   client_->willFollowRedirect(this, newRequest, redirectResponse);
 
@@ -120,6 +120,7 @@ void WebURLLoaderMock::loadSynchronously(const blink::WebURLRequest& request,
 
 void WebURLLoaderMock::loadAsynchronously(const blink::WebURLRequest& request,
                                           blink::WebURLLoaderClient* client) {
+  CHECK(client);
   if (factory_->IsMockedURL(request.url())) {
     client_ = client;
     factory_->LoadAsynchronouly(request, this);
@@ -153,4 +154,8 @@ void WebURLLoaderMock::setDefersLoading(bool deferred) {
 void WebURLLoaderMock::setLoadingTaskRunner(blink::WebTaskRunner*) {
   // In principle this is NOTIMPLEMENTED(), but if we put that here it floods
   // the console during webkit unit tests, so we leave the function empty.
+}
+
+base::WeakPtr<WebURLLoaderMock> WebURLLoaderMock::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }

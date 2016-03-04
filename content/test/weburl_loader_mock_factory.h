@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -95,7 +96,7 @@ class WebURLLoaderMockFactory {
                    blink::WebData* data);
 
   // Checks if the loader is pending. Otherwise, it may have been deleted.
-  bool IsPending(WebURLLoaderMock* loader);
+  bool IsPending(base::WeakPtr<WebURLLoaderMock> loader);
 
   // Reads |m_filePath| and puts its content in |data|.
   // Returns true if it successfully read the file.
