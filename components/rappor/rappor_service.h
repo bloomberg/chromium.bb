@@ -73,7 +73,7 @@ class RapporService {
   // scoped_ptr<Sample> sample = rappor_service->CreateSample(MY_METRIC_TYPE);
   // sample->SetStringField("Field1", "some string");
   // sample->SetFlagsValue("Field2", SOME|FLAGS);
-  // rappor_service->RecordSample("MyMetric", sample.Pass());
+  // rappor_service->RecordSample("MyMetric", std::move(sample));
   //
   // This will result in a report setting two metrics "MyMetric.Field1" and
   // "MyMetric.Field2", and they will both be generated from the same sample,

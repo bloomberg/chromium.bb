@@ -25,11 +25,11 @@ class URLRequestInterceptor;
 // rather than just the scheme.  Example usage:
 //
 // // Intercept "scheme://host/" requests.
-// URLRequestFilter::GetInstance()->AddHostnameInterceptor("scheme", "host",
-//                                                         interceptor.Pass());
+// URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+//     "scheme", "host", std::move(interceptor));
 // // Add special handling for the URL http://foo.com/
-// URLRequestFilter::GetInstance()->AddUrlInterceptor(GURL("http://foo.com/"),
-//                                                    interceptor.Pass());
+// URLRequestFilter::GetInstance()->AddUrlInterceptor(
+//     GURL("http://foo.com/"), std::move(interceptor));
 //
 // The URLRequestFilter is implemented as a singleton that is not thread-safe,
 // and hence must only be used in test code where the network stack is used

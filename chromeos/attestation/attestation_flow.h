@@ -46,7 +46,7 @@ class CHROMEOS_EXPORT ServerProxy {
 // and the Chrome OS Privacy CA server.  Sample usage:
 //    AttestationFlow flow(AsyncMethodCaller::GetInstance(),
 //                         DBusThreadManager::Get().GetCryptohomeClient(),
-//                         my_server_proxy.Pass());
+//                         std::move(my_server_proxy));
 //    AttestationFlow::CertificateCallback callback = base::Bind(&MyCallback);
 //    flow.GetCertificate(ENTERPRISE_USER_CERTIFICATE, false, callback);
 class CHROMEOS_EXPORT AttestationFlow {

@@ -58,7 +58,7 @@ class SubscribedMessage;
 // scoped_ptr<ReportRequest> request(new ReportRequest);
 // (Fill in ReportRequest.)
 //
-// handler.SendReportRequest(request.Pass(),
+// handler.SendReportRequest(std::move(request),
 //                           "my_app_id",
 //                           "",
 //                           base::Bind(&HandleStatus));

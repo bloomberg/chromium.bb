@@ -37,7 +37,7 @@
 //   void Foo::ConnectToService(
 //       mojo::InterfaceRequest<ResourceUsageReporter> req) {
 //     content::ServiceRegistry* registry = host_->GetServiceRegistry();
-//     registry->ConnectToRemoteService(req.Pass());
+//     registry->ConnectToRemoteService(std::move(req));
 //   }
 //
 //   ...
@@ -47,7 +47,7 @@
 //     content::BrowserThread::PostTask(
 //         content::BrowserThread::IO, FROM_HERE,
 //         base::Bind(&Foo::ConnectToService, this, base::Passed(&request)));
-//     resource_usage_.reset(new ProcessResourceUsage(service.Pass()));
+//     resource_usage_.reset(new ProcessResourceUsage(std::move(service)));
 //   ...
 //
 // Note: ProcessResourceUsage is thread-hostile and must live on a single

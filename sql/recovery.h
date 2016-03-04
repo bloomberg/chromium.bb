@@ -31,25 +31,25 @@ namespace sql {
 //     // Create the schema to recover to.  On failure, clear the
 //     // database.
 //     if (!r.db()->Execute(kCreateSchemaSql)) {
-//       sql::Recovery::Unrecoverable(r.Pass());
+//       sql::Recovery::Unrecoverable(std::move(r));
 //       return;
 //     }
 //
 //     // Recover data in "mytable".
 //     size_t rows_recovered = 0;
 //     if (!r.AutoRecoverTable("mytable", 0, &rows_recovered)) {
-//       sql::Recovery::Unrecoverable(r.Pass());
+//       sql::Recovery::Unrecoverable(std::move(r));
 //       return;
 //     }
 //
 //     // Manually cleanup additional constraints.
 //     if (!r.db()->Execute(kCleanupSql)) {
-//       sql::Recovery::Unrecoverable(r.Pass());
+//       sql::Recovery::Unrecoverable(std::move(r));
 //       return;
 //     }
 //
 //     // Commit the recovered data to the original database file.
-//     sql::Recovery::Recovered(r.Pass());
+//     sql::Recovery::Recovered(std::move(r));
 //   }
 // }
 //

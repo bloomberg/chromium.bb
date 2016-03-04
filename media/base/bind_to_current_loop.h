@@ -26,7 +26,7 @@
 
 namespace media {
 
-// Mimic base::internal::CallbackForward, replacing p.Pass() with
+// Mimic base::internal::CallbackForward, replacing std::move(p) with
 // base::Passed(&p) to account for the extra layer of indirection.
 namespace internal {
 template <typename T>

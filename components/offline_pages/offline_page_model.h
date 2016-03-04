@@ -58,7 +58,7 @@ class OfflinePageMetadataStore;
 //   // In code using the OfflinePagesModel to save a page:
 //   scoped_ptr<ArchiverImpl> archiver(new ArchiverImpl());
 //   // Callback is of type SavePageCallback.
-//   model->SavePage(url, archiver.Pass(), callback);
+//   model->SavePage(url, std::move(archiver), callback);
 //
 // TODO(fgorski): Things to describe:
 // * how to cancel requests and what to expect

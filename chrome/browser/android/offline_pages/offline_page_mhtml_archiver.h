@@ -39,7 +39,7 @@ namespace offline_pages {
 //         new OfflinePageMHTMLArchiver(
 //             web_contents, archive_dir));
 //     // Callback is of type OfflinePageModel::SavePageCallback.
-//     model->SavePage(url, archiver.Pass(), callback);
+//     model->SavePage(url, std::move(archiver), callback);
 //   }
 class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
  public:

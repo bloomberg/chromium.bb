@@ -65,7 +65,7 @@ struct HttpRequest;
 //   http_response->set_code(test_server::SUCCESS);
 //   http_response->set_content("hello");
 //   http_response->set_content_type("text/plain");
-//   return http_response.Pass();
+//   return http_response;
 // }
 //
 // For a test that spawns another process such as browser_tests, it is

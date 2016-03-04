@@ -400,25 +400,6 @@ TEST(ScopedPtrTest, MoveBehavior) {
     EXPECT_TRUE(scoper3.get());
   }
 
-#if !defined(OS_ANDROID) && !defined(OS_LINUX) && !defined(OS_MACOSX) && \
-    !defined(OS_WIN)
-  // Test uncaught Pass() does not have side effects, because Pass()
-  // is implemented by std::move().
-  // TODO(danakj): Remove this test case when we remove Pass().
-  {
-    ConDecLogger* logger = new ConDecLogger(&constructed);
-    scoped_ptr<ConDecLogger> scoper(logger);
-    EXPECT_EQ(1, constructed);
-
-    // Should auto-destruct logger by end of scope.
-    scoped_ptr<ConDecLogger>&& rvalue = scoper.Pass();
-    // The Pass() function mimics std::move(), which does not have side-effects.
-    EXPECT_TRUE(scoper.get());
-    EXPECT_TRUE(rvalue);
-  }
-  EXPECT_EQ(0, constructed);
-#endif
-
   // Test that passing to function which does nothing does not leak.
   {
     ConDecLogger* logger = new ConDecLogger(&constructed);
