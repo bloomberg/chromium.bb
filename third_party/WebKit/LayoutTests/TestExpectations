@@ -1444,9 +1444,3 @@ crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/repaint-via-layout-of
 crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/resize-squashing-layer-that-needs-full-repaint.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/squash-partial-repaint-inside-squashed-layer.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/squashing/squashing-inside-preserve-3d-element.html [ Failure ]
-
-crbug.com/589818 [ Mac10.11 Retina ] fast/forms/placeholder-position.html [ NeedsRebaseline ]
-crbug.com/589818 [ Mac10.11 Retina ] fast/forms/search/search-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/589818 [ Mac10.11 Retina ] fast/forms/search/search-rtl.html [ NeedsRebaseline ]
-crbug.com/589818 [ Mac10.11 Retina ] fast/forms/search/search-vertical-alignment.html [ NeedsRebaseline ]
-crbug.com/589818 [ Mac10.11 Retina ] fast/forms/search/searchfield-heights.html [ NeedsRebaseline ]
