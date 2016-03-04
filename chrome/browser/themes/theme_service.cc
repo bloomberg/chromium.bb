@@ -477,21 +477,6 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       return color_utils::AlphaBlend(GetColor(kLabelBackground, incognito),
                                      SK_ColorBLACK, 230);
 #endif
-    case ThemeProperties::COLOR_STATUS_BAR_TEXT: {
-      // A long time ago, we blended the toolbar and the tab text together to
-      // get the status bar text because, at the time, our text rendering in
-      // views couldn't do alpha blending. Even though this is no longer the
-      // case, this blending decision is built into the majority of themes that
-      // exist, and we must keep doing it.
-      SkColor toolbar_color =
-          GetColor(ThemeProperties::COLOR_TOOLBAR, incognito);
-      SkColor text_color = GetColor(ThemeProperties::COLOR_TAB_TEXT, incognito);
-      return SkColorSetARGB(
-          SkColorGetA(text_color),
-          (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
-          (SkColorGetG(text_color) + SkColorGetR(toolbar_color)) / 2,
-          (SkColorGetB(text_color) + SkColorGetR(toolbar_color)) / 2);
-    }
   }
 
   return ThemeProperties::GetDefaultColor(id, incognito);

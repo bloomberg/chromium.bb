@@ -892,7 +892,6 @@ void Gtk2UI::LoadGtkValues() {
 
   colors_[ThemeProperties::COLOR_TAB_TEXT] = label_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = label_color;
-  colors_[ThemeProperties::COLOR_STATUS_BAR_TEXT] = label_color;
 
   UpdateDefaultFont();
 

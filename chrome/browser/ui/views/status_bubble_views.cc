@@ -420,22 +420,25 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   rrect.setRectRadii(RectToSkRect(rect), (const SkVector*)rad);
   canvas->sk_canvas()->drawRRect(rrect, paint);
 
-  // Draw highlight text and then the text body. In order to make sure the text
-  // is aligned to the right on RTL UIs, we mirror the text bounds if the
-  // locale is RTL.
+  // Compute text bounds.
   const gfx::FontList font_list;
   int text_width =
       std::min(gfx::GetStringWidth(text_, font_list),
                width - shadow_size - kTextPositionX - kTextHorizPadding);
   int text_height = height - shadow_size;
-  gfx::Rect body_bounds(kShadowThickness + kTextPositionX,
+  gfx::Rect text_bounds(kShadowThickness + kTextPositionX,
                         kShadowThickness,
                         std::max(0, text_width),
                         std::max(0, text_height));
-  body_bounds.set_x(GetMirroredXForRect(body_bounds));
+  // Make sure the text is aligned to the right on RTL UIs.
+  text_bounds.set_x(GetMirroredXForRect(text_bounds));
+
+  // Text color is the foreground tab text color at 50% alpha.
   SkColor text_color =
-      theme_provider_->GetColor(ThemeProperties::COLOR_STATUS_BAR_TEXT);
-  canvas->DrawStringRect(text_, font_list, text_color, body_bounds);
+      theme_provider_->GetColor(ThemeProperties::COLOR_TAB_TEXT);
+  canvas->DrawStringRect(text_, font_list,
+                         SkColorSetA(text_color, SkColorGetA(text_color) / 2),
+                         text_bounds);
 }
 
 
