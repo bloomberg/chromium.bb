@@ -662,6 +662,22 @@ TEST_F(HostResolverImplTest, LocalhostIPV4IPV6Lookup) {
   EXPECT_TRUE(req5->HasOneAddress("::1", 80));
 }
 
+TEST_F(HostResolverImplTest, ResolveIPLiteralWithHostResolverSystemOnly) {
+  const char kIpLiteral[] = "178.78.32.1";
+  // Add a mapping to tell if the resolver proc was called (if it was called,
+  // then the result will be the remapped value. Otherwise it will be the IP
+  // literal).
+  proc_->AddRuleForAllFamilies(kIpLiteral, "183.45.32.1");
+
+  HostResolver::RequestInfo info_bypass(HostPortPair(kIpLiteral, 80));
+  info_bypass.set_host_resolver_flags(HOST_RESOLVER_SYSTEM_ONLY);
+
+  Request* req = CreateRequest(info_bypass, MEDIUM);
+  EXPECT_EQ(OK, req->Resolve());
+
+  EXPECT_TRUE(req->HasAddress(kIpLiteral, 80));
+}
+
 TEST_F(HostResolverImplTest, EmptyListMeansNameNotResolved) {
   proc_->AddRuleForAllFamilies("just.testing", "");
   proc_->SignalMultiple(1u);

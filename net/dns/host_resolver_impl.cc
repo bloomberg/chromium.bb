@@ -2082,11 +2082,6 @@ bool HostResolverImpl::ResolveAsIP(const Key& key,
   if (ip_address == nullptr)
     return false;
 
-  DCHECK_EQ(key.host_resolver_flags &
-      ~(HOST_RESOLVER_CANONNAME | HOST_RESOLVER_LOOPBACK_ONLY |
-        HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6),
-            0) << " Unhandled flag";
-
   *net_error = OK;
   AddressFamily family = GetAddressFamily(*ip_address);
   if (key.address_family != ADDRESS_FAMILY_UNSPECIFIED &&
