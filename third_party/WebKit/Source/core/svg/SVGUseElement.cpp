@@ -364,6 +364,28 @@ static void associateCorrespondingElements(SVGElement& targetRoot, SVGElement& i
     ASSERT(!(targetIterator != targetRange.end()));
 }
 
+// We don't walk the target tree element-by-element, and clone each element,
+// but instead use cloneNode(deep=true). This is an optimization for the common
+// case where <use> doesn't contain disallowed elements (ie. <foreignObject>).
+// Though if there are disallowed elements in the subtree, we have to remove
+// them.  For instance: <use> on <g> containing <foreignObject> (indirect
+// case).
+static inline void removeDisallowedElementsFromSubtree(SVGElement& subtree)
+{
+    ASSERT(!subtree.inDocument());
+    Element* element = ElementTraversal::firstWithin(subtree);
+    while (element) {
+        if (isDisallowedElement(*element)) {
+            Element* next = ElementTraversal::nextSkippingChildren(*element, &subtree);
+            // The subtree is not in document so this won't generate events that could mutate the tree.
+            element->parentNode()->removeChild(element);
+            element = next;
+        } else {
+            element = ElementTraversal::next(*element, &subtree);
+        }
+    }
+}
+
 void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
 {
     ASSERT(!m_targetElementInstance);
@@ -380,16 +402,15 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
         return;
 
     // Set up root SVG element in shadow tree.
-    RefPtrWillBeRawPtr<Element> newChild = target.cloneElementWithoutChildren();
-    m_targetElementInstance = toSVGElement(newChild.get());
-    ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
-    shadowTreeRootElement->appendChild(newChild.release());
-
     // Clone the target subtree into the shadow tree, not handling <use> and <symbol> yet.
+    RefPtrWillBeRawPtr<Element> instanceRoot = target.cloneElementWithChildren();
+    ASSERT(instanceRoot->isSVGElement());
+    associateCorrespondingElements(target, toSVGElement(*instanceRoot));
+    removeDisallowedElementsFromSubtree(toSVGElement(*instanceRoot));
 
-    // SVG specification does not say a word about <use> & cycles. My view on this is: just ignore it!
-    // Non-appearing <use> content is easier to debug, then half-appearing content.
-    buildShadowTree(target, *m_targetElementInstance);
+    m_targetElementInstance = toSVGElement(instanceRoot.get());
+    ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
+    shadowTreeRootElement->appendChild(instanceRoot.release());
 
     addReferencesToFirstDegreeNestedUseElements(target);
 
@@ -496,26 +517,6 @@ void SVGUseElement::addReferencesToFirstDegreeNestedUseElements(SVGElement& targ
         addReferenceTo(useElement);
 }
 
-void SVGUseElement::buildShadowTree(SVGElement& target, SVGElement& targetInstance)
-{
-    ASSERT(!isDisallowedElement(target));
-
-    targetInstance.setCorrespondingElement(&target);
-
-    for (RefPtrWillBeRawPtr<Node> child = target.firstChild(); child; child = child->nextSibling()) {
-        // Skip any disallowed element.
-        if (isDisallowedElement(*child))
-            continue;
-
-        RefPtrWillBeRawPtr<Node> newChild = child->cloneNode(false);
-        targetInstance.appendChild(newChild.get());
-        if (newChild->isSVGElement()) {
-            // Enter recursion, appending new instance tree nodes to the "instance" object.
-            buildShadowTree(toSVGElement(*child), toSVGElement(*newChild));
-        }
-    }
-}
-
 void SVGUseElement::cloneNonMarkupEventListeners()
 {
     for (SVGElement& element : Traversal<SVGElement>::descendantsOf(*userAgentShadowRoot())) {
@@ -548,28 +549,6 @@ bool SVGUseElement::hasCycleUseReferencing(const SVGUseElement& use, const Conta
         instance = instance->parentNode();
     }
     return false;
-}
-
-// We don't walk the target tree element-by-element, and clone each element,
-// but instead use cloneNode(deep=true). This is an optimization for the common
-// case where <use> doesn't contain disallowed elements (ie. <foreignObject>).
-// Though if there are disallowed elements in the subtree, we have to remove
-// them.  For instance: <use> on <g> containing <foreignObject> (indirect
-// case).
-static inline void removeDisallowedElementsFromSubtree(SVGElement& subtree)
-{
-    ASSERT(!subtree.inDocument());
-    Element* element = ElementTraversal::firstWithin(subtree);
-    while (element) {
-        if (isDisallowedElement(*element)) {
-            Element* next = ElementTraversal::nextSkippingChildren(*element, &subtree);
-            // The subtree is not in document so this won't generate events that could mutate the tree.
-            element->parentNode()->removeChild(element);
-            element = next;
-        } else {
-            element = ElementTraversal::next(*element, &subtree);
-        }
-    }
 }
 
 static void moveChildrenToReplacementElement(ContainerNode& sourceRoot, ContainerNode& destinationRoot)
