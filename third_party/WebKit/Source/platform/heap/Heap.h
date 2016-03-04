@@ -68,17 +68,6 @@ public:
             freeHook(address);
     }
 
-    static void reallocHookIfEnabled(Address oldAddress, Address newAddress, size_t size, const char* typeName)
-    {
-        // Report a reallocation as a free followed by an allocation.
-        AllocationHook* allocationHook = m_allocationHook;
-        FreeHook* freeHook = m_freeHook;
-        if (UNLIKELY(allocationHook && freeHook)) {
-            freeHook(oldAddress);
-            allocationHook(newAddress, size, typeName);
-        }
-    }
-
 private:
     static AllocationHook* m_allocationHook;
     static FreeHook* m_freeHook;
@@ -239,7 +228,7 @@ public:
         allocationSize = (allocationSize + allocationMask) & ~allocationMask;
         return allocationSize;
     }
-    static Address allocateOnArenaIndex(ThreadState*, size_t, int arenaIndex, size_t gcInfoIndex);
+    static Address allocateOnArenaIndex(ThreadState*, size_t, int arenaIndex, size_t gcInfoIndex, const char* typeName);
     template<typename T> static Address allocate(size_t, bool eagerlySweep = false);
     template<typename T> static Address reallocate(void* previous, size_t);
 
@@ -485,22 +474,22 @@ public:                                                \
 #define EAGERLY_FINALIZE_WILL_BE_REMOVED()
 #endif
 
-inline Address Heap::allocateOnArenaIndex(ThreadState* state, size_t size, int arenaIndex, size_t gcInfoIndex)
+inline Address Heap::allocateOnArenaIndex(ThreadState* state, size_t size, int arenaIndex, size_t gcInfoIndex, const char* typeName)
 {
     ASSERT(state->isAllocationAllowed());
     ASSERT(arenaIndex != BlinkGC::LargeObjectArenaIndex);
     NormalPageArena* arena = static_cast<NormalPageArena*>(state->arena(arenaIndex));
-    return arena->allocateObject(allocationSizeFromSize(size), gcInfoIndex);
+    Address address = arena->allocateObject(allocationSizeFromSize(size), gcInfoIndex);
+    HeapAllocHooks::allocationHookIfEnabled(address, size, typeName);
+    return address;
 }
 
 template<typename T>
 Address Heap::allocate(size_t size, bool eagerlySweep)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    Address address = Heap::allocateOnArenaIndex(state, size, eagerlySweep ? BlinkGC::EagerSweepArenaIndex : Heap::arenaIndexForObjectSize(size), GCInfoTrait<T>::index());
     const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(T);
-    HeapAllocHooks::allocationHookIfEnabled(address, size, typeName);
-    return address;
+    return Heap::allocateOnArenaIndex(state, size, eagerlySweep ? BlinkGC::EagerSweepArenaIndex : Heap::arenaIndexForObjectSize(size), GCInfoTrait<T>::index(), typeName);
 }
 
 template<typename T>
@@ -528,13 +517,13 @@ Address Heap::reallocate(void* previous, size_t size)
     // TODO(haraken): We don't support reallocate() for finalizable objects.
     ASSERT(!Heap::gcInfo(previousHeader->gcInfoIndex())->hasFinalizer());
     ASSERT(previousHeader->gcInfoIndex() == GCInfoTrait<T>::index());
-    Address address = Heap::allocateOnArenaIndex(state, size, arenaIndex, GCInfoTrait<T>::index());
+    const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(T);
+    HeapAllocHooks::freeHookIfEnabled(static_cast<Address>(previous));
+    Address address = Heap::allocateOnArenaIndex(state, size, arenaIndex, GCInfoTrait<T>::index(), typeName);
     size_t copySize = previousHeader->payloadSize();
     if (copySize > size)
         copySize = size;
     memcpy(address, previous, copySize);
-    const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(T);
-    HeapAllocHooks::reallocHookIfEnabled(static_cast<Address>(previous), address, size, typeName);
     return address;
 }
 

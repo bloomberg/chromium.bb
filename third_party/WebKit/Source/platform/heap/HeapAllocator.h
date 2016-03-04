@@ -62,7 +62,9 @@ public:
     {
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        return reinterpret_cast<T*>(Heap::allocateOnArenaIndex(state, size, BlinkGC::InlineVectorArenaIndex, gcInfoIndex));
+        using VectorType = HeapVectorBacking<T, VectorTraits<T>>;
+        const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(VectorType);
+        return reinterpret_cast<T*>(Heap::allocateOnArenaIndex(state, size, BlinkGC::InlineVectorArenaIndex, gcInfoIndex, typeName));
     }
     static void freeInlineVectorBacking(void*);
     static bool expandInlineVectorBacking(void*, size_t);
@@ -73,7 +75,8 @@ public:
     {
         size_t gcInfoIndex = GCInfoTrait<HeapHashTableBacking<HashTable>>::index();
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        return reinterpret_cast<T*>(Heap::allocateOnArenaIndex(state, size, BlinkGC::HashTableArenaIndex, gcInfoIndex));
+        const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(HeapHashTableBacking<HashTable>);
+        return reinterpret_cast<T*>(Heap::allocateOnArenaIndex(state, size, BlinkGC::HashTableArenaIndex, gcInfoIndex, typeName));
     }
     template <typename T, typename HashTable>
     static T* allocateZeroedHashTableBacking(size_t size)
