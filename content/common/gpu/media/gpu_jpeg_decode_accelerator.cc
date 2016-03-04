@@ -17,7 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
-#include "content/common/gpu/media_messages.h"
+#include "content/common/gpu/media/media_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/message_filter.h"
 #include "media/filters/jpeg_parser.h"

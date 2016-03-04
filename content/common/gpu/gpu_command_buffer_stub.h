@@ -182,16 +182,6 @@ class GpuCommandBufferStub
   void OnDestroyTransferBuffer(int32_t id);
   void OnGetTransferBuffer(int32_t id, IPC::Message* reply_message);
 
-  void OnCreateVideoDecoder(const media::VideoDecodeAccelerator::Config& config,
-                            int32_t route_id,
-                            IPC::Message* reply_message);
-  void OnCreateVideoEncoder(media::VideoPixelFormat input_format,
-                            const gfx::Size& input_visible_size,
-                            media::VideoCodecProfile output_profile,
-                            uint32_t initial_bitrate,
-                            int32_t route_id,
-                            IPC::Message* reply_message);
-
   void OnEnsureBackbuffer();
 
   void OnSignalSyncToken(const gpu::SyncToken& sync_token, uint32_t id);
@@ -240,10 +230,10 @@ class GpuCommandBufferStub
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
   // are destroyed. So a raw pointer is safe.
-  GpuChannel* channel_;
+  GpuChannel* const channel_;
 
   // Outlives the stub.
-  gpu::SyncPointManager* sync_point_manager_;
+  gpu::SyncPointManager* const sync_point_manager_;
 
   // Task runner for main thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
