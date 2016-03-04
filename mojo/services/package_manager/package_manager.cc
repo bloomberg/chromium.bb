@@ -43,6 +43,12 @@ ApplicationInfo BuildApplicationInfoFromDictionary(
   CHECK(value.GetString(ApplicationCatalogStore::kNameKey, &name_string));
   CHECK(mojo::IsValidName(name_string)) << "Invalid Name: " << name_string;
   info.name = name_string;
+  if (value.HasKey(ApplicationCatalogStore::kQualifierKey)) {
+    CHECK(value.GetString(ApplicationCatalogStore::kQualifierKey,
+                          &info.qualifier));
+  } else {
+    info.qualifier = mojo::GetNamePath(name_string);
+  }
   CHECK(value.GetString(ApplicationCatalogStore::kDisplayNameKey,
                         &info.display_name));
   const base::DictionaryValue* capabilities = nullptr;
@@ -82,6 +88,8 @@ scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
 
 // static
 const char ApplicationCatalogStore::kNameKey[] = "name";
+// static
+const char ApplicationCatalogStore::kQualifierKey[] = "process-group";
 // static
 const char ApplicationCatalogStore::kDisplayNameKey[] = "display_name";
 // static
@@ -157,15 +165,18 @@ void PackageManager::ResolveMojoName(const mojo::String& mojo_name,
                                      const ResolveMojoNameCallback& callback) {
   std::string resolved_name = mojo_name;
   auto alias_iter = mojo_name_aliases_.find(resolved_name);
-  std::string qualifier;
-  if (alias_iter != mojo_name_aliases_.end()) {
+  if (alias_iter != mojo_name_aliases_.end())
     resolved_name = alias_iter->second.first;
-    qualifier = alias_iter->second.second;
-  } else {
-    qualifier = mojo::GetNamePath(resolved_name);
-  }
 
-  EnsureNameInCatalog(resolved_name, qualifier, callback);
+  std::string qualifier = mojo::GetNamePath(resolved_name);
+  auto qualifier_iter = qualifiers_.find(resolved_name);
+  if (qualifier_iter != qualifiers_.end())
+    qualifier = qualifier_iter->second;
+
+  if (IsNameInCatalog(resolved_name))
+    CompleteResolveMojoName(resolved_name, qualifier, callback);
+  else
+    AddNameToCatalog(resolved_name, callback);
 }
 
 void PackageManager::GetEntries(
@@ -224,21 +235,15 @@ bool PackageManager::IsNameInCatalog(const std::string& name) const {
   return catalog_.find(name) != catalog_.end();
 }
 
-void PackageManager::EnsureNameInCatalog(
+void PackageManager::AddNameToCatalog(
     const std::string& name,
-    const std::string& qualifier,
     const ResolveMojoNameCallback& callback) {
-  if (IsNameInCatalog(name)) {
-    CompleteResolveMojoName(name, qualifier, callback);
-    return;
-  }
-
   GURL manifest_url = GetManifestURL(name);
   if (manifest_url.is_empty()) {
     // The name is of some form that can't be resolved to a manifest (e.g. some
     // scheme used for tests). Just pass it back to the caller so it can be
     // loaded with a custom loader.
-    callback.Run(name, name, nullptr, nullptr);
+    callback.Run(name, mojo::GetNamePath(name), nullptr, nullptr);
     return;
   }
 
@@ -249,7 +254,7 @@ void PackageManager::EnsureNameInCatalog(
   base::PostTaskAndReplyWithResult(
       blocking_pool_, FROM_HERE, base::Bind(&ReadManifest, manifest_path),
       base::Bind(&PackageManager::OnReadManifest, weak_factory_.GetWeakPtr(),
-                 name, qualifier, callback));
+                 name, callback));
 }
 
 void PackageManager::DeserializeCatalog() {
@@ -293,9 +298,10 @@ const ApplicationInfo& PackageManager::DeserializeApplication(
         applications->GetDictionary(i, &child);
         const ApplicationInfo& child_info = DeserializeApplication(child);
         mojo_name_aliases_[child_info.name] =
-            std::make_pair(info.name, mojo::GetNamePath(child_info.name));
+            std::make_pair(info.name, child_info.qualifier);
       }
     }
+    qualifiers_[info.name] = info.qualifier;
   }
   return catalog_[info.name];
 }
@@ -314,20 +320,18 @@ GURL PackageManager::GetManifestURL(const std::string& name) {
 // static
 void PackageManager::OnReadManifest(base::WeakPtr<PackageManager> pm,
                                     const std::string& name,
-                                    const std::string& qualifier,
                                     const ResolveMojoNameCallback& callback,
                                     scoped_ptr<base::Value> manifest) {
   if (!pm) {
     // The PackageManager was destroyed, we're likely in shutdown. Run the
     // callback so we don't trigger a DCHECK.
-    callback.Run(name, name, nullptr, nullptr);
+    callback.Run(name, mojo::GetNamePath(name), nullptr, nullptr);
     return;
   }
-  pm->OnReadManifestImpl(name, qualifier, callback, std::move(manifest));
+  pm->OnReadManifestImpl(name, callback, std::move(manifest));
 }
 
 void PackageManager::OnReadManifestImpl(const std::string& name,
-                                        const std::string& qualifier,
                                         const ResolveMojoNameCallback& callback,
                                         scoped_ptr<base::Value> manifest) {
   if (manifest) {
@@ -339,8 +343,13 @@ void PackageManager::OnReadManifestImpl(const std::string& name,
     info.name = name;
     info.display_name = name;
     catalog_[info.name] = info;
+    qualifiers_[info.name] = mojo::GetNamePath(name);
   }
   SerializeCatalog();
+
+  auto qualifier_iter = qualifiers_.find(name);
+  DCHECK(qualifier_iter != qualifiers_.end());
+  std::string qualifier = qualifier_iter->second;
   CompleteResolveMojoName(name, qualifier, callback);
 }
 

@@ -31,6 +31,7 @@ struct ApplicationInfo {
   ~ApplicationInfo();
 
   std::string name;
+  std::string qualifier;
   std::string display_name;
   CapabilityFilter base_filter;
 };
@@ -42,6 +43,8 @@ class ApplicationCatalogStore {
  public:
   // Value is a string.
   static const char kNameKey[];
+  // Value is a string.
+  static const char kQualifierKey[];
   // Value is a string.
   static const char kDisplayNameKey[];
   // Value is a dictionary that maps from the filter to a list of string
@@ -123,10 +126,10 @@ class PackageManager : public mojo::ShellClient,
   bool IsNameInCatalog(const std::string& name) const;
 
   // Called from ResolveMojoName().
-  // If |name| is not in the catalog, attempts to load a manifest for it.
-  void EnsureNameInCatalog(const std::string& name,
-                           const std::string& qualifier,
-                           const ResolveMojoNameCallback& callback);
+  // Attempts to load a manifest for |name|, reads it and adds its metadata to
+  // the catalog.
+  void AddNameToCatalog(const std::string& name,
+                        const ResolveMojoNameCallback& callback);
 
   // Populate/serialize the catalog from/to the supplied store.
   void DeserializeCatalog();
@@ -142,13 +145,11 @@ class PackageManager : public mojo::ShellClient,
   // but |callback| must be run.
   static void OnReadManifest(base::WeakPtr<PackageManager> pm,
                              const std::string& name,
-                             const std::string& qualifier,
                              const ResolveMojoNameCallback& callback,
                              scoped_ptr<base::Value> manifest);
 
   // Called once the manifest is read and |this| hasn't been deleted.
   void OnReadManifestImpl(const std::string& name,
-                          const std::string& qualifier,
                           const ResolveMojoNameCallback& callback,
                           scoped_ptr<base::Value> manifest);
 
@@ -166,6 +167,8 @@ class PackageManager : public mojo::ShellClient,
   // app that is responsible for handling it. The value is a pair of the name of
   // the handler along with a qualifier.
   MojoNameAliasMap mojo_name_aliases_;
+
+  std::map<std::string, std::string> qualifiers_;
 
   base::WeakPtrFactory<PackageManager> weak_factory_;
 

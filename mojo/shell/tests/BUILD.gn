@@ -33,6 +33,7 @@ test("mojo_shell_unittests") {
     "//mojo/shell/public/cpp",
     "//mojo/shell/tests/application_manager",
     "//mojo/shell/tests/connect",
+    "//mojo/shell/tests/lifecycle",
     "//mojo/util:filename_util",
     "//testing/gtest",
   ]

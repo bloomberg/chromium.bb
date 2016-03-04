@@ -54,10 +54,10 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
     else
       loop.reset(new base::MessageLoop(message_loop_type_));
 
-    ShellConnection impl(client_.get(),
-                         MakeRequest<shell::mojom::ShellClient>(
-                            MakeScopedHandle(MessagePipeHandle(
-                                shell_client_request_handle))));
+    connection_.reset(new ShellConnection(
+        client_.get(),
+        MakeRequest<shell::mojom::ShellClient>(MakeScopedHandle(
+            MessagePipeHandle(shell_client_request_handle)))));
     loop->Run();
     // It's very common for the client to cache the app and terminate on errors.
     // If we don't delete the client before the app we run the risk of the
@@ -67,6 +67,7 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
     // client.
     loop.reset();
     client_.reset();
+    connection_.reset();
   }
   return MOJO_RESULT_OK;
 }
@@ -78,6 +79,10 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle) {
         !base::CommandLine::ForCurrentProcess()->HasSwitch("single-process");
   }
   return Run(shell_client_request_handle, init_base);
+}
+
+void ApplicationRunner::DestroyShellConnection() {
+  connection_.reset();
 }
 
 }  // namespace mojo

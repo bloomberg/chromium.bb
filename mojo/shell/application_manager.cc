@@ -469,6 +469,13 @@ void ApplicationManager::OnGotResolvedName(
     const String& resolved_qualifier,
     mojom::CapabilityFilterPtr base_filter,
     const String& file_url) {
+  std::string qualifier = params->target().qualifier();
+  if (qualifier == GetNamePath(params->target().name()))
+    qualifier = resolved_qualifier;
+  Identity target(params->target().name(), qualifier,
+                  params->target().user_id());
+  params->set_target(target);
+
   // It's possible that when this manifest request was issued, another one was
   // already in-progress and completed by the time this one did, and so the
   // requested application may already be running.
@@ -481,7 +488,6 @@ void ApplicationManager::OnGotResolvedName(
   CapabilityFilter filter = GetPermissiveCapabilityFilter();
   if (!base_filter.is_null())
     filter = base_filter->filter.To<CapabilityFilter>();
-  Identity target = params->target();
   target.set_filter(filter);
 
   mojom::ShellClientRequest request;
@@ -498,7 +504,7 @@ void ApplicationManager::OnGotResolvedName(
     // from the original request rather than for the package itself, which will
     // always be the same.
     CreateShellClient(
-        source, Identity(resolved_name, target.qualifier(), target.user_id()),
+        source, Identity(resolved_name, resolved_qualifier, target.user_id()),
         target.name(), std::move(request));
   } else {
     bool start_sandboxed = false;

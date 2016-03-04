@@ -12,6 +12,7 @@
 namespace mojo {
 
 class ShellClient;
+class ShellConnection;
 
 // A utility for running a chromium based mojo Application. The typical use
 // case is to use when writing your MojoMain:
@@ -46,7 +47,14 @@ class ApplicationRunner {
   // Calls Run above with |init_base| set to |true|.
   MojoResult Run(MojoHandle shell_handle);
 
+  // Allows the caller to shut down the connection with the shell. After the
+  // shell notices the pipe has closed, it will no longer track an instance of
+  // this application, though this application may continue to run and service
+  // requests from others.
+  void DestroyShellConnection();
+
  private:
+  scoped_ptr<ShellConnection> connection_;
   scoped_ptr<ShellClient> client_;
 
   // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as
