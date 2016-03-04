@@ -31,7 +31,7 @@ function test()
 {
     InspectorTest.WorkerAgent.disable();
     // Debugger should not crash when autoconnecting is immediately followed by termination.
-    InspectorTest.WorkerAgent.setAutoconnectToWorkers(true, didDisableWorkerInspection);
+    InspectorTest.WorkerAgent.setWaitForDebuggerOnStart(true, didDisableWorkerInspection);
 
     function didDisableWorkerInspection()
     {

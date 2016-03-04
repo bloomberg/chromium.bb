@@ -94,7 +94,6 @@ public:
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) override;
     void run(ErrorString*) override;
-    void isRunRequired(ErrorString*, bool* result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) override;
     void compileScript(ErrorString*,
         const String& expression,

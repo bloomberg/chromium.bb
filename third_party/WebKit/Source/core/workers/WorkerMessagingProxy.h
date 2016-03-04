@@ -54,7 +54,7 @@ class CORE_EXPORT WorkerMessagingProxy
 public:
     // Implementations of WorkerGlobalScopeProxy.
     // (Only use these methods in the worker object thread.)
-    void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode) override;
+    void startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode) override;
     void terminateWorkerGlobalScope() override;
     void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) override;
     bool hasPendingActivity() const override;

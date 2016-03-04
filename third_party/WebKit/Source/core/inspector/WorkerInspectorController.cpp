@@ -132,11 +132,6 @@ void WorkerInspectorController::resumeStartup()
     m_workerGlobalScope->thread()->stopRunningDebuggerTasksOnPause();
 }
 
-bool WorkerInspectorController::isRunRequired()
-{
-    return m_workerGlobalScope->thread()->isRunningDebuggerTasksOnPause();
-}
-
 void WorkerInspectorController::sendProtocolResponse(int sessionId, int callId, PassOwnPtr<protocol::DictionaryValue> message)
 {
     // Worker messages are wrapped, no need to handle callId.

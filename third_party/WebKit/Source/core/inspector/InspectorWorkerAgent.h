@@ -58,16 +58,14 @@ public:
     void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     // Called from InspectorInstrumentation
-    bool shouldPauseDedicatedWorkerOnStart();
-    void didStartWorker(WorkerInspectorProxy*, const KURL&);
+    bool shouldWaitForDebuggerOnWorkerStart();
+    void didStartWorker(WorkerInspectorProxy*, const KURL&, bool waitingForDebugger);
     void workerTerminated(WorkerInspectorProxy*);
 
     // Called from Dispatcher
     void enable(ErrorString*) override;
-    void connectToWorker(ErrorString*, const String& workerId) override;
-    void disconnectFromWorker(ErrorString*, const String& workerId) override;
     void sendMessageToWorker(ErrorString*, const String& workerId, const String& message) override;
-    void setAutoconnectToWorkers(ErrorString*, bool value) override;
+    void setWaitForDebuggerOnStart(ErrorString*, bool value) override;
 
     void setTracingSessionId(const String&);
 
@@ -100,7 +98,7 @@ public:
 private:
     InspectorWorkerAgent(InspectedFrames*, PageConsoleAgent*);
     void createWorkerAgentClientsForExistingWorkers();
-    void createWorkerAgentClient(WorkerInspectorProxy*, const String& url, const String& id);
+    void createWorkerAgentClient(WorkerInspectorProxy*, const String& url, const String& id, bool waitingForDebugger);
     void destroyWorkerAgentClients();
 
     class WorkerInfo {

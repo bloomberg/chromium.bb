@@ -63,7 +63,6 @@ public:
         virtual ~Client() { }
 
         virtual void resumeStartup() { }
-        virtual bool isRunRequired() { return false; }
     };
 
     ~InspectorRuntimeAgent() override;
@@ -86,7 +85,6 @@ public:
     void run(ErrorString*) override;
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-    void isRunRequired(ErrorString*, bool* result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool enabled) override;
     void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, Maybe<String>* scriptId, Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void runScript(ErrorString*, const String& scriptId, int executionContextId, const Maybe<String>& objectGroup, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<bool>& includeCommandLineAPI, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<protocol::Runtime::ExceptionDetails>*) override;

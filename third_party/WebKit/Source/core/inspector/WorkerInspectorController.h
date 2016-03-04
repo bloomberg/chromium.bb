@@ -72,7 +72,6 @@ private:
 
     // InspectorRuntimeAgent::Client implementation.
     void resumeStartup() override;
-    bool isRunRequired() override;
 
     // protocol::FrontendChannel implementation.
     void sendProtocolResponse(int sessionId, int callId, PassOwnPtr<protocol::DictionaryValue> message) override;
