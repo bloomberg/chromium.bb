@@ -13,17 +13,13 @@ struct LayoutDumpFlags {
                   bool dump_as_markup,
                   bool dump_child_frames_as_markup,
                   bool dump_child_frame_scroll_positions,
-                  bool is_printing,
-                  bool dump_line_box_trees,
-                  bool debug_render_tree)
+                  bool is_printing)
       : dump_as_text(dump_as_text),
         dump_child_frames_as_text(dump_child_frames_as_text),
         dump_as_markup(dump_as_text),
         dump_child_frames_as_markup(dump_child_frames_as_markup),
         dump_child_frame_scroll_positions(dump_child_frame_scroll_positions),
-        is_printing(is_printing),
-        dump_line_box_trees(dump_line_box_trees),
-        debug_render_tree(debug_render_tree) {}
+        is_printing(is_printing) {}
 
   // Default constructor needed for IPC.
   //
@@ -64,10 +60,6 @@ struct LayoutDumpFlags {
 
   // If true, layout is to target printed pages.
   bool is_printing;
-
-  // Extra flags for debugging layout tests.
-  bool dump_line_box_trees;
-  bool debug_render_tree;
 };
 
 }  // namespace test_runner

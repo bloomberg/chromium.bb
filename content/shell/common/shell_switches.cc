@@ -28,10 +28,6 @@ const char kCrashDumpsDir[] = "crash-dumps-dir";
 // causes the leak detector to cause immediate crash when found leak.
 const char kCrashOnFailure[] = "crash-on-failure";
 
-// When run-layout-test is enabled, this causes the line box tree for
-// each LayoutBlockFlow to be dumped as well.
-const char kDumpLineBoxTrees[] = "dump-line-box-trees";
-
 // Enable accelerated 2D canvas.
 const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 

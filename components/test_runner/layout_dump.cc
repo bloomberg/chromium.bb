@@ -78,11 +78,6 @@ std::string DumpLayout(WebLocalFrame* frame, const LayoutDumpFlags& flags) {
           WebFrameContentDumper::LayoutAsTextNormal;
       if (flags.is_printing)
         layout_text_behavior |= WebFrameContentDumper::LayoutAsTextPrinting;
-      if (flags.debug_render_tree)
-        layout_text_behavior |= WebFrameContentDumper::LayoutAsTextDebug;
-      if (flags.dump_line_box_trees)
-        layout_text_behavior |=
-            WebFrameContentDumper::LayoutAsTextWithLineTrees;
       result = WebFrameContentDumper::dumpLayoutTreeAsText(frame,
                                                            layout_text_behavior)
                    .utf8();

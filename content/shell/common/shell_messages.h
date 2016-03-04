@@ -35,8 +35,6 @@ IPC_STRUCT_TRAITS_BEGIN(test_runner::LayoutDumpFlags)
   IPC_STRUCT_TRAITS_MEMBER(dump_child_frames_as_markup)
   IPC_STRUCT_TRAITS_MEMBER(dump_child_frame_scroll_positions)
   IPC_STRUCT_TRAITS_MEMBER(is_printing)
-  IPC_STRUCT_TRAITS_MEMBER(dump_line_box_trees)
-  IPC_STRUCT_TRAITS_MEMBER(debug_render_tree)
 IPC_STRUCT_TRAITS_END()
 
 // Tells the renderer to reset all test runners.

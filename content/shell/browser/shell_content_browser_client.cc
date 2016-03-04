@@ -234,10 +234,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDumpLineBoxTrees)) {
-    command_line->AppendSwitch(switches::kDumpLineBoxTrees);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFontAntialiasing)) {
     command_line->AppendSwitch(switches::kEnableFontAntialiasing);
   }

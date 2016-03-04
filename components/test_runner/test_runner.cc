@@ -1663,9 +1663,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
           false,  // dump_as_markup
           false,  // dump_child_frames_as_markup
           false,  // dump_child_frame_scroll_positions
-          false,  // is_printing
-          false,  // dump_line_box_trees
-          false),  // debug_render_tree
+          false),  // is_printing
       test_interfaces_(interfaces),
       delegate_(nullptr),
       web_view_(nullptr),
