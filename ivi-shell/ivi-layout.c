@@ -1867,21 +1867,6 @@ ivi_layout_layer_set_destination_rectangle(struct ivi_layout_layer *ivilayer,
 }
 
 static int32_t
-ivi_layout_layer_get_dimension(struct ivi_layout_layer *ivilayer,
-			       int32_t *dest_width, int32_t *dest_height)
-{
-	if (ivilayer == NULL || dest_width == NULL || dest_height == NULL) {
-		weston_log("ivi_layout_layer_get_dimension: invalid argument\n");
-		return IVI_FAILED;
-	}
-
-	*dest_width = ivilayer->prop.dest_width;
-	*dest_height = ivilayer->prop.dest_height;
-
-	return IVI_SUCCEEDED;
-}
-
-static int32_t
 ivi_layout_layer_set_dimension(struct ivi_layout_layer *ivilayer,
 			       int32_t dest_width, int32_t dest_height)
 {
@@ -2691,7 +2676,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.layer_set_destination_rectangle	= ivi_layout_layer_set_destination_rectangle,
 	.layer_set_position			= ivi_layout_layer_set_position,
 	.layer_set_dimension			= ivi_layout_layer_set_dimension,
-	.layer_get_dimension			= ivi_layout_layer_get_dimension,
 	.layer_set_orientation			= ivi_layout_layer_set_orientation,
 	.layer_get_orientation			= ivi_layout_layer_get_orientation,
 	.layer_add_surface			= ivi_layout_layer_add_surface,

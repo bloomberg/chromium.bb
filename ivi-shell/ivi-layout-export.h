@@ -555,15 +555,6 @@ struct ivi_layout_interface {
 				       int32_t dest_width, int32_t dest_height);
 
 	/**
-	 * \brief Get the horizontal and vertical dimension of the layer.
-	 *
-	 * \return IVI_SUCCEEDED if the method call was successful
-	 * \return IVI_FAILED if the method call was failed
-	 */
-	int32_t (*layer_get_dimension)(struct ivi_layout_layer *ivilayer,
-				       int32_t *dest_width, int32_t *dest_height);
-
-	/**
 	 * \brief Sets the orientation of a ivi_layer.
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful

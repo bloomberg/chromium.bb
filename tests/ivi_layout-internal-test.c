@@ -236,32 +236,21 @@ test_layer_dimension(struct test_context *ctx)
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 	struct ivi_layout_layer *ivilayer;
 	const struct ivi_layout_layer_properties *prop;
-	int32_t dest_width;
-	int32_t dest_height;
 
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
 
-	iassert(lyt->layer_get_dimension(
-		ivilayer, &dest_width, &dest_height) == IVI_SUCCEEDED);
-	iassert(dest_width == 200);
-	iassert(dest_height == 300);
+	prop = lyt->get_properties_of_layer(ivilayer);
+	iassert(prop->dest_width == 200);
+	iassert(prop->dest_height == 300);
 
 	iassert(lyt->layer_set_dimension(ivilayer, 400, 600) == IVI_SUCCEEDED);
 
-	iassert(lyt->layer_get_dimension(
-		ivilayer, &dest_width, &dest_height) == IVI_SUCCEEDED);
-	iassert(dest_width == 200);
-	iassert(dest_height == 300);
+	iassert(prop->dest_width == 200);
+	iassert(prop->dest_height == 300);
 
 	lyt->commit_changes();
 
-	iassert(IVI_SUCCEEDED == lyt->layer_get_dimension(
-		ivilayer, &dest_width, &dest_height));
-	iassert(dest_width == 400);
-	iassert(dest_height == 600);
-
-	prop = lyt->get_properties_of_layer(ivilayer);
 	iassert(prop->dest_width == 400);
 	iassert(prop->dest_height == 600);
 
@@ -302,8 +291,6 @@ test_layer_destination_rectangle(struct test_context *ctx)
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 	struct ivi_layout_layer *ivilayer;
 	const struct ivi_layout_layer_properties *prop;
-	int32_t dest_width;
-	int32_t dest_height;
 
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
@@ -325,12 +312,6 @@ test_layer_destination_rectangle(struct test_context *ctx)
 
 	lyt->commit_changes();
 
-	iassert(lyt->layer_get_dimension(
-		ivilayer, &dest_width, &dest_height) == IVI_SUCCEEDED);
-	iassert(dest_width == 400);
-	iassert(dest_height == 600);
-
-	prop = lyt->get_properties_of_layer(ivilayer);
 	iassert(prop->dest_width == 400);
 	iassert(prop->dest_height == 600);
 	iassert(prop->dest_x == 20);
@@ -458,8 +439,6 @@ test_layer_bad_dimension(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 	struct ivi_layout_layer *ivilayer;
-	int32_t dest_width;
-	int32_t dest_height;
 
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
@@ -467,13 +446,6 @@ test_layer_bad_dimension(struct test_context *ctx)
 	iassert(lyt->layer_set_dimension(NULL, 200, 300) == IVI_FAILED);
 
 	lyt->commit_changes();
-
-	iassert(lyt->layer_get_dimension(
-		NULL, &dest_width, &dest_height) == IVI_FAILED);
-	iassert(lyt->layer_get_dimension(
-		ivilayer, NULL, &dest_height) == IVI_FAILED);
-	iassert(lyt->layer_get_dimension(
-		ivilayer, &dest_width, NULL) == IVI_FAILED);
 
 	lyt->layer_destroy(ivilayer);
 }
