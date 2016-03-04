@@ -39,6 +39,7 @@
 #include "core/editing/commands/InsertParagraphSeparatorCommand.h"
 #include "core/editing/commands/InsertTextCommand.h"
 #include "core/editing/spellcheck/SpellChecker.h"
+#include "core/events/BeforeTextInsertedEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/layout/LayoutObject.h"
@@ -163,6 +164,23 @@ void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(TypingCommand
 
     typingCommand->setStartingSelection(currentSelection);
     typingCommand->setEndingSelection(currentSelection);
+}
+
+static String dispatchBeforeTextInsertedEvent(const String& text, const VisibleSelection& selectionForInsertion, bool insertionIsForUpdatingComposition)
+{
+    if (insertionIsForUpdatingComposition)
+        return text;
+
+    String newText = text;
+    if (Node* startNode = selectionForInsertion.start().computeContainerNode()) {
+        if (startNode->rootEditableElement()) {
+            // Send BeforeTextInsertedEvent. The event handler will update text if necessary.
+            RefPtrWillBeRawPtr<BeforeTextInsertedEvent> evt = BeforeTextInsertedEvent::create(text);
+            startNode->rootEditableElement()->dispatchEvent(evt);
+            newText = evt->text();
+        }
+    }
+    return newText;
 }
 
 void TypingCommand::insertText(Document& document, const String& text, Options options, TextCompositionType compositionType)
@@ -338,6 +356,28 @@ void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedT
     frame->editor().appliedEditing(this);
 }
 
+// LineOperation should define member function "opeartor (size_t lineOffset, size_t lineLength, bool isLastLine)".
+// lienLength doesn't include the newline character. So the value of lineLength could be 0.
+template <class LineOperation>
+static void forEachLineInString(const String& string, const LineOperation& operation, EditingState* editingState)
+{
+    unsigned offset = 0;
+    size_t newline;
+    while ((newline = string.find('\n', offset)) != kNotFound) {
+        operation(offset, newline - offset, false, editingState);
+        if (editingState->isAborted())
+            return;
+        offset = newline + 1;
+    }
+    if (!offset) {
+        operation(0, string.length(), true, editingState);
+    } else {
+        unsigned length = string.length();
+        if (length != offset)
+            operation(offset, length - offset, true, editingState);
+    }
+}
+
 void TypingCommand::insertText(const String &text, bool selectInsertedText, EditingState* editingState)
 {
     // FIXME: Need to implement selectInsertedText for cases where more than one insert is involved.
@@ -358,6 +398,17 @@ void TypingCommand::insertTextRunWithoutNewlines(const String &text, bool select
     if (editingState->isAborted())
         return;
     typingAddedToOpenCommand(InsertText);
+}
+
+static bool canAppendNewLineFeedToSelection(const VisibleSelection& selection)
+{
+    Element* element = selection.rootEditableElement();
+    if (!element)
+        return false;
+
+    RefPtrWillBeRawPtr<BeforeTextInsertedEvent> event = BeforeTextInsertedEvent::create(String("\n"));
+    element->dispatchEvent(event);
+    return event->text().length();
 }
 
 void TypingCommand::insertLineBreak(EditingState* editingState)

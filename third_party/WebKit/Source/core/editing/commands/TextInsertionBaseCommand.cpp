@@ -39,32 +39,4 @@ TextInsertionBaseCommand::TextInsertionBaseCommand(Document& document)
 {
 }
 
-String dispatchBeforeTextInsertedEvent(const String& text, const VisibleSelection& selectionForInsertion, bool insertionIsForUpdatingComposition)
-{
-    if (insertionIsForUpdatingComposition)
-        return text;
-
-    String newText = text;
-    if (Node* startNode = selectionForInsertion.start().computeContainerNode()) {
-        if (startNode->rootEditableElement()) {
-            // Send BeforeTextInsertedEvent. The event handler will update text if necessary.
-            RefPtrWillBeRawPtr<BeforeTextInsertedEvent> evt = BeforeTextInsertedEvent::create(text);
-            startNode->rootEditableElement()->dispatchEvent(evt);
-            newText = evt->text();
-        }
-    }
-    return newText;
-}
-
-bool canAppendNewLineFeedToSelection(const VisibleSelection& selection)
-{
-    Element* element = selection.rootEditableElement();
-    if (!element)
-        return false;
-
-    RefPtrWillBeRawPtr<BeforeTextInsertedEvent> event = BeforeTextInsertedEvent::create(String("\n"));
-    element->dispatchEvent(event);
-    return event->text().length();
-}
-
 } // namespace blink
