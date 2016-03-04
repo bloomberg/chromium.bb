@@ -177,17 +177,16 @@ test_layer_visibility(struct test_context *ctx)
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
 
-	iassert(lyt->layer_get_visibility(ivilayer) == false);
+	prop = lyt->get_properties_of_layer(ivilayer);
+
+	iassert(prop->visibility == false);
 
 	iassert(lyt->layer_set_visibility(ivilayer, true) == IVI_SUCCEEDED);
 
-	iassert(lyt->layer_get_visibility(ivilayer) == false);
+	iassert(prop->visibility == false);
 
 	lyt->commit_changes();
 
-	iassert(lyt->layer_get_visibility(ivilayer) == true);
-
-	prop = lyt->get_properties_of_layer(ivilayer);
 	iassert(prop->visibility == true);
 
 	lyt->layer_destroy(ivilayer);
@@ -424,8 +423,6 @@ test_layer_bad_visibility(struct test_context *ctx)
 	iassert(lyt->layer_set_visibility(NULL, true) == IVI_FAILED);
 
 	lyt->commit_changes();
-
-	iassert(lyt->layer_get_visibility(NULL) == false);
 }
 
 static void

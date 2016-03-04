@@ -529,15 +529,6 @@ struct ivi_layout_interface {
 					bool newVisibility);
 
 	/**
-	 * \brief Get the visibility of a layer. If a layer is not visible,
-	 * the layer and its surfaces will not be rendered.
-	 *
-	 * \return true if layer is visible
-	 * \return false if layer is invisible or the method call was failed
-	 */
-	bool (*layer_get_visibility)(struct ivi_layout_layer *ivilayer);
-
-	/**
 	 * \brief Set the opacity of a ivi_layer.
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
