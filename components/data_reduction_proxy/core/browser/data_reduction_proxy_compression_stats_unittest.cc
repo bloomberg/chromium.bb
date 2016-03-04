@@ -498,21 +498,6 @@ TEST_F(DataReductionProxyCompressionStatsTest, WritePrefsDelayed) {
 }
 
 TEST_F(DataReductionProxyCompressionStatsTest,
-       WritePrefsOnUpdateDailyReceivedContentLengths) {
-  ResetCompressionStatsWithDelay(
-      base::TimeDelta::FromMinutes(kWriteDelayMinutes));
-  SetUpPrefs();
-
-  pref_service()->SetBoolean(
-      prefs::kUpdateDailyReceivedContentLengths, true);
-
-  VerifyPrefWasWritten(prefs::kHttpOriginalContentLength);
-  VerifyPrefWasWritten(prefs::kHttpReceivedContentLength);
-  VerifyPrefListWasWritten(prefs::kDailyHttpOriginalContentLength);
-  VerifyPrefListWasWritten(prefs::kDailyHttpReceivedContentLength);
-}
-
-TEST_F(DataReductionProxyCompressionStatsTest,
        HistoricNetworkStatsInfoToValue) {
   const int64_t kOriginalLength = 150;
   const int64_t kReceivedLength = 100;

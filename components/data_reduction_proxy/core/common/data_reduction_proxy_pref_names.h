@@ -56,7 +56,6 @@ extern const char kLoFiConsecutiveSessionDisables[];
 extern const char kLoFiWasUsedThisSession[];
 extern const char kSimulatedConfigRetrieveTime[];
 extern const char kStatisticsPrefsMigrated[];
-extern const char kUpdateDailyReceivedContentLengths[];
 
 }  // namespace prefs
 }  // namespace data_reduction_proxy

@@ -39,8 +39,6 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
 
   registry->RegisterBooleanPref(prefs::kStatisticsPrefsMigrated, false);
-  registry->RegisterBooleanPref(prefs::kUpdateDailyReceivedContentLengths,
-                                false);
   registry->RegisterListPref(prefs::kDailyHttpOriginalContentLength);
   registry->RegisterInt64Pref(prefs::kDailyHttpOriginalContentLengthApplication,
                               0L);
@@ -140,8 +138,6 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kDailyHttpReceivedContentLengthVideo, 0L);
   registry->RegisterInt64Pref(prefs::kDailyHttpReceivedContentLengthUnknown,
                               0L);
-  registry->RegisterBooleanPref(prefs::kUpdateDailyReceivedContentLengths,
-                                false);
   registry->RegisterListPref(
       prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
   registry->RegisterInt64Pref(

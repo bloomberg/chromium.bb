@@ -34,7 +34,6 @@ class PreferenceWhitelist {
     whitelist_.insert("googlegeolocationaccess.enabled");
     // The following settings need to be checked and probably removed. See
     // http://crbug.com/164227#c157 .
-    whitelist_.insert("data_reduction.update_daily_lengths");
     whitelist_.insert("easy_unlock.proximity_required");
   }
 

@@ -18,12 +18,6 @@
         "$ref": "types.private.ChromeDirectSetting",
         "value": ["googlegeolocationaccess.enabled", {"type":"boolean"}],
         "description": "If enabled, Google services can access the user's location. This preference's value is a boolean, defaulting to <code>false</code>."
-      },
-      "dataReductionUpdateDailyLengths": {
-        "nocompile": true,
-        "$ref": "types.private.ChromeDirectSetting",
-        "value": ["data_reduction.update_daily_lengths", {"type":"boolean"}],
-        "description": "Flag to indicate that dataReductionDailyContentLength and dataReductionDailyReceivedLength must be updated with their latest values. This preference's value is a boolean, defaulting to <code>false</code>."
       }
     },
     "functions": [

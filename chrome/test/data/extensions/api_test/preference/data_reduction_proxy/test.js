@@ -7,7 +7,6 @@
 // --gtest_filter=ExtensionPreferenceApiTest.DataReductionProxy
 
 var dataReductionProxy = chrome.dataReductionProxy;
-var privatePreferences = chrome.preferencesPrivate;
 chrome.test.runTests([
   function getDrpPrefs() {
     dataReductionProxy.spdyProxyEnabled.get({}, chrome.test.callbackPass(
@@ -19,141 +18,48 @@ chrome.test.runTests([
               },
               result);
     }));
-    dataReductionProxy.dataReductionDailyContentLength.get({},
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(
-              {
-                'value': [],
-                'levelOfControl': 'controllable_by_this_extension'
-              },
-              result);
-    }));
-    dataReductionProxy.dataReductionDailyReceivedLength.get({},
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(
-              {
-                'value': [],
-                'levelOfControl': 'controllable_by_this_extension'
-              },
-              result);
-    }));
-    privatePreferences.dataReductionUpdateDailyLengths.get({},
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(
-              {
-                'value': false
-              },
-              result);
-    }));
-  },
-  function updateDailyLengths() {
-    dataReductionProxy.dataReductionDailyContentLength.onChange.addListener(
-        confirmDailyContentLength);
-    dataReductionProxy.dataReductionDailyReceivedLength.onChange.addListener(
-        confirmRecievedLength);
-
-    // Trigger calls to confirmDailyContentLength.onChange and
-    // dataReductionDailyReceivedLength.onChange listeners.
-    dataReductionProxy.spdyProxyEnabled.set({ 'value': true });
-    privatePreferences.dataReductionUpdateDailyLengths.set({'value': true});
-
-    // Helper methods.
-    var expectedDailyLengths = [];
-    for (var i = 0; i < 60; i++) {
-      expectedDailyLengths[i] = '0';
-    }
-    function confirmRecievedLength() {
-      dataReductionProxy.dataReductionDailyReceivedLength.get({},
-          chrome.test.callbackPass(function(result) {
-            chrome.test.assertEq(
-                {
-                  'value': expectedDailyLengths ,
-                  'levelOfControl': 'controllable_by_this_extension'
-                },
-                result);
-      }));
-      privatePreferences.dataReductionUpdateDailyLengths.get({},
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(
-              {
-                'value': false
-              },
-              result);
-      }));
-    }
-    function confirmDailyContentLength() {
-      dataReductionProxy.dataReductionDailyContentLength.get({},
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(
-              {
-                'value': expectedDailyLengths ,
-                'levelOfControl': 'controllable_by_this_extension'
-              },
-              result);
-          dataReductionProxy.dataReductionDailyContentLength.onChange.
-              removeListener(confirmDailyContentLength);
-      }));
-      privatePreferences.dataReductionUpdateDailyLengths.get({},
-        chrome.test.callbackPass(function(result) {
-          chrome.test.assertEq(
-              {
-                'value': false
-              },
-              result);
-          dataReductionProxy.dataReductionDailyReceivedLength.onChange.
-              removeListener(confirmRecievedLength);
-      }));
-    }
   },
   function clearDataSavings() {
+    dataReductionProxy.dataUsageReportingEnabled.set({ 'value': true });
     dataReductionProxy.spdyProxyEnabled.set({ 'value': true });
 
-    dataReductionProxy.clearDataSavings(function() {
-        // Confirm that data is cleared
-        dataReductionProxy.dataReductionDailyContentLength.get({},
-          chrome.test.callbackPass(function(result) {
-            chrome.test.assertEq(
-              {
-                'value': [],
-                'levelOfControl': 'controllable_by_this_extension'
-              },
-              result);
-          }));
-        dataReductionProxy.dataReductionDailyReceivedLength.get({},
-          chrome.test.callbackPass(function(result) {
-            chrome.test.assertEq(
-              {
-                'value': [],
-                'levelOfControl': 'controllable_by_this_extension'
-              },
-              result);
-          }));
-    });
+    verifyDataUsage(20, chrome.test.callbackPass(function() {
+      dataReductionProxy.clearDataSavings(function() {
+        verifyDataUsage(1, null);
+      });
+    }));
   },
   function dataUsageReporting() {
     dataReductionProxy.dataUsageReportingEnabled.set({ 'value': true });
 
-    // Data usage reporting takes some time to initialize before a call to
-    // |getDataUsage| is successful. If |getDataUsage| gives us an empty array,
-    // we retry after some delay. Test will report failure if the expected
-    // data usage is not returned after 20 retries.
-    var verifyDataUsage = function(numRetries) {
-      chrome.test.assertTrue(numRetries != 0);
-
-      setTimeout(chrome.test.callbackPass(function() {
-        dataReductionProxy.getDataUsage(chrome.test.callbackPass(
-          function(data_usage) {
-            chrome.test.assertTrue('data_usage_buckets' in data_usage);
-            if (data_usage['data_usage_buckets'].length == 0) {
-              verifyDataUsage(numRetries - 1);
-            } else {
-              chrome.test.assertEq(5760,
-                                   data_usage['data_usage_buckets'].length);
-            }
-        }));
-      }), 1000);
-    };
-
-    verifyDataUsage(20);
+    verifyDataUsage(20, null);
   }
 ]);
+
+// Data usage reporting takes some time to initialize before a call to
+// |getDataUsage| is successful. If |getDataUsage| gives us an empty array,
+// we retry after some delay. Test will report failure if the expected data
+// usage is not returned after |numRetries| retries.
+// We don't have a way to populate actual data usage in a browser test, so we
+// only check the length of the returned data usage array.
+// The |onVerifyDone| callback, if present, is executed after verifying data
+// usage.
+function verifyDataUsage(numRetries, onVerifyDone) {
+  chrome.test.assertTrue(numRetries != 0);
+
+  setTimeout(chrome.test.callbackPass(function() {
+    dataReductionProxy.getDataUsage(chrome.test.callbackPass(
+      function(data_usage) {
+        chrome.test.assertTrue('data_usage_buckets' in data_usage);
+        if (data_usage['data_usage_buckets'].length == 0) {
+          verifyDataUsage(numRetries - 1, onVerifyDone);
+        } else {
+          chrome.test.assertEq(5760,
+                               data_usage['data_usage_buckets'].length);
+          if (onVerifyDone) {
+            onVerifyDone();
+          }
+        }
+    }));
+  }), 1000);
+};

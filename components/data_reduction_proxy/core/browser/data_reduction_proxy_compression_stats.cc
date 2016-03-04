@@ -372,7 +372,6 @@ DataReductionProxyCompressionStats::~DataReductionProxyCompressionStats() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 
   WritePrefs();
-  pref_change_registrar_.RemoveAll();
 }
 
 void DataReductionProxyCompressionStats::Init() {
@@ -447,21 +446,6 @@ void DataReductionProxyCompressionStats::Init() {
       switches::kClearDataReductionProxyDataSavings)) {
     ClearDataSavingStatistics();
   }
-
-  pref_change_registrar_.Init(pref_service_);
-  pref_change_registrar_.Add(
-      prefs::kUpdateDailyReceivedContentLengths,
-      base::Bind(&DataReductionProxyCompressionStats::OnUpdateContentLengths,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void DataReductionProxyCompressionStats::OnUpdateContentLengths() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!pref_service_->GetBoolean(prefs::kUpdateDailyReceivedContentLengths))
-    return;
-
-  WritePrefs();
-  pref_service_->SetBoolean(prefs::kUpdateDailyReceivedContentLengths, false);
 }
 
 void DataReductionProxyCompressionStats::UpdateContentLengths(

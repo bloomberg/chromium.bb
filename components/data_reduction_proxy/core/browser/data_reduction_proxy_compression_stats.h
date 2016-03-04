@@ -13,7 +13,6 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -23,7 +22,6 @@
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "net/base/network_change_notifier.h"
 
@@ -237,7 +235,6 @@ class DataReductionProxyCompressionStats
   const base::TimeDelta delay_;
   DataReductionProxyPrefMap pref_map_;
   DataReductionProxyListPrefMap list_pref_map_;
-  PrefChangeRegistrar pref_change_registrar_;
   BooleanPrefMember data_usage_reporting_enabled_;
   ConnectionType connection_type_;
 

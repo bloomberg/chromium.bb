@@ -230,12 +230,5 @@ const char kSimulatedConfigRetrieveTime[] =
 const char kStatisticsPrefsMigrated[] =
     "data_reduction.statistics_prefs_migrated";
 
-// Pref to indicate that the kDailyHttpOriginalContentLength and
-// kDailyHttpReceivedContentLength prefs must be updated with their latest
-// value. These values are cached in memory on platforms other than Android and
-// iOS for performance reasons.
-const char kUpdateDailyReceivedContentLengths[] =
-    "data_reduction.update_daily_lengths";
-
 }  // namespace prefs
 }  // namespace data_reduction_proxy
