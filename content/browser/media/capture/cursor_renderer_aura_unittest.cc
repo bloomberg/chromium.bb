@@ -200,4 +200,20 @@ TEST_F(CursorRendererAuraTest, CursorRenderedOnFrame) {
   EXPECT_TRUE(NonZeroPixelsInRegion(frame, gfx::Rect(50, 50, 70, 70)));
 }
 
+TEST_F(CursorRendererAuraTest, CursorRenderedOnRootWindow) {
+  cursor_renderer_.reset(new CursorRendererAura(root_window()));
+  EXPECT_FALSE(CursorDisplayed());
+
+  // Cursor displayed after mouse movement.
+  MoveMouseCursorWithinWindow();
+  EXPECT_TRUE(CursorDisplayed());
+
+  // Cursor being displayed even if another window is activated.
+  scoped_ptr<aura::Window> window2(aura::test::CreateTestWindowWithBounds(
+      gfx::Rect(0, 0, 800, 600), root_window()));
+  wm::ActivateWindow(window2.get());
+  SnapshotCursorState(gfx::Rect(0, 0, 800, 600));
+  EXPECT_TRUE(CursorDisplayed());
+}
+
 }  // namespace content
