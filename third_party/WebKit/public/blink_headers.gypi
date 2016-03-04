@@ -351,7 +351,6 @@
       "web/WebDOMFileSystem.h",
       "web/WebDOMMediaStreamTrack.h",
       "web/WebDOMMessageEvent.h",
-      "web/WebDOMProgressEvent.h",
       "web/WebDataSource.h",
       "web/WebDatabase.h",
       "web/WebDateTimeChooserCompletion.h",
