@@ -146,10 +146,11 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
       continue;
     }
 
+    // TODO(crbug.com/591816): Make sure parsing cc-numbers of type password
+    // doesn't have bad side effects.
     AutofillField* current_number_field;
-    if (ParseFieldSpecifics(scanner,
-                            base::UTF8ToUTF16(kCardNumberRe),
-                            kMatchNumAndTel,
+    if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kCardNumberRe),
+                            kMatchNumAndTel | MATCH_PASSWORD,
                             &current_number_field)) {
       // Avoid autofilling any credit card number field having very low or high
       // |start_index| on the HTML form.
