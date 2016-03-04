@@ -641,9 +641,10 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         String message;
         boolean doLiteralSearch = false;
         if (isNetworkUnavailable) {
+            // TODO(donnd): double-check that the network is really unavailable?
             message = mActivity.getResources().getString(
                     R.string.contextual_search_network_unavailable);
-        } else if (!isHttpFailureCode(responseCode)) {
+        } else if (!isHttpFailureCode(responseCode) && !TextUtils.isEmpty(displayText)) {
             message = displayText;
         } else if (!mPolicy.shouldShowErrorCodeInBar()) {
             message = mSelectionController.getSelectedText();

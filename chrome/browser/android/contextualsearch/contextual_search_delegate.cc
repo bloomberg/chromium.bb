@@ -28,6 +28,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
 
@@ -45,8 +46,6 @@ const char kContextualSearchMentions[] = "mentions";
 const char kContextualSearchServerEndpoint[] = "_/contextualsearch?";
 const int kContextualSearchRequestVersion = 2;
 const int kContextualSearchMaxSelection = 100;
-// The maximum length of a URL to build.
-const int kMaxURLSize = 2048;
 const char kXssiEscape[] = ")]}'\n";
 const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
 const char kDoPreventPreloadValue[] = "1";
@@ -107,7 +106,7 @@ void ContextualSearchDelegate::ContinueSearchTermResolutionRequest() {
   DCHECK(context_.get());
   if (!context_.get())
     return;
-  GURL request_url(BuildRequestUrl());
+  GURL request_url(BuildRequestUrl(context_->selected_text));
   DCHECK(request_url.is_valid());
 
   // Reset will delete any previous fetcher, and we won't get any callback.
@@ -133,6 +132,28 @@ void ContextualSearchDelegate::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(source == search_term_fetcher_.get());
   int response_code = source->GetResponseCode();
+
+  scoped_ptr<ResolvedSearchTerm> resolved_search_term(
+      new ResolvedSearchTerm(response_code));
+  if (source->GetStatus().is_success() && response_code == net::HTTP_OK) {
+    std::string response;
+    bool has_string_response = source->GetResponseAsString(&response);
+    DCHECK(has_string_response);
+    if (has_string_response) {
+      resolved_search_term =
+          GetResolvedSearchTermFromJson(response_code, response);
+    }
+  }
+  search_term_callback_.Run(*resolved_search_term);
+
+  // The ContextualSearchContext is consumed once the request has completed.
+  context_.reset();
+}
+
+scoped_ptr<ResolvedSearchTerm>
+ContextualSearchDelegate::GetResolvedSearchTermFromJson(
+    int response_code,
+    const std::string& json_string) {
   std::string search_term;
   std::string display_text;
   std::string alternate_term;
@@ -142,83 +163,48 @@ void ContextualSearchDelegate::OnURLFetchComplete(
   int start_adjust = 0;
   int end_adjust = 0;
   std::string context_language;
-  std::string target_language;
 
-  if (source->GetStatus().is_success() && response_code == 200) {
-    std::string response;
-    bool has_string_response = source->GetResponseAsString(&response);
-    DCHECK(has_string_response);
-    if (has_string_response) {
-      DecodeSearchTermFromJsonResponse(
-          response, &search_term, &display_text, &alternate_term,
-          &prevent_preload, &mention_start, &mention_end, &context_language);
-      if (mention_start != 0 || mention_end != 0) {
-        // Sanity check that our selection is non-zero and it is less than
-        // 100 characters as that would make contextual search bar hide.
-        // We also check that there is at least one character overlap between
-        // the new and old selection.
-        if (mention_start >= mention_end
-            || (mention_end - mention_start) > kContextualSearchMaxSelection
-            || mention_end <= context_->start_offset
-            || mention_start >= context_->end_offset) {
-          start_adjust = 0;
-          end_adjust = 0;
-        } else {
-          start_adjust = mention_start - context_->start_offset;
-          end_adjust = mention_end - context_->end_offset;
-        }
-      }
+  DecodeSearchTermFromJsonResponse(
+      json_string, &search_term, &display_text, &alternate_term,
+      &prevent_preload, &mention_start, &mention_end, &context_language);
+  if (mention_start != 0 || mention_end != 0) {
+    // Sanity check that our selection is non-zero and it is less than
+    // 100 characters as that would make contextual search bar hide.
+    // We also check that there is at least one character overlap between
+    // the new and old selection.
+    if (mention_start >= mention_end ||
+        (mention_end - mention_start) > kContextualSearchMaxSelection ||
+        mention_end <= context_->start_offset ||
+        mention_start >= context_->end_offset) {
+      start_adjust = 0;
+      end_adjust = 0;
+    } else {
+      start_adjust = mention_start - context_->start_offset;
+      end_adjust = mention_end - context_->end_offset;
     }
   }
   bool is_invalid = response_code == net::URLFetcher::RESPONSE_CODE_INVALID;
-  ResolvedSearchTerm resolved_search_term(
+  return scoped_ptr<ResolvedSearchTerm>(new ResolvedSearchTerm(
       is_invalid, response_code, search_term, display_text, alternate_term,
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
-      context_language);
-  search_term_callback_.Run(resolved_search_term);
-
-  // The ContextualSearchContext is consumed once the request has completed.
-  context_.reset();
+      context_language));
 }
 
-// TODO(jeremycho): Remove selected_text and base_page_url CGI parameters.
-GURL ContextualSearchDelegate::BuildRequestUrl() {
-  // TODO(jeremycho): Confirm this is the right way to handle TemplateURL fails.
+std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
+  // TODO(donnd): Confirm this is the right way to handle TemplateURL fails.
   if (!template_url_service_ ||
       !template_url_service_->GetDefaultSearchProvider()) {
-    return GURL();
+    return std::string();
   }
 
-  std::string selected_text_escaped(
-      net::EscapeQueryParamValue(context_->selected_text, true));
-  std::string base_page_url_escaped(
-      net::EscapeQueryParamValue(context_->page_url.spec(), true));
-  bool use_resolved_search_term = context_->use_resolved_search_term;
-
-  // If the request is too long, don't include the base-page URL.
-  std::string request = GetSearchTermResolutionUrlString(
-      selected_text_escaped, base_page_url_escaped, use_resolved_search_term);
-  if (request.length() >= kMaxURLSize) {
-    request = GetSearchTermResolutionUrlString(
-          selected_text_escaped, "", use_resolved_search_term);
-  }
-  return GURL(request);
-}
-
-std::string ContextualSearchDelegate::GetSearchTermResolutionUrlString(
-    const std::string& selected_text,
-    const std::string& base_page_url,
-    const bool use_resolved_search_term) {
+  std::string selected_text(net::EscapeQueryParamValue(selection, true));
   TemplateURL* template_url = template_url_service_->GetDefaultSearchProvider();
 
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      kContextualSearchRequestVersion,
-      selected_text,
-      base_page_url,
-      use_resolved_search_term);
+      kContextualSearchRequestVersion, selected_text, "", true);
 
   search_terms_args.contextual_search_params = params;
 
@@ -251,6 +237,17 @@ void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
   // Immediately cancel any request that's in flight, since we're building a new
   // context (and the response disposes of any existing context).
   search_term_fetcher_.reset();
+  BuildContext(selection, use_resolved_search_term, content_view_core,
+               may_send_base_page_url);
+  content_view_core->RequestTextSurroundingSelection(
+      field_trial_->GetSurroundingSize(), callback);
+}
+
+void ContextualSearchDelegate::BuildContext(
+    const std::string& selection,
+    bool use_resolved_search_term,
+    content::ContentViewCore* content_view_core,
+    bool may_send_base_page_url) {
   // Decide if the URL should be sent with the context.
   GURL page_url(content_view_core->GetWebContents()->GetURL());
   GURL url_to_send;
@@ -262,8 +259,6 @@ void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
   std::string encoding(content_view_core->GetWebContents()->GetEncoding());
   context_.reset(new ContextualSearchContext(
       selection, use_resolved_search_term, url_to_send, encoding));
-  content_view_core->RequestTextSurroundingSelection(
-      field_trial_->GetSurroundingSize(), callback);
 }
 
 void ContextualSearchDelegate::StartSearchTermRequestFromSelection(
@@ -337,6 +332,11 @@ void ContextualSearchDelegate::SendSurroundingText(int max_surrounding_chars) {
 
 void ContextualSearchDelegate::SetDiscourseContextAndAddToHeader(
     const ContextualSearchContext& context) {
+  search_term_fetcher_->AddExtraRequestHeader(GetDiscourseContext(context));
+}
+
+std::string ContextualSearchDelegate::GetDiscourseContext(
+    const ContextualSearchContext& context) {
   discourse_context::ClientDiscourseContext proto;
   discourse_context::Display* display = proto.add_display();
   display->set_uri(context.page_url.spec());
@@ -358,8 +358,7 @@ void ContextualSearchDelegate::SetDiscourseContextAndAddToHeader(
   // The server memoizer expects a web-safe encoding.
   std::replace(encoded_context.begin(), encoded_context.end(), '+', '-');
   std::replace(encoded_context.begin(), encoded_context.end(), '/', '_');
-  search_term_fetcher_->AddExtraRequestHeader(
-      kDiscourseContextHeaderPrefix + encoded_context);
+  return kDiscourseContextHeaderPrefix + encoded_context;
 }
 
 bool ContextualSearchDelegate::CanSendPageURL(

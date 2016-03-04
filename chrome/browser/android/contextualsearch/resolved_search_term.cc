@@ -4,6 +4,19 @@
 
 #include "chrome/browser/android/contextualsearch/resolved_search_term.h"
 
+#include "net/url_request/url_fetcher.h"
+
+ResolvedSearchTerm::ResolvedSearchTerm(int response_code)
+    : is_invalid(response_code == net::URLFetcher::RESPONSE_CODE_INVALID),
+      response_code(response_code),
+      search_term(""),
+      display_text(""),
+      alternate_term(""),
+      prevent_preload(false),
+      selection_start_adjust(0),
+      selection_end_adjust(0),
+      context_language("") {}
+
 ResolvedSearchTerm::ResolvedSearchTerm(bool is_invalid,
                                        int response_code,
                                        const std::string& search_term,

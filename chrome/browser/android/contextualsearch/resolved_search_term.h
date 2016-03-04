@@ -14,6 +14,7 @@
 // surrounding text.
 struct ResolvedSearchTerm {
  public:
+  explicit ResolvedSearchTerm(int response_code);
   ResolvedSearchTerm(bool is_invalid,
                      int response_code,
                      const std::string& search_term,
@@ -27,13 +28,14 @@ struct ResolvedSearchTerm {
 
   const bool is_invalid;
   const int response_code;
-  const std::string& search_term;
-  const std::string& display_text;
-  const std::string& alternate_term;
+  // Use strings, rather than just references, to keep this complete.
+  const std::string search_term;
+  const std::string display_text;
+  const std::string alternate_term;
   const bool prevent_preload;
   const int selection_start_adjust;
   const int selection_end_adjust;
-  const std::string& context_language;
+  const std::string context_language;
 
   DISALLOW_COPY_AND_ASSIGN(ResolvedSearchTerm);
 };

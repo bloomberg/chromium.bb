@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/base64.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -13,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "chrome/browser/android/contextualsearch/resolved_search_term.h"
+#include "chrome/browser/android/proto/client_discourse_context.pb.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/escape.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -23,7 +25,8 @@ using base::ListValue;
 
 namespace {
 
-const char kSomeSpecificBasePage[] = "http://some.specific.host.name.com";
+const char kSomeSpecificBasePage[] = "http://some.specific.host.name.com/";
+const char kDiscourseContextHeaderName[] = "X-Additional-Discourse-Context";
 
 }  // namespace
 
@@ -123,13 +126,41 @@ class ContextualSearchDelegateTest : public testing::Test {
     delegate_->set_context_for_testing(test_context_);
   }
 
-  bool DoesRequestContainOurSpecificBasePage() {
-    return fetcher()->GetOriginalURL().spec().find(
-        specific_base_page_URL_escaped()) != std::string::npos;
+  // Gets the Client Discourse Context proto from the request header.
+  discourse_context::ClientDiscourseContext GetDiscourseContextFromRequest() {
+    discourse_context::ClientDiscourseContext cdc;
+    // Make sure we can get the actual raw headers from the fake fetcher.
+    net::HttpRequestHeaders fetch_headers;
+    fetcher()->GetExtraRequestHeaders(&fetch_headers);
+    if (fetch_headers.HasHeader(kDiscourseContextHeaderName)) {
+      std::string actual_header_value;
+      fetch_headers.GetHeader(kDiscourseContextHeaderName,
+                              &actual_header_value);
+
+      // Unescape, since the server memoizer expects a web-safe encoding.
+      std::string unescaped_header = actual_header_value;
+      std::replace(unescaped_header.begin(), unescaped_header.end(), '-', '+');
+      std::replace(unescaped_header.begin(), unescaped_header.end(), '_', '/');
+
+      // Base64 decode the header.
+      std::string decoded_header;
+      if (base::Base64Decode(unescaped_header, &decoded_header)) {
+        cdc.ParseFromString(decoded_header);
+      }
+    }
+    return cdc;
   }
 
-  std::string specific_base_page_URL_escaped() {
-    return net::EscapeQueryParamValue(kSomeSpecificBasePage, true);
+  // Gets the base-page URL from the request, or an empty string if not present.
+  std::string getBasePageUrlFromRequest() {
+    std::string result;
+    discourse_context::ClientDiscourseContext cdc =
+        GetDiscourseContextFromRequest();
+    if (cdc.display_size() > 0) {
+      const discourse_context::Display& first_display = cdc.display(0);
+      result = first_display.uri();
+    }
+    return result;
   }
 
   net::TestURLFetcher* fetcher() { return fetcher_; }
@@ -211,7 +242,6 @@ TEST_F(ContextualSearchDelegateTest, NormalFetchWithXssiEscape) {
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("Barack Obama", display_text());
   EXPECT_FALSE(do_prevent_preload());
-  EXPECT_TRUE(DoesRequestContainOurSpecificBasePage());
 }
 
 TEST_F(ContextualSearchDelegateTest, NormalFetchWithoutXssiEscape) {
@@ -229,7 +259,6 @@ TEST_F(ContextualSearchDelegateTest, NormalFetchWithoutXssiEscape) {
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("Barack Obama", display_text());
   EXPECT_FALSE(do_prevent_preload());
-  EXPECT_TRUE(DoesRequestContainOurSpecificBasePage());
 }
 
 TEST_F(ContextualSearchDelegateTest, ResponseWithNoDisplayText) {
@@ -245,7 +274,6 @@ TEST_F(ContextualSearchDelegateTest, ResponseWithNoDisplayText) {
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("obama", display_text());
   EXPECT_FALSE(do_prevent_preload());
-  EXPECT_TRUE(DoesRequestContainOurSpecificBasePage());
 }
 
 TEST_F(ContextualSearchDelegateTest, ResponseWithPreventPreload) {
@@ -261,7 +289,6 @@ TEST_F(ContextualSearchDelegateTest, ResponseWithPreventPreload) {
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("obama", display_text());
   EXPECT_TRUE(do_prevent_preload());
-  EXPECT_TRUE(DoesRequestContainOurSpecificBasePage());
 }
 
 TEST_F(ContextualSearchDelegateTest, NonJsonResponse) {
@@ -275,7 +302,6 @@ TEST_F(ContextualSearchDelegateTest, NonJsonResponse) {
   EXPECT_EQ("", search_term());
   EXPECT_EQ("", display_text());
   EXPECT_FALSE(do_prevent_preload());
-  EXPECT_TRUE(DoesRequestContainOurSpecificBasePage());
 }
 
 TEST_F(ContextualSearchDelegateTest, InvalidResponse) {
@@ -492,6 +518,10 @@ TEST_F(ContextualSearchDelegateTest, ResponseWithLanguage) {
   EXPECT_EQ("obama", search_term());
   EXPECT_EQ("obama", display_text());
   EXPECT_TRUE(do_prevent_preload());
-  EXPECT_TRUE(DoesRequestContainOurSpecificBasePage());
   EXPECT_EQ("de", context_language());
+}
+
+TEST_F(ContextualSearchDelegateTest, HeaderContainsBasePageUrl) {
+  CreateDefaultSearchContextAndRequestSearchTerm();
+  EXPECT_EQ(kSomeSpecificBasePage, getBasePageUrlFromRequest());
 }
