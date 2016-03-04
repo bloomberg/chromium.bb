@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -87,6 +88,7 @@
 #include "content/public/browser/stream_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_message_macros.h"
@@ -564,11 +566,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
 
   update_load_states_timer_.reset(new base::RepeatingTimer());
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  // This needs to be called to mark the trial as active, even if the result
-  // isn't used.
-  std::string stale_while_revalidate_trial_group =
-      base::FieldTrialList::FindFullName("StaleWhileRevalidate");
   // stale-while-revalidate currently doesn't work with browser-side navigation.
   // Only enable stale-while-revalidate if browser navigation is not enabled.
   //
@@ -576,9 +573,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
   // together. Or disable stale-while-revalidate completely before browser-side
   // navigation becomes the default. crbug.com/561610
   if (!IsBrowserSideNavigationEnabled() &&
-      (base::StartsWith(stale_while_revalidate_trial_group, "Enabled",
-                        base::CompareCase::SENSITIVE) ||
-       command_line->HasSwitch(switches::kEnableStaleWhileRevalidate))) {
+      base::FeatureList::IsEnabled(features::kStaleWhileRevalidate)) {
     async_revalidation_manager_.reset(new AsyncRevalidationManager);
   }
 }

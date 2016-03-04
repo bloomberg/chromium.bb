@@ -48,6 +48,12 @@ const base::Feature kRenderingPipelineThrottling{
 const base::Feature kScrollAnchoring{"ScrollAnchoring",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables implementation of the Cache-Control: stale-while-revalidate directive
+// which permits servers to allow the use of stale resources while revalidation
+// proceeds in the background. See http://crbug.com/348877
+const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate2",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables token binding
 // (https://www.ietf.org/id/draft-ietf-tokbind-protocol-04.txt).
 const base::Feature kTokenBinding{"token-binding",

@@ -989,7 +989,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-stale-while-revalidate",
      IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_NAME,
      IDS_FLAGS_ENABLE_STALE_WHILE_REVALIDATE_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableStaleWhileRevalidate)},
+     FEATURE_VALUE_TYPE(features::kStaleWhileRevalidate)},
     {"enable-suggestions-with-substring-match",
      IDS_FLAGS_SUGGESTIONS_WITH_SUB_STRING_MATCH_NAME,
      IDS_FLAGS_SUGGESTIONS_WITH_SUB_STRING_MATCH_DESCRIPTION, kOsAll,

@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -43,16 +43,18 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
   ~AsyncRevalidationManagerBrowserTest() override {}
 
   void SetUp() override {
+    base::FeatureList::ClearInstanceForTesting();
+    scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(
+        "StaleWhileRevalidate2", std::string());
+    base::FeatureList::SetInstance(std::move(feature_list));
+
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     ContentBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
     embedded_test_server()->StartAcceptingConnections();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch("enable-stale-while-revalidate");
   }
 
   base::RunLoop* run_loop() { return &run_loop_; }
