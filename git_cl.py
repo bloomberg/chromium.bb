@@ -602,9 +602,9 @@ class Settings(object):
       if autoupdate != 'false' and cr_settings_file:
         LoadCodereviewSettingsFromFile(cr_settings_file)
         # set updated to True to avoid infinite calling loop
-        # through DownloadHooks
+        # through DownloadGerritHook
         self.updated = True
-        DownloadHooks(False)
+        DownloadGerritHook(False)
       self.updated = True
 
   def GetDefaultServerUrl(self, error_ok=False):
@@ -1570,8 +1570,8 @@ def hasSheBang(fname):
     return f.read(2).startswith('#!')
 
 
-def DownloadHooks(force):
-  """downloads hooks
+def DownloadGerritHook(force):
+  """Download and install Gerrit commit-msg hook.
 
   Args:
     force: True to update hooks. False to install hooks if not present.
@@ -1585,6 +1585,10 @@ def DownloadHooks(force):
       if not force:
         return
     try:
+      print(
+          'WARNING: installing Gerrit commit-msg hook.\n'
+          '         This behavior of git cl will soon be disabled.\n'
+          '         See bug http://crbug.com/579176.')
       urlretrieve(src, dst)
       if not hasSheBang(dst):
         DieWithError('Not a script: %s\n'
@@ -1623,7 +1627,7 @@ def CMDconfig(parser, args):
 
   if len(args) == 0:
     GetCodereviewSettingsInteractively()
-    DownloadHooks(True)
+    DownloadGerritHook(True)
     return 0
 
   url = args[0]
@@ -1632,7 +1636,7 @@ def CMDconfig(parser, args):
 
   # Load code review settings and download hooks (if available).
   LoadCodereviewSettingsFromFile(urllib2.urlopen(url))
-  DownloadHooks(True)
+  DownloadGerritHook(True)
   return 0
 
 
