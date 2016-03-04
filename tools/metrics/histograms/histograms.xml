@@ -57684,11 +57684,59 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.Screenshare.BitrateSentInKbps" units="kbps">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of sent bits per second for a sent screenshare stream. Recorded
+    when a stream is removed. The total number of bytes is divided by the time
+    the video stream exists.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.Screenshare.EncodeTimeInMs" units="ms">
   <owner>sprang@chromium.org</owner>
   <summary>
     The average encode time per frame for a sent (screen content) video stream.
     Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.FecBitrateSentInKbps" units="kbps">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of sent FEC bits per second for a sent screenshare stream.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.FirPacketsReceivedPerMinute"
+    units="packets/minute">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of received RTCP FIR packets per minute for a sent screenshare
+    stream. Recorded when a stream is removed. The total number of packets is
+    divided by the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.FramesPerDrop"
+    units="sent/dropped ratio">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Ratio of sent frames to dropped frames at the encoder. The value is reported
+    when a stream is removed and is calculated as the total number frames sent
+    divided by the number of dropped frames.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.FramesPerOvershoot"
+    units="sent/overshoot ratio">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Ratio of sent frames to number of re-encoded frames (due to target bitrate
+    overshoot). The value is reported when a stream is removed and is calculated
+    as the total number frames sent divided by the number of re-encoded frames.
   </summary>
 </histogram>
 
@@ -57717,6 +57765,59 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.Screenshare.Layer0">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Stats for the lower layer (TL0) of a screenshare stream in conference mode.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.Layer1">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Stats for the higher layer (TL1) of a screenshare stream in conference mode.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.MediaBitrateSentInKbps" units="kbps">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of sent media payload bits per second for a sent screenshare
+    stream. Recorded when a stream is removed. The total number of bytes is
+    divided by the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.NackPacketsReceivedPerMinute"
+    units="packets/minute">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of received RTCP NACK packets per minute for a sent screenshare
+    stream. Recorded when a stream is removed. The total number of packets is
+    divided by the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.PaddingBitrateSentInKbps"
+    units="kbps">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of sent padding bits per second for a sent screenshare stream.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.PliPacketsReceivedPerMinute"
+    units="packets/minute">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of received RTCP PLI packets per minute for a sent screenshare
+    stream. Recorded when a stream is removed. The total number of packets is
+    divided by the time the video stream exists.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.Screenshare.QualityLimitedResolutionDownscales"
     units="downscales">
   <owner>sprang@chromium.org</owner>
@@ -57733,6 +57834,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Percentage of sent frames that are downscaled in resolution due to quality
     for a sent (screen content) video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.RetransmittedBitrateSentInKbps"
+    units="kbps">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of retransmitted bits per second for a sent screenshare stream.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.RtxBitrateSentInKbps" units="kbps">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    The number of sent bits over RTX per second for a sent screenshare stream.
+    Recorded when a stream is removed. The total number of bytes is divided by
+    the time the video stream exists.
   </summary>
 </histogram>
 
@@ -57777,11 +57897,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.Screenshare.SentPacketsLostInPercent" units="%">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Percentage of sent packets lost for a sent screenshare stream. Recorded when
+    a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.Screenshare.SentWidthInPixels" units="pixels">
   <owner>sprang@chromium.org</owner>
   <summary>
     The average sent width per frame for a sent (screen content) video stream.
     Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.UniqueNackRequestsReceivedInPercent"
+    units="%">
+  <owner>sprang@chromium.org</owner>
+  <summary>
+    Percentage of unique RTCP NACK requests that are received in response to a
+    sent screenshare stream. Recorded when a stream is removed.
   </summary>
 </histogram>
 
@@ -88622,6 +88759,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
   <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ScreenshareLayerStats" separator=".">
+  <suffix name="FrameRate"
+      label="Frames per second sent, in fps. The value is reported when a
+             stream is removed and is calculated as the total number of
+             frames in this layer, divided by the duration of the call."/>
+  <suffix name="Qp"
+      label="Average quantizer (qp) of frames sent. The value is reported
+             when a stream is removed and is calculated, for this layer, as
+             the sum of all qp values divided the number of frames."/>
+  <suffix name="TargetBitrate"
+      label="Average target bitrate in kbps. The value is reported when a
+             stream is removed and is calculated as the sum of all target
+             bitrates for this layer (sampled after frame has been encoded)
+             divided by the total number of frames for this layer."/>
+  <affected-histogram name="WebRTC.Video.Screenshare.Layer0"/>
+  <affected-histogram name="WebRTC.Video.Screenshare.Layer1"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ScrollUpdateHandledThread">
