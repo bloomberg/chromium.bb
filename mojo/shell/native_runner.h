@@ -10,6 +10,7 @@
 #include "base/process/process_handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 
 namespace base {
 class FilePath;
@@ -37,9 +38,10 @@ class NativeRunner {
       const base::Closure& app_completed_callback) = 0;
 
   // Like Start(), but used to initialize the host for a child process started
-  // by someone else. Provides |request| via |channel|.
-  virtual void InitHost(ScopedHandle channel,
-                        InterfaceRequest<mojom::ShellClient> request) = 0;
+  // by someone else. Provides |request| via |factory|.
+  virtual void InitHost(mojom::ShellClientFactoryPtr factory,
+                        const String& name,
+                        mojom::ShellClientRequest request) = 0;
 };
 
 class NativeRunnerFactory {

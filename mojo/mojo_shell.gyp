@@ -77,7 +77,6 @@
     ],
     'dependencies': [
       'mojo_runner_common_lib',
-      'mojo_runner_connection_bindings_lib',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_base',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
@@ -93,26 +92,6 @@
     ],
     'include_dirs': [
       '..',
-    ],
-  }, {
-    'target_name': 'mojo_runner_connection_bindings_lib',
-    'type': 'static_library',
-    'dependencies': [
-      'mojo_runner_connection_mojom',
-    ],
-  }, {
-    'target_name': 'mojo_runner_connection_mojom',
-    'type': 'none',
-    'variables': {
-      'mojom_files': [
-        'shell/runner/child/child_controller.mojom',
-      ],
-    },
-    'includes': [
-      'mojom_bindings_generator_explicit.gypi',
-    ],
-    'dependencies': [
-      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_base',
     ],
   }, {
     'target_name': 'mojo_runner_host_lib',
@@ -135,7 +114,6 @@
     ],
     'dependencies': [
       'mojo_runner_common_lib',
-      'mojo_runner_connection_bindings_lib',
       'mojo_shell_lib',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/base/base.gyp:base_i18n',

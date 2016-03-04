@@ -118,10 +118,12 @@ std::string RegisterChildWithExternalShell(
       GetProxy(&pid_receiver);
   new PIDSender(render_process_host, std::move(pid_receiver));
 
-  application_manager->CreateInstanceForHandle(
-      mojo::ScopedHandle(mojo::Handle(request_pipe.release().value())),
-      url,
-      CreateCapabilityFilterForRenderer(),
+  mojo::shell::mojom::ShellClientFactoryPtr factory;
+  factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
+      std::move(request_pipe), 0u));
+
+  application_manager->CreateInstanceForFactory(
+      std::move(factory), url, CreateCapabilityFilterForRenderer(),
       std::move(request));
 
   // Store the URL on the RPH so client code can access it later via

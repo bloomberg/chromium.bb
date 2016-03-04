@@ -5,6 +5,7 @@
 module mojo.shell.mojom;
 
 import "mojo/shell/public/interfaces/shell.mojom";
+import "mojo/shell/public/interfaces/shell_client_factory.mojom";
 
 struct InstanceInfo {
   uint32 id;
@@ -46,14 +47,12 @@ interface PIDReceiver {
 
 interface ApplicationManager {
   // Instructs the ApplicationManager to create an instance for an existing
-  // process at the other end of |channel|, and perform applicable
-  // initialization. This assumes the target process will bind the other end of
-  // channel to an implementation of ChildController and bind an Application
-  // request there.
-  CreateInstanceForHandle(handle channel,
-                          string name,
-                          CapabilityFilter filter,
-                          PIDReceiver& pid_receiver);
+  // process at the other end of |factory|, and perform applicable
+  // initialization.
+  CreateInstanceForFactory(ShellClientFactory factory,
+                           string name,
+                           CapabilityFilter filter,
+                           PIDReceiver& pid_receiver);
 
   // The listener is removed when the |listener| pipe is closed.
   AddInstanceListener(InstanceListener listener);

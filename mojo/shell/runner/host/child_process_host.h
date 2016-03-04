@@ -20,7 +20,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/shell/identity.h"
-#include "mojo/shell/runner/child/child_controller.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "mojo/shell/runner/host/child_process_host.h"
 
 namespace base {
@@ -57,21 +57,19 @@ class ChildProcessHost {
                    const base::FilePath& app_path);
   // Allows a ChildProcessHost to be instantiated for an existing channel
   // created by someone else (e.g. an app that launched its own process).
-  explicit ChildProcessHost(ScopedHandle channel);
+  explicit ChildProcessHost(mojom::ShellClientFactoryPtr factory);
   virtual ~ChildProcessHost();
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
   void Start(const ProcessReadyCallback& callback);
 
-  // Waits for the child process to terminate, and returns its exit code.
-  int Join();
+  // Waits for the child process to terminate.
+  void Join();
 
-  // See |mojom::ChildController|:
-  void StartApp(
-      InterfaceRequest<mojom::ShellClient> request,
-      const mojom::ChildController::StartAppCallback& on_app_complete);
-  void ExitNow(int32_t exit_code);
+  void StartChild(mojom::ShellClientRequest request,
+                  const String& name,
+                  const base::Closure& quit_closure);
 
  protected:
   void DidStart(const ProcessReadyCallback& callback);
@@ -79,22 +77,19 @@ class ChildProcessHost {
  private:
   void DoLaunch();
 
-  void AppCompleted(int32_t result);
-
   // If |true|, the hosted process is neither launched nor owned by this
   // ChildProcessHost.
   bool external_process_ = false;
 
   scoped_refptr<base::TaskRunner> launch_process_runner_;
-  NativeRunnerDelegate* delegate_;
-  bool start_sandboxed_;
+  NativeRunnerDelegate* delegate_ = nullptr;
+  bool start_sandboxed_ = false;
   Identity target_;
   const base::FilePath app_path_;
   base::Process child_process_;
-  // Used for the ChildController binding.
+  // Used for the ShellClientFactory binding.
   edk::PlatformChannelPair platform_channel_pair_;
-  mojom::ChildControllerPtr controller_;
-  mojom::ChildController::StartAppCallback on_app_complete_;
+  mojom::ShellClientFactoryPtr factory_;
   edk::HandlePassingInformation handle_passing_info_;
 
   // Used to back the NodeChannel between the parent and child node.

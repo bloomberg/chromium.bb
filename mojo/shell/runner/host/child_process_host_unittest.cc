@@ -99,10 +99,7 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
       base::Bind(&ProcessReadyCallbackAdapater, run_loop.QuitClosure()));
   run_loop.Run();
 
-  child_process_host.ExitNow(123);
-  int exit_code = child_process_host.Join();
-  VLOG(2) << "Joined child: exit_code = " << exit_code;
-  EXPECT_EQ(123, exit_code);
+  child_process_host.Join();
   blocking_pool->Shutdown();
   edk::ShutdownIPCSupport();
   EXPECT_EQ(1u, native_runner_delegate.get_and_clear_adjust_count());

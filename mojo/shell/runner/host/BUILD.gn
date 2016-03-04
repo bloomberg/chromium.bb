@@ -48,8 +48,8 @@ source_set("child_process_base") {
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
     "//mojo/shell",
+    "//mojo/shell/public/interfaces",
     "//mojo/shell/runner:init",
-    "//mojo/shell/runner/child:interfaces",
     "//mojo/shell/runner/common",
   ]
 }
@@ -76,8 +76,8 @@ source_set("lib") {
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
     "//mojo/shell",
+    "//mojo/shell/public/interfaces",
     "//mojo/shell/runner:init",
-    "//mojo/shell/runner/child:interfaces",
     "//mojo/shell/runner/common",
   ]
 

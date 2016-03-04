@@ -106,15 +106,17 @@ class ApplicationManager::Instance : public mojom::Connector,
     return runner;
   }
 
-  scoped_ptr<NativeRunner> StartWithChannel(
-      ScopedHandle channel,
+  scoped_ptr<NativeRunner> StartWithFactory(
+      mojom::ShellClientFactoryPtr shell_client_factory,
+      const String& name,
       mojom::ShellClientRequest request,
       mojom::PIDReceiverRequest pid_receiver_request,
       NativeRunnerFactory* factory) {
     pid_receiver_binding_.Bind(std::move(pid_receiver_request));
     scoped_ptr<NativeRunner> runner = factory->Create(base::FilePath());
     runner_ = runner.get();
-    runner_->InitHost(std::move(channel), std::move(request));
+    runner_->InitHost(std::move(shell_client_factory), name,
+                      std::move(request));
     return runner;
   }
 
@@ -309,8 +311,8 @@ void ApplicationManager::Create(Connection* connection,
 ////////////////////////////////////////////////////////////////////////////////
 // ApplicationManager, mojom::ApplicationManager implemetation:
 
-void ApplicationManager::CreateInstanceForHandle(
-    ScopedHandle channel,
+void ApplicationManager::CreateInstanceForFactory(
+    mojom::ShellClientFactoryPtr factory,
     const String& name,
     mojom::CapabilityFilterPtr filter,
     mojom::PIDReceiverRequest pid_receiver) {
@@ -324,7 +326,7 @@ void ApplicationManager::CreateInstanceForHandle(
   mojom::ShellClientRequest request;
   Instance* instance = CreateInstance(target_id, &request);
   native_runners_.push_back(
-      instance->StartWithChannel(std::move(channel), std::move(request),
+      instance->StartWithFactory(std::move(factory), name, std::move(request),
                                  std::move(pid_receiver),
                                  native_runner_factory_.get()));
 }

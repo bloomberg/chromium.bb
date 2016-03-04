@@ -92,12 +92,15 @@ class Driver : public mojo::ShellClient,
     filter->filter.insert("mojo:application_manager_unittest",
                           std::move(test_interfaces));
 
+    mojo::shell::mojom::ShellClientFactoryPtr factory;
+    factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
+        std::move(pipe), 0u));
+
     mojo::shell::mojom::ApplicationManagerPtr application_manager;
     connector->ConnectToInterface("mojo:shell", &application_manager);
-    application_manager->CreateInstanceForHandle(
-        mojo::ScopedHandle(mojo::Handle(pipe.release().value())),
-        "exe:application_manager_unittest_target", std::move(filter),
-        std::move(request));
+    application_manager->CreateInstanceForFactory(
+        std::move(factory), "exe:application_manager_unittest_target",
+        std::move(filter), std::move(request));
 
     base::LaunchOptions options;
   #if defined(OS_WIN)

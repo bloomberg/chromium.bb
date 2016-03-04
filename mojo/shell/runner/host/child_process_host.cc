@@ -49,27 +49,19 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
       weak_factory_(this) {
   node_channel_.reset(new edk::PlatformChannelPair);
   primordial_pipe_token_ = edk::GenerateRandomToken();
-  controller_.Bind(
-      InterfacePtrInfo<mojom::ChildController>(
-          edk::CreateParentMessagePipe(primordial_pipe_token_), 0u));
+  factory_.Bind(InterfacePtrInfo<mojom::ShellClientFactory>(
+      edk::CreateParentMessagePipe(primordial_pipe_token_), 0u));
 }
 
-ChildProcessHost::ChildProcessHost(ScopedHandle channel)
+ChildProcessHost::ChildProcessHost(mojom::ShellClientFactoryPtr factory)
     : external_process_(true),
-      launch_process_runner_(nullptr),
-      delegate_(nullptr),
-      start_sandboxed_(false),
+      factory_(std::move(factory)),
       start_child_process_event_(false, false),
-      weak_factory_(this) {
-  CHECK(channel.is_valid());
-  ScopedMessagePipeHandle handle(MessagePipeHandle(channel.release().value()));
-  controller_.Bind(
-      InterfacePtrInfo<mojom::ChildController>(std::move(handle), 0u));
-}
+      weak_factory_(this) {}
 
 ChildProcessHost::~ChildProcessHost() {
   if (!app_path_.empty())
-    CHECK(!controller_) << "Destroying ChildProcessHost before calling Join";
+    CHECK(!factory_) << "Destroying ChildProcessHost before calling Join";
 }
 
 void ChildProcessHost::Start(const ProcessReadyCallback& callback) {
@@ -82,11 +74,11 @@ void ChildProcessHost::Start(const ProcessReadyCallback& callback) {
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-int ChildProcessHost::Join() {
-  if (controller_ && !external_process_)
+void ChildProcessHost::Join() {
+  if (factory_ && !external_process_)
     start_child_process_event_.Wait();
 
-  controller_ = mojom::ChildControllerPtr();
+  factory_.reset();
 
   // This host may be hosting a child process whose lifetime is controlled
   // elsewhere. In this case we have no known process handle to wait on.
@@ -96,36 +88,23 @@ int ChildProcessHost::Join() {
         << "Failed to wait for child process";
 
     child_process_.Close();
-    return rv;
   }
-
-  return 0;
 }
 
-void ChildProcessHost::StartApp(
-    InterfaceRequest<mojom::ShellClient> request,
-    const mojom::ChildController::StartAppCallback& on_app_complete) {
-  DCHECK(controller_);
-  on_app_complete_ = on_app_complete;
-  controller_->StartApp(
-      std::move(request),
-      base::Bind(&ChildProcessHost::AppCompleted, weak_factory_.GetWeakPtr()));
-}
-
-void ChildProcessHost::ExitNow(int32_t exit_code) {
-  DCHECK(controller_);
-
-  controller_->ExitNow(exit_code);
+void ChildProcessHost::StartChild(mojom::ShellClientRequest request,
+                                  const String& name,
+                                  const base::Closure& quit_closure) {
+  DCHECK(factory_);
+  factory_->CreateShellClient(std::move(request), name);
+  factory_.set_connection_error_handler(quit_closure);
 }
 
 void ChildProcessHost::DidStart(const ProcessReadyCallback& callback) {
-  DVLOG(2) << "ChildProcessHost::DidStart()";
-
   if (child_process_.IsValid()) {
     callback.Run(child_process_.Pid());
   } else {
     LOG(ERROR) << "Failed to start child process";
-    AppCompleted(MOJO_RESULT_UNKNOWN);
+    factory_.reset();
   }
 }
 
@@ -227,14 +206,6 @@ void ChildProcessHost::DoLaunch() {
     }
   }
   start_child_process_event_.Signal();
-}
-
-void ChildProcessHost::AppCompleted(int32_t result) {
-  if (!on_app_complete_.is_null()) {
-    auto on_app_complete = on_app_complete_;
-    on_app_complete_.reset();
-    on_app_complete.Run(result);
-  }
 }
 
 }  // namespace shell

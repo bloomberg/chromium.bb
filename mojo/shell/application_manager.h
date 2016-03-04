@@ -106,10 +106,11 @@ class ApplicationManager : public ShellClient,
               InterfaceRequest<mojom::ApplicationManager> request) override;
 
   // mojom::ApplicationManager:
-  void CreateInstanceForHandle(ScopedHandle channel,
-                               const String& name,
-                               mojom::CapabilityFilterPtr filter,
-                               mojom::PIDReceiverRequest pid_receiver) override;
+  void CreateInstanceForFactory(
+      mojom::ShellClientFactoryPtr factory,
+      const String& name,
+      mojom::CapabilityFilterPtr filter,
+      mojom::PIDReceiverRequest pid_receiver) override;
   void AddInstanceListener(mojom::InstanceListenerPtr listener) override;
 
   void InitPackageManager(

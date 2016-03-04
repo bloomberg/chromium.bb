@@ -37,7 +37,7 @@ void InProcessNativeRunner::Start(
     const base::FilePath& app_path,
     const Identity& target,
     bool start_sandboxed,
-    InterfaceRequest<mojom::ShellClient> request,
+    mojom::ShellClientRequest request,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
@@ -60,9 +60,9 @@ void InProcessNativeRunner::Start(
   pid_available_callback.Run(base::kNullProcessId);
 }
 
-void InProcessNativeRunner::InitHost(
-    ScopedHandle channel,
-    InterfaceRequest<mojom::ShellClient> request) {
+void InProcessNativeRunner::InitHost(mojom::ShellClientFactoryPtr factory,
+                                     const String& name,
+                                     mojom::ShellClientRequest request) {
   NOTREACHED();  // Can't host another process in this runner.
 }
 

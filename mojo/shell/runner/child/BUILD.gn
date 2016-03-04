@@ -21,7 +21,6 @@ source_set("lib") {
   ]
 
   deps = [
-    ":interfaces",
     "//base",
     "//mojo/edk/system",
     "//mojo/message_pump",
@@ -29,18 +28,6 @@ source_set("lib") {
     "//mojo/shell/public/interfaces",
     "//mojo/shell/runner/common",
   ]
-}
-
-mojom("interfaces") {
-  sources = [
-    "child_controller.mojom",
-  ]
-
-  deps = [
-    "//mojo/shell/public/interfaces",
-  ]
-
-  import_dirs = [ "//mojo/services" ]
 }
 
 source_set("test_native_main") {

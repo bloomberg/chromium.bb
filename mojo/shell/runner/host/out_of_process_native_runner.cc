@@ -33,7 +33,7 @@ void OutOfProcessNativeRunner::Start(
     const base::FilePath& app_path,
     const Identity& target,
     bool start_sandboxed,
-    InterfaceRequest<mojom::ShellClient> request,
+    mojom::ShellClientRequest request,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
@@ -45,22 +45,21 @@ void OutOfProcessNativeRunner::Start(
       launch_process_runner_, delegate_, start_sandboxed, target, app_path));
   child_process_host_->Start(base::Bind(
       &OutOfProcessNativeRunner::OnProcessLaunched, base::Unretained(this),
-      base::Passed(&request), pid_available_callback));
+      base::Passed(&request), target.name(), pid_available_callback));
 }
 
 void OutOfProcessNativeRunner::InitHost(
-    ScopedHandle channel,
-    InterfaceRequest<mojom::ShellClient> request) {
-  child_process_host_.reset(new ChildProcessHost(std::move(channel)));
-  child_process_host_->StartApp(
-      std::move(request),
+    mojom::ShellClientFactoryPtr factory,
+    const String& name,
+    mojom::ShellClientRequest request) {
+  child_process_host_.reset(new ChildProcessHost(std::move(factory)));
+  child_process_host_->StartChild(
+      std::move(request), name,
       base::Bind(&OutOfProcessNativeRunner::AppCompleted,
                  base::Unretained(this)));
 }
 
-void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
-  DVLOG(2) << "OutOfProcessNativeRunner::AppCompleted(" << result << ")";
-
+void OutOfProcessNativeRunner::AppCompleted() {
   if (child_process_host_)
     child_process_host_->Join();
   child_process_host_.reset();
@@ -72,12 +71,13 @@ void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
 }
 
 void OutOfProcessNativeRunner::OnProcessLaunched(
-    InterfaceRequest<mojom::ShellClient> request,
+    mojom::ShellClientRequest request,
+    const String& name,
     const base::Callback<void(base::ProcessId)>& pid_available_callback,
     base::ProcessId pid) {
   DCHECK(child_process_host_);
-  child_process_host_->StartApp(
-      std::move(request),
+  child_process_host_->StartChild(
+      std::move(request), name,
       base::Bind(&OutOfProcessNativeRunner::AppCompleted,
                  base::Unretained(this)));
   pid_available_callback.Run(pid);

@@ -32,7 +32,7 @@
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/shell/runner/child/child_controller.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/runner/init.h"
 
@@ -176,13 +176,10 @@ class AppContext : public edk::ProcessDelegate {
 
 // ChildControllerImpl ------------------------------------------------------
 
-class ChildControllerImpl : public mojom::ChildController {
+class ChildControllerImpl : public mojom::ShellClientFactory {
  public:
   ~ChildControllerImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-
-    // TODO(vtl): Pass in the result from |MainMain()|.
-    on_app_complete_.Run(MOJO_RESULT_UNIMPLEMENTED);
   }
 
   // To be executed on the controller thread. Creates the |ChildController|,
@@ -216,18 +213,11 @@ class ChildControllerImpl : public mojom::ChildController {
     _exit(1);
   }
 
-  // |ChildController| methods:
-  void StartApp(InterfaceRequest<mojom::ShellClient> request,
-                const StartAppCallback& on_app_complete) override {
+  // |mojom::ShellClientFactory| methods:
+  void CreateShellClient(mojom::ShellClientRequest request,
+                         const String& name) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-
-    on_app_complete_ = on_app_complete;
     unblocker_.Unblock(base::Bind(run_callback_, base::Passed(&request)));
-  }
-
-  void ExitNow(int32_t exit_code) override {
-    DVLOG(2) << "ChildControllerImpl::ExitNow(" << exit_code << ")";
-    _exit(exit_code);
   }
 
  private:
@@ -239,9 +229,8 @@ class ChildControllerImpl : public mojom::ChildController {
   base::ThreadChecker thread_checker_;
   RunCallback run_callback_;
   Blocker::Unblocker unblocker_;
-  StartAppCallback on_app_complete_;
 
-  Binding<ChildController> binding_;
+  Binding<mojom::ShellClientFactory> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildControllerImpl);
 };

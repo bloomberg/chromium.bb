@@ -33,7 +33,6 @@
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/shell/runner/child/child_controller.mojom.h"
 #include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/runner/host/child_process_base.h"
 #include "mojo/shell/runner/host/native_application_support.h"

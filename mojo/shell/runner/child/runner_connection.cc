@@ -22,7 +22,7 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/runner/child/child_controller.mojom.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "mojo/shell/runner/common/switches.h"
 
 namespace mojo {
@@ -128,13 +128,10 @@ class RunnerConnectionImpl : public RunnerConnection {
   DISALLOW_COPY_AND_ASSIGN(RunnerConnectionImpl);
 };
 
-class ChildControllerImpl : public mojom::ChildController {
+class ChildControllerImpl : public mojom::ShellClientFactory {
  public:
   ~ChildControllerImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-
-    // TODO(vtl): Pass in the result from |MainMain()|.
-    on_app_complete_.Run(MOJO_RESULT_UNIMPLEMENTED);
   }
 
   // To be executed on the controller thread. Creates the |ChildController|,
@@ -167,7 +164,7 @@ class ChildControllerImpl : public mojom::ChildController {
     DLOG(ERROR) << "Connection error to the shell.";
     if (exit_on_error_) {
       _exit(1);
-    } else if (on_app_complete_.is_null()) {
+    } else {
       // If we failed before we could even get a ShellClient request from the
       // shell, signal failure to the RunnerConnection, as it's still blocking
       // on a response.
@@ -177,20 +174,13 @@ class ChildControllerImpl : public mojom::ChildController {
     }
   }
 
-  // |mojom::ChildController| methods:
-  void StartApp(InterfaceRequest<mojom::ShellClient> request,
-                const StartAppCallback& on_app_complete) override {
+  // |mojom::ShellClientFactory| methods:
+  void CreateShellClient(mojom::ShellClientRequest request,
+                         const String& name) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-
-    on_app_complete_ = on_app_complete;
     unblocker_.Unblock(
         base::Bind(&ChildControllerImpl::ReturnApplicationRequestOnMainThread,
                    callback_, base::Passed(&request)));
-  }
-
-  void ExitNow(int32_t exit_code) override {
-    DVLOG(2) << "ChildControllerImpl::ExitNow(" << exit_code << ")";
-    _exit(exit_code);
   }
 
  private:
@@ -214,9 +204,8 @@ class ChildControllerImpl : public mojom::ChildController {
   RunnerConnectionImpl* const connection_;
   GotApplicationRequestCallback callback_;
   Blocker::Unblocker unblocker_;
-  StartAppCallback on_app_complete_;
 
-  Binding<ChildController> binding_;
+  Binding<mojom::ShellClientFactory> binding_;
 
   bool exit_on_error_;
 

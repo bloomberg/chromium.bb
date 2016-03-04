@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/native_runner.h"
+#include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 
 namespace base {
 class TaskRunner;
@@ -36,20 +37,20 @@ class OutOfProcessNativeRunner : public NativeRunner {
       const base::FilePath& app_path,
       const Identity& identity,
       bool start_sandboxed,
-      InterfaceRequest<mojom::ShellClient> request,
+      mojom::ShellClientRequest request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       const base::Closure& app_completed_callback) override;
-  void InitHost(
-      ScopedHandle channel,
-      InterfaceRequest<mojom::ShellClient> request) override;
+  void InitHost(mojom::ShellClientFactoryPtr factory,
+                const String& name,
+                mojom::ShellClientRequest request) override;
 
  private:
-  // |ChildController::StartApp()| callback:
-  void AppCompleted(int32_t result);
+  void AppCompleted();
 
   // Callback run when the child process has launched.
   void OnProcessLaunched(
-      InterfaceRequest<mojom::ShellClient> request,
+      mojom::ShellClientRequest request,
+      const String& name,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       base::ProcessId pid);
 
