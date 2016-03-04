@@ -41,12 +41,13 @@ PassOwnPtrWillBeRawPtr<PublicURLManager> PublicURLManager::create(ExecutionConte
 
 PublicURLManager::PublicURLManager(ExecutionContext* context)
     : ContextLifecycleObserver(context)
+    , m_isStopped(false)
 {
 }
 
 void PublicURLManager::registerURL(SecurityOrigin* origin, const KURL& url, URLRegistrable* registrable, const String& uuid)
 {
-    if (!executionContext())
+    if (m_isStopped)
         return;
 
     RegistryURLMap::ValueType* found = m_registryToURL.add(&registrable->registry(), URLMap()).storedValue;
@@ -88,8 +89,9 @@ void PublicURLManager::revoke(const String& uuid)
 
 void PublicURLManager::contextDestroyed()
 {
-    if (!executionContext())
+    if (m_isStopped)
         return;
+    m_isStopped = true;
 
     for (auto& registryUrl : m_registryToURL) {
         for (auto& url : registryUrl.value)

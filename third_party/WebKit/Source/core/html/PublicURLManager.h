@@ -66,6 +66,7 @@ private:
     typedef HashMap<URLRegistry*, URLMap> RegistryURLMap;
 
     RegistryURLMap m_registryToURL;
+    bool m_isStopped;
 };
 
 } // namespace blink
