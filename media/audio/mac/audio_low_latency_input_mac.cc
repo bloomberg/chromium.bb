@@ -560,6 +560,16 @@ void AUAudioInputStream::Close() {
     // selected set of the |device_property_changes_map_| map. Add UMA stats
     // if valuable data is found.
     AddDevicePropertyChangesToUMA(false);
+    // Log whether call to Start() was deferred or not. To be compared with
+    // Media.Audio.InputStartWasDeferredMac which logs the same value but only
+    // when input audio fails to start.
+    UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputStartWasDeferredAudioWorkedMac",
+                          start_was_deferred_);
+    // Log if a change of I/O buffer size was required. To be compared with
+    // Media.Audio.InputBufferSizeWasChangedMac which logs the same value but
+    // only when input audio fails to start.
+    UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputBufferSizeWasChangedAudioWorkedMac",
+                          buffer_size_was_changed_);
     // TODO(henrika): possibly add more values here...
   }
   // Inform the audio manager that we have been closed. This will cause our

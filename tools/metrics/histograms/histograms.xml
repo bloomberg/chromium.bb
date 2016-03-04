@@ -19079,6 +19079,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.InputBufferSizeWasChangedAudioWorkedMac"
+    enum="BooleanChanged">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Indicates if the size of the audio unit's IO buffer was changed when
+    starting an input audio stream. Sampled each time an AUAudioInputStream
+    instance is closed, i.e., we know that input audio has started as it should
+    when this value is stored. Can be compared with
+    Media.Audio.InputBufferSizeWasChangedMac which is only added when input
+    audio fails to start.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.InputBufferSizeWasChangedMac"
     enum="BooleanSuccess">
   <owner>henrika@chromium.org</owner>
@@ -19118,7 +19131,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Media.Audio.InputStartWasDeferredMac" enum="BooleanSuccess">
+<histogram name="Media.Audio.InputStartWasDeferredAudioWorkedMac"
+    enum="BooleanDeferred">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Indicates if audio capturing started with a small delay or not. Sampled each
+    time an AUAudioInputStream instance is closed, i.e., we know that input
+    audio has started as it should when this value is stored. Can be compared
+    with Media.Audio.InputStartWasDeferredMac which is only added when input
+    audio fails to start.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.InputStartWasDeferredMac" enum="BooleanDeferred">
   <owner>henrika@chromium.org</owner>
   <summary>
     Indicates if audio capturing started with a small delay or not. Only sampled
@@ -59981,6 +60006,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanDataReductionProxy" type="int">
   <int value="0" label="Not Data Reduction Proxy"/>
   <int value="1" label="Data Reduction Proxy"/>
+</enum>
+
+<enum name="BooleanDeferred" type="int">
+  <int value="0" label="Not deferred"/>
+  <int value="1" label="Deferred"/>
 </enum>
 
 <enum name="BooleanDelete" type="int">
