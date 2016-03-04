@@ -50,9 +50,6 @@ class CONTENT_EXPORT SandboxCompiler {
   bool CompileAndApplyProfile(std::string* error);
 
  private:
-  // Frees all of the system resources allocated for the sandbox.
-  void FreeSandboxResources(void* profile, void* params, char* error);
-
   // Storage of the key/value pairs of strings that are used in the sandbox
   // profile.
   std::map<std::string, std::string> params_map_;
