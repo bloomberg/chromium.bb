@@ -8,6 +8,7 @@ regression sheriff role is now entirely focused on performance.
 ## Key Responsibilities
 
  * [Triage Regressions on the Perf Dashboard](#triage)
+ * [Triaging Data Stoppage Alerts](#datastoppage)
  * [Follow up on Performance Regressions](#followup)
  * [Give Feedback on our Infrastructure](#feedback)
 
@@ -71,6 +72,41 @@ below it the dashboard shows graphs of all the alerts checked in that table.
    and kick off a bisect for it. There should be capacity to kick off as many
    bisects as you feel are necessary to investigate; [give feedback](#feedback)
    below if you feel that is not the case.
+
+###<a name="datastoppage"></a> Triaging data stoppage alerts
+
+Data stoppage alerts are listed on the
+[perf dashboard alerts page](https://chromeperf.appspot.com/alerts). Whenever
+the dashboard is monitoring a metric, and that metric stops sending data, an
+alert is fired. Some of these alerts are expected:
+
+   * When a telemetry benchmark is disabled, we get a data stoppage alert.
+     Check the [code for the benchmark](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/benchmarks/)
+     to see if it has been disabled, and if so associate the alert with the
+     bug for the disable.
+   * When a bot has been turned down. These should be announced to
+     perf-sheriffs@chromium.org, but if you can't find the bot on the waterfall
+     and you didn't see the announcement, double check in the speed infra chat.
+     Ideally these will be associated with the bug for the bot turndown, but
+     it's okay to mark them invalid if you can't find the bug.
+
+If there doesn't seem to be a valid reason for the alert, file a bug on it
+using the perf dashboard, and cc [the owner](http://go/perf-owners). Then do
+some diagnosis:
+
+   * Look at the perf dashboard graph to see the last revision we got data for,
+     and note that in the bug. Click on the `buildbot stdio` link in the tooltip
+     to find the buildbot status page for the last good build, and increment
+     the build number to get the first build with no data, and note that in the
+     bug as well. Check for any changes to the test in the revision range.
+   * Go to the buildbot status page of the bot which should be running the test.
+     Is it running the test? If not, note that in the bug.
+   * If it is running the test and the test is failing, diagnose as a test
+     failure.
+   * If it is running the test and the test is passing, check the `json.output`
+     link on the buildbot status page for the test. This is the data the test
+     sent to the perf dashboard. Are there null values? Sometimes it lists a
+     reason as well. Please put your finding in the bug.
 
 ###<a name="followup"></a> Follow up on Performance Regressions
 

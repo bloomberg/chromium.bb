@@ -9,7 +9,6 @@ waterfall up and running, and triaging performance test failures and flakes.
      * [Handling Test Failures](#testfailures)
      * [Handling Device and Bot Failures](#botfailures)
      * [Follow up on failures](#followup)
-  * [Triaging Data Stoppage Alerts](#datastoppage)
 
 ###<a name="chromiumperf"></a> Keeping the chromium.perf waterfall green
 
@@ -205,45 +204,7 @@ are for disabled tests. These should be pinged weekly, and work towards fixing
 should be ongoing when the sheriff is not working on a Pri-1 issue. Here is the
 [list of Pri-2 bugs that have not been pinged in a week](https://code.google.com/p/chromium/issues/list?can=2&q=label:Performance-BotHealth%20label:Pri-2%20modified-before:today-7&sort=modified)
 
-###<a name="datastoppage"></a> Triaging data stoppage alerts
-
-Data stoppage alerts are listed on the
-[perf dashboard alerts page](https://chromeperf.appspot.com/alerts). Whenever
-the dashboard is monitoring a metric, and that metric stops sending data, an
-alert is fired. Some of these alerts are expected:
-
-   * When a telemetry benchmark is disabled, we get a data stoppage alert.
-     Check the [code for the benchmark](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/benchmarks/)
-     to see if it has been disabled, and if so associate the alert with the
-     bug for the disable.
-   * When a bot has been turned down. These should be announced to
-     perf-sheriffs@chromium.org, but if you can't find the bot on the waterfall
-     and you didn't see the announcement, double check in the speed infra chat.
-     Ideally these will be associated with the bug for the bot turndown, but
-     it's okay to mark them invalid if you can't find the bug.
-
-If there doesn't seem to be a valid reason for the alert, file a bug on it
-using the perf dashboard, and cc [the owner](http://go/perf-owners). Then do
-some diagnosis:
-
-   * Look at the perf dashboard graph to see the last revision we got data for,
-     and note that in the bug. Click on the `buildbot stdio` link in the tooltip
-     to find the buildbot status page for the last good build, and increment
-     the build number to get the first build with no data, and note that in the
-     bug as well. Check for any changes to the test in the revision range.
-   * Go to the buildbot status page of the bot which should be running the test.
-     Is it running the test? If not, note that in the bug.
-   * If it is running the test and the test is failing, diagnose as a test
-     failure.
-   * If it is running the test and the test is passing, check the `json.output`
-     link on the buildbot status page for the test. This is the data the test
-     sent to the perf dashboard. Are there null values? Sometimes it lists a
-     reason as well. Please put your finding in the bug.
-
 <!-- Unresolved issues:
 1. Do perf sheriffs watch the bisect waterfall?
 2. Do perf sheriffs watch the internal clank waterfall?
-3. Do we use sheriff-o-matic?
-4. Should we add some list of bugs that bot sheriffs could help fix, to improve
-their workflow?
 -->
