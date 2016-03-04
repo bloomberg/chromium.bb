@@ -11,7 +11,7 @@
       "--slave",
       "totallyaslave-c4",
       "--spec",
-      "cache_dir = None\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'src', 'url': 'svn://svn.chromium.org/chrome/trunk/src'}]",
+      "cache_dir = '[GIT_CACHE]'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'svn://svn.chromium.org/chrome/trunk/src'}]",
       "--root",
       "src/v8",
       "--revision_mapping_file",

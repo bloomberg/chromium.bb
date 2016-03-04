@@ -12,7 +12,7 @@ DEPS = [
 def RunSteps(api):
   api.gclient.use_mirror = True
 
-  src_cfg = api.gclient.make_config()
+  src_cfg = api.gclient.make_config(GIT_MODE=True, CACHE_DIR='[GIT_CACHE]')
   soln = src_cfg.solutions.add()
   soln.name = 'src'
   soln.url = 'svn://svn.chromium.org/chrome/trunk/src'
