@@ -87,6 +87,9 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
             "op": ">=",
             "value": "10.0.4"
           }
+        },
+        {
+          "driver_vendor": ".*ANGLE.*"
         }
       ],
       "features": [
