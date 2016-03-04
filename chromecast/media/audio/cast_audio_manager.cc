@@ -6,6 +6,7 @@
 
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/base/media_message_loop.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
@@ -63,7 +64,7 @@ scoped_ptr<MediaPipelineBackend> CastAudioManager::CreateMediaPipelineBackend(
   DCHECK(media::MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
 
   return scoped_ptr<MediaPipelineBackend>(
-      CastMediaShlib::CreateMediaPipelineBackend(params));
+      MediaPipelineBackendManager::CreateMediaPipelineBackend(params));
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLinearOutputStream(

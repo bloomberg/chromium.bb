@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromecast/browser/media/cma_media_pipeline_client.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/cast_media_shlib.h"
 
 namespace chromecast {
@@ -17,7 +18,8 @@ CmaMediaPipelineClient::~CmaMediaPipelineClient() {}
 scoped_ptr<MediaPipelineBackend>
 CmaMediaPipelineClient::CreateMediaPipelineBackend(
     const MediaPipelineDeviceParams& params) {
-  return make_scoped_ptr(CastMediaShlib::CreateMediaPipelineBackend(params));
+  return make_scoped_ptr(
+      MediaPipelineBackendManager::CreateMediaPipelineBackend(params));
 }
 
 void CmaMediaPipelineClient::OnMediaPipelineBackendCreated() {
