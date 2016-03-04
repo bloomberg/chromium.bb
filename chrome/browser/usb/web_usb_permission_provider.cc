@@ -86,12 +86,13 @@ void WebUSBPermissionProvider::HasDevicePermission(
 
   mojo::Array<mojo::String> allowed_guids;
   for (size_t i = 0; i < requested_devices.size(); ++i) {
-    const device::usb::DeviceInfoPtr& device = requested_devices[i];
-    if (FindOriginInDescriptorSet(device->webusb_allowed_origins.get(),
+    const device::usb::DeviceInfo& device = *requested_devices[i];
+    if (FindOriginInDescriptorSet(device.webusb_allowed_origins.get(),
                                   requesting_origin, nullptr, nullptr) &&
         chooser_context->HasDevicePermission(requesting_origin,
-                                             embedding_origin, device->guid))
-      allowed_guids.push_back(device->guid);
+                                             embedding_origin, device)) {
+      allowed_guids.push_back(device.guid);
+    }
   }
   callback.Run(std::move(allowed_guids));
 }

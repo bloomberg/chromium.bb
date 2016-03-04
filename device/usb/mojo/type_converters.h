@@ -75,7 +75,7 @@ template <>
 struct TypeConverter<device::usb::AlternateInterfaceInfoPtr,
                      device::UsbInterfaceDescriptor> {
   static device::usb::AlternateInterfaceInfoPtr Convert(
-      const device::UsbInterfaceDescriptor& interface);
+      const device::UsbInterfaceDescriptor& iface);
 };
 
 // Note that this is an explicit vector-to-array conversion, as

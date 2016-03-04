@@ -16,6 +16,8 @@
 #include "device/core/device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/interfaces/device.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -244,5 +246,6 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfoWithUsbDevice) {
   button_listener->ButtonPressed(button, event);
   api_->SetPermissionInfo(list);
   EXPECT_EQ(0, api_->permissions_content()->child_count());
-  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device->guid()));
+  EXPECT_FALSE(store->HasDevicePermission(
+      origin, origin, *device::usb::DeviceInfo::From(*device)));
 }

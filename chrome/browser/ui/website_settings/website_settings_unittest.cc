@@ -28,6 +28,8 @@
 #include "device/core/device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/interfaces/device.mojom.h"
 #include "grit/theme_resources.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -343,7 +345,8 @@ TEST_F(WebsiteSettingsTest, OnChosenObjectDeleted) {
       last_chosen_object_info()[0].get();
   website_settings()->OnSiteChosenObjectDeleted(info->ui_info, *info->object);
 
-  EXPECT_FALSE(store->HasDevicePermission(url(), url(), device->guid()));
+  EXPECT_FALSE(store->HasDevicePermission(
+      url(), url(), *device::usb::DeviceInfo::From(*device)));
   EXPECT_EQ(0u, last_chosen_object_info().size());
 }
 

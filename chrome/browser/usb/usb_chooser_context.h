@@ -16,6 +16,12 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "device/usb/usb_service.h"
 
+namespace device {
+namespace usb {
+class DeviceInfo;
+}
+}
+
 class UsbChooserContext : public ChooserContextBase,
                           public device::UsbService::Observer {
  public:
@@ -39,17 +45,11 @@ class UsbChooserContext : public ChooserContextBase,
                              const GURL& embedding_origin,
                              const std::string& guid);
 
-  // Revokes |requesting_origin|'s access to the USB device known to
-  // device::UsbService as |guid|.
-  void RevokeDevicePermission(const GURL& requesting_origin,
-                              const GURL& embedding_origin,
-                              const std::string& guid);
-
   // Checks if |requesting_origin| (when embedded within |embedding_origin| has
-  // access to the USB device known to device::UsbService as |guid|.
+  // access to a device with |device_info|.
   bool HasDevicePermission(const GURL& requesting_origin,
                            const GURL& embedding_origin,
-                           const std::string& guid);
+                           const device::usb::DeviceInfo& device_info);
 
  private:
   // ChooserContextBase implementation.
