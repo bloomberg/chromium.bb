@@ -211,18 +211,16 @@ test_layer_orientation(struct test_context *ctx)
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
 
-	iassert(lyt->layer_get_orientation(ivilayer) == WL_OUTPUT_TRANSFORM_NORMAL);
+	prop = lyt->get_properties_of_layer(ivilayer);
+	iassert(prop->orientation == WL_OUTPUT_TRANSFORM_NORMAL);
 
 	iassert(lyt->layer_set_orientation(
 		ivilayer, WL_OUTPUT_TRANSFORM_90) == IVI_SUCCEEDED);
 
-	iassert(lyt->layer_get_orientation(ivilayer) == WL_OUTPUT_TRANSFORM_NORMAL);
+	iassert(prop->orientation == WL_OUTPUT_TRANSFORM_NORMAL);
 
 	lyt->commit_changes();
 
-	iassert(lyt->layer_get_orientation(ivilayer) == WL_OUTPUT_TRANSFORM_90);
-
-	prop = lyt->get_properties_of_layer(ivilayer);
 	iassert(prop->orientation == WL_OUTPUT_TRANSFORM_90);
 
 	lyt->layer_destroy(ivilayer);
@@ -428,8 +426,6 @@ test_layer_bad_orientation(struct test_context *ctx)
 		NULL, WL_OUTPUT_TRANSFORM_90) == IVI_FAILED);
 
 	lyt->commit_changes();
-
-	iassert(lyt->layer_get_orientation(NULL) == WL_OUTPUT_TRANSFORM_NORMAL);
 }
 
 static void

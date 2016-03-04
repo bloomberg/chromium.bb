@@ -554,16 +554,6 @@ struct ivi_layout_interface {
 					 enum wl_output_transform orientation);
 
 	/**
-	 * \brief Gets the orientation of a layer.
-	 *
-	 * \return (enum wl_output_transform)
-	 *              if the method call was successful
-	 * \return WL_OUTPUT_TRANSFORM_NORMAL if the method call was failed
-	 */
-	enum wl_output_transform
-		(*layer_get_orientation)(struct ivi_layout_layer *ivilayer);
-
-	/**
 	 * \brief Add a ivi_surface to a ivi_layer which is currently managed by the service
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful

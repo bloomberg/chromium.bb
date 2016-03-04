@@ -1936,17 +1936,6 @@ ivi_layout_layer_set_orientation(struct ivi_layout_layer *ivilayer,
 	return IVI_SUCCEEDED;
 }
 
-static enum wl_output_transform
-ivi_layout_layer_get_orientation(struct ivi_layout_layer *ivilayer)
-{
-	if (ivilayer == NULL) {
-		weston_log("ivi_layout_layer_get_orientation: invalid argument\n");
-		return 0;
-	}
-
-	return ivilayer->prop.orientation;
-}
-
 int32_t
 ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 				  struct ivi_layout_surface **pSurface,
@@ -2665,7 +2654,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.layer_set_position			= ivi_layout_layer_set_position,
 	.layer_set_dimension			= ivi_layout_layer_set_dimension,
 	.layer_set_orientation			= ivi_layout_layer_set_orientation,
-	.layer_get_orientation			= ivi_layout_layer_get_orientation,
 	.layer_add_surface			= ivi_layout_layer_add_surface,
 	.layer_remove_surface			= ivi_layout_layer_remove_surface,
 	.layer_set_render_order			= ivi_layout_layer_set_render_order,
