@@ -292,6 +292,7 @@ private:
     bool isEnumeratable() const final;
     bool isInteractiveContent() const final;
     bool supportLabels() const final;
+    bool matchesDefaultPseudoClass() const override;
 
     bool isTextFormControl() const final { return isTextField(); }
 

@@ -518,6 +518,11 @@ bool InputType::canBeSuccessfulSubmitButton()
     return false;
 }
 
+bool InputType::matchesDefaultPseudoClass()
+{
+    return false;
+}
+
 bool InputType::layoutObjectIsNeeded()
 {
     return true;

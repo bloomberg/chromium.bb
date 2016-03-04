@@ -88,6 +88,11 @@ void BaseCheckableInputType::accessKeyAction(bool sendMouseEvents)
     element().dispatchSimulatedClick(0, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
 }
 
+bool BaseCheckableInputType::matchesDefaultPseudoClass()
+{
+    return element().fastHasAttribute(checkedAttr);
+}
+
 String BaseCheckableInputType::fallbackValue() const
 {
     return "on";

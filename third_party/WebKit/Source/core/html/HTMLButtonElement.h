@@ -62,6 +62,7 @@ private:
     bool supportLabels() const override { return true; }
     bool isInteractiveContent() const override;
     bool supportsAutofocus() const override;
+    bool matchesDefaultPseudoClass() const override;
 
     bool canBeSuccessfulSubmitButton() const override;
     bool isActivatedSubmit() const override;

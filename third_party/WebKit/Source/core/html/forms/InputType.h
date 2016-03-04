@@ -148,6 +148,7 @@ public:
     virtual void disableSecureTextInput();
     virtual void accessKeyAction(bool sendMouseEvents);
     virtual bool canBeSuccessfulSubmitButton();
+    virtual bool matchesDefaultPseudoClass();
 
     // Miscellaneous functions
 

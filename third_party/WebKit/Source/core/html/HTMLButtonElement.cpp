@@ -214,6 +214,13 @@ bool HTMLButtonElement::supportsAutofocus() const
     return true;
 }
 
+bool HTMLButtonElement::matchesDefaultPseudoClass() const
+{
+    // HTMLFormElement::findDefaultButton() traverses the tree. So we check
+    // canBeSuccessfulSubmitButton() first for early return.
+    return canBeSuccessfulSubmitButton() && form() && form()->findDefaultButton() == this;
+}
+
 Node::InsertionNotificationRequest HTMLButtonElement::insertedInto(ContainerNode* insertionPoint)
 {
     InsertionNotificationRequest request = HTMLFormControlElement::insertedInto(insertionPoint);

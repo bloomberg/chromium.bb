@@ -91,6 +91,7 @@ private:
     ~HTMLOptionElement();
 
     bool supportsFocus() const override;
+    bool matchesDefaultPseudoClass() const override;
     void attach(const AttachContext& = AttachContext()) override;
     void detach(const AttachContext& = AttachContext()) override;
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;

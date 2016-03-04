@@ -54,6 +54,7 @@ private:
     void handleKeypressEvent(KeyboardEvent*) final;
     bool canSetStringValue() const final;
     void accessKeyAction(bool sendMouseEvents) final;
+    bool matchesDefaultPseudoClass() override;
     String fallbackValue() const final;
     bool storesValueSeparateFromAttribute() final;
     void setValue(const String&, bool, TextFieldEventBehavior) final;

@@ -1658,6 +1658,11 @@ bool HTMLInputElement::supportLabels() const
     return m_inputType->isInteractiveContent();
 }
 
+bool HTMLInputElement::matchesDefaultPseudoClass() const
+{
+    return m_inputType->matchesDefaultPseudoClass();
+}
+
 bool HTMLInputElement::shouldAppearChecked() const
 {
     return checked() && m_inputType->isCheckable();

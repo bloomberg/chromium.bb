@@ -115,6 +115,11 @@ bool HTMLOptionElement::supportsFocus() const
     return HTMLElement::supportsFocus();
 }
 
+bool HTMLOptionElement::matchesDefaultPseudoClass() const
+{
+    return fastHasAttribute(selectedAttr);
+}
+
 String HTMLOptionElement::displayLabel() const
 {
     Document& document = this->document();

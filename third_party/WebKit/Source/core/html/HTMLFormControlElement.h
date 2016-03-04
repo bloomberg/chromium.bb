@@ -166,7 +166,6 @@ private:
 
     short tabIndex() const final;
 
-    bool matchesDefaultPseudoClass() const final;
     bool isValidElement() override;
     bool matchesValidityPseudoClasses() const override;
     void updateAncestorDisabledState() const;
