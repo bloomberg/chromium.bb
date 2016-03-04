@@ -342,7 +342,8 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
         startMode,
         contentSecurityPolicy ? contentSecurityPolicy->headers() : nullptr,
         starterOrigin,
-        workerClients.release());
+        workerClients.release(),
+        m_mainScriptLoader->responseAddressSpace());
     m_loaderProxy = WorkerLoaderProxy::create(this);
     m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this);
     InspectorInstrumentation::scriptImported(m_loadingDocument.get(), m_mainScriptLoader->identifier(), m_mainScriptLoader->script());

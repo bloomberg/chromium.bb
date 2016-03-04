@@ -54,6 +54,7 @@ PassRefPtrWillBeRawPtr<SharedWorkerGlobalScope> SharedWorkerGlobalScope::create(
     // passed along to the created 'context'.
     RefPtrWillBeRawPtr<SharedWorkerGlobalScope> context = adoptRefWillBeNoop(new SharedWorkerGlobalScope(name, startupData->m_scriptURL, startupData->m_userAgent, thread, startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release()));
     context->applyContentSecurityPolicyFromVector(*startupData->m_contentSecurityPolicyHeaders);
+    context->setAddressSpace(startupData->m_addressSpace);
     return context.release();
 }
 

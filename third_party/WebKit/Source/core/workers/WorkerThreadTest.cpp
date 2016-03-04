@@ -185,6 +185,7 @@ public:
             headers.release(),
             m_securityOrigin.get(),
             clients.release(),
+            WebURLRequest::AddressSpaceLocal,
             V8CacheOptionsDefault));
     }
 

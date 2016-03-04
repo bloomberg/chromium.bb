@@ -1,0 +1,8 @@
+<script>
+    var w = new SharedWorker("/security/cors-rfc1918/resources/post-addressspace-to-owner.js");
+    w.port.onmessage = function (e) {
+        window.parent.postMessage(e.data, "*");
+    }
+    w.port.start();
+    w.port.postMessage("go");
+</script>

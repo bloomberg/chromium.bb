@@ -31,6 +31,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
+#include "core/dom/SecurityContext.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/Console.h"
@@ -112,7 +113,7 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     ContentSecurityPolicy* csp = m_workerObject->contentSecurityPolicy() ? m_workerObject->contentSecurityPolicy() : document->contentSecurityPolicy();
     ASSERT(csp);
 
-    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, nullptr, startMode, csp->headers(), starterOrigin, m_workerClients.release());
+    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, nullptr, startMode, csp->headers(), starterOrigin, m_workerClients.release(), document->addressSpace());
     double originTime = document->loader() ? document->loader()->timing().referenceMonotonicTime() : monotonicallyIncreasingTime();
 
     m_loaderProxy = WorkerLoaderProxy::create(this);

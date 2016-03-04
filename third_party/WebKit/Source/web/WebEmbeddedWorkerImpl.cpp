@@ -32,6 +32,7 @@
 
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
+#include "core/dom/SecurityContext.h"
 #include "core/fetch/SubstituteData.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -370,6 +371,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
         document->contentSecurityPolicy()->headers(),
         starterOrigin,
         workerClients.release(),
+        m_mainScriptLoader->responseAddressSpace(),
         static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));
 
     m_mainScriptLoader.clear();

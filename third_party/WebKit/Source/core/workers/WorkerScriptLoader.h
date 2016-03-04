@@ -80,6 +80,8 @@ public:
     ContentSecurityPolicy* contentSecurityPolicy() { return m_contentSecurityPolicy.get(); }
     PassRefPtrWillBeRawPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
+    WebURLRequest::AddressSpace responseAddressSpace() const { return m_responseAddressSpace; }
+
     // ThreadableLoaderClient
     void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void didReceiveData(const char* data, unsigned dataLength) override;
@@ -119,6 +121,7 @@ private:
     OwnPtr<Vector<char>> m_cachedMetadata;
     WebURLRequest::RequestContext m_requestContext;
     RefPtrWillBePersistent<ContentSecurityPolicy> m_contentSecurityPolicy;
+    WebURLRequest::AddressSpace m_responseAddressSpace;
 };
 
 } // namespace blink

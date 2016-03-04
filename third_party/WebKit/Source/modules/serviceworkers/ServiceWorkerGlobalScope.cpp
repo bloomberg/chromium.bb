@@ -73,6 +73,7 @@ PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::creat
 
     context->setV8CacheOptions(startupData->m_v8CacheOptions);
     context->applyContentSecurityPolicyFromVector(*startupData->m_contentSecurityPolicyHeaders);
+    context->setAddressSpace(startupData->m_addressSpace);
 
     return context.release();
 }

@@ -34,8 +34,9 @@
 #include "platform/HTTPNames.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
-
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -49,6 +50,7 @@ WorkerScriptLoader::WorkerScriptLoader()
     , m_identifier(0)
     , m_appCacheID(0)
     , m_requestContext(WebURLRequest::RequestContextWorker)
+    , m_responseAddressSpace(WebURLRequest::AddressSpacePublic)
 {
 }
 
@@ -133,6 +135,13 @@ void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const Reso
     m_responseEncoding = response.textEncodingName();
     m_appCacheID = response.appCacheID();
     processContentSecurityPolicy(response);
+
+    if (Platform::current()->isReservedIPAddress(response.remoteIPAddress())) {
+        m_responseAddressSpace = SecurityOrigin::create(m_responseURL)->isLocalhost()
+            ? WebURLRequest::AddressSpaceLocal
+            : WebURLRequest::AddressSpacePrivate;
+    }
+
     if (m_responseCallback)
         (*m_responseCallback)();
 }

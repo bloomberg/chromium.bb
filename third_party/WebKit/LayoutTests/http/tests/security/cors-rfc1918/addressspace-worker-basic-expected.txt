@@ -1,7 +1,0 @@
-
-This is a testharness.js-based test.
-FAIL http://localhost:8000 = 'local' assert_equals: expected "local" but got "public"
-FAIL http://127.0.0.1:8000 = 'local' assert_equals: expected "local" but got "public"
-FAIL http://example.test:8000 = 'private' assert_equals: expected "private" but got "public"
-Harness: the test ran to completion.
-

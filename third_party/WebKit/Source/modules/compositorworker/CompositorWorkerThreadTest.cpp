@@ -147,6 +147,7 @@ public:
             adoptPtr(new Vector<CSPHeaderAndType>()),
             m_securityOrigin.get(),
             clients.release(),
+            WebURLRequest::AddressSpaceLocal,
             V8CacheOptionsDefault));
         return adoptPtr(workerThread);
     }

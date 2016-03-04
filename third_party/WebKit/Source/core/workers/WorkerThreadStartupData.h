@@ -38,6 +38,7 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -49,9 +50,9 @@ class CORE_EXPORT WorkerThreadStartupData final {
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
     USING_FAST_MALLOC(WorkerThreadStartupData);
 public:
-    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
+    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, WebURLRequest::AddressSpace addressSpace, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
     {
-        return adoptPtr(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, cachedMetaData, startMode, contentSecurityPolicyHeaders, starterOrigin, workerClients, v8CacheOptions));
+        return adoptPtr(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, cachedMetaData, startMode, contentSecurityPolicyHeaders, starterOrigin, workerClients, addressSpace, v8CacheOptions));
     }
 
     ~WorkerThreadStartupData();
@@ -62,6 +63,7 @@ public:
     OwnPtr<Vector<char>> m_cachedMetaData;
     WorkerThreadStartMode m_startMode;
     OwnPtr<Vector<CSPHeaderAndType>> m_contentSecurityPolicyHeaders;
+
 
     // The SecurityOrigin of the Document creating a Worker may have
     // been configured with extra policy privileges when it was created
@@ -84,10 +86,12 @@ public:
     // supplies no extra 'clients', m_workerClients can be left as empty/null.
     OwnPtrWillBeCrossThreadPersistent<WorkerClients> m_workerClients;
 
+    WebURLRequest::AddressSpace m_addressSpace;
+
     V8CacheOptions m_v8CacheOptions;
 
 private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>, V8CacheOptions);
+    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>, WebURLRequest::AddressSpace, V8CacheOptions);
 };
 
 } // namespace blink

@@ -6,6 +6,8 @@ function createIFrame(origin, type) {
         file = "post-addressspace-to-parent.html?csp";
     } else if (type == "worker") {
         file = "post-addressspace-from-worker.html";
+    } else if (type == "sharedworker") {
+        file = "post-addressspace-from-sharedworker.html";
     }
 
     var i = document.createElement('iframe');
