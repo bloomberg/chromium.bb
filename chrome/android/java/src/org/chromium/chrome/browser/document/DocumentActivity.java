@@ -579,19 +579,20 @@ public class DocumentActivity extends ChromeActivity {
         boolean isCreatedWithWebContents = asyncParams != null
                 && asyncParams.getWebContents() != null;
 
-        if (params != null && params.getTabToReparent() != null) {
-            mTab = params.getTabToReparent();
-            mTab.reparentToActivity(this, new DocumentTabDelegateFactory());
-        } else {
-            mTab = createActivityTab(asyncParams);
-        }
-
+        // URL modification must happen before the Tab is created.
         if (!isIncognito() && asyncParams != null) {
             LoadUrlParams loadUrlParams = asyncParams.getLoadUrlParams();
             if (loadUrlParams != null && loadUrlParams.getUrl() != null) {
                 loadUrlParams.setUrl(DataReductionProxySettings.getInstance()
                         .maybeRewriteWebliteUrl(loadUrlParams.getUrl()));
             }
+        }
+
+        if (params != null && params.getTabToReparent() != null) {
+            mTab = params.getTabToReparent();
+            mTab.reparentToActivity(this, new DocumentTabDelegateFactory());
+        } else {
+            mTab = createActivityTab(asyncParams);
         }
 
         if (asyncParams != null && asyncParams.getWebContents() != null) {
