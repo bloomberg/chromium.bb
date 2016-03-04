@@ -78,10 +78,6 @@ bool NetworkServiceDelegate::AcceptConnection(Connection* connection) {
   return true;
 }
 
-bool NetworkServiceDelegate::ShellConnectionLost() {
-  return true;
-}
-
 void NetworkServiceDelegate::Create(Connection* connection,
                                     InterfaceRequest<NetworkService> request) {
   new NetworkServiceImpl(ref_factory_.CreateRef(), std::move(request));

@@ -16,10 +16,8 @@ Connector::ConnectParams::~ConnectParams() {}
 
 ConnectorImpl::ConnectorImpl(shell::mojom::ConnectorPtrInfo unbound_state)
     : unbound_state_(std::move(unbound_state)) {}
-ConnectorImpl::ConnectorImpl(shell::mojom::ConnectorPtr connector,
-                             const base::Closure& connection_error_closure)
+ConnectorImpl::ConnectorImpl(shell::mojom::ConnectorPtr connector)
     : connector_(std::move(connector)) {
-  connector_.set_connection_error_handler(connection_error_closure);
   thread_checker_.reset(new base::ThreadChecker);
 }
 ConnectorImpl::~ConnectorImpl() {}
@@ -33,8 +31,12 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   // Bind this object to the current thread the first time it is used to
   // connect.
   if (!connector_.is_bound()) {
-    if (!unbound_state_.is_valid())
+    if (!unbound_state_.is_valid()) {
+      // It's possible to get here when the link to the shell has been severed
+      // (and so the connector pipe has been closed) but the app has chosen not
+      // to quit.
       return nullptr;
+    }
     connector_.Bind(std::move(unbound_state_));
     thread_checker_.reset(new base::ThreadChecker);
   }

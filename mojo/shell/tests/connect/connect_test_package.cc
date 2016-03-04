@@ -148,12 +148,11 @@ class ConnectTestShellClient
     connection->AddInterface<test::mojom::ConnectTestService>(this);
     return true;
   }
-  bool ShellConnectionLost() override {
+  void ShellConnectionLost() override {
     if (base::MessageLoop::current() &&
         base::MessageLoop::current()->is_running()) {
       base::MessageLoop::current()->QuitWhenIdle();
     }
-    return true;
   }
 
   // InterfaceFactory<mojom::ShellClientFactory>:

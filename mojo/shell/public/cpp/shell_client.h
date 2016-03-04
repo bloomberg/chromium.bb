@@ -42,11 +42,10 @@ class ShellClient {
   // underlying pipe closed. The default implementation returns false.
   virtual bool AcceptConnection(Connection* connection);
 
-  // Called when ShellConnection's pipe to the Mojo Shell is closed.
-  //
-  // Returning true from this method will cause ...
-  // The default implementation returns true.
-  virtual bool ShellConnectionLost();
+  // Called when ShellConnection's ShellClient binding (i.e. the pipe the
+  // Mojo Shell has to talk to us over) is closed. A shell client may use this
+  // as a signal to terminate.
+  virtual void ShellConnectionLost();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellClient);

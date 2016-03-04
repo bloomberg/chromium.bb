@@ -42,9 +42,8 @@ bool TracingApp::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
-bool TracingApp::ShellConnectionLost() {
+void TracingApp::ShellConnectionLost() {
   base::MessageLoop::current()->QuitWhenIdle();
-  return true;
 }
 
 void TracingApp::Create(mojo::Connection* connection,

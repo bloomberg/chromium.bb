@@ -38,10 +38,10 @@ void ShellConnection::Initialize(shell::mojom::ConnectorPtr connector,
                                  const mojo::String& name,
                                  uint32_t id,
                                  uint32_t user_id) {
-  connector_.reset(new ConnectorImpl(
-      std::move(connector),
+  connector_.reset(new ConnectorImpl(std::move(connector)));
+  binding_.set_connection_error_handler(
       base::Bind(&ShellConnection::OnConnectionError,
-                 weak_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr()));
   client_->Initialize(connector_.get(), name, id, user_id);
 }
 
@@ -69,12 +69,12 @@ void ShellConnection::AcceptConnection(
 // ShellConnection, private:
 
 void ShellConnection::OnConnectionError() {
-  // We give the client notice first, since it might want to do something on
-  // shell connection errors other than immediate termination of the run
-  // loop. The application might want to continue servicing connections other
-  // than the one to the shell.
-  if (client_->ShellConnectionLost())
-    connector_.reset();
+  // Note that the ShellClient doesn't technically have to quit now, it may live
+  // on to service existing connections. All existing Connectors however are
+  // invalid.
+  client_->ShellConnectionLost();
+  // We don't reset the connector as clients may have taken a raw pointer to it.
+  // Connect() will return nullptr if they try to connect to anything.
 }
 
 }  // namespace mojo

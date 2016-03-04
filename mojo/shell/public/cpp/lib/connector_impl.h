@@ -15,8 +15,7 @@ namespace mojo {
 class ConnectorImpl : public Connector {
  public:
   explicit ConnectorImpl(shell::mojom::ConnectorPtrInfo unbound_state);
-  ConnectorImpl(shell::mojom::ConnectorPtr connector,
-                const base::Closure& connection_error_closure);
+  explicit ConnectorImpl(shell::mojom::ConnectorPtr connector);
   ~ConnectorImpl() override;
 
  private:

@@ -38,7 +38,6 @@ class NetworkServiceDelegate : public ShellClient,
   void Initialize(Connector* connector, const std::string& url,
                   uint32_t id, uint32_t user_id) override;
   bool AcceptConnection(Connection* connection) override;
-  bool ShellConnectionLost() override;
 
   // InterfaceFactory<NetworkService> implementation.
   void Create(Connection* connection,
