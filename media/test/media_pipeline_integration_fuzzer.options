@@ -1,0 +1,3 @@
+[libfuzzer]
+# This is done to avoid DEATH of ASan with "Thread limit exceeded" error.
+runs=500000

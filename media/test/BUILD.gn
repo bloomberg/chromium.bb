@@ -130,4 +130,5 @@ fuzzer_test("media_pipeline_integration_fuzzer") {
     "//testing/gmock",
     "//ui/gfx:test_support",
   ]
+  libfuzzer_options = "media_pipeline_integration_fuzzer.options"
 }
