@@ -243,6 +243,27 @@ Value RunActionForEach(Scope* scope,
                               block, err);
 }
 
+// bundle_data -----------------------------------------------------------------
+
+const char kBundleData[] = "bundle_data";
+const char kBundleData_HelpShort[] =
+    "bundle_data: Declare a target without output.";
+const char kBundleData_Help[] =
+    "bundle_data: Declare a target without output.\n"
+    "\n"
+    "  This target type allows to declare data that is required at runtime.\n"
+    "  It is used to inform \"create_bundle\" targets of the files to copy\n"
+    "  into generated bundle, see \"gn help create_bundle\" for help.\n";
+
+Value RunBundleData(Scope* scope,
+                    const FunctionCallNode* function,
+                    const std::vector<Value>& args,
+                    BlockNode* block,
+                    Err* err) {
+  return ExecuteGenericTarget(functions::kBundleData, scope, function, args,
+                              block, err);
+}
+
 // copy ------------------------------------------------------------------------
 
 const char kCopy[] = "copy";

@@ -151,9 +151,10 @@ Toolchain::ToolType Toolchain::GetToolTypeForTargetFinalOutput(
       return Toolchain::TYPE_ALINK;
     case Target::SOURCE_SET:
       return TYPE_STAMP;
-    case Target::COPY_FILES:
     case Target::ACTION:
     case Target::ACTION_FOREACH:
+    case Target::BUNDLE_DATA:
+    case Target::COPY_FILES:
       return TYPE_STAMP;
     default:
       NOTREACHED();

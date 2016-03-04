@@ -46,6 +46,11 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
   "{{output_extension}}",  // SUBSTITUTION_OUTPUT_EXTENSION
   "{{solibs}}",  // SUBSTITUTION_SOLIBS
 
+  "{{bundle_root_dir}}",  // SUBSTITUTION_BUNDLE_ROOT_DIR
+  "{{bundle_resources_dir}}",  // SUBSTITUTION_BUNDLE_RESOURCES_DIR
+  "{{bundle_executable_dir}}",  // SUBSTITUTION_BUNDLE_EXECUTABLE_DIR
+  "{{bundle_plugins_dir}}",  // SUBSTITUTION_BUNDLE_PLUGINS_DIR
+
   "{{response_file_name}}",  // SUBSTITUTION_RSP_FILE_NAME
 };
 
@@ -89,6 +94,11 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
     "output_extension",  // SUBSTITUTION_OUTPUT_EXTENSION
     "solibs",            // SUBSTITUTION_SOLIBS
 
+    "bundle_root_dir",        // SUBSTITUTION_BUNDLE_ROOT_DIR
+    "bundle_resources_dir",   // SUBSTITUTION_BUNDLE_RESOURCES_DIR
+    "bundle_executable_dir",  // SUBSTITUTION_BUNDLE_EXECUTABLE_DIR
+    "bundle_plugins_dir",     // SUBSTITUTION_BUNDLE_PLUGINS_DIR
+
     "rspfile",  // SUBSTITUTION_RSP_FILE_NAME
 };
 
@@ -114,6 +124,24 @@ bool SubstitutionIsInOutputDir(SubstitutionType type) {
          type == SUBSTITUTION_ROOT_OUT_DIR ||
          type == SUBSTITUTION_TARGET_GEN_DIR ||
          type == SUBSTITUTION_TARGET_OUT_DIR;
+}
+
+bool SubstitutionIsInBundleDir(SubstitutionType type) {
+  return type == SUBSTITUTION_BUNDLE_ROOT_DIR ||
+         type == SUBSTITUTION_BUNDLE_RESOURCES_DIR ||
+         type == SUBSTITUTION_BUNDLE_EXECUTABLE_DIR ||
+         type == SUBSTITUTION_BUNDLE_PLUGINS_DIR;
+}
+
+bool IsValidBundleDataSubstitution(SubstitutionType type) {
+  return type == SUBSTITUTION_LITERAL ||
+         type == SUBSTITUTION_SOURCE_NAME_PART ||
+         type == SUBSTITUTION_SOURCE_FILE_PART ||
+         type == SUBSTITUTION_SOURCE_ROOT_RELATIVE_DIR ||
+         type == SUBSTITUTION_BUNDLE_ROOT_DIR ||
+         type == SUBSTITUTION_BUNDLE_RESOURCES_DIR ||
+         type == SUBSTITUTION_BUNDLE_EXECUTABLE_DIR ||
+         type == SUBSTITUTION_BUNDLE_PLUGINS_DIR;
 }
 
 bool IsValidSourceSubstitution(SubstitutionType type) {

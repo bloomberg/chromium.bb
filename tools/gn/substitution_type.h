@@ -59,6 +59,12 @@ enum SubstitutionType {
   SUBSTITUTION_OUTPUT_EXTENSION,  // {{output_extension}}
   SUBSTITUTION_SOLIBS,  // {{solibs}}
 
+  // Valid for bundle_data targets.
+  SUBSTITUTION_BUNDLE_ROOT_DIR,  // {{bundle_root_dir}}
+  SUBSTITUTION_BUNDLE_RESOURCES_DIR,  // {{bundle_resources_dir}}
+  SUBSTITUTION_BUNDLE_EXECUTABLE_DIR,  // {{bundle_executable_dir}}
+  SUBSTITUTION_BUNDLE_PLUGINS_DIR,  // {{bundle_plugins_dir}}
+
   // Used only for the args of actions.
   SUBSTITUTION_RSP_FILE_NAME,  // {{response_file_name}}
 
@@ -96,7 +102,13 @@ struct SubstitutionBits {
 // verify that they produce a file in the output directory.
 bool SubstitutionIsInOutputDir(SubstitutionType type);
 
+// Returns true if the given substitution pattern references the bundle
+// directory. This is used to check strings that begin with a substitution to
+// verify that they produce a file in the bundle directory.
+bool SubstitutionIsInBundleDir(SubstitutionType type);
+
 // Returns true if the given substitution is valid for the named purpose.
+bool IsValidBundleDataSubstitution(SubstitutionType type);
 bool IsValidSourceSubstitution(SubstitutionType type);
 // Both compiler and linker tools.
 bool IsValidToolSubstitution(SubstitutionType type);

@@ -80,6 +80,15 @@ Value RunAssert(Scope* scope,
                 const std::vector<Value>& args,
                 Err* err);
 
+extern const char kBundleData[];
+extern const char kBundleData_HelpShort[];
+extern const char kBundleData_Help[];
+Value RunBundleData(Scope* scope,
+                    const FunctionCallNode* function,
+                    const std::vector<Value>& args,
+                    BlockNode* block,
+                    Err* err);
+
 extern const char kConfig[];
 extern const char kConfig_HelpShort[];
 extern const char kConfig_Help[];

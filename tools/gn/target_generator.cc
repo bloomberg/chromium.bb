@@ -9,6 +9,7 @@
 #include "tools/gn/action_target_generator.h"
 #include "tools/gn/binary_target_generator.h"
 #include "tools/gn/build_settings.h"
+#include "tools/gn/bundle_data_target_generator.h"
 #include "tools/gn/config.h"
 #include "tools/gn/copy_target_generator.h"
 #include "tools/gn/err.h"
@@ -87,7 +88,11 @@ void TargetGenerator::GenerateTarget(Scope* scope,
   target->set_defined_from(function_call);
 
   // Create and call out to the proper generator.
-  if (output_type == functions::kCopy) {
+  if (output_type == functions::kBundleData) {
+    BundleDataTargetGenerator generator(
+        target.get(), scope, function_call, err);
+    generator.Run();
+  } else if (output_type == functions::kCopy) {
     CopyTargetGenerator generator(target.get(), scope, function_call, err);
     generator.Run();
   } else if (output_type == functions::kAction) {

@@ -15,7 +15,10 @@ ActionValues::~ActionValues() {}
 void ActionValues::GetOutputsAsSourceFiles(
     const Target* target,
     std::vector<SourceFile>* result) const {
-  if (target->output_type() == Target::COPY_FILES ||
+  if (target->output_type() == Target::BUNDLE_DATA) {
+    // The bundle_data target has no output, the real output will be generated
+    // by the create_bundle target.
+  } else if (target->output_type() == Target::COPY_FILES ||
       target->output_type() == Target::ACTION_FOREACH) {
     // Copy and foreach applies the outputs to the sources.
     SubstitutionWriter::ApplyListToSources(

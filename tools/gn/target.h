@@ -44,6 +44,7 @@ class Target : public Item {
     COPY_FILES,
     ACTION,
     ACTION_FOREACH,
+    BUNDLE_DATA,
   };
 
   enum DepsIterationType {

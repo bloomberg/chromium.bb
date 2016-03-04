@@ -803,6 +803,7 @@ struct FunctionInfoInitializer {
 
     INSERT_FUNCTION(Action, true)
     INSERT_FUNCTION(ActionForEach, true)
+    INSERT_FUNCTION(BundleData, true)
     INSERT_FUNCTION(Copy, true)
     INSERT_FUNCTION(Executable, true)
     INSERT_FUNCTION(Group, true)

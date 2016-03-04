@@ -222,6 +222,8 @@ const char* Target::GetStringForOutputType(OutputType type) {
       return "Action";
     case ACTION_FOREACH:
       return "ActionForEach";
+    case BUNDLE_DATA:
+      return "Bundle data";
     default:
       return "";
   }
@@ -479,6 +481,7 @@ void Target::FillOutputFiles() {
   bool check_tool_outputs = false;
   switch (output_type_) {
     case GROUP:
+    case BUNDLE_DATA:
     case SOURCE_SET:
     case COPY_FILES:
     case ACTION:

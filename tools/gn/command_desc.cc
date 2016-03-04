@@ -684,7 +684,8 @@ int RunDesc(const std::vector<std::string>& args) {
     target->output_type() != Target::GROUP &&
     target->output_type() != Target::COPY_FILES &&
     target->output_type() != Target::ACTION &&
-    target->output_type() != Target::ACTION_FOREACH;
+    target->output_type() != Target::ACTION_FOREACH &&
+    target->output_type() != Target::BUNDLE_DATA;
 
   // Generally we only want to display toolchains on labels when the toolchain
   // is different than the default one for this target (which we always print
