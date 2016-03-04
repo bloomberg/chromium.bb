@@ -30,6 +30,15 @@ cope with the way git log presents them.
 
 See [2] for a recommend reading on writing commit messages.
 
+Your patches should also include a Signed-off-by line with your name and
+email address.  If you're not the patch's original author, you should
+also gather S-o-b's by them (and/or whomever gave the patch to you.) The
+significance of this is that it certifies that you created the patch,
+that it was created under an appropriate open source license, or
+provided to you under those terms.  This lets us indicate a chain of
+responsibility for the copyright status of the code.
+
+We won't reject patches that lack S-o-b, but it is strongly recommended.
 
 == Tracking patches and following up ==
 
