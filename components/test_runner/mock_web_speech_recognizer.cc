@@ -111,22 +111,18 @@ class ErrorTask : public MockWebSpeechRecognizer::Task {
 // Task for tidying up after recognition task has ended.
 class EndedTask : public MockWebSpeechRecognizer::Task {
  public:
-  EndedTask(MockWebSpeechRecognizer* mock,
-            blink::WebSpeechRecognitionHandle handle)
-      : MockWebSpeechRecognizer::Task(mock), handle_(handle) {}
+  EndedTask(MockWebSpeechRecognizer* mock)
+      : MockWebSpeechRecognizer::Task(mock) {}
 
   ~EndedTask() override {}
 
   void run() override {
-    // Reset recognizer's handle if it hasn't been replaced.
-    if (recognizer_->Handle() == handle_)
-      recognizer_->Handle().reset();
-    handle_.reset();
+    blink::WebSpeechRecognitionHandle handle = recognizer_->Handle();
+    recognizer_->Handle().reset();
+    recognizer_->Client()->didEnd(handle);
   }
 
  private:
-  blink::WebSpeechRecognitionHandle handle_;
-
   DISALLOW_COPY_AND_ASSIGN(EndedTask);
 };
 
@@ -175,9 +171,7 @@ void MockWebSpeechRecognizer::start(
       new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEndSound));
   task_queue_.push_back(
       new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEndAudio));
-  task_queue_.push_back(
-      new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEnd));
-  task_queue_.push_back(new EndedTask(this, handle_));
+  task_queue_.push_back(new EndedTask(this));
 
   StartTaskQueue();
 }
@@ -200,9 +194,7 @@ void MockWebSpeechRecognizer::abort(
 
   ClearTaskQueue();
   was_aborted_ = true;
-  task_queue_.push_back(
-      new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEnd));
-  task_queue_.push_back(new EndedTask(this, handle_));
+  task_queue_.push_back(new EndedTask(this));
 
   StartTaskQueue();
 }
@@ -239,9 +231,7 @@ void MockWebSpeechRecognizer::SetError(const blink::WebString& error,
 
   ClearTaskQueue();
   task_queue_.push_back(new ErrorTask(this, code, message));
-  task_queue_.push_back(
-      new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didEnd));
-  task_queue_.push_back(new EndedTask(this, handle_));
+  task_queue_.push_back(new EndedTask(this));
 
   StartTaskQueue();
 }
