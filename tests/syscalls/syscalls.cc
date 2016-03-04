@@ -118,20 +118,10 @@ bool test_sysconf() {
     return true;
   int rv;
   rv = sysconf(_SC_NPROCESSORS_ONLN);
-  if (rv == -1) {
-    printf("failed to get nprocs\n");
-    return false;
-  }
-  if (rv < 1) {
-    printf("got strange number of processors: %d\n", rv);
-    return false;
-  }
+  ASSERT_GE(rv, 1);
   // test sysconf on an invalid input.
   rv = sysconf(-1);
-  if (rv != -1) {
-    printf("succeeded on unsupported\n");
-    return false;
-  }
+  ASSERT_EQ(rv, -1);
   return true;
 }
 
@@ -996,63 +986,49 @@ bool test_close(const char *test_file) {
 
   // file OK
   fd = open(test_file, O_RDWR);
-  if (fd == -1)
-    return failed(testname, "open(test_file, O_RDWR)");
+  ASSERT_GE(fd, 0);
   ret_val = close(fd);
-  if (ret_val == -1)
-    return failed(testname, "close(test_file, O_RDWR)");
+  ASSERT_EQ(ret_val, 0);
 
   // file OK
   fd = open(test_file, O_RDWR);
-  if (fd == -1)
-    return failed(testname, "open(test_file, O_RDWR)");
+  ASSERT_GE(fd, 0);
   // close on wrong fd not OK
   errno = 0;
   ret_val = close(fd+1);
-  if (ret_val != -1)
-    return failed(testname, "close(fd+1)");
+  ASSERT_EQ(ret_val, -1);
   // bad file number
-  if (EBADF != errno)
-    return failed(testname, "EBADF != errno");
+  ASSERT_EQ(errno, EBADF);
   ret_val = close(fd);
-  if (ret_val == -1)
-    return failed(testname, "close(test_file, O_RDWR)");
+  ASSERT_EQ(ret_val, 0);
 
   // file not OK
   fd = open("file_none.txt", O_WRONLY);
-  if (fd != -1)
-    return failed(testname, "open(file_none.txt, O_WRONLY)");
+  ASSERT_EQ(fd, -1);
   errno = 0;
   ret_val = close(fd);
-  if (ret_val == 0)
-    return failed(testname, "close(file_none.txt, O_WRONLY)");
+  ASSERT_EQ(ret_val, -1);
   // bad file number
-  if (EBADF != errno)
-    return failed(testname, "EBADF != errno");
+  ASSERT_EQ(errno, EBADF);
 
   // directory OK
   // Linux's open() (unsandboxed) does not allow O_RDWR on a directory.
   // TODO(mseaborn): sel_ldr should reject O_RDWR on a directory too.
   if (!NONSFI_MODE) {
     fd = open(".", O_RDWR);
-    if (fd == -1)
-      return failed(testname, "open(., O_RDWR)");
+    ASSERT_GE(fd, 0);
     ret_val = close(fd);
-    if (ret_val == -1)
-      return failed(testname, "close(., O_RDWR)");
+    ASSERT_EQ(ret_val, 0);
   }
 
   // directory not OK
   fd = open("nosuchdir", O_RDWR);
-  if (fd != -1)
-    return failed(testname, "open(nosuchdir, O_RDWR)");
+  ASSERT_EQ(fd, -1);
   errno = 0;
   ret_val = close(fd);
-  if (ret_val == 0)
-    return failed(testname, "close(nosuchdir, O_RDWR)");
+  ASSERT_EQ(ret_val, -1);
   // bad file number
-  if (EBADF != errno)
-    return failed(testname, "EBADF != errno");
+  ASSERT_EQ(errno, EBADF);
 
   return passed(testname, "all");
 }
@@ -1066,65 +1042,53 @@ bool test_read(const char *test_file) {
   const char *testname = "test_read";
 
   fd = open(test_file, O_RDONLY);
-  if (fd == -1)
-    return failed(testname, "open(test_file, O_RDONLY)");
+  ASSERT_GE(fd, 0);
 
   // fd OK, buffer OK, count OK
   ret_val = read(fd, out_char, 1);
-  if (ret_val == -1)
-    return failed(testname, "read(fd, out_char, 1)");
+  ASSERT_EQ(ret_val, 1);
 
   errno = 0;
   // fd not OK, buffer OK, count OK
   ret_val = read(-1, out_char, 1);
-  if (ret_val != -1)
-    return failed(testname, "read(-1, out_char, 1)");
+  ASSERT_EQ(ret_val, -1);
   // bad file number
-  if (EBADF != errno)
-    return failed(testname, "EBADF != errno");
+  ASSERT_EQ(errno, EBADF);
 
   errno = 0;
   // fd OK, buffer OK, count not OK
   // Linux's read() (unsandboxed) does not reject this buffer size.
   if (!NONSFI_MODE) {
     ret_val = read(fd, out_char, -1);
-    if (ret_val != -1)
-      return failed(testname, "read(fd, out_char, -1)");
+    ASSERT_EQ(ret_val, -1);
     // bad address
     ASSERT_EQ(errno, EFAULT);
-    if (EFAULT != errno)
-      return failed(testname, "EFAULT != errno");
   }
 
   errno = 0;
   // fd not OK, buffer OK, count not OK
   ret_val = read(-1, out_char, -1);
-  if (ret_val != -1)
-    return failed(testname, "read(-1, out_char, -1)");
+  ASSERT_EQ(ret_val, -1);
   // bad descriptor
   if (NONSFI_MODE) {
     // Under qemu-arm, this read() call returns EFAULT.
     if (EBADF != errno && EFAULT != errno)
       return failed(testname, "errno is not EBADF or EFAULT");
   } else {
-    if (EBADF != errno)
-      return failed(testname, "EBADF != errno");
+    ASSERT_EQ(errno, EBADF);
   }
 
   // fd OK, buffer OK, count 0
   ret_val = read(fd, out_char, 0);
-  if (ret_val != 0)
-    return failed(testname, "read(fd, out_char, 0)");
+  ASSERT_EQ(ret_val, 0);
 
   // read 10, but only 3 are left
   ret_val = read(fd, out_char, 10);
-  if (ret_val != 4)
-    return failed(testname, "read(fd, out_char, 10)");
+  ASSERT_EQ(ret_val, 4);
 
   // EOF
   ret_val = read(fd, out_char, 10);
-  if (ret_val != 0)
-    return failed(testname, "read(fd, out_char, 10)");
+  ASSERT_EQ(ret_val, 0);
 
   close(fd);
   return passed(testname, "all");
@@ -1138,34 +1102,28 @@ bool test_write(const char *test_file) {
   const char *testname = "test_write";
 
   fd = open(test_file, O_WRONLY);
-  if (fd == -1)
-    return failed(testname, "open(test_file, O_WRONLY)");
+  ASSERT_GE(fd, 0);
 
   // all params OK
   ret_val = write(fd, out_char, 2);
-  if (ret_val != 2)
-    return failed(testname, "write(fd, out_char, 2)");
+  ASSERT_EQ(ret_val, 2);
 
   errno = 0;
   // invalid count
   // Linux's write() (unsandboxed) does not reject this buffer size.
   if (!NONSFI_MODE) {
     ret_val = write(fd, out_char, -1);
-    if (ret_val != -1)
-      return failed(testname, "write(fd, out_char, -1)");
+    ASSERT_EQ(ret_val, -1);
     // bad address
-    if (EFAULT != errno)
-      return failed(testname, "EFAULT != errno");
+    ASSERT_EQ(errno, EFAULT);
   }
 
   errno = 0;
   // invalid fd
   ret_val = write(-1, out_char, 2);
-  if (ret_val != -1)
-    return failed(testname, "write(-1, out_char, 2)");
+  ASSERT_EQ(ret_val, -1);
   // bad address
-  if (EBADF != errno)
-    return failed(testname, "EBADF != errno");
+  ASSERT_EQ(errno, EBADF);
 
   close(fd);
   return passed(testname, "all");
@@ -1180,77 +1138,64 @@ bool test_lseek(const char *test_file) {
   const char *testname = "test_lseek";
 
   fd = open(test_file, O_RDWR);
-  if (fd == -1)
-    return failed(testname, "open(test_file, O_RDWR)");
+  ASSERT_GE(fd, 0);
 
   ret_val = lseek(fd, 2, SEEK_SET);
-  if (ret_val != 2)
-    return failed(testname, "lseek(fd, 2, SEEK_SET)");
+  ASSERT_EQ(ret_val, 2);
 
   errno = 0;
   ret_val = lseek(-1, 1, SEEK_SET);
-  if (ret_val != -1)
-    return failed(testname, "lseek(-1, 1, SEEK_SET)");
+  ASSERT_EQ(ret_val, -1);
   // bad file number
-  if (EBADF != errno)
-    return failed(testname, "EBADF != errno");
+  ASSERT_EQ(errno, EBADF);
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) || (out_char != '3'))
-    return failed(testname, "read(fd, &out_char, 1) #1");
+  ASSERT_EQ(ret_val, 1);
+  ASSERT_EQ(out_char, '3');
 
   ret_val = lseek(fd, 1, SEEK_CUR);
-  if (ret_val != 4)
-    return failed(testname, "lseek(fd, 1, SEEK_CUR)");
+  ASSERT_EQ(ret_val, 4);
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) || (out_char != '5'))
-    return failed(testname, "read(fd, &out_char, 1) #2");
+  ASSERT_EQ(ret_val, 1);
+  ASSERT_EQ(out_char, '5');
 
   ret_val = lseek(fd, -1, SEEK_CUR);
-  if (ret_val != 4)
-    return failed(testname, "lseek(fd, -1, SEEK_CUR)");
+  ASSERT_EQ(ret_val, 4);
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) || (out_char != '5'))
-    return failed(testname, "read(fd, &out_char, 1) #3");
+  ASSERT_EQ(ret_val, 1);
+  ASSERT_EQ(out_char, '5');
 
   ret_val = lseek(fd, -2, SEEK_END);
-  if (ret_val != 3)
-    return failed(testname, "lseek(fd, -2, SEEK_END)");
+  ASSERT_EQ(ret_val, 3);
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) || (out_char != '4'))
-    return failed(testname, "read(fd, &out_char, 1) #4");
+  ASSERT_EQ(ret_val, 1);
+  ASSERT_EQ(out_char, '4');
 
   ret_val = lseek(fd, 4, SEEK_END);
   // lseek allows for positioning beyond the EOF
-  if (ret_val != 9)
-    return failed(testname, "lseek(fd, 4, SEEK_END)");
+  ASSERT_EQ(ret_val, 9);
 
   ret_val = lseek(fd, 4, SEEK_SET);
-  if (ret_val != 4)
-    return failed(testname, "lseek(fd, 4, SEEK_SET)");
+  ASSERT_EQ(ret_val, 4);
 
   errno = 0;
   ret_val = lseek(fd, 4, SEEK_END + 3);
-  if (ret_val != -1)
-    return failed(testname, "lseek(fd, 4, SEEK_END + 3)");
+  ASSERT_EQ(ret_val, -1);
   // invalid argument
-  if (EINVAL != errno)
-    return failed(testname, "EINVAL != errno");
+  ASSERT_EQ(errno, EINVAL);
 
   errno = 0;
   ret_val = lseek(fd, -40, SEEK_SET);
-  if (ret_val != -1)
-    return failed(testname, "lseek(fd, -40, SEEK_SET)");
+  ASSERT_EQ(ret_val, -1);
   // invalid argument
-  if (EINVAL != errno)
-    return failed(testname, "EINVAL != errno");
+  ASSERT_EQ(errno, EINVAL);
 
   ret_val = read(fd, &out_char, 1);
-  if ((ret_val != 1) || (out_char == '4'))
-    return failed(testname, "read(fd, &out_char, 1) #5");
+  ASSERT_EQ(ret_val, 1);
+  ASSERT_EQ(out_char, '5');
 
   close(fd);
   return passed(testname, "all");
