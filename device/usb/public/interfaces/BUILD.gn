@@ -8,6 +8,5 @@ mojom("interfaces") {
   sources = [
     "device.mojom",
     "device_manager.mojom",
-    "permission_provider.mojom",
   ]
 }

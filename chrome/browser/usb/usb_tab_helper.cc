@@ -38,11 +38,8 @@ void UsbTabHelper::CreateDeviceManager(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<device::usb::DeviceManager> request) {
   DCHECK(WebContents::FromRenderFrameHost(render_frame_host) == web_contents());
-  device::usb::PermissionProviderPtr permission_provider;
-  GetPermissionProvider(render_frame_host,
-                        mojo::GetProxy(&permission_provider));
-  device::usb::DeviceManagerImpl::Create(std::move(permission_provider),
-                                         std::move(request));
+  device::usb::DeviceManagerImpl::Create(
+      GetPermissionProvider(render_frame_host), std::move(request));
 }
 
 #if !defined(OS_ANDROID)
@@ -73,15 +70,14 @@ FrameUsbServices* UsbTabHelper::GetFrameUsbService(
   return it->second.get();
 }
 
-void UsbTabHelper::GetPermissionProvider(
-    RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<device::usb::PermissionProvider> request) {
+base::WeakPtr<device::usb::PermissionProvider>
+UsbTabHelper::GetPermissionProvider(RenderFrameHost* render_frame_host) {
   FrameUsbServices* frame_usb_services = GetFrameUsbService(render_frame_host);
   if (!frame_usb_services->permission_provider) {
     frame_usb_services->permission_provider.reset(
         new WebUSBPermissionProvider(render_frame_host));
   }
-  frame_usb_services->permission_provider->Bind(std::move(request));
+  return frame_usb_services->permission_provider->GetWeakPtr();
 }
 
 #if !defined(OS_ANDROID)

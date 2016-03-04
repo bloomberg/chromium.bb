@@ -10,36 +10,30 @@
 namespace device {
 namespace usb {
 
-FakePermissionProvider::FakePermissionProvider() {}
+FakePermissionProvider::FakePermissionProvider() : weak_factory_(this) {}
 
 FakePermissionProvider::~FakePermissionProvider() {}
 
-void FakePermissionProvider::HasDevicePermission(
-    mojo::Array<DeviceInfoPtr> requested_devices,
-    const HasDevicePermissionCallback& callback) {
-  mojo::Array<mojo::String> allowed_guids(requested_devices.size());
-  for (size_t i = 0; i < requested_devices.size(); ++i)
-    allowed_guids[i] = requested_devices[i]->guid;
-  callback.Run(std::move(allowed_guids));
+base::WeakPtr<PermissionProvider> FakePermissionProvider::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
-void FakePermissionProvider::HasConfigurationPermission(
-    uint8_t requested_configuration,
-    device::usb::DeviceInfoPtr device,
-    const HasInterfacePermissionCallback& callback) {
-  callback.Run(true);
+bool FakePermissionProvider::HasDevicePermission(
+    const device::usb::DeviceInfo& device_info) const {
+  return true;
 }
-void FakePermissionProvider::HasInterfacePermission(
+
+bool FakePermissionProvider::HasConfigurationPermission(
+    uint8_t requested_configuration,
+    const device::usb::DeviceInfo& device_info) const {
+  return true;
+}
+
+bool FakePermissionProvider::HasInterfacePermission(
     uint8_t requested_interface,
     uint8_t configuration_value,
-    device::usb::DeviceInfoPtr device,
-    const HasInterfacePermissionCallback& callback) {
-  callback.Run(true);
-}
-
-void FakePermissionProvider::Bind(
-    mojo::InterfaceRequest<PermissionProvider> request) {
-  bindings_.AddBinding(this, std::move(request));
+    const device::usb::DeviceInfo& device_info) const {
+  return true;
 }
 
 }  // namespace usb

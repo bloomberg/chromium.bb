@@ -29,6 +29,8 @@
         'mojo/device_manager_impl.h',
         'mojo/type_converters.cc',
         'mojo/type_converters.h',
+        'mojo/permission_provider.cc',
+        'mojo/permission_provider.h',
         'usb_configuration_android.cc',
         'usb_configuration_android.h',
         'usb_context.cc',
@@ -128,7 +130,6 @@
       'sources': [
         'public/interfaces/device.mojom',
         'public/interfaces/device_manager.mojom',
-        'public/interfaces/permission_provider.mojom',
       ],
       'includes': [
         '../../mojo/mojom_bindings_generator.gypi',

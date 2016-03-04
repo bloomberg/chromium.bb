@@ -23,6 +23,7 @@
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mojo/fake_permission_provider.h"
+#include "device/usb/mojo/type_converters.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -168,11 +169,11 @@ class USBDeviceImplTest : public testing::Test {
         new MockUsbDevice(vendor_id, product_id, manufacturer, product, serial);
     mock_handle_ = new MockUsbDeviceHandle(mock_device_.get());
 
-    PermissionProviderPtr permission_provider;
-    permission_provider_.Bind(mojo::GetProxy(&permission_provider));
     DevicePtr proxy;
-    new DeviceImpl(mock_device_, std::move(permission_provider),
-                   mojo::GetProxy(&proxy));
+    new DeviceImpl(
+        mock_device_,
+        DeviceInfo::From(static_cast<const UsbDevice&>(*mock_device_)),
+        permission_provider_.GetWeakPtr(), mojo::GetProxy(&proxy));
 
     // Set up mock handle calls to respond based on mock device configs
     // established by the test.

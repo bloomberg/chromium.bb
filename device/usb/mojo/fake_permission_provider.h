@@ -7,10 +7,8 @@
 
 #include <stdint.h>
 
-#include "device/usb/public/interfaces/permission_provider.mojom.h"
-#include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "base/memory/weak_ptr.h"
+#include "device/usb/mojo/permission_provider.h"
 
 namespace device {
 namespace usb {
@@ -20,22 +18,16 @@ class FakePermissionProvider : public PermissionProvider {
   FakePermissionProvider();
   ~FakePermissionProvider() override;
 
-  void HasDevicePermission(
-      mojo::Array<DeviceInfoPtr> requested_devices,
-      const HasDevicePermissionCallback& callback) override;
-  void HasConfigurationPermission(
-      uint8_t requested_configuration,
-      device::usb::DeviceInfoPtr device,
-      const HasInterfacePermissionCallback& callback) override;
-  void HasInterfacePermission(
-      uint8_t requested_interface,
-      uint8_t configuration_value,
-      device::usb::DeviceInfoPtr device,
-      const HasInterfacePermissionCallback& callback) override;
-  void Bind(mojo::InterfaceRequest<PermissionProvider> request) override;
+  base::WeakPtr<PermissionProvider> GetWeakPtr();
+  bool HasDevicePermission(const DeviceInfo& device_info) const override;
+  bool HasConfigurationPermission(uint8_t requested_configuration,
+                                  const DeviceInfo& device_info) const override;
+  bool HasInterfacePermission(uint8_t requested_interface,
+                              uint8_t configuration_value,
+                              const DeviceInfo& device_info) const override;
 
  private:
-  mojo::BindingSet<PermissionProvider> bindings_;
+  base::WeakPtrFactory<PermissionProvider> weak_factory_;
 };
 
 }  // namespace usb

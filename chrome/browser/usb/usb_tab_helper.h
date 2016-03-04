@@ -57,9 +57,8 @@ class UsbTabHelper : public content::WebContentsObserver,
   FrameUsbServices* GetFrameUsbService(
       content::RenderFrameHost* render_frame_host);
 
-  void GetPermissionProvider(
-      content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<device::usb::PermissionProvider> request);
+  base::WeakPtr<device::usb::PermissionProvider> GetPermissionProvider(
+      content::RenderFrameHost* render_frame_host);
 
 #if !defined(OS_ANDROID)
   void GetPermissionBubble(

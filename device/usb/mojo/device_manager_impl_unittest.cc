@@ -38,10 +38,8 @@ class USBDeviceManagerImplTest : public testing::Test {
 
  protected:
   DeviceManagerPtr ConnectToDeviceManager() {
-    PermissionProviderPtr permission_provider;
-    permission_provider_.Bind(mojo::GetProxy(&permission_provider));
     DeviceManagerPtr device_manager;
-    DeviceManagerImpl::Create(std::move(permission_provider),
+    DeviceManagerImpl::Create(permission_provider_.GetWeakPtr(),
                               mojo::GetProxy(&device_manager));
     return device_manager;
   }
