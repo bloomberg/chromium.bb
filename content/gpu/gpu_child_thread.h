@@ -41,7 +41,6 @@ namespace content {
 class GpuMemoryBufferFactory;
 class GpuProcessControlImpl;
 class GpuWatchdogThread;
-class MediaService;
 
 // The main thread of the GPU child process. There will only ever be one of
 // these per process. It does process initialization and shutdown. It forwards
@@ -152,8 +151,6 @@ class GpuChildThread : public ChildThreadImpl,
   gpu::SyncPointManager* sync_point_manager_;
 
   scoped_ptr<GpuChannelManager> gpu_channel_manager_;
-
-  scoped_ptr<MediaService> media_service_;
 
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;

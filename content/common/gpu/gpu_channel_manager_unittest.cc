@@ -36,13 +36,12 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
   params.preempts = false;
   params.allow_view_command_buffers = false;
   params.allow_real_time_streams = false;
-  IPC::ChannelHandle channel_handle =
-      channel_manager()->EstablishChannel(params);
-  EXPECT_NE("", channel_handle.name);
+  IPC::ChannelHandle handle = channel_manager()->EstablishChannel(params);
+  EXPECT_NE("", handle.name);
 
   GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
   ASSERT_TRUE(channel);
-  EXPECT_EQ(channel_handle.name, channel->channel_id());
+  EXPECT_EQ(handle.name, channel->channel_id());
 }
 
 TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {

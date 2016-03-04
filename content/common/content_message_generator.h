@@ -30,7 +30,7 @@
 #include "content/common/geofencing_messages.h"
 #include "content/common/gpu/gpu_host_messages.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/media/media_messages.h"
+#include "content/common/gpu/media_messages.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/manifest_manager_messages.h"

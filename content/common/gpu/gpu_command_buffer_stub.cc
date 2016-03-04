@@ -23,6 +23,9 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
 #include "content/common/gpu/image_transport_surface.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator.h"
+#include "content/common/gpu/media/gpu_video_encode_accelerator.h"
+#include "content/common/gpu/media_messages.h"
 #include "content/public/common/content_client.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -39,8 +42,6 @@
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_image.h"
-#include "ui/gl/gl_switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -307,6 +308,10 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterTransferBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyTransferBuffer,
                         OnDestroyTransferBuffer);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateVideoDecoder,
+                                    OnCreateVideoDecoder)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateVideoEncoder,
+                                    OnCreateVideoEncoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncToken,
                         OnSignalSyncToken)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalQuery,
@@ -328,6 +333,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
         base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodMs));
   }
 
+  DCHECK(handled);
   return handled;
 }
 
@@ -865,6 +871,41 @@ void GpuCommandBufferStub::ReportState() { command_buffer_->UpdateState(); }
 void GpuCommandBufferStub::PutChanged() {
   FastSetActiveURL(active_url_, active_url_hash_);
   scheduler_->PutChanged();
+}
+
+void GpuCommandBufferStub::OnCreateVideoDecoder(
+    const media::VideoDecodeAccelerator::Config& config,
+    int32_t decoder_route_id,
+    IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
+  GpuVideoDecodeAccelerator* decoder = new GpuVideoDecodeAccelerator(
+      decoder_route_id, this, channel_->io_task_runner());
+  bool succeeded = decoder->Initialize(config);
+  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(reply_message,
+                                                           succeeded);
+  Send(reply_message);
+  // decoder is registered as a DestructionObserver of this stub and will
+  // self-delete during destruction of this stub.
+}
+
+void GpuCommandBufferStub::OnCreateVideoEncoder(
+    media::VideoPixelFormat input_format,
+    const gfx::Size& input_visible_size,
+    media::VideoCodecProfile output_profile,
+    uint32_t initial_bitrate,
+    int32_t encoder_route_id,
+    IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoEncoder");
+  GpuVideoEncodeAccelerator* encoder =
+      new GpuVideoEncodeAccelerator(encoder_route_id, this);
+  bool succeeded = encoder->Initialize(input_format, input_visible_size,
+                                       output_profile, initial_bitrate);
+  GpuCommandBufferMsg_CreateVideoEncoder::WriteReplyParams(reply_message,
+                                                           succeeded);
+  Send(reply_message);
+
+  // encoder is registered as a DestructionObserver of this stub and will
+  // self-delete during destruction of this stub.
 }
 
 void GpuCommandBufferStub::PullTextureUpdates(

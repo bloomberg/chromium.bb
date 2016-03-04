@@ -201,6 +201,13 @@ IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32_t /* instance_id */)
 
+// Create and initialize a hardware jpeg decoder using the specified route_id.
+// Created decoders should be freed with AcceleratedJpegDecoderMsg_Destroy when
+// no longer needed.
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateJpegDecoder,
+                            int32_t /* route_id */,
+                            bool /* succeeded */)
+
 // Simple NOP message which can be used as fence to ensure all previous sent
 // messages have been received.
 IPC_SYNC_MESSAGE_CONTROL0_0(GpuChannelMsg_Nop)

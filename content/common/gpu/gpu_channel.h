@@ -57,6 +57,7 @@ namespace content {
 class GpuChannelManager;
 class GpuChannelMessageFilter;
 class GpuChannelMessageQueue;
+class GpuJpegDecodeAccelerator;
 class GpuWatchdog;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
@@ -86,8 +87,6 @@ class CONTENT_EXPORT GpuChannel
   // the returned handle and is responsible for closing it.
   virtual IPC::ChannelHandle Init(base::WaitableEvent* shutdown_event);
 
-  void SetUnhandledMessageListener(IPC::Listener* listener);
-
   // Get the GpuChannelManager that owns this channel.
   GpuChannelManager* gpu_channel_manager() const {
     return gpu_channel_manager_;
@@ -100,8 +99,6 @@ class CONTENT_EXPORT GpuChannel
   int client_id() const { return client_id_; }
 
   uint64_t client_tracing_id() const { return client_tracing_id_; }
-
-  base::WeakPtr<GpuChannel> AsWeakPtr();
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() const {
     return io_task_runner_;
@@ -150,12 +147,13 @@ class CONTENT_EXPORT GpuChannel
   void HandleUpdateValueState(unsigned int target,
                               const gpu::ValueState& state);
 
-  GpuChannelMessageFilter* filter() const { return filter_.get(); }
-
   // Visible for testing.
   const gpu::ValueStateMap* pending_valuebuffer_state() const {
     return pending_valuebuffer_state_.get();
   }
+
+  // Visible for testing.
+  GpuChannelMessageFilter* filter() const { return filter_.get(); }
 
   // Returns the global order number for the last processed IPC message.
   uint32_t GetProcessedOrderNum() const;
@@ -220,6 +218,7 @@ class CONTENT_EXPORT GpuChannel
       int32_t route_id,
       bool* succeeded);
   void OnDestroyCommandBuffer(int32_t route_id);
+  void OnCreateJpegDecoder(int32_t route_id, IPC::Message* reply_msg);
 
   bool CreateCommandBuffer(const gfx::GLSurfaceHandle& window,
                            const gfx::Size& size,
@@ -236,8 +235,6 @@ class CONTENT_EXPORT GpuChannel
   gpu::SyncPointManager* const sync_point_manager_;
 
   scoped_ptr<IPC::SyncChannel> channel_;
-
-  IPC::Listener* unhandled_message_listener_;
 
   // Uniquely identifies the channel within this GPU process.
   std::string channel_id_;
@@ -272,6 +269,8 @@ class CONTENT_EXPORT GpuChannel
   scoped_refptr<gpu::gles2::SubscriptionRefSet> subscription_ref_set_;
 
   scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
+
+  scoped_ptr<GpuJpegDecodeAccelerator> jpeg_decoder_;
 
   gpu::gles2::DisallowedFeatures disallowed_features_;
   GpuWatchdog* const watchdog_;

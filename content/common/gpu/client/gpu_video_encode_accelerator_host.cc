@@ -9,7 +9,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
-#include "content/common/gpu/media/media_messages.h"
+#include "content/common/gpu/media_messages.h"
 #include "media/base/video_frame.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -93,15 +93,10 @@ bool GpuVideoEncodeAcceleratorHost::Initialize(
   int32_t route_id = channel_->GenerateRouteID();
   channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
 
-  CreateVideoEncoderParams params;
-  params.command_buffer_route_id = impl_->route_id();
-  params.input_format = input_format;
-  params.input_visible_size = input_visible_size;
-  params.output_profile = output_profile;
-  params.initial_bitrate = initial_bitrate;
-  params.encoder_route_id = route_id;
   bool succeeded = false;
-  Send(new GpuCommandBufferMsg_CreateVideoEncoder(params, &succeeded));
+  Send(new GpuCommandBufferMsg_CreateVideoEncoder(
+      impl_->route_id(), input_format, input_visible_size, output_profile,
+      initial_bitrate, route_id, &succeeded));
   if (!succeeded) {
     DLOG(ERROR) << "Send(GpuCommandBufferMsg_CreateVideoEncoder()) failed";
     channel_->RemoveRoute(route_id);
