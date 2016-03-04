@@ -1306,4 +1306,26 @@ TEST_F(VisibleUnitsTest, startOfWord)
     EXPECT_EQ(PositionInFlatTree(space, 1), startOfWord(createVisiblePositionInFlatTree(*five, 1)).deepEquivalent());
 }
 
+TEST_F(VisibleUnitsTest, endsOfNodeAreVisuallyDistinctPositionsWithInvisibleChild)
+{
+    // Repro case of crbug.com/582247
+    const char* bodyContent = "<button> </button><script>document.designMode = 'on'</script>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    Node* button = document().querySelector("button", ASSERT_NO_EXCEPTION);
+    EXPECT_TRUE(endsOfNodeAreVisuallyDistinctPositions(button));
+}
+
+TEST_F(VisibleUnitsTest, endsOfNodeAreVisuallyDistinctPositionsWithEmptyLayoutChild)
+{
+    // Repro case of crbug.com/584030
+    const char* bodyContent = "<button><rt><script>document.designMode = 'on'</script></rt></button>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    Node* button = document().querySelector("button", ASSERT_NO_EXCEPTION);
+    EXPECT_TRUE(endsOfNodeAreVisuallyDistinctPositions(button));
+}
+
 } // namespace blink
