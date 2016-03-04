@@ -477,8 +477,7 @@ media::interfaces::AudioDecoderConfigPtr TypeConverter<
       static_cast<media::interfaces::ChannelLayout>(input.channel_layout());
   config->samples_per_second = input.samples_per_second();
   if (!input.extra_data().empty()) {
-    std::vector<uint8_t> extra_data = input.extra_data();
-    config->extra_data.Swap(&extra_data);
+    config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
   }
   config->seek_preroll_usec = input.seek_preroll().InMicroseconds();
   config->codec_delay = input.codec_delay();
@@ -518,7 +517,9 @@ media::interfaces::VideoDecoderConfigPtr TypeConverter<
   config->coded_size = Size::From(input.coded_size());
   config->visible_rect = Rect::From(input.visible_rect());
   config->natural_size = Size::From(input.natural_size());
-  config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
+  if (!input.extra_data().empty()) {
+    config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
+  }
   config->is_encrypted = input.is_encrypted();
   return config;
 }

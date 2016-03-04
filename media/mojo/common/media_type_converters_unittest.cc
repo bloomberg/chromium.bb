@@ -23,6 +23,10 @@ namespace media {
 
 namespace {
 
+static const gfx::Size kCodedSize(320, 240);
+static const gfx::Rect kVisibleRect(320, 240);
+static const gfx::Size kNaturalSize(320, 240);
+
 void CompareBytes(uint8_t* original_data, uint8_t* result_data, size_t length) {
   EXPECT_GT(length, 0u);
   EXPECT_EQ(memcmp(original_data, result_data, length), 0);
@@ -226,6 +230,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Normal) {
                     kExtraDataVector, false, base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
+  EXPECT_FALSE(ptr->extra_data.is_null());
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
   EXPECT_TRUE(result.Matches(config));
 }
@@ -236,6 +241,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_EmptyExtraData) {
                     EmptyExtraData(), false, base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
+  EXPECT_TRUE(ptr->extra_data.is_null());
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
   EXPECT_TRUE(result.Matches(config));
 }
@@ -248,7 +254,48 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Encrypted) {
                     base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
+  EXPECT_TRUE(ptr->is_encrypted);
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
+  EXPECT_TRUE(result.is_encrypted());
+  EXPECT_TRUE(result.Matches(config));
+}
+
+TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_Normal) {
+  const uint8_t kExtraData[] = "config extra data";
+  const std::vector<uint8_t> kExtraDataVector(
+      &kExtraData[0], &kExtraData[0] + arraysize(kExtraData));
+
+  VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+                            COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
+                            kNaturalSize, kExtraDataVector, false);
+  interfaces::VideoDecoderConfigPtr ptr(
+      interfaces::VideoDecoderConfig::From(config));
+  EXPECT_FALSE(ptr->extra_data.is_null());
+  VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
+  EXPECT_TRUE(result.Matches(config));
+}
+
+TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_EmptyExtraData) {
+  VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+                            COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
+                            kNaturalSize, EmptyExtraData(), false);
+  interfaces::VideoDecoderConfigPtr ptr(
+      interfaces::VideoDecoderConfig::From(config));
+  EXPECT_TRUE(ptr->extra_data.is_null());
+  VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
+  EXPECT_TRUE(result.Matches(config));
+}
+
+TEST(MediaTypeConvertersTest, ConvertVideoDecoderConfig_Encrypted) {
+  VideoDecoderConfig config(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+                            COLOR_SPACE_UNSPECIFIED, kCodedSize, kVisibleRect,
+                            kNaturalSize, EmptyExtraData(),
+                            true /* is_encrypted */);
+  interfaces::VideoDecoderConfigPtr ptr(
+      interfaces::VideoDecoderConfig::From(config));
+  EXPECT_TRUE(ptr->is_encrypted);
+  VideoDecoderConfig result(ptr.To<VideoDecoderConfig>());
+  EXPECT_TRUE(result.is_encrypted());
   EXPECT_TRUE(result.Matches(config));
 }
 
