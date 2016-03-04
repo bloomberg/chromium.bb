@@ -151,8 +151,6 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* gurmukhiFonts[] = { L"Nirmala UI", L"Raavi", 0 };
     static const UChar* hangulFonts[] = { L"Malgun Gothic", L"Gulim", 0 };
     static const UChar* hebrewFonts[] = { L"David", L"Segoe UI", 0 };
-    static const UChar* hiraganaFonts[] = { L"MS PGothic", L"Yu Gothic",
-        L"Microsoft YaHei", 0 };
     static const UChar* imperialAramaicFonts[] = { L"Segoe UI Historic", 0 };
     static const UChar* inscriptionalPahlaviFonts[] = { L"Segoe UI Historic",
         0 };
@@ -160,10 +158,8 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         0 };
     static const UChar* javaneseFonts[] = { L"Javanese Text", 0 };
     static const UChar* kannadaFonts[] = { L"Tunga", L"Nirmala UI", 0 };
-    static const UChar* katakanaFonts[] = { L"MS PGothic", L"Yu Gothic",
-        L"Microsoft YaHei", 0 };
-    static const UChar* katakanaOrHiraganaFonts[] = { L"MS PGothic",
-        L"Yu Gothic", L"Microsoft YaHei", 0 };
+    static const UChar* katakanaOrHiraganaFonts[] = { L"Meiryo", L"Yu Gothic",
+        L"MS PGothic", L"Microsoft YaHei", 0 };
     static const UChar* kharoshthiFonts[] = { L"Segoe UI Historic", 0 };
     // Try Khmer OS before Vista fonts as it goes along better with Latin
     // and looks better/larger for the same size.
@@ -245,13 +241,13 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         { USCRIPT_GURMUKHI, gurmukhiFonts },
         { USCRIPT_HANGUL, hangulFonts },
         { USCRIPT_HEBREW, hebrewFonts },
-        { USCRIPT_HIRAGANA, hiraganaFonts },
+        { USCRIPT_HIRAGANA, katakanaOrHiraganaFonts },
         { USCRIPT_IMPERIAL_ARAMAIC, imperialAramaicFonts },
         { USCRIPT_INSCRIPTIONAL_PAHLAVI, inscriptionalPahlaviFonts },
         { USCRIPT_INSCRIPTIONAL_PARTHIAN, inscriptionalParthianFonts },
         { USCRIPT_JAVANESE, javaneseFonts },
         { USCRIPT_KANNADA, kannadaFonts },
-        { USCRIPT_KATAKANA, katakanaFonts },
+        { USCRIPT_KATAKANA, katakanaOrHiraganaFonts },
         { USCRIPT_KATAKANA_OR_HIRAGANA, katakanaOrHiraganaFonts },
         { USCRIPT_KHAROSHTHI, kharoshthiFonts },
         { USCRIPT_KHMER, khmerFonts },
