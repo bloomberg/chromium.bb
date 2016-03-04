@@ -516,10 +516,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   scoped_refptr<VideoFrame> wrapping_frame(new VideoFrame(
       frame->format(), frame->storage_type(), frame->coded_size(), visible_rect,
       natural_size, frame->timestamp()));
-  if (frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM)) {
-    wrapping_frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM,
-                                          true);
-  }
+
+  // Copy all metadata to the wrapped frame.
+  wrapping_frame->metadata()->MergeMetadataFrom(frame->metadata());
 
   for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
     wrapping_frame->strides_[i] = frame->stride(i);

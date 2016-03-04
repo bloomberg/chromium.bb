@@ -131,6 +131,9 @@ class MEDIA_EXPORT VideoFrameMetadata {
   void MergeInternalValuesInto(base::DictionaryValue* out) const;
   void MergeInternalValuesFrom(const base::DictionaryValue& in);
 
+  // Merges internal values from |metadata_source|.
+  void MergeMetadataFrom(const VideoFrameMetadata* metadata_source);
+
  private:
   const base::BinaryValue* GetBinaryValue(Key key) const;
 

@@ -145,6 +145,11 @@ void VideoFrameMetadata::MergeInternalValuesFrom(
   dictionary_.MergeDictionary(&in);
 }
 
+void VideoFrameMetadata::MergeMetadataFrom(
+    const VideoFrameMetadata* metadata_source) {
+  dictionary_.MergeDictionary(&metadata_source->dictionary_);
+}
+
 const base::BinaryValue* VideoFrameMetadata::GetBinaryValue(Key key) const {
   const base::Value* internal_value = nullptr;
   if (dictionary_.GetWithoutPathExpansion(ToInternalKey(key),

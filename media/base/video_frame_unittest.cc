@@ -229,6 +229,8 @@ static void FrameNoLongerNeededCallback(
 TEST(VideoFrame, WrapVideoFrame) {
   const int kWidth = 4;
   const int kHeight = 4;
+  const base::TimeDelta kFrameDuration = base::TimeDelta::FromMicroseconds(42);
+
   scoped_refptr<media::VideoFrame> frame;
   bool done_callback_was_run = false;
   {
@@ -238,11 +240,13 @@ TEST(VideoFrame, WrapVideoFrame) {
 
     gfx::Rect visible_rect(1, 1, 1, 1);
     gfx::Size natural_size = visible_rect.size();
-    frame = media::VideoFrame::WrapVideoFrame(
-        wrapped_frame, visible_rect, natural_size);
-    frame->AddDestructionObserver(
-        base::Bind(&FrameNoLongerNeededCallback, wrapped_frame,
-                   &done_callback_was_run));
+    wrapped_frame->metadata()->SetTimeDelta(
+        media::VideoFrameMetadata::FRAME_DURATION, kFrameDuration);
+    frame = media::VideoFrame::WrapVideoFrame(wrapped_frame, visible_rect,
+                                              natural_size);
+    frame->AddDestructionObserver(base::Bind(
+        &FrameNoLongerNeededCallback, wrapped_frame, &done_callback_was_run));
+
     EXPECT_EQ(wrapped_frame->coded_size(), frame->coded_size());
     EXPECT_EQ(wrapped_frame->data(media::VideoFrame::kYPlane),
               frame->data(media::VideoFrame::kYPlane));
@@ -250,6 +254,20 @@ TEST(VideoFrame, WrapVideoFrame) {
     EXPECT_EQ(visible_rect, frame->visible_rect());
     EXPECT_NE(wrapped_frame->natural_size(), frame->natural_size());
     EXPECT_EQ(natural_size, frame->natural_size());
+
+    // Verify metadata was copied to the wrapped frame.
+    base::TimeDelta frame_duration;
+    ASSERT_TRUE(frame->metadata()->GetTimeDelta(
+        media::VideoFrameMetadata::FRAME_DURATION, &frame_duration));
+
+    EXPECT_EQ(frame_duration, kFrameDuration);
+
+    // Verify the metadata copy was a deep copy.
+    wrapped_frame->metadata()->Clear();
+    EXPECT_NE(
+        wrapped_frame->metadata()->HasKey(
+            media::VideoFrameMetadata::FRAME_DURATION),
+        frame->metadata()->HasKey(media::VideoFrameMetadata::FRAME_DURATION));
   }
 
   EXPECT_FALSE(done_callback_was_run);
