@@ -96,10 +96,8 @@ ToolbarActionsBarUnitTest::ToolbarActionsBarUnitTest(bool use_redesign)
 ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 
 void ToolbarActionsBarUnitTest::SetUp() {
-  if (use_redesign_) {
-    redesign_switch_.reset(new extensions::FeatureSwitch::ScopedOverride(
-        extensions::FeatureSwitch::extension_action_redesign(), true));
-  }
+  redesign_switch_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::extension_action_redesign(), use_redesign_));
 
   BrowserWithTestWindowTest::SetUp();
   // The toolbar typically displays extension icons, so create some extension

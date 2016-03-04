@@ -211,15 +211,14 @@ TEST_P(ExtensionActionIconFactoryTest, NoIcons) {
   ASSERT_FALSE(browser_action->default_icon());
   ASSERT_TRUE(browser_action->GetExplicitlySetIcon(0 /*tab id*/).IsEmpty());
 
-  gfx::ImageSkia favicon = GetFavicon();
-
   ExtensionActionIconFactory icon_factory(
       profile(), extension.get(), browser_action, this);
 
   gfx::Image icon = icon_factory.GetIcon(0);
 
   EXPECT_TRUE(ImageRepsAreEqual(
-      favicon.GetRepresentation(1.0f),
+      browser_action->GetDefaultIconImage().ToImageSkia()->GetRepresentation(
+          1.0f),
       icon.ToImageSkia()->GetRepresentation(1.0f)));
 }
 
@@ -253,11 +252,12 @@ TEST_P(ExtensionActionIconFactoryTest, AfterSetIcon) {
       set_icon.ToImageSkia()->GetRepresentation(1.0f),
       icon.ToImageSkia()->GetRepresentation(1.0f)));
 
-  // It should still return favicon for another tabs.
+  // It should still return the default icon for another tab.
   icon = icon_factory.GetIcon(1);
 
   EXPECT_TRUE(ImageRepsAreEqual(
-      GetFavicon().GetRepresentation(1.0f),
+      browser_action->GetDefaultIconImage().ToImageSkia()->GetRepresentation(
+          1.0f),
       icon.ToImageSkia()->GetRepresentation(1.0f)));
 }
 

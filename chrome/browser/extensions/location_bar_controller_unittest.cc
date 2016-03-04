@@ -40,6 +40,8 @@ class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     active_script_override_.reset(new FeatureSwitch::ScopedOverride(
         FeatureSwitch::scripts_require_action(), true));
+    extension_action_override_.reset(new FeatureSwitch::ScopedOverride(
+        FeatureSwitch::extension_action_redesign(), false));
 
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined OS_CHROMEOS
@@ -99,6 +101,9 @@ class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
   // Since we also test that we show page actions for pending script requests,
   // we need to enable that feature.
   scoped_ptr<FeatureSwitch::ScopedOverride> active_script_override_;
+
+  // This tests legacy page actions.
+  scoped_ptr<FeatureSwitch::ScopedOverride> extension_action_override_;
 };
 
 // Test that the location bar gets the proper current actions.

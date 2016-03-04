@@ -419,37 +419,26 @@ void ToolbarActionsModelUnitTest::SetMockActionsFactory(
 TEST_F(ToolbarActionsModelUnitTest, BasicToolbarActionsModelTest) {
   Init();
 
-  // Load an extension with no browser action.
-  scoped_refptr<const extensions::Extension> extension1 =
-      extensions::extension_action_test_util::CreateActionExtension(
-          "no_action", extensions::extension_action_test_util::NO_ACTION);
-  ASSERT_TRUE(AddExtension(extension1));
-
-  // This extension should not be in the model (has no browser action).
-  EXPECT_EQ(0u, observer()->inserted_count());
-  EXPECT_EQ(0u, num_toolbar_items());
-  EXPECT_EQ(std::string(), GetActionIdAtIndex(0u));
-
   // Load an extension with a browser action.
-  scoped_refptr<const extensions::Extension> extension2 =
+  scoped_refptr<const extensions::Extension> extension =
       extensions::extension_action_test_util::CreateActionExtension(
           "browser_action",
           extensions::extension_action_test_util::BROWSER_ACTION);
-  ASSERT_TRUE(AddExtension(extension2));
+  ASSERT_TRUE(AddExtension(extension));
 
   // We should now find our extension in the model.
   EXPECT_EQ(1u, observer()->inserted_count());
   EXPECT_EQ(1u, num_toolbar_items());
-  EXPECT_EQ(extension2->id(), GetActionIdAtIndex(0u));
+  EXPECT_EQ(extension->id(), GetActionIdAtIndex(0u));
 
   // Should be a no-op, but still fires the events.
-  toolbar_model()->MoveActionIcon(extension2->id(), 0);
+  toolbar_model()->MoveActionIcon(extension->id(), 0);
   EXPECT_EQ(1u, observer()->moved_count());
   EXPECT_EQ(1u, num_toolbar_items());
-  EXPECT_EQ(extension2->id(), GetActionIdAtIndex(0u));
+  EXPECT_EQ(extension->id(), GetActionIdAtIndex(0u));
 
   // Remove the extension and verify.
-  ASSERT_TRUE(RemoveExtension(extension2));
+  ASSERT_TRUE(RemoveExtension(extension));
   EXPECT_EQ(1u, observer()->removed_count());
   EXPECT_EQ(0u, num_toolbar_items());
   EXPECT_EQ(std::string(), GetActionIdAtIndex(0u));
@@ -910,7 +899,9 @@ TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarSizeAfterPrefChange) {
 
 // Test that, in the absence of the extension-action-redesign switch, the
 // model only contains extensions with browser actions and component actions.
-TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesNoSwitch) {
+TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesDisabledSwitch) {
+  extensions::FeatureSwitch::ScopedOverride enable_redesign(
+      extensions::FeatureSwitch::extension_action_redesign(), false);
   Init();
   ASSERT_TRUE(AddActionExtensions());
 
@@ -921,7 +912,7 @@ TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesNoSwitch) {
 // Test that, with the extension-action-redesign switch, the model contains
 // all types of extensions, except those which should not be displayed on the
 // toolbar (like component extensions).
-TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesSwitch) {
+TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesEnabledSwitch) {
   extensions::FeatureSwitch::ScopedOverride enable_redesign(
       extensions::FeatureSwitch::extension_action_redesign(), true);
   Init();
@@ -977,6 +968,8 @@ TEST_F(ToolbarActionsModelUnitTest, TestToolbarExtensionTypesSwitch) {
 // Test that hiding actions on the toolbar results in their removal from the
 // model when the redesign switch is not enabled.
 TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarActionsVisibilityNoSwitch) {
+  extensions::FeatureSwitch::ScopedOverride enable_redesign(
+      extensions::FeatureSwitch::extension_action_redesign(), false);
   Init();
 
   extensions::ExtensionActionAPI* action_api =

@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -288,6 +289,9 @@ TEST_F(ExtensionInstalledBubbleControllerTest,
 // Test the layout of a bubble for an unpacked extension (which is not syncable)
 // and verify that the page action preview is enabled.
 TEST_F(ExtensionInstalledBubbleControllerTest, BubbleLayoutPageActionUnpacked) {
+  // Tests legacy behavior.
+  extensions::FeatureSwitch::ScopedOverride extension_action_override(
+      extensions::FeatureSwitch::extension_action_redesign(), false);
   // Page actions need a web contents (for the location bar to not break).
   AddWebContents();
 

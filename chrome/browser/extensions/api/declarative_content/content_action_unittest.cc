@@ -21,6 +21,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/value_builder.h"
 #include "ipc/ipc_message_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -98,6 +99,9 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
 }
 
 TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
+  // Tests legacy behavior.
+  FeatureSwitch::ScopedOverride action_redesign_override(
+      FeatureSwitch::extension_action_redesign(), false);
   TestExtensionEnvironment env;
 
   const Extension* extension = env.MakeExtension(base::DictionaryValue());

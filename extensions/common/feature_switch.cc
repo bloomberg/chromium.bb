@@ -52,7 +52,7 @@ class CommonSwitches {
                                      FeatureSwitch::DEFAULT_DISABLED),
         extension_action_redesign(switches::kExtensionActionRedesign,
                                   kExtensionActionRedesignExperiment,
-                                  FeatureSwitch::DEFAULT_DISABLED),
+                                  FeatureSwitch::DEFAULT_ENABLED),
         extension_action_redesign_override(switches::kExtensionActionRedesign,
                                            FeatureSwitch::DEFAULT_ENABLED),
         scripts_require_action(switches::kScriptsRequireAction,
