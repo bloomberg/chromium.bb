@@ -4,7 +4,6 @@
 
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/string_escape.h"
@@ -34,11 +33,6 @@ using content::PluginInstanceThrottler;
 using content::RenderThread;
 
 namespace plugins {
-
-// TODO(tommycli): After a size update, re-check the size after this delay, as
-// Blink can report incorrect sizes to plugins while the compositing state is
-// dirty. Chosen because it seems to work.
-const int kSizeChangeRecheckDelayMilliseconds = 100;
 
 void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
   DCHECK(!is_blocked_for_power_saver_poster_);
@@ -71,7 +65,6 @@ LoadablePluginPlaceholder::LoadablePluginPlaceholder(
       premade_throttler_(nullptr),
       allow_loading_(false),
       finished_loading_(false),
-      in_size_recheck_(false),
       heuristic_run_before_(premade_throttler_ != nullptr),
       weak_factory_(this) {}
 
@@ -190,25 +183,48 @@ v8::Local<v8::Object> LoadablePluginPlaceholder::GetV8ScriptableObject(
 void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
     const gfx::Rect& unobscured_rect) {
   DCHECK(content::RenderThread::Get());
-  if (!power_saver_enabled_ || !finished_loading_)
+  if (!plugin() || !power_saver_enabled_ || !finished_loading_)
     return;
 
-  // Only update the unobscured rect during the recheck phase. Also early exit
-  // to prevent reentrancy issues.
-  if (in_size_recheck_) {
-    unobscured_rect_ = unobscured_rect;
+  if (unobscured_rect_ == unobscured_rect)
     return;
-  }
 
-  if (!size_update_timer_.IsRunning()) {
-    // TODO(tommycli): We have to post a delayed task to recheck the size, as
-    // Blink can report wrong sizes for partially obscured plugins while the
-    // compositing state is dirty. https://crbug.com/343769
-    size_update_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kSizeChangeRecheckDelayMilliseconds),
-        base::Bind(&LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle,
-                   weak_factory_.GetWeakPtr()));
+  unobscured_rect_ = unobscured_rect;
+
+  float zoom_factor = plugin()->container()->pageZoomFactor();
+  int width = roundf(unobscured_rect_.width() / zoom_factor);
+  int height = roundf(unobscured_rect_.height() / zoom_factor);
+
+  if (is_blocked_for_power_saver_poster_) {
+    // Adjust poster container padding and dimensions to center play button for
+    // plugins and plugin posters that have their top or left portions obscured.
+    int x = roundf(unobscured_rect_.x() / zoom_factor);
+    int y = roundf(unobscured_rect_.y() / zoom_factor);
+    std::string script = base::StringPrintf(
+        "window.resizePoster('%dpx', '%dpx', '%dpx', '%dpx')", x, y, width,
+        height);
+    plugin()->web_view()->mainFrame()->executeScript(
+        blink::WebScriptSource(base::UTF8ToUTF16(script)));
+
+    // On a size update check if we now qualify as a essential plugin.
+    url::Origin content_origin = url::Origin(GetPluginParams().url);
+    auto status = render_frame()->GetPeripheralContentStatus(
+        render_frame()->GetWebFrame()->top()->securityOrigin(), content_origin,
+        gfx::Size(width, height));
+    if (status != content::RenderFrame::CONTENT_STATUS_PERIPHERAL) {
+      MarkPluginEssential(
+          heuristic_run_before_
+              ? PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE
+              : PluginInstanceThrottler::UNTHROTTLE_METHOD_DO_NOT_RECORD);
+
+      if (!heuristic_run_before_ &&
+          status ==
+              content::RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG) {
+        render_frame()->WhitelistContentOrigin(content_origin);
+      }
+    }
+
+    heuristic_run_before_ = true;
   }
 }
 
@@ -325,61 +341,6 @@ bool LoadablePluginPlaceholder::LoadingBlocked() const {
   DCHECK(allow_loading_);
   return is_blocked_for_background_tab_ || is_blocked_for_power_saver_poster_ ||
          is_blocked_for_prerendering_;
-}
-
-void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
-  DCHECK(content::RenderThread::Get());
-  DCHECK(!in_size_recheck_);
-  DCHECK(finished_loading_);
-
-  base::AutoReset<bool> recheck_scope(&in_size_recheck_, true);
-
-  if (!plugin())
-    return;
-
-  gfx::Rect old_rect = unobscured_rect_;
-
-  // Re-check the size in case the reported size was incorrect.
-  plugin()->container()->reportGeometry();
-
-  if (old_rect == unobscured_rect_)
-    return;
-
-  float zoom_factor = plugin()->container()->pageZoomFactor();
-  int width = roundf(unobscured_rect_.width() / zoom_factor);
-  int height = roundf(unobscured_rect_.height() / zoom_factor);
-
-  if (is_blocked_for_power_saver_poster_) {
-    // Adjust poster container padding and dimensions to center play button for
-    // plugins and plugin posters that have their top or left portions obscured.
-    int x = roundf(unobscured_rect_.x() / zoom_factor);
-    int y = roundf(unobscured_rect_.y() / zoom_factor);
-    std::string script = base::StringPrintf(
-        "window.resizePoster('%dpx', '%dpx', '%dpx', '%dpx')", x, y, width,
-        height);
-    plugin()->web_view()->mainFrame()->executeScript(
-        blink::WebScriptSource(base::UTF8ToUTF16(script)));
-
-    // On a size update check if we now qualify as a essential plugin.
-    url::Origin content_origin = url::Origin(GetPluginParams().url);
-    auto status = render_frame()->GetPeripheralContentStatus(
-        render_frame()->GetWebFrame()->top()->securityOrigin(), content_origin,
-        gfx::Size(width, height));
-    if (status != content::RenderFrame::CONTENT_STATUS_PERIPHERAL) {
-      MarkPluginEssential(
-          heuristic_run_before_
-              ? PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE
-              : PluginInstanceThrottler::UNTHROTTLE_METHOD_DO_NOT_RECORD);
-
-      if (!heuristic_run_before_ &&
-          status ==
-              content::RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG) {
-        render_frame()->WhitelistContentOrigin(content_origin);
-      }
-    }
-
-    heuristic_run_before_ = true;
-  }
 }
 
 }  // namespace plugins
