@@ -1221,12 +1221,13 @@ void CookieMonster::DeleteCookie(const GURL& url,
   FindCookiesForHostAndDomain(url, options, &cookies);
   std::set<CanonicalCookie*> matching_cookies;
 
-  for (const auto& cookie : cookies) {
-    if (cookie->Name() != cookie_name)
+  for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
+       it != cookies.end(); ++it) {
+    if ((*it)->Name() != cookie_name)
       continue;
-    if (!cookie->IsOnPath(url.path()))
+    if (url.path().find((*it)->Path()))
       continue;
-    matching_cookies.insert(cookie);
+    matching_cookies.insert(*it);
   }
 
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {

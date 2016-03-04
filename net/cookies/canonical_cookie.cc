@@ -47,7 +47,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -350,14 +349,15 @@ bool CanonicalCookie::IsOnPath(const std::string& url_path) const {
   // was longer, the same length, or shorter than the length of the url path.
   // I think the approach below is simpler.
 
-  // Make sure the cookie path is a prefix of the url path.  If the url path is
-  // shorter than the cookie path, then the cookie path can't be a prefix.
-  if (!base::StartsWith(url_path, path_, base::CompareCase::SENSITIVE))
+  // Make sure the cookie path is a prefix of the url path.  If the
+  // url path is shorter than the cookie path, then the cookie path
+  // can't be a prefix.
+  if (url_path.find(path_) != 0)
     return false;
 
-  // |url_path| is >= |path_|, and |path_| is a prefix of |url_path|.  If they
-  // are the are the same length then they are identical, otherwise need an
-  // additional check:
+  // Now we know that url_path is >= cookie_path, and that cookie_path
+  // is a prefix of url_path.  If they are the are the same length then
+  // they are identical, otherwise we need an additional check:
 
   // In order to avoid in correctly matching a cookie path of /blah
   // with a request path of '/blahblah/', we need to make sure that either
@@ -365,9 +365,8 @@ bool CanonicalCookie::IsOnPath(const std::string& url_path) const {
   // in the url path.  Since we know that the url path length is greater
   // than the cookie path length, it's safe to index one byte past.
   if (path_.length() != url_path.length() && path_.back() != '/' &&
-      url_path[path_.length()] != '/') {
+      url_path[path_.length()] != '/')
     return false;
-  }
 
   return true;
 }
