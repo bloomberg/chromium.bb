@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['../options_browsertest_base.js']);
 GEN('#include "chrome/browser/ui/webui/options/chromeos/' +
     'guest_mode_options_browsertest.h"');
 
 /**
  * TestFixture for guest mode options WebUI testing.
- * @extends {testing.Test}
+ * @extends {OptionsBrowsertestBase}
  * @constructor
  */
 function GuestModeOptionsUIBrowserTest() {}
 
 GuestModeOptionsUIBrowserTest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /** @override */
   browsePreload: 'chrome://settings-frame',
@@ -39,11 +40,8 @@ GuestModeOptionsUIBrowserTest.prototype = {
   },
 };
 
-/**
- * Test sections that should be hidden in guest mode.
- * TODO(michaelpg): Debug flakiness: crbug.com/591154.
- */
-TEST_F('GuestModeOptionsUIBrowserTest', 'DISABLED_testSections', function() {
+/** Test sections that should be hidden in guest mode. */
+TEST_F('GuestModeOptionsUIBrowserTest', 'testSections', function() {
   this.expectHidden($('startup-section'));
   this.expectHidden($('appearance-section'));
   this.expectHidden($('andorid-apps-section'));
@@ -52,11 +50,8 @@ TEST_F('GuestModeOptionsUIBrowserTest', 'DISABLED_testSections', function() {
   this.expectHidden($('reset-profile-settings-section'));
 });
 
-/**
- * Test controls that should be disabled in guest mode.
- * TODO(michaelpg): Debug flakiness: crbug.com/591154.
- */
-TEST_F('GuestModeOptionsUIBrowserTest', 'DISABLED_testControls', function() {
+/** Test controls that should be disabled in guest mode. */
+TEST_F('GuestModeOptionsUIBrowserTest', 'testControls', function() {
   // Appearance section.
   var setWallpaper = $('set-wallpaper');
   expectTrue(setWallpaper.disabled);
