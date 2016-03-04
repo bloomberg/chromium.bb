@@ -8,6 +8,7 @@
 import base64
 import json
 import logging
+import traceback
 
 from googleapiclient import discovery
 from oauth2client import gce
@@ -104,7 +105,9 @@ class PubSubMonitor(Monitor):
     try:
       self._initialize()
     except EnvironmentError:
-      logging.exception('PubSubMonitor._initialize failed')
+      # Log a warning, not error, to avoid false alarms in AppEngine apps.
+      logging.warning('PubSubMonitor._initialize failed:\n%s',
+                      traceback.format_exc())
       self._api = None
       self._update_init_metrics(http_metrics.STATUS_ERROR)
       return False
@@ -122,6 +125,9 @@ class PubSubMonitor(Monitor):
       use_instrumented_http (bool): whether to record monitoring metrics for
           HTTP requests made to the pubsub API.
     """
+    # Do not call self._check_initialize() in the constructor. This
+    # class is constructed during app initialization on AppEngine, and
+    # network calls are especially flaky during that time.
     self._api = None
     self._use_instrumented_http = use_instrumented_http
     if use_instrumented_http:
@@ -131,7 +137,6 @@ class PubSubMonitor(Monitor):
       self._http = httplib2.Http(timeout=self.TIMEOUT)
     self._credsfile = credsfile
     self._topic = 'projects/%s/topics/%s' % (project, topic)
-    self._check_initialize()
 
   def send(self, metric_pb):
     """Send a metric proto to the monitoring api.
