@@ -346,16 +346,19 @@ Buffer::Buffer(scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer)
       texture_target_(GL_TEXTURE_2D),
       query_type_(GL_COMMANDS_COMPLETED_CHROMIUM),
       use_zero_copy_(true),
+      is_overlay_candidate_(false),
       use_count_(0) {}
 
 Buffer::Buffer(scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
                unsigned texture_target,
                unsigned query_type,
-               bool use_zero_copy)
+               bool use_zero_copy,
+               bool is_overlay_candidate)
     : gpu_memory_buffer_(std::move(gpu_memory_buffer)),
       texture_target_(texture_target),
       query_type_(query_type),
       use_zero_copy_(use_zero_copy),
+      is_overlay_candidate_(is_overlay_candidate),
       use_count_(0) {}
 
 Buffer::~Buffer() {}
@@ -412,11 +415,9 @@ scoped_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
     // This binds the latest contents of this buffer to |texture|.
     gpu::SyncToken sync_token = texture->BindTexImage();
 
-    // TODO(reveman): Set to true when GMBs can be imported for SCANOUT.
-    bool is_overlay_candidate = false;
-    *texture_mailbox =
-        cc::TextureMailbox(texture->mailbox(), sync_token, texture_target_,
-                           gpu_memory_buffer_->GetSize(), is_overlay_candidate);
+    *texture_mailbox = cc::TextureMailbox(
+        texture->mailbox(), sync_token, texture_target_,
+        gpu_memory_buffer_->GetSize(), is_overlay_candidate_);
     // The contents texture will be released when no longer used by the
     // compositor.
     return cc::SingleReleaseCallback::Create(
@@ -440,7 +441,7 @@ scoped_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
                           base::Passed(&contents_texture_)));
   *texture_mailbox = cc::TextureMailbox(
       texture->mailbox(), sync_token, GL_TEXTURE_2D,
-      gpu_memory_buffer_->GetSize(), false /* is_overlay_candidate*/);
+      gpu_memory_buffer_->GetSize(), false /* is_overlay_candidate */);
   // The mailbox texture will be released when no longer used by the
   // compositor.
   return cc::SingleReleaseCallback::Create(

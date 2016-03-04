@@ -88,7 +88,8 @@ scoped_ptr<Buffer> SharedMemory::CreateBuffer(const gfx::Size& size,
                  // buffers as binding to texture is implemented using a call to
                  // glTexImage2D and the buffer can be reused as soon as that
                  // command has been issued.
-                 GL_COMMANDS_ISSUED_CHROMIUM, use_zero_copy));
+                 GL_COMMANDS_ISSUED_CHROMIUM, use_zero_copy,
+                 false /* is_overlay_candidate */));
 }
 
 }  // namespace exo

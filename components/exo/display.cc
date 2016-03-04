@@ -4,6 +4,7 @@
 
 #include "components/exo/display.h"
 
+#include <iterator>
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
@@ -74,10 +75,17 @@ scoped_ptr<Buffer> Display::CreateLinuxDMABufBuffer(base::ScopedFD fd,
   // Using zero-copy for optimal performance.
   bool use_zero_copy = true;
 
-  return make_scoped_ptr(
-      new Buffer(std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,
-                 // COMMANDS_COMPLETED queries are required by native pixmaps.
-                 GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy));
+  // List of overlay formats that are known to be supported.
+  // TODO(reveman): Determine this at runtime.
+  const gfx::BufferFormat kOverlayFormats[] = {gfx::BufferFormat::BGRX_8888};
+  bool is_overlay_candidate =
+      std::find(std::begin(kOverlayFormats), std::end(kOverlayFormats),
+                format) != std::end(kOverlayFormats);
+
+  return make_scoped_ptr(new Buffer(
+      std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,
+      // COMMANDS_COMPLETED queries are required by native pixmaps.
+      GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate));
 }
 #endif
 
