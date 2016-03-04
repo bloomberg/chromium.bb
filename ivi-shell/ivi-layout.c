@@ -1810,17 +1810,6 @@ ivi_layout_layer_set_opacity(struct ivi_layout_layer *ivilayer,
 	return IVI_SUCCEEDED;
 }
 
-wl_fixed_t
-ivi_layout_layer_get_opacity(struct ivi_layout_layer *ivilayer)
-{
-	if (ivilayer == NULL) {
-		weston_log("ivi_layout_layer_get_opacity: invalid argument\n");
-		return wl_fixed_from_double(0.0);
-	}
-
-	return ivilayer->prop.opacity;
-}
-
 static int32_t
 ivi_layout_layer_set_source_rectangle(struct ivi_layout_layer *ivilayer,
 				      int32_t x, int32_t y,
@@ -2745,7 +2734,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.get_layers_on_screen			= ivi_layout_get_layers_on_screen,
 	.layer_set_visibility			= ivi_layout_layer_set_visibility,
 	.layer_set_opacity			= ivi_layout_layer_set_opacity,
-	.layer_get_opacity			= ivi_layout_layer_get_opacity,
 	.layer_set_source_rectangle		= ivi_layout_layer_set_source_rectangle,
 	.layer_set_destination_rectangle	= ivi_layout_layer_set_destination_rectangle,
 	.layer_set_position			= ivi_layout_layer_set_position,

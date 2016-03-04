@@ -530,14 +530,6 @@ struct ivi_layout_interface {
 				     wl_fixed_t opacity);
 
 	/**
-	 * \brief Get the opacity of a ivi_layer.
-	 *
-	 * \return opacity if the method call was successful
-	 * \return wl_fixed_from_double(0.0) if the method call was failed
-	 */
-	wl_fixed_t (*layer_get_opacity)(struct ivi_layout_layer *ivilayer);
-
-	/**
 	 * \brief Set the area of a ivi_layer which should be used for the rendering.
 	 *
 	 * Only this part will be visible.

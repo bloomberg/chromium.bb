@@ -202,18 +202,16 @@ test_layer_opacity(struct test_context *ctx)
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
 
-	iassert(lyt->layer_get_opacity(ivilayer) == wl_fixed_from_double(1.0));
+	prop = lyt->get_properties_of_layer(ivilayer);
+	iassert(prop->opacity == wl_fixed_from_double(1.0));
 
 	iassert(lyt->layer_set_opacity(
 		ivilayer, wl_fixed_from_double(0.5)) == IVI_SUCCEEDED);
 
-	iassert(lyt->layer_get_opacity(ivilayer) == wl_fixed_from_double(1.0));
+	iassert(prop->opacity == wl_fixed_from_double(1.0));
 
 	lyt->commit_changes();
 
-	iassert(lyt->layer_get_opacity(ivilayer) == wl_fixed_from_double(0.5));
-
-	prop = lyt->get_properties_of_layer(ivilayer);
 	iassert(prop->opacity == wl_fixed_from_double(0.5));
 
 	lyt->layer_destroy(ivilayer);
@@ -430,6 +428,7 @@ test_layer_bad_opacity(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 	struct ivi_layout_layer *ivilayer;
+	const struct ivi_layout_layer_properties *prop;
 
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 	iassert(ivilayer != NULL);
@@ -445,21 +444,20 @@ test_layer_bad_opacity(struct test_context *ctx)
 
 	lyt->commit_changes();
 
-	iassert(lyt->layer_get_opacity(ivilayer) == wl_fixed_from_double(0.3));
+	prop = lyt->get_properties_of_layer(ivilayer);
+	iassert(prop->opacity == wl_fixed_from_double(0.3));
 
 	iassert(lyt->layer_set_opacity(
 		ivilayer, wl_fixed_from_double(1.1)) == IVI_FAILED);
 
 	lyt->commit_changes();
 
-	iassert(lyt->layer_get_opacity(ivilayer) == wl_fixed_from_double(0.3));
+	iassert(prop->opacity == wl_fixed_from_double(0.3));
 
 	iassert(lyt->layer_set_opacity(
 		NULL, wl_fixed_from_double(0.5)) == IVI_FAILED);
 
 	lyt->commit_changes();
-
-	iassert(lyt->layer_get_opacity(NULL) == wl_fixed_from_double(0.0));
 
 	lyt->layer_destroy(ivilayer);
 }

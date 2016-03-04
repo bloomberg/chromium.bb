@@ -831,7 +831,7 @@ ivi_layout_transition_fade_layer(
 		data = transition->private_data;
 
 		/* FIXME */
-		fixed_opacity = ivi_layout_layer_get_opacity(layer);
+		fixed_opacity = layer->prop.opacity;
 		now_opacity = wl_fixed_to_double(fixed_opacity);
 		remain = 0.0;
 

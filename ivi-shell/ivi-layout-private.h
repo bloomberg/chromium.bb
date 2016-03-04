@@ -199,8 +199,6 @@ ivi_layout_get_surface_from_id(uint32_t id_surface);
 int32_t
 ivi_layout_layer_set_opacity(struct ivi_layout_layer *ivilayer,
 			     wl_fixed_t opacity);
-wl_fixed_t
-ivi_layout_layer_get_opacity(struct ivi_layout_layer *ivilayer);
 int32_t
 ivi_layout_layer_set_visibility(struct ivi_layout_layer *ivilayer,
 				bool newVisibility);
