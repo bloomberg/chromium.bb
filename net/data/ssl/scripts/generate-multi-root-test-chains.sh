@@ -208,53 +208,20 @@ cp out/D.pem ../certificates/multi-root-D-by-D.pem
 cp out/E.pem ../certificates/multi-root-E-by-E.pem
 
 echo "Generating CRLSets"
-# Block D and E by SPKI; invalidates all paths.
-python crlsetutil.py -o ../certificates/multi-root-crlset-D-and-E.raw \
-<<CRLSETDOCBLOCK
-{
-  "BlockedBySPKI": [
-    "out/D.pem",
-    "out/E.pem"
-  ]
-}
-CRLSETDOCBLOCK
-
-# Block E by SPKI.
-python crlsetutil.py -o ../certificates/multi-root-crlset-E.raw \
-<<CRLSETDOCBLOCK
-{
-  "BlockedBySPKI": [
-    "out/E.pem"
-  ]
-}
-CRLSETDOCBLOCK
-
-# Block C-by-D (serial number 0x1000) and F-by-E (serial number 0x1001) by
-# way of serial number.
-python crlsetutil.py -o ../certificates/multi-root-crlset-CD-and-FE.raw \
-<<CRLSETDOCBLOCK
+# Block C-by-E (serial number 0x1001) by way of serial number.
+python crlsetutil.py -o ../certificates/multi-root-crlset-C-by-E.raw \
+<<CRLSETBYSERIAL
 {
   "BlockedByHash": {
-    "out/D.pem": [4096],
     "out/E.pem": [4097]
   }
 }
-CRLSETDOCBLOCK
+CRLSETBYSERIAL
 
-# Block C (all versions) by way of SPKI
-python crlsetutil.py -o ../certificates/multi-root-crlset-C.raw \
-<<CRLSETDOCBLOCK
+# Block F (all versions) by way of SPKI
+python crlsetutil.py -o ../certificates/multi-root-crlset-F.raw \
+<<CRLSETBYSPKI
 {
-  "BlockedBySPKI": [ "out/C.pem" ]
+  "BlockedBySPKI": [ "out/F.pem" ]
 }
-CRLSETDOCBLOCK
-
-# Block an unrelated/unissued serial (0x0FFF) to enable all paths.
-python crlsetutil.py -o ../certificates/multi-root-crlset-unrelated.raw \
-<<CRLSETDOCBLOCK
-{
-  "BlockedByHash": {
-    "out/E.pem": [4095]
-  }
-}
-CRLSETDOCBLOCK
+CRLSETBYSPKI
