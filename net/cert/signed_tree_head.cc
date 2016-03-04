@@ -6,8 +6,6 @@
 
 #include <string.h>
 
-#include <iostream>
-
 #include "base/strings/string_number_conversions.h"
 
 namespace net {
@@ -31,16 +29,17 @@ SignedTreeHead::SignedTreeHead(Version version,
 
 SignedTreeHead::~SignedTreeHead() {}
 
-void PrintTo(const SignedTreeHead& sth, std::ostream* os) {
-  (*os) << "{\n"
-        << "\t\"version\": " << sth.version << ",\n"
-        << "\t\"timestamp\": " << sth.timestamp << ",\n"
-        << "\t\"tree_size\": " << sth.tree_size << ",\n"
-        << "\t\"sha256_root_hash\": \""
-        << base::HexEncode(sth.sha256_root_hash, kSthRootHashLength)
-        << "\",\n\t\"log_id\": \""
-        << base::HexEncode(sth.log_id.data(), sth.log_id.size()) << "\"\n"
-        << "}";
+std::ostream& operator<<(std::ostream& stream, const SignedTreeHead& sth) {
+  return stream << "{\n"
+                << "\t\"version\": " << sth.version << ",\n"
+                << "\t\"timestamp\": " << sth.timestamp << ",\n"
+                << "\t\"tree_size\": " << sth.tree_size << ",\n"
+                << "\t\"sha256_root_hash\": \""
+                << base::HexEncode(sth.sha256_root_hash, kSthRootHashLength)
+                << "\",\n\t\"log_id\": \""
+                << base::HexEncode(sth.log_id.data(), sth.log_id.size())
+                << "\"\n"
+                << "}";
 }
 
 }  // namespace ct
