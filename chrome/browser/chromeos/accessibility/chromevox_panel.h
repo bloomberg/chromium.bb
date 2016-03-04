@@ -34,6 +34,7 @@ class ChromeVoxPanel : public views::WidgetDelegate,
   void EnterFullscreen();
   void ExitFullscreen();
   void DisableSpokenFeedback();
+  void Focus();
 
   // WidgetDelegate overrides.
   const views::Widget* GetWidget() const override;

@@ -554,6 +554,9 @@ Background.prototype = {
         this.startExcursion();
         (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
         return false;
+      case 'toggleSearchWidget':
+        (new PanelCommand(PanelCommandType.SEARCH)).send();
+        return false;
       case 'showKbExplorerPage':
         var explorerPage = {url: 'chromevox/background/kbexplorer.html'};
         chrome.tabs.create(explorerPage);
@@ -928,12 +931,23 @@ Background.prototype = {
    */
   restoreCurrentRange_: function() {
     if (this.savedRange_) {
-      var containingWebView = this.savedRange_.start.node;
+      var node = this.savedRange_.start.node;
+      var containingWebView = node;
       while (containingWebView && containingWebView.role != RoleType.webView)
         containingWebView = containingWebView.parent;
-      if (containingWebView)
-        containingWebView.focus();
 
+      if (containingWebView) {
+        // Focusing the webView causes a focus change event which steals focus
+        // away from the saved range.
+        var saved = this.savedRange_;
+        var setSavedRange = function(e) {
+          if (e.target.root == saved.start.node.root)
+            this.navigateToRange_(saved);
+          node.root.removeEventListener(EventType.focus, setSavedRange, true);
+        }.bind(this);
+        node.root.addEventListener(EventType.focus, setSavedRange, true);
+        containingWebView.focus();
+      }
       this.navigateToRange_(this.savedRange_);
       this.savedRange_ = null;
     }
@@ -952,6 +966,14 @@ Background.prototype = {
   endExcursion: function() {
     this.inExcursion_ = false;
     this.restoreCurrentRange_();
+  },
+
+  /**
+   * Move ChromeVox back to the last saved range.
+   */
+  saveExcursion: function() {
+    this.savedRange_ =
+        new cursors.Range(this.currentRange_.start, this.currentRange_.end);
   },
 };
 

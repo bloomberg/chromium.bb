@@ -75,7 +75,12 @@ Msgs.addTranslatedMessagesToDom = function(root) {
     if (!msgid) {
       throw new Error('Element has no msgid attribute: ' + elts[i]);
     }
-    elts[i].textContent = this.getMsg(msgid);
+    var val = this.getMsg(msgid);
+    if (elts[i].tagName == 'INPUT') {
+      elts[i].setAttribute('placeholder', val);
+    } else {
+      elts[i].textContent = val;
+    }
     elts[i].classList.add('i18n-processed');
   }
 };

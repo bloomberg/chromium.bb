@@ -8,6 +8,7 @@
 
 goog.provide('Panel');
 
+goog.require('ISearchUI');
 goog.require('Msgs');
 goog.require('PanelCommand');
 goog.require('PanelMenu');
@@ -160,6 +161,9 @@ Panel.exec = function(command) {
     case PanelCommandType.OPEN_MENUS:
       Panel.onOpenMenus();
       break;
+    case PanelCommandType.SEARCH:
+      Panel.onSearch();
+      break;
   }
 };
 
@@ -298,6 +302,16 @@ Panel.onOpenMenus = function(opt_event) {
 
   // Activate the first menu.
   Panel.activateMenu(Panel.menus_[0]);
+};
+
+/** Open incremental search. */
+Panel.onSearch = function() {
+  Panel.clearMenus();
+  Panel.pendingCallback_ = null;
+
+  window.location = '#focus';
+
+  ISearchUI.get($('search'));
 };
 
 /**

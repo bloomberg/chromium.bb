@@ -15,10 +15,25 @@ GEN_INCLUDE(['chromevox_e2e_test_base.js']);
  */
 function ChromeVoxNextE2ETest() {
   ChromeVoxE2ETest.call(this);
+
+  if (this.runtimeDeps.length > 0) {
+    chrome.extension.getViews().forEach(function(w) {
+      this.runtimeDeps.forEach(function(dep) {
+        if (w[dep])
+          window[dep] = w[dep];
+      }.bind(this));
+    }.bind(this));
+  }
 }
 
 ChromeVoxNextE2ETest.prototype = {
   __proto__: ChromeVoxE2ETest.prototype,
+
+  /**
+   * Dependencies defined on a background window other than this one.
+   * @type {!Array<string>}
+   */
+  runtimeDeps: [],
 
   /**
    * Gets the desktop from the automation API and Launches a new tab with

@@ -26,6 +26,7 @@ const int kPanelHeight = 35;
 const char kChromeVoxPanelRelativeUrl[] = "/cvox2/background/panel.html";
 const char kFullscreenURLFragment[] = "fullscreen";
 const char kDisableSpokenFeedbackURLFragment[] = "close";
+const char kFocusURLFragment[] = "focus";
 
 }  // namespace
 
@@ -50,6 +51,8 @@ class ChromeVoxPanelWebContentsObserver : public content::WebContentsObserver {
       panel_->DisableSpokenFeedback();
     else if (fragment == kFullscreenURLFragment)
       panel_->EnterFullscreen();
+    else if (fragment == kFocusURLFragment)
+      panel_->Focus();
     else
       panel_->ExitFullscreen();
   }
@@ -112,10 +115,8 @@ void ChromeVoxPanel::DidFirstVisuallyNonEmptyPaint() {
 }
 
 void ChromeVoxPanel::EnterFullscreen() {
+  Focus();
   fullscreen_ = true;
-  widget_->widget_delegate()->set_can_activate(true);
-  widget_->Activate();
-  web_view_->RequestFocus();
   UpdateWidgetBounds();
 }
 
@@ -128,6 +129,12 @@ void ChromeVoxPanel::ExitFullscreen() {
 void ChromeVoxPanel::DisableSpokenFeedback() {
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
       false, ui::A11Y_NOTIFICATION_NONE);
+}
+
+void ChromeVoxPanel::Focus() {
+  widget_->widget_delegate()->set_can_activate(true);
+  widget_->Activate();
+  web_view_->RequestFocus();
 }
 
 const views::Widget* ChromeVoxPanel::GetWidget() const {

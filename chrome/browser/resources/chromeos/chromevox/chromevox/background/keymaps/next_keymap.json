@@ -492,6 +492,15 @@
           "keyCode": [65, 73]
         }
       }
+    },
+    {
+      "command": "toggleSearchWidget",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [191]
+        }
+      }
     }
   ]
 }
