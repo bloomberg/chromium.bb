@@ -51,7 +51,6 @@
 namespace blink {
 
 class DocumentLoader;
-class HTMLFormElement;
 class Frame;
 class FrameLoaderClient;
 class ProgressTracker;
@@ -186,7 +185,7 @@ public:
     void restoreScrollPositionAndViewState();
 
     bool shouldContinueForNavigationPolicy(const ResourceRequest&, const SubstituteData&, DocumentLoader*, ContentSecurityPolicyDisposition,
-        NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry, bool isClientRedirect, HTMLFormElement*);
+        NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry, bool isClientRedirect);
 
     DECLARE_TRACE();
 

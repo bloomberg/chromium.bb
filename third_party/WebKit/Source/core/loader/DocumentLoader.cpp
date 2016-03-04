@@ -347,7 +347,7 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
         cancelMainResourceLoad(ResourceError::cancelledError(requestURL));
         return;
     }
-    if (!frameLoader()->shouldContinueForNavigationPolicy(m_request, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem(), isClientRedirect(), nullptr)) {
+    if (!frameLoader()->shouldContinueForNavigationPolicy(m_request, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem(), isClientRedirect())) {
         cancelMainResourceLoad(ResourceError::cancelledError(requestURL));
         return;
     }

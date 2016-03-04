@@ -1336,7 +1336,7 @@ bool FrameLoader::shouldClose(bool isReload)
 
 bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, const SubstituteData& substituteData,
     DocumentLoader* loader, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy,
-    NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem, bool isClientRedirect, HTMLFormElement* form)
+    NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem, bool isClientRedirect)
 {
     // Don't ask if we are loading an empty URL.
     if (request.url().isEmpty() || substituteData.isValid())
@@ -1366,12 +1366,6 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
     if (policy == NavigationPolicyHandledByClient) {
         // Mark the frame as loading since the embedder is handling the navigation.
         m_progressTracker->progressStarted();
-
-        // If this is a form submit, dispatch that a form is being submitted
-        // since the embedder is handling the navigation.
-        if (form)
-            client()->dispatchWillSubmitForm(form);
-
         return false;
     }
     if (!LocalDOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::processingUserGesture())
@@ -1392,13 +1386,8 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     frameLoadRequest.resourceRequest().setRequestContext(determineRequestContextFromNavigationType(navigationType));
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
-    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr,
-        frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType,
-        navigationPolicy, type == FrameLoadTypeReplaceCurrentItem,
-        frameLoadRequest.clientRedirect() == ClientRedirect, frameLoadRequest.form())) {
+    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirect))
         return;
-    }
-
     if (!shouldClose(navigationType == NavigationTypeReload))
         return;
 
