@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -39,31 +39,6 @@
 namespace content {
 
 namespace {
-
-void RecordSnifferMetrics(bool sniffing_blocked,
-                          bool we_would_like_to_sniff,
-                          const std::string& mime_type) {
-  static base::HistogramBase* nosniff_usage(NULL);
-  if (!nosniff_usage)
-    nosniff_usage = base::BooleanHistogram::FactoryGet(
-        "nosniff.usage", base::HistogramBase::kUmaTargetedHistogramFlag);
-  nosniff_usage->AddBoolean(sniffing_blocked);
-
-  if (sniffing_blocked) {
-    static base::HistogramBase* nosniff_otherwise(NULL);
-    if (!nosniff_otherwise)
-      nosniff_otherwise = base::BooleanHistogram::FactoryGet(
-          "nosniff.otherwise", base::HistogramBase::kUmaTargetedHistogramFlag);
-    nosniff_otherwise->AddBoolean(we_would_like_to_sniff);
-
-    static base::HistogramBase* nosniff_empty_mime_type(NULL);
-    if (!nosniff_empty_mime_type)
-      nosniff_empty_mime_type = base::BooleanHistogram::FactoryGet(
-          "nosniff.empty_mime_type",
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-    nosniff_empty_mime_type->AddBoolean(mime_type.empty());
-  }
-}
 
 // Used to write into an existing IOBuffer at a given offset.
 class DependentIOBuffer : public net::WrappedIOBuffer {
@@ -259,8 +234,6 @@ bool MimeTypeResourceHandler::ShouldSniffContent() {
       base::LowerCaseEqualsASCII(content_type_options, "nosniff");
   bool we_would_like_to_sniff =
       net::ShouldSniffMimeType(request()->url(), mime_type);
-
-  RecordSnifferMetrics(sniffing_blocked, we_would_like_to_sniff, mime_type);
 
   if (!sniffing_blocked && we_would_like_to_sniff) {
     // We're going to look at the data before deciding what the content type
