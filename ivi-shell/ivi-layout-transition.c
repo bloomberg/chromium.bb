@@ -539,7 +539,7 @@ ivi_layout_transition_visibility_on(struct ivi_layout_surface *surface,
 				    uint32_t duration)
 {
 	struct ivi_layout_transition *transition;
-	bool is_visible = ivi_layout_surface_get_visibility(surface);
+	bool is_visible = surface->prop.visibility;
 	wl_fixed_t dest_alpha = ivi_layout_surface_get_opacity(surface);
 	struct store_alpha *user_data = NULL;
 	wl_fixed_t start_alpha = 0.0;

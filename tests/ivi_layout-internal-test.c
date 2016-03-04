@@ -68,14 +68,10 @@ static void
 test_surface_bad_visibility(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	bool visibility;
 
 	iassert(lyt->surface_set_visibility(NULL, true) == IVI_FAILED);
 
 	lyt->commit_changes();
-
-	visibility = lyt->surface_get_visibility(NULL);
-	iassert(visibility == false);
 }
 
 static void

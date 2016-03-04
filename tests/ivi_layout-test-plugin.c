@@ -356,7 +356,6 @@ RUNNER_TEST(surface_visibility)
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 	struct ivi_layout_surface *ivisurf;
 	int32_t ret;
-	bool visibility;
 	const struct ivi_layout_surface_properties *prop;
 
 	ivisurf = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
@@ -366,9 +365,6 @@ RUNNER_TEST(surface_visibility)
 	runner_assert(ret == IVI_SUCCEEDED);
 
 	lyt->commit_changes();
-
-	visibility = lyt->surface_get_visibility(ivisurf);
-	runner_assert(visibility == true);
 
 	prop = lyt->get_properties_of_surface(ivisurf);
 	runner_assert(prop->visibility == true);

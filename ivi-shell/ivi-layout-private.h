@@ -196,8 +196,6 @@ ivi_layout_surface_get_opacity(struct ivi_layout_surface *ivisurf);
 int32_t
 ivi_layout_surface_set_visibility(struct ivi_layout_surface *ivisurf,
 				  bool newVisibility);
-bool
-ivi_layout_surface_get_visibility(struct ivi_layout_surface *ivisurf);
 struct ivi_layout_surface *
 ivi_layout_get_surface_from_id(uint32_t id_surface);
 int32_t

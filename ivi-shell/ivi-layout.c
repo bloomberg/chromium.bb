@@ -2059,17 +2059,6 @@ ivi_layout_surface_set_visibility(struct ivi_layout_surface *ivisurf,
 	return IVI_SUCCEEDED;
 }
 
-bool
-ivi_layout_surface_get_visibility(struct ivi_layout_surface *ivisurf)
-{
-	if (ivisurf == NULL) {
-		weston_log("ivi_layout_surface_get_visibility: invalid argument\n");
-		return false;
-	}
-
-	return ivisurf->prop.visibility;
-}
-
 int32_t
 ivi_layout_surface_set_opacity(struct ivi_layout_surface *ivisurf,
 			       wl_fixed_t opacity)
@@ -2745,7 +2734,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.get_properties_of_surface		= ivi_layout_get_properties_of_surface,
 	.get_surfaces_on_layer			= ivi_layout_get_surfaces_on_layer,
 	.surface_set_visibility			= ivi_layout_surface_set_visibility,
-	.surface_get_visibility			= ivi_layout_surface_get_visibility,
 	.surface_set_opacity			= ivi_layout_surface_set_opacity,
 	.surface_get_opacity			= ivi_layout_surface_get_opacity,
 	.surface_set_source_rectangle		= ivi_layout_surface_set_source_rectangle,

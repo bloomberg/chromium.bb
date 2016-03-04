@@ -280,16 +280,6 @@ struct ivi_layout_interface {
 					  bool newVisibility);
 
 	/**
-	 * \brief Get the visibility of a surface.
-	 *
-	 * If a surface is not visible it will not be rendered.
-	 *
-	 * \return true if surface is visible
-	 * \return false if surface is invisible or the method call was failed
-	 */
-	bool (*surface_get_visibility)(struct ivi_layout_surface *ivisurf);
-
-	/**
 	 * \brief Set the opacity of a surface.
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
