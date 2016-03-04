@@ -42,8 +42,8 @@ public:
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         ASSERT(state->isAllocationAllowed());
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
-        NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->vectorBackingArena(gcInfoIndex));
-        return reinterpret_cast<T*>(heap->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
+        NormalPageArena* arena = static_cast<NormalPageArena*>(state->vectorBackingArena(gcInfoIndex));
+        return reinterpret_cast<T*>(arena->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
     }
     template <typename T>
     static T* allocateExpandedVectorBacking(size_t size)
@@ -51,8 +51,8 @@ public:
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         ASSERT(state->isAllocationAllowed());
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
-        NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->expandedVectorBackingHeap(gcInfoIndex));
-        return reinterpret_cast<T*>(heap->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
+        NormalPageArena* arena = static_cast<NormalPageArena*>(state->expandedVectorBackingArena(gcInfoIndex));
+        return reinterpret_cast<T*>(arena->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
     }
     static void freeVectorBacking(void*);
     static bool expandVectorBacking(void*, size_t);

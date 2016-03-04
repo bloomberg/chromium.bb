@@ -456,8 +456,8 @@ public:
         }
     }
 
-    // vectorBackingArena() returns a heap that the vector allocation should use.
-    // We have four vector arenas and want to choose the best heap here.
+    // vectorBackingArena() returns an arena that the vector allocation should use.
+    // We have four vector arenas and want to choose the best arena here.
     //
     // The goal is to improve the succession rate where expand and
     // promptlyFree happen at an allocation point. This is a key for reusing
@@ -469,15 +469,15 @@ public:
     // - A vector is likely to be promptly freed if the same type of vector
     //   has been frequently promptly freed in the past.
     // - Given the above, when allocating a new vector, look at the four vectors
-    //   that are placed immediately prior to the allocation point of each heap.
-    //   Choose the heap where the vector is least likely to be expanded
+    //   that are placed immediately prior to the allocation point of each arena.
+    //   Choose the arena where the vector is least likely to be expanded
     //   nor promptly freed.
     //
-    // To implement the heuristics, we add a arenaAge to each heap. The arenaAge
+    // To implement the heuristics, we add an arenaAge to each arena. The arenaAge
     // is updated if:
     //
-    // - a vector on the heap is expanded; or
-    // - a vector that meets the condition (*) is allocated on the heap
+    // - a vector on the arena is expanded; or
+    // - a vector that meets the condition (*) is allocated on the arena
     //
     //   (*) More than 33% of the same type of vectors have been promptly
     //       freed since the last GC.
@@ -498,7 +498,7 @@ public:
         ASSERT(isVectorArenaIndex(arenaIndex));
         return m_arenas[arenaIndex];
     }
-    BaseArena* expandedVectorBackingHeap(size_t gcInfoIndex);
+    BaseArena* expandedVectorBackingArena(size_t gcInfoIndex);
     static bool isVectorArenaIndex(int arenaIndex)
     {
         return BlinkGC::Vector1ArenaIndex <= arenaIndex && arenaIndex <= BlinkGC::Vector4ArenaIndex;

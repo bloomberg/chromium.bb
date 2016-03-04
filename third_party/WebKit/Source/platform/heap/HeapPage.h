@@ -125,7 +125,7 @@ const uint8_t reuseForbiddenZapValue = 0x2c;
 
 class CallbackStack;
 class FreePagePool;
-class NormalPageHeap;
+class NormalPageArena;
 class OrphanedPagePool;
 class PageMemory;
 class PageMemoryRegion;
@@ -492,7 +492,7 @@ public:
     }
 
 
-    NormalPageHeap* arenaForNormalPage();
+    NormalPageArena* arenaForNormalPage();
 
 private:
     HeapObjectHeader* findHeaderFromAddress(Address);
@@ -646,16 +646,17 @@ private:
     // All FreeListEntries in the nth list have size >= 2^n.
     FreeListEntry* m_freeLists[blinkPageSizeLog2];
 
-    friend class NormalPageHeap;
+    friend class NormalPageArena;
 };
 
 // Each thread has a number of thread arenas (e.g., Generic arenas,
 // typed arenas for Node, arenas for collection backings etc)
-// and BaseArena represents each thread heap.
+// and BaseArena represents each thread arena.
 //
-// BaseArena is a parent class of NormalPageHeap and LargeObjectHeap.
-// NormalPageHeap represents a heap that contains NormalPages
-// and LargeObjectHeap represents a heap that contains LargeObjectPages.
+// BaseArena is a parent class of NormalPageArena and LargeObjectArena.
+// NormalPageArena represents a part of a heap that contains NormalPages
+// and LargeObjectArena represents a part of a heap that contains
+// LargeObjectPages.
 class PLATFORM_EXPORT BaseArena {
     USING_FAST_MALLOC(BaseArena);
 public:
@@ -678,7 +679,7 @@ public:
     void prepareHeapForTermination();
     void prepareForSweep();
 #if defined(ADDRESS_SANITIZER)
-    void poisonHeap(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning);
+    void poisonArena(BlinkGC::ObjectsToPoison, BlinkGC::Poisoning);
 #endif
     Address lazySweep(size_t, size_t gcInfoIndex);
     void sweepUnsweptPage();
@@ -704,9 +705,9 @@ private:
     int m_index;
 };
 
-class PLATFORM_EXPORT NormalPageHeap final : public BaseArena {
+class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 public:
-    NormalPageHeap(ThreadState*, int);
+    NormalPageArena(ThreadState*, int);
     void addToFreeList(Address address, size_t size)
     {
         ASSERT(findPageFromAddress(address));
@@ -759,9 +760,9 @@ private:
     size_t m_promptlyFreedSize;
 };
 
-class LargeObjectHeap final : public BaseArena {
+class LargeObjectArena final : public BaseArena {
 public:
-    LargeObjectHeap(ThreadState*, int);
+    LargeObjectArena(ThreadState*, int);
     Address allocateLargeObjectPage(size_t, size_t gcInfoIndex);
     void freeLargeObjectPage(LargeObjectPage*);
 #if ENABLE(ASSERT)
@@ -872,7 +873,7 @@ void HeapObjectHeader::markDead()
     m_encoded |= headerDeadBitMask;
 }
 
-inline Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcInfoIndex)
+inline Address NormalPageArena::allocateObject(size_t allocationSize, size_t gcInfoIndex)
 {
     if (LIKELY(allocationSize <= m_remainingAllocationSize)) {
         Address headerAddress = m_currentAllocationPoint;

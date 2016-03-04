@@ -125,8 +125,8 @@ ThreadState::ThreadState()
     }
 
     for (int arenaIndex = 0; arenaIndex < BlinkGC::LargeObjectArenaIndex; arenaIndex++)
-        m_arenas[arenaIndex] = new NormalPageHeap(this, arenaIndex);
-    m_arenas[BlinkGC::LargeObjectArenaIndex] = new LargeObjectHeap(this, BlinkGC::LargeObjectArenaIndex);
+        m_arenas[arenaIndex] = new NormalPageArena(this, arenaIndex);
+    m_arenas[BlinkGC::LargeObjectArenaIndex] = new LargeObjectArena(this, BlinkGC::LargeObjectArenaIndex);
 
     m_likelyToBePromptlyFreed = adoptArrayPtr(new int[likelyToBePromptlyFreedArraySize]);
     clearArenaAges();
@@ -1047,7 +1047,7 @@ void ThreadState::poisonAllHeaps()
     poisonEagerArena(BlinkGC::ClearPoison);
     // ..along with poisoning all unmarked objects in the other arenas.
     for (int i = 1; i < BlinkGC::NumberOfArenas; i++)
-        m_arenas[i]->poisonHeap(BlinkGC::UnmarkedOnly, BlinkGC::SetPoison);
+        m_arenas[i]->poisonArena(BlinkGC::UnmarkedOnly, BlinkGC::SetPoison);
 #endif
 }
 
@@ -1055,7 +1055,7 @@ void ThreadState::poisonEagerArena(BlinkGC::Poisoning poisoning)
 {
     // TODO(Oilpan): enable the poisoning always.
 #if ENABLE(OILPAN)
-    m_arenas[BlinkGC::EagerSweepArenaIndex]->poisonHeap(BlinkGC::MarkedAndUnmarked, poisoning);
+    m_arenas[BlinkGC::EagerSweepArenaIndex]->poisonArena(BlinkGC::MarkedAndUnmarked, poisoning);
 #endif
 }
 #endif
@@ -1449,7 +1449,7 @@ int ThreadState::arenaIndexOfVectorArenaLeastRecentlyExpanded(int beginArenaInde
     return arenaIndexWithMinArenaAge;
 }
 
-BaseArena* ThreadState::expandedVectorBackingHeap(size_t gcInfoIndex)
+BaseArena* ThreadState::expandedVectorBackingArena(size_t gcInfoIndex)
 {
     ASSERT(checkThread());
     size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;

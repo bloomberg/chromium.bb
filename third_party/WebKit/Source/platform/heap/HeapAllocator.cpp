@@ -24,9 +24,9 @@ void HeapAllocator::backingFree(void* address)
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     ASSERT(header->checkHeader());
-    NormalPageHeap* heap = static_cast<NormalPage*>(page)->arenaForNormalPage();
+    NormalPageArena* arena = static_cast<NormalPage*>(page)->arenaForNormalPage();
     state->promptlyFreed(header->gcInfoIndex());
-    heap->promptlyFreeObject(header);
+    arena->promptlyFreeObject(header);
 }
 
 void HeapAllocator::freeVectorBacking(void* address)
@@ -63,10 +63,10 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     ASSERT(header->checkHeader());
-    NormalPageHeap* heap = static_cast<NormalPage*>(page)->arenaForNormalPage();
-    bool succeed = heap->expandObject(header, newSize);
+    NormalPageArena* arena = static_cast<NormalPage*>(page)->arenaForNormalPage();
+    bool succeed = arena->expandObject(header, newSize);
     if (succeed)
-        state->allocationPointAdjusted(heap->arenaIndex());
+        state->allocationPointAdjusted(arena->arenaIndex());
     return succeed;
 }
 
@@ -106,16 +106,16 @@ bool HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     ASSERT(header->checkHeader());
-    NormalPageHeap* heap = static_cast<NormalPage*>(page)->arenaForNormalPage();
+    NormalPageArena* arena = static_cast<NormalPage*>(page)->arenaForNormalPage();
     // We shrink the object only if the shrinking will make a non-small
     // prompt-free block.
     // FIXME: Optimize the threshold size.
-    if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(HeapObjectHeader) + sizeof(void*) * 32 && !heap->isObjectAllocatedAtAllocationPoint(header))
+    if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(HeapObjectHeader) + sizeof(void*) * 32 && !arena->isObjectAllocatedAtAllocationPoint(header))
         return true;
 
-    bool succeededAtAllocationPoint = heap->shrinkObject(header, quantizedShrunkSize);
+    bool succeededAtAllocationPoint = arena->shrinkObject(header, quantizedShrunkSize);
     if (succeededAtAllocationPoint)
-        state->allocationPointAdjusted(heap->arenaIndex());
+        state->allocationPointAdjusted(arena->arenaIndex());
     return true;
 }
 

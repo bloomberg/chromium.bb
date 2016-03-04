@@ -489,8 +489,8 @@ inline Address Heap::allocateOnArenaIndex(ThreadState* state, size_t size, int a
 {
     ASSERT(state->isAllocationAllowed());
     ASSERT(arenaIndex != BlinkGC::LargeObjectArenaIndex);
-    NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->arena(arenaIndex));
-    return heap->allocateObject(allocationSizeFromSize(size), gcInfoIndex);
+    NormalPageArena* arena = static_cast<NormalPageArena*>(state->arena(arenaIndex));
+    return arena->allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
 
 template<typename T>
