@@ -1867,31 +1867,6 @@ ivi_layout_layer_set_destination_rectangle(struct ivi_layout_layer *ivilayer,
 }
 
 static int32_t
-ivi_layout_layer_set_dimension(struct ivi_layout_layer *ivilayer,
-			       int32_t dest_width, int32_t dest_height)
-{
-	struct ivi_layout_layer_properties *prop = NULL;
-
-	if (ivilayer == NULL) {
-		weston_log("ivi_layout_layer_set_dimension: invalid argument\n");
-		return IVI_FAILED;
-	}
-
-	prop = &ivilayer->pending.prop;
-
-	prop->dest_width  = dest_width;
-	prop->dest_height = dest_height;
-
-	if (ivilayer->prop.dest_width != dest_width ||
-	    ivilayer->prop.dest_height != dest_height)
-		ivilayer->event_mask |= IVI_NOTIFICATION_DIMENSION;
-	else
-		ivilayer->event_mask &= ~IVI_NOTIFICATION_DIMENSION;
-
-	return IVI_SUCCEEDED;
-}
-
-static int32_t
 ivi_layout_layer_set_orientation(struct ivi_layout_layer *ivilayer,
 				 enum wl_output_transform orientation)
 {
@@ -2579,7 +2554,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.layer_set_opacity			= ivi_layout_layer_set_opacity,
 	.layer_set_source_rectangle		= ivi_layout_layer_set_source_rectangle,
 	.layer_set_destination_rectangle	= ivi_layout_layer_set_destination_rectangle,
-	.layer_set_dimension			= ivi_layout_layer_set_dimension,
 	.layer_set_orientation			= ivi_layout_layer_set_orientation,
 	.layer_add_surface			= ivi_layout_layer_add_surface,
 	.layer_remove_surface			= ivi_layout_layer_remove_surface,
