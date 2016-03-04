@@ -303,8 +303,8 @@ cr.define('options', function() {
       }
 
       var pagesToSearch = this.getSearchablePages_();
-      for (var key in pagesToSearch) {
-        var page = pagesToSearch[key];
+      for (var i = 0; i < pagesToSearch.length; i++) {
+        var page = pagesToSearch[i];
 
         if (!active)
           page.visible = false;
@@ -391,8 +391,8 @@ cr.define('options', function() {
       this.removeSearchBubbles_();
 
       var pagesToSearch = this.getSearchablePages_();
-      for (var key in pagesToSearch) {
-        var page = pagesToSearch[key];
+      for (var i = 0; i < pagesToSearch.length; i++) {
+        var page = pagesToSearch[i];
         var elements = page.pageDiv.querySelectorAll('section');
         for (var i = 0, node; node = elements[i]; i++) {
           node.classList.add('search-hidden');
@@ -413,8 +413,8 @@ cr.define('options', function() {
 
       if (searchText.length) {
         // Search all top-level sections for anchored string matches.
-        for (var key in pagesToSearch) {
-          var page = pagesToSearch[key];
+        for (var i = 0; i < pagesToSearch.length; i++) {
+          var page = pagesToSearch[i];
           var elements =
               page.pageDiv.querySelectorAll('section');
           for (var i = 0, node; node = elements[i]; i++) {
@@ -435,8 +435,8 @@ cr.define('options', function() {
         // we need to make visible.
         var subPagesToSearch = this.getSearchableSubPages_();
         var control, node;
-        for (var key in subPagesToSearch) {
-          var page = subPagesToSearch[key];
+        for (var i = 0; i < subPagesToSearch.length; i++) {
+          var page = subPagesToSearch[i];
           if (this.highlightMatches_(regExp, page.pageDiv)) {
             this.revealAssociatedSections_(page);
 

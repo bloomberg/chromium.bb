@@ -65,6 +65,7 @@ cr.define('cr.ui', function() {
       }
 
       for (var index in unselected) {
+        index = +index;
         delete this.selectedIndexes_[index];
         // Mark the index as changed. If previously marked, then unmark,
         // since it just got reverted to the original state.

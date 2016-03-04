@@ -381,7 +381,8 @@ Polymer({
     if (!this.isAuthorCreditShown_(selectedItem))
       return '';
 
-    assert(selectedItem.dataset.defaultImageIndex < defaultImages.length);
+    assert(selectedItem.dataset.defaultImageIndex !== null &&
+           selectedItem.dataset.defaultImageIndex < defaultImages.length);
     return defaultImages[selectedItem.dataset.defaultImageIndex].author;
   },
 
@@ -396,7 +397,8 @@ Polymer({
     if (!this.isAuthorCreditShown_(selectedItem))
       return '';
 
-    assert(selectedItem.dataset.defaultImageIndex < defaultImages.length);
+    assert(selectedItem.dataset.defaultImageIndex !== null &&
+           selectedItem.dataset.defaultImageIndex < defaultImages.length);
     return defaultImages[selectedItem.dataset.defaultImageIndex].website;
   },
 });

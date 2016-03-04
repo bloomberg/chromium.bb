@@ -102,10 +102,10 @@ cr.define('options', function() {
     /**
      * Map from language code to spell check dictionary download status for that
      * language.
-     * @type {Array}
+     * @type {!Object}
      * @private
      */
-    spellcheckDictionaryDownloadStatus_: [],
+    spellcheckDictionaryDownloadStatus_: {},
 
     /**
      * Number of times a spell check dictionary download failed.

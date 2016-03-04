@@ -159,7 +159,6 @@
           '<(EXTERNS_DIR)/metrics_private.js',
           '../../../../../third_party/analytics/externs.js',
           '../../../externs/chrome_echo_private.js',
-          '../../../externs/chrome_wallpaper.js',
           '../../../externs/chrome_webstore_widget_private.js',
           '../../../externs/chrome_test.js',
           '../../../externs/connection.js',

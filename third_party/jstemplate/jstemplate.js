@@ -614,7 +614,7 @@ JstProcessor.prototype.jstSelect_ = function(context, template, select) {
         // A queue of calls to push.
         var queue = me.createArray_();
 
-        var instancesStart = instance || 0;
+        var instancesStart = /** @type {number} */(instance || 0);
         var i, I, clone;
         for (i = instancesStart, I = count - 1; i < I; ++i) {
           var node = domCloneNode(template);
@@ -637,7 +637,7 @@ JstProcessor.prototype.jstSelect_ = function(context, template, select) {
                    JsEvalContext.recycle, clone, null);
         me.push_(queue);
       } else if (instance < count) {
-        var v = value[instance];
+        var v = value[/** @type {number} */(instance)];
 
         jstSetInstance(template, value, instance);
         var clone = context.clone(v, instance, count);

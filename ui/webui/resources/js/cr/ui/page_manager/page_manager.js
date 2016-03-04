@@ -61,7 +61,8 @@ cr.define('cr.ui.pageManager', function() {
       this.handleScroll_();
 
       // Shake the dialog if the user clicks outside the dialog bounds.
-      var containers = document.querySelectorAll('body > .overlay');
+      var containers = /** @type {!NodeList<!HTMLElement>} */(
+          document.querySelectorAll('body > .overlay'));
       for (var i = 0; i < containers.length; i++) {
         var overlay = containers[i];
         cr.ui.overlay.setupOverlay(overlay);

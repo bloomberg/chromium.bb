@@ -13,7 +13,8 @@ cr.define('cr.ui.overlay', function() {
    * @return {HTMLElement} The overlay.
    */
   function getTopOverlay() {
-    var overlays = document.querySelectorAll('.overlay:not([hidden])');
+    var overlays = /** @type !NodeList<!HTMLElement> */(
+        document.querySelectorAll('.overlay:not([hidden])'));
     return overlays[overlays.length - 1];
   }
 
@@ -26,8 +27,8 @@ cr.define('cr.ui.overlay', function() {
    */
   function getDefaultButton(overlay) {
     function isHidden(node) { return node.hidden; }
-    var defaultButtons =
-        overlay.querySelectorAll('.page .button-strip > .default-button');
+    var defaultButtons = /** @type !NodeList<!HTMLElement> */(
+        overlay.querySelectorAll('.page .button-strip > .default-button'));
     for (var i = 0; i < defaultButtons.length; i++) {
       if (!findAncestor(defaultButtons[i], isHidden))
         return defaultButtons[i];

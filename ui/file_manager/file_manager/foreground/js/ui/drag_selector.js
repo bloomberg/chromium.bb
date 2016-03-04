@@ -177,7 +177,7 @@ DragSelector.prototype.onMouseMove_ = function(event) {
   this.target_.selectionModel_.beginChange();
   for (var name in selectionFlag) {
     var index = parseInt(name, 10);
-    var flag = selectionFlag[name];
+    var flag = selectionFlag[index];
     // The flag may be one of followings:
     // - IN_LAST_SELECTION | IN_CURRENT_SELECTION
     // - IN_LAST_SELECTION

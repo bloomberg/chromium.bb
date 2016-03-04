@@ -480,7 +480,8 @@ FileGrid.prototype.createSelectionController = function(sm) {
  */
 FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
   var urls = util.entriesToURLs(entries);
-  var boxes = this.querySelectorAll('.img-container');
+  var boxes = /** @type {!NodeList<!HTMLElement>} */(
+      this.querySelectorAll('.img-container'));
   for (var i = 0; i < boxes.length; i++) {
     var box = boxes[i];
     var listItem = this.getListItemAncestor(box);
