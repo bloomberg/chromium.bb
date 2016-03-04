@@ -29,15 +29,22 @@ AudioRendererMixerInput::AudioRendererMixerInput(
       mixer_(nullptr),
       callback_(nullptr),
       error_cb_(base::Bind(&AudioRendererMixerInput::OnRenderError,
-                           base::Unretained(this))) {}
+                           base::Unretained(this))) {
+  // Can be constructed on any thread, but sink operations should all occur
+  // on same thread.
+  thread_checker_.DetachFromThread();
+}
 
 AudioRendererMixerInput::~AudioRendererMixerInput() {
+  DCHECK(!started_);
   DCHECK(!mixer_);
 }
 
 void AudioRendererMixerInput::Initialize(
     const AudioParameters& params,
     AudioRendererSink::RenderCallback* callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!started_);
   DCHECK(!mixer_);
   DCHECK(callback);
 
@@ -46,6 +53,7 @@ void AudioRendererMixerInput::Initialize(
 }
 
 void AudioRendererMixerInput::Start() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!started_);
   DCHECK(!mixer_);
   DCHECK(callback_);  // Initialized.
@@ -68,6 +76,8 @@ void AudioRendererMixerInput::Start() {
 }
 
 void AudioRendererMixerInput::Stop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Stop() may be called at any time, if Pause() hasn't been called we need to
   // remove our mixer input before shutdown.
   Pause();
@@ -90,6 +100,8 @@ void AudioRendererMixerInput::Stop() {
 }
 
 void AudioRendererMixerInput::Play() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (playing_ || !mixer_)
     return;
 
@@ -98,6 +110,8 @@ void AudioRendererMixerInput::Play() {
 }
 
 void AudioRendererMixerInput::Pause() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!playing_ || !mixer_)
     return;
 
@@ -106,6 +120,8 @@ void AudioRendererMixerInput::Pause() {
 }
 
 bool AudioRendererMixerInput::SetVolume(double volume) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(volume_lock_);
   volume_ = volume;
   return true;
 }
@@ -118,6 +134,8 @@ void AudioRendererMixerInput::SwitchOutputDevice(
     const std::string& device_id,
     const url::Origin& security_origin,
     const SwitchOutputDeviceCB& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!mixer_) {
     if (pending_switch_callback_.is_null()) {
       pending_switch_callback_ = callback;
@@ -159,12 +177,16 @@ void AudioRendererMixerInput::SwitchOutputDevice(
 }
 
 AudioParameters AudioRendererMixerInput::GetOutputParameters() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (mixer_)
     return mixer_->GetOutputDevice()->GetOutputParameters();
   return get_hardware_params_cb_.Run(device_id_, security_origin_);
 }
 
 OutputDeviceStatus AudioRendererMixerInput::GetDeviceStatus() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (mixer_)
     return mixer_->GetOutputDevice()->GetDeviceStatus();
 
@@ -176,6 +198,11 @@ OutputDeviceStatus AudioRendererMixerInput::GetDeviceStatus() {
 
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
                                              base::TimeDelta buffer_delay) {
+  // No thread checker here. This method is called on a different thread as part
+  // of audio rendering. AudioRendererMixer has locks that protect us from
+  // things like attempting to ProvideInput while simultaneously removing
+  // ourselves from mixer inputs (see Pause()).
+
   // TODO(chcunningham): Delete this conversion and change ProvideInput to more
   // precisely describe delay as a count of frames delayed instead of TimeDelta.
   // See http://crbug.com/587522.
@@ -190,7 +217,11 @@ double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
         frames_filled, audio_bus->frames() - frames_filled);
   }
 
-  return frames_filled > 0 ? volume_ : 0;
+  // Synchronize access to |volume_| with SetVolume().
+  {
+    base::AutoLock auto_lock(volume_lock_);
+    return frames_filled > 0 ? volume_ : 0;
+  }
 }
 
 void AudioRendererMixerInput::OnRenderError() {

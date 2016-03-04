@@ -9,6 +9,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/output_device.h"
@@ -68,6 +70,14 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
  private:
   friend class AudioRendererMixerInputTest;
+
+  // Used to DCHECK that control methods (Start/Stop/Switch...) are called from
+  // the same thread.
+  base::ThreadChecker thread_checker_;
+
+  // Protect |volume_|, accessed by separate threads in ProvideInput() and
+  // SetVolume().
+  base::Lock volume_lock_;
 
   bool started_;
   bool playing_;
