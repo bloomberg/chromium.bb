@@ -448,10 +448,10 @@ def parse_gperf(infile):
   for line in lines:
     if line[-3:-1] != ', ':
       raise InputError('Expected "domainname, <digit>", found "%s"' % line)
-    # Technically the DAFSA format could support return values in range [0-31],
-    # but the values below are the only with a defined meaning.
-    if line[-1] not in '0124':
-      raise InputError('Expected value to be one of {0,1,2,4}, found "%s"' %
+    # Technically the DAFSA format can support return values in the range
+    # [0-31], but only the first three bits have any defined meaning.
+    if not line.endswith(('0', '1', '2', '3', '4', '5', '6', '7')):
+      raise InputError('Expected value to be in the range of 0-7, found "%s"' %
                        line[-1])
   return [line[:-3] + line[-1] for line in lines]
 

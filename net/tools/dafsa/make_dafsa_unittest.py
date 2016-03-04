@@ -29,13 +29,7 @@ class ParseGperfTest(unittest.TestCase):
     infile2 = [ '%%', 'a, x', '%%' ]
     self.assertRaises(make_dafsa.InputError, make_dafsa.parse_gperf, infile2)
 
-    infile3 = [ '%%', 'a,  3', '%%' ]
-    self.assertRaises(make_dafsa.InputError, make_dafsa.parse_gperf, infile3)
-
-    infile4 = [ '%%', 'a,  6', '%%' ]
-    self.assertRaises(make_dafsa.InputError, make_dafsa.parse_gperf, infile4)
-
-    infile5 = [ '%%', 'a,  12', '%%' ]
+    infile5 = [ '%%', 'a, 12', '%%' ]
     self.assertRaises(make_dafsa.InputError, make_dafsa.parse_gperf, infile5)
 
   def testValues(self):
@@ -52,9 +46,17 @@ class ParseGperfTest(unittest.TestCase):
     words3 = [ 'a2' ]
     self.assertEqual(make_dafsa.parse_gperf(infile3), words3)
 
-    infile4 = [ '%%', 'a, 4', '%%' ]
-    words4 = [ 'a4' ]
+    infile4 = [ '%%', 'a, 3', '%%' ]
+    words4 = [ 'a3' ]
     self.assertEqual(make_dafsa.parse_gperf(infile4), words4)
+
+    infile5 = [ '%%', 'a, 4', '%%' ]
+    words5 = [ 'a4' ]
+    self.assertEqual(make_dafsa.parse_gperf(infile5), words5)
+
+    infile6 = [ '%%', 'a, 6', '%%' ]
+    words6 = [ 'a6' ]
+    self.assertEqual(make_dafsa.parse_gperf(infile6), words6)
 
   def testOneWord(self):
     """Tests a single key can be parsed."""
