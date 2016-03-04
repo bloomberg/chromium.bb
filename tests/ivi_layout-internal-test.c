@@ -113,17 +113,10 @@ static void
 test_surface_bad_position(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-	struct ivi_layout_surface *ivisurf = NULL;
-	int32_t dest_x;
-	int32_t dest_y;
 
 	iassert(lyt->surface_set_position(NULL, 20, 30) == IVI_FAILED);
 
 	lyt->commit_changes();
-
-	iassert(lyt->surface_get_position(NULL, &dest_x, &dest_y) == IVI_FAILED);
-	iassert(lyt->surface_get_position(ivisurf, NULL, &dest_y) == IVI_FAILED);
-	iassert(lyt->surface_get_position(ivisurf, &dest_x, NULL) == IVI_FAILED);
 }
 
 static void
