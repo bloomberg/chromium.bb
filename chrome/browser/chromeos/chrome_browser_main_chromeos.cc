@@ -93,6 +93,7 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -328,7 +329,8 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
       !parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kGuestSession)) {
     singleton_command_line->AppendSwitchASCII(
-        switches::kLoginUser, login::StubAccountId().GetUserEmail());
+        switches::kLoginUser,
+        cryptohome::Identification(login::StubAccountId()).id());
     if (!parsed_command_line().HasSwitch(switches::kLoginProfile)) {
       singleton_command_line->AppendSwitchASCII(switches::kLoginProfile,
                                                 chrome::kTestUserProfileDir);
@@ -515,11 +517,13 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   ChromeBrowserMainPartsLinux::PreProfileInit();
 
   if (immediate_login) {
-    const std::string user_email = login::CanonicalizeUserID(
-        parsed_command_line().GetSwitchValueASCII(switches::kLoginUser));
+    const std::string cryptohome_id =
+        parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
+    const AccountId account_id(
+        cryptohome::Identification::FromString(cryptohome_id).GetAccountId());
+
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
-    const AccountId account_id(AccountId::FromUserEmail(user_email));
     if (policy::IsDeviceLocalAccountUser(account_id.GetUserEmail(), NULL) &&
         !user_manager->IsKnownUser(account_id)) {
       // When a device-local account is removed, its policy is deleted from disk
@@ -536,7 +540,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     std::string user_id_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
     user_manager->UserLoggedIn(account_id, user_id_hash, true);
-    VLOG(1) << "Relaunching browser for user: " << user_email
+    VLOG(1) << "Relaunching browser for user: " << account_id.Serialize()
             << " with hash: " << user_id_hash;
   }
 }

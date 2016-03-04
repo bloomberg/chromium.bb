@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -159,9 +160,8 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
     if (delay == 0)
       KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(app_id_);
   }
-
   kiosk_profile_loader_.reset(
-      new KioskProfileLoader(app.user_id, false, this));
+      new KioskProfileLoader(app.account_id, false, this));
   kiosk_profile_loader_->Start();
 }
 

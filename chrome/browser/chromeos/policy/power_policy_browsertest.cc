@@ -206,7 +206,7 @@ void PowerPolicyBrowserTestBase::InstallUserKey() {
   ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
   std::string sanitized_username =
       chromeos::CryptohomeClient::GetStubSanitizedUsername(
-          chromeos::login::StubAccountId().GetUserEmail());
+          cryptohome::Identification(chromeos::login::StubAccountId()));
   base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username)
                    .AppendASCII("policy.pub");
@@ -224,7 +224,8 @@ void PowerPolicyBrowserTestBase::StoreAndReloadUserPolicy() {
   // Install the new user policy blob in session manager client.
   user_policy_.Build();
   session_manager_client()->set_user_policy(
-      user_policy_.policy_data().username(),
+      cryptohome::Identification(
+          AccountId::FromUserEmail(user_policy_.policy_data().username())),
       user_policy_.GetBlob());
 
   // Reload user policy from session manager client and wait for the update to

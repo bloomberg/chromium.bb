@@ -44,6 +44,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/owner_flags_storage.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -246,7 +247,10 @@ void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
   chromeos::DBusThreadManager::Get()
       ->GetSessionManagerClient()
       ->SetFlagsForUser(
-          user_manager::UserManager::Get()->GetActiveUser()->email(), flags);
+          cryptohome::Identification(user_manager::UserManager::Get()
+                                         ->GetActiveUser()
+                                         ->GetAccountId()),
+          flags);
 #endif
   chrome::AttemptRestart();
 }

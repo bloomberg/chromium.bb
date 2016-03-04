@@ -5,6 +5,7 @@
 #include "chromeos/attestation/mock_attestation_flow.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "components/signin/core/account_id/account_id.h"
 
 using testing::_;
 using testing::DefaultValue;

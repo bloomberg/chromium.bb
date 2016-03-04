@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,35 +31,40 @@ class MockCryptohomeClient : public CryptohomeClient {
   MOCK_METHOD1(IsMounted, void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(Unmount, bool(bool* success));
   MOCK_METHOD3(AsyncCheckKey,
-               void(const std::string& username,
+               void(const cryptohome::Identification& cryptohome_id,
                     const std::string& key,
                     const AsyncMethodCallback& callback));
   MOCK_METHOD4(AsyncMigrateKey,
-               void(const std::string& username,
+               void(const cryptohome::Identification& cryptohome_id,
                     const std::string& from_key,
                     const std::string& to_key,
                     const AsyncMethodCallback& callback));
-  MOCK_METHOD2(AsyncRemove, void(const std::string& username,
-                                 const AsyncMethodCallback& callback));
+  MOCK_METHOD2(AsyncRemove,
+               void(const cryptohome::Identification& cryptohome_id,
+                    const AsyncMethodCallback& callback));
+
   MOCK_METHOD1(GetSystemSalt, void(const GetSystemSaltCallback& callback));
   MOCK_METHOD2(GetSanitizedUsername,
-               void(const std::string& username,
+               void(const cryptohome::Identification& cryptohome_id,
                     const StringDBusMethodCallback& callback));
   MOCK_METHOD1(BlockingGetSanitizedUsername,
-               std::string(const std::string& username));
-  MOCK_METHOD4(AsyncMount, void(const std::string& username,
-                                const std::string& key,
-                                int flags,
-                                const AsyncMethodCallback& callback));
-  MOCK_METHOD4(AsyncAddKey, void(const std::string& username,
-                                 const std::string& key,
-                                 const std::string& new_key,
-                                 const AsyncMethodCallback& callback));
+               std::string(const cryptohome::Identification& cryptohome_id));
+  MOCK_METHOD4(AsyncMount,
+               void(const cryptohome::Identification& cryptohome_id,
+                    const std::string& key,
+                    int flags,
+                    const AsyncMethodCallback& callback));
+  MOCK_METHOD4(AsyncAddKey,
+               void(const cryptohome::Identification& cryptohome_id,
+                    const std::string& key,
+                    const std::string& new_key,
+                    const AsyncMethodCallback& callback));
   MOCK_METHOD1(AsyncMountGuest,
                void(const AsyncMethodCallback& callback));
-  MOCK_METHOD3(AsyncMountPublic, void(const std::string& public_mount_id,
-                                      int flags,
-                                      const AsyncMethodCallback& callback));
+  MOCK_METHOD3(AsyncMountPublic,
+               void(const cryptohome::Identification& public_mount_id,
+                    int flags,
+                    const AsyncMethodCallback& callback));
   MOCK_METHOD1(TpmIsReady, void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(TpmIsEnabled, void(const BoolDBusMethodCallback& callback));
   MOCK_METHOD1(CallTpmIsEnabledAndBlock, bool(bool* enabled));
@@ -77,7 +83,7 @@ class MockCryptohomeClient : public CryptohomeClient {
   MOCK_METHOD1(Pkcs11GetTpmTokenInfo,
                void(const Pkcs11GetTpmTokenInfoCallback& callback));
   MOCK_METHOD2(Pkcs11GetTpmTokenInfoForUser,
-               void(const std::string& username,
+               void(const cryptohome::Identification& cryptohome_id,
                     const Pkcs11GetTpmTokenInfoCallback& callback));
   MOCK_METHOD3(InstallAttributesGet,
                bool(const std::string& name,
@@ -107,38 +113,38 @@ class MockCryptohomeClient : public CryptohomeClient {
       AsyncTpmAttestationCreateCertRequest,
       void(attestation::PrivacyCAType pca_type,
            attestation::AttestationCertificateProfile certificate_profile,
-           const std::string& user_id,
+           const cryptohome::Identification& cryptohome_id,
            const std::string& request_origin,
            const AsyncMethodCallback& callback));
   MOCK_METHOD5(AsyncTpmAttestationFinishCertRequest,
                void(const std::string& pca_response,
                     attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_name,
                     const AsyncMethodCallback& callback));
   MOCK_METHOD4(TpmAttestationDoesKeyExist,
                void(attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_name,
                     const BoolDBusMethodCallback& callback));
   MOCK_METHOD4(TpmAttestationGetCertificate,
                void(attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_name,
                     const DataMethodCallback& callback));
   MOCK_METHOD4(TpmAttestationGetPublicKey,
                void(attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_name,
                     const DataMethodCallback& callback));
   MOCK_METHOD4(TpmAttestationRegisterKey,
                void(attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_name,
                     const AsyncMethodCallback& callback));
   MOCK_METHOD8(TpmAttestationSignEnterpriseChallenge,
                void(attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_name,
                     const std::string& domain,
                     const std::string& device_id,
@@ -147,53 +153,53 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const AsyncMethodCallback& callback));
   MOCK_METHOD5(TpmAttestationSignSimpleChallenge,
                void(attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_name,
                     const std::string& challenge,
                     const AsyncMethodCallback& callback));
   MOCK_METHOD4(TpmAttestationGetKeyPayload,
                void(attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_name,
                     const DataMethodCallback& callback));
   MOCK_METHOD5(TpmAttestationSetKeyPayload,
                void(attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_name,
                     const std::string& payload,
                     const BoolDBusMethodCallback& callback));
   MOCK_METHOD4(TpmAttestationDeleteKeys,
                void(attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const cryptohome::Identification& cryptohome_id,
                     const std::string& key_prefix,
                     const BoolDBusMethodCallback& callback));
   MOCK_METHOD4(GetKeyDataEx,
-      void(const cryptohome::AccountIdentifier& id,
-           const cryptohome::AuthorizationRequest& auth,
-           const cryptohome::GetKeyDataRequest& request,
-           const ProtobufMethodCallback& callback));
+               void(const cryptohome::Identification& cryptohome_id,
+                    const cryptohome::AuthorizationRequest& auth,
+                    const cryptohome::GetKeyDataRequest& request,
+                    const ProtobufMethodCallback& callback));
   MOCK_METHOD4(CheckKeyEx,
-      void(const cryptohome::AccountIdentifier& id,
-           const cryptohome::AuthorizationRequest& auth,
-           const cryptohome::CheckKeyRequest& request,
-           const ProtobufMethodCallback& callback));
+               void(const cryptohome::Identification& cryptohome_id,
+                    const cryptohome::AuthorizationRequest& auth,
+                    const cryptohome::CheckKeyRequest& request,
+                    const ProtobufMethodCallback& callback));
   MOCK_METHOD4(MountEx,
-      void(const cryptohome::AccountIdentifier& id,
-           const cryptohome::AuthorizationRequest& auth,
-           const cryptohome::MountRequest& request,
-           const ProtobufMethodCallback& callback));
+               void(const cryptohome::Identification& cryptohome_id,
+                    const cryptohome::AuthorizationRequest& auth,
+                    const cryptohome::MountRequest& request,
+                    const ProtobufMethodCallback& callback));
   MOCK_METHOD4(AddKeyEx,
-      void(const cryptohome::AccountIdentifier& id,
-           const cryptohome::AuthorizationRequest& auth,
-           const cryptohome::AddKeyRequest& request,
-           const ProtobufMethodCallback& callback));
+               void(const cryptohome::Identification& cryptohome_id,
+                    const cryptohome::AuthorizationRequest& auth,
+                    const cryptohome::AddKeyRequest& request,
+                    const ProtobufMethodCallback& callback));
   MOCK_METHOD4(UpdateKeyEx,
-      void(const cryptohome::AccountIdentifier& id,
-           const cryptohome::AuthorizationRequest& auth,
-           const cryptohome::UpdateKeyRequest& request,
-           const ProtobufMethodCallback& callback));
+               void(const cryptohome::Identification& cryptohome_id,
+                    const cryptohome::AuthorizationRequest& auth,
+                    const cryptohome::UpdateKeyRequest& request,
+                    const ProtobufMethodCallback& callback));
   MOCK_METHOD4(RemoveKeyEx,
-               void(const cryptohome::AccountIdentifier& id,
+               void(const cryptohome::Identification& cryptohome_id,
                     const cryptohome::AuthorizationRequest& auth,
                     const cryptohome::RemoveKeyRequest& request,
                     const ProtobufMethodCallback& callback));

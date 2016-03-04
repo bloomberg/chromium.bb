@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -40,10 +41,10 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
   ~CrashRestoreSimpleTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kLoginUser, kUserId1);
+    command_line->AppendSwitchASCII(switches::kLoginUser, cryptohome_id1_.id());
     command_line->AppendSwitchASCII(
         switches::kLoginProfile,
-        CryptohomeClient::GetStubSanitizedUsername(kUserId1));
+        CryptohomeClient::GetStubSanitizedUsername(cryptohome_id1_));
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -51,18 +52,27 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
     session_manager_client_ = new FakeSessionManagerClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         scoped_ptr<SessionManagerClient>(session_manager_client_));
-    session_manager_client_->StartSession(kUserId1);
+    session_manager_client_->StartSession(cryptohome_id1_);
   }
 
   FakeSessionManagerClient* session_manager_client_;
+  const AccountId account_id1_ = AccountId::FromUserEmail(kUserId1);
+  const AccountId account_id2_ = AccountId::FromUserEmail(kUserId2);
+  const AccountId account_id3_ = AccountId::FromUserEmail(kUserId3);
+  const cryptohome::Identification cryptohome_id1_ =
+      cryptohome::Identification(account_id1_);
+  const cryptohome::Identification cryptohome_id2_ =
+      cryptohome::Identification(account_id2_);
+  const cryptohome::Identification cryptohome_id3_ =
+      cryptohome::Identification(account_id3_);
 };
 
 IN_PROC_BROWSER_TEST_F(CrashRestoreSimpleTest, RestoreSessionForOneUser) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   user_manager::User* user = user_manager->GetActiveUser();
   ASSERT_TRUE(user);
-  EXPECT_EQ(kUserId1, user->email());
-  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(kUserId1),
+  EXPECT_EQ(account_id1_, user->GetAccountId());
+  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id1_),
             user->username_hash());
   EXPECT_EQ(1UL, user_manager->GetLoggedInUsers().size());
 }
@@ -116,8 +126,8 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     CrashRestoreSimpleTest::SetUpInProcessBrowserTestFixture();
-    session_manager_client_->StartSession(kUserId2);
-    session_manager_client_->StartSession(kUserId3);
+    session_manager_client_->StartSession(cryptohome_id2_);
+    session_manager_client_->StartSession(cryptohome_id3_);
   }
 };
 
@@ -138,21 +148,21 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   user_manager::User* user = user_manager->GetActiveUser();
   ASSERT_TRUE(user);
-  EXPECT_EQ(kUserId3, user->email());
-  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(kUserId3),
+  EXPECT_EQ(account_id3_, user->GetAccountId());
+  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id3_),
             user->username_hash());
   const user_manager::UserList& users = user_manager->GetLoggedInUsers();
   ASSERT_EQ(3UL, users.size());
 
   // User that becomes active moves to the beginning of the list.
-  EXPECT_EQ(kUserId3, users[0]->email());
-  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(kUserId3),
+  EXPECT_EQ(account_id3_, users[0]->GetAccountId());
+  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id3_),
             users[0]->username_hash());
-  EXPECT_EQ(kUserId2, users[1]->email());
-  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(kUserId2),
+  EXPECT_EQ(account_id2_, users[1]->GetAccountId());
+  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id2_),
             users[1]->username_hash());
-  EXPECT_EQ(kUserId1, users[2]->email());
-  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(kUserId1),
+  EXPECT_EQ(account_id1_, users[2]->GetAccountId());
+  EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id1_),
             users[2]->username_hash());
 }
 

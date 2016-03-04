@@ -433,7 +433,9 @@ class UserSessionManager
 
   // User sessions that have to be restored after browser crash.
   // [user_id] > [user_id_hash]
-  SessionManagerClient::ActiveSessionsMap pending_user_sessions_;
+  using PendingUserSessions = std::map<AccountId, std::string>;
+
+  PendingUserSessions pending_user_sessions_;
 
   base::ObserverList<chromeos::UserSessionStateObserver>
       session_state_observer_list_;

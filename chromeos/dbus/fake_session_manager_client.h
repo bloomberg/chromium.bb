@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager_client.h"
 
 namespace chromeos {
@@ -32,7 +33,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   bool IsScreenLocked() const override;
   void EmitLoginPromptVisible() override;
   void RestartJob(const std::vector<std::string>& argv) override;
-  void StartSession(const std::string& user_email) override;
+  void StartSession(const cryptohome::Identification& cryptohome_id) override;
   void StopSession() override;
   void NotifySupervisedUserCreationStarted() override;
   void NotifySupervisedUserCreationFinished() override;
@@ -42,23 +43,23 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void NotifyLockScreenDismissed() override;
   void RetrieveActiveSessions(const ActiveSessionsCallback& callback) override;
   void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) override;
-  void RetrievePolicyForUser(const std::string& username,
+  void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
                              const RetrievePolicyCallback& callback) override;
   std::string BlockingRetrievePolicyForUser(
-      const std::string& username) override;
+      const cryptohome::Identification& cryptohome_id) override;
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       const RetrievePolicyCallback& callback) override;
   void StoreDevicePolicy(const std::string& policy_blob,
                          const StorePolicyCallback& callback) override;
-  void StorePolicyForUser(const std::string& username,
+  void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
                           const std::string& policy_blob,
                           const StorePolicyCallback& callback) override;
   void StoreDeviceLocalAccountPolicy(
       const std::string& account_id,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) override;
-  void SetFlagsForUser(const std::string& username,
+  void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(const StateKeysCallback& callback) override;
 
@@ -70,8 +71,9 @@ class FakeSessionManagerClient : public SessionManagerClient {
   const std::string& device_policy() const;
   void set_device_policy(const std::string& policy_blob);
 
-  const std::string& user_policy(const std::string& username) const;
-  void set_user_policy(const std::string& username,
+  const std::string& user_policy(
+      const cryptohome::Identification& cryptohome_id) const;
+  void set_user_policy(const cryptohome::Identification& cryptohome_id,
                        const std::string& policy_blob);
 
   const std::string& device_local_account_policy(
@@ -105,7 +107,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
 
  private:
   std::string device_policy_;
-  std::map<std::string, std::string> user_policies_;
+  std::map<cryptohome::Identification, std::string> user_policies_;
   std::map<std::string, std::string> device_local_account_policy_;
   base::ObserverList<Observer> observers_;
   SessionManagerClient::ActiveSessionsMap user_sessions_;

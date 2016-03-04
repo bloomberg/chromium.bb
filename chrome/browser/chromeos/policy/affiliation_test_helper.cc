@@ -44,11 +44,13 @@ const char kFakeRefreshToken[] = "fake-refresh-token";
 const char kEnterpriseUser[] = "testuser@example.com";
 
 void SetUserKeys(policy::UserPolicyBuilder* user_policy) {
-  std::string username = user_policy->policy_data().username();
+  const AccountId account_id =
+      AccountId::FromUserEmail(user_policy->policy_data().username());
   base::FilePath user_keys_dir;
   ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
   const std::string sanitized_username =
-      chromeos::CryptohomeClient::GetStubSanitizedUsername(username);
+      chromeos::CryptohomeClient::GetStubSanitizedUsername(
+          cryptohome::Identification(account_id));
   const base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username).AppendASCII("policy.pub");
   std::vector<uint8_t> user_key_bits;
@@ -84,14 +86,15 @@ void SetUserAffiliationIDs(
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
     const std::string& user_email,
     const std::set<std::string>& user_affiliation_ids) {
+  const AccountId account_id = AccountId::FromUserEmail(user_email);
   user_policy->policy_data().set_username(user_email);
   SetUserKeys(user_policy);
   for (const auto& user_affiliation_id : user_affiliation_ids) {
     user_policy->policy_data().add_user_affiliation_ids(user_affiliation_id);
   }
   user_policy->Build();
-  fake_session_manager_client->set_user_policy(user_email,
-                                               user_policy->GetBlob());
+  fake_session_manager_client->set_user_policy(
+      cryptohome::Identification(account_id), user_policy->GetBlob());
 }
 
 void PreLoginUser(const std::string& user_id) {
@@ -105,8 +108,8 @@ void LoginUser(const std::string& user_id) {
       chromeos::UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 
-  chromeos::UserContext user_context(AccountId::FromUserEmail(user_id));
-  user_context.SetGaiaID("gaia-id-" + user_id);
+  chromeos::UserContext user_context(
+      AccountId::FromUserEmailGaiaId(user_id, "gaia-id-" + user_id));
   user_context.SetKey(chromeos::Key("password"));
   if (user_id == kEnterpriseUser) {
     user_context.SetRefreshToken(kFakeRefreshToken);

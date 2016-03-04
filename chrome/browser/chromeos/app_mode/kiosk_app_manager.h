@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/extensions/external_cache.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/gfx/image/image_skia.h"
 
 class PrefRegistrySimple;
@@ -70,7 +71,7 @@ class KioskAppManager : public KioskAppDataDelegate,
     ~App();
 
     std::string app_id;
-    std::string user_id;
+    AccountId account_id;
     std::string name;
     gfx::ImageSkia icon;
     std::string required_platform_version;

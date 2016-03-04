@@ -54,8 +54,10 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/login/user_names.h"
+#include "components/signin/core/account_id/account_id.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -334,7 +336,9 @@ class CloudPolicyTest : public InProcessBrowserTest,
     ASSERT_TRUE(
         PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_policy_key_dir));
     std::string sanitized_username =
-        chromeos::CryptohomeClient::GetStubSanitizedUsername(GetTestUser());
+        chromeos::CryptohomeClient::GetStubSanitizedUsername(
+            cryptohome::Identification(
+                AccountId::FromUserEmail(GetTestUser())));
     user_policy_key_file_ = user_policy_key_dir.AppendASCII(sanitized_username)
                                                .AppendASCII("policy.pub");
 #endif

@@ -87,6 +87,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -662,7 +663,9 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // possible. We should instead cleanly exit and go back to the OOBE screen,
   // where we will launch again after the timeout has expired.
   if (chromeos::DemoAppLauncher::IsDemoAppSession(
-      command_line.GetSwitchValueASCII(chromeos::switches::kLoginUser))) {
+          cryptohome::Identification::FromString(
+              command_line.GetSwitchValueASCII(chromeos::switches::kLoginUser))
+              .GetAccountId())) {
     chrome::AttemptUserExit();
     return false;
   }

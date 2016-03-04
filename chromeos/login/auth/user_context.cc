@@ -11,7 +11,6 @@ UserContext::UserContext() : account_id_(EmptyAccountId()) {}
 
 UserContext::UserContext(const UserContext& other)
     : account_id_(other.account_id_),
-      gaia_id_(other.gaia_id_),
       key_(other.key_),
       auth_code_(other.auth_code_),
       refresh_token_(other.refresh_token_),
@@ -32,20 +31,19 @@ UserContext::UserContext(const AccountId& account_id)
 }
 
 UserContext::UserContext(user_manager::UserType user_type,
-                         const std::string& user_id)
-    : account_id_(EmptyAccountId()), user_type_(user_type) {
+                         const AccountId& account_id)
+    : account_id_(account_id), user_type_(user_type) {
   if (user_type_ == user_manager::USER_TYPE_REGULAR)
-    account_id_ = AccountId::FromUserEmail(login::CanonicalizeUserID(user_id));
-  else
-    account_id_ = AccountId::FromUserEmail(user_id);
+    account_id_.SetUserEmail(
+        login::CanonicalizeUserID(account_id_.GetUserEmail()));
 }
 
 UserContext::~UserContext() {
 }
 
 bool UserContext::operator==(const UserContext& context) const {
-  return context.account_id_ == account_id_ && context.gaia_id_ == gaia_id_ &&
-         context.key_ == key_ && context.auth_code_ == auth_code_ &&
+  return context.account_id_ == account_id_ && context.key_ == key_ &&
+         context.auth_code_ == auth_code_ &&
          context.refresh_token_ == refresh_token_ &&
          context.access_token_ == access_token_ &&
          context.user_id_hash_ == user_id_hash_ &&
@@ -64,7 +62,7 @@ const AccountId& UserContext::GetAccountId() const {
 }
 
 const std::string& UserContext::GetGaiaID() const {
-  return gaia_id_;
+  return account_id_.GetGaiaId();
 }
 
 const Key* UserContext::GetKey() const {
@@ -124,12 +122,8 @@ bool UserContext::HasCredentials() const {
          !auth_code_.empty();
 }
 
-void UserContext::SetUserID(const std::string& user_id) {
-  account_id_ = AccountId::FromUserEmail(login::CanonicalizeUserID(user_id));
-}
-
-void UserContext::SetGaiaID(const std::string& gaia_id) {
-  gaia_id_ = gaia_id;
+void UserContext::SetAccountId(const AccountId& account_id) {
+  account_id_ = account_id;
 }
 
 void UserContext::SetKey(const Key& key) {

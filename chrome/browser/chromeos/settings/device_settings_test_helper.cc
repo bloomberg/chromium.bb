@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,7 +112,8 @@ void DeviceSettingsTestHelper::EmitLoginPromptVisible() {}
 void DeviceSettingsTestHelper::RestartJob(
     const std::vector<std::string>& argv) {}
 
-void DeviceSettingsTestHelper::StartSession(const std::string& user_email) {}
+void DeviceSettingsTestHelper::StartSession(
+    const cryptohome::Identification& cryptohome_id) {}
 
 void DeviceSettingsTestHelper::StopSession() {}
 
@@ -136,12 +138,11 @@ void DeviceSettingsTestHelper::RetrieveDevicePolicy(
 }
 
 void DeviceSettingsTestHelper::RetrievePolicyForUser(
-    const std::string& username,
-    const RetrievePolicyCallback& callback) {
-}
+    const cryptohome::Identification& cryptohome_id,
+    const RetrievePolicyCallback& callback) {}
 
 std::string DeviceSettingsTestHelper::BlockingRetrievePolicyForUser(
-    const std::string& username) {
+    const cryptohome::Identification& cryptohome_id) {
   return "";
 }
 
@@ -160,10 +161,9 @@ void DeviceSettingsTestHelper::StoreDevicePolicy(
 }
 
 void DeviceSettingsTestHelper::StorePolicyForUser(
-    const std::string& username,
+    const cryptohome::Identification& cryptohome_id,
     const std::string& policy_blob,
-    const StorePolicyCallback& callback) {
-}
+    const StorePolicyCallback& callback) {}
 
 void DeviceSettingsTestHelper::StoreDeviceLocalAccountPolicy(
     const std::string& account_id,
@@ -174,7 +174,7 @@ void DeviceSettingsTestHelper::StoreDeviceLocalAccountPolicy(
 }
 
 void DeviceSettingsTestHelper::SetFlagsForUser(
-    const std::string& account_id,
+    const cryptohome::Identification& cryptohome_id,
     const std::vector<std::string>& flags) {}
 
 void DeviceSettingsTestHelper::GetServerBackedStateKeys(

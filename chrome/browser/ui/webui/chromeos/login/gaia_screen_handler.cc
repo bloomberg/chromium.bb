@@ -441,7 +441,6 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   Delegate()->SetDisplayEmail(sanitized_email);
 
   UserContext user_context(GetAccountId(email, gaia_id));
-  user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthCode(auth_code);
   user_context.SetAuthFlow(using_saml
@@ -525,7 +524,6 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
   const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
   Delegate()->SetDisplayEmail(sanitized_email);
   UserContext user_context(GetAccountId(typed_email, gaia_id));
-  user_context.SetGaiaID(gaia_id);
   user_context.SetKey(Key(password));
   user_context.SetAuthFlow(using_saml
                                ? UserContext::AUTH_FLOW_GAIA_WITH_SAML

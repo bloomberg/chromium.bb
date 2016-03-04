@@ -149,8 +149,7 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   }
 
   cryptohome::HomedirMethods::GetInstance()->MountEx(
-      cryptohome::Identification(
-          attempt->user_context.GetAccountId().GetUserEmail()),
+      cryptohome::Identification(attempt->user_context.GetAccountId()),
       cryptohome::Authorization(auth_key), mount,
       base::Bind(&OnMount, attempt, resolver));
 }
@@ -267,8 +266,7 @@ void StartMount(const base::WeakPtr<AuthAttemptState>& attempt,
   }
 
   cryptohome::HomedirMethods::GetInstance()->GetKeyDataEx(
-      cryptohome::Identification(
-          attempt->user_context.GetAccountId().GetUserEmail()),
+      cryptohome::Identification(attempt->user_context.GetAccountId()),
       kCryptohomeGAIAKeyLabel, base::Bind(&OnGetKeyDataEx, attempt, resolver,
                                           ephemeral, create_if_nonexistent));
 }
@@ -284,7 +282,7 @@ void MountGuestAndGetHash(const base::WeakPtr<AuthAttemptState>& attempt,
                  attempt,
                  resolver));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-      attempt->user_context.GetAccountId().GetUserEmail(),
+      cryptohome::Identification(attempt->user_context.GetAccountId()),
       base::Bind(&TriggerResolveHash, attempt, resolver));
 }
 
@@ -293,11 +291,11 @@ void MountPublic(const base::WeakPtr<AuthAttemptState>& attempt,
                  scoped_refptr<CryptohomeAuthenticator> resolver,
                  int flags) {
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountPublic(
-      attempt->user_context.GetAccountId().GetUserEmail(), flags,
+      cryptohome::Identification(attempt->user_context.GetAccountId()), flags,
       base::Bind(&TriggerResolveWithLoginTimeMarker,
                  "CryptohomeMountPublic-End", attempt, resolver));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-      attempt->user_context.GetAccountId().GetUserEmail(),
+      cryptohome::Identification(attempt->user_context.GetAccountId()),
       base::Bind(&TriggerResolveHash, attempt, resolver));
 }
 
@@ -320,13 +318,13 @@ void Migrate(const base::WeakPtr<AuthAttemptState>& attempt,
       TransformKeyIfNeeded(*attempt->user_context.GetKey(), system_salt);
   if (passing_old_hash) {
     caller->AsyncMigrateKey(
-        attempt->user_context.GetAccountId().GetUserEmail(),
+        cryptohome::Identification(attempt->user_context.GetAccountId()),
         old_key->GetSecret(), new_key->GetSecret(),
         base::Bind(&TriggerResolveWithLoginTimeMarker, "CryptohomeMount-End",
                    attempt, resolver));
   } else {
     caller->AsyncMigrateKey(
-        attempt->user_context.GetAccountId().GetUserEmail(),
+        cryptohome::Identification(attempt->user_context.GetAccountId()),
         new_key->GetSecret(), old_key->GetSecret(),
         base::Bind(&TriggerResolveWithLoginTimeMarker, "CryptohomeMount-End",
                    attempt, resolver));
@@ -339,7 +337,7 @@ void Remove(const base::WeakPtr<AuthAttemptState>& attempt,
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeRemove-Start", false);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      attempt->user_context.GetAccountId().GetUserEmail(),
+      cryptohome::Identification(attempt->user_context.GetAccountId()),
       base::Bind(&TriggerResolveWithLoginTimeMarker, "CryptohomeRemove-End",
                  attempt, resolver));
 }
@@ -351,8 +349,8 @@ void CheckKey(const base::WeakPtr<AuthAttemptState>& attempt,
   scoped_ptr<Key> key =
       TransformKeyIfNeeded(*attempt->user_context.GetKey(), system_salt);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncCheckKey(
-      attempt->user_context.GetAccountId().GetUserEmail(), key->GetSecret(),
-      base::Bind(&TriggerResolve, attempt, resolver));
+      cryptohome::Identification(attempt->user_context.GetAccountId()),
+      key->GetSecret(), base::Bind(&TriggerResolve, attempt, resolver));
 }
 
 }  // namespace
@@ -447,12 +445,11 @@ void CryptohomeAuthenticator::LoginAsSupervisedUser(
 
 void CryptohomeAuthenticator::LoginOffTheRecord() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  current_state_.reset(
-      new AuthAttemptState(UserContext(user_manager::USER_TYPE_GUEST,
-                                       login::GuestAccountId().GetUserEmail()),
-                           false,    // unlock
-                           false,    // online_complete
-                           false));  // user_is_new
+  current_state_.reset(new AuthAttemptState(
+      UserContext(user_manager::USER_TYPE_GUEST, login::GuestAccountId()),
+      false,    // unlock
+      false,    // online_complete
+      false));  // user_is_new
   remove_user_data_on_failure_ = false;
   ephemeral_mount_attempted_ = true;
   MountGuestAndGetHash(current_state_->AsWeakPtr(),
@@ -477,14 +474,14 @@ void CryptohomeAuthenticator::LoginAsPublicSession(
 }
 
 void CryptohomeAuthenticator::LoginAsKioskAccount(
-    const std::string& app_user_id,
+    const AccountId& app_account_id,
     bool use_guest_mount) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  const std::string user_id =
-      use_guest_mount ? login::GuestAccountId().GetUserEmail() : app_user_id;
+  const AccountId& account_id =
+      use_guest_mount ? login::GuestAccountId() : app_account_id;
   current_state_.reset(new AuthAttemptState(
-      UserContext(user_manager::USER_TYPE_KIOSK_APP, user_id),
+      UserContext(user_manager::USER_TYPE_KIOSK_APP, account_id),
       false,    // unlock
       false,    // online_complete
       false));  // user_is_new

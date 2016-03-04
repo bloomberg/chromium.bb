@@ -1003,7 +1003,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
 }
 
 void SigninScreenHandler::HandleLaunchIncognito() {
-  UserContext context(user_manager::USER_TYPE_GUEST, std::string());
+  UserContext context(user_manager::USER_TYPE_GUEST, EmptyAccountId());
   if (delegate_)
     delegate_->Login(context, SigninSpecifics());
 }
@@ -1024,8 +1024,7 @@ void SigninScreenHandler::HandleLaunchPublicSession(
   if (!delegate_)
     return;
 
-  UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
-                      account_id.GetUserEmail());
+  UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT, account_id);
   context.SetPublicSessionLocale(locale),
   context.SetPublicSessionInputMethod(input_method);
   delegate_->Login(context, SigninSpecifics());
@@ -1278,8 +1277,7 @@ void SigninScreenHandler::SendPublicSessionKeyboardLayouts(
 
 void SigninScreenHandler::HandleLaunchKioskApp(const AccountId& app_account_id,
                                                bool diagnostic_mode) {
-  UserContext context(user_manager::USER_TYPE_KIOSK_APP,
-                      app_account_id.GetUserEmail());
+  UserContext context(user_manager::USER_TYPE_KIOSK_APP, app_account_id);
   SigninSpecifics specifics;
   specifics.kiosk_diagnostic_mode = diagnostic_mode;
   if (delegate_)

@@ -120,8 +120,9 @@ class AppSession::AppWindowHandler : public AppWindowRegistry::Observer {
 
   void OnAppWindowRemoved(AppWindow* app_window) override {
     if (window_registry_->GetAppWindowsForApp(app_id_).empty()) {
-      if (DemoAppLauncher::IsDemoAppSession(
-              user_manager::UserManager::Get()->GetActiveUser()->email())) {
+      if (DemoAppLauncher::IsDemoAppSession(user_manager::UserManager::Get()
+                                                ->GetActiveUser()
+                                                ->GetAccountId())) {
         // If we were in demo mode, we disabled all our network technologies,
         // re-enable them.
         NetworkStateHandler* handler =
@@ -188,7 +189,7 @@ void AppSession::Init(Profile* profile, const std::string& app_id) {
   // For a demo app, we don't need to either setup the update service or
   // the idle app name notification.
   if (DemoAppLauncher::IsDemoAppSession(
-          user_manager::UserManager::Get()->GetActiveUser()->email()))
+          user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()))
     return;
 
   // Set the app_id for the current instance of KioskAppUpdateService.

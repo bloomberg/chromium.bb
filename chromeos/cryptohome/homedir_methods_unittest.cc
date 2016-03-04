@@ -17,6 +17,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,6 +35,10 @@ MATCHER_P(EqualsProto, expected_proto, "") {
   std::string actual_value;
   arg.SerializeToString(&actual_value);
   return actual_value == expected_value;
+}
+
+MATCHER_P(EqualsIdentification, expected_identification, "") {
+  return arg == expected_identification;
 }
 
 }  // namespace
@@ -68,7 +73,7 @@ class HomedirMethodsTest : public testing::Test {
   chromeos::MockCryptohomeClient* cryptohome_client_;
 
   // The reply that |cryptohome_client_| will make.
-  cryptohome::BaseReply cryptohome_reply_;
+  BaseReply cryptohome_reply_;
 
   // The results of the most recent |HomedirMethods| method call.
   bool success_;
@@ -119,25 +124,22 @@ void HomedirMethodsTest::StoreGetKeyDataExResult(
 
 // Verifies that the result of a GetKeyDataEx() call is correctly parsed.
 TEST_F(HomedirMethodsTest, GetKeyDataEx) {
-  AccountIdentifier expected_id;
-  expected_id.set_email(kUserID);
-  const cryptohome::AuthorizationRequest expected_auth;
-  cryptohome::GetKeyDataRequest expected_request;
-      expected_request.mutable_key()->mutable_data()->set_label(kKeyLabel);
+  const Identification expected_id(AccountId::FromUserEmail(kUserID));
+  const AuthorizationRequest expected_auth;
+  GetKeyDataRequest expected_request;
+  expected_request.mutable_key()->mutable_data()->set_label(kKeyLabel);
 
   EXPECT_CALL(*cryptohome_client_,
-              GetKeyDataEx(EqualsProto(expected_id),
+              GetKeyDataEx(EqualsIdentification(expected_id),
                            EqualsProto(expected_auth),
-                           EqualsProto(expected_request),
-                           _))
+                           EqualsProto(expected_request), _))
       .Times(1)
-      .WillOnce(WithArg<3>(Invoke(
-          this,
-          &HomedirMethodsTest::RunProtobufMethodCallback)));
+      .WillOnce(WithArg<3>(
+          Invoke(this, &HomedirMethodsTest::RunProtobufMethodCallback)));
 
   // Set up the reply that |cryptohome_client_| will make.
-  cryptohome::GetKeyDataReply* reply =
-      cryptohome_reply_.MutableExtension(cryptohome::GetKeyDataReply::reply);
+  GetKeyDataReply* reply =
+      cryptohome_reply_.MutableExtension(GetKeyDataReply::reply);
   KeyData* key_data = reply->add_key_data();
   key_data->set_type(KeyData::KEY_TYPE_PASSWORD);
   key_data->set_label(kKeyLabel);
@@ -155,10 +157,9 @@ TEST_F(HomedirMethodsTest, GetKeyDataEx) {
 
   // Call GetKeyDataEx().
   HomedirMethods::GetInstance()->GetKeyDataEx(
-    Identification(kUserID),
-    kKeyLabel,
-    base::Bind(&HomedirMethodsTest::StoreGetKeyDataExResult,
-               base::Unretained(this)));
+      Identification(AccountId::FromUserEmail(kUserID)), kKeyLabel,
+      base::Bind(&HomedirMethodsTest::StoreGetKeyDataExResult,
+                 base::Unretained(this)));
 
   // Verify that the call was successful and the result was correctly parsed.
   EXPECT_TRUE(success_);

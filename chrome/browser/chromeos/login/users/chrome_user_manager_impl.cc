@@ -606,7 +606,7 @@ void ChromeUserManagerImpl::PerformPostUserLoggedInActions(
 }
 
 bool ChromeUserManagerImpl::IsDemoApp(const AccountId& account_id) const {
-  return DemoAppLauncher::IsDemoAppSession(account_id.GetUserEmail());
+  return DemoAppLauncher::IsDemoAppSession(account_id);
 }
 
 bool ChromeUserManagerImpl::IsKioskApp(const AccountId& account_id) const {
@@ -1251,7 +1251,8 @@ bool ChromeUserManagerImpl::IsFirstExecAfterBoot() const {
 void ChromeUserManagerImpl::AsyncRemoveCryptohome(
     const AccountId& account_id) const {
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      account_id.GetUserEmail(), base::Bind(&OnRemoveUserComplete, account_id));
+      cryptohome::Identification(account_id),
+      base::Bind(&OnRemoveUserComplete, account_id));
 }
 
 bool ChromeUserManagerImpl::IsGuestAccountId(

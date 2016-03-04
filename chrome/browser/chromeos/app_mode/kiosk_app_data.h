@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -48,7 +49,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
 
   KioskAppData(KioskAppDataDelegate* delegate,
                const std::string& app_id,
-               const std::string& user_id,
+               const AccountId& account_id,
                const GURL& update_url);
   ~KioskAppData() override;
 
@@ -73,7 +74,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   bool IsFromWebStore() const;
 
   const std::string& app_id() const { return app_id_; }
-  const std::string& user_id() const { return user_id_; }
+  const AccountId& account_id() const { return account_id_; }
   const std::string& name() const { return name_; }
   const GURL& update_url() const { return update_url_; }
   const gfx::ImageSkia& icon() const { return icon_; }
@@ -145,7 +146,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   Status status_;
 
   std::string app_id_;
-  std::string user_id_;
+  AccountId account_id_;
   std::string name_;
   GURL update_url_;
   gfx::ImageSkia icon_;

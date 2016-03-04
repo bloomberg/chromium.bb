@@ -19,7 +19,6 @@
 
 namespace cryptohome {
 
-class AccountIdentifier;
 class AddKeyRequest;
 class AuthorizationRequest;
 class BaseReply;
@@ -31,6 +30,8 @@ class MountRequest;
 class RemoveKeyRequest;
 class SetBootAttributeRequest;
 class UpdateKeyRequest;
+
+class Identification;
 
 } // namespace cryptohome
 
@@ -95,7 +96,8 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   static CryptohomeClient* Create();
 
   // Returns the sanitized |username| that the stub implementation would return.
-  static std::string GetStubSanitizedUsername(const std::string& username);
+  static std::string GetStubSanitizedUsername(
+      const cryptohome::Identification& cryptohome_id);
 
   // Sets AsyncCallStatus signal handlers.
   // |handler| is called when results for AsyncXXX methods are returned.
@@ -121,20 +123,20 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
 
   // Calls AsyncCheckKey method.  |callback| is called after the method call
   // succeeds.
-  virtual void AsyncCheckKey(const std::string& username,
+  virtual void AsyncCheckKey(const cryptohome::Identification& cryptohome_id,
                              const std::string& key,
                              const AsyncMethodCallback& callback) = 0;
 
   // Calls AsyncMigrateKey method.  |callback| is called after the method call
   // succeeds.
-  virtual void AsyncMigrateKey(const std::string& username,
+  virtual void AsyncMigrateKey(const cryptohome::Identification& cryptohome_id,
                                const std::string& from_key,
                                const std::string& to_key,
                                const AsyncMethodCallback& callback) = 0;
 
   // Calls AsyncRemove method.  |callback| is called after the method call
   // succeeds.
-  virtual void AsyncRemove(const std::string& username,
+  virtual void AsyncRemove(const cryptohome::Identification& cryptohome_id,
                            const AsyncMethodCallback& callback) = 0;
 
   // Calls GetSystemSalt method.  |callback| is called after the method call
@@ -144,7 +146,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // Calls GetSanitizedUsername method.  |callback| is called after the method
   // call succeeds.
   virtual void GetSanitizedUsername(
-      const std::string& username,
+      const cryptohome::Identification& cryptohome_id,
       const StringDBusMethodCallback& callback) = 0;
 
   // Same as GetSanitizedUsername() but blocks until a reply is received, and
@@ -154,13 +156,13 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // considered acceptable (e.g. restarting the browser after a crash or after
   // a flag change).
   virtual std::string BlockingGetSanitizedUsername(
-      const std::string& username) = 0;
+      const cryptohome::Identification& cryptohome_id) = 0;
 
   // Calls the AsyncMount method to asynchronously mount the cryptohome for
   // |username|, using |key| to unlock it. For supported |flags|, see the
   // documentation of AsyncMethodCaller::AsyncMount().
   // |callback| is called after the method call succeeds.
-  virtual void AsyncMount(const std::string& username,
+  virtual void AsyncMount(const cryptohome::Identification& cryptohome_id,
                           const std::string& key,
                           int flags,
                           const AsyncMethodCallback& callback) = 0;
@@ -168,7 +170,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // Calls the AsyncAddKey method to asynchronously add another |new_key| for
   // |username|, using |key| to unlock it first.
   // |callback| is called after the method call succeeds.
-  virtual void AsyncAddKey(const std::string& username,
+  virtual void AsyncAddKey(const cryptohome::Identification& cryptohome_id,
                            const std::string& key,
                            const std::string& new_key,
                            const AsyncMethodCallback& callback) = 0;
@@ -181,9 +183,10 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // |public_mount_id|. For supported |flags|, see the documentation of
   // AsyncMethodCaller::AsyncMount().  |callback| is called after the method
   // call succeeds.
-  virtual void AsyncMountPublic(const std::string& public_mount_id,
-                                int flags,
-                                const AsyncMethodCallback& callback) = 0;
+  virtual void AsyncMountPublic(
+      const cryptohome::Identification& public_mount_id,
+      int flags,
+      const AsyncMethodCallback& callback) = 0;
 
   // Calls TpmIsReady method.
   virtual void TpmIsReady(const BoolDBusMethodCallback& callback) = 0;
@@ -241,11 +244,10 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const Pkcs11GetTpmTokenInfoCallback& callback) = 0;
 
   // Calls Pkcs11GetTpmTokenInfoForUser method.  On success |callback| will
-  // receive PKCS #11 token information for the user identified by |user_email|.
-  // The |user_email| must be a canonical email address as returned by
-  // user_manager::User::email().
+  // receive PKCS #11 token information for the user identified by
+  // |cryptohome_id|.
   virtual void Pkcs11GetTpmTokenInfoForUser(
-      const std::string& user_email,
+      const cryptohome::Identification& cryptohome_id,
       const Pkcs11GetTpmTokenInfoCallback& callback) = 0;
 
   // Calls InstallAttributesGet method and returns true when the call succeeds.
@@ -308,19 +310,19 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const AsyncMethodCallback& callback) = 0;
 
   // Asynchronously creates an attestation certificate request according to
-  // |certificate_profile|.  Some profiles require that the |user_id| of the
-  // currently active user and an identifier of the |request_origin| be
+  // |certificate_profile|.  Some profiles require that the |cryptohome_id| of
+  // the currently active user and an identifier of the |request_origin| be
   // provided.  |callback| will be called when the dbus call completes.  When
   // the operation completes, the AsyncCallStatusWithDataHandler signal handler
   // is called.  The data that is sent with the signal is a certificate request
   // to be sent to the Privacy CA of type |pca_type|.  The certificate request
   // is completed by calling AsyncTpmAttestationFinishCertRequest.  The
-  // |user_id| will not be included in the certificate request for the Privacy
-  // CA.
+  // |cryptohome_id| will not be included in the certificate request for the
+  // Privacy CA.
   virtual void AsyncTpmAttestationCreateCertRequest(
       chromeos::attestation::PrivacyCAType pca_type,
       attestation::AttestationCertificateProfile certificate_profile,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& request_origin,
       const AsyncMethodCallback& callback) = 0;
 
@@ -331,46 +333,45 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // is the response to the certificate request emitted by the Privacy CA.
   // |key_type| determines whether the certified key is to be associated with
   // the current user.  |key_name| is a name for the key.  If |key_type| is
-  // KEY_USER, a |user_id| must be provided.  Otherwise |user_id| is ignored.
-  // For normal GAIA users the |user_id| is a canonical email address.
+  // KEY_USER, a |cryptohome_id| must be provided.  Otherwise |cryptohome_id|
+  // is ignored.
   virtual void AsyncTpmAttestationFinishCertRequest(
       const std::string& pca_response,
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const AsyncMethodCallback& callback) = 0;
 
   // Checks if an attestation key already exists.  If the key specified by
   // |key_type| and |key_name| exists, then the result sent to the callback will
-  // be true.  If |key_type| is KEY_USER, a |user_id| must be provided.
-  // Otherwise |user_id| is ignored.  For normal GAIA users the |user_id| is a
-  // canonical email address.
+  // be true.  If |key_type| is KEY_USER, a |cryptohome_id| must be provided.
+  // Otherwise |cryptohome_id| is ignored.
   virtual void TpmAttestationDoesKeyExist(
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const BoolDBusMethodCallback& callback) = 0;
 
   // Gets the attestation certificate for the key specified by |key_type| and
   // |key_name|.  |callback| will be called when the operation completes.  If
   // the key does not exist the callback |result| parameter will be false.  If
-  // |key_type| is KEY_USER, a |user_id| must be provided.  Otherwise |user_id|
-  // is ignored.  For normal GAIA users the |user_id| is a canonical email
-  // address.
+  // |key_type| is KEY_USER, a |cryptohome_id| must be provided.  Otherwise
+  // |cryptohome_id|
+  // is ignored.
   virtual void TpmAttestationGetCertificate(
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const DataMethodCallback& callback) = 0;
 
   // Gets the public key for the key specified by |key_type| and |key_name|.
   // |callback| will be called when the operation completes.  If the key does
   // not exist the callback |result| parameter will be false.  If |key_type| is
-  // KEY_USER, a |user_id| must be provided.  Otherwise |user_id| is ignored.
-  // For normal GAIA users the |user_id| is a canonical email address.
+  // KEY_USER, a |cryptohome_id| must be provided.  Otherwise |cryptohome_id|
+  // is ignored.
   virtual void TpmAttestationGetPublicKey(
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const DataMethodCallback& callback) = 0;
 
@@ -378,12 +379,11 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // PKCS #11 token.  The |callback| will be called when the dbus call
   // completes.  When the operation completes, the AsyncCallStatusHandler signal
   // handler is called.  |key_type| and |key_name| specify the key to register.
-  // If |key_type| is KEY_USER, a |user_id| must be provided.  Otherwise
-  // |user_id| is ignored.  For normal GAIA users the |user_id| is a canonical
-  // email address.
+  // If |key_type| is KEY_USER, a |cryptohome_id| must be provided.  Otherwise
+  // |cryptohome_id| is ignored.
   virtual void TpmAttestationRegisterKey(
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const AsyncMethodCallback& callback) = 0;
 
@@ -393,12 +393,11 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // generated.  |challenge| must be a valid enterprise attestation challenge.
   // The |callback| will be called when the dbus call completes.  When the
   // operation completes, the AsyncCallStatusWithDataHandler signal handler is
-  // called.  If |key_type| is KEY_USER, a |user_id| must be provided.
-  // Otherwise |user_id| is ignored.  For normal GAIA users the |user_id| is a
-  // canonical email address.
+  // called.  If |key_type| is KEY_USER, a |cryptohome_id| must be provided.
+  // Otherwise |cryptohome_id| is ignored.
   virtual void TpmAttestationSignEnterpriseChallenge(
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const std::string& domain,
       const std::string& device_id,
@@ -412,11 +411,11 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // cannot be used to sign arbitrary data.  The |callback| will be called when
   // the dbus call completes.  When the operation completes, the
   // AsyncCallStatusWithDataHandler signal handler is called.  If |key_type| is
-  // KEY_USER, a |user_id| must be provided.  Otherwise |user_id| is ignored.
-  // For normal GAIA users the |user_id| is a canonical email address.
+  // KEY_USER, a |cryptohome_id| must be provided.  Otherwise |cryptohome_id|
+  // is ignored.
   virtual void TpmAttestationSignSimpleChallenge(
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const std::string& challenge,
       const AsyncMethodCallback& callback) = 0;
@@ -426,23 +425,22 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // If the key does not exist the callback |result| parameter will be false.
   // If no payload has been set for the key the callback |result| parameter will
   // be true and the |data| parameter will be empty.  If |key_type| is
-  // KEY_USER, a |user_id| must be provided.  Otherwise |user_id| is ignored.
-  // For normal GAIA users the |user_id| is a canonical email address.
+  // KEY_USER, a |cryptohome_id| must be provided.  Otherwise |cryptohome_id|
+  // is ignored.
   virtual void TpmAttestationGetKeyPayload(
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const DataMethodCallback& callback) = 0;
 
   // Sets the |payload| associated with the key specified by |key_type| and
   // |key_name|.  The |callback| will be called when the operation completes.
   // If the operation succeeds, the callback |result| parameter will be true.
-  // If |key_type| is KEY_USER, a |user_id| must be provided.  Otherwise
-  // |user_id| is ignored.  For normal GAIA users the |user_id| is a canonical
-  // email address.
+  // If |key_type| is KEY_USER, a |cryptohome_id| must be provided.  Otherwise
+  // |cryptohome_id| is ignored.
   virtual void TpmAttestationSetKeyPayload(
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_name,
       const std::string& payload,
       const BoolDBusMethodCallback& callback) = 0;
@@ -450,14 +448,14 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // Deletes certified keys as specified by |key_type| and |key_prefix|.  The
   // |callback| will be called when the operation completes.  If the operation
   // succeeds, the callback |result| parameter will be true.  If |key_type| is
-  // KEY_USER, a |user_id| must be provided.  Otherwise |user_id| is ignored.
-  // For normal GAIA users the |user_id| is a canonical email address.  All keys
-  // where the key name has a prefix matching |key_prefix| will be deleted.  All
-  // meta-data associated with the key, including certificates, will also be
-  // deleted.
+  // KEY_USER, a |cryptohome_id| must be provided.  Otherwise |cryptohome_id|
+  // is ignored.
+  // All keys where the key name has a prefix matching |key_prefix| will be
+  // deleted.  All meta-data associated with the key, including certificates,
+  // will also be deleted.
   virtual void TpmAttestationDeleteKeys(
       attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const std::string& key_prefix,
       const BoolDBusMethodCallback& callback) = 0;
 
@@ -466,56 +464,51 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // GetKeyDataEx returns information about the key specified in |request|. At
   // present, this does not include any secret information and the call should
   // not be authenticated (|auth| should be empty).
-  virtual void GetKeyDataEx(
-      const cryptohome::AccountIdentifier& id,
-      const cryptohome::AuthorizationRequest& auth,
-      const cryptohome::GetKeyDataRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+  virtual void GetKeyDataEx(const cryptohome::Identification& cryptohome_id,
+                            const cryptohome::AuthorizationRequest& auth,
+                            const cryptohome::GetKeyDataRequest& request,
+                            const ProtobufMethodCallback& callback) = 0;
 
   // Asynchronously calls CheckKeyEx method. |callback| is called after method
   // call, and with reply protobuf.
   // CheckKeyEx just checks if authorization information is valid.
-  virtual void CheckKeyEx(
-      const cryptohome::AccountIdentifier& id,
-      const cryptohome::AuthorizationRequest& auth,
-      const cryptohome::CheckKeyRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+  virtual void CheckKeyEx(const cryptohome::Identification& cryptohome_id,
+                          const cryptohome::AuthorizationRequest& auth,
+                          const cryptohome::CheckKeyRequest& request,
+                          const ProtobufMethodCallback& callback) = 0;
 
   // Asynchronously calls MountEx method. |callback| is called after method
   // call, and with reply protobuf.
   // MountEx attempts to mount home dir using given authorization, and can
   // create new home dir if necessary values are specified in |request|.
-  virtual void MountEx(
-      const cryptohome::AccountIdentifier& id,
-      const cryptohome::AuthorizationRequest& auth,
-      const cryptohome::MountRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+  virtual void MountEx(const cryptohome::Identification& cryptohome_id,
+                       const cryptohome::AuthorizationRequest& auth,
+                       const cryptohome::MountRequest& request,
+                       const ProtobufMethodCallback& callback) = 0;
 
   // Asynchronously calls AddKeyEx method. |callback| is called after method
   // call, and with reply protobuf.
   // AddKeyEx adds another key to the given key set. |request| also defines
   // behavior in case when key with specified label already exist.
-  virtual void AddKeyEx(
-      const cryptohome::AccountIdentifier& id,
-      const cryptohome::AuthorizationRequest& auth,
-      const cryptohome::AddKeyRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+  virtual void AddKeyEx(const cryptohome::Identification& cryptohome_id,
+                        const cryptohome::AuthorizationRequest& auth,
+                        const cryptohome::AddKeyRequest& request,
+                        const ProtobufMethodCallback& callback) = 0;
 
   // Asynchronously calls UpdateKeyEx method. |callback| is called after method
   // call, and with reply protobuf. Reply will contain MountReply extension.
   // UpdateKeyEx replaces key used for authorization, without affecting any
   // other keys. If specified at home dir creation time, new key may have
   // to be signed and/or encrypted.
-  virtual void UpdateKeyEx(
-      const cryptohome::AccountIdentifier& id,
-      const cryptohome::AuthorizationRequest& auth,
-      const cryptohome::UpdateKeyRequest& request,
-      const ProtobufMethodCallback& callback) = 0;
+  virtual void UpdateKeyEx(const cryptohome::Identification& cryptohome_id,
+                           const cryptohome::AuthorizationRequest& auth,
+                           const cryptohome::UpdateKeyRequest& request,
+                           const ProtobufMethodCallback& callback) = 0;
 
   // Asynchronously calls RemoveKeyEx method. |callback| is called after method
   // call, and with reply protobuf.
   // RemoveKeyEx removes key from the given key set.
-  virtual void RemoveKeyEx(const cryptohome::AccountIdentifier& id,
+  virtual void RemoveKeyEx(const cryptohome::Identification& cryptohome_id,
                            const cryptohome::AuthorizationRequest& auth,
                            const cryptohome::RemoveKeyRequest& request,
                            const ProtobufMethodCallback& callback) = 0;

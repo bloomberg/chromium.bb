@@ -295,15 +295,14 @@ void DidGetTPMInfoForUserOnUIThread(
   }
 }
 
-void GetTPMInfoForUserOnUIThread(const std::string& username,
+void GetTPMInfoForUserOnUIThread(const AccountId& account_id,
                                  const std::string& username_hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "Getting TPM info from cryptohome for "
-           << " " << username << " " << username_hash;
+           << " " << account_id.Serialize() << " " << username_hash;
   scoped_ptr<chromeos::TPMTokenInfoGetter> scoped_token_info_getter =
       chromeos::TPMTokenInfoGetter::CreateForUserToken(
-          username,
-          chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
+          account_id, chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
           base::ThreadTaskRunnerHandle::Get());
   chromeos::TPMTokenInfoGetter* token_info_getter =
       scoped_token_info_getter.get();
@@ -318,21 +317,20 @@ void GetTPMInfoForUserOnUIThread(const std::string& username,
                  username_hash));
 }
 
-void StartTPMSlotInitializationOnIOThread(const std::string& username,
+void StartTPMSlotInitializationOnIOThread(const AccountId& account_id,
                                           const std::string& username_hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GetTPMInfoForUserOnUIThread, username, username_hash));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetTPMInfoForUserOnUIThread, account_id, username_hash));
 }
 
-void StartNSSInitOnIOThread(const std::string& username,
+void StartNSSInitOnIOThread(const AccountId& account_id,
                             const std::string& username_hash,
                             const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "Starting NSS init for " << username
+  DVLOG(1) << "Starting NSS init for " << account_id.Serialize()
            << "  hash:" << username_hash;
 
   // Make sure NSS is initialized for the user.
@@ -347,9 +345,10 @@ void StartNSSInitOnIOThread(const std::string& username,
   crypto::WillInitializeTPMForChromeOSUser(username_hash);
 
   if (crypto::IsTPMTokenEnabledForNSS()) {
-    if (crypto::IsTPMTokenReady(base::Bind(
-            &StartTPMSlotInitializationOnIOThread, username, username_hash))) {
-      StartTPMSlotInitializationOnIOThread(username, username_hash);
+    if (crypto::IsTPMTokenReady(
+            base::Bind(&StartTPMSlotInitializationOnIOThread, account_id,
+                       username_hash))) {
+      StartTPMSlotInitializationOnIOThread(account_id, username_hash);
     } else {
       DVLOG(1) << "Waiting for tpm ready ...";
     }
@@ -446,12 +445,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     if (user && !user->username_hash().empty()) {
       params->username_hash = user->username_hash();
       DCHECK(!params->username_hash.empty());
-      BrowserThread::PostTask(BrowserThread::IO,
-                              FROM_HERE,
-                              base::Bind(&StartNSSInitOnIOThread,
-                                         user->email(),
-                                         user->username_hash(),
-                                         profile->GetPath()));
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::Bind(&StartNSSInitOnIOThread, user->GetAccountId(),
+                     user->username_hash(), profile->GetPath()));
 
       // Use the device-wide system key slot only if the user is affiliated on
       // the device.

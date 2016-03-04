@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/login/auth/login_performer.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -256,8 +257,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Public session auto-login timeout, in milliseconds.
   int public_session_auto_login_delay_;
 
-  // Username for public session auto-login.
-  std::string public_session_auto_login_username_;
+  // AccountId for public session auto-login.
+  AccountId public_session_auto_login_account_id_ = EmptyAccountId();
 
   // Used to execute login operations.
   scoped_ptr<LoginPerformer> login_performer_;

@@ -395,14 +395,13 @@ class KioskAppData::WebstoreDataParser
 
 KioskAppData::KioskAppData(KioskAppDataDelegate* delegate,
                            const std::string& app_id,
-                           const std::string& user_id,
+                           const AccountId& account_id,
                            const GURL& update_url)
     : delegate_(delegate),
       status_(STATUS_INIT),
       app_id_(app_id),
-      user_id_(user_id),
-      update_url_(update_url) {
-}
+      account_id_(account_id),
+      update_url_(update_url) {}
 
 KioskAppData::~KioskAppData() {}
 

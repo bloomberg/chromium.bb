@@ -266,10 +266,10 @@ class CryptohomeAuthenticatorTest : public testing::Test {
           cryptohome::KeyDefinition::ProviderData("salt"));
       key_definition.provider_data.back().bytes = std::move(salt);
     }
-    EXPECT_CALL(*mock_homedir_methods_,
-                GetKeyDataEx(cryptohome::Identification(
-                                 user_context_.GetAccountId().GetUserEmail()),
-                             kCryptohomeGAIAKeyLabel, _))
+    EXPECT_CALL(
+        *mock_homedir_methods_,
+        GetKeyDataEx(cryptohome::Identification(user_context_.GetAccountId()),
+                     kCryptohomeGAIAKeyLabel, _))
         .WillOnce(WithArg<2>(Invoke(
             this, &CryptohomeAuthenticatorTest::InvokeGetDataExCallback)));
   }
@@ -285,10 +285,10 @@ class CryptohomeAuthenticatorTest : public testing::Test {
           kCryptohomeGAIAKeyLabel,
           cryptohome::PRIV_DEFAULT));
     }
-    EXPECT_CALL(*mock_homedir_methods_,
-                MountEx(cryptohome::Identification(
-                            user_context_.GetAccountId().GetUserEmail()),
-                        cryptohome::Authorization(auth_key), mount, _))
+    EXPECT_CALL(
+        *mock_homedir_methods_,
+        MountEx(cryptohome::Identification(user_context_.GetAccountId()),
+                cryptohome::Authorization(auth_key), mount, _))
         .Times(1)
         .RetiresOnSaturation();
   }
@@ -562,8 +562,9 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataResync) {
   // Set up mock async method caller to respond successfully to a cryptohome
   // remove attempt.
   mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(*mock_caller_,
-              AsyncRemove(user_context_.GetAccountId().GetUserEmail(), _))
+  EXPECT_CALL(
+      *mock_caller_,
+      AsyncRemove(cryptohome::Identification(user_context_.GetAccountId()), _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -585,8 +586,9 @@ TEST_F(CryptohomeAuthenticatorTest, DriveResyncFail) {
 
   // Set up mock async method caller to fail a cryptohome remove attempt.
   mock_caller_->SetUp(false, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(*mock_caller_,
-              AsyncRemove(user_context_.GetAccountId().GetUserEmail(), _))
+  EXPECT_CALL(
+      *mock_caller_,
+      AsyncRemove(cryptohome::Identification(user_context_.GetAccountId()), _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -616,9 +618,10 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataRecover) {
 
   // Set up mock async method caller to respond successfully to a key migration.
   mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(*mock_caller_,
-              AsyncMigrateKey(user_context_.GetAccountId().GetUserEmail(), _,
-                              transformed_key_.GetSecret(), _))
+  EXPECT_CALL(
+      *mock_caller_,
+      AsyncMigrateKey(cryptohome::Identification(user_context_.GetAccountId()),
+                      _, transformed_key_.GetSecret(), _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -641,9 +644,10 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataRecoverButFail) {
   // Set up mock async method caller to fail a key migration attempt,
   // asserting that the wrong password was used.
   mock_caller_->SetUp(false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
-  EXPECT_CALL(*mock_caller_,
-              AsyncMigrateKey(user_context_.GetAccountId().GetUserEmail(), _,
-                              transformed_key_.GetSecret(), _))
+  EXPECT_CALL(
+      *mock_caller_,
+      AsyncMigrateKey(cryptohome::Identification(user_context_.GetAccountId()),
+                      _, transformed_key_.GetSecret(), _))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -732,8 +736,10 @@ TEST_F(CryptohomeAuthenticatorTest, DriveUnlock) {
   // Set up mock async method caller to respond successfully to a cryptohome
   // key-check attempt.
   mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(*mock_caller_,
-              AsyncCheckKey(user_context_.GetAccountId().GetUserEmail(), _, _))
+  EXPECT_CALL(
+      *mock_caller_,
+      AsyncCheckKey(cryptohome::Identification(user_context_.GetAccountId()), _,
+                    _))
       .Times(1)
       .RetiresOnSaturation();
 

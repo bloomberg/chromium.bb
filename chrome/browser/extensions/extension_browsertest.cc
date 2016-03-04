@@ -138,7 +138,7 @@ void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
     // ExtensionService and then the real profile with one, as we do when
     // running on chromeos.
     command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                    "TestUser@gmail.com");
+                                    "testuser@gmail.com");
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
 #endif

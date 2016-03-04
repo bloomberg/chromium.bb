@@ -17,6 +17,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -44,7 +45,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
       chromeos::CryptohomeClient* cryptohome_client,
       chromeos::SessionManagerClient* session_manager_client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      const std::string& username,
+      const AccountId& account_id,
       const base::FilePath& user_policy_key_dir,
       const base::FilePath& legacy_token_cache_file,
       const base::FilePath& legacy_policy_cache_file);
@@ -124,7 +125,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
 
   chromeos::CryptohomeClient* cryptohome_client_;
   chromeos::SessionManagerClient* session_manager_client_;
-  const std::string username_;
+  const AccountId account_id_;
   base::FilePath user_policy_key_dir_;
 
   // TODO(mnissler): Remove all the legacy policy support members below after

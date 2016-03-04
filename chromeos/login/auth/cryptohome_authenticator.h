@@ -129,12 +129,12 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
   // success/failure.
   void LoginAsPublicSession(const UserContext& user_context) override;
 
-  // Initiates login into the kiosk mode account identified by |app_user_id|.
+  // Initiates login into the kiosk mode account identified by |app_account_id|.
   // Mounts an ephemeral guest cryptohome if |use_guest_mount| is |true|.
   // Otherwise, mounts a public cryptohome, which will be ephemeral if the
   // |DeviceEphemeralUsersEnabled| policy is enabled and non-ephemeral
   // otherwise.
-  void LoginAsKioskAccount(const std::string& app_user_id,
+  void LoginAsKioskAccount(const AccountId& app_account_id,
                            bool use_guest_mount) override;
 
   // These methods must be called on the UI thread, as they make DBus calls

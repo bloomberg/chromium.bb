@@ -40,6 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/user_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -805,7 +806,7 @@ void WallpaperManager::SetPolicyControlledWallpaper(
 
   if (user->username_hash().empty()) {
     cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-        account_id.GetUserEmail(),
+        cryptohome::Identification(account_id),
         base::Bind(&WallpaperManager::SetCustomWallpaperOnSanitizedUsername,
                    weak_factory_.GetWeakPtr(), account_id, user_image.image(),
                    true /* update wallpaper */));

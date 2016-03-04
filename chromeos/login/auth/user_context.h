@@ -40,7 +40,7 @@ class CHROMEOS_EXPORT UserContext {
   UserContext();
   UserContext(const UserContext& other);
   explicit UserContext(const AccountId& account_id);
-  UserContext(user_manager::UserType user_type, const std::string& user_id);
+  UserContext(user_manager::UserType user_type, const AccountId& account_id);
   ~UserContext();
 
   bool operator==(const UserContext& context) const;
@@ -64,8 +64,7 @@ class CHROMEOS_EXPORT UserContext {
 
   bool HasCredentials() const;
 
-  void SetUserID(const std::string& user_id);
-  void SetGaiaID(const std::string& gaia_id);
+  void SetAccountId(const AccountId& account_id);
   void SetKey(const Key& key);
   void SetAuthCode(const std::string& auth_code);
   void SetRefreshToken(const std::string& refresh_token);
@@ -83,7 +82,6 @@ class CHROMEOS_EXPORT UserContext {
 
  private:
   AccountId account_id_;
-  std::string gaia_id_;
   Key key_;
   std::string auth_code_;
   std::string refresh_token_;

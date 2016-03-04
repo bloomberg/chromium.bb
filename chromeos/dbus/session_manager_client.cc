@@ -20,6 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/chromeos_paths.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "crypto/sha2.h"
@@ -34,15 +35,16 @@ namespace chromeos {
 
 namespace {
 
-// Returns a location for |file| that is specific to the given |username|.
+// Returns a location for |file| that is specific to the given |cryptohome_id|.
 // These paths will be relative to DIR_USER_POLICY_KEYS, and can be used only
 // to store stub files.
-base::FilePath GetUserFilePath(const std::string& username, const char* file) {
+base::FilePath GetUserFilePath(const cryptohome::Identification& cryptohome_id,
+                               const char* file) {
   base::FilePath keys_path;
   if (!PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &keys_path))
     return base::FilePath();
   const std::string sanitized =
-      CryptohomeClient::GetStubSanitizedUsername(username);
+      CryptohomeClient::GetStubSanitizedUsername(cryptohome_id);
   return keys_path.AppendASCII(sanitized).AppendASCII(file);
 }
 
@@ -153,11 +155,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
         false);
   }
 
-  void StartSession(const std::string& user_email) override {
+  void StartSession(const cryptohome::Identification& cryptohome_id) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerStartSession);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(user_email);
+    writer.AppendString(cryptohome_id.id());
     writer.AppendString("");  // Unique ID is deprecated
     session_manager_proxy_->CallMethod(
         &method_call,
@@ -238,21 +240,20 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    callback));
   }
 
-  void RetrievePolicyForUser(const std::string& username,
+  void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
                              const RetrievePolicyCallback& callback) override {
     CallRetrievePolicyByUsername(
-        login_manager::kSessionManagerRetrievePolicyForUser,
-        username,
+        login_manager::kSessionManagerRetrievePolicyForUser, cryptohome_id.id(),
         callback);
   }
 
   std::string BlockingRetrievePolicyForUser(
-      const std::string& username) override {
+      const cryptohome::Identification& cryptohome_id) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerRetrievePolicyForUser);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(username);
+    writer.AppendString(cryptohome_id.id());
     scoped_ptr<dbus::Response> response =
         blocking_method_caller_->CallMethodAndBlock(&method_call);
     std::string policy;
@@ -289,13 +290,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
                    callback));
   }
 
-  void StorePolicyForUser(const std::string& username,
+  void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
                           const std::string& policy_blob,
                           const StorePolicyCallback& callback) override {
     CallStorePolicyByUsername(login_manager::kSessionManagerStorePolicyForUser,
-                              username,
-                              policy_blob,
-                              callback);
+                              cryptohome_id.id(), policy_blob, callback);
   }
 
   void StoreDeviceLocalAccountPolicy(
@@ -309,12 +308,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
         callback);
   }
 
-  void SetFlagsForUser(const std::string& username,
+  void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                        const std::vector<std::string>& flags) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerSetFlagsForUser);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(username);
+    writer.AppendString(cryptohome_id.id());
     writer.AppendArrayOfStrings(flags);
     session_manager_proxy_->CallMethod(
         &method_call,
@@ -423,12 +422,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   // Helper for RetrieveDeviceLocalAccountPolicy and RetrievePolicyForUser.
   void CallRetrievePolicyByUsername(const std::string& method_name,
-                                    const std::string& username,
+                                    const std::string& account_id,
                                     const RetrievePolicyCallback& callback) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  method_name);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(username);
+    writer.AppendString(account_id);
     session_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -440,13 +439,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void CallStorePolicyByUsername(const std::string& method_name,
-                                 const std::string& username,
+                                 const std::string& account_id,
                                  const std::string& policy_blob,
                                  const StorePolicyCallback& callback) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  method_name);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(username);
+    writer.AppendString(account_id);
     // static_cast does not work due to signedness.
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(policy_blob.data()),
@@ -544,7 +543,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
           LOG(ERROR) << method_name << " response is incorrect: "
                      << response->ToString();
         } else {
-          sessions[key] = value;
+          sessions[cryptohome::Identification::FromString(key)] = value;
         }
       }
       success = true;
@@ -741,7 +740,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   bool IsScreenLocked() const override { return screen_is_locked_; }
   void EmitLoginPromptVisible() override {}
   void RestartJob(const std::vector<std::string>& argv) override {}
-  void StartSession(const std::string& user_email) override {}
+  void StartSession(const cryptohome::Identification& cryptohome_id) override {}
   void StopSession() override {}
   void NotifySupervisedUserCreationStarted() override {}
   void NotifySupervisedUserCreationFinished() override {}
@@ -774,22 +773,23 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
         base::Bind(&GetFileContent, device_policy_path),
         callback);
   }
-  void RetrievePolicyForUser(const std::string& username,
+  void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
                              const RetrievePolicyCallback& callback) override {
     base::PostTaskAndReplyWithResult(
-        base::WorkerPool::GetTaskRunner(false).get(),
-        FROM_HERE,
-        base::Bind(&GetFileContent, GetUserFilePath(username, "stub_policy")),
+        base::WorkerPool::GetTaskRunner(false).get(), FROM_HERE,
+        base::Bind(&GetFileContent,
+                   GetUserFilePath(cryptohome_id, "stub_policy")),
         callback);
   }
   std::string BlockingRetrievePolicyForUser(
-      const std::string& username) override {
-    return GetFileContent(GetUserFilePath(username, "stub_policy"));
+      const cryptohome::Identification& cryptohome_id) override {
+    return GetFileContent(GetUserFilePath(cryptohome_id, "stub_policy"));
   }
   void RetrieveDeviceLocalAccountPolicy(
-      const std::string& account_name,
+      const std::string& account_id,
       const RetrievePolicyCallback& callback) override {
-    RetrievePolicyForUser(account_name, callback);
+    RetrievePolicyForUser(cryptohome::Identification::FromString(account_id),
+                          callback);
   }
   void StoreDevicePolicy(const std::string& policy_blob,
                          const StorePolicyCallback& callback) override {
@@ -821,7 +821,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
         base::Bind(callback, true),
         false);
   }
-  void StorePolicyForUser(const std::string& username,
+  void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
                           const std::string& policy_blob,
                           const StorePolicyCallback& callback) override {
     // The session manager writes the user policy key to a well-known
@@ -834,7 +834,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     }
 
     if (response.has_new_public_key()) {
-      base::FilePath key_path = GetUserFilePath(username, "policy.pub");
+      base::FilePath key_path = GetUserFilePath(cryptohome_id, "policy.pub");
       base::WorkerPool::PostTask(
           FROM_HERE,
           base::Bind(&StoreFile, key_path, response.new_public_key()),
@@ -843,7 +843,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
 
     // This file isn't read directly by Chrome, but is used by this class to
     // reload the user policy across restarts.
-    base::FilePath stub_policy_path = GetUserFilePath(username, "stub_policy");
+    base::FilePath stub_policy_path =
+        GetUserFilePath(cryptohome_id, "stub_policy");
     base::WorkerPool::PostTaskAndReply(
         FROM_HERE,
         base::Bind(&StoreFile, stub_policy_path, policy_blob),
@@ -851,12 +852,13 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
         false);
   }
   void StoreDeviceLocalAccountPolicy(
-      const std::string& account_name,
+      const std::string& account_id,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) override {
-    StorePolicyForUser(account_name, policy_blob, callback);
+    StorePolicyForUser(cryptohome::Identification::FromString(account_id),
+                       policy_blob, callback);
   }
-  void SetFlagsForUser(const std::string& username,
+  void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                        const std::vector<std::string>& flags) override {}
 
   void GetServerBackedStateKeys(const StateKeysCallback& callback) override {

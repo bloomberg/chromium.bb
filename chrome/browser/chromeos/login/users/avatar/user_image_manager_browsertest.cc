@@ -107,9 +107,7 @@ policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
 class UserImageManagerTest : public LoginManagerTest,
                              public user_manager::UserManager::Observer {
  protected:
-  UserImageManagerTest()
-      : LoginManagerTest(true),
-        enterprise_account_id_(AccountId::FromUserEmail(kEnterpriseUser1)) {}
+  UserImageManagerTest() : LoginManagerTest(true) {}
 
   // LoginManagerTest overrides:
   void SetUpInProcessBrowserTestFixture() override {
@@ -327,7 +325,10 @@ class UserImageManagerTest : public LoginManagerTest,
 
   const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
   const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
-  const AccountId enterprise_account_id_;
+  const AccountId enterprise_account_id_ =
+      AccountId::FromUserEmail(kEnterpriseUser1);
+  const cryptohome::Identification cryptohome_id_ =
+      cryptohome::Identification(enterprise_account_id_);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerTest);
@@ -666,8 +667,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
     ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
                                  &user_keys_dir));
     const std::string sanitized_username =
-        chromeos::CryptohomeClient::GetStubSanitizedUsername(
-            enterprise_account_id_.GetUserEmail());
+        chromeos::CryptohomeClient::GetStubSanitizedUsername(cryptohome_id_);
     const base::FilePath user_key_file =
         user_keys_dir.AppendASCII(sanitized_username)
                      .AppendASCII("policy.pub");
@@ -748,8 +748,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(
-      enterprise_account_id_.GetUserEmail(), user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(cryptohome_id_,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
@@ -773,8 +773,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
   // image.
   user_policy_.payload().Clear();
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(
-      enterprise_account_id_.GetUserEmail(), user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(cryptohome_id_,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->AddObserver(this);
   store->Load();
@@ -855,8 +855,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(
-      enterprise_account_id_.GetUserEmail(), user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(cryptohome_id_,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();
@@ -902,8 +902,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   user_policy_.payload().mutable_useravatarimage()->set_value(
       ConstructPolicy(test::kUserAvatarImage2RelativePath));
   user_policy_.Build();
-  fake_session_manager_client_->set_user_policy(
-      enterprise_account_id_.GetUserEmail(), user_policy_.GetBlob());
+  fake_session_manager_client_->set_user_policy(cryptohome_id_,
+                                                user_policy_.GetBlob());
   run_loop_.reset(new base::RunLoop);
   store->Load();
   run_loop_->Run();

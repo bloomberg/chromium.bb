@@ -164,22 +164,23 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     // that there are no calls to the attestation service.  Thus, a test must
     // explicitly expect these calls or the mocks will fail the test.
 
+    const AccountId account_id = AccountId::FromUserEmail(kTestEmail);
     // Configure the mock AttestationFlow to call FakeGetCertificate.
     EXPECT_CALL(mock_attestation_flow_,
                 GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-                               kTestEmail, kTestID, _, _))
-        .WillRepeatedly(WithArgs<4>(Invoke(
-            this, &PlatformVerificationFlowTest::FakeGetCertificate)));
+                               account_id, kTestID, _, _))
+        .WillRepeatedly(WithArgs<4>(
+            Invoke(this, &PlatformVerificationFlowTest::FakeGetCertificate)));
 
     // Configure the mock AsyncMethodCaller to call FakeSignChallenge.
     std::string expected_key_name = std::string(kContentProtectionKeyPrefix) +
                                     std::string(kTestID);
     EXPECT_CALL(mock_async_caller_,
-                TpmAttestationSignSimpleChallenge(KEY_USER, kTestEmail,
-                                                  expected_key_name,
-                                                  kTestChallenge, _))
-        .WillRepeatedly(WithArgs<4>(Invoke(
-            this, &PlatformVerificationFlowTest::FakeSignChallenge)));
+                TpmAttestationSignSimpleChallenge(
+                    KEY_USER, cryptohome::Identification(account_id),
+                    expected_key_name, kTestChallenge, _))
+        .WillRepeatedly(WithArgs<4>(
+            Invoke(this, &PlatformVerificationFlowTest::FakeSignChallenge)));
   }
 
   void FakeGetCertificate(

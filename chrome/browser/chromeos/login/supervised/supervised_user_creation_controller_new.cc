@@ -229,8 +229,7 @@ void SupervisedUserCreationControllerNew::OnKeyTransformedIfNeeded(
 
   keys.push_back(master_key);
   authenticator_->CreateMount(
-      creation_context_->local_user_id,
-      keys,
+      AccountId::FromUserEmail(creation_context_->local_user_id), keys,
       base::Bind(&SupervisedUserCreationControllerNew::OnMountSuccess,
                  weak_factory_.GetWeakPtr()));
 }

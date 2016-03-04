@@ -762,8 +762,8 @@ bool ExistingUserController::password_changed() const {
 }
 
 void ExistingUserController::LoginAsGuest() {
-  PerformPreLoginActions(UserContext(user_manager::USER_TYPE_GUEST,
-                                     login::GuestAccountId().GetUserEmail()));
+  PerformPreLoginActions(
+      UserContext(user_manager::USER_TYPE_GUEST, login::GuestAccountId()));
 
   bool allow_guest;
   cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
@@ -866,20 +866,21 @@ void ExistingUserController::ConfigurePublicSessionAutoLogin() {
   const std::vector<policy::DeviceLocalAccount> device_local_accounts =
       policy::GetDeviceLocalAccounts(cros_settings_);
 
-  public_session_auto_login_username_.clear();
+  public_session_auto_login_account_id_ = EmptyAccountId();
   for (std::vector<policy::DeviceLocalAccount>::const_iterator
            it = device_local_accounts.begin();
        it != device_local_accounts.end(); ++it) {
     if (it->account_id == auto_login_account_id) {
-      public_session_auto_login_username_ = it->user_id;
+      public_session_auto_login_account_id_ =
+          AccountId::FromUserEmail(it->user_id);
       break;
     }
   }
 
   const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
-      AccountId::FromUserEmail(public_session_auto_login_username_));
+      public_session_auto_login_account_id_);
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
-    public_session_auto_login_username_.clear();
+    public_session_auto_login_account_id_ = EmptyAccountId();
 
   if (!cros_settings_->GetInteger(
           kAccountsPrefDeviceLocalAccountAutoLoginDelay,
@@ -887,7 +888,7 @@ void ExistingUserController::ConfigurePublicSessionAutoLogin() {
     public_session_auto_login_delay_ = 0;
   }
 
-  if (!public_session_auto_login_username_.empty())
+  if (public_session_auto_login_account_id_.is_valid())
     StartPublicSessionAutoLoginTimer();
   else
     StopPublicSessionAutoLoginTimer();
@@ -902,9 +903,10 @@ void ExistingUserController::ResetPublicSessionAutoLoginTimer() {
 }
 
 void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
-  CHECK(signin_screen_ready_ && !public_session_auto_login_username_.empty());
+  CHECK(signin_screen_ready_ &&
+        public_session_auto_login_account_id_.is_valid());
   Login(UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
-                    public_session_auto_login_username_),
+                    public_session_auto_login_account_id_),
         SigninSpecifics());
 }
 
@@ -914,9 +916,8 @@ void ExistingUserController::StopPublicSessionAutoLoginTimer() {
 }
 
 void ExistingUserController::StartPublicSessionAutoLoginTimer() {
-  if (!signin_screen_ready_ ||
-      is_login_in_progress_ ||
-      public_session_auto_login_username_.empty()) {
+  if (!signin_screen_ready_ || is_login_in_progress_ ||
+      !public_session_auto_login_account_id_.is_valid()) {
     return;
   }
 

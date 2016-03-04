@@ -150,7 +150,8 @@ class WallpaperManagerPolicyTest
     base::FilePath user_keys_dir;
     EXPECT_TRUE(PathService::Get(DIR_USER_POLICY_KEYS, &user_keys_dir));
     const std::string sanitized_user_id =
-        CryptohomeClient::GetStubSanitizedUsername(account_id.GetUserEmail());
+        CryptohomeClient::GetStubSanitizedUsername(
+            cryptohome::Identification(account_id));
     const base::FilePath user_key_file =
         user_keys_dir.AppendASCII(sanitized_user_id)
                      .AppendASCII("policy.pub");
@@ -252,8 +253,8 @@ class WallpaperManagerPolicyTest
       builder->payload().Clear();
     }
     builder->Build();
-    fake_session_manager_client_->set_user_policy(account_id.GetUserEmail(),
-                                                  builder->GetBlob());
+    fake_session_manager_client_->set_user_policy(
+        cryptohome::Identification(account_id), builder->GetBlob());
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(account_id);
     ASSERT_TRUE(user);

@@ -46,11 +46,10 @@ const char kReauthReasonKey[] = "reauth_reason";
 const char kGaiaIdMigration[] = "gaia_id_migration";
 
 PrefService* GetLocalState() {
-  UserManager* user_manager = UserManager::Get();
-  if (user_manager)
-    return user_manager->GetLocalState();
+  if (!UserManager::IsInitialized())
+    return nullptr;
 
-  return nullptr;
+  return UserManager::Get()->GetLocalState();
 }
 
 // Checks if values in |dict| correspond with |account_id| identity.
@@ -72,7 +71,11 @@ bool UserMatches(const AccountId& account_id,
 
 // Fills relevant |dict| values based on |account_id|.
 void UpdateIdentity(const AccountId& account_id, base::DictionaryValue& dict) {
-  dict.SetString(kCanonicalEmail, account_id.GetUserEmail());
+  if (!account_id.GetUserEmail().empty())
+    dict.SetString(kCanonicalEmail, account_id.GetUserEmail());
+
+  if (!account_id.GetGaiaId().empty())
+    dict.SetString(kGAIAIdKey, account_id.GetGaiaId());
 }
 
 }  // namespace
@@ -86,9 +89,8 @@ bool FindPrefs(const AccountId& account_id,
     return false;
 
   // UserManager is usually NULL in unit tests.
-  UserManager* user_manager = UserManager::Get();
-  if (user_manager &&
-      user_manager->IsUserNonCryptohomeDataEphemeral(account_id))
+  if (UserManager::IsInitialized() &&
+      UserManager::Get()->IsUserNonCryptohomeDataEphemeral(account_id))
     return false;
 
   const base::ListValue* known_users = local_state->GetList(kKnownUsers);
@@ -114,9 +116,8 @@ void UpdatePrefs(const AccountId& account_id,
     return;
 
   // UserManager is usually NULL in unit tests.
-  UserManager* user_manager = UserManager::Get();
-  if (user_manager &&
-      user_manager->IsUserNonCryptohomeDataEphemeral(account_id))
+  if (UserManager::IsInitialized() &&
+      UserManager::Get()->IsUserNonCryptohomeDataEphemeral(account_id))
     return;
 
   ListPrefUpdate update(local_state, kKnownUsers);
@@ -219,9 +220,10 @@ AccountId GetAccountId(const std::string& user_email,
     return EmptyAccountId();
 
   AccountId result(EmptyAccountId());
-  UserManager* user_manager = UserManager::Get();
-  if (user_manager &&
-      user_manager->GetPlatformKnownUserId(user_email, gaia_id, &result)) {
+  // UserManager is usually NULL in unit tests.
+  if (UserManager::IsInitialized() &&
+      UserManager::Get()->GetPlatformKnownUserId(user_email, gaia_id,
+                                                 &result)) {
     return result;
   }
 
@@ -254,6 +256,29 @@ AccountId GetAccountId(const std::string& user_email,
   return (gaia_id.empty()
               ? AccountId::FromUserEmail(user_email)
               : AccountId::FromUserEmailGaiaId(user_email, gaia_id));
+}
+
+std::vector<AccountId> GetKnownAccountIds() {
+  std::vector<AccountId> result;
+  PrefService* local_state = GetLocalState();
+
+  // Local State may not be initialized in tests.
+  if (!local_state)
+    return result;
+
+  const base::ListValue* known_users = local_state->GetList(kKnownUsers);
+  for (size_t i = 0; i < known_users->GetSize(); ++i) {
+    const base::DictionaryValue* element = nullptr;
+    if (known_users->GetDictionary(i, &element)) {
+      std::string email;
+      std::string gaia_id;
+      const bool has_email = element->GetString(kCanonicalEmail, &email);
+      const bool has_gaia_id = element->GetString(kGAIAIdKey, &gaia_id);
+      if (has_email || has_gaia_id)
+        result.push_back(AccountId::FromUserEmailGaiaId(email, gaia_id));
+    }
+  }
+  return result;
 }
 
 bool GetGaiaIdMigrationStatus(const AccountId& account_id,

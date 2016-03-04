@@ -50,7 +50,6 @@ const char kTestRefreshToken2[] = "fake-refresh-token-2";
 UserContext CreateUserContext(const std::string& user_id) {
   UserContext user_context(AccountId::FromUserEmailGaiaId(
       user_id, LoginManagerTest::GetGaiaIDForUserID(user_id)));
-  user_context.SetGaiaID(LoginManagerTest::GetGaiaIDForUserID(user_id));
   user_context.SetKey(Key("password"));
   if (user_id == LoginManagerTest::kEnterpriseUser1) {
     user_context.SetRefreshToken(kTestRefreshToken1);

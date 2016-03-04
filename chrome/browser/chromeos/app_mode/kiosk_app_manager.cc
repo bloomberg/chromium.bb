@@ -35,13 +35,16 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/login/user_names.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_urls.h"
@@ -61,30 +64,34 @@ std::string GenerateKioskAppAccountId(const std::string& app_id) {
   return app_id + '@' + kKioskAppAccountDomain;
 }
 
-void ScheduleDelayedCryptohomeRemoval(const std::string& user_id,
+void ScheduleDelayedCryptohomeRemoval(const cryptohome::Identification& id,
                                       const std::string& app_id) {
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate dict_update(local_state, kKioskUsersToRemove);
-  dict_update->SetStringWithoutPathExpansion(user_id, app_id);
+
+  // We are using cryptohome::Identification here because it cannot change
+  // before actual removal will take place. (Possible cryptohome migration
+  // happens only on session start, but deletion should happen before it.)
+  dict_update->SetStringWithoutPathExpansion(id.id(), app_id);
   local_state->CommitPendingWrite();
 }
 
-void CancelDelayedCryptohomeRemoval(const std::string& user_id) {
+void CancelDelayedCryptohomeRemoval(const cryptohome::Identification& id) {
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate dict_update(local_state, kKioskUsersToRemove);
-  dict_update->RemoveWithoutPathExpansion(user_id, nullptr);
+  dict_update->RemoveWithoutPathExpansion(id.id(), nullptr);
   local_state->CommitPendingWrite();
 }
 
-void OnRemoveAppCryptohomeComplete(const std::string& user_id,
+void OnRemoveAppCryptohomeComplete(const cryptohome::Identification& id,
                                    const std::string& app,
                                    const base::Closure& callback,
                                    bool success,
                                    cryptohome::MountError return_code) {
   if (success) {
-    CancelDelayedCryptohomeRemoval(user_id);
+    CancelDelayedCryptohomeRemoval(id);
   } else {
-    ScheduleDelayedCryptohomeRemoval(user_id, app);
+    ScheduleDelayedCryptohomeRemoval(id, app);
     LOG(ERROR) << "Remove cryptohome for " << app
         << " failed, return code: " << return_code;
   }
@@ -102,16 +109,14 @@ void PerformDelayedCryptohomeRemovals(bool service_is_available) {
   const base::DictionaryValue* dict =
       local_state->GetDictionary(kKioskUsersToRemove);
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    std::string user_id = it.key();
+    const cryptohome::Identification cryptohome_id(
+        cryptohome::Identification::FromString(it.key()));
     std::string app_id;
     it.value().GetAsString(&app_id);
     VLOG(1) << "Removing obsolete crypthome for " << app_id;
     cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-        user_id,
-        base::Bind(&OnRemoveAppCryptohomeComplete,
-                   user_id,
-                   app_id,
-                   base::Closure()));
+        cryptohome_id, base::Bind(&OnRemoveAppCryptohomeComplete, cryptohome_id,
+                                  app_id, base::Closure()));
   }
 }
 
@@ -171,15 +176,17 @@ KioskAppManager::App::App(const KioskAppData& data,
                           bool is_extension_pending,
                           bool auto_launched_with_zero_delay)
     : app_id(data.app_id()),
-      user_id(data.user_id()),
+      account_id(data.account_id()),
       name(data.name()),
       icon(data.icon()),
       required_platform_version(data.required_platform_version()),
       is_loading(data.IsLoading() || is_extension_pending),
       was_auto_launched_with_zero_delay(auto_launched_with_zero_delay) {}
 
-KioskAppManager::App::App() : is_loading(false),
-                              was_auto_launched_with_zero_delay(false) {}
+KioskAppManager::App::App()
+    : account_id(EmptyAccountId()),
+      is_loading(false),
+      was_auto_launched_with_zero_delay(false) {}
 
 KioskAppManager::App::~App() {}
 
@@ -642,6 +649,9 @@ void KioskAppManager::UpdateAppData() {
     if (it->account_id == auto_login_account_id)
       auto_launch_app_id_ = it->kiosk_app_id;
 
+    // Note that app ids are not canonical, i.e. they can contain upper
+    // case letters.
+    const AccountId account_id(AccountId::FromUserEmail(it->user_id));
     std::map<std::string, KioskAppData*>::iterator old_it =
         old_apps.find(it->kiosk_app_id);
     if (old_it != old_apps.end()) {
@@ -649,11 +659,11 @@ void KioskAppManager::UpdateAppData() {
       old_apps.erase(old_it);
     } else {
       KioskAppData* new_app = new KioskAppData(
-          this, it->kiosk_app_id, it->user_id, GURL(it->kiosk_app_update_url));
+          this, it->kiosk_app_id, account_id, GURL(it->kiosk_app_update_url));
       apps_.push_back(new_app);  // Takes ownership of |new_app|.
       new_app->Load();
     }
-    CancelDelayedCryptohomeRemoval(it->user_id);
+    CancelDelayedCryptohomeRemoval(cryptohome::Identification(account_id));
   }
 
   base::Closure cryptohomes_barrier_closure;
@@ -663,7 +673,7 @@ void KioskAppManager::UpdateAppData() {
   if (active_user) {
     const AccountId active_account_id = active_user->GetAccountId();
     for (const auto& it : old_apps) {
-      if (it.second->user_id() == active_account_id.GetUserEmail()) {
+      if (it.second->account_id() == active_account_id) {
         VLOG(1) << "Currently running kiosk app removed from policy, exiting";
         cryptohomes_barrier_closure = BarrierClosure(
             old_apps.size(), base::Bind(&chrome::AttemptUserExit));
@@ -677,12 +687,10 @@ void KioskAppManager::UpdateAppData() {
   for (std::map<std::string, KioskAppData*>::iterator it = old_apps.begin();
        it != old_apps.end(); ++it) {
     it->second->ClearCache();
+    const cryptohome::Identification cryptohome_id(it->second->account_id());
     cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-        it->second->user_id(),
-        base::Bind(&OnRemoveAppCryptohomeComplete,
-                   it->second->user_id(),
-                   it->first,
-                   cryptohomes_barrier_closure));
+        cryptohome_id, base::Bind(&OnRemoveAppCryptohomeComplete, cryptohome_id,
+                                  it->first, cryptohomes_barrier_closure));
     apps_to_remove.push_back(it->second->app_id());
   }
   STLDeleteValues(&old_apps);

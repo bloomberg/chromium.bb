@@ -10,6 +10,8 @@
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 
+class AccountId;
+
 namespace chromeos {
 
 class AuthFailure;
@@ -27,7 +29,7 @@ class CHROMEOS_EXPORT FakeExtendedAuthenticator : public ExtendedAuthenticator {
                            const ResultCallback& success_callback) override;
   void AuthenticateToCheck(const UserContext& context,
                            const base::Closure& success_callback) override;
-  void CreateMount(const std::string& user_id,
+  void CreateMount(const AccountId& account_id,
                    const std::vector<cryptohome::KeyDefinition>& keys,
                    const ResultCallback& success_callback) override;
   void AddKey(const UserContext& context,

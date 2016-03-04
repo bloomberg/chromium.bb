@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "components/signin/core/account_id/account_id.h"
 
 namespace base {
 class TaskRunner;
@@ -47,7 +48,7 @@ class CHROMEOS_EXPORT TPMTokenInfoGetter {
 
   // Factory method for TPMTokenInfoGetter for a user token.
   static scoped_ptr<TPMTokenInfoGetter> CreateForUserToken(
-      const std::string& user_id,
+      const AccountId& account_id,
       CryptohomeClient* cryptohome_client,
       const scoped_refptr<base::TaskRunner>& delayed_task_runner);
 
@@ -80,7 +81,7 @@ class CHROMEOS_EXPORT TPMTokenInfoGetter {
 
   TPMTokenInfoGetter(
       Type type,
-      const std::string& user_id,
+      const AccountId& account_id,
       CryptohomeClient* cryptohome_client,
       const scoped_refptr<base::TaskRunner>& delayed_task_runner);
 
@@ -107,8 +108,9 @@ class CHROMEOS_EXPORT TPMTokenInfoGetter {
   Type type_;
   State state_;
 
-  // The user id associated with the TPMTokenInfoGetter. Empty for system token.
-  std::string user_id_;
+  // The account id associated with the TPMTokenInfoGetter. Empty for system
+  // token.
+  AccountId account_id_;
 
   TPMTokenInfoCallback callback_;
 

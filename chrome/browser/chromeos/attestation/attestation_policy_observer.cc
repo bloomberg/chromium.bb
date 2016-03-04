@@ -17,11 +17,14 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
+#include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "net/cert/pem_tokenizer.h"
@@ -171,11 +174,9 @@ void AttestationPolicyObserver::Start() {
                  weak_factory_.GetWeakPtr());
   cryptohome_client_->TpmAttestationDoesKeyExist(
       KEY_DEVICE,
-      std::string(),  // Not used.
+      cryptohome::Identification(),  // Not used.
       kEnterpriseMachineKey,
-      base::Bind(DBusBoolRedirectCallback,
-                 on_does_exist,
-                 on_does_not_exist,
+      base::Bind(DBusBoolRedirectCallback, on_does_exist, on_does_not_exist,
                  base::Bind(&AttestationPolicyObserver::Reschedule,
                             weak_factory_.GetWeakPtr()),
                  FROM_HERE));
@@ -185,22 +186,21 @@ void AttestationPolicyObserver::GetNewCertificate() {
   // We can reuse the dbus callback handler logic.
   attestation_flow_->GetCertificate(
       PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
-      std::string(),  // Not used.
-      std::string(),  // Not used.
-      true,  // Force a new key to be generated.
+      EmptyAccountId(),  // Not used.
+      std::string(),     // Not used.
+      true,              // Force a new key to be generated.
       base::Bind(DBusStringCallback,
                  base::Bind(&AttestationPolicyObserver::UploadCertificate,
                             weak_factory_.GetWeakPtr()),
                  base::Bind(&AttestationPolicyObserver::Reschedule,
                             weak_factory_.GetWeakPtr()),
-                 FROM_HERE,
-                 DBUS_METHOD_CALL_SUCCESS));
+                 FROM_HERE, DBUS_METHOD_CALL_SUCCESS));
 }
 
 void AttestationPolicyObserver::GetExistingCertificate() {
   cryptohome_client_->TpmAttestationGetCertificate(
       KEY_DEVICE,
-      std::string(),  // Not used.
+      cryptohome::Identification(),  // Not used.
       kEnterpriseMachineKey,
       base::Bind(DBusStringCallback,
                  base::Bind(&AttestationPolicyObserver::CheckCertificateExpiry,
@@ -272,10 +272,9 @@ void AttestationPolicyObserver::GetKeyPayload(
     base::Callback<void(const std::string&)> callback) {
   cryptohome_client_->TpmAttestationGetKeyPayload(
       KEY_DEVICE,
-      std::string(),  // Not used.
+      cryptohome::Identification(),  // Not used.
       kEnterpriseMachineKey,
-      base::Bind(DBusStringCallback,
-                 callback,
+      base::Bind(DBusStringCallback, callback,
                  base::Bind(&AttestationPolicyObserver::Reschedule,
                             weak_factory_.GetWeakPtr()),
                  FROM_HERE));
@@ -301,14 +300,10 @@ void AttestationPolicyObserver::MarkAsUploaded(const std::string& key_payload) {
   }
   cryptohome_client_->TpmAttestationSetKeyPayload(
       KEY_DEVICE,
-      std::string(),  // Not used.
-      kEnterpriseMachineKey,
-      new_payload,
-      base::Bind(DBusBoolRedirectCallback,
-                 base::Closure(),
-                 base::Closure(),
-                 base::Closure(),
-                 FROM_HERE));
+      cryptohome::Identification(),  // Not used.
+      kEnterpriseMachineKey, new_payload,
+      base::Bind(DBusBoolRedirectCallback, base::Closure(), base::Closure(),
+                 base::Closure(), FROM_HERE));
 }
 
 void AttestationPolicyObserver::Reschedule() {

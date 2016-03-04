@@ -111,6 +111,9 @@ class TestingProfile : public Profile {
     // Sets the PolicyService to be used by this profile.
     void SetPolicyService(scoped_ptr<policy::PolicyService> policy_service);
 
+    // Sets the UserProfileName to be used by this profile.
+    void SetProfileName(const std::string& profile_name);
+
     // Creates the TestingProfile using previously-set settings.
     scoped_ptr<TestingProfile> Build();
 
@@ -134,6 +137,7 @@ class TestingProfile : public Profile {
     std::string supervised_user_id_;
     scoped_ptr<policy::PolicyService> policy_service_;
     TestingFactories testing_factories_;
+    std::string profile_name_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
@@ -163,7 +167,8 @@ class TestingProfile : public Profile {
                  bool guest_session,
                  const std::string& supervised_user_id,
                  scoped_ptr<policy::PolicyService> policy_service,
-                 const TestingFactories& factories);
+                 const TestingFactories& factories,
+                 const std::string& profile_name);
 
   ~TestingProfile() override;
 

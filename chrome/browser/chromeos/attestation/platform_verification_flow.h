@@ -16,6 +16,8 @@
 #include "base/timer/timer.h"
 #include "url/gurl.h"
 
+class AccountId;
+
 namespace content {
 class WebContents;
 }
@@ -176,17 +178,17 @@ class PlatformVerificationFlow
                              bool attestation_prepared);
 
   // Initiates the flow to get a platform key certificate.  The arguments to
-  // ChallengePlatformKey are in |context|.  |user_id| identifies the user for
-  // which to get a certificate.  If |force_new_key| is true then any existing
-  // key for the same user and service will be ignored and a new key will be
-  // generated and certified.
+  // ChallengePlatformKey are in |context|.  |account_id| identifies the user
+  // for which to get a certificate.  If |force_new_key| is true then any
+  // existing key for the same user and service will be ignored and a new key
+  // will be generated and certified.
   void GetCertificate(const ChallengeContext& context,
-                      const std::string& user_id,
+                      const AccountId& account_id,
                       bool force_new_key);
 
   // A callback called when an attestation certificate request operation
   // completes.  The arguments to ChallengePlatformKey are in |context|.
-  // |user_id| identifies the user for which the certificate was requested.
+  // |account_id| identifies the user for which the certificate was requested.
   // |operation_success| is true iff the certificate request operation
   // succeeded.  |certificate_chain| holds the certificate for the platform key
   // on success.  If the certificate request was successful, this method invokes
@@ -194,7 +196,7 @@ class PlatformVerificationFlow
   // method being called, this method does nothing - notably, the callback is
   // not invoked.
   void OnCertificateReady(const ChallengeContext& context,
-                          const std::string& user_id,
+                          const AccountId& account_id,
                           scoped_ptr<base::Timer> timer,
                           bool operation_success,
                           const std::string& certificate_chain);
@@ -207,14 +209,14 @@ class PlatformVerificationFlow
   // A callback called when a challenge signing request has completed.  The
   // |certificate_chain| is the platform certificate chain for the key which
   // signed the |challenge|.  The arguments to ChallengePlatformKey are in
-  // |context|. |user_id| identifies the user for which the certificate was
+  // |context|. |account_id| identifies the user for which the certificate was
   // requested. |is_expiring_soon| will be set iff a certificate in the
   // |certificate_chain| is expiring soon. |operation_success| is true iff the
   // challenge signing operation was successful.  If it was successful,
   // |response_data| holds the challenge response and the method will invoke
   // |context.callback|.
   void OnChallengeReady(const ChallengeContext& context,
-                        const std::string& user_id,
+                        const AccountId& account_id,
                         const std::string& certificate_chain,
                         bool is_expiring_soon,
                         bool operation_success,

@@ -280,7 +280,7 @@ class SecretInterceptingFakeCryptohomeClient : public FakeCryptohomeClient {
  public:
   SecretInterceptingFakeCryptohomeClient();
 
-  void MountEx(const cryptohome::AccountIdentifier& id,
+  void MountEx(const cryptohome::Identification& id,
                const cryptohome::AuthorizationRequest& auth,
                const cryptohome::MountRequest& request,
                const ProtobufMethodCallback& callback) override;
@@ -298,7 +298,7 @@ SecretInterceptingFakeCryptohomeClient::
 }
 
 void SecretInterceptingFakeCryptohomeClient::MountEx(
-    const cryptohome::AccountIdentifier& id,
+    const cryptohome::Identification& id,
     const cryptohome::AuthorizationRequest& auth,
     const cryptohome::MountRequest& request,
     const ProtobufMethodCallback& callback) {

@@ -132,6 +132,9 @@ using testing::Return;
 
 namespace {
 
+// Default profile name
+const char kTestingProfile[] = "testing_profile";
+
 // Task used to make sure history has finished processing a request. Intended
 // for use with BlockUntilHistoryProcessesPendingRequests.
 
@@ -258,7 +261,8 @@ TestingProfile::TestingProfile()
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(NULL),
-      delegate_(NULL) {
+      delegate_(NULL),
+      profile_name_(kTestingProfile) {
   CreateTempProfileDir();
   profile_path_ = temp_dir_.path();
 
@@ -277,13 +281,13 @@ TestingProfile::TestingProfile(const base::FilePath& path)
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(NULL),
-      delegate_(NULL) {
+      delegate_(NULL),
+      profile_name_(kTestingProfile) {
   Init();
   FinishInit();
 }
 
-TestingProfile::TestingProfile(const base::FilePath& path,
-                               Delegate* delegate)
+TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
     : start_time_(Time::Now()),
       testing_prefs_(NULL),
       force_incognito_(false),
@@ -294,7 +298,8 @@ TestingProfile::TestingProfile(const base::FilePath& path,
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(NULL),
-      delegate_(delegate) {
+      delegate_(delegate),
+      profile_name_(kTestingProfile) {
   Init();
   if (delegate_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -316,7 +321,8 @@ TestingProfile::TestingProfile(
     bool guest_session,
     const std::string& supervised_user_id,
     scoped_ptr<policy::PolicyService> policy_service,
-    const TestingFactories& factories)
+    const TestingFactories& factories,
+    const std::string& profile_name)
     : start_time_(Time::Now()),
       prefs_(prefs.release()),
       testing_prefs_(NULL),
@@ -332,6 +338,7 @@ TestingProfile::TestingProfile(
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(NULL),
       delegate_(delegate),
+      profile_name_(profile_name),
       policy_service_(policy_service.release()) {
   if (parent)
     parent->SetOffTheRecordProfile(scoped_ptr<Profile>(this));
@@ -475,8 +482,6 @@ void TestingProfile::Init() {
     store->SetInitializationCompleted();
   }
 #endif
-
-  profile_name_ = "testing_profile";
 }
 
 void TestingProfile::FinishInit() {
@@ -975,8 +980,8 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
 TestingProfile::Builder::Builder()
     : build_called_(false),
       delegate_(NULL),
-      guest_session_(false) {
-}
+      guest_session_(false),
+      profile_name_(kTestingProfile) {}
 
 TestingProfile::Builder::~Builder() {
 }
@@ -1015,6 +1020,10 @@ void TestingProfile::Builder::SetPolicyService(
   policy_service_ = std::move(policy_service);
 }
 
+void TestingProfile::Builder::SetProfileName(const std::string& profile_name) {
+  profile_name_ = profile_name;
+}
+
 void TestingProfile::Builder::AddTestingFactory(
     BrowserContextKeyedServiceFactory* service_factory,
     BrowserContextKeyedServiceFactory::TestingFactoryFunction callback) {
@@ -1031,7 +1040,7 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
       extension_policy_,
 #endif
       std::move(pref_service_), NULL, guest_session_, supervised_user_id_,
-      std::move(policy_service_), testing_factories_));
+      std::move(policy_service_), testing_factories_, profile_name_));
 }
 
 TestingProfile* TestingProfile::Builder::BuildIncognito(
@@ -1047,5 +1056,6 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
 #endif
                             std::move(pref_service_), original_profile,
                             guest_session_, supervised_user_id_,
-                            std::move(policy_service_), testing_factories_);
+                            std::move(policy_service_), testing_factories_,
+                            profile_name_);
 }

@@ -101,11 +101,12 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
     return existing_user_controller()->auto_login_timer_.get();
   }
 
-  const std::string& auto_login_username() const {
-    return existing_user_controller()->public_session_auto_login_username_;
+  const AccountId& auto_login_account_id() const {
+    return existing_user_controller()->public_session_auto_login_account_id_;
   }
-  void set_auto_login_username(const std::string& username) {
-    existing_user_controller()->public_session_auto_login_username_ = username;
+  void set_auto_login_account_id(const AccountId& account_id) {
+    existing_user_controller()->public_session_auto_login_account_id_ =
+        account_id;
   }
 
   int auto_login_delay() const {
@@ -157,19 +158,19 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
 
 TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {
   // Timer shouldn't start until signin screen is ready.
-  set_auto_login_username(auto_login_account_id_.GetUserEmail());
+  set_auto_login_account_id(auto_login_account_id_);
   set_auto_login_delay(kAutoLoginDelay2);
   existing_user_controller()->StartPublicSessionAutoLoginTimer();
   EXPECT_FALSE(auto_login_timer());
 
   // Timer shouldn't start if the policy isn't set.
-  set_auto_login_username("");
+  set_auto_login_account_id(EmptyAccountId());
   existing_user_controller()->OnSigninScreenReady();
   existing_user_controller()->StartPublicSessionAutoLoginTimer();
   EXPECT_FALSE(auto_login_timer());
 
   // Timer shouldn't fire in the middle of a login attempt.
-  set_auto_login_username(auto_login_account_id_.GetUserEmail());
+  set_auto_login_account_id(auto_login_account_id_);
   set_is_login_in_progress(true);
   existing_user_controller()->StartPublicSessionAutoLoginTimer();
   EXPECT_FALSE(auto_login_timer());
@@ -185,7 +186,7 @@ TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {
 
 TEST_F(ExistingUserControllerAutoLoginTest, StopAutoLoginTimer) {
   existing_user_controller()->OnSigninScreenReady();
-  set_auto_login_username(auto_login_account_id_.GetUserEmail());
+  set_auto_login_account_id(auto_login_account_id_);
   set_auto_login_delay(kAutoLoginDelay2);
 
   existing_user_controller()->StartPublicSessionAutoLoginTimer();
@@ -199,7 +200,7 @@ TEST_F(ExistingUserControllerAutoLoginTest, StopAutoLoginTimer) {
 
 TEST_F(ExistingUserControllerAutoLoginTest, ResetAutoLoginTimer) {
   existing_user_controller()->OnSigninScreenReady();
-  set_auto_login_username(auto_login_account_id_.GetUserEmail());
+  set_auto_login_account_id(auto_login_account_id_);
 
   // Timer starts off not running.
   EXPECT_FALSE(auto_login_timer());
@@ -233,14 +234,14 @@ TEST_F(ExistingUserControllerAutoLoginTest, ConfigureAutoLogin) {
   ConfigureAutoLogin();
   EXPECT_FALSE(auto_login_timer());
   EXPECT_EQ(auto_login_delay(), 0);
-  EXPECT_EQ(auto_login_username(), "");
+  EXPECT_EQ(auto_login_account_id(), EmptyAccountId());
 
   // Timer shouldn't start when the delay alone is set.
   SetAutoLoginSettings("", kAutoLoginDelay1);
   ConfigureAutoLogin();
   EXPECT_FALSE(auto_login_timer());
   EXPECT_EQ(auto_login_delay(), kAutoLoginDelay1);
-  EXPECT_EQ(auto_login_username(), "");
+  EXPECT_EQ(auto_login_account_id(), EmptyAccountId());
 
   // Timer should start when the account ID is set.
   SetAutoLoginSettings(auto_login_user_id_, kAutoLoginDelay1);
@@ -250,7 +251,7 @@ TEST_F(ExistingUserControllerAutoLoginTest, ConfigureAutoLogin) {
   EXPECT_EQ(auto_login_timer()->GetCurrentDelay().InMilliseconds(),
             kAutoLoginDelay1);
   EXPECT_EQ(auto_login_delay(), kAutoLoginDelay1);
-  EXPECT_EQ(auto_login_username(), auto_login_account_id_.GetUserEmail());
+  EXPECT_EQ(auto_login_account_id(), auto_login_account_id_);
 
   // Timer should restart when the delay is changed.
   SetAutoLoginSettings(auto_login_user_id_, kAutoLoginDelay2);
@@ -260,7 +261,7 @@ TEST_F(ExistingUserControllerAutoLoginTest, ConfigureAutoLogin) {
   EXPECT_EQ(auto_login_timer()->GetCurrentDelay().InMilliseconds(),
             kAutoLoginDelay2);
   EXPECT_EQ(auto_login_delay(), kAutoLoginDelay2);
-  EXPECT_EQ(auto_login_username(), auto_login_account_id_.GetUserEmail());
+  EXPECT_EQ(auto_login_account_id(), auto_login_account_id_);
 
   // Timer should stop when the account ID is unset.
   SetAutoLoginSettings("", kAutoLoginDelay2);
@@ -269,7 +270,7 @@ TEST_F(ExistingUserControllerAutoLoginTest, ConfigureAutoLogin) {
   EXPECT_FALSE(auto_login_timer()->IsRunning());
   EXPECT_EQ(auto_login_timer()->GetCurrentDelay().InMilliseconds(),
             kAutoLoginDelay2);
-  EXPECT_EQ(auto_login_username(), "");
+  EXPECT_EQ(auto_login_account_id(), EmptyAccountId());
   EXPECT_EQ(auto_login_delay(), kAutoLoginDelay2);
 }
 

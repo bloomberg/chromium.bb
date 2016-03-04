@@ -81,6 +81,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -434,7 +435,7 @@ void UserSessionManager::CompleteGuestSessionLogin(const GURL& start_url) {
   if (!about_flags::AreSwitchesIdenticalToCurrentCommandLine(
           user_flags, *base::CommandLine::ForCurrentProcess(), NULL)) {
     DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
-        login::GuestAccountId().GetUserEmail(),
+        cryptohome::Identification(login::GuestAccountId()),
         base::CommandLine::StringVector());
   }
 
@@ -718,7 +719,9 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
   flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
   LOG(WARNING) << "Restarting to apply per-session flags...";
   DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
-      user_manager::UserManager::Get()->GetActiveUser()->email(), flags);
+      cryptohome::Identification(
+          user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()),
+      flags);
   AttemptRestart(profile);
   return true;
 }
@@ -894,7 +897,7 @@ void UserSessionManager::StartCrosSession() {
   BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("StartSession-Start", false);
   DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
-      user_context_.GetAccountId().GetUserEmail());
+      cryptohome::Identification(user_context_.GetAccountId()));
   btl->AddLoginTimeMarker("StartSession-End", false);
 }
 
@@ -908,8 +911,8 @@ void UserSessionManager::NotifyUserLoggedIn() {
 }
 
 void UserSessionManager::PrepareProfile() {
-  const bool is_demo_session = DemoAppLauncher::IsDemoAppSession(
-      user_context_.GetAccountId().GetUserEmail());
+  const bool is_demo_session =
+      DemoAppLauncher::IsDemoAppSession(user_context_.GetAccountId());
 
   // TODO(nkostylev): Figure out whether demo session is using the right profile
   // path or not. See https://codereview.chromium.org/171423009
@@ -1426,13 +1429,14 @@ void UserSessionManager::OnRestoreActiveSessions(
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   DCHECK_EQ(1u, user_manager->GetLoggedInUsers().size());
   DCHECK(user_manager->GetActiveUser());
-  std::string active_user_id = user_manager->GetActiveUser()->email();
+  const cryptohome::Identification active_cryptohome_id =
+      cryptohome::Identification(user_manager->GetActiveUser()->GetAccountId());
 
   SessionManagerClient::ActiveSessionsMap::const_iterator it;
   for (it = sessions.begin(); it != sessions.end(); ++it) {
-    if (active_user_id == it->first)
+    if (active_cryptohome_id == it->first)
       continue;
-    pending_user_sessions_[it->first] = it->second;
+    pending_user_sessions_[(it->first).GetAccountId()] = it->second;
   }
   RestorePendingUserSessions();
 }
@@ -1445,13 +1449,12 @@ void UserSessionManager::RestorePendingUserSessions() {
   }
 
   // Get next user to restore sessions and delete it from list.
-  SessionManagerClient::ActiveSessionsMap::const_iterator it =
-      pending_user_sessions_.begin();
-  std::string user_id = it->first;
+  PendingUserSessions::const_iterator it = pending_user_sessions_.begin();
+  const AccountId account_id = it->first;
   std::string user_id_hash = it->second;
-  DCHECK(!user_id.empty());
+  DCHECK(account_id.is_valid());
   DCHECK(!user_id_hash.empty());
-  pending_user_sessions_.erase(user_id);
+  pending_user_sessions_.erase(account_id);
 
   // Check that this user is not logged in yet.
   user_manager::UserList logged_in_users =
@@ -1461,7 +1464,7 @@ void UserSessionManager::RestorePendingUserSessions() {
        it != logged_in_users.end();
        ++it) {
     const user_manager::User* user = (*it);
-    if (user->email() == user_id) {
+    if (user->GetAccountId() == account_id) {
       user_already_logged_in = true;
       break;
     }
@@ -1469,7 +1472,7 @@ void UserSessionManager::RestorePendingUserSessions() {
   DCHECK(!user_already_logged_in);
 
   if (!user_already_logged_in) {
-    UserContext user_context(AccountId::FromUserEmail(user_id));
+    UserContext user_context(account_id);
     user_context.SetUserIDHash(user_id_hash);
     user_context.SetIsUsingOAuth(false);
 

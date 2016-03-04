@@ -13,6 +13,8 @@
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
+class AccountId;
+
 namespace content {
 class BrowserContext;
 }
@@ -56,11 +58,11 @@ class CHROMEOS_EXPORT Authenticator
   // Initiates login into the public account identified by |user_context|.
   virtual void LoginAsPublicSession(const UserContext& user_context) = 0;
 
-  // Initiates login into kiosk mode account identified by |app_user_id|.
-  // The |app_user_id| is a generated username for the account.
+  // Initiates login into kiosk mode account identified by |app_account_id|.
+  // The |app_account_id| is a generated account id for the account.
   // |use_guest_mount| specifies whether to force the session to use a
   // guest mount. If this is false, we use mount a public cryptohome.
-  virtual void LoginAsKioskAccount(const std::string& app_user_id,
+  virtual void LoginAsKioskAccount(const AccountId& app_account_id,
                                    bool use_guest_mount) = 0;
 
   // Notifies caller that login was successful. Must be called on the UI thread.

@@ -264,7 +264,6 @@ class OAuth2Test : public OobeBaseTest {
     }
 
     UserContext user_context(account_id);
-    user_context.SetGaiaID(account_id.GetGaiaId());
     user_context.SetKey(Key(password));
     controller->Login(user_context, SigninSpecifics());
     content::WindowedNotificationObserver(

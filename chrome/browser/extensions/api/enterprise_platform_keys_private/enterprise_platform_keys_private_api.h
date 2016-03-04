@@ -18,6 +18,7 @@
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "extensions/browser/extension_function.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -94,6 +95,9 @@ class EPKPChallengeKeyBase {
   // Returns the user email.
   std::string GetUserEmail() const;
 
+  // Returns account id.
+  AccountId GetAccountId() const;
+
   // Returns the enterprise virtual device ID.
   std::string GetDeviceId() const;
 
@@ -103,7 +107,7 @@ class EPKPChallengeKeyBase {
   // user consent before calling GetCertificate().
   void PrepareKey(
       chromeos::attestation::AttestationKeyType key_type,
-      const std::string& user_id,
+      const AccountId& account_id,
       const std::string& key_name,
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
       bool require_user_consent,
@@ -120,18 +124,17 @@ class EPKPChallengeKeyBase {
  private:
   // Holds the context of a PrepareKey() operation.
   struct PrepareKeyContext {
-    PrepareKeyContext(
-        chromeos::attestation::AttestationKeyType key_type,
-        const std::string& user_id,
-        const std::string& key_name,
-        chromeos::attestation::AttestationCertificateProfile
-            certificate_profile,
-        bool require_user_consent,
-        const base::Callback<void(PrepareKeyResult)>& callback);
+    PrepareKeyContext(chromeos::attestation::AttestationKeyType key_type,
+                      const AccountId& account_id,
+                      const std::string& key_name,
+                      chromeos::attestation::AttestationCertificateProfile
+                          certificate_profile,
+                      bool require_user_consent,
+                      const base::Callback<void(PrepareKeyResult)>& callback);
     ~PrepareKeyContext();
 
     chromeos::attestation::AttestationKeyType key_type;
-    const std::string user_id;
+    const AccountId account_id;
     const std::string key_name;
     chromeos::attestation::AttestationCertificateProfile certificate_profile;
     bool require_user_consent;

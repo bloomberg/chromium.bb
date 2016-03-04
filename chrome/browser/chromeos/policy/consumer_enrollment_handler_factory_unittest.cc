@@ -44,14 +44,19 @@ class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
         make_scoped_ptr(fake_service_));
 
     // Set up FakeChromeUserManager.
-    fake_user_manager_->AddUser(AccountId::FromUserEmail(kTestOwner));
-    fake_user_manager_->AddUser(AccountId::FromUserEmail(kTestUser));
-    fake_user_manager_->set_owner_id(AccountId::FromUserEmail(kTestOwner));
+    fake_user_manager_->AddUser(owner_account_id);
+    fake_user_manager_->AddUser(test_account_id);
+    fake_user_manager_->set_owner_id(owner_account_id);
   }
 
   void SetUp() override {
+    testing::Test::SetUp();
+
     ASSERT_TRUE(testing_profile_manager_->SetUp());
   }
+
+  const AccountId owner_account_id = AccountId::FromUserEmail(kTestOwner);
+  const AccountId test_account_id = AccountId::FromUserEmail(kTestUser);
 
   content::TestBrowserThreadBundle thread_bundle_;
   FakeConsumerManagementService* fake_service_;
@@ -61,7 +66,8 @@ class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
 };
 
 TEST_F(ConsumerEnrollmentHandlerFactoryTest, ServiceIsCreated) {
-  Profile* profile = testing_profile_manager_->CreateTestingProfile(kTestOwner);
+  Profile* profile = testing_profile_manager_->CreateTestingProfile(
+      owner_account_id.GetUserEmail());
   EXPECT_TRUE(ConsumerEnrollmentHandlerFactory::GetForBrowserContext(profile));
 }
 

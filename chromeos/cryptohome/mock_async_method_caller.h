@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace cryptohome {
@@ -27,27 +28,32 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
 
   void SetUp(bool success, MountError return_code);
 
-  MOCK_METHOD3(AsyncCheckKey, void(const std::string& user_email,
-                                   const std::string& passhash,
-                                   Callback callback));
-  MOCK_METHOD4(AsyncMigrateKey, void(const std::string& user_email,
-                                     const std::string& old_hash,
-                                     const std::string& new_hash,
-                                     Callback callback));
-  MOCK_METHOD4(AsyncMount, void(const std::string& user_email,
-                                const std::string& passhash,
-                                int flags,
-                                Callback callback));
-  MOCK_METHOD4(AsyncAddKey, void(const std::string& user_email,
-                                 const std::string& passhash,
-                                 const std::string& new_key,
-                                 Callback callback));
+  MOCK_METHOD3(AsyncCheckKey,
+               void(const Identification& user_id,
+                    const std::string& passhash,
+                    Callback callback));
+  MOCK_METHOD4(AsyncMigrateKey,
+               void(const Identification& user_id,
+                    const std::string& old_hash,
+                    const std::string& new_hash,
+                    Callback callback));
+  MOCK_METHOD4(AsyncMount,
+               void(const Identification& user_id,
+                    const std::string& passhash,
+                    int flags,
+                    Callback callback));
+  MOCK_METHOD4(AsyncAddKey,
+               void(const Identification& user_id,
+                    const std::string& passhash,
+                    const std::string& new_key,
+                    Callback callback));
   MOCK_METHOD1(AsyncMountGuest, void(Callback callback));
-  MOCK_METHOD3(AsyncMountPublic, void(const std::string& public_mount_id,
-                                      int flags,
-                                      Callback callback));
-  MOCK_METHOD2(AsyncRemove, void(const std::string& user_email,
-                                 Callback callback));
+  MOCK_METHOD3(AsyncMountPublic,
+               void(const Identification& public_mount_id,
+                    int flags,
+                    Callback callback));
+  MOCK_METHOD2(AsyncRemove,
+               void(const Identification& user_id, Callback callback));
   MOCK_METHOD2(AsyncTpmAttestationCreateEnrollRequest,
                void(chromeos::attestation::PrivacyCAType pca_type,
                     const DataCallback& callback));
@@ -59,38 +65,37 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
       AsyncTpmAttestationCreateCertRequest,
       void(chromeos::attestation::PrivacyCAType pca_type,
            chromeos::attestation::AttestationCertificateProfile profile,
-           const std::string& user_id,
+           const Identification& user_id,
            const std::string& request_origin,
            const DataCallback& callback));
   MOCK_METHOD5(AsyncTpmAttestationFinishCertRequest,
                void(const std::string& pca_response,
                     chromeos::attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const Identification& user_id,
                     const std::string& key_name,
                     const DataCallback& callback));
   MOCK_METHOD4(TpmAttestationRegisterKey,
                void(chromeos::attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const Identification& user_id,
                     const std::string& key_name,
                     const Callback& callback));
-  MOCK_METHOD8(
-      TpmAttestationSignEnterpriseChallenge,
-      void(chromeos::attestation::AttestationKeyType key_type,
-           const std::string& user_id,
-           const std::string& key_name,
-           const std::string& domain,
-           const std::string& device_id,
-           chromeos::attestation::AttestationChallengeOptions options,
-           const std::string& challenge,
-           const DataCallback& callback));
+  MOCK_METHOD8(TpmAttestationSignEnterpriseChallenge,
+               void(chromeos::attestation::AttestationKeyType key_type,
+                    const Identification& user_id,
+                    const std::string& key_name,
+                    const std::string& domain,
+                    const std::string& device_id,
+                    chromeos::attestation::AttestationChallengeOptions options,
+                    const std::string& challenge,
+                    const DataCallback& callback));
   MOCK_METHOD5(TpmAttestationSignSimpleChallenge,
                void(chromeos::attestation::AttestationKeyType key_type,
-                    const std::string& user_id,
+                    const Identification& user_id,
                     const std::string& key_name,
                     const std::string& challenge,
                     const DataCallback& callback));
   MOCK_METHOD2(AsyncGetSanitizedUsername,
-               void(const std::string& user,
+               void(const Identification& user_id,
                     const DataCallback& callback));
 
  private:

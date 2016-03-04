@@ -65,9 +65,10 @@ void FakeExtendedAuthenticator::AuthenticateToCheck(
                 AuthFailure(AuthFailure::UNLOCK_FAILED));
 }
 
-void FakeExtendedAuthenticator::CreateMount(const std::string& user_id,
-                         const std::vector<cryptohome::KeyDefinition>& keys,
-                         const ResultCallback& success_callback) {
+void FakeExtendedAuthenticator::CreateMount(
+    const AccountId& account_id,
+    const std::vector<cryptohome::KeyDefinition>& keys,
+    const ResultCallback& success_callback) {
   NOTREACHED();
 }
 

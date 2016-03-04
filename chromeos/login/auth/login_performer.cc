@@ -228,14 +228,13 @@ void LoginPerformer::LoginOffTheRecord() {
       base::Bind(&Authenticator::LoginOffTheRecord, authenticator_.get()));
 }
 
-void LoginPerformer::LoginAsKioskAccount(const std::string& app_user_id,
+void LoginPerformer::LoginAsKioskAccount(const AccountId& app_account_id,
                                          bool use_guest_mount) {
   EnsureAuthenticator();
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&Authenticator::LoginAsKioskAccount,
-                                    authenticator_.get(),
-                                    app_user_id,
-                                    use_guest_mount));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&Authenticator::LoginAsKioskAccount, authenticator_.get(),
+                 app_account_id, use_guest_mount));
 }
 
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {

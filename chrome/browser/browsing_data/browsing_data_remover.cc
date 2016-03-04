@@ -89,6 +89,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/attestation/attestation_constants.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
@@ -881,7 +882,8 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
       chromeos::DBusThreadManager::Get()
           ->GetCryptohomeClient()
           ->TpmAttestationDeleteKeys(
-              chromeos::attestation::KEY_USER, user->email(),
+              chromeos::attestation::KEY_USER,
+              cryptohome::Identification(user->GetAccountId()),
               chromeos::attestation::kContentProtectionKeyPrefix,
               base::Bind(&BrowsingDataRemover::OnClearPlatformKeys,
                          weak_ptr_factory_.GetWeakPtr()));

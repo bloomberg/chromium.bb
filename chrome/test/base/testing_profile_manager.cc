@@ -87,6 +87,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   builder.SetPath(profile_path);
   builder.SetPrefService(std::move(prefs));
   builder.SetSupervisedUserId(supervised_user_id);
+  builder.SetProfileName(profile_name);
 
   for (TestingProfile::TestingFactories::const_iterator it = factories.begin();
        it != factories.end(); ++it) {
@@ -94,7 +95,6 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   }
 
   TestingProfile* profile = builder.Build().release();
-  profile->set_profile_name(profile_name);
   profile_manager_->AddProfile(profile);  // Takes ownership.
 
   // Update the user metadata.

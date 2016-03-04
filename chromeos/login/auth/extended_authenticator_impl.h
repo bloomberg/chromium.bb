@@ -15,6 +15,8 @@
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+class AccountId;
+
 namespace chromeos {
 
 class AuthStatusConsumer;
@@ -32,7 +34,7 @@ class CHROMEOS_EXPORT ExtendedAuthenticatorImpl : public ExtendedAuthenticator {
                            const ResultCallback& success_callback) override;
   void AuthenticateToCheck(const UserContext& context,
                            const base::Closure& success_callback) override;
-  void CreateMount(const std::string& user_id,
+  void CreateMount(const AccountId& account_id,
                    const std::vector<cryptohome::KeyDefinition>& keys,
                    const ResultCallback& success_callback) override;
   void AddKey(const UserContext& context,

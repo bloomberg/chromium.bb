@@ -49,14 +49,14 @@ DemoAppLauncher::~DemoAppLauncher() {
 void DemoAppLauncher::StartDemoAppLaunch() {
   DVLOG(1) << "Launching demo app...";
   // user_id = DemoAppUserId, force_emphemeral = true, delegate = this.
-  kiosk_profile_loader_.reset(new KioskProfileLoader(
-      login::DemoAccountId().GetUserEmail(), true, this));
+  kiosk_profile_loader_.reset(
+      new KioskProfileLoader(login::DemoAccountId(), true, this));
   kiosk_profile_loader_->Start();
 }
 
 // static
-bool DemoAppLauncher::IsDemoAppSession(const std::string& user_id) {
-  return user_id == login::DemoAccountId().GetUserEmail();
+bool DemoAppLauncher::IsDemoAppSession(const AccountId& account_id) {
+  return account_id == login::DemoAccountId();
 }
 
 // static

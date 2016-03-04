@@ -4,6 +4,8 @@
 include_rules = [
   "+components/device_event_log",
   "+components/prefs",
+  "+components/signin/core/account_id/account_id.h",
+  "+components/user_manager/known_user.h",
   "+crypto",
   "+net",
   "+policy/proto",

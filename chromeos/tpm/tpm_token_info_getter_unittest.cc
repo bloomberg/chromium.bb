@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,17 +85,16 @@ class FakeTaskRunner : public base::TaskRunner {
 // TPMTokenInfoGetter tests.
 class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
  public:
-  // |user_id|: The user associated with the TPMTokenInfoGetter that will be
+  // |account_id|: The user associated with the TPMTokenInfoGetter that will be
   // using the TestCryptohomeClient. Should be empty for system token.
-  explicit TestCryptohomeClient(const std::string& user_id)
-      : user_id_(user_id),
+  explicit TestCryptohomeClient(const AccountId& account_id)
+      : account_id_(account_id),
         tpm_is_enabled_(true),
         tpm_is_enabled_failure_count_(0),
         tpm_is_enabled_succeeded_(false),
         get_tpm_token_info_failure_count_(0),
         get_tpm_token_info_not_set_count_(0),
-        get_tpm_token_info_succeeded_(false) {
-  }
+        get_tpm_token_info_succeeded_(false) {}
 
   ~TestCryptohomeClient() override {}
 
@@ -152,22 +152,22 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
 
   void Pkcs11GetTpmTokenInfo(
       const Pkcs11GetTpmTokenInfoCallback& callback) override {
-    ASSERT_TRUE(user_id_.empty());
+    ASSERT_TRUE(account_id_.empty());
 
     HandleGetTpmTokenInfo(callback);
   }
 
   void Pkcs11GetTpmTokenInfoForUser(
-      const std::string& user_id,
+      const cryptohome::Identification& cryptohome_id,
       const Pkcs11GetTpmTokenInfoCallback& callback) override {
-    ASSERT_FALSE(user_id_.empty());
-    ASSERT_EQ(user_id_, user_id);
+    ASSERT_FALSE(cryptohome_id.id().empty());
+    ASSERT_EQ(account_id_, cryptohome_id.GetAccountId());
 
     HandleGetTpmTokenInfo(callback);
   }
 
   // Handles Pkcs11GetTpmTokenInfo calls (both for system and user token). The
-  // CryptohomeClient method overrides should make sure that |user_id_| is
+  // CryptohomeClient method overrides should make sure that |account_id_| is
   // properly set before calling this.
   void HandleGetTpmTokenInfo(const Pkcs11GetTpmTokenInfoCallback& callback) {
     ASSERT_TRUE(tpm_is_enabled_succeeded_);
@@ -218,7 +218,7 @@ class TestCryptohomeClient : public chromeos::FakeCryptohomeClient {
         tpm_token_info_.slot_id);
   }
 
-  std::string user_id_;
+  AccountId account_id_;
   bool tpm_is_enabled_;
   int tpm_is_enabled_failure_count_;
   bool tpm_is_enabled_succeeded_;
@@ -237,7 +237,7 @@ class SystemTPMTokenInfoGetterTest : public testing::Test {
   ~SystemTPMTokenInfoGetterTest() override {}
 
   void SetUp() override {
-    cryptohome_client_.reset(new TestCryptohomeClient(std::string()));
+    cryptohome_client_.reset(new TestCryptohomeClient(EmptyAccountId()));
     tpm_token_info_getter_ =
         chromeos::TPMTokenInfoGetter::CreateForSystemToken(
             cryptohome_client_.get(),
@@ -258,23 +258,22 @@ class SystemTPMTokenInfoGetterTest : public testing::Test {
 
 class UserTPMTokenInfoGetterTest : public testing::Test {
  public:
-  UserTPMTokenInfoGetterTest() : user_id_("user") {}
+  UserTPMTokenInfoGetterTest()
+      : account_id_(AccountId::FromUserEmail("user")) {}
   ~UserTPMTokenInfoGetterTest() override {}
 
   void SetUp() override {
-    cryptohome_client_.reset(new TestCryptohomeClient(user_id_));
-    tpm_token_info_getter_ =
-        chromeos::TPMTokenInfoGetter::CreateForUserToken(
-            user_id_,
-            cryptohome_client_.get(),
-            scoped_refptr<base::TaskRunner>(new FakeTaskRunner(&delays_)));
+    cryptohome_client_.reset(new TestCryptohomeClient(account_id_));
+    tpm_token_info_getter_ = chromeos::TPMTokenInfoGetter::CreateForUserToken(
+        account_id_, cryptohome_client_.get(),
+        scoped_refptr<base::TaskRunner>(new FakeTaskRunner(&delays_)));
   }
 
  protected:
   scoped_ptr<TestCryptohomeClient> cryptohome_client_;
   scoped_ptr<chromeos::TPMTokenInfoGetter> tpm_token_info_getter_;
 
-  std::string user_id_;
+  const AccountId account_id_;
   std::vector<int64_t> delays_;
 
  private:

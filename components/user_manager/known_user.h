@@ -6,6 +6,7 @@
 #define COMPONENTS_USER_MANAGER_KNOWN_USER_H_
 
 #include <string>
+#include <vector>
 
 #include "components/user_manager/user_manager_export.h"
 
@@ -67,6 +68,9 @@ bool USER_MANAGER_EXPORT GetIntegerPref(const AccountId& account_id,
 void USER_MANAGER_EXPORT SetIntegerPref(const AccountId& account_id,
                                         const std::string& path,
                                         const int in_value);
+
+// Returns the list of known AccountIds.
+std::vector<AccountId> USER_MANAGER_EXPORT GetKnownAccountIds();
 
 // This call forms full account id of a known user by email and (optionally)
 // gaia_id.

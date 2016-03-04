@@ -10,8 +10,11 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
+
+class AccountId;
 
 namespace cryptohome {
 
@@ -25,12 +28,28 @@ enum AuthKeyPrivileges {
 };
 
 // Identification of the user calling cryptohome method.
-struct CHROMEOS_EXPORT Identification {
-  explicit Identification(const std::string& user_id);
+class CHROMEOS_EXPORT Identification {
+ public:
+  Identification();
+
+  explicit Identification(const AccountId& account_id);
 
   bool operator==(const Identification& other) const;
 
-  std::string user_id;
+  // This method should be used for migration purpose only.
+  static Identification FromString(const std::string& id);
+
+  // Look up known user and return its AccountId.
+  AccountId GetAccountId() const;
+
+  const std::string& id() const { return id_; }
+
+  bool operator<(const Identification& right) const;
+
+ private:
+  explicit Identification(const std::string&);
+
+  std::string id_;
 };
 
 // Definition of the key (e.g. password) for the cryptohome.
@@ -145,6 +164,25 @@ class CHROMEOS_EXPORT MountParameters {
   std::vector<KeyDefinition> create_keys;
 };
 
+// This function returns true if cryptohome of |account_id| is migrated to
+// gaiaId-based identifier (AccountId::GetGaiaIdKey()).
+bool GetGaiaIdMigrationStatus(const AccountId& account_id);
+
+// This function marks |account_id| cryptohome migrated to gaiaId-based
+// identifier (AccountId::GetGaiaIdKey()).
+void SetGaiaIdMigrationStatusDone(const AccountId& account_id);
+
 }  // namespace cryptohome
+
+namespace BASE_HASH_NAMESPACE {
+
+// Implement hashing of cryptohome::Identification, so it can be used as a key
+// in STL containers.
+template <>
+struct hash<cryptohome::Identification> {
+  std::size_t operator()(const cryptohome::Identification& cryptohome_id) const;
+};
+
+}  // namespace BASE_HASH_NAMESPACE
 
 #endif  // CHROMEOS_CRYPTOHOME_CRYPTOHOME_PARAMETERS_H_

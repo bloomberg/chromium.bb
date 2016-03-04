@@ -50,11 +50,12 @@ void FakeSessionManagerClient::EmitLoginPromptVisible() {
 void FakeSessionManagerClient::RestartJob(
     const std::vector<std::string>& argv) {}
 
-void FakeSessionManagerClient::StartSession(const std::string& user_email) {
-  DCHECK_EQ(0UL, user_sessions_.count(user_email));
+void FakeSessionManagerClient::StartSession(
+    const cryptohome::Identification& cryptohome_id) {
+  DCHECK_EQ(0UL, user_sessions_.count(cryptohome_id));
   std::string user_id_hash =
-      CryptohomeClient::GetStubSanitizedUsername(user_email);
-  user_sessions_[user_email] = user_id_hash;
+      CryptohomeClient::GetStubSanitizedUsername(cryptohome_id);
+  user_sessions_[cryptohome_id] = user_id_hash;
 }
 
 void FakeSessionManagerClient::StopSession() {
@@ -94,15 +95,15 @@ void FakeSessionManagerClient::RetrieveDevicePolicy(
 }
 
 void FakeSessionManagerClient::RetrievePolicyForUser(
-    const std::string& username,
+    const cryptohome::Identification& cryptohome_id,
     const RetrievePolicyCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, user_policies_[username]));
+      FROM_HERE, base::Bind(callback, user_policies_[cryptohome_id]));
 }
 
 std::string FakeSessionManagerClient::BlockingRetrievePolicyForUser(
-    const std::string& username) {
-  return user_policies_[username];
+    const cryptohome::Identification& cryptohome_id) {
+  return user_policies_[cryptohome_id];
 }
 
 void FakeSessionManagerClient::RetrieveDeviceLocalAccountPolicy(
@@ -123,10 +124,10 @@ void FakeSessionManagerClient::StoreDevicePolicy(
 }
 
 void FakeSessionManagerClient::StorePolicyForUser(
-    const std::string& username,
+    const cryptohome::Identification& cryptohome_id,
     const std::string& policy_blob,
     const StorePolicyCallback& callback) {
-  user_policies_[username] = policy_blob;
+  user_policies_[cryptohome_id] = policy_blob;
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::Bind(callback, true));
 }
@@ -141,9 +142,8 @@ void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
 }
 
 void FakeSessionManagerClient::SetFlagsForUser(
-    const std::string& username,
-    const std::vector<std::string>& flags) {
-}
+    const cryptohome::Identification& cryptohome_id,
+    const std::vector<std::string>& flags) {}
 
 void FakeSessionManagerClient::GetServerBackedStateKeys(
     const StateKeysCallback& callback) {
@@ -178,15 +178,16 @@ void FakeSessionManagerClient::set_device_policy(
 }
 
 const std::string& FakeSessionManagerClient::user_policy(
-    const std::string& username) const {
-  std::map<std::string, std::string>::const_iterator it =
-      user_policies_.find(username);
+    const cryptohome::Identification& cryptohome_id) const {
+  std::map<cryptohome::Identification, std::string>::const_iterator it =
+      user_policies_.find(cryptohome_id);
   return it == user_policies_.end() ? base::EmptyString() : it->second;
 }
 
-void FakeSessionManagerClient::set_user_policy(const std::string& username,
-                                               const std::string& policy_blob) {
-  user_policies_[username] = policy_blob;
+void FakeSessionManagerClient::set_user_policy(
+    const cryptohome::Identification& cryptohome_id,
+    const std::string& policy_blob) {
+  user_policies_[cryptohome_id] = policy_blob;
 }
 
 const std::string& FakeSessionManagerClient::device_local_account_policy(

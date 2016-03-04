@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/policy/user_policy_disk_cache.h"
 #include "chrome/browser/chromeos/policy/user_policy_token_loader.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -178,14 +179,14 @@ UserCloudPolicyStoreChromeOS::UserCloudPolicyStoreChromeOS(
     chromeos::CryptohomeClient* cryptohome_client,
     chromeos::SessionManagerClient* session_manager_client,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    const std::string& username,
+    const AccountId& account_id,
     const base::FilePath& user_policy_key_dir,
     const base::FilePath& legacy_token_cache_file,
     const base::FilePath& legacy_policy_cache_file)
     : UserCloudPolicyStoreBase(background_task_runner),
       cryptohome_client_(cryptohome_client),
       session_manager_client_(session_manager_client),
-      username_(username),
+      account_id_(account_id),
       user_policy_key_dir_(user_policy_key_dir),
       legacy_cache_dir_(legacy_token_cache_file.DirName()),
       legacy_loader_(new LegacyPolicyCacheLoader(legacy_token_cache_file,
@@ -213,7 +214,7 @@ void UserCloudPolicyStoreChromeOS::Load() {
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
   session_manager_client_->RetrievePolicyForUser(
-      username_,
+      cryptohome::Identification(account_id_),
       base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyRetrieved,
                  weak_factory_.GetWeakPtr()));
 }
@@ -228,7 +229,8 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   // Profile initialization never sees unmanaged prefs, which would lead to
   // data loss. http://crbug.com/263061
   std::string policy_blob =
-      session_manager_client_->BlockingRetrievePolicyForUser(username_);
+      session_manager_client_->BlockingRetrievePolicyForUser(
+          cryptohome::Identification(account_id_));
   if (policy_blob.empty()) {
     // The session manager doesn't have policy, or the call failed.
     // Just notify that the load is done, and don't bother with the legacy
@@ -245,7 +247,8 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
   }
 
   std::string sanitized_username =
-      cryptohome_client_->BlockingGetSanitizedUsername(username_);
+      cryptohome_client_->BlockingGetSanitizedUsername(
+          cryptohome::Identification(account_id_));
   if (sanitized_username.empty()) {
     status_ = STATUS_LOAD_ERROR;
     NotifyStoreError();
@@ -268,15 +271,14 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
   // Create and configure a validator.
   scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
-  validator->ValidateUsername(username_, true);
+  validator->ValidateUsername(account_id_.GetUserEmail(), true);
   if (policy_key_.empty()) {
     validator->ValidateInitialKey(GetPolicyVerificationKey(),
-                                  ExtractDomain(username_));
+                                  ExtractDomain(account_id_.GetUserEmail()));
   } else {
     const bool allow_rotation = true;
-    validator->ValidateSignature(policy_key_,
-                                 GetPolicyVerificationKey(),
-                                 ExtractDomain(username_),
+    validator->ValidateSignature(policy_key_, GetPolicyVerificationKey(),
+                                 ExtractDomain(account_id_.GetUserEmail()),
                                  allow_rotation);
   }
 
@@ -310,8 +312,7 @@ void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
   }
 
   session_manager_client_->StorePolicyForUser(
-      username_,
-      policy_blob,
+      cryptohome::Identification(account_id_), policy_blob,
       base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyStored,
                  weak_factory_.GetWeakPtr()));
 }
@@ -418,7 +419,7 @@ void UserCloudPolicyStoreChromeOS::OnLegacyLoadFinished(
     // the signature on this policy is not verified.
     scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
         std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_REQUIRED);
-    validator->ValidateUsername(username_, true);
+    validator->ValidateUsername(account_id_.GetUserEmail(), true);
     validator.release()->StartValidation(
         base::Bind(&UserCloudPolicyStoreChromeOS::OnLegacyPolicyValidated,
                    weak_factory_.GetWeakPtr(),
@@ -532,10 +533,10 @@ void UserCloudPolicyStoreChromeOS::EnsurePolicyKeyLoaded(
   } else {
     // Get the hashed username that's part of the key's path, to determine
     // |policy_key_path_|.
-    cryptohome_client_->GetSanitizedUsername(username_,
+    cryptohome_client_->GetSanitizedUsername(
+        cryptohome::Identification(account_id_),
         base::Bind(&UserCloudPolicyStoreChromeOS::OnGetSanitizedUsername,
-                   weak_factory_.GetWeakPtr(),
-                   callback));
+                   weak_factory_.GetWeakPtr(), callback));
   }
 }
 
@@ -559,15 +560,16 @@ UserCloudPolicyStoreChromeOS::CreateValidatorForLoad(
     scoped_ptr<em::PolicyFetchResponse> policy) {
   scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_NOT_BEFORE);
-  validator->ValidateUsername(username_, true);
+  validator->ValidateUsername(account_id_.GetUserEmail(), true);
   const bool allow_rotation = false;
   const std::string empty_key = std::string();
   // The policy loaded from session manager need not be validated using the
   // verification key since it is secure, and since there may be legacy policy
   // data that was stored without a verification key. Hence passing an empty
   // value for the verification key.
-  validator->ValidateSignature(
-      policy_key_, empty_key, ExtractDomain(username_), allow_rotation);
+  validator->ValidateSignature(policy_key_, empty_key,
+                               ExtractDomain(account_id_.GetUserEmail()),
+                               allow_rotation);
   return validator;
 }
 }  // namespace policy

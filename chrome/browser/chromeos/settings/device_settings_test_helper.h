@@ -89,7 +89,7 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   bool IsScreenLocked() const override;
   void EmitLoginPromptVisible() override;
   void RestartJob(const std::vector<std::string>& argv) override;
-  void StartSession(const std::string& user_email) override;
+  void StartSession(const cryptohome::Identification& cryptohome_id) override;
   void StopSession() override;
   void NotifySupervisedUserCreationStarted() override;
   void NotifySupervisedUserCreationFinished() override;
@@ -99,23 +99,23 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   void NotifyLockScreenDismissed() override;
   void RetrieveActiveSessions(const ActiveSessionsCallback& callback) override;
   void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) override;
-  void RetrievePolicyForUser(const std::string& username,
+  void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
                              const RetrievePolicyCallback& callback) override;
   std::string BlockingRetrievePolicyForUser(
-      const std::string& username) override;
+      const cryptohome::Identification& cryptohome_id) override;
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       const RetrievePolicyCallback& callback) override;
   void StoreDevicePolicy(const std::string& policy_blob,
                          const StorePolicyCallback& callback) override;
-  void StorePolicyForUser(const std::string& username,
+  void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
                           const std::string& policy_blob,
                           const StorePolicyCallback& callback) override;
   void StoreDeviceLocalAccountPolicy(
       const std::string& account_id,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) override;
-  void SetFlagsForUser(const std::string& account_id,
+  void SetFlagsForUser(const cryptohome::Identification& cryptohome_id,
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(const StateKeysCallback& callback) override;
 

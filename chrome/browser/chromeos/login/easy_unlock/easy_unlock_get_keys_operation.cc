@@ -36,9 +36,7 @@ void EasyUnlockGetKeysOperation::Start() {
 }
 
 void EasyUnlockGetKeysOperation::GetKeyData() {
-  const std::string canonicalized =
-      gaia::CanonicalizeEmail(user_context_.GetAccountId().GetUserEmail());
-  cryptohome::Identification id(canonicalized);
+  const cryptohome::Identification id(user_context_.GetAccountId());
   cryptohome::HomedirMethods::GetInstance()->GetKeyDataEx(
       id,
       EasyUnlockKeyManager::GetKeyLabel(key_index_),

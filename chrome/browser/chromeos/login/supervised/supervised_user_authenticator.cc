@@ -14,6 +14,8 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/auth/key.h"
+#include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -67,18 +69,16 @@ void Mount(SupervisedUserAuthenticator::AuthAttempt* attempt,
 
   Key key(attempt->password);
   key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      attempt->username, std::string() /* gaia_id */);
+  const cryptohome::Identification cryptohome_id(account_id);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
-      attempt->username,
-      key.GetSecret(),
-      flags,
-      base::Bind(&TriggerResolveWithLoginTimeMarker,
-                 "CryptohomeMount-LMU-End",
-                 attempt,
-                 resolver));
+      cryptohome_id, key.GetSecret(), flags,
+      base::Bind(&TriggerResolveWithLoginTimeMarker, "CryptohomeMount-LMU-End",
+                 attempt, resolver));
 
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-      attempt->username,
-      base::Bind(&TriggerResolveResult, attempt, resolver));
+      cryptohome_id, base::Bind(&TriggerResolveResult, attempt, resolver));
 }
 
 // Calls cryptohome's addKey method.
@@ -94,14 +94,13 @@ void AddKey(SupervisedUserAuthenticator::AuthAttempt* attempt,
   user_key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
   Key master_key(plain_text_master_key);
   master_key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      attempt->username, std::string() /* gaia_id */);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncAddKey(
-      attempt->username,
-      user_key.GetSecret(),
+      cryptohome::Identification(account_id), user_key.GetSecret(),
       master_key.GetSecret(),
-      base::Bind(&TriggerResolveWithLoginTimeMarker,
-                 "CryptohomeAddKey-LMU-End",
-                 attempt,
-                 resolver));
+      base::Bind(&TriggerResolveWithLoginTimeMarker, "CryptohomeAddKey-LMU-End",
+                 attempt, resolver));
 }
 
 }  // namespace

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chromeos/login/auth/login_performer.h"
+#include "components/signin/core/account_id/account_id.h"
 
 class Profile;
 
@@ -33,7 +34,7 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
     virtual ~Delegate() {}
   };
 
-  KioskProfileLoader(const std::string& app_user_id,
+  KioskProfileLoader(const AccountId& app_account_id,
                      bool use_guest_mount,
                      Delegate* delegate);
 
@@ -58,7 +59,7 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   // UserSessionManagerDelegate implementation:
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
 
-  std::string user_id_;
+  const AccountId account_id_;
   bool use_guest_mount_;
   Delegate* delegate_;
   scoped_ptr<CryptohomedChecker> cryptohomed_checker_;

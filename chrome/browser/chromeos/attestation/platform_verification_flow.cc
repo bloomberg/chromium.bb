@@ -23,6 +23,7 @@
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -249,11 +250,12 @@ void PlatformVerificationFlow::OnAttestationPrepared(
     return;
   }
 
-  GetCertificate(context, user->email(), false /* Don't force a new key */);
+  GetCertificate(context, user->GetAccountId(),
+                 false /* Don't force a new key */);
 }
 
 void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
-                                              const std::string& user_id,
+                                              const AccountId& account_id,
                                               bool force_new_key) {
   scoped_ptr<base::Timer> timer(new base::Timer(false,    // Don't retain.
                                                 false));  // Don't repeat.
@@ -263,23 +265,17 @@ void PlatformVerificationFlow::GetCertificate(const ChallengeContext& context,
       context);
   timer->Start(FROM_HERE, timeout_delay_, timeout_callback);
 
-  AttestationFlow::CertificateCallback certificate_callback = base::Bind(
-      &PlatformVerificationFlow::OnCertificateReady,
-      this,
-      context,
-      user_id,
-      base::Passed(&timer));
-  attestation_flow_->GetCertificate(
-      PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-      user_id,
-      context.service_id,
-      force_new_key,
-      certificate_callback);
+  AttestationFlow::CertificateCallback certificate_callback =
+      base::Bind(&PlatformVerificationFlow::OnCertificateReady, this, context,
+                 account_id, base::Passed(&timer));
+  attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
+                                    account_id, context.service_id,
+                                    force_new_key, certificate_callback);
 }
 
 void PlatformVerificationFlow::OnCertificateReady(
     const ChallengeContext& context,
-    const std::string& user_id,
+    const AccountId& account_id,
     scoped_ptr<base::Timer> timer,
     bool operation_success,
     const std::string& certificate_chain) {
@@ -301,20 +297,18 @@ void PlatformVerificationFlow::OnCertificateReady(
   ExpiryStatus expiry_status = CheckExpiry(certificate_chain);
   ReportExpiryStatus(expiry_status);
   if (expiry_status == EXPIRY_STATUS_EXPIRED) {
-    GetCertificate(context, user_id, true /* Force a new key */);
+    GetCertificate(context, account_id, true /* Force a new key */);
     return;
   }
   bool is_expiring_soon = (expiry_status == EXPIRY_STATUS_EXPIRING_SOON);
   cryptohome::AsyncMethodCaller::DataCallback cryptohome_callback =
       base::Bind(&PlatformVerificationFlow::OnChallengeReady, this, context,
-                 user_id, certificate_chain, is_expiring_soon);
+                 account_id, certificate_chain, is_expiring_soon);
   std::string key_name = kContentProtectionKeyPrefix;
   key_name += context.service_id;
-  async_caller_->TpmAttestationSignSimpleChallenge(KEY_USER,
-                                                   user_id,
-                                                   key_name,
-                                                   context.challenge,
-                                                   cryptohome_callback);
+  async_caller_->TpmAttestationSignSimpleChallenge(
+      KEY_USER, cryptohome::Identification(account_id), key_name,
+      context.challenge, cryptohome_callback);
 }
 
 void PlatformVerificationFlow::OnCertificateTimeout(
@@ -325,7 +319,7 @@ void PlatformVerificationFlow::OnCertificateTimeout(
 
 void PlatformVerificationFlow::OnChallengeReady(
     const ChallengeContext& context,
-    const std::string& user_id,
+    const AccountId& account_id,
     const std::string& certificate_chain,
     bool is_expiring_soon,
     bool operation_success,
@@ -352,7 +346,7 @@ void PlatformVerificationFlow::OnChallengeReady(
         base::Bind(&PlatformVerificationFlow::RenewCertificateCallback, this,
                    certificate_chain);
     attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-                                      user_id, context.service_id,
+                                      account_id, context.service_id,
                                       true,  // force_new_key
                                       renew_callback);
   }

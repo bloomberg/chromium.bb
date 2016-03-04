@@ -138,10 +138,9 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   // - For device-local accounts, policy is provided by
   //   |DeviceLocalAccountPolicyService|.
   // All other user types do not have user policy.
-  const std::string& username = user->email();
-  if (!user->HasGaiaAccount() ||
-      user->IsSupervised() ||
-      BrowserPolicyConnector::IsNonEnterpriseUser(username)) {
+  const AccountId account_id = user->GetAccountId();
+  if (!user->HasGaiaAccount() || user->IsSupervised() ||
+      BrowserPolicyConnector::IsNonEnterpriseUser(account_id.GetUserEmail())) {
     return scoped_ptr<UserCloudPolicyManagerChromeOS>();
   }
 
@@ -195,8 +194,8 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
       new UserCloudPolicyStoreChromeOS(
           chromeos::DBusThreadManager::Get()->GetCryptohomeClient(),
           chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-          background_task_runner,
-          username, policy_key_dir, token_cache_file, policy_cache_file));
+          background_task_runner, account_id, policy_key_dir, token_cache_file,
+          policy_cache_file));
 
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
@@ -226,9 +225,11 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
 
   bool wildcard_match = false;
   if (connector->IsEnterpriseManaged() &&
-      chromeos::CrosSettings::IsWhitelisted(username, &wildcard_match) &&
-      wildcard_match && !connector->IsNonEnterpriseUser(username)) {
-    manager->EnableWildcardLoginCheck(username);
+      chromeos::CrosSettings::IsWhitelisted(account_id.GetUserEmail(),
+                                            &wildcard_match) &&
+      wildcard_match &&
+      !connector->IsNonEnterpriseUser(account_id.GetUserEmail())) {
+    manager->EnableWildcardLoginCheck(account_id.GetUserEmail());
   }
 
   manager->Init(

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/session/stub_login_session_manager_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/login/user_names.h"
 #include "components/signin/core/account_id/account_id.h"
 
@@ -45,8 +46,10 @@ ChromeSessionManager::CreateSessionManager(
   bool force_login_screen_in_test =
       parsed_command_line.HasSwitch(switches::kForceLoginManagerInTests);
 
-  const AccountId login_account_id(AccountId::FromUserEmail(
-      parsed_command_line.GetSwitchValueASCII(switches::kLoginUser)));
+  const std::string cryptohome_id =
+      parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
+  const AccountId login_account_id(
+      cryptohome::Identification::FromString(cryptohome_id).GetAccountId());
 
   KioskAppManager::RemoveObsoleteCryptohomes();
 

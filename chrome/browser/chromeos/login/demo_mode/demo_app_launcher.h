@@ -12,6 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 
+class AccountId;
+
 namespace base {
 class FilePath;
 }
@@ -26,7 +28,7 @@ class DemoAppLauncher : public KioskProfileLoader::Delegate {
 
   void StartDemoAppLaunch();
 
-  static bool IsDemoAppSession(const std::string& user_id);
+  static bool IsDemoAppSession(const AccountId& account_id);
   static void SetDemoAppPathForTesting(const base::FilePath& path);
 
   static const char kDemoAppId[];
