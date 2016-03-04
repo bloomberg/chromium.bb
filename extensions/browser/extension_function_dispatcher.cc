@@ -472,7 +472,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
       ExtensionFunctionRegistry::GetInstance()->NewFunction(params.name);
   if (!function) {
     LOG(ERROR) << "Unknown Extension API - " << params.name;
-    SendAccessDenied(callback, function->histogram_value());
+    SendAccessDenied(callback, extensions::functions::UNKNOWN);
     return NULL;
   }
 
