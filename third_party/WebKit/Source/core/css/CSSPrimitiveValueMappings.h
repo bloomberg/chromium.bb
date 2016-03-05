@@ -277,8 +277,8 @@ template<> inline EBorderStyle CSSPrimitiveValue::convertTo() const
 template<> inline OutlineIsAuto CSSPrimitiveValue::convertTo() const
 {
     if (m_value.valueID == CSSValueAuto)
-        return AUTO_ON;
-    return AUTO_OFF;
+        return OutlineIsAutoOn;
+    return OutlineIsAutoOff;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(CompositeOperator e)

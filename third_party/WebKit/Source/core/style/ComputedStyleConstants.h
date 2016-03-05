@@ -90,9 +90,9 @@ enum EBorderStyle {
     BorderStyleDouble
 };
 
-enum EBorderPrecedence { BOFF, BTABLE, BCOLGROUP, BCOL, BROWGROUP, BROW, BCELL };
+enum EBorderPrecedence { BorderPrecedenceOff, BorderPrecedenceTable, BorderPrecedenceColumnGroup, BorderPrecedenceColumn, BorderPrecedenceRowGroup, BorderPrecedenceRow, BorderPrecedenceCell };
 
-enum OutlineIsAuto { AUTO_OFF = 0, AUTO_ON };
+enum OutlineIsAuto { OutlineIsAutoOff = 0, OutlineIsAutoOn };
 
 enum EPosition {
     StaticPosition = 0,

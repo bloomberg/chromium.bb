@@ -41,7 +41,7 @@ public:
         , m_colorIsCurrentColor(true)
         , m_width(3)
         , m_style(BorderStyleNone)
-        , m_isAuto(AUTO_OFF)
+        , m_isAuto(OutlineIsAutoOff)
     {
     }
 

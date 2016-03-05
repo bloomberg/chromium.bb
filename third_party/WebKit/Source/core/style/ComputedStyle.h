@@ -1649,7 +1649,7 @@ public:
     // Initial values for all the properties
     static EBorderCollapse initialBorderCollapse() { return BorderCollapseSeparate; }
     static EBorderStyle initialBorderStyle() { return BorderStyleNone; }
-    static OutlineIsAuto initialOutlineStyleIsAuto() { return AUTO_OFF; }
+    static OutlineIsAuto initialOutlineStyleIsAuto() { return OutlineIsAutoOff; }
     static NinePieceImage initialNinePieceImage() { return NinePieceImage(); }
     static LengthSize initialBorderRadius() { return LengthSize(Length(0, Fixed), Length(0, Fixed)); }
     static ECaptionSide initialCaptionSide() { return CAPTOP; }

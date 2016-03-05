@@ -496,12 +496,12 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
     // (1) Our start border.
     int startColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderStartColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
     int endColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderEndColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
-    CollapsedBorderValue result(style()->borderStart(), includeColor ? resolveColor(startColorProperty) : Color(), BCELL);
+    CollapsedBorderValue result(style()->borderStart(), includeColor ? resolveColor(startColorProperty) : Color(), BorderPrecedenceCell);
 
     // (2) The end border of the preceding cell.
     LayoutTableCell* cellBefore = table->cellBefore(this);
     if (cellBefore) {
-        CollapsedBorderValue cellBeforeAdjoiningBorder = CollapsedBorderValue(cellBefore->borderAdjoiningCellAfter(this), includeColor ? cellBefore->resolveColor(endColorProperty) : Color(), BCELL);
+        CollapsedBorderValue cellBeforeAdjoiningBorder = CollapsedBorderValue(cellBefore->borderAdjoiningCellAfter(this), includeColor ? cellBefore->resolveColor(endColorProperty) : Color(), BorderPrecedenceCell);
         // |result| should be the 2nd argument as |cellBefore| should win in case of equality per CSS 2.1 (Border conflict resolution, point 4).
         result = chooseBorder(cellBeforeAdjoiningBorder, result);
         if (!result.exists())
@@ -511,12 +511,12 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
     bool startBorderAdjoinsTable = hasStartBorderAdjoiningTable();
     if (startBorderAdjoinsTable) {
         // (3) Our row's start border.
-        result = chooseBorder(result, CollapsedBorderValue(row()->borderAdjoiningStartCell(this), includeColor ? parent()->resolveColor(startColorProperty) : Color(), BROW));
+        result = chooseBorder(result, CollapsedBorderValue(row()->borderAdjoiningStartCell(this), includeColor ? parent()->resolveColor(startColorProperty) : Color(), BorderPrecedenceRow));
         if (!result.exists())
             return result;
 
         // (4) Our row group's start border.
-        result = chooseBorder(result, CollapsedBorderValue(section()->borderAdjoiningStartCell(this), includeColor ? section()->resolveColor(startColorProperty) : Color(), BROWGROUP));
+        result = chooseBorder(result, CollapsedBorderValue(section()->borderAdjoiningStartCell(this), includeColor ? section()->resolveColor(startColorProperty) : Color(), BorderPrecedenceRowGroup));
         if (!result.exists())
             return result;
     }
@@ -525,7 +525,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
     LayoutTable::ColAndColGroup colAndColGroup = table->colElementAtAbsoluteColumn(absoluteColumnIndex());
     if (colAndColGroup.colgroup && colAndColGroup.adjoinsStartBorderOfColGroup) {
         // Only apply the colgroup's border if this cell touches the colgroup edge.
-        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(startColorProperty) : Color(), BCOLGROUP));
+        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(startColorProperty) : Color(), BorderPrecedenceColumnGroup));
         if (!result.exists())
             return result;
     }
@@ -533,7 +533,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
         // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
         // "For the purposes of the CSS table model, the col element is expected to be treated as if it
         // "was present as many times as its span attribute specifies".
-        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.col->resolveColor(startColorProperty) : Color(), BCOL));
+        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.col->resolveColor(startColorProperty) : Color(), BorderPrecedenceColumn));
         if (!result.exists())
             return result;
     }
@@ -543,7 +543,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
         LayoutTable::ColAndColGroup colAndColGroup = table->colElementAtAbsoluteColumn(absoluteColumnIndex() - 1);
         // Only apply the colgroup's border if this cell touches the colgroup edge.
         if (colAndColGroup.colgroup && colAndColGroup.adjoinsEndBorderOfColGroup) {
-            result = chooseBorder(CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(endColorProperty) : Color(), BCOLGROUP), result);
+            result = chooseBorder(CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(endColorProperty) : Color(), BorderPrecedenceColumnGroup), result);
             if (!result.exists())
                 return result;
         }
@@ -551,7 +551,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
         // "For the purposes of the CSS table model, the col element is expected to be treated as if it
         // "was present as many times as its span attribute specifies".
         if (colAndColGroup.col) {
-            result = chooseBorder(CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellAfter(this), includeColor ? colAndColGroup.col->resolveColor(endColorProperty) : Color(), BCOL), result);
+            result = chooseBorder(CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellAfter(this), includeColor ? colAndColGroup.col->resolveColor(endColorProperty) : Color(), BorderPrecedenceColumn), result);
             if (!result.exists())
                 return result;
         }
@@ -559,7 +559,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
 
     if (startBorderAdjoinsTable) {
         // (7) The table's start border.
-        result = chooseBorder(result, CollapsedBorderValue(table->tableStartBorderAdjoiningCell(this), includeColor ? table->resolveColor(startColorProperty) : Color(), BTABLE));
+        result = chooseBorder(result, CollapsedBorderValue(table->tableStartBorderAdjoiningCell(this), includeColor ? table->resolveColor(startColorProperty) : Color(), BorderPrecedenceTable));
         if (!result.exists())
             return result;
     }
@@ -578,12 +578,12 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
     // (1) Our end border.
     int startColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderStartColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
     int endColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderEndColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
-    CollapsedBorderValue result = CollapsedBorderValue(style()->borderEnd(), includeColor ? resolveColor(endColorProperty) : Color(), BCELL);
+    CollapsedBorderValue result = CollapsedBorderValue(style()->borderEnd(), includeColor ? resolveColor(endColorProperty) : Color(), BorderPrecedenceCell);
 
     // (2) The start border of the following cell.
     if (!isEndColumn) {
         if (LayoutTableCell* cellAfter = table->cellAfter(this)) {
-            CollapsedBorderValue cellAfterAdjoiningBorder = CollapsedBorderValue(cellAfter->borderAdjoiningCellBefore(this), includeColor ? cellAfter->resolveColor(startColorProperty) : Color(), BCELL);
+            CollapsedBorderValue cellAfterAdjoiningBorder = CollapsedBorderValue(cellAfter->borderAdjoiningCellBefore(this), includeColor ? cellAfter->resolveColor(startColorProperty) : Color(), BorderPrecedenceCell);
             result = chooseBorder(result, cellAfterAdjoiningBorder);
             if (!result.exists())
                 return result;
@@ -593,12 +593,12 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
     bool endBorderAdjoinsTable = hasEndBorderAdjoiningTable();
     if (endBorderAdjoinsTable) {
         // (3) Our row's end border.
-        result = chooseBorder(result, CollapsedBorderValue(row()->borderAdjoiningEndCell(this), includeColor ? parent()->resolveColor(endColorProperty) : Color(), BROW));
+        result = chooseBorder(result, CollapsedBorderValue(row()->borderAdjoiningEndCell(this), includeColor ? parent()->resolveColor(endColorProperty) : Color(), BorderPrecedenceRow));
         if (!result.exists())
             return result;
 
         // (4) Our row group's end border.
-        result = chooseBorder(result, CollapsedBorderValue(section()->borderAdjoiningEndCell(this), includeColor ? section()->resolveColor(endColorProperty) : Color(), BROWGROUP));
+        result = chooseBorder(result, CollapsedBorderValue(section()->borderAdjoiningEndCell(this), includeColor ? section()->resolveColor(endColorProperty) : Color(), BorderPrecedenceRowGroup));
         if (!result.exists())
             return result;
     }
@@ -607,7 +607,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
     LayoutTable::ColAndColGroup colAndColGroup = table->colElementAtAbsoluteColumn(absoluteColumnIndex() + colSpan() - 1);
     if (colAndColGroup.colgroup && colAndColGroup.adjoinsEndBorderOfColGroup) {
         // Only apply the colgroup's border if this cell touches the colgroup edge.
-        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(endColorProperty) : Color(), BCOLGROUP));
+        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(endColorProperty) : Color(), BorderPrecedenceColumnGroup));
         if (!result.exists())
             return result;
     }
@@ -615,7 +615,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
         // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
         // "For the purposes of the CSS table model, the col element is expected to be treated as if it
         // "was present as many times as its span attribute specifies".
-        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.col->resolveColor(endColorProperty) : Color(), BCOL));
+        result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellEndBorder(this), includeColor ? colAndColGroup.col->resolveColor(endColorProperty) : Color(), BorderPrecedenceColumn));
         if (!result.exists())
             return result;
     }
@@ -625,7 +625,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
         LayoutTable::ColAndColGroup colAndColGroup = table->colElementAtAbsoluteColumn(absoluteColumnIndex() + colSpan());
         if (colAndColGroup.colgroup && colAndColGroup.adjoinsStartBorderOfColGroup) {
             // Only apply the colgroup's border if this cell touches the colgroup edge.
-            result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(startColorProperty) : Color(), BCOLGROUP));
+            result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.colgroup->borderAdjoiningCellStartBorder(this), includeColor ? colAndColGroup.colgroup->resolveColor(startColorProperty) : Color(), BorderPrecedenceColumnGroup));
             if (!result.exists())
                 return result;
         }
@@ -633,7 +633,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
             // Always apply the col's border irrespective of whether this cell touches it. This is per HTML5:
             // "For the purposes of the CSS table model, the col element is expected to be treated as if it
             // "was present as many times as its span attribute specifies".
-            result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellBefore(this), includeColor ? colAndColGroup.col->resolveColor(startColorProperty) : Color(), BCOL));
+            result = chooseBorder(result, CollapsedBorderValue(colAndColGroup.col->borderAdjoiningCellBefore(this), includeColor ? colAndColGroup.col->resolveColor(startColorProperty) : Color(), BorderPrecedenceColumn));
             if (!result.exists())
                 return result;
         }
@@ -641,7 +641,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
 
     if (endBorderAdjoinsTable) {
         // (7) The table's end border.
-        result = chooseBorder(result, CollapsedBorderValue(table->tableEndBorderAdjoiningCell(this), includeColor ? table->resolveColor(endColorProperty) : Color(), BTABLE));
+        result = chooseBorder(result, CollapsedBorderValue(table->tableEndBorderAdjoiningCell(this), includeColor ? table->resolveColor(endColorProperty) : Color(), BorderPrecedenceTable));
         if (!result.exists())
             return result;
     }
@@ -657,18 +657,18 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
     // (1) Our before border.
     int beforeColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderBeforeColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
     int afterColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderAfterColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
-    CollapsedBorderValue result = CollapsedBorderValue(style()->borderBefore(), includeColor ? resolveColor(beforeColorProperty) : Color(), BCELL);
+    CollapsedBorderValue result = CollapsedBorderValue(style()->borderBefore(), includeColor ? resolveColor(beforeColorProperty) : Color(), BorderPrecedenceCell);
 
     LayoutTableCell* prevCell = table->cellAbove(this);
     if (prevCell) {
         // (2) A before cell's after border.
-        result = chooseBorder(CollapsedBorderValue(prevCell->style()->borderAfter(), includeColor ? prevCell->resolveColor(afterColorProperty) : Color(), BCELL), result);
+        result = chooseBorder(CollapsedBorderValue(prevCell->style()->borderAfter(), includeColor ? prevCell->resolveColor(afterColorProperty) : Color(), BorderPrecedenceCell), result);
         if (!result.exists())
             return result;
     }
 
     // (3) Our row's before border.
-    result = chooseBorder(result, CollapsedBorderValue(parent()->style()->borderBefore(), includeColor ? parent()->resolveColor(beforeColorProperty) : Color(), BROW));
+    result = chooseBorder(result, CollapsedBorderValue(parent()->style()->borderBefore(), includeColor ? parent()->resolveColor(beforeColorProperty) : Color(), BorderPrecedenceRow));
     if (!result.exists())
         return result;
 
@@ -681,7 +681,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
             prevRow = prevCell->section()->lastRow();
 
         if (prevRow) {
-            result = chooseBorder(CollapsedBorderValue(prevRow->style()->borderAfter(), includeColor ? prevRow->resolveColor(afterColorProperty) : Color(), BROW), result);
+            result = chooseBorder(CollapsedBorderValue(prevRow->style()->borderAfter(), includeColor ? prevRow->resolveColor(afterColorProperty) : Color(), BorderPrecedenceRow), result);
             if (!result.exists())
                 return result;
         }
@@ -691,14 +691,14 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
     LayoutTableSection* currSection = section();
     if (!rowIndex()) {
         // (5) Our row group's before border.
-        result = chooseBorder(result, CollapsedBorderValue(currSection->style()->borderBefore(), includeColor ? currSection->resolveColor(beforeColorProperty) : Color(), BROWGROUP));
+        result = chooseBorder(result, CollapsedBorderValue(currSection->style()->borderBefore(), includeColor ? currSection->resolveColor(beforeColorProperty) : Color(), BorderPrecedenceRowGroup));
         if (!result.exists())
             return result;
 
         // (6) Previous row group's after border.
         currSection = table->sectionAbove(currSection, SkipEmptySections);
         if (currSection) {
-            result = chooseBorder(CollapsedBorderValue(currSection->style()->borderAfter(), includeColor ? currSection->resolveColor(afterColorProperty) : Color(), BROWGROUP), result);
+            result = chooseBorder(CollapsedBorderValue(currSection->style()->borderAfter(), includeColor ? currSection->resolveColor(afterColorProperty) : Color(), BorderPrecedenceRowGroup), result);
             if (!result.exists())
                 return result;
         }
@@ -708,18 +708,18 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
         // (8) Our column and column group's before borders.
         LayoutTableCol* colElt = table->colElementAtAbsoluteColumn(absoluteColumnIndex()).innermostColOrColGroup();
         if (colElt) {
-            result = chooseBorder(result, CollapsedBorderValue(colElt->style()->borderBefore(), includeColor ? colElt->resolveColor(beforeColorProperty) : Color(), BCOL));
+            result = chooseBorder(result, CollapsedBorderValue(colElt->style()->borderBefore(), includeColor ? colElt->resolveColor(beforeColorProperty) : Color(), BorderPrecedenceColumn));
             if (!result.exists())
                 return result;
             if (LayoutTableCol* enclosingColumnGroup = colElt->enclosingColumnGroup()) {
-                result = chooseBorder(result, CollapsedBorderValue(enclosingColumnGroup->style()->borderBefore(), includeColor ? enclosingColumnGroup->resolveColor(beforeColorProperty) : Color(), BCOLGROUP));
+                result = chooseBorder(result, CollapsedBorderValue(enclosingColumnGroup->style()->borderBefore(), includeColor ? enclosingColumnGroup->resolveColor(beforeColorProperty) : Color(), BorderPrecedenceColumnGroup));
                 if (!result.exists())
                     return result;
             }
         }
 
         // (9) The table's before border.
-        result = chooseBorder(result, CollapsedBorderValue(table->style()->borderBefore(), includeColor ? table->resolveColor(beforeColorProperty) : Color(), BTABLE));
+        result = chooseBorder(result, CollapsedBorderValue(table->style()->borderBefore(), includeColor ? table->resolveColor(beforeColorProperty) : Color(), BorderPrecedenceTable));
         if (!result.exists())
             return result;
     }
@@ -735,24 +735,24 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedAfterBorder(IncludeBorderC
     // (1) Our after border.
     int beforeColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderBeforeColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
     int afterColorProperty = includeColor ? CSSProperty::resolveDirectionAwareProperty(CSSPropertyWebkitBorderAfterColor, styleForCellFlow().direction(), styleForCellFlow().getWritingMode()) : 0;
-    CollapsedBorderValue result = CollapsedBorderValue(style()->borderAfter(), includeColor ? resolveColor(afterColorProperty) : Color(), BCELL);
+    CollapsedBorderValue result = CollapsedBorderValue(style()->borderAfter(), includeColor ? resolveColor(afterColorProperty) : Color(), BorderPrecedenceCell);
 
     LayoutTableCell* nextCell = table->cellBelow(this);
     if (nextCell) {
         // (2) An after cell's before border.
-        result = chooseBorder(result, CollapsedBorderValue(nextCell->style()->borderBefore(), includeColor ? nextCell->resolveColor(beforeColorProperty) : Color(), BCELL));
+        result = chooseBorder(result, CollapsedBorderValue(nextCell->style()->borderBefore(), includeColor ? nextCell->resolveColor(beforeColorProperty) : Color(), BorderPrecedenceCell));
         if (!result.exists())
             return result;
     }
 
     // (3) Our row's after border. (FIXME: Deal with rowspan!)
-    result = chooseBorder(result, CollapsedBorderValue(parent()->style()->borderAfter(), includeColor ? parent()->resolveColor(afterColorProperty) : Color(), BROW));
+    result = chooseBorder(result, CollapsedBorderValue(parent()->style()->borderAfter(), includeColor ? parent()->resolveColor(afterColorProperty) : Color(), BorderPrecedenceRow));
     if (!result.exists())
         return result;
 
     // (4) The next row's before border.
     if (nextCell) {
-        result = chooseBorder(result, CollapsedBorderValue(nextCell->parent()->style()->borderBefore(), includeColor ? nextCell->parent()->resolveColor(beforeColorProperty) : Color(), BROW));
+        result = chooseBorder(result, CollapsedBorderValue(nextCell->parent()->style()->borderBefore(), includeColor ? nextCell->parent()->resolveColor(beforeColorProperty) : Color(), BorderPrecedenceRow));
         if (!result.exists())
             return result;
     }
@@ -761,14 +761,14 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedAfterBorder(IncludeBorderC
     LayoutTableSection* currSection = section();
     if (rowIndex() + rowSpan() >= currSection->numRows()) {
         // (5) Our row group's after border.
-        result = chooseBorder(result, CollapsedBorderValue(currSection->style()->borderAfter(), includeColor ? currSection->resolveColor(afterColorProperty) : Color(), BROWGROUP));
+        result = chooseBorder(result, CollapsedBorderValue(currSection->style()->borderAfter(), includeColor ? currSection->resolveColor(afterColorProperty) : Color(), BorderPrecedenceRowGroup));
         if (!result.exists())
             return result;
 
         // (6) Following row group's before border.
         currSection = table->sectionBelow(currSection, SkipEmptySections);
         if (currSection) {
-            result = chooseBorder(result, CollapsedBorderValue(currSection->style()->borderBefore(), includeColor ? currSection->resolveColor(beforeColorProperty) : Color(), BROWGROUP));
+            result = chooseBorder(result, CollapsedBorderValue(currSection->style()->borderBefore(), includeColor ? currSection->resolveColor(beforeColorProperty) : Color(), BorderPrecedenceRowGroup));
             if (!result.exists())
                 return result;
         }
@@ -778,18 +778,18 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedAfterBorder(IncludeBorderC
         // (8) Our column and column group's after borders.
         LayoutTableCol* colElt = table->colElementAtAbsoluteColumn(absoluteColumnIndex()).innermostColOrColGroup();
         if (colElt) {
-            result = chooseBorder(result, CollapsedBorderValue(colElt->style()->borderAfter(), includeColor ? colElt->resolveColor(afterColorProperty) : Color(), BCOL));
+            result = chooseBorder(result, CollapsedBorderValue(colElt->style()->borderAfter(), includeColor ? colElt->resolveColor(afterColorProperty) : Color(), BorderPrecedenceColumn));
             if (!result.exists())
                 return result;
             if (LayoutTableCol* enclosingColumnGroup = colElt->enclosingColumnGroup()) {
-                result = chooseBorder(result, CollapsedBorderValue(enclosingColumnGroup->style()->borderAfter(), includeColor ? enclosingColumnGroup->resolveColor(afterColorProperty) : Color(), BCOLGROUP));
+                result = chooseBorder(result, CollapsedBorderValue(enclosingColumnGroup->style()->borderAfter(), includeColor ? enclosingColumnGroup->resolveColor(afterColorProperty) : Color(), BorderPrecedenceColumnGroup));
                 if (!result.exists())
                     return result;
             }
         }
 
         // (9) The table's after border.
-        result = chooseBorder(result, CollapsedBorderValue(table->style()->borderAfter(), includeColor ? table->resolveColor(afterColorProperty) : Color(), BTABLE));
+        result = chooseBorder(result, CollapsedBorderValue(table->style()->borderAfter(), includeColor ? table->resolveColor(afterColorProperty) : Color(), BorderPrecedenceTable));
         if (!result.exists())
             return result;
     }

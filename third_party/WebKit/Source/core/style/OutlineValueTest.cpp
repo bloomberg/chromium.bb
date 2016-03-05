@@ -48,10 +48,10 @@ TEST(OutlineValueTest, VisuallyEqualIsAuto)
     outline2.setStyle(BorderStyleDotted);
     EXPECT_TRUE(outline1.visuallyEqual(outline2));
 
-    outline1.setIsAuto(AUTO_ON);
+    outline1.setIsAuto(OutlineIsAutoOn);
     EXPECT_FALSE(outline1.visuallyEqual(outline2));
 
-    outline2.setIsAuto(AUTO_ON);
+    outline2.setIsAuto(OutlineIsAutoOn);
     EXPECT_TRUE(outline1.visuallyEqual(outline2));
 }
 
