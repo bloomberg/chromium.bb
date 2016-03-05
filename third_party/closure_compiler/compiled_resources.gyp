@@ -22,7 +22,6 @@
       'dependencies': [
         '../../chrome/browser/resources/bookmark_manager/js/compiled_resources.gyp:*',
         '../../chrome/browser/resources/chromeos/compiled_resources.gyp:*',
-        '../../chrome/browser/resources/chromeos/network_ui/compiled_resources.gyp:*',
         '../../chrome/browser/resources/extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/help/compiled_resources.gyp:*',
         '../../chrome/browser/resources/history/compiled_resources.gyp:*',

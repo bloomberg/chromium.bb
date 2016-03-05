@@ -11,6 +11,10 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'cr_network_icon_externs',
+      'includes': ['../../../../../third_party/closure_compiler/include_js.gypi'],
+    },
+    {
       'target_name': 'cr_network_list',
       'dependencies': [
         'cr_onc_types',
