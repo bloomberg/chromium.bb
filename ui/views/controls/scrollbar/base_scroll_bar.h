@@ -115,6 +115,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, ScrollBarFitsToBottom);
+  FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, ThumbFullLengthOfTrack);
   int GetThumbSizeForTest();
 
   // Changes to 'pushed' state and starts a timer to scroll repeatedly.

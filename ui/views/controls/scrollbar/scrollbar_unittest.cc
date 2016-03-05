@@ -175,4 +175,28 @@ TEST_F(NativeScrollBarTest, ScrollToEndAfterShrinkAndExpand) {
   EXPECT_TRUE(scrollbar_->ScrollByContentsOffset(-1));
 }
 
+TEST_F(NativeScrollBarTest, ThumbFullLengthOfTrack) {
+  // Shrink content so that it fits within the viewport.
+  scrollbar_->Update(100, 10, 0);
+  EXPECT_EQ(scrollbar_->GetTrackBounds().width(),
+            scrollbar_->GetThumbSizeForTest());
+  // Emulate a click on the full size scroll bar.
+  scrollbar_->ScrollToThumbPosition(0, false);
+  EXPECT_EQ(0, scrollbar_->GetPosition());
+  // Emulate a key down.
+  scrollbar_->ScrollByAmount(BaseScrollBar::SCROLL_NEXT_LINE);
+  EXPECT_EQ(0, scrollbar_->GetPosition());
+
+  // Expand content so that it fits *exactly* within the viewport.
+  scrollbar_->Update(100, 100, 0);
+  EXPECT_EQ(scrollbar_->GetTrackBounds().width(),
+            scrollbar_->GetThumbSizeForTest());
+  // Emulate a click on the full size scroll bar.
+  scrollbar_->ScrollToThumbPosition(0, false);
+  EXPECT_EQ(0, scrollbar_->GetPosition());
+  // Emulate a key down.
+  scrollbar_->ScrollByAmount(BaseScrollBar::SCROLL_NEXT_LINE);
+  EXPECT_EQ(0, scrollbar_->GetPosition());
+}
+
 }  // namespace views

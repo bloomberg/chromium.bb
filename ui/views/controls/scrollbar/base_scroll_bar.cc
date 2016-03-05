@@ -413,7 +413,8 @@ void BaseScrollBar::Update(int viewport_size,
   // Thumb Height and Thumb Pos.
   // The height of the thumb is the ratio of the Viewport height to the
   // content size multiplied by the height of the thumb track.
-  double ratio = static_cast<double>(viewport_size) / contents_size_;
+  double ratio =
+      std::min(1.0, static_cast<double>(viewport_size) / contents_size_);
   int thumb_size = static_cast<int>(ratio * GetTrackSize());
   thumb_->SetSize(thumb_size);
 
@@ -505,10 +506,13 @@ int BaseScrollBar::CalculateThumbPosition(int contents_scroll_offset) const {
 int BaseScrollBar::CalculateContentsOffset(int thumb_position,
                                            bool scroll_to_middle) const {
   int thumb_size = thumb_->GetSize();
+  int track_size = GetTrackSize();
+  if (track_size == thumb_size)
+    return 0;
   if (scroll_to_middle)
     thumb_position = thumb_position - (thumb_size / 2);
   return (thumb_position * (contents_size_ - viewport_size_)) /
-         (GetTrackSize() - thumb_size);
+         (track_size - thumb_size);
 }
 
 void BaseScrollBar::SetThumbTrackState(CustomButton::ButtonState state) {
