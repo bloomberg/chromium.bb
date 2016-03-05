@@ -92,4 +92,4 @@ class NET_EXPORT UnixDomainServerSocket : public ServerSocket {
 
 }  // namespace net
 
-#endif  // NET_SOCKET_UNIX_DOMAIN_SOCKET_POSIX_H_
+#endif  // NET_SOCKET_UNIX_DOMAIN_SERVER_SOCKET_POSIX_H_
