@@ -385,6 +385,26 @@ void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource
     }
 }
 
+void ResourceFetcher::updateMemoryCacheStats(Resource* resource, RevalidationPolicy policy, const FetchRequest& request,  const ResourceFactory& factory, bool isStaticData) const
+{
+    if (isStaticData)
+        return;
+
+    if (request.forPreload()) {
+        DEFINE_RESOURCE_HISTOGRAM("Preload.");
+    } else {
+        DEFINE_RESOURCE_HISTOGRAM("");
+    }
+
+    // Aims to count Resource only referenced from MemoryCache (i.e. what
+    // would be dead if MemoryCache holds weak references to Resource).
+    // Currently we check references to Resource from ResourceClient and
+    // |m_preloads| only, because they are major sources of references.
+    if (resource && !resource->hasClients() && (!m_preloads || !m_preloads->contains(resource))) {
+        DEFINE_RESOURCE_HISTOGRAM("Dead.");
+    }
+}
+
 PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw || factory.type() == Resource::XSLStyleSheet);
@@ -434,18 +454,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& 
 
     const RevalidationPolicy policy = determineRevalidationPolicy(factory.type(), request, resource.get(), isStaticData);
 
-    if (request.forPreload()) {
-        DEFINE_RESOURCE_HISTOGRAM("Preload.");
-    } else {
-        DEFINE_RESOURCE_HISTOGRAM("");
-    }
-    // Aims to count Resource only referenced from MemoryCache (i.e. what
-    // would be dead if MemoryCache holds weak references to Resource).
-    // Currently we check references to Resource from ResourceClient and
-    // |m_preloads| only, because they are major sources of references.
-    if (resource && !resource->hasClients() && (!m_preloads || !m_preloads->contains(resource)) && !isStaticData) {
-        DEFINE_RESOURCE_HISTOGRAM("Dead.");
-    }
+    updateMemoryCacheStats(resource.get(), policy, request, factory, isStaticData);
 
     switch (policy) {
     case Reload:

@@ -181,6 +181,8 @@ private:
 
     void willTerminateResourceLoader(ResourceLoader*);
 
+    void updateMemoryCacheStats(Resource*, RevalidationPolicy, const FetchRequest&,  const ResourceFactory&, bool isStaticData) const;
+
     Member<FetchContext> m_context;
 
     HashSet<String> m_validatedURLs;
