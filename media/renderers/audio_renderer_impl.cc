@@ -695,16 +695,20 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
       CHECK_GE(first_packet_timestamp_, base::TimeDelta());
       const base::TimeDelta play_delay =
           first_packet_timestamp_ - audio_clock_->back_timestamp();
-      CHECK_LT(play_delay.InSeconds(), 1000)
-          << "first_packet_timestamp_ = " << first_packet_timestamp_
-          << ", audio_clock_->back_timestamp() = "
-          << audio_clock_->back_timestamp();
       if (play_delay > base::TimeDelta()) {
         DCHECK_EQ(frames_written, 0);
-        frames_written =
-            std::min(static_cast<int>(play_delay.InSecondsF() *
-                                      audio_parameters_.sample_rate()),
-                     frames_requested);
+
+        // Don't multiply |play_delay| out since it can be a huge value on
+        // poorly encoded media and multiplying by the sample rate could cause
+        // the value to overflow.
+        if (play_delay.InSecondsF() > static_cast<double>(frames_requested) /
+                                          audio_parameters_.sample_rate()) {
+          frames_written = frames_requested;
+        } else {
+          frames_written =
+              play_delay.InSecondsF() * audio_parameters_.sample_rate();
+        }
+
         audio_bus->ZeroFramesPartial(0, frames_written);
       }
 

@@ -755,6 +755,16 @@ TEST_F(AudioRendererImplTest, RenderingDelayedForEarlyStartTime) {
     ASSERT_NE(0.0f, bus->channel(0)[i]);
 }
 
+TEST_F(AudioRendererImplTest, RenderingDelayDoesNotOverflow) {
+  Initialize();
+
+  // Choose a first timestamp as far into the future as possible. Without care
+  // this can cause an overflow in rendering arithmetic.
+  Preroll(base::TimeDelta(), base::TimeDelta::Max(), PIPELINE_OK);
+  StartTicking();
+  EXPECT_TRUE(ConsumeBufferedData(OutputFrames(1)));
+}
+
 TEST_F(AudioRendererImplTest, ImmediateEndOfStream) {
   Initialize();
   {
