@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/identity.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace mojo {
 namespace shell {

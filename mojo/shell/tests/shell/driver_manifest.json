@@ -1,0 +1,5 @@
+{
+  "name": "exe:shell_unittest_driver",
+  "display_name": "Shell Unittest: Driver",
+  "capabilities": { "*": [ "*" ] }
+}

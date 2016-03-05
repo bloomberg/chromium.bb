@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace content {
 

@@ -17,7 +17,7 @@
 #include "mojo/services/package_manager/public/interfaces/catalog.mojom.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
-#include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
@@ -266,12 +266,12 @@ void TaskViewer::Initialize(mojo::Connector* connector,
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(connector);
 
-  mojo::shell::mojom::ApplicationManagerPtr application_manager;
-  connector->ConnectToInterface("mojo:shell", &application_manager);
+  mojo::shell::mojom::ShellPtr shell;
+  connector->ConnectToInterface("mojo:shell", &shell);
 
   mojo::shell::mojom::InstanceListenerPtr listener;
   mojo::shell::mojom::InstanceListenerRequest request = GetProxy(&listener);
-  application_manager->AddInstanceListener(std::move(listener));
+  shell->AddInstanceListener(std::move(listener));
 
   package_manager::mojom::CatalogPtr catalog;
   connector->ConnectToInterface("mojo:package_manager", &catalog);

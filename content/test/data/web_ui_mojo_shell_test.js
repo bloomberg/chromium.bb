@@ -14,10 +14,11 @@ define('main', [
   'mojo/public/js/core',
   'mojo/public/js/router',
   'mojo/services/network/public/interfaces/url_loader.mojom',
-  'mojo/shell/public/interfaces/shell.mojom',
+  'mojo/shell/public/interfaces/connector.mojom',
   'content/public/renderer/service_provider',
   'content/public/test/test_mojo_service.mojom',
-], function (core, router, urlMojom, shellMojom, serviceRegistry, testMojom) {
+], function (core, router, urlMojom, connectorMojom, serviceRegistry,
+             testMojom) {
 
   var connectToService = function(serviceProvider, iface) {
     var pipe = core.createMessagePipe();
@@ -29,8 +30,8 @@ define('main', [
   return function() {
     domAutomationController.setAutomationId(0);
     var connectorPipe =
-        serviceRegistry.connectToService(shellMojom.Connector.name);
-    var connector = new shellMojom.Connector.proxyClass(
+        serviceRegistry.connectToService(connectorMojom.Connector.name);
+    var connector = new connectorMojom.Connector.proxyClass(
         new router.Router(connectorPipe));
 
     connector.connect(

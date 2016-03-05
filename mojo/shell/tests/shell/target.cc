@@ -10,9 +10,9 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/init.h"
-#include "mojo/shell/tests/application_manager/application_manager_unittest.mojom.h"
+#include "mojo/shell/tests/shell/shell_unittest.mojom.h"
 
-using mojo::shell::test::mojom::CreateInstanceForHandleTestPtr;
+using mojo::shell::test::mojom::CreateInstanceForFactoryTestPtr;
 
 namespace {
 
@@ -25,9 +25,8 @@ class Target : public mojo::ShellClient {
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector, const std::string& name,
                   uint32_t id, uint32_t user_id) override {
-    CreateInstanceForHandleTestPtr service;
-    connector->ConnectToInterface("mojo:application_manager_unittest",
-                                  &service);
+    CreateInstanceForFactoryTestPtr service;
+    connector->ConnectToInterface("mojo:shell_unittest", &service);
     service->SetTargetID(id);
   }
 

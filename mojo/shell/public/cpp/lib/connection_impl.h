@@ -12,8 +12,8 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/public/cpp/connection.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace mojo {
 namespace internal {

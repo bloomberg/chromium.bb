@@ -7,10 +7,10 @@ import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-source_set("application_manager") {
+source_set("shell") {
   testonly = true
   sources = [
-    "application_manager_unittest.cc",
+    "shell_unittest.cc",
   ]
 
   deps = [
@@ -25,23 +25,23 @@ source_set("application_manager") {
   ]
 
   data_deps = [
-    ":application_manager_unittest_driver",
-    ":application_manager_unittest_target",
+    ":shell_unittest_driver",
+    ":shell_unittest_target",
   ]
 }
 
 mojom("interfaces") {
   sources = [
-    "application_manager_unittest.mojom",
+    "shell_unittest.mojom",
   ]
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "application_manager_unittest"
-  source = "application_manager_unittest_manifest.json"
+  application_name = "shell_unittest"
+  source = "shell_unittest_manifest.json"
 }
 
-executable("application_manager_unittest_driver") {
+executable("shell_unittest_driver") {
   testonly = true
 
   sources = [
@@ -63,11 +63,11 @@ executable("application_manager_unittest_driver") {
 
 mojo_application_manifest("driver_manifest") {
   type = "exe"
-  application_name = "application_manager_unittest_driver"
+  application_name = "shell_unittest_driver"
   source = "driver_manifest.json"
 }
 
-executable("application_manager_unittest_target") {
+executable("shell_unittest_target") {
   testonly = true
 
   sources = [

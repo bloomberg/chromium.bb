@@ -6,14 +6,14 @@
 
 #include <utility>
 
-#include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_params.h"
+#include "mojo/shell/shell.h"
 
 namespace mojo {
 namespace shell {
 
 ScopedMessagePipeHandle ConnectToInterfaceByName(
-    ApplicationManager* application_manager,
+    Shell* shell,
     const Identity& source,
     const Identity& target,
     const std::string& interface_name) {
@@ -22,7 +22,7 @@ ScopedMessagePipeHandle ConnectToInterfaceByName(
   params->set_source(source);
   params->set_target(target);
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
-  application_manager->Connect(std::move(params));
+  shell->Connect(std::move(params));
   MessagePipe pipe;
   remote_interfaces->GetInterface(interface_name, std::move(pipe.handle1));
   return std::move(pipe.handle0);

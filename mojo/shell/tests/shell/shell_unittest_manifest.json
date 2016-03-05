@@ -1,0 +1,5 @@
+{
+  "name": "mojo:shell_unittest",
+  "display_name": "Shell Unittest",
+  "capabilities": { "*": [ "*" ] }
+}

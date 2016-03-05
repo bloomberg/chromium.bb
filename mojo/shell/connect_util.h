@@ -8,40 +8,39 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/shell/identity.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mojo {
 namespace shell {
 
-class ApplicationManager;
+class Shell;
 
 ScopedMessagePipeHandle ConnectToInterfaceByName(
-    ApplicationManager* application_manager,
+    Shell* shell,
     const Identity& source,
     const Identity& target,
     const std::string& interface_name);
 
 // Must only be used by shell internals and test code as it does not forward
-// capability filters. Runs |application_name| with a permissive capability
-// filter.
+// capability filters. Runs |name| with a permissive capability filter.
 template <typename Interface>
-inline void ConnectToInterface(ApplicationManager* application_manager,
+inline void ConnectToInterface(Shell* shell,
                                const Identity& source,
                                const Identity& target,
                                InterfacePtr<Interface>* ptr) {
-  ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
-      application_manager, source, target, Interface::Name_);
+  ScopedMessagePipeHandle service_handle =
+      ConnectToInterfaceByName(shell, source, target, Interface::Name_);
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }
 
 template <typename Interface>
-inline void ConnectToInterface(ApplicationManager* application_manager,
+inline void ConnectToInterface(Shell* shell,
                                const Identity& source,
-                               const std::string& application_name,
+                               const std::string& name,
                                InterfacePtr<Interface>* ptr) {
   ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
-      application_manager, source,
-      Identity(application_name, std::string(), mojom::Connector::kUserInherit),
+      shell, source,
+      Identity(name, std::string(), mojom::Connector::kUserInherit),
       Interface::Name_);
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }

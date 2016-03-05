@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/shell/public/cpp/connector.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mojo {
 

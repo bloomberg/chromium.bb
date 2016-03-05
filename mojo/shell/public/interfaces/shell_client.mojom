@@ -4,8 +4,8 @@
 
 module mojo.shell.mojom;
 
+import "mojo/shell/public/interfaces/connector.mojom";
 import "mojo/shell/public/interfaces/interface_provider.mojom";
-import "mojo/shell/public/interfaces/shell.mojom";
 
 // Implemented by something "known to" the Mojo Shell (e.g. an application or
 // service), for which an instance is tracked. It allows the implementor to

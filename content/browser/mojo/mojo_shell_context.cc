@@ -30,7 +30,7 @@
 #include "mojo/shell/loader.h"
 #include "mojo/shell/native_runner.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
 
 namespace content {
@@ -205,10 +205,10 @@ MojoShellContext::MojoShellContext() {
   scoped_ptr<mojo::shell::NativeRunnerFactory> native_runner_factory(
       new mojo::shell::InProcessNativeRunnerFactory(
           BrowserThread::GetBlockingPool()));
-  application_manager_.reset(new mojo::shell::ApplicationManager(
-      std::move(native_runner_factory), file_task_runner.get(), nullptr));
+  shell_.reset(new mojo::shell::Shell(std::move(native_runner_factory),
+                                      file_task_runner.get(), nullptr));
 
-  application_manager_->set_default_loader(
+  shell_->set_default_loader(
       scoped_ptr<mojo::shell::Loader>(new DefaultLoader));
 
   StaticApplicationMap apps;
@@ -220,7 +220,7 @@ MojoShellContext::MojoShellContext() {
       apps[entry.first] = entry.second;
   }
   for (const auto& entry : apps) {
-    application_manager_->SetLoaderForName(
+    shell_->SetLoaderForName(
         make_scoped_ptr(new StaticLoader(entry.second)), entry.first);
   }
 
@@ -229,7 +229,7 @@ MojoShellContext::MojoShellContext() {
       ->browser()
       ->RegisterOutOfProcessMojoApplications(&sandboxed_apps);
   for (const auto& app : sandboxed_apps) {
-    application_manager_->SetLoaderForName(
+    shell_->SetLoaderForName(
         make_scoped_ptr(
             new UtilityProcessLoader(app.second, true /* use_sandbox */)),
         app.first);
@@ -240,25 +240,24 @@ MojoShellContext::MojoShellContext() {
       ->browser()
       ->RegisterUnsandboxedOutOfProcessMojoApplications(&unsandboxed_apps);
   for (const auto& app : unsandboxed_apps) {
-    application_manager_->SetLoaderForName(
+    shell_->SetLoaderForName(
         make_scoped_ptr(
             new UtilityProcessLoader(app.second, false /* use_sandbox */)),
         app.first);
   }
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  application_manager_->SetLoaderForName(make_scoped_ptr(new GpuProcessLoader),
-                                         "mojo:media");
+  shell_->SetLoaderForName(make_scoped_ptr(new GpuProcessLoader), "mojo:media");
 #endif
 
   base::Callback<scoped_ptr<mojo::ShellClient>()> profile_callback =
       base::Bind(&profile::CreateProfileApp);
-  application_manager_->SetLoaderForName(
+  shell_->SetLoaderForName(
       make_scoped_ptr(new StaticLoader(profile_callback)), "mojo:profile");
 
   if (!IsRunningInMojoShell()) {
     MojoShellConnectionImpl::Create(
-        application_manager_->InitInstanceForEmbedder(kBrowserAppName));
+        shell_->InitInstanceForEmbedder(kBrowserAppName));
   }
 }
 
@@ -298,7 +297,7 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
   params->set_remote_interfaces(std::move(request));
   params->set_local_interfaces(std::move(exposed_services));
   params->set_connect_callback(callback);
-  application_manager_->Connect(std::move(params));
+  shell_->Connect(std::move(params));
 }
 
 }  // namespace content

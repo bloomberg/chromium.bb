@@ -12,7 +12,7 @@
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/tests/connect/connect_test.mojom.h"
 
 namespace mojo {

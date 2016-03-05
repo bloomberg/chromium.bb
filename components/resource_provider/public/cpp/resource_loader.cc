@@ -12,8 +12,8 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 #include "mojo/shell/public/cpp/connector.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace resource_provider {
 namespace {

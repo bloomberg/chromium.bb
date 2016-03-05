@@ -182,7 +182,7 @@
           'services/package_manager/public/interfaces/catalog.mojom',
           'services/package_manager/public/interfaces/resolver.mojom',
           'services/package_manager/public/interfaces/shell_resolver.mojom',
-          'shell/public/interfaces/application_manager.mojom',
+          'shell/public/interfaces/connector.mojom',
           'shell/public/interfaces/interface_provider.mojom',
           'shell/public/interfaces/shell.mojom',
           'shell/public/interfaces/shell_client.mojom',

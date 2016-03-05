@@ -6,7 +6,7 @@
 #define MOJO_SHELL_PUBLIC_CPP_CONNECTOR_H_
 
 #include "mojo/shell/public/cpp/connection.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mojo {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_APPLICATION_MANAGER_H_
-#define MOJO_SHELL_APPLICATION_MANAGER_H_
+#ifndef MOJO_SHELL_SHELL_H_
+#define MOJO_SHELL_SHELL_H_
 
 #include <map>
 #include <vector>
@@ -21,7 +21,7 @@
 #include "mojo/shell/native_runner.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
@@ -36,18 +36,18 @@ namespace mojo {
 class ShellConnection;
 namespace shell {
 
-class ApplicationManager : public ShellClient {
+class Shell : public ShellClient {
  public:
   // API for testing.
   class TestAPI {
    public:
-    explicit TestAPI(ApplicationManager* manager);
+    explicit TestAPI(Shell* shell);
     ~TestAPI();
 
     // Returns true if there is a Instance for this name.
     bool HasRunningInstanceForName(const std::string& name) const;
    private:
-    ApplicationManager* manager_;
+    Shell* shell_;
 
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
@@ -58,15 +58,14 @@ class ApplicationManager : public ShellClient {
   // |file_task_runner| provides access to a thread to perform file copy
   // operations on. This may be null only in testing environments where
   // applications are loaded via Loader implementations.
-  ApplicationManager(
-      scoped_ptr<NativeRunnerFactory> native_runner_factory,
-      base::TaskRunner* file_task_runner,
-      scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
-  ~ApplicationManager() override;
+  Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
+        base::TaskRunner* file_task_runner,
+        scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
+  ~Shell() override;
 
   // Provide a callback to be notified whenever an instance is destroyed.
-  // Typically the creator of the ApplicationManager will use this to determine
-  // when some set of instances it created are destroyed, so it can shut down.
+  // Typically the creator of the Shell will use this to determine when some set
+  // of instances it created are destroyed, so it can shut down.
   void SetInstanceQuitCallback(base::Callback<void(const Identity&)> callback);
 
   // Completes a connection between a source and target application as defined
@@ -75,9 +74,9 @@ class ApplicationManager : public ShellClient {
   void Connect(scoped_ptr<ConnectParams> params);
 
   // Creates a new Instance identified as |name|. This is intended for use by
-  // the ApplicationManager's embedder to register itself with the shell. The
-  // name is never resolved and there must not be an existing instance
-  // associated with it. This must only be called once.
+  // the Shell's embedder to register itself with the shell. The name is never
+  // resolved and there must not be an existing instance associated with it.
+  // This must only be called once.
   mojom::ShellClientRequest InitInstanceForEmbedder(const std::string& name);
 
   // Sets the default Loader to be used if not overridden by SetLoaderForName().
@@ -103,8 +102,8 @@ class ApplicationManager : public ShellClient {
       scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
 
   // Destroys all Shell-ends of connections established with Applications.
-  // Applications connected by this ApplicationManager will observe pipe errors
-  // and have a chance to shutdown.
+  // Applications connected by this Shell will observe pipe errors and have a
+  // chance to shutdown.
   void TerminateShellConnections();
 
   // Removes a Instance when it encounters an error.
@@ -122,16 +121,15 @@ class ApplicationManager : public ShellClient {
   Instance* CreateInstance(const Identity& target_id,
                            mojom::ShellClientRequest* request);
 
-  // Called from the instance implementing mojom::ApplicationManager. |user_id|
-  // must be resolved by the instance (i.e. must not be
-  // mojom::Connector::kUserInherit).
+  // Called from the instance implementing mojom::Shell. |user_id| must be
+  // resolved by the instance (i.e. must not be mojom::Connector::kUserInherit).
   void CreateInstanceForFactory(
       mojom::ShellClientFactoryPtr factory,
       const String& name,
       uint32_t user_id,
       mojom::CapabilityFilterPtr filter,
       mojom::PIDReceiverRequest pid_receiver);
-  // Called from the instance implementing mojom::ApplicationManager.
+  // Called from the instance implementing mojom::Shell.
   void AddInstanceListener(mojom::InstanceListenerPtr listener);
 
   void CreateShellClient(const Identity& source,
@@ -192,9 +190,9 @@ class ApplicationManager : public ShellClient {
   scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   std::vector<scoped_ptr<NativeRunner>> native_runners_;
   scoped_ptr<ShellConnection> shell_connection_;
-  base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;
+  base::WeakPtrFactory<Shell> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ApplicationManager);
+  DISALLOW_COPY_AND_ASSIGN(Shell);
 };
 
 mojom::Connector::ConnectCallback EmptyConnectCallback();
@@ -202,4 +200,4 @@ mojom::Connector::ConnectCallback EmptyConnectCallback();
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_APPLICATION_MANAGER_H_
+#endif  // MOJO_SHELL_SHELL_H_

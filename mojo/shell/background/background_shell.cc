@@ -13,11 +13,11 @@
 #include "base/threading/simple_thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/services/package_manager/package_manager.h"
-#include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
+#include "mojo/shell/shell.h"
 #include "mojo/shell/standalone/context.h"
 
 namespace mojo {
@@ -81,14 +81,13 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
     // Only valid to call this on the background thread.
     DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
-    // Ownership of |loader| passes to ApplicationManager.
+    // Ownership of |loader| passes to Shell.
     const std::string name = params->target().name();
     BackgroundLoader* loader = new BackgroundLoader(
         base::Bind(&MojoThread::OnGotApplicationRequest, base::Unretained(this),
                    name, signal, request));
-    context_->application_manager()->SetLoaderForName(make_scoped_ptr(loader),
-                                                      name);
-    context_->application_manager()->Connect(std::move(params));
+    context_->shell()->SetLoaderForName(make_scoped_ptr(loader), name);
+    context_->shell()->Connect(std::move(params));
     // The request is asynchronously processed. When processed
     // OnGotApplicationRequest() is called and we'll signal |signal|.
   }
@@ -146,7 +145,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
                                mojom::ShellClientRequest actual_request) {
     *request_result = std::move(actual_request);
     // Trigger destruction of the loader.
-    context_->application_manager()->SetLoaderForName(nullptr, name);
+    context_->shell()->SetLoaderForName(nullptr, name);
     signal->Signal();
   }
 

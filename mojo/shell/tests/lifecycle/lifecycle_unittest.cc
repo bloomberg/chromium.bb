@@ -14,7 +14,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/shell/public/cpp/shell_test.h"
-#include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/runner/common/switches.h"
 #include "mojo/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 
@@ -210,16 +210,16 @@ class LifecycleTest : public mojo::test::ShellTest {
     test_interfaces.push_back("*");
     filter->filter.insert("*", std::move(test_interfaces));
 
-    mojo::shell::mojom::ApplicationManagerPtr application_manager;
-    connector()->ConnectToInterface("mojo:shell", &application_manager);
+    mojo::shell::mojom::ShellPtr shell;
+    connector()->ConnectToInterface("mojo:shell", &shell);
 
     mojo::shell::mojom::ShellClientFactoryPtr factory;
     factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
         std::move(pipe), 0u));
 
-    application_manager->CreateInstanceForFactory(
-        std::move(factory), kTestExeName, mojom::Connector::kUserInherit,
-        std::move(filter), std::move(request));
+    shell->CreateInstanceForFactory(std::move(factory), kTestExeName,
+                                    mojom::Connector::kUserInherit,
+                                    std::move(filter), std::move(request));
 
     base::LaunchOptions options;
   #if defined(OS_WIN)
@@ -251,12 +251,12 @@ class LifecycleTest : public mojo::test::ShellTest {
 
  private:
   scoped_ptr<InstanceState> TrackInstances() {
-    mojom::ApplicationManagerPtr am;
-    connector()->ConnectToInterface("mojo:shell", &am);
+    mojom::ShellPtr shell;
+    connector()->ConnectToInterface("mojo:shell", &shell);
     mojom::InstanceListenerPtr listener;
     base::RunLoop loop;
     InstanceState* state = new InstanceState(GetProxy(&listener), &loop);
-    am->AddInstanceListener(std::move(listener));
+    shell->AddInstanceListener(std::move(listener));
     loop.Run();
     return make_scoped_ptr(state);
   }

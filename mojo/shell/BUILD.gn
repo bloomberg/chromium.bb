@@ -20,8 +20,6 @@ group("all") {
 source_set("shell") {
   output_name = "mojo_shell"
   sources = [
-    "application_manager.cc",
-    "application_manager.h",
     "connect_params.cc",
     "connect_params.h",
     "connect_util.cc",
@@ -31,6 +29,8 @@ source_set("shell") {
     "loader.h",
     "native_runner.h",
     "native_runner_delegate.h",
+    "shell.cc",
+    "shell.h",
     "switches.cc",
     "switches.h",
   ]

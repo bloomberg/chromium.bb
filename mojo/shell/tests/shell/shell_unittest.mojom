@@ -4,7 +4,7 @@
 
 module mojo.shell.test.mojom;
 
-interface CreateInstanceForHandleTest {
+interface CreateInstanceForFactoryTest {
   SetTargetID(uint32 target_id);
 };
 

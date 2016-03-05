@@ -21,8 +21,8 @@ namespace shell {
 
 class Identity;
 
-// ApplicationManager requires implementations of NativeRunner and
-// NativeRunnerFactory to run native applications.
+// Shell requires implementations of NativeRunner and NativeRunnerFactory to run
+// native applications.
 class NativeRunner {
  public:
   virtual ~NativeRunner() {}

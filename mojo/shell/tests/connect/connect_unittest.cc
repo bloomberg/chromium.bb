@@ -13,7 +13,7 @@
 #include "base/test/test_suite.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/shell_test.h"
-#include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/tests/connect/connect_test.mojom.h"
 
 // Tests that multiple applications can be packaged in a single Mojo application

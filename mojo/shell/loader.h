@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SHELL_APPLICATION_MANAGER_LOADER_H_
-#define SHELL_APPLICATION_MANAGER_LOADER_H_
+#ifndef MOJO_SHELL_LOADER_H_
+#define MOJO_SHELL_LOADER_H_
 
 #include "base/callback.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {
@@ -25,4 +25,4 @@ class Loader {
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // SHELL_APPLICATION_MANAGER_LOADER_H_
+#endif  // MOJO_SHELL_LOADER_H_

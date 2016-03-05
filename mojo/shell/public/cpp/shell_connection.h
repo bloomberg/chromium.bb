@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/public/cpp/shell_client.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
 namespace mojo {

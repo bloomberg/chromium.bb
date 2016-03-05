@@ -13,7 +13,7 @@
 #include "content/child/scoped_web_callbacks.h"
 #include "content/renderer/usb/type_converters.h"
 #include "mojo/shell/public/cpp/connect.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBDeviceInfo.h"
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBTransferInfo.h"

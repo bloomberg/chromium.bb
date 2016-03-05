@@ -1,0 +1,77 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo.shell.mojom;
+
+import "mojo/shell/public/interfaces/interface_provider.mojom";
+
+// Encapsulates establishing connections with other Mojo applications.
+interface Connector {
+  const uint32 kInvalidApplicationID = 0;
+  const uint32 kUserRoot = 0;
+  const uint32 kUserInherit = 1;
+
+  // Requests a connection with another application. The application originating
+  // the request is referred to as the "source" and the one receiving the
+  // "target".
+  //
+  // The connection is embodied by a pair of message pipes binding the
+  // InterfaceProvider interface, which allows both the source and target
+  // applications to export interfaces to one another. The interfaces bound via
+  // these InterfaceProviders are brokered by the shell according to the
+  // security policy defined by each application in its manifest .
+  //
+  // If the target application is not running, the shell will run it, calling
+  // its Initialize() method before completing the connection.
+  //
+  // Parameters:
+  //
+  //  name
+  //    A mojo: or exe: name identifying the target application.
+  //
+  //  user_id
+  //    The user id of the target application instance to connect to. If no such
+  //    instance exists, the shell may start one. This user id will be passed
+  //    to the new instance via Initialize(). Applications must generally set
+  //    this to kUserInherit, and the shell will either connect to an existing
+  //    instance matching the caller's user id, create a new instance matching
+  //    the caller's user id, or connect to an existing instance running as
+  //    kUserRoot. By default, applications do not have the ability to pass
+  //    arbitrary values to this method, and doing so will result in a
+  //    connection error on the remote service provider. An application with
+  //    the ability to launch applications with arbitrary user ids (e.g. a login
+  //    app) may set this value to something meaningful to it.
+  //
+  //  remote_interfaces
+  //    Allows the source application access to interface implementations
+  //    exposed by the target application. The interfaces accessible via this
+  //    InterfaceParameter are filtered by the security policy described by the
+  //    source and target application manifests.
+  //
+  //  local_interfaces
+  //    Allows the remote application access to interface implementations
+  //    exposed by the source application. The interfaces accessible via this
+  //    InterfaceProvider are filtered by the security policy described by the
+  //    source and target application manifests.
+  //
+  // Response parameters:
+  //
+  //  application_id
+  //    A unique identifier for the instance that was connected to.
+  //
+  //  user_id
+  //    The user id the shell ran the target application as. Typically a client
+  //    passes kUserInherit to Connect(), which is an invalid user id, so this
+  //    value in the response is guaranteed to be a valid user id, either the
+  //    id connected to, or kUserRoot if no user-specific instance was located.
+  //
+  Connect(string name,
+          uint32 user_id,
+          InterfaceProvider&? remote_interfaces,
+          InterfaceProvider? local_interfaces) => (uint32 application_id,
+                                                   uint32 user_id);
+
+  // Clones this Connector so it can be passed to another thread.
+  Clone(Connector& request);
+};

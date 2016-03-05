@@ -12,7 +12,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/shell/application_manager.h"
+#include "mojo/shell/shell.h"
 #include "mojo/shell/standalone/tracer.h"
 
 namespace base {
@@ -53,9 +53,7 @@ class Context : public edk::ProcessDelegate {
   // Run the application specified on the command line.
   void RunCommandLineApplication();
 
-  ApplicationManager* application_manager() {
-    return application_manager_.get();
-  }
+  Shell* shell() { return shell_.get(); }
 
  private:
   // edk::ProcessDelegate:
@@ -71,7 +69,7 @@ class Context : public edk::ProcessDelegate {
   // Ensure this is destructed before task_runners_ since it owns a message pipe
   // that needs the IO thread to destruct cleanly.
   Tracer tracer_;
-  scoped_ptr<ApplicationManager> application_manager_;
+  scoped_ptr<Shell> shell_;
   base::Time main_entry_time_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);

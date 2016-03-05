@@ -1,5 +1,0 @@
-{
-  "name": "mojo:application_manager_unittest",
-  "display_name": "Application Manager Unittest",
-  "capabilities": { "*": [ "*" ] }
-}

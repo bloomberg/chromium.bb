@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/package_manager/package_manager.h"
-#include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/connector.h"
@@ -20,6 +19,7 @@
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
+#include "mojo/shell/shell.h"
 #include "mojo/shell/tests/test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -399,10 +399,9 @@ class LoaderTest : public testing::Test {
   ~LoaderTest() override {}
 
   void SetUp() override {
-    application_manager_.reset(
-        new ApplicationManager(nullptr, nullptr, nullptr));
+    shell_.reset(new Shell(nullptr, nullptr, nullptr));
     test_loader_ = new TestLoader(&context_);
-    application_manager_->set_default_loader(scoped_ptr<Loader>(test_loader_));
+    shell_->set_default_loader(scoped_ptr<Loader>(test_loader_));
 
     TestServicePtr service_proxy;
     ConnectToInterface(kTestURLString, &service_proxy);
@@ -411,18 +410,18 @@ class LoaderTest : public testing::Test {
 
   void TearDown() override {
     test_client_.reset();
-    application_manager_.reset();
+    shell_.reset();
   }
 
   void AddLoaderForName(const std::string& name,
                         const std::string& requestor_name) {
-    application_manager_->SetLoaderForName(
+    shell_->SetLoaderForName(
         make_scoped_ptr(new Tester(&tester_context_, requestor_name)), name);
   }
 
   bool HasRunningInstanceForName(const std::string& name) {
-    ApplicationManager::TestAPI manager_test_api(application_manager_.get());
-    return manager_test_api.HasRunningInstanceForName(name);
+    Shell::TestAPI test_api(shell_.get());
+    return test_api.HasRunningInstanceForName(name);
   }
 
  protected:
@@ -437,7 +436,7 @@ class LoaderTest : public testing::Test {
     params->set_remote_interfaces(GetProxy(&remote_interfaces));
     params->set_connect_callback(
         base::Bind(&OnConnect, base::Unretained(&loop)));
-    application_manager_->Connect(std::move(params));
+    shell_->Connect(std::move(params));
     loop.Run();
 
     mojo::GetInterface(remote_interfaces.get(), ptr);
@@ -449,7 +448,7 @@ class LoaderTest : public testing::Test {
   TestContext context_;
   base::MessageLoop loop_;
   scoped_ptr<TestClient> test_client_;
-  scoped_ptr<ApplicationManager> application_manager_;
+  scoped_ptr<Shell> shell_;
   DISALLOW_COPY_AND_ASSIGN(LoaderTest);
 };
 
@@ -472,13 +471,13 @@ TEST_F(LoaderTest, ClientError) {
 
 TEST_F(LoaderTest, Deletes) {
   {
-    ApplicationManager am(nullptr, nullptr, nullptr);
+    Shell shell(nullptr, nullptr, nullptr);
     TestLoader* default_loader = new TestLoader(&context_);
     TestLoader* name_loader1 = new TestLoader(&context_);
     TestLoader* name_loader2 = new TestLoader(&context_);
-    am.set_default_loader(scoped_ptr<Loader>(default_loader));
-    am.SetLoaderForName(scoped_ptr<Loader>(name_loader1), "test:test1");
-    am.SetLoaderForName(scoped_ptr<Loader>(name_loader2), "test:test1");
+    shell.set_default_loader(scoped_ptr<Loader>(default_loader));
+    shell.SetLoaderForName(scoped_ptr<Loader>(name_loader1), "test:test1");
+    shell.SetLoaderForName(scoped_ptr<Loader>(name_loader2), "test:test1");
   }
   EXPECT_EQ(3, context_.num_loader_deletes);
 }
@@ -487,9 +486,8 @@ TEST_F(LoaderTest, Deletes) {
 TEST_F(LoaderTest, SetLoaders) {
   TestLoader* default_loader = new TestLoader(&context_);
   TestLoader* name_loader = new TestLoader(&context_);
-  application_manager_->set_default_loader(scoped_ptr<Loader>(default_loader));
-  application_manager_->SetLoaderForName(
-      scoped_ptr<Loader>(name_loader), "test:test1");
+  shell_->set_default_loader(scoped_ptr<Loader>(default_loader));
+  shell_->SetLoaderForName(scoped_ptr<Loader>(name_loader), "test:test1");
 
   // test::test1 should go to name_loader.
   TestServicePtr test_service;
@@ -506,8 +504,8 @@ TEST_F(LoaderTest, SetLoaders) {
 TEST_F(LoaderTest, NoServiceNoLoad) {
   AddLoaderForName(kTestAURLString, std::string());
 
-  // There is no TestC service implementation registered with
-  // ApplicationManager, so this cannot succeed (but also shouldn't crash).
+  // There is no TestC service implementation registered with the Shell, so this
+  // cannot succeed (but also shouldn't crash).
   TestCPtr c;
   ConnectToInterface(kTestAURLString, &c);
   c.set_connection_error_handler(
@@ -519,16 +517,15 @@ TEST_F(LoaderTest, NoServiceNoLoad) {
 
 TEST_F(LoaderTest, TestEndApplicationClosure) {
   ClosingLoader* loader = new ClosingLoader();
-  application_manager_->SetLoaderForName(
-      scoped_ptr<Loader>(loader), "test:test");
+  shell_->SetLoaderForName(scoped_ptr<Loader>(loader), "test:test");
 
   bool called = false;
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
   params->set_target(Identity("test:test", "", mojom::Connector::kUserRoot));
-  application_manager_->SetInstanceQuitCallback(
+  shell_->SetInstanceQuitCallback(
       base::Bind(&QuitClosure, params->target(), &called));
-  application_manager_->Connect(std::move(params));
+  shell_->Connect(std::move(params));
   loop_.Run();
   EXPECT_TRUE(called);
 }

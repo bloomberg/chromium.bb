@@ -155,9 +155,8 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
   scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog;
   if (init_params)
     app_catalog = std::move(init_params->app_catalog);
-  application_manager_.reset(new ApplicationManager(std::move(runner_factory),
-                                                    blocking_pool_.get(),
-                                                    std::move(app_catalog)));
+  shell_.reset(new Shell(std::move(runner_factory), blocking_pool_.get(),
+                         std::move(app_catalog)));
 
   shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
   shell::mojom::InterfaceProviderPtr tracing_local_interfaces;
@@ -169,7 +168,7 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
                               mojom::Connector::kUserInherit));
   params->set_remote_interfaces(GetProxy(&tracing_remote_interfaces));
   params->set_local_interfaces(std::move(tracing_local_interfaces));
-  application_manager_->Connect(std::move(params));
+  shell_->Connect(std::move(params));
 
   if (command_line.HasSwitch(tracing::kTraceStartup)) {
     tracing::TraceCollectorPtr coordinator;
@@ -196,10 +195,10 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
 }
 
 void Context::Shutdown() {
-  // Actions triggered by ApplicationManager's destructor may require a current
-  // message loop, so we should destruct it explicitly now as ~Context() occurs
-  // post message loop shutdown.
-  application_manager_.reset();
+  // Actions triggered by Shell's destructor may require a current message loop,
+  // so we should destruct it explicitly now as ~Context() occurs post message
+  // loop shutdown.
+  shell_.reset();
 
   TRACE_EVENT0("mojo_shell", "Context::Shutdown");
   DCHECK_EQ(base::MessageLoop::current()->task_runner(), shell_runner_);
@@ -232,8 +231,7 @@ void Context::RunCommandLineApplication() {
 }
 
 void Context::Run(const std::string& name) {
-  application_manager_->SetInstanceQuitCallback(
-      base::Bind(&OnInstanceQuit, name));
+  shell_->SetInstanceQuitCallback(base::Bind(&OnInstanceQuit, name));
 
   shell::mojom::InterfaceProviderPtr remote_interfaces;
   shell::mojom::InterfaceProviderPtr local_interfaces;
@@ -244,7 +242,7 @@ void Context::Run(const std::string& name) {
                               mojom::Connector::kUserRoot));
   params->set_remote_interfaces(GetProxy(&remote_interfaces));
   params->set_local_interfaces(std::move(local_interfaces));
-  application_manager_->Connect(std::move(params));
+  shell_->Connect(std::move(params));
 }
 
 }  // namespace shell

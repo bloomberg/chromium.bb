@@ -20,7 +20,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/shell/public/cpp/connector.h"
-#include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace content {
 namespace {
@@ -99,9 +99,9 @@ std::string RegisterChildWithExternalShell(
   if (!MojoShellConnection::Get())
     return pipe_token;
 
-  mojo::shell::mojom::ApplicationManagerPtr application_manager;
+  mojo::shell::mojom::ShellPtr shell;
   MojoShellConnection::Get()->GetConnector()->ConnectToInterface(
-      "mojo:shell", &application_manager);
+      "mojo:shell", &shell);
 
   // The content of the URL/qualifier we pass is actually meaningless, it's only
   // important that they're unique per process.
@@ -122,9 +122,10 @@ std::string RegisterChildWithExternalShell(
   factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
       std::move(request_pipe), 0u));
 
-  application_manager->CreateInstanceForFactory(
-      std::move(factory), url, mojo::shell::mojom::Connector::kUserInherit,
-      CreateCapabilityFilterForRenderer(), std::move(request));
+  shell->CreateInstanceForFactory(std::move(factory), url,
+                                  mojo::shell::mojom::Connector::kUserInherit,
+                                  CreateCapabilityFilterForRenderer(),
+                                  std::move(request));
 
   // Store the URL on the RPH so client code can access it later via
   // GetMojoApplicationInstanceURL().

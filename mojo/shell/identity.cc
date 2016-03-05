@@ -5,7 +5,7 @@
 #include "mojo/shell/identity.h"
 
 #include "mojo/shell/public/cpp/names.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mojo {
 namespace shell {
