@@ -24,7 +24,6 @@
         '../../chrome/browser/resources/chromeos/compiled_resources.gyp:*',
         '../../chrome/browser/resources/extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/help/compiled_resources.gyp:*',
-        '../../chrome/browser/resources/history/compiled_resources.gyp:*',
         '../../chrome/browser/resources/options/compiled_resources.gyp:*',
         '../../chrome/browser/resources/media_router/compiled_resources.gyp:*',
         '../../chrome/browser/resources/md_extensions/compiled_resources.gyp:*',

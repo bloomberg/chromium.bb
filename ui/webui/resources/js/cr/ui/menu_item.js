@@ -197,7 +197,8 @@ cr.define('cr.ui', function() {
       if (!this.disabled && !this.isSeparator() && this.selected) {
         // Store |contextElement| since it'll be removed by {Menu} on handling
         // 'activate' event.
-        var contextElement = this.parentNode.contextElement;
+        var contextElement = /** @type {{contextElement: Element}} */(
+            this.parentNode).contextElement;
         var activationEvent = cr.doc.createEvent('Event');
         activationEvent.initEvent('activate', true, true);
         activationEvent.originalEvent = e;
