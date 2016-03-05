@@ -74,11 +74,10 @@ remoting.Me2MeActivity.prototype.start = function() {
     }
   }
 
-  this.hostUpdateDialog_.showIfNecessary(webappVersion).then(function() {
-    return that.host_.options.load();
-  }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
-    // User cancels out of the Host upgrade dialog.  Report it as bad version.
-    throw new remoting.Error(remoting.Error.Tag.BAD_VERSION);
+  this.hostUpdateDialog_.showIfNecessary(webappVersion).catch(
+      remoting.Error.handler(function(/** remoting.Error */ error) {
+        // User cancels the Host upgrade dialog.  Report it as bad version.
+        throw new remoting.Error(remoting.Error.Tag.BAD_VERSION);
   })).then(
     this.gnubbyAuthHandler_.isGnubbyExtensionInstalled.bind(
         this.gnubbyAuthHandler_)
@@ -144,7 +143,11 @@ remoting.Me2MeActivity.prototype.connect_ = function() {
   this.desktopActivity_ = new remoting.DesktopRemotingActivity(
       this, this.logger_, this.additionalCapabilities_);
   this.desktopActivity_.getConnectingDialog().show();
-  this.desktopActivity_.start(this.host_, this.createCredentialsProvider_());
+  this.host_.options.load().then(
+    function() {
+      this.desktopActivity_.start(this.host_,
+                                    this.createCredentialsProvider_());
+    }.bind(this));
 };
 
 /**
