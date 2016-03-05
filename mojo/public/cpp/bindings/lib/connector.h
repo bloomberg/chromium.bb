@@ -9,10 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/cpp/system/watcher.h"
 
 namespace base {
 class Lock;
@@ -141,8 +141,8 @@ class Connector : public MessageReceiver {
   }
 
  private:
-  // Callback of mojo::Watcher.
-  void OnWatcherHandleReady(MojoResult result);
+  // Callback of mojo::common::HandleWatcher.
+  void OnHandleWatcherHandleReady(MojoResult result);
   // Callback of SyncHandleWatcher.
   void OnSyncHandleWatcherHandleReady(MojoResult result);
   void OnHandleReadyInternal(MojoResult result);
@@ -169,7 +169,7 @@ class Connector : public MessageReceiver {
   ScopedMessagePipeHandle message_pipe_;
   MessageReceiver* incoming_receiver_;
 
-  Watcher handle_watcher_;
+  common::HandleWatcher handle_watcher_;
 
   bool error_;
   bool drop_writes_;
