@@ -5,7 +5,6 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 
 #include "base/logging.h"
-#include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 
 namespace chromecast {
