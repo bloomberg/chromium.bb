@@ -596,6 +596,24 @@ static int irt_ftruncate(int fd, nacl_irt_off_t length) {
   return check_error(ftruncate(fd, length));
 }
 
+static int irt_pread(int fd, void *buf, size_t count,
+                     nacl_irt_off_t offset, size_t *nread) {
+  int result = pread(fd, buf, count, offset);
+  if (result < 0)
+    return errno;
+  *nread = result;
+  return 0;
+}
+
+static int irt_pwrite(int fd, const void *buf, size_t count,
+                      nacl_irt_off_t offset, size_t *nwrote) {
+  int result = pwrite(fd, buf, count, offset);
+  if (result < 0)
+    return errno;
+  *nwrote = result;
+  return 0;
+}
+
 static int irt_utimes(const char *filename, const struct timeval *times) {
   return check_error(utimes(filename, times));
 }
@@ -681,6 +699,43 @@ const struct nacl_irt_dev_fdio_v0_2 nacl_irt_dev_fdio_v0_2 = {
   irt_fsync,
   irt_fdatasync,
   irt_ftruncate,
+};
+
+DEFINE_STUB(isatty)
+const struct nacl_irt_dev_fdio_v0_3 nacl_irt_dev_fdio_v0_3 = {
+  irt_close,
+  irt_dup,
+  irt_dup2,
+  irt_read,
+  irt_write,
+  irt_seek,
+  irt_fstat,
+  USE_STUB(nacl_irt_dev_fdio_v0_3, getdents),
+  irt_fchdir,
+  irt_fchmod,
+  irt_fsync,
+  irt_fdatasync,
+  irt_ftruncate,
+  USE_STUB(nacl_irt_dev_fdio_v0_3, isatty),
+};
+
+const struct nacl_irt_dev_fdio nacl_irt_dev_fdio = {
+  irt_close,
+  irt_dup,
+  irt_dup2,
+  irt_read,
+  irt_write,
+  irt_seek,
+  irt_fstat,
+  USE_STUB(nacl_irt_dev_fdio, getdents),
+  irt_fchdir,
+  irt_fchmod,
+  irt_fsync,
+  irt_fdatasync,
+  irt_ftruncate,
+  USE_STUB(nacl_irt_dev_fdio, isatty),
+  irt_pread,
+  irt_pwrite,
 };
 
 const struct nacl_irt_fdio nacl_irt_fdio = {
@@ -805,6 +860,10 @@ static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic), NULL },
   { NACL_IRT_DEV_FDIO_v0_2, &nacl_irt_dev_fdio_v0_2,
     sizeof(nacl_irt_dev_fdio_v0_2), NULL },
+  { NACL_IRT_DEV_FDIO_v0_3, &nacl_irt_dev_fdio_v0_3,
+    sizeof(nacl_irt_dev_fdio_v0_3), NULL },
+  { NACL_IRT_DEV_FDIO_v0_4, &nacl_irt_dev_fdio,
+    sizeof(nacl_irt_dev_fdio), NULL },
   { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
   { NACL_IRT_MEMORY_v0_3, &nacl_irt_memory, sizeof(nacl_irt_memory), NULL },
   { NACL_IRT_TLS_v0_1, &nacl_irt_tls, sizeof(nacl_irt_tls), NULL },

@@ -64,6 +64,8 @@ SRCS_NEWLIB_SYSCALL =  [
     'ntohl.c',
     'ntohs.c',
     'open.c',
+    'pread.c',
+    'pwrite.c',
     'random.c',
     'read.c',
     'readlink.c',
