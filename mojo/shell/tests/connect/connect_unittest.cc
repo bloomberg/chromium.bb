@@ -56,11 +56,11 @@ class ConnectTest : public mojo::test::ShellTest,
   void CompareConnectionState(
       const std::string& connection_local_name,
       const std::string& connection_remote_name,
-      uint32_t connection_remote_userid,
+      const std::string& connection_remote_userid,
       uint32_t connection_remote_id,
       const std::string& initialize_local_name,
-      uint32_t initialize_id,
-      uint32_t initialize_userid) {
+      const std::string& initialize_userid,
+      uint32_t initialize_id) {
     EXPECT_EQ(connection_local_name, connection_state_->connection_local_name);
     EXPECT_EQ(connection_remote_name,
               connection_state_->connection_remote_name);
@@ -223,7 +223,7 @@ TEST_F(ConnectTest, LocalInterface) {
       run_loop.Run();
       CompareConnectionState(
           kTestAppName, test_name(), test_userid(), test_instance_id(),
-          kTestAppName, remote_id, connection->GetRemoteUserID());
+          kTestAppName, connection->GetRemoteUserID(), remote_id);
     }
   }
 
@@ -251,7 +251,7 @@ TEST_F(ConnectTest, LocalInterface) {
       run_loop.Run();
       CompareConnectionState(
           kTestAppAName, test_name(), test_userid(), test_instance_id(),
-          kTestAppAName, remote_id, connection->GetRemoteUserID());
+          kTestAppAName, connection->GetRemoteUserID(), remote_id);
     }
 
   }

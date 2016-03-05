@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_MUS_WS_USER_ID_H_
 #define COMPONENTS_MUS_WS_USER_ID_H_
 
-#include <stdint.h>
+#include <string>
 
 namespace mus {
 namespace ws {
 
-using UserId = uint32_t;
+using UserId = std::string;
 
 }  // namespace ws
 }  // namespace mus

@@ -24,7 +24,7 @@ WindowManagerFactoryRegistry::~WindowManagerFactoryRegistry() {
 }
 
 void WindowManagerFactoryRegistry::Register(
-    UserId user_id,
+    const UserId& user_id,
     mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request) {
   if (ContainsServiceForUser(user_id))
     return;
@@ -58,7 +58,7 @@ void WindowManagerFactoryRegistry::AddServiceImpl(
 }
 
 bool WindowManagerFactoryRegistry::ContainsServiceForUser(
-    UserId user_id) const {
+    const UserId& user_id) const {
   for (auto& service_ptr : services_) {
     if (service_ptr->user_id() == user_id) {
       LOG(ERROR) << "WindowManagerFactoryService already registered for "
@@ -93,11 +93,11 @@ void WindowManagerFactoryRegistry::OnWindowManagerFactorySet(
     connection_manager_->OnFirstWindowManagerFactorySet();
 }
 
-void WindowManagerFactoryRegistry::OnActiveUserIdChanged(UserId id) {}
+void WindowManagerFactoryRegistry::OnActiveUserIdChanged(const UserId& id) {}
 
-void WindowManagerFactoryRegistry::OnUserIdAdded(UserId id) {}
+void WindowManagerFactoryRegistry::OnUserIdAdded(const UserId& id) {}
 
-void WindowManagerFactoryRegistry::OnUserIdRemoved(UserId id) {
+void WindowManagerFactoryRegistry::OnUserIdRemoved(const UserId& id) {
   for (auto iter = services_.begin(); iter != services_.end(); ++iter) {
     if ((*iter)->user_id() == id) {
       services_.erase(iter);

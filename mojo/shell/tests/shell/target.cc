@@ -24,7 +24,7 @@ class Target : public mojo::ShellClient {
  private:
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector, const std::string& name,
-                  uint32_t id, uint32_t user_id) override {
+                  const std::string& user_id, uint32_t id) override {
     CreateInstanceForFactoryTestPtr service;
     connector->ConnectToInterface("mojo:shell_unittest", &service);
     service->SetTargetID(id);

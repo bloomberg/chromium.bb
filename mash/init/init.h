@@ -32,10 +32,10 @@ class Init : public mojo::ShellClient,
  private:
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector, const std::string& url,
-                  uint32_t id, uint32_t user_id) override;
+                  const std::string& user_id, uint32_t id) override;
 
   // mojom::Login:
-  void LoginAs(uint32_t user_id) override;
+  void LoginAs(const mojo::String& user_id) override;
 
   // mojo::InterfaceFactory<mojom::Login>:
   void Create(mojo::Connection* connection,

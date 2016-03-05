@@ -6,11 +6,12 @@ module mojo.shell.mojom;
 
 import "mojo/shell/public/interfaces/interface_provider.mojom";
 
+const string kRootUserID = "505C0EE9-3013-43C0-82B0-A84F50CF8D84";
+const string kInheritUserID = "D26290E4-4485-4EAE-81A2-66D1EEB40A9D";
+
 // Encapsulates establishing connections with other Mojo applications.
 interface Connector {
   const uint32 kInvalidApplicationID = 0;
-  const uint32 kUserRoot = 0;
-  const uint32 kUserInherit = 1;
 
   // Requests a connection with another application. The application originating
   // the request is referred to as the "source" and the one receiving the
@@ -33,15 +34,18 @@ interface Connector {
   //  user_id
   //    The user id of the target application instance to connect to. If no such
   //    instance exists, the shell may start one. This user id will be passed
-  //    to the new instance via Initialize(). Applications must generally set
-  //    this to kUserInherit, and the shell will either connect to an existing
-  //    instance matching the caller's user id, create a new instance matching
-  //    the caller's user id, or connect to an existing instance running as
-  //    kUserRoot. By default, applications do not have the ability to pass
-  //    arbitrary values to this method, and doing so will result in a
+  //    to the new instance via Initialize(). Applications must generally pass
+  //    kInheritUserID for this value, and the shell will either connect to an
+  //    existing instance matching the caller's user id, create a new instance
+  //    matching the caller's user id, or connect to an existing instance
+  //    running as kRootUserID. By default, applications do not have the ability
+  //    to pass arbitrary values to this method, and doing so will result in a
   //    connection error on the remote service provider. An application with
   //    the ability to launch applications with arbitrary user ids (e.g. a login
-  //    app) may set this value to something meaningful to it.
+  //    app) may set this value to something meaningful to it. The user id
+  //    string is a valid guid of the form "%08X-%04X-%04X-%04X-%012llX", and
+  //    (aside from the root user whose guid is defined above) intended to be
+  //    not-guessable.
   //
   //  remote_interfaces
   //    Allows the source application access to interface implementations
@@ -57,20 +61,19 @@ interface Connector {
   //
   // Response parameters:
   //
+  //  user_id
+  //    The user id the shell ran the target application as. Typically a client
+  //    passes kInheritUserID as the user id to Connect() which is resolved by
+  //    the shell into a valid user id returned through this callback.
+  //
   //  application_id
   //    A unique identifier for the instance that was connected to.
   //
-  //  user_id
-  //    The user id the shell ran the target application as. Typically a client
-  //    passes kUserInherit to Connect(), which is an invalid user id, so this
-  //    value in the response is guaranteed to be a valid user id, either the
-  //    id connected to, or kUserRoot if no user-specific instance was located.
-  //
   Connect(string name,
-          uint32 user_id,
+          string user_id,
           InterfaceProvider&? remote_interfaces,
-          InterfaceProvider? local_interfaces) => (uint32 application_id,
-                                                   uint32 user_id);
+          InterfaceProvider? local_interfaces) => (string user_id,
+                                                   uint32 application_id);
 
   // Clones this Connector so it can be passed to another thread.
   Clone(Connector& request);

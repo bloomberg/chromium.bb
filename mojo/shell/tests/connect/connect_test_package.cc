@@ -51,7 +51,7 @@ class ProvidedShellClient
  private:
   // mojo::ShellClient:
   void Initialize(Connector* connector, const std::string& name,
-                  uint32_t id, uint32_t user_id) override {
+                  const std::string& user_id, uint32_t id) override {
     name_ = name;
     id_ = id;
     userid_ = user_id;
@@ -115,7 +115,7 @@ class ProvidedShellClient
 
   std::string name_;
   uint32_t id_ = mojom::Connector::kInvalidApplicationID;
-  uint32_t userid_ = mojom::Connector::kUserRoot;
+  std::string userid_ = mojom::kRootUserID;
   const std::string title_;
   mojom::ShellClientRequest request_;
   test::mojom::ExposedInterfacePtr caller_;
@@ -138,7 +138,7 @@ class ConnectTestShellClient
  private:
   // mojo::ShellClient:
   void Initialize(Connector* connector, const std::string& name,
-                  uint32_t id, uint32_t user_id) override {
+                  const std::string& user_id, uint32_t id) override {
     bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestShellClient::OnConnectionError,
                    base::Unretained(this)));

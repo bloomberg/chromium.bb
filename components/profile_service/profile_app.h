@@ -50,24 +50,24 @@ class ProfileApp : public mojo::ShellClient,
   // applications inside of chrome in general; this system won't work once
   // ProfileApp gets put in its own sandboxed process.
   static void AssociateMojoUserIDWithProfileDir(
-      uint32_t user_id,
+      const std::string& user_id,
       const base::FilePath& profile_data_dir);
 
  private:
   // |ShellClient| override:
   void Initialize(mojo::Connector* connector,
                   const std::string& url,
-                  uint32_t id,
-                  uint32_t user_id) override;
+                  const std::string& user_id,
+                  uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
   // |InterfaceFactory<ProfileService>| implementation:
   void Create(mojo::Connection* connection,
-              mojo::InterfaceRequest<ProfileService> request) override;
+              ProfileServiceRequest request) override;
 
   // |InterfaceFactory<LevelDBService>| implementation:
   void Create(mojo::Connection* connection,
-              mojo::InterfaceRequest<leveldb::LevelDBService> request) override;
+              leveldb::LevelDBServiceRequest request) override;
 
   mojo::TracingImpl tracing_;
 

@@ -133,9 +133,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void Initialize(BrowserContext* browser_context,
                          const base::FilePath& path);
 
-  // Returns a randomized user ID number associated with this
-  // BrowserContext. This ID is not persistent across runs.
-  static uint32_t GetMojoUserIdFor(BrowserContext* browser_context);
+  // Returns a Mojo User ID associated with this BrowserContext. This ID is not
+  // persistent across runs. See mojo/shell/public/interfaces/connector.mojom.
+  static const std::string& GetMojoUserIdFor(BrowserContext* browser_context);
 
   ~BrowserContext() override;
 

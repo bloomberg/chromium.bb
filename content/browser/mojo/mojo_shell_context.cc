@@ -284,16 +284,16 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     mojo::shell::mojom::InterfaceProviderPtr exposed_services,
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {
   scoped_ptr<mojo::shell::ConnectParams> params(new mojo::shell::ConnectParams);
-  // TODO(beng): kUserRoot is obviously wrong.
+  // TODO(beng): kRootUserID is obviously wrong.
   // TODO(beng): We need to set a permissive filter here temporarily because
   //             content is known as a bogus system: name that the application
   //             manager doesn't understand.
   mojo::shell::Identity source_id(
-      requestor_name, std::string(), mojo::shell::mojom::Connector::kUserRoot);
+      requestor_name, std::string(), mojo::shell::mojom::kRootUserID);
   source_id.set_filter(mojo::shell::GetPermissiveCapabilityFilter());
   params->set_source(source_id);
   params->set_target(mojo::shell::Identity(
-      name, std::string(), mojo::shell::mojom::Connector::kUserRoot));
+      name, std::string(), mojo::shell::mojom::kRootUserID));
   params->set_remote_interfaces(std::move(request));
   params->set_local_interfaces(std::move(exposed_services));
   params->set_connect_callback(callback);

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/process.h"
@@ -72,14 +73,14 @@ class Shell::Instance : public mojom::Connector,
 
   void InitializeClient() {
     shell_client_->Initialize(connectors_.CreateInterfacePtrAndBind(this),
-                              identity_.name(), id_, identity_.user_id());
+                              identity_.name(), identity_.user_id(), id_);
     connectors_.set_connection_error_handler(
         base::Bind(&mojo::shell::Shell::OnInstanceError,
                    base::Unretained(shell_), base::Unretained(this)));
   }
 
   void ConnectToClient(scoped_ptr<ConnectParams> params) {
-    params->connect_callback().Run(id_, identity_.user_id());
+    params->connect_callback().Run(identity_.user_id(), id_);
     AllowedInterfaces interfaces;
     interfaces.insert("*");
     if (!params->source().is_null())
@@ -88,7 +89,7 @@ class Shell::Instance : public mojom::Connector,
     Instance* source = shell_->GetExistingInstance(params->source());
     uint32_t source_id = source ? source->id() : kInvalidApplicationID;
     shell_client_->AcceptConnection(
-        params->source().name(), source_id, params->source().user_id(),
+        params->source().name(), params->source().user_id(), source_id,
         params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
         Array<String>::From(interfaces), params->target().name());
   }
@@ -144,15 +145,19 @@ class Shell::Instance : public mojom::Connector,
  private:
   // mojom::Connector implementation:
   void Connect(const String& app_name,
-               uint32_t user_id,
+               const String& user_id,
                shell::mojom::InterfaceProviderRequest remote_interfaces,
                shell::mojom::InterfaceProviderPtr local_interfaces,
                const ConnectCallback& callback) override {
+    // TODO(beng): Might not want to CHECK here, but rather run the callback
+    // with an error code.
+    CHECK(base::IsValidGUID(user_id));
+
     // TODO(beng): perform checking on policy of whether this instance is
     // allowed to pass different user_ids.
     if (!IsValidName(app_name)) {
       LOG(ERROR) << "Error: invalid Name: " << app_name;
-      callback.Run(kInvalidApplicationID, kUserInherit);
+      callback.Run(mojom::kInheritUserID, kInvalidApplicationID);
       return;
     }
     if (allow_any_application_ ||
@@ -168,7 +173,7 @@ class Shell::Instance : public mojom::Connector,
     else {
       LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
           identity_.name() << " to: " << app_name;
-      callback.Run(kInvalidApplicationID, kUserInherit);
+      callback.Run(mojom::kInheritUserID, kInvalidApplicationID);
     }
   }
   void Clone(mojom::ConnectorRequest request) override {
@@ -190,14 +195,15 @@ class Shell::Instance : public mojom::Connector,
   void CreateInstanceForFactory(
       mojom::ShellClientFactoryPtr factory,
       const String& name,
-      uint32_t user_id,
+      const String& user_id,
       mojom::CapabilityFilterPtr filter,
       mojom::PIDReceiverRequest pid_receiver) override {
     // TODO(beng): perform checking on policy of whether this instance is
     // allowed to pass different user_ids.
-    if (user_id == mojom::Connector::kUserInherit)
-      user_id = identity_.user_id();
-    shell_->CreateInstanceForFactory(std::move(factory), name, user_id,
+    std::string user_id_string = user_id;
+    if (user_id_string == mojom::kInheritUserID)
+      user_id_string = identity_.user_id();
+    shell_->CreateInstanceForFactory(std::move(factory), name, user_id_string,
                                      std::move(filter),
                                      std::move(pid_receiver));
   }
@@ -280,12 +286,12 @@ void Shell::Connect(scoped_ptr<ConnectParams> params) {
                        params->target().name());
   DCHECK(IsValidName(params->target().name()));
 
-  if (params->target().user_id() == mojom::Connector::kUserInherit) {
+  if (params->target().user_id() == mojom::kInheritUserID) {
     Instance* source = GetExistingInstance(params->source());
     Identity target = params->target();
     // TODO(beng): we should CHECK source.
     target.set_user_id(source ? source->identity().user_id()
-                              : mojom::Connector::kUserRoot);
+                              : mojom::kRootUserID);
     params->set_target(target);
   }
 
@@ -304,8 +310,7 @@ mojom::ShellClientRequest Shell::InitInstanceForEmbedder(
     const std::string& name) {
   DCHECK(!embedder_instance_);
 
-  mojo::shell::Identity target(name, std::string(),
-                               mojom::Connector::kUserRoot);
+  mojo::shell::Identity target(name, std::string(), mojom::kRootUserID);
   target.set_filter(GetPermissiveCapabilityFilter());
   DCHECK(!GetExistingInstance(target));
 
@@ -404,7 +409,7 @@ bool Shell::ConnectToExistingInstance(scoped_ptr<ConnectParams>* params) {
   Instance* instance = GetExistingInstance((*params)->target());
   if (!instance) {
     Identity root_identity = (*params)->target();
-    root_identity.set_user_id(mojom::Connector::kUserRoot);
+    root_identity.set_user_id(mojom::kRootUserID);
     instance = GetExistingInstance(root_identity);
     if (!instance) return false;
   }
@@ -431,16 +436,16 @@ Shell::Instance* Shell::CreateInstance(const Identity& target_id,
 
 void Shell::CreateInstanceForFactory(
     mojom::ShellClientFactoryPtr factory,
-    const String& name,
-    uint32_t user_id,
+    const std::string& name,
+    const std::string& user_id,
     mojom::CapabilityFilterPtr filter,
     mojom::PIDReceiverRequest pid_receiver) {
-  DCHECK(user_id != mojom::Connector::kUserInherit);
+  DCHECK(user_id != mojom::kInheritUserID);
   // We don't call ConnectToClient() here since the instance was created
   // manually by other code, not in response to a Connect() request. The newly
   // created instance is identified by |name| and may be subsequently reached by
   // client code using this identity.
-  Identity target_id(name, std::string(), mojom::Connector::kUserRoot);
+  Identity target_id(name, std::string(), mojom::kRootUserID);
   target_id.set_filter(filter->filter.To<CapabilityFilter>());
   mojom::ShellClientRequest request;
   Instance* instance = CreateInstance(target_id, &request);

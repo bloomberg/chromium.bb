@@ -81,7 +81,7 @@ class Connection {
   // callback being fired, this will return the value passed via Connect().
   // After the Connect() callback (call AddRemoteIDCallback to register one)
   // this will return the actual user id the shell ran the target as.
-  virtual uint32_t GetRemoteUserID() const = 0;
+  virtual const std::string& GetRemoteUserID() const = 0;
 
   // Register a handler to receive an error notification on the pipe to the
   // remote application's InterfaceProvider.

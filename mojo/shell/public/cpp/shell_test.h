@@ -36,8 +36,8 @@ class ShellTestClient : public mojo::ShellClient {
  protected:
   void Initialize(Connector* connector,
                   const std::string& name,
-                  uint32_t id,
-                  uint32_t user_id) override;
+                  const std::string& user_id,
+                  uint32_t id) override;
 
  private:
   ShellTest* test_;
@@ -63,8 +63,8 @@ class ShellTest : public testing::Test {
 
   // Instance information received from the Shell during Initialize().
   const std::string& test_name() const { return initialize_name_; }
+  const std::string& test_userid() const { return initialize_userid_; }
   uint32_t test_instance_id() const { return initialize_instance_id_; }
-  uint32_t test_userid() const { return initialize_userid_; }
 
   // By default, creates a simple ShellClient that captures the metadata sent
   // via Initialize(). Override to customize, but custom implementations must
@@ -75,8 +75,8 @@ class ShellTest : public testing::Test {
   // Call to set Initialize() metadata when GetShellClient() is overridden.
   void InitializeCalled(Connector* connector,
                         const std::string& name,
-                        uint32_t id,
-                        uint32_t userid);
+                        const std::string& userid,
+                        uint32_t id);
 
   // testing::Test:
   void SetUp() override;
@@ -96,9 +96,9 @@ class ShellTest : public testing::Test {
 
   Connector* connector_ = nullptr;
   std::string initialize_name_;
+  std::string initialize_userid_ = shell::mojom::kInheritUserID;
   uint32_t initialize_instance_id_ =
       shell::mojom::Connector::kInvalidApplicationID;
-  uint32_t initialize_userid_ = shell::mojom::Connector::kUserInherit;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTest);
 };

@@ -13,10 +13,10 @@ namespace shell {
 Identity::Identity() {}
 
 Identity::Identity(const std::string& name)
-    : Identity(name, GetNamePath(name), mojom::Connector::kUserRoot) {}
+    : Identity(name, GetNamePath(name), mojom::kRootUserID) {}
 
 Identity::Identity(const std::string& name, const std::string& qualifier,
-                   uint32_t user_id)
+                   const std::string& user_id)
     : name_(name),
       qualifier_(qualifier.empty() ? GetNamePath(name_) : qualifier),
       user_id_(user_id) {}
@@ -45,7 +45,7 @@ bool Identity::operator==(const Identity& other) const {
 }
 
 Identity CreateShellIdentity() {
-  Identity id = Identity("mojo:shell", "", mojom::Connector::kUserRoot);
+  Identity id = Identity("mojo:shell", "", mojom::kRootUserID);
   id.set_filter(GetPermissiveCapabilityFilter());
   return id;
 }

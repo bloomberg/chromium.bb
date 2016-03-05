@@ -11,16 +11,16 @@ namespace mus {
 namespace ws {
 
 UserIdTracker::UserIdTracker()
-    : active_id_(mojo::shell::mojom::Connector::kInvalidApplicationID) {}
+    : active_id_(mojo::shell::mojom::kRootUserID) {}
 UserIdTracker::~UserIdTracker() {
   DCHECK(ids_.empty());
 }
 
-bool UserIdTracker::IsValidUserId(UserId id) const {
+bool UserIdTracker::IsValidUserId(const UserId& id) const {
   return ids_.count(id) > 0;
 }
 
-void UserIdTracker::SetActiveUserId(UserId id) {
+void UserIdTracker::SetActiveUserId(const UserId& id) {
   if (id == active_id_)
     return;
 
@@ -29,13 +29,13 @@ void UserIdTracker::SetActiveUserId(UserId id) {
                     OnActiveUserIdChanged(id));
 }
 
-void UserIdTracker::AddUserId(UserId id) {
+void UserIdTracker::AddUserId(const UserId& id) {
   DCHECK(!IsValidUserId(id));
   ids_.insert(id);
   FOR_EACH_OBSERVER(UserIdTrackerObserver, observers_, OnUserIdAdded(id));
 }
 
-void UserIdTracker::RemoveUserId(UserId id) {
+void UserIdTracker::RemoveUserId(const UserId& id) {
   DCHECK(IsValidUserId(id));
   ids_.erase(id);
   FOR_EACH_OBSERVER(UserIdTrackerObserver, observers_, OnUserIdRemoved(id));

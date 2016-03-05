@@ -59,13 +59,13 @@ class ShellConnection : public shell::mojom::ShellClient {
  private:
   // shell::mojom::ShellClient:
   void Initialize(shell::mojom::ConnectorPtr connector,
-                  const mojo::String& name,
-                  uint32_t id,
-                  uint32_t user_id) override;
+                  const String& name,
+                  const String& user_id,
+                  uint32_t id) override;
   void AcceptConnection(
       const String& requestor_name,
+      const String& requestor_user_id,
       uint32_t requestor_id,
-      uint32_t requestor_user_id,
       shell::mojom::InterfaceProviderRequest remote_interfaces,
       shell::mojom::InterfaceProviderPtr local_interfaces,
       Array<String> allowed_interfaces,

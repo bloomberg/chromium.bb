@@ -12,7 +12,7 @@ namespace ws {
 
 WindowManagerFactoryService::WindowManagerFactoryService(
     WindowManagerFactoryRegistry* registry,
-    UserId user_id,
+    const UserId& user_id,
     mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request)
     : registry_(registry),
       user_id_(user_id),
@@ -31,7 +31,7 @@ void WindowManagerFactoryService::SetWindowManagerFactory(
 
 WindowManagerFactoryService::WindowManagerFactoryService(
     WindowManagerFactoryRegistry* registry,
-    UserId user_id)
+    const UserId& user_id)
     : registry_(registry),
       user_id_(user_id),
       binding_(this),

@@ -23,7 +23,7 @@ ConnectionImpl::ConnectionImpl(
     const std::string& connection_name,
     const std::string& remote_name,
     uint32_t remote_id,
-    uint32_t remote_user_id,
+    const std::string& remote_user_id,
     shell::mojom::InterfaceProviderPtr remote_interfaces,
     shell::mojom::InterfaceProviderRequest local_interfaces,
     const std::set<std::string>& allowed_interfaces)
@@ -65,7 +65,7 @@ const std::string& ConnectionImpl::GetRemoteApplicationName() {
   return remote_name_;
 }
 
-uint32_t ConnectionImpl::GetRemoteUserID() const {
+const std::string& ConnectionImpl::GetRemoteUserID() const {
   return remote_user_id_;
 }
 
@@ -109,8 +109,8 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConnectionImpl, private:
 
-void ConnectionImpl::OnGotInstanceID(uint32_t target_application_id,
-                                     uint32_t target_user_id) {
+void ConnectionImpl::OnGotInstanceID(const std::string& target_user_id,
+                                     uint32_t target_application_id) {
   DCHECK(!remote_ids_valid_);
   remote_ids_valid_ = true;
 

@@ -389,7 +389,8 @@ class Tester : public ShellClient,
   ScopedVector<TestAImpl> a_bindings_;
 };
 
-void OnConnect(base::RunLoop* loop, uint32_t instance_id, uint32_t user_id) {
+void OnConnect(base::RunLoop* loop, const String& user_id,
+               uint32_t instance_id) {
   loop->Quit();
 }
 
@@ -522,7 +523,7 @@ TEST_F(LoaderTest, TestEndApplicationClosure) {
   bool called = false;
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
-  params->set_target(Identity("test:test", "", mojom::Connector::kUserRoot));
+  params->set_target(Identity("test:test", "", mojom::kRootUserID));
   shell_->SetInstanceQuitCallback(
       base::Bind(&QuitClosure, params->target(), &called));
   shell_->Connect(std::move(params));

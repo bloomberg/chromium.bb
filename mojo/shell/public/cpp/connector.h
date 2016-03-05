@@ -34,12 +34,12 @@ class Connector {
     ~ConnectParams();
 
     const std::string& name() { return name_; }
-    void set_user_id(uint32_t user_id) { user_id_ = user_id; }
-    uint32_t user_id() const { return user_id_; }
+    void set_user_id(const std::string& user_id) { user_id_ = user_id; }
+    const std::string& user_id() const { return user_id_; }
 
    private:
     std::string name_;
-    uint32_t user_id_;
+    std::string user_id_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);
   };

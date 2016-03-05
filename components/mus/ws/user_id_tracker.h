@@ -24,11 +24,11 @@ class UserIdTracker {
   UserIdTracker();
   ~UserIdTracker();
 
-  bool IsValidUserId(UserId id) const;
+  bool IsValidUserId(const UserId& id) const;
 
-  void SetActiveUserId(UserId id);
-  void AddUserId(UserId id);
-  void RemoveUserId(UserId id);
+  void SetActiveUserId(const UserId& id);
+  void AddUserId(const UserId& id);
+  void RemoveUserId(const UserId& id);
 
   void AddObserver(UserIdTrackerObserver* observer);
   void RemoveObserver(UserIdTrackerObserver* observer);

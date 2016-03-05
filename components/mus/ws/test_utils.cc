@@ -70,7 +70,7 @@ WindowManagerFactoryRegistryTestApi::WindowManagerFactoryRegistryTestApi(
 WindowManagerFactoryRegistryTestApi::~WindowManagerFactoryRegistryTestApi() {}
 
 void WindowManagerFactoryRegistryTestApi::AddService(
-    UserId user_id,
+    const UserId& user_id,
     mojom::WindowManagerFactory* factory) {
   scoped_ptr<WindowManagerFactoryService> service_ptr(
       new WindowManagerFactoryService(registry_, user_id));

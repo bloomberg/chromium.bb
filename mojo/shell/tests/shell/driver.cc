@@ -45,7 +45,7 @@ class Driver : public mojo::ShellClient,
  private:
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector, const std::string& name,
-                  uint32_t id, uint32_t user_id) override {
+                  const std::string& user_id, uint32_t id) override {
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
   #if defined(OS_WIN)
@@ -100,7 +100,7 @@ class Driver : public mojo::ShellClient,
     connector->ConnectToInterface("mojo:shell", &shell);
     shell->CreateInstanceForFactory(std::move(factory),
                                     "exe:shell_unittest_target",
-                                    mojo::shell::mojom::Connector::kUserInherit,
+                                    mojo::shell::mojom::kInheritUserID,
                                     std::move(filter), std::move(request));
 
     base::LaunchOptions options;

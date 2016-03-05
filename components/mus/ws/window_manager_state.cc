@@ -6,21 +6,22 @@
 
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/server_window.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mus {
 namespace ws {
 
 WindowManagerState::WindowManagerState(Display* display)
-    : WindowManagerState(display, false, 0u) {}
+    : WindowManagerState(display, false, mojo::shell::mojom::kRootUserID) {}
 
-WindowManagerState::WindowManagerState(Display* display, uint32_t user_id)
+WindowManagerState::WindowManagerState(Display* display, const UserId& user_id)
     : WindowManagerState(display, true, user_id) {}
 
 WindowManagerState::~WindowManagerState() {}
 
 WindowManagerState::WindowManagerState(Display* display,
                                        bool is_user_id_valid,
-                                       uint32_t user_id)
+                                       const UserId& user_id)
     : display_(display),
       is_user_id_valid_(is_user_id_valid),
       user_id_(user_id) {

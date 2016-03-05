@@ -19,6 +19,7 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mus {
 namespace ws {
@@ -186,7 +187,8 @@ WindowManagerState* Display::GetFirstWindowManagerState() {
              : window_manager_state_map_.begin()->second.get();
 }
 
-WindowManagerState* Display::GetWindowManagerStateForUser(UserId user_id) {
+WindowManagerState* Display::GetWindowManagerStateForUser(
+    const UserId& user_id) {
   auto iter = window_manager_state_map_.find(user_id);
   return iter == window_manager_state_map_.end() ? nullptr : iter->second.get();
 }
@@ -302,7 +304,8 @@ void Display::InitWindowManagersIfNecessary() {
     WindowManagerState* wms = wms_ptr.get();
     // For this case we never create additional WindowManagerStates, so any
     // id works.
-    window_manager_state_map_[0u] = std::move(wms_ptr);
+    window_manager_state_map_[mojo::shell::mojom::kRootUserID] =
+        std::move(wms_ptr);
     wms->tree_ = binding_->CreateWindowTree(wms->root());
   } else {
     CreateWindowManagerStatesFromRegistry();
@@ -614,13 +617,13 @@ void Display::OnWindowDestroyed(ServerWindow* window) {
   window->RemoveObserver(this);
 }
 
-void Display::OnActiveUserIdChanged(UserId id) {
+void Display::OnActiveUserIdChanged(const UserId& id) {
   // TODO(sky): this likely needs to cancel any pending events and all that.
 }
 
-void Display::OnUserIdAdded(UserId id) {}
+void Display::OnUserIdAdded(const UserId& id) {}
 
-void Display::OnUserIdRemoved(UserId id) {
+void Display::OnUserIdRemoved(const UserId& id) {
   if (binding_)
     return;
 

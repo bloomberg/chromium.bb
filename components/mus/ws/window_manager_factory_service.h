@@ -25,11 +25,11 @@ class WindowManagerFactoryService : public mojom::WindowManagerFactoryService {
  public:
   WindowManagerFactoryService(
       WindowManagerFactoryRegistry* registry,
-      UserId user_id,
+      const UserId& user_id,
       mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request);
   ~WindowManagerFactoryService() override;
 
-  UserId user_id() const { return user_id_; }
+  const UserId& user_id() const { return user_id_; }
 
   mojom::WindowManagerFactory* window_manager_factory() {
     return window_manager_factory_;
@@ -43,7 +43,7 @@ class WindowManagerFactoryService : public mojom::WindowManagerFactoryService {
 
   // Used by tests.
   WindowManagerFactoryService(WindowManagerFactoryRegistry* registry,
-                              UserId user_id);
+                              const UserId& user_id);
 
   void SetWindowManagerFactoryImpl(mojom::WindowManagerFactory* factory);
   void OnConnectionLost();

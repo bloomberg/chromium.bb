@@ -122,11 +122,11 @@ class Shell : public ShellClient {
                            mojom::ShellClientRequest* request);
 
   // Called from the instance implementing mojom::Shell. |user_id| must be
-  // resolved by the instance (i.e. must not be mojom::Connector::kUserInherit).
+  // resolved by the instance (i.e. must not be mojom::kInheritUserID).
   void CreateInstanceForFactory(
       mojom::ShellClientFactoryPtr factory,
-      const String& name,
-      uint32_t user_id,
+      const std::string& name,
+      const std::string& user_id,
       mojom::CapabilityFilterPtr filter,
       mojom::PIDReceiverRequest pid_receiver);
   // Called from the instance implementing mojom::Shell.

@@ -35,20 +35,20 @@ void ShellConnection::WaitForInitialize() {
 // ShellConnection, shell::mojom::ShellClient implementation:
 
 void ShellConnection::Initialize(shell::mojom::ConnectorPtr connector,
-                                 const mojo::String& name,
-                                 uint32_t id,
-                                 uint32_t user_id) {
+                                 const String& name,
+                                 const String& user_id,
+                                 uint32_t id) {
   connector_.reset(new ConnectorImpl(std::move(connector)));
   binding_.set_connection_error_handler(
       base::Bind(&ShellConnection::OnConnectionError,
                  weak_factory_.GetWeakPtr()));
-  client_->Initialize(connector_.get(), name, id, user_id);
+  client_->Initialize(connector_.get(), name, user_id, id);
 }
 
 void ShellConnection::AcceptConnection(
     const String& requestor_name,
+    const String& requestor_user_id,
     uint32_t requestor_id,
-    uint32_t requestor_user_id,
     shell::mojom::InterfaceProviderRequest local_interfaces,
     shell::mojom::InterfaceProviderPtr remote_interfaces,
     Array<String> allowed_interfaces,

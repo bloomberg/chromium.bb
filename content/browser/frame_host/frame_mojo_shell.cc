@@ -49,7 +49,7 @@ void FrameMojoShell::BindRequest(mojo::shell::mojom::ConnectorRequest request) {
 // future we may need to support both.
 void FrameMojoShell::Connect(
     const mojo::String& application_name,
-    uint32_t user_id,
+    const mojo::String& user_id,
     mojo::shell::mojom::InterfaceProviderRequest services,
     mojo::shell::mojom::InterfaceProviderPtr /* exposed_services */,
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {

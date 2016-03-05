@@ -21,7 +21,7 @@ namespace {
 // Share the application name with multiple application tests.
 String g_name;
 uint32_t g_id = shell::mojom::Connector::kInvalidApplicationID;
-uint32_t g_user_id = shell::mojom::Connector::kUserRoot;
+String g_user_id = shell::mojom::kRootUserID;
 
 // ShellClient request handle passed from the shell in MojoMain, stored in
 // between SetUp()/TearDown() so we can (re-)intialize new ShellConnections.
@@ -45,9 +45,9 @@ class ShellGrabber : public shell::mojom::ShellClient {
  private:
   // shell::mojom::ShellClient implementation.
   void Initialize(shell::mojom::ConnectorPtr connector,
-                  const mojo::String& name,
-                  uint32_t id,
-                  uint32_t user_id) override {
+                  const String& name,
+                  const String& user_id,
+                  uint32_t id) override {
     g_name = name;
     g_id = id;
     g_user_id = user_id;
@@ -57,7 +57,7 @@ class ShellGrabber : public shell::mojom::ShellClient {
 
   void AcceptConnection(
       const String& requestor_name,
-      uint32_t requestor_user_id,
+      const String& requestor_user_id,
       uint32_t requestor_id,
       shell::mojom::InterfaceProviderRequest local_interfaces,
       shell::mojom::InterfaceProviderPtr remote_interfaces,
@@ -119,11 +119,11 @@ TestHelper::TestHelper(ShellClient* client)
           client == nullptr ? &default_shell_client_ : client,
           std::move(g_shell_client_request))),
       name_(g_name),
-      instance_id_(g_id),
-      userid_(g_user_id) {
+      userid_(g_user_id),
+      instance_id_(g_id) {
   // Fake ShellClient initialization.
   shell::mojom::ShellClient* shell_client = shell_connection_.get();
-  shell_client->Initialize(std::move(g_connector), g_name, g_id, g_user_id);
+  shell_client->Initialize(std::move(g_connector), g_name, g_user_id, g_id);
 }
 
 TestHelper::~TestHelper() {

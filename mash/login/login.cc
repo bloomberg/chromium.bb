@@ -72,9 +72,9 @@ class LoginView : public views::WidgetDelegateView,
     // Login...
     mojo::Connector::ConnectParams params("mojo:mash_shell");
     if (sender == login_button_1_) {
-      login_->login()->LoginAs(3);
+      login_->login()->LoginAs("3");
     } else if (sender == login_button_2_) {
-      login_->login()->LoginAs(4);
+      login_->login()->LoginAs("4");
     } else {
       NOTREACHED();
     }
@@ -94,7 +94,7 @@ Login::Login() {}
 Login::~Login() {}
 
 void Login::Initialize(mojo::Connector* connector, const std::string& url,
-                       uint32_t id, uint32_t user_id) {
+                       const std::string& user_id, uint32_t id) {
   tracing_.Initialize(connector, url);
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));

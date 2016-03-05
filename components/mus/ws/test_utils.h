@@ -28,7 +28,7 @@ class WindowManagerFactoryRegistryTestApi {
   WindowManagerFactoryRegistryTestApi(WindowManagerFactoryRegistry* registry);
   ~WindowManagerFactoryRegistryTestApi();
 
-  void AddService(UserId user_id, mojom::WindowManagerFactory* factory);
+  void AddService(const UserId& user_id, mojom::WindowManagerFactory* factory);
 
  private:
   WindowManagerFactoryRegistry* registry_;

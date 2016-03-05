@@ -35,7 +35,7 @@ define('main', [
         new router.Router(connectorPipe));
 
     connector.connect(
-        TEST_APP_URL, 1,
+        TEST_APP_URL, connectorMojom.kInheritUserID,
         function (services) {
           var test = connectToService(services, testMojom.TestMojoService);
           test.getRequestorName().then(function(response) {

@@ -15,8 +15,8 @@ ShellTestClient::ShellTestClient(ShellTest* test) : test_(test) {}
 ShellTestClient::~ShellTestClient() {}
 
 void ShellTestClient::Initialize(Connector* connector, const std::string& name,
-                                 uint32_t id, uint32_t user_id) {
-  test_->InitializeCalled(connector, name, id, user_id);
+                                 const std::string& user_id, uint32_t id) {
+  test_->InitializeCalled(connector, name, user_id, id);
 }
 
 ShellTest::ShellTest() {}
@@ -34,12 +34,12 @@ scoped_ptr<ShellClient> ShellTest::CreateShellClient() {
 
 void ShellTest::InitializeCalled(Connector* connector,
                                  const std::string& name,
-                                 uint32_t id,
-                                 uint32_t userid) {
+                                 const std::string& user_id,
+                                 uint32_t id) {
   connector_ = connector;
   initialize_name_ = name;
   initialize_instance_id_ = id;
-  initialize_userid_ = userid;
+  initialize_userid_ = user_id;
 }
 
 void ShellTest::SetUp() {

@@ -39,7 +39,8 @@ FileSystemApp::~FileSystemApp() {}
 
 void FileSystemApp::Initialize(mojo::Connector* connector,
                                const std::string& url,
-                               uint32_t id, uint32_t user_id) {
+                               const std::string& user_id,
+                               uint32_t id) {
   tracing_.Initialize(connector, url);
 }
 

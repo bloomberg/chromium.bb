@@ -20,7 +20,6 @@ using AllowedInterfaces = std::set<std::string>;
 // more details.
 using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
 
-
 // Represents the identity of an application.
 // |name| is the structured name of the application.
 // |qualifier| is a string that allows to tie a specific instance of an
@@ -31,12 +30,12 @@ using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
 class Identity {
  public:
   Identity();
-  // Assumes user = mojom::Connector::kUserRoot.
+  // Assumes user = mojom::kRootUserID.
   // Used in tests or for shell-initiated connections.
   explicit Identity(const std::string& in_name);
   Identity(const std::string& in_name,
            const std::string& in_qualifier,
-           uint32_t user_id);
+           const std::string& user_id);
   Identity(const Identity& other);
   ~Identity();
 
@@ -45,8 +44,8 @@ class Identity {
   bool operator==(const Identity& other) const;
 
   const std::string& name() const { return name_; }
-  uint32_t user_id() const { return user_id_; }
-  void set_user_id(uint32_t user_id) { user_id_ = user_id; }
+  const std::string& user_id() const { return user_id_; }
+  void set_user_id(const std::string& user_id) { user_id_ = user_id; }
   const std::string& qualifier() const { return qualifier_; }
   void set_filter(const CapabilityFilter& filter) { filter_ = filter; }
   const CapabilityFilter& filter() const { return filter_; }
@@ -55,7 +54,7 @@ class Identity {
   std::string name_;
   std::string qualifier_;
 
-  uint32_t user_id_;
+  std::string user_id_;
 
   // TODO(beng): CapabilityFilter is not currently included in equivalence
   //             checks for Identity since we're not currently clear on the

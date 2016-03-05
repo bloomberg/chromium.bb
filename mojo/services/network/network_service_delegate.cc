@@ -49,7 +49,8 @@ void NetworkServiceDelegate::RemoveObserver(
 
 void NetworkServiceDelegate::Initialize(Connector* connector,
                                         const std::string& name,
-                                        uint32_t id, uint32_t user_id) {
+                                        const std::string& user_id,
+                                        uint32_t id) {
   // TODO(erg): Find everything else that writes to the filesystem and
   // transition it to proxying mojo:filesystem. We shouldn't have any path
   // calculation code here, but sadly need it until the transition is done. In

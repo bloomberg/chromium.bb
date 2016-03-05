@@ -14,9 +14,9 @@ namespace ws {
 
 class UserIdTrackerObserver {
  public:
-  virtual void OnActiveUserIdChanged(UserId id) = 0;
-  virtual void OnUserIdAdded(UserId id) = 0;
-  virtual void OnUserIdRemoved(UserId id) = 0;
+  virtual void OnActiveUserIdChanged(const UserId& id) = 0;
+  virtual void OnUserIdAdded(const UserId& id) = 0;
+  virtual void OnUserIdRemoved(const UserId& id) = 0;
 
  protected:
   virtual ~UserIdTrackerObserver() {}

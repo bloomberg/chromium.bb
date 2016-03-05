@@ -10,7 +10,7 @@ ShellClient::ShellClient() {}
 ShellClient::~ShellClient() {}
 
 void ShellClient::Initialize(Connector* connector, const std::string& name,
-                             uint32_t id, uint32_t user_id) {
+                             const std::string& user_id, uint32_t id) {
 }
 
 bool ShellClient::AcceptConnection(Connection* connection) {

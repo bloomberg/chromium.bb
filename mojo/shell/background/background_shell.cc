@@ -178,8 +178,7 @@ void BackgroundShell::Init(scoped_ptr<InitParams> init_params) {
 mojom::ShellClientRequest BackgroundShell::CreateShellClientRequest(
     const std::string& name) {
   scoped_ptr<ConnectParams> params(new ConnectParams);
-  params->set_target(Identity(name, std::string(),
-                              mojom::Connector::kUserRoot));
+  params->set_target(Identity(name, std::string(), mojom::kRootUserID));
   mojom::ShellClientRequest request;
   base::WaitableEvent signal(true, false);
   thread_->message_loop()->task_runner()->PostTask(

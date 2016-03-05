@@ -34,7 +34,7 @@ class ConnectTestApp : public ShellClient,
  private:
   // mojo::ShellClient:
   void Initialize(Connector* connector, const std::string& name,
-                  uint32_t id, uint32_t user_id) override {
+                  const std::string& user_id, uint32_t id) override {
     connector_ = connector;
     name_ = name;
     id_ = id;
@@ -147,7 +147,7 @@ class ConnectTestApp : public ShellClient,
   Connector* connector_ = nullptr;
   std::string name_;
   uint32_t id_ = mojom::Connector::kInvalidApplicationID;
-  uint32_t userid_ = mojom::Connector::kUserRoot;
+  std::string userid_ = mojom::kRootUserID;
   BindingSet<test::mojom::ConnectTestService> bindings_;
   BindingSet<test::mojom::StandaloneApp> standalone_bindings_;
   BindingSet<test::mojom::BlockedInterface> blocked_bindings_;

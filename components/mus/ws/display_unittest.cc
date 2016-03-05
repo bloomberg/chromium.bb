@@ -78,8 +78,8 @@ TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
   const int kNumHostsToCreate = 2;
   connection_manager_delegate_.set_num_displays_to_create(kNumHostsToCreate);
 
-  const UserId kTestId1 = 2;
-  const UserId kTestId2 = 21;
+  const UserId kTestId1 = "2";
+  const UserId kTestId2 = "21";
   WindowManagerFactoryRegistryTestApi(
       connection_manager_->window_manager_factory_registry())
       .AddService(kTestId1, &test_window_manager_factory_);
@@ -116,8 +116,8 @@ TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
 TEST_F(DisplayTest, Destruction) {
   connection_manager_delegate_.set_num_displays_to_create(1);
 
-  const UserId kTestId1 = 2;
-  const UserId kTestId2 = 21;
+  const UserId kTestId1 = "2";
+  const UserId kTestId2 = "21";
   WindowManagerFactoryRegistryTestApi(
       connection_manager_->window_manager_factory_registry())
       .AddService(kTestId1, &test_window_manager_factory_);

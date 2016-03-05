@@ -5,6 +5,6 @@
 module mash.init.mojom;
 
 interface Login {
-  LoginAs(uint32 user_id);
+  LoginAs(string user_id);
 };
 

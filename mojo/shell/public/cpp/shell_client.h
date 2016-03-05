@@ -33,8 +33,8 @@ class ShellClient {
   // Called exactly once before any other method.
   virtual void Initialize(Connector* connector,
                           const std::string& name,
-                          uint32_t id,
-                          uint32_t user_id = 0);
+                          const std::string& user_id,
+                          uint32_t id);
 
   // Called when a connection to this client is brokered by the shell. Override
   // to expose services to the remote application. Return true if the connection

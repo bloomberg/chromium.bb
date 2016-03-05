@@ -10,6 +10,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
@@ -44,9 +45,9 @@ namespace content {
 #if !defined(OS_IOS)
 namespace {
 
-base::LazyInstance<std::set<uint32_t>> g_used_user_ids =
+base::LazyInstance<std::set<std::string>> g_used_user_ids =
     LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<std::vector<std::pair<BrowserContext*, uint32_t>>>
+base::LazyInstance<std::vector<std::pair<BrowserContext*, std::string>>>
 g_context_to_user_id = LAZY_INSTANCE_INITIALIZER;
 
 // Key names on BrowserContext.
@@ -336,13 +337,10 @@ void BrowserContext::SetDownloadManagerForTesting(
 void BrowserContext::Initialize(
     BrowserContext* browser_context,
     const base::FilePath& path) {
-  // Associate a random unsigned 32 bit number with |browser_context|. This
-  // becomes the mojo user id for this BrowserContext.
-  uint32_t new_id = static_cast<uint32_t>(base::RandGenerator(UINT32_MAX));
-  while ((new_id == 0) ||
-         (g_used_user_ids.Get().find(new_id) != g_used_user_ids.Get().end())) {
-    new_id = static_cast<uint32_t>(base::RandGenerator(UINT32_MAX));
-  }
+  // Generate a GUID for |browser_context| to use as the Mojo user id.
+  std::string new_id = base::GenerateGUID();
+  while (g_used_user_ids.Get().find(new_id) != g_used_user_ids.Get().end())
+    new_id = base::GenerateGUID();
 
   g_used_user_ids.Get().insert(new_id);
   g_context_to_user_id.Get().push_back(std::make_pair(browser_context, new_id));
@@ -352,7 +350,8 @@ void BrowserContext::Initialize(
                                new base::SupportsUserData::Data);
 }
 
-uint32_t BrowserContext::GetMojoUserIdFor(BrowserContext* browser_context) {
+const std::string& BrowserContext::GetMojoUserIdFor(
+    BrowserContext* browser_context) {
   CHECK(browser_context->GetUserData(kMojoWasInitialized))
       << "Attempting to get the mojo user id for a BrowserContext that was "
       << "never Initialize()ed.";
@@ -360,7 +359,7 @@ uint32_t BrowserContext::GetMojoUserIdFor(BrowserContext* browser_context) {
   auto it = std::find_if(
       g_context_to_user_id.Get().begin(),
       g_context_to_user_id.Get().end(),
-      [&browser_context](const std::pair<BrowserContext*, uint32_t>& p) {
+      [&browser_context](const std::pair<BrowserContext*, std::string>& p) {
         return p.first == browser_context; });
   CHECK(it != g_context_to_user_id.Get().end());
   return it->second;

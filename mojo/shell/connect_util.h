@@ -39,8 +39,7 @@ inline void ConnectToInterface(Shell* shell,
                                const std::string& name,
                                InterfacePtr<Interface>* ptr) {
   ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
-      shell, source,
-      Identity(name, std::string(), mojom::Connector::kUserInherit),
+      shell, source, Identity(name, std::string(), mojom::kInheritUserID),
       Interface::Name_);
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }

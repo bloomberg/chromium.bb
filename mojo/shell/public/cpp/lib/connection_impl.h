@@ -30,7 +30,7 @@ class ConnectionImpl : public Connection {
   ConnectionImpl(const std::string& connection_name,
                  const std::string& remote_name,
                  uint32_t remote_id,
-                 uint32_t remote_user_id,
+                 const std::string& remote_user_id,
                  shell::mojom::InterfaceProviderPtr remote_interfaces,
                  shell::mojom::InterfaceProviderRequest local_interfaces,
                  const std::set<std::string>& allowed_interfaces);
@@ -42,7 +42,7 @@ class ConnectionImpl : public Connection {
   // Connection:
   const std::string& GetConnectionName() override;
   const std::string& GetRemoteApplicationName() override;
-  uint32_t GetRemoteUserID() const override;
+  const std::string& GetRemoteUserID() const override;
   void SetRemoteInterfaceProviderConnectionErrorHandler(
       const Closure& handler) override;
   bool GetRemoteApplicationID(uint32_t* remote_id) const override;
@@ -52,8 +52,8 @@ class ConnectionImpl : public Connection {
   InterfaceRegistry* GetLocalRegistry() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
-  void OnGotInstanceID(uint32_t target_application_id,
-                       uint32_t target_user_id);
+  void OnGotInstanceID(const std::string& target_user_id,
+                       uint32_t target_application_id);
 
   const std::string connection_name_;
   const std::string remote_name_;
@@ -61,7 +61,7 @@ class ConnectionImpl : public Connection {
   uint32_t remote_id_;
   bool remote_ids_valid_;
   std::vector<Closure> remote_id_callbacks_;
-  uint32_t remote_user_id_;
+  std::string remote_user_id_;
 
   InterfaceRegistry local_registry_;
   shell::mojom::InterfaceProviderPtr remote_interfaces_;

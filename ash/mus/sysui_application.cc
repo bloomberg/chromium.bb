@@ -279,8 +279,8 @@ SysUIApplication::~SysUIApplication() {}
 
 void SysUIApplication::Initialize(mojo::Connector* connector,
                                   const std::string& url,
-                                  uint32_t id,
-                                  uint32_t user_id) {
+                                  const std::string& user_id,
+                                  uint32_t id) {
   ash_init_.reset(new AshInit());
   ash_init_->Initialize(connector);
 }

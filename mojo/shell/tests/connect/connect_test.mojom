@@ -19,11 +19,11 @@ interface StandaloneApp {
 struct ConnectionState {
   string connection_local_name;
   string connection_remote_name;
-  uint32 connection_remote_userid;
+  string connection_remote_userid;
   uint32 connection_remote_id;
   string initialize_local_name;
+  string initialize_userid;
   uint32 initialize_id;
-  uint32 initialize_userid;
 };
 
 interface ExposedInterface {

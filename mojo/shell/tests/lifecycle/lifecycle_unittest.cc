@@ -218,8 +218,8 @@ class LifecycleTest : public mojo::test::ShellTest {
         std::move(pipe), 0u));
 
     shell->CreateInstanceForFactory(std::move(factory), kTestExeName,
-                                    mojom::Connector::kUserInherit,
-                                    std::move(filter), std::move(request));
+                                    mojom::kInheritUserID, std::move(filter),
+                                    std::move(request));
 
     base::LaunchOptions options;
   #if defined(OS_WIN)

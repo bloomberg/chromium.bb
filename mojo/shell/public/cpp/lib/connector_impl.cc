@@ -10,7 +10,7 @@ namespace mojo {
 
 Connector::ConnectParams::ConnectParams(const std::string& name)
     : name_(name),
-      user_id_(shell::mojom::Connector::kUserInherit) {
+      user_id_(shell::mojom::kInheritUserID) {
 }
 Connector::ConnectParams::~ConnectParams() {}
 

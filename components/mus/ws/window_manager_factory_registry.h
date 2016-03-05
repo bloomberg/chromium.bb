@@ -36,7 +36,7 @@ class WindowManagerFactoryRegistry : public UserIdTrackerObserver {
   ~WindowManagerFactoryRegistry() override;
 
   void Register(
-      UserId user_id,
+      const UserId& user_id,
       mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request);
 
   std::vector<WindowManagerFactoryService*> GetServices();
@@ -50,15 +50,15 @@ class WindowManagerFactoryRegistry : public UserIdTrackerObserver {
 
   void AddServiceImpl(scoped_ptr<WindowManagerFactoryService> service);
 
-  bool ContainsServiceForUser(UserId user_id) const;
+  bool ContainsServiceForUser(const UserId& user_id) const;
   void OnWindowManagerFactoryConnectionLost(
       WindowManagerFactoryService* service);
   void OnWindowManagerFactorySet(WindowManagerFactoryService* service);
 
   // UserIdTrackerObserver:
-  void OnActiveUserIdChanged(UserId id) override;
-  void OnUserIdAdded(UserId id) override;
-  void OnUserIdRemoved(UserId id) override;
+  void OnActiveUserIdChanged(const UserId& id) override;
+  void OnUserIdAdded(const UserId& id) override;
+  void OnUserIdRemoved(const UserId& id) override;
 
   // Set to true the first time a valid factory has been found.
   bool got_valid_factory_ = false;

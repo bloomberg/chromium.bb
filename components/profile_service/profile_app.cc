@@ -13,8 +13,8 @@ namespace profile {
 
 namespace {
 
-base::LazyInstance<std::map<uint32_t, base::FilePath>> g_user_id_to_data_dir =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::map<std::string, base::FilePath>>
+    g_user_id_to_data_dir = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -30,15 +30,15 @@ ProfileApp::~ProfileApp() {}
 
 // static
 void ProfileApp::AssociateMojoUserIDWithProfileDir(
-    uint32_t user_id,
+    const std::string& user_id,
     const base::FilePath& profile_data_dir) {
   g_user_id_to_data_dir.Get()[user_id] = profile_data_dir;
 }
 
 void ProfileApp::Initialize(mojo::Connector* connector,
                             const std::string& url,
-                            uint32_t id,
-                            uint32_t user_id) {
+                            const std::string& user_id,
+                            uint32_t id) {
   tracing_.Initialize(connector, url);
   leveldb_service_.reset(new leveldb::LevelDBServiceImpl);
 
@@ -54,7 +54,7 @@ bool ProfileApp::AcceptConnection(mojo::Connection* connection) {
 }
 
 void ProfileApp::Create(mojo::Connection* connection,
-                        mojo::InterfaceRequest<ProfileService> request) {
+                        ProfileServiceRequest request) {
   // No, we need one of these per connection.
   new ProfileServiceImpl(connection,
                          std::move(request),
@@ -62,9 +62,8 @@ void ProfileApp::Create(mojo::Connection* connection,
                          lock_table_.get());
 }
 
-void ProfileApp::Create(
-    mojo::Connection* connection,
-    mojo::InterfaceRequest<leveldb::LevelDBService> request) {
+void ProfileApp::Create(mojo::Connection* connection,
+                        leveldb::LevelDBServiceRequest request) {
   leveldb_bindings_.AddBinding(leveldb_service_.get(), std::move(request));
 }
 

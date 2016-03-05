@@ -625,7 +625,7 @@ bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
-void OnGotInstanceID(uint32_t instance_id, uint32_t user_id) {}
+void OnGotInstanceID(const std::string& user_id, uint32_t instance_id) {}
 
 WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
   DCHECK(!path.IsAbsolute());
@@ -6087,9 +6087,9 @@ mojo::shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
   if (!connector_)
     GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&connector_));
   mojo::shell::mojom::InterfaceProviderPtr interface_provider;
-  connector_->Connect(
-      url.spec(), mojo::shell::mojom::Connector::kUserInherit,
-      GetProxy(&interface_provider), nullptr, base::Bind(&OnGotInstanceID));
+  connector_->Connect(url.spec(), mojo::shell::mojom::kInheritUserID,
+                      GetProxy(&interface_provider), nullptr,
+                      base::Bind(&OnGotInstanceID));
   return interface_provider;
 }
 

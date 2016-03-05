@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/ws/user_id.h"
 
 namespace mus {
 namespace ws {
@@ -22,7 +23,7 @@ class WindowManagerState {
  public:
   // Creates a WindowManagerState that can host content from any user.
   explicit WindowManagerState(Display* display);
-  WindowManagerState(Display* display, uint32_t user_id);
+  WindowManagerState(Display* display, const UserId& user_id);
   ~WindowManagerState();
 
   bool is_user_id_valid() const { return is_user_id_valid_; }
@@ -36,14 +37,15 @@ class WindowManagerState {
  private:
   friend class Display;
 
-  WindowManagerState(Display* display, bool is_user_id_valid, uint32_t user_id);
+  WindowManagerState(Display* display, bool is_user_id_valid,
+                     const UserId& user_id);
 
   Display* display_;
   // If this was created implicitly by a call
   // WindowTreeHostFactory::CreateWindowTreeHost(), then |is_user_id_valid_|
   // is false.
   const bool is_user_id_valid_;
-  const uint32_t user_id_;
+  const UserId user_id_;
   scoped_ptr<ServerWindow> root_;
   WindowTree* tree_ = nullptr;
 

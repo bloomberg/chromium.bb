@@ -123,7 +123,7 @@ std::string RegisterChildWithExternalShell(
       std::move(request_pipe), 0u));
 
   shell->CreateInstanceForFactory(std::move(factory), url,
-                                  mojo::shell::mojom::Connector::kUserInherit,
+                                  mojo::shell::mojom::kInheritUserID,
                                   CreateCapabilityFilterForRenderer(),
                                   std::move(request));
 

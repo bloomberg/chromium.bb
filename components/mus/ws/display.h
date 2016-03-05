@@ -109,7 +109,7 @@ class Display : public PlatformDisplayDelegate,
   WindowManagerState* GetWindowManagerStateWithRoot(const ServerWindow* window);
   // TODO(sky): this is wrong, plumb through user_id.
   WindowManagerState* GetFirstWindowManagerState();
-  WindowManagerState* GetWindowManagerStateForUser(UserId user_id);
+  WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
   size_t num_window_manger_states() const {
     return window_manager_state_map_.size();
   }
@@ -160,7 +160,7 @@ class Display : public PlatformDisplayDelegate,
   friend class test::DisplayTestApi;
 
   using WindowManagerStateMap =
-      std::map<uint32_t, scoped_ptr<WindowManagerState>>;
+      std::map<UserId, scoped_ptr<WindowManagerState>>;
 
   // There are two types of events that may be queued, both occur only when
   // waiting for an ack from a client.
@@ -242,9 +242,9 @@ class Display : public PlatformDisplayDelegate,
   void OnWindowDestroyed(ServerWindow* window) override;
 
   // UserIdTrackerObserver:
-  void OnActiveUserIdChanged(UserId id) override;
-  void OnUserIdAdded(UserId id) override;
-  void OnUserIdRemoved(UserId id) override;
+  void OnActiveUserIdChanged(const UserId& id) override;
+  void OnUserIdAdded(const UserId& id) override;
+  void OnUserIdRemoved(const UserId& id) override;
 
   // WindowManagerFactoryRegistryObserver:
   void OnWindowManagerFactorySet(WindowManagerFactoryService* service) override;
