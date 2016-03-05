@@ -287,9 +287,10 @@ static void FilesSelectedInChooser(
     if (!url.is_valid())
       continue;
     base::FilePath path(url.SchemeIsFile() ?
-      net::UnescapeURLComponent(url.path(),
-        net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS) :
-        file_path_str[i]);
+        net::UnescapeURLComponent(url.path(),
+            net::UnescapeRule::SPACES |
+            net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS) :
+            file_path_str[i]);
     content::FileChooserFileInfo file_info;
     file_info.file_path = path;
     if (!display_name_str[i].empty())
