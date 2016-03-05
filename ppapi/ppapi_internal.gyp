@@ -84,7 +84,7 @@
           },
           'dependencies': [
             '../base/base.gyp:base',
-            '../gpu/gpu.gyp:gpu_ipc',
+            '../gpu/gpu.gyp:gpu_ipc_common',
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
             'ppapi.gyp:ppapi_c',
@@ -108,7 +108,7 @@
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gles2_implementation',
-            '../gpu/gpu.gyp:gpu_ipc',
+            '../gpu/gpu.gyp:gpu_ipc_common',
             '../media/media.gyp:shared_memory_support',
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
@@ -156,7 +156,7 @@
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gles2_implementation',
-            '../gpu/gpu.gyp:gpu_ipc',
+            '../gpu/gpu.gyp:gpu_ipc_common',
             '../media/media.gyp:shared_memory_support',
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
@@ -240,12 +240,12 @@
           'dependencies': [
             '../base/base.gyp:base_win64',
             '../ipc/ipc.gyp:ipc_win64',
-            '../gpu/gpu.gyp:gpu_ipc_win64',
+            '../gpu/gpu.gyp:gpu_ipc_common_win64',
             'ppapi.gyp:ppapi_c',
             'ppapi_shared_win64',
           ],
           'export_dependent_settings': [
-            '../gpu/gpu.gyp:gpu_ipc_win64',
+            '../gpu/gpu.gyp:gpu_ipc_common_win64',
           ],
           'defines': [
             '<@(nacl_win64_defines)',

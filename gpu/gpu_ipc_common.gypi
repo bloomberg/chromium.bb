@@ -6,11 +6,15 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../ipc/ipc.gyp:ipc',
+    '../third_party/khronos/khronos.gyp:khronos_headers',
   ],
   'include_dirs': [
     '..',
   ],
   'sources': [
+    'ipc/common/gpu_command_buffer_traits.cc',
+    'ipc/common/gpu_command_buffer_traits.h',
+    'ipc/common/id_type_traits.h',
     'ipc/common/memory_stats.cc',
     'ipc/common/memory_stats.h',
   ],
@@ -20,6 +24,7 @@
     ['nacl_win64_target==1', {
       # gpu_ipc_win64 must only link against the 64-bit ipc target.
       'dependencies!': [
+        '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
       ],
     }],

@@ -117,7 +117,7 @@
             'build_nonsfi_helper': 1,
           },
           'includes': [
-            'gpu_ipc.gypi',
+            'gpu_ipc_common.gypi',
           ],
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl',

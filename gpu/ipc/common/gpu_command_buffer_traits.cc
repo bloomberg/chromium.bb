@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/gpu_command_buffer_traits.h"
+#include "gpu/ipc/common/gpu_command_buffer_traits.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,25 +15,25 @@
 // Generate param traits size methods.
 #include "ipc/param_traits_size_macros.h"
 namespace IPC {
-#include "gpu/ipc/gpu_command_buffer_traits_multi.h"
+#include "gpu/ipc/common/gpu_command_buffer_traits_multi.h"
 }  // namespace IPC
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {
-#include "gpu/ipc/gpu_command_buffer_traits_multi.h"
+#include "gpu/ipc/common/gpu_command_buffer_traits_multi.h"
 }  // namespace IPC
 
 // Generate param traits read methods.
 #include "ipc/param_traits_read_macros.h"
 namespace IPC {
-#include "gpu/ipc/gpu_command_buffer_traits_multi.h"
+#include "gpu/ipc/common/gpu_command_buffer_traits_multi.h"
 }  // namespace IPC
 
 // Generate param traits log methods.
 #include "ipc/param_traits_log_macros.h"
 namespace IPC {
-#include "gpu/ipc/gpu_command_buffer_traits_multi.h"
+#include "gpu/ipc/common/gpu_command_buffer_traits_multi.h"
 }  // namespace IPC
 
 namespace IPC {

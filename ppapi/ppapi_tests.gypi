@@ -200,7 +200,7 @@
         'ppapi_unittest_shared',
         '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
-        '../gpu/gpu.gyp:gpu_ipc',
+        '../gpu/gpu.gyp:gpu_ipc_common',
         '../ipc/ipc.gyp:ipc',
         '../ipc/ipc.gyp:test_support_ipc',
         '../media/media.gyp:shared_memory_support',

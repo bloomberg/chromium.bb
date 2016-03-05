@@ -91,5 +91,5 @@ mojom("interfaces") {
   ]
 
   typemaps = [ "mojo.typemap" ]
-  typemap_deps = [ "//gpu/ipc" ]
+  typemap_deps = [ "//gpu/ipc/common" ]
 }

@@ -279,7 +279,7 @@ component("proxy") {
   deps = [
     "//base",
     "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/ipc",
+    "//gpu/ipc/common",
     "//ipc",
     "//media:shared_memory_support",
     "//ppapi/c",
@@ -343,7 +343,7 @@ source_set("ipc_sources") {
 
   deps = [
     "//base",
-    "//gpu/ipc",
+    "//gpu/ipc/common",
     "//ipc",
     "//ppapi/c",
     "//ppapi/shared_impl",

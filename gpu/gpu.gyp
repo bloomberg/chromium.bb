@@ -523,7 +523,6 @@
             'command_buffer_service',
             'gles2_cmd_helper',
             'gpu_config',
-            'gpu_ipc',
             'gpu_ipc_common',
           ],
           'sources': [
@@ -594,17 +593,6 @@
           'msvs_disabled_warnings': [4267, ],
         },
         {
-          # GN version: //gpu/ipc
-          'target_name': 'gpu_ipc',
-          'type': 'static_library',
-          'includes': [
-            'gpu_ipc.gypi',
-          ],
-          'dependencies': [
-            'command_buffer_common',
-          ],
-        },
-        {
           # GN version: //gpu/ipc/common
           'target_name': 'gpu_ipc_common',
           'type': 'static_library',
@@ -644,7 +632,6 @@
             'command_buffer_service.gypi',
             'gles2_cmd_helper.gypi',
             'gpu_config.gypi',
-            'gpu_ipc.gypi',
             'gpu_ipc_common.gypi',
             '../build/android/increase_size_for_speed.gypi',
           ],
@@ -698,14 +685,6 @@
           ],
         },
         {
-          # GN version: //gpu/ipc
-          'target_name': 'gpu_ipc',
-          'type': 'none',
-          'dependencies': [
-            'gpu',
-          ],
-        },
-        {
           # GN version: //gpu/ipc/common
           'target_name': 'gpu_ipc_common',
           'type': 'none',
@@ -728,30 +707,6 @@
           ],
           'dependencies': [
             '../base/base.gyp:base_win64',
-          ],
-          'defines': [
-            '<@(nacl_win64_defines)',
-            'GPU_IMPLEMENTATION',
-          ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
-        },
-        {
-          'target_name': 'gpu_ipc_win64',
-          'type': 'static_library',
-          'variables': {
-            'nacl_win64_target': 1,
-          },
-          'includes': [
-            'gpu_ipc.gypi',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base_win64',
-            '../ipc/ipc.gyp:ipc_win64',
-            'command_buffer_common_win64',
           ],
           'defines': [
             '<@(nacl_win64_defines)',

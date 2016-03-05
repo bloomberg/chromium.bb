@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-group("ipc") {
+group("common") {
   if (is_component_build) {
     public_deps = [
       "//gpu",
@@ -18,14 +18,21 @@ source_set("ipc_common_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
+    "gpu_command_buffer_traits.cc",
+    "gpu_command_buffer_traits.h",
+    "id_type_traits.h",
     "memory_stats.cc",
     "memory_stats.h",
   ]
 
-  configs += [ "//gpu:gpu_implementation" ]
+  configs += [
+    "//gpu:gpu_implementation",
+    "//third_party/khronos:khronos_headers",
+  ]
 
   deps = [
     "//base",
+    "//gpu/command_buffer/common:common_sources",
     "//ipc",
   ]
 }

@@ -7,8 +7,8 @@
 
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/gpu_export.h"
-#include "gpu/ipc/gpu_command_buffer_traits_multi.h"
-#include "gpu/ipc/id_type_traits.h"
+#include "gpu/ipc/common/gpu_command_buffer_traits_multi.h"
+#include "gpu/ipc/common/id_type_traits.h"
 #include "ipc/ipc_message_utils.h"
 
 namespace gpu {
