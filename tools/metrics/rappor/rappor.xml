@@ -581,6 +581,22 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Media.OriginUrl.MSE.Insecure" type="ETLD_PLUS_ONE">
+  <owner>wolenetz@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    Media Source Extensions (MSE) from an insecure origin.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Media.OriginUrl.MSE.Secure" type="ETLD_PLUS_ONE">
+  <owner>wolenetz@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    Media Source Extensions (MSE) from a potentially trustworthy origin.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Media.OriginUrl.SRC" type="ETLD_PLUS_ONE">
   <owner>xhwang@chromium.org</owner>
   <summary>

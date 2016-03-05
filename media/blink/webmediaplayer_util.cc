@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_client.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerEncryptedMediaClient.h"
 
 namespace media {
@@ -112,7 +113,7 @@ std::string LoadTypeToString(blink::WebMediaPlayer::LoadType load_type) {
 // MediaStream as well.
 void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
                    const GURL& url,
-                   const GURL& origin_url) {
+                   const blink::WebSecurityOrigin& security_origin) {
   // Report URL scheme, such as http, https, file, blob etc.
   UMA_HISTOGRAM_ENUMERATION("Media.URLScheme", URLScheme(url),
                             kMaxURLScheme + 1);
@@ -123,8 +124,23 @@ void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
 
   // Report the origin from where the media player is created.
   if (GetMediaClient()) {
+    GURL security_origin_url(
+        blink::WebStringToGURL(security_origin.toString()));
+
     GetMediaClient()->RecordRapporURL(
-        "Media.OriginUrl." + LoadTypeToString(load_type), origin_url);
+        "Media.OriginUrl." + LoadTypeToString(load_type), security_origin_url);
+
+    // For MSE, also report usage by secure/insecure origin.
+    if (load_type == blink::WebMediaPlayer::LoadTypeMediaSource) {
+      blink::WebString error_message;
+      if (security_origin.isPotentiallyTrustworthy(error_message)) {
+        GetMediaClient()->RecordRapporURL("Media.OriginUrl.MSE.Secure",
+                                          security_origin_url);
+      } else {
+        GetMediaClient()->RecordRapporURL("Media.OriginUrl.MSE.Insecure",
+                                          security_origin_url);
+      }
+    }
   }
 }
 

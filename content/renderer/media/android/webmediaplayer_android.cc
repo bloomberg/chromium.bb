@@ -320,9 +320,8 @@ void WebMediaPlayerAndroid::DoLoad(LoadType load_type,
                                    CORSMode cors_mode) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  media::ReportMetrics(
-      load_type, GURL(url),
-      blink::WebStringToGURL(frame_->document().securityOrigin().toString()));
+  media::ReportMetrics(load_type, GURL(url),
+                       frame_->document().securityOrigin());
 
   switch (load_type) {
     case LoadTypeURL:
