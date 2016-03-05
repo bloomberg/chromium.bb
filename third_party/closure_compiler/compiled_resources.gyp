@@ -30,7 +30,6 @@
         '../../chrome/browser/resources/md_extensions/compiled_resources.gyp:*',
         '../../chrome/browser/resources/md_history/compiled_resources.gyp:*',
         '../../chrome/browser/resources/ntp4/compiled_resources.gyp:*',
-        '../../chrome/browser/resources/uber/compiled_resources.gyp:*',
         '../../remoting/app_remoting_webapp_compile.gypi:*',
         '../../remoting/remoting_webapp_compile.gypi:*',
         '../../ui/file_manager/audio_player/js/compiled_resources.gyp:*',
