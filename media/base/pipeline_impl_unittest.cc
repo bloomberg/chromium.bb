@@ -342,6 +342,19 @@ class PipelineImplTest : public ::testing::Test {
     done_cb.Run(std::move(text_track));
   }
 
+  void RunBufferedTimeRangesTest(const base::TimeDelta duration) {
+    EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
+    EXPECT_FALSE(pipeline_->DidLoadingProgress());
+    Ranges<base::TimeDelta> ranges;
+    ranges.Add(base::TimeDelta(), duration);
+    pipeline_->OnBufferedTimeRangesChanged(ranges);
+    EXPECT_TRUE(pipeline_->DidLoadingProgress());
+    EXPECT_FALSE(pipeline_->DidLoadingProgress());
+    EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+    EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
+    EXPECT_EQ(duration, pipeline_->GetBufferedTimeRanges().end(0));
+  }
+
   // Fixture members.
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
@@ -649,24 +662,30 @@ TEST_F(PipelineImplTest, GetBufferedTimeRanges) {
   SetRendererExpectations();
 
   StartPipelineAndExpect(PIPELINE_OK);
-
-  EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
-
-  EXPECT_FALSE(pipeline_->DidLoadingProgress());
-  Ranges<base::TimeDelta> ranges;
-  ranges.Add(base::TimeDelta(), kDuration / 8);
-  pipeline_->OnBufferedTimeRangesChanged(ranges);
-  EXPECT_TRUE(pipeline_->DidLoadingProgress());
-  EXPECT_FALSE(pipeline_->DidLoadingProgress());
-  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
-  EXPECT_EQ(base::TimeDelta(), pipeline_->GetBufferedTimeRanges().start(0));
-  EXPECT_EQ(kDuration / 8, pipeline_->GetBufferedTimeRanges().end(0));
+  RunBufferedTimeRangesTest(kDuration / 8);
 
   base::TimeDelta kSeekTime = kDuration / 2;
   ExpectSeek(kSeekTime, false);
   DoSeek(kSeekTime);
 
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
+}
+
+TEST_F(PipelineImplTest, BufferedTimeRangesCanChangeAfterStop) {
+  EXPECT_CALL(*demuxer_, Initialize(_, _, _))
+      .WillOnce(PostCallback<1>(PIPELINE_OK));
+  EXPECT_CALL(*demuxer_, Stop());
+
+  EXPECT_CALL(callbacks_, OnStart(_));
+  StartPipeline();
+
+  EXPECT_CALL(callbacks_, OnStop());
+  pipeline_->Stop(
+      base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
+  message_loop_.RunUntilIdle();
+
+  RunBufferedTimeRangesTest(base::TimeDelta::FromSeconds(5));
+  DestroyPipeline();
 }
 
 TEST_F(PipelineImplTest, EndedCallback) {

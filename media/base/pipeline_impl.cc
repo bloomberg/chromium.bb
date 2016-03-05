@@ -503,7 +503,6 @@ void PipelineImpl::OnStopCompleted(PipelineStatus status) {
 
 void PipelineImpl::OnBufferedTimeRangesChanged(
     const Ranges<base::TimeDelta>& ranges) {
-  DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
   buffered_time_ranges_ = ranges;
   did_loading_progress_ = true;

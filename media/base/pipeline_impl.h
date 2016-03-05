@@ -113,10 +113,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
               const CdmAttachedCB& cdm_attached_cb) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PipelineImplTest, GetBufferedTimeRanges);
-  FRIEND_TEST_ALL_PREFIXES(PipelineImplTest, EndedCallback);
-  FRIEND_TEST_ALL_PREFIXES(PipelineImplTest, AudioStreamShorterThanVideo);
   friend class MediaLog;
+  friend class PipelineImplTest;
 
   // Pipeline states, as described above.
   enum State {
