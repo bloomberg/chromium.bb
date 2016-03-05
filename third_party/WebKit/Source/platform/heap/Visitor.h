@@ -33,14 +33,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/GarbageCollected.h"
-#include "platform/heap/StackFrameDepth.h"
-#include "platform/heap/ThreadState.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/Atomics.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
-#include "wtf/HashMap.h"
 #include "wtf/HashTraits.h"
 #include "wtf/TypeTraits.h"
 
@@ -385,7 +381,6 @@ private:
 
     ThreadState* m_state;
     const MarkingMode m_markingMode;
-    bool m_isGlobalMarkingVisitor;
 };
 
 } // namespace blink

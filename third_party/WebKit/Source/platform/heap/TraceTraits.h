@@ -8,6 +8,7 @@
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/InlinedGlobalMarkingVisitor.h"
+#include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"

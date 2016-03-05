@@ -9,7 +9,6 @@
 #include "platform/heap/TraceTraits.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/Atomics.h"
 #include "wtf/Deque.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"

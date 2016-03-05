@@ -39,7 +39,6 @@
 #include "wtf/AddressSanitizer.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/Atomics.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/Forward.h"
 #include "wtf/PageAllocator.h"
