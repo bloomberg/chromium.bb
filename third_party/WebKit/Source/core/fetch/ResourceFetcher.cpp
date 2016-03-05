@@ -1068,11 +1068,6 @@ bool ResourceFetcher::defersLoading() const
     return context().defersLoading();
 }
 
-bool ResourceFetcher::isLoadedBy(ResourceFetcher* possibleOwner) const
-{
-    return this == possibleOwner;
-}
-
 bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& newRequest, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options)
 {
     if (!context().canRequest(resource->getType(), newRequest, newRequest.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))

@@ -240,7 +240,7 @@ const KURL& DocumentLoader::urlForHistory() const
 void DocumentLoader::mainReceivedError(const ResourceError& error)
 {
     ASSERT(!error.isNull());
-    ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
+    ASSERT(!m_frame || !m_frame->page()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
     if (m_applicationCacheHost)
         m_applicationCacheHost->failedLoadingMainResource();
     if (!frameLoader())
@@ -297,7 +297,7 @@ void DocumentLoader::notifyFinished(Resource* resource)
 
 void DocumentLoader::finishedLoading(double finishTime)
 {
-    ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
+    ASSERT(!m_frame->page()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
 
     RefPtrWillBeRawPtr<DocumentLoader> protect(this);
 
@@ -446,7 +446,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
     if (it != response.httpHeaderFields().end())
         m_suboriginName = SuboriginPolicy::parseSuboriginName(*frame()->document(), it->value);
 
-    ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
+    ASSERT(!m_frame->page()->defersLoading());
 
     m_response = response;
 
@@ -530,7 +530,7 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, size_t l
     ASSERT(length);
     ASSERT_UNUSED(resource, resource == m_mainResource);
     ASSERT(!m_response.isNull());
-    ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
+    ASSERT(!m_frame->page()->defersLoading());
 
     if (m_inDataReceived) {
         // If this function is reentered, defer processing of the additional
@@ -659,17 +659,6 @@ const AtomicString& DocumentLoader::responseMIMEType() const
 const KURL& DocumentLoader::unreachableURL() const
 {
     return m_substituteData.failingURL();
-}
-
-void DocumentLoader::setDefersLoading(bool defers)
-{
-    // Multiple frames may be loading the same main resource simultaneously. If deferral state changes,
-    // each frame's DocumentLoader will try to send a setDefersLoading() to the same underlying ResourceLoader. Ensure only
-    // the "owning" DocumentLoader does so, as setDefersLoading() is not resilient to setting the same value repeatedly.
-    if (mainResourceLoader() && mainResourceLoader()->isLoadedBy(m_fetcher.get()))
-        mainResourceLoader()->setDefersLoading(defers);
-
-    m_fetcher->setDefersLoading(defers);
 }
 
 bool DocumentLoader::maybeLoadEmpty()

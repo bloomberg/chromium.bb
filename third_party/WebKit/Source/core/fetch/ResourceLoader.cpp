@@ -66,7 +66,6 @@ ResourceLoader* ResourceLoader::create(ResourceFetcher* fetcher, Resource* resou
 ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource, const ResourceLoaderOptions& options)
     : m_fetcher(fetcher)
     , m_notifiedLoadComplete(false)
-    , m_defersLoading(fetcher->defersLoading())
     , m_loadingMultipartContent(false)
     , m_options(options)
     , m_resource(resource)
@@ -103,7 +102,6 @@ void ResourceLoader::releaseResources()
         m_loader->cancel();
         m_loader.clear();
     }
-    m_deferredRequest = ResourceRequest();
     m_fetcher.clear();
 }
 
@@ -120,28 +118,20 @@ void ResourceLoader::start()
 {
     ASSERT(!m_loader);
     ASSERT(!m_request.isNull());
-    ASSERT(m_deferredRequest.isNull());
 
     m_fetcher->willStartLoadingResource(m_resource.get(), m_request);
-
-    if (m_defersLoading) {
-        m_deferredRequest = m_request;
-        return;
-    }
-
-    if (m_options.synchronousPolicy == RequestSynchronously) {
-        requestSynchronously();
-        return;
-    }
-
     RELEASE_ASSERT(m_state == ConnectionStateNew);
     m_state = ConnectionStateStarted;
 
     m_loader = adoptPtr(Platform::current()->createURLLoader());
+    m_loader->setDefersLoading(m_fetcher->defersLoading());
     ASSERT(m_loader);
     m_loader->setLoadingTaskRunner(m_fetcher->loadingTaskRunner());
-    WrappedResourceRequest wrappedRequest(m_request);
-    m_loader->loadAsynchronously(wrappedRequest, this);
+
+    if (m_options.synchronousPolicy == RequestSynchronously)
+        requestSynchronously();
+    else
+        m_loader->loadAsynchronously(WrappedResourceRequest(m_request), this);
 }
 
 void ResourceLoader::changeToSynchronous()
@@ -150,21 +140,17 @@ void ResourceLoader::changeToSynchronous()
     ASSERT(m_loader);
     m_loader->cancel();
     m_loader.clear();
+    m_loader = adoptPtr(Platform::current()->createURLLoader());
+    ASSERT(m_loader);
     m_request.setPriority(ResourceLoadPriorityHighest);
-    m_state = ConnectionStateNew;
+    m_state = ConnectionStateStarted;
     requestSynchronously();
 }
 
 void ResourceLoader::setDefersLoading(bool defers)
 {
-    m_defersLoading = defers;
-    if (m_loader)
-        m_loader->setDefersLoading(defers);
-    if (!defers && !m_deferredRequest.isNull()) {
-        m_request = applyOptions(m_deferredRequest);
-        m_deferredRequest = ResourceRequest();
-        start();
-    }
+    ASSERT(m_loader);
+    m_loader->setDefersLoading(defers);
 }
 
 void ResourceLoader::didDownloadData(WebURLLoader*, int length, int encodedDataLength)
@@ -430,30 +416,24 @@ void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
     releaseResources();
 }
 
-bool ResourceLoader::isLoadedBy(ResourceFetcher* loader) const
-{
-    return m_fetcher->isLoadedBy(loader);
-}
-
 void ResourceLoader::requestSynchronously()
 {
-    OwnPtr<WebURLLoader> loader = adoptPtr(Platform::current()->createURLLoader());
-    ASSERT(loader);
-
     // downloadToFile is not supported for synchronous requests.
     ASSERT(!m_request.downloadToFile());
+    ASSERT(m_loader);
+
+    if (m_fetcher->defersLoading()) {
+        cancel();
+        return;
+    }
 
     RefPtrWillBeRawPtr<Resource> protectResource(m_resource.get());
-
-    RELEASE_ASSERT(m_state == ConnectionStateNew);
-    m_state = ConnectionStateStarted;
-
     WrappedResourceRequest requestIn(m_request);
     WebURLResponse responseOut;
     responseOut.initialize();
     WebURLError errorOut;
     WebData dataOut;
-    loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut);
+    m_loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut);
     if (errorOut.reason) {
         if (m_state == ConnectionStateReleased) {
             // A message dispatched while synchronously fetching the resource

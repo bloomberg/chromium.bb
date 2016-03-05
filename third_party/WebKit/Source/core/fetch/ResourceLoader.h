@@ -40,7 +40,6 @@
 namespace blink {
 
 class Resource;
-class KURL;
 class ResourceError;
 class ResourceFetcher;
 
@@ -64,9 +63,6 @@ public:
     const ResourceRequest& originalRequest() const { return m_originalRequest; }
 
     void setDefersLoading(bool);
-    bool defersLoading() const { return m_defersLoading; }
-
-    void releaseResources();
 
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
 
@@ -80,11 +76,6 @@ public:
     void didFinishLoading(WebURLLoader*, double finishTime, int64_t encodedDataLength) override;
     void didFail(WebURLLoader*, const WebURLError&) override;
     void didDownloadData(WebURLLoader*, int, int) override;
-
-    const KURL& url() const { return m_request.url(); }
-    bool isLoadedBy(ResourceFetcher*) const;
-
-    const ResourceRequest& request() const { return m_request; }
 
     bool loadingMultipartContent() const { return m_loadingMultipartContent; }
 
@@ -101,6 +92,8 @@ private:
 
     ResourceRequest& applyOptions(ResourceRequest&) const;
 
+    void releaseResources();
+
     OwnPtr<WebURLLoader> m_loader;
     Member<ResourceFetcher> m_fetcher;
 
@@ -109,9 +102,7 @@ private:
 
     bool m_notifiedLoadComplete;
 
-    bool m_defersLoading;
     bool m_loadingMultipartContent;
-    ResourceRequest m_deferredRequest;
     ResourceLoaderOptions m_options;
 
     enum ConnectionState {

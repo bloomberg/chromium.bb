@@ -210,12 +210,11 @@ FrameLoaderClient* FrameLoader::client() const
 
 void FrameLoader::setDefersLoading(bool defers)
 {
-    if (m_documentLoader)
-        m_documentLoader->setDefersLoading(defers);
     if (m_provisionalDocumentLoader)
-        m_provisionalDocumentLoader->setDefersLoading(defers);
+        m_provisionalDocumentLoader->fetcher()->setDefersLoading(defers);
 
     if (Document* document = m_frame->document()) {
+        document->fetcher()->setDefersLoading(defers);
         if (defers)
             document->suspendScheduledTasks();
         else

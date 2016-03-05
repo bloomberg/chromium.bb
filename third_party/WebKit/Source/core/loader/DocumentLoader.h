@@ -109,8 +109,6 @@ public:
     NavigationType getNavigationType() const { return m_navigationType; }
     void setNavigationType(NavigationType navigationType) { m_navigationType = navigationType; }
 
-    void setDefersLoading(bool);
-
     void startLoadingMainResource();
     void cancelMainResourceLoad(const ResourceError&);
 

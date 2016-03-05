@@ -118,7 +118,6 @@ public:
     void didInitializeResourceLoader(ResourceLoader*);
     void willStartLoadingResource(Resource*, ResourceRequest&);
     bool defersLoading() const;
-    bool isLoadedBy(ResourceFetcher*) const;
 
     enum AccessControlLoggingDecision {
         ShouldLogAccessControlErrors,
