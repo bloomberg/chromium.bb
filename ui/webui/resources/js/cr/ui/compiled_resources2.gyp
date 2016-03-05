@@ -27,6 +27,11 @@
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'focus_outline_manager',
+      'dependencies': ['../../compiled_resources2.gyp:cr'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'focus_row',
       'dependencies': [
         '../../compiled_resources2.gyp:assert',

@@ -53,7 +53,7 @@ cr.define('uber_frame', function() {
     uber.invokeMethodOnParent('showPage',
        {pageId: e.currentTarget.getAttribute('controls')});
 
-    setSelection(e.currentTarget);
+    setSelection(/** @type {Element} */(e.currentTarget));
   }
 
   /**
@@ -116,7 +116,7 @@ cr.define('uber_frame', function() {
    * Adjusts this frame's content to scrolls from the outer frame. This is done
    * to obscure text in RTL as a user scrolls over the content of this frame (as
    * currently RTL scrollbars still draw on the right).
-   * @param {number} scroll document.body.scrollLeft of the content frame.
+   * @param {number} scrollLeft document.body.scrollLeft of the content frame.
    */
   function adjustToScroll(scrollLeft) {
     assert(isRTL());
