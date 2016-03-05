@@ -13,7 +13,7 @@ var global = this;
 var WebUIListener;
 
 /** Platform, package, object property, and Event support. **/
-var cr = function() {
+var cr = cr || function() {
   'use strict';
 
   /**

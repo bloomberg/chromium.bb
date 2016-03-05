@@ -74,6 +74,15 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CrTest) {
   LoadFile(base::FilePath(FILE_PATH_LITERAL("cr_test.html")));
 }
 
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CrReloadTest) {
+  AddLibrary(IDR_WEBUI_JS_CR);
+  AddLibrary(IDR_WEBUI_JS_CR_UI);
+  // Loading cr.js again on purpose to check whether it overwrites the cr
+  // namespace.
+  AddLibrary(IDR_WEBUI_JS_CR);
+  LoadFile(base::FilePath(FILE_PATH_LITERAL("cr_reload_test.html")));
+}
+
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, EventTargetTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
