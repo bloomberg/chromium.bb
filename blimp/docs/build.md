@@ -30,6 +30,7 @@ ninja -C out-android/Debug blimp blimp_apk_incremental &&
 ```
 
 To add your own build preferences
+
 ```bash
 gn args out-android/Debug
 ```
@@ -51,6 +52,7 @@ ninja -C out-linux/Debug blimp
 ```
 
 To add your own build preferences
+
 ```bash
 gn args out-android/Debug
 ```
