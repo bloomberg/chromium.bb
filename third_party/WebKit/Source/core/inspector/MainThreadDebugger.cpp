@@ -63,7 +63,7 @@ MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 MainThreadDebugger::MainThreadDebugger(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
     : ThreadDebugger(isolate)
     , m_clientMessageLoop(clientMessageLoop)
-    , m_taskRunner(adoptPtr(new InspectorTaskRunner(isolate)))
+    , m_taskRunner(adoptPtr(new InspectorTaskRunner()))
 {
     MutexLocker locker(creationMutex());
     ASSERT(!s_instance);
@@ -104,8 +104,10 @@ MainThreadDebugger* MainThreadDebugger::instance()
 void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task> task)
 {
     MutexLocker locker(creationMutex());
-    if (s_instance)
-        s_instance->m_taskRunner->interruptAndRun(task);
+    if (s_instance) {
+        s_instance->m_taskRunner->appendTask(task);
+        s_instance->m_taskRunner->interruptAndRunAllTasksDontWait(s_instance->m_isolate);
+    }
 }
 
 void MainThreadDebugger::runMessageLoopOnPause(int contextGroupId)

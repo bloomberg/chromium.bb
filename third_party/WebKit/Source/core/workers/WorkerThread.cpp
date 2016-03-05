@@ -134,84 +134,6 @@ PassOwnPtr<Closure> WorkerThread::createWorkerThreadTask(PassOwnPtr<ExecutionCon
     return threadSafeBind(&WorkerThread::performTask, AllowCrossThreadAccess(this), task, isInstrumented);
 }
 
-class WorkerThread::DebuggerTaskQueue {
-    WTF_MAKE_NONCOPYABLE(DebuggerTaskQueue);
-public:
-    using Task = WTF::Closure;
-    using Result = WorkerThread::TaskQueueResult;
-
-    DebuggerTaskQueue() { }
-
-    // Returns true if the queue is still alive, false if the queue has been
-    // killed.
-    bool append(PassOwnPtr<Task> task)
-    {
-        MutexLocker lock(m_mutex);
-        m_queue.append(task);
-        m_condition.signal();
-        return !m_killed;
-    }
-
-    PassOwnPtr<Task> waitWithTimeout(Result& result, double absoluteTime)
-    {
-        MutexLocker lock(m_mutex);
-        bool timedOut = false;
-
-        while (!m_killed && !timedOut && m_queue.isEmpty())
-            timedOut = !m_condition.timedWait(m_mutex, absoluteTime);
-
-        ASSERT(!timedOut || absoluteTime != infiniteTime());
-
-        if (m_killed) {
-            result = Terminated;
-            return nullptr;
-        }
-
-        if (timedOut) {
-            result = Timeout;
-            return nullptr;
-        }
-
-        ASSERT_WITH_SECURITY_IMPLICATION(!m_queue.isEmpty());
-        result = TaskReceived;
-
-        return m_queue.takeFirst().release();
-    }
-
-    void kill()
-    {
-        MutexLocker lock(m_mutex);
-        m_killed = true;
-        m_condition.broadcast();
-    }
-
-    static double infiniteTime() { return std::numeric_limits<double>::max(); }
-
-private:
-    Mutex m_mutex;
-    ThreadCondition m_condition;
-    Deque<OwnPtr<Task>> m_queue;
-    bool m_killed = false;
-};
-
-class WorkerThread::RunInspectorCommandsTask : public InspectorTaskRunner::Task {
-    WTF_MAKE_NONCOPYABLE(RunInspectorCommandsTask);
-public:
-    explicit RunInspectorCommandsTask(WorkerThread* thread) : m_thread(thread) { }
-    ~RunInspectorCommandsTask() override { }
-    void run() override
-    {
-        // Process all queued debugger commands. WorkerThread is certainly
-        // alive if this task is being executed.
-        InspectorInstrumentation::willEnterNestedRunLoop(m_thread->workerGlobalScope());
-        while (WorkerThread::TaskReceived == m_thread->runDebuggerTask(WorkerThread::DontWaitForTask)) { }
-        InspectorInstrumentation::didLeaveNestedRunLoop(m_thread->workerGlobalScope());
-    }
-
-private:
-    WorkerThread* m_thread;
-};
-
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
     : m_started(false)
     , m_terminated(false)
@@ -219,7 +141,7 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_pausedInDebugger(false)
     , m_runningDebuggerTask(false)
     , m_shouldTerminateV8Execution(false)
-    , m_debuggerTaskQueue(adoptPtr(new DebuggerTaskQueue))
+    , m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner()))
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_webScheduler(nullptr)
@@ -289,7 +211,6 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         m_isolate = initializeIsolate();
         // Optimize for memory usage instead of latency for the worker isolate.
         m_isolate->IsolateInBackgroundNotification();
-        m_inspectorTaskRunner = adoptPtr(new InspectorTaskRunner(m_isolate));
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
@@ -429,7 +350,7 @@ void WorkerThread::terminateInternal()
         terminateV8Execution();
 
     InspectorInstrumentation::didKillAllExecutionContextTasks(m_workerGlobalScope.get());
-    m_debuggerTaskQueue->kill();
+    m_inspectorTaskRunner->kill();
     backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this)));
 }
 
@@ -519,7 +440,9 @@ void WorkerThread::terminateV8Execution()
 
 void WorkerThread::runDebuggerTaskDontWait()
 {
-    runDebuggerTask(WorkerThread::DontWaitForTask);
+    OwnPtr<Closure> task = m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::DontWaitForTask);
+    if (task)
+        (*task)();
 }
 
 void WorkerThread::appendDebuggerTask(PassOwnPtr<Closure> task)
@@ -529,56 +452,50 @@ void WorkerThread::appendDebuggerTask(PassOwnPtr<Closure> task)
         if (m_shutdown)
             return;
     }
-    m_debuggerTaskQueue->append(task);
+    m_inspectorTaskRunner->appendTask(threadSafeBind(&WorkerThread::runDebuggerTask, AllowCrossThreadAccess(this), task));
+    {
+        MutexLocker lock(m_threadStateMutex);
+        if (m_isolate)
+            m_inspectorTaskRunner->interruptAndRunAllTasksDontWait(m_isolate);
+    }
     backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::runDebuggerTaskDontWait, AllowCrossThreadAccess(this)));
-    if (m_inspectorTaskRunner)
-        m_inspectorTaskRunner->interruptAndRun(adoptPtr(new RunInspectorCommandsTask(this)));
 }
 
-WorkerThread::TaskQueueResult WorkerThread::runDebuggerTask(WaitMode waitMode)
+void WorkerThread::runDebuggerTask(PassOwnPtr<Closure> task)
 {
     ASSERT(isCurrentThread());
-    TaskQueueResult result;
-    double absoluteTime = DebuggerTaskQueue::infiniteTime();
-    OwnPtr<Closure> task;
+    InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
     {
-        if (waitMode == DontWaitForTask)
-            absoluteTime = 0.0;
-        SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
-        task = m_debuggerTaskQueue->waitWithTimeout(result, absoluteTime);
+        MutexLocker lock(m_threadStateMutex);
+        m_runningDebuggerTask = true;
     }
-
-    if (result == TaskReceived) {
-        InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
-        {
-            MutexLocker lock(m_threadStateMutex);
-            m_runningDebuggerTask = true;
-        }
-        InspectorInstrumentation::willProcessTask(workerGlobalScope());
-        (*task)();
-        InspectorInstrumentation::didProcessTask(workerGlobalScope());
-        {
-            MutexLocker lock(m_threadStateMutex);
-            m_runningDebuggerTask = false;
-            if (m_shouldTerminateV8Execution) {
-                m_shouldTerminateV8Execution = false;
-                terminateV8Execution();
-            }
+    InspectorInstrumentation::willProcessTask(workerGlobalScope());
+    (*task)();
+    InspectorInstrumentation::didProcessTask(workerGlobalScope());
+    {
+        MutexLocker lock(m_threadStateMutex);
+        m_runningDebuggerTask = false;
+        if (m_shouldTerminateV8Execution) {
+            m_shouldTerminateV8Execution = false;
+            terminateV8Execution();
         }
     }
-
-    return result;
 }
 
 void WorkerThread::startRunningDebuggerTasksOnPause()
 {
     m_pausedInDebugger = true;
-    WorkerThread::TaskQueueResult result;
     InspectorInstrumentation::willEnterNestedRunLoop(m_workerGlobalScope.get());
+    OwnPtr<Closure> task;
     do {
-        result = runDebuggerTask(WorkerThread::WaitForTask);
+        {
+            SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
+            task = m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::WaitForTask);
+        }
+        if (task)
+            (*task)();
     // Keep waiting until execution is resumed.
-    } while (result == WorkerThread::TaskReceived && m_pausedInDebugger);
+    } while (task && m_pausedInDebugger);
     InspectorInstrumentation::didLeaveNestedRunLoop(m_workerGlobalScope.get());
 }
 

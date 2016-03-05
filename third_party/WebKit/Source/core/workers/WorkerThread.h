@@ -134,8 +134,6 @@ protected:
     virtual void terminateV8Execution();
 
 private:
-    class DebuggerTaskQueue;
-    class RunInspectorCommandsTask;
     friend class WorkerMicrotaskRunner;
 
     PassOwnPtr<Closure> createWorkerThreadTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
@@ -149,14 +147,7 @@ private:
     void performTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
     void performShutdownTask();
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
-
-    enum WaitMode { WaitForTask, DontWaitForTask };
-    enum TaskQueueResult {
-        Terminated, // Queue was destroyed while waiting for a task.
-        Timeout, // Timeout was specified and it expired.
-        TaskReceived, // A task was successfully received and returned.
-    };
-    TaskQueueResult runDebuggerTask(WaitMode);
+    void runDebuggerTask(PassOwnPtr<Closure>);
     void runDebuggerTaskDontWait();
 
     bool m_started;
@@ -165,7 +156,6 @@ private:
     bool m_pausedInDebugger;
     bool m_runningDebuggerTask;
     bool m_shouldTerminateV8Execution;
-    OwnPtr<DebuggerTaskQueue> m_debuggerTaskQueue;
     OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
 

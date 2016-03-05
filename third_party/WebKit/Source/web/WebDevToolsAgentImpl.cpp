@@ -72,6 +72,7 @@
 #include "modules/storage/InspectorDOMStorageAgent.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -265,31 +266,6 @@ private:
 };
 
 ClientMessageLoopAdapter* ClientMessageLoopAdapter::s_instance = nullptr;
-
-class DebuggerTask : public InspectorTaskRunner::Task {
-public:
-    DebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor> descriptor)
-        : m_sessionId(sessionId)
-        , m_descriptor(descriptor)
-    {
-    }
-
-    ~DebuggerTask() override {}
-    virtual void run()
-    {
-        WebDevToolsAgent* webagent = m_descriptor->agent();
-        if (!webagent)
-            return;
-
-        WebDevToolsAgentImpl* agentImpl = static_cast<WebDevToolsAgentImpl*>(webagent);
-        if (agentImpl->m_attached)
-            agentImpl->dispatchMessageFromFrontend(m_sessionId, m_descriptor->message());
-    }
-
-private:
-    int m_sessionId;
-    OwnPtr<WebDevToolsAgent::MessageDescriptor> m_descriptor;
-};
 
 // static
 PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLocalFrameImpl* frame, WebDevToolsAgentClient* client)
@@ -608,7 +584,7 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(int sessionId, const WebSt
     if (!m_attached)
         return;
     if (WebDevToolsAgent::shouldInterruptForMessage(message))
-        MainThreadDebugger::instance()->taskRunner()->runPendingTasks();
+        MainThreadDebugger::instance()->taskRunner()->runAllTasksDontWait();
     else
         dispatchMessageFromFrontend(sessionId, message);
 }
@@ -740,12 +716,21 @@ void WebDevToolsAgentImpl::didProcessTask()
     flushPendingProtocolNotifications();
 }
 
+void WebDevToolsAgentImpl::runDebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor> descriptor)
+{
+    WebDevToolsAgent* webagent = descriptor->agent();
+    if (!webagent)
+        return;
+
+    WebDevToolsAgentImpl* agentImpl = static_cast<WebDevToolsAgentImpl*>(webagent);
+    if (agentImpl->m_attached)
+        agentImpl->dispatchMessageFromFrontend(sessionId, descriptor->message());
+}
+
 void WebDevToolsAgent::interruptAndDispatch(int sessionId, MessageDescriptor* rawDescriptor)
 {
     // rawDescriptor can't be a PassOwnPtr because interruptAndDispatch is a WebKit API function.
-    OwnPtr<MessageDescriptor> descriptor = adoptPtr(rawDescriptor);
-    OwnPtr<DebuggerTask> task = adoptPtr(new DebuggerTask(sessionId, descriptor.release()));
-    MainThreadDebugger::interruptMainThreadAndRun(task.release());
+    MainThreadDebugger::interruptMainThreadAndRun(threadSafeBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId, adoptPtr(rawDescriptor)));
 }
 
 bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)

@@ -46,7 +46,6 @@
 
 namespace blink {
 
-class DebuggerTask;
 class GraphicsLayer;
 class InspectedFrames;
 class InspectorInspectorAgent;
@@ -142,6 +141,9 @@ private:
 
     void initializeDeferredAgents();
 
+    friend class WebDevToolsAgent;
+    static void runDebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor>);
+
     WebDevToolsAgentClient* m_client;
     RawPtrWillBeMember<WebLocalFrameImpl> m_webLocalFrameImpl;
     bool m_attached;
@@ -173,8 +175,6 @@ private:
     int m_sessionId;
     String m_stateCookie;
     bool m_stateMuted;
-
-    friend class DebuggerTask;
 };
 
 } // namespace blink
