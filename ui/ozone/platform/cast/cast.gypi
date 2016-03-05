@@ -30,6 +30,11 @@
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',
       ],
+      'conditions': [
+        ['disable_display==1', {
+          'defines': ['DISABLE_DISPLAY'],
+        }],
+      ],
 
       'sources': [
         'client_native_pixmap_factory_cast.cc',

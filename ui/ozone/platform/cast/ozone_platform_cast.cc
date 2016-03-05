@@ -85,8 +85,15 @@ class OzonePlatformCast : public OzonePlatform {
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     // Enable dummy software rendering support if GPU process disabled
+    // or if we're an audio-only build.
     // Note: switch is kDisableGpu from content/public/common/content_switches.h
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch("disable-gpu"))
+    bool enable_dummy_software_rendering = true;
+#if !defined(DISABLE_DISPLAY)
+    enable_dummy_software_rendering =
+        base::CommandLine::ForCurrentProcess()->HasSwitch("disable-gpu");
+#endif
+
+    if (enable_dummy_software_rendering)
       surface_factory_.reset(new SurfaceFactoryCast());
   }
   void InitializeGPU() override {
