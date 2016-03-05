@@ -27,6 +27,12 @@ struct PLLRoot {
   size_t bucket_count;
   const int32_t *hash_buckets;
   const uint32_t *hash_chains;
+
+  // Bloom Filter, for quick exported symbol lookup rejection.
+  size_t bloom_filter_maskwords_bitmask;
+  // The number of right shifts to generate the second hash from the first.
+  size_t bloom_filter_shift2;
+  const uint32_t *bloom_filter_data;
 };
 
 #endif

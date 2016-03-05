@@ -27,6 +27,11 @@ class PLLModule {
     return root_->string_table + root_->imported_names[i];
   }
 
+  // If this function returns "false", the symbol is definitely not exported.
+  // Otherwise, the symbol may or may not be exported. This is public so the
+  // bloom filter can be tested.
+  bool IsMaybeExported(uint32_t hash);
+
   void *GetExportedSym(const char *name);
 
  private:

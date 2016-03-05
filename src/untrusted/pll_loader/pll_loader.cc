@@ -17,8 +17,24 @@ uint32_t PLLModule::HashString(const char *sp) {
   return h;
 }
 
+bool PLLModule::IsMaybeExported(uint32_t hash1) {
+  const int kWordSizeBits = 32;
+  uint32_t hash2 = hash1 >> root_->bloom_filter_shift2;
+
+  uint32_t word_num = (hash1 / kWordSizeBits) &
+      root_->bloom_filter_maskwords_bitmask;
+  uint32_t bitmask =
+      (1 << (hash1 % kWordSizeBits)) | (1 << (hash2 % kWordSizeBits));
+  return (root_->bloom_filter_data[word_num] & bitmask) == bitmask;
+}
+
 void *PLLModule::GetExportedSym(const char *name) {
   uint32_t hash = HashString(name);
+
+  // Use the bloom filter to quickly reject symbols that aren't exported.
+  if (!IsMaybeExported(hash))
+    return NULL;
+
   uint32_t bucket_index = hash % root_->bucket_count;
   int32_t chain_index = root_->hash_buckets[bucket_index];
   // Bucket empty -- value not found.

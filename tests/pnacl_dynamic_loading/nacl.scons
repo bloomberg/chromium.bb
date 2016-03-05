@@ -101,7 +101,7 @@ env.AddNodeToTestSuite(
 
 
 # Use of the ConvertToPSO pass requires this toolchain version.
-if env['TOOLCHAIN_FEATURE_VERSION'] < 19:
+if env['TOOLCHAIN_FEATURE_VERSION'] < 20:
   Return()
 
 test_pll = MakeAndTranslatePll('test_pll', 'test_pll.c')

@@ -92,6 +92,14 @@ void *GetExportedSym(const PLLRoot *root, const char *name) {
   void *sym_slow = GetExportedSymSlow(root, name);
   void *sym_hash = GetExportedSymHash(root, name);
   ASSERT_EQ(sym_slow, sym_hash);
+
+  // The bloom filter errs on the side of returning "true", and may return true
+  // even if the symbol is not actually exported. This means that we cannot
+  // assert a "false" result from the bloom filter, since an alternative (but
+  // equally valid) bloom filter may return "true" for the same input.
+  uint32_t hash = PLLModule::HashString(name);
+  if (sym_slow != NULL)
+    ASSERT(PLLModule(root).IsMaybeExported(hash));
   return sym_slow;
 }
 
@@ -160,6 +168,10 @@ int main(int argc, char **argv) {
   ASSERT_EQ(pll_root->format_version, kFormatVersion);
 
   VerifyHashTable(pll_root);
+
+  // The bloom filter bitmask must be one less than a power of 2.
+  ASSERT_EQ((pll_root->bloom_filter_maskwords_bitmask + 1) &
+            pll_root->bloom_filter_maskwords_bitmask, 0);
 
   // Test exports.
 
