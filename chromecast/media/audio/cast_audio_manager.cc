@@ -4,6 +4,9 @@
 
 #include "chromecast/media/audio/cast_audio_manager.h"
 
+#include <algorithm>
+#include <string>
+
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"

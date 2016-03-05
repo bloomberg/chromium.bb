@@ -13,7 +13,8 @@ namespace media {
 
 class AudioDecoderWrapper : public MediaPipelineBackend::AudioDecoder {
  public:
-  AudioDecoderWrapper(MediaPipelineBackend::AudioDecoder* audio_decoder);
+  explicit AudioDecoderWrapper(
+      MediaPipelineBackend::AudioDecoder* audio_decoder);
   ~AudioDecoderWrapper() override;
 
   // MediaPipelineBackend::AudioDecoder implementation:
