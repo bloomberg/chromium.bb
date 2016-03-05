@@ -1710,7 +1710,7 @@ public:
     static int initialOutlineOffset() { return 0; }
     static float initialOpacity() { return 1.0f; }
     static EBoxAlignment initialBoxAlign() { return BSTRETCH; }
-    static EBoxDecorationBreak initialBoxDecorationBreak() { return DSLICE; }
+    static EBoxDecorationBreak initialBoxDecorationBreak() { return BoxDecorationBreakSlice; }
     static EBoxDirection initialBoxDirection() { return BNORMAL; }
     static EBoxLines initialBoxLines() { return SINGLE; }
     static EBoxOrient initialBoxOrient() { return HORIZONTAL; }
@@ -1718,7 +1718,7 @@ public:
     static float initialBoxFlex() { return 0.0f; }
     static unsigned initialBoxFlexGroup() { return 1; }
     static unsigned initialBoxOrdinalGroup() { return 1; }
-    static EBoxSizing initialBoxSizing() { return CONTENT_BOX; }
+    static EBoxSizing initialBoxSizing() { return BoxSizingContentBox; }
     static StyleReflection* initialBoxReflect() { return 0; }
     static float initialFlexGrow() { return 0; }
     static float initialFlexShrink() { return 1; }
@@ -1732,8 +1732,8 @@ public:
     static EUserDrag initialUserDrag() { return DRAG_AUTO; }
     static EUserSelect initialUserSelect() { return SELECT_TEXT; }
     static TextOverflow initialTextOverflow() { return TextOverflowClip; }
-    static EMarginCollapse initialMarginBeforeCollapse() { return MCOLLAPSE; }
-    static EMarginCollapse initialMarginAfterCollapse() { return MCOLLAPSE; }
+    static EMarginCollapse initialMarginBeforeCollapse() { return MarginCollapseCollapse; }
+    static EMarginCollapse initialMarginAfterCollapse() { return MarginCollapseCollapse; }
     static EWordBreak initialWordBreak() { return NormalWordBreak; }
     static EOverflowWrap initialOverflowWrap() { return NormalOverflowWrap; }
     static LineBreak initialLineBreak() { return LineBreakAuto; }

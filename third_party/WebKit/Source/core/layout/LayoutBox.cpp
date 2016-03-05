@@ -1159,7 +1159,7 @@ LayoutUnit LayoutBox::adjustBorderBoxLogicalWidthForBoxSizing(float width) const
 {
     LayoutUnit bordersPlusPadding = borderAndPaddingLogicalWidth();
     LayoutUnit result(width);
-    if (style()->boxSizing() == CONTENT_BOX)
+    if (style()->boxSizing() == BoxSizingContentBox)
         return result + bordersPlusPadding;
     return std::max(result, bordersPlusPadding);
 }
@@ -1168,7 +1168,7 @@ LayoutUnit LayoutBox::adjustBorderBoxLogicalHeightForBoxSizing(float height) con
 {
     LayoutUnit bordersPlusPadding = borderAndPaddingLogicalHeight();
     LayoutUnit result(height);
-    if (style()->boxSizing() == CONTENT_BOX)
+    if (style()->boxSizing() == BoxSizingContentBox)
         return result + bordersPlusPadding;
     return std::max(result, bordersPlusPadding);
 }
@@ -1176,7 +1176,7 @@ LayoutUnit LayoutBox::adjustBorderBoxLogicalHeightForBoxSizing(float height) con
 LayoutUnit LayoutBox::adjustContentBoxLogicalWidthForBoxSizing(float width) const
 {
     LayoutUnit result(width);
-    if (style()->boxSizing() == BORDER_BOX)
+    if (style()->boxSizing() == BoxSizingBorderBox)
         result -= borderAndPaddingLogicalWidth();
     return std::max(LayoutUnit(), result);
 }
@@ -1184,7 +1184,7 @@ LayoutUnit LayoutBox::adjustContentBoxLogicalWidthForBoxSizing(float width) cons
 LayoutUnit LayoutBox::adjustContentBoxLogicalHeightForBoxSizing(float height) const
 {
     LayoutUnit result(height);
-    if (style()->boxSizing() == BORDER_BOX)
+    if (style()->boxSizing() == BoxSizingBorderBox)
         result -= borderAndPaddingLogicalHeight();
     return std::max(LayoutUnit(), result);
 }

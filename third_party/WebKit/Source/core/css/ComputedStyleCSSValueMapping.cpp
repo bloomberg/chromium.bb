@@ -641,7 +641,7 @@ static LayoutRect sizingBox(const LayoutObject* layoutObject)
         return LayoutRect();
 
     const LayoutBox* box = toLayoutBox(layoutObject);
-    return box->style()->boxSizing() == BORDER_BOX ? box->borderBoxRect() : box->computedCSSContentBoxRect();
+    return box->style()->boxSizing() == BoxSizingBorderBox ? box->borderBoxRect() : box->computedCSSContentBoxRect();
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> renderTextDecorationFlagsToCSSValue(int textDecoration)
@@ -1523,7 +1523,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWebkitBoxAlign:
         return cssValuePool().createValue(style.boxAlign());
     case CSSPropertyWebkitBoxDecorationBreak:
-        if (style.boxDecorationBreak() == DSLICE)
+        if (style.boxDecorationBreak() == BoxDecorationBreakSlice)
             return cssValuePool().createIdentifierValue(CSSValueSlice);
     return cssValuePool().createIdentifierValue(CSSValueClone);
     case CSSPropertyWebkitBoxDirection:
@@ -2117,7 +2117,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyZoom:
         return cssValuePool().createValue(style.zoom(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyBoxSizing:
-        if (style.boxSizing() == CONTENT_BOX)
+        if (style.boxSizing() == BoxSizingContentBox)
             return cssValuePool().createIdentifierValue(CSSValueContentBox);
         return cssValuePool().createIdentifierValue(CSSValueBorderBox);
     case CSSPropertyWebkitAppRegion:

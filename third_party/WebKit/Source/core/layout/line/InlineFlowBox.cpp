@@ -317,7 +317,7 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
         // we know the inline began on this line (unless we are a continuation).
         LineBoxList* lineBoxList = lineBoxes();
         if (!lineBoxList->firstLineBox()->isConstructed() && !getLineLayoutItem().isInlineElementContinuation()) {
-            if (getLineLayoutItem().style()->boxDecorationBreak() == DCLONE)
+            if (getLineLayoutItem().style()->boxDecorationBreak() == BoxDecorationBreakClone)
                 includeLeftEdge = includeRightEdge = true;
             else if (ltr && lineBoxList->firstLineBox() == this)
                 includeLeftEdge = true;
@@ -335,7 +335,7 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
             // (2) The logicallyLastRun is not a descendant of this layout object.
             // (3) The logicallyLastRun is a descendant of this layout object, but it is the last child of this layout object and it does not wrap to the next line.
             // (4) The decoration break is set to clone therefore there will be borders on every sides.
-            if (getLineLayoutItem().style()->boxDecorationBreak() == DCLONE) {
+            if (getLineLayoutItem().style()->boxDecorationBreak() == BoxDecorationBreakClone) {
                 includeLeftEdge = includeRightEdge = true;
             } else if (ltr) {
                 if (!nextLineBox()

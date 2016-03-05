@@ -67,7 +67,7 @@ void InlineFlowBoxPainter::paintFillLayer(const PaintInfo& paintInfo, const Colo
     bool hasFillImage = img && img->canRender();
     if ((!hasFillImage && !m_inlineFlowBox.getLineLayoutItem().style()->hasBorderRadius()) || (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()) || !m_inlineFlowBox.parent()) {
         BoxPainter::paintFillLayer(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);
-    } else if (m_inlineFlowBox.getLineLayoutItem().style()->boxDecorationBreak() == DCLONE) {
+    } else if (m_inlineFlowBox.getLineLayoutItem().style()->boxDecorationBreak() == BoxDecorationBreakClone) {
         GraphicsContextStateSaver stateSaver(paintInfo.context);
         paintInfo.context.clip(pixelSnappedIntRect(rect));
         BoxPainter::paintFillLayer(*boxModel, paintInfo, c, fillLayer, rect, BackgroundBleedNone, &m_inlineFlowBox, rect.size(), op);

@@ -763,10 +763,10 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBoxDecorationBreak e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case DSLICE:
+    case BoxDecorationBreakSlice:
         m_value.valueID = CSSValueSlice;
         break;
-    case DCLONE:
+    case BoxDecorationBreakClone:
         m_value.valueID = CSSValueClone;
         break;
     }
@@ -777,15 +777,15 @@ template<> inline EBoxDecorationBreak CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueSlice:
-        return DSLICE;
+        return BoxDecorationBreakSlice;
     case CSSValueClone:
-        return DCLONE;
+        return BoxDecorationBreakClone;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return DSLICE;
+    return BoxDecorationBreakSlice;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(BackgroundEdgeOrigin e)
@@ -833,10 +833,10 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBoxSizing e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case BORDER_BOX:
+    case BoxSizingBorderBox:
         m_value.valueID = CSSValueBorderBox;
         break;
-    case CONTENT_BOX:
+    case BoxSizingContentBox:
         m_value.valueID = CSSValueContentBox;
         break;
     }
@@ -847,15 +847,15 @@ template<> inline EBoxSizing CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueBorderBox:
-        return BORDER_BOX;
+        return BoxSizingBorderBox;
     case CSSValueContentBox:
-        return CONTENT_BOX;
+        return BoxSizingContentBox;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return BORDER_BOX;
+    return BoxSizingBorderBox;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBoxDirection e)
@@ -1657,13 +1657,13 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EMarginCollapse e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case MCOLLAPSE:
+    case MarginCollapseCollapse:
         m_value.valueID = CSSValueCollapse;
         break;
-    case MSEPARATE:
+    case MarginCollapseSeparate:
         m_value.valueID = CSSValueSeparate;
         break;
-    case MDISCARD:
+    case MarginCollapseDiscard:
         m_value.valueID = CSSValueDiscard;
         break;
     }
@@ -1674,17 +1674,17 @@ template<> inline EMarginCollapse CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueCollapse:
-        return MCOLLAPSE;
+        return MarginCollapseCollapse;
     case CSSValueSeparate:
-        return MSEPARATE;
+        return MarginCollapseSeparate;
     case CSSValueDiscard:
-        return MDISCARD;
+        return MarginCollapseDiscard;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return MCOLLAPSE;
+    return MarginCollapseCollapse;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EOverflow e)

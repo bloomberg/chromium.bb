@@ -107,15 +107,15 @@ enum EFloat {
     NoFloat, LeftFloat, RightFloat
 };
 
-enum EMarginCollapse { MCOLLAPSE, MSEPARATE, MDISCARD };
+enum EMarginCollapse { MarginCollapseCollapse, MarginCollapseSeparate, MarginCollapseDiscard };
 
 // Box decoration attributes. Not inherited.
 
-enum EBoxDecorationBreak { DSLICE, DCLONE };
+enum EBoxDecorationBreak { BoxDecorationBreakSlice, BoxDecorationBreakClone };
 
 // Box attributes. Not inherited.
 
-enum EBoxSizing { CONTENT_BOX, BORDER_BOX };
+enum EBoxSizing { BoxSizingContentBox, BoxSizingBorderBox };
 
 // Random visual rendering model attributes. Not inherited.
 

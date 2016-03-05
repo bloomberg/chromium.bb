@@ -834,7 +834,7 @@ bool LayoutBlock::isSelfCollapsingBlock() const
     if (logicalHeight() > 0
         || isTable() || borderAndPaddingLogicalHeight()
         || style()->logicalMinHeight().isPositive()
-        || style()->marginBeforeCollapse() == MSEPARATE || style()->marginAfterCollapse() == MSEPARATE)
+        || style()->marginBeforeCollapse() == MarginCollapseSeparate || style()->marginAfterCollapse() == MarginCollapseSeparate)
         return false;
 
     Length logicalHeightLength = style()->logicalHeight();
@@ -954,7 +954,7 @@ bool LayoutBlock::widthAvailableToChildrenHasChanged()
 
     // If we use border-box sizing, have percentage padding, and our parent has changed width then the width available to our children has changed even
     // though our own width has remained the same.
-    widthAvailableToChildrenHasChanged |= style()->boxSizing() == BORDER_BOX && needsPreferredWidthsRecalculation() && view()->layoutState()->containingBlockLogicalWidthChanged();
+    widthAvailableToChildrenHasChanged |= style()->boxSizing() == BoxSizingBorderBox && needsPreferredWidthsRecalculation() && view()->layoutState()->containingBlockLogicalWidthChanged();
 
     return widthAvailableToChildrenHasChanged;
 }
@@ -1050,7 +1050,7 @@ bool LayoutBlock::createsNewFormattingContext() const
 
 static inline bool changeInAvailableLogicalHeightAffectsChild(LayoutBlock* parent, LayoutBox& child)
 {
-    if (parent->style()->boxSizing() != BORDER_BOX)
+    if (parent->style()->boxSizing() != BoxSizingBorderBox)
         return false;
     return parent->style()->isHorizontalWritingMode() && !child.style()->isHorizontalWritingMode();
 }

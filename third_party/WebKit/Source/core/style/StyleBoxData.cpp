@@ -40,8 +40,8 @@ StyleBoxData::StyleBoxData()
     , m_maxHeight(ComputedStyle::initialMaxSize())
     , m_zIndex(0)
     , m_hasAutoZIndex(true)
-    , m_boxSizing(CONTENT_BOX)
-    , m_boxDecorationBreak(DSLICE)
+    , m_boxSizing(BoxSizingContentBox)
+    , m_boxDecorationBreak(BoxDecorationBreakSlice)
 {
 }
 

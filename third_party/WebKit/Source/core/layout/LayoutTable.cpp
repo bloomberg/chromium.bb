@@ -335,7 +335,7 @@ LayoutUnit LayoutTable::convertStyleLogicalWidthToComputedWidth(const Length& st
     // HTML tables' width styles already include borders and paddings, but CSS tables' width styles do not.
     LayoutUnit borders;
     bool isCSSTable = !isHTMLTableElement(node());
-    if (isCSSTable && styleLogicalWidth.isSpecified() && styleLogicalWidth.isPositive() && style()->boxSizing() == CONTENT_BOX)
+    if (isCSSTable && styleLogicalWidth.isSpecified() && styleLogicalWidth.isPositive() && style()->boxSizing() == BoxSizingContentBox)
         borders = borderStart() + borderEnd() + (collapseBorders() ? LayoutUnit() : paddingStart() + paddingEnd());
 
     return minimumValueForLength(styleLogicalWidth, availableWidth) + borders;
@@ -351,7 +351,7 @@ LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(const Length& 
         // HTML tables size as though CSS height includes border/padding, CSS tables do not.
         LayoutUnit borders = LayoutUnit();
         // FIXME: We cannot apply box-sizing: content-box on <table> which other browsers allow.
-        if (isHTMLTableElement(node()) || style()->boxSizing() == BORDER_BOX) {
+        if (isHTMLTableElement(node()) || style()->boxSizing() == BoxSizingBorderBox) {
             borders = borderAndPadding;
         }
         computedLogicalHeight = LayoutUnit(styleLogicalHeight.value() - borders);

@@ -1293,7 +1293,7 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSize
 
     LayoutSize difference((currentSize + newOffset - adjustedOldOffset).expandedTo(minimumSize) - currentSize);
 
-    bool isBoxSizingBorder = box().style()->boxSizing() == BORDER_BOX;
+    bool isBoxSizingBorder = box().style()->boxSizing() == BoxSizingBorderBox;
 
     EResize resize = box().style()->resize();
     if (resize != RESIZE_VERTICAL && difference.width()) {
