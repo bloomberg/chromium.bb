@@ -144,6 +144,20 @@ TEST(LayerOwnerTest, RecreateRootLayerWithNullCompositor) {
   EXPECT_EQ(nullptr, layer_copy->GetCompositor());
 }
 
+TEST(LayerOwnerTest, InvertPropertyRemainSameWithRecreateLayer) {
+  LayerOwner owner;
+  Layer* layer = new Layer;
+  owner.SetLayer(layer);
+
+  layer->SetLayerInverted(true);
+  scoped_ptr<Layer> old_layer1 = owner.RecreateLayer();
+  EXPECT_EQ(old_layer1->layer_inverted(), owner.layer()->layer_inverted());
+
+  old_layer1->SetLayerInverted(false);
+  scoped_ptr<Layer> old_layer2 = owner.RecreateLayer();
+  EXPECT_EQ(old_layer2->layer_inverted(), owner.layer()->layer_inverted());
+}
+
 TEST_F(LayerOwnerTestWithCompositor, RecreateRootLayerWithCompositor) {
   LayerOwner owner;
   Layer* layer = new Layer;
