@@ -85,17 +85,22 @@ class UprevAndroidStage(generic_stages.BuilderStage,
           raise
 
     kwargs = {}
-    if not self.android_version:
+    if self.android_version is None:
       try:
         self.android_version = self._run.DetermineAndroidVersion(
             boards=self._boards)
       except cbuildbot_run.NoAndroidVersionError as ex:
-        logging.warn('Unable to determine Android version, using %s (%s)',
-                     android_atom_to_build, ex)
-        self.android_version = android_atom_to_build
+        if android_atom_to_build is not None:
+          logging.error('Unable to determine Android version, uprevved %s',
+                        android_atom_to_build)
+          raise
+        else:
+          logging.info('Build does not contain Android (%s)', ex)
 
-    kwargs['tag'] = self.android_version
-    logging.PrintBuildbotStepText('tag %s' % kwargs['tag'])
+
+    if self.android_version is not None:
+      kwargs['tag'] = self.android_version
+      logging.PrintBuildbotStepText('tag %s' % kwargs['tag'])
 
     if (self._android_rev and
         not android_atom_to_build and
