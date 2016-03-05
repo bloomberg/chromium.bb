@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "media/base/media_export.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -21,7 +20,7 @@ namespace media {
 // A derived class of media::VideoFrame holding a mojo::SharedBufferHandle
 // which is mapped on constructor and remains so for the lifetime of the
 // object. These frames are ref-counted.
-class MEDIA_EXPORT MojoSharedBufferVideoFrame : public VideoFrame {
+class MojoSharedBufferVideoFrame : public VideoFrame {
  public:
   // Creates a new I420 frame in shared memory with provided parameters
   // (coded_size() == natural_size() == visible_rect()), or returns nullptr.
