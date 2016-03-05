@@ -19,7 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/content_param_traits.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "ui/gfx/gpu_memory_buffer.h"

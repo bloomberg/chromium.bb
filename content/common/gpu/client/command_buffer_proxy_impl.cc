@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"

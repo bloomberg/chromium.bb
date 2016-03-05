@@ -34,7 +34,6 @@
 #include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"

@@ -17,7 +17,6 @@
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/gpu/gpu_stream_constants.h"
-#include "content/public/common/common_param_traits.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -36,6 +35,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gpu_preference.h"
+#include "url/ipc/url_param_traits.h"
 
 #if defined(OS_ANDROID)
 #include "content/common/android/surface_texture_peer.h"
