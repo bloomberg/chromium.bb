@@ -91,6 +91,20 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      'target_name': 'boringssl_chacha_test',
+      'type': 'executable',
+      'dependencies': [
+        'boringssl.gyp:boringssl',
+      ],
+      'sources': [
+        'src/crypto/chacha/chacha_test.cc',
+        '<@(boringssl_test_support_sources)',
+      ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
       'target_name': 'boringssl_aead_test',
       'type': 'executable',
       'dependencies': [
@@ -567,6 +581,7 @@
       'boringssl_bio_test',
       'boringssl_bn_test',
       'boringssl_bytestring_test',
+      'boringssl_chacha_test',
       'boringssl_cipher_test',
       'boringssl_cmac_test',
       'boringssl_constant_time_test',

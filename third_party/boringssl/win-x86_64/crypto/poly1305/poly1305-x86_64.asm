@@ -1159,6 +1159,20 @@ $L$short_tail_avx:
 
 
 
+	vpsrldq	xmm9,xmm14,8
+	vpsrldq	xmm8,xmm13,8
+	vpsrldq	xmm6,xmm11,8
+	vpsrldq	xmm5,xmm10,8
+	vpsrldq	xmm7,xmm12,8
+	vpaddq	xmm13,xmm13,xmm8
+	vpaddq	xmm14,xmm14,xmm9
+	vpaddq	xmm10,xmm10,xmm5
+	vpaddq	xmm11,xmm11,xmm6
+	vpaddq	xmm12,xmm12,xmm7
+
+
+
+
 	vpsrlq	xmm3,xmm13,26
 	vpand	xmm13,xmm13,xmm15
 	vpaddq	xmm14,xmm14,xmm3
@@ -1190,25 +1204,11 @@ $L$short_tail_avx:
 	vpand	xmm13,xmm13,xmm15
 	vpaddq	xmm14,xmm14,xmm3
 
-
-
-
-	vpsrldq	xmm7,xmm12,8
-	vpsrldq	xmm5,xmm10,8
-	vpsrldq	xmm6,xmm11,8
-	vpsrldq	xmm8,xmm13,8
-	vpsrldq	xmm9,xmm14,8
-	vpaddq	xmm2,xmm12,xmm7
-	vpaddq	xmm0,xmm10,xmm5
-	vpaddq	xmm1,xmm11,xmm6
-	vpaddq	xmm3,xmm13,xmm8
-	vpaddq	xmm4,xmm14,xmm9
-
-	vmovd	DWORD[(-112)+rdi],xmm0
-	vmovd	DWORD[(-108)+rdi],xmm1
-	vmovd	DWORD[(-104)+rdi],xmm2
-	vmovd	DWORD[(-100)+rdi],xmm3
-	vmovd	DWORD[(-96)+rdi],xmm4
+	vmovd	DWORD[(-112)+rdi],xmm10
+	vmovd	DWORD[(-108)+rdi],xmm11
+	vmovd	DWORD[(-104)+rdi],xmm12
+	vmovd	DWORD[(-100)+rdi],xmm13
+	vmovd	DWORD[(-96)+rdi],xmm14
 	vmovdqa	xmm6,XMMWORD[80+r11]
 	vmovdqa	xmm7,XMMWORD[96+r11]
 	vmovdqa	xmm8,XMMWORD[112+r11]
@@ -1851,6 +1851,31 @@ $L$tail_avx2:
 
 
 
+	vpsrldq	ymm8,ymm12,8
+	vpsrldq	ymm9,ymm2,8
+	vpsrldq	ymm10,ymm3,8
+	vpsrldq	ymm6,ymm4,8
+	vpsrldq	ymm7,ymm0,8
+	vpaddq	ymm12,ymm12,ymm8
+	vpaddq	ymm2,ymm2,ymm9
+	vpaddq	ymm3,ymm3,ymm10
+	vpaddq	ymm4,ymm4,ymm6
+	vpaddq	ymm0,ymm0,ymm7
+
+	vpermq	ymm10,ymm3,0x2
+	vpermq	ymm6,ymm4,0x2
+	vpermq	ymm7,ymm0,0x2
+	vpermq	ymm8,ymm12,0x2
+	vpermq	ymm9,ymm2,0x2
+	vpaddq	ymm3,ymm3,ymm10
+	vpaddq	ymm4,ymm4,ymm6
+	vpaddq	ymm0,ymm0,ymm7
+	vpaddq	ymm12,ymm12,ymm8
+	vpaddq	ymm2,ymm2,ymm9
+
+
+
+
 	vpsrlq	ymm14,ymm3,26
 	vpand	ymm3,ymm3,ymm5
 	vpaddq	ymm4,ymm4,ymm14
@@ -1881,31 +1906,6 @@ $L$tail_avx2:
 	vpsrlq	ymm14,ymm3,26
 	vpand	ymm3,ymm3,ymm5
 	vpaddq	ymm4,ymm4,ymm14
-
-
-
-
-	vpsrldq	ymm9,ymm2,8
-	vpsrldq	ymm7,ymm0,8
-	vpsrldq	ymm8,ymm1,8
-	vpsrldq	ymm10,ymm3,8
-	vpsrldq	ymm6,ymm4,8
-	vpaddq	ymm2,ymm2,ymm9
-	vpaddq	ymm0,ymm0,ymm7
-	vpaddq	ymm1,ymm1,ymm8
-	vpaddq	ymm3,ymm3,ymm10
-	vpaddq	ymm4,ymm4,ymm6
-
-	vpermq	ymm9,ymm2,0x2
-	vpermq	ymm7,ymm0,0x2
-	vpermq	ymm8,ymm1,0x2
-	vpermq	ymm10,ymm3,0x2
-	vpermq	ymm6,ymm4,0x2
-	vpaddq	ymm2,ymm2,ymm9
-	vpaddq	ymm0,ymm0,ymm7
-	vpaddq	ymm1,ymm1,ymm8
-	vpaddq	ymm3,ymm3,ymm10
-	vpaddq	ymm4,ymm4,ymm6
 
 	vmovd	DWORD[(-112)+rdi],xmm0
 	vmovd	DWORD[(-108)+rdi],xmm1

@@ -202,6 +202,7 @@
       'src/crypto/pkcs8/p8_pkey.c',
       'src/crypto/pkcs8/pkcs8.c',
       'src/crypto/poly1305/poly1305.c',
+      'src/crypto/rand/deterministic.c',
       'src/crypto/rand/rand.c',
       'src/crypto/rand/urandom.c',
       'src/crypto/rand/windows.c',

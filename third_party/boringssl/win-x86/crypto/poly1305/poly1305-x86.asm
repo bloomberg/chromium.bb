@@ -1200,9 +1200,19 @@ L$016long_tail:
 	paddq	xmm1,xmm5
 	paddq	xmm2,xmm6
 L$017short_tail:
+	pshufd	xmm6,xmm4,78
+	pshufd	xmm5,xmm3,78
+	paddq	xmm4,xmm6
+	paddq	xmm3,xmm5
+	pshufd	xmm6,xmm0,78
+	pshufd	xmm5,xmm1,78
+	paddq	xmm0,xmm6
+	paddq	xmm1,xmm5
+	pshufd	xmm6,xmm2,78
 	movdqa	xmm5,xmm3
 	pand	xmm3,xmm7
 	psrlq	xmm5,26
+	paddq	xmm2,xmm6
 	paddq	xmm5,xmm4
 	movdqa	xmm6,xmm0
 	pand	xmm0,xmm7
@@ -1230,24 +1240,14 @@ L$017short_tail:
 	paddd	xmm1,xmm5
 	pand	xmm3,xmm7
 	paddd	xmm4,xmm6
-	pshufd	xmm6,xmm0,78
-	pshufd	xmm5,xmm1,78
-	paddd	xmm0,xmm6
-	pshufd	xmm6,xmm2,78
-	paddd	xmm1,xmm5
-	pshufd	xmm5,xmm3,78
-	paddd	xmm2,xmm6
-	pshufd	xmm6,xmm4,78
-	paddd	xmm3,xmm5
-	paddd	xmm4,xmm6
 L$013done:
 	movd	DWORD [edi-48],xmm0
 	movd	DWORD [edi-44],xmm1
 	movd	DWORD [edi-40],xmm2
 	movd	DWORD [edi-36],xmm3
 	movd	DWORD [edi-32],xmm4
-L$007nodata:
 	mov	esp,ebp
+L$007nodata:
 	pop	edi
 	pop	esi
 	pop	ebx

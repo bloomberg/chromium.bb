@@ -739,6 +739,19 @@ poly1305_blocks_neon:
 
 .Lshort_tail:
 	////////////////////////////////////////////////////////////////
+	// horizontal add
+
+	addp	v22.2d,v22.2d,v22.2d
+	ldp	d8,d9,[sp,#16]		// meet ABI requirements
+	addp	v19.2d,v19.2d,v19.2d
+	ldp	d10,d11,[sp,#32]
+	addp	v23.2d,v23.2d,v23.2d
+	ldp	d12,d13,[sp,#48]
+	addp	v20.2d,v20.2d,v20.2d
+	ldp	d14,d15,[sp,#64]
+	addp	v21.2d,v21.2d,v21.2d
+
+	////////////////////////////////////////////////////////////////
 	// lazy reduction, but without narrowing
 
 	ushr	v29.2d,v22.2d,#26
@@ -768,19 +781,6 @@ poly1305_blocks_neon:
 	and	v22.16b,v22.16b,v31.16b
 	add	v20.2d,v20.2d,v29.2d	// h0 -> h1
 	add	v23.2d,v23.2d,v30.2d	// h3 -> h4
-
-	////////////////////////////////////////////////////////////////
-	// horizontal add
-
-	addp	v21.2d,v21.2d,v21.2d
-	ldp	d8,d9,[sp,#16]		// meet ABI requirements
-	addp	v19.2d,v19.2d,v19.2d
-	ldp	d10,d11,[sp,#32]
-	addp	v20.2d,v20.2d,v20.2d
-	ldp	d12,d13,[sp,#48]
-	addp	v22.2d,v22.2d,v22.2d
-	ldp	d14,d15,[sp,#64]
-	addp	v23.2d,v23.2d,v23.2d
 
 	////////////////////////////////////////////////////////////////
 	// write the result, can be partially reduced

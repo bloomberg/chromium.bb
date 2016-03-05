@@ -1191,9 +1191,19 @@ L016long_tail:
 	paddq	%xmm5,%xmm1
 	paddq	%xmm6,%xmm2
 L017short_tail:
+	pshufd	$78,%xmm4,%xmm6
+	pshufd	$78,%xmm3,%xmm5
+	paddq	%xmm6,%xmm4
+	paddq	%xmm5,%xmm3
+	pshufd	$78,%xmm0,%xmm6
+	pshufd	$78,%xmm1,%xmm5
+	paddq	%xmm6,%xmm0
+	paddq	%xmm5,%xmm1
+	pshufd	$78,%xmm2,%xmm6
 	movdqa	%xmm3,%xmm5
 	pand	%xmm7,%xmm3
 	psrlq	$26,%xmm5
+	paddq	%xmm6,%xmm2
 	paddq	%xmm4,%xmm5
 	movdqa	%xmm0,%xmm6
 	pand	%xmm7,%xmm0
@@ -1221,24 +1231,14 @@ L017short_tail:
 	paddd	%xmm5,%xmm1
 	pand	%xmm7,%xmm3
 	paddd	%xmm6,%xmm4
-	pshufd	$78,%xmm0,%xmm6
-	pshufd	$78,%xmm1,%xmm5
-	paddd	%xmm6,%xmm0
-	pshufd	$78,%xmm2,%xmm6
-	paddd	%xmm5,%xmm1
-	pshufd	$78,%xmm3,%xmm5
-	paddd	%xmm6,%xmm2
-	pshufd	$78,%xmm4,%xmm6
-	paddd	%xmm5,%xmm3
-	paddd	%xmm6,%xmm4
 L013done:
 	movd	%xmm0,-48(%edi)
 	movd	%xmm1,-44(%edi)
 	movd	%xmm2,-40(%edi)
 	movd	%xmm3,-36(%edi)
 	movd	%xmm4,-32(%edi)
-L007nodata:
 	movl	%ebp,%esp
+L007nodata:
 	popl	%edi
 	popl	%esi
 	popl	%ebx

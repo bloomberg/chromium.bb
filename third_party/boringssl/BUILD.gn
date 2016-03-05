@@ -7,16 +7,36 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 # Config for us and everybody else depending on BoringSSL.
-config("openssl_config") {
+config("external_config") {
   include_dirs = [ "src/include" ]
   if (is_component_build) {
     defines = [ "BORINGSSL_SHARED_LIBRARY" ]
   }
 }
 
-# Config internal to this build file.
-config("openssl_internal_config") {
+# Config internal to this build file, shared by boringssl and boringssl_fuzzer.
+config("internal_config") {
   visibility = [ ":*" ]  # Only targets in this file can depend on this.
+  defines = [
+    "BORINGSSL_IMPLEMENTATION",
+    "BORINGSSL_NO_STATIC_INITIALIZER",
+    "OPENSSL_SMALL",
+  ]
+  configs = [
+    # TODO(davidben): Fix size_t truncations in BoringSSL.
+    # https://crbug.com/429039
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+}
+
+config("no_asm_config") {
+  visibility = [ ":*" ]  # Only targets in this file can depend on this.
+  defines = [ "OPENSSL_NO_ASM" ]
+}
+
+config("fuzzer_config") {
+  visibility = [ ":*" ]  # Only targets in this file can depend on this.
+  defines = [ "BORINGSSL_UNSAFE_FUZZER_MODE" ]
 }
 
 # The list of BoringSSL files is kept in boringssl.gypi.
@@ -25,6 +45,8 @@ gypi_values =
                 [ rebase_path("//third_party/boringssl/boringssl.gypi") ],
                 "scope",
                 [ "//third_party/boringssl/boringssl.gypi" ])
+boringssl_sources =
+    gypi_values.boringssl_crypto_sources + gypi_values.boringssl_ssl_sources
 
 # Windows' assembly is built with Yasm. The other platforms use the platform
 # assembler.
@@ -37,83 +59,92 @@ if (is_win && !is_msan) {
       sources = gypi_values.boringssl_win_x86_sources
     }
   }
+} else {
+  source_set("boringssl_asm") {
+    visibility = [ ":*" ]  # Only targets in this file can depend on this.
+
+    sources = []
+    asmflags = []
+    include_dirs = [ "src/include" ]
+
+    if (current_cpu == "arm" && is_clang) {
+      # TODO(hans) Enable integrated-as (crbug.com/124610).
+      asmflags += [ "-fno-integrated-as" ]
+      if (is_android) {
+        rebased_android_toolchain_root =
+            rebase_path(android_toolchain_root, root_build_dir)
+
+        # Else /usr/bin/as gets picked up.
+        asmflags += [ "-B${rebased_android_toolchain_root}/bin" ]
+      }
+    }
+
+    if (is_msan) {
+      public_configs = [ ":no_asm_config" ]
+    } else if (current_cpu == "x64") {
+      if (is_mac || is_ios) {
+        sources += gypi_values.boringssl_mac_x86_64_sources
+      } else if (is_linux || is_android) {
+        sources += gypi_values.boringssl_linux_x86_64_sources
+      } else {
+        public_configs = [ ":no_asm_config" ]
+      }
+    } else if (current_cpu == "x86") {
+      if (is_mac || is_ios) {
+        sources += gypi_values.boringssl_mac_x86_sources
+      } else if (is_linux || is_android) {
+        sources += gypi_values.boringssl_linux_x86_sources
+      } else {
+        public_configs = [ ":no_asm_config" ]
+      }
+    } else if (current_cpu == "arm" && (is_linux || is_android)) {
+      sources += gypi_values.boringssl_linux_arm_sources
+    } else if (current_cpu == "arm64" && (is_linux || is_android)) {
+      sources += gypi_values.boringssl_linux_aarch64_sources
+
+      # TODO(davidben): Remove explicit arch flag once https://crbug.com/576858
+      # is fixed.
+      asmflags += [ "-march=armv8-a+crypto" ]
+    } else {
+      public_configs = [ ":no_asm_config" ]
+    }
+  }
 }
 
 component("boringssl") {
-  sources = gypi_values.boringssl_crypto_sources
-  sources += gypi_values.boringssl_ssl_sources
-
-  public_configs = [ ":openssl_config" ]
-
-  asmflags = []
-  cflags = []
-  defines = [
-    "BORINGSSL_IMPLEMENTATION",
-    "BORINGSSL_NO_STATIC_INITIALIZER",
-    "OPENSSL_SMALL",
+  sources = boringssl_sources
+  deps = [
+    ":boringssl_asm",
   ]
-  deps = []
-  if (is_component_build) {
-    defines += [ "BORINGSSL_SHARED_LIBRARY" ]
-  }
+
+  public_configs = [ ":external_config" ]
+  configs += [ ":internal_config" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
-    # TODO(davidben): Fix size_t truncations in BoringSSL.
-    # https://crbug.com/429039
-    "//build/config/compiler:no_size_t_to_int_warning",
+  if (is_nacl) {
+    deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
+  }
+}
+
+# The same as boringssl, but builds with BORINGSSL_UNSAFE_FUZZER_MODE.
+component("boringssl_fuzzer") {
+  visibility = [ ":*" ]  # Only targets in this file can depend on this.
+
+  sources = boringssl_sources
+  deps = [
+    ":boringssl_asm",
   ]
 
-  # Also gets the include dirs from :openssl_config
-  include_dirs = [ "src/include" ]
+  public_configs = [
+    ":external_config",
+    ":fuzzer_config",
+  ]
+  configs += [ ":internal_config" ]
 
-  if (current_cpu == "arm" && is_clang) {
-    # TODO(hans) Enable integrated-as (crbug.com/124610).
-    asmflags += [ "-fno-integrated-as" ]
-    if (is_android) {
-      rebased_android_toolchain_root =
-          rebase_path(android_toolchain_root, root_build_dir)
-
-      # Else /usr/bin/as gets picked up.
-      asmflags += [ "-B${rebased_android_toolchain_root}/bin" ]
-    }
-  }
-
-  if (is_msan) {
-    defines += [ "OPENSSL_NO_ASM" ]
-  } else if (current_cpu == "x64") {
-    if (is_mac || is_ios) {
-      sources += gypi_values.boringssl_mac_x86_64_sources
-    } else if (is_linux || is_android) {
-      sources += gypi_values.boringssl_linux_x86_64_sources
-    } else if (is_win) {
-      deps += [ ":boringssl_asm" ]
-    } else {
-      defines += [ "OPENSSL_NO_ASM" ]
-    }
-  } else if (current_cpu == "x86") {
-    if (is_mac || is_ios) {
-      sources += gypi_values.boringssl_mac_x86_sources
-    } else if (is_linux || is_android) {
-      sources += gypi_values.boringssl_linux_x86_sources
-    } else if (is_win) {
-      deps += [ ":boringssl_asm" ]
-    } else {
-      defines += [ "OPENSSL_NO_ASM" ]
-    }
-  } else if (current_cpu == "arm" && (is_linux || is_android)) {
-    sources += gypi_values.boringssl_linux_arm_sources
-  } else if (current_cpu == "arm64" && (is_linux || is_android)) {
-    sources += gypi_values.boringssl_linux_aarch64_sources
-
-    # TODO(davidben): Remove explicit arch flag once https://crbug.com/576858
-    # is fixed.
-    asmflags += [ "-march=armv8-a+crypto" ]
-  } else {
-    defines += [ "OPENSSL_NO_ASM" ]
-  }
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   if (is_nacl) {
     deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
@@ -125,7 +156,7 @@ fuzzer_test("boringssl_d2i_x509_fuzzer") {
     "src/fuzz/cert.cc",
   ]
   deps = [
-    ":boringssl",
+    ":boringssl_fuzzer",
   ]
 }
 
@@ -134,7 +165,7 @@ fuzzer_test("boringssl_client_bio_write_fuzzer") {
     "src/fuzz/client.cc",
   ]
   deps = [
-    ":boringssl",
+    ":boringssl_fuzzer",
   ]
 }
 
@@ -143,7 +174,7 @@ fuzzer_test("boringssl_d2i_autoprivatekey_fuzzer") {
     "src/fuzz/privkey.cc",
   ]
   deps = [
-    ":boringssl",
+    ":boringssl_fuzzer",
   ]
 }
 
@@ -152,6 +183,6 @@ fuzzer_test("boringssl_server_bio_write_fuzzer") {
     "src/fuzz/server.cc",
   ]
   deps = [
-    ":boringssl",
+    ":boringssl_fuzzer",
   ]
 }

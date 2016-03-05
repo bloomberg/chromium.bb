@@ -1101,6 +1101,20 @@ L$short_tail_avx:
 
 
 
+	vpsrldq	$8,%xmm14,%xmm9
+	vpsrldq	$8,%xmm13,%xmm8
+	vpsrldq	$8,%xmm11,%xmm6
+	vpsrldq	$8,%xmm10,%xmm5
+	vpsrldq	$8,%xmm12,%xmm7
+	vpaddq	%xmm8,%xmm13,%xmm13
+	vpaddq	%xmm9,%xmm14,%xmm14
+	vpaddq	%xmm5,%xmm10,%xmm10
+	vpaddq	%xmm6,%xmm11,%xmm11
+	vpaddq	%xmm7,%xmm12,%xmm12
+
+
+
+
 	vpsrlq	$26,%xmm13,%xmm3
 	vpand	%xmm15,%xmm13,%xmm13
 	vpaddq	%xmm3,%xmm14,%xmm14
@@ -1132,25 +1146,11 @@ L$short_tail_avx:
 	vpand	%xmm15,%xmm13,%xmm13
 	vpaddq	%xmm3,%xmm14,%xmm14
 
-
-
-
-	vpsrldq	$8,%xmm12,%xmm7
-	vpsrldq	$8,%xmm10,%xmm5
-	vpsrldq	$8,%xmm11,%xmm6
-	vpsrldq	$8,%xmm13,%xmm8
-	vpsrldq	$8,%xmm14,%xmm9
-	vpaddq	%xmm7,%xmm12,%xmm2
-	vpaddq	%xmm5,%xmm10,%xmm0
-	vpaddq	%xmm6,%xmm11,%xmm1
-	vpaddq	%xmm8,%xmm13,%xmm3
-	vpaddq	%xmm9,%xmm14,%xmm4
-
-	vmovd	%xmm0,-112(%rdi)
-	vmovd	%xmm1,-108(%rdi)
-	vmovd	%xmm2,-104(%rdi)
-	vmovd	%xmm3,-100(%rdi)
-	vmovd	%xmm4,-96(%rdi)
+	vmovd	%xmm10,-112(%rdi)
+	vmovd	%xmm11,-108(%rdi)
+	vmovd	%xmm12,-104(%rdi)
+	vmovd	%xmm13,-100(%rdi)
+	vmovd	%xmm14,-96(%rdi)
 	leaq	88(%r11),%rsp
 	vzeroupper
 	.byte	0xf3,0xc3
@@ -1746,6 +1746,31 @@ L$tail_avx2:
 
 
 
+	vpsrldq	$8,%ymm12,%ymm8
+	vpsrldq	$8,%ymm2,%ymm9
+	vpsrldq	$8,%ymm3,%ymm10
+	vpsrldq	$8,%ymm4,%ymm6
+	vpsrldq	$8,%ymm0,%ymm7
+	vpaddq	%ymm8,%ymm12,%ymm12
+	vpaddq	%ymm9,%ymm2,%ymm2
+	vpaddq	%ymm10,%ymm3,%ymm3
+	vpaddq	%ymm6,%ymm4,%ymm4
+	vpaddq	%ymm7,%ymm0,%ymm0
+
+	vpermq	$0x2,%ymm3,%ymm10
+	vpermq	$0x2,%ymm4,%ymm6
+	vpermq	$0x2,%ymm0,%ymm7
+	vpermq	$0x2,%ymm12,%ymm8
+	vpermq	$0x2,%ymm2,%ymm9
+	vpaddq	%ymm10,%ymm3,%ymm3
+	vpaddq	%ymm6,%ymm4,%ymm4
+	vpaddq	%ymm7,%ymm0,%ymm0
+	vpaddq	%ymm8,%ymm12,%ymm12
+	vpaddq	%ymm9,%ymm2,%ymm2
+
+
+
+
 	vpsrlq	$26,%ymm3,%ymm14
 	vpand	%ymm5,%ymm3,%ymm3
 	vpaddq	%ymm14,%ymm4,%ymm4
@@ -1776,31 +1801,6 @@ L$tail_avx2:
 	vpsrlq	$26,%ymm3,%ymm14
 	vpand	%ymm5,%ymm3,%ymm3
 	vpaddq	%ymm14,%ymm4,%ymm4
-
-
-
-
-	vpsrldq	$8,%ymm2,%ymm9
-	vpsrldq	$8,%ymm0,%ymm7
-	vpsrldq	$8,%ymm1,%ymm8
-	vpsrldq	$8,%ymm3,%ymm10
-	vpsrldq	$8,%ymm4,%ymm6
-	vpaddq	%ymm9,%ymm2,%ymm2
-	vpaddq	%ymm7,%ymm0,%ymm0
-	vpaddq	%ymm8,%ymm1,%ymm1
-	vpaddq	%ymm10,%ymm3,%ymm3
-	vpaddq	%ymm6,%ymm4,%ymm4
-
-	vpermq	$0x2,%ymm2,%ymm9
-	vpermq	$0x2,%ymm0,%ymm7
-	vpermq	$0x2,%ymm1,%ymm8
-	vpermq	$0x2,%ymm3,%ymm10
-	vpermq	$0x2,%ymm4,%ymm6
-	vpaddq	%ymm9,%ymm2,%ymm2
-	vpaddq	%ymm7,%ymm0,%ymm0
-	vpaddq	%ymm8,%ymm1,%ymm1
-	vpaddq	%ymm10,%ymm3,%ymm3
-	vpaddq	%ymm6,%ymm4,%ymm4
 
 	vmovd	%xmm0,-112(%rdi)
 	vmovd	%xmm1,-108(%rdi)

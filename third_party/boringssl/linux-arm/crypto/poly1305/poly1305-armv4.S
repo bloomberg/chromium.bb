@@ -997,6 +997,15 @@ poly1305_blocks_neon:
 
 .Lshort_tail:
 	@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	@ horizontal addition
+
+	vadd.i64	d16,d16,d17
+	vadd.i64	d10,d10,d11
+	vadd.i64	d18,d18,d19
+	vadd.i64	d12,d12,d13
+	vadd.i64	d14,d14,d15
+
+	@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 	@ lazy reduction, but without narrowing
 
 	vshr.u64	q15,q8,#26
@@ -1025,15 +1034,6 @@ poly1305_blocks_neon:
 	vand.i64	q8,q8,q0
 	vadd.i64	q6,q6,q15		@ h0 -> h1
 	vadd.i64	q9,q9,q4		@ h3 -> h4
-
-	@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	@ horizontal addition
-
-	vadd.i64	d14,d14,d15
-	vadd.i64	d10,d10,d11
-	vadd.i64	d16,d16,d17
-	vadd.i64	d12,d12,d13
-	vadd.i64	d18,d18,d19
 
 	cmp	r2,#0
 	bne	.Leven
