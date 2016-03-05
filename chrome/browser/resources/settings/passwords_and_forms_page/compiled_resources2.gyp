@@ -4,22 +4,19 @@
 {
   'targets': [
     {
-      'target_name': 'settings_animated_pages',
+      'target_name': 'passwords_and_forms_page',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):passwords_private',
+        'passwords_section',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'settings_page_visibility',
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'settings_router',
+      'target_name': 'passwords_section',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(EXTERNS_GYP):passwords_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

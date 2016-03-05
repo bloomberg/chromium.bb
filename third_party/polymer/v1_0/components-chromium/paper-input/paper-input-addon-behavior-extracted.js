@@ -17,10 +17,10 @@
     /**
      * The function called by `<paper-input-container>` when the input value or validity changes.
      * @param {{
-     *   inputElement: (Node|undefined),
+     *   inputElement: (Element|undefined),
      *   value: (string|undefined),
-     *   invalid: (boolean|undefined)
-     * }} state All properties are optional -
+     *   invalid: boolean
+     * }} state -
      *     inputElement: The input element.
      *     value: The input value.
      *     invalid: True if the input value is invalid.

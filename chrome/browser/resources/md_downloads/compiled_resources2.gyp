@@ -19,7 +19,7 @@
     },
     {
       'target_name': 'externs',
-      'includes': ['../../../../third_party/closure_compiler/externs_js.gypi'],
+      'includes': ['../../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
       'target_name': 'item',

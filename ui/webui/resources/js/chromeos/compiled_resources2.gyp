@@ -4,12 +4,12 @@
 {
   'targets': [
     {
-      'target_name': 'cr_elements_resources',
-      'type': 'none',
+      'target_name': 'ui_account_tweaks',
       'dependencies': [
-        'network/compiled_resources.gyp:*',
-        'policy/compiled_resources.gyp:*',
+        '../compiled_resources2.gyp:cr',
+        '../compiled_resources2.gyp:load_time_data',
       ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
   ]
 }

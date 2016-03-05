@@ -6,7 +6,8 @@
 
   'variables': {
     'CLOSURE_DIR': '<(DEPTH)/third_party/closure_compiler',
-    'EXTERNS_GYP': '<(CLOSURE_DIR)/externs/compiled_resources.gyp',
+    'EXTERNS_GYP': '<(CLOSURE_DIR)/externs/compiled_resources2.gyp',
+    'INTERFACES_GYP': '<(CLOSURE_DIR)/interfaces/compiled_resources2.gyp',
 
     'default_source_file': '<(_target_name).js',
     'source_files%': ['<(default_source_file)'],
@@ -46,7 +47,7 @@
       'inputs': [
         '<(CLOSURE_DIR)/compile_js2.gypi',
         '<(CLOSURE_DIR)/compile2.py',
-        '<(CLOSURE_DIR)/externs_js.gypi',
+        '<(CLOSURE_DIR)/include_js.gypi',
         '<(CLOSURE_DIR)/processor.py',
         '<(CLOSURE_DIR)/build/outputs.py',
         '<(CLOSURE_DIR)/compiler/compiler.jar',

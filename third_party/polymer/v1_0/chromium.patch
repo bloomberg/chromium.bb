@@ -23,3 +23,91 @@ index baf9ab3..985fe6c 100644
  },
  removeCustomPropAssignment: function (cssText) {
  return cssText.replace(this._rx.customProp, '').replace(this._rx.mixinProp, '');
+diff --git a/components-chromium/paper-input/paper-input-addon-behavior-extracted.js b/components-chromium/paper-input/paper-input-addon-behavior-extracted.js
+index d3e469c2..94313dd 100644
+--- a/components-chromium/paper-input/paper-input-addon-behavior-extracted.js
++++ b/components-chromium/paper-input/paper-input-addon-behavior-extracted.js
+@@ -17,10 +17,10 @@
+     /**
+      * The function called by `<paper-input-container>` when the input value or validity changes.
+      * @param {{
+-     *   inputElement: (Node|undefined),
++     *   inputElement: (Element|undefined),
+      *   value: (string|undefined),
+-     *   invalid: (boolean|undefined)
+-     * }} state All properties are optional -
++     *   invalid: boolean
++     * }} state -
+      *     inputElement: The input element.
+      *     value: The input value.
+      *     invalid: True if the input value is invalid.
+@@ -28,4 +28,4 @@
+     update: function(state) {
+     }
+
+-  };
+\ No newline at end of file
++  };
+diff --git a/components-chromium/paper-input/paper-input-char-counter-extracted.js b/comp
+onents-chromium/paper-input/paper-input-char-counter-extracted.js
+index 6577627..e5bb409 100644
+--- a/components-chromium/paper-input/paper-input-char-counter-extracted.js
++++ b/components-chromium/paper-input/paper-input-char-counter-extracted.js
+@@ -12,6 +12,17 @@ Polymer({
+       }
+     },
+
++    /**
++     * This overrides the update function in PaperInputAddonBehavior.
++     * @param {{
++     *   inputElement: (Element|undefined),
++     *   value: (string|undefined),
++     *   invalid: boolean
++     * }} state -
++     *     inputElement: The input element.
++     *     value: The input value.
++     *     invalid: True if the input value is invalid.
++     */
+     update: function(state) {
+       if (!state.inputElement) {
+         return;
+@@ -20,11 +31,11 @@ Polymer({
+       state.value = state.value || '';
+
+       // Account for the textarea's new lines.
+-      var str = state.value.replace(/(\r\n|\n|\r)/g, '--').length;
++      var str = state.value.replace(/(\r\n|\n|\r)/g, '--').length.toString();
+
+       if (state.inputElement.hasAttribute('maxlength')) {
+         str += '/' + state.inputElement.getAttribute('maxlength');
+       }
+       this._charCounterStr = str;
+     }
+-  });
+\ No newline at end of file
++  });
+diff --git a/components-chromium/paper-input/paper-input-error-extracted.js b/components-chromium/paper-input/paper-input-error-extracted.js
+index ac6fe00..fb45601 100644
+--- a/components-chromium/paper-input/paper-input-error-extracted.js
++++ b/components-chromium/paper-input/paper-input-error-extracted.js
+@@ -16,7 +16,18 @@ Polymer({
+       }
+     },
+
++    /**
++     * This overrides the update function in PaperInputAddonBehavior.
++     * @param {{
++     *   inputElement: (Element|undefined),
++     *   value: (string|undefined),
++     *   invalid: boolean
++     * }} state -
++     *     inputElement: The input element.
++     *     value: The input value.
++     *     invalid: True if the input value is invalid.
++     */
+     update: function(state) {
+       this._setInvalid(state.invalid);
+     }
+-  });
+\ No newline at end of file
++  });
