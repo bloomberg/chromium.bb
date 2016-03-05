@@ -221,6 +221,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   Status AddId(const std::string& id, const std::string& type,
                std::vector<std::string>& codecs);
 
+  // Notifies a caller via |tracks_updated_cb| that the set of media tracks
+  // for a given |id| has changed.
+  void SetTracksWatcher(const std::string& id,
+                        const MediaTracksUpdatedCB& tracks_updated_cb);
+
   // Removed an ID & associated resources that were previously added with
   // AddId().
   void RemoveId(const std::string& id);
@@ -233,16 +238,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // |append_window_start| and |append_window_end| correspond to the MSE spec's
   // similarly named source buffer attributes that are used in coded frame
   // processing.
-  // |init_segment_received_cb| is run for each newly successfully parsed
-  // initialization segment.
-  void AppendData(
-      const std::string& id,
-      const uint8_t* data,
-      size_t length,
-      base::TimeDelta append_window_start,
-      base::TimeDelta append_window_end,
-      base::TimeDelta* timestamp_offset,
-      const MediaSourceState::InitSegmentReceivedCB& init_segment_received_cb);
+  void AppendData(const std::string& id,
+                  const uint8_t* data,
+                  size_t length,
+                  base::TimeDelta append_window_start,
+                  base::TimeDelta append_window_end,
+                  base::TimeDelta* timestamp_offset);
 
   // Aborts parsing the current segment and reset the parser to a state where
   // it can accept a new segment.

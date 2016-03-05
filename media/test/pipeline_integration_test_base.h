@@ -148,6 +148,8 @@ class PipelineIntegrationTestBase {
   void DemuxerEncryptedMediaInitDataCB(EmeInitDataType type,
                                        const std::vector<uint8_t>& init_data);
 
+  void DemuxerMediaTracksUpdatedCB(scoped_ptr<MediaTracks> tracks);
+
   void OnEnded();
   void OnError(PipelineStatus status);
   void QuitAfterCurrentTimeTask(const base::TimeDelta& quit_time);

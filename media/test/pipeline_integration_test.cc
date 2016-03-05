@@ -535,9 +535,7 @@ class MockMediaSource {
 
     chunk_demuxer_->AppendData(
         kSourceId, file_data_->data() + current_position_, size,
-        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_,
-        base::Bind(&MockMediaSource::InitSegmentReceived,
-                   base::Unretained(this)));
+        base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
     current_position_ += size;
   }
 
@@ -546,9 +544,7 @@ class MockMediaSource {
                     int size) {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
     chunk_demuxer_->AppendData(kSourceId, pData, size, base::TimeDelta(),
-                               kInfiniteDuration(), &timestamp_offset,
-                               base::Bind(&MockMediaSource::InitSegmentReceived,
-                                          base::Unretained(this)));
+                               kInfiniteDuration(), &timestamp_offset);
     last_timestamp_offset_ = timestamp_offset;
   }
 
@@ -559,9 +555,7 @@ class MockMediaSource {
                               int size) {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
     chunk_demuxer_->AppendData(kSourceId, pData, size, append_window_start,
-                               append_window_end, &timestamp_offset,
-                               base::Bind(&MockMediaSource::InitSegmentReceived,
-                                          base::Unretained(this)));
+                               append_window_end, &timestamp_offset);
     last_timestamp_offset_ = timestamp_offset;
   }
 
@@ -622,6 +616,9 @@ class MockMediaSource {
     }
 
     CHECK_EQ(chunk_demuxer_->AddId(kSourceId, type, codecs), ChunkDemuxer::kOk);
+    chunk_demuxer_->SetTracksWatcher(
+        kSourceId, base::Bind(&MockMediaSource::InitSegmentReceivedWrapper,
+                              base::Unretained(this)));
 
     AppendData(initial_append_size_);
   }
@@ -637,7 +634,12 @@ class MockMediaSource {
     return last_timestamp_offset_;
   }
 
-  MOCK_METHOD1(InitSegmentReceived, void(const MediaTracks&));
+  // A workaround for gtest mocks not allowing moving scoped_ptrs.
+  void InitSegmentReceivedWrapper(scoped_ptr<MediaTracks> tracks) {
+    InitSegmentReceived(tracks);
+  }
+
+  MOCK_METHOD1(InitSegmentReceived, void(scoped_ptr<MediaTracks>&));
 
  private:
   scoped_refptr<DecoderBuffer> file_data_;

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_log.h"
+#include "media/base/media_tracks.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/chunk_demuxer.h"
 #if !defined(MEDIA_DISABLE_FFMPEG)
@@ -77,6 +78,11 @@ void PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB(
   DCHECK(!init_data.empty());
   CHECK(!encrypted_media_init_data_cb_.is_null());
   encrypted_media_init_data_cb_.Run(type, init_data);
+}
+
+void PipelineIntegrationTestBase::DemuxerMediaTracksUpdatedCB(
+    scoped_ptr<MediaTracks> tracks) {
+  CHECK(tracks);
 }
 
 void PipelineIntegrationTestBase::OnEnded() {
@@ -267,12 +273,16 @@ void PipelineIntegrationTestBase::CreateDemuxer(
     scoped_ptr<DataSource> data_source) {
   data_source_ = std::move(data_source);
 
+  Demuxer::MediaTracksUpdatedCB tracks_updated_cb =
+      base::Bind(&PipelineIntegrationTestBase::DemuxerMediaTracksUpdatedCB,
+                 base::Unretained(this));
+
 #if !defined(MEDIA_DISABLE_FFMPEG)
   demuxer_ = scoped_ptr<Demuxer>(new FFmpegDemuxer(
       message_loop_.task_runner(), data_source_.get(),
       base::Bind(&PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB,
                  base::Unretained(this)),
-      new MediaLog()));
+      tracks_updated_cb, new MediaLog()));
 #endif
 }
 

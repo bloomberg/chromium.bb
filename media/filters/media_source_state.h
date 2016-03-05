@@ -28,8 +28,6 @@ class MEDIA_EXPORT MediaSourceState {
   typedef base::Callback<ChunkDemuxerStream*(DemuxerStream::Type)>
       CreateDemuxerStreamCB;
 
-  typedef base::Callback<void(const MediaTracks&)> InitSegmentReceivedCB;
-
   typedef base::Callback<void(ChunkDemuxerStream*, const TextTrackConfig&)>
       NewTextTrackCB;
 
@@ -52,14 +50,12 @@ class MEDIA_EXPORT MediaSourceState {
   // error occurred. |*timestamp_offset| is used and possibly updated by the
   // append. |append_window_start| and |append_window_end| correspond to the MSE
   // spec's similarly named source buffer attributes that are used in coded
-  // frame processing. |init_segment_received_cb| is run for each new fully
-  // parsed initialization segment.
+  // frame processing.
   bool Append(const uint8_t* data,
               size_t length,
               TimeDelta append_window_start,
               TimeDelta append_window_end,
-              TimeDelta* timestamp_offset,
-              const InitSegmentReceivedCB& init_segment_received_cb);
+              TimeDelta* timestamp_offset);
 
   // Aborts the current append sequence and resets the parser.
   void ResetParserState(TimeDelta append_window_start,
@@ -116,6 +112,8 @@ class MEDIA_EXPORT MediaSourceState {
   static Ranges<TimeDelta> ComputeRangesIntersection(
       const RangesList& activeRanges,
       bool ended);
+
+  void SetTracksWatcher(const Demuxer::MediaTracksUpdatedCB& tracks_updated_cb);
 
  private:
   // Called by the |stream_parser_| when a new initialization segment is
@@ -195,11 +193,13 @@ class MEDIA_EXPORT MediaSourceState {
   StreamParser::InitCB init_cb_;
 
   // During Append(), OnNewConfigs() will trigger the initialization segment
-  // received algorithm. This callback is only non-NULL during the lifetime of
-  // an Append() call. Note, the MSE spec explicitly disallows this algorithm
+  // received algorithm. Note, the MSE spec explicitly disallows this algorithm
   // during an Abort(), since Abort() is allowed only to emit coded frames, and
-  // only if the parser is PARSING_MEDIA_SEGMENT (not an INIT segment).
-  InitSegmentReceivedCB init_segment_received_cb_;
+  // only if the parser is PARSING_MEDIA_SEGMENT (not an INIT segment). So we
+  // also have a flag here that indicates if Append is in progress and we can
+  // invoke this callback.
+  Demuxer::MediaTracksUpdatedCB init_segment_received_cb_;
+  bool append_in_progress_ = false;
 
   // Indicates that timestampOffset should be updated automatically during
   // OnNewBuffers() based on the earliest end timestamp of the buffers provided.

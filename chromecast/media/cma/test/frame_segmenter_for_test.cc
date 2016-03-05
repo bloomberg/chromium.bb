@@ -15,6 +15,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_log.h"
+#include "media/base/media_tracks.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
@@ -269,6 +270,9 @@ void OnEncryptedMediaInitData(::media::EmeInitDataType init_data_type,
   LOG(FATAL) << "Unexpected test failure: file is encrypted.";
 }
 
+void OnMediaTracksUpdated(scoped_ptr<::media::MediaTracks> tracks) {
+}
+
 void OnNewBuffer(BufferList* buffer_list,
                  const base::Closure& finished_cb,
                  ::media::DemuxerStream::Status status,
@@ -310,7 +314,8 @@ DemuxResult FFmpegDemuxForTest(const base::FilePath& filepath,
 
   ::media::FFmpegDemuxer demuxer(
       base::ThreadTaskRunnerHandle::Get(), &data_source,
-      base::Bind(&OnEncryptedMediaInitData), new ::media::MediaLog());
+      base::Bind(&OnEncryptedMediaInitData), base::Bind(&OnMediaTracksUpdated),
+      new ::media::MediaLog());
   ::media::WaitableMessageLoopEvent init_event;
   demuxer.Initialize(&fake_demuxer_host,
                      init_event.GetPipelineStatusCB(),

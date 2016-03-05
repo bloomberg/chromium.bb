@@ -740,6 +740,7 @@ FFmpegDemuxer::FFmpegDemuxer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     DataSource* data_source,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+    const MediaTracksUpdatedCB& media_tracks_updated_cb,
     const scoped_refptr<MediaLog>& media_log)
     : host_(NULL),
       task_runner_(task_runner),
@@ -755,9 +756,11 @@ FFmpegDemuxer::FFmpegDemuxer(
       text_enabled_(false),
       duration_known_(false),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
+      media_tracks_updated_cb_(media_tracks_updated_cb),
       weak_factory_(this) {
   DCHECK(task_runner_.get());
   DCHECK(data_source_);
+  DCHECK(!media_tracks_updated_cb_.is_null());
 }
 
 FFmpegDemuxer::~FFmpegDemuxer() {}

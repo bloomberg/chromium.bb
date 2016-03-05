@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"
+#include "media/base/media_tracks.h"
 #include "media/base/test_data_util.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -52,6 +53,10 @@ static void QuitLoopWithStatus(base::MessageLoop* message_loop,
 static void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                      const std::vector<uint8_t>& init_data) {
   VLOG(0) << "File is encrypted.";
+}
+
+static void OnMediaTracksUpdated(scoped_ptr<MediaTracks> tracks) {
+  VLOG(0) << "Got media tracks info, tracks = " << tracks->tracks().size();
 }
 
 typedef std::vector<media::DemuxerStream* > Streams;
@@ -183,8 +188,11 @@ static void RunDemuxerBenchmark(const std::string& filename) {
 
     Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
         base::Bind(&OnEncryptedMediaInitData);
+    Demuxer::MediaTracksUpdatedCB tracks_updated_cb =
+        base::Bind(&OnMediaTracksUpdated);
     FFmpegDemuxer demuxer(message_loop.task_runner(), &data_source,
-                          encrypted_media_init_data_cb, new MediaLog());
+                          encrypted_media_init_data_cb, tracks_updated_cb,
+                          new MediaLog());
 
     demuxer.Initialize(&demuxer_host,
                        base::Bind(&QuitLoopWithStatus, &message_loop),

@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "media/base/media_tracks.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/renderer_factory.h"
 #include "media/base/surface_manager.h"
@@ -255,6 +256,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Called when the demuxer encounters encrypted streams.
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8_t>& init_data);
+
+  // Called when the FFmpegDemuxer encounters new media tracks. This is only
+  // invoked when using FFmpegDemuxer, since MSE/ChunkDemuxer handle media
+  // tracks separately in WebSourceBufferImpl.
+  void OnFFmpegMediaTracksUpdated(scoped_ptr<MediaTracks> tracks);
 
   // Called when a decoder detects that the key needed to decrypt the stream
   // is not available.

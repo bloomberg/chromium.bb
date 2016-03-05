@@ -46,6 +46,9 @@ WebSourceBufferImpl::WebSourceBufferImpl(
       client_(NULL),
       append_window_end_(kInfiniteDuration()) {
   DCHECK(demuxer_);
+  demuxer_->SetTracksWatcher(
+      id, base::Bind(&WebSourceBufferImpl::InitSegmentReceived,
+                     base::Unretained(this)));
 }
 
 WebSourceBufferImpl::~WebSourceBufferImpl() {
@@ -99,11 +102,8 @@ void WebSourceBufferImpl::append(
     unsigned length,
     double* timestamp_offset) {
   base::TimeDelta old_offset = timestamp_offset_;
-  demuxer_->AppendData(id_, data, length,
-                       append_window_start_, append_window_end_,
-                       &timestamp_offset_,
-                       base::Bind(&WebSourceBufferImpl::InitSegmentReceived,
-                                  base::Unretained(this)));
+  demuxer_->AppendData(id_, data, length, append_window_start_,
+                       append_window_end_, &timestamp_offset_);
 
   // Coded frame processing may update the timestamp offset. If the caller
   // provides a non-NULL |timestamp_offset| and frame processing changes the
@@ -159,7 +159,7 @@ void WebSourceBufferImpl::removedFromMediaSource() {
   client_ = NULL;
 }
 
-void WebSourceBufferImpl::InitSegmentReceived(const MediaTracks& tracks) {
+void WebSourceBufferImpl::InitSegmentReceived(scoped_ptr<MediaTracks> tracks) {
   DVLOG(1) << __FUNCTION__;
   // TODO(servolk): Implement passing MediaTrack info to blink level.
   // https://crbug.com/249428

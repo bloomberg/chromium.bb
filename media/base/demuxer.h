@@ -22,6 +22,7 @@
 namespace media {
 
 class TextTrackConfig;
+class MediaTracks;
 
 class MEDIA_EXPORT DemuxerHost {
  public:
@@ -63,6 +64,11 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
   typedef base::Callback<void(EmeInitDataType type,
                               const std::vector<uint8_t>& init_data)>
       EncryptedMediaInitDataCB;
+
+  // Notifies demuxer clients that media track configuration has been updated
+  // (e.g. the inital stream metadata has been parsed successfully, or a new
+  // init segment has been parsed successfully in MSE case).
+  typedef base::Callback<void(scoped_ptr<MediaTracks>)> MediaTracksUpdatedCB;
 
   Demuxer();
   ~Demuxer() override;

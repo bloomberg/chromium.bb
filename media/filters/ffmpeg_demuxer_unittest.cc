@@ -17,6 +17,7 @@
 #include "base/threading/thread.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/media_log.h"
+#include "media/base/media_tracks.h"
 #include "media/base/mock_demuxer_host.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
@@ -91,9 +92,12 @@ class FFmpegDemuxerTest : public testing::Test {
     Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
         &FFmpegDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
 
+    Demuxer::MediaTracksUpdatedCB tracks_updated_cb = base::Bind(
+        &FFmpegDemuxerTest::OnMediaTracksUpdated, base::Unretained(this));
+
     demuxer_.reset(new FFmpegDemuxer(
         message_loop_.task_runner(), data_source_.get(),
-        encrypted_media_init_data_cb, new MediaLog()));
+        encrypted_media_init_data_cb, tracks_updated_cb, new MediaLog()));
   }
 
   MOCK_METHOD1(CheckPoint, void(int v));
@@ -203,6 +207,8 @@ class FFmpegDemuxerTest : public testing::Test {
   MOCK_METHOD2(OnEncryptedMediaInitData,
                void(EmeInitDataType init_data_type,
                     const std::vector<uint8_t>& init_data));
+
+  void OnMediaTracksUpdated(scoped_ptr<MediaTracks> tracks) {}
 
   // Accessor to demuxer internals.
   void set_duration_known(bool duration_known) {

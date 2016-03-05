@@ -145,21 +145,24 @@ void MediaSourceState::SetGroupStartTimestampIfInSequenceMode(
   frame_processor_->SetGroupStartTimestampIfInSequenceMode(timestamp_offset);
 }
 
-bool MediaSourceState::Append(
-    const uint8_t* data,
-    size_t length,
-    TimeDelta append_window_start,
-    TimeDelta append_window_end,
-    TimeDelta* timestamp_offset,
-    const InitSegmentReceivedCB& init_segment_received_cb) {
+void MediaSourceState::SetTracksWatcher(
+    const Demuxer::MediaTracksUpdatedCB& tracks_updated_cb) {
+  DCHECK(init_segment_received_cb_.is_null());
+  init_segment_received_cb_ = tracks_updated_cb;
+  DCHECK(!init_segment_received_cb_.is_null());
+}
+
+bool MediaSourceState::Append(const uint8_t* data,
+                              size_t length,
+                              TimeDelta append_window_start,
+                              TimeDelta append_window_end,
+                              TimeDelta* timestamp_offset) {
+  append_in_progress_ = true;
   DCHECK(timestamp_offset);
   DCHECK(!timestamp_offset_during_append_);
-  DCHECK(!init_segment_received_cb.is_null());
-  DCHECK(init_segment_received_cb_.is_null());
   append_window_start_during_append_ = append_window_start;
   append_window_end_during_append_ = append_window_end;
   timestamp_offset_during_append_ = timestamp_offset;
-  init_segment_received_cb_ = init_segment_received_cb;
 
   // TODO(wolenetz/acolwell): Curry and pass a NewBuffersCB here bound with
   // append window and timestamp offset pointer. See http://crbug.com/351454.
@@ -172,7 +175,7 @@ bool MediaSourceState::Append(
         << " append_window_end=" << append_window_end.InSecondsF();
   }
   timestamp_offset_during_append_ = NULL;
-  init_segment_received_cb_.Reset();
+  append_in_progress_ = false;
   return result;
 }
 
@@ -480,7 +483,9 @@ bool MediaSourceState::OnNewConfigs(
   DVLOG(1) << "OnNewConfigs(" << allow_audio << ", " << allow_video << ", "
            << audio_config.IsValidConfig() << ", "
            << video_config.IsValidConfig() << ")";
-  DCHECK(!init_segment_received_cb_.is_null());
+  // MSE spec allows new configs to be emitted only during Append, but not
+  // during Flush or parser reset operations.
+  CHECK(append_in_progress_);
 
   if (!audio_config.IsValidConfig() && !video_config.IsValidConfig()) {
     DVLOG(1) << "OnNewConfigs() : Audio & video config are not valid!";
@@ -643,8 +648,10 @@ bool MediaSourceState::OnNewConfigs(
   frame_processor_->SetAllTrackBuffersNeedRandomAccessPoint();
 
   DVLOG(1) << "OnNewConfigs() : " << (success ? "success" : "failed");
-  if (success)
-    init_segment_received_cb_.Run(*media_tracks_);
+  if (success) {
+    DCHECK(!init_segment_received_cb_.is_null());
+    init_segment_received_cb_.Run(std::move(media_tracks_));
+  }
 
   return success;
 }

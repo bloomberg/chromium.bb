@@ -549,6 +549,14 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   return kOk;
 }
 
+void ChunkDemuxer::SetTracksWatcher(
+    const std::string& id,
+    const MediaTracksUpdatedCB& tracks_updated_cb) {
+  base::AutoLock auto_lock(lock_);
+  CHECK(IsValidId(id));
+  source_state_map_[id]->SetTracksWatcher(tracks_updated_cb);
+}
+
 void ChunkDemuxer::RemoveId(const std::string& id) {
   base::AutoLock auto_lock(lock_);
   CHECK(IsValidId(id));
@@ -596,19 +604,16 @@ bool ChunkDemuxer::EvictCodedFrames(const std::string& id,
   return itr->second->EvictCodedFrames(media_time_dts, newDataSize);
 }
 
-void ChunkDemuxer::AppendData(
-    const std::string& id,
-    const uint8_t* data,
-    size_t length,
-    TimeDelta append_window_start,
-    TimeDelta append_window_end,
-    TimeDelta* timestamp_offset,
-    const MediaSourceState::InitSegmentReceivedCB& init_segment_received_cb) {
+void ChunkDemuxer::AppendData(const std::string& id,
+                              const uint8_t* data,
+                              size_t length,
+                              TimeDelta append_window_start,
+                              TimeDelta append_window_end,
+                              TimeDelta* timestamp_offset) {
   DVLOG(1) << "AppendData(" << id << ", " << length << ")";
 
   DCHECK(!id.empty());
   DCHECK(timestamp_offset);
-  DCHECK(!init_segment_received_cb.is_null());
 
   Ranges<TimeDelta> ranges;
 
@@ -629,11 +634,9 @@ void ChunkDemuxer::AppendData(
       case INITIALIZING:
       case INITIALIZED:
         DCHECK(IsValidId(id));
-        if (!source_state_map_[id]->Append(data, length,
-                                           append_window_start,
+        if (!source_state_map_[id]->Append(data, length, append_window_start,
                                            append_window_end,
-                                           timestamp_offset,
-                                           init_segment_received_cb)) {
+                                           timestamp_offset)) {
           ReportError_Locked(PIPELINE_ERROR_DECODE);
           return;
         }
