@@ -56,22 +56,6 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       callback(fileSystems, selectedFileSystemName);
   });
 
-  apiFunctions.setCustomCallback('dropPermissionForMediaFileSystem',
-      function(name, request, callback, response) {
-    var galleryId = response;
-
-    if (galleryId) {
-      for (var key in mediaGalleriesMetadata) {
-        if (mediaGalleriesMetadata[key].galleryId == galleryId) {
-          delete mediaGalleriesMetadata[key];
-          break;
-        }
-      }
-    }
-    if (callback)
-      callback();
-  });
-
   apiFunctions.setHandleRequest('getMediaFileSystemMetadata',
                                 function(filesystem) {
     if (filesystem && filesystem.name &&

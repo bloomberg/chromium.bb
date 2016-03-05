@@ -25,26 +25,6 @@ var onAddWatchRequestCallback = function (details) {
   }
 };
 
-// chrome.mediaGalleries.getAllGalleryWatch callback.
-var getAllGalleryWatchCallback = function (results) {
-  if (!results) {
-    chrome.test.sendMessage('get_all_gallery_watch_failed');
-    return;
-  }
-  if (results.length == 0) {
-    chrome.test.sendMessage('gallery_watchers_does_not_exists');
-  } else {
-    for (var i = 0; i < results.length; ++i) {
-      var info = chrome.mediaGalleries.getMediaFileSystemMetadata(galleries[i]);
-      if (results[i] !== info.galleryId) {
-        chrome.test.sendMessage('gallery_watcher_mismatch');
-        return;
-      }
-    }
-    chrome.test.sendMessage('gallery_watcher_checks');
-  }
-};
-
 var onGalleryChangedCheckingCallback = function(result) {
   if (result.galleryId != '' && result.type == 'contents_changed') {
     chrome.test.sendMessage('on_gallery_changed_checking_ok');
@@ -127,14 +107,4 @@ function removeGalleryChangedListener() {
   chrome.mediaGalleries.onGalleryChanged.removeListener(
       onGalleryChangedCallback);
   chrome.test.sendMessage('remove_gallery_changed_listener_ok');
-};
-
-function getAllWatchedGalleryIds() {
-  chrome.mediaGalleries.getAllGalleryWatch(getAllGalleryWatchCallback);
-  chrome.test.sendMessage('get_all_gallery_watch_ok');
-};
-
-function removeAllGalleryWatch() {
-  chrome.mediaGalleries.removeAllGalleryWatch();
-  chrome.test.sendMessage('remove_all_gallery_watch_ok');
 };

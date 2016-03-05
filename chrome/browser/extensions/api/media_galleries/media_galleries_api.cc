@@ -64,22 +64,16 @@ using storage_monitor::StorageInfo;
 namespace extensions {
 
 namespace MediaGalleries = api::media_galleries;
-namespace DropPermissionForMediaFileSystem =
-    MediaGalleries::DropPermissionForMediaFileSystem;
 namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
 namespace AddGalleryWatch = MediaGalleries::AddGalleryWatch;
 namespace RemoveGalleryWatch = MediaGalleries::RemoveGalleryWatch;
-namespace GetAllGalleryWatch = MediaGalleries::GetAllGalleryWatch;
 
 namespace {
 
 const char kDisallowedByPolicy[] =
     "Media Galleries API is disallowed by policy: ";
-const char kFailedToSetGalleryPermission[] =
-    "Failed to set gallery permission.";
 const char kInvalidGalleryIdMsg[] = "Invalid gallery id.";
 const char kMissingEventListener[] = "Missing event listener registration.";
-const char kNonExistentGalleryId[] = "Non-existent gallery id.";
 
 const char kDeviceIdKey[] = "deviceId";
 const char kGalleryIdKey[] = "galleryId";
@@ -472,72 +466,6 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
                                             cb);
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-//          MediaGalleriesGetAllMediaFileSystemMetadataFunction              //
-///////////////////////////////////////////////////////////////////////////////
-MediaGalleriesGetAllMediaFileSystemMetadataFunction::
-    ~MediaGalleriesGetAllMediaFileSystemMetadataFunction() {}
-
-bool MediaGalleriesGetAllMediaFileSystemMetadataFunction::RunAsync() {
-  media_galleries::UsageCount(
-      media_galleries::GET_ALL_MEDIA_FILE_SYSTEM_METADATA);
-  return Setup(GetProfile(), &error_, base::Bind(
-      &MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnPreferencesInit,
-      this));
-}
-
-void MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnPreferencesInit() {
-  MediaFileSystemRegistry* registry = media_file_system_registry();
-  MediaGalleriesPreferences* prefs = registry->GetPreferences(GetProfile());
-  DCHECK(prefs->IsInitialized());
-  MediaGalleryPrefIdSet permitted_gallery_ids =
-      prefs->GalleriesForExtension(*extension());
-
-  MediaStorageUtil::DeviceIdSet* device_ids = new MediaStorageUtil::DeviceIdSet;
-  const MediaGalleriesPrefInfoMap& galleries = prefs->known_galleries();
-  for (MediaGalleryPrefIdSet::const_iterator it = permitted_gallery_ids.begin();
-       it != permitted_gallery_ids.end(); ++it) {
-    MediaGalleriesPrefInfoMap::const_iterator gallery_it = galleries.find(*it);
-    DCHECK(gallery_it != galleries.end());
-    device_ids->insert(gallery_it->second.device_id);
-  }
-
-  MediaStorageUtil::FilterAttachedDevices(
-      device_ids,
-      base::Bind(
-          &MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnGetGalleries,
-          this,
-          permitted_gallery_ids,
-          base::Owned(device_ids)));
-}
-
-void MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnGetGalleries(
-    const MediaGalleryPrefIdSet& permitted_gallery_ids,
-    const MediaStorageUtil::DeviceIdSet* available_devices) {
-  MediaFileSystemRegistry* registry = media_file_system_registry();
-  MediaGalleriesPreferences* prefs = registry->GetPreferences(GetProfile());
-
-  base::ListValue* list = new base::ListValue();
-  const MediaGalleriesPrefInfoMap& galleries = prefs->known_galleries();
-  for (MediaGalleryPrefIdSet::const_iterator it = permitted_gallery_ids.begin();
-       it != permitted_gallery_ids.end(); ++it) {
-    MediaGalleriesPrefInfoMap::const_iterator gallery_it = galleries.find(*it);
-    DCHECK(gallery_it != galleries.end());
-    const MediaGalleryPrefInfo& gallery = gallery_it->second;
-    MediaGalleries::MediaFileSystemMetadata metadata;
-    metadata.name = base::UTF16ToUTF8(gallery.GetGalleryDisplayName());
-    metadata.gallery_id = base::Uint64ToString(gallery.pref_id);
-    metadata.is_removable = StorageInfo::IsRemovableDevice(gallery.device_id);
-    metadata.is_media_device = StorageInfo::IsMediaDevice(gallery.device_id);
-    metadata.is_available = ContainsKey(*available_devices, gallery.device_id);
-    list->Append(metadata.ToValue().release());
-  }
-
-  SetResult(list);
-  SendResponse(true);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 //               MediaGalleriesAddUserSelectedFolderFunction                 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -641,52 +569,6 @@ MediaGalleriesAddUserSelectedFolderFunction::GetMediaFileSystemsForExtension(
   DCHECK(registry->GetPreferences(GetProfile())->IsInitialized());
   registry->GetMediaFileSystemsForExtension(GetSenderWebContents(), extension(),
                                             cb);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//         MediaGalleriesDropPermissionForMediaFileSystemFunction            //
-///////////////////////////////////////////////////////////////////////////////
-MediaGalleriesDropPermissionForMediaFileSystemFunction::
-    ~MediaGalleriesDropPermissionForMediaFileSystemFunction() {}
-
-bool MediaGalleriesDropPermissionForMediaFileSystemFunction::RunAsync() {
-  media_galleries::UsageCount(
-      media_galleries::DROP_PERMISSION_FOR_MEDIA_FILE_SYSTEM);
-
-  scoped_ptr<DropPermissionForMediaFileSystem::Params> params(
-      DropPermissionForMediaFileSystem::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-  MediaGalleryPrefId pref_id;
-  if (!base::StringToUint64(params->gallery_id, &pref_id)) {
-    error_ = kInvalidGalleryIdMsg;
-    return false;
-  }
-
-  base::Closure callback = base::Bind(
-      &MediaGalleriesDropPermissionForMediaFileSystemFunction::
-          OnPreferencesInit,
-      this,
-      pref_id);
-  return Setup(GetProfile(), &error_, callback);
-}
-
-void MediaGalleriesDropPermissionForMediaFileSystemFunction::OnPreferencesInit(
-    MediaGalleryPrefId pref_id) {
-  MediaGalleriesPreferences* preferences =
-      media_file_system_registry()->GetPreferences(GetProfile());
-  if (!ContainsKey(preferences->known_galleries(), pref_id)) {
-    error_ = kNonExistentGalleryId;
-    SendResponse(false);
-    return;
-  }
-
-  bool dropped = preferences->SetGalleryPermissionForExtension(
-      *extension(), pref_id, false);
-  if (dropped)
-    SetResult(new base::StringValue(base::Uint64ToString(pref_id)));
-  else
-    error_ = kFailedToSetGalleryPermission;
-  SendResponse(dropped);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -988,68 +870,6 @@ void MediaGalleriesRemoveGalleryWatchFunction::OnPreferencesInit(
 
   gallery_watch_manager()->RemoveWatch(
       GetProfile(), extension_id(), gallery_pref_id);
-  SendResponse(true);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//              MediaGalleriesGetAllGalleryWatchFunction                     //
-///////////////////////////////////////////////////////////////////////////////
-
-MediaGalleriesGetAllGalleryWatchFunction::
-    ~MediaGalleriesGetAllGalleryWatchFunction() {
-}
-
-bool MediaGalleriesGetAllGalleryWatchFunction::RunAsync() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  media_galleries::UsageCount(media_galleries::GET_ALL_GALLERY_WATCH);
-  if (!render_frame_host() || !render_frame_host()->GetProcess())
-    return false;
-
-  MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(
-          GetProfile());
-  preferences->EnsureInitialized(base::Bind(
-      &MediaGalleriesGetAllGalleryWatchFunction::OnPreferencesInit, this));
-  return true;
-}
-
-void MediaGalleriesGetAllGalleryWatchFunction::OnPreferencesInit() {
-  std::vector<std::string> result;
-  MediaGalleryPrefIdSet gallery_ids =
-      gallery_watch_manager()->GetWatchSet(GetProfile(), extension_id());
-  for (MediaGalleryPrefIdSet::const_iterator iter = gallery_ids.begin();
-       iter != gallery_ids.end();
-       ++iter) {
-    result.push_back(base::Uint64ToString(*iter));
-  }
-  results_ = GetAllGalleryWatch::Results::Create(result);
-  SendResponse(true);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//              MediaGalleriesRemoveAllGalleryWatchFunction                  //
-///////////////////////////////////////////////////////////////////////////////
-
-MediaGalleriesRemoveAllGalleryWatchFunction::
-    ~MediaGalleriesRemoveAllGalleryWatchFunction() {
-}
-
-bool MediaGalleriesRemoveAllGalleryWatchFunction::RunAsync() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  media_galleries::UsageCount(media_galleries::REMOVE_ALL_GALLERY_WATCH);
-  if (!render_frame_host() || !render_frame_host()->GetProcess())
-    return false;
-
-  MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(
-          GetProfile());
-  preferences->EnsureInitialized(base::Bind(
-      &MediaGalleriesRemoveAllGalleryWatchFunction::OnPreferencesInit, this));
-  return true;
-}
-
-void MediaGalleriesRemoveAllGalleryWatchFunction::OnPreferencesInit() {
-  gallery_watch_manager()->RemoveAllWatches(GetProfile(), extension_id());
   SendResponse(true);
 }
 

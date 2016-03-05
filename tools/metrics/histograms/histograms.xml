@@ -65669,7 +65669,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="641" label="GCM_SEND"/>
   <int value="642" label="SERIAL_CONNECT"/>
   <int value="643" label="SERIAL_DISCONNECT"/>
-  <int value="644" label="MEDIAGALLERIES_GETALLMEDIAFILESYSTEMMETADATA"/>
+  <int value="644"
+      label="DELETED_MEDIAGALLERIES_GETALLMEDIAFILESYSTEMMETADATA"/>
   <int value="645" label="FIRSTRUNPRIVATE_GETLOCALIZEDSTRINGS"/>
   <int value="646" label="FIRSTRUNPRIVATE_LAUNCHTUTORIAL"/>
   <int value="647" label="SOCKETS_UDP_SETPAUSED"/>
@@ -65746,7 +65747,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="717" label="FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDSUCCESS"/>
   <int value="718"
       label="DELETED_FILESYSTEMPROVIDERINTERNAL_UNMOUNTREQUESTEDERROR"/>
-  <int value="719" label="MEDIAGALLERIES_DROPPERMISSIONFORMEDIAFILESYSTEM"/>
+  <int value="719"
+      label="DELETED_MEDIAGALLERIES_DROPPERMISSIONFORMEDIAFILESYSTEM"/>
   <int value="720" label="WEBCAMPRIVATE_SET"/>
   <int value="721" label="WEBCAMPRIVATE_RESET"/>
   <int value="722" label="WEBCAMPRIVATE_GET"/>
@@ -65926,8 +65928,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="EASYUNLOCKPRIVATE_CONNECTTOBLUETOOTHSERVICEINSECURELY"/>
   <int value="885" label="MEDIAGALLERIES_ADDGALLERYWATCH"/>
   <int value="886" label="MEDIAGALLERIES_REMOVEGALLERYWATCH"/>
-  <int value="887" label="MEDIAGALLERIES_GETALLGALLERYWATCH"/>
-  <int value="888" label="MEDIAGALLERIES_REMOVEALLGALLERYWATCH"/>
+  <int value="887" label="DELETED_MEDIAGALLERIES_GETALLGALLERYWATCH"/>
+  <int value="888" label="DELETED_MEDIAGALLERIES_REMOVEALLGALLERYWATCH"/>
   <int value="889" label="MANAGEMENT_GETSELF"/>
   <int value="890" label="APP_CURRENTWINDOWINTERNAL_SETVISIBLEONALLWORKSPACES"/>
   <int value="891" label="EASYUNLOCKPRIVATE_GETSIGNINCHALLENGE"/>
@@ -73677,7 +73679,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="Gallery removed from WebUI"/>
   <int value="9" label="Preferences initialized"/>
   <int value="10" label="Preferences initialization failed"/>
-  <int value="11" label="GetAllMediaFileSystemMetadata API invocations"/>
+  <int value="11"
+      label="GetAllMediaFileSystemMetadata API invocations (obsolete)"/>
   <int value="12" label="GetMetadata API invocations"/>
   <int value="13" label="AddUserSelectedFolder API invocations"/>
   <int value="14" label="StartMediaScan API invocations (obsolete)"/>
@@ -73689,9 +73692,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="20"
       label="Gallery removed from AddScanResults dialog (obsolete)"/>
   <int value="21" label="Gallery removed from permission dialog"/>
-  <int value="22" label="DropPermissionForMediaFileSystem API invocations"/>
-  <int value="23" label="GetAllGalleryWatch API invocations"/>
-  <int value="24" label="RemoveAllGalleryWatch API invocations"/>
+  <int value="22"
+      label="DropPermissionForMediaFileSystem API invocations (obsolete)"/>
+  <int value="23" label="GetAllGalleryWatch API invocations (obsolete)"/>
+  <int value="24" label="RemoveAllGalleryWatch API invocations (obsolete)"/>
   <int value="25" label="iTunes file system used this session"/>
   <int value="26" label="Picasa file system used this session"/>
   <int value="27" label="iPhoto file system used this session"/>

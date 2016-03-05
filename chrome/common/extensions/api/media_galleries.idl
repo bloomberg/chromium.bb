@@ -75,7 +75,7 @@ namespace mediaGalleries {
       void ([instanceOf=DOMFileSystem] object[] mediaFileSystems,
             DOMString selectedFileSystemName);
 
-  callback DropPermissionForMediaFileSystemCallback = void ();
+  [nodefine] callback DropPermissionForMediaFileSystemCallback = void ();
 
   [inline_doc] dictionary MediaFileSystemMetadata {
     // The name of the file system.
@@ -180,7 +180,8 @@ namespace mediaGalleries {
   };
 
   callback AddGalleryWatchCallback = void (AddGalleryWatchResult result);
-  callback GetAllGalleryWatchCallback = void (DOMString[] galleryIds);
+  [nodefine] callback GetAllGalleryWatchCallback =
+      void (DOMString[] galleryIds);
 
   interface Functions {
     // Get the media galleries configured in this user agent. If none are
@@ -196,6 +197,8 @@ namespace mediaGalleries {
     static void addUserSelectedFolder(AddUserFolderCallback callback);
 
     // Give up access to a given media gallery.
+    [nodefine, deprecated="The user can manually drop access to galleries
+    via the permissions dialog."]
     static void dropPermissionForMediaFileSystem(
         DOMString galleryId,
         optional DropPermissionForMediaFileSystemCallback callback);
@@ -224,6 +227,7 @@ namespace mediaGalleries {
         [instanceOf=DOMFileSystem] object mediaFileSystem);
 
     // Get metadata for all available media galleries.
+    [nodefine, deprecated="Use getMediaFileSystemMetadata instead."]
     static void getAllMediaFileSystemMetadata(
         MediaFileSystemsMetadataCallback callback);
 
@@ -242,9 +246,12 @@ namespace mediaGalleries {
     static void removeGalleryWatch(DOMString galleryId);
 
     // Notifies which galleries are being watched via the given callback.
+    [nodefine, deprecated="Applications should store their own gallery watches
+    as they are added."]
     static void getAllGalleryWatch(GetAllGalleryWatchCallback callback);
 
     // Removes all gallery watches.
+    [nodefine, deprecated="Use removeGalleryWatch instead."]
     static void removeAllGalleryWatch();
   };
 

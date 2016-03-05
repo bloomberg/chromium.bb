@@ -131,28 +131,6 @@ class MediaGalleriesGetMediaFileSystemsFunction
   void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
 };
 
-class MediaGalleriesGetAllMediaFileSystemMetadataFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaGalleries.getAllMediaFileSystemMetadata",
-                             MEDIAGALLERIES_GETALLMEDIAFILESYSTEMMETADATA)
-
- protected:
-  ~MediaGalleriesGetAllMediaFileSystemMetadataFunction() override;
-  bool RunAsync() override;
-
- private:
-  // Bottom half for RunAsync, invoked after the preferences is initialized.
-  // Gets the list of permitted galleries and checks if they are available.
-  void OnPreferencesInit();
-
-  // Callback to run upon getting the list of available devices.
-  // Sends the list of media filesystem metadata back to the extension.
-  void OnGetGalleries(
-      const MediaGalleryPrefIdSet& permitted_gallery_ids,
-      const storage_monitor::MediaStorageUtil::DeviceIdSet* available_devices);
-};
-
 class MediaGalleriesAddUserSelectedFolderFunction
     : public ChromeAsyncExtensionFunction {
  public:
@@ -184,21 +162,6 @@ class MediaGalleriesAddUserSelectedFolderFunction
   // A helper method that calls
   // MediaFileSystemRegistry::GetMediaFileSystemsForExtension().
   void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
-};
-
-class MediaGalleriesDropPermissionForMediaFileSystemFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaGalleries.dropPermissionForMediaFileSystem",
-                             MEDIAGALLERIES_DROPPERMISSIONFORMEDIAFILESYSTEM)
-
- protected:
-  ~MediaGalleriesDropPermissionForMediaFileSystemFunction() override;
-  bool RunAsync() override;
-
- private:
-  // Bottom half for RunAsync, invoked after the preferences is initialized.
-  void OnPreferencesInit(MediaGalleryPrefId pref_id);
 };
 
 class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
@@ -260,34 +223,6 @@ class MediaGalleriesRemoveGalleryWatchFunction
 
  private:
   void OnPreferencesInit(const std::string& pref_id);
-};
-
-class MediaGalleriesGetAllGalleryWatchFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaGalleries.getAllGalleryWatch",
-                             MEDIAGALLERIES_GETALLGALLERYWATCH);
-
- protected:
-  ~MediaGalleriesGetAllGalleryWatchFunction() override;
-  bool RunAsync() override;
-
- private:
-  void OnPreferencesInit();
-};
-
-class MediaGalleriesRemoveAllGalleryWatchFunction
-    : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaGalleries.removeAllGalleryWatch",
-                             MEDIAGALLERIES_REMOVEALLGALLERYWATCH);
-
- protected:
-  ~MediaGalleriesRemoveAllGalleryWatchFunction() override;
-  bool RunAsync() override;
-
- private:
-  void OnPreferencesInit();
 };
 
 }  // namespace extensions
