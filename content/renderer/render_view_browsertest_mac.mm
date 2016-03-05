@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebFrameContentDumper.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 #include <Carbon/Carbon.h>  // for the kVK_* constants.
 #include <Cocoa/Cocoa.h>
@@ -107,6 +108,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
+  view->GetWebView()->updateAllLifecyclePhases();
   output = WebFrameContentDumper::dumpFrameTreeAsText(GetMainFrame(),
                                                       kMaxOutputCharacters);
   EXPECT_EQ(kArrowDownScrollDown, base::UTF16ToASCII(output));
@@ -117,6 +119,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
+  view->GetWebView()->updateAllLifecyclePhases();
   output = WebFrameContentDumper::dumpFrameTreeAsText(GetMainFrame(),
                                                       kMaxOutputCharacters);
   EXPECT_EQ(kArrowUpScrollUp, base::UTF16ToASCII(output));
@@ -132,6 +135,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
+  view->GetWebView()->updateAllLifecyclePhases();
   output = WebFrameContentDumper::dumpFrameTreeAsText(GetMainFrame(),
                                                       kMaxOutputCharacters);
   EXPECT_EQ(kArrowDownNoScroll, base::UTF16ToASCII(output));
@@ -142,6 +146,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
   ProcessPendingMessages();
   ExecuteJavaScriptForTests("scroll.textContent = window.pageYOffset");
+  view->GetWebView()->updateAllLifecyclePhases();
   output = WebFrameContentDumper::dumpFrameTreeAsText(GetMainFrame(),
                                                       kMaxOutputCharacters);
   EXPECT_EQ(kArrowUpNoScroll, base::UTF16ToASCII(output));

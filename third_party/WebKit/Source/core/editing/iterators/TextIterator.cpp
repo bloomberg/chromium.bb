@@ -146,9 +146,11 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const PositionTemplate<St
 {
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
-    // Updates layout here since, |Position.compareTo()| and |initialize()|
-    // assume layout tree is up-to-date.
-    start.document()->updateLayoutIgnorePendingStylesheets();
+
+    // TODO(dglazkov): TextIterator should not be created for documents that don't have a frame,
+    // but it currently still happens in some cases. See http://crbug.com/591877 for details.
+    ASSERT(!start.document()->view() || !start.document()->view()->needsLayout());
+    ASSERT(!start.document()->needsLayoutTreeUpdate());
     if (start.compareTo(end) > 0) {
         initialize(end.computeContainerNode(), end.computeOffsetInContainerNode(), start.computeContainerNode(), start.computeOffsetInContainerNode());
         return;
@@ -1090,6 +1092,10 @@ PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::endPositionInCurrent
 template<typename Strategy>
 int TextIteratorAlgorithm<Strategy>::rangeLength(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, bool forSelectionPreservation)
 {
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    start.document()->updateLayoutIgnorePendingStylesheets();
+
     int length = 0;
     TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
     if (forSelectionPreservation)
@@ -1143,6 +1149,10 @@ static String createPlainText(const EphemeralRangeTemplate<Strategy>& range, Tex
 {
     if (range.isNull())
         return emptyString();
+
+    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    range.startPosition().document()->updateLayoutIgnorePendingStylesheets();
 
     TextIteratorAlgorithm<Strategy> it(range.startPosition(), range.endPosition(), behavior);
 
