@@ -18,7 +18,7 @@
 
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
-#include "content/common/gpu/media_messages.h"
+#include "content/common/gpu/media/media_messages.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"

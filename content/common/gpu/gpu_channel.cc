@@ -34,7 +34,6 @@
 #include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/value_state.h"
@@ -72,21 +71,6 @@ const int64_t kMaxPreemptTimeMs = kVsyncIntervalMs;
 // Stop the preemption once the time for the longest pending IPC drops
 // below this threshold.
 const int64_t kStopPreemptThresholdMs = kVsyncIntervalMs;
-
-void SendCreateJpegDecoderResult(
-    scoped_ptr<IPC::Message> reply_message,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    base::WeakPtr<GpuChannel> channel,
-    scoped_refptr<GpuChannelMessageFilter> filter,
-    bool result) {
-  GpuChannelMsg_CreateJpegDecoder::WriteReplyParams(reply_message.get(),
-                                                    result);
-  if (io_task_runner->BelongsToCurrentThread()) {
-    filter->Send(reply_message.release());
-  } else {
-    channel->Send(reply_message.release());
-  }
-}
 
 }  // anonymous namespace
 
@@ -605,6 +589,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        bool allow_real_time_streams)
     : gpu_channel_manager_(gpu_channel_manager),
       sync_point_manager_(sync_point_manager),
+      unhandled_message_listener_(nullptr),
       channel_id_(IPC::Channel::GenerateVerifiedChannelID("gpu")),
       preempting_flag_(preempting_flag),
       preempted_flag_(preempted_flag),
@@ -665,6 +650,14 @@ IPC::ChannelHandle GpuChannel::Init(base::WaitableEvent* shutdown_event) {
   channel_->AddFilter(filter_.get());
 
   return channel_handle;
+}
+
+void GpuChannel::SetUnhandledMessageListener(IPC::Listener* listener) {
+  unhandled_message_listener_ = listener;
+}
+
+base::WeakPtr<GpuChannel> GpuChannel::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 base::ProcessId GpuChannel::GetClientPID() const {
@@ -766,11 +759,8 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_CreateJpegDecoder,
-                                    OnCreateJpegDecoder)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  DCHECK(handled) << msg.type();
   return handled;
 }
 
@@ -831,6 +821,9 @@ void GpuChannel::HandleMessageHelper(const IPC::Message& msg) {
   } else {
     handled = router_.RouteMessage(msg);
   }
+
+  if (!handled && unhandled_message_listener_)
+    handled = unhandled_message_listener_->OnMessageReceived(msg);
 
   // Respond to sync messages even if router failed to route.
   if (!handled && msg.is_sync()) {
@@ -997,18 +990,6 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   }
 
   RemoveRoute(route_id);
-}
-
-void GpuChannel::OnCreateJpegDecoder(int32_t route_id,
-                                     IPC::Message* reply_msg) {
-  scoped_ptr<IPC::Message> msg(reply_msg);
-  if (!jpeg_decoder_) {
-    jpeg_decoder_.reset(new GpuJpegDecodeAccelerator(this, io_task_runner_));
-  }
-  jpeg_decoder_->AddClient(
-      route_id,
-      base::Bind(&SendCreateJpegDecoderResult, base::Passed(&msg),
-                 io_task_runner_, weak_factory_.GetWeakPtr(), filter_));
 }
 
 void GpuChannel::CacheShader(const std::string& key,

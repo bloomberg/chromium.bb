@@ -6,6 +6,7 @@
 // for a much smaller-than-usual include guard section.
 
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/create_video_encoder_params.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/param_traits_macros.h"
@@ -101,28 +102,25 @@ IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
   IPC_STRUCT_TRAITS_MEMBER(cypher_bytes)
 IPC_STRUCT_TRAITS_END()
 
-// Create and initialize a hardware video decoder using the specified route_id.
-// Created decoders should be freed with AcceleratedVideoDecoderMsg_Destroy when
-// no longer needed.
-IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateVideoDecoder,
-                           media::VideoDecodeAccelerator::Config, /* config */
-                           int32_t,                               /* route_id */
-                           bool /* succeeded */)
-
-// Create and initialize a hardware video encoder using the specified route_id.
-// Created encoders should be freed with AcceleratedVideoEncoderMsg_Destroy when
-// no longer needed.
-IPC_SYNC_MESSAGE_ROUTED5_1(GpuCommandBufferMsg_CreateVideoEncoder,
-                           media::VideoPixelFormat /* input_format */,
-                           gfx::Size /* input_visible_size */,
-                           media::VideoCodecProfile /* output_profile */,
-                           uint32_t /* initial_bitrate */,
-                           int32_t, /* route_id */
-                           bool /* succeeded */)
+IPC_STRUCT_TRAITS_BEGIN(content::CreateVideoEncoderParams)
+  IPC_STRUCT_TRAITS_MEMBER(input_format)
+  IPC_STRUCT_TRAITS_MEMBER(input_visible_size)
+  IPC_STRUCT_TRAITS_MEMBER(output_profile)
+  IPC_STRUCT_TRAITS_MEMBER(initial_bitrate)
+  IPC_STRUCT_TRAITS_MEMBER(encoder_route_id)
+IPC_STRUCT_TRAITS_END()
 
 //------------------------------------------------------------------------------
 // Accelerated Video Decoder Messages
 // These messages are sent from Renderer process to GPU process.
+
+// Create and initialize a hardware video decoder using the specified route_id.
+// Created decoders should be freed with AcceleratedVideoDecoderMsg_Destroy when
+// no longer needed.
+IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateVideoDecoder,
+                           media::VideoDecodeAccelerator::Config /* config */,
+                           int32_t /* decoder_route_id */,
+                           bool /* succeeded */)
 
 // Set a CDM on the decoder to handle encrypted buffers.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_SetCdm, int32_t /* CDM ID */)
@@ -195,6 +193,13 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_ErrorNotification,
 // Accelerated Video Encoder Messages
 // These messages are sent from the Renderer process to GPU process.
 
+// Create and initialize a hardware video encoder using the specified route_id.
+// Created encoders should be freed with AcceleratedVideoEncoderMsg_Destroy when
+// no longer needed.
+IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoEncoder,
+                           content::CreateVideoEncoderParams,
+                           bool /* succeeded */)
+
 // Queue a video frame to the encoder to encode. |frame_id| will be returned
 // by AcceleratedVideoEncoderHostMsg_NotifyInputDone.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderMsg_Encode,
@@ -251,6 +256,13 @@ IPC_MESSAGE_ROUTED0(AcceleratedVideoEncoderMsg_Destroy)
 //------------------------------------------------------------------------------
 // Accelerated JPEG Decoder Messages
 // These messages are sent from the Browser process to GPU process.
+
+// Create and initialize a hardware jpeg decoder using the specified route_id.
+// Created decoders should be freed with AcceleratedJpegDecoderMsg_Destroy when
+// no longer needed.
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateJpegDecoder,
+                            int32_t /* route_id */,
+                            bool /* succeeded */)
 
 // Decode one JPEG image from shared memory |input_buffer_handle| with size
 // |input_buffer_size|. The input buffer is associated with |input_buffer_id|

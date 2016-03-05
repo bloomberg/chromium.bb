@@ -18,6 +18,7 @@
 #include "content/common/gpu/gpu_host_messages.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
+#include "content/common/gpu/media/media_service.h"
 #include "content/gpu/gpu_process_control_impl.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
@@ -302,6 +303,7 @@ void GpuChildThread::DidCreateOffscreenContext(const GURL& active_url) {
 }
 
 void GpuChildThread::DidDestroyChannel(int client_id) {
+  media_service_->RemoveChannel(client_id);
   Send(new GpuHostMsg_DestroyChannel(client_id));
 }
 
@@ -376,6 +378,8 @@ void GpuChildThread::OnInitialize() {
                             ChildProcess::current()->io_task_runner(),
                             ChildProcess::current()->GetShutDownEvent(),
                             sync_point_manager_, gpu_memory_buffer_factory_));
+
+  media_service_.reset(new MediaService(gpu_channel_manager_.get()));
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()
@@ -565,6 +569,7 @@ void GpuChildThread::OnEstablishChannel(const EstablishChannelParams& params) {
 
   IPC::ChannelHandle channel_handle =
       gpu_channel_manager_->EstablishChannel(params);
+  media_service_->AddChannel(params.client_id);
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
 
@@ -601,8 +606,10 @@ void GpuChildThread::OnWakeUpGpu() {
 #endif
 
 void GpuChildThread::OnLoseAllContexts() {
-  if (gpu_channel_manager_)
+  if (gpu_channel_manager_) {
     gpu_channel_manager_->DestroyAllChannels();
+    media_service_->DestroyAllChannels();
+  }
 }
 
 void GpuChildThread::BindProcessControlRequest(
