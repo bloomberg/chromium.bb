@@ -318,8 +318,8 @@ class PaygenStage(artifact_stages.ArchivingStage):
       paygen_build_lib.ValidateBoardConfig(board)
     except  paygen_build_lib.BoardNotConfigured:
       raise PaygenNoPaygenConfigForBoard(
-          'No release.conf entry was found for board %s. Get a TPM to fix.' %
-          board)
+          'Golden Eye (%s) has no entry for board %s. Get a TPM to fix.' %
+          (paygen_build_lib.BOARDS_URI, board))
 
     with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       def channel_notifier(channel):
