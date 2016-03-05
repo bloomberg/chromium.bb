@@ -460,6 +460,7 @@ void LayerAnimationController::NotifyAnimationAborted(
             event.monotonic_time, event.target_property, event.group_id);
       if (event.target_property == TargetProperty::TRANSFORM)
         aborted_transform_animation = true;
+      break;
     }
   }
   if (aborted_transform_animation)
