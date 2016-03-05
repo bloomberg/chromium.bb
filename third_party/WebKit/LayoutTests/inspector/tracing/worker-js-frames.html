@@ -2,7 +2,6 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
-<script src="../tracing-test.js"></script>
 <script>
 
 // Save references to the worker objects to make sure they are not GC'ed.
@@ -63,9 +62,9 @@ function test()
 
     function processTracingEvents()
     {
-        var mainThread = { name: "Main Thread", events: InspectorTest.tracingTimelineModel()._mainThreadEvents };
+        var mainThread = { name: "Main Thread", events: InspectorTest.timelineModel()._mainThreadEvents };
         processThread(new Set(["startSecondWorker", "worker2.onmessage"]), mainThread);
-        InspectorTest.tracingTimelineModel()._virtualThreads.forEach(function(thread)
+        InspectorTest.timelineModel()._virtualThreads.forEach(function(thread)
         {
             if (!thread.isWorker())
                 return;

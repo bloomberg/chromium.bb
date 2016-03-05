@@ -8,11 +8,10 @@
 function test()
 {
     var panel = WebInspector.panels.timeline;
-    var model = panel._model;
 
     var callbackBarrier = new CallbackBarrier();
-    model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
-    model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, callbackBarrier.createCallback());
+    InspectorTest.addSniffer(panel, "recordingStarted", recordingStarted);
+    InspectorTest.addSniffer(panel, "loadingComplete", callbackBarrier.createCallback());
 
     WebInspector.ConsolePanel.show();
     InspectorTest.runWhenPageLoads(step1);

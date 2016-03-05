@@ -2,7 +2,6 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
-<script src="../tracing-test.js"></script>
 <script>
 
 function test()
@@ -46,7 +45,6 @@ function test()
 
         InspectorTest.override(WebInspector.TimelineLoader, "_createFileReader", createFileReader);
         WebInspector.TimelineLoader.loadFromFile(model, {}, new InspectorTest.TestTimelineLifecycleDelegate());
-        model.tracingComplete();
 
         var saver = new WebInspector.TracingTimelineSaver();
         var stream = new InspectorTest.StringOutputStream(InspectorTest.safeWrap(checkSaveData));

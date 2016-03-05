@@ -64,17 +64,3 @@ timestamp 1
 Timeline 'two'
 timestamp 2
 
-Running: testRacyStart
-timestamp 0
-Timeline 'one'
-timestamp 1
-Timeline 'two'
-timestamp 2
-
-Running: testRacyStart2
-timestamp 0
-Timeline 'one'
-timestamp 1
-Timeline 'two'
-timestamp 2
-

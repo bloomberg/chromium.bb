@@ -10,7 +10,6 @@
 </style>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
-<script src="../tracing-test.js"></script>
 <script>
 
 function doActions(callback)
@@ -28,7 +27,7 @@ function test()
     InspectorTest.invokeWithTracing("doActions", onTracingComplete);
     function onTracingComplete()
     {
-        var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
+        var events = InspectorTest.timelineModel().inspectedTargetEvents();
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
             if (events[i].name === WebInspector.TimelineModel.RecordType.UpdateLayerTree) {

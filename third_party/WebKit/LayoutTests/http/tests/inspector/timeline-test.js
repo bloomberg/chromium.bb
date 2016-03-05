@@ -61,6 +61,38 @@ InspectorTest.formatters.formatAsInvalidationCause = function(cause)
     return "{reason: " + cause.reason + ", stackTrace: " + stackTrace + "}";
 }
 
+InspectorTest.preloadPanel("timeline");
+WebInspector.TempFile = InspectorTest.TempFileMock;
+
+InspectorTest.createTracingModel = function()
+{
+    return new WebInspector.TracingModel(new WebInspector.TempFileBackingStorage("tracing"));
+}
+
+InspectorTest.tracingModel = function()
+{
+    return WebInspector.panels.timeline._tracingModel;
+}
+
+InspectorTest.invokeWithTracing = function(functionName, callback, additionalCategories, enableJSSampling)
+{
+    var categories = "-*,disabled-by-default-devtools.timeline*,devtools.timeline," + WebInspector.TracingModel.TopLevelEventCategory;
+    if (additionalCategories)
+        categories += "," + additionalCategories;
+    InspectorTest.timelineController()._startRecordingWithCategories(categories, enableJSSampling, tracingStarted);
+
+    function tracingStarted()
+    {
+        InspectorTest.invokePageFunctionAsync(functionName, onPageActionsDone);
+    }
+
+    function onPageActionsDone()
+    {
+        InspectorTest.addSniffer(WebInspector.panels.timeline, "loadingComplete", callback)
+        InspectorTest.timelineController().stopRecording();
+    }
+}
+
 InspectorTest.timelineModel = function()
 {
     return WebInspector.panels.timeline._model;
@@ -71,15 +103,31 @@ InspectorTest.timelineFrameModel = function()
     return WebInspector.panels.timeline._frameModel;
 }
 
+InspectorTest.setTraceEvents = function(timelineModel, tracingModel, events)
+{
+    tracingModel.reset();
+    tracingModel.addEvents(events);
+    tracingModel.tracingComplete();
+    timelineModel.setEvents(tracingModel);
+}
+
+InspectorTest.createTimelineModelWithEvents = function(events)
+{
+    var tracingModel = new WebInspector.TracingModel(new WebInspector.TempFileBackingStorage("tracing"));
+    var timelineModel = new WebInspector.TimelineModel(WebInspector.TimelineUIUtils.visibleEventsFilter());
+    InspectorTest.setTraceEvents(timelineModel, tracingModel, events);
+    return timelineModel;
+}
+
+InspectorTest.timelineController = function()
+{
+    return WebInspector.panels.timeline._controller;
+}
+
 InspectorTest.startTimeline = function(callback)
 {
     var panel = WebInspector.panels.timeline;
-    function onRecordingStarted()
-    {
-        panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this);
-        callback();
-    }
-    panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this);
+    InspectorTest.addSniffer(panel, "recordingStarted", callback);
     panel._toggleRecording();
 };
 
@@ -88,10 +136,9 @@ InspectorTest.stopTimeline = function(callback)
     var panel = WebInspector.panels.timeline;
     function didStop()
     {
-        panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, didStop, this)
         InspectorTest.runAfterPendingDispatches(callback);
     }
-    panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, didStop, this)
+    InspectorTest.addSniffer(panel, "loadingComplete", didStop);
     panel._toggleRecording();
 };
 

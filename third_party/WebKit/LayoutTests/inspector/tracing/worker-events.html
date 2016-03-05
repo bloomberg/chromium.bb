@@ -2,7 +2,6 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
-<script src="../tracing-test.js"></script>
 <script>
 
 // Save references to the worker objects to make sure they are not GC'ed.
@@ -59,7 +58,7 @@ function test()
             return;
 
         ++workerMetadataEventCount;
-        InspectorTest.assertEquals(InspectorTest.tracingTimelineModel().sessionId(), event.args["data"]["sessionId"]);
+        InspectorTest.assertEquals(InspectorTest.timelineModel().sessionId(), event.args["data"]["sessionId"]);
         InspectorTest.addResult("Got DevTools worker metadata event(" + workerMetadataEventCount +  "): " + event.name);
     }
 

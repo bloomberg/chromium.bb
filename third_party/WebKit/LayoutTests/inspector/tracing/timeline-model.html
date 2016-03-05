@@ -2,7 +2,6 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
-<script src="../tracing-test.js"></script>
 <script>
 function test()
 {
@@ -52,8 +51,7 @@ function test()
         {"name": "Program", "ts": 2009999, "ph": "E", args: {},  "tid": mainThread, "pid": 100, "cat":"disabled-by-default.devtools.timeline"}
     ];
 
-    var tracingTimelineModel = InspectorTest.tracingTimelineModel();
-    tracingTimelineModel.setEventsForTest(commonMetadata.concat(traceEvents));
+    var tracingTimelineModel = InspectorTest.createTimelineModelWithEvents(commonMetadata.concat(traceEvents));
     var records = tracingTimelineModel.records();
     var topLevelRecordsCount = 2;
     InspectorTest.assertEquals(topLevelRecordsCount, records.length);

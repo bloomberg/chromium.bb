@@ -2,7 +2,6 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
-<script src="../tracing-test.js"></script>
 <script>
 function test()
 {
@@ -34,7 +33,7 @@ function test()
         {"name": "FunctionCall", "ts": 6000000, "dur":  1000, "ph": "X", args: {},  "tid": mainThread, "pid": 100, "cat":"disabled-by-default-devtools.timeline", "args":{"data":{}}}
     ];
 
-    WebInspector.panels.timeline._model.setEventsForTest(traceEvents);
+    InspectorTest.setTraceEvents(InspectorTest.timelineModel(), InspectorTest.tracingModel(), traceEvents);
     var overview = WebInspector.panels.timeline._overviewPane;
     var startTime = overview._windowStartTime;
     var endTime = overview._windowEndTime;

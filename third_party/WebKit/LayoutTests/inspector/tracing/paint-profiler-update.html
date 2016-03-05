@@ -2,7 +2,6 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
-<script src="../tracing-test.js"></script>
 <script>
 function performActions(callback)
 {
@@ -33,7 +32,7 @@ function test()
     var paintEvents = [];
     function onRecordingDone()
     {
-        var events = InspectorTest.tracingTimelineModel()._mainThreadEvents;
+        var events = InspectorTest.timelineModel()._mainThreadEvents;
         for (var event of events) {
             if (event.name === WebInspector.TimelineModel.RecordType.Paint) {
                 paintEvents.push(event);

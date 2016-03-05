@@ -1,7 +1,7 @@
 <html>
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
-<script src="tracing-test.js"></script>
+<script src="../http/tests/inspector/timeline-test.js"></script>
 <script>
 function test()
 {
@@ -21,7 +21,8 @@ function test()
     }
 
     var model = InspectorTest.createTracingModel();
-    model.setEventsForTest(testData);
+    model.addEvents(testData);
+    model.tracingComplete();
     var process = model.sortedProcesses()[0];
     var thread = process.sortedThreads()[0];
     InspectorTest.assertEquals("лет ми спик фром май харт", getEventByName("NonAscii").args["nonascii"]);

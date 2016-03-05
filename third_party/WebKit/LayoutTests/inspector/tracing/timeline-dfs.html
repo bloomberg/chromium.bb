@@ -48,16 +48,15 @@ var test = function()
         {"name": "b", "ts": 4000000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}}
     ];
 
-    // Reset filter to accept all records.
-    InspectorTest.timelineModel()._eventFilter = new WebInspector.TimelineModel.Filter();
-    InspectorTest.timelineModel().setEventsForTest(testData);
+    var model = new WebInspector.TimelineModel(new WebInspector.TimelineModel.Filter());
+    InspectorTest.setTraceEvents(model, InspectorTest.createTracingModel(), testData);
 
     InspectorTest.addResult("DFS preorder:");
-    InspectorTest.timelineModel().forAllRecords(dumper);
+    model.forAllRecords(dumper);
     InspectorTest.addResult("");
 
     InspectorTest.addResult("DFS postorder:");
-    InspectorTest.timelineModel().forAllRecords(null, dumper);
+    model.forAllRecords(null, dumper);
     InspectorTest.completeTest();
 }
 

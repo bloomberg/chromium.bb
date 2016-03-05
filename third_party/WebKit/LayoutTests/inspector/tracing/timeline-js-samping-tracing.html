@@ -1,7 +1,7 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../tracing-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 function test()
 {
@@ -463,8 +463,7 @@ function test()
     ];
 
     Runtime.experiments.enableForTest("timelineTracingJSProfile");
-    var tracingTimelineModel = InspectorTest.tracingTimelineModel();
-    tracingTimelineModel.setEventsForTest(rawTraceEvents);
+    var tracingTimelineModel = InspectorTest.createTimelineModelWithEvents(rawTraceEvents);
     var events = tracingTimelineModel.mainThreadEvents();
     events.filter(function(e) { return e.name === "JSFrame"; }).forEach(function(e) {
         InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + e.args.data.functionName);

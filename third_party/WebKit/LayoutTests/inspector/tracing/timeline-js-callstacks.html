@@ -1,7 +1,7 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../tracing-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 function test()
 {
@@ -550,8 +550,7 @@ function test()
     }
     ];
 
-    var tracingTimelineModel = InspectorTest.tracingTimelineModel();
-    tracingTimelineModel.setEventsForTest(rawTraceEvents);
+    var tracingTimelineModel = InspectorTest.createTimelineModelWithEvents(rawTraceEvents);
     var events = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(tracingTimelineModel.mainThreadEvents());
     events = events.mergeOrdered(tracingTimelineModel.mainThreadEvents(), WebInspector.TracingModel.Event.orderedCompareStartTime);
     events.filter(function(e) { return e.duration; }).forEach(function(e) {

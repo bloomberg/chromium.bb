@@ -35,9 +35,7 @@ function test()
         {"name": "foooooo", "ts": 1099999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"toplevel", "args": {}}
     ];
 
-    var panel = WebInspector.panels.timeline;
-    var model = InspectorTest.timelineModel();
-    model.setEventsForTest(testData);
+    var model = InspectorTest.createTimelineModelWithEvents(testData);
     var view = new WebInspector.EventsTimelineTreeView(model, null);
     view.updateContents(WebInspector.TimelineSelection.fromRange(model.minimumRecordTime(), model.maximumRecordTime()));
     var filtersControl = view._filtersControl;

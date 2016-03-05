@@ -147,104 +147,25 @@ function test()
 
         function testStartFromPanel(next)
         {
-            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
-            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
-            panel._toggleRecording();
-
-            function recordingStarted()
-            {
-                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
-                InspectorTest.evaluateInPage("startStopTimeline()", step2);
-            }
-
-            function step2()
-            {
-                panel._toggleRecording();
-            }
+            InspectorTest.evaluateWithTimeline("startStopTimeline()", finish)
 
             function finish()
             {
                 printTimelineAndTimestampEvents();
-                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
                 next();
             }
         },
 
         function testStopFromPanel(next)
         {
-            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
-
-            InspectorTest.startTimeline(step1);
-
-            function step1()
-            {
-                InspectorTest.evaluateInPage("startTimeline()", step2);
-            }
-
-            function step2()
-            {
-                panel._toggleRecording();
-            }
+            InspectorTest.evaluateWithTimeline("startTimeline()", finish)
 
             function finish()
             {
                 printTimelineAndTimestampEvents();
-                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
                 next();
             }
-       },
-
-        function testRacyStart(next)
-        {
-            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
-            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
-            panel._toggleRecording();
-
-            function recordingStarted()
-            {
-                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
-                InspectorTest.evaluateInPage("startTimeline()", didEvaluate);
-            }
-
-            function didEvaluate()
-            {
-                panel._toggleRecording();
-            }
-
-            function finish()
-            {
-                printTimelineAndTimestampEvents();
-                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
-                next();
-            }
-        },
-
-        function testRacyStart2(next)
-        {
-            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
-            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
-
-            panel._toggleRecording();
-
-            function recordingStarted()
-            {
-                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
-                InspectorTest.evaluateInPage("startTimeline()", didEvaluate);
-            }
-
-            function didEvaluate()
-            {
-                // Fool listener order execution.
-                setTimeout(panel._toggleRecording.bind(panel));
-            }
-
-            function finish()
-            {
-                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
-                printTimelineAndTimestampEvents();
-                next();
-            }
-        }
+       }
     ]);
 
     function printTimelineAndTimestampEvents() {

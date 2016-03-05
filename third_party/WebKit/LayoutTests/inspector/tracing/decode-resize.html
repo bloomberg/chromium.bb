@@ -25,7 +25,6 @@ div.img-container {
 </style>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
-<script src="../tracing-test.js"></script>
 <script>
 
 var images = [
@@ -93,7 +92,7 @@ function test()
             var urlB = InspectorTest.formatters.formatAsURL(b.url || "<missing>");
             return urlA.localeCompare(urlB);
         }
-        var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
+        var events = InspectorTest.timelineModel().inspectedTargetEvents();
         var sortedDecodeEvents = events.filter(isDecodeImageEvent).sort(compareImageURLs);
         for (var i = 0; i < sortedDecodeEvents.length; ++i) {
             var event = sortedDecodeEvents[i];
