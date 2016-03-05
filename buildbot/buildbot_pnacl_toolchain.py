@@ -49,6 +49,8 @@ parser.add_argument('--sanitize', choices=['address'
                                            #, 'thread', 'memory', 'undefined'
                                           ],
                     help='Build with corresponding sanitizer')
+parser.add_argument('--no-goma', action='store_true', default=False,
+                    help='Do not run with goma')
 args = parser.parse_args()
 
 host_os = buildbot_lib.GetHostPlatform()
@@ -69,6 +71,8 @@ toolchain_install_dir = os.path.join(
     'toolchain',
     '%s_%s' % (host_os, pynacl.platform.GetArch()),
     'pnacl_newlib')
+
+use_goma = buildbot_lib.RunningOnBuildbot() and not args.no_goma
 
 
 def ToolchainBuildCmd(sync=False, extra_flags=[]):
@@ -97,6 +101,9 @@ def ToolchainBuildCmd(sync=False, extra_flags=[]):
   # See https://code.google.com/p/nativeclient/issues/detail?id=3830
   if host_os == 'win':
     executable_args.append('--disable-llvm-assertions')
+
+  if use_goma:
+    executable_args.append('--goma=/b/build/goma')
 
   return [sys.executable] + executable_args + sync_flag + extra_flags
 
@@ -130,6 +137,9 @@ if host_os != 'win':
          os.path.join(
              NACL_DIR, '..', 'tools', 'clang', 'scripts', 'update.py')])
 
+if use_goma:
+  buildbot_lib.Command(context, cmd=[
+      sys.executable, '/b/build/goma/goma_ctl.py', 'restart'])
 
 # toolchain_build outputs its own buildbot annotations, so don't use
 # buildbot_lib.Step to run it here.
@@ -141,6 +151,10 @@ if host_os != 'win':
 # package_version tool.
 # First build only the packages that will be uploaded, and upload them.
 RunWithLog(ToolchainBuildCmd(sync=True, extra_flags=['--canonical-only']))
+
+if use_goma:
+  buildbot_lib.Command(context, cmd=[
+      sys.executable, '/b/build/goma/goma_ctl.py', 'stop'])
 
 if args.skip_tests:
   sys.exit(0)
