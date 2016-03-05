@@ -15,41 +15,6 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * Utility class for bundling a promise object with it's resolver methods.
-   * @param {!Promise<!print_preview.Destination>} promise A promise returning
-   *     a destination.
-   * @param {function(!print_preview.Destination)} resolve Function resolving
-   *     the promise.
-   * @param {function()} reject Function for rejecting the promise.
-   * @constructor @struct
-   */
-  function PromiseResolver(promise, resolve, reject) {
-    /** @type {!Promise<!print_preview.Destination>} */
-    this.promise = promise;
-    /** @type {function(!print_preview.Destination)} */
-    this.resolve = resolve;
-    /** @type {function()} */
-    this.reject = reject;
-  }
-
-  /**
-   * Create a Promise and an associated PromiseResolver.
-   * @return {!PromiseResolver}
-   */
-  PromiseResolver.create = function() {
-    var reject = null;
-    var resolve = null;
-    /** @type {!Promise<!print_preview.Destination>} */
-    var promise = new Promise(function(resolvePromise, rejectPromise) {
-      resolve = /** @type {function(!print_preview.Destination)}*/(
-          resolvePromise);
-      reject = /** @type {function()} */(rejectPromise);
-    });
-
-    return new PromiseResolver(promise, resolve, reject);
-  };
-
-  /**
    * Overlay used to resolve a provisional extension destination. The user is
    * prompted to allow print preview to grant a USB device access to an
    * extension associated with the destination. If user agrees destination
@@ -78,7 +43,7 @@ cr.define('print_preview', function() {
 
     /**
      * Promise resolver for promise returned by {@code this.run}.
-     * @private {?PromiseResolver}
+     * @private {?PromiseResolver<!print_preview.Destination>}
      */
     this.promiseResolver_ = null;
   }
@@ -126,7 +91,7 @@ cr.define('print_preview', function() {
                'Showing overlay while not in initial state.');
         assert(!this.promiseResolver_, 'Promise resolver already set.');
         this.setState_(ResolverState.ACTIVE);
-        this.promiseResolver_ = PromiseResolver.create();
+        this.promiseResolver_ = new PromiseResolver();
         this.getChildElement('.default').focus();
       } else if (this.state_ != ResolverState.DONE) {
         assert(this.state_ != ResolverState.INITIAL, 'Hiding in initial state');

@@ -16,15 +16,18 @@
  *  resolver.resolve({hello: 'world'});
  */
 
-/** @constructor */
+/**
+ * @constructor @struct
+ * @template T
+ */
 function PromiseResolver() {
-  /** @type {!Function} */
+  /** @type {function(T): void} */
   this.resolve;
 
-  /** @type {!Function} */
+  /** @type {function(*=): void} */
   this.reject;
 
-  /** @type {!Promise} */
+  /** @type {!Promise<T>} */
   this.promise = new Promise(function(resolve, reject) {
     this.resolve = resolve;
     this.reject = reject;
