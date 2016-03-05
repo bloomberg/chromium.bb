@@ -1,6 +1,7 @@
 include_rules = [
   "+components/data_use_measurement/core",
   "+components/invalidation",
+  "+components/metrics",
   "+components/os_crypt",
   "+components/policy",
   "+components/pref_registry",

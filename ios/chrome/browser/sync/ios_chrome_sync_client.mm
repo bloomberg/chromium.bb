@@ -37,9 +37,11 @@
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -381,4 +383,25 @@ IOSChromeSyncClient::GetSyncApiComponentFactory() {
 void IOSChromeSyncClient::SetSyncApiComponentFactoryForTesting(
     scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory) {
   component_factory_ = std::move(component_factory);
+}
+
+// static
+void IOSChromeSyncClient::GetDeviceInfoTrackers(
+    std::vector<const sync_driver::DeviceInfoTracker*>* trackers) {
+  DCHECK(trackers);
+  std::vector<ios::ChromeBrowserState*> browser_state_list =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ios::ChromeBrowserState* browser_state : browser_state_list) {
+    ProfileSyncService* profile_sync_service =
+        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
+    if (profile_sync_service != nullptr) {
+      const sync_driver::DeviceInfoTracker* tracker =
+          profile_sync_service->GetDeviceInfoTracker();
+      if (tracker != nullptr) {
+        trackers->push_back(tracker);
+      }
+    }
+  }
 }

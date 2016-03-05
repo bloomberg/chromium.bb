@@ -113,9 +113,8 @@ class SessionsSyncManager : public syncer::SyncableService,
   FaviconCache* GetFaviconCache();
 
   // Triggers garbage collection of stale sessions (as defined by
-  // |stale_session_threshold_days_|). This is called automatically every
-  // time we start up (via AssociateModels) and when new sessions data is
-  // downloaded (sync cycles complete).
+  // |stale_session_threshold_days_|). This is called every time we see new
+  // sessions data downloaded (sync cycles complete).
   void DoGarbageCollection();
 
  private:

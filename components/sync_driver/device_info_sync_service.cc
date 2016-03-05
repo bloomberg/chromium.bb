@@ -5,10 +5,13 @@
 #include "components/sync_driver/device_info_sync_service.h"
 
 #include <stddef.h>
+
+#include <algorithm>
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "sync/api/sync_change.h"
 #include "sync/protocol/sync.pb.h"
@@ -16,6 +19,8 @@
 
 namespace sync_driver {
 
+using base::Time;
+using base::TimeDelta;
 using syncer::ModelType;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
@@ -24,6 +29,9 @@ using syncer::SyncData;
 using syncer::SyncDataList;
 using syncer::SyncErrorFactory;
 using syncer::SyncMergeResult;
+
+const TimeDelta kDeviceInfoPulseInterval = TimeDelta::FromDays(1);
+const TimeDelta kStaleDeviceInfoThreshold = TimeDelta::FromDays(14);
 
 namespace {
 
@@ -91,6 +99,7 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
   // UPDATE to INVALID down below if the initial data contains
   // data matching the local device ID.
   SyncChange::SyncChangeType change_type = SyncChange::ACTION_ADD;
+  TimeDelta pulse_delay;
   size_t num_items_new = 0;
   size_t num_items_updated = 0;
 
@@ -116,11 +125,13 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
             local_device_info->signin_scoped_device_id());
       }
 
+      pulse_delay = CalculatePulseDelay(*iter, Time::Now());
       // Store the synced device info for the local device only if
       // it is the same as the local info. Otherwise store the local
       // device info and issue a change further below after finishing
       // processing the |initial_sync_data|.
-      if (synced_local_device_info->Equals(*local_device_info)) {
+      if (synced_local_device_info->Equals(*local_device_info) &&
+          !pulse_delay.is_zero()) {
         change_type = SyncChange::ACTION_INVALID;
       } else {
         num_items_updated++;
@@ -137,16 +148,17 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
 
   syncer::SyncMergeResult result(type);
 
-  // Add SyncData for the local device if it is new or different than
-  // the synced one, and also add it to the |change_list|.
-  if (change_type != SyncChange::ACTION_INVALID) {
-    SyncData local_data = CreateLocalData(local_device_info);
-    StoreSyncData(local_device_info->guid(), local_data);
-
-    SyncChangeList change_list;
-    change_list.push_back(SyncChange(FROM_HERE, change_type, local_data));
-    result.set_error(
-        sync_processor_->ProcessSyncChanges(FROM_HERE, change_list));
+  // If the SyncData for the local device is new or different then send it
+  // immediately, otherwise wait until the pulse interval has elapsed from the
+  // previous update. Regardless of the branch here we setup a timer loop with
+  // SendLocalData such that we continue pulsing every interval.
+  if (change_type == SyncChange::ACTION_INVALID) {
+    pulse_timer_.Start(
+        FROM_HERE, pulse_delay,
+        base::Bind(&DeviceInfoSyncService::SendLocalData,
+                   base::Unretained(this), SyncChange::ACTION_UPDATE));
+  } else {
+    SendLocalData(change_type);
   }
 
   result.set_num_items_before_association(1);
@@ -264,6 +276,10 @@ void DeviceInfoSyncService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+int DeviceInfoSyncService::CountActiveDevices() const {
+  return CountActiveDevices(Time::Now());
+}
+
 void DeviceInfoSyncService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDeviceInfoChange());
 }
@@ -278,6 +294,7 @@ SyncData DeviceInfoSyncService::CreateLocalData(const DeviceInfo* info) {
   specifics.set_sync_user_agent(info->sync_user_agent());
   specifics.set_device_type(info->device_type());
   specifics.set_signin_scoped_device_id(info->signin_scoped_device_id());
+  specifics.set_last_updated_timestamp(syncer::TimeToProtoTime(Time::Now()));
 
   return CreateLocalData(entity);
 }
@@ -322,6 +339,68 @@ void DeviceInfoSyncService::DeleteSyncData(const std::string& client_id) {
              << " with ID " << client_id;
     all_data_.erase(iter);
   }
+}
+
+// static
+Time DeviceInfoSyncService::GetLastUpdateTime(const SyncData& device_info) {
+  if (device_info.GetSpecifics().device_info().has_last_updated_timestamp()) {
+    return syncer::ProtoTimeToTime(
+        device_info.GetSpecifics().device_info().last_updated_timestamp());
+  } else if (!device_info.IsLocal()) {
+    // If there is no |last_updated_timestamp| present, fallback to mod time.
+    return syncer::SyncDataRemote(device_info).GetModifiedTime();
+  } else {
+    // We shouldn't reach this point for remote data, so this means we're likely
+    // looking at the local device info. Using a long ago time is perfect, since
+    // the desired behavior is to update/pulse our data as soon as possible.
+    return Time();
+  }
+}
+
+// static
+TimeDelta DeviceInfoSyncService::GetLastUpdateAge(const SyncData& device_info,
+                                                  const Time now) {
+  // Don't allow negative ages for data modified in the future, use age of 0.
+  return std::max(TimeDelta(), now - GetLastUpdateTime(device_info));
+}
+
+// static
+TimeDelta DeviceInfoSyncService::CalculatePulseDelay(
+    const SyncData& device_info,
+    const Time now) {
+  // Don't allow negative delays for very stale data, use delay of 0.
+  return std::max(TimeDelta(), kDeviceInfoPulseInterval -
+                                   GetLastUpdateAge(device_info, now));
+}
+
+void DeviceInfoSyncService::SendLocalData(
+    const SyncChange::SyncChangeType change_type) {
+  DCHECK_NE(change_type, SyncChange::ACTION_INVALID);
+
+  const DeviceInfo* device_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  const SyncData& data = CreateLocalData(device_info);
+  StoreSyncData(device_info->guid(), data);
+
+  SyncChangeList change_list;
+  change_list.push_back(SyncChange(FROM_HERE, change_type, data));
+  sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
+
+  pulse_timer_.Start(
+      FROM_HERE, kDeviceInfoPulseInterval,
+      base::Bind(&DeviceInfoSyncService::SendLocalData, base::Unretained(this),
+                 SyncChange::ACTION_UPDATE));
+}
+
+int DeviceInfoSyncService::CountActiveDevices(const Time now) const {
+  int count = 0;
+  for (const auto& pair : all_data_) {
+    const TimeDelta age = GetLastUpdateAge(pair.second, now);
+    if (age < kStaleDeviceInfoThreshold) {
+      count++;
+    }
+  }
+  return count;
 }
 
 }  // namespace sync_driver

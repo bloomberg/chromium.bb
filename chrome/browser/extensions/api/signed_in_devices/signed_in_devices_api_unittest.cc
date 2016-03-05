@@ -67,6 +67,11 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
 
   void RemoveObserver(Observer* observer) override { NOTREACHED(); }
 
+  int CountActiveDevices() const override {
+    NOTREACHED();
+    return 0;
+  }
+
   void Add(const DeviceInfo* device) { devices_.push_back(device); }
 
  private:

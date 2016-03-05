@@ -37,6 +37,8 @@ class DeviceInfoTracker {
   virtual void AddObserver(Observer* observer) = 0;
   // Unregisters an observer.
   virtual void RemoveObserver(Observer* observer) = 0;
+  // Returns the count of active devices.
+  virtual int CountActiveDevices() const = 0;
 };
 
 }  // namespace sync_driver

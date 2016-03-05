@@ -214,7 +214,7 @@ bool Syncer::HandleCycleEnd(
     session->SendSyncCycleEndEventNotification(source);
 
     bool success = !sessions::HasSyncerError(
-          session->status_controller().model_neutral_state());
+        session->status_controller().model_neutral_state());
     if (success && source == sync_pb::GetUpdatesCallerInfo::PERIODIC)
       session->mutable_status_controller()->UpdatePollTime();
     return success;

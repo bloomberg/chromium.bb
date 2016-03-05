@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_CHROME_SYNC_CLIENT_H__
 #define CHROME_BROWSER_SYNC_CHROME_SYNC_CLIENT_H__
 
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/sync/glue/extensions_activity_monitor.h"
@@ -21,6 +23,7 @@ class PasswordStore;
 }
 
 namespace sync_driver {
+class DeviceInfoTracker;
 class SyncApiComponentFactory;
 class SyncService;
 }
@@ -61,6 +64,12 @@ class ChromeSyncClient : public sync_driver::SyncClient {
       BrowsingDataRemover::Observer* observer);
   void SetSyncApiComponentFactoryForTesting(
       scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory);
+
+  // Iterates over all of the profiles that have been loaded so far, and
+  // extracts their tracker if present. If some profiles don't have trackers, no
+  // indication is given in the passed vector.
+  static void GetDeviceInfoTrackers(
+      std::vector<const sync_driver::DeviceInfoTracker*>* trackers);
 
  private:
   // Register data types which are enabled on desktop platforms only.

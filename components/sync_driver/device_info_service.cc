@@ -196,6 +196,11 @@ void DeviceInfoService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+int DeviceInfoService::CountActiveDevices() const {
+  // TODO(skym): crbug.com/590006: Implementation.
+  return 0;
+}
+
 void DeviceInfoService::NotifyObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDeviceInfoChange());
 }

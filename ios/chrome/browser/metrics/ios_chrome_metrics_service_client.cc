@@ -36,6 +36,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
+#include "components/sync_driver/device_count_metrics_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
@@ -44,6 +45,7 @@
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
+#include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/browser/tab_parenting_global_observer.h"
 #include "ios/chrome/browser/ui/browser_otr_state.h"
 #include "ios/chrome/common/channel_info.h"
@@ -254,6 +256,11 @@ void IOSChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(
           new MobileSessionShutdownMetricsProvider(metrics_service_.get())));
+
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(
+          new sync_driver::DeviceCountMetricsProvider(
+              base::Bind(&IOSChromeSyncClient::GetDeviceInfoTrackers))));
 }
 
 void IOSChromeMetricsServiceClient::OnInitTaskGotDriveMetrics() {

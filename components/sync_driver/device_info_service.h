@@ -69,6 +69,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   ScopedVector<sync_driver::DeviceInfo> GetAllDeviceInfo() const override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  int CountActiveDevices() const override;
 
  private:
   friend class DeviceInfoServiceTest;

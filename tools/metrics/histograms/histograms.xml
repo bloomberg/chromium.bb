@@ -50424,6 +50424,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.DeviceCount">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    The largest number of active syncing devices known to any profile. May be 0
+    when there are no signed in/syncing profiles open.
+  </summary>
+</histogram>
+
 <histogram name="Sync.DeviceIdMismatchDetails" enum="DeviceIdMismatch">
   <owner>pavely@chromium.org</owner>
   <summary>

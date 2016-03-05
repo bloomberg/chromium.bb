@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_SYNC_IOS_CHROME_SYNC_CLIENT_H__
 #define IOS_CHROME_BROWSER_SYNC_IOS_CHROME_SYNC_CLIENT_H__
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/sync_client.h"
@@ -22,6 +24,7 @@ class PasswordStore;
 }
 
 namespace sync_driver {
+class DeviceInfoTracker;
 class SyncApiComponentFactory;
 class SyncService;
 }
@@ -58,9 +61,11 @@ class IOSChromeSyncClient : public sync_driver::SyncClient {
   void SetSyncApiComponentFactoryForTesting(
       scoped_ptr<sync_driver::SyncApiComponentFactory> component_factory);
 
- private:
-  void ClearBrowsingData(base::Time start, base::Time end);
+  // Iterates over browser states and returns any trackers that can be found.
+  static void GetDeviceInfoTrackers(
+      std::vector<const sync_driver::DeviceInfoTracker*>* trackers);
 
+ private:
   ios::ChromeBrowserState* const browser_state_;
 
   // The sync api component factory in use by this client.

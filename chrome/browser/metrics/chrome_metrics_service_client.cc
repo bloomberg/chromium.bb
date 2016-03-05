@@ -24,6 +24,7 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
+#include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -49,6 +50,7 @@
 #include "components/omnibox/browser/omnibox_metrics_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync_driver/device_count_metrics_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -429,6 +431,11 @@ void ChromeMetricsServiceClient::Initialize() {
           SigninStatusMetricsProvider::CreateInstance(
               make_scoped_ptr(new ChromeSigninStatusMetricsProviderDelegate))));
 #endif  // !defined(OS_CHROMEOS)
+
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(
+          new sync_driver::DeviceCountMetricsProvider(base::Bind(
+              &browser_sync::ChromeSyncClient::GetDeviceInfoTrackers))));
 
   // Clear stability metrics if it is the first time cellular upload logic
   // should apply to avoid sudden bulk uploads. It needs to be done after all

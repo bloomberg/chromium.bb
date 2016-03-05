@@ -43,4 +43,10 @@ message DeviceInfoSpecifics {
   // Device_id that is stable until user signs out. This device_id is used for
   // annotating login scoped refresh token.
   optional string signin_scoped_device_id = 7;
+
+  // This field is updated to be the current time periodically, and is also set
+  // to the current time whenever another field changes. By examining the
+  // difference between this field and the current time, it should be possible
+  // to reason about the inactivity of any device that was syncing at one time.
+  optional int64 last_updated_timestamp = 8;
 }
