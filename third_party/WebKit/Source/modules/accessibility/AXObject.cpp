@@ -1013,7 +1013,7 @@ bool AXObject::supportsSetSizeAndPosInSet() const
     if ((role == ListBoxOptionRole && parentRole == ListBoxRole)
         || (role == ListItemRole && parentRole == ListRole)
         || (role == MenuItemRole && parentRole == MenuRole)
-        || (role == RadioButtonRole && parentRole == RadioGroupRole)
+        || (role == RadioButtonRole)
         || (role == TabRole && parentRole == TabListRole)
         || (role == TreeItemRole && parentRole == TreeRole))
         return true;

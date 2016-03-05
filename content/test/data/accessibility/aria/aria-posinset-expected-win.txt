@@ -1,12 +1,39 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
 ++ROLE_SYSTEM_LIST
-++++ROLE_SYSTEM_LISTITEM name='Item 1' FOCUSABLE setsize:4 posinset:1
-++++ROLE_SYSTEM_LISTITEM name='Item 2' FOCUSABLE setsize:4 posinset:2
-++++ROLE_SYSTEM_LISTITEM name='Item 3' FOCUSABLE setsize:4 posinset:3
-++++ROLE_SYSTEM_LISTITEM name='Item 4' FOCUSABLE setsize:4 posinset:4
+++++ROLE_SYSTEM_LISTITEM name='Item 1' FOCUSABLE setsize:2 posinset:1
+++++ROLE_SYSTEM_LISTITEM name='Item 2' FOCUSABLE setsize:2 posinset:2
 ++ROLE_SYSTEM_LIST
-++++ROLE_SYSTEM_LISTITEM name='Item 1' FOCUSABLE setsize:5 posinset:1
-++++ROLE_SYSTEM_LISTITEM name='Item 2' FOCUSABLE setsize:5 posinset:2
-++++ROLE_SYSTEM_LISTITEM name='Item 3' FOCUSABLE setsize:5 posinset:3
-++++ROLE_SYSTEM_LISTITEM name='Item 4' FOCUSABLE setsize:5 posinset:4
-++++ROLE_SYSTEM_LISTITEM name='Item 5' FOCUSABLE setsize:5 posinset:5
+++++ROLE_SYSTEM_LISTITEM name='Item 1' FOCUSABLE setsize:2 posinset:1
+++++ROLE_SYSTEM_LISTITEM name='Item 2' FOCUSABLE setsize:2 posinset:2
+++IA2_ROLE_FORM
+++++ROLE_SYSTEM_RADIOBUTTON FOCUSABLE setsize:4 posinset:3
+++++ROLE_SYSTEM_STATICTEXT name='1'
+++++ROLE_SYSTEM_WHITESPACE name='
+'
+++++ROLE_SYSTEM_RADIOBUTTON FOCUSABLE setsize:4 posinset:4
+++++ROLE_SYSTEM_STATICTEXT name='2'
+++IA2_ROLE_SECTION
+++++ROLE_SYSTEM_RADIOBUTTON FOCUSABLE setsize:2 posinset:1
+++++ROLE_SYSTEM_STATICTEXT name='Apple'
+++++ROLE_SYSTEM_WHITESPACE name='
+'
+++++ROLE_SYSTEM_RADIOBUTTON FOCUSABLE setsize:2 posinset:2
+++++ROLE_SYSTEM_STATICTEXT name='Banana'
+++ROLE_SYSTEM_GROUPING name='Cake'
+++++IA2_ROLE_LABEL
+++++++ROLE_SYSTEM_STATICTEXT name='Cake'
+++++IA2_ROLE_SECTION
+++++++ROLE_SYSTEM_RADIOBUTTON name='Chiffon cakes' FOCUSABLE setsize:2 posinset:1
+++++++ROLE_SYSTEM_WHITESPACE name='
+'
+++++++ROLE_SYSTEM_RADIOBUTTON name='Chocolate cakes' FOCUSABLE setsize:2 posinset:2
+++IA2_ROLE_FORM
+++++IA2_ROLE_PARAGRAPH
+++++++ROLE_SYSTEM_PUSHBUTTON name='changedFromRadio' FOCUSABLE
+++++++IA2_ROLE_LABEL
+++++++++ROLE_SYSTEM_STATICTEXT name='red'
+++++++ROLE_SYSTEM_WHITESPACE name='
+'
+++++++ROLE_SYSTEM_RADIOBUTTON name='blue' FOCUSABLE setsize:1 posinset:1
+++IA2_ROLE_SECTION
+++++ROLE_SYSTEM_STATICTEXT name='Done'

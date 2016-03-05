@@ -764,6 +764,8 @@
       'accessibility/AXObject.h',
       'accessibility/AXProgressIndicator.cpp',
       'accessibility/AXProgressIndicator.h',
+      'accessibility/AXRadioInput.cpp',
+      'accessibility/AXRadioInput.h',
       'accessibility/AXSVGRoot.cpp',
       'accessibility/AXSVGRoot.h',
       'accessibility/AXSlider.cpp',

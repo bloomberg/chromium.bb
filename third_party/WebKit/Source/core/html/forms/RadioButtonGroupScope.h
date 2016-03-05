@@ -44,6 +44,7 @@ public:
     void removeButton(HTMLInputElement*);
     HTMLInputElement* checkedButtonForGroup(const AtomicString& groupName) const;
     bool isInRequiredGroup(HTMLInputElement*) const;
+    unsigned groupSizeFor(const HTMLInputElement*) const;
 
 private:
     using NameToGroupMap = WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<RadioButtonGroup>, CaseFoldingHash>;

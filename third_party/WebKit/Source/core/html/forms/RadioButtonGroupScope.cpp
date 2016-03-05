@@ -38,6 +38,7 @@ public:
     void requiredAttributeChanged(HTMLInputElement*);
     void remove(HTMLInputElement*);
     bool contains(HTMLInputElement*) const;
+    unsigned size() const;
 
     DECLARE_TRACE();
 
@@ -180,6 +181,13 @@ void RadioButtonGroup::remove(HTMLInputElement* button)
         // valid only if the group was invalid.
         button->setNeedsValidityCheck();
     }
+
+    // Send notification to update AX attributes for AXObjects which radiobutton group has.
+    if (!m_members.isEmpty()) {
+        HTMLInputElement* input = m_members.begin()->key;
+        if (AXObjectCache* cache = input->document().existingAXObjectCache())
+            cache->radiobuttonRemovedFromGroup(input);
+    }
 }
 
 void RadioButtonGroup::setNeedsValidityCheckForAllButtons()
@@ -194,6 +202,11 @@ void RadioButtonGroup::setNeedsValidityCheckForAllButtons()
 bool RadioButtonGroup::contains(HTMLInputElement* button) const
 {
     return m_members.contains(button);
+}
+
+unsigned RadioButtonGroup::size() const
+{
+    return m_members.size();
 }
 
 DEFINE_TRACE(RadioButtonGroup)
@@ -275,6 +288,17 @@ bool RadioButtonGroupScope::isInRequiredGroup(HTMLInputElement* element) const
         return false;
     RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
     return group && group->isRequired() && group->contains(element);
+}
+
+unsigned RadioButtonGroupScope::groupSizeFor(const HTMLInputElement* element) const
+{
+    if (!m_nameToGroupMap)
+        return 0;
+
+    RadioButtonGroup* group = m_nameToGroupMap->get(element->name());
+    if (!group)
+        return 0;
+    return group->size();
 }
 
 void RadioButtonGroupScope::removeButton(HTMLInputElement* element)

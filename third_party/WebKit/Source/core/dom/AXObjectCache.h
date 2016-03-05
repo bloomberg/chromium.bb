@@ -96,6 +96,7 @@ public:
     virtual void listboxOptionStateChanged(HTMLOptionElement*) = 0;
     virtual void listboxSelectedChildrenChanged(HTMLSelectElement*) = 0;
     virtual void listboxActiveIndexChanged(HTMLSelectElement*) = 0;
+    virtual void radiobuttonRemovedFromGroup(HTMLInputElement*) = 0;
 
     virtual void remove(LayoutObject*) = 0;
     virtual void remove(Node*) = 0;

@@ -1764,6 +1764,14 @@ RadioButtonGroupScope* HTMLInputElement::radioButtonGroupScope() const
     return nullptr;
 }
 
+unsigned HTMLInputElement::sizeOfRadioGroup() const
+{
+    RadioButtonGroupScope* scope = radioButtonGroupScope();
+    if (!scope)
+        return 0;
+    return scope->groupSizeFor(this);
+}
+
 inline void HTMLInputElement::addToRadioButtonGroup()
 {
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())

@@ -268,6 +268,8 @@ public:
     bool isPlaceholderVisible() const override { return m_isPlaceholderVisible; }
     void setPlaceholderVisibility(bool) override;
 
+    unsigned sizeOfRadioGroup() const;
+
 protected:
     HTMLInputElement(Document&, HTMLFormElement*, bool createdByParser);
 

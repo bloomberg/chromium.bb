@@ -29,6 +29,7 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
 #include "core/HTMLNames.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -66,6 +67,7 @@
 #include "modules/accessibility/AXMenuListOption.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXProgressIndicator.h"
+#include "modules/accessibility/AXRadioInput.h"
 #include "modules/accessibility/AXSVGRoot.h"
 #include "modules/accessibility/AXSlider.h"
 #include "modules/accessibility/AXSpinButton.h"
@@ -305,6 +307,9 @@ AXObject* AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutObject)
 
     if (isHTMLOptionElement(node))
         return AXListBoxOption::create(layoutObject, *this);
+
+    if (isHTMLInputElement(node) && toHTMLInputElement(node)->type() == InputTypeNames::radio)
+        return AXRadioInput::create(layoutObject, *this);
 
     if (layoutObject->isSVGRoot())
         return AXSVGRoot::create(layoutObject, *this);
@@ -931,6 +936,24 @@ void AXObjectCacheImpl::listboxActiveIndexChanged(HTMLSelectElement* select)
         return;
 
     toAXListBox(obj)->activeIndexChanged();
+}
+
+void AXObjectCacheImpl::radiobuttonRemovedFromGroup(HTMLInputElement* groupMember)
+{
+    AXObject* obj = get(groupMember);
+    if (!obj || !obj->isAXRadioInput())
+        return;
+
+    // The 'posInSet' and 'setSize' attributes should be updated from the first node,
+    // as the removed node is already detached from tree.
+    HTMLInputElement* firstRadio = toAXRadioInput(obj)->findFirstRadioButtonInGroup(groupMember);
+    AXObject* firstObj = get(firstRadio);
+    if (!firstObj || !firstObj->isAXRadioInput())
+        return;
+
+    toAXRadioInput(firstObj)->updatePosAndSetSize(1);
+    postNotification(firstObj, AXAriaAttributeChanged);
+    toAXRadioInput(firstObj)->requestUpdateToNextNode(true);
 }
 
 void AXObjectCacheImpl::handleLayoutComplete(LayoutObject* layoutObject)
