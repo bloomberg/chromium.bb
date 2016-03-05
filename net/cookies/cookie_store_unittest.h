@@ -1300,6 +1300,34 @@ TYPED_TEST_P(CookieStoreTest, GetAllCookiesAsync) {
   ASSERT_TRUE(++it == cookies.end());
 }
 
+TYPED_TEST_P(CookieStoreTest, DeleteCookieAsync) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+
+  EXPECT_TRUE(
+      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=A1; path=/"));
+  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+                              "A=A2; path=/foo"));
+  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+                              "A=A3; path=/bar"));
+  EXPECT_TRUE(
+      this->SetCookie(cs.get(), this->http_www_google_.url(), "B=B1; path=/"));
+  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+                              "B=B2; path=/foo"));
+  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+                              "B=B3; path=/bar"));
+
+  this->DeleteCookie(cs.get(), this->http_www_google_.AppendPath("foo/bar"),
+                     "A");
+
+  CookieList cookies = this->GetAllCookies(cs.get());
+  size_t expected_size = 4;
+  EXPECT_EQ(expected_size, cookies.size());
+  for (const auto& cookie : cookies) {
+    EXPECT_NE("A1", cookie.Value());
+    EXPECT_NE("A2", cookie.Value());
+  }
+}
+
 TYPED_TEST_P(CookieStoreTest, DeleteCanonicalCookieAsync) {
   scoped_refptr<CookieStore> cs(this->GetCookieStore());
 
@@ -1394,6 +1422,7 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            OverwritePersistentCookie,
                            CookieOrdering,
                            GetAllCookiesAsync,
+                           DeleteCookieAsync,
                            DeleteCanonicalCookieAsync,
                            DeleteSessionCookie);
 

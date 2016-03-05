@@ -1422,27 +1422,6 @@ TEST_F(CookieMonsterTest, CookieSorting) {
   EXPECT_EQ("A1", cookies[5].Value());
 }
 
-TEST_F(CookieMonsterTest, DeleteCookieByName) {
-  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
-
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "A=A1; path=/"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "A=A2; path=/foo"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "A=A3; path=/bar"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "B=B1; path=/"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "B=B2; path=/foo"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "B=B3; path=/bar"));
-
-  DeleteCookie(cm.get(), http_www_google_.AppendPath("foo/bar"), "A");
-
-  CookieList cookies = GetAllCookies(cm.get());
-  size_t expected_size = 4;
-  EXPECT_EQ(expected_size, cookies.size());
-  for (CookieList::iterator it = cookies.begin(); it != cookies.end(); ++it) {
-    EXPECT_NE("A1", it->Value());
-    EXPECT_NE("A2", it->Value());
-  }
-}
-
 // Tests importing from a persistent cookie store that contains duplicate
 // equivalent cookies. This situation should be handled by removing the
 // duplicate cookie (both from the in-memory cache, and from the backing store).

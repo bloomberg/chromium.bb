@@ -68,8 +68,6 @@ void MockPersistentCookieStore::AddCookie(const CanonicalCookie& cookie) {
 
 void MockPersistentCookieStore::UpdateCookieAccessTime(
     const CanonicalCookie& cookie) {
-  commands_.push_back(
-      CookieStoreCommand(CookieStoreCommand::UPDATE_ACCESS_TIME, cookie));
 }
 
 void MockPersistentCookieStore::DeleteCookie(const CanonicalCookie& cookie) {

@@ -53,8 +53,10 @@ class LoadedCallbackTask
 // Describes a call to one of the 3 functions of PersistentCookieStore.
 struct CookieStoreCommand {
   enum Type {
+    // UPDATE_ACCESS_TIME is not included in this list, because get cookie
+    // commands may or may not end updating the access time, unless they have
+    // the option set not to do so.
     ADD,
-    UPDATE_ACCESS_TIME,
     REMOVE,
   };
 
