@@ -5,9 +5,6 @@
 /**
  * @fileoverview Behavior to be used by Polymer elements that want to
  * automatically remove WebUI listeners when detached.
- *
- * TODO(dpapad): This file can be useful for any WebUI Polymer code, not just
- * for settings, consider moving elsewhere.
  */
 
 cr.define('settings', function() {

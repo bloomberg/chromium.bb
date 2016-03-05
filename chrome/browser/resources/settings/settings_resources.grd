@@ -562,12 +562,6 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_WEB_UI_LISTENER_BEHAVIOR_HTML"
-                 file="web_ui_listener_behavior.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_WEB_UI_LISTENER_BEHAVIOR_JS"
-                 file="web_ui_listener_behavior.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SEARCH_PAGE_JS"
                  file="search_page/search_page.js"
                  type="chrome_html" />
