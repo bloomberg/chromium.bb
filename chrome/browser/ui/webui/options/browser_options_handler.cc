@@ -173,9 +173,11 @@ void AppendExtensionData(const std::string& key,
 }
 #endif  // defined(OS_WIN)
 
+#if !defined(OS_CHROMEOS)
 bool IsDisabledByPolicy(const BooleanPrefMember& pref) {
   return pref.IsManaged() && !pref.GetValue();
 }
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -190,11 +192,13 @@ BrowserOptionsHandler::BrowserOptionsHandler()
 #endif  // defined(OS_CHROMEOS)
       signin_observer_(this),
       weak_ptr_factory_(this) {
+#if !defined(OS_CHROMEOS)
   // The worker pointer is reference counted. While it is running, the
   // message loops of the FILE and UI thread will hold references to it
   // and it will be automatically freed once all its tasks have finished.
   default_browser_worker_ = new shell_integration::DefaultBrowserWorker(
       this, /*delete_observer=*/false);
+#endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   cloud_print_mdns_ui_enabled_ = true;
@@ -207,8 +211,10 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
   if (sync_service)
     sync_service->RemoveObserver(this);
 
+#if !defined(OS_CHROMEOS)
   if (default_browser_worker_.get())
     default_browser_worker_->ObserverDestroyed();
+#endif
   if (template_url_service_)
     template_url_service_->RemoveObserver(this);
   // There may be pending file dialogs, we need to tell them that we've gone
@@ -723,10 +729,6 @@ void BrowserOptionsHandler::RegisterCloudPrintValues(
 
 void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "becomeDefaultBrowser",
-      base::Bind(&BrowserOptionsHandler::BecomeDefaultBrowser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "setDefaultSearchEngine",
       base::Bind(&BrowserOptionsHandler::SetDefaultSearchEngine,
                  base::Unretained(this)));
@@ -788,6 +790,10 @@ void BrowserOptionsHandler::RegisterMessages() {
       base::Bind(&BrowserOptionsHandler::PerformFactoryResetRestart,
                  base::Unretained(this)));
 #else
+  web_ui()->RegisterMessageCallback(
+      "becomeDefaultBrowser",
+      base::Bind(&BrowserOptionsHandler::BecomeDefaultBrowser,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "restartBrowser",
       base::Bind(&BrowserOptionsHandler::HandleRestartBrowser,
@@ -911,11 +917,13 @@ void BrowserOptionsHandler::InitializeHandler() {
   content::URLDataSource::Add(
       profile, new FaviconSource(profile, FaviconSource::FAVICON));
 
+#if !defined(OS_CHROMEOS)
   default_browser_policy_.Init(
       prefs::kDefaultBrowserSettingEnabled,
       g_browser_process->local_state(),
       base::Bind(&BrowserOptionsHandler::UpdateDefaultBrowserState,
                  base::Unretained(this)));
+#endif
 
 #if defined(OS_CHROMEOS)
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
@@ -1011,7 +1019,9 @@ void BrowserOptionsHandler::InitializePage() {
 
   ObserveThemeChanged();
   OnStateChanged();
+#if !defined(OS_CHROMEOS)
   UpdateDefaultBrowserState();
+#endif
 
   SetupMetricsReportingSettingVisibility();
   SetupMetricsReportingCheckbox();
@@ -1095,6 +1105,7 @@ bool BrowserOptionsHandler::ShouldAllowAdvancedSettings() {
 #endif
 }
 
+#if !defined(OS_CHROMEOS)
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {
   default_browser_worker_->StartCheckIsDefault();
 }
@@ -1115,15 +1126,6 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const base::ListValue* args) {
   // them when this changes.
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   prefs->SetBoolean(prefs::kCheckDefaultBrowser, true);
-}
-
-int BrowserOptionsHandler::StatusStringIdForState(
-    shell_integration::DefaultWebClientState state) {
-  if (state == shell_integration::IS_DEFAULT)
-    return IDS_OPTIONS_DEFAULTBROWSER_DEFAULT;
-  if (state == shell_integration::NOT_DEFAULT)
-    return IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
-  return IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
 }
 
 void BrowserOptionsHandler::SetDefaultWebClientUIState(
@@ -1169,6 +1171,7 @@ void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
       "BrowserOptions.updateDefaultBrowserState",
       status_string, is_default, can_be_default);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
   if (!template_url_service_ || !template_url_service_->loaded())

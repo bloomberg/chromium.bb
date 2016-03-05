@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -36,7 +35,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
-#endif  // defined(OS_CHROMEOS)
+#else  // defined(OS_CHROMEOS)
+#include "chrome/browser/shell_integration.h"
+#endif  // !defined(OS_CHROMEOS)
 
 class AutocompleteController;
 class CloudPrintSetupHandler;
@@ -60,7 +61,9 @@ class BrowserOptionsHandler
       public sync_driver::SyncServiceObserver,
       public SigninManagerBase::Observer,
       public ui::SelectFileDialog::Listener,
+#if !defined(OS_CHROMEOS)
       public shell_integration::DefaultWebClientObserver,
+#endif
 #if defined(OS_CHROMEOS)
       public chromeos::system::PointerDeviceObserver::Observer,
       public policy::ConsumerManagementService::Observer,
@@ -90,10 +93,6 @@ class BrowserOptionsHandler
                              const std::string& password) override;
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
-
-  // shell_integration::DefaultWebClientObserver implementation.
-  void SetDefaultWebClientUIState(
-      shell_integration::DefaultWebClientUIState state) override;
 
   // TemplateURLServiceObserver implementation.
   void OnTemplateURLServiceChanged() override;
@@ -158,14 +157,8 @@ class BrowserOptionsHandler
   // Will be called when the kSigninAllowed pref has changed.
   void OnSigninAllowedPrefChange();
 
-  // Makes this the default browser. Called from WebUI.
-  void BecomeDefaultBrowser(const base::ListValue* args);
-
   // Sets the search engine at the given index to be default. Called from WebUI.
   void SetDefaultSearchEngine(const base::ListValue* args);
-
-  // Returns the string ID for the given default browser state.
-  int StatusStringIdForState(shell_integration::DefaultWebClientState state);
 
   // Returns if the "make Chrome default browser" button should be shown.
   bool ShouldShowSetDefaultBrowser();
@@ -176,12 +169,21 @@ class BrowserOptionsHandler
   // Returns if access to advanced settings should be allowed.
   bool ShouldAllowAdvancedSettings();
 
+#if !defined(OS_CHROMEOS)
   // Gets the current default browser state, and asynchronously reports it to
   // the WebUI page.
   void UpdateDefaultBrowserState();
 
+  // Makes this the default browser. Called from WebUI.
+  void BecomeDefaultBrowser(const base::ListValue* args);
+
+  // shell_integration::DefaultWebClientObserver implementation.
+  void SetDefaultWebClientUIState(
+      shell_integration::DefaultWebClientUIState state) override;
+
   // Updates the UI with the given state for the default browser.
   void SetDefaultBrowserUIString(int status_string_id);
+#endif  // !defined(OS_CHROMEOS)
 
   // Loads the possible default search engine list and reports it to the WebUI.
   void AddTemplateUrlServiceObserver();
@@ -376,13 +378,15 @@ class BrowserOptionsHandler
   // true on other platforms.
   bool IsDeviceOwnerProfile();
 
+#if !defined(OS_CHROMEOS)
   scoped_refptr<shell_integration::DefaultBrowserWorker>
       default_browser_worker_;
+  BooleanPrefMember default_browser_policy_;
+#endif
 
   bool page_initialized_;
 
   StringPrefMember homepage_;
-  BooleanPrefMember default_browser_policy_;
 
   TemplateURLService* template_url_service_;  // Weak.
 
