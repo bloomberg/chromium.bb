@@ -45,30 +45,30 @@ inline bool includesAdjacentEdges(BorderEdgeFlags flags)
 inline bool styleRequiresClipPolygon(EBorderStyle style)
 {
     // These are drawn with a stroke, so we have to clip to get corner miters.
-    return style == DOTTED || style == DASHED;
+    return style == BorderStyleDotted || style == BorderStyleDashed;
 }
 
 inline bool borderStyleFillsBorderArea(EBorderStyle style)
 {
-    return !(style == DOTTED || style == DASHED || style == DOUBLE);
+    return !(style == BorderStyleDotted || style == BorderStyleDashed || style == BorderStyleDouble);
 }
 
 inline bool borderStyleHasInnerDetail(EBorderStyle style)
 {
-    return style == GROOVE || style == RIDGE || style == DOUBLE;
+    return style == BorderStyleGroove || style == BorderStyleRidge || style == BorderStyleDouble;
 }
 
 inline bool borderStyleIsDottedOrDashed(EBorderStyle style)
 {
-    return style == DOTTED || style == DASHED;
+    return style == BorderStyleDotted || style == BorderStyleDashed;
 }
 
-// OUTSET darkens the bottom and right (and maybe lightens the top and left)
-// INSET darkens the top and left (and maybe lightens the bottom and right)
+// BorderStyleOutset darkens the bottom and right (and maybe lightens the top and left)
+// BorderStyleInset darkens the top and left (and maybe lightens the bottom and right)
 inline bool borderStyleHasUnmatchedColorsAtCorner(EBorderStyle style, BoxSide side, BoxSide adjacentSide)
 {
     // These styles match at the top/left and bottom/right.
-    if (style == INSET || style == GROOVE || style == RIDGE || style == OUTSET) {
+    if (style == BorderStyleInset || style == BorderStyleGroove || style == BorderStyleRidge || style == BorderStyleOutset) {
         const BorderEdgeFlags topRightFlags = edgeFlagForSide(BSTop) | edgeFlagForSide(BSRight);
         const BorderEdgeFlags bottomLeftFlags = edgeFlagForSide(BSBottom) | edgeFlagForSide(BSLeft);
 
@@ -106,7 +106,7 @@ inline bool willOverdraw(BoxSide side, EBorderStyle style, BorderEdgeFlags compl
 
 inline bool borderStylesRequireMiter(BoxSide side, BoxSide adjacentSide, EBorderStyle style, EBorderStyle adjacentStyle)
 {
-    if (style == DOUBLE || adjacentStyle == DOUBLE || adjacentStyle == GROOVE || adjacentStyle == RIDGE)
+    if (style == BorderStyleDouble || adjacentStyle == BorderStyleDouble || adjacentStyle == BorderStyleGroove || adjacentStyle == BorderStyleRidge)
         return true;
 
     if (borderStyleIsDottedOrDashed(style) != borderStyleIsDottedOrDashed(adjacentStyle))
@@ -311,16 +311,16 @@ bool bleedAvoidanceIsClipping(BackgroundBleedAvoidance bleedAvoidance)
 }
 
 // The LUTs below assume specific enum values.
-static_assert(BNONE == 0, "unexpected EBorderStyle value");
-static_assert(BHIDDEN == 1, "unexpected EBorderStyle value");
-static_assert(INSET == 2, "unexpected EBorderStyle value");
-static_assert(GROOVE == 3, "unexpected EBorderStyle value");
-static_assert(OUTSET == 4, "unexpected EBorderStyle value");
-static_assert(RIDGE == 5, "unexpected EBorderStyle value");
-static_assert(DOTTED == 6, "unexpected EBorderStyle value");
-static_assert(DASHED == 7, "unexpected EBorderStyle value");
-static_assert(SOLID == 8, "unexpected EBorderStyle value");
-static_assert(DOUBLE == 9, "unexpected EBorderStyle value");
+static_assert(BorderStyleNone == 0, "unexpected EBorderStyle value");
+static_assert(BorderStyleHidden == 1, "unexpected EBorderStyle value");
+static_assert(BorderStyleInset == 2, "unexpected EBorderStyle value");
+static_assert(BorderStyleGroove == 3, "unexpected EBorderStyle value");
+static_assert(BorderStyleOutset == 4, "unexpected EBorderStyle value");
+static_assert(BorderStyleRidge == 5, "unexpected EBorderStyle value");
+static_assert(BorderStyleDotted == 6, "unexpected EBorderStyle value");
+static_assert(BorderStyleDashed == 7, "unexpected EBorderStyle value");
+static_assert(BorderStyleSolid == 8, "unexpected EBorderStyle value");
+static_assert(BorderStyleDouble == 9, "unexpected EBorderStyle value");
 
 static_assert(BSTop == 0, "unexpected BoxSide value");
 static_assert(BSRight == 1, "unexpected BoxSide value");
@@ -330,16 +330,16 @@ static_assert(BSLeft == 3, "unexpected BoxSide value");
 // Style-based paint order: non-solid edges (dashed/dotted/double) are painted before
 // solid edges (inset/outset/groove/ridge/solid) to maximize overdraw opportunities.
 const unsigned kStylePriority[] = {
-    0 /* BNONE */,
-    0 /* BHIDDEN */,
-    2 /* INSET */,
-    2 /* GROOVE */,
-    2 /* OUTSET */,
-    2 /* RIDGE */,
-    1 /* DOTTED */,
-    1 /* DASHED */,
-    3 /* SOLID */,
-    1 /* DOUBLE */
+    0 /* BorderStyleNone */,
+    0 /* BorderStyleHidden */,
+    2 /* BorderStyleInset */,
+    2 /* BorderStyleGroove */,
+    2 /* BorderStyleOutset */,
+    2 /* BorderStyleRidge */,
+    1 /* BorderStyleDotted */,
+    1 /* BorderStyleDashed */,
+    3 /* BorderStyleSolid */,
+    1 /* BorderStyleDouble */
 };
 
 // Given the same style, prefer drawing in non-adjacent order to minimize the number of sides
@@ -442,7 +442,7 @@ void BoxBorderPainter::drawDoubleBorder(GraphicsContext& context, const LayoutRe
 {
     ASSERT(m_isUniformColor);
     ASSERT(m_isUniformStyle);
-    ASSERT(firstEdge().borderStyle() == DOUBLE);
+    ASSERT(firstEdge().borderStyle() == BorderStyleDouble);
     ASSERT(m_visibleEdgeSet == AllBorderEdges);
 
     const Color color = firstEdge().color;
@@ -467,11 +467,11 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext& context, const Layou
     if (!m_isUniformColor || !m_isUniformStyle || !m_inner.isRenderable())
         return false;
 
-    if (firstEdge().borderStyle() != SOLID && firstEdge().borderStyle() != DOUBLE)
+    if (firstEdge().borderStyle() != BorderStyleSolid && firstEdge().borderStyle() != BorderStyleDouble)
         return false;
 
     if (m_visibleEdgeSet == AllBorderEdges) {
-        if (firstEdge().borderStyle() == SOLID) {
+        if (firstEdge().borderStyle() == BorderStyleSolid) {
             if (m_isUniformWidth && !m_outer.isRounded()) {
                 // 4-side, solid, uniform-width, rectangular border => one drawRect()
                 drawSolidBorderRect(context, m_outer.rect(), firstEdge().width, firstEdge().color);
@@ -481,7 +481,7 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext& context, const Layou
             }
         } else {
             // 4-side, double border => 2x drawDRRect()
-            ASSERT(firstEdge().borderStyle() == DOUBLE);
+            ASSERT(firstEdge().borderStyle() == BorderStyleDouble);
             drawDoubleBorder(context, borderRect);
         }
 
@@ -490,7 +490,7 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext& context, const Layou
 
     // This is faster than the normal complex border path only if it avoids creating transparency
     // layers (when the border is translucent).
-    if (firstEdge().borderStyle() == SOLID && !m_outer.isRounded() && m_hasAlpha) {
+    if (firstEdge().borderStyle() == BorderStyleSolid && !m_outer.isRounded() && m_hasAlpha) {
         ASSERT(m_visibleEdgeSet != AllBorderEdges);
         // solid, rectangular border => one drawPath()
         Path path;
@@ -869,15 +869,15 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
     if (thickness <= 0)
         return;
 
-    if (borderStyle == DOUBLE && thickness < 3)
-        borderStyle = SOLID;
+    if (borderStyle == BorderStyleDouble && thickness < 3)
+        borderStyle = BorderStyleSolid;
 
     switch (borderStyle) {
-    case BNONE:
-    case BHIDDEN:
+    case BorderStyleNone:
+    case BorderStyleHidden:
         return;
-    case DOTTED:
-    case DASHED: {
+    case BorderStyleDotted:
+    case BorderStyleDashed: {
         graphicsContext.setStrokeColor(color);
 
         // The stroke is doubled here because the provided path is the
@@ -885,14 +885,14 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
         // The extra multiplier is so that the clipping mask can antialias
         // the edges to prevent jaggies.
         graphicsContext.setStrokeThickness(drawThickness * 2 * 1.1f);
-        graphicsContext.setStrokeStyle(borderStyle == DASHED ? DashedStroke : DottedStroke);
+        graphicsContext.setStrokeStyle(borderStyle == BorderStyleDashed ? DashedStroke : DottedStroke);
 
         // If the number of dashes that fit in the path is odd and non-integral then we
         // will have an awkwardly-sized dash at the end of the path. To try to avoid that
         // here, we simply make the whitespace dashes ever so slightly bigger.
         // FIXME: This could be even better if we tried to manipulate the dash offset
         // and possibly the gapLength to get the corners dash-symmetrical.
-        float dashLength = thickness * ((borderStyle == DASHED) ? 3.0f : 1.0f);
+        float dashLength = thickness * ((borderStyle == BorderStyleDashed) ? 3.0f : 1.0f);
         float gapLength = dashLength;
         float numberOfDashes = borderPath.length() / dashLength;
         // Don't try to show dashes if we have less than 2 dashes + 2 gaps.
@@ -917,7 +917,7 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
         graphicsContext.strokePath(borderPath);
         return;
     }
-    case DOUBLE: {
+    case BorderStyleDouble: {
         // Draw inner border line
         {
             GraphicsContextStateSaver stateSaver(graphicsContext);
@@ -927,7 +927,7 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
 
             graphicsContext.clipRoundedRect(innerClip);
             drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness, drawThickness,
-                side, color, SOLID);
+                side, color, BorderStyleSolid);
         }
 
         // Draw outer border line
@@ -948,21 +948,21 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
                 m_includeLogicalLeftEdge, m_includeLogicalRightEdge);
             graphicsContext.clipOutRoundedRect(outerClip);
             drawBoxSideFromPath(graphicsContext, borderRect, borderPath, thickness, drawThickness,
-                side, color, SOLID);
+                side, color, BorderStyleSolid);
         }
         return;
     }
-    case RIDGE:
-    case GROOVE:
+    case BorderStyleRidge:
+    case BorderStyleGroove:
     {
         EBorderStyle s1;
         EBorderStyle s2;
-        if (borderStyle == GROOVE) {
-            s1 = INSET;
-            s2 = OUTSET;
+        if (borderStyle == BorderStyleGroove) {
+            s1 = BorderStyleInset;
+            s2 = BorderStyleOutset;
         } else {
-            s1 = OUTSET;
-            s2 = INSET;
+            s1 = BorderStyleOutset;
+            s2 = BorderStyleInset;
         }
 
         // Paint full border
@@ -985,11 +985,11 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
             side, color, s2);
         return;
     }
-    case INSET:
+    case BorderStyleInset:
         if (side == BSTop || side == BSLeft)
             color = color.dark();
         break;
-    case OUTSET:
+    case BorderStyleOutset:
         if (side == BSBottom || side == BSRight)
             color = color.dark();
         break;

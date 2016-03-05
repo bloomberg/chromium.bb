@@ -37,10 +37,10 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext, const Layout
 
     // Find out if the hasImage() check in ComputedStyle::border*Width had any affect, i.e. if a border is non-zero while border-style is
     // none or hidden.
-    if ((style.borderLeftWidth() && (style.borderLeft().style() == BNONE || style.borderLeft().style() == BHIDDEN))
-        || (style.borderRightWidth() && (style.borderRight().style() == BNONE || style.borderRight().style() == BHIDDEN))
-        || (style.borderTopWidth() && (style.borderTop().style() == BNONE || style.borderTop().style() == BHIDDEN))
-        || (style.borderBottomWidth() && (style.borderBottom().style() == BNONE || style.borderBottom().style() == BHIDDEN)))
+    if ((style.borderLeftWidth() && (style.borderLeft().style() == BorderStyleNone || style.borderLeft().style() == BorderStyleHidden))
+        || (style.borderRightWidth() && (style.borderRight().style() == BorderStyleNone || style.borderRight().style() == BorderStyleHidden))
+        || (style.borderTopWidth() && (style.borderTop().style() == BorderStyleNone || style.borderTop().style() == BorderStyleHidden))
+        || (style.borderBottomWidth() && (style.borderBottom().style() == BorderStyleNone || style.borderBottom().style() == BorderStyleHidden)))
         Deprecation::countDeprecation(m_layoutObject.document(), UseCounter::BorderImageWithBorderStyleNone);
 
     // FIXME: border-image is broken with full page zooming when tiling has to happen, since the tiling function

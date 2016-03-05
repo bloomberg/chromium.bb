@@ -249,7 +249,7 @@ FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(cons
         // Use the most conservative inset to avoid mixed-style corner issues.
         float fractionalInset = 1.0f / 2;
         for (auto& edge : edges) {
-            if (edge.borderStyle() == DOUBLE) {
+            if (edge.borderStyle() == BorderStyleDouble) {
                 fractionalInset = 1.0f / 6;
                 break;
             }

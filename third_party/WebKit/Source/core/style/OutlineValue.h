@@ -51,7 +51,7 @@ public:
 
     bool visuallyEqual(const OutlineValue& o) const
     {
-        if (m_style == BNONE && o.m_style == BNONE)
+        if (m_style == BorderStyleNone && o.m_style == BorderStyleNone)
             return true;
         return *this == o;
     }

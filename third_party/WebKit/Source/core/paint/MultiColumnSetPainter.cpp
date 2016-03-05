@@ -42,7 +42,7 @@ void MultiColumnSetPainter::paintColumnRules(const PaintInfo& paintInfo, const L
     EBorderStyle ruleStyle = blockStyle.columnRuleStyle();
     LayoutUnit ruleThickness(blockStyle.columnRuleWidth());
     LayoutUnit colGap = m_layoutMultiColumnSet.columnGap();
-    bool renderRule = ruleStyle > BHIDDEN && !ruleTransparent;
+    bool renderRule = ruleStyle > BorderStyleHidden && !ruleTransparent;
     if (!renderRule)
         return;
 

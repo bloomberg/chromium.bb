@@ -40,14 +40,14 @@ public:
         : m_color(0)
         , m_colorIsCurrentColor(true)
         , m_width(3)
-        , m_style(BNONE)
+        , m_style(BorderStyleNone)
         , m_isAuto(AUTO_OFF)
     {
     }
 
     bool nonZero(bool checkStyle = true) const
     {
-        return width() && (!checkStyle || m_style != BNONE);
+        return width() && (!checkStyle || m_style != BorderStyleNone);
     }
 
     bool isTransparent() const
@@ -57,7 +57,7 @@ public:
 
     bool isVisible(bool checkStyle = true) const
     {
-        return nonZero(checkStyle) && !isTransparent() && (!checkStyle || m_style != BHIDDEN);
+        return nonZero(checkStyle) && !isTransparent() && (!checkStyle || m_style != BorderStyleHidden);
     }
 
     bool operator==(const BorderValue& o) const
@@ -68,9 +68,9 @@ public:
     // The default width is 3px, but if the style is none we compute a value of 0 (in ComputedStyle itself)
     bool visuallyEqual(const BorderValue& o) const
     {
-        if (m_style == BNONE && o.m_style == BNONE)
+        if (m_style == BorderStyleNone && o.m_style == BorderStyleNone)
             return true;
-        if (m_style == BHIDDEN && o.m_style == BHIDDEN)
+        if (m_style == BorderStyleHidden && o.m_style == BorderStyleHidden)
             return true;
         return *this == o;
     }

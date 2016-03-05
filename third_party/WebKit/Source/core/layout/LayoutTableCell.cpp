@@ -430,21 +430,21 @@ static int compareBorders(const CollapsedBorderValue& border1, const CollapsedBo
         return -1;
 
     // Rule #1 above.
-    if (border2.style() == BHIDDEN) {
-        if (border1.style() == BHIDDEN)
+    if (border2.style() == BorderStyleHidden) {
+        if (border1.style() == BorderStyleHidden)
             return 0;
         return -1;
     }
-    if (border1.style() == BHIDDEN)
+    if (border1.style() == BorderStyleHidden)
         return 1;
 
     // Rule #2 above.  A style of 'none' has lowest priority and always loses to any other border.
-    if (border2.style() == BNONE) {
-        if (border1.style() == BNONE)
+    if (border2.style() == BorderStyleNone) {
+        if (border1.style() == BorderStyleNone)
             return 0;
         return 1;
     }
-    if (border1.style() == BNONE)
+    if (border1.style() == BorderStyleNone)
         return -1;
 
     // The first part of rule #3 above. Wider borders win.

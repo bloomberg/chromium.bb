@@ -48,7 +48,7 @@ public:
 
     unsigned short ruleWidth() const
     {
-        if (m_rule.style() == BNONE || m_rule.style() == BHIDDEN)
+        if (m_rule.style() == BorderStyleNone || m_rule.style() == BorderStyleHidden)
             return 0;
         return m_rule.width();
     }

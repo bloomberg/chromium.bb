@@ -561,11 +561,11 @@ public:
 
     int outlineWidth() const
     {
-        if (m_background->outline().style() == BNONE)
+        if (m_background->outline().style() == BorderStyleNone)
             return 0;
         return m_background->outline().width();
     }
-    bool hasOutline() const { return outlineWidth() > 0 && outlineStyle() > BHIDDEN; }
+    bool hasOutline() const { return outlineWidth() > 0 && outlineStyle() > BorderStyleHidden; }
     EBorderStyle outlineStyle() const { return m_background->outline().style(); }
     OutlineIsAuto outlineStyleIsAuto() const { return static_cast<OutlineIsAuto>(m_background->outline().isAuto()); }
     int outlineOutsetExtent() const;
@@ -763,7 +763,7 @@ public:
 
     int outlineOffset() const
     {
-        if (m_background->outline().style() == BNONE)
+        if (m_background->outline().style() == BorderStyleNone)
             return 0;
         return m_background->outline().offset();
     }
@@ -1647,8 +1647,8 @@ public:
     bool hasAuthorBorder() const { return rareNonInheritedData->m_hasAuthorBorder; };
 
     // Initial values for all the properties
-    static EBorderCollapse initialBorderCollapse() { return BSEPARATE; }
-    static EBorderStyle initialBorderStyle() { return BNONE; }
+    static EBorderCollapse initialBorderCollapse() { return BorderCollapseSeparate; }
+    static EBorderStyle initialBorderStyle() { return BorderStyleNone; }
     static OutlineIsAuto initialOutlineStyleIsAuto() { return AUTO_OFF; }
     static NinePieceImage initialNinePieceImage() { return NinePieceImage(); }
     static LengthSize initialBorderRadius() { return LengthSize(Length(0, Fixed), Length(0, Fixed)); }

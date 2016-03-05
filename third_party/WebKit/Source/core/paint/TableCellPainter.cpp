@@ -57,10 +57,10 @@ void TableCellPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pain
 
 static EBorderStyle collapsedBorderStyle(EBorderStyle style)
 {
-    if (style == OUTSET)
-        return GROOVE;
-    if (style == INSET)
-        return RIDGE;
+    if (style == BorderStyleOutset)
+        return BorderStyleGroove;
+    if (style == BorderStyleInset)
+        return BorderStyleRidge;
     return style;
 }
 

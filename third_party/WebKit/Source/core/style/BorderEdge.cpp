@@ -12,20 +12,20 @@ BorderEdge::BorderEdge(int edgeWidth, const Color& edgeColor, EBorderStyle edgeS
     , isPresent(edgeIsPresent)
     , style(edgeStyle)
 {
-    if (style == DOUBLE && edgeWidth < 3)
-        style = SOLID;
+    if (style == BorderStyleDouble && edgeWidth < 3)
+        style = BorderStyleSolid;
 }
 
 BorderEdge::BorderEdge()
     : width(0)
     , isPresent(false)
-    , style(BHIDDEN)
+    , style(BorderStyleHidden)
 {
 }
 
 bool BorderEdge::hasVisibleColorAndStyle() const
 {
-    return style > BHIDDEN && color.alpha() > 0;
+    return style > BorderStyleHidden && color.alpha() > 0;
 }
 
 bool BorderEdge::shouldRender() const
@@ -40,10 +40,10 @@ bool BorderEdge::presentButInvisible() const
 
 bool BorderEdge::obscuresBackgroundEdge() const
 {
-    if (!isPresent || color.hasAlpha() || style == BHIDDEN)
+    if (!isPresent || color.hasAlpha() || style == BorderStyleHidden)
         return false;
 
-    if (style == DOTTED || style == DASHED)
+    if (style == BorderStyleDotted || style == BorderStyleDashed)
         return false;
 
     return true;
@@ -51,10 +51,10 @@ bool BorderEdge::obscuresBackgroundEdge() const
 
 bool BorderEdge::obscuresBackground() const
 {
-    if (!isPresent || color.hasAlpha() || style == BHIDDEN)
+    if (!isPresent || color.hasAlpha() || style == BorderStyleHidden)
         return false;
 
-    if (style == DOTTED || style == DASHED || style == DOUBLE)
+    if (style == BorderStyleDotted || style == BorderStyleDashed || style == BorderStyleDouble)
         return false;
 
     return true;

@@ -1147,15 +1147,15 @@ int LayoutTableSection::calcBlockDirectionOuterBorder(BlockBorderSide side) cons
     int borderWidth = 0;
 
     const BorderValue& sb = side == BorderBefore ? style()->borderBefore() : style()->borderAfter();
-    if (sb.style() == BHIDDEN)
+    if (sb.style() == BorderStyleHidden)
         return -1;
-    if (sb.style() > BHIDDEN)
+    if (sb.style() > BorderStyleHidden)
         borderWidth = sb.width();
 
     const BorderValue& rb = side == BorderBefore ? firstRow()->style()->borderBefore() : lastRow()->style()->borderAfter();
-    if (rb.style() == BHIDDEN)
+    if (rb.style() == BorderStyleHidden)
         return -1;
-    if (rb.style() > BHIDDEN && rb.width() > borderWidth)
+    if (rb.style() > BorderStyleHidden && rb.width() > borderWidth)
         borderWidth = rb.width();
 
     bool allHidden = true;
@@ -1169,18 +1169,18 @@ int LayoutTableSection::calcBlockDirectionOuterBorder(BlockBorderSide side) cons
         LayoutTableCol* col = table()->colElementAtAbsoluteColumn(c).innermostColOrColGroup();
         if (col) {
             const BorderValue& gb = side == BorderBefore ? col->style()->borderBefore() : col->style()->borderAfter();
-            if (gb.style() == BHIDDEN || cb.style() == BHIDDEN)
+            if (gb.style() == BorderStyleHidden || cb.style() == BorderStyleHidden)
                 continue;
             allHidden = false;
-            if (gb.style() > BHIDDEN && gb.width() > borderWidth)
+            if (gb.style() > BorderStyleHidden && gb.width() > borderWidth)
                 borderWidth = gb.width();
-            if (cb.style() > BHIDDEN && cb.width() > borderWidth)
+            if (cb.style() > BorderStyleHidden && cb.width() > borderWidth)
                 borderWidth = cb.width();
         } else {
-            if (cb.style() == BHIDDEN)
+            if (cb.style() == BorderStyleHidden)
                 continue;
             allHidden = false;
-            if (cb.style() > BHIDDEN && cb.width() > borderWidth)
+            if (cb.style() > BorderStyleHidden && cb.width() > borderWidth)
                 borderWidth = cb.width();
         }
     }
@@ -1202,16 +1202,16 @@ int LayoutTableSection::calcInlineDirectionOuterBorder(InlineBorderSide side) co
     int borderWidth = 0;
 
     const BorderValue& sb = side == BorderStart ? style()->borderStart() : style()->borderEnd();
-    if (sb.style() == BHIDDEN)
+    if (sb.style() == BorderStyleHidden)
         return -1;
-    if (sb.style() > BHIDDEN)
+    if (sb.style() > BorderStyleHidden)
         borderWidth = sb.width();
 
     if (LayoutTableCol* col = table()->colElementAtAbsoluteColumn(colIndex).innermostColOrColGroup()) {
         const BorderValue& gb = side == BorderStart ? col->style()->borderStart() : col->style()->borderEnd();
-        if (gb.style() == BHIDDEN)
+        if (gb.style() == BorderStyleHidden)
             return -1;
-        if (gb.style() > BHIDDEN && gb.width() > borderWidth)
+        if (gb.style() > BorderStyleHidden && gb.width() > borderWidth)
             borderWidth = gb.width();
     }
 
@@ -1225,12 +1225,12 @@ int LayoutTableSection::calcInlineDirectionOuterBorder(InlineBorderSide side) co
         const ComputedStyle& primaryCellParentStyle = current.primaryCell()->parent()->styleRef();
         const BorderValue& cb = side == BorderStart ? primaryCellStyle.borderStart() : primaryCellStyle.borderEnd(); // FIXME: Make this work with perpendicular and flipped cells.
         const BorderValue& rb = side == BorderStart ? primaryCellParentStyle.borderStart() : primaryCellParentStyle.borderEnd();
-        if (cb.style() == BHIDDEN || rb.style() == BHIDDEN)
+        if (cb.style() == BorderStyleHidden || rb.style() == BorderStyleHidden)
             continue;
         allHidden = false;
-        if (cb.style() > BHIDDEN && cb.width() > borderWidth)
+        if (cb.style() > BorderStyleHidden && cb.width() > borderWidth)
             borderWidth = cb.width();
-        if (rb.style() > BHIDDEN && rb.width() > borderWidth)
+        if (rb.style() > BorderStyleHidden && rb.width() > borderWidth)
             borderWidth = rb.width();
     }
     if (allHidden)

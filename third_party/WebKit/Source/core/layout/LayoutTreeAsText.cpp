@@ -67,34 +67,34 @@ using namespace HTMLNames;
 static void printBorderStyle(TextStream& ts, const EBorderStyle borderStyle)
 {
     switch (borderStyle) {
-    case BNONE:
+    case BorderStyleNone:
         ts << "none";
         break;
-    case BHIDDEN:
+    case BorderStyleHidden:
         ts << "hidden";
         break;
-    case INSET:
+    case BorderStyleInset:
         ts << "inset";
         break;
-    case GROOVE:
+    case BorderStyleGroove:
         ts << "groove";
         break;
-    case RIDGE:
+    case BorderStyleRidge:
         ts << "ridge";
         break;
-    case OUTSET:
+    case BorderStyleOutset:
         ts << "outset";
         break;
-    case DOTTED:
+    case BorderStyleDotted:
         ts << "dotted";
         break;
-    case DASHED:
+    case BorderStyleDashed:
         ts << "dashed";
         break;
-    case SOLID:
+    case BorderStyleSolid:
         ts << "solid";
         break;
-    case DOUBLE:
+    case BorderStyleDouble:
         ts << "double";
         break;
     }

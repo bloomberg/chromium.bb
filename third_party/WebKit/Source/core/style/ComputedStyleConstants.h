@@ -73,11 +73,22 @@ enum ColumnFill { ColumnFillBalance, ColumnFillAuto };
 
 enum ColumnSpan { ColumnSpanNone = 0, ColumnSpanAll };
 
-enum EBorderCollapse { BSEPARATE = 0, BCOLLAPSE = 1 };
+enum EBorderCollapse { BorderCollapseSeparate = 0, BorderCollapseCollapse = 1 };
 
 // These have been defined in the order of their precedence for border-collapsing. Do
 // not change this order! This order also must match the order in CSSValueKeywords.in.
-enum EBorderStyle { BNONE, BHIDDEN, INSET, GROOVE, OUTSET, RIDGE, DOTTED, DASHED, SOLID, DOUBLE };
+enum EBorderStyle {
+    BorderStyleNone,
+    BorderStyleHidden,
+    BorderStyleInset,
+    BorderStyleGroove,
+    BorderStyleOutset,
+    BorderStyleRidge,
+    BorderStyleDotted,
+    BorderStyleDashed,
+    BorderStyleSolid,
+    BorderStyleDouble
+};
 
 enum EBorderPrecedence { BOFF, BTABLE, BCOLGROUP, BCOL, BROWGROUP, BROW, BCELL };
 

@@ -233,34 +233,34 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBorderStyle e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case BNONE:
+    case BorderStyleNone:
         m_value.valueID = CSSValueNone;
         break;
-    case BHIDDEN:
+    case BorderStyleHidden:
         m_value.valueID = CSSValueHidden;
         break;
-    case INSET:
+    case BorderStyleInset:
         m_value.valueID = CSSValueInset;
         break;
-    case GROOVE:
+    case BorderStyleGroove:
         m_value.valueID = CSSValueGroove;
         break;
-    case RIDGE:
+    case BorderStyleRidge:
         m_value.valueID = CSSValueRidge;
         break;
-    case OUTSET:
+    case BorderStyleOutset:
         m_value.valueID = CSSValueOutset;
         break;
-    case DOTTED:
+    case BorderStyleDotted:
         m_value.valueID = CSSValueDotted;
         break;
-    case DASHED:
+    case BorderStyleDashed:
         m_value.valueID = CSSValueDashed;
         break;
-    case SOLID:
+    case BorderStyleSolid:
         m_value.valueID = CSSValueSolid;
         break;
-    case DOUBLE:
+    case BorderStyleDouble:
         m_value.valueID = CSSValueDouble;
         break;
     }
@@ -270,7 +270,7 @@ template<> inline EBorderStyle CSSPrimitiveValue::convertTo() const
 {
     ASSERT(isValueID());
     if (m_value.valueID == CSSValueAuto) // Valid for CSS outline-style
-        return DOTTED;
+        return BorderStyleDotted;
     return (EBorderStyle)(m_value.valueID - CSSValueNone);
 }
 
@@ -3764,10 +3764,10 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBorderCollapse e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case BSEPARATE:
+    case BorderCollapseSeparate:
         m_value.valueID = CSSValueSeparate;
         break;
-    case BCOLLAPSE:
+    case BorderCollapseCollapse:
         m_value.valueID = CSSValueCollapse;
         break;
     }
@@ -3778,15 +3778,15 @@ template<> inline EBorderCollapse CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueSeparate:
-        return BSEPARATE;
+        return BorderCollapseSeparate;
     case CSSValueCollapse:
-        return BCOLLAPSE;
+        return BorderCollapseCollapse;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return BSEPARATE;
+    return BorderCollapseSeparate;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EImageRendering e)

@@ -641,14 +641,14 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
         // In the collapsing border model, 'hidden' suppresses other borders, while 'none'
         // does not, so these style differences can be width differences.
         if (inherited_flags._border_collapse
-            && ((borderTopStyle() == BHIDDEN && other.borderTopStyle() == BNONE)
-                || (borderTopStyle() == BNONE && other.borderTopStyle() == BHIDDEN)
-                || (borderBottomStyle() == BHIDDEN && other.borderBottomStyle() == BNONE)
-                || (borderBottomStyle() == BNONE && other.borderBottomStyle() == BHIDDEN)
-                || (borderLeftStyle() == BHIDDEN && other.borderLeftStyle() == BNONE)
-                || (borderLeftStyle() == BNONE && other.borderLeftStyle() == BHIDDEN)
-                || (borderRightStyle() == BHIDDEN && other.borderRightStyle() == BNONE)
-                || (borderRightStyle() == BNONE && other.borderRightStyle() == BHIDDEN)))
+            && ((borderTopStyle() == BorderStyleHidden && other.borderTopStyle() == BorderStyleNone)
+                || (borderTopStyle() == BorderStyleNone && other.borderTopStyle() == BorderStyleHidden)
+                || (borderBottomStyle() == BorderStyleHidden && other.borderBottomStyle() == BorderStyleNone)
+                || (borderBottomStyle() == BorderStyleNone && other.borderBottomStyle() == BorderStyleHidden)
+                || (borderLeftStyle() == BorderStyleHidden && other.borderLeftStyle() == BorderStyleNone)
+                || (borderLeftStyle() == BorderStyleNone && other.borderLeftStyle() == BorderStyleHidden)
+                || (borderRightStyle() == BorderStyleHidden && other.borderRightStyle() == BorderStyleNone)
+                || (borderRightStyle() == BorderStyleNone && other.borderRightStyle() == BorderStyleHidden)))
             return true;
     } else if (noninherited_flags.effectiveDisplay == LIST_ITEM) {
         if (inherited_flags._list_style_type != other.inherited_flags._list_style_type
@@ -1514,7 +1514,7 @@ StyleColor ComputedStyle::decorationColorIncludingFallback(bool visitedLink) con
 Color ComputedStyle::colorIncludingFallback(int colorProperty, bool visitedLink) const
 {
     StyleColor result(StyleColor::currentColor());
-    EBorderStyle borderStyle = BNONE;
+    EBorderStyle borderStyle = BorderStyleNone;
     switch (colorProperty) {
     case CSSPropertyBackgroundColor:
         result = visitedLink ? visitedLinkBackgroundColor() : backgroundColor();
@@ -1578,7 +1578,7 @@ Color ComputedStyle::colorIncludingFallback(int colorProperty, bool visitedLink)
 
     // FIXME: Treating styled borders with initial color differently causes problems
     // See crbug.com/316559, crbug.com/276231
-    if (!visitedLink && (borderStyle == INSET || borderStyle == OUTSET || borderStyle == RIDGE || borderStyle == GROOVE))
+    if (!visitedLink && (borderStyle == BorderStyleInset || borderStyle == BorderStyleOutset || borderStyle == BorderStyleRidge || borderStyle == BorderStyleGroove))
         return Color(238, 238, 238);
     return visitedLink ? visitedLinkColor() : color();
 }

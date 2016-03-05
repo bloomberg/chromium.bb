@@ -70,28 +70,28 @@ public:
 
     int borderLeftWidth() const
     {
-        if (!m_image.hasImage() && (m_left.style() == BNONE || m_left.style() == BHIDDEN))
+        if (!m_image.hasImage() && (m_left.style() == BorderStyleNone || m_left.style() == BorderStyleHidden))
             return 0;
         return m_left.width();
     }
 
     int borderRightWidth() const
     {
-        if (!m_image.hasImage() && (m_right.style() == BNONE || m_right.style() == BHIDDEN))
+        if (!m_image.hasImage() && (m_right.style() == BorderStyleNone || m_right.style() == BorderStyleHidden))
             return 0;
         return m_right.width();
     }
 
     int borderTopWidth() const
     {
-        if (!m_image.hasImage() && (m_top.style() == BNONE || m_top.style() == BHIDDEN))
+        if (!m_image.hasImage() && (m_top.style() == BorderStyleNone || m_top.style() == BorderStyleHidden))
             return 0;
         return m_top.width();
     }
 
     int borderBottomWidth() const
     {
-        if (!m_image.hasImage() && (m_bottom.style() == BNONE || m_bottom.style() == BHIDDEN))
+        if (!m_image.hasImage() && (m_bottom.style() == BorderStyleNone || m_bottom.style() == BorderStyleHidden))
             return 0;
         return m_bottom.width();
     }

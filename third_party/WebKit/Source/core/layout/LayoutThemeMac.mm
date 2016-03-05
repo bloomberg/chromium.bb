@@ -848,13 +848,13 @@ void LayoutThemeMac::adjustSearchFieldStyle(ComputedStyle& style) const
     style.resetBorder();
     const short borderWidth = searchFieldBorderWidth * style.effectiveZoom();
     style.setBorderLeftWidth(borderWidth);
-    style.setBorderLeftStyle(INSET);
+    style.setBorderLeftStyle(BorderStyleInset);
     style.setBorderRightWidth(borderWidth);
-    style.setBorderRightStyle(INSET);
+    style.setBorderRightStyle(BorderStyleInset);
     style.setBorderBottomWidth(borderWidth);
-    style.setBorderBottomStyle(INSET);
+    style.setBorderBottomStyle(BorderStyleInset);
     style.setBorderTopWidth(borderWidth);
-    style.setBorderTopStyle(INSET);
+    style.setBorderTopStyle(BorderStyleInset);
 
     // Override height.
     style.setHeight(Length(Auto));
