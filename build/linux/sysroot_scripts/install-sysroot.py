@@ -32,7 +32,7 @@ import gyp_chromium
 import gyp_environment
 
 
-URL_PREFIX = 'http://commondatastorage.googleapis.com'
+URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
 REVISION_AMD64 = 'c52471d9dec240c8d0a88fa98aa1eefeee32e22f'
 REVISION_ARM = 'c52471d9dec240c8d0a88fa98aa1eefeee32e22f'
