@@ -1,3 +1,6 @@
+#ifndef VP10_COMMON_ODINTRIN_H_
+#define VP10_COMMON_ODINTRIN_H_
+
 #include "vp10/common/enums.h"
 #include "vpx/vpx_integer.h"
 #include "vpx_dsp/vpx_dsp_common.h"
@@ -27,3 +30,5 @@ typedef int16_t dering_in;
  *       we have to special-case it.
  *         We define a special version of the macro to use when x can be zero.*/
 #  define OD_ILOG(x) ((x) ? OD_ILOG_NZ(x) : 0)
+
+#endif
