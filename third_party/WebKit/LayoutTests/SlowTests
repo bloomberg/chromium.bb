@@ -148,6 +148,7 @@ crbug.com/248938 virtual/threaded/animations/3d/replace-filling-transform.html [
 crbug.com/311482 virtual/threaded/animations/interpolation/filter-interpolation.html [ Slow ]
 crbug.com/311482 virtual/threaded/animations/keyframes-unprefixed-03.html [ Slow ]
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]
+crbug.com/243871 virtual/threaded/fast/idle-callback/idle_periods.html [ Slow ]
 
 crbug.com/258896 animations/animation-direction-reverse-fill-mode.html [ Slow ]
 
@@ -280,5 +281,5 @@ crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-sc
 crbug.com/570656 [ Mac ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Slow ]
 crbug.com/570656 [ Mac ] fast/text/unicode-fallback-font.html [ Slow ]
 
-# This is really only slow under MSAN, but it's forbidden to add this expectation to MSANExpectations.
-crbug.com/584807 [ Linux ] printing/webgl-oversized-printing.html [ Slow ]
+crbug.com/584807 printing/webgl-oversized-printing.html [ Slow ]
+crbug.com/584807 virtual/threaded/printing/webgl-oversized-printing.html [ Slow ]
