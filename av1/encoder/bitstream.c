@@ -336,12 +336,13 @@ static void pack_mb_tokens(aom_writer *w, TOKENEXTRA **tp,
     if (t >= TWO_TOKEN && t < EOB_TOKEN) {
       int len = UNCONSTRAINED_NODES - p->skip_eob_node;
       int bits = v >> (n - len);
-      aom_write_tree(w, av1_coef_tree, p->context_tree, bits, len, i);
+      aom_write_tree_bits(w, av1_coef_tree, p->context_tree, bits, len, i);
+      v &= (1 << (n - len)) - 1;
       aom_write_tree(w, av1_coef_con_tree,
                      av1_pareto8_full[p->context_tree[PIVOT_NODE] - 1], v,
                      n - len, 0);
     } else {
-      aom_write_tree(w, av1_coef_tree, p->context_tree, v, n, i);
+      aom_write_tree_bits(w, av1_coef_tree, p->context_tree, v, n, i);
     }
 
     if (b->base_val) {
