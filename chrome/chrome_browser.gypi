@@ -3354,8 +3354,6 @@
             '../components/components.gyp:webusb',
             '../components/components_resources.gyp:components_resources',
             '../content/app/resources/content_resources.gyp:content_resources',
-            '../content/content.gyp:common_features',
-            '../content/content.gyp:feature_h264_with_openh264_ffmpeg',
             '../device/core/core.gyp:device_core',
             '../device/usb/usb.gyp:device_usb',
             '../device/usb/usb.gyp:device_usb_mojo_bindings',

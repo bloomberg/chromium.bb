@@ -190,8 +190,6 @@ source_set("browser") {
     "//components/webdata_services",
     "//content/public/browser",
     "//content/public/common",
-    "//content/public/common:feature_h264_with_openh264_ffmpeg",
-    "//content/public/common:features",
     "//courgette:courgette_lib",
     "//crypto",
     "//google_apis",
