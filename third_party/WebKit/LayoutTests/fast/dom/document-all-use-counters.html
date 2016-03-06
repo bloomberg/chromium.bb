@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<title>document.all UseCounters</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  const DocumentAllItemNoArguments = 1252; // From UseCounter.h
+  assert_false(internals.isUseCounted(document, DocumentAllItemNoArguments));
+  document.all.item();
+  assert_true(internals.isUseCounted(document, DocumentAllItemNoArguments));
+}, 'document.all.item with no arguments');
+
+test(function() {
+  const DocumentAllItemNamed = 1253; // From UseCounter.h
+  assert_false(internals.isUseCounted(document, DocumentAllItemNamed));
+  document.all.item('x');
+  assert_true(internals.isUseCounted(document, DocumentAllItemNamed));
+}, 'document.all.item with name');
+
+test(function() {
+  const DocumentAllItemIndexed = 1254; // From UseCounter.h
+  document.all.item(-1);
+  document.all.item(4294967295);
+  assert_false(internals.isUseCounted(document, DocumentAllItemIndexed));
+  document.all.item(4294967294);
+  assert_true(internals.isUseCounted(document, DocumentAllItemIndexed));
+}, 'document.all.item with index');
+
+test(function() {
+  const DocumentAllItemIndexedWithNonNumber = 1255; // From UseCounter.h
+  document.all.item(0);
+  document.all.item(0.5);
+  document.all.item(NaN);
+  document.all.item(Infinity);
+  document.all.item('-1');
+  document.all.item('00');
+  document.all.item('4294967295');
+  assert_false(internals.isUseCounted(document, DocumentAllItemIndexedWithNonNumber));
+  document.all.item('4294967294');
+  assert_true(internals.isUseCounted(document, DocumentAllItemIndexedWithNonNumber));
+}, 'document.all.item with index as string');
+
+test(function() {
+  const DocumentAllLegacyCallNoArguments = 1256; // From UseCounter.h
+  assert_false(internals.isUseCounted(document, DocumentAllLegacyCallNoArguments));
+  document.all();
+  assert_true(internals.isUseCounted(document, DocumentAllLegacyCallNoArguments));
+}, 'document.all legacy call with no arguments');
+
+test(function() {
+  const DocumentAllLegacyCallNamed = 1257; // From UseCounter.h
+  assert_false(internals.isUseCounted(document, DocumentAllLegacyCallNamed));
+  document.all('x');
+  assert_true(internals.isUseCounted(document, DocumentAllLegacyCallNamed));
+}, 'document.all legacy call with name');
+
+test(function() {
+  const DocumentAllLegacyCallIndexed = 1258; // From UseCounter.h
+  document.all(-1);
+  document.all(4294967295);
+  assert_false(internals.isUseCounted(document, DocumentAllLegacyCallIndexed));
+  document.all(4294967294);
+  assert_true(internals.isUseCounted(document, DocumentAllLegacyCallIndexed));
+}, 'document.all legacy call with index');
+
+test(function() {
+  const DocumentAllLegacyCallIndexedWithNonNumber = 1259; // From UseCounter.h
+  document.all(0);
+  document.all(0.5);
+  document.all(NaN);
+  document.all(Infinity);
+  document.all('-1');
+  document.all('00');
+  document.all('4294967295');
+  assert_false(internals.isUseCounted(document, DocumentAllLegacyCallIndexedWithNonNumber));
+  document.all('4294967294');
+  assert_true(internals.isUseCounted(document, DocumentAllLegacyCallIndexedWithNonNumber));
+}, 'document.all legacy call with index as a non-number (string)');
+
+test(function() {
+  const DocumentAllLegacyCallTwoArguments = 1260; // From UseCounter.h
+  document.all('x');
+  assert_false(internals.isUseCounted(document, DocumentAllLegacyCallTwoArguments));
+  document.all('x', 0);
+  assert_true(internals.isUseCounted(document, DocumentAllLegacyCallTwoArguments));
+}, 'document.all legacy call with two arguments');
+</script>

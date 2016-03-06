@@ -1075,9 +1075,20 @@ public:
         ApplicationCacheManifestSelectSecureOrigin = 1246,
         ApplicationCacheAPIInsecureOrigin = 1247,
         ApplicationCacheAPISecureOrigin = 1248,
+        // The above items are available in M50 branch
+
         CSSAtRuleApply = 1249,
         CSSSelectorPseudoAny = 1250,
         PannerNodeSetVelocity = 1251,
+        DocumentAllItemNoArguments = 1252,
+        DocumentAllItemNamed = 1253,
+        DocumentAllItemIndexed = 1254,
+        DocumentAllItemIndexedWithNonNumber = 1255,
+        DocumentAllLegacyCallNoArguments = 1256,
+        DocumentAllLegacyCallNamed = 1257,
+        DocumentAllLegacyCallIndexed = 1258,
+        DocumentAllLegacyCallIndexedWithNonNumber = 1259,
+        DocumentAllLegacyCallTwoArguments = 1260,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

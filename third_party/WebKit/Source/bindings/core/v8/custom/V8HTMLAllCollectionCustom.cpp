@@ -57,10 +57,12 @@ static v8::Local<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicS
 }
 
 template<class CallbackInfo>
-static v8::Local<v8::Value> getItem(HTMLAllCollection* collection, v8::Local<v8::Value> argument, const CallbackInfo& info)
+static v8::Local<v8::Value> getItem(HTMLAllCollection* collection, v8::Local<v8::Value> argument, const CallbackInfo& info,
+    UseCounter::Feature namedFeature, UseCounter::Feature indexedFeature, UseCounter::Feature indexedWithNonNumberFeature)
 {
     v8::Local<v8::Uint32> index;
     if (!argument->ToArrayIndex(info.GetIsolate()->GetCurrentContext()).ToLocal(&index)) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), namedFeature);
         TOSTRING_DEFAULT(V8StringResource<>, name, argument, v8::Undefined(info.GetIsolate()));
         v8::Local<v8::Value> result = getNamedItems(collection, name, info);
 
@@ -70,30 +72,44 @@ static v8::Local<v8::Value> getItem(HTMLAllCollection* collection, v8::Local<v8:
         return result;
     }
 
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), indexedFeature);
+    if (!argument->IsNumber())
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), indexedWithNonNumberFeature);
+
     RefPtrWillBeRawPtr<Element> result = collection->item(index->Value());
     return toV8(result.release(), info.Holder(), info.GetIsolate());
 }
 
 void V8HTMLAllCollection::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    if (info.Length() < 1) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::DocumentAllItemNoArguments);
+        return;
+    }
+
     HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
-    v8SetReturnValue(info, getItem(impl, info[0], info));
+    v8SetReturnValue(info, getItem(impl, info[0], info, UseCounter::DocumentAllItemNamed,
+        UseCounter::DocumentAllItemIndexed, UseCounter::DocumentAllItemIndexedWithNonNumber));
 }
 
 void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 1)
-        return;
-
-    HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
-    Node& ownerNode = impl->ownerNode();
-
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), ownerNode.document(), UseCounter::DocumentAllLegacyCall);
-
-    if (info.Length() == 1) {
-        v8SetReturnValue(info, getItem(impl, info[0], info));
+    if (info.Length() < 1) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::DocumentAllLegacyCallNoArguments);
         return;
     }
+
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::DocumentAllLegacyCall);
+
+    HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
+
+    if (info.Length() == 1) {
+        v8SetReturnValue(info, getItem(impl, info[0], info, UseCounter::DocumentAllLegacyCallNamed,
+            UseCounter::DocumentAllLegacyCallIndexed, UseCounter::DocumentAllLegacyCallIndexedWithNonNumber));
+        return;
+    }
+
+    UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::DocumentAllLegacyCallTwoArguments);
 
     // If there is a second argument it is the index of the item we want.
     TOSTRING_VOID(V8StringResource<>, name, info[0]);
