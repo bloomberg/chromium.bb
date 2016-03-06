@@ -89,7 +89,7 @@ class Driver : public mojo::ShellClient,
         mojo::shell::mojom::CapabilityFilter::New());
     mojo::Array<mojo::String> test_interfaces;
     test_interfaces.push_back(
-        mojo::shell::test::mojom::CreateInstanceForFactoryTest::Name_);
+        mojo::shell::test::mojom::CreateInstanceTest::Name_);
     filter->filter.insert("mojo:shell_unittest", std::move(test_interfaces));
 
     mojo::shell::mojom::ShellClientFactoryPtr factory;
@@ -98,10 +98,11 @@ class Driver : public mojo::ShellClient,
 
     mojo::shell::mojom::ShellPtr shell;
     connector->ConnectToInterface("mojo:shell", &shell);
-    shell->CreateInstanceForFactory(std::move(factory),
-                                    "exe:shell_unittest_target",
-                                    mojo::shell::mojom::kInheritUserID,
-                                    std::move(filter), std::move(request));
+    shell->CreateInstance(std::move(factory), "exe:shell_unittest_target",
+                          mojo::shell::mojom::kInheritUserID, std::move(filter),
+                          std::move(request),
+                          base::Bind(&Driver::OnConnectionCompleted,
+                                     base::Unretained(this)));
 
     base::LaunchOptions options;
   #if defined(OS_WIN)
@@ -132,6 +133,8 @@ class Driver : public mojo::ShellClient,
     target_.Terminate(0, false);
     base::MessageLoop::current()->QuitWhenIdle();
   }
+
+  void OnConnectionCompleted(mojo::shell::mojom::ConnectResult result) {}
 
   base::Process target_;
   mojo::BindingSet<mojo::shell::test::mojom::Driver> bindings_;

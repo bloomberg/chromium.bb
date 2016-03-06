@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/public/cpp/interface_registry.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace mojo {
@@ -85,21 +86,30 @@ class Connection {
 
   // Register a handler to receive an error notification on the pipe to the
   // remote application's InterfaceProvider.
-  virtual void SetRemoteInterfaceProviderConnectionErrorHandler(
-      const Closure& handler) = 0;
+  virtual void SetConnectionLostClosure(const Closure& handler) = 0;
 
-  // Returns the id of the remote application. For Connections created via
-  // Shell::Connect(), this will not be determined until Connect()'s callback is
-  // run, and this function will return false. Use AddRemoteIDCallback() to
-  // schedule a callback to be run when the remote application id is available.
-  // A value of Shell::kInvalidApplicationID indicates the connection has not
-  // been established.
+  // Returns true if |result| has been modified to include the result of the
+  // connection (see mojo/shell/public/interfaces/connector.mojom for error
+  // codes), false if the connection is still pending and |result| has not been
+  // modified. Call AddConnectionCompletedClosure() to schedule a closure to be
+  // run when the connection is completed and the result is available.
+  virtual bool GetConnectionResult(
+      shell::mojom::ConnectResult* result) const = 0;
+
+  // Returns true if |remote_id| has been modified to include the instance id of
+  // the remote application. For connections created via Connector::Connect(),
+  // this will not be determined until the connection has been completed by the
+  // shell. Use AddConnectionCompletedClosure() to schedule a closure to be run
+  // when the connection is completed and the remote id is available. Returns
+  // false if the connection has not yet been completed and |remote_id| is not
+  // modified.
   virtual bool GetRemoteApplicationID(uint32_t* remote_id) const = 0;
 
-  // See description in GetRemoteApplicationID()/
-  // GetRemoteShellClientFactoryID(). If the ids are available, |callback| is
-  // run immediately.
-  virtual void AddRemoteIDCallback(const Closure& callback) = 0;
+  // Register a closure to be run when the connection has been completed by the
+  // shell and remote metadata is available. Useful only for connections created
+  // via Connector::Connect(). Once the connection is complete, metadata is
+  // available immediately.
+  virtual void AddConnectionCompletedClosure(const Closure& callback) = 0;
 
   // Returns true if the Shell allows |interface_name| to be exposed to the
   // remote application.

@@ -58,8 +58,7 @@ void Init::StartRestartableService(mojo::Connector::ConnectParams* params,
   scoped_ptr<mojo::Connection> connection = connector_->Connect(params);
   // Note: |connection| may be null if we've lost our connection to the shell.
   if (connection) {
-    connection->SetRemoteInterfaceProviderConnectionErrorHandler(
-        restart_callback);
+    connection->SetConnectionLostClosure(restart_callback);
     connection->AddInterface<mojom::Login>(this);
     connections_[params->name()] = std::move(connection);
   }

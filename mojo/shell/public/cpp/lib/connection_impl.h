@@ -43,25 +43,27 @@ class ConnectionImpl : public Connection {
   const std::string& GetConnectionName() override;
   const std::string& GetRemoteApplicationName() override;
   const std::string& GetRemoteUserID() const override;
-  void SetRemoteInterfaceProviderConnectionErrorHandler(
-      const Closure& handler) override;
+  void SetConnectionLostClosure(const Closure& handler) override;
+  bool GetConnectionResult(shell::mojom::ConnectResult* result) const override;
   bool GetRemoteApplicationID(uint32_t* remote_id) const override;
-  void AddRemoteIDCallback(const Closure& callback) override;
+  void AddConnectionCompletedClosure(const Closure& callback) override;
   bool AllowsInterface(const std::string& interface_name) const override;
   shell::mojom::InterfaceProvider* GetRemoteInterfaces() override;
   InterfaceRegistry* GetLocalRegistry() override;
   base::WeakPtr<Connection> GetWeakPtr() override;
 
-  void OnGotInstanceID(const std::string& target_user_id,
-                       uint32_t target_application_id);
+  void OnConnectionCompleted(shell::mojom::ConnectResult result,
+                             const std::string& target_user_id,
+                             uint32_t target_application_id);
 
   const std::string connection_name_;
   const std::string remote_name_;
 
-  uint32_t remote_id_;
-  bool remote_ids_valid_;
-  std::vector<Closure> remote_id_callbacks_;
-  std::string remote_user_id_;
+  shell::mojom::ConnectResult result_ = shell::mojom::ConnectResult::OK;
+  uint32_t remote_id_ = shell::mojom::Connector::kInvalidApplicationID;
+  bool connection_completed_ = false;
+  std::vector<Closure> connection_completed_callbacks_;
+  std::string remote_user_id_ = shell::mojom::kInheritUserID;
 
   InterfaceRegistry local_registry_;
   shell::mojom::InterfaceProviderPtr remote_interfaces_;

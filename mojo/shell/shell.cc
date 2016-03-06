@@ -80,7 +80,8 @@ class Shell::Instance : public mojom::Connector,
   }
 
   void ConnectToClient(scoped_ptr<ConnectParams> params) {
-    params->connect_callback().Run(identity_.user_id(), id_);
+    params->connect_callback().Run(mojom::ConnectResult::OK,
+                                   identity_.user_id(), id_);
     AllowedInterfaces interfaces;
     interfaces.insert("*");
     if (!params->source().is_null())
@@ -149,17 +150,20 @@ class Shell::Instance : public mojom::Connector,
                shell::mojom::InterfaceProviderRequest remote_interfaces,
                shell::mojom::InterfaceProviderPtr local_interfaces,
                const ConnectCallback& callback) override {
-    // TODO(beng): Might not want to CHECK here, but rather run the callback
-    // with an error code.
-    CHECK(base::IsValidGUID(user_id));
-
-    // TODO(beng): perform checking on policy of whether this instance is
-    // allowed to pass different user_ids.
     if (!IsValidName(app_name)) {
       LOG(ERROR) << "Error: invalid Name: " << app_name;
-      callback.Run(mojom::kInheritUserID, kInvalidApplicationID);
+      callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
+                   mojom::kInheritUserID, kInvalidApplicationID);
       return;
     }
+    if (!base::IsValidGUID(user_id)) {
+      LOG(ERROR) << "Error: invalid user_id: " << user_id;
+      callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
+                   mojom::kInheritUserID, kInvalidApplicationID);
+      return;
+    }
+    // TODO(beng): perform checking on policy of whether this instance is
+    // allowed to pass different user_ids.
     if (allow_any_application_ ||
         identity_.filter().find(app_name) != identity_.filter().end()) {
       scoped_ptr<ConnectParams> params(new ConnectParams);
@@ -169,11 +173,11 @@ class Shell::Instance : public mojom::Connector,
       params->set_local_interfaces(std::move(local_interfaces));
       params->set_connect_callback(callback);
       shell_->Connect(std::move(params));
-    }
-    else {
+    } else {
       LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
           identity_.name() << " to: " << app_name;
-      callback.Run(mojom::kInheritUserID, kInvalidApplicationID);
+      callback.Run(mojom::ConnectResult::PERMISSION_DENIED,
+                   mojom::kInheritUserID, kInvalidApplicationID);
     }
   }
   void Clone(mojom::ConnectorRequest request) override {
@@ -192,12 +196,14 @@ class Shell::Instance : public mojom::Connector,
   }
 
   // mojom::Shell implementation:
-  void CreateInstanceForFactory(
-      mojom::ShellClientFactoryPtr factory,
-      const String& name,
-      const String& user_id,
-      mojom::CapabilityFilterPtr filter,
-      mojom::PIDReceiverRequest pid_receiver) override {
+  void CreateInstance(mojom::ShellClientFactoryPtr factory,
+                      const String& name,
+                      const String& user_id,
+                      mojom::CapabilityFilterPtr filter,
+                      mojom::PIDReceiverRequest pid_receiver,
+                      const CreateInstanceCallback& callback) override {
+    if (!base::IsValidGUID(user_id))
+      callback.Run(mojom::ConnectResult::INVALID_ARGUMENT);
     // TODO(beng): perform checking on policy of whether this instance is
     // allowed to pass different user_ids.
     std::string user_id_string = user_id;
@@ -206,6 +212,7 @@ class Shell::Instance : public mojom::Connector,
     shell_->CreateInstanceForFactory(std::move(factory), name, user_id_string,
                                      std::move(filter),
                                      std::move(pid_receiver));
+    callback.Run(mojom::ConnectResult::OK);
   }
   void AddInstanceListener(mojom::InstanceListenerPtr listener) override {
     // TODO(beng): this should only track the instances matching this user, and

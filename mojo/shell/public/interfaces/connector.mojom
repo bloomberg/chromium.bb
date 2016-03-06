@@ -9,6 +9,21 @@ import "mojo/shell/public/interfaces/interface_provider.mojom";
 const string kRootUserID = "505C0EE9-3013-43C0-82B0-A84F50CF8D84";
 const string kInheritUserID = "D26290E4-4485-4EAE-81A2-66D1EEB40A9D";
 
+enum ConnectResult {
+  // The connection was established successfully.
+  OK,
+
+  // The name or user id supplied was malformed, or the application specified
+  // by |name| could not be loaded.
+  INVALID_ARGUMENT,
+  
+  // The connection was blocked by policy. Either connections to |name| are
+  // forbidden from this app by the CapabilityFilter, or the application
+  // attempted to connect using a user id other than its own,
+  // kInheritUserID or kRootUserID.
+  PERMISSION_DENIED
+};
+
 // Encapsulates establishing connections with other Mojo applications.
 interface Connector {
   const uint32 kInvalidApplicationID = 0;
@@ -61,6 +76,9 @@ interface Connector {
   //
   // Response parameters:
   //
+  //  result
+  //    Indicates the result of the Connect() operation.
+  //
   //  user_id
   //    The user id the shell ran the target application as. Typically a client
   //    passes kInheritUserID as the user id to Connect() which is resolved by
@@ -72,7 +90,8 @@ interface Connector {
   Connect(string name,
           string user_id,
           InterfaceProvider&? remote_interfaces,
-          InterfaceProvider? local_interfaces) => (string user_id,
+          InterfaceProvider? local_interfaces) => (ConnectResult result,
+                                                   string user_id,
                                                    uint32 application_id);
 
   // Clones this Connector so it can be passed to another thread.

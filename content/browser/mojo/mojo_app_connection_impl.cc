@@ -15,7 +15,8 @@ namespace content {
 const char kBrowserMojoAppUrl[] = "system:content_browser";
 
 namespace {
-void OnGotInstanceID(const std::string& user_id, uint32_t remote_id) {}
+void OnGotInstanceID(mojo::shell::mojom::ConnectResult result,
+                     const std::string& user_id, uint32_t remote_id) {}
 }  // namespace
 
 // static

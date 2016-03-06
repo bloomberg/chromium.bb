@@ -81,6 +81,8 @@ class PIDSender : public RenderProcessHostObserver {
   DISALLOW_COPY_AND_ASSIGN(PIDSender);
 };
 
+void OnConnectionComplete(mojo::shell::mojom::ConnectResult result) {}
+
 }  // namespace
 
 std::string RegisterChildWithExternalShell(
@@ -122,10 +124,10 @@ std::string RegisterChildWithExternalShell(
   factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
       std::move(request_pipe), 0u));
 
-  shell->CreateInstanceForFactory(std::move(factory), url,
-                                  mojo::shell::mojom::kInheritUserID,
-                                  CreateCapabilityFilterForRenderer(),
-                                  std::move(request));
+  shell->CreateInstance(std::move(factory), url,
+                        mojo::shell::mojom::kInheritUserID,
+                        CreateCapabilityFilterForRenderer(),
+                        std::move(request), base::Bind(&OnConnectionComplete));
 
   // Store the URL on the RPH so client code can access it later via
   // GetMojoApplicationInstanceURL().

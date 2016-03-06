@@ -625,7 +625,8 @@ bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
 
-void OnGotInstanceID(const std::string& user_id, uint32_t instance_id) {}
+void OnGotInstanceID(mojo::shell::mojom::ConnectResult result,
+                     const std::string& user_id, uint32_t instance_id) {}
 
 WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
   DCHECK(!path.IsAbsolute());

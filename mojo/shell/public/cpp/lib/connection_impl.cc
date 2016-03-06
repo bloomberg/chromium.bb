@@ -30,7 +30,7 @@ ConnectionImpl::ConnectionImpl(
     : connection_name_(connection_name),
       remote_name_(remote_name),
       remote_id_(remote_id),
-      remote_ids_valid_(
+      connection_completed_(
           remote_id != shell::mojom::Connector::kInvalidApplicationID),
       remote_user_id_(remote_user_id),
       local_registry_(std::move(local_interfaces), this),
@@ -41,16 +41,14 @@ ConnectionImpl::ConnectionImpl(
       weak_factory_(this) {}
 
 ConnectionImpl::ConnectionImpl()
-    : remote_id_(shell::mojom::Connector::kInvalidApplicationID),
-      remote_ids_valid_(false),
-      local_registry_(shell::mojom::InterfaceProviderRequest(), this),
+    : local_registry_(shell::mojom::InterfaceProviderRequest(), this),
       allow_all_interfaces_(true),
       weak_factory_(this) {}
 
 ConnectionImpl::~ConnectionImpl() {}
 
 shell::mojom::Connector::ConnectCallback ConnectionImpl::GetConnectCallback() {
-  return base::Bind(&ConnectionImpl::OnGotInstanceID,
+  return base::Bind(&ConnectionImpl::OnConnectionCompleted,
                     weak_factory_.GetWeakPtr());
 }
 
@@ -69,25 +67,33 @@ const std::string& ConnectionImpl::GetRemoteUserID() const {
   return remote_user_id_;
 }
 
-void ConnectionImpl::SetRemoteInterfaceProviderConnectionErrorHandler(
-    const Closure& handler) {
+void ConnectionImpl::SetConnectionLostClosure(const Closure& handler) {
   remote_interfaces_.set_connection_error_handler(handler);
 }
 
+bool ConnectionImpl::GetConnectionResult(
+    shell::mojom::ConnectResult* result) const {
+  if (!connection_completed_)
+    return false;
+  *result = result_;
+  return true;
+}
+
+
 bool ConnectionImpl::GetRemoteApplicationID(uint32_t* remote_id) const {
-  if (!remote_ids_valid_)
+  if (!connection_completed_)
     return false;
 
   *remote_id = remote_id_;
   return true;
 }
 
-void ConnectionImpl::AddRemoteIDCallback(const Closure& callback) {
-  if (remote_ids_valid_) {
+void ConnectionImpl::AddConnectionCompletedClosure(const Closure& callback) {
+  if (connection_completed_) {
     callback.Run();
     return;
   }
-  remote_id_callbacks_.push_back(callback);
+  connection_completed_callbacks_.push_back(callback);
 }
 
 bool ConnectionImpl::AllowsInterface(const std::string& interface_name) const {
@@ -109,15 +115,17 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 ////////////////////////////////////////////////////////////////////////////////
 // ConnectionImpl, private:
 
-void ConnectionImpl::OnGotInstanceID(const std::string& target_user_id,
-                                     uint32_t target_application_id) {
-  DCHECK(!remote_ids_valid_);
-  remote_ids_valid_ = true;
+void ConnectionImpl::OnConnectionCompleted(shell::mojom::ConnectResult result,
+                                           const std::string& target_user_id,
+                                           uint32_t target_application_id) {
+  DCHECK(!connection_completed_);
+  connection_completed_ = true;
 
+  result_ = result;
   remote_id_ = target_application_id;
   remote_user_id_= target_user_id;
   std::vector<Closure> callbacks;
-  callbacks.swap(remote_id_callbacks_);
+  callbacks.swap(connection_completed_callbacks_);
   for (auto callback : callbacks)
     callback.Run();
 }

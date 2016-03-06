@@ -114,8 +114,7 @@ void ShellApplicationDelegate::StartRestartableService(
   scoped_ptr<mojo::Connection> connection = connector_->Connect(url);
   // Note: |connection| may be null if we've lost our connection to the shell.
   if (connection) {
-    connection->SetRemoteInterfaceProviderConnectionErrorHandler(
-        restart_callback);
+    connection->SetConnectionLostClosure(restart_callback);
     connection->AddInterface<mojom::Shell>(this);
     connections_[url] = std::move(connection);
   }

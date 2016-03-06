@@ -102,7 +102,7 @@ class ConnectTestApp : public ShellClient,
     base::RunLoop run_loop;
     scoped_ptr<Connection> connection =
         connector_->Connect("mojo:connect_test_a");
-    connection->SetRemoteInterfaceProviderConnectionErrorHandler(
+    connection->SetConnectionLostClosure(
         base::Bind(&ConnectTestApp::OnConnectionBlocked,
                    base::Unretained(this), callback, &run_loop));
     test::mojom::ConnectTestServicePtr test_service;

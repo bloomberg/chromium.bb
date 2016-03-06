@@ -24,8 +24,8 @@ namespace {
 
 class ShellTestClient
     : public mojo::test::ShellTestClient,
-      public InterfaceFactory<test::mojom::CreateInstanceForFactoryTest>,
-      public test::mojom::CreateInstanceForFactoryTest {
+      public InterfaceFactory<test::mojom::CreateInstanceTest>,
+      public test::mojom::CreateInstanceTest {
  public:
   explicit ShellTestClient(mojo::test::ShellTest* test)
       : mojo::test::ShellTestClient(test),
@@ -38,18 +38,18 @@ class ShellTestClient
  private:
   // mojo::ShellClient:
   bool AcceptConnection(Connection* connection) override {
-    connection->AddInterface<test::mojom::CreateInstanceForFactoryTest>(this);
+    connection->AddInterface<test::mojom::CreateInstanceTest>(this);
     return true;
   }
 
-  // InterfaceFactory<test::mojom::CreateInstanceForFactoryTest>:
+  // InterfaceFactory<test::mojom::CreateInstanceTest>:
   void Create(
       Connection* connection,
-      test::mojom::CreateInstanceForFactoryTestRequest request) override {
+      test::mojom::CreateInstanceTestRequest request) override {
     binding_.Bind(std::move(request));
   }
 
-  // test::mojom::CreateInstanceForFactoryTest:
+  // test::mojom::CreateInstanceTest:
   void SetTargetID(uint32_t target_id) override {
     target_id_ = target_id;
     base::MessageLoop::current()->QuitWhenIdle();
@@ -57,7 +57,7 @@ class ShellTestClient
 
   uint32_t target_id_;
 
-  Binding<test::mojom::CreateInstanceForFactoryTest> binding_;
+  Binding<test::mojom::CreateInstanceTest> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTestClient);
 };
@@ -159,7 +159,7 @@ class ShellTest : public mojo::test::ShellTest,
   DISALLOW_COPY_AND_ASSIGN(ShellTest);
 };
 
-TEST_F(ShellTest, CreateInstanceForFactory) {
+TEST_F(ShellTest, CreateInstance) {
   AddListenerAndWaitForApplications();
 
   // 1. Launch a process. (Actually, have the runner launch a process that
