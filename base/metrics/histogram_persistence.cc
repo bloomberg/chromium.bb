@@ -288,6 +288,8 @@ HistogramBase* CreatePersistentHistogram(
   HistogramBase::AtomicCount* logged_data =
       counts_data + histogram_data.bucket_count;
 
+  CHECK_LT(0, histogram_data.minimum);
+  CHECK_LT(0, histogram_data.maximum);
   std::string name(histogram_data_ptr->name);
   HistogramBase* histogram = nullptr;
   switch (histogram_data.histogram_type) {
