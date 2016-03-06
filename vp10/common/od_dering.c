@@ -313,6 +313,7 @@ void od_dering(const od_dering_opt_vtbl *vtbl, int16_t *y, int ystride,
         }
       }
 #else
+      (void)overlap;
       skip = bskip[by*skip_stride + bx];
 #endif
       if (skip) thresh[by][bx] = 0;
