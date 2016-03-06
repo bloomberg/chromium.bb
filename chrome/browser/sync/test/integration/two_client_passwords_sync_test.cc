@@ -53,20 +53,19 @@ class TwoClientPasswordsSyncTest : public SyncTest {
 };
 
 // TCM ID - 3732277
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Add) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
 
   PasswordForm form = CreateTestPasswordForm(0);
-  AddLogin(GetVerifierPasswordStore(), form);
-  ASSERT_EQ(1, GetVerifierPasswordCount());
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
   ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
+  ASSERT_EQ(1, GetPasswordCount(1));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Race) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ENABLED(Race)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 
@@ -81,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Race) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       SetPassphraseAndAddPassword) {
+                       E2E_ENABLED(SetPassphraseAndAddPassword)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
@@ -228,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, MAYBE_DeleteAll) {
 }
 
 // TCM ID - 3694311
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Merge) {
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ENABLED(Merge)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());
 

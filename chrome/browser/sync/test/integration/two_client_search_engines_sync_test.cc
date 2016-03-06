@@ -61,7 +61,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(Delete)) {
 }
 
 // TCM ID - 8912240.
-IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, AddMultiple) {
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
+                       E2E_ENABLED(AddMultiple)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 
@@ -91,7 +92,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, Duplicates) {
 }
 
 // TCM ID - 9004201.
-IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateKeyword) {
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
+                       E2E_ENABLED(UpdateKeyword)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 
@@ -108,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateKeyword) {
 }
 
 // TCM ID - 8894859.
-IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateUrl) {
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(UpdateUrl)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 
@@ -125,7 +127,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateUrl) {
 }
 
 // TCM ID - 8910490.
-IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, UpdateName) {
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
+                       E2E_ENABLED(UpdateName)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 
@@ -205,7 +208,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DisableSync) {
 }
 
 // TCM ID - 8891809.
-IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, SyncDefault) {
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
+                       E2E_ENABLED(SyncDefault)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 
@@ -221,7 +225,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, SyncDefault) {
 
 // Ensure that we can change the search engine and immediately delete it
 // without putting the clients out of sync.
-IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DeleteSyncedDefault) {
+IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
+                       E2E_ENABLED(DeleteSyncedDefault)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 

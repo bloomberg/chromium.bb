@@ -68,7 +68,7 @@ class TwoClientsPasswordManagerSettingMigratorServiceSyncTest
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientsPasswordManagerSettingMigratorServiceSyncTest,
-                       ChangeLegacyPrefTestBothClientsWithMigration) {
+    E2E_ENABLED(ChangeLegacyPrefTestBothClientsWithMigration)) {
   ASSERT_TRUE(SetupSync());
   EnsureMigrationStartsForClient(0);
   EnsureMigrationStartsForClient(1);
@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientsPasswordManagerSettingMigratorServiceSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientsPasswordManagerSettingMigratorServiceSyncTest,
-                       ChangeNewPrefTestBothClientsWithMigration) {
+                       E2E_ENABLED(ChangeNewPrefTestBothClientsWithMigration)) {
   ASSERT_TRUE(SetupClients());
   EnsureMigrationStartsForClient(0);
   EnsureMigrationStartsForClient(1);
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientsPasswordManagerSettingMigratorServiceSyncTest,
 
 IN_PROC_BROWSER_TEST_F(
     TwoClientsPasswordManagerSettingMigratorServiceSyncTest,
-    ChangeLegacyPrefOnMigratedClientOneClientsWithMigration) {
+    E2E_ENABLED(ChangeLegacyPrefOnMigratedClientOneClientsWithMigration)) {
   ASSERT_TRUE(SetupSync());
   EnsureMigrationStartsForClient(0);
   TestPrefChangeOnClient(0, kPasswordManagerSavingEnabled);
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     TwoClientsPasswordManagerSettingMigratorServiceSyncTest,
-    ChangeLegacyPrefOnNonMigratedClientOneClientsWithMigration) {
+    E2E_ENABLED(ChangeLegacyPrefOnNonMigratedClientOneClientsWithMigration)) {
   ASSERT_TRUE(SetupSync());
   EnsureMigrationStartsForClient(0);
   TestPrefChangeOnClient(1, kPasswordManagerSavingEnabled);
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientsPasswordManagerSettingMigratorServiceSyncTest,
-                       ChangeNewPrefOnMigratedClientOneClientsWithMigration) {
+    E2E_ENABLED(ChangeNewPrefOnMigratedClientOneClientsWithMigration)) {
   ASSERT_TRUE(SetupSync());
   EnsureMigrationStartsForClient(0);
   TestPrefChangeOnClient(0, kCredentialsEnableService);
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientsPasswordManagerSettingMigratorServiceSyncTest,
 
 IN_PROC_BROWSER_TEST_F(
     TwoClientsPasswordManagerSettingMigratorServiceSyncTest,
-    ChangeNewPrefOnNonMigratedClientOneClientsWithMigration) {
+    E2E_ENABLED(ChangeNewPrefOnNonMigratedClientOneClientsWithMigration)) {
   ASSERT_TRUE(SetupSync());
   EnsureMigrationStartsForClient(0);
   TestPrefChangeOnClient(1, kCredentialsEnableService);

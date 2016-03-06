@@ -194,7 +194,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
 }
 
 // TCM: 3643277
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DisableEnableSync) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
+                       E2E_ENABLED(DisableEnableSync)) {
   const base::string16 kUrl1(ASCIIToUTF16("http://history1.google.com/"));
   const base::string16 kUrl2(ASCIIToUTF16("http://history2.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -389,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, UpdateToNonTypedURL) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
-                       DontSyncUpdatedNonTypedURLs) {
+                       E2E_ENABLED(DontSyncUpdatedNonTypedURLs)) {
   // Checks if a non-typed URL that has been updated (modified) doesn't get
   // synced. This is a regression test after fixing a bug where adding a
   // non-typed URL was guarded against but later modifying it was not. Since
@@ -426,7 +427,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                                            ui::PAGE_TRANSITION_TYPED));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, SyncTypedRedirects) {
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
+                       E2E_ENABLED(SyncTypedRedirects)) {
   const base::string16 kHistoryUrl(ASCIIToUTF16("http://typed.google.com/"));
   const base::string16 kRedirectedHistoryUrl(
       ASCIIToUTF16("http://www.typed.google.com/"));

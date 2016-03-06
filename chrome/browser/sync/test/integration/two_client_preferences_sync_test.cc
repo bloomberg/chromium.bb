@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, E2E_ONLY(Sanity)) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, BooleanPref) {
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, E2E_ENABLED(BooleanPref)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitBooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 
@@ -57,7 +57,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, BooleanPref) {
   ASSERT_TRUE(AwaitBooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, Bidirectional) {
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
+                       E2E_ENABLED(Bidirectional)) {
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
@@ -71,7 +72,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, Bidirectional) {
   EXPECT_EQ("http://www.google.com/1", GetPrefs(0)->GetString(prefs::kHomePage));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, UnsyncableBooleanPref) {
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
+                       E2E_ENABLED(UnsyncableBooleanPref)) {
   ASSERT_TRUE(SetupSync());
   DisableVerifier();
   ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
@@ -89,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, UnsyncableBooleanPref) {
   ASSERT_FALSE(BooleanPrefMatches(prefs::kCheckDefaultBrowser));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, StringPref) {
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, E2E_ENABLED(StringPref)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
 
@@ -97,7 +99,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, StringPref) {
   ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, ComplexPrefs) {
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
+                       E2E_ENABLED(ComplexPrefs)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitIntegerPrefMatches(prefs::kRestoreOnStartup));
   ASSERT_TRUE(AwaitListPrefMatches(prefs::kURLsToRestoreOnStartup));
@@ -115,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, ComplexPrefs) {
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
-                       SingleClientEnabledEncryptionBothChanged) {
+                       E2E_ENABLED(SingleClientEnabledEncryptionBothChanged)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitBooleanPrefMatches(prefs::kHomePageIsNewTabPage));
   ASSERT_TRUE(AwaitStringPrefMatches(prefs::kHomePage));
@@ -130,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
-                       BothClientsEnabledEncryptionAndChangedMultipleTimes) {
+      E2E_ENABLED(BothClientsEnabledEncryptionAndChangedMultipleTimes)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AwaitBooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 

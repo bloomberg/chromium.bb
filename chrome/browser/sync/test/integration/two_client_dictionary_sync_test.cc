@@ -27,7 +27,7 @@ class TwoClientDictionarySyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientDictionarySyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Sanity) {
+IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, E2E_ENABLED(Sanity)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
@@ -56,7 +56,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Sanity) {
   ASSERT_EQ(words.size(), dictionary_helper::GetDictionarySize(0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousAdd) {
+IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
+                       E2E_ENABLED(SimultaneousAdd)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
@@ -67,7 +68,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousAdd) {
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousRemove) {
+IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
+                       E2E_ENABLED(SimultaneousRemove)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
@@ -83,7 +85,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, SimultaneousRemove) {
   ASSERT_EQ(0UL, dictionary_helper::GetDictionarySize(0));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, AddDifferentToEach) {
+IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
+                       E2E_ENABLED(AddDifferentToEach)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
@@ -96,7 +99,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, AddDifferentToEach) {
             static_cast<int>(dictionary_helper::GetDictionarySize(0)));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, RemoveOnAAddOnB) {
+IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest,
+                       E2E_ENABLED(RemoveOnAAddOnB)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());

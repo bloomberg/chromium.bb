@@ -168,8 +168,7 @@ bool SyncAppHelper::AppStatesMatch(Profile* profile1, Profile* profile2) {
       DVLOG(2) << "Apps for profile " << profile2->GetDebugName()
                << " are not valid.";
       return false;
-    } else if (!sync_datatype_helper::test()->UsingExternalServers() &&
-               !it1->second.Equals(it2->second)) {
+    } else if (!it1->second.Equals(it2->second)) {
       // If this test is run against real backend servers then we do not expect
       // to install pending apps. So, we don't check equality of AppStates of
       // each app per profile.

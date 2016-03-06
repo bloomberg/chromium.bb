@@ -276,11 +276,7 @@ bool SyncExtensionHelper::ExtensionStatesMatch(
       DVLOG(1) << "Extensions for profile " << profile1->GetDebugName()
                << " do not match profile " << profile2->GetDebugName();
       return false;
-    } else if (!sync_datatype_helper::test()->UsingExternalServers() &&
-               !it1->second.Equals(it2->second)) {
-      // If this test is run against real backend servers then we do not expect
-      // to install pending extensions. So, we don't check equality of
-      // ExtensionState of each extension per profile.
+    } else if (!it1->second.Equals(it2->second)) {
       DVLOG(1) << "Extension states for profile " << profile1->GetDebugName()
                << " do not match profile " << profile2->GetDebugName();
       return false;
