@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/socket/mock_tcp_client_socket.h"
 #include "extensions/browser/api/socket/socket.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
@@ -13,6 +14,20 @@
 namespace extensions {
 
 const int kBufferLength = 10;
+
+template <typename T>
+scoped_ptr<T> CreateTestSocket(scoped_ptr<MockTCPClientSocket> stream);
+
+template <>
+scoped_ptr<TCPSocket> CreateTestSocket(scoped_ptr<MockTCPClientSocket> stream) {
+  return make_scoped_ptr(new TCPSocket(std::move(stream), "fake id",
+                         true /* is_connected */));
+}
+
+template <>
+scoped_ptr<TLSSocket> CreateTestSocket(scoped_ptr<MockTCPClientSocket> stream) {
+  return make_scoped_ptr(new TLSSocket(std::move(stream), "fake id"));
+}
 
 class CombinedSocketTest : public testing::Test {
  public:
@@ -30,10 +45,10 @@ class CombinedSocketTest : public testing::Test {
                         testing::Return(kBufferLength)));
     EXPECT_CALL(*stream, Disconnect());
 
-    T socket(std::move(stream), "fake id");
+    scoped_ptr<T> socket = CreateTestSocket<T>(std::move(stream));
     ReadCompletionCallback read_callback =
         base::Bind(&CombinedSocketTest::OnRead, base::Unretained(this));
-    socket.Read(kBufferLength, read_callback);
+    socket->Read(kBufferLength, read_callback);
     EXPECT_EQ(kBufferLength, count_);
     EXPECT_NE(nullptr, buffer);
     EXPECT_EQ(buffer, io_buffer_);
@@ -53,10 +68,10 @@ class CombinedSocketTest : public testing::Test {
                         testing::Return(net::ERR_IO_PENDING)));
     EXPECT_CALL(*stream, Disconnect());
 
-    T socket(std::move(stream), "fake id");
+    scoped_ptr<T> socket = CreateTestSocket<T>(std::move(stream));
     ReadCompletionCallback read_callback =
         base::Bind(&CombinedSocketTest::OnRead, base::Unretained(this));
-    socket.Read(kBufferLength, read_callback);
+    socket->Read(kBufferLength, read_callback);
     EXPECT_EQ(0, count_);
     EXPECT_EQ(nullptr, io_buffer_);
     socket_cb.Run(kBufferLength);
@@ -78,10 +93,10 @@ class CombinedSocketTest : public testing::Test {
     ON_CALL(*stream, IsConnected()).WillByDefault(testing::Return(false));
     EXPECT_CALL(*stream, Disconnect());
 
-    T socket(std::move(stream), "fake id");
+    scoped_ptr<T> socket = CreateTestSocket<T>(std::move(stream));
     ReadCompletionCallback read_callback =
         base::Bind(&CombinedSocketTest::OnRead, base::Unretained(this));
-    socket.Read(kBufferLength, read_callback);
+    socket->Read(kBufferLength, read_callback);
     EXPECT_EQ(kBufferLength, count_);
     EXPECT_NE(nullptr, buffer);
     EXPECT_EQ(buffer, io_buffer_);
