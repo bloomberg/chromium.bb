@@ -15,6 +15,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_fake_nswindow_focus.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -66,6 +70,11 @@ class BubbleDelegateTest : public ViewsTestBase {
   }
 
  private:
+#if defined(OS_MACOSX)
+  // Ensure tests running in parallel don't steal focus from the Widget on Mac.
+  ui::test::ScopedFakeNSWindowFocus fake_focus_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(BubbleDelegateTest);
 };
 
@@ -277,6 +286,7 @@ TEST_F(BubbleDelegateTest, CloseReasons) {
         anchor_widget->GetContentsView(), BubbleBorder::NONE);
     bubble_delegate->set_close_on_deactivate(true);
     Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
+    anchor_widget->Show();
     bubble_widget->Show();
     anchor_widget->Activate();
     EXPECT_TRUE(bubble_widget->IsClosed());
