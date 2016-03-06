@@ -51,6 +51,10 @@ DSP_SRCS-yes += entdec.c
 DSP_SRCS-yes += entdec.h
 DSP_SRCS-yes += entcode.c
 DSP_SRCS-yes += entcode.h
+DSP_SRCS-yes += daalaboolreader.c
+DSP_SRCS-yes += daalaboolreader.h
+DSP_SRCS-yes += daalaboolwriter.c
+DSP_SRCS-yes += daalaboolwriter.h
 endif
 
 ifeq ($(CONFIG_USE_X86INC),yes)

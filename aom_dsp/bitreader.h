@@ -18,31 +18,57 @@
 #include "./aom_config.h"
 #include "aom/aomdx.h"
 #include "aom/aom_integer.h"
+#if CONFIG_DAALA_EC
+#include "aom_dsp/daalaboolreader.h"
+#else
 #include "aom_dsp/dkboolreader.h"
+#endif
 #include "aom_dsp/prob.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#if CONFIG_DAALA_EC
+typedef struct daala_reader aom_reader;
+#else
 typedef struct aom_dk_reader aom_reader;
+#endif
 
 static INLINE int aom_reader_init(aom_reader *r, const uint8_t *buffer,
                                   size_t size, aom_decrypt_cb decrypt_cb,
                                   void *decrypt_state) {
+#if CONFIG_DAALA_EC
+  (void)decrypt_cb;
+  (void)decrypt_state;
+  return aom_daala_reader_init(r, buffer, size);
+#else
   return aom_dk_reader_init(r, buffer, size, decrypt_cb, decrypt_state);
+#endif
 }
 
 static INLINE const uint8_t *aom_reader_find_end(aom_reader *r) {
+#if CONFIG_DAALA_EC
+  return aom_daala_reader_find_end(r);
+#else
   return aom_dk_reader_find_end(r);
+#endif
 }
 
 static INLINE int aom_reader_has_error(aom_reader *r) {
+#if CONFIG_DAALA_EC
+  return aom_daala_reader_has_error(r);
+#else
   return aom_dk_reader_has_error(r);
+#endif
 }
 
 static INLINE int aom_read(aom_reader *r, int prob) {
+#if CONFIG_DAALA_EC
+  return aom_daala_read(r, prob);
+#else
   return aom_dk_read(r, prob);
+#endif
 }
 
 static INLINE int aom_read_bit(aom_reader *r) {
