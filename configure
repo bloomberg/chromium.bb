@@ -260,6 +260,7 @@ EXPERIMENT_LIST="
     ext_compound
     supertx
     ans
+    daala_ec
 "
 CONFIG_LIST="
     dependency_tracking
