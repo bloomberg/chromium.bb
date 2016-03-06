@@ -69,7 +69,7 @@ test("components_unittests") {
     "//components/variations:unit_tests",
     "//components/variations/service:unit_tests",
     "//components/web_resource:unit_tests",
-    "//mojo/edk/system",
+    "//mojo/edk/embedder:headers",
     "//net",
     "//testing/gtest",
     "//ui/base",

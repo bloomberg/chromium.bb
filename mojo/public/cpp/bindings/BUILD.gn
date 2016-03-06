@@ -101,6 +101,7 @@ source_set("bindings") {
 
   deps = [
     "//base",
+    "//mojo/message_pump",
     "//mojo/public/interfaces/bindings:bindings_cpp_sources",
   ]
 }

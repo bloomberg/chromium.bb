@@ -10,7 +10,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../mojo/mojo_public.gyp:mojo_message_pump_lib',
-        '../mojo/mojo_public.gyp:mojo_cpp_system',
+        '../mojo/mojo_public.gyp:mojo_system_cpp_headers',
         '../third_party/WebKit/public/blink.gyp:blink',
       ],
       'include_dirs': [

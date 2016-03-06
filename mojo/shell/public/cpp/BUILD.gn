@@ -50,6 +50,7 @@ source_set("sources") {
   deps = [
     "//base",
     "//base:i18n",
+    "//mojo/message_pump",
   ]
 
   public_deps = [
