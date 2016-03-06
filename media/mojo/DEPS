@@ -4,4 +4,7 @@ include_rules = [
   "+mojo/converters",
   "+mojo/logging",
   "+mojo/public",
+
+  # media/mojo is not part of "media" target and should not use MEDIA_EXPORT.
+  "-media/base/media_export.h"
 ]
