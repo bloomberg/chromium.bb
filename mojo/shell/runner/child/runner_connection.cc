@@ -33,10 +33,14 @@ namespace {
 // and runs a closure provided by that thread.
 class Blocker {
  public:
+  // Unblocks a Blocker. Safe to copy around to any thread, but must only be
+  // used from a single thread.
   class Unblocker {
    public:
     explicit Unblocker(Blocker* blocker = nullptr) : blocker_(blocker) {}
     ~Unblocker() {}
+
+    bool IsBlocking() const { return blocker_ != nullptr; }
 
     void Unblock(base::Closure run_after) {
       DCHECK(blocker_);
@@ -162,25 +166,16 @@ class ChildControllerImpl : public mojom::ShellClientFactory {
     // A connection error means the connection to the shell is lost. This is not
     // recoverable.
     DLOG(ERROR) << "Connection error to the shell.";
-    if (exit_on_error_) {
+    if (exit_on_error_)
       _exit(1);
-    } else {
-      // If we failed before we could even get a ShellClient request from the
-      // shell, signal failure to the RunnerConnection, as it's still blocking
-      // on a response.
-      unblocker_.Unblock(
-          base::Bind(&ChildControllerImpl::ReturnApplicationRequestOnMainThread,
-                     callback_, nullptr));
-    }
+    else
+      UnblockConnection(nullptr);
   }
 
   // |mojom::ShellClientFactory| methods:
   void CreateShellClient(mojom::ShellClientRequest request,
                          const String& name) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    unblocker_.Unblock(
-        base::Bind(&ChildControllerImpl::ReturnApplicationRequestOnMainThread,
-                   callback_, base::Passed(&request)));
+    UnblockConnection(std::move(request));
   }
 
  private:
@@ -198,6 +193,15 @@ class ChildControllerImpl : public mojom::ShellClientFactory {
       const GotApplicationRequestCallback& callback,
       InterfaceRequest<mojom::ShellClient> request) {
     callback.Run(std::move(request));
+  }
+
+  void UnblockConnection(mojom::ShellClientRequest request) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (unblocker_.IsBlocking()) {
+      unblocker_.Unblock(
+          base::Bind(&ChildControllerImpl::ReturnApplicationRequestOnMainThread,
+                     callback_, base::Passed(&request)));
+    }
   }
 
   base::ThreadChecker thread_checker_;
