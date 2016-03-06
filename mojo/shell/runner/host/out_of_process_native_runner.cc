@@ -43,20 +43,10 @@ void OutOfProcessNativeRunner::Start(
 
   child_process_host_.reset(new ChildProcessHost(
       launch_process_runner_, delegate_, start_sandboxed, target, app_path));
-  child_process_host_->Start(base::Bind(
-      &OutOfProcessNativeRunner::OnProcessLaunched, base::Unretained(this),
-      base::Passed(&request), target.name(), pid_available_callback));
-}
-
-void OutOfProcessNativeRunner::InitHost(
-    mojom::ShellClientFactoryPtr factory,
-    const String& name,
-    mojom::ShellClientRequest request) {
-  child_process_host_.reset(new ChildProcessHost(std::move(factory)));
-  child_process_host_->StartChild(
-      std::move(request), name,
-      base::Bind(&OutOfProcessNativeRunner::AppCompleted,
-                 base::Unretained(this)));
+  child_process_host_->Start(std::move(request), target.name(),
+                             pid_available_callback,
+                             base::Bind(&OutOfProcessNativeRunner::AppCompleted,
+                                        base::Unretained(this)));
 }
 
 void OutOfProcessNativeRunner::AppCompleted() {
@@ -68,19 +58,6 @@ void OutOfProcessNativeRunner::AppCompleted() {
   app_completed_callback_.Reset();
   if (!app_completed_callback.is_null())
     app_completed_callback.Run();
-}
-
-void OutOfProcessNativeRunner::OnProcessLaunched(
-    mojom::ShellClientRequest request,
-    const String& name,
-    const base::Callback<void(base::ProcessId)>& pid_available_callback,
-    base::ProcessId pid) {
-  DCHECK(child_process_host_);
-  child_process_host_->StartChild(
-      std::move(request), name,
-      base::Bind(&OutOfProcessNativeRunner::AppCompleted,
-                 base::Unretained(this)));
-  pid_available_callback.Run(pid);
 }
 
 OutOfProcessNativeRunnerFactory::OutOfProcessNativeRunnerFactory(

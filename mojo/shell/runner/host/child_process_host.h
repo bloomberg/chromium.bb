@@ -55,31 +55,23 @@ class ChildProcessHost {
                    bool start_sandboxed,
                    const Identity& target,
                    const base::FilePath& app_path);
-  // Allows a ChildProcessHost to be instantiated for an existing channel
-  // created by someone else (e.g. an app that launched its own process).
-  explicit ChildProcessHost(mojom::ShellClientFactoryPtr factory);
   virtual ~ChildProcessHost();
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
   // |Start()| was called) when the child has been started (or failed to start).
-  void Start(const ProcessReadyCallback& callback);
+  void Start(mojom::ShellClientRequest request,
+             const String& name,
+             const ProcessReadyCallback& callback,
+             const base::Closure& quit_closure);
 
   // Waits for the child process to terminate.
   void Join();
-
-  void StartChild(mojom::ShellClientRequest request,
-                  const String& name,
-                  const base::Closure& quit_closure);
 
  protected:
   void DidStart(const ProcessReadyCallback& callback);
 
  private:
   void DoLaunch();
-
-  // If |true|, the hosted process is neither launched nor owned by this
-  // ChildProcessHost.
-  bool external_process_ = false;
 
   scoped_refptr<base::TaskRunner> launch_process_runner_;
   NativeRunnerDelegate* delegate_ = nullptr;

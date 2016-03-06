@@ -60,12 +60,6 @@ void InProcessNativeRunner::Start(
   pid_available_callback.Run(base::kNullProcessId);
 }
 
-void InProcessNativeRunner::InitHost(mojom::ShellClientFactoryPtr factory,
-                                     const String& name,
-                                     mojom::ShellClientRequest request) {
-  NOTREACHED();  // Can't host another process in this runner.
-}
-
 void InProcessNativeRunner::Run() {
   DVLOG(2) << "Loading/running Mojo app in process from library: "
            << app_path_.value()

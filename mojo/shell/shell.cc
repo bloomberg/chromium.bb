@@ -111,20 +111,6 @@ class Shell::Instance : public mojom::Connector,
     return runner;
   }
 
-  scoped_ptr<NativeRunner> StartWithFactory(
-      mojom::ShellClientFactoryPtr shell_client_factory,
-      const String& name,
-      mojom::ShellClientRequest request,
-      mojom::PIDReceiverRequest pid_receiver_request,
-      NativeRunnerFactory* factory) {
-    pid_receiver_binding_.Bind(std::move(pid_receiver_request));
-    scoped_ptr<NativeRunner> runner = factory->Create(base::FilePath());
-    runner_ = runner.get();
-    runner_->InitHost(std::move(shell_client_factory), name,
-                      std::move(request));
-    return runner;
-  }
-
   mojom::InstanceInfoPtr CreateInstanceInfo() const {
     mojom::InstanceInfoPtr info(mojom::InstanceInfo::New());
     info->id = id_;
@@ -209,9 +195,18 @@ class Shell::Instance : public mojom::Connector,
     std::string user_id_string = user_id;
     if (user_id_string == mojom::kInheritUserID)
       user_id_string = identity_.user_id();
-    shell_->CreateInstanceForFactory(std::move(factory), name, user_id_string,
-                                     std::move(filter),
-                                     std::move(pid_receiver));
+
+    // We don't call ConnectToClient() here since the instance was created
+    // manually by other code, not in response to a Connect() request. The newly
+    // created instance is identified by |name| and may be subsequently reached
+    // by client code using this identity.
+    Identity target_id(name, std::string(), user_id_string);
+    target_id.set_filter(filter->filter.To<CapabilityFilter>());
+    mojom::ShellClientRequest request;
+    Instance* instance = shell_->CreateInstance(target_id, &request);
+    instance->pid_receiver_binding_.Bind(std::move(pid_receiver));
+    instance->factory_ = std::move(factory);
+    instance->factory_->CreateShellClient(std::move(request), name);
     callback.Run(mojom::ConnectResult::OK);
   }
   void AddInstanceListener(mojom::InstanceListenerPtr listener) override {
@@ -243,6 +238,7 @@ class Shell::Instance : public mojom::Connector,
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
   BindingSet<mojom::Connector> connectors_;
   BindingSet<mojom::Shell> shell_bindings_;
+  mojom::ShellClientFactoryPtr factory_;
   NativeRunner* runner_ = nullptr;
   base::ProcessId pid_ = base::kNullProcessId;
   base::WeakPtrFactory<Instance> weak_factory_;
@@ -439,27 +435,6 @@ Shell::Instance* Shell::CreateInstance(const Identity& target_id,
       });
   instance->InitializeClient();
   return instance;
-}
-
-void Shell::CreateInstanceForFactory(
-    mojom::ShellClientFactoryPtr factory,
-    const std::string& name,
-    const std::string& user_id,
-    mojom::CapabilityFilterPtr filter,
-    mojom::PIDReceiverRequest pid_receiver) {
-  DCHECK(user_id != mojom::kInheritUserID);
-  // We don't call ConnectToClient() here since the instance was created
-  // manually by other code, not in response to a Connect() request. The newly
-  // created instance is identified by |name| and may be subsequently reached by
-  // client code using this identity.
-  Identity target_id(name, std::string(), mojom::kRootUserID);
-  target_id.set_filter(filter->filter.To<CapabilityFilter>());
-  mojom::ShellClientRequest request;
-  Instance* instance = CreateInstance(target_id, &request);
-  native_runners_.push_back(
-      instance->StartWithFactory(std::move(factory), name, std::move(request),
-                                 std::move(pid_receiver),
-                                 native_runner_factory_.get()));
 }
 
 void Shell::AddInstanceListener(mojom::InstanceListenerPtr listener) {

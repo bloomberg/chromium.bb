@@ -36,12 +36,6 @@ class NativeRunner {
       InterfaceRequest<mojom::ShellClient> request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       const base::Closure& app_completed_callback) = 0;
-
-  // Like Start(), but used to initialize the host for a child process started
-  // by someone else. Provides |request| via |factory|.
-  virtual void InitHost(mojom::ShellClientFactoryPtr factory,
-                        const String& name,
-                        mojom::ShellClientRequest request) = 0;
 };
 
 class NativeRunnerFactory {

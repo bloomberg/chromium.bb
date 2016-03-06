@@ -37,10 +37,6 @@ class InProcessNativeRunner : public NativeRunner,
       InterfaceRequest<mojom::ShellClient> request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       const base::Closure& app_completed_callback) override;
-  void InitHost(
-      mojom::ShellClientFactoryPtr factory,
-      const String& name,
-      InterfaceRequest<mojom::ShellClient> request) override;
 
  private:
   // |base::DelegateSimpleThread::Delegate| method:

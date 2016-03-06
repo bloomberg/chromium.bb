@@ -216,11 +216,13 @@ class LifecycleTest : public mojo::test::ShellTest {
     mojo::shell::mojom::ShellClientFactoryPtr factory;
     factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
         std::move(pipe), 0u));
+    base::RunLoop loop;
     shell->CreateInstance(std::move(factory), kTestExeName,
                           mojom::kInheritUserID, std::move(filter),
                           std::move(request),
                           base::Bind(&LifecycleTest::OnConnectionCompleted,
-                                     base::Unretained(this)));
+                                     base::Unretained(this), &loop));
+    loop.Run();
 
     base::LaunchOptions options;
   #if defined(OS_WIN)
@@ -262,7 +264,10 @@ class LifecycleTest : public mojo::test::ShellTest {
     return make_scoped_ptr(state);
   }
 
-  void OnConnectionCompleted(mojom::ConnectResult result) {}
+  void OnConnectionCompleted(base::RunLoop* loop,
+                             mojom::ConnectResult result) {
+    loop->Quit();
+  }
 
   scoped_ptr<InstanceState> instances_;
 

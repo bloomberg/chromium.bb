@@ -53,20 +53,21 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
       edk::CreateParentMessagePipe(primordial_pipe_token_), 0u));
 }
 
-ChildProcessHost::ChildProcessHost(mojom::ShellClientFactoryPtr factory)
-    : external_process_(true),
-      factory_(std::move(factory)),
-      start_child_process_event_(false, false),
-      weak_factory_(this) {}
-
 ChildProcessHost::~ChildProcessHost() {
   if (!app_path_.empty())
     CHECK(!factory_) << "Destroying ChildProcessHost before calling Join";
 }
 
-void ChildProcessHost::Start(const ProcessReadyCallback& callback) {
-  DCHECK(!external_process_);
+void ChildProcessHost::Start(mojom::ShellClientRequest request,
+                             const String& name,
+                             const ProcessReadyCallback& callback,
+                             const base::Closure& quit_closure) {
   DCHECK(!child_process_.IsValid());
+  // Request is invalid in child_process_host_unittest.
+  if (request.is_pending()) {
+    factory_->CreateShellClient(std::move(request), name);
+    factory_.set_connection_error_handler(quit_closure);
+  }
   launch_process_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&ChildProcessHost::DoLaunch, base::Unretained(this)),
@@ -75,7 +76,7 @@ void ChildProcessHost::Start(const ProcessReadyCallback& callback) {
 }
 
 void ChildProcessHost::Join() {
-  if (factory_ && !external_process_)
+  if (factory_)
     start_child_process_event_.Wait();
 
   factory_.reset();
@@ -91,14 +92,6 @@ void ChildProcessHost::Join() {
   }
 }
 
-void ChildProcessHost::StartChild(mojom::ShellClientRequest request,
-                                  const String& name,
-                                  const base::Closure& quit_closure) {
-  DCHECK(factory_);
-  factory_->CreateShellClient(std::move(request), name);
-  factory_.set_connection_error_handler(quit_closure);
-}
-
 void ChildProcessHost::DidStart(const ProcessReadyCallback& callback) {
   if (child_process_.IsValid()) {
     callback.Run(child_process_.Pid());
@@ -109,8 +102,6 @@ void ChildProcessHost::DidStart(const ProcessReadyCallback& callback) {
 }
 
 void ChildProcessHost::DoLaunch() {
-  DCHECK(!external_process_);
-
   const base::CommandLine* parent_command_line =
       base::CommandLine::ForCurrentProcess();
   base::FilePath target_path = parent_command_line->GetProgram();

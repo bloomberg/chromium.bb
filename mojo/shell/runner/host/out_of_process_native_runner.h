@@ -40,19 +40,9 @@ class OutOfProcessNativeRunner : public NativeRunner {
       mojom::ShellClientRequest request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       const base::Closure& app_completed_callback) override;
-  void InitHost(mojom::ShellClientFactoryPtr factory,
-                const String& name,
-                mojom::ShellClientRequest request) override;
 
  private:
   void AppCompleted();
-
-  // Callback run when the child process has launched.
-  void OnProcessLaunched(
-      mojom::ShellClientRequest request,
-      const String& name,
-      const base::Callback<void(base::ProcessId)>& pid_available_callback,
-      base::ProcessId pid);
 
   base::TaskRunner* const launch_process_runner_;
   NativeRunnerDelegate* delegate_;
