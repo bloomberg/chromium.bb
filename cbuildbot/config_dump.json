@@ -16094,7 +16094,8 @@
             "rambi"
         ],
         "buildslave_type": "gce_beefy",
-        "important": true
+        "important": true,
+        "vm_tests": []
     },
     "rambi-release-afdo": {
         "_template": "release-afdo-generate",

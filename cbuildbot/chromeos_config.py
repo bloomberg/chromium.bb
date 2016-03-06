@@ -2243,6 +2243,7 @@ def GetConfig():
       'rambi-release', _release,
       _base_configs['rambi'],
       important=True,
+      vm_tests=[],
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
