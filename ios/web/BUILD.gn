@@ -217,8 +217,6 @@ source_set("web") {
     "web_state/page_viewport_state.mm",
     "web_state/ui/crw_context_menu_provider.h",
     "web_state/ui/crw_context_menu_provider.mm",
-    "web_state/ui/crw_debug_web_view.h",
-    "web_state/ui/crw_debug_web_view.mm",
     "web_state/ui/crw_generic_content_view.mm",
     "web_state/ui/crw_simple_web_view_controller.h",
     "web_state/ui/crw_static_file_web_view.h",

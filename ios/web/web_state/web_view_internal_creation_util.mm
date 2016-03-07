@@ -26,10 +26,6 @@
 #import "ios/web/web_view_counter_impl.h"
 
 #if !defined(NDEBUG)
-#import "ios/web/web_state/ui/crw_debug_web_view.h"
-#endif
-
-#if !defined(NDEBUG)
 
 namespace {
 // Returns the counter of all the active WKWebViews.
@@ -137,16 +133,7 @@ UIWebView* CreateWebView(CGRect frame) {
   DCHECK(web::GetWebClient());
   web::GetWebClient()->PreWebViewCreation();
 
-  UIWebView* result = nil;
-#if defined(NDEBUG)
-  result = [[UIWebView alloc] initWithFrame:frame];
-#else
-  // TODO(eugenebut): create constant for @"LogJavascript" (crbug.com/391807).
-  if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LogJavascript"])
-    result = [[CRWDebugWebView alloc] initWithFrame:frame];
-  else
-    result = [[UIWebView alloc] initWithFrame:frame];
-#endif  // defined(NDEBUG)
+  UIWebView* result = [[UIWebView alloc] initWithFrame:frame];
 
   // Disable data detector types. Safari does the same.
   [result setDataDetectorTypes:UIDataDetectorTypeNone];

@@ -17,7 +17,6 @@
 #include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/test/web_test.h"
-#import "ios/web/web_state/ui/crw_debug_web_view.h"
 #import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/crw_static_file_web_view.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
@@ -170,21 +169,6 @@ TEST_F(WebViewCreationUtilsTest, WKWebViewsShareProcessPool) {
 }
 
 #if !defined(NDEBUG)
-
-// Tests web::CreateWebView function that it correctly returns a CRWDebugWebView
-// with the correct frame and calls WebClient::PreWebViewCreation/
-// WebClient::PostWebViewCreation methods.
-TEST_F(WebViewCreationUtilsTest, DebugCreation) {
-  [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"LogJavascript"];
-
-  UIWebView* captured_web_view = nil;
-  ExpectWebClientCalls(&captured_web_view);
-
-  base::scoped_nsobject<UIWebView> web_view(CreateWebView(kTestFrame));
-  EXPECT_TRUE([web_view isMemberOfClass:[CRWDebugWebView class]]);
-  EXPECT_TRUE(CGRectEqualToRect(kTestFrame, [web_view frame]));
-  EXPECT_NSEQ(web_view, captured_web_view);
-}
 
 // Tests that getting a WKWebView from the util methods correctly maintains
 // the global active wkwebview count (which is debug-only).
