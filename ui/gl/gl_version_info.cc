@@ -83,6 +83,7 @@ void GLVersionInfo::ParseVersionString(const char* version_str,
   }
   if (*is_es && *major_version == 3)
     *is_es3 = true;
+  DCHECK(major_version != 0);
 }
 
 }  // namespace gfx

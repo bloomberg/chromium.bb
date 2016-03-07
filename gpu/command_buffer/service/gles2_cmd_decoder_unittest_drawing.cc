@@ -62,7 +62,7 @@ class GLES2DecoderGeometryInstancingTest : public GLES2DecoderWithShaderTest {
     // Most of the tests in this file assume they're running on
     // desktop OpenGL, and large portions of the tests will become
     // no-ops if they aren't.
-    init.gl_version = "opengl 2.1";
+    init.gl_version = "2.1";
     init.has_alpha = true;
     init.has_depth = true;
     init.request_alpha = true;

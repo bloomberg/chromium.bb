@@ -96,7 +96,7 @@ class BaseGpuTest : public GpuServiceTest {
     const char* gl_version = "3.2";
     const char* extensions = "";
     if (GetTimerType() == gfx::GPUTiming::kTimerTypeEXT) {
-      gl_version = "opengl 2.1";
+      gl_version = "2.1";
       extensions = "GL_EXT_timer_query";
     } else if (GetTimerType() == gfx::GPUTiming::kTimerTypeDisjoint) {
       gl_version = "opengl es 3.0";

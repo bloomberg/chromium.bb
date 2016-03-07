@@ -1198,7 +1198,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_discard_framebuffer) {
 
 TEST_P(FeatureInfoTest, InitializeSamplersWithARBSamplerObjects) {
   SetupInitExpectationsWithGLVersion(
-      "GL_ARB_sampler_objects", "", "OpenGL 3.0");
+      "GL_ARB_sampler_objects", "", "3.0");
   EXPECT_TRUE(info_->feature_flags().enable_samplers);
 }
 
@@ -1242,7 +1242,7 @@ TEST_P(FeatureInfoTest, InitializeWithES3) {
 }
 
 TEST_P(FeatureInfoTest, InitializeWithoutSamplers) {
-  SetupInitExpectationsWithGLVersion("", "", "OpenGL GL 3.0");
+  SetupInitExpectationsWithGLVersion("", "", "3.0");
   EXPECT_FALSE(info_->feature_flags().enable_samplers);
 }
 
