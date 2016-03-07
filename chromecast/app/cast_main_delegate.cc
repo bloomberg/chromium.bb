@@ -23,6 +23,7 @@
 #include "chromecast/common/cast_resource_delegate.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/renderer/cast_content_renderer_client.h"
+#include "chromecast/utility/cast_content_utility_client.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
@@ -232,6 +233,11 @@ content::ContentRendererClient*
 CastMainDelegate::CreateContentRendererClient() {
   renderer_client_ = CastContentRendererClient::Create();
   return renderer_client_.get();
+}
+
+content::ContentUtilityClient* CastMainDelegate::CreateContentUtilityClient() {
+  utility_client_ = CastContentUtilityClient::Create();
+  return utility_client_.get();
 }
 
 }  // namespace shell

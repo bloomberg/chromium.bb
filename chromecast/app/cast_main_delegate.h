@@ -23,6 +23,7 @@ namespace shell {
 
 class CastContentBrowserClient;
 class CastContentRendererClient;
+class CastContentUtilityClient;
 
 class CastMainDelegate : public content::ContentMainDelegate {
  public:
@@ -41,12 +42,14 @@ class CastMainDelegate : public content::ContentMainDelegate {
 #endif  // !defined(OS_ANDROID)
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
+  content::ContentUtilityClient* CreateContentUtilityClient() override;
 
  private:
   void InitializeResourceBundle();
 
   scoped_ptr<CastContentBrowserClient> browser_client_;
   scoped_ptr<CastContentRendererClient> renderer_client_;
+  scoped_ptr<CastContentUtilityClient> utility_client_;
   scoped_ptr<CastResourceDelegate> resource_delegate_;
   CastContentClient content_client_;
 

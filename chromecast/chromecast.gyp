@@ -422,6 +422,7 @@
         'renderer/media/capabilities_message_filter.h',
         'service/cast_service.cc',
         'service/cast_service.h',
+        'utility/cast_content_utility_client.h',
       ],
       'conditions': [
         ['chromecast_branding!="public"', {
@@ -435,6 +436,7 @@
             'browser/pref_service_helper_simple.cc',
             'common/platform_client_auth_simple.cc',
             'renderer/cast_content_renderer_client_simple.cc',
+            'utility/cast_content_utility_client_simple.cc',
           ],
         }],
         # ExternalMetrics not necessary on Android and (as of this writing) uses
