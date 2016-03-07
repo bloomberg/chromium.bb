@@ -4,53 +4,64 @@
 
 #include <stddef.h>
 
-#include "base/lazy_instance.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_perftest_support.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/test/multiprocess_test_helper.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 
+namespace IPC {
 namespace {
 
-// This is needed because we rely on //base/test:test_support_perf and
-// it provides main() which doesn't have Mojo initialization.  We need
-// some way to call Init() only once before using Mojo.
-struct MojoInitialier {
-  MojoInitialier() { mojo::edk::Init(); }
-};
+const char kPerftestToken[] = "perftest-token";
 
-base::LazyInstance<MojoInitialier> g_mojo_initializer
-    = LAZY_INSTANCE_INITIALIZER;
-
-class MojoChannelPerfTest : public IPC::test::IPCChannelPerfTestBase {
-public:
-  typedef IPC::test::IPCChannelPerfTestBase Super;
-
-  MojoChannelPerfTest();
+class MojoChannelPerfTest : public test::IPCChannelPerfTestBase {
+ public:
+  MojoChannelPerfTest() { token_ = mojo::edk::GenerateRandomToken(); }
 
   void TearDown() override {
-    IPC::test::IPCChannelPerfTestBase::TearDown();
+    {
+      base::AutoLock l(ipc_support_lock_);
+      ipc_support_.reset();
+    }
+    test::IPCChannelPerfTestBase::TearDown();
   }
 
-  scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
-      const IPC::ChannelHandle& handle,
+  scoped_ptr<ChannelFactory> CreateChannelFactory(
+      const ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    return IPC::ChannelMojo::CreateServerFactory(runner, handle);
+    EnsureIpcSupport();
+    return ChannelMojo::CreateServerFactory(token_);
   }
 
-  bool DidStartClient() override {
-    bool ok = IPCTestBase::DidStartClient();
-    DCHECK(ok);
-    return ok;
+  bool StartClient() override {
+    EnsureIpcSupport();
+    helper_.StartChildWithExtraSwitch("MojoPerfTestClient", kPerftestToken,
+                                      token_);
+    return true;
   }
+
+  bool WaitForClientShutdown() override {
+    return helper_.WaitForChildTestShutdown();
+  }
+
+  void EnsureIpcSupport() {
+    base::AutoLock l(ipc_support_lock_);
+    if (!ipc_support_) {
+      ipc_support_.reset(
+          new mojo::edk::test::ScopedIPCSupport(io_task_runner()));
+    }
+  }
+
+  mojo::edk::test::MultiprocessTestHelper helper_;
+  std::string token_;
+  base::Lock ipc_support_lock_;
+  scoped_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
 };
-
-MojoChannelPerfTest::MojoChannelPerfTest() {
-  g_mojo_initializer.Get();
-}
-
 
 TEST_F(MojoChannelPerfTest, ChannelPingPong) {
   RunTestChannelPingPong(GetDefaultTestParams());
@@ -80,28 +91,33 @@ TEST_F(MojoChannelPerfTest, DISABLED_MaxChannelCount) {
   }
 }
 
-class MojoTestClient : public IPC::test::PingPongTestClient {
+class MojoPerfTestClient : public test::PingPongTestClient {
  public:
-  typedef IPC::test::PingPongTestClient SuperType;
+  typedef test::PingPongTestClient SuperType;
 
-  MojoTestClient();
+  MojoPerfTestClient();
 
-  scoped_ptr<IPC::Channel> CreateChannel(IPC::Listener* listener) override;
+  scoped_ptr<Channel> CreateChannel(Listener* listener) override;
+
+ private:
+  mojo::edk::test::ScopedIPCSupport ipc_support_;
 };
 
-MojoTestClient::MojoTestClient() {
-  g_mojo_initializer.Get();
+MojoPerfTestClient::MojoPerfTestClient()
+    : ipc_support_(base::ThreadTaskRunnerHandle::Get()) {
+  mojo::edk::test::MultiprocessTestHelper::ChildSetup();
 }
 
-scoped_ptr<IPC::Channel> MojoTestClient::CreateChannel(
-    IPC::Listener* listener) {
-  return scoped_ptr<IPC::Channel>(IPC::ChannelMojo::Create(
-      task_runner(), IPCTestBase::GetChannelName("PerformanceClient"),
-      IPC::Channel::MODE_CLIENT, listener));
+scoped_ptr<Channel> MojoPerfTestClient::CreateChannel(Listener* listener) {
+  return scoped_ptr<Channel>(ChannelMojo::Create(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kPerftestToken),
+      Channel::MODE_CLIENT, listener));
 }
 
-MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {
-  MojoTestClient client;
+MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
+  MojoPerfTestClient client;
+
   int rv = client.RunMain();
 
   base::RunLoop run_loop;
@@ -111,3 +127,4 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {
 }
 
 }  // namespace
+}  // namespace IPC

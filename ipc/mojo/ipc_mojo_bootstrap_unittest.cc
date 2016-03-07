@@ -9,8 +9,14 @@
 #include "base/base_paths.h"
 #include "base/files/file.h"
 #include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_test_base.h"
+#include "ipc/mojo/ipc.mojom.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/test/mojo_test_base.h"
+#include "mojo/edk/test/multiprocess_test_helper.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -18,33 +24,40 @@
 
 namespace {
 
-class IPCMojoBootstrapTest : public IPCTestBase {
+class IPCMojoBootstrapTest : public mojo::edk::test::MojoTestBase {
  protected:
 };
 
 class TestingDelegate : public IPC::MojoBootstrap::Delegate {
  public:
-  TestingDelegate() : passed_(false) {}
+  explicit TestingDelegate(const base::Closure& quit_callback)
+      : passed_(false), quit_callback_(quit_callback) {}
 
-  void OnPipeAvailable(mojo::edk::ScopedPlatformHandle handle,
-                       int32_t peer_pid) override;
+  void OnPipesAvailable(IPC::mojom::ChannelAssociatedPtrInfo send_channel,
+                        IPC::mojom::ChannelAssociatedRequest receive_channel,
+                        int32_t peer_pid) override;
   void OnBootstrapError() override;
 
   bool passed() const { return passed_; }
 
  private:
   bool passed_;
+  const base::Closure quit_callback_;
 };
 
-void TestingDelegate::OnPipeAvailable(mojo::edk::ScopedPlatformHandle handle,
-                                      int32_t peer_pid) {
+void TestingDelegate::OnPipesAvailable(
+    IPC::mojom::ChannelAssociatedPtrInfo send_channel,
+    IPC::mojom::ChannelAssociatedRequest receive_channel,
+    int32_t peer_pid) {
   passed_ = true;
-  base::MessageLoop::current()->QuitWhenIdle();
+  quit_callback_.Run();
 }
 
 void TestingDelegate::OnBootstrapError() {
-  base::MessageLoop::current()->QuitWhenIdle();
+  quit_callback_.Run();
 }
+
+const char kMojoChannelToken[] = "IPCMojoBootstrapTest token";
 
 // Times out on Android; see http://crbug.com/502290
 #if defined(OS_ANDROID)
@@ -53,41 +66,47 @@ void TestingDelegate::OnBootstrapError() {
 #define MAYBE_Connect Connect
 #endif
 TEST_F(IPCMojoBootstrapTest, MAYBE_Connect) {
-  Init("IPCMojoBootstrapTestClient");
-
-  TestingDelegate delegate;
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+  TestingDelegate delegate(run_loop.QuitClosure());
   scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
-      GetTestChannelHandle(), IPC::Channel::MODE_SERVER, &delegate);
+      kMojoChannelToken, IPC::Channel::MODE_SERVER, &delegate);
+  RUN_CHILD_ON_PIPE(IPCMojoBootstrapTestClient, unused_pipe)
 
-  ASSERT_TRUE(bootstrap->Connect());
-#if defined(OS_POSIX)
-  ASSERT_TRUE(StartClientWithFD(bootstrap->GetClientFileDescriptor()));
-#else
-  ASSERT_TRUE(StartClient());
-#endif
-
-  base::MessageLoop::current()->Run();
+  bootstrap->Connect();
+  run_loop.Run();
 
   EXPECT_TRUE(delegate.passed());
-  EXPECT_TRUE(WaitForClientShutdown());
+  END_CHILD()
 }
 
-// A long running process that connects to us.
-MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCMojoBootstrapTestClient) {
-  base::MessageLoopForIO main_message_loop;
+class IPCMojoBootstrapTestClient {
 
-  TestingDelegate delegate;
+};
+
+}  // namespace
+
+namespace mojo {
+namespace edk {
+namespace {
+
+// A long running process that connects to us.
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(IPCMojoBootstrapTestClient,
+                             IPCMojoBootstrapTest,
+                             unused_pipe) {
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+  TestingDelegate delegate(run_loop.QuitClosure());
   scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
-      IPCTestBase::GetChannelName("IPCMojoBootstrapTestClient"),
-      IPC::Channel::MODE_CLIENT, &delegate);
+      kMojoChannelToken, IPC::Channel::MODE_CLIENT, &delegate);
 
   bootstrap->Connect();
 
-  base::MessageLoop::current()->Run();
+  run_loop.Run();
 
   EXPECT_TRUE(delegate.passed());
-
-  return 0;
 }
 
 }  // namespace
+}  // namespace edk
+}  // namespace mojo

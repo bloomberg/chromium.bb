@@ -160,10 +160,12 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   DCHECK(mojo_fd.is_valid());
 
 #if defined(OS_ANDROID)
-  files_to_register->Share(kPrimaryIPCChannel, ipcfd.get());
+  if (ipcfd.get() != -1)
+    files_to_register->Share(kPrimaryIPCChannel, ipcfd.get());
   files_to_register->Share(kMojoIPCChannel, mojo_fd.get());
 #else
-  files_to_register->Transfer(kPrimaryIPCChannel, std::move(ipcfd));
+  if (ipcfd.get() != -1)
+    files_to_register->Transfer(kPrimaryIPCChannel, std::move(ipcfd));
   files_to_register->Transfer(kMojoIPCChannel, std::move(mojo_fd));
 #endif
 #endif

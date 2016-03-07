@@ -54,6 +54,7 @@
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_logging.h"
@@ -62,6 +63,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
+#include "ipc/mojo/scoped_ipc_support.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
@@ -360,10 +362,10 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
   bool create_pipe_now = true;
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner = GetIOTaskRunner();
-    DCHECK(io_task_runner);
     channel_->Init(
-        IPC::ChannelMojo::CreateClientFactory(io_task_runner, channel_name_),
+        IPC::ChannelMojo::CreateClientFactory(
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kMojoChannelToken)),
         create_pipe_now);
     return;
   }

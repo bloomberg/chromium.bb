@@ -65,6 +65,7 @@ class IPC_EXPORT ChannelPosix : public Channel,
   static bool IsNamedServerInitialized(const std::string& channel_id);
 #if defined(OS_LINUX)
   static void SetGlobalPid(int pid);
+  static int GetGlobalPid();
 #endif  // OS_LINUX
 
  private:

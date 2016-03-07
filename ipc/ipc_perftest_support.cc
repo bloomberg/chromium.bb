@@ -227,6 +227,9 @@ class PerformanceChannelListener : public Listener {
   scoped_ptr<base::PerfTimeLogger> perf_logger_;
 };
 
+IPCChannelPerfTestBase::IPCChannelPerfTestBase() = default;
+IPCChannelPerfTestBase::~IPCChannelPerfTestBase() = default;
+
 std::vector<PingPongTestParams>
 IPCChannelPerfTestBase::GetDefaultTestParams() {
   // Test several sizes. We use 12^N for message size, and limit the message
@@ -281,14 +284,14 @@ void IPCChannelPerfTestBase::RunTestChannelPingPong(
 
 void IPCChannelPerfTestBase::RunTestChannelProxyPingPong(
     const std::vector<PingPongTestParams>& params) {
+  io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
   InitWithCustomMessageLoop("PerformanceClient",
                             make_scoped_ptr(new base::MessageLoop()));
 
-  base::TestIOThread io_thread(base::TestIOThread::kAutoStart);
 
   // Set up IPC channel and start client.
   PerformanceChannelListener listener("ChannelProxy");
-  CreateChannelProxy(&listener, io_thread.task_runner());
+  CreateChannelProxy(&listener, io_thread_->task_runner());
   listener.Init(channel_proxy());
   ASSERT_TRUE(StartClient());
 
@@ -318,6 +321,8 @@ void IPCChannelPerfTestBase::RunTestChannelProxyPingPong(
 
   EXPECT_TRUE(WaitForClientShutdown());
   DestroyChannelProxy();
+
+  io_thread_.reset();
 }
 
 

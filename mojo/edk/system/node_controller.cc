@@ -193,14 +193,20 @@ void NodeController::MergePortIntoParent(const std::string& token,
     }
   }
 
-  scoped_refptr<NodeChannel> parent = GetParentChannel();
-  if (parent) {
-    parent->RequestPortMerge(port.name(), token);
-    return;
+  scoped_refptr<NodeChannel> parent;
+  {
+    // Hold |pending_port_merges_lock_| while getting |parent|. Otherwise,
+    // there is a race where the parent can be set, and |pending_port_merges_|
+    // be processed between retrieving |parent| and adding the merge to
+    // |pending_port_merges_|.
+    base::AutoLock lock(pending_port_merges_lock_);
+    parent = GetParentChannel();
+    if (!parent) {
+      pending_port_merges_.push_back(std::make_pair(token, port));
+      return;
+    }
   }
-
-  base::AutoLock lock(pending_port_merges_lock_);
-  pending_port_merges_.push_back(std::make_pair(token, port));
+  parent->RequestPortMerge(port.name(), token);
 }
 
 scoped_refptr<PlatformSharedBuffer> NodeController::CreateSharedBuffer(

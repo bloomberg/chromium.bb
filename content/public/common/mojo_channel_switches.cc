@@ -16,8 +16,11 @@ namespace switches {
 const char kEnableRendererMojoChannel[] =
     "enable-renderer-mojo-channel";
 
-// Disale ChannelMojo usage regardless of the platform or the process type.
+// Disable ChannelMojo usage regardless of the platform or the process type.
 const char kDisableMojoChannel[] = "disable-mojo-channel";
+
+// The token to use to construct the message pipe on which to layer ChannelMojo.
+const char kMojoChannelToken[] = "mojo-channel-token";
 
 }  // namespace switches
 

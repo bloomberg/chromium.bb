@@ -5,17 +5,14 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-mojom("client_channel") {
+mojom("mojom") {
   sources = [
-    "client_channel.mojom",
+    "ipc.mojom",
   ]
 }
 
 component("mojo") {
   sources = [
-    "async_handle_waiter.cc",
-    "async_handle_waiter.h",
-    "client_channel.mojom",
     "ipc_channel_mojo.cc",
     "ipc_channel_mojo.h",
     "ipc_message_pipe_reader.cc",
@@ -35,7 +32,7 @@ component("mojo") {
   defines = [ "IPC_MOJO_IMPLEMENTATION" ]
 
   deps = [
-    ":client_channel",
+    ":mojom",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//ipc",
@@ -48,8 +45,6 @@ component("mojo") {
 
 test("ipc_mojo_unittests") {
   sources = [
-    "async_handle_waiter_unittest.cc",
-
     # TODO(rockot): Re-enable these when we're ready to start using ChannelMojo
     # again. They need to be updated to support multiprocess testing with the
     # current Mojo EDK implementation.
@@ -59,13 +54,15 @@ test("ipc_mojo_unittests") {
   ]
 
   deps = [
+    ":mojo",
+    ":mojom",
     "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//ipc",
     "//ipc:test_support",
-    "//ipc/mojo",
     "//mojo/edk/system",
+    "//mojo/edk/test:test_support",
     "//mojo/environment:chromium",
     "//testing/gtest",
     "//url",
@@ -75,18 +72,25 @@ test("ipc_mojo_unittests") {
 test("ipc_mojo_perftests") {
   sources = [
     "ipc_mojo_perftest.cc",
+    "run_all_perftests.cc",
   ]
 
   deps = [
+    ":mojo",
+    ":mojom",
     "//base",
     "//base/test:test_support",
-    "//base/test:test_support_perf",
     "//base/third_party/dynamic_annotations",
     "//ipc",
     "//ipc:test_support",
-    "//ipc/mojo",
     "//mojo/edk/system",
+    "//mojo/edk/test:test_support",
+    "//mojo/edk/test:test_support_impl",
     "//mojo/environment:chromium",
     "//url",
   ]
+
+  if (is_linux && !is_component_build) {
+    public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+  }
 }

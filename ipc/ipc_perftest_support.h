@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/test_io_thread.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_test_base.h"
 
@@ -34,12 +36,24 @@ class PingPongTestParams {
 
 class IPCChannelPerfTestBase : public IPCTestBase {
  public:
+  IPCChannelPerfTestBase();
+  ~IPCChannelPerfTestBase() override;
+
   static std::vector<PingPongTestParams> GetDefaultTestParams();
 
   void RunTestChannelPingPong(
       const std::vector<PingPongTestParams>& params_list);
   void RunTestChannelProxyPingPong(
       const std::vector<PingPongTestParams>& params_list);
+
+  scoped_refptr<base::TaskRunner> io_task_runner() {
+    if (io_thread_)
+      return io_thread_->task_runner();
+    return base::ThreadTaskRunnerHandle::Get();
+  }
+
+ private:
+  scoped_ptr<base::TestIOThread> io_thread_;
 };
 
 class PingPongTestClient {

@@ -13,49 +13,45 @@
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
+#include "ipc/mojo/ipc.mojom.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
 
-// MojoBootstrap establishes a bootstrap pipe between two processes in
-// Chrome. It creates a native IPC::Channel first, then sends one
-// side of a newly created pipe to peer process. The pipe is intended
-// to be wrapped by Mojo MessagePipe.
+// MojoBootstrap establishes a pair of associated interfaces between two
+// processes in Chrome.
 //
-// Clients should implement MojoBootstrapDelegate to get the pipe
+// Clients should implement MojoBootstrap::Delegate to get the associated pipes
 // from MojoBootstrap object.
 //
 // This lives on IO thread other than Create(), which can be called from
 // UI thread as Channel::Create() can be.
-class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
+class IPC_MOJO_EXPORT MojoBootstrap {
  public:
   class Delegate {
    public:
-    virtual void OnPipeAvailable(mojo::edk::ScopedPlatformHandle handle,
-                                 int32_t peer_pid) = 0;
+    virtual void OnPipesAvailable(
+        mojom::ChannelAssociatedPtrInfo send_channel,
+        mojom::ChannelAssociatedRequest receive_channel,
+        int32_t peer_pid) = 0;
     virtual void OnBootstrapError() = 0;
   };
 
-  // Create the MojoBootstrap instance.
-  // Instead of creating IPC::Channel, passs its ChannelHandle as |handle|,
-  // mode as |mode|. The result is notified to passed |delegate|.
-  static scoped_ptr<MojoBootstrap> Create(ChannelHandle handle,
+  // Create the MojoBootstrap instance, using |token| to create the message
+  // pipe, in mode as specified by |mode|. The result is passed to |delegate|.
+  static scoped_ptr<MojoBootstrap> Create(const std::string& token,
                                           Channel::Mode mode,
                                           Delegate* delegate);
 
   MojoBootstrap();
-  ~MojoBootstrap() override;
+  virtual ~MojoBootstrap();
 
-  // Start the handshake over the underlying platform channel.
-  bool Connect();
+  // Start the handshake over the underlying message pipe.
+  virtual void Connect() = 0;
 
-  // GetSelfPID returns the PID associated with |channel_|.
+  // GetSelfPID returns our PID.
   base::ProcessId GetSelfPID() const;
-
-#if defined(OS_POSIX) && !defined(OS_NACL)
-  int GetClientFileDescriptor() const;
-  base::ScopedFD TakeClientFileDescriptor();
-#endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
  protected:
   // On MojoServerBootstrap: INITIALIZED -> WAITING_ACK -> READY
@@ -64,21 +60,18 @@ class IPC_MOJO_EXPORT MojoBootstrap : public Listener {
   enum State { STATE_INITIALIZED, STATE_WAITING_ACK, STATE_READY, STATE_ERROR };
 
   Delegate* delegate() const { return delegate_; }
-  bool Send(Message* message);
   void Fail();
   bool HasFailed() const;
 
   State state() const { return state_; }
   void set_state(State state) { state_ = state; }
 
+  const std::string& token() { return token_; }
+
  private:
-  void Init(scoped_ptr<Channel> channel, Delegate* delegate);
+  void Init(const std::string& token, Delegate* delegate);
 
-  // Listener implementations
-  void OnBadMessageReceived(const Message& message) override;
-  void OnChannelError() override;
-
-  scoped_ptr<Channel> channel_;
+  std::string token_;
   Delegate* delegate_;
   State state_;
 

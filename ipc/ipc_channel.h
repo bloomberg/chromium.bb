@@ -223,6 +223,7 @@ class IPC_EXPORT Channel : public Endpoint {
   // message from client to server we need to send the PID from the global
   // PID namespace.
   static void SetGlobalPid(int pid);
+  static int GetGlobalPid();
 #endif
 
 #if defined(OS_ANDROID)

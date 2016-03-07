@@ -48,8 +48,9 @@ class IPCTestBase : public base::MultiProcessTest {
   // message loop on the main thread. As IPCTestBase creates IO message loop by
   // default, such tests need to provide a custom message loop for the main
   // thread.
-  void InitWithCustomMessageLoop(const std::string& test_client_name,
-                                 scoped_ptr<base::MessageLoop> message_loop);
+  virtual void InitWithCustomMessageLoop(
+      const std::string& test_client_name,
+      scoped_ptr<base::MessageLoop> message_loop);
 
   // Creates a channel with the given listener and connects to the channel
   // (returning true if successful), respectively. Use these to use a channel
@@ -80,7 +81,7 @@ class IPCTestBase : public base::MultiProcessTest {
 
   // Starts the client process, returning true if successful; this should be
   // done after connecting to the channel.
-  bool StartClient();
+  virtual bool StartClient();
 
 #if defined(OS_POSIX)
   // A StartClient() variant that allows caller to pass the FD of IPC pipe
@@ -91,7 +92,7 @@ class IPCTestBase : public base::MultiProcessTest {
   // this does not initiate client shutdown; that must be done by the test
   // (somehow). This must be called before the end of the test whenever
   // StartClient() was called successfully.
-  bool WaitForClientShutdown();
+  virtual bool WaitForClientShutdown();
 
   IPC::ChannelHandle GetTestChannelHandle();
 

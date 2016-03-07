@@ -613,6 +613,10 @@ bool ChannelPosix::IsNamedServerInitialized(
 void ChannelPosix::SetGlobalPid(int pid) {
   global_pid_ = pid;
 }
+// static
+int ChannelPosix::GetGlobalPid() {
+  return global_pid_;
+}
 #endif  // OS_LINUX
 
 // Called by libevent when we can read from the pipe without blocking.
@@ -1124,6 +1128,9 @@ bool Channel::IsNamedServerInitialized(
 // static
 void Channel::SetGlobalPid(int pid) {
   ChannelPosix::SetGlobalPid(pid);
+}
+int Channel::GetGlobalPid() {
+  return ChannelPosix::GetGlobalPid();
 }
 #endif  // OS_LINUX
 

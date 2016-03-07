@@ -25,7 +25,6 @@
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
 #include "ipc/mojo/ipc_mojo_message_helper.h"
 #include "ipc/mojo/ipc_mojo_param_traits.h"
-#include "ipc/mojo/scoped_ipc_support.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
