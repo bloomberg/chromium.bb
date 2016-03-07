@@ -724,10 +724,9 @@ WillBeHeapVector<RefPtrWillBeMember<T>> toRefPtrWillBeMemberNativeArray(v8::Loca
 template <typename T, typename V8T>
 HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
-    v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
     uint32_t length = 0;
     if (value->IsArray()) {
-        length = v8::Local<v8::Array>::Cast(v8Value)->Length();
+        length = v8::Local<v8::Array>::Cast(value)->Length();
     } else if (!toV8Sequence(value, length, isolate, exceptionState)) {
         if (!exceptionState.hadException())
             exceptionState.throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex));
@@ -736,7 +735,7 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value, int argume
 
     HeapVector<Member<T>> result;
     result.reserveInitialCapacity(length);
-    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
     v8::TryCatch block(isolate);
     for (uint32_t i = 0; i < length; ++i) {
         v8::Local<v8::Value> element;
@@ -841,8 +840,7 @@ inline bool toV8Sequence(v8::Local<v8::Value> value, uint32_t& length, v8::Isola
         return false;
     }
 
-    v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
-    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
     v8::Local<v8::String> lengthSymbol = v8AtomicString(isolate, "length");
 
     // FIXME: The specification states that the length property should be used as fallback, if value
