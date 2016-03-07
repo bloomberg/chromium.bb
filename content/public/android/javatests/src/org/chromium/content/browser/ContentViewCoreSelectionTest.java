@@ -8,6 +8,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
@@ -487,8 +488,12 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertEquals("SampleTextToCopy", mContentViewCore.getSelectedText());
     }
 
+    /*
     @SmallTest
     @Feature({"TextInput"})
+    https://crbug.com/592428
+    */
+    @FlakyTest
     public void testSelectActionBarPasswordPaste() throws Exception {
         copyStringToClipboard("SamplePassword2");
 
