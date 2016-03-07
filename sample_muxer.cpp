@@ -14,6 +14,7 @@
 #include <string>
 
 // libwebm common includes.
+#include "common/file_util.h"
 #include "common/hdr_util.h"
 
 // libwebm parser includes
@@ -281,8 +282,8 @@ int main(int argc, char* argv[]) {
   // Set muxer header info
   mkvmuxer::MkvWriter writer;
 
-  char* temp_file = tmpnam(NULL);
-  if (!writer.Open(cues_before_clusters ? temp_file : output)) {
+  const std::string temp_file = libwebm::GetTempFileName();
+  if (!writer.Open(cues_before_clusters ? temp_file.c_str() : output)) {
     printf("\n Filename is invalid or error while opening.\n");
     return EXIT_FAILURE;
   }
@@ -571,7 +572,7 @@ int main(int argc, char* argv[]) {
   writer.Close();
 
   if (cues_before_clusters) {
-    if (reader.Open(temp_file)) {
+    if (reader.Open(temp_file.c_str())) {
       printf("\n Filename is invalid or error while opening.\n");
       return EXIT_FAILURE;
     }
@@ -585,7 +586,7 @@ int main(int argc, char* argv[]) {
     }
     reader.Close();
     writer.Close();
-    remove(temp_file);
+    remove(temp_file.c_str());
   }
 
   delete[] data;
