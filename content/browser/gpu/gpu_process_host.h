@@ -40,6 +40,7 @@ struct ChannelHandle;
 }
 
 namespace gpu {
+struct GpuPreferences;
 struct SyncToken;
 }
 
@@ -52,7 +53,7 @@ class RenderWidgetHostViewFrameSubscriber;
 class ShaderDiskCache;
 
 typedef base::Thread* (*GpuMainThreadFactoryFunction)(
-    const InProcessChildThreadParams&);
+    const InProcessChildThreadParams&, const gpu::GpuPreferences&);
 
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public IPC::Sender,

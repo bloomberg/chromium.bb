@@ -14,6 +14,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "ipc/ipc_channel_handle.h"
@@ -100,6 +101,33 @@ IPC_STRUCT_TRAITS_BEGIN(content::BufferPresentedParams)
 IPC_STRUCT_TRAITS_END()
 #endif
 
+IPC_STRUCT_TRAITS_BEGIN(gpu::GpuPreferences)
+  IPC_STRUCT_TRAITS_MEMBER(single_process)
+  IPC_STRUCT_TRAITS_MEMBER(in_process_gpu)
+  IPC_STRUCT_TRAITS_MEMBER(ui_prioritize_in_gpu_process)
+  IPC_STRUCT_TRAITS_MEMBER(compile_shader_always_succeeds)
+  IPC_STRUCT_TRAITS_MEMBER(disable_gl_error_limit)
+  IPC_STRUCT_TRAITS_MEMBER(disable_glsl_translator)
+  IPC_STRUCT_TRAITS_MEMBER(disable_gpu_driver_bug_workarounds)
+  IPC_STRUCT_TRAITS_MEMBER(disable_shader_name_hashing)
+  IPC_STRUCT_TRAITS_MEMBER(enable_gpu_command_logging)
+  IPC_STRUCT_TRAITS_MEMBER(enable_gpu_debugging)
+  IPC_STRUCT_TRAITS_MEMBER(enable_gpu_service_logging_gpu)
+  IPC_STRUCT_TRAITS_MEMBER(disable_gpu_program_cache)
+  IPC_STRUCT_TRAITS_MEMBER(enforce_gl_minimums)
+  IPC_STRUCT_TRAITS_MEMBER(force_gpu_mem_available)
+  IPC_STRUCT_TRAITS_MEMBER(gpu_program_cache_size)
+  IPC_STRUCT_TRAITS_MEMBER(disable_gpu_shader_disk_cache)
+  IPC_STRUCT_TRAITS_MEMBER(enable_share_group_async_texture_upload)
+  IPC_STRUCT_TRAITS_MEMBER(enable_subscribe_uniform_extension)
+  IPC_STRUCT_TRAITS_MEMBER(enable_threaded_texture_mailboxes)
+  IPC_STRUCT_TRAITS_MEMBER(gl_shader_interm_output)
+  IPC_STRUCT_TRAITS_MEMBER(emulate_shader_precision)
+  IPC_STRUCT_TRAITS_MEMBER(enable_gpu_service_logging)
+  IPC_STRUCT_TRAITS_MEMBER(enable_gpu_service_tracing)
+  IPC_STRUCT_TRAITS_MEMBER(enable_unsafe_es3_apis)
+IPC_STRUCT_TRAITS_END()
+
 //------------------------------------------------------------------------------
 // GPU Messages
 // These are messages from the browser to the GPU process.
@@ -109,7 +137,8 @@ IPC_STRUCT_TRAITS_END()
 // up between the browser and GPU process before doing any work that might
 // potentially crash the GPU process. Detection of the child process
 // exiting abruptly is predicated on having the IPC channel set up.
-IPC_MESSAGE_CONTROL0(GpuMsg_Initialize)
+IPC_MESSAGE_CONTROL1(GpuMsg_Initialize,
+                     gpu::GpuPreferences /* gpu_prefernces */)
 
 // Tells the GPU process to shutdown itself.
 IPC_MESSAGE_CONTROL0(GpuMsg_Finalize)

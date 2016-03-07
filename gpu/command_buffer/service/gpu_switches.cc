@@ -71,27 +71,4 @@ const char kGLShaderIntermOutput[] = "gl-shader-interm-output";
 // round intermediate values in ANGLE.
 const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 
-const char* kGpuSwitches[] = {
-    kCompileShaderAlwaysSucceeds,
-    kDisableGLErrorLimit,
-    kDisableGLSLTranslator,
-    kDisableGpuDriverBugWorkarounds,
-    kDisableShaderNameHashing,
-    kEnableGPUCommandLogging,
-    kEnableGPUDebugging,
-    kEnableGPUServiceLoggingGPU,
-    kDisableGpuProgramCache,
-    kEnforceGLMinimums,
-    kForceGpuMemAvailableMb,
-    kGpuDriverBugWorkarounds,
-    kGpuProgramCacheSizeKb,
-    kDisableGpuShaderDiskCache,
-    kEnableShareGroupAsyncTextureUpload,
-    kEnableSubscribeUniformExtension,
-    kGLShaderIntermOutput,
-    kEmulateShaderPrecision,
-};
-
-const int kNumGpuSwitches = arraysize(kGpuSwitches);
-
 }  // namespace switches
