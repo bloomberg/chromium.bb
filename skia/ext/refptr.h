@@ -139,7 +139,13 @@ class RefPtr {
   friend RefPtr<U> AdoptRef(U* ptr);
 
   template<typename U>
+  friend RefPtr<U> AdoptRef(sk_sp<U>&&);
+
+  template<typename U>
   friend RefPtr<U> SharePtr(U* ptr);
+
+  template<typename U>
+  friend RefPtr<U> SharePtr(sk_sp<U>);
 
   template <typename U>
   friend class RefPtr;
@@ -149,10 +155,16 @@ class RefPtr {
 template<typename T>
 RefPtr<T> AdoptRef(T* ptr) { return RefPtr<T>(ptr); }
 
+template<typename T>
+RefPtr<T> AdoptRef(sk_sp<T>&& sp) { return RefPtr<T>(sp.release()); }
+
 // For objects that are already owned. This doesn't take ownership of existing
 // references and adds a new one.
 template<typename T>
 RefPtr<T> SharePtr(T* ptr) { return RefPtr<T>(SkSafeRef(ptr)); }
+
+template<typename T>
+RefPtr<T> SharePtr(sk_sp<T> sp) { return RefPtr<T>(sp.release()); }
 
 }  // namespace skia
 

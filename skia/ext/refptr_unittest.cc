@@ -214,5 +214,31 @@ TEST(RefPtrTest, Nullptr) {
   EXPECT_FALSE(returned);
 }
 
+TEST(RefPtrTest, SkSP) {
+  sk_sp<RefCountCounter> sp = sk_make_sp<RefCountCounter>();
+  EXPECT_EQ(0, sp->ref_count_changes());
+
+  RefPtr<RefCountCounter> ref = skia::SharePtr(sp);
+  EXPECT_FALSE(ref->unique());
+  EXPECT_EQ(1, ref->ref_count_changes());
+
+  sp = sk_make_sp<RefCountCounter>();
+  EXPECT_TRUE(ref->unique());
+  EXPECT_EQ(2, ref->ref_count_changes());
+
+  ref = skia::SharePtr(std::move(sp));
+  EXPECT_TRUE(ref->unique());
+  EXPECT_EQ(0, ref->ref_count_changes());
+
+  sp = sk_make_sp<RefCountCounter>();
+  ref = skia::AdoptRef(std::move(sp));
+  EXPECT_TRUE(ref->unique());
+  EXPECT_EQ(0, ref->ref_count_changes());
+
+  ref = skia::AdoptRef(sk_make_sp<RefCountCounter>());
+  EXPECT_TRUE(ref->unique());
+  EXPECT_EQ(0, ref->ref_count_changes());
+}
+
 }  // namespace
 }  // namespace skia
