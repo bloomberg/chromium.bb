@@ -14,6 +14,7 @@
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/connection_manager_delegate.h"
+#include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_factory.h"
@@ -80,16 +81,17 @@ TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
 
   const UserId kTestId1 = "2";
   const UserId kTestId2 = "21";
+  DisplayManager* display_manager = connection_manager_->display_manager();
   WindowManagerFactoryRegistryTestApi(
       connection_manager_->window_manager_factory_registry())
       .AddService(kTestId1, &test_window_manager_factory_);
   // The first register should trigger creation of the default
   // Displays. There should be kNumHostsToCreate Displays.
   EXPECT_EQ(static_cast<size_t>(kNumHostsToCreate),
-            connection_manager_->displays().size());
+            display_manager->displays().size());
 
   // Each host should have a WindowManagerState for kTestId1.
-  for (Display* display : connection_manager_->displays()) {
+  for (Display* display : display_manager->displays()) {
     EXPECT_EQ(1u, display->num_window_manger_states());
     EXPECT_TRUE(display->GetWindowManagerStateForUser(kTestId1));
     EXPECT_FALSE(display->GetWindowManagerStateForUser(kTestId2));
@@ -99,7 +101,7 @@ TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
   WindowManagerFactoryRegistryTestApi(
       connection_manager_->window_manager_factory_registry())
       .AddService(kTestId2, &test_window_manager_factory_);
-  for (Display* display : connection_manager_->displays()) {
+  for (Display* display : display_manager->displays()) {
     ASSERT_EQ(2u, display->num_window_manger_states());
     WindowManagerState* state1 =
         display->GetWindowManagerStateForUser(kTestId1);
@@ -123,11 +125,12 @@ TEST_F(DisplayTest, Destruction) {
       .AddService(kTestId1, &test_window_manager_factory_);
 
   // Add another registry, should trigger creation of another wm.
+  DisplayManager* display_manager = connection_manager_->display_manager();
   WindowManagerFactoryRegistryTestApi(
       connection_manager_->window_manager_factory_registry())
       .AddService(kTestId2, &test_window_manager_factory_);
-  ASSERT_EQ(1u, connection_manager_->displays().size());
-  Display* display = *connection_manager_->displays().begin();
+  ASSERT_EQ(1u, display_manager->displays().size());
+  Display* display = *display_manager->displays().begin();
   ASSERT_EQ(2u, display->num_window_manger_states());
   // There should be two trees, one for each windowmanager.
   EXPECT_EQ(2u, connection_manager_->num_trees());
@@ -139,15 +142,15 @@ TEST_F(DisplayTest, Destruction) {
     connection_manager_->DestroyTree(state->tree());
     ASSERT_EQ(1u, display->num_window_manger_states());
     EXPECT_FALSE(display->GetWindowManagerStateForUser(kTestId1));
-    EXPECT_EQ(1u, connection_manager_->displays().size());
+    EXPECT_EQ(1u, display_manager->displays().size());
     EXPECT_EQ(1u, connection_manager_->num_trees());
   }
 
-  EXPECT_FALSE(connection_manager_delegate_.got_on_no_more_connections());
+  EXPECT_FALSE(connection_manager_delegate_.got_on_no_more_displays());
   // Destroy the Display, which should shutdown the trees.
-  connection_manager_->DestroyDisplay(display);
+  connection_manager_->display_manager()->DestroyDisplay(display);
   EXPECT_EQ(0u, connection_manager_->num_trees());
-  EXPECT_TRUE(connection_manager_delegate_.got_on_no_more_connections());
+  EXPECT_TRUE(connection_manager_delegate_.got_on_no_more_displays());
 }
 
 }  // namespace test

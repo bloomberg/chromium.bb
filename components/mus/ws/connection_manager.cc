@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/mus/ws/connection_manager_delegate.h"
+#include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
+#include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
@@ -30,7 +32,7 @@ ConnectionManager::ConnectionManager(
     : delegate_(delegate),
       surfaces_state_(surfaces_state),
       next_connection_id_(1),
-      next_root_id_(0),
+      display_manager_(new ws::DisplayManager(this)),
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
@@ -40,38 +42,15 @@ ConnectionManager::ConnectionManager(
 ConnectionManager::~ConnectionManager() {
   in_destructor_ = true;
 
-  while (!pending_displays_.empty())
-    DestroyDisplay(*pending_displays_.begin());
-  DCHECK(pending_displays_.empty());
+  // Destroys the window trees results in querying for the display. Tear down
+  // the displays first so that the trees are notified of the display going
+  // away while the display is still valid.
+  display_manager_->DestroyAllDisplays();
 
-  // DestroyDisplay() removes from |displays_| and deletes the Display.
-  while (!displays_.empty())
-    DestroyDisplay(*displays_.begin());
-  DCHECK(displays_.empty());
+  while (!tree_map_.empty())
+    DestroyTree(tree_map_.begin()->second.get());
 
-  tree_map_.clear();
-}
-
-void ConnectionManager::AddDisplay(Display* display) {
-  DCHECK_EQ(0u, pending_displays_.count(display));
-  pending_displays_.insert(display);
-}
-
-void ConnectionManager::DestroyDisplay(Display* display) {
-  for (auto& pair : tree_map_)
-    pair.second->OnWillDestroyDisplay(display);
-
-  if (pending_displays_.count(display)) {
-    pending_displays_.erase(display);
-  } else {
-    DCHECK(displays_.count(display));
-    displays_.erase(display);
-  }
-  delete display;
-
-  // If we have no more roots left, let the app know so it can terminate.
-  if (!displays_.size() && !pending_displays_.size())
-    delegate_->OnNoMoreRootConnections();
+  display_manager_.reset();
 }
 
 ServerWindow* ConnectionManager::CreateServerWindow(
@@ -85,13 +64,6 @@ ServerWindow* ConnectionManager::CreateServerWindow(
 ConnectionSpecificId ConnectionManager::GetAndAdvanceNextConnectionId() {
   const ConnectionSpecificId id = next_connection_id_++;
   DCHECK_LT(id, next_connection_id_);
-  return id;
-}
-
-uint16_t ConnectionManager::GetAndAdvanceNextRootId() {
-  // TODO(sky): handle wrapping!
-  const uint16_t id = next_root_id_++;
-  DCHECK_LT(id, next_root_id_);
   return id;
 }
 
@@ -158,9 +130,13 @@ void ConnectionManager::DestroyTree(WindowTree* tree) {
   // Notify the hosts, taking care to only notify each host once.
   std::set<Display*> displays_notified;
   for (auto* root : tree->roots()) {
-    Display* display = GetDisplayContaining(root);
+    // WindowTree holds its roots as a const, which is right as WindowTree
+    // doesn't need to modify the window. OTOH we do. We could look up the
+    // window using the id to get non-const version, but instead we cast.
+    Display* display =
+        display_manager_->GetDisplayContaining(const_cast<ServerWindow*>(root));
     if (display && displays_notified.count(display) == 0) {
-      display->OnWindowTreeConnectionError(tree);
+      display->OnWillDestroyTree(tree);
       displays_notified.insert(display);
     }
   }
@@ -185,7 +161,7 @@ WindowTree* ConnectionManager::GetTreeWithId(
 ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
   // kInvalidConnectionId is used for Display and WindowManager nodes.
   if (id.connection_id == kInvalidConnectionId) {
-    for (Display* display : displays_) {
+    for (Display* display : display_manager_->displays()) {
       ServerWindow* window = display->GetRootWithId(id);
       if (window)
         return window;
@@ -195,22 +171,11 @@ ServerWindow* ConnectionManager::GetWindow(const WindowId& id) {
   return tree ? tree->GetWindow(id) : nullptr;
 }
 
-void ConnectionManager::SchedulePaint(const ServerWindow* window,
+void ConnectionManager::SchedulePaint(ServerWindow* window,
                                       const gfx::Rect& bounds) {
-  for (Display* display : displays_) {
-    if (display->SchedulePaintIfInViewport(window, bounds))
-      return;
-  }
-}
-
-void ConnectionManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {
-  DCHECK_NE(0u, pending_displays_.count(display));
-  DCHECK_EQ(0u, displays_.count(display));
-  const bool is_first_display = displays_.empty();
-  displays_.insert(display);
-  pending_displays_.erase(display);
-  if (is_first_display)
-    delegate_->OnFirstDisplayReady();
+  Display* display = display_manager_->GetDisplayContaining(window);
+  if (display)
+    display->SchedulePaint(window, bounds);
 }
 
 void ConnectionManager::OnTreeMessagedClient(ConnectionSpecificId id) {
@@ -224,12 +189,14 @@ bool ConnectionManager::DidTreeMessageClient(ConnectionSpecificId id) const {
 
 mojom::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForWindow(
     const ServerWindow* window) {
-  Display* display = GetDisplayContaining(window);
+  const Display* display = display_manager_->GetDisplayContaining(window);
   if (display)
     return display->GetViewportMetrics().Clone();
 
-  if (!displays_.empty())
-    return (*displays_.begin())->GetViewportMetrics().Clone();
+  if (!display_manager_->displays().empty())
+    return (*display_manager_->displays().begin())
+        ->GetViewportMetrics()
+        .Clone();
 
   mojom::ViewportMetricsPtr metrics = mojom::ViewportMetrics::New();
   metrics->size_in_pixels = mojo::Size::New();
@@ -247,66 +214,13 @@ const WindowTree* ConnectionManager::GetTreeWithRoot(
   return nullptr;
 }
 
-WindowManagerAndDisplayConst ConnectionManager::GetWindowManagerAndDisplay(
-    const ServerWindow* window) const {
-  const ServerWindow* last = window;
-  while (window && window->parent()) {
-    last = window;
-    window = window->parent();
-  }
-  for (Display* display : displays_) {
-    if (window == display->root_window()) {
-      WindowManagerAndDisplayConst result;
-      result.display = display;
-      result.window_manager_state =
-          display->GetWindowManagerStateWithRoot(last);
-      return result;
-    }
-  }
-  return WindowManagerAndDisplayConst();
-}
-
-WindowManagerAndDisplay ConnectionManager::GetWindowManagerAndDisplay(
-    const ServerWindow* window) {
-  WindowManagerAndDisplayConst result_const =
-      const_cast<const ConnectionManager*>(this)->GetWindowManagerAndDisplay(
-          window);
-  WindowManagerAndDisplay result;
-  result.display = const_cast<Display*>(result_const.display);
-  result.window_manager_state =
-      const_cast<WindowManagerState*>(result_const.window_manager_state);
-  return result;
-}
-
-Display* ConnectionManager::GetDisplayContaining(const ServerWindow* window) {
-  return const_cast<Display*>(
-      static_cast<const ConnectionManager*>(this)->GetDisplayContaining(
-          window));
-}
-
-const Display* ConnectionManager::GetDisplayContaining(
-    const ServerWindow* window) const {
-  while (window && window->parent())
-    window = window->parent();
-  for (Display* display : displays_) {
-    if (window == display->root_window())
-      return display;
-  }
-  return nullptr;
-}
-
-Display* ConnectionManager::GetActiveDisplay() {
-  // TODO(sky): this isn't active, but first. Make it active.
-  return displays_.size() ? *displays_.begin() : nullptr;
-}
-
 void ConnectionManager::AddDisplayManagerBinding(
     mojo::InterfaceRequest<mojom::DisplayManager> request) {
   display_manager_bindings_.AddBinding(this, std::move(request));
 }
 
 void ConnectionManager::OnFirstWindowManagerFactorySet() {
-  if (!displays_.empty() || !pending_displays_.empty())
+  if (display_manager_->has_active_or_pending_displays())
     return;
 
   // We've been supplied a WindowManagerFactory and no displays have been
@@ -367,7 +281,7 @@ void ConnectionManager::WindowManagerCreatedTopLevelWindow(
 mojom::DisplayPtr ConnectionManager::DisplayToMojomDisplay(Display* display) {
   size_t i = 0;
   int next_x = 0;
-  for (Display* display2 : displays_) {
+  for (Display* display2 : display_manager_->displays()) {
     const ServerWindow* root = display->root_window();
     if (display == display2) {
       mojom::DisplayPtr display_ptr = mojom::Display::New();
@@ -462,9 +376,8 @@ void ConnectionManager::ProcessWindowReorder(
 }
 
 void ConnectionManager::ProcessWindowDeleted(const ServerWindow* window) {
-  for (auto& pair : tree_map_) {
+  for (auto& pair : tree_map_)
     pair.second->ProcessWindowDeleted(window, IsOperationSource(pair.first));
-  }
 }
 
 void ConnectionManager::ProcessWillChangeWindowPredefinedCursor(
@@ -476,7 +389,7 @@ void ConnectionManager::ProcessWillChangeWindowPredefinedCursor(
   }
 
   // Pass the cursor change to the native window.
-  Display* display = GetDisplayContaining(window);
+  Display* display = display_manager_->GetDisplayContaining(window);
   if (display)
     display->OnCursorUpdated(window);
 }
@@ -537,23 +450,24 @@ void ConnectionManager::FinishOperation() {
 
 void ConnectionManager::MaybeUpdateNativeCursor(ServerWindow* window) {
   // This can be null in unit tests.
-  Display* display = GetDisplayContaining(window);
+  Display* display = display_manager_->GetDisplayContaining(window);
   if (display)
     display->MaybeChangeCursorOnWindowTreeChange();
 }
 
 void ConnectionManager::CallOnDisplays(
     mojom::DisplayManagerObserver* observer) {
-  mojo::Array<mojom::DisplayPtr> displays(displays_.size());
+  std::set<Display*> displays = display_manager_->displays();
+  mojo::Array<mojom::DisplayPtr> display_ptrs(displays.size());
   {
     size_t i = 0;
     // TODO(sky): need ordering!
-    for (Display* display : displays_) {
-      displays[i] = DisplayToMojomDisplay(display);
+    for (Display* display : displays) {
+      display_ptrs[i] = DisplayToMojomDisplay(display);
       ++i;
     }
   }
-  observer->OnDisplays(std::move(displays));
+  observer->OnDisplays(std::move(display_ptrs));
 }
 
 void ConnectionManager::CallOnDisplayChanged(
@@ -571,24 +485,21 @@ mus::SurfacesState* ConnectionManager::GetSurfacesState() {
   return surfaces_state_.get();
 }
 
-void ConnectionManager::OnScheduleWindowPaint(const ServerWindow* window) {
+void ConnectionManager::OnScheduleWindowPaint(ServerWindow* window) {
   if (!in_destructor_)
     SchedulePaint(window, gfx::Rect(window->bounds().size()));
 }
 
 const ServerWindow* ConnectionManager::GetRootWindow(
     const ServerWindow* window) const {
-  const Display* display = GetDisplayContaining(window);
+  const Display* display = display_manager_->GetDisplayContaining(window);
   return display ? display->root_window() : nullptr;
 }
 
 void ConnectionManager::ScheduleSurfaceDestruction(ServerWindow* window) {
-  for (Display* display : displays_) {
-    if (display->root_window()->Contains(window)) {
-      display->ScheduleSurfaceDestruction(window);
-      break;
-    }
-  }
+  Display* display = display_manager_->GetDisplayContaining(window);
+  if (display)
+    display->ScheduleSurfaceDestruction(window);
 }
 
 ServerWindow* ConnectionManager::FindWindowForSurface(
@@ -598,7 +509,7 @@ ServerWindow* ConnectionManager::FindWindowForSurface(
   WindowTree* window_tree;
   if (ancestor->id().connection_id == kInvalidConnectionId) {
     WindowManagerAndDisplay wm_and_display =
-        GetWindowManagerAndDisplay(ancestor);
+        display_manager_->GetWindowManagerAndDisplay(ancestor);
     window_tree = wm_and_display.window_manager_state
                       ? wm_and_display.window_manager_state->tree()
                       : nullptr;
@@ -617,8 +528,7 @@ ServerWindow* ConnectionManager::FindWindowForSurface(
 }
 
 void ConnectionManager::OnWindowDestroyed(ServerWindow* window) {
-  if (!in_destructor_)
-    ProcessWindowDeleted(window);
+  ProcessWindowDeleted(window);
 }
 
 void ConnectionManager::OnWillChangeWindowHierarchy(ServerWindow* window,
@@ -723,7 +633,7 @@ void ConnectionManager::OnWindowSharedPropertyChanged(
 void ConnectionManager::OnWindowTextInputStateChanged(
     ServerWindow* window,
     const ui::TextInputState& state) {
-  Display* display = GetDisplayContaining(window);
+  Display* display = display_manager_->GetDisplayContaining(window);
   display->UpdateTextInputState(window, state);
 }
 
@@ -759,6 +669,19 @@ void ConnectionManager::AddObserver(mojom::DisplayManagerObserverPtr observer) {
   }
   CallOnDisplays(observer.get());
   display_manager_observers_.AddInterfacePtr(std::move(observer));
+}
+
+void ConnectionManager::OnWillDestroyDisplay(Display* display) {
+  for (auto& pair : tree_map_)
+    pair.second->OnWillDestroyDisplay(display);
+}
+
+void ConnectionManager::OnFirstDisplayReady() {
+  delegate_->OnFirstDisplayReady();
+}
+
+void ConnectionManager::OnNoMoreDisplays() {
+  delegate_->OnNoMoreDisplays();
 }
 
 }  // namespace ws

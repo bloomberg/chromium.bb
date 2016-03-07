@@ -69,7 +69,7 @@ class MandolineUIServicesApp
 
   // ConnectionManagerDelegate:
   void OnFirstDisplayReady() override;
-  void OnNoMoreRootConnections() override;
+  void OnNoMoreDisplays() override;
   scoped_ptr<ws::WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
       ws::ConnectionManager* connection_manager,
       ws::WindowTree* tree,

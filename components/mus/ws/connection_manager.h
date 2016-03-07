@@ -20,6 +20,7 @@
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/display.h"
+#include "components/mus/ws/display_manager_delegate.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window_delegate.h"
@@ -36,24 +37,11 @@ namespace mus {
 namespace ws {
 
 class ConnectionManagerDelegate;
+class DisplayManager;
 class ServerWindow;
 class WindowManagerState;
 class WindowTree;
 class WindowTreeBinding;
-
-struct WindowManagerAndDisplay {
-  WindowManagerAndDisplay() : window_manager_state(nullptr), display(nullptr) {}
-
-  WindowManagerState* window_manager_state;
-  Display* display;
-};
-
-struct WindowManagerAndDisplayConst {
-  WindowManagerAndDisplayConst()
-      : window_manager_state(nullptr), display(nullptr) {}
-  const WindowManagerState* window_manager_state;
-  const Display* display;
-};
 
 // ConnectionManager manages the set of connections to the window server (all
 // the WindowTrees) as well as providing the root of the hierarchy.
@@ -62,7 +50,8 @@ struct WindowManagerAndDisplayConst {
 // clearer.
 class ConnectionManager : public ServerWindowDelegate,
                           public ServerWindowObserver,
-                          public mojom::DisplayManager {
+                          public mojom::DisplayManager,
+                          public DisplayManagerDelegate {
  public:
   ConnectionManager(ConnectionManagerDelegate* delegate,
                     const scoped_refptr<mus::SurfacesState>& surfaces_state);
@@ -72,10 +61,10 @@ class ConnectionManager : public ServerWindowDelegate,
 
   UserIdTracker* user_id_tracker() { return &user_id_tracker_; }
 
-  // Adds/removes a Display. ConnectionManager owns the Displays.
-  void AddDisplay(Display* display);
-  void DestroyDisplay(Display* display);
-  std::set<Display*> displays() { return displays_; }
+  ws::DisplayManager* display_manager() { return display_manager_.get(); }
+  const ws::DisplayManager* display_manager() const {
+    return display_manager_.get();
+  }
 
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before ConnectionManager.
@@ -85,10 +74,6 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Returns the id for the next WindowTree.
   ConnectionSpecificId GetAndAdvanceNextConnectionId();
-
-  // Returns the id for the next root window (both for the root of a Display
-  // as well as the root of WindowManagers).
-  uint16_t GetAndAdvanceNextRootId();
 
   // See description of WindowTree::Embed() for details. This assumes
   // |transport_window_id| is valid.
@@ -116,18 +101,12 @@ class ConnectionManager : public ServerWindowDelegate,
   ServerWindow* GetWindow(const WindowId& id);
 
   // Schedules a paint for the specified region in the coordinates of |window|.
-  void SchedulePaint(const ServerWindow* window, const gfx::Rect& bounds);
+  void SchedulePaint(ServerWindow* window, const gfx::Rect& bounds);
 
   OperationType current_operation_type() const {
     return current_operation_ ? current_operation_->type()
                               : OperationType::NONE;
   }
-
-  // Invoked when the Display's PlatformDisplay is closed.
-  void OnDisplayClosed();
-
-  // Called when the AcceleratedWidget is available for |display|.
-  void OnDisplayAcceleratedWidgetAvailable(Display* display);
 
   // Invoked when a connection messages a client about the change. This is used
   // to avoid sending ServerChangeIdAdvanced() unnecessarily.
@@ -147,20 +126,6 @@ class ConnectionManager : public ServerWindowDelegate,
         const_cast<const ConnectionManager*>(this)->GetTreeWithRoot(window));
   }
   const WindowTree* GetTreeWithRoot(const ServerWindow* window) const;
-
-  // Returns the Display that contains |window|, or null if |window| is not
-  // attached to a display.
-  Display* GetDisplayContaining(const ServerWindow* window);
-  const Display* GetDisplayContaining(const ServerWindow* window) const;
-
-  WindowManagerAndDisplayConst GetWindowManagerAndDisplay(
-      const ServerWindow* window) const;
-  WindowManagerAndDisplay GetWindowManagerAndDisplay(
-      const ServerWindow* window);
-
-  Display* GetActiveDisplay();
-
-  bool has_displays() const { return !displays_.empty(); }
 
   void AddDisplayManagerBinding(
       mojo::InterfaceRequest<mojom::DisplayManager> request);
@@ -270,7 +235,7 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Overridden from ServerWindowDelegate:
   mus::SurfacesState* GetSurfacesState() override;
-  void OnScheduleWindowPaint(const ServerWindow* window) override;
+  void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
   void ScheduleSurfaceDestruction(ServerWindow* window) override;
   ServerWindow* FindWindowForSurface(
@@ -313,6 +278,11 @@ class ConnectionManager : public ServerWindowDelegate,
   // Overriden from mojom::DisplayManager:
   void AddObserver(mojom::DisplayManagerObserverPtr observer) override;
 
+  // DisplayManagerDelegate:
+  void OnWillDestroyDisplay(Display* display) override;
+  void OnFirstDisplayReady() override;
+  void OnNoMoreDisplays() override;
+
   UserIdTracker user_id_tracker_;
 
   ConnectionManagerDelegate* delegate_;
@@ -323,17 +293,10 @@ class ConnectionManager : public ServerWindowDelegate,
   // ID to use for next WindowTree.
   ConnectionSpecificId next_connection_id_;
 
-  // ID to use for next root node.
-  uint16_t next_root_id_;
+  scoped_ptr<ws::DisplayManager> display_manager_;
 
   // Set of WindowTrees.
   WindowTreeMap tree_map_;
-
-  // Displays are initially added to |pending_displays_|. When the display is
-  // initialized it is moved to |displays_|. ConnectionManager owns the
-  // Displays.
-  std::set<Display*> pending_displays_;
-  std::set<Display*> displays_;
 
   // If non-null then we're processing a client operation. The Operation is
   // not owned by us (it's created on the stack by WindowTree).

@@ -10,6 +10,7 @@
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display_binding.h"
+#include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/focus_controller.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/window_manager_factory_service.h"
@@ -128,7 +129,7 @@ Display::~Display() {
 void Display::Init(scoped_ptr<DisplayBinding> binding) {
   init_called_ = true;
   binding_ = std::move(binding);
-  connection_manager_->AddDisplay(this);
+  display_manager()->AddDisplay(this);
   InitWindowManagersIfNecessary();
 }
 
@@ -138,13 +139,10 @@ void Display::SetFrameDecorationValues(mojom::FrameDecorationValuesPtr values) {
   connection_manager_->ProcessFrameDecorationValuesChanged(this);
 }
 
-bool Display::SchedulePaintIfInViewport(const ServerWindow* window,
-                                        const gfx::Rect& bounds) {
-  if (root_->Contains(window)) {
-    platform_display_->SchedulePaint(window, bounds);
-    return true;
-  }
-  return false;
+void Display::SchedulePaint(const ServerWindow* window,
+                            const gfx::Rect& bounds) {
+  DCHECK(root_->Contains(window));
+  platform_display_->SchedulePaint(window, bounds);
 }
 
 void Display::ScheduleSurfaceDestruction(ServerWindow* window) {
@@ -247,7 +245,7 @@ void Display::SetImeVisibility(ServerWindow* window, bool visible) {
   platform_display_->SetImeVisibility(visible);
 }
 
-void Display::OnWindowTreeConnectionError(WindowTree* tree) {
+void Display::OnWillDestroyTree(WindowTree* tree) {
   for (auto it = window_manager_state_map_.begin();
        it != window_manager_state_map_.end(); ++it) {
     if (it->second->tree() == tree) {
@@ -298,7 +296,7 @@ void Display::InitWindowManagersIfNecessary() {
   if (!init_called_ || !root_)
     return;
 
-  connection_manager_->OnDisplayAcceleratedWidgetAvailable(this);
+  display_manager()->OnDisplayAcceleratedWidgetAvailable(this);
   if (binding_) {
     scoped_ptr<WindowManagerState> wms_ptr(new WindowManagerState(this));
     WindowManagerState* wms = wms_ptr.get();
@@ -310,6 +308,14 @@ void Display::InitWindowManagersIfNecessary() {
   } else {
     CreateWindowManagerStatesFromRegistry();
   }
+}
+
+DisplayManager* Display::display_manager() {
+  return connection_manager_->display_manager();
+}
+
+const DisplayManager* Display::display_manager() const {
+  return connection_manager_->display_manager();
 }
 
 void Display::OnEventAckTimeout() {
@@ -435,7 +441,7 @@ void Display::OnNativeCaptureLost() {
 }
 
 void Display::OnDisplayClosed() {
-  connection_manager_->DestroyDisplay(this);
+  display_manager()->DestroyDisplay(this);
 }
 
 void Display::OnViewportMetricsChanged(
@@ -443,7 +449,7 @@ void Display::OnViewportMetricsChanged(
     const mojom::ViewportMetrics& new_metrics) {
   if (!root_) {
     root_.reset(connection_manager_->CreateServerWindow(
-        RootWindowId(connection_manager_->GetAndAdvanceNextRootId()),
+        display_manager()->GetAndAdvanceNextRootId(),
         ServerWindow::Properties()));
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
     root_->SetVisible(true);
@@ -542,7 +548,8 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   WindowTree* wms_tree_with_old_focused_window = nullptr;
   if (old_focused_window) {
     WindowManagerState* wms =
-        connection_manager_->GetWindowManagerAndDisplay(old_focused_window)
+        display_manager()
+            ->GetWindowManagerAndDisplay(old_focused_window)
             .window_manager_state;
     wms_tree_with_old_focused_window = wms ? wms->tree() : nullptr;
     if (wms_tree_with_old_focused_window &&
@@ -556,7 +563,8 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   }
   if (new_focused_window) {
     WindowManagerState* wms =
-        connection_manager_->GetWindowManagerAndDisplay(new_focused_window)
+        display_manager()
+            ->GetWindowManagerAndDisplay(new_focused_window)
             .window_manager_state;
     WindowTree* wms_tree = wms ? wms->tree() : nullptr;
     if (wms_tree && wms_tree != wms_tree_with_old_focused_window &&
@@ -631,8 +639,8 @@ void Display::OnUserIdRemoved(const UserId& id) {
   if (!state)
     return;
 
-  // DestroyTree() calls back to OnWindowTreeConnectionError() and the
-  // WindowManagerState is destroyed (and removed).
+  // DestroyTree() calls back to OnWillDestroyTree() and the WindowManagerState
+  // is destroyed (and removed).
   connection_manager_->DestroyTree(state->tree());
   DCHECK_EQ(0u, window_manager_state_map_.count(id));
 }

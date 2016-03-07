@@ -15,6 +15,7 @@
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
+#include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "components/mus/ws/window_tree_factory.h"
@@ -157,7 +158,7 @@ void MandolineUIServicesApp::OnFirstDisplayReady() {
   }
 }
 
-void MandolineUIServicesApp::OnNoMoreRootConnections() {
+void MandolineUIServicesApp::OnNoMoreDisplays() {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
@@ -180,7 +181,7 @@ void MandolineUIServicesApp::CreateDefaultDisplays() {
 
 void MandolineUIServicesApp::Create(mojo::Connection* connection,
                                     mojom::DisplayManagerRequest request) {
-  if (!connection_manager_->has_displays()) {
+  if (!connection_manager_->display_manager()->has_displays()) {
     scoped_ptr<PendingRequest> pending_request(new PendingRequest);
     pending_request->dm_request.reset(
         new mojo::InterfaceRequest<mojom::DisplayManager>(std::move(request)));
@@ -199,7 +200,7 @@ void MandolineUIServicesApp::Create(
 
 void MandolineUIServicesApp::Create(Connection* connection,
                                     mojom::WindowTreeFactoryRequest request) {
-  if (!connection_manager_->has_displays()) {
+  if (!connection_manager_->display_manager()->has_displays()) {
     scoped_ptr<PendingRequest> pending_request(new PendingRequest);
     pending_request->wtf_request.reset(
         new mojo::InterfaceRequest<mojom::WindowTreeFactory>(

@@ -13,6 +13,7 @@
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/default_access_policy.h"
 #include "components/mus/ws/display.h"
+#include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/focus_controller.h"
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/platform_display.h"
@@ -154,7 +155,7 @@ const ServerWindow* WindowTree::GetWindowByClientId(
 }
 
 const Display* WindowTree::GetDisplay(const ServerWindow* window) const {
-  return window ? connection_manager_->GetDisplayContaining(window) : nullptr;
+  return window ? display_manager()->GetDisplayContaining(window) : nullptr;
 }
 
 void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
@@ -563,6 +564,14 @@ void WindowTree::ProcessTransientWindowRemoved(
                                      transient_client_window_id.id);
 }
 
+DisplayManager* WindowTree::display_manager() {
+  return connection_manager_->display_manager();
+}
+
+const DisplayManager* WindowTree::display_manager() const {
+  return connection_manager_->display_manager();
+}
+
 Display* WindowTree::GetDisplayForWindowManager() {
   // The WindowTree for the wm has one and only one root.
   CHECK_EQ(1u, roots_.size());
@@ -572,7 +581,7 @@ Display* WindowTree::GetDisplayForWindowManager() {
 
   Display* display = GetDisplay(*roots_.begin());
   WindowManagerAndDisplay wm_and_display =
-      connection_manager_->GetWindowManagerAndDisplay(*roots_.begin());
+      display_manager()->GetWindowManagerAndDisplay(*roots_.begin());
   CHECK(wm_and_display.display);
   CHECK(wm_and_display.window_manager_state);
   DCHECK_EQ(this, wm_and_display.window_manager_state->tree());
@@ -592,9 +601,9 @@ bool WindowTree::ShouldRouteToWindowManager(const ServerWindow* window) const {
 
   // The WindowManager is attached to the root of the Display, if there isn't a
   // WindowManager attached no need to route to it.
-  const WindowManagerState* wms =
-      connection_manager_->GetWindowManagerAndDisplay(window)
-          .window_manager_state;
+  const WindowManagerState* wms = display_manager()
+                                      ->GetWindowManagerAndDisplay(window)
+                                      .window_manager_state;
   if (!wms || !wms->tree()->window_manager_internal_)
     return false;
 
@@ -891,7 +900,7 @@ void WindowTree::NewTopLevelWindow(
     mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
   DCHECK(!waiting_for_top_level_window_info_);
   const ClientWindowId client_window_id(transport_window_id);
-  Display* display = connection_manager_->GetActiveDisplay();
+  Display* display = display_manager()->GetActiveDisplay();
   // TODO(sky): need a way for client to provide context.
   WindowManagerState* wms =
       display ? display->GetFirstWindowManagerState() : nullptr;
@@ -1039,9 +1048,9 @@ void WindowTree::SetWindowBounds(uint32_t change_id,
         connection_manager_->GenerateWindowManagerChangeId(this, change_id);
     // |window_id| may be a client id, use the id from the window to ensure
     // the windowmanager doesn't get an id it doesn't know about.
-    WindowManagerState* wms =
-        connection_manager_->GetWindowManagerAndDisplay(window)
-            .window_manager_state;
+    WindowManagerState* wms = display_manager()
+                                  ->GetWindowManagerAndDisplay(window)
+                                  .window_manager_state;
     wms->tree()->window_manager_internal_->WmSetBounds(
         wm_change_id, wms->tree()->ClientWindowIdForWindow(window).id,
         std::move(bounds));
@@ -1074,9 +1083,9 @@ void WindowTree::SetWindowProperty(uint32_t change_id,
   if (window && ShouldRouteToWindowManager(window)) {
     const uint32_t wm_change_id =
         connection_manager_->GenerateWindowManagerChangeId(this, change_id);
-    WindowManagerState* wms =
-        connection_manager_->GetWindowManagerAndDisplay(window)
-            .window_manager_state;
+    WindowManagerState* wms = display_manager()
+                                  ->GetWindowManagerAndDisplay(window)
+                                  .window_manager_state;
     wms->tree()->window_manager_internal_->WmSetProperty(
         wm_change_id, wms->tree()->ClientWindowIdForWindow(window).id, name,
         std::move(value));

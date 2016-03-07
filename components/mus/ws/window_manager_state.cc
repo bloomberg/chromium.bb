@@ -5,6 +5,7 @@
 #include "components/mus/ws/window_manager_state.h"
 
 #include "components/mus/ws/connection_manager.h"
+#include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/server_window.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 
@@ -27,7 +28,7 @@ WindowManagerState::WindowManagerState(Display* display,
       user_id_(user_id) {
   ConnectionManager* connection_manager = display_->connection_manager();
   root_.reset(connection_manager->CreateServerWindow(
-      RootWindowId(connection_manager->GetAndAdvanceNextRootId()),
+      connection_manager->display_manager()->GetAndAdvanceNextRootId(),
       ServerWindow::Properties()));
   // Our root is always a child of the Display's root. Do this
   // before the WindowTree has been created so that the client doesn't get

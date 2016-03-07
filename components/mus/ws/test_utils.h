@@ -211,12 +211,10 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   }
   TestWindowTreeBinding* last_binding() { return last_binding_; }
 
-  bool got_on_no_more_connections() const {
-    return got_on_no_more_connections_;
-  }
+  bool got_on_no_more_displays() const { return got_on_no_more_displays_; }
 
   // ConnectionManagerDelegate:
-  void OnNoMoreRootConnections() override;
+  void OnNoMoreDisplays() override;
   scoped_ptr<WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
       ws::ConnectionManager* connection_manager,
       ws::WindowTree* tree,
@@ -231,7 +229,7 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   TestWindowTreeBinding* last_binding_ = nullptr;
   Display* display_ = nullptr;
   ConnectionManager* connection_manager_ = nullptr;
-  bool got_on_no_more_connections_ = false;
+  bool got_on_no_more_displays_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectionManagerDelegate);
 };

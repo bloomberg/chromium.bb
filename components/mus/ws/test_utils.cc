@@ -247,8 +247,8 @@ void TestWindowTreeBinding::SetIncomingMethodCallProcessingPaused(bool paused) {
 TestConnectionManagerDelegate::TestConnectionManagerDelegate() {}
 TestConnectionManagerDelegate::~TestConnectionManagerDelegate() {}
 
-void TestConnectionManagerDelegate::OnNoMoreRootConnections() {
-  got_on_no_more_connections_ = true;
+void TestConnectionManagerDelegate::OnNoMoreDisplays() {
+  got_on_no_more_displays_ = true;
 }
 
 scoped_ptr<WindowTreeBinding>

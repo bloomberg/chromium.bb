@@ -32,6 +32,7 @@ namespace ws {
 
 class ConnectionManager;
 class DisplayBinding;
+class DisplayManager;
 class FocusController;
 class WindowManagerState;
 class WindowTree;
@@ -79,11 +80,8 @@ class Display : public PlatformDisplayDelegate,
     return *frame_decoration_values_;
   }
 
-  // Schedules a paint for the specified region in the coordinates of |window|
-  // if the |window| is in this viewport. Returns whether |window| is in the
-  // viewport.
-  bool SchedulePaintIfInViewport(const ServerWindow* window,
-                                 const gfx::Rect& bounds);
+  // Schedules a paint for the specified region in the coordinates of |window|.
+  void SchedulePaint(const ServerWindow* window, const gfx::Rect& bounds);
 
   // Schedules destruction of surfaces in |window|. If a frame has been
   // scheduled but not drawn surface destruction is delayed until the frame is
@@ -136,9 +134,8 @@ class Display : public PlatformDisplayDelegate,
     return event_dispatcher_.capture_window();
   }
 
-  // Called just before |tree| is destroyed after its connection encounters an
-  // error.
-  void OnWindowTreeConnectionError(WindowTree* tree);
+  // Called just before |tree| is destroyed.
+  void OnWillDestroyTree(WindowTree* tree);
 
   // Called when a client updates a cursor. This will update the cursor on the
   // native display if the cursor is currently under |window|.
@@ -180,6 +177,9 @@ class Display : public PlatformDisplayDelegate,
 
   // Inits the necessary state once the display is ready.
   void InitWindowManagersIfNecessary();
+
+  DisplayManager* display_manager();
+  const DisplayManager* display_manager() const;
 
   void OnEventAckTimeout();
 

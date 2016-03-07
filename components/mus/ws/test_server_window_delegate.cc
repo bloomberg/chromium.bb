@@ -17,8 +17,7 @@ mus::SurfacesState* TestServerWindowDelegate::GetSurfacesState() {
   return nullptr;
 }
 
-void TestServerWindowDelegate::OnScheduleWindowPaint(
-    const ServerWindow* window) {}
+void TestServerWindowDelegate::OnScheduleWindowPaint(ServerWindow* window) {}
 
 const ServerWindow* TestServerWindowDelegate::GetRootWindow(
     const ServerWindow* window) const {

@@ -34,6 +34,7 @@ namespace ws {
 
 class AccessPolicy;
 class ConnectionManager;
+class DisplayManager;
 class Display;
 class ServerWindow;
 class TargetedEvent;
@@ -211,6 +212,9 @@ class WindowTree : public mojom::WindowTree,
     // Another connection is being embedded in the window.
     EMBED,
   };
+
+  DisplayManager* display_manager();
+  const DisplayManager* display_manager() const;
 
   // Used when this tree is the window manager.
   Display* GetDisplayForWindowManager();

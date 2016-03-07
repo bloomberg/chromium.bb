@@ -24,7 +24,7 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
  private:
   // ServerWindowDelegate:
   mus::SurfacesState* GetSurfacesState() override;
-  void OnScheduleWindowPaint(const ServerWindow* window) override;
+  void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
   void ScheduleSurfaceDestruction(ServerWindow* window) override;
   ServerWindow* FindWindowForSurface(

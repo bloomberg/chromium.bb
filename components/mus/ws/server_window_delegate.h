@@ -23,7 +23,7 @@ class ServerWindowDelegate {
  public:
   virtual SurfacesState* GetSurfacesState() = 0;
 
-  virtual void OnScheduleWindowPaint(const ServerWindow* window) = 0;
+  virtual void OnScheduleWindowPaint(ServerWindow* window) = 0;
 
   // Returns the root of the window tree to which this |window| is attached.
   // Returns null if this window is not attached up through to a root window.

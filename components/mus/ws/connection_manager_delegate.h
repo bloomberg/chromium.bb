@@ -35,7 +35,7 @@ class ConnectionManagerDelegate {
   // Called once when the AcceleratedWidget of a Display is available.
   virtual void OnFirstDisplayReady();
 
-  virtual void OnNoMoreRootConnections() = 0;
+  virtual void OnNoMoreDisplays() = 0;
 
   // Creates a WindowTreeBinding in response to Embed() calls on the
   // ConnectionManager.
