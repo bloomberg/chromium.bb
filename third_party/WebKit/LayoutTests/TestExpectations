@@ -314,8 +314,7 @@ crbug.com/498539 inspector/tracing/timeline-timer.html [ Pass Failure ]
 crbug.com/498539 inspector/elements/styles-3/styles-change-node-while-editing.html [ Failure Pass ]
 crbug.com/498539 [ Mac ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
 crbug.com/498539 [ Mac10.10 ] inspector/sources/debugger/debug-inlined-scripts-fragment-id.html [ Pass Timeout ]
-# TODO(yangguo): Uncomment this line once crbug.com/590992 has been fixed.
-# crbug.com/498539 [ Precise ] inspector/sources/debugger-step/debugger-step-over-inlined-scripts.html [ Pass Timeout ]
+crbug.com/498539 [ Precise ] inspector/sources/debugger-step/debugger-step-over-inlined-scripts.html [ Pass Timeout ]
 crbug.com/498539 [ Precise Win7 Mac10.10 ] inspector/sources/debugger-breakpoints/dynamic-scripts-breakpoints.html [ Pass Timeout ]
 crbug.com/498539 [ Precise Mac10.10 ] inspector/sources/debugger-breakpoints/set-breakpoint.html [ Pass Timeout ]
 crbug.com/498539 [ Trusty ] inspector/sources/debugger/mutation-observer-suspend-while-paused.html [ Pass Timeout ]
@@ -1318,7 +1317,7 @@ crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.
 
 crbug.com/581038 fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
 
-crbug.com/585724 fast/js/JSON-parse.html [ NeedsManualRebaseline ]
+crbug.com/585724 fast/js/JSON-parse.html [ NeedsRebaseline ]
 
 crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Timeout Pass ]
 
@@ -1330,18 +1329,12 @@ crbug.com/248063 [ Win ] plugins/plugin-clip-subframe.html [ Pass Failure ]
 
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
-crbug.com/590992 inspector/sources/debugger-step/debugger-step-into-async1.html [ Pass Failure ]
-crbug.com/590992 inspector/sources/debugger-step/debugger-step-into-document-write.html [ Pass Failure ]
-crbug.com/590992 inspector/sources/debugger-step/debugger-step-into-inlined-scripts.html [ Pass Failure ]
-crbug.com/590992 inspector/sources/debugger-step/debugger-step-over-document-write.html [ Pass Failure ]
-crbug.com/590992 inspector/sources/debugger-step/debugger-step-over-inlined-scripts.html [ Pass Failure Timeout ]
-
-crbug.com/257405 fast/js/invalid-syntax-for-function.html [ NeedsManualRebaseline ]
-crbug.com/257405 fast/js/kde/string-1-n.html [ NeedsManualRebaseline ]
-crbug.com/257405 fast/js/kde/string-2-n.html [ NeedsManualRebaseline ]
-crbug.com/257405 fast/regex/non-pattern-characters.html [ NeedsManualRebaseline ]
-crbug.com/257405 http/tests/websocket/bad-sub-protocol-control-chars.html [ NeedsManualRebaseline ]
-crbug.com/257405 inspector/console/console-control-characters.html [ NeedsManualRebaseline ]
+crbug.com/257405 fast/js/invalid-syntax-for-function.html [ NeedsRebaseline ]
+crbug.com/257405 fast/js/kde/string-1-n.html [ NeedsRebaseline ]
+crbug.com/257405 fast/js/kde/string-2-n.html [ NeedsRebaseline ]
+crbug.com/257405 fast/regex/non-pattern-characters.html [ NeedsRebaseline ]
+crbug.com/257405 http/tests/websocket/bad-sub-protocol-control-chars.html [ NeedsRebaseline ]
+crbug.com/257405 inspector/console/console-control-characters.html [ NeedsRebaseline ]
 
 crbug.com/591821 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/591821 [ Linux Win ] fast/events/menu-key-context-menu-document.html [ Failure Pass ]
