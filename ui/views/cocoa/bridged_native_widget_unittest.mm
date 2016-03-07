@@ -214,8 +214,7 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
 
  protected:
   scoped_ptr<views::View> view_;
-  scoped_ptr<BridgedNativeWidget> bridge_;
-  BridgedContentView* ns_view_;  // Weak. Owned by bridge_.
+  BridgedContentView* ns_view_;  // Weak. Owned by bridge().
   base::MessageLoopForUI message_loop_;
 
  private:
