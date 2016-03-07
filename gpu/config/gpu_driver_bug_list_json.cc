@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.46",
+  "version": "8.47",
   "entries": [
     {
       "id": 1,
@@ -190,7 +190,11 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "id": 12,
       "description": "Limit max cube map texure size to 1024 on Macs with Intel GPUs",
       "os": {
-        "type": "macosx"
+        "type": "macosx",
+        "version": {
+          "op": "<",
+          "value": "10.10"
+        }
       },
       "vendor_id": "0x8086",
       "features": [
