@@ -11,6 +11,7 @@
 #include <shobjidl.h>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/win/scoped_co_mem.h"
 #include "chrome/common/chrome_constants.h"
@@ -123,6 +124,10 @@ bool GetDefaultCrashDumpLocation(base::FilePath* crash_dir) {
   // chrome's PathService entries (for DIR_CRASH_DUMPS) being available on
   // Windows. See https://crbug.com/564398.
   if (!GetDefaultUserDataDirectory(crash_dir))
+    return false;
+  // We have to make sure the user data dir exists on first run. See
+  // http://crbug.com/591504.
+  if (!PathExists(*crash_dir) && !CreateDirectory(*crash_dir))
     return false;
   *crash_dir = crash_dir->Append(FILE_PATH_LITERAL("Crashpad"));
   return true;
