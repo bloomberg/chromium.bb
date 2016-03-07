@@ -441,6 +441,7 @@ partword flakon =	For example flakonnyi, flakonnyit words related need this gene
 partword furgon =	For example furgonnyi word related need this general exception
 partword helyszín 125-15-456-156-34-1345	For example helyszínnyi word related need this general exception
 partword magánnyer 134-1-1245-4-1345-1246-15-1235	For example magánnyereségük word
+begword sopron =	Sopron is a town name, and for example the sopronnyi word need marking different the first n and remaining ny letter
 
 #ly related exceptions
 #This exception parts need marking ly letters with two single l and y letter combination
@@ -547,6 +548,7 @@ partword basszuszen 12-1-156-156-136-234-126-15-1345	For example basszuszene, ba
 begword okoszá 135-13-135-234-126-4	For example okoszár word
 partword terrorizmus 2345-15-1235-1235-135-1235-24-126-134-136-234	For example terrorizmusszerű, terrorizmusszakértő words
 partword luxuszak 123-136-1346-136-234-126-1-13	For example luxuszakó word
+begword őszsirá 12456-234-345-24-1235-4	For example őszsiráf word
 
 #ssz related exceptions
 #Following exception words and word parts need writing one s and one sz braille letter
@@ -906,6 +908,7 @@ begword vörhenyesszők 1236-12345-1235-125-15-1246-15-234-156-12456-13	For exam
 begword vörössz 1236-12345-1235-12345-234-156	For example vörösszakállú, vörösszőke word
 begword zavarossz 126-1-1236-1-1235-135-234-156	For example zavarosszürke word
 partword gázspra 1245-4-126-234-1234-1235-1	For example gázspray word
+always gázspré 1245-4-126-234-1234-1235-16	For example gázspré word
 always gázstop 1245-4-126-234-2345-135-1234	For example the gázstop word need this general exception
 partword gázsuga 1245-4-126-234-136-1245-1	For example gázsugarak word
 partword gázzsámo 1245-4-126-345-4-134-135	For example gázzsámoly word
@@ -1318,6 +1321,8 @@ begword sasszám 234-1-234-156-4-134	For example sasszámlálás, sasszámláló
 partword mocskosszá 134-135-146-13-135-234-156-4	For example mocskosszájú word
 begword szarosszá 156-1-1235-135-234-156-4
 partword politikus =	For example politikusszakszervezetet word
+begword mulatóssz 134-136-123-1-2345-246-234-156	For example mulatóssztár word
+partword kongresszussz 13-135-1345-1245-1235-15-156-156-136-234-156	For example kongresszusszervező word related need this exception
 
 #ty, lly, tty related exceptions
 #This exception part containing english words with need presenting original english braille rules
