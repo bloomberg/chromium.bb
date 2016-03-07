@@ -253,6 +253,7 @@ fuzzer_test("libpng_read_fuzzer") {
     "//base",
     "//third_party/libpng",
   ]
+  dict = "dicts/png.dict"
 }
 
 fuzzer_test("icu_uregex_open_fuzzer") {
