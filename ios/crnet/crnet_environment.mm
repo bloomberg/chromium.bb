@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/at_exit.h"
+#include "base/atomicops.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -286,13 +287,14 @@ void CrNetEnvironment::Install() {
   proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
       network_io_thread_->task_runner(), nullptr);
 
+  net::SetURLRequestContextForNSSHttpIO(main_context_.get());
+  main_context_getter_ = new CrNetURLRequestContextGetter(
+      main_context_.get(), network_io_thread_->task_runner());
+  base::subtle::MemoryBarrier();
   PostToNetworkThread(FROM_HERE,
       base::Bind(&CrNetEnvironment::InitializeOnNetworkThread,
                  base::Unretained(this)));
 
-  net::SetURLRequestContextForNSSHttpIO(main_context_.get());
-  main_context_getter_ = new CrNetURLRequestContextGetter(
-      main_context_.get(), network_io_thread_->task_runner());
   SetRequestFilterBlock(nil);
 }
 
