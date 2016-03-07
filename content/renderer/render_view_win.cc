@@ -32,6 +32,11 @@ void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   blink::WebFontRendering::setLCDOrientation(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
           prefs.subpixel_rendering));
+
+  blink::WebFontRendering::setAntialiasedTextEnabled(
+      prefs.should_antialias_text);
+  blink::WebFontRendering::setLCDTextEnabled(prefs.subpixel_rendering
+      != gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
 }
 
 void RenderViewImpl::UpdateThemePrefs() {

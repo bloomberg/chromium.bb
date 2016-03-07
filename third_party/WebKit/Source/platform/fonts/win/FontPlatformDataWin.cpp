@@ -85,38 +85,6 @@ void FontPlatformData::setupPaint(SkPaint* paint, float, const Font*) const
     paint->setFlags(flags);
 }
 
-// Lookup the current system settings for font smoothing.
-// We cache these values for performance, but if the browser has a way to be
-// notified when these change, we could re-query them at that time.
-static uint32_t getSystemTextFlags()
-{
-    static bool gInited;
-    static uint32_t gFlags;
-    if (!gInited) {
-        BOOL enabled;
-        gFlags = 0;
-        if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0)) {
-            if (enabled) {
-                gFlags |= SkPaint::kAntiAlias_Flag;
-
-                UINT smoothType;
-                if (SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &smoothType, 0)) {
-                    if (FE_FONTSMOOTHINGCLEARTYPE == smoothType)
-                        gFlags |= SkPaint::kLCDRenderText_Flag;
-                }
-            }
-        } else {
-            // SystemParametersInfo will fail only under full sandbox lockdown on Win8+.
-            // So, we default to settings we know are supported and look good.
-            // FIXME(eae): We should be querying the DirectWrite settings directly
-            // so we can respect the settings for users who turn off smoothing.
-            gFlags = SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag;
-        }
-        gInited = true;
-    }
-    return gFlags;
-}
-
 static bool isWebFont(const String& familyName)
 {
     // Web-fonts have artifical names constructed to always be:
@@ -131,7 +99,13 @@ static int computePaintTextFlags(String fontFamilyName)
     if (LayoutTestSupport::isRunningLayoutTest())
         return LayoutTestSupport::isFontAntialiasingEnabledForTest() ? SkPaint::kAntiAlias_Flag : 0;
 
-    int textFlags = getSystemTextFlags();
+    int textFlags = 0;
+    if (FontCache::fontCache()->antialiasedTextEnabled()) {
+        int lcdFlag = FontCache::fontCache()->lcdTextEnabled()
+            ? SkPaint::kLCDRenderText_Flag
+            : 0;
+        textFlags = SkPaint::kAntiAlias_Flag | lcdFlag;
+    }
 
     // Many web-fonts are so poorly hinted that they are terrible to read when drawn in BW.
     // In these cases, we have decided to FORCE these fonts to be drawn with at least grayscale AA,

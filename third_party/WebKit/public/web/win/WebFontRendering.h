@@ -24,6 +24,8 @@ public:
     BLINK_EXPORT static void setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeight);
     BLINK_EXPORT static void setLCDOrder(SkFontHost::LCDOrder);
     BLINK_EXPORT static void setLCDOrientation(SkFontHost::LCDOrientation);
+    BLINK_EXPORT static void setAntialiasedTextEnabled(bool);
+    BLINK_EXPORT static void setLCDTextEnabled(bool);
 };
 
 } // namespace blink

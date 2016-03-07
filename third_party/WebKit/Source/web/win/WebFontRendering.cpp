@@ -63,4 +63,16 @@ void WebFontRendering::setLCDOrientation(SkFontHost::LCDOrientation orientation)
     SkFontHost::SetSubpixelOrientation(orientation);
 }
 
+// static
+void WebFontRendering::setAntialiasedTextEnabled(bool enabled)
+{
+    FontCache::setAntialiasedTextEnabled(enabled);
+}
+
+// static
+void WebFontRendering::setLCDTextEnabled(bool enabled)
+{
+    FontCache::setLCDTextEnabled(enabled);
+}
+
 } // namespace blink
