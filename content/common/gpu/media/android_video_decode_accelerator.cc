@@ -177,6 +177,12 @@ class AVDATimerManager {
   // will start the repeating timer on an interval of DecodePollDelay().
   void StartTimer(AndroidVideoDecodeAccelerator* avda_instance) {
     avda_instances_.insert(avda_instance);
+
+    // If the timer is running, StopTimer() might have been called earlier, if
+    // so remove the instance from the pending erasures.
+    if (timer_running_)
+      pending_erase_.erase(avda_instance);
+
     if (io_timer_.IsRunning())
       return;
     io_timer_.Start(FROM_HERE, DecodePollDelay(), this,
