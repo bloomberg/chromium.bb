@@ -420,8 +420,6 @@ void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 
 scoped_ptr<views::InkDropAnimation> LabelButton::CreateInkDropAnimation()
     const {
-  // TODO(bruthig): Make the flood fill ink drops centered on the LocatedEvent
-  // that triggered them.
   return GetText().empty()
              ? CustomButton::CreateInkDropAnimation()
              : make_scoped_ptr(new views::FloodFillInkDropAnimation(
@@ -435,6 +433,13 @@ scoped_ptr<views::InkDropHover> LabelButton::CreateInkDropHover() const {
              ? CustomButton::CreateInkDropHover()
              : make_scoped_ptr(new views::InkDropHover(
                    size(), 0, GetInkDropCenter(), GetInkDropBaseColor()));
+}
+
+gfx::Point LabelButton::GetInkDropCenter() const {
+  // TODO(bruthig): Make the flood fill ink drops centered on the LocatedEvent
+  // that triggered them.
+  return GetText().empty() ? image()->GetMirroredBounds().CenterPoint()
+                           : CustomButton::GetInkDropCenter();
 }
 
 void LabelButton::StateChanged() {

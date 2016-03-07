@@ -70,9 +70,6 @@ class AppMenuButton : public views::MenuButton,
 
  private:
   // views::MenuButton:
-  gfx::Point GetInkDropCenter() const override;
-
-  // views::MenuButton:
   const char* GetClassName() const override;
   scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
   gfx::Rect GetThemePaintRect() const override;

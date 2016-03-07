@@ -105,6 +105,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   scoped_ptr<InkDropAnimation> CreateInkDropAnimation() const override;
   scoped_ptr<InkDropHover> CreateInkDropHover() const override;
+  gfx::Point GetInkDropCenter() const override;
 
  protected:
   ImageView* image() const { return image_; }
