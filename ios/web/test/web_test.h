@@ -104,13 +104,6 @@ class WebTestWithWebController : public WebTest,
   NSString* CreateLoadCheck();
 };
 
-#pragma mark -
-
-// A test fixtures thats creates a CRWWKWebViewWebController for testing.
-// TODO(crbug.com/589563): Remove this typedef, clients should use
-// |WebTestWithWebController|.
-typedef WebTestWithWebController WebTestWithWKWebViewWebController;
-
 }  // namespace web
 
 #endif  // IOS_WEB_TEST_WEB_TEST_H_
