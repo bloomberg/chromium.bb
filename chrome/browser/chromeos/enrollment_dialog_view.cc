@@ -51,7 +51,6 @@ class EnrollmentDialogView : public views::DialogDelegateView {
                          const base::Closure& connect);
 
   // views::DialogDelegateView overrides
-  int GetDialogButtons() const override;
   bool Accept() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
@@ -109,10 +108,6 @@ void EnrollmentDialogView::ShowDialog(gfx::NativeWindow owning_window,
   views::Widget* widget = dialog_view->GetWidget();
   DCHECK(widget);
   widget->Show();
-}
-
-int EnrollmentDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
 }
 
 bool EnrollmentDialogView::Accept() {

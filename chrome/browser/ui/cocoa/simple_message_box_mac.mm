@@ -15,13 +15,12 @@
 
 namespace chrome {
 
+namespace {
+
 MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const base::string16& title,
                                 const base::string16& message,
                                 MessageBoxType type) {
-  if (type == MESSAGE_BOX_TYPE_OK_CANCEL)
-    NOTIMPLEMENTED();
-
   startup_metric_utils::SetNonBrowserUIDisplayed();
   if (internal::g_should_skip_message_box_for_test)
     return MESSAGE_BOX_RESULT_YES;
@@ -29,9 +28,7 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   // Ignore the title; it's the window title on other platforms and ignorable.
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
   [alert setMessageText:base::SysUTF16ToNSString(message)];
-  NSAlertStyle style = (type == MESSAGE_BOX_TYPE_INFORMATION) ?
-      NSInformationalAlertStyle : NSWarningAlertStyle;
-  [alert setAlertStyle:style];
+  [alert setAlertStyle:NSWarningAlertStyle];
   if (type == MESSAGE_BOX_TYPE_QUESTION) {
     [alert addButtonWithTitle:
         l10n_util::GetNSString(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)];
@@ -43,6 +40,20 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   NSInteger result = [alert runModal];
   return (result == NSAlertSecondButtonReturn) ?
       MESSAGE_BOX_RESULT_NO : MESSAGE_BOX_RESULT_YES;
+}
+
+}  // namespace
+
+void ShowWarningMessageBox(gfx::NativeWindow parent,
+                           const base::string16& title,
+                           const base::string16& message) {
+  ShowMessageBox(parent, title, message, MESSAGE_BOX_TYPE_WARNING);
+}
+
+MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
+                                        const base::string16& title,
+                                        const base::string16& message) {
+  return ShowMessageBox(parent, title, message, MESSAGE_BOX_TYPE_QUESTION);
 }
 
 }  // namespace chrome

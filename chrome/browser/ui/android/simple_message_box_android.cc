@@ -8,10 +8,15 @@
 
 namespace chrome {
 
-MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
-                                const base::string16& title,
-                                const base::string16& message,
-                                MessageBoxType type) {
+void ShowWarningMessageBox(gfx::NativeWindow parent,
+                           const base::string16& title,
+                           const base::string16& message) {
+  NOTIMPLEMENTED();
+}
+
+MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
+                                        const base::string16& title,
+                                        const base::string16& message) {
   NOTIMPLEMENTED();
   return MESSAGE_BOX_RESULT_NO;
 }

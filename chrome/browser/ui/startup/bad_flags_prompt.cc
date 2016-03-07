@@ -141,7 +141,7 @@ void MaybeShowInvalidUserDataDirWarningDialog() {
     ResourceBundle::CleanupSharedInstance();
 
   // More complex dialogs cannot be shown before the earliest calls here.
-  ShowMessageBox(NULL, title, message, chrome::MESSAGE_BOX_TYPE_WARNING);
+  ShowWarningMessageBox(NULL, title, message);
 }
 
 }  // namespace chrome

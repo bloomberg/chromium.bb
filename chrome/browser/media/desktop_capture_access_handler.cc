@@ -209,9 +209,9 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   //  2. Request comes from a page with a secure origin or from an extension.
   if (screen_capture_enabled && origin_is_secure) {
     // Get title of the calling application prior to showing the message box.
-    // chrome::ShowMessageBox() starts a nested message loop which may allow
-    // |web_contents| to be destroyed on the UI thread before the message box
-    // is closed. See http://crbug.com/326690.
+    // chrome::ShowQuestionMessageBox() starts a nested message loop which may
+    // allow |web_contents| to be destroyed on the UI thread before the messag
+    // box is closed. See http://crbug.com/326690.
     base::string16 application_title =
         GetApplicationTitle(web_contents, extension);
 #if !defined(OS_ANDROID)
@@ -237,11 +237,11 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
               ? IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT
               : IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT,
           application_name);
-      chrome::MessageBoxResult result = chrome::ShowMessageBox(
+      chrome::MessageBoxResult result = chrome::ShowQuestionMessageBox(
           parent_window,
           l10n_util::GetStringFUTF16(
               IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE, application_name),
-          confirmation_text, chrome::MESSAGE_BOX_TYPE_QUESTION);
+          confirmation_text);
       user_approved = (result == chrome::MESSAGE_BOX_RESULT_YES);
     }
 

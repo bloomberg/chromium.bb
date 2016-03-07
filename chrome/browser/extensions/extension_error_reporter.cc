@@ -79,11 +79,9 @@ void ExtensionErrorReporter::ReportError(const base::string16& message,
   LOG(WARNING) << "Extension error: " << message;
 
   if (enable_noisy_errors_ && be_noisy) {
-    chrome::ShowMessageBox(
-        NULL,
-        l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOAD_ERROR_HEADING),
-        message,
-        chrome::MESSAGE_BOX_TYPE_WARNING);
+    chrome::ShowWarningMessageBox(
+        NULL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOAD_ERROR_HEADING),
+        message);
   }
 }
 

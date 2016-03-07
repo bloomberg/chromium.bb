@@ -138,11 +138,11 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
   if (child_count < num_bookmark_urls_before_prompting)
     return true;
 
-  return ShowMessageBox(parent,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
-                                 base::IntToString16(child_count)),
-      MESSAGE_BOX_TYPE_QUESTION) == MESSAGE_BOX_RESULT_YES;
+  return ShowQuestionMessageBox(
+             parent, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+             l10n_util::GetStringFUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
+                                        base::IntToString16(child_count))) ==
+         MESSAGE_BOX_RESULT_YES;
 }
 #endif
 
@@ -229,11 +229,11 @@ void OpenAll(gfx::NativeWindow parent,
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
                                gfx::NativeWindow window) {
   DCHECK(node && node->is_folder() && !node->empty());
-  return ShowMessageBox(window,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      l10n_util::GetStringFUTF16Int(IDS_BOOKMARK_EDITOR_CONFIRM_DELETE,
-                                    ChildURLCountTotal(node)),
-      MESSAGE_BOX_TYPE_QUESTION) == MESSAGE_BOX_RESULT_YES;
+  return ShowQuestionMessageBox(
+             window, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+             l10n_util::GetStringFUTF16Int(IDS_BOOKMARK_EDITOR_CONFIRM_DELETE,
+                                           ChildURLCountTotal(node))) ==
+         MESSAGE_BOX_RESULT_YES;
 }
 
 void ShowBookmarkAllTabsDialog(Browser* browser) {

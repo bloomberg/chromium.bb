@@ -55,8 +55,7 @@ void ShowWarningMessageBox(const base::string16& message) {
   // Block opening dialog from nested task.
   base::AutoReset<bool> auto_reset(&is_dialog_shown, true);
 
-  chrome::ShowMessageBox(nullptr, base::string16(), message,
-                         chrome::MESSAGE_BOX_TYPE_WARNING);
+  chrome::ShowWarningMessageBox(nullptr, base::string16(), message);
 }
 
 }  // namespace

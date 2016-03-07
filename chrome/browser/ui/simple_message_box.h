@@ -16,10 +16,8 @@ enum MessageBoxResult {
 };
 
 enum MessageBoxType {
-  MESSAGE_BOX_TYPE_INFORMATION,  // Shows an OK button.
   MESSAGE_BOX_TYPE_WARNING,      // Shows an OK button.
   MESSAGE_BOX_TYPE_QUESTION,     // Shows YES and NO buttons.
-  MESSAGE_BOX_TYPE_OK_CANCEL,    // Shows OK and CANCEL buttons (Aura only).
 };
 
 // Shows a dialog box with the given |title| and |message|. If |parent| is
@@ -29,10 +27,15 @@ enum MessageBoxType {
 // NOTE: In general, you should avoid this since it's usually poor UI.
 // We have a variety of other surfaces such as app menu notifications and
 // infobars; consult the UI leads for a recommendation.
-MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
-                                const base::string16& title,
-                                const base::string16& message,
-                                MessageBoxType type);
+void ShowWarningMessageBox(gfx::NativeWindow parent,
+                           const base::string16& title,
+                           const base::string16& message);
+
+// As above, but two buttons are displayed and the return value indicates which
+// is chosen.
+MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
+                                        const base::string16& title,
+                                        const base::string16& message);
 
 // Shows a dialog box with the given |title| and |message|, and with two buttons
 // labeled with |yes_text| and |no_text|. If |parent| is non-NULL, the box will

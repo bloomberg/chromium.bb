@@ -90,22 +90,14 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(const base::string16& title,
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message))) {
   if (yes_text_.empty()) {
-    if (type_ == MESSAGE_BOX_TYPE_QUESTION)
-      yes_text_ =
-          l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
-    else if (type_ == MESSAGE_BOX_TYPE_OK_CANCEL)
-      yes_text_ = l10n_util::GetStringUTF16(IDS_OK);
-    else
-      yes_text_ = l10n_util::GetStringUTF16(IDS_OK);
+    yes_text_ =
+        type_ == MESSAGE_BOX_TYPE_QUESTION
+            ? l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)
+            : l10n_util::GetStringUTF16(IDS_OK);
   }
 
-  if (no_text_.empty()) {
-    if (type_ == MESSAGE_BOX_TYPE_QUESTION)
-      no_text_ =
-          l10n_util::GetStringUTF16(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
-    else if (type_ == MESSAGE_BOX_TYPE_OK_CANCEL)
-      no_text_ = l10n_util::GetStringUTF16(IDS_CANCEL);
-  }
+  if (no_text_.empty() && type_ == MESSAGE_BOX_TYPE_QUESTION)
+    no_text_ = l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {
@@ -125,10 +117,8 @@ MessageBoxResult SimpleMessageBoxViews::RunDialogAndGetResult() {
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
-  if (type_ == MESSAGE_BOX_TYPE_QUESTION ||
-      type_ == MESSAGE_BOX_TYPE_OK_CANCEL) {
+  if (type_ == MESSAGE_BOX_TYPE_QUESTION)
     return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
 
   return ui::DIALOG_BUTTON_OK;
 }
@@ -188,14 +178,10 @@ void SimpleMessageBoxViews::Done() {
 UINT GetMessageBoxFlagsFromType(MessageBoxType type) {
   UINT flags = MB_SETFOREGROUND;
   switch (type) {
-    case MESSAGE_BOX_TYPE_INFORMATION:
-      return flags | MB_OK | MB_ICONINFORMATION;
     case MESSAGE_BOX_TYPE_WARNING:
       return flags | MB_OK | MB_ICONWARNING;
     case MESSAGE_BOX_TYPE_QUESTION:
       return flags | MB_YESNO | MB_ICONQUESTION;
-    case MESSAGE_BOX_TYPE_OK_CANCEL:
-      return flags | MB_OKCANCEL | MB_ICONWARNING;
   }
   NOTREACHED();
   return flags | MB_OK | MB_ICONWARNING;
@@ -250,12 +236,18 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
 
 }  // namespace
 
-MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
-                                const base::string16& title,
-                                const base::string16& message,
-                                MessageBoxType type) {
-  return ShowMessageBoxImpl(
-      parent, title, message, type, base::string16(), base::string16());
+void ShowWarningMessageBox(gfx::NativeWindow parent,
+                           const base::string16& title,
+                           const base::string16& message) {
+  ShowMessageBoxImpl(parent, title, message, MESSAGE_BOX_TYPE_WARNING,
+                     base::string16(), base::string16());
+}
+
+MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
+                                        const base::string16& title,
+                                        const base::string16& message) {
+  return ShowMessageBoxImpl(parent, title, message, MESSAGE_BOX_TYPE_QUESTION,
+                            base::string16(), base::string16());
 }
 
 MessageBoxResult ShowMessageBoxWithButtonText(gfx::NativeWindow parent,

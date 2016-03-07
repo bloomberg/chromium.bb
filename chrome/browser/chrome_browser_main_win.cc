@@ -224,10 +224,9 @@ void ShowCloseBrowserFirstMessageBox() {
        shell_integration::IS_DEFAULT)) {
     message_id = IDS_UNINSTALL_CLOSE_APP_IMMERSIVE;
   }
-  chrome::ShowMessageBox(NULL,
-                         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                         l10n_util::GetStringUTF16(message_id),
-                         chrome::MESSAGE_BOX_TYPE_WARNING);
+  chrome::ShowWarningMessageBox(NULL,
+                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+                                l10n_util::GetStringUTF16(message_id));
 }
 
 int DoUninstallTasks(bool chrome_still_running) {
@@ -309,10 +308,9 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   // TODO(viettrungluu): why don't we run this earlier?
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs) &&
       base::win::GetVersion() < base::win::VERSION_XP) {
-    chrome::ShowMessageBox(NULL,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-        l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP),
-        chrome::MESSAGE_BOX_TYPE_WARNING);
+    chrome::ShowWarningMessageBox(
+        NULL, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+        l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP));
   }
 
   return rv;

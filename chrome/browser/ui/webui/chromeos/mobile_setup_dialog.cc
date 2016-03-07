@@ -142,10 +142,9 @@ void MobileSetupDialogDelegate::OnCloseContents(WebContents* source,
     return;
   }
 
-  *out_close_dialog = chrome::ShowMessageBox(dialog_window_,
-      l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE),
-      l10n_util::GetStringUTF16(IDS_MOBILE_CANCEL_ACTIVATION),
-      chrome::MESSAGE_BOX_TYPE_QUESTION);
+  *out_close_dialog = chrome::ShowQuestionMessageBox(
+      dialog_window_, l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE),
+      l10n_util::GetStringUTF16(IDS_MOBILE_CANCEL_ACTIVATION));
 }
 
 bool MobileSetupDialogDelegate::ShouldShowDialogTitle() const {
