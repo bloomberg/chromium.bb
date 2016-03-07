@@ -175,7 +175,8 @@ class PipelineImplTest : public ::testing::Test {
   // Sets up expectations to allow the video renderer to initialize.
   void SetRendererExpectations() {
     EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
-        .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
+        .WillOnce(DoAll(SaveArg<2>(&statistics_cb_),
+                        SaveArg<3>(&buffering_state_cb_),
                         SaveArg<4>(&ended_cb_), PostCallback<1>(PIPELINE_OK)));
     EXPECT_CALL(*renderer_, HasAudio()).WillRepeatedly(Return(audio_stream()));
     EXPECT_CALL(*renderer_, HasVideo()).WillRepeatedly(Return(video_stream()));
@@ -371,6 +372,7 @@ class PipelineImplTest : public ::testing::Test {
   scoped_ptr<FakeTextTrackStream> text_stream_;
   BufferingStateCB buffering_state_cb_;
   base::Closure ended_cb_;
+  StatisticsCB statistics_cb_;
   VideoDecoderConfig video_decoder_config_;
   PipelineMetadata metadata_;
   base::TimeDelta start_time_;
@@ -612,8 +614,21 @@ TEST_F(PipelineImplTest, SuspendResume) {
 
   StartPipelineAndExpect(PIPELINE_OK);
 
+  // Inject some fake memory usage to verify its cleared after suspend.
+  PipelineStatistics stats;
+  stats.audio_memory_usage = 12345;
+  stats.video_memory_usage = 67890;
+  statistics_cb_.Run(stats);
+  EXPECT_EQ(stats.audio_memory_usage,
+            pipeline_->GetStatistics().audio_memory_usage);
+  EXPECT_EQ(stats.video_memory_usage,
+            pipeline_->GetStatistics().video_memory_usage);
+
   ExpectSuspend();
   DoSuspend();
+
+  EXPECT_EQ(pipeline_->GetStatistics().audio_memory_usage, 0);
+  EXPECT_EQ(pipeline_->GetStatistics().video_memory_usage, 0);
 
   base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
   ExpectResume(expected);

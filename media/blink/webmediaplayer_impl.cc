@@ -867,6 +867,8 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
 
   if (delegate_)
     delegate_->PlayerGone(delegate_id_);
+  memory_usage_reporting_timer_.Stop();
+  ReportMemoryUsage();
 
   if (pending_suspend_resume_cycle_) {
     pending_suspend_resume_cycle_ = false;
@@ -1421,6 +1423,9 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
       stats.audio_memory_usage + stats.video_memory_usage +
       (data_source_ ? data_source_->GetMemoryUsage() : 0) +
       demuxer_memory_usage;
+
+  // Note, this isn't entirely accurate, there may be VideoFrames held by the
+  // compositor or other resources that we're unaware of.
 
   DVLOG(2) << "Memory Usage -- Audio: " << stats.audio_memory_usage
            << ", Video: " << stats.video_memory_usage << ", DataSource: "

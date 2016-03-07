@@ -385,6 +385,8 @@ void PipelineImpl::StateTransitionTask(PipelineStatus status) {
 
     case kSuspended:
       renderer_.reset();
+      statistics_.audio_memory_usage = 0;
+      statistics_.video_memory_usage = 0;
       base::ResetAndReturn(&suspend_cb_).Run(PIPELINE_OK);
       return;
 
