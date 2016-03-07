@@ -210,7 +210,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 
     style.applyTextDecorations();
 
-    if (style.overflowX() != OVISIBLE || style.overflowY() != OVISIBLE)
+    if (style.overflowX() != OverflowVisible || style.overflowY() != OverflowVisible)
         adjustOverflow(style);
 
     // Cull out any useless layers and also repeat patterns into additional layers.
@@ -226,8 +226,8 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         style.setUnique();
 
     // FIXME: when dropping the -webkit prefix on transform-style, we should also have opacity < 1 cause flattening.
-    if (style.preserves3D() && (style.overflowX() != OVISIBLE
-        || style.overflowY() != OVISIBLE
+    if (style.preserves3D() && (style.overflowX() != OverflowVisible
+        || style.overflowY() != OverflowVisible
         || style.hasFilter()))
         style.setTransformStyle3D(TransformStyle3DFlat);
 
@@ -343,15 +343,15 @@ void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const Comput
 
     if (isHTMLMarqueeElement(element)) {
         // For now, <marquee> requires an overflow clip to work properly.
-        style.setOverflowX(OHIDDEN);
-        style.setOverflowY(OHIDDEN);
+        style.setOverflowX(OverflowHidden);
+        style.setOverflowY(OverflowHidden);
         return;
     }
 
     if (isHTMLTextAreaElement(element)) {
         // Textarea considers overflow visible as auto.
-        style.setOverflowX(style.overflowX() == OVISIBLE ? OAUTO : style.overflowX());
-        style.setOverflowY(style.overflowY() == OVISIBLE ? OAUTO : style.overflowY());
+        style.setOverflowX(style.overflowX() == OverflowVisible ? OverflowAuto : style.overflowX());
+        style.setOverflowY(style.overflowY() == OverflowVisible ? OverflowAuto : style.overflowY());
         return;
     }
 
@@ -363,7 +363,7 @@ void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const Comput
 
 void StyleAdjuster::adjustOverflow(ComputedStyle& style)
 {
-    ASSERT(style.overflowX() != OVISIBLE || style.overflowY() != OVISIBLE);
+    ASSERT(style.overflowX() != OverflowVisible || style.overflowY() != OverflowVisible);
 
     if (style.display() == TABLE || style.display() == INLINE_TABLE) {
         // Tables only support overflow:hidden and overflow:visible and ignore anything else,
@@ -371,30 +371,30 @@ void StyleAdjuster::adjustOverflow(ComputedStyle& style)
         // container box the rules for resolving conflicting x and y values in CSS Overflow Module
         // Level 3 do not apply. Arguably overflow-x and overflow-y aren't allowed on tables but
         // all UAs allow it.
-        if (style.overflowX() != OHIDDEN)
-            style.setOverflowX(OVISIBLE);
-        if (style.overflowY() != OHIDDEN)
-            style.setOverflowY(OVISIBLE);
+        if (style.overflowX() != OverflowHidden)
+            style.setOverflowX(OverflowVisible);
+        if (style.overflowY() != OverflowHidden)
+            style.setOverflowY(OverflowVisible);
         // If we are left with conflicting overflow values for the x and y axes on a table then resolve
-        // both to OVISIBLE. This is interoperable behaviour but is not specced anywhere.
-        if (style.overflowX() == OVISIBLE)
-            style.setOverflowY(OVISIBLE);
-        else if (style.overflowY() == OVISIBLE)
-            style.setOverflowX(OVISIBLE);
-    } else if (style.overflowX() == OVISIBLE && style.overflowY() != OVISIBLE) {
+        // both to OverflowVisible. This is interoperable behaviour but is not specced anywhere.
+        if (style.overflowX() == OverflowVisible)
+            style.setOverflowY(OverflowVisible);
+        else if (style.overflowY() == OverflowVisible)
+            style.setOverflowX(OverflowVisible);
+    } else if (style.overflowX() == OverflowVisible && style.overflowY() != OverflowVisible) {
         // If either overflow value is not visible, change to auto.
         // FIXME: Once we implement pagination controls, overflow-x should default to hidden
         // if overflow-y is set to -webkit-paged-x or -webkit-page-y. For now, we'll let it
         // default to auto so we can at least scroll through the pages.
-        style.setOverflowX(OAUTO);
-    } else if (style.overflowY() == OVISIBLE && style.overflowX() != OVISIBLE) {
-        style.setOverflowY(OAUTO);
+        style.setOverflowX(OverflowAuto);
+    } else if (style.overflowY() == OverflowVisible && style.overflowX() != OverflowVisible) {
+        style.setOverflowY(OverflowAuto);
     }
 
     // Menulists should have visible overflow
     if (style.appearance() == MenulistPart) {
-        style.setOverflowX(OVISIBLE);
-        style.setOverflowY(OVISIBLE);
+        style.setOverflowX(OverflowVisible);
+        style.setOverflowY(OverflowVisible);
     }
 }
 

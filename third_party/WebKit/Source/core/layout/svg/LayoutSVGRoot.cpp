@@ -179,9 +179,9 @@ bool LayoutSVGRoot::shouldApplyViewportClip() const
     // the outermost svg is clipped if auto, and svg document roots are always clipped
     // When the svg is stand-alone (isDocumentElement() == true) the viewport clipping should always
     // be applied, noting that the window scrollbars should be hidden if overflow=hidden.
-    return style()->overflowX() == OHIDDEN
-        || style()->overflowX() == OAUTO
-        || style()->overflowX() == OSCROLL
+    return style()->overflowX() == OverflowHidden
+        || style()->overflowX() == OverflowAuto
+        || style()->overflowX() == OverflowScroll
         || this->isDocumentElement();
 }
 

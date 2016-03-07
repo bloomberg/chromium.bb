@@ -701,15 +701,15 @@ public:
     virtual void stopAutoscroll() { }
     virtual void panScroll(const IntPoint&);
 
-    bool hasAutoVerticalScrollbar() const { return hasOverflowClip() && (style()->overflowY() == OAUTO || style()->overflowY() == OPAGEDY || style()->overflowY() == OOVERLAY); }
-    bool hasAutoHorizontalScrollbar() const { return hasOverflowClip() && (style()->overflowX() == OAUTO || style()->overflowX() == OOVERLAY); }
+    bool hasAutoVerticalScrollbar() const { return hasOverflowClip() && (style()->overflowY() == OverflowAuto || style()->overflowY() == OverflowPagedY || style()->overflowY() == OverflowOverlay); }
+    bool hasAutoHorizontalScrollbar() const { return hasOverflowClip() && (style()->overflowX() == OverflowAuto || style()->overflowX() == OverflowOverlay); }
     bool scrollsOverflow() const { return scrollsOverflowX() || scrollsOverflowY(); }
     virtual bool shouldPlaceBlockDirectionScrollbarOnLogicalLeft() const { return style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft(); }
 
     bool hasScrollableOverflowX() const { return scrollsOverflowX() && pixelSnappedScrollWidth() != pixelSnappedClientWidth(); }
     bool hasScrollableOverflowY() const { return scrollsOverflowY() && pixelSnappedScrollHeight() != pixelSnappedClientHeight(); }
-    virtual bool scrollsOverflowX() const { return hasOverflowClip() && (style()->overflowX() == OSCROLL || hasAutoHorizontalScrollbar()); }
-    virtual bool scrollsOverflowY() const { return hasOverflowClip() && (style()->overflowY() == OSCROLL || hasAutoVerticalScrollbar()); }
+    virtual bool scrollsOverflowX() const { return hasOverflowClip() && (style()->overflowX() == OverflowScroll || hasAutoHorizontalScrollbar()); }
+    virtual bool scrollsOverflowY() const { return hasOverflowClip() && (style()->overflowY() == OverflowScroll || hasAutoVerticalScrollbar()); }
 
     // Elements such as the <input> field override this to specify that they are scrollable
     // outside the context of the CSS overflow style

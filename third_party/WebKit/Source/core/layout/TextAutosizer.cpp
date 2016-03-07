@@ -225,7 +225,7 @@ static bool blockHeightConstrained(const LayoutBlock* block)
     // FIXME: Consider additional heuristics, such as ignoring fixed heights if the content is already overflowing before autosizing kicks in.
     for (; block; block = block->containingBlock()) {
         const ComputedStyle& style = block->styleRef();
-        if (style.overflowY() >= OSCROLL)
+        if (style.overflowY() >= OverflowScroll)
             return false;
         if (style.height().isSpecified() || style.maxHeight().isSpecified() || block->isOutOfFlowPositioned()) {
             // Some sites (e.g. wikipedia) set their html and/or body elements to height:100%,

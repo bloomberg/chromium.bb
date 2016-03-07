@@ -354,7 +354,7 @@ bool SVGLayoutSupport::isOverflowHidden(const LayoutObject* object)
     // LayoutSVGRoot should never query for overflow state - it should always clip itself to the initial viewport size.
     ASSERT(!object->isDocumentElement());
 
-    return object->style()->overflowX() == OHIDDEN || object->style()->overflowX() == OSCROLL;
+    return object->style()->overflowX() == OverflowHidden || object->style()->overflowX() == OverflowScroll;
 }
 
 void SVGLayoutSupport::intersectPaintInvalidationRectWithResources(const LayoutObject* layoutObject, FloatRect& paintInvalidationRect)

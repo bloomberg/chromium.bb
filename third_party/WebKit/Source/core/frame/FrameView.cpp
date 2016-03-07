@@ -553,15 +553,15 @@ void FrameView::calculateScrollbarModesFromOverflowStyle(const ComputedStyle* st
     EOverflow overflowY = style->overflowY();
 
     if (!shouldIgnoreOverflowHidden()) {
-        if (overflowX == OHIDDEN)
+        if (overflowX == OverflowHidden)
             hMode = ScrollbarAlwaysOff;
-        if (overflowY == OHIDDEN)
+        if (overflowY == OverflowHidden)
             vMode = ScrollbarAlwaysOff;
     }
 
-    if (overflowX == OSCROLL)
+    if (overflowX == OverflowScroll)
         hMode = ScrollbarAlwaysOn;
-    if (overflowY == OSCROLL)
+    if (overflowY == OverflowScroll)
         vMode = ScrollbarAlwaysOn;
 }
 
@@ -3140,9 +3140,9 @@ void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode ve
     // http://crbug.com/426447
     LayoutObject* viewport = viewportLayoutObject();
     if (viewport && !shouldIgnoreOverflowHidden()) {
-        if (viewport->style()->overflowX() == OHIDDEN)
+        if (viewport->style()->overflowX() == OverflowHidden)
             horizontalMode = ScrollbarAlwaysOff;
-        if (viewport->style()->overflowY() == OHIDDEN)
+        if (viewport->style()->overflowY() == OverflowHidden)
             verticalMode = ScrollbarAlwaysOff;
     }
 

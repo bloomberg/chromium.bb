@@ -120,12 +120,20 @@ enum EBoxSizing { BoxSizingContentBox, BoxSizingBorderBox };
 // Random visual rendering model attributes. Not inherited.
 
 enum EOverflow {
-    OVISIBLE, OHIDDEN, OSCROLL, OAUTO, OOVERLAY, OPAGEDX, OPAGEDY
+    OverflowVisible, OverflowHidden, OverflowScroll, OverflowAuto, OverflowOverlay, OverflowPagedX, OverflowPagedY
 };
 
 enum EVerticalAlign {
-    BASELINE, MIDDLE, SUB, SUPER, TEXT_TOP,
-    TEXT_BOTTOM, TOP, BOTTOM, BASELINE_MIDDLE, LENGTH
+    VerticalAlignBaseline,
+    VerticalAlignMiddle,
+    VerticalAlignSub,
+    VerticalAlignSuper,
+    VerticalAlignTextTop,
+    VerticalAlignTextBottom,
+    VerticalAlignTop,
+    VerticalAlignBottom,
+    VerticalAlignBaselineMiddle,
+    VerticalAlignLength
 };
 
 enum EClear {

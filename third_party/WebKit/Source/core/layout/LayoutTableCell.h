@@ -185,7 +185,7 @@ public:
     bool isBaselineAligned() const
     {
         EVerticalAlign va = style()->verticalAlign();
-        return va == BASELINE || va == TEXT_BOTTOM || va == TEXT_TOP || va == SUPER || va == SUB || va == LENGTH;
+        return va == VerticalAlignBaseline || va == VerticalAlignTextBottom || va == VerticalAlignTextTop || va == VerticalAlignSuper || va == VerticalAlignSub || va == VerticalAlignLength;
     }
 
     void computeIntrinsicPadding(int rowHeight, SubtreeLayoutScope&);

@@ -320,13 +320,13 @@ bool canScrollInDirection(const Node* container, WebFocusType type)
 
     switch (type) {
     case WebFocusTypeLeft:
-        return (container->layoutObject()->style()->overflowX() != OHIDDEN && container->layoutBox()->scrollLeft() > 0);
+        return (container->layoutObject()->style()->overflowX() != OverflowHidden && container->layoutBox()->scrollLeft() > 0);
     case WebFocusTypeUp:
-        return (container->layoutObject()->style()->overflowY() != OHIDDEN && container->layoutBox()->scrollTop() > 0);
+        return (container->layoutObject()->style()->overflowY() != OverflowHidden && container->layoutBox()->scrollTop() > 0);
     case WebFocusTypeRight:
-        return (container->layoutObject()->style()->overflowX() != OHIDDEN && container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth() < container->layoutBox()->scrollWidth());
+        return (container->layoutObject()->style()->overflowX() != OverflowHidden && container->layoutBox()->scrollLeft() + container->layoutBox()->clientWidth() < container->layoutBox()->scrollWidth());
     case WebFocusTypeDown:
-        return (container->layoutObject()->style()->overflowY() != OHIDDEN && container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight() < container->layoutBox()->scrollHeight());
+        return (container->layoutObject()->style()->overflowY() != OverflowHidden && container->layoutBox()->scrollTop() + container->layoutBox()->clientHeight() < container->layoutBox()->scrollHeight());
     default:
         ASSERT_NOT_REACHED();
         return false;
@@ -584,8 +584,8 @@ bool canBeScrolledIntoView(WebFocusType type, const FocusCandidate& candidate)
     for (Node* parentNode = candidate.visibleNode->parentNode(); parentNode; parentNode = parentNode->parentNode()) {
         LayoutRect parentRect = nodeRectInAbsoluteCoordinates(parentNode);
         if (!candidateRect.intersects(parentRect)) {
-            if (((type == WebFocusTypeLeft || type == WebFocusTypeRight) && parentNode->layoutObject()->style()->overflowX() == OHIDDEN)
-                || ((type == WebFocusTypeUp || type == WebFocusTypeDown) && parentNode->layoutObject()->style()->overflowY() == OHIDDEN))
+            if (((type == WebFocusTypeLeft || type == WebFocusTypeRight) && parentNode->layoutObject()->style()->overflowX() == OverflowHidden)
+                || ((type == WebFocusTypeUp || type == WebFocusTypeDown) && parentNode->layoutObject()->style()->overflowY() == OverflowHidden))
                 return false;
         }
         if (parentNode == candidate.enclosingScrollableBox)

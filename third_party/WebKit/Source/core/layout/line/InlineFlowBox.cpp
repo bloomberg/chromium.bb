@@ -125,7 +125,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
             if (child->getLineLayoutItem().isBR() || (child->getLineLayoutItem().parent() != getLineLayoutItem())) {
                 if (!parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
                     || parentStyle.lineHeight() != childStyle.lineHeight()
-                    || (parentStyle.verticalAlign() != BASELINE && !isRootInlineBox()) || childStyle.verticalAlign() != BASELINE)
+                    || (parentStyle.verticalAlign() != VerticalAlignBaseline && !isRootInlineBox()) || childStyle.verticalAlign() != VerticalAlignBaseline)
                     shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
             }
             if (childStyle.hasTextCombine() || childStyle.getTextEmphasisMark() != TextEmphasisMarkNone)
@@ -142,7 +142,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
                 if (!childFlowBox->descendantsHaveSameLineHeightAndBaseline()
                     || !parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
                     || parentStyle.lineHeight() != childStyle.lineHeight()
-                    || (parentStyle.verticalAlign() != BASELINE && !isRootInlineBox()) || childStyle.verticalAlign() != BASELINE
+                    || (parentStyle.verticalAlign() != VerticalAlignBaseline && !isRootInlineBox()) || childStyle.verticalAlign() != VerticalAlignBaseline
                     || childStyle.hasBorder() || childStyle.hasPadding() || childStyle.hasTextCombine())
                     shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
             }
@@ -470,9 +470,9 @@ void InlineFlowBox::adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent, i
         // positioned elements
         if (curr->getLineLayoutItem().isOutOfFlowPositioned())
             continue; // Positioned placeholders don't affect calculations.
-        if (curr->verticalAlign() == TOP || curr->verticalAlign() == BOTTOM) {
+        if (curr->verticalAlign() == VerticalAlignTop || curr->verticalAlign() == VerticalAlignBottom) {
             int lineHeight = curr->lineHeight();
-            if (curr->verticalAlign() == TOP) {
+            if (curr->verticalAlign() == VerticalAlignTop) {
                 if (maxAscent + maxDescent < lineHeight)
                     maxDescent = lineHeight - maxAscent;
             } else {
@@ -548,10 +548,10 @@ void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit&
         rootBox->ascentAndDescentForBox(curr, textBoxDataMap, ascent, descent, affectsAscent, affectsDescent);
 
         LayoutUnit boxHeight(ascent + descent);
-        if (curr->verticalAlign() == TOP) {
+        if (curr->verticalAlign() == VerticalAlignTop) {
             if (maxPositionTop < boxHeight)
                 maxPositionTop = boxHeight;
-        } else if (curr->verticalAlign() == BOTTOM) {
+        } else if (curr->verticalAlign() == VerticalAlignBottom) {
             if (maxPositionBottom < boxHeight)
                 maxPositionBottom = boxHeight;
         } else if (!inlineFlowBox || noQuirksMode || inlineFlowBox->hasTextChildren() || (inlineFlowBox->descendantsHaveSameLineHeightAndBaseline() && inlineFlowBox->hasTextDescendants()) || inlineFlowBox->boxModelObject().hasInlineDirectionBordersOrPadding()) {
@@ -607,9 +607,9 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
 
         InlineFlowBox* inlineFlowBox = curr->isInlineFlowBox() ? toInlineFlowBox(curr) : nullptr;
         bool childAffectsTopBottomPos = true;
-        if (curr->verticalAlign() == TOP) {
+        if (curr->verticalAlign() == VerticalAlignTop) {
             curr->setLogicalTop(top);
-        } else if (curr->verticalAlign() == BOTTOM) {
+        } else if (curr->verticalAlign() == VerticalAlignBottom) {
             curr->setLogicalTop((top + maxHeight - curr->lineHeight()));
         } else {
             if (!noQuirksMode && inlineFlowBox && !inlineFlowBox->hasTextChildren() && !curr->boxModelObject().hasInlineDirectionBordersOrPadding()

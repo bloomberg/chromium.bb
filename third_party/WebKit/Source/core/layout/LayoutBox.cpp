@@ -734,7 +734,7 @@ LayoutRect LayoutBox::reflectedRect(const LayoutRect& r) const
 
 int LayoutBox::verticalScrollbarWidth() const
 {
-    if (!hasOverflowClip() || style()->overflowY() == OOVERLAY)
+    if (!hasOverflowClip() || style()->overflowY() == OverflowOverlay)
         return 0;
 
     return scrollableArea()->verticalScrollbarWidth();
@@ -742,7 +742,7 @@ int LayoutBox::verticalScrollbarWidth() const
 
 int LayoutBox::horizontalScrollbarHeight() const
 {
-    if (!hasOverflowClip() || style()->overflowX() == OOVERLAY)
+    if (!hasOverflowClip() || style()->overflowX() == OverflowOverlay)
         return 0;
 
     return scrollableArea()->horizontalScrollbarHeight();
@@ -755,13 +755,13 @@ int LayoutBox::intrinsicScrollbarLogicalWidth() const
 
     ASSERT(scrollableArea());
 
-    if (isHorizontalWritingMode() && style()->overflowY() == OSCROLL) {
-        // Even with OSCROLL, the scrollbar may not exist (crbug.com/415031).
+    if (isHorizontalWritingMode() && style()->overflowY() == OverflowScroll) {
+        // Even with OverflowScroll, the scrollbar may not exist (crbug.com/415031).
         return scrollableArea()->hasVerticalScrollbar() ? verticalScrollbarWidth() : 0;
     }
 
-    if (!isHorizontalWritingMode() && style()->overflowX() == OSCROLL) {
-        // Even with OSCROLL, the scrollbar may not exist (crbug.com/415031).
+    if (!isHorizontalWritingMode() && style()->overflowX() == OverflowScroll) {
+        // Even with OverflowScroll, the scrollbar may not exist (crbug.com/415031).
         return scrollableArea()->hasHorizontalScrollbar() ? horizontalScrollbarHeight() : 0;
     }
 
@@ -2079,7 +2079,7 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     // Width calculations
     if (treatAsReplaced) {
         computedValues.m_extent = LayoutUnit(logicalWidthLength.value()) + borderAndPaddingLogicalWidth();
-    } else if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->logicalMinWidth().isAuto() && style()->overflowX() == OVISIBLE && containerLogicalWidth < minPreferredLogicalWidth()) {
+    } else if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->logicalMinWidth().isAuto() && style()->overflowX() == OverflowVisible && containerLogicalWidth < minPreferredLogicalWidth()) {
         // TODO (lajava) Move this logic to the LayoutGrid class.
         // Implied minimum size of Grid items.
         computedValues.m_extent = constrainLogicalWidthByMinMax(minPreferredLogicalWidth(), containerLogicalWidth, cb);
@@ -2420,7 +2420,7 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         // https://bugs.webkit.org/show_bug.cgi?id=46418
         if (hasOverrideLogicalContentHeight()) {
             LayoutUnit contentHeight = overrideLogicalContentHeight();
-            if (parent()->isLayoutGrid() && style()->logicalMinHeight().isAuto() && style()->overflowY() == OVISIBLE) {
+            if (parent()->isLayoutGrid() && style()->logicalMinHeight().isAuto() && style()->overflowY() == OverflowVisible) {
                 ASSERT(style()->logicalHeight().isAuto());
                 LayoutUnit minContentHeight = computeContentLogicalHeight(MinSize, Length(MinContent), computedValues.m_extent - borderAndPaddingLogicalHeight());
                 contentHeight = std::max(contentHeight, constrainContentBoxLogicalHeightByMinMax(minContentHeight, computedValues.m_extent - borderAndPaddingLogicalHeight()));

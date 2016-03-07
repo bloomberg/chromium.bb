@@ -715,7 +715,7 @@ bool LayoutFlexibleBox::crossAxisLengthIsDefinite(const LayoutBox& child, const 
 bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(const LayoutBox& child) const
 {
     return !mainAxisLengthIsDefinite(child, flexBasisForChild(child)) && (
-        hasOrthogonalFlow(child) || crossAxisOverflowForChild(child) == OAUTO);
+        hasOrthogonalFlow(child) || crossAxisOverflowForChild(child) == OverflowAuto);
 }
 
 void LayoutFlexibleBox::cacheChildMainSize(const LayoutBox& child)
@@ -994,7 +994,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
         // computeMainAxisExtentForChild can return -1 when the child has a percentage
         // min size, but we have an indefinite size in that axis.
         minExtent = std::max(LayoutUnit(), minExtent);
-    } else if (min.isAuto() && mainAxisOverflowForChild(child) == OVISIBLE && !(isColumnFlow() && child.isFlexibleBox())) {
+    } else if (min.isAuto() && mainAxisOverflowForChild(child) == OverflowVisible && !(isColumnFlow() && child.isFlexibleBox())) {
         // TODO(cbiesinger): For now, we do not handle min-height: auto for nested column flexboxes. We need
         // to implement https://drafts.csswg.org/css-flexbox/#intrinsic-sizes before that produces
         // reasonable results. Tracking bug: https://crbug.com/581553

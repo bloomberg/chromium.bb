@@ -1647,17 +1647,17 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FontSizeChange));
     }
 
-    EOverflow overflowX = OAUTO;
-    EOverflow overflowY = OAUTO;
+    EOverflow overflowX = OverflowAuto;
+    EOverflow overflowY = OverflowAuto;
     float columnGap = 0;
     if (overflowStyle) {
         overflowX = overflowStyle->overflowX();
         overflowY = overflowStyle->overflowY();
         // Visible overflow on the viewport is meaningless, and the spec says to treat it as 'auto':
-        if (overflowX == OVISIBLE)
-            overflowX = OAUTO;
-        if (overflowY == OVISIBLE)
-            overflowY = OAUTO;
+        if (overflowX == OverflowVisible)
+            overflowX = OverflowAuto;
+        if (overflowY == OverflowVisible)
+            overflowY = OverflowAuto;
         // Column-gap is (ab)used by the current paged overflow implementation (in lack of other
         // ways to specify gaps between pages), so we have to propagate it too.
         columnGap = overflowStyle->columnGap();

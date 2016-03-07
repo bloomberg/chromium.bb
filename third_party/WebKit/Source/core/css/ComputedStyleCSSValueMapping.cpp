@@ -2036,26 +2036,26 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createValue(style.unicodeBidi());
     case CSSPropertyVerticalAlign:
         switch (style.verticalAlign()) {
-        case BASELINE:
+        case VerticalAlignBaseline:
             return cssValuePool().createIdentifierValue(CSSValueBaseline);
-        case MIDDLE:
+        case VerticalAlignMiddle:
             return cssValuePool().createIdentifierValue(CSSValueMiddle);
-        case SUB:
+        case VerticalAlignSub:
             return cssValuePool().createIdentifierValue(CSSValueSub);
-        case SUPER:
+        case VerticalAlignSuper:
             return cssValuePool().createIdentifierValue(CSSValueSuper);
-        case TEXT_TOP:
+        case VerticalAlignTextTop:
             return cssValuePool().createIdentifierValue(CSSValueTextTop);
-        case TEXT_BOTTOM:
+        case VerticalAlignTextBottom:
             return cssValuePool().createIdentifierValue(CSSValueTextBottom);
-        case TOP:
+        case VerticalAlignTop:
             return cssValuePool().createIdentifierValue(CSSValueTop);
-        case BOTTOM:
+        case VerticalAlignBottom:
             return cssValuePool().createIdentifierValue(CSSValueBottom);
-        case BASELINE_MIDDLE:
+        case VerticalAlignBaselineMiddle:
             return cssValuePool().createIdentifierValue(CSSValueWebkitBaselineMiddle);
-        case LENGTH:
-            return zoomAdjustedPixelValueForLength(style.verticalAlignLength(), style);
+        case VerticalAlignLength:
+            return zoomAdjustedPixelValueForLength(style.getVerticalAlignLength(), style);
         }
         ASSERT_NOT_REACHED();
         return nullptr;

@@ -177,26 +177,26 @@ void LayoutTableCell::computeIntrinsicPadding(int rowHeight, SubtreeLayoutScope&
 
     int intrinsicPaddingBefore = 0;
     switch (style()->verticalAlign()) {
-    case SUB:
-    case SUPER:
-    case TEXT_TOP:
-    case TEXT_BOTTOM:
-    case LENGTH:
-    case BASELINE: {
+    case VerticalAlignSub:
+    case VerticalAlignSuper:
+    case VerticalAlignTextTop:
+    case VerticalAlignTextBottom:
+    case VerticalAlignLength:
+    case VerticalAlignBaseline: {
         int baseline = cellBaselinePosition();
         if (baseline > borderBefore() + paddingBefore())
             intrinsicPaddingBefore = section()->rowBaseline(rowIndex()) - (baseline - oldIntrinsicPaddingBefore);
         break;
     }
-    case TOP:
+    case VerticalAlignTop:
         break;
-    case MIDDLE:
+    case VerticalAlignMiddle:
         intrinsicPaddingBefore = (rowHeight - logicalHeightWithoutIntrinsicPadding) / 2;
         break;
-    case BOTTOM:
+    case VerticalAlignBottom:
         intrinsicPaddingBefore = rowHeight - logicalHeightWithoutIntrinsicPadding;
         break;
-    case BASELINE_MIDDLE:
+    case VerticalAlignBaselineMiddle:
         break;
     }
 
@@ -986,7 +986,7 @@ void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged, bool ve
         return;
 
     // Shrink our intrinsic padding as much as possible to accommodate the scrollbar.
-    if (style()->verticalAlign() == MIDDLE) {
+    if (style()->verticalAlign() == VerticalAlignMiddle) {
         LayoutUnit totalHeight = logicalHeight();
         LayoutUnit heightWithoutIntrinsicPadding = totalHeight - intrinsicPaddingBefore() - intrinsicPaddingAfter();
         totalHeight -= scrollbarHeight;

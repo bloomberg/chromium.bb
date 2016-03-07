@@ -209,8 +209,8 @@ void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout)
     LayoutInline* parentLayoutInline = parent()->isLayoutInline() ? toLayoutInline(parent()) : 0;
     bool checkFonts = document().inNoQuirksMode();
     bool alwaysCreateLineBoxesNew = (parentLayoutInline && parentLayoutInline->alwaysCreateLineBoxes())
-        || (parentLayoutInline && parentStyle.verticalAlign() != BASELINE)
-        || style()->verticalAlign() != BASELINE
+        || (parentLayoutInline && parentStyle.verticalAlign() != VerticalAlignBaseline)
+        || style()->verticalAlign() != VerticalAlignBaseline
         || style()->getTextEmphasisMark() != TextEmphasisMarkNone
         || (checkFonts && (!parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(style()->font().fontMetrics())
         || parentStyle.lineHeight() != style()->lineHeight()));
@@ -220,7 +220,7 @@ void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout)
         const ComputedStyle& firstLineParentStyle = parent()->styleRef(true);
         const ComputedStyle& childStyle = styleRef(true);
         alwaysCreateLineBoxesNew = !firstLineParentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
-        || childStyle.verticalAlign() != BASELINE
+        || childStyle.verticalAlign() != VerticalAlignBaseline
         || firstLineParentStyle.lineHeight() != childStyle.lineHeight();
     }
 

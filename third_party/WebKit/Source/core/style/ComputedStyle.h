@@ -573,12 +573,12 @@ public:
     EOverflow overflowX() const { return static_cast<EOverflow>(noninherited_flags.overflowX); }
     EOverflow overflowY() const { return static_cast<EOverflow>(noninherited_flags.overflowY); }
     // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
-    bool isOverflowVisible() const { ASSERT(overflowX() != OVISIBLE || overflowX() == overflowY()); return overflowX() == OVISIBLE; }
-    bool isOverflowPaged() const { return overflowY() == OPAGEDX || overflowY() == OPAGEDY; }
+    bool isOverflowVisible() const { ASSERT(overflowX() != OverflowVisible || overflowX() == overflowY()); return overflowX() == OverflowVisible; }
+    bool isOverflowPaged() const { return overflowY() == OverflowPagedX || overflowY() == OverflowPagedY; }
 
     EVisibility visibility() const { return static_cast<EVisibility>(inherited_flags._visibility); }
     EVerticalAlign verticalAlign() const { return static_cast<EVerticalAlign>(noninherited_flags.verticalAlign); }
-    const Length& verticalAlignLength() const { return m_box->verticalAlign(); }
+    const Length& getVerticalAlignLength() const { return m_box->verticalAlign(); }
 
     const Length& clipLeft() const { return visual->clip.left(); }
     const Length& clipRight() const { return visual->clip.right(); }
@@ -873,7 +873,7 @@ public:
         // out along the inline axis, just like for regular multicol. Otherwise, we need to lay out
         // along the block axis.
         if (isOverflowPaged())
-            return (overflowY() == OPAGEDX) == isHorizontalWritingMode();
+            return (overflowY() == OverflowPagedX) == isHorizontalWritingMode();
         return false;
     }
     float columnWidth() const { return rareNonInheritedData->m_multiCol->m_width; }
@@ -1157,7 +1157,7 @@ public:
     void setOverflowY(EOverflow v) { noninherited_flags.overflowY = v; }
     void setVisibility(EVisibility v) { inherited_flags._visibility = v; }
     void setVerticalAlign(EVerticalAlign v) { noninherited_flags.verticalAlign = v; }
-    void setVerticalAlignLength(const Length& length) { setVerticalAlign(LENGTH); SET_VAR(m_box, m_verticalAlign, length); }
+    void setVerticalAlignLength(const Length& length) { setVerticalAlign(VerticalAlignLength); SET_VAR(m_box, m_verticalAlign, length); }
 
     void setHasAutoClip() { SET_VAR(visual, hasAutoClip, true); SET_VAR(visual, clip, ComputedStyle::initialClip()); }
     void setClip(const LengthBox& box) { SET_VAR(visual, hasAutoClip, false); SET_VAR(visual, clip, box); }
@@ -1667,8 +1667,8 @@ public:
     static EFloat initialFloating() { return NoFloat; }
     static EListStylePosition initialListStylePosition() { return OUTSIDE; }
     static EListStyleType initialListStyleType() { return Disc; }
-    static EOverflow initialOverflowX() { return OVISIBLE; }
-    static EOverflow initialOverflowY() { return OVISIBLE; }
+    static EOverflow initialOverflowX() { return OverflowVisible; }
+    static EOverflow initialOverflowY() { return OverflowVisible; }
     static EBreak initialBreakAfter() { return BreakAuto; }
     static EBreak initialBreakBefore() { return BreakAuto; }
     static EBreak initialBreakInside() { return BreakAuto; }
@@ -1696,7 +1696,7 @@ public:
     static Length initialTextIndent() { return Length(Fixed); }
     static TextIndentLine initialTextIndentLine() { return TextIndentFirstLine; }
     static TextIndentType initialTextIndentType() { return TextIndentNormal; }
-    static EVerticalAlign initialVerticalAlign() { return BASELINE; }
+    static EVerticalAlign initialVerticalAlign() { return VerticalAlignBaseline; }
     static short initialWidows() { return 1; }
     static short initialOrphans() { return 2; }
     static Length initialLineHeight() { return Length(-100.0, Percent); }

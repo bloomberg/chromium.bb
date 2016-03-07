@@ -283,8 +283,8 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(co
     if (inputElement()->shouldRevealPassword())
         textBlockStyle->setTextSecurity(TSNONE);
 
-    textBlockStyle->setOverflowX(OSCROLL);
-    textBlockStyle->setOverflowY(OSCROLL);
+    textBlockStyle->setOverflowX(OverflowScroll);
+    textBlockStyle->setOverflowY(OverflowScroll);
     RefPtr<ComputedStyle> noScrollbarStyle = ComputedStyle::create();
     noScrollbarStyle->setStyleType(SCROLLBAR);
     noScrollbarStyle->setDisplay(NONE);

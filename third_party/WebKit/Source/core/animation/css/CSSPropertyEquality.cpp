@@ -240,7 +240,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
         return a.top() == b.top();
     case CSSPropertyVerticalAlign:
         return a.verticalAlign() == b.verticalAlign()
-            && (a.verticalAlign() != LENGTH || a.verticalAlignLength() == b.verticalAlignLength());
+            && (a.verticalAlign() != VerticalAlignLength || a.getVerticalAlignLength() == b.getVerticalAlignLength());
     case CSSPropertyVisibility:
         return a.visibility() == b.visibility();
     case CSSPropertyWebkitBorderHorizontalSpacing:

@@ -1692,25 +1692,25 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EOverflow e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case OVISIBLE:
+    case OverflowVisible:
         m_value.valueID = CSSValueVisible;
         break;
-    case OHIDDEN:
+    case OverflowHidden:
         m_value.valueID = CSSValueHidden;
         break;
-    case OSCROLL:
+    case OverflowScroll:
         m_value.valueID = CSSValueScroll;
         break;
-    case OAUTO:
+    case OverflowAuto:
         m_value.valueID = CSSValueAuto;
         break;
-    case OOVERLAY:
+    case OverflowOverlay:
         m_value.valueID = CSSValueOverlay;
         break;
-    case OPAGEDX:
+    case OverflowPagedX:
         m_value.valueID = CSSValueWebkitPagedX;
         break;
-    case OPAGEDY:
+    case OverflowPagedY:
         m_value.valueID = CSSValueWebkitPagedY;
         break;
     }
@@ -1721,25 +1721,25 @@ template<> inline EOverflow CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueVisible:
-        return OVISIBLE;
+        return OverflowVisible;
     case CSSValueHidden:
-        return OHIDDEN;
+        return OverflowHidden;
     case CSSValueScroll:
-        return OSCROLL;
+        return OverflowScroll;
     case CSSValueAuto:
-        return OAUTO;
+        return OverflowAuto;
     case CSSValueOverlay:
-        return OOVERLAY;
+        return OverflowOverlay;
     case CSSValueWebkitPagedX:
-        return OPAGEDX;
+        return OverflowPagedX;
     case CSSValueWebkitPagedY:
-        return OPAGEDY;
+        return OverflowPagedY;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return OVISIBLE;
+    return OverflowVisible;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBreak e)
@@ -2402,34 +2402,34 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EVerticalAlign a)
 {
     init(UnitType::ValueID);
     switch (a) {
-    case TOP:
+    case VerticalAlignTop:
         m_value.valueID = CSSValueTop;
         break;
-    case BOTTOM:
+    case VerticalAlignBottom:
         m_value.valueID = CSSValueBottom;
         break;
-    case MIDDLE:
+    case VerticalAlignMiddle:
         m_value.valueID = CSSValueMiddle;
         break;
-    case BASELINE:
+    case VerticalAlignBaseline:
         m_value.valueID = CSSValueBaseline;
         break;
-    case TEXT_BOTTOM:
+    case VerticalAlignTextBottom:
         m_value.valueID = CSSValueTextBottom;
         break;
-    case TEXT_TOP:
+    case VerticalAlignTextTop:
         m_value.valueID = CSSValueTextTop;
         break;
-    case SUB:
+    case VerticalAlignSub:
         m_value.valueID = CSSValueSub;
         break;
-    case SUPER:
+    case VerticalAlignSuper:
         m_value.valueID = CSSValueSuper;
         break;
-    case BASELINE_MIDDLE:
+    case VerticalAlignBaselineMiddle:
         m_value.valueID = CSSValueWebkitBaselineMiddle;
         break;
-    case LENGTH:
+    case VerticalAlignLength:
         m_value.valueID = CSSValueInvalid;
     }
 }
@@ -2439,29 +2439,29 @@ template<> inline EVerticalAlign CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueTop:
-        return TOP;
+        return VerticalAlignTop;
     case CSSValueBottom:
-        return BOTTOM;
+        return VerticalAlignBottom;
     case CSSValueMiddle:
-        return MIDDLE;
+        return VerticalAlignMiddle;
     case CSSValueBaseline:
-        return BASELINE;
+        return VerticalAlignBaseline;
     case CSSValueTextBottom:
-        return TEXT_BOTTOM;
+        return VerticalAlignTextBottom;
     case CSSValueTextTop:
-        return TEXT_TOP;
+        return VerticalAlignTextTop;
     case CSSValueSub:
-        return SUB;
+        return VerticalAlignSub;
     case CSSValueSuper:
-        return SUPER;
+        return VerticalAlignSuper;
     case CSSValueWebkitBaselineMiddle:
-        return BASELINE_MIDDLE;
+        return VerticalAlignBaselineMiddle;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return TOP;
+    return VerticalAlignTop;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EVisibility e)
