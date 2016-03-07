@@ -24,10 +24,14 @@ namespace test {
 // stats data and a |modifier| to append to each result bucket. For instance, if
 // the modifier is '_oneway', the rtt stat will be logged as goog_rtt in
 // the video_tx_oneway bucket.
+// If |video_codec| is a non-empty string, the codec name is appended last for
+// video metrics, e.g. 'video_tx_oneway_VP9'.
 void PrintBweForVideoMetrics(const base::DictionaryValue& pc_dict,
-                             const std::string& modifier);
+                             const std::string& modifier,
+                             const std::string& video_codec);
 void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict,
-                               const std::string& modifier);
+                               const std::string& modifier,
+                               const std::string& video_codec);
 
 }  // namespace test
 

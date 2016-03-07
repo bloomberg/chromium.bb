@@ -101,96 +101,126 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
     return scoped_ptr<base::DictionaryValue>(
         GetWebrtcInternalsData(webrtc_internals_tab));
   }
+
+  void RunsAudioVideoCall60SecsAndLogsInternalMetrics(
+      const std::string& video_codec) {
+    ASSERT_TRUE(test::HasReferenceFilesInCheckout());
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100)
+        << "This is a long-running test; you must specify "
+           "--ui-test-action-max-timeout to have a value of at least 100000.";
+
+    content::WebContents* left_tab =
+        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+    content::WebContents* right_tab =
+        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+
+    SetupPeerconnectionWithLocalStream(left_tab);
+    SetupPeerconnectionWithLocalStream(right_tab);
+
+    NegotiateCall(left_tab, right_tab, video_codec);
+
+    StartDetectingVideo(left_tab, "remote-view");
+    StartDetectingVideo(right_tab, "remote-view");
+
+    WaitForVideoToPlay(left_tab);
+    WaitForVideoToPlay(right_tab);
+
+    // Let values stabilize, bandwidth ramp up, etc.
+    test::SleepInJavascript(left_tab, 60000);
+
+    // Start measurements.
+    scoped_ptr<base::DictionaryValue> all_data =
+        MeasureWebRtcInternalsData(10000);
+    ASSERT_TRUE(all_data.get() != NULL);
+
+    const base::DictionaryValue* first_pc_dict =
+        GetDataOnPeerConnection(all_data.get(), 0);
+    ASSERT_TRUE(first_pc_dict != NULL);
+    test::PrintBweForVideoMetrics(*first_pc_dict, "", video_codec);
+    test::PrintMetricsForAllStreams(*first_pc_dict, "", video_codec);
+
+    HangUp(left_tab);
+    HangUp(right_tab);
+  }
+
+  void RunsOneWayCall60SecsAndLogsInternalMetrics(
+      const std::string& video_codec) {
+    ASSERT_TRUE(test::HasReferenceFilesInCheckout());
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100)
+        << "This is a long-running test; you must specify "
+           "--ui-test-action-max-timeout to have a value of at least 100000.";
+
+    content::WebContents* left_tab =
+        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+    content::WebContents* right_tab =
+        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+
+    SetupPeerconnectionWithLocalStream(left_tab);
+    SetupPeerconnectionWithoutLocalStream(right_tab);
+
+    NegotiateCall(left_tab, right_tab, video_codec);
+
+    // Remote video will only play in one tab since the call is one-way.
+    StartDetectingVideo(right_tab, "remote-view");
+    WaitForVideoToPlay(right_tab);
+
+    // Let values stabilize, bandwidth ramp up, etc.
+    test::SleepInJavascript(left_tab, 60000);
+
+    scoped_ptr<base::DictionaryValue> all_data =
+        MeasureWebRtcInternalsData(10000);
+    ASSERT_TRUE(all_data.get() != NULL);
+
+    // This assumes the sending peer connection is always listed first in the
+    // data store, and the receiving second.
+    const base::DictionaryValue* first_pc_dict =
+        GetDataOnPeerConnection(all_data.get(), 0);
+    ASSERT_TRUE(first_pc_dict != NULL);
+    test::PrintBweForVideoMetrics(*first_pc_dict, "_sendonly", video_codec);
+    test::PrintMetricsForAllStreams(*first_pc_dict, "_sendonly", video_codec);
+
+    const base::DictionaryValue* second_pc_dict =
+        GetDataOnPeerConnection(all_data.get(), 1);
+    ASSERT_TRUE(second_pc_dict != NULL);
+    test::PrintBweForVideoMetrics(*second_pc_dict, "_recvonly", video_codec);
+    test::PrintMetricsForAllStreams(*second_pc_dict, "_recvonly", video_codec);
+
+    HangUp(left_tab);
+    HangUp(right_tab);
+  }
 };
 
 // This is manual for its long execution time.
-IN_PROC_BROWSER_TEST_F(WebRtcPerfBrowserTest,
-                       MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetrics) {
-  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
-  ASSERT_TRUE(embedded_test_server()->Start());
 
-  ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100) <<
-      "This is a long-running test; you must specify "
-      "--ui-test-action-max-timeout to have a value of at least 100000.";
-
-  content::WebContents* left_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-  content::WebContents* right_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-
-  SetupPeerconnectionWithLocalStream(left_tab);
-  SetupPeerconnectionWithLocalStream(right_tab);
-
-  NegotiateCall(left_tab, right_tab);
-
-  StartDetectingVideo(left_tab, "remote-view");
-  StartDetectingVideo(right_tab, "remote-view");
-
-  WaitForVideoToPlay(left_tab);
-  WaitForVideoToPlay(right_tab);
-
-  // Let values stabilize, bandwidth ramp up, etc.
-  test::SleepInJavascript(left_tab, 60000);
-
-  // Start measurements.
-  scoped_ptr<base::DictionaryValue> all_data =
-      MeasureWebRtcInternalsData(10000);
-  ASSERT_TRUE(all_data.get() != NULL);
-
-  const base::DictionaryValue* first_pc_dict =
-      GetDataOnPeerConnection(all_data.get(), 0);
-  ASSERT_TRUE(first_pc_dict != NULL);
-  test::PrintBweForVideoMetrics(*first_pc_dict, "");
-  test::PrintMetricsForAllStreams(*first_pc_dict, "");
-
-  HangUp(left_tab);
-  HangUp(right_tab);
+// The video codec name is now appended to result bucket (e.g. 'video_tx_VP8').
+// TODO(asapersson): Keep test below using the default video codec (which do
+// not have the codec name appended ('video_tx')) until new tests have been
+// running for some time.
+IN_PROC_BROWSER_TEST_F(
+    WebRtcPerfBrowserTest,
+    MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsDefault) {
+  RunsAudioVideoCall60SecsAndLogsInternalMetrics("");
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcPerfBrowserTest,
-                       MANUAL_RunsOneWayCall60SecsAndLogsInternalMetrics) {
-  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100) <<
-      "This is a long-running test; you must specify "
-      "--ui-test-action-max-timeout to have a value of at least 100000.";
-
-  content::WebContents* left_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-  content::WebContents* right_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-
-  SetupPeerconnectionWithLocalStream(left_tab);
-  SetupPeerconnectionWithoutLocalStream(right_tab);
-
-  NegotiateCall(left_tab, right_tab);
-
-  // Remote video will only play in one tab since the call is one-way.
-  StartDetectingVideo(right_tab, "remote-view");
-  WaitForVideoToPlay(right_tab);
-
-  // Let values stabilize, bandwidth ramp up, etc.
-  test::SleepInJavascript(left_tab, 60000);
-
-  scoped_ptr<base::DictionaryValue> all_data =
-      MeasureWebRtcInternalsData(10000);
-  ASSERT_TRUE(all_data.get() != NULL);
-
-  // This assumes the sending peer connection is always listed first in the
-  // data store, and the receiving second.
-  const base::DictionaryValue* first_pc_dict =
-      GetDataOnPeerConnection(all_data.get(), 0);
-  ASSERT_TRUE(first_pc_dict != NULL);
-  test::PrintBweForVideoMetrics(*first_pc_dict, "_sendonly");
-  test::PrintMetricsForAllStreams(*first_pc_dict, "_sendonly");
-
-  const base::DictionaryValue* second_pc_dict =
-      GetDataOnPeerConnection(all_data.get(), 1);
-  ASSERT_TRUE(second_pc_dict != NULL);
-  test::PrintBweForVideoMetrics(*second_pc_dict, "_recvonly");
-  test::PrintMetricsForAllStreams(*second_pc_dict, "_recvonly");
-
-  HangUp(left_tab);
-  HangUp(right_tab);
+IN_PROC_BROWSER_TEST_F(
+    WebRtcPerfBrowserTest,
+    MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8) {
+  RunsAudioVideoCall60SecsAndLogsInternalMetrics("VP8");
 }
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcPerfBrowserTest,
+    MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9) {
+  RunsAudioVideoCall60SecsAndLogsInternalMetrics("VP9");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcPerfBrowserTest,
+    MANUAL_RunsOneWayCall60SecsAndLogsInternalMetricsDefault) {
+  RunsOneWayCall60SecsAndLogsInternalMetrics("");
+}
+

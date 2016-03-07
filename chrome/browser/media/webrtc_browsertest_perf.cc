@@ -209,33 +209,39 @@ static std::set<std::string> FindAllSsrcIdentifiers(
 namespace test {
 
 void PrintBweForVideoMetrics(const base::DictionaryValue& pc_dict,
-                             const std::string& modifier) {
+                             const std::string& modifier,
+                             const std::string& video_codec) {
+  std::string video_modifier =
+      video_codec.empty() ? modifier : modifier + "_" + video_codec;
   const std::string kBweStatsKey = "bweforvideo";
   std::string value;
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googAvailableSendBandwidth", kBweStatsKey), &value));
-  perf_test::PrintResult(
-      "bwe_stats", modifier, "available_send_bw", value, "bit/s", false);
+  perf_test::PrintResult("bwe_stats", video_modifier, "available_send_bw",
+                         value, "bit/s", false);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googAvailableReceiveBandwidth", kBweStatsKey), &value));
-  perf_test::PrintResult(
-      "bwe_stats", modifier, "available_recv_bw", value, "bit/s", false);
+  perf_test::PrintResult("bwe_stats", video_modifier, "available_recv_bw",
+                         value, "bit/s", false);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googTargetEncBitrate", kBweStatsKey), &value));
-  perf_test::PrintResult(
-      "bwe_stats", modifier, "target_enc_bitrate", value, "bit/s", false);
+  perf_test::PrintResult("bwe_stats", video_modifier, "target_enc_bitrate",
+                         value, "bit/s", false);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googActualEncBitrate", kBweStatsKey), &value));
-  perf_test::PrintResult(
-      "bwe_stats", modifier, "actual_enc_bitrate", value, "bit/s", false);
+  perf_test::PrintResult("bwe_stats", video_modifier, "actual_enc_bitrate",
+                         value, "bit/s", false);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googTransmitBitrate", kBweStatsKey), &value));
-  perf_test::PrintResult(
-      "bwe_stats", modifier, "transmit_bitrate", value, "bit/s",false);
+  perf_test::PrintResult("bwe_stats", video_modifier, "transmit_bitrate", value,
+                         "bit/s", false);
 }
 
 void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict,
-                               const std::string& modifier) {
+                               const std::string& modifier,
+                               const std::string& video_codec) {
+  std::string video_modifier =
+      video_codec.empty() ? modifier : modifier + "_" + video_codec;
   const base::DictionaryValue* stats_dict;
   ASSERT_TRUE(pc_dict.GetDictionary("stats", &stats_dict));
   std::set<std::string> ssrc_identifiers = FindAllSsrcIdentifiers(*stats_dict);
@@ -249,8 +255,8 @@ void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict,
     bool did_recognize_stream_type =
         MaybePrintResultsForAudioReceive(ssrc, pc_dict, modifier) ||
         MaybePrintResultsForAudioSend(ssrc, pc_dict, modifier) ||
-        MaybePrintResultsForVideoReceive(ssrc, pc_dict, modifier) ||
-        MaybePrintResultsForVideoSend(ssrc, pc_dict, modifier);
+        MaybePrintResultsForVideoReceive(ssrc, pc_dict, video_modifier) ||
+        MaybePrintResultsForVideoSend(ssrc, pc_dict, video_modifier);
     ASSERT_TRUE(did_recognize_stream_type) << "Failed to figure out which "
                                               "kind of stream SSRC " << ssrc
                                            << " is. ";
