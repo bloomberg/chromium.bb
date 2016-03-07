@@ -159,7 +159,10 @@ class ExtensionApiFrameIdMap {
   // virtual for testing.
   virtual FrameData KeyToValue(const RenderFrameIdKey& key) const;
 
-  FrameData LookupFrameDataOnUI(const RenderFrameIdKey& key);
+  // Looks up the data for the given |key| and adds it to the |frame_data_map_|.
+  // |for_lookup| indicates whether this is for a pending lookup (as opposed to
+  // preemptively caching the frame data).
+  FrameData LookupFrameDataOnUI(const RenderFrameIdKey& key, bool for_lookup);
 
   // Called as soon as the frame ID is found for the given |key|, and runs all
   // queued callbacks with |cached_frame_id_pair|.

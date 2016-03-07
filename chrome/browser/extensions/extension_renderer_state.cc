@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
@@ -214,10 +215,12 @@ bool ExtensionRendererState::GetTabAndWindowId(
   int render_view_id = info->GetRouteID();
   RenderId render_id(render_process_id, render_view_id);
   TabAndWindowIdMap::iterator iter = map_.find(render_id);
+  bool found = false;
   if (iter != map_.end()) {
     *tab_id = iter->second.first;
     *window_id = iter->second.second;
-    return true;
+    found = true;
   }
-  return false;
+  UMA_HISTOGRAM_BOOLEAN("Extensions.ExtensionRendererStateCacheHit", found);
+  return found;
 }

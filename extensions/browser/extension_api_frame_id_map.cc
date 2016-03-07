@@ -152,21 +152,35 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
 }
 
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::LookupFrameDataOnUI(
-    const RenderFrameIdKey& key) {
+    const RenderFrameIdKey& key,
+    bool for_lookup) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  bool lookup_successful = false;
+  FrameData data;
   FrameDataMap::const_iterator frame_id_iter = frame_data_map_.find(key);
-  if (frame_id_iter != frame_data_map_.end())
-    return frame_id_iter->second;
+  if (frame_id_iter != frame_data_map_.end()) {
+    lookup_successful = true;
+    data = frame_id_iter->second;
+  } else {
+    data = KeyToValue(key);
+    // Don't save invalid values in the map.
+    if (data.frame_id != kInvalidFrameId) {
+      lookup_successful = true;
+      auto kvpair = FrameDataMap::value_type(key, data);
+      base::AutoLock lock(frame_data_map_lock_);
+      frame_data_map_.insert(kvpair);
+    }
+  }
 
-  FrameData cached_frame_data = KeyToValue(key);
-  // Don't save invalid values in the map.
-  if (cached_frame_data.frame_id == kInvalidFrameId)
-    return cached_frame_data;
+  // TODO(devlin): Depending on how the data looks, this may be removable after
+  // a few cycles. Check back in M52 to see if it's still needed.
+  if (for_lookup) {
+    UMA_HISTOGRAM_BOOLEAN("Extensions.ExtensionFrameMapLookupSuccessful",
+                          lookup_successful);
+  }
 
-  auto kvpair = FrameDataMap::value_type(key, cached_frame_data);
-  base::AutoLock lock(frame_data_map_lock_);
-  return frame_data_map_.insert(kvpair).first->second;
+  return data;
 }
 
 void ExtensionApiFrameIdMap::ReceivedFrameDataOnIO(
@@ -244,7 +258,7 @@ void ExtensionApiFrameIdMap::GetFrameDataOnIO(
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&ExtensionApiFrameIdMap::LookupFrameDataOnUI,
-                 base::Unretained(this), key),
+                 base::Unretained(this), key, true /* for lookup */),
       base::Bind(&ExtensionApiFrameIdMap::ReceivedFrameDataOnIO,
                  base::Unretained(this), key));
 }
@@ -262,15 +276,17 @@ bool ExtensionApiFrameIdMap::GetCachedFrameDataOnIO(int render_process_id,
   // A valid routing ID is only meaningful with a valid process ID.
   DCHECK_GE(render_process_id, 0);
 
-  base::AutoLock lock(frame_data_map_lock_);
-  FrameDataMap::const_iterator frame_id_iter = frame_data_map_.find(
-      RenderFrameIdKey(render_process_id, frame_routing_id));
   bool found = false;
-  if (frame_id_iter != frame_data_map_.end()) {
-    // This is very likely to happen because CacheFrameId() is called as soon
-    // as the frame is created.
-    *frame_data_out = frame_id_iter->second;
-    found = true;
+  {
+    base::AutoLock lock(frame_data_map_lock_);
+    FrameDataMap::const_iterator frame_id_iter = frame_data_map_.find(
+        RenderFrameIdKey(render_process_id, frame_routing_id));
+    if (frame_id_iter != frame_data_map_.end()) {
+      // This is very likely to happen because CacheFrameId() is called as soon
+      // as the frame is created.
+      *frame_data_out = frame_id_iter->second;
+      found = true;
+    }
   }
 
   // TODO(devlin): Depending on how the data looks, this may be removable after
@@ -288,7 +304,7 @@ void ExtensionApiFrameIdMap::CacheFrameData(content::RenderFrameHost* rfh) {
 }
 
 void ExtensionApiFrameIdMap::CacheFrameData(const RenderFrameIdKey& key) {
-  LookupFrameDataOnUI(key);
+  LookupFrameDataOnUI(key, false /* not for lookup */);
 }
 
 void ExtensionApiFrameIdMap::RemoveFrameData(content::RenderFrameHost* rfh) {

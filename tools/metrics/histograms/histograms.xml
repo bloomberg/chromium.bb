@@ -12838,6 +12838,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ExtensionFrameMapLookupSuccessful" units="Boolean">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    True if the lookup for a frame in the extension frame map succeeded after a
+    cache miss.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ExtensionHostMonitoring.MaxActiveLoading">
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -12891,6 +12899,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during ExtensionManagement::Refresh.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ExtensionRendererStateCacheHit" units="Boolean">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    True if the cache for the ExtensionRendererState was hit during a lookup.
   </summary>
 </histogram>
 
