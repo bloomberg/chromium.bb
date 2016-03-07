@@ -60,6 +60,7 @@ static PassRefPtr<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(int fo
 
 namespace blink {
 
+#if OS(ANDROID) || OS(LINUX)
 // Android special locale for retrieving the color emoji font
 // based on the proposed changes in UTR #51 for introducing
 // an Emoji script code:
@@ -83,7 +84,6 @@ static CString toSkFontMgrLocale(const String& locale)
     }
 }
 
-#if OS(ANDROID) || OS(LINUX)
 // This function is called on android or when we are emulating android fonts on linux and the
 // embedder has overriden the default fontManager with WebFontRendering::setSkiaFontMgr.
 // static
