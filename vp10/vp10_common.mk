@@ -67,8 +67,9 @@ VP10_COMMON_SRCS-yes += common/od_dering.c
 VP10_COMMON_SRCS-yes += common/od_dering.h
 VP10_COMMON_SRCS-yes += common/dering.c
 VP10_COMMON_SRCS-yes += common/dering.h
-VP10_COMMON_SRCS-yes += common/odintrin.h
 endif
+VP10_COMMON_SRCS-yes += common/odintrin.c
+VP10_COMMON_SRCS-yes += common/odintrin.h
 
 ifneq ($(CONFIG_VPX_HIGHBITDEPTH),yes)
 VP10_COMMON_SRCS-$(HAVE_DSPR2)  += common/mips/dspr2/itrans4_dspr2.c
