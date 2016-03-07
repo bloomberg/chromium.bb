@@ -212,26 +212,12 @@ bool GetNameForDecl(const clang::EnumConstantDecl& decl,
     }
   }
 
-  name = 'k';  // k prefix on enum values.
-  if (!is_shouty) {
-    name += original_name;
-    name[1] = clang::toUppercase(name[1]);
-    return true;
-  }
+  if (is_shouty)
+    return false;
 
-  // If it's shouty make it camel case.
-  bool start_word = true;
-  for (auto c : original_name) {
-    if (c == '_') {
-      start_word = true;
-      continue;
-    }
-    if (start_word)
-      name += clang::toUppercase(c);
-    else
-      name += clang::toLowercase(c);
-    start_word = false;
-  }
+  name = 'k';  // k prefix on enum values.
+  name += original_name;
+  name[1] = clang::toUppercase(name[1]);
   return true;
 }
 

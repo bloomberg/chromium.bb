@@ -5,7 +5,7 @@
 namespace blink {
 
 enum EnumInNamespace {
-  // These should be renamed to SHOUT_CAPS.
+  // These should be renamed to kConstantCase.
   NamedWrong,
   namedWrong2,
   // This shouldn't exist but if it does renaming them will help us find them.
@@ -15,7 +15,7 @@ enum EnumInNamespace {
 class T {
  public:
   enum EnumInClass {
-    // These should be renamed to SHOUT_CAPS.
+    // These should be renamed to kConstantCase.
     ClassNamedWrong,
     classNamedWrong22,
     // This shouldn't exist but if it does renaming them will help us find them.
@@ -23,7 +23,7 @@ class T {
   };
 
   enum class EnumClassInClass {
-    // These should be renamed to SHOUT_CAPS.
+    // These should be renamed to kConstantCase.
     EnumClassNamedWrong,
     enumClassNamedWrong22,
     // This shouldn't exist but if it does renaming them will help us find them.
@@ -31,7 +31,7 @@ class T {
   };
 };
 
-// Already SHOUT_CAPS, so the naming shouldn't change.
+// Is SHOUT_CAPS, so the naming shouldn't change.
 enum AlreadyShouty {
   ENABLE_DIRECTZ3000_SUPPORT_FOR_HL3E1,
 };
@@ -46,7 +46,7 @@ enum EnumOutsideNamespace {
 };
 
 void F() {
-  // These should be renamed to SHOUT_CAPS.
+  // These should be renamed to kConstantCase.
   blink::EnumInNamespace e1 = blink::NamedWrong;
   blink::EnumInNamespace e2 = blink::namedWrong2;
   blink::T::EnumInClass e3 = blink::T::ClassNamedWrong;
