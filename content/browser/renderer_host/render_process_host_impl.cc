@@ -1385,6 +1385,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   static const char* const kSwitchNames[] = {
     switches::kAgcStartupMinVolume,
     switches::kAllowLoopbackInPeerConnection,
+    switches::kAndroidFontsPath,
     switches::kAudioBufferSize,
     switches::kBlinkPlatformLogChannels,
     switches::kBlinkSettings,

@@ -45,9 +45,7 @@
 #include "wtf/text/WTFString.h"
 #include <limits.h>
 
-#if OS(WIN)
 #include "SkFontMgr.h"
-#endif
 
 class SkTypeface;
 
@@ -104,9 +102,11 @@ public:
     unsigned short generation();
     void invalidate();
 
+    SkFontMgr* fontManager() { return m_fontManager.get(); }
+    static void setFontManager(const RefPtr<SkFontMgr>&);
+
 #if OS(WIN)
     bool useSubpixelPositioning() const { return s_useSubpixelPositioning; }
-    SkFontMgr* fontManager() { return m_fontManager.get(); }
     static bool useDirectWrite() { return s_useDirectWrite; }
     static bool antialiasedTextEnabled() { return s_antialiasedTextEnabled; }
     static bool lcdTextEnabled() { return s_lcdTextEnabled; }
@@ -114,7 +114,6 @@ public:
     static void setUseDirectWrite(bool useDirectWrite) { s_useDirectWrite = useDirectWrite; }
     static void setAntialiasedTextEnabled(bool enabled) { s_antialiasedTextEnabled = enabled; }
     static void setLCDTextEnabled(bool enabled) { s_lcdTextEnabled = enabled; }
-    static void setFontManager(const RefPtr<SkFontMgr>&);
     static void setDeviceScaleFactor(float deviceScaleFactor) { s_deviceScaleFactor = deviceScaleFactor; }
     static void addSideloadedFontForTesting(SkTypeface*);
     // Functions to cache and retrieve the system font metrics.
@@ -178,17 +177,23 @@ private:
     // Implemented on skia platforms.
     PassRefPtr<SkTypeface> createTypeface(const FontDescription&, const FontFaceCreationParams&, CString& name);
 
+#if OS(ANDROID) || OS(LINUX)
+    static AtomicString getFamilyNameForCharacter(SkFontMgr*, UChar32, const FontDescription&, FontFallbackPriority);
+#endif
+
     PassRefPtr<SimpleFontData> fallbackOnStandardFontStyle(const FontDescription&, UChar32);
 
     // Don't purge if this count is > 0;
     int m_purgePreventCount;
 
-#if OS(WIN)
     RefPtr<SkFontMgr> m_fontManager;
+
+    static SkFontMgr* s_fontManager;
+
+#if OS(WIN)
     static bool s_useDirectWrite;
     static bool s_antialiasedTextEnabled;
     static bool s_lcdTextEnabled;
-    static SkFontMgr* s_fontManager;
     static float s_deviceScaleFactor;
     static bool s_useSubpixelPositioning;
     static HashMap<String, RefPtr<SkTypeface>>* s_sideloadedFonts;

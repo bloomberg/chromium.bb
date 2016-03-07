@@ -162,6 +162,7 @@
       'dependencies': [
         '../build/linux/system.gyp:fontconfig',
         '../build/linux/system.gyp:freetype2',
+        '../third_party/expat/expat.gyp:expat',
         '../third_party/icu/icu.gyp:icuuc',
       ],
       'cflags': [
@@ -293,6 +294,14 @@
           '-Wno-deprecated-declarations',
         ],
       },
+    }],
+    # Add the files for the SkFontMgr_Android. This is used to emulate android
+    # fonts on linux. See content/zygote/zygote_main_linux.cc
+    [ 'OS == "linux"', {
+      'sources/': [
+        ['include', 'SkFontMgr_android\\.cpp$',],
+        ['include', 'SkFontMgr_android_parser\\.cpp$',],
+      ],
     }],
   ],
 

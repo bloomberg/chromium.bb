@@ -34,6 +34,17 @@
 
 namespace blink {
 
+FontCache::FontCache()
+    : m_purgePreventCount(0)
+{
+    if (s_fontManager) {
+        adopted(s_fontManager);
+        m_fontManager = s_fontManager;
+    } else {
+        m_fontManager = nullptr;
+    }
+}
+
 void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, FontCache::PlatformFallbackFont* fallbackFont)
 {
     WebFallbackFont webFallbackFont;
@@ -56,6 +67,17 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
     const SimpleFontData*,
     FontFallbackPriority fallbackPriority)
 {
+    // The m_fontManager is set only if it was provided by the embedder with WebFontRendering::setSkiaFontManager. This is
+    // used to emulate android fonts on linux so we always request the family from the font manager and if none is found, we return
+    // the LastResort fallback font and avoid using FontCache::getFontForCharacter which would use sandbox support to
+    // query the underlying system for the font family.
+    if (m_fontManager) {
+        AtomicString familyName = getFamilyNameForCharacter(m_fontManager.get(), c, fontDescription, fallbackPriority);
+        if (familyName.isEmpty())
+            return getLastResortFallbackFont(fontDescription, DoNotRetain);
+        return fontDataFromFontPlatformData(getFontPlatformData(fontDescription, FontFaceCreationParams(familyName)), DoNotRetain);
+    }
+
     if (fallbackPriority == FontFallbackPriority::EmojiEmoji) {
         // FIXME crbug.com/591346: We're overriding the fallback character here
         // with the FAMILY emoji in the hope to find a suitable emoji font.

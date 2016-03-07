@@ -31,7 +31,6 @@
 #include "platform/fonts/FontCache.h"
 
 #include "platform/Language.h"
-#include "platform/fonts/AcceptLanguagesResolver.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontFaceCreationParams.h"
@@ -41,61 +40,10 @@
 
 namespace blink {
 
-// Android special locale for retrieving the color emoji font
-// based on the proposed changes in UTR #51 for introducing
-// an Emoji script code:
-// http://www.unicode.org/reports/tr51/proposed.html#Emoji_Script
-static const char* kAndroidColorEmojiLocale = "und-Zsye";
-
-// SkFontMgr requires script-based locale names, like "zh-Hant" and "zh-Hans",
-// instead of "zh-CN" and "zh-TW".
-static CString toSkFontMgrLocale(const String& locale)
-{
-    if (!locale.startsWith("zh", TextCaseInsensitive))
-        return locale.ascii();
-
-    switch (localeToScriptCodeForFontSelection(locale)) {
-    case USCRIPT_SIMPLIFIED_HAN:
-        return "zh-Hans";
-    case USCRIPT_TRADITIONAL_HAN:
-        return "zh-Hant";
-    default:
-        return locale.ascii();
-    }
-}
-
-static AtomicString getFamilyNameForCharacter(UChar32 c, const FontDescription& fontDescription, FontFallbackPriority fallbackPriority)
-{
-    const size_t kMaxLocales = 4;
-    RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
-    const char* bcp47Locales[kMaxLocales];
-    size_t localeCount = 0;
-
-    if (fallbackPriority == FontFallbackPriority::EmojiEmoji) {
-        bcp47Locales[localeCount++] = kAndroidColorEmojiLocale;
-    }
-    if (const char* hanLocale = AcceptLanguagesResolver::preferredHanSkFontMgrLocale())
-        bcp47Locales[localeCount++] = hanLocale;
-    CString defaultLocale = toSkFontMgrLocale(defaultLanguage());
-    bcp47Locales[localeCount++] = defaultLocale.data();
-    CString fontLocale;
-    if (!fontDescription.locale().isEmpty()) {
-        fontLocale = toSkFontMgrLocale(fontDescription.locale());
-        bcp47Locales[localeCount++] = fontLocale.data();
-    }
-    ASSERT_WITH_SECURITY_IMPLICATION(localeCount < kMaxLocales);
-    RefPtr<SkTypeface> typeface = adoptRef(fm->matchFamilyStyleCharacter(0, SkFontStyle(), bcp47Locales, localeCount, c));
-    if (!typeface)
-        return emptyAtom;
-
-    SkString skiaFamilyName;
-    typeface->getFamilyName(&skiaFamilyName);
-    return skiaFamilyName.c_str();
-}
-
 PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescription& fontDescription, UChar32 c, const SimpleFontData*, FontFallbackPriority fallbackPriority)
 {
-    AtomicString familyName = getFamilyNameForCharacter(c, fontDescription, fallbackPriority);
+    RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
+    AtomicString familyName = getFamilyNameForCharacter(fm.get(), c, fontDescription, fallbackPriority);
     if (familyName.isEmpty())
         return getLastResortFallbackFont(fontDescription, DoNotRetain);
     return fontDataFromFontPlatformData(getFontPlatformData(fontDescription, FontFaceCreationParams(familyName)), DoNotRetain);
@@ -121,7 +69,8 @@ AtomicString FontCache::getGenericFamilyNameForScript(const AtomicString& family
         return familyName;
     }
 
-    return getFamilyNameForCharacter(examplerChar, fontDescription, FontFallbackPriority::Text);
+    RefPtr<SkFontMgr> fm = adoptRef(SkFontMgr::RefDefault());
+    return getFamilyNameForCharacter(fm.get(), examplerChar, fontDescription, FontFallbackPriority::Text);
 }
 
 } // namespace blink

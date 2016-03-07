@@ -417,6 +417,15 @@ component("skia") {
     ]
   }
 
+  # Add the files for the SkFontMgr_Android. This is used to emulate android
+  # fonts on linux. See content/zygote/zygote_main_linux.cc
+  if (is_linux) {
+    sources += [
+      "//third_party/skia/src/ports/SkFontMgr_android.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_android_parser.cpp",
+    ]
+  }
+
   if (!is_linux && !is_android) {
     sources -= [
       "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
@@ -464,6 +473,7 @@ component("skia") {
     deps += [
       "//build/linux:fontconfig",
       "//build/linux:freetype2",
+      "//third_party/expat",
       "//third_party/icu:icuuc",
     ]
   }

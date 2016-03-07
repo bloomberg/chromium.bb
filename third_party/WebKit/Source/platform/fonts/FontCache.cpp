@@ -59,12 +59,13 @@ using namespace WTF;
 
 namespace blink {
 
-#if !OS(WIN)
+#if !OS(WIN) && !OS(LINUX)
 FontCache::FontCache()
     : m_purgePreventCount(0)
+    , m_fontManager(nullptr)
 {
 }
-#endif // !OS(WIN)
+#endif // !OS(WIN) && !OS(LINUX)
 
 typedef HashMap<FontCacheKey, OwnPtr<FontPlatformData>, FontCacheKeyHash, FontCacheKeyTraits> FontPlatformDataCache;
 typedef HashMap<FallbackListCompositeKey, OwnPtr<ShapeCache>, FallbackListCompositeKeyHash, FallbackListCompositeKeyTraits> FallbackListShaperCache;
@@ -72,11 +73,12 @@ typedef HashMap<FallbackListCompositeKey, OwnPtr<ShapeCache>, FallbackListCompos
 static FontPlatformDataCache* gFontPlatformDataCache = nullptr;
 static FallbackListShaperCache* gFallbackListShaperCache = nullptr;
 
+SkFontMgr* FontCache::s_fontManager = nullptr;
+
 #if OS(WIN)
 bool FontCache::s_useDirectWrite = false;
 bool FontCache::s_antialiasedTextEnabled = false;
 bool FontCache::s_lcdTextEnabled = false;
-SkFontMgr* FontCache::s_fontManager = nullptr;
 bool FontCache::s_useSubpixelPositioning = false;
 float FontCache::s_deviceScaleFactor = 1.0;
 #endif // OS(WIN)
@@ -150,7 +152,6 @@ FontVerticalDataCache& fontVerticalDataCacheInstance()
     return fontVerticalDataCache;
 }
 
-#if OS(WIN)
 void FontCache::setFontManager(const RefPtr<SkFontMgr>& fontManager)
 {
     ASSERT(!s_fontManager);
@@ -158,7 +159,6 @@ void FontCache::setFontManager(const RefPtr<SkFontMgr>& fontManager)
     // Explicitly AddRef since we're going to hold on to the object for the life of the program.
     s_fontManager->ref();
 }
-#endif
 
 PassRefPtr<OpenTypeVerticalData> FontCache::getVerticalData(const FontFileKey& key, const FontPlatformData& platformData)
 {

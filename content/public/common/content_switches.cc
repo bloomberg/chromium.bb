@@ -37,6 +37,11 @@ const char kAllowNoSandboxJob[]             = "allow-no-sandbox-job";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
+// Uses the android SkFontManager on linux. The specified directory should
+// include the configuration xml file with the name "fonts.xml".
+// This is used in blimp to emulate android fonts on linux.
+const char kAndroidFontsPath[]          = "android-fonts-path";
+
 // Choose which logging channels in blink platform to activate.  See
 // Logging.cpp in blink's Source/platform for a list of available channels.
 const char kBlinkPlatformLogChannels[]      = "blink-platform-log-channels";

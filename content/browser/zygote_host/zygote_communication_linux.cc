@@ -280,7 +280,8 @@ void ZygoteCommunication::Init() {
   // to the zygote/renderers.
   // Should this list be obtained from browser_render_process_host.cc?
   static const char* kForwardSwitches[] = {
-      switches::kAllowSandboxDebugging, switches::kDisableSeccompFilterSandbox,
+      switches::kAllowSandboxDebugging, switches::kAndroidFontsPath,
+      switches::kDisableSeccompFilterSandbox,
       switches::kEnableHeapProfiling,
       switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
       // Zygote process needs to know what resources to have loaded when it

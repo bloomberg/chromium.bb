@@ -31,6 +31,7 @@
 #include "public/web/linux/WebFontRendering.h"
 
 #include "core/layout/LayoutThemeFontProvider.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontPlatformData.h"
 
@@ -38,6 +39,13 @@ using blink::FontDescription;
 using blink::FontPlatformData;
 
 namespace blink {
+
+// static
+void WebFontRendering::setSkiaFontManager(SkFontMgr* fontMgr)
+{
+    WTF::adopted(fontMgr);
+    FontCache::setFontManager(RefPtr<SkFontMgr>(fontMgr));
+}
 
 // static
 void WebFontRendering::setHinting(SkPaint::Hinting hinting)
