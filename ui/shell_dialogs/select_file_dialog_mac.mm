@@ -350,6 +350,7 @@ SelectFileDialogImpl::SetAccessoryView(
   // Create an array with each item corresponding to an array of different
   // extensions in an extension group.
   NSMutableArray* file_type_lists = [NSMutableArray array];
+  int default_extension_index = -1;
   for (size_t i = 0; i < file_types->extensions.size(); ++i) {
     const std::vector<base::FilePath::StringType>& ext_list =
         file_types->extensions[i];
@@ -373,6 +374,9 @@ SelectFileDialogImpl::SetAccessoryView(
     // Set to store different extensions in the current extension group.
     NSMutableSet* file_type_set = [NSMutableSet set];
     for (const base::FilePath::StringType& ext : ext_list) {
+      if (ext == default_extension)
+        default_extension_index = i;
+
       base::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
       [file_type_set addObject:base::mac::CFToNSCast(uti.get())];
 
@@ -401,14 +405,21 @@ SelectFileDialogImpl::SetAccessoryView(
   [popup setTarget:handler];
   [popup setAction:@selector(popupAction:)];
 
-  if (default_extension.empty()) {
+  // file_type_index uses 1 based indexing.
+  if (file_type_index) {
+    DCHECK_LE(static_cast<size_t>(file_type_index),
+              file_types->extensions.size());
+    DCHECK_GE(file_type_index, 1);
+    [popup selectItemAtIndex:file_type_index - 1];
+    [handler popupAction:popup];
+  } else if (!default_extension.empty() && default_extension_index != -1) {
+    [popup selectItemAtIndex:default_extension_index];
+    [dialog
+        setAllowedFileTypes:@[ base::SysUTF8ToNSString(default_extension) ]];
+  } else {
     // Select the first item.
     [popup selectItemAtIndex:0];
     [handler popupAction:popup];
-  } else {
-    [popup selectItemAtIndex:-1];
-    [dialog
-        setAllowedFileTypes:@[ base::SysUTF8ToNSString(default_extension) ]];
   }
 
   return handler;
