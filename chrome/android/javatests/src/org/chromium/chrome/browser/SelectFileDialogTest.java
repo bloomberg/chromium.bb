@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -102,6 +103,7 @@ public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @MediumTest
     @Feature({"TextInput", "Main"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/592627")
     public void testSelectFileAndCancelRequest() throws Throwable {
         DOMUtils.clickNode(this, mContentViewCore, "input_file");
         CriteriaHelper.pollForCriteria(new IntentSentCriteria());
