@@ -5,5 +5,5 @@ Tests that the name of the function invoked as object constructor will be displa
 
 console-object-constructor-name.html:12 Parent
 console-object-constructor-name.html:13 Child
-console-object-constructor-name.html:14 outer.inner
+console-object-constructor-name.html:14 inner
 

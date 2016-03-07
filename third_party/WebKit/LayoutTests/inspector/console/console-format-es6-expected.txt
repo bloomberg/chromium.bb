@@ -50,7 +50,7 @@ Symbol(a)
 console-format-es6.html:11 Object {a: Symbol(), Symbol(a): 2}
     a: Symbol()
     getter: (...)
-    get getter: getter()
+    get getter: get getter()
     Symbol(a): 2
     __proto__: Object
 console-format-es6.html:12 [Object]
@@ -61,7 +61,7 @@ globals[3]
 Object {a: Symbol(), Symbol(a): 2}
     a: Symbol()
     getter: (...)
-    get getter: getter()
+    get getter: get getter()
     Symbol(a): 2
     __proto__: Object
 console-format-es6.html:11 Map {Object {a: Symbol(), Symbol(a): 2} => Object {foo: 1}}

@@ -27,7 +27,7 @@ status: closed
 
 Running: testIterObjGenerator
 iterObjGenerator: type = object, subtype = generator
-functionName: "obj.generator"
+functionName: "generator"
 lineNumber: 25
 columnNumber: 8
 scriptId is valid: true

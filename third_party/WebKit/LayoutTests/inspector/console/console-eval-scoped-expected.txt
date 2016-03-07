@@ -21,7 +21,7 @@ Running: testConsoleEvalObject
     enumerable : true
     get : {
         className : "Function"
-        description : "function getter() { }"
+        description : "function get getter() { }"
         objectId : <string>
         type : "function"
     }
@@ -41,7 +41,7 @@ Running: testConsoleEvalObject
     name : "setter"
     set : {
         className : "Function"
-        description : "function setter(_) { }"
+        description : "function set setter(_) { }"
         objectId : <string>
         type : "function"
     }

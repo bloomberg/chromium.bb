@@ -1292,15 +1292,6 @@ crbug.com/558574 [ Win7 ] fast/text/emphasis.html [ Failure ]
 
 crbug.com/574196 fast/js/mozilla/strict/13.1.html [ NeedsManualRebaseline ]
 
-crbug.com/588803 inspector/console/alert-toString-exception.html [ NeedsManualRebaseline ]
-crbug.com/588803 inspector/console/console-eval-scoped.html [ NeedsManualRebaseline ]
-crbug.com/588803 inspector/console/console-format-es6.html [ NeedsManualRebaseline ]
-crbug.com/588803 inspector/console/console-object-constructor-name.html [ NeedsManualRebaseline ]
-crbug.com/588803 inspector/runtime/runtime-getProperties.html [ NeedsManualRebaseline ]
-crbug.com/588803 inspector/sources/debugger-frameworks/frameworks-jquery.html [ NeedsManualRebaseline ]
-crbug.com/588803 inspector/sources/debugger-ui/function-details.html [ NeedsManualRebaseline ]
-crbug.com/588803 inspector/sources/debugger-ui/function-generator-details.html [ NeedsManualRebaseline ]
-
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 

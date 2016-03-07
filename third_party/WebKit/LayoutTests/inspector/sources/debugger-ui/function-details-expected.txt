@@ -27,7 +27,7 @@ Function details:
 lineNumber: 16
 columnNumber: 15
 scriptId is valid: true
-functionName: obj.m
+functionName: m
 isGenerator: false
 scopeChain #0: global; <global object properties omitted>
 
