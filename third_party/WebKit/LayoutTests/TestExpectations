@@ -1345,8 +1345,6 @@ crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.
 
 crbug.com/581038 fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
 
-crbug.com/585724 fast/js/JSON-parse.html [ NeedsRebaseline ]
-
 crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Timeout Pass ]
 
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
@@ -1356,13 +1354,6 @@ crbug.com/588061 [ Debug ] inspector/sources/debugger-breakpoints/debugger-reloa
 crbug.com/248063 [ Win ] plugins/plugin-clip-subframe.html [ Pass Failure ]
 
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
-
-crbug.com/257405 fast/js/invalid-syntax-for-function.html [ NeedsRebaseline ]
-crbug.com/257405 fast/js/kde/string-1-n.html [ NeedsRebaseline ]
-crbug.com/257405 fast/js/kde/string-2-n.html [ NeedsRebaseline ]
-crbug.com/257405 fast/regex/non-pattern-characters.html [ NeedsRebaseline ]
-crbug.com/257405 http/tests/websocket/bad-sub-protocol-control-chars.html [ NeedsRebaseline ]
-crbug.com/257405 inspector/console/console-control-characters.html [ NeedsRebaseline ]
 
 crbug.com/591821 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/591821 [ Linux Win ] fast/events/menu-key-context-menu-document.html [ Failure Pass ]
