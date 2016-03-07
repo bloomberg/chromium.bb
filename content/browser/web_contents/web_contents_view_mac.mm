@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_sending_event.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -23,6 +24,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -636,10 +638,12 @@ void WebContentsViewMac::CloseTab() {
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
 
-  // Occlusion notification APIs are new in Mavericks.
-  bool supportsOcclusionAPIs = base::mac::IsOSMavericksOrLater();
+  // Occlusion is highly undesirable for browser tests, since it will
+  // flakily change test behavior.
+  static bool isDisabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBackgroundingOccludedWindowsForTesting);
 
-  if (supportsOcclusionAPIs) {
+  if (!isDisabled) {
     if (oldWindow) {
       [notificationCenter
           removeObserver:self

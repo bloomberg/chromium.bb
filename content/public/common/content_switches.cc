@@ -90,6 +90,11 @@ const char kDisableAcceleratedVideoDecode[] =
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
+// Disable backgrounding renders for occluded windows. Done for tests to avoid
+// nondeterministic behavior.
+extern const char kDisableBackgroundingOccludedWindowsForTesting[] =
+    "disable-backgrounding-occluded-windows";
+
 // Disable one or more Blink runtime-enabled features.
 // Use names from RuntimeEnabledFeatures.in, separated by commas.
 // Applied after kEnableBlinkFeatures, and after other flags that change these

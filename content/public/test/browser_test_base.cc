@@ -200,6 +200,11 @@ void BrowserTestBase::SetUp() {
   if (use_software_compositing_)
     command_line->AppendSwitch(switches::kDisableGpu);
 
+  // The layout of windows on screen is unpredictable during tests, so disable
+  // occlusion when running browser tests.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableBackgroundingOccludedWindowsForTesting);
+
 #if defined(USE_AURA)
   // Most tests do not need pixel output, so we don't produce any. The command
   // line can override this behaviour to allow for visual debugging.
