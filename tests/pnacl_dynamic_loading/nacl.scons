@@ -56,7 +56,6 @@ LLVM_PASSES = (
     # The following is a subset of "-pnacl-abi-simplify-preopt".  We don't
     # want to run the full "-pnacl-abi-simplify-preopt" because it
     # internalizes symbols that we want to export via "-convert-to-pso".
-    '-resolve-aliases '
     '-nacl-global-cleanup '
     '-expand-varargs '
     '-rewrite-pnacl-library-calls '
@@ -101,7 +100,7 @@ env.AddNodeToTestSuite(
 
 
 # Use of the ConvertToPSO pass requires this toolchain version.
-if env['TOOLCHAIN_FEATURE_VERSION'] < 20:
+if env['TOOLCHAIN_FEATURE_VERSION'] < 21:
   Return()
 
 test_pll = MakeAndTranslatePll('test_pll', 'test_pll.c')

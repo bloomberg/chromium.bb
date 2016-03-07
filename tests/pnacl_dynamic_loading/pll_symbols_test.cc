@@ -191,8 +191,15 @@ int main(int argc, char **argv) {
   void *example_func = GetExportedSym(pll_root, "example_func");
   ASSERT_NE(example_func, NULL);
 
-  // For "var", "get_var" and "example_func".
-  int expected_exports = 3;
+  int *var_alias = (int *) GetExportedSym(pll_root, "var_alias");
+  ASSERT_EQ(var_alias, var);
+
+  void *example_func_alias = GetExportedSym(pll_root, "example_func_alias");
+  ASSERT_EQ(example_func_alias, example_func);
+
+  // For "var", "get_var", "example_func", "var_alias", and
+  // "example_func_alias".
+  int expected_exports = 5;
 
   // Test imports referenced by variables.  We can test these directly, by
   // checking that the relocations refer to the correct addresses.

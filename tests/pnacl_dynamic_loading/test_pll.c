@@ -64,3 +64,9 @@ int *get_var(void) {
 int example_func(void) {
   return 5678;
 }
+
+/* Test aliases */
+
+extern int var_alias __attribute__((alias("var")));
+
+void example_func_alias(void) __attribute__((alias("example_func")));
