@@ -238,12 +238,10 @@ void OffTheRecordProfileIOData::InitializeInternal(
   main_context->set_channel_id_service(channel_id_service);
 
   using content::CookieStoreConfig;
-  main_context->set_cookie_store(
-      CreateCookieStore(CookieStoreConfig(
-          base::FilePath(),
-          CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
-          NULL,
-          profile_params->cookie_monster_delegate.get())));
+  main_cookie_store_ = CreateCookieStore(CookieStoreConfig(
+      base::FilePath(), CookieStoreConfig::EPHEMERAL_SESSION_COOKIES, NULL,
+      profile_params->cookie_monster_delegate.get()));
+  main_context->set_cookie_store(main_cookie_store_.get());
 
   http_network_session_ = CreateHttpNetworkSession(*profile_params);
   main_http_factory_ = CreateMainHttpFactory(
@@ -298,9 +296,8 @@ void OffTheRecordProfileIOData::
   content::CookieStoreConfig cookie_config;
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-  net::CookieStore* extensions_cookie_store =
-      content::CreateCookieStore(cookie_config);
-  extensions_context->set_cookie_store(extensions_cookie_store);
+  extensions_cookie_store_ = content::CreateCookieStore(cookie_config);
+  extensions_context->set_cookie_store(extensions_cookie_store_.get());
 
   scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(
       new net::URLRequestJobFactoryImpl());

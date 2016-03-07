@@ -32,6 +32,7 @@
 #include "ios/web/public/web_thread.h"
 #include "net/base/cache_type.h"
 #include "net/base/sdch_manager.h"
+#include "net/cookies/cookie_store.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -339,28 +340,24 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   main_context->set_backoff_manager(
       io_thread_globals->url_request_backoff_manager.get());
 
-  scoped_refptr<net::CookieStore> cookie_store = NULL;
   net::ChannelIDService* channel_id_service = NULL;
 
-  // Set up cookie store.
-  if (!cookie_store.get()) {
-    DCHECK(!lazy_params_->cookie_path.empty());
-    cookie_util::CookieStoreConfig ios_cookie_config(
-        lazy_params_->cookie_path,
-        cookie_util::CookieStoreConfig::RESTORED_SESSION_COOKIES,
-        cookie_util::CookieStoreConfig::COOKIE_STORE_IOS,
-        cookie_config::GetCookieCryptoDelegate());
-    cookie_store = cookie_util::CreateCookieStore(ios_cookie_config);
+  DCHECK(!lazy_params_->cookie_path.empty());
+  cookie_util::CookieStoreConfig ios_cookie_config(
+      lazy_params_->cookie_path,
+      cookie_util::CookieStoreConfig::RESTORED_SESSION_COOKIES,
+      cookie_util::CookieStoreConfig::COOKIE_STORE_IOS,
+      cookie_config::GetCookieCryptoDelegate());
+  main_cookie_store_ = cookie_util::CreateCookieStore(ios_cookie_config);
 
-    if (profile_params->path.BaseName().value() ==
-        kIOSChromeInitialBrowserState) {
-      // Enable metrics on the default profile, not secondary profiles.
-      static_cast<net::CookieStoreIOS*>(cookie_store.get())
-          ->SetMetricsEnabled();
-    }
+  if (profile_params->path.BaseName().value() ==
+      kIOSChromeInitialBrowserState) {
+    // Enable metrics on the default profile, not secondary profiles.
+    static_cast<net::CookieStoreIOS*>(main_cookie_store_.get())
+        ->SetMetricsEnabled();
   }
 
-  main_context->set_cookie_store(cookie_store.get());
+  main_context->set_cookie_store(main_cookie_store_.get());
 
   // Set up server bound cert service.
   if (!channel_id_service) {
@@ -430,11 +427,11 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
       base::FilePath(),
       cookie_util::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
       cookie_util::CookieStoreConfig::COOKIE_STORE_IOS, nullptr);
-  scoped_refptr<net::CookieStore> cookie_store =
+  scoped_ptr<net::CookieStore> cookie_store =
       cookie_util::CreateCookieStore(ios_cookie_config);
 
   // Transfer ownership of the cookies and cache to AppRequestContext.
-  context->SetCookieStore(cookie_store.get());
+  context->SetCookieStore(std::move(cookie_store));
   context->SetHttpTransactionFactory(std::move(app_http_cache));
 
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(

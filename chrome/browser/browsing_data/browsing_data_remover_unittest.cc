@@ -343,8 +343,8 @@ class RemoveCookieTester {
   }
 
  protected:
-  void SetMonster(net::CookieStore* monster) {
-    cookie_store_ = monster;
+  void SetCookieStore(net::CookieStore* cookie_store) {
+    cookie_store_ = cookie_store;
   }
 
  private:
@@ -365,10 +365,17 @@ class RemoveCookieTester {
 
   bool get_cookie_success_ = false;
   base::Closure quit_closure_;
+
+  // CookieStore must out live |this|.
   net::CookieStore* cookie_store_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
 };
+
+void RunClosureAfterCookiesCleared(const base::Closure& task,
+                                   int cookies_deleted) {
+  task.Run();
+}
 
 class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
@@ -380,13 +387,16 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
     sb_service->Initialize();
     base::MessageLoop::current()->RunUntilIdle();
 
-    // Create a cookiemonster that does not have persistant storage, and replace
-    // the SafeBrowsingService created one with it.
-    net::CookieStore* monster =
-        content::CreateCookieStore(content::CookieStoreConfig());
-    sb_service->url_request_context()->GetURLRequestContext()->
-        set_cookie_store(monster);
-    SetMonster(monster);
+    // Make sure the safe browsing cookie store has no cookies.
+    // TODO(mmenke): Is this really needed?
+    base::RunLoop run_loop;
+    net::URLRequestContext* request_context =
+        sb_service->url_request_context()->GetURLRequestContext();
+    request_context->cookie_store()->DeleteAllAsync(
+        base::Bind(&RunClosureAfterCookiesCleared, run_loop.QuitClosure()));
+    run_loop.Run();
+
+    SetCookieStore(request_context->cookie_store());
   }
 
   virtual ~RemoveSafeBrowsingCookieTester() {

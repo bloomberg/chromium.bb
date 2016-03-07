@@ -25,6 +25,7 @@ URLRequestContext::URLRequestContext()
       proxy_service_(nullptr),
       network_delegate_(nullptr),
       http_user_agent_settings_(nullptr),
+      cookie_store_(nullptr),
       transport_security_state_(nullptr),
       cert_transparency_verifier_(nullptr),
       http_transaction_factory_(nullptr),
@@ -33,8 +34,7 @@ URLRequestContext::URLRequestContext()
       backoff_manager_(nullptr),
       sdch_manager_(nullptr),
       network_quality_estimator_(nullptr),
-      url_requests_(new std::set<const URLRequest*>) {
-}
+      url_requests_(new std::set<const URLRequest*>) {}
 
 URLRequestContext::~URLRequestContext() {
   AssertNoURLRequests();
@@ -51,7 +51,7 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
   set_ssl_config_service(other->ssl_config_service_.get());
   set_network_delegate(other->network_delegate_);
   set_http_server_properties(other->http_server_properties_);
-  set_cookie_store(other->cookie_store_.get());
+  set_cookie_store(other->cookie_store_);
   set_transport_security_state(other->transport_security_state_);
   set_cert_transparency_verifier(other->cert_transparency_verifier_);
   set_http_transaction_factory(other->http_transaction_factory_);

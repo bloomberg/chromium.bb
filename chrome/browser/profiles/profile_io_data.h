@@ -267,7 +267,7 @@ class ProfileIOData {
    public:
     AppRequestContext();
 
-    void SetCookieStore(net::CookieStore* cookie_store);
+    void SetCookieStore(scoped_ptr<net::CookieStore> cookie_store);
     void SetHttpTransactionFactory(
         scoped_ptr<net::HttpTransactionFactory> http_factory);
     void SetJobFactory(scoped_ptr<net::URLRequestJobFactory> job_factory);
@@ -275,7 +275,7 @@ class ProfileIOData {
    private:
     ~AppRequestContext() override;
 
-    scoped_refptr<net::CookieStore> cookie_store_;
+    scoped_ptr<net::CookieStore> cookie_store_;
     scoped_ptr<net::HttpTransactionFactory> http_factory_;
     scoped_ptr<net::URLRequestJobFactory> job_factory_;
   };

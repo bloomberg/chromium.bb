@@ -7,6 +7,8 @@
 #import <Foundation/Foundation.h>
 
 #include "base/bind_helpers.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #import "net/base/mac/url_conversions.h"
@@ -28,11 +30,11 @@ void ClearCookies() {
 namespace net {
 
 struct CookieStoreIOSTestTraits {
-  static net::CookieStore* Create() {
+  static scoped_ptr<net::CookieStore> Create() {
     ClearCookies();
-    CookieStoreIOS* store = new CookieStoreIOS(nullptr);
+    scoped_ptr<CookieStoreIOS> store(new CookieStoreIOS(nullptr));
     store->synchronization_state_ = CookieStoreIOS::SYNCHRONIZED;
-    return store;
+    return std::move(store);
   }
 
   static const bool supports_http_only = false;
@@ -47,8 +49,8 @@ struct CookieStoreIOSTestTraits {
 };
 
 struct InactiveCookieStoreIOSTestTraits {
-  static scoped_refptr<net::CookieStore> Create() {
-    return new CookieStoreIOS(nullptr);
+  static scoped_ptr<net::CookieStore> Create() {
+    return make_scoped_ptr(new CookieStoreIOS(nullptr));
   }
 
   static const bool is_cookie_monster = false;
@@ -76,6 +78,8 @@ class RoundTripTestCookieStore : public net::CookieStore {
         dummy_store_(new CookieStoreIOS(nullptr)) {
     CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
   }
+
+  ~RoundTripTestCookieStore() override { store_->UnSynchronize(); }
 
   // Inherited CookieStore methods.
   void SetCookieWithOptionsAsync(const GURL& url,
@@ -175,9 +179,6 @@ class RoundTripTestCookieStore : public net::CookieStore {
     return scoped_ptr<CookieStore::CookieChangedSubscription>();
   }
 
- protected:
-  ~RoundTripTestCookieStore() override { store_->UnSynchronize(); }
-
  private:
   void RoundTrip() {
     CookieStoreIOS::SwitchSynchronizedStore(store_.get(), dummy_store_.get());
@@ -188,16 +189,16 @@ class RoundTripTestCookieStore : public net::CookieStore {
     CookieStoreIOS::SwitchSynchronizedStore(dummy_store_.get(), store_.get());
   }
 
-  scoped_refptr<CookieStoreIOS> store_;
+  scoped_ptr<CookieStoreIOS> store_;
   // |dummy_store_| is not directly used, but is needed to make |store_|
   // inactive.
-  scoped_refptr<CookieStoreIOS> dummy_store_;
+  scoped_ptr<CookieStoreIOS> dummy_store_;
 };
 
 struct RoundTripTestCookieStoreTraits {
-  static scoped_refptr<net::CookieStore> Create() {
+  static scoped_ptr<net::CookieStore> Create() {
     ClearCookies();
-    return new RoundTripTestCookieStore();
+    return make_scoped_ptr(new RoundTripTestCookieStore());
   }
 
   static const bool is_cookie_monster = false;
@@ -362,9 +363,9 @@ class CookieStoreIOSWithBackend : public testing::Test {
       : kTestCookieURL("http://foo.google.com/bar"),
         kTestCookieURL2("http://foo.google.com/baz"),
         kTestCookieURL3("http://foo.google.com"),
-        kTestCookieURL4("http://bar.google.com/bar") {
-    backend_ = new TestPersistentCookieStore;
-    store_ = new net::CookieStoreIOS(backend_.get());
+        kTestCookieURL4("http://bar.google.com/bar"),
+        backend_(new TestPersistentCookieStore),
+        store_(new net::CookieStoreIOS(backend_.get())) {
     net::CookieStoreIOS::SetCookiePolicy(net::CookieStoreIOS::ALLOW);
     cookie_changed_callback_ = store_->AddCallbackForCookie(
         kTestCookieURL, "abc",
@@ -429,7 +430,7 @@ class CookieStoreIOSWithBackend : public testing::Test {
 
   base::MessageLoop loop_;
   scoped_refptr<TestPersistentCookieStore> backend_;
-  scoped_refptr<net::CookieStoreIOS> store_;
+  scoped_ptr<net::CookieStoreIOS> store_;
   scoped_ptr<net::CookieStore::CookieChangedSubscription>
       cookie_changed_callback_;
   std::vector<net::CanonicalCookie> cookies_changed_;
@@ -529,7 +530,7 @@ TEST(CookieStoreIOS, GetAllCookiesForURLAsync) {
   base::MessageLoop loop;
   const GURL kTestCookieURL("http://foo.google.com/bar");
   ClearCookies();
-  scoped_refptr<CookieStoreIOS> cookie_store(new CookieStoreIOS(nullptr));
+  scoped_ptr<CookieStoreIOS> cookie_store(new CookieStoreIOS(nullptr));
   CookieStoreIOS::SwitchSynchronizedStore(nullptr, cookie_store.get());
   // Add a cookie.
   net::CookieOptions options;
@@ -607,7 +608,7 @@ TEST_F(CookieStoreIOSWithBackend, SynchronizingAfterPolicyChange) {
 // unsynchronized while synchronization is in progress).
 TEST_F(CookieStoreIOSWithBackend, SyncThenUnsync) {
   ClearCookies();
-  scoped_refptr<CookieStoreIOS> dummy_store = new CookieStoreIOS(nullptr);
+  scoped_ptr<CookieStoreIOS> dummy_store(new CookieStoreIOS(nullptr));
   // Switch back and forth before synchronization can complete.
   CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
   CookieStoreIOS::SwitchSynchronizedStore(store_.get(), dummy_store.get());
@@ -628,7 +629,7 @@ TEST_F(CookieStoreIOSWithBackend, SyncThenUnsync) {
 // and there are pending tasks).
 TEST_F(CookieStoreIOSWithBackend, SyncThenUnsyncWithPendingTasks) {
   ClearCookies();
-  scoped_refptr<CookieStoreIOS> dummy_store = new CookieStoreIOS(nullptr);
+  scoped_ptr<CookieStoreIOS> dummy_store(new CookieStoreIOS(nullptr));
   // Start synchornization.
   CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
   // Create a pending task while synchronization is in progress.
@@ -726,7 +727,7 @@ TEST_F(CookieStoreIOSWithBackend, FlushOnUnSynchronize) {
 }
 
 TEST_F(CookieStoreIOSWithBackend, FlushOnSwitch) {
-  scoped_refptr<CookieStoreIOS> dummy_store = new CookieStoreIOS(nullptr);
+  scoped_ptr<CookieStoreIOS> dummy_store(new CookieStoreIOS(nullptr));
   CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
   EXPECT_FALSE(backend_->flushed());
   CookieStoreIOS::SwitchSynchronizedStore(store_.get(), dummy_store.get());

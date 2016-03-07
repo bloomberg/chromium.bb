@@ -12,6 +12,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_SYSTEM_POLICY_REQUEST_CONTEXT_H_
 
 namespace net {
+class CookieStore;
 class HttpNetworkLayer;
 }
 
@@ -35,13 +36,16 @@ class POLICY_EXPORT SystemPolicyRequestContext
  private:
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
 
-  // The lazy-initialized URLRequestContext associated with this getter.
-  scoped_ptr<net::URLRequestContext> context_;
-
   // HttpNetworkLayer associated with |context_|.
   scoped_ptr<net::HttpNetworkLayer> http_transaction_factory_;
 
+  scoped_ptr<net::CookieStore> cookie_store_;
+
   net::StaticHttpUserAgentSettings http_user_agent_settings_;
+
+  // The lazy-initialized URLRequestContext associated with this getter.
+  scoped_ptr<net::URLRequestContext> context_;
+
   DISALLOW_COPY_AND_ASSIGN(SystemPolicyRequestContext);
 };
 

@@ -42,7 +42,7 @@ const char kValidCookieLine[] = "A=B; path=/";
 // The CookieStoreTestTraits must have the following members:
 // struct CookieStoreTestTraits {
 //   // Factory function. Will be called at most once per test.
-//   static scoped_refptr<CookieStore> Create();
+//   static scoped_ptr<CookieStore> Create();
 //
 //   // The cookie store supports cookies with the exclude_httponly() option.
 //   static const bool supports_http_only;
@@ -278,10 +278,10 @@ class CookieStoreTest : public testing::Test {
   }
 
   // Returns the CookieStore for the test - each test only uses one CookieStore.
-  scoped_refptr<CookieStore> GetCookieStore() {
+  CookieStore* GetCookieStore() {
     if (!cookie_store_)
       cookie_store_ = CookieStoreTestTraits::Create();
-    return cookie_store_;
+    return cookie_store_.get();
   }
 
   // Compares two cookie lines.
@@ -332,13 +332,13 @@ class CookieStoreTest : public testing::Test {
     return tokens;
   }
 
-  scoped_refptr<CookieStore> cookie_store_;
+  scoped_ptr<CookieStore> cookie_store_;
 };
 
 TYPED_TEST_CASE_P(CookieStoreTest);
 
 TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
 
   base::Time two_hours_ago = base::Time::Now() - base::TimeDelta::FromHours(2);
   base::Time one_hour_ago = base::Time::Now() - base::TimeDelta::FromHours(1);
@@ -346,39 +346,39 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
       base::Time::Now() + base::TimeDelta::FromHours(1);
 
   EXPECT_TRUE(this->SetCookieWithDetails(
-      cs.get(), this->www_google_foo_.url(), "A", "B", std::string(), "/foo",
+      cs, this->www_google_foo_.url(), "A", "B", std::string(), "/foo",
       one_hour_ago, one_hour_from_now, base::Time(), false, false, false,
       COOKIE_PRIORITY_DEFAULT));
   // Note that for the creation time to be set exactly, without modification,
   // it must be different from the one set by the line above.
   EXPECT_TRUE(this->SetCookieWithDetails(
-      cs.get(), this->www_google_bar_.url(), "C", "D",
-      this->www_google_bar_.domain(), "/bar", two_hours_ago, base::Time(),
-      one_hour_ago, false, true, false, COOKIE_PRIORITY_DEFAULT));
+      cs, this->www_google_bar_.url(), "C", "D", this->www_google_bar_.domain(),
+      "/bar", two_hours_ago, base::Time(), one_hour_ago, false, true, false,
+      COOKIE_PRIORITY_DEFAULT));
   EXPECT_TRUE(this->SetCookieWithDetails(
-      cs.get(), this->http_www_google_.url(), "E", "F", std::string(),
-      std::string(), base::Time(), base::Time(), base::Time(), true, false,
-      false, COOKIE_PRIORITY_DEFAULT));
+      cs, this->http_www_google_.url(), "E", "F", std::string(), std::string(),
+      base::Time(), base::Time(), base::Time(), true, false, false,
+      COOKIE_PRIORITY_DEFAULT));
 
   // Test that malformed attributes fail to set the cookie.
   EXPECT_FALSE(this->SetCookieWithDetails(
-      cs.get(), this->www_google_foo_.url(), " A", "B", std::string(), "/foo",
+      cs, this->www_google_foo_.url(), " A", "B", std::string(), "/foo",
       base::Time(), base::Time(), base::Time(), false, false, false,
       COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(this->SetCookieWithDetails(
-      cs.get(), this->www_google_foo_.url(), "A;", "B", std::string(), "/foo",
+      cs, this->www_google_foo_.url(), "A;", "B", std::string(), "/foo",
       base::Time(), base::Time(), base::Time(), false, false, false,
       COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(this->SetCookieWithDetails(
-      cs.get(), this->www_google_foo_.url(), "A=", "B", std::string(), "/foo",
+      cs, this->www_google_foo_.url(), "A=", "B", std::string(), "/foo",
       base::Time(), base::Time(), base::Time(), false, false, false,
       COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(this->SetCookieWithDetails(
-      cs.get(), this->www_google_foo_.url(), "A", "B", "google.ozzzzzzle",
-      "foo", base::Time(), base::Time(), base::Time(), false, false, false,
+      cs, this->www_google_foo_.url(), "A", "B", "google.ozzzzzzle", "foo",
+      base::Time(), base::Time(), base::Time(), false, false, false,
       COOKIE_PRIORITY_DEFAULT));
   EXPECT_FALSE(this->SetCookieWithDetails(
-      cs.get(), this->www_google_foo_.url(), "A=", "B", std::string(), "foo",
+      cs, this->www_google_foo_.url(), "A=", "B", std::string(), "foo",
       base::Time(), base::Time(), base::Time(), false, false, false,
       COOKIE_PRIORITY_DEFAULT));
 
@@ -391,8 +391,8 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
   options.set_include_same_site();
   options.set_do_not_update_access_time();
 
-  CookieList cookies = this->GetCookieListWithOptions(
-      cs.get(), this->www_google_foo_.url(), options);
+  CookieList cookies =
+      this->GetCookieListWithOptions(cs, this->www_google_foo_.url(), options);
   CookieList::iterator it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -416,15 +416,15 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
   // Verify that the cookie was set as 'httponly' by passing in a CookieOptions
   // that excludes them and getting an empty result.
   if (TypeParam::supports_http_only) {
-    cookies = this->GetCookieListWithOptions(
-        cs.get(), this->www_google_bar_.url(), CookieOptions());
+    cookies = this->GetCookieListWithOptions(cs, this->www_google_bar_.url(),
+                                             CookieOptions());
     it = cookies.begin();
     ASSERT_TRUE(it == cookies.end());
   }
 
   // Get the cookie using the wide open |options|:
-  cookies = this->GetCookieListWithOptions(
-      cs.get(), this->www_google_bar_.url(), options);
+  cookies =
+      this->GetCookieListWithOptions(cs, this->www_google_bar_.url(), options);
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -442,8 +442,8 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
 
   EXPECT_TRUE(++it == cookies.end());
 
-  cookies = this->GetCookieListWithOptions(
-      cs.get(), this->https_www_google_.url(), options);
+  cookies = this->GetCookieListWithOptions(cs, this->https_www_google_.url(),
+                                           options);
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -465,289 +465,272 @@ TYPED_TEST_P(CookieStoreTest, SetCookieWithDetailsAsync) {
 }
 
 TYPED_TEST_P(CookieStoreTest, DomainTest) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(), "A=B"));
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  CookieStore* cs = this->GetCookieStore();
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(), "A=B"));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
   EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(),
+      this->SetCookie(cs, this->http_www_google_.url(),
                       this->http_www_google_.Format("C=D; domain=.%D")));
-  this->MatchCookieLines(
-      "A=B; C=D", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B; C=D",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Verify that A=B was set as a host cookie rather than a domain
   // cookie -- should not be accessible from a sub sub-domain.
   this->MatchCookieLines(
-      "C=D",
-      this->GetCookies(
-          cs.get(), GURL(this->http_www_google_.Format("http://foo.www.%D"))));
+      "C=D", this->GetCookies(
+                 cs, GURL(this->http_www_google_.Format("http://foo.www.%D"))));
 
   // Test and make sure we find domain cookies on the same domain.
   EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(),
+      this->SetCookie(cs, this->http_www_google_.url(),
                       this->http_www_google_.Format("E=F; domain=.www.%D")));
-  this->MatchCookieLines(
-      "A=B; C=D; E=F",
-      this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B; C=D; E=F",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Test setting a domain= that doesn't start w/ a dot, should
   // treat it as a domain cookie, as if there was a pre-pended dot.
   EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(),
+      this->SetCookie(cs, this->http_www_google_.url(),
                       this->http_www_google_.Format("G=H; domain=www.%D")));
-  this->MatchCookieLines(
-      "A=B; C=D; E=F; G=H",
-      this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B; C=D; E=F; G=H",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Test domain enforcement, should fail on a sub-domain or something too deep.
   EXPECT_FALSE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(),
+      this->SetCookie(cs, this->http_www_google_.url(),
                       this->http_www_google_.Format("I=J; domain=.%R")));
   this->MatchCookieLines(
       std::string(),
-      this->GetCookies(cs.get(),
-                       GURL(this->http_www_google_.Format("http://a.%R"))));
+      this->GetCookies(cs, GURL(this->http_www_google_.Format("http://a.%R"))));
   EXPECT_FALSE(this->SetCookie(
-      cs.get(), this->http_www_google_.url(),
+      cs, this->http_www_google_.url(),
       this->http_www_google_.Format("K=L; domain=.bla.www.%D")));
   this->MatchCookieLines(
       "C=D; E=F; G=H",
       this->GetCookies(
-          cs.get(), GURL(this->http_www_google_.Format("http://bla.www.%D"))));
-  this->MatchCookieLines(
-      "A=B; C=D; E=F; G=H",
-      this->GetCookies(cs.get(), this->http_www_google_.url()));
+          cs, GURL(this->http_www_google_.Format("http://bla.www.%D"))));
+  this->MatchCookieLines("A=B; C=D; E=F; G=H",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 }
 
 // FireFox recognizes domains containing trailing periods as valid.
 // IE and Safari do not. Assert the expected policy here.
 TYPED_TEST_P(CookieStoreTest, DomainWithTrailingDotTest) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  EXPECT_FALSE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  CookieStore* cs = this->GetCookieStore();
+  EXPECT_FALSE(this->SetCookie(cs, this->http_www_google_.url(),
                                "a=1; domain=.www.google.com."));
-  EXPECT_FALSE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  EXPECT_FALSE(this->SetCookie(cs, this->http_www_google_.url(),
                                "b=2; domain=.www.google.com.."));
-  this->MatchCookieLines(
-      std::string(), this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
 }
 
 // Test that cookies can bet set on higher level domains.
 TYPED_TEST_P(CookieStoreTest, ValidSubdomainTest) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url_abcd("http://a.b.c.d.com");
   GURL url_bcd("http://b.c.d.com");
   GURL url_cd("http://c.d.com");
   GURL url_d("http://d.com");
 
-  EXPECT_TRUE(this->SetCookie(cs.get(), url_abcd, "a=1; domain=.a.b.c.d.com"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), url_abcd, "b=2; domain=.b.c.d.com"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), url_abcd, "c=3; domain=.c.d.com"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), url_abcd, "d=4; domain=.d.com"));
+  EXPECT_TRUE(this->SetCookie(cs, url_abcd, "a=1; domain=.a.b.c.d.com"));
+  EXPECT_TRUE(this->SetCookie(cs, url_abcd, "b=2; domain=.b.c.d.com"));
+  EXPECT_TRUE(this->SetCookie(cs, url_abcd, "c=3; domain=.c.d.com"));
+  EXPECT_TRUE(this->SetCookie(cs, url_abcd, "d=4; domain=.d.com"));
 
-  this->MatchCookieLines("a=1; b=2; c=3; d=4",
-                         this->GetCookies(cs.get(), url_abcd));
-  this->MatchCookieLines("b=2; c=3; d=4", this->GetCookies(cs.get(), url_bcd));
-  this->MatchCookieLines("c=3; d=4", this->GetCookies(cs.get(), url_cd));
-  this->MatchCookieLines("d=4", this->GetCookies(cs.get(), url_d));
+  this->MatchCookieLines("a=1; b=2; c=3; d=4", this->GetCookies(cs, url_abcd));
+  this->MatchCookieLines("b=2; c=3; d=4", this->GetCookies(cs, url_bcd));
+  this->MatchCookieLines("c=3; d=4", this->GetCookies(cs, url_cd));
+  this->MatchCookieLines("d=4", this->GetCookies(cs, url_d));
 
   // Check that the same cookie can exist on different sub-domains.
-  EXPECT_TRUE(this->SetCookie(cs.get(), url_bcd, "X=bcd; domain=.b.c.d.com"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), url_bcd, "X=cd; domain=.c.d.com"));
+  EXPECT_TRUE(this->SetCookie(cs, url_bcd, "X=bcd; domain=.b.c.d.com"));
+  EXPECT_TRUE(this->SetCookie(cs, url_bcd, "X=cd; domain=.c.d.com"));
   this->MatchCookieLines("b=2; c=3; d=4; X=bcd; X=cd",
-                         this->GetCookies(cs.get(), url_bcd));
-  this->MatchCookieLines("c=3; d=4; X=cd", this->GetCookies(cs.get(), url_cd));
+                         this->GetCookies(cs, url_bcd));
+  this->MatchCookieLines("c=3; d=4; X=cd", this->GetCookies(cs, url_cd));
 }
 
 // Test that setting a cookie which specifies an invalid domain has
 // no side-effect. An invalid domain in this context is one which does
 // not match the originating domain.
 TYPED_TEST_P(CookieStoreTest, InvalidDomainTest) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url_foobar("http://foo.bar.com");
 
   // More specific sub-domain than allowed.
-  EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "a=1; domain=.yo.foo.bar.com"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "a=1; domain=.yo.foo.bar.com"));
 
-  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "b=2; domain=.foo.com"));
-  EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "c=3; domain=.bar.foo.com"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "b=2; domain=.foo.com"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "c=3; domain=.bar.foo.com"));
 
   // Different TLD, but the rest is a substring.
-  EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "d=4; domain=.foo.bar.com.net"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "d=4; domain=.foo.bar.com.net"));
 
   // A substring that isn't really a parent domain.
-  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "e=5; domain=ar.com"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "e=5; domain=ar.com"));
 
   // Completely invalid domains:
-  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "f=6; domain=."));
-  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "g=7; domain=/"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "f=6; domain=."));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "g=7; domain=/"));
   EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "h=8; domain=http://foo.bar.com"));
-  EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "i=9; domain=..foo.bar.com"));
-  EXPECT_FALSE(this->SetCookie(cs.get(), url_foobar, "j=10; domain=..bar.com"));
+      this->SetCookie(cs, url_foobar, "h=8; domain=http://foo.bar.com"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "i=9; domain=..foo.bar.com"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "j=10; domain=..bar.com"));
 
   // Make sure there isn't something quirky in the domain canonicalization
   // that supports full URL semantics.
   EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "k=11; domain=.foo.bar.com?blah"));
+      this->SetCookie(cs, url_foobar, "k=11; domain=.foo.bar.com?blah"));
   EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "l=12; domain=.foo.bar.com/blah"));
+      this->SetCookie(cs, url_foobar, "l=12; domain=.foo.bar.com/blah"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "m=13; domain=.foo.bar.com:80"));
+  EXPECT_FALSE(this->SetCookie(cs, url_foobar, "n=14; domain=.foo.bar.com:"));
   EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "m=13; domain=.foo.bar.com:80"));
-  EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "n=14; domain=.foo.bar.com:"));
-  EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foobar, "o=15; domain=.foo.bar.com#sup"));
+      this->SetCookie(cs, url_foobar, "o=15; domain=.foo.bar.com#sup"));
 
-  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_foobar));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs, url_foobar));
 }
 
 // Make sure the cookie code hasn't gotten its subdomain string handling
 // reversed, missed a suffix check, etc.  It's important here that the two
 // hosts below have the same domain + registry.
 TYPED_TEST_P(CookieStoreTest, InvalidDomainSameDomainAndRegistry) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url_foocom("http://foo.com.com");
-  EXPECT_FALSE(
-      this->SetCookie(cs.get(), url_foocom, "a=1; domain=.foo.com.com.com"));
-  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_foocom));
+  EXPECT_FALSE(this->SetCookie(cs, url_foocom, "a=1; domain=.foo.com.com.com"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs, url_foocom));
 }
 
 // Setting the domain without a dot on a parent domain should add a domain
 // cookie.
 TYPED_TEST_P(CookieStoreTest, DomainWithoutLeadingDotParentDomain) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url_hosted("http://manage.hosted.filefront.com");
   GURL url_filefront("http://www.filefront.com");
-  EXPECT_TRUE(
-      this->SetCookie(cs.get(), url_hosted, "sawAd=1; domain=filefront.com"));
-  this->MatchCookieLines("sawAd=1", this->GetCookies(cs.get(), url_hosted));
-  this->MatchCookieLines("sawAd=1", this->GetCookies(cs.get(), url_filefront));
+  EXPECT_TRUE(this->SetCookie(cs, url_hosted, "sawAd=1; domain=filefront.com"));
+  this->MatchCookieLines("sawAd=1", this->GetCookies(cs, url_hosted));
+  this->MatchCookieLines("sawAd=1", this->GetCookies(cs, url_filefront));
 }
 
 // Even when the specified domain matches the domain of the URL exactly, treat
 // it as setting a domain cookie.
 TYPED_TEST_P(CookieStoreTest, DomainWithoutLeadingDotSameDomain) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://www.google.com");
-  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=www.google.com"));
-  this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+  EXPECT_TRUE(this->SetCookie(cs, url, "a=1; domain=www.google.com"));
+  this->MatchCookieLines("a=1", this->GetCookies(cs, url));
   this->MatchCookieLines(
-      "a=1", this->GetCookies(cs.get(), GURL("http://sub.www.google.com")));
+      "a=1", this->GetCookies(cs, GURL("http://sub.www.google.com")));
   this->MatchCookieLines(
-      std::string(),
-      this->GetCookies(cs.get(), GURL("http://something-else.com")));
+      std::string(), this->GetCookies(cs, GURL("http://something-else.com")));
 }
 
 // Test that the domain specified in cookie string is treated case-insensitive
 TYPED_TEST_P(CookieStoreTest, CaseInsensitiveDomainTest) {
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://www.google.com");
-  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=.GOOGLE.COM"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), url, "b=2; domain=.wWw.gOOgLE.coM"));
-  this->MatchCookieLines("a=1; b=2", this->GetCookies(cs.get(), url));
+  EXPECT_TRUE(this->SetCookie(cs, url, "a=1; domain=.GOOGLE.COM"));
+  EXPECT_TRUE(this->SetCookie(cs, url, "b=2; domain=.wWw.gOOgLE.coM"));
+  this->MatchCookieLines("a=1; b=2", this->GetCookies(cs, url));
 }
 
 TYPED_TEST_P(CookieStoreTest, TestIpAddress) {
   GURL url_ip("http://1.2.3.4/weee");
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  EXPECT_TRUE(this->SetCookie(cs.get(), url_ip, kValidCookieLine));
-  this->MatchCookieLines("A=B", this->GetCookies(cs.get(), url_ip));
+  CookieStore* cs = this->GetCookieStore();
+  EXPECT_TRUE(this->SetCookie(cs, url_ip, kValidCookieLine));
+  this->MatchCookieLines("A=B", this->GetCookies(cs, url_ip));
 }
 
 // IP addresses should not be able to set domain cookies.
 TYPED_TEST_P(CookieStoreTest, TestIpAddressNoDomainCookies) {
   GURL url_ip("http://1.2.3.4/weee");
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  EXPECT_FALSE(this->SetCookie(cs.get(), url_ip, "b=2; domain=.1.2.3.4"));
-  EXPECT_FALSE(this->SetCookie(cs.get(), url_ip, "c=3; domain=.3.4"));
-  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_ip));
+  CookieStore* cs = this->GetCookieStore();
+  EXPECT_FALSE(this->SetCookie(cs, url_ip, "b=2; domain=.1.2.3.4"));
+  EXPECT_FALSE(this->SetCookie(cs, url_ip, "c=3; domain=.3.4"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs, url_ip));
   // It should be allowed to set a cookie if domain= matches the IP address
   // exactly.  This matches IE/Firefox, even though it seems a bit wrong.
-  EXPECT_FALSE(this->SetCookie(cs.get(), url_ip, "b=2; domain=1.2.3.3"));
-  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url_ip));
-  EXPECT_TRUE(this->SetCookie(cs.get(), url_ip, "b=2; domain=1.2.3.4"));
-  this->MatchCookieLines("b=2", this->GetCookies(cs.get(), url_ip));
+  EXPECT_FALSE(this->SetCookie(cs, url_ip, "b=2; domain=1.2.3.3"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs, url_ip));
+  EXPECT_TRUE(this->SetCookie(cs, url_ip, "b=2; domain=1.2.3.4"));
+  this->MatchCookieLines("b=2", this->GetCookies(cs, url_ip));
 }
 
 // Test a TLD setting cookies on itself.
 TYPED_TEST_P(CookieStoreTest, TestTLD) {
   if (!TypeParam::supports_non_dotted_domains)
     return;
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://com/");
 
   // Allow setting on "com", (but only as a host cookie).
-  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
+  EXPECT_TRUE(this->SetCookie(cs, url, "a=1"));
   // Domain cookies can't be set.
-  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.com"));
+  EXPECT_FALSE(this->SetCookie(cs, url, "b=2; domain=.com"));
   // Exact matches between the domain attribute and the host are treated as
   // host cookies, not domain cookies.
-  EXPECT_TRUE(this->SetCookie(cs.get(), url, "c=3; domain=com"));
+  EXPECT_TRUE(this->SetCookie(cs, url, "c=3; domain=com"));
 
-  this->MatchCookieLines("a=1; c=3", this->GetCookies(cs.get(), url));
+  this->MatchCookieLines("a=1; c=3", this->GetCookies(cs, url));
 
   // Make sure they don't show up for a normal .com, they should be host,
   // domain, cookies.
   this->MatchCookieLines(
       std::string(),
-      this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com/")));
+      this->GetCookies(cs, GURL("http://hopefully-no-cookies.com/")));
   this->MatchCookieLines(std::string(),
-                         this->GetCookies(cs.get(), GURL("http://.com/")));
+                         this->GetCookies(cs, GURL("http://.com/")));
 }
 
 // http://com. should be treated the same as http://com.
 TYPED_TEST_P(CookieStoreTest, TestTLDWithTerminalDot) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://com./index.html");
-  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
-  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.com."));
-  this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+  EXPECT_TRUE(this->SetCookie(cs, url, "a=1"));
+  EXPECT_FALSE(this->SetCookie(cs, url, "b=2; domain=.com."));
+  this->MatchCookieLines("a=1", this->GetCookies(cs, url));
   this->MatchCookieLines(
       std::string(),
-      this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com./")));
+      this->GetCookies(cs, GURL("http://hopefully-no-cookies.com./")));
 }
 
 TYPED_TEST_P(CookieStoreTest, TestSubdomainSettingCookiesOnUnknownTLD) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://a.b");
-  EXPECT_FALSE(this->SetCookie(cs.get(), url, "a=1; domain=.b"));
-  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=b"));
-  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url));
+  EXPECT_FALSE(this->SetCookie(cs, url, "a=1; domain=.b"));
+  EXPECT_FALSE(this->SetCookie(cs, url, "b=2; domain=b"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs, url));
 }
 
 TYPED_TEST_P(CookieStoreTest, TestSubdomainSettingCookiesOnKnownTLD) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://google.com");
-  EXPECT_FALSE(this->SetCookie(cs.get(), url, "a=1; domain=.com"));
-  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=com"));
-  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url));
+  EXPECT_FALSE(this->SetCookie(cs, url, "a=1; domain=.com"));
+  EXPECT_FALSE(this->SetCookie(cs, url, "b=2; domain=com"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs, url));
 }
 
 TYPED_TEST_P(CookieStoreTest, TestSubdomainSettingCookiesOnKnownDottedTLD) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://google.co.uk");
-  EXPECT_FALSE(this->SetCookie(cs.get(), url, "a=1; domain=.co.uk"));
-  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.uk"));
-  this->MatchCookieLines(std::string(), this->GetCookies(cs.get(), url));
+  EXPECT_FALSE(this->SetCookie(cs, url, "a=1; domain=.co.uk"));
+  EXPECT_FALSE(this->SetCookie(cs, url, "b=2; domain=.uk"));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs, url));
   this->MatchCookieLines(
-      std::string(),
-      this->GetCookies(cs.get(), GURL("http://something-else.co.uk")));
+      std::string(), this->GetCookies(cs, GURL("http://something-else.co.uk")));
   this->MatchCookieLines(
-      std::string(),
-      this->GetCookies(cs.get(), GURL("http://something-else.uk")));
+      std::string(), this->GetCookies(cs, GURL("http://something-else.uk")));
 }
 
 // Intranet URLs should only be able to set host cookies.
 TYPED_TEST_P(CookieStoreTest, TestSettingCookiesOnUnknownTLD) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://b");
-  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
-  EXPECT_FALSE(this->SetCookie(cs.get(), url, "b=2; domain=.b"));
-  this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+  EXPECT_TRUE(this->SetCookie(cs, url, "a=1"));
+  EXPECT_FALSE(this->SetCookie(cs, url, "b=2; domain=.b"));
+  this->MatchCookieLines("a=1", this->GetCookies(cs, url));
 }
 
 // Exact matches between the domain attribute and an intranet host are
@@ -755,64 +738,59 @@ TYPED_TEST_P(CookieStoreTest, TestSettingCookiesOnUnknownTLD) {
 TYPED_TEST_P(CookieStoreTest, TestSettingCookiesWithHostDomainOnUnknownTLD) {
   if (!TypeParam::supports_non_dotted_domains)
     return;
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://b");
-  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1; domain=b"));
+  EXPECT_TRUE(this->SetCookie(cs, url, "a=1; domain=b"));
 
-  this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+  this->MatchCookieLines("a=1", this->GetCookies(cs, url));
 
   // Make sure it doesn't show up for an intranet subdomain, it should be
   // a host, not domain, cookie.
   this->MatchCookieLines(
       std::string(),
-      this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.b/")));
+      this->GetCookies(cs, GURL("http://hopefully-no-cookies.b/")));
   this->MatchCookieLines(std::string(),
-                         this->GetCookies(cs.get(), GURL("http://.b/")));
+                         this->GetCookies(cs, GURL("http://.b/")));
 }
 
 // Test reading/writing cookies when the domain ends with a period,
 // as in "www.google.com."
 TYPED_TEST_P(CookieStoreTest, TestHostEndsWithDot) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url("http://www.google.com");
   GURL url_with_dot("http://www.google.com.");
-  EXPECT_TRUE(this->SetCookie(cs.get(), url, "a=1"));
-  this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
+  EXPECT_TRUE(this->SetCookie(cs, url, "a=1"));
+  this->MatchCookieLines("a=1", this->GetCookies(cs, url));
 
   // Do not share cookie space with the dot version of domain.
   // Note: this is not what FireFox does, but it _is_ what IE+Safari do.
   if (TypeParam::preserves_trailing_dots) {
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url, "b=2; domain=.www.google.com."));
-    this->MatchCookieLines("a=1", this->GetCookies(cs.get(), url));
-    EXPECT_TRUE(
-        this->SetCookie(cs.get(), url_with_dot, "b=2; domain=.google.com."));
-    this->MatchCookieLines("b=2", this->GetCookies(cs.get(), url_with_dot));
+    EXPECT_FALSE(this->SetCookie(cs, url, "b=2; domain=.www.google.com."));
+    this->MatchCookieLines("a=1", this->GetCookies(cs, url));
+    EXPECT_TRUE(this->SetCookie(cs, url_with_dot, "b=2; domain=.google.com."));
+    this->MatchCookieLines("b=2", this->GetCookies(cs, url_with_dot));
   } else {
-    EXPECT_TRUE(
-        this->SetCookie(cs.get(), url, "b=2; domain=.www.google.com."));
-    this->MatchCookieLines("a=1 b=2", this->GetCookies(cs.get(), url));
+    EXPECT_TRUE(this->SetCookie(cs, url, "b=2; domain=.www.google.com."));
+    this->MatchCookieLines("a=1 b=2", this->GetCookies(cs, url));
     // Setting this cookie should fail, since the trailing dot on the domain
     // isn't preserved, and then the domain mismatches the URL.
-    EXPECT_FALSE(
-        this->SetCookie(cs.get(), url_with_dot, "b=2; domain=.google.com."));
+    EXPECT_FALSE(this->SetCookie(cs, url_with_dot, "b=2; domain=.google.com."));
   }
 
   // Make sure there weren't any side effects.
   this->MatchCookieLines(
       std::string(),
-      this->GetCookies(cs.get(), GURL("http://hopefully-no-cookies.com/")));
+      this->GetCookies(cs, GURL("http://hopefully-no-cookies.com/")));
   this->MatchCookieLines(std::string(),
-                         this->GetCookies(cs.get(), GURL("http://.com/")));
+                         this->GetCookies(cs, GURL("http://.com/")));
 }
 
 TYPED_TEST_P(CookieStoreTest, InvalidScheme) {
   if (!TypeParam::filters_schemes)
     return;
 
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  EXPECT_FALSE(
-      this->SetCookie(cs.get(), this->ftp_google_.url(), kValidCookieLine));
+  CookieStore* cs = this->GetCookieStore();
+  EXPECT_FALSE(this->SetCookie(cs, this->ftp_google_.url(), kValidCookieLine));
 }
 
 TYPED_TEST_P(CookieStoreTest, InvalidScheme_Read) {
@@ -822,42 +800,38 @@ TYPED_TEST_P(CookieStoreTest, InvalidScheme_Read) {
   const std::string kValidDomainCookieLine =
       this->http_www_google_.Format("A=B; path=/; domain=%D");
 
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  CookieStore* cs = this->GetCookieStore();
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(),
                               kValidDomainCookieLine));
   this->MatchCookieLines(std::string(),
-                         this->GetCookies(cs.get(), this->ftp_google_.url()));
-  EXPECT_EQ(0U, this->GetCookieListWithOptions(
-                        cs.get(), this->ftp_google_.url(), CookieOptions())
+                         this->GetCookies(cs, this->ftp_google_.url()));
+  EXPECT_EQ(0U, this->GetCookieListWithOptions(cs, this->ftp_google_.url(),
+                                               CookieOptions())
                     .size());
 }
 
 TYPED_TEST_P(CookieStoreTest, PathTest) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   std::string url("http://www.google.izzle");
-  EXPECT_TRUE(this->SetCookie(cs.get(), GURL(url), "A=B; path=/wee"));
-  this->MatchCookieLines("A=B", this->GetCookies(cs.get(), GURL(url + "/wee")));
-  this->MatchCookieLines("A=B",
-                         this->GetCookies(cs.get(), GURL(url + "/wee/")));
-  this->MatchCookieLines("A=B",
-                         this->GetCookies(cs.get(), GURL(url + "/wee/war")));
+  EXPECT_TRUE(this->SetCookie(cs, GURL(url), "A=B; path=/wee"));
+  this->MatchCookieLines("A=B", this->GetCookies(cs, GURL(url + "/wee")));
+  this->MatchCookieLines("A=B", this->GetCookies(cs, GURL(url + "/wee/")));
+  this->MatchCookieLines("A=B", this->GetCookies(cs, GURL(url + "/wee/war")));
   this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), GURL(url + "/wee/war/more/more")));
+      "A=B", this->GetCookies(cs, GURL(url + "/wee/war/more/more")));
   if (!TypeParam::has_path_prefix_bug)
     this->MatchCookieLines(std::string(),
-                           this->GetCookies(cs.get(), GURL(url + "/weehee")));
-  this->MatchCookieLines(std::string(),
-                         this->GetCookies(cs.get(), GURL(url + "/")));
+                           this->GetCookies(cs, GURL(url + "/weehee")));
+  this->MatchCookieLines(std::string(), this->GetCookies(cs, GURL(url + "/")));
 
   // If we add a 0 length path, it should default to /
-  EXPECT_TRUE(this->SetCookie(cs.get(), GURL(url), "A=C; path="));
-  this->MatchCookieLines("A=B; A=C",
-                         this->GetCookies(cs.get(), GURL(url + "/wee")));
-  this->MatchCookieLines("A=C", this->GetCookies(cs.get(), GURL(url + "/")));
+  EXPECT_TRUE(this->SetCookie(cs, GURL(url), "A=C; path="));
+  this->MatchCookieLines("A=B; A=C", this->GetCookies(cs, GURL(url + "/wee")));
+  this->MatchCookieLines("A=C", this->GetCookies(cs, GURL(url + "/")));
 }
 
 TYPED_TEST_P(CookieStoreTest, EmptyExpires) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   CookieOptions options;
   if (!TypeParam::supports_http_only)
     options.set_include_httponly();
@@ -866,171 +840,168 @@ TYPED_TEST_P(CookieStoreTest, EmptyExpires) {
       "ACSTM=20130308043820420042; path=/; domain=ipdl.inpit.go.jp; Expires=";
   std::string cookie_line = "ACSTM=20130308043820420042";
 
-  this->SetCookieWithOptions(cs.get(), url, set_cookie_line, options);
+  this->SetCookieWithOptions(cs, url, set_cookie_line, options);
   this->MatchCookieLines(cookie_line,
-                         this->GetCookiesWithOptions(cs.get(), url, options));
+                         this->GetCookiesWithOptions(cs, url, options));
 
   options.set_server_time(base::Time::Now() - base::TimeDelta::FromHours(1));
-  this->SetCookieWithOptions(cs.get(), url, set_cookie_line, options);
+  this->SetCookieWithOptions(cs, url, set_cookie_line, options);
   this->MatchCookieLines(cookie_line,
-                         this->GetCookiesWithOptions(cs.get(), url, options));
+                         this->GetCookiesWithOptions(cs, url, options));
 
   options.set_server_time(base::Time::Now() + base::TimeDelta::FromHours(1));
-  this->SetCookieWithOptions(cs.get(), url, set_cookie_line, options);
+  this->SetCookieWithOptions(cs, url, set_cookie_line, options);
   this->MatchCookieLines(cookie_line,
-                         this->GetCookiesWithOptions(cs.get(), url, options));
+                         this->GetCookiesWithOptions(cs, url, options));
 }
 
 TYPED_TEST_P(CookieStoreTest, HttpOnlyTest) {
   if (!TypeParam::supports_http_only)
     return;
 
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   CookieOptions options;
   options.set_include_httponly();
 
   // Create a httponly cookie.
-  EXPECT_TRUE(this->SetCookieWithOptions(cs.get(), this->http_www_google_.url(),
+  EXPECT_TRUE(this->SetCookieWithOptions(cs, this->http_www_google_.url(),
                                          "A=B; httponly", options));
 
   // Check httponly read protection.
-  this->MatchCookieLines(
-      std::string(), this->GetCookies(cs.get(), this->http_www_google_.url()));
-  this->MatchCookieLines(
-      "A=B", this->GetCookiesWithOptions(cs.get(), this->http_www_google_.url(),
-                                         options));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
+  this->MatchCookieLines("A=B", this->GetCookiesWithOptions(
+                                    cs, this->http_www_google_.url(), options));
 
   // Check httponly overwrite protection.
-  EXPECT_FALSE(this->SetCookie(cs.get(), this->http_www_google_.url(), "A=C"));
-  this->MatchCookieLines(
-      std::string(), this->GetCookies(cs.get(), this->http_www_google_.url()));
-  this->MatchCookieLines(
-      "A=B", this->GetCookiesWithOptions(cs.get(), this->http_www_google_.url(),
-                                         options));
-  EXPECT_TRUE(this->SetCookieWithOptions(cs.get(), this->http_www_google_.url(),
+  EXPECT_FALSE(this->SetCookie(cs, this->http_www_google_.url(), "A=C"));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
+  this->MatchCookieLines("A=B", this->GetCookiesWithOptions(
+                                    cs, this->http_www_google_.url(), options));
+  EXPECT_TRUE(this->SetCookieWithOptions(cs, this->http_www_google_.url(),
                                          "A=C", options));
-  this->MatchCookieLines(
-      "A=C", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=C",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Check httponly create protection.
   EXPECT_FALSE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(), "B=A; httponly"));
-  this->MatchCookieLines(
-      "A=C", this->GetCookiesWithOptions(cs.get(), this->http_www_google_.url(),
-                                         options));
-  EXPECT_TRUE(this->SetCookieWithOptions(cs.get(), this->http_www_google_.url(),
+      this->SetCookie(cs, this->http_www_google_.url(), "B=A; httponly"));
+  this->MatchCookieLines("A=C", this->GetCookiesWithOptions(
+                                    cs, this->http_www_google_.url(), options));
+  EXPECT_TRUE(this->SetCookieWithOptions(cs, this->http_www_google_.url(),
                                          "B=A; httponly", options));
-  this->MatchCookieLines("A=C; B=A",
-                         this->GetCookiesWithOptions(
-                             cs.get(), this->http_www_google_.url(), options));
   this->MatchCookieLines(
-      "A=C", this->GetCookies(cs.get(), this->http_www_google_.url()));
+      "A=C; B=A",
+      this->GetCookiesWithOptions(cs, this->http_www_google_.url(), options));
+  this->MatchCookieLines("A=C",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 }
 
 TYPED_TEST_P(CookieStoreTest, TestCookieDeletion) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
 
   // Create a session cookie.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
-                              kValidCookieLine));
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  EXPECT_TRUE(
+      this->SetCookie(cs, this->http_www_google_.url(), kValidCookieLine));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
   // Delete it via Max-Age.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(),
                               std::string(kValidCookieLine) + "; max-age=0"));
-  this->MatchCookieLineWithTimeout(cs.get(), this->http_www_google_.url(),
+  this->MatchCookieLineWithTimeout(cs, this->http_www_google_.url(),
                                    std::string());
 
   // Create a session cookie.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
-                              kValidCookieLine));
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  EXPECT_TRUE(
+      this->SetCookie(cs, this->http_www_google_.url(), kValidCookieLine));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
   // Delete it via Expires.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(),
                               std::string(kValidCookieLine) +
                                   "; expires=Mon, 18-Apr-1977 22:50:13 GMT"));
-  this->MatchCookieLines(
-      std::string(), this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Create a persistent cookie.
   EXPECT_TRUE(this->SetCookie(
-      cs.get(), this->http_www_google_.url(),
+      cs, this->http_www_google_.url(),
       std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-22 22:50:13 GMT"));
 
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
   // Delete it via Max-Age.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(),
                               std::string(kValidCookieLine) + "; max-age=0"));
-  this->MatchCookieLineWithTimeout(cs.get(), this->http_www_google_.url(),
+  this->MatchCookieLineWithTimeout(cs, this->http_www_google_.url(),
                                    std::string());
 
   // Create a persistent cookie.
   EXPECT_TRUE(this->SetCookie(
-      cs.get(), this->http_www_google_.url(),
+      cs, this->http_www_google_.url(),
       std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-22 22:50:13 GMT"));
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
   // Delete it via Expires.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(),
                               std::string(kValidCookieLine) +
                                   "; expires=Mon, 18-Apr-1977 22:50:13 GMT"));
-  this->MatchCookieLines(
-      std::string(), this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Create a persistent cookie.
   EXPECT_TRUE(this->SetCookie(
-      cs.get(), this->http_www_google_.url(),
+      cs, this->http_www_google_.url(),
       std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-22 22:50:13 GMT"));
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
   // Check that it is not deleted with significant enough clock skew.
   base::Time server_time;
   EXPECT_TRUE(base::Time::FromString("Sun, 17-Apr-1977 22:50:13 GMT",
                                      &server_time));
   EXPECT_TRUE(this->SetCookieWithServerTime(
-      cs.get(), this->http_www_google_.url(),
+      cs, this->http_www_google_.url(),
       std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-1977 22:50:13 GMT",
       server_time));
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Create a persistent cookie.
   EXPECT_TRUE(this->SetCookie(
-      cs.get(), this->http_www_google_.url(),
+      cs, this->http_www_google_.url(),
       std::string(kValidCookieLine) + "; expires=Mon, 18-Apr-22 22:50:13 GMT"));
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
   // Delete it via Expires, with a unix epoch of 0.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(),
                               std::string(kValidCookieLine) +
                                   "; expires=Thu, 1-Jan-1970 00:00:00 GMT"));
-  this->MatchCookieLines(
-      std::string(), this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
 }
 
 TYPED_TEST_P(CookieStoreTest, TestDeleteAll) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
 
   // Set a session cookie.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
-                              kValidCookieLine));
-  EXPECT_EQ("A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  EXPECT_TRUE(
+      this->SetCookie(cs, this->http_www_google_.url(), kValidCookieLine));
+  EXPECT_EQ("A=B", this->GetCookies(cs, this->http_www_google_.url()));
 
   // Set a persistent cookie.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(),
                               "C=D; expires=Mon, 18-Apr-22 22:50:13 GMT"));
 
-  EXPECT_EQ(2u, this->GetAllCookies(cs.get()).size());
+  EXPECT_EQ(2u, this->GetAllCookies(cs).size());
 
   // Delete both, and make sure it works
-  EXPECT_EQ(2, this->DeleteAll(cs.get()));
-  EXPECT_EQ(0u, this->GetAllCookies(cs.get()).size());
+  EXPECT_EQ(2, this->DeleteAll(cs));
+  EXPECT_EQ(0u, this->GetAllCookies(cs).size());
 }
 
 TYPED_TEST_P(CookieStoreTest, TestDeleteAllCreatedBetween) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   const base::Time last_month = base::Time::Now() -
                                 base::TimeDelta::FromDays(30);
   const base::Time last_minute = base::Time::Now() -
@@ -1041,90 +1012,86 @@ TYPED_TEST_P(CookieStoreTest, TestDeleteAllCreatedBetween) {
                                 base::TimeDelta::FromDays(30);
 
   // Add a cookie.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(), "A=B"));
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(), "A=B"));
   // Check that the cookie is in the store.
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Remove cookies in empty intervals.
-  EXPECT_EQ(0, this->DeleteCreatedBetween(cs.get(), last_month, last_minute));
-  EXPECT_EQ(0, this->DeleteCreatedBetween(cs.get(), next_minute, next_month));
+  EXPECT_EQ(0, this->DeleteCreatedBetween(cs, last_month, last_minute));
+  EXPECT_EQ(0, this->DeleteCreatedBetween(cs, next_minute, next_month));
   // Check that the cookie is still there.
-  this->MatchCookieLines(
-      "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Remove the cookie with an interval defined by two dates.
-  EXPECT_EQ(1, this->DeleteCreatedBetween(cs.get(), last_minute, next_minute));
+  EXPECT_EQ(1, this->DeleteCreatedBetween(cs, last_minute, next_minute));
   // Check that the cookie disappeared.
-  this->MatchCookieLines(
-      std::string(), this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Add another cookie.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(), "C=D"));
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(), "C=D"));
   // Check that the cookie is in the store.
-  this->MatchCookieLines(
-      "C=D", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("C=D",
+                         this->GetCookies(cs, this->http_www_google_.url()));
 
   // Remove the cookie with a null ending time.
-  EXPECT_EQ(1, this->DeleteCreatedBetween(cs.get(), last_minute, base::Time()));
+  EXPECT_EQ(1, this->DeleteCreatedBetween(cs, last_minute, base::Time()));
   // Check that the cookie disappeared.
-  this->MatchCookieLines(
-      std::string(), this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
 }
 
 TYPED_TEST_P(CookieStoreTest, TestDeleteAllCreatedBetweenForHost) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   GURL url_not_google("http://www.notgoogle.com");
   base::Time now = base::Time::Now();
 
   // These 3 cookies match the time range and host.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(), "A=B"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(), "C=D"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(), "Y=Z"));
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(), "A=B"));
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(), "C=D"));
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(), "Y=Z"));
 
   // This cookie does not match host.
-  EXPECT_TRUE(this->SetCookie(cs.get(), url_not_google, "E=F"));
+  EXPECT_TRUE(this->SetCookie(cs, url_not_google, "E=F"));
 
   // Delete cookies.
-  EXPECT_EQ(
-      3,  // Deletes A=B, C=D, Y=Z
-      this->DeleteAllCreatedBetweenForHost(cs.get(), now, base::Time::Max(),
-                                           this->http_www_google_.url()));
+  EXPECT_EQ(3,  // Deletes A=B, C=D, Y=Z
+            this->DeleteAllCreatedBetweenForHost(cs, now, base::Time::Max(),
+                                                 this->http_www_google_.url()));
 }
 
 TYPED_TEST_P(CookieStoreTest, TestSecure) {
-    scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
 
-    EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(), "A=B"));
-    this->MatchCookieLines(
-        "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
-    this->MatchCookieLines(
-        "A=B", this->GetCookies(cs.get(), this->https_www_google_.url()));
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(), "A=B"));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->https_www_google_.url()));
 
-    EXPECT_TRUE(this->SetCookie(cs.get(), this->https_www_google_.url(),
-                                "A=B; secure"));
+  EXPECT_TRUE(
+      this->SetCookie(cs, this->https_www_google_.url(), "A=B; secure"));
   // The secure should overwrite the non-secure.
-    this->MatchCookieLines(
-        std::string(),
-        this->GetCookies(cs.get(), this->http_www_google_.url()));
-    this->MatchCookieLines(
-        "A=B", this->GetCookies(cs.get(), this->https_www_google_.url()));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->https_www_google_.url()));
 
-    EXPECT_TRUE(this->SetCookie(cs.get(), this->https_www_google_.url(),
-                                "D=E; secure"));
-    this->MatchCookieLines(
-        std::string(),
-        this->GetCookies(cs.get(), this->http_www_google_.url()));
-    this->MatchCookieLines(
-        "A=B; D=E", this->GetCookies(cs.get(), this->https_www_google_.url()));
+  EXPECT_TRUE(
+      this->SetCookie(cs, this->https_www_google_.url(), "D=E; secure"));
+  this->MatchCookieLines(std::string(),
+                         this->GetCookies(cs, this->http_www_google_.url()));
+  this->MatchCookieLines("A=B; D=E",
+                         this->GetCookies(cs, this->https_www_google_.url()));
 
-    EXPECT_TRUE(
-        this->SetCookie(cs.get(), this->https_www_google_.url(), "A=B"));
+  EXPECT_TRUE(this->SetCookie(cs, this->https_www_google_.url(), "A=B"));
   // The non-secure should overwrite the secure.
-    this->MatchCookieLines(
-        "A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
-    this->MatchCookieLines(
-        "D=E; A=B", this->GetCookies(cs.get(), this->https_www_google_.url()));
+  this->MatchCookieLines("A=B",
+                         this->GetCookies(cs, this->http_www_google_.url()));
+  this->MatchCookieLines("D=E; A=B",
+                         this->GetCookies(cs, this->https_www_google_.url()));
 }
 
 static const int kLastAccessThresholdMilliseconds = 200;
@@ -1133,17 +1100,17 @@ static const int kLastAccessThresholdMilliseconds = 200;
 TYPED_TEST_P(CookieStoreTest, NetUtilCookieTest) {
   const GURL test_url("http://mojo.jojo.google.izzle/");
 
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
 
-  EXPECT_TRUE(this->SetCookie(cs.get(), test_url, "foo=bar"));
-  std::string value = this->GetCookies(cs.get(), test_url);
+  EXPECT_TRUE(this->SetCookie(cs, test_url, "foo=bar"));
+  std::string value = this->GetCookies(cs, test_url);
   this->MatchCookieLines("foo=bar", value);
 
   // test that we can retrieve all cookies:
-  EXPECT_TRUE(this->SetCookie(cs.get(), test_url, "x=1"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), test_url, "y=2"));
+  EXPECT_TRUE(this->SetCookie(cs, test_url, "x=1"));
+  EXPECT_TRUE(this->SetCookie(cs, test_url, "y=2"));
 
-  std::string result = this->GetCookies(cs.get(), test_url);
+  std::string result = this->GetCookies(cs, test_url);
   EXPECT_FALSE(result.empty());
   EXPECT_NE(result.find("x=1"), std::string::npos) << result;
   EXPECT_NE(result.find("y=2"), std::string::npos) << result;
@@ -1152,17 +1119,15 @@ TYPED_TEST_P(CookieStoreTest, NetUtilCookieTest) {
 TYPED_TEST_P(CookieStoreTest, OverwritePersistentCookie) {
   GURL url_google("http://www.google.com/");
   GURL url_chromium("http://chromium.org");
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
 
   // Insert a cookie "a" for path "/path1"
-  EXPECT_TRUE(this->SetCookie(cs.get(),
-                              url_google,
+  EXPECT_TRUE(this->SetCookie(cs, url_google,
                               "a=val1; path=/path1; "
                               "expires=Mon, 18-Apr-22 22:50:13 GMT"));
 
   // Insert a cookie "b" for path "/path1"
-  EXPECT_TRUE(this->SetCookie(cs.get(),
-                              url_google,
+  EXPECT_TRUE(this->SetCookie(cs, url_google,
                               "b=val1; path=/path1; "
                               "expires=Mon, 18-Apr-22 22:50:14 GMT"));
 
@@ -1170,80 +1135,72 @@ TYPED_TEST_P(CookieStoreTest, OverwritePersistentCookie) {
   // overwrite the non-http-only version.
   CookieOptions allow_httponly;
   allow_httponly.set_include_httponly();
-  EXPECT_TRUE(this->SetCookieWithOptions(cs.get(),
-                                         url_google,
+  EXPECT_TRUE(this->SetCookieWithOptions(cs, url_google,
                                          "b=val2; path=/path1; httponly; "
                                          "expires=Mon, 18-Apr-22 22:50:14 GMT",
                                          allow_httponly));
 
   // Insert a cookie "a" for path "/path1". This should overwrite.
-  EXPECT_TRUE(this->SetCookie(cs.get(),
-                              url_google,
+  EXPECT_TRUE(this->SetCookie(cs, url_google,
                               "a=val33; path=/path1; "
                               "expires=Mon, 18-Apr-22 22:50:14 GMT"));
 
   // Insert a cookie "a" for path "/path2". This should NOT overwrite
   // cookie "a", since the path is different.
-  EXPECT_TRUE(this->SetCookie(cs.get(),
-                              url_google,
+  EXPECT_TRUE(this->SetCookie(cs, url_google,
                               "a=val9; path=/path2; "
                               "expires=Mon, 18-Apr-22 22:50:14 GMT"));
 
   // Insert a cookie "a" for path "/path1", but this time for "chromium.org".
   // Although the name and path match, the hostnames do not, so shouldn't
   // overwrite.
-  EXPECT_TRUE(this->SetCookie(cs.get(),
-                              url_chromium,
+  EXPECT_TRUE(this->SetCookie(cs, url_chromium,
                               "a=val99; path=/path1; "
                               "expires=Mon, 18-Apr-22 22:50:14 GMT"));
 
   if (TypeParam::supports_http_only) {
     this->MatchCookieLines(
-        "a=val33",
-        this->GetCookies(cs.get(), GURL("http://www.google.com/path1")));
+        "a=val33", this->GetCookies(cs, GURL("http://www.google.com/path1")));
   } else {
     this->MatchCookieLines(
         "a=val33; b=val2",
-        this->GetCookies(cs.get(), GURL("http://www.google.com/path1")));
+        this->GetCookies(cs, GURL("http://www.google.com/path1")));
   }
   this->MatchCookieLines(
-      "a=val9",
-      this->GetCookies(cs.get(), GURL("http://www.google.com/path2")));
+      "a=val9", this->GetCookies(cs, GURL("http://www.google.com/path2")));
   this->MatchCookieLines(
-      "a=val99", this->GetCookies(cs.get(), GURL("http://chromium.org/path1")));
+      "a=val99", this->GetCookies(cs, GURL("http://chromium.org/path1")));
 }
 
 TYPED_TEST_P(CookieStoreTest, CookieOrdering) {
   // Put a random set of cookies into a store and make sure they're returned in
   // the right order.
   // Cookies should be sorted by path length and creation time, as per RFC6265.
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
-  EXPECT_TRUE(this->SetCookie(
-      cs.get(), GURL("http://d.c.b.a.google.com/aa/x.html"), "c=1"));
-  EXPECT_TRUE(this->SetCookie(cs.get(),
-                              GURL("http://b.a.google.com/aa/bb/cc/x.html"),
+  CookieStore* cs = this->GetCookieStore();
+  EXPECT_TRUE(
+      this->SetCookie(cs, GURL("http://d.c.b.a.google.com/aa/x.html"), "c=1"));
+  EXPECT_TRUE(this->SetCookie(cs, GURL("http://b.a.google.com/aa/bb/cc/x.html"),
                               "d=1; domain=b.a.google.com"));
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
       TypeParam::creation_time_granularity_in_ms));
-  EXPECT_TRUE(this->SetCookie(cs.get(),
-                              GURL("http://b.a.google.com/aa/bb/cc/x.html"),
+  EXPECT_TRUE(this->SetCookie(cs, GURL("http://b.a.google.com/aa/bb/cc/x.html"),
                               "a=4; domain=b.a.google.com"));
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
       TypeParam::creation_time_granularity_in_ms));
-  EXPECT_TRUE(this->SetCookie(cs.get(),
+  EXPECT_TRUE(this->SetCookie(cs,
                               GURL("http://c.b.a.google.com/aa/bb/cc/x.html"),
                               "e=1; domain=c.b.a.google.com"));
   EXPECT_TRUE(this->SetCookie(
-      cs.get(), GURL("http://d.c.b.a.google.com/aa/bb/x.html"), "b=1"));
-  EXPECT_TRUE(this->SetCookie(
-      cs.get(), GURL("http://news.bbc.co.uk/midpath/x.html"), "g=10"));
-  EXPECT_EQ("d=1; a=4; e=1; b=1; c=1",
-            this->GetCookies(cs.get(),
-                             GURL("http://d.c.b.a.google.com/aa/bb/cc/dd")));
+      cs, GURL("http://d.c.b.a.google.com/aa/bb/x.html"), "b=1"));
+  EXPECT_TRUE(this->SetCookie(cs, GURL("http://news.bbc.co.uk/midpath/x.html"),
+                              "g=10"));
+  EXPECT_EQ(
+      "d=1; a=4; e=1; b=1; c=1",
+      this->GetCookies(cs, GURL("http://d.c.b.a.google.com/aa/bb/cc/dd")));
 
   CookieOptions options;
   CookieList cookies = this->GetCookieListWithOptions(
-      cs.get(), GURL("http://d.c.b.a.google.com/aa/bb/cc/dd"), options);
+      cs, GURL("http://d.c.b.a.google.com/aa/bb/cc/dd"), options);
   CookieList::const_iterator it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -1267,16 +1224,15 @@ TYPED_TEST_P(CookieStoreTest, CookieOrdering) {
 // Check that GetAllCookiesAsync returns cookies from multiple domains, in the
 // correct order.
 TYPED_TEST_P(CookieStoreTest, GetAllCookiesAsync) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
 
   EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=B; path=/a"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_foo_com_.url(), "C=D;/"));
-  EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_bar_com_.url(), "E=F; path=/bar"));
+      this->SetCookie(cs, this->http_www_google_.url(), "A=B; path=/a"));
+  EXPECT_TRUE(this->SetCookie(cs, this->http_foo_com_.url(), "C=D;/"));
+  EXPECT_TRUE(this->SetCookie(cs, this->http_bar_com_.url(), "E=F; path=/bar"));
 
   // Check cookies for url.
-  CookieList cookies = this->GetAllCookies(cs.get());
+  CookieList cookies = this->GetAllCookies(cs);
   CookieList::const_iterator it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
@@ -1301,25 +1257,24 @@ TYPED_TEST_P(CookieStoreTest, GetAllCookiesAsync) {
 }
 
 TYPED_TEST_P(CookieStoreTest, DeleteCookieAsync) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
 
   EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=A1; path=/"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
-                              "A=A2; path=/foo"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
-                              "A=A3; path=/bar"));
+      this->SetCookie(cs, this->http_www_google_.url(), "A=A1; path=/"));
   EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(), "B=B1; path=/"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
-                              "B=B2; path=/foo"));
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
-                              "B=B3; path=/bar"));
+      this->SetCookie(cs, this->http_www_google_.url(), "A=A2; path=/foo"));
+  EXPECT_TRUE(
+      this->SetCookie(cs, this->http_www_google_.url(), "A=A3; path=/bar"));
+  EXPECT_TRUE(
+      this->SetCookie(cs, this->http_www_google_.url(), "B=B1; path=/"));
+  EXPECT_TRUE(
+      this->SetCookie(cs, this->http_www_google_.url(), "B=B2; path=/foo"));
+  EXPECT_TRUE(
+      this->SetCookie(cs, this->http_www_google_.url(), "B=B3; path=/bar"));
 
-  this->DeleteCookie(cs.get(), this->http_www_google_.AppendPath("foo/bar"),
-                     "A");
+  this->DeleteCookie(cs, this->http_www_google_.AppendPath("foo/bar"), "A");
 
-  CookieList cookies = this->GetAllCookies(cs.get());
+  CookieList cookies = this->GetAllCookies(cs);
   size_t expected_size = 4;
   EXPECT_EQ(expected_size, cookies.size());
   for (const auto& cookie : cookies) {
@@ -1329,63 +1284,63 @@ TYPED_TEST_P(CookieStoreTest, DeleteCookieAsync) {
 }
 
 TYPED_TEST_P(CookieStoreTest, DeleteCanonicalCookieAsync) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
 
   // Set two cookies with the same name, and make sure both are set.
   EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=B;Path=/foo"));
+      this->SetCookie(cs, this->http_www_google_.url(), "A=B;Path=/foo"));
   EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=C;Path=/bar"));
-  EXPECT_EQ(2u, this->GetAllCookies(cs.get()).size());
-  EXPECT_EQ("A=B", this->GetCookies(cs.get(), this->www_google_foo_.url()));
-  EXPECT_EQ("A=C", this->GetCookies(cs.get(), this->www_google_bar_.url()));
+      this->SetCookie(cs, this->http_www_google_.url(), "A=C;Path=/bar"));
+  EXPECT_EQ(2u, this->GetAllCookies(cs).size());
+  EXPECT_EQ("A=B", this->GetCookies(cs, this->www_google_foo_.url()));
+  EXPECT_EQ("A=C", this->GetCookies(cs, this->www_google_bar_.url()));
 
   // Delete the "/foo" cookie, and make sure only it was deleted.
   CookieList cookies = this->GetCookieListWithOptions(
-      cs.get(), this->www_google_foo_.url(), CookieOptions());
+      cs, this->www_google_foo_.url(), CookieOptions());
   ASSERT_EQ(1u, cookies.size());
-  EXPECT_EQ(1, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
-  EXPECT_EQ(1u, this->GetAllCookies(cs.get()).size());
-  EXPECT_EQ("", this->GetCookies(cs.get(), this->www_google_foo_.url()));
-  EXPECT_EQ("A=C", this->GetCookies(cs.get(), this->www_google_bar_.url()));
+  EXPECT_EQ(1, this->DeleteCanonicalCookie(cs, cookies[0]));
+  EXPECT_EQ(1u, this->GetAllCookies(cs).size());
+  EXPECT_EQ("", this->GetCookies(cs, this->www_google_foo_.url()));
+  EXPECT_EQ("A=C", this->GetCookies(cs, this->www_google_bar_.url()));
 
   // Deleting the "/foo" cookie again should fail.
-  EXPECT_EQ(0, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
+  EXPECT_EQ(0, this->DeleteCanonicalCookie(cs, cookies[0]));
 
   // Try to delete the "/bar" cookie after overwriting it with a new cookie.
-  cookies = this->GetCookieListWithOptions(
-      cs.get(), this->www_google_bar_.url(), CookieOptions());
+  cookies = this->GetCookieListWithOptions(cs, this->www_google_bar_.url(),
+                                           CookieOptions());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_TRUE(
-      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=D;Path=/bar"));
-  EXPECT_EQ(0, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
-  EXPECT_EQ(1u, this->GetAllCookies(cs.get()).size());
-  EXPECT_EQ("A=D", this->GetCookies(cs.get(), this->www_google_bar_.url()));
+      this->SetCookie(cs, this->http_www_google_.url(), "A=D;Path=/bar"));
+  EXPECT_EQ(0, this->DeleteCanonicalCookie(cs, cookies[0]));
+  EXPECT_EQ(1u, this->GetAllCookies(cs).size());
+  EXPECT_EQ("A=D", this->GetCookies(cs, this->www_google_bar_.url()));
 
   // Delete the new "/bar" cookie.
-  cookies = this->GetCookieListWithOptions(
-      cs.get(), this->www_google_bar_.url(), CookieOptions());
+  cookies = this->GetCookieListWithOptions(cs, this->www_google_bar_.url(),
+                                           CookieOptions());
   ASSERT_EQ(1u, cookies.size());
-  EXPECT_EQ(1, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
-  EXPECT_EQ(0u, this->GetAllCookies(cs.get()).size());
-  EXPECT_EQ("", this->GetCookies(cs.get(), this->www_google_bar_.url()));
+  EXPECT_EQ(1, this->DeleteCanonicalCookie(cs, cookies[0]));
+  EXPECT_EQ(0u, this->GetAllCookies(cs).size());
+  EXPECT_EQ("", this->GetCookies(cs, this->www_google_bar_.url()));
 }
 
 TYPED_TEST_P(CookieStoreTest, DeleteSessionCookie) {
-  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+  CookieStore* cs = this->GetCookieStore();
   // Create a session cookie and a persistent cookie.
-  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+  EXPECT_TRUE(this->SetCookie(cs, this->http_www_google_.url(),
                               std::string(kValidCookieLine)));
   EXPECT_TRUE(this->SetCookie(
-      cs.get(), this->http_www_google_.url(),
+      cs, this->http_www_google_.url(),
       this->http_www_google_.Format("C=D; path=/; domain=%D;"
                                     "expires=Mon, 18-Apr-22 22:50:13 GMT")));
-  this->MatchCookieLines(
-      "A=B; C=D", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  this->MatchCookieLines("A=B; C=D",
+                         this->GetCookies(cs, this->http_www_google_.url()));
   // Delete the session cookie.
-  this->DeleteSessionCookies(cs.get());
+  this->DeleteSessionCookies(cs);
   // Check that the session cookie has been deleted but not the persistent one.
-  EXPECT_EQ("C=D", this->GetCookies(cs.get(), this->http_www_google_.url()));
+  EXPECT_EQ("C=D", this->GetCookies(cs, this->http_www_google_.url()));
 }
 
 REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,

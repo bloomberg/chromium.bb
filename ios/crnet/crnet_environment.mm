@@ -39,6 +39,7 @@
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert_net/nss_ocsp.h"
+#include "net/cookies/cookie_store.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_impl.h"
@@ -467,10 +468,9 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   main_context_->set_http_transaction_factory(main_cache);
 
   // Cookies
-  scoped_refptr<net::CookieStore> cookie_store =
-  net::CookieStoreIOS::CreateCookieStore(
+  cookie_store_ = net::CookieStoreIOS::CreateCookieStore(
       [NSHTTPCookieStorage sharedHTTPCookieStorage]);
-  main_context_->set_cookie_store(cookie_store.get());
+  main_context_->set_cookie_store(cookie_store_.get());
 
   net::URLRequestJobFactoryImpl* job_factory =
       new net::URLRequestJobFactoryImpl;

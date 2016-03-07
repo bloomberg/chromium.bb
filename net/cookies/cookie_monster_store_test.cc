@@ -194,11 +194,12 @@ void MockSimplePersistentCookieStore::Flush(const base::Closure& callback) {
 void MockSimplePersistentCookieStore::SetForceKeepSessionState() {
 }
 
-CookieMonster* CreateMonsterFromStoreForGC(int num_secure_cookies,
-                                           int num_old_secure_cookies,
-                                           int num_non_secure_cookies,
-                                           int num_old_non_secure_cookies,
-                                           int days_old) {
+scoped_ptr<CookieMonster> CreateMonsterFromStoreForGC(
+    int num_secure_cookies,
+    int num_old_secure_cookies,
+    int num_non_secure_cookies,
+    int num_old_non_secure_cookies,
+    int days_old) {
   base::Time current(base::Time::Now());
   base::Time past_creation(base::Time::Now() - base::TimeDelta::FromDays(1000));
   scoped_refptr<MockSimplePersistentCookieStore> store(
@@ -232,7 +233,7 @@ CookieMonster* CreateMonsterFromStoreForGC(int num_secure_cookies,
     store->AddCookie(cc);
   }
 
-  return new CookieMonster(store.get(), NULL);
+  return make_scoped_ptr(new CookieMonster(store.get(), nullptr));
 }
 
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() {

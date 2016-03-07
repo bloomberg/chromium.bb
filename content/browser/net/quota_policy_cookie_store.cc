@@ -129,17 +129,18 @@ CookieStoreConfig::CookieStoreConfig(
 CookieStoreConfig::~CookieStoreConfig() {
 }
 
-net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
+scoped_ptr<net::CookieStore> CreateCookieStore(
+    const CookieStoreConfig& config) {
   // TODO(bcwhite): Remove ScopedTracker below once crbug.com/483686 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("483686 content::CreateCookieStore"));
 
-  net::CookieMonster* cookie_monster = nullptr;
+  scoped_ptr<net::CookieMonster> cookie_monster;
 
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    cookie_monster = new net::CookieMonster(nullptr,
-                                            config.cookie_delegate.get());
+    cookie_monster.reset(
+        new net::CookieMonster(nullptr, config.cookie_delegate.get()));
   } else {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         config.client_task_runner;
@@ -171,8 +172,8 @@ net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
             sqlite_store.get(),
             config.storage_policy.get());
 
-    cookie_monster =
-        new net::CookieMonster(persistent_store, config.cookie_delegate.get());
+    cookie_monster.reset(
+        new net::CookieMonster(persistent_store, config.cookie_delegate.get()));
     if ((config.session_cookie_mode ==
          CookieStoreConfig::PERSISTANT_SESSION_COOKIES) ||
         (config.session_cookie_mode ==
@@ -184,7 +185,7 @@ net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
   if (!config.cookieable_schemes.empty())
     cookie_monster->SetCookieableSchemes(config.cookieable_schemes);
 
-  return cookie_monster;
+  return std::move(cookie_monster);
 }
 
 }  // namespace content

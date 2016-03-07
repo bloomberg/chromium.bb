@@ -301,6 +301,8 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   system_transaction_factory_.reset(new net::HttpNetworkLayer(
       new net::HttpNetworkSession(system_params)));
   system_job_factory_.reset(new net::URLRequestJobFactoryImpl());
+  system_cookie_store_ =
+      content::CreateCookieStore(content::CookieStoreConfig());
 
   net::URLRequestContext* system_context = new net::URLRequestContext();
   system_context->set_host_resolver(host_resolver_.get());
@@ -319,8 +321,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
   system_context->set_http_user_agent_settings(
       http_user_agent_settings_.get());
   system_context->set_job_factory(system_job_factory_.get());
-  system_context->set_cookie_store(
-      content::CreateCookieStore(content::CookieStoreConfig()));
+  system_context->set_cookie_store(system_cookie_store_.get());
   system_context->set_network_delegate(system_network_delegate_.get());
   system_context->set_net_log(net_log_);
   return system_context;
@@ -368,12 +369,8 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
 
   content::CookieStoreConfig cookie_config(
       browser_context->GetPath().Append(kCookieStoreFile),
-      content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES,
-      NULL, NULL);
-  cookie_config.background_task_runner =
-      scoped_refptr<base::SequencedTaskRunner>();
-  scoped_refptr<net::CookieStore> cookie_store =
-      content::CreateCookieStore(cookie_config);
+      content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, nullptr, nullptr);
+  main_cookie_store_ = content::CreateCookieStore(cookie_config);
 
   net::URLRequestContext* main_context = new net::URLRequestContext();
   main_context->set_host_resolver(host_resolver_.get());
@@ -386,7 +383,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMainRequestContext(
       http_auth_handler_factory_.get());
   main_context->set_http_server_properties(
       http_server_properties_->GetWeakPtr());
-  main_context->set_cookie_store(cookie_store.get());
+  main_context->set_cookie_store(main_cookie_store_.get());
   main_context->set_http_user_agent_settings(
       http_user_agent_settings_.get());
 

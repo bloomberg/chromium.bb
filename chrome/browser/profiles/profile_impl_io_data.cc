@@ -60,6 +60,7 @@
 #include "extensions/common/constants.h"
 #include "net/base/cache_type.h"
 #include "net/base/sdch_manager.h"
+#include "net/cookies/cookie_store.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -483,23 +484,19 @@ void ProfileImplIOData::InitializeInternal(
   main_context->set_backoff_manager(
       io_thread_globals->url_request_backoff_manager.get());
 
-  scoped_refptr<net::CookieStore> cookie_store = NULL;
-  net::ChannelIDService* channel_id_service = NULL;
+  net::ChannelIDService* channel_id_service = nullptr;
 
   // Set up cookie store.
-  if (!cookie_store.get()) {
-    DCHECK(!lazy_params_->cookie_path.empty());
+  DCHECK(!lazy_params_->cookie_path.empty());
 
-    content::CookieStoreConfig cookie_config(
-        lazy_params_->cookie_path,
-        lazy_params_->session_cookie_mode,
-        lazy_params_->special_storage_policy.get(),
-        profile_params->cookie_monster_delegate.get());
-    cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
-    cookie_store = content::CreateCookieStore(cookie_config);
-  }
+  content::CookieStoreConfig cookie_config(
+      lazy_params_->cookie_path, lazy_params_->session_cookie_mode,
+      lazy_params_->special_storage_policy.get(),
+      profile_params->cookie_monster_delegate.get());
+  cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
+  main_cookie_store_ = content::CreateCookieStore(cookie_config);
 
-  main_context->set_cookie_store(cookie_store.get());
+  main_context->set_cookie_store(main_cookie_store_.get());
 
   // Set up server bound cert service.
   if (!channel_id_service) {
@@ -591,9 +588,8 @@ void ProfileImplIOData::
   cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   // Enable cookies for chrome-extension URLs.
   cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-  net::CookieStore* extensions_cookie_store =
-      content::CreateCookieStore(cookie_config);
-  extensions_context->set_cookie_store(extensions_cookie_store);
+  extensions_cookie_store_ = content::CreateCookieStore(cookie_config);
+  extensions_context->set_cookie_store(extensions_cookie_store_.get());
 
   scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(
       new net::URLRequestJobFactoryImpl());
@@ -644,28 +640,25 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   scoped_ptr<net::HttpCache> app_http_cache =
       CreateHttpFactory(http_network_session_.get(), std::move(app_backend));
 
-  scoped_refptr<net::CookieStore> cookie_store = NULL;
+  scoped_ptr<net::CookieStore> cookie_store;
   if (partition_descriptor.in_memory) {
     cookie_store = content::CreateCookieStore(content::CookieStoreConfig());
-  }
-
-  // Use an app-specific cookie store.
-  if (!cookie_store.get()) {
+  } else {
+    // Use an app-specific cookie store.
     DCHECK(!cookie_path.empty());
 
     // TODO(creis): We should have a cookie delegate for notifying the cookie
     // extensions API, but we need to update it to understand isolated apps
     // first.
     content::CookieStoreConfig cookie_config(
-        cookie_path,
-        content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
-        NULL, NULL);
+        cookie_path, content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
+        nullptr, nullptr);
     cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
     cookie_store = content::CreateCookieStore(cookie_config);
   }
 
   // Transfer ownership of the cookies and cache to AppRequestContext.
-  context->SetCookieStore(cookie_store.get());
+  context->SetCookieStore(std::move(cookie_store));
   context->SetHttpTransactionFactory(std::move(app_http_cache));
 
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(

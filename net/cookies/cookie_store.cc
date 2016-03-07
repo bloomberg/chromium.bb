@@ -8,8 +8,6 @@
 
 namespace net {
 
-CookieStore::CookieStore() {}
-
 CookieStore::~CookieStore() {}
 
 std::string CookieStore::BuildCookieLine(
@@ -61,5 +59,7 @@ void CookieStore::GetAllCookiesForURLAsync(
   options.set_do_not_update_access_time();
   GetCookieListWithOptionsAsync(url, options, callback);
 }
+
+CookieStore::CookieStore() {}
 
 }  // namespace net

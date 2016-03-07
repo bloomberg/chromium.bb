@@ -31,6 +31,7 @@ class DomainReliabilityMonitor;
 
 namespace net {
 class CookieCryptoDelegate;
+class CookieStore;
 class FtpTransactionFactory;
 class HttpNetworkSession;
 class HttpServerProperties;
@@ -222,6 +223,9 @@ class ProfileImplIOData : public ProfileIOData {
   // Same as |ProfileIOData::http_server_properties_|, owned there to maintain
   // destruction ordering.
   mutable net::HttpServerPropertiesManager* http_server_properties_manager_;
+
+  mutable scoped_ptr<net::CookieStore> main_cookie_store_;
+  mutable scoped_ptr<net::CookieStore> extensions_cookie_store_;
 
   mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
 

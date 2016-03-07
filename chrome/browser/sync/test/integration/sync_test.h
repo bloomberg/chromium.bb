@@ -343,8 +343,6 @@ class SyncTest : public InProcessBrowserTest {
   // Helper method used to check if the test server is up and running.
   bool IsTestServerRunning();
 
-  void SetupNetwork(net::URLRequestContextGetter* context);
-
   // Helper method used to set up fake responses for kClientLoginUrl,
   // kIssueAuthTokenUrl, kGetUserInfoUrl and kSearchDomainCheckUrl in order to
   // mock out calls to GAIA servers.

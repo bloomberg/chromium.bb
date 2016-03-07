@@ -863,6 +863,7 @@ void CookieMonster::SetCookieWithDetailsAsync(
 
 void CookieMonster::FlushStore(const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   if (initialized_ && store_.get())
     store_->Flush(callback);
   else if (!callback.is_null())
@@ -871,6 +872,7 @@ void CookieMonster::FlushStore(const base::Closure& callback) {
 
 void CookieMonster::SetForceKeepSessionState() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   if (store_)
     store_->SetForceKeepSessionState();
 }
@@ -1002,6 +1004,7 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
                                     const std::string& name,
                                     const CookieChangedCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   std::pair<GURL, std::string> key(gurl, name);
   if (hook_map_.count(key) == 0)
     hook_map_[key] = make_linked_ptr(new CookieChangedCallbackList());
@@ -1012,6 +1015,8 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
 CookieMonster::~CookieMonster() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // TODO(mmenke): Does it really make sense to run |delegate_| and
+  // CookieChanged callbacks when the CookieStore is destroyed?
   for (CookieMap::iterator cookie_it = cookies_.begin();
        cookie_it != cookies_.end();) {
     CookieMap::iterator current_cookie_it = cookie_it;

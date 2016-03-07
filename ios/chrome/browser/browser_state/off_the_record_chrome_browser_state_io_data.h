@@ -21,6 +21,7 @@ class ChromeBrowserState;
 }
 
 namespace net {
+class CookieStore;
 class HttpNetworkSession;
 class HttpTransactionFactory;
 class SdchManager;
@@ -103,6 +104,8 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
 
   mutable scoped_ptr<net::HttpNetworkSession> http_network_session_;
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
+
+  mutable scoped_ptr<net::CookieStore> main_cookie_store_;
 
   mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
 

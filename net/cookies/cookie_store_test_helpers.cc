@@ -34,10 +34,9 @@ namespace net {
 const int kDelayedTime = 0;
 
 DelayedCookieMonster::DelayedCookieMonster()
-      : cookie_monster_(new CookieMonster(NULL, NULL)),
-        did_run_(false),
-        result_(false) {
-}
+    : cookie_monster_(new CookieMonster(nullptr, nullptr)),
+      did_run_(false),
+      result_(false) {}
 
 DelayedCookieMonster::~DelayedCookieMonster() {
 }

@@ -297,7 +297,7 @@ class NET_EXPORT URLRequestContextBuilder {
   // multiple channel-id stores (or used both with and without a channel id
   // store).
   void SetCookieAndChannelIdStores(
-      const scoped_refptr<CookieStore>& cookie_store,
+      scoped_ptr<CookieStore> cookie_store,
       scoped_ptr<ChannelIDService> channel_id_service);
 
   // Sets the task runner used to perform file operations. If not set, one will
@@ -348,7 +348,7 @@ class NET_EXPORT URLRequestContextBuilder {
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<NetworkDelegate> network_delegate_;
   scoped_ptr<ProxyDelegate> proxy_delegate_;
-  scoped_refptr<CookieStore> cookie_store_;
+  scoped_ptr<CookieStore> cookie_store_;
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;
   scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   scoped_ptr<CertVerifier> cert_verifier_;

@@ -17,6 +17,7 @@
 class JsonPrefStore;
 
 namespace net {
+class CookieStore;
 class HttpCache;
 class NetworkChangeNotifier;
 class NetLog;
@@ -155,6 +156,7 @@ class CrNetEnvironment {
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::HttpServerProperties> http_server_properties_;
+  scoped_ptr<net::CookieStore> cookie_store_;
   scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
   scoped_ptr<net::URLRequestContext> main_context_;
   scoped_ptr<CrNetHttpProtocolHandlerDelegate> http_protocol_handler_delegate_;

@@ -29,7 +29,8 @@ class NET_EXPORT URLRequestContextGetter
  public:
   // Returns the URLRequestContextGetter's URLRequestContext. Must only be
   // called on the network task runner. Once NotifyContextShuttingDown() is
-  // invoked, must always return nullptr.
+  // invoked, must always return nullptr. Does not transfer ownership of
+  // the URLRequestContext.
   virtual URLRequestContext* GetURLRequestContext() = 0;
 
   // Returns a SingleThreadTaskRunner corresponding to the thread on

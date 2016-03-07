@@ -81,12 +81,9 @@
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/port_util.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/test/fake_server/fake_server.h"
@@ -175,14 +172,6 @@ class EncryptionChecker : public SingleClientStatusChangeChecker {
 
   std::string GetDebugMessage() const override { return "Encryption"; }
 };
-
-void SetupNetworkCallback(
-    base::WaitableEvent* done,
-    net::URLRequestContextGetter* url_request_context_getter) {
-  url_request_context_getter->GetURLRequestContext()->
-      set_cookie_store(new net::CookieMonster(NULL, NULL));
-  done->Signal();
-}
 
 scoped_ptr<KeyedService> BuildFakeServerProfileInvalidationProvider(
     content::BrowserContext* context) {
@@ -534,8 +523,6 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
   // already exist.
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(GetProfile(index));
-
-  SetupNetwork(GetProfile(index)->GetRequestContext());
 
   if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     // TODO(pvalenzuela): Run the fake server via EmbeddedTestServer.
@@ -1116,15 +1103,6 @@ void SyncTest::TriggerCreateSyncedBookmarks() {
             base::UTF16ToASCII(
                 browser()->tab_strip_model()->GetActiveWebContents()->
                     GetTitle()));
-}
-
-void SyncTest::SetupNetwork(net::URLRequestContextGetter* context_getter) {
-  base::WaitableEvent done(false, false);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetupNetworkCallback, &done,
-                 make_scoped_refptr(context_getter)));
-  done.Wait();
 }
 
 fake_server::FakeServer* SyncTest::GetFakeServer() const {

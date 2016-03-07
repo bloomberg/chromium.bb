@@ -17,7 +17,6 @@
 class PrefService;
 
 namespace net {
-class CookieStore;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpAuthPreferences;
@@ -81,7 +80,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_refptr<net::CookieStore> cookie_store_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
   // http_auth_preferences_ holds the preferences for the negotiate

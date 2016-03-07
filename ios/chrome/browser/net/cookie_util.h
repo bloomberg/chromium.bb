@@ -74,7 +74,7 @@ struct CookieStoreConfig {
 
 // Creates a cookie store wich is internally either a CookieMonster or a
 // CookieStoreIOS.
-net::CookieStore* CreateCookieStore(const CookieStoreConfig& config);
+scoped_ptr<net::CookieStore> CreateCookieStore(const CookieStoreConfig& config);
 
 // Returns true if the cookies should be cleared.
 // Current implementation returns true if the device has rebooted since the

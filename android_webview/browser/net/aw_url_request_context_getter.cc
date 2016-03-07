@@ -200,8 +200,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!url_request_context_);
 
-  cookie_store_ = new AwCookieStoreWrapper();
-
   net::URLRequestContextBuilder builder;
   scoped_ptr<AwNetworkDelegate> aw_network_delegate(new AwNetworkDelegate());
 
@@ -237,8 +235,9 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
       std::move(proxy_config_service_), net_log_.get()));
   builder.set_net_log(net_log_.get());
-  builder.SetCookieAndChannelIdStores(cookie_store_,
-                                      std::move(channel_id_service));
+  builder.SetCookieAndChannelIdStores(
+      make_scoped_ptr(new AwCookieStoreWrapper()),
+      std::move(channel_id_service));
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
   cache_params.type =

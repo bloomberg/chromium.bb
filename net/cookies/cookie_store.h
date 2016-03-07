@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
@@ -31,7 +31,7 @@ class CookieMonster;
 // All async functions may either invoke the callback asynchronously, or they
 // may be invoked immediately (prior to return of the asynchronous function).
 // Destroying the CookieStore will cancel pending async callbacks.
-class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
+class NET_EXPORT CookieStore {
  public:
   // Callback definitions.
   typedef base::Callback<void(const CookieList& cookies)> GetCookieListCallback;
@@ -43,6 +43,8 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   typedef base::CallbackList<void(const CanonicalCookie& cookie, bool removed)>
       CookieChangedCallbackList;
   typedef CookieChangedCallbackList::Subscription CookieChangedSubscription;
+
+  virtual ~CookieStore();
 
   // Returns the cookie line (e.g. "cookie1=value1; cookie2=value2") represented
   // by |cookies|. The string is built in the same order as the given list.
@@ -201,9 +203,7 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       const CookieChangedCallback& callback) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<CookieStore>;
   CookieStore();
-  virtual ~CookieStore();
 };
 
 }  // namespace net

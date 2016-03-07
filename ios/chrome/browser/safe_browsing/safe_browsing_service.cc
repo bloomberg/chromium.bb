@@ -90,6 +90,8 @@ class SafeBrowsingURLRequestContextGetter
 
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
 
+  scoped_ptr<net::CookieStore> safe_browsing_cookie_store_;
+
   scoped_ptr<net::URLRequestContext> safe_browsing_request_context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
@@ -126,9 +128,10 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
             web::WebThread::GetBlockingPool()->GetSequencedTaskRunner(
                 web::WebThread::GetBlockingPool()->GetSequenceToken()),
             false, nullptr));
-
-    safe_browsing_request_context_->set_cookie_store(
+    safe_browsing_cookie_store_.reset(
         new net::CookieMonster(sqlite_store.get(), nullptr));
+    safe_browsing_request_context_->set_cookie_store(
+        safe_browsing_cookie_store_.get());
   }
 
   return safe_browsing_request_context_.get();

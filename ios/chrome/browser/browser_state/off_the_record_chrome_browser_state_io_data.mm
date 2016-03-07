@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/sdch_manager.h"
+#include "net/cookies/cookie_store.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/ftp/ftp_network_layer.h"
@@ -196,11 +197,12 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
   set_channel_id_service(channel_id_service);
   main_context->set_channel_id_service(channel_id_service);
 
-  main_context->set_cookie_store(
+  main_cookie_store_ =
       cookie_util::CreateCookieStore(cookie_util::CookieStoreConfig(
           cookie_path_,
           cookie_util::CookieStoreConfig::RESTORED_SESSION_COOKIES,
-          cookie_util::CookieStoreConfig::COOKIE_STORE_IOS, nullptr)));
+          cookie_util::CookieStoreConfig::COOKIE_STORE_IOS, nullptr));
+  main_context->set_cookie_store(main_cookie_store_.get());
 
   http_network_session_ = CreateHttpNetworkSession(*profile_params);
   main_http_factory_ = CreateMainHttpFactory(

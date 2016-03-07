@@ -2251,9 +2251,7 @@ TEST_F(URLRequestTest, DelayedCookieCallback) {
   ASSERT_TRUE(test_server.Start());
 
   TestURLRequestContext context;
-  scoped_refptr<DelayedCookieMonster> delayed_cm =
-      new DelayedCookieMonster();
-  scoped_refptr<CookieStore> cookie_store = delayed_cm;
+  scoped_ptr<DelayedCookieMonster> delayed_cm(new DelayedCookieMonster());
   context.set_cookie_store(delayed_cm.get());
 
   // Set up a cookie.

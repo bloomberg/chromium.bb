@@ -59,7 +59,7 @@ class NET_EXPORT URLRequestContextStorage {
   void set_proxy_delegate(scoped_ptr<ProxyDelegate> proxy_delegate);
   void set_http_server_properties(
       scoped_ptr<HttpServerProperties> http_server_properties);
-  void set_cookie_store(CookieStore* cookie_store);
+  void set_cookie_store(scoped_ptr<CookieStore> cookie_store);
   void set_transport_security_state(
       scoped_ptr<TransportSecurityState> transport_security_state);
   void set_http_network_session(
@@ -101,7 +101,7 @@ class NET_EXPORT URLRequestContextStorage {
   scoped_ptr<ProxyDelegate> proxy_delegate_;
   scoped_ptr<HttpServerProperties> http_server_properties_;
   scoped_ptr<HttpUserAgentSettings> http_user_agent_settings_;
-  scoped_refptr<CookieStore> cookie_store_;
+  scoped_ptr<CookieStore> cookie_store_;
   scoped_ptr<TransportSecurityState> transport_security_state_;
 
   // Not actually pointed at by the URLRequestContext, but may be used (but not

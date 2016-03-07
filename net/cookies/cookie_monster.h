@@ -142,6 +142,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
                 CookieMonsterDelegate* delegate,
                 int last_access_threshold_milliseconds);
 
+  ~CookieMonster() override;
+
   // Replaces all the cookies by |list|. This method does not flush the backend.
   void SetAllCookiesAsync(const CookieList& list,
                           const SetCookiesCallback& callback);
@@ -376,8 +378,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;
-
-  ~CookieMonster() override;
 
   // The following are synchronous calls to which the asynchronous methods
   // delegate either immediately (if the store is loaded) or through a deferred

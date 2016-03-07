@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 
@@ -190,11 +191,12 @@ class MockSimplePersistentCookieStore
 // will be marked secure and non-secure, respectively. Do two SetCookies().
 // Return whether each of the two SetCookies() took longer than |gc_perf_micros|
 // to complete, and how many cookie were left in the store afterwards.
-CookieMonster* CreateMonsterFromStoreForGC(int num_secure_cookies,
-                                           int num_old_secure_cookies,
-                                           int num_non_secure_cookies,
-                                           int num_old_non_secure_cookies,
-                                           int days_old);
+scoped_ptr<CookieMonster> CreateMonsterFromStoreForGC(
+    int num_secure_cookies,
+    int num_old_secure_cookies,
+    int num_non_secure_cookies,
+    int num_old_non_secure_cookies,
+    int days_old);
 
 }  // namespace net
 

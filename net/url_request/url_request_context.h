@@ -145,7 +145,7 @@ class NET_EXPORT URLRequestContext
 
   // Gets the cookie store for this context (may be null, in which case
   // cookies are not stored).
-  CookieStore* cookie_store() const { return cookie_store_.get(); }
+  CookieStore* cookie_store() const { return cookie_store_; }
   void set_cookie_store(CookieStore* cookie_store);
 
   TransportSecurityState* transport_security_state() const {
@@ -237,7 +237,7 @@ class NET_EXPORT URLRequestContext
   NetworkDelegate* network_delegate_;
   base::WeakPtr<HttpServerProperties> http_server_properties_;
   HttpUserAgentSettings* http_user_agent_settings_;
-  scoped_refptr<CookieStore> cookie_store_;
+  CookieStore* cookie_store_;
   TransportSecurityState* transport_security_state_;
   CTVerifier* cert_transparency_verifier_;
   HttpTransactionFactory* http_transaction_factory_;

@@ -743,7 +743,7 @@ void IOThread::Init() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466432 IOThread::InitAsync::CreateCookieStore::Start"));
   globals_->system_cookie_store =
-        content::CreateCookieStore(content::CookieStoreConfig());
+      content::CreateCookieStore(content::CookieStoreConfig());
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile12(

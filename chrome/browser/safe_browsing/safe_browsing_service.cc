@@ -129,6 +129,8 @@ class SafeBrowsingURLRequestContextGetter
 
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
 
+  scoped_ptr<net::CookieStore> safe_browsing_cookie_store_;
+
   scoped_ptr<net::URLRequestContext> safe_browsing_request_context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
@@ -156,11 +158,13 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
       safe_browsing_request_context_->CopyFrom(
           system_context_getter_->GetURLRequestContext());
     }
-    safe_browsing_request_context_->set_cookie_store(
+    safe_browsing_cookie_store_ =
         content::CreateCookieStore(content::CookieStoreConfig(
             CookieFilePath(),
             content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES, nullptr,
-            nullptr)));
+            nullptr));
+    safe_browsing_request_context_->set_cookie_store(
+        safe_browsing_cookie_store_.get());
   }
 
   return safe_browsing_request_context_.get();

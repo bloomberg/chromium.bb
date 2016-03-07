@@ -9,6 +9,7 @@
 #include "net/http/http_network_session.h"
 
 namespace net {
+class CookieStore;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetLog;
@@ -106,10 +107,12 @@ class URLRequestContextFactory {
   scoped_ptr<net::HttpServerProperties> http_server_properties_;
   scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
   scoped_ptr<net::HttpTransactionFactory> system_transaction_factory_;
+  scoped_ptr<net::CookieStore> system_cookie_store_;
   scoped_ptr<net::URLRequestJobFactory> system_job_factory_;
 
   bool main_dependencies_initialized_;
   scoped_ptr<net::HttpTransactionFactory> main_transaction_factory_;
+  scoped_ptr<net::CookieStore> main_cookie_store_;
   scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
 
   bool media_dependencies_initialized_;

@@ -19,6 +19,8 @@ class DelayedCookieMonster : public CookieStore {
  public:
   DelayedCookieMonster();
 
+  ~DelayedCookieMonster() override;
+
   // Call the asynchronous CookieMonster function, expect it to immediately
   // invoke the internal callback.
   // Post a delayed task to invoke the original callback with the results.
@@ -111,9 +113,8 @@ class DelayedCookieMonster : public CookieStore {
       const CookieMonster::GetCookieListCallback& callback);
 
   friend class base::RefCountedThreadSafe<DelayedCookieMonster>;
-  ~DelayedCookieMonster() override;
 
-  scoped_refptr<CookieMonster> cookie_monster_;
+  scoped_ptr<CookieMonster> cookie_monster_;
 
   bool did_run_;
   bool result_;

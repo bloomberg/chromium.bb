@@ -257,10 +257,10 @@ void URLRequestContextBuilder::SetInterceptors(
 }
 
 void URLRequestContextBuilder::SetCookieAndChannelIdStores(
-      const scoped_refptr<CookieStore>& cookie_store,
-      scoped_ptr<ChannelIDService> channel_id_service) {
+    scoped_ptr<CookieStore> cookie_store,
+    scoped_ptr<ChannelIDService> channel_id_service) {
   DCHECK(cookie_store);
-  cookie_store_ = cookie_store;
+  cookie_store_ = std::move(cookie_store);
   channel_id_service_ = std::move(channel_id_service);
 }
 
@@ -338,10 +338,11 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   storage->set_http_auth_handler_factory(std::move(http_auth_handler_factory_));
 
   if (cookie_store_) {
-    storage->set_cookie_store(cookie_store_.get());
+    storage->set_cookie_store(std::move(cookie_store_));
     storage->set_channel_id_service(std::move(channel_id_service_));
   } else {
-    storage->set_cookie_store(new CookieMonster(NULL, NULL));
+    storage->set_cookie_store(
+        make_scoped_ptr(new CookieMonster(nullptr, nullptr)));
     // TODO(mmenke):  This always creates a file thread, even when it ends up
     // not being used.  Consider lazily creating the thread.
     storage->set_channel_id_service(make_scoped_ptr(new ChannelIDService(

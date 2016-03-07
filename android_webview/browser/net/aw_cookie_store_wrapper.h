@@ -35,6 +35,7 @@ namespace android_webview {
 class AwCookieStoreWrapper : public net::CookieStore {
  public:
   AwCookieStoreWrapper();
+  ~AwCookieStoreWrapper() override;
 
   // CookieStore implementation:
   void SetCookieWithOptionsAsync(const GURL& url,
@@ -85,8 +86,6 @@ class AwCookieStoreWrapper : public net::CookieStore {
       const CookieChangedCallback& callback) override;
 
  private:
-  ~AwCookieStoreWrapper() override;
-
   // Used by CreateWrappedCallback below. Takes an arugment of Type and posts
   // a task to |task_runner| to invoke |callback| with that argument. If
   // |weak_cookie_store| is deleted before the task is run, the task will not

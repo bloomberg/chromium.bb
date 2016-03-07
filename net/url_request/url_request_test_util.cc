@@ -123,8 +123,10 @@ void TestURLRequestContext::Init() {
                       HttpCache::DefaultBackend::InMemory(0), false)));
   }
   // In-memory cookie store.
-  if (!cookie_store())
-    context_storage_.set_cookie_store(new CookieMonster(nullptr, nullptr));
+  if (!cookie_store()) {
+    context_storage_.set_cookie_store(
+        make_scoped_ptr(new CookieMonster(nullptr, nullptr)));
+  }
   // In-memory Channel ID service.
   if (!channel_id_service()) {
     context_storage_.set_channel_id_service(make_scoped_ptr(

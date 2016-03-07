@@ -83,6 +83,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
+#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -162,8 +163,11 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
   TestExtensionURLRequestContext() {
     content::CookieStoreConfig cookie_config;
     cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
-    set_cookie_store(content::CreateCookieStore(cookie_config));
+    cookie_store_ = content::CreateCookieStore(cookie_config);
+    set_cookie_store(cookie_store_.get());
   }
+
+  scoped_ptr<net::CookieStore> cookie_store_;
 
   ~TestExtensionURLRequestContext() override { AssertNoURLRequests(); }
 };

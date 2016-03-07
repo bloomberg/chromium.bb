@@ -44,10 +44,11 @@ scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
 }
 
 // Creates a CookieMonster configured by |config|.
-net::CookieMonster* CreateCookieMonster(const CookieStoreConfig& config) {
+scoped_ptr<net::CookieMonster> CreateCookieMonster(
+    const CookieStoreConfig& config) {
   if (config.path.empty()) {
     // Empty path means in-memory store.
-    return new net::CookieMonster(nullptr, nullptr);
+    return make_scoped_ptr(new net::CookieMonster(nullptr, nullptr));
   }
 
   const bool restore_old_session_cookies =
@@ -55,8 +56,8 @@ net::CookieMonster* CreateCookieMonster(const CookieStoreConfig& config) {
   scoped_refptr<net::SQLitePersistentCookieStore> persistent_store =
       CreatePersistentCookieStore(config.path, restore_old_session_cookies,
                                   config.crypto_delegate);
-  net::CookieMonster* cookie_monster =
-      new net::CookieMonster(persistent_store.get(), nullptr);
+  scoped_ptr<net::CookieMonster> cookie_monster(
+      new net::CookieMonster(persistent_store.get(), nullptr));
   if (restore_old_session_cookies)
     cookie_monster->SetPersistSessionCookies(true);
   return cookie_monster;
@@ -77,7 +78,8 @@ CookieStoreConfig::CookieStoreConfig(const base::FilePath& path,
 
 CookieStoreConfig::~CookieStoreConfig() {}
 
-net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
+scoped_ptr<net::CookieStore> CreateCookieStore(
+    const CookieStoreConfig& config) {
   if (config.cookie_store_type == CookieStoreConfig::COOKIE_MONSTER)
     return CreateCookieMonster(config);
 
@@ -89,7 +91,7 @@ net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
         config.path, true /* restore_old_session_cookies */,
         config.crypto_delegate);
   }
-  return new net::CookieStoreIOS(persistent_store.get());
+  return make_scoped_ptr(new net::CookieStoreIOS(persistent_store.get()));
 }
 
 bool ShouldClearSessionCookies() {

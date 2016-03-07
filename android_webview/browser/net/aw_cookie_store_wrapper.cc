@@ -195,6 +195,8 @@ AwCookieStoreWrapper::AwCookieStoreWrapper()
     : client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {}
 
+AwCookieStoreWrapper::~AwCookieStoreWrapper() {}
+
 void AwCookieStoreWrapper::SetCookieWithOptionsAsync(
     const GURL& url,
     const std::string& cookie_line,
@@ -332,8 +334,6 @@ AwCookieStoreWrapper::AddCallbackForCookie(
   SubscriptionWrapper* subscription = new SubscriptionWrapper();
   return subscription->Subscribe(url, name, callback);
 }
-
-AwCookieStoreWrapper::~AwCookieStoreWrapper() {}
 
 base::Closure AwCookieStoreWrapper::CreateWrappedClosureCallback(
     const base::Closure& callback) {

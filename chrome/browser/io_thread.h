@@ -190,7 +190,7 @@ class IOThread : public content::BrowserThreadDelegate {
     SystemRequestContextLeakChecker system_request_context_leak_checker;
     // |system_cookie_store| and |system_channel_id_service| are shared
     // between |proxy_script_fetcher_context| and |system_request_context|.
-    scoped_refptr<net::CookieStore> system_cookie_store;
+    scoped_ptr<net::CookieStore> system_cookie_store;
 #if defined(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;

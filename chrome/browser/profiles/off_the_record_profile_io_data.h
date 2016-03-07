@@ -19,6 +19,7 @@ class ChromeURLRequestContextGetter;
 class Profile;
 
 namespace net {
+class CookieStore;
 class FtpTransactionFactory;
 class HttpNetworkSession;
 class HttpTransactionFactory;
@@ -148,6 +149,9 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   mutable scoped_ptr<net::HttpNetworkSession> http_network_session_;
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
+
+  mutable scoped_ptr<net::CookieStore> main_cookie_store_;
+  mutable scoped_ptr<net::CookieStore> extensions_cookie_store_;
 
   mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
   mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;

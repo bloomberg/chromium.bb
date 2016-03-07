@@ -14,6 +14,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "ios/net/cookies/cookie_cache.h"
@@ -72,6 +73,8 @@ class CookieStoreIOS : public net::CookieStore,
       net::CookieMonster::PersistentCookieStore* persistent_store,
       NSHTTPCookieStorage* system_store);
 
+  ~CookieStoreIOS() override;
+
   enum CookiePolicy { ALLOW, BLOCK };
 
   // Must be called on the thread where CookieStoreIOS instances live.
@@ -84,7 +87,8 @@ class CookieStoreIOS : public net::CookieStore,
   // as its default backend and is initially synchronized with it.
   // Apple does not persist the cookies' creation dates in NSHTTPCookieStorage,
   // so callers should not expect these values to be populated.
-  static CookieStoreIOS* CreateCookieStore(NSHTTPCookieStorage* cookie_storage);
+  static scoped_ptr<CookieStoreIOS> CreateCookieStore(
+      NSHTTPCookieStorage* cookie_storage);
 
   // As there is only one system store, only one CookieStoreIOS at a time may
   // be synchronized with it.
@@ -157,9 +161,6 @@ class CookieStoreIOS : public net::CookieStore,
       const std::string& name,
       const CookieChangedCallback& callback) override;
 
- protected:
-  ~CookieStoreIOS() override;
-
  private:
   // For tests.
   friend struct CookieStoreIOSTestTraits;
@@ -200,7 +201,7 @@ class CookieStoreIOS : public net::CookieStore,
   void DeleteCookiesWithFilter(const CookieFilterFunction& filter,
                                const DeleteCallback& callback);
 
-  scoped_refptr<net::CookieMonster> cookie_monster_;
+  scoped_ptr<net::CookieMonster> cookie_monster_;
   NSHTTPCookieStorage* system_store_;
   scoped_ptr<CookieCreationTimeManager> creation_time_manager_;
   bool metrics_enabled_;
@@ -323,6 +324,8 @@ class CookieStoreIOS : public net::CookieStore,
   typedef std::map<std::pair<GURL, std::string>, CookieChangedCallbackList*>
       CookieChangedHookMap;
   CookieChangedHookMap hook_map_;
+
+  base::WeakPtrFactory<CookieStoreIOS> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieStoreIOS);
 };

@@ -568,9 +568,9 @@ ProfileIOData::AppRequestContext::AppRequestContext() {
 }
 
 void ProfileIOData::AppRequestContext::SetCookieStore(
-    net::CookieStore* cookie_store) {
-  cookie_store_ = cookie_store;
-  set_cookie_store(cookie_store);
+    scoped_ptr<net::CookieStore> cookie_store) {
+  cookie_store_ = std::move(cookie_store);
+  set_cookie_store(cookie_store_.get());
 }
 
 void ProfileIOData::AppRequestContext::SetHttpTransactionFactory(

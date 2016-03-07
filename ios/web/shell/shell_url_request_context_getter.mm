@@ -77,10 +77,10 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             web::WebThread::GetBlockingPool()->GetSequencedTaskRunner(
                 web::WebThread::GetBlockingPool()->GetSequenceToken()),
             true, nullptr);
-    scoped_refptr<net::CookieStoreIOS> cookie_store =
-        new net::CookieStoreIOS(persistent_store.get());
-    storage_->set_cookie_store(cookie_store.get());
+    scoped_ptr<net::CookieStoreIOS> cookie_store(
+        new net::CookieStoreIOS(persistent_store.get()));
     net::CookieStoreIOS::SwitchSynchronizedStore(nullptr, cookie_store.get());
+    storage_->set_cookie_store(std::move(cookie_store));
 
     std::string user_agent = web::GetWebClient()->GetUserAgent(false);
     storage_->set_http_user_agent_settings(make_scoped_ptr(

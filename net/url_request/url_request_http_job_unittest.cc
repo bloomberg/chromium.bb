@@ -544,10 +544,13 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
 }
 
 TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
-  context_.set_cookie_store(new DelayedCookieMonster());
+  DelayedCookieMonster cookie_monster;
+  TestURLRequestContext context(true);
+  context.set_cookie_store(&cookie_monster);
+  context.Init();
 
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request = context_.CreateRequest(
+  scoped_ptr<URLRequest> request = context.CreateRequest(
       GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
 
   request->Start();

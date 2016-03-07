@@ -21,6 +21,8 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -224,7 +226,7 @@ class CookieManager {
   base::Thread cookie_store_backend_thread_;
 
   scoped_refptr<base::SingleThreadTaskRunner> cookie_store_task_runner_;
-  scoped_refptr<net::CookieStore> cookie_store_;
+  scoped_ptr<net::CookieStore> cookie_store_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };

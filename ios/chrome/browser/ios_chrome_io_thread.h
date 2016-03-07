@@ -127,7 +127,7 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
     scoped_ptr<net::URLRequestJobFactory> system_url_request_job_factory;
     scoped_ptr<net::URLRequestContext> system_request_context;
     SystemRequestContextLeakChecker system_request_context_leak_checker;
-    scoped_refptr<net::CookieStore> system_cookie_store;
+    scoped_ptr<net::CookieStore> system_cookie_store;
     scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     scoped_ptr<net::NetworkQualityEstimator> network_quality_estimator;
     uint16_t testing_fixed_http_port;

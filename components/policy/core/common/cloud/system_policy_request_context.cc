@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_store.h"
 #include "net/http/http_network_layer.h"
 #include "net/url_request/url_request_context.h"
 
@@ -56,9 +57,11 @@ SystemPolicyRequestContext::GetURLRequestContext() {
         system_context->http_transaction_factory()->GetSession()));
     context_->set_http_transaction_factory(http_transaction_factory_.get());
 
+    cookie_store_.reset(new net::CookieMonster(NULL, NULL));
+
     // No cookies, please. We also don't track channel IDs (no
     // ChannelIDService).
-    context_->set_cookie_store(new net::CookieMonster(NULL, NULL));
+    context_->set_cookie_store(cookie_store_.get());
   }
 
   return context_.get();

@@ -93,9 +93,10 @@ void URLRequestContextStorage::set_http_server_properties(
   context_->set_http_server_properties(http_server_properties_->GetWeakPtr());
 }
 
-void URLRequestContextStorage::set_cookie_store(CookieStore* cookie_store) {
-  context_->set_cookie_store(cookie_store);
-  cookie_store_ = cookie_store;
+void URLRequestContextStorage::set_cookie_store(
+    scoped_ptr<CookieStore> cookie_store) {
+  context_->set_cookie_store(cookie_store.get());
+  cookie_store_ = std::move(cookie_store);
 }
 
 void URLRequestContextStorage::set_transport_security_state(

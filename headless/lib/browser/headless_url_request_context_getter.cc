@@ -12,6 +12,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_switches.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
