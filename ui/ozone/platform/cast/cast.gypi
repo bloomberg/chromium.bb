@@ -4,6 +4,7 @@
 
 {
   'variables': {
+    'disable_display%': 0,
     'internal_ozone_platform_deps': [
       'ozone_platform_cast',
     ],
