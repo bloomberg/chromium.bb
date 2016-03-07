@@ -143,27 +143,43 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
   if (delegate_)
     image = delegate_->GetNativeImageNamed(resource_id);
 
-  bool found_in_a_material_design_pack = false;
-
   if (image.IsEmpty()) {
     base::scoped_nsobject<NSImage> ns_image;
+    // Material Design packs are meant to override the standard packs, so
+    // search for the image in those packs first.
     for (size_t i = 0; i < data_packs_.size(); ++i) {
+      if (!data_packs_[i]->HasOnlyMaterialDesignAssets())
+        continue;
       scoped_refptr<base::RefCountedStaticMemory> data(
           data_packs_[i]->GetStaticMemory(resource_id));
       if (!data.get())
         continue;
 
-      // This loop adds the image resource from each available pack, if it's
-      // present. When Material Design packs are available, however, their
-      // images are meant to override the same image in the standard packs. The
-      // Material Design packs exist at the start of the data_packs_ vector,
-      // so make a note that the image was pulled from a Material Design pack,
-      // and ignore the same image in the standard packs.
-      if (found_in_a_material_design_pack) {
-        break;
+      base::scoped_nsobject<NSData> ns_data(
+          [[NSData alloc] initWithBytes:data->front() length:data->size()]);
+      if (!ns_image.get()) {
+        ns_image.reset([[NSImage alloc] initWithData:ns_data]);
+      } else {
+        NSImageRep* image_rep = [NSBitmapImageRep imageRepWithData:ns_data];
+        if (image_rep)
+          [ns_image addRepresentation:image_rep];
       }
-      found_in_a_material_design_pack =
-          data_packs_[i]->HasOnlyMaterialDesignAssets();
+    }
+
+    if (ns_image.get()) {
+      image = gfx::Image(ns_image.release());
+    }
+  }
+
+  if (image.IsEmpty()) {
+    base::scoped_nsobject<NSImage> ns_image;
+    for (size_t i = 0; i < data_packs_.size(); ++i) {
+      if (data_packs_[i]->HasOnlyMaterialDesignAssets())
+        continue;
+      scoped_refptr<base::RefCountedStaticMemory> data(
+          data_packs_[i]->GetStaticMemory(resource_id));
+      if (!data.get())
+        continue;
 
       base::scoped_nsobject<NSData> ns_data(
           [[NSData alloc] initWithBytes:data->front() length:data->size()]);
