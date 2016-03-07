@@ -27,7 +27,7 @@ public:
     static void shutdown();
     static ScriptStreamerThread* shared();
 
-    void postTask(WTF::PassOwnPtr<WTF::Closure>);
+    void postTask(WTF::PassOwnPtr<WTF::CrossThreadClosure>);
 
     bool isRunningTask() const
     {

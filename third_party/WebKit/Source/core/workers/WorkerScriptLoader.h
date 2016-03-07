@@ -61,7 +61,7 @@ public:
     // used from worker context and the worker shuts down in the middle of an
     // operation. This will cause leaks when we support nested workers.
     // Note that callbacks could be invoked before loadAsynchronously() returns.
-    void loadAsynchronously(ExecutionContext&, const KURL&, CrossOriginRequestPolicy, PassOwnPtr<Closure> responseCallback, PassOwnPtr<Closure> finishedCallback);
+    void loadAsynchronously(ExecutionContext&, const KURL&, CrossOriginRequestPolicy, PassOwnPtr<SameThreadClosure> responseCallback, PassOwnPtr<SameThreadClosure> finishedCallback);
 
     // This will immediately invoke |finishedCallback| if loadAsynchronously()
     // is in progress.
@@ -105,8 +105,8 @@ private:
     void processContentSecurityPolicy(const ResourceResponse&);
 
     // Callbacks for loadAsynchronously().
-    OwnPtr<Closure> m_responseCallback;
-    OwnPtr<Closure> m_finishedCallback;
+    OwnPtr<SameThreadClosure> m_responseCallback;
+    OwnPtr<SameThreadClosure> m_finishedCallback;
 
     RefPtr<ThreadableLoader> m_threadableLoader;
     String m_responseEncoding;

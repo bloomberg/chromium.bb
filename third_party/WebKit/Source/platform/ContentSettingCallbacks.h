@@ -18,17 +18,17 @@ class PLATFORM_EXPORT ContentSettingCallbacks {
     USING_FAST_MALLOC(ContentSettingCallbacks);
     WTF_MAKE_NONCOPYABLE(ContentSettingCallbacks);
 public:
-    static PassOwnPtr<ContentSettingCallbacks> create(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);
+    static PassOwnPtr<ContentSettingCallbacks> create(PassOwnPtr<SameThreadClosure> allowed, PassOwnPtr<SameThreadClosure> denied);
     virtual ~ContentSettingCallbacks() { }
 
     void onAllowed() { (*m_allowed)(); }
     void onDenied() { (*m_denied)(); }
 
 private:
-    ContentSettingCallbacks(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);
+    ContentSettingCallbacks(PassOwnPtr<SameThreadClosure> allowed, PassOwnPtr<SameThreadClosure> denied);
 
-    OwnPtr<Closure> m_allowed;
-    OwnPtr<Closure> m_denied;
+    OwnPtr<SameThreadClosure> m_allowed;
+    OwnPtr<SameThreadClosure> m_denied;
 };
 
 } // namespace blink

@@ -75,7 +75,7 @@ protected:
 
 private:
     WebFileSystem* fileSystem() const;
-    void requestFileSystemAccessInternal(ExecutionContext*, PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);
+    void requestFileSystemAccessInternal(ExecutionContext*, PassOwnPtr<SameThreadClosure> allowed, PassOwnPtr<SameThreadClosure> denied);
     void fileSystemNotAvailable(PassRefPtrWillBeRawPtr<ExecutionContext>, CallbackWrapper*);
     void fileSystemNotAllowedInternal(PassRefPtrWillBeRawPtr<ExecutionContext>, CallbackWrapper*);
     void fileSystemAllowedInternal(PassRefPtrWillBeRawPtr<ExecutionContext>, FileSystemType, CallbackWrapper*);

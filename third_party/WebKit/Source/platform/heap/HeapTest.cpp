@@ -4995,21 +4995,21 @@ TEST(HeapTest, RegressNullIsStrongified)
 
 TEST(HeapTest, Bind)
 {
-    OwnPtr<Closure> closure = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), Bar::create(), static_cast<Visitor*>(0));
+    OwnPtr<SameThreadClosure> closure = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), Bar::create(), static_cast<Visitor*>(0));
     preciselyCollectGarbage();
     // The closure should have a persistent handle to the Bar.
     EXPECT_EQ(1u, Bar::s_live);
 
-    OwnPtr<Closure> closure2 = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), RawPtr<Bar>(Bar::create()), static_cast<Visitor*>(0));
+    OwnPtr<SameThreadClosure> closure2 = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), RawPtr<Bar>(Bar::create()), static_cast<Visitor*>(0));
     preciselyCollectGarbage();
     // The closure should have a persistent handle to the Bar.
     EXPECT_EQ(2u, Bar::s_live);
     // RawPtr<OffHeapInt> should not make Persistent.
-    OwnPtr<Closure> closure3 = bind(&OffHeapInt::voidFunction, RawPtr<OffHeapInt>(OffHeapInt::create(1).get()));
+    OwnPtr<SameThreadClosure> closure3 = bind(&OffHeapInt::voidFunction, RawPtr<OffHeapInt>(OffHeapInt::create(1).get()));
 
     UseMixin::s_traceCount = 0;
     Mixin* mixin = UseMixin::create();
-    OwnPtr<Closure> mixinClosure = bind(static_cast<void (Mixin::*)(Visitor*)>(&Mixin::trace), mixin, static_cast<Visitor*>(0));
+    OwnPtr<SameThreadClosure> mixinClosure = bind(static_cast<void (Mixin::*)(Visitor*)>(&Mixin::trace), mixin, static_cast<Visitor*>(0));
     preciselyCollectGarbage();
     // The closure should have a persistent handle to the mixin.
     EXPECT_EQ(1, UseMixin::s_traceCount);

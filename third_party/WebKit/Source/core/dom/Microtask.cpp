@@ -57,9 +57,9 @@ void Microtask::enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task> callback)
     isolate->EnqueueMicrotask(&microtaskFunctionCallback, callback.leakPtr());
 }
 
-void Microtask::enqueueMicrotask(PassOwnPtr<Closure> callback)
+void Microtask::enqueueMicrotask(PassOwnPtr<SameThreadClosure> callback)
 {
-    enqueueMicrotask(adoptPtr(new Task(callback)));
+    enqueueMicrotask(adoptPtr(new SameThreadTask(callback)));
 }
 
 } // namespace blink

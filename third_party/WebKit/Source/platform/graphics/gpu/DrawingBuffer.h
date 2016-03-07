@@ -170,7 +170,7 @@ public:
     // Otherwise, bind to the default FBO.
     void restoreFramebufferBindings();
 
-    void addNewMailboxCallback(PassOwnPtr<Closure> closure) { m_newMailboxCallback = std::move(closure); }
+    void addNewMailboxCallback(PassOwnPtr<SameThreadClosure> closure) { m_newMailboxCallback = std::move(closure); }
 
 protected: // For unittests
     DrawingBuffer(
@@ -313,7 +313,7 @@ private:
     };
     FrontBufferInfo m_frontColorBuffer;
 
-    OwnPtr<Closure> m_newMailboxCallback;
+    OwnPtr<SameThreadClosure> m_newMailboxCallback;
 
     // This is used when the user requests either a depth or stencil buffer.
     Platform3DObject m_depthStencilBuffer;

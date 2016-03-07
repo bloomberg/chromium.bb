@@ -25,7 +25,7 @@ public:
     InspectorTaskRunner();
     ~InspectorTaskRunner();
 
-    using Task = WTF::Closure;
+    using Task = WTF::CrossThreadClosure;
     void appendTask(PassOwnPtr<Task>);
 
     enum WaitMode { WaitForTask, DontWaitForTask };

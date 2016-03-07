@@ -22,7 +22,7 @@ WebTaskRunner::Task* CancellableTaskFactory::cancelAndCreate()
 void CancellableTaskFactory::CancellableTask::run()
 {
     if (CancellableTaskFactory* taskFactory = m_weakPtr.get()) {
-        Closure* closure = taskFactory->m_closure.get();
+        SameThreadClosure* closure = taskFactory->m_closure.get();
         taskFactory->m_weakPtrFactory.revokeAll();
         (*closure)();
     }

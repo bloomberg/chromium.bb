@@ -53,7 +53,7 @@ ScriptStreamerThread* ScriptStreamerThread::shared()
     return s_sharedThread;
 }
 
-void ScriptStreamerThread::postTask(PassOwnPtr<Closure> task)
+void ScriptStreamerThread::postTask(PassOwnPtr<CrossThreadClosure> task)
 {
     ASSERT(isMainThread());
     MutexLocker locker(m_mutex);

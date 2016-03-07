@@ -20,7 +20,7 @@ enum TaskSize {
     TaskSizeLongRunningTask,
 };
 
-PLATFORM_EXPORT void postOnBackgroundThread(const WebTraceLocation&, PassOwnPtr<Closure>, TaskSize);
+PLATFORM_EXPORT void postOnBackgroundThread(const WebTraceLocation&, PassOwnPtr<CrossThreadClosure>, TaskSize);
 
 } // BackgroundTaskRunner
 

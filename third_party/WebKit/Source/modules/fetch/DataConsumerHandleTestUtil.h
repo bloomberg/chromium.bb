@@ -115,13 +115,13 @@ public:
                 ASSERT(m_holder);
                 m_holder = nullptr;
             }
-            void postTaskToReadingThread(const WebTraceLocation& location, PassOwnPtr<Closure> task)
+            void postTaskToReadingThread(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
             {
                 MutexLocker locker(m_holderMutex);
                 ASSERT(m_holder);
                 m_holder->readingThread()->postTask(location, task);
             }
-            void postTaskToUpdatingThread(const WebTraceLocation& location, PassOwnPtr<Closure> task)
+            void postTaskToUpdatingThread(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
             {
                 MutexLocker locker(m_holderMutex);
                 ASSERT(m_holder);
@@ -218,20 +218,20 @@ public:
         void resetReader() { m_reader = nullptr; }
         void signalDone() { m_waitableEvent->signal(); }
         const String& result() { return m_context->result(); }
-        void postTaskToReadingThread(const WebTraceLocation& location, PassOwnPtr<Closure> task)
+        void postTaskToReadingThread(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
         {
             m_context->postTaskToReadingThread(location,  task);
         }
-        void postTaskToUpdatingThread(const WebTraceLocation& location, PassOwnPtr<Closure> task)
+        void postTaskToUpdatingThread(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
         {
             m_context->postTaskToUpdatingThread(location,  task);
         }
-        void postTaskToReadingThreadAndWait(const WebTraceLocation& location, PassOwnPtr<Closure> task)
+        void postTaskToReadingThreadAndWait(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
         {
             postTaskToReadingThread(location,  task);
             m_waitableEvent->wait();
         }
-        void postTaskToUpdatingThreadAndWait(const WebTraceLocation& location, PassOwnPtr<Closure> task)
+        void postTaskToUpdatingThreadAndWait(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
         {
             postTaskToUpdatingThread(location,  task);
             m_waitableEvent->wait();

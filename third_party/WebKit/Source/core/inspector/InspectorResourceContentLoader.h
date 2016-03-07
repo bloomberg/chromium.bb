@@ -29,7 +29,7 @@ public:
     void dispose();
     DECLARE_TRACE();
 
-    void ensureResourcesContentLoaded(PassOwnPtr<Closure> callback);
+    void ensureResourcesContentLoaded(PassOwnPtr<SameThreadClosure> callback);
     void didCommitLoadForLocalFrame(LocalFrame*);
 
 private:
@@ -42,7 +42,7 @@ private:
     void stop();
     bool hasFinished();
 
-    Vector<OwnPtr<Closure>> m_callbacks;
+    Vector<OwnPtr<SameThreadClosure>> m_callbacks;
     bool m_allRequestsStarted;
     bool m_started;
     RawPtrWillBeMember<LocalFrame> m_inspectedFrame;

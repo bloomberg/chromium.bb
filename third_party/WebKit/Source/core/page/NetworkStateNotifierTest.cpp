@@ -80,13 +80,13 @@ public:
         return m_callbackCount;
     }
 
-    void setNotificationCallback(PassOwnPtr<Closure> closure)
+    void setNotificationCallback(PassOwnPtr<SameThreadClosure> closure)
     {
         m_closure = closure;
     }
 
 private:
-    OwnPtr<Closure> m_closure;
+    OwnPtr<SameThreadClosure> m_closure;
     WebConnectionType m_observedType;
     double m_observedMaxBandwidthMbps;
     int m_callbackCount;

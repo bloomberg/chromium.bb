@@ -96,7 +96,7 @@ public:
     WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
 
     void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
-    void appendDebuggerTask(PassOwnPtr<Closure>);
+    void appendDebuggerTask(PassOwnPtr<CrossThreadClosure>);
 
     // Runs only debugger tasks while paused in debugger, called on worker thread.
     void startRunningDebuggerTasksOnPause();
@@ -136,7 +136,7 @@ protected:
 private:
     friend class WorkerMicrotaskRunner;
 
-    PassOwnPtr<Closure> createWorkerThreadTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
+    PassOwnPtr<CrossThreadClosure> createWorkerThreadTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
 
     // Called on the main thread.
     void terminateInternal();
@@ -147,7 +147,7 @@ private:
     void performTask(PassOwnPtr<ExecutionContextTask>, bool isInstrumented);
     void performShutdownTask();
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
-    void runDebuggerTask(PassOwnPtr<Closure>);
+    void runDebuggerTask(PassOwnPtr<CrossThreadClosure>);
     void runDebuggerTaskDontWait();
 
     bool m_started;

@@ -50,55 +50,59 @@ public:
 
 namespace internal {
 
-template<typename T>
+template<typename T, WTF::FunctionThreadAffinity threadAffinity>
 class CallClosureTaskBase : public ExecutionContextTask {
 protected:
-    CallClosureTaskBase(PassOwnPtr<Function<T>> closure, bool isSameThread)
+    explicit CallClosureTaskBase(PassOwnPtr<Function<T, threadAffinity>> closure)
         : m_closure(std::move(closure))
-#if ENABLE(ASSERT)
-        , m_isSameThread(isSameThread)
-        , m_createdThread(currentThread())
-#endif
     {
     }
 
-    void checkThread()
-    {
-#if ENABLE(ASSERT)
-        if (m_isSameThread) {
-            RELEASE_ASSERT(m_createdThread == currentThread());
-        }
-#endif
-    }
-
-    OwnPtr<Function<T>> m_closure;
-
-private:
-#if ENABLE(ASSERT)
-    bool m_isSameThread;
-    ThreadIdentifier m_createdThread;
-#endif
+    OwnPtr<Function<T, threadAffinity>> m_closure;
 };
 
-class CallClosureTask final : public CallClosureTaskBase<void()> {
+template<WTF::FunctionThreadAffinity threadAffinity>
+class CallClosureTask final : public CallClosureTaskBase<void(), threadAffinity> {
 public:
     // Do not use |create| other than in createCrossThreadTask and
     // createSameThreadTask.
     // See http://crbug.com/390851
-    static PassOwnPtr<CallClosureTask> create(PassOwnPtr<Closure> closure, bool isSameThread = false)
+    static PassOwnPtr<CallClosureTask<threadAffinity>> create(PassOwnPtr<Function<void(), threadAffinity>> closure)
     {
-        return adoptPtr(new CallClosureTask(std::move(closure), isSameThread));
+        return adoptPtr(new CallClosureTask<threadAffinity>(std::move(closure)));
     }
 
     void performTask(ExecutionContext*) override
     {
-        checkThread();
-        (*m_closure)();
+        (*this->m_closure)();
     }
 
 private:
-    CallClosureTask(PassOwnPtr<Closure> closure, bool isSameThread)
-        : CallClosureTaskBase<void()>(std::move(closure), isSameThread)
+    explicit CallClosureTask(PassOwnPtr<Function<void(), threadAffinity>> closure)
+        : CallClosureTaskBase<void(), threadAffinity>(std::move(closure))
+    {
+    }
+};
+
+template<WTF::FunctionThreadAffinity threadAffinity>
+class CallClosureWithExecutionContextTask final : public CallClosureTaskBase<void(ExecutionContext*), threadAffinity> {
+public:
+    // Do not use |create| other than in createCrossThreadTask and
+    // createSameThreadTask.
+    // See http://crbug.com/390851
+    static PassOwnPtr<CallClosureWithExecutionContextTask> create(PassOwnPtr<Function<void(ExecutionContext*), threadAffinity>> closure)
+    {
+        return adoptPtr(new CallClosureWithExecutionContextTask(std::move(closure)));
+    }
+
+    void performTask(ExecutionContext* context) override
+    {
+        (*this->m_closure)(context);
+    }
+
+private:
+    explicit CallClosureWithExecutionContextTask(PassOwnPtr<Function<void(ExecutionContext*), threadAffinity>> closure)
+        : CallClosureTaskBase<void(ExecutionContext*), threadAffinity>(std::move(closure))
     {
     }
 };
@@ -114,7 +118,7 @@ template<typename FunctionType, typename... P>
 PassOwnPtr<ExecutionContextTask> createSameThreadTask(
     FunctionType function, const P&... parameters)
 {
-    return internal::CallClosureTask::create(bind(function, parameters...), true);
+    return internal::CallClosureTask<WTF::SameThreadAffinity>::create(bind(function, parameters...));
 }
 
 } // namespace blink

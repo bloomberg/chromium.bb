@@ -46,7 +46,7 @@ public:
     // destructed (possibly on the calling thread or on the thread of
     // |executionContext|) when |executionContext| is stopped or
     // CrossThreadHolder is destructed.
-    void postTask(PassOwnPtr<WTF::Function<void(T*, ExecutionContext*)>> task)
+    void postTask(PassOwnPtr<WTF::Function<void(T*, ExecutionContext*), WTF::CrossThreadAffinity>> task)
     {
         MutexLocker locker(m_mutex->mutex());
         if (!m_bridge) {
@@ -119,7 +119,7 @@ private:
             m_holder = nullptr;
         }
 
-        void runTask(PassOwnPtr<WTF::Function<void(T*, ExecutionContext*)>> task)
+        void runTask(PassOwnPtr<WTF::Function<void(T*, ExecutionContext*), WTF::CrossThreadAffinity>> task)
         {
             ASSERT(executionContext()->isContextThread());
             if (m_obj)

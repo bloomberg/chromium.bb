@@ -8,19 +8,24 @@
 
 namespace blink {
 
-void WebTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr<ClosureTask> task)
+void WebTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
 {
-    postTask(std::move(location), new blink::Task(std::move(task)));
+    postTask(location, new CrossThreadTask(std::move(task)));
 }
 
-void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, PassOwnPtr <ClosureTask> task, long long delayMs)
+void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task, long long delayMs)
 {
-    postDelayedTask(location, new blink::Task(std::move(task)), delayMs);
+    postDelayedTask(location, new CrossThreadTask(std::move(task)), delayMs);
 }
 
-void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, PassOwnPtr <ClosureTask> task, double delayMs)
+void WebTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr<SameThreadClosure> task)
 {
-    postDelayedTask(location, new blink::Task(std::move(task)), delayMs);
+    postTask(location, new SameThreadTask(std::move(task)));
+}
+
+void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, PassOwnPtr <SameThreadClosure> task, long long delayMs)
+{
+    postDelayedTask(location, new SameThreadTask(std::move(task)), delayMs);
 }
 
 } // namespace blink

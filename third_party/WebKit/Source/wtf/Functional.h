@@ -41,9 +41,14 @@ namespace WTF {
 
 // Functional.h provides a very simple way to bind a function pointer and arguments together into a function object
 // that can be stored, copied and invoked, similar to how boost::bind and std::bind in C++11.
+
+// Thread Safety:
 //
-// Use threadSafeBind() or createCrossThreadTask() if the function/task is
-// called on a (potentially) different thread from the current thread.
+// WTF::bind() and SameThreadClosure should be used for same-thread closures
+// only, i.e. the closures must be created, executed and destructed on
+// the same thread.
+// Use threadSafeBind() and CrossThreadClosure if the function/task is called
+// or destructed on a (potentially) different thread from the current thread.
 
 // WTF::bind() and move semantics
 // ==============================
@@ -191,11 +196,16 @@ template<> struct ParamStorageTraits<void*> {
     static void* unwrap(const StorageType& value) { return value; }
 };
 
-template<typename>
+enum FunctionThreadAffinity {
+    CrossThreadAffinity,
+    SameThreadAffinity
+};
+
+template<typename, FunctionThreadAffinity threadAffinity = SameThreadAffinity>
 class Function;
 
-template<typename R, typename... Args>
-class Function<R(Args...)> {
+template<FunctionThreadAffinity threadAffinity, typename R, typename... Args>
+class Function<R(Args...), threadAffinity> {
     USING_FAST_MALLOC(Function);
     WTF_MAKE_NONCOPYABLE(Function);
 public:
@@ -203,13 +213,46 @@ public:
     virtual R operator()(Args... args) = 0;
 protected:
     Function() = default;
+    void checkThread() { }
 };
 
-template <typename BoundParametersTuple, typename FunctionWrapper, typename... UnboundParameters>
+#if ENABLE(ASSERT)
+template<typename R, typename... Args>
+class Function<R(Args...), SameThreadAffinity> {
+    USING_FAST_MALLOC(Function);
+    WTF_MAKE_NONCOPYABLE(Function);
+public:
+    virtual ~Function()
+    {
+        checkThread();
+    }
+    virtual R operator()(Args... args) = 0;
+protected:
+    Function()
+        : m_createdThread(currentThread())
+    {
+    }
+
+    void NEVER_INLINE checkThread()
+    {
+        // Function with SameThreadAffinity, including SameThreadClosure
+        // created by WTF::bind() or blink::createSameThreadTask(),
+        // must be called and destructed on the thread where it is created.
+        // If it is intended to be used cross-thread, use
+        // blink::threadSafeBind() or blink::createCrossThreadTask() instead.
+        RELEASE_ASSERT(m_createdThread == currentThread());
+    }
+
+private:
+    const ThreadIdentifier m_createdThread;
+};
+#endif
+
+template <FunctionThreadAffinity threadAffinity, typename BoundParametersTuple, typename FunctionWrapper, typename... UnboundParameters>
 class PartBoundFunctionImpl;
 
-template <typename... BoundParameters, typename FunctionWrapper, typename... UnboundParameters>
-class PartBoundFunctionImpl<std::tuple<BoundParameters...>, FunctionWrapper, UnboundParameters...> final : public Function<typename FunctionWrapper::ResultType(UnboundParameters...)> {
+template <FunctionThreadAffinity threadAffinity, typename... BoundParameters, typename FunctionWrapper, typename... UnboundParameters>
+class PartBoundFunctionImpl<threadAffinity, std::tuple<BoundParameters...>, FunctionWrapper, UnboundParameters...> final : public Function<typename FunctionWrapper::ResultType(UnboundParameters...), threadAffinity> {
 public:
     // We would like to use StorageTraits<UnboundParameters>... with StorageTraits defined as below in order to obtain
     // storage traits of UnboundParameters, but unfortunately MSVC can't handle template using declarations correctly.
@@ -236,6 +279,7 @@ private:
     template <std::size_t... boundIndices, typename... IncomingUnboundParameters>
         typename FunctionWrapper::ResultType callInternal(const base::IndexSequence<boundIndices...>&, IncomingUnboundParameters&&... unbound)
     {
+        this->checkThread();
         // Get each element in m_bound, unwrap them, and call the function with the desired arguments.
         return m_functionWrapper(ParamStorageTraits<typename std::decay<BoundParameters>::type>::unwrap(std::get<boundIndices>(m_bound))..., std::forward<IncomingUnboundParameters>(unbound)...);
     }
@@ -244,23 +288,31 @@ private:
     std::tuple<typename ParamStorageTraits<typename std::decay<BoundParameters>::type>::StorageType...> m_bound;
 };
 
-template <typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
-PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...)>> bind(FunctionType function, BoundParameters&&... boundParameters)
+template <FunctionThreadAffinity threadAffinity, typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
+PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...), threadAffinity>> bindInternal(FunctionType function, BoundParameters&&... boundParameters)
 {
     // Bound parameters' types are wrapped with std::tuple so we can pass two template parameter packs (bound
     // parameters and unbound) to PartBoundFunctionImpl. Note that a tuple of this type isn't actually created;
     // std::tuple<> is just for carrying the bound parameters' types. Any other class template taking a type parameter
     // pack can be used instead of std::tuple. std::tuple is used just because it's most convenient for this purpose.
-    using BoundFunctionType = PartBoundFunctionImpl<std::tuple<BoundParameters&&...>, FunctionWrapper<FunctionType>, UnboundParameters...>;
+    using BoundFunctionType = PartBoundFunctionImpl<threadAffinity, std::tuple<BoundParameters&&...>, FunctionWrapper<FunctionType>, UnboundParameters...>;
     return adoptPtr(new BoundFunctionType(FunctionWrapper<FunctionType>(function), std::forward<BoundParameters>(boundParameters)...));
 }
 
-typedef Function<void()> Closure;
+template <typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
+PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...), SameThreadAffinity>> bind(FunctionType function, BoundParameters&&... boundParameters)
+{
+    return bindInternal<SameThreadAffinity, UnboundParameters...>(function, std::forward<BoundParameters>(boundParameters)...);
+}
+
+typedef Function<void(), SameThreadAffinity> SameThreadClosure;
+typedef Function<void(), CrossThreadAffinity> CrossThreadClosure;
 
 } // namespace WTF
 
 using WTF::Function;
 using WTF::bind;
-using WTF::Closure;
+using WTF::SameThreadClosure;
+using WTF::CrossThreadClosure;
 
 #endif // WTF_Functional_h

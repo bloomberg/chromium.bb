@@ -50,7 +50,7 @@ public:
     // executed in. Until then, all microtasks have to keep track of their
     // ScriptState themselves.
     static void enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task>);
-    static void enqueueMicrotask(PassOwnPtr<Closure>);
+    static void enqueueMicrotask(PassOwnPtr<SameThreadClosure>);
 };
 
 } // namespace blink

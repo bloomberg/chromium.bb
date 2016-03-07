@@ -89,33 +89,6 @@ namespace blink {
 //     |ptr| is assumed safe to be passed across threads, and
 //     AllowCrossThreadAccess() is applied automatically.
 
-namespace internal {
-
-class CallClosureWithExecutionContextTask final : public CallClosureTaskBase<void(ExecutionContext*)> {
-public:
-    // Do not use |create| other than in createCrossThreadTask and
-    // createSameThreadTask.
-    // See http://crbug.com/390851
-    static PassOwnPtr<CallClosureWithExecutionContextTask> create(PassOwnPtr<Function<void(ExecutionContext*)>> closure, bool isSameThread = false)
-    {
-        return adoptPtr(new CallClosureWithExecutionContextTask(closure, isSameThread));
-    }
-
-    void performTask(ExecutionContext* context) override
-    {
-        checkThread();
-        (*m_closure)(context);
-    }
-
-private:
-    CallClosureWithExecutionContextTask(PassOwnPtr<Function<void(ExecutionContext*)>> closure, bool isSameThread)
-        : CallClosureTaskBase<void(ExecutionContext*)>(closure, isSameThread)
-    {
-    }
-};
-
-} // namespace internal
-
 // RETTYPE, PS, and MPS are added as template parameters to circumvent MSVC 18.00.21005.1 (VS 2013) issues.
 
 // [1] createCrossThreadTask() for non-member functions (with ExecutionContext* argument).
@@ -124,7 +97,7 @@ template<typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(void (*function)(MP...), const P&... parameters)
 {
-    return internal::CallClosureWithExecutionContextTask::create(threadSafeBind<ExecutionContext*>(function, parameters...));
+    return internal::CallClosureWithExecutionContextTask<WTF::CrossThreadAffinity>::create(threadSafeBind<ExecutionContext*>(function, parameters...));
 }
 
 // [2] createCrossThreadTask() for member functions of class C (with ExecutionContext* argument) + raw pointer (C*).
@@ -133,7 +106,7 @@ template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), C* p, const P&... parameters)
 {
-    return internal::CallClosureWithExecutionContextTask::create(threadSafeBind<ExecutionContext*>(function, AllowCrossThreadAccess(p), parameters...));
+    return internal::CallClosureWithExecutionContextTask<WTF::CrossThreadAffinity>::create(threadSafeBind<ExecutionContext*>(function, AllowCrossThreadAccess(p), parameters...));
 }
 
 // [3] createCrossThreadTask() for non-member functions
@@ -142,7 +115,7 @@ template<typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (*function)(MP...), const P&... parameters)
 {
-    return internal::CallClosureTask::create(threadSafeBind(function, parameters...));
+    return internal::CallClosureTask<WTF::CrossThreadAffinity>::create(threadSafeBind(function, parameters...));
 }
 
 // [4] createCrossThreadTask() for member functions of class C + raw pointer (C*)
@@ -152,14 +125,14 @@ template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), C* p, const P&... parameters)
 {
-    return internal::CallClosureTask::create(threadSafeBind(function, AllowCrossThreadAccess(p), parameters...));
+    return internal::CallClosureTask<WTF::CrossThreadAffinity>::create(threadSafeBind(function, AllowCrossThreadAccess(p), parameters...));
 }
 
 template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), const WeakPtr<C>& p, const P&... parameters)
 {
-    return internal::CallClosureTask::create(threadSafeBind(function, AllowCrossThreadAccess(p), parameters...));
+    return internal::CallClosureTask<WTF::CrossThreadAffinity>::create(threadSafeBind(function, AllowCrossThreadAccess(p), parameters...));
 }
 
 // [6] createCrossThreadTask() for member functions + pointers to class C other than C* or const WeakPtr<C>&
@@ -168,7 +141,7 @@ template<typename C, typename... P, typename... MP,
     typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS == MPS + 1, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), const P&... parameters)
 {
-    return internal::CallClosureTask::create(threadSafeBind(function, parameters...));
+    return internal::CallClosureTask<WTF::CrossThreadAffinity>::create(threadSafeBind(function, parameters...));
 }
 
 } // namespace blink

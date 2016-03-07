@@ -57,12 +57,14 @@ public:
 
 #ifdef INSIDE_BLINK
     // Helpers for posting bound functions as tasks.
-    typedef Function<void()> ClosureTask;
 
-    void postTask(const WebTraceLocation&, PassOwnPtr<ClosureTask>);
-    // TODO(alexclarke): Remove this when possible.
-    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ClosureTask>, long long delayMs);
-    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ClosureTask>, double delayMs);
+    // For cross-thread posting. Can be called from any thread.
+    void postTask(const WebTraceLocation&, PassOwnPtr<CrossThreadClosure>);
+    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<CrossThreadClosure>, long long delayMs);
+
+    // For same-thread posting. Must be called from the associated WebThread.
+    void postTask(const WebTraceLocation&, PassOwnPtr<SameThreadClosure>);
+    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<SameThreadClosure>, long long delayMs);
 
     PassOwnPtr<WebTaskRunner> adoptClone()
     {

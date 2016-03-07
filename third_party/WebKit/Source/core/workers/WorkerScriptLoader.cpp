@@ -82,7 +82,7 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
     WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(executionContext), request, *this, options, resourceLoaderOptions);
 }
 
-void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, PassOwnPtr<Closure> responseCallback, PassOwnPtr<Closure> finishedCallback)
+void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, PassOwnPtr<SameThreadClosure> responseCallback, PassOwnPtr<SameThreadClosure> finishedCallback)
 {
     ASSERT(responseCallback || finishedCallback);
     m_responseCallback = responseCallback;
@@ -222,7 +222,7 @@ void WorkerScriptLoader::notifyFinished()
     if (!m_finishedCallback)
         return;
 
-    OwnPtr<Closure> callback = m_finishedCallback.release();
+    OwnPtr<SameThreadClosure> callback = m_finishedCallback.release();
     (*callback)();
 }
 

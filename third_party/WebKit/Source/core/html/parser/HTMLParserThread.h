@@ -50,7 +50,7 @@ public:
     // It is an error to call shared() before init() or after shutdown();
     static HTMLParserThread* shared();
 
-    void postTask(PassOwnPtr<Closure>);
+    void postTask(PassOwnPtr<CrossThreadClosure>);
 
 private:
     HTMLParserThread();

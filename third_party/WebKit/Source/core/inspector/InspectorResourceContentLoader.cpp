@@ -149,7 +149,7 @@ void InspectorResourceContentLoader::start()
     checkDone();
 }
 
-void InspectorResourceContentLoader::ensureResourcesContentLoaded(PassOwnPtr<Closure> callback)
+void InspectorResourceContentLoader::ensureResourcesContentLoaded(PassOwnPtr<SameThreadClosure> callback)
 {
     if (!m_started)
         start();
@@ -204,7 +204,7 @@ void InspectorResourceContentLoader::checkDone()
 {
     if (!hasFinished())
         return;
-    Vector<OwnPtr<Closure>> callbacks;
+    Vector<OwnPtr<SameThreadClosure>> callbacks;
     callbacks.swap(m_callbacks);
     for (const auto& callback : callbacks)
         (*callback)();

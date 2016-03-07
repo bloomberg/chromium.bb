@@ -122,7 +122,7 @@ void WorkerThread::performTask(PassOwnPtr<ExecutionContextTask> task, bool isIns
         InspectorInstrumentation::didPerformExecutionContextTask(globalScope);
 }
 
-PassOwnPtr<Closure> WorkerThread::createWorkerThreadTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
+PassOwnPtr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
 {
     if (isInstrumented)
         isInstrumented = !task->taskNameForInstrumentation().isEmpty();
@@ -440,12 +440,12 @@ void WorkerThread::terminateV8Execution()
 
 void WorkerThread::runDebuggerTaskDontWait()
 {
-    OwnPtr<Closure> task = m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::DontWaitForTask);
+    OwnPtr<CrossThreadClosure> task = m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::DontWaitForTask);
     if (task)
         (*task)();
 }
 
-void WorkerThread::appendDebuggerTask(PassOwnPtr<Closure> task)
+void WorkerThread::appendDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
 {
     {
         MutexLocker lock(m_threadStateMutex);
@@ -461,7 +461,7 @@ void WorkerThread::appendDebuggerTask(PassOwnPtr<Closure> task)
     backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::runDebuggerTaskDontWait, AllowCrossThreadAccess(this)));
 }
 
-void WorkerThread::runDebuggerTask(PassOwnPtr<Closure> task)
+void WorkerThread::runDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
 {
     ASSERT(isCurrentThread());
     InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
@@ -486,7 +486,7 @@ void WorkerThread::startRunningDebuggerTasksOnPause()
 {
     m_pausedInDebugger = true;
     InspectorInstrumentation::willEnterNestedRunLoop(m_workerGlobalScope.get());
-    OwnPtr<Closure> task;
+    OwnPtr<CrossThreadClosure> task;
     do {
         {
             SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);

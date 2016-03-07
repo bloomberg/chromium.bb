@@ -11,12 +11,12 @@
 
 namespace blink {
 
-static void RunBackgroundTask(PassOwnPtr<Closure> closure)
+static void RunBackgroundTask(PassOwnPtr<CrossThreadClosure> closure)
 {
     (*closure)();
 }
 
-void BackgroundTaskRunner::postOnBackgroundThread(const WebTraceLocation& location, PassOwnPtr<Closure> closure, TaskSize taskSize)
+void BackgroundTaskRunner::postOnBackgroundThread(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> closure, TaskSize taskSize)
 {
     tracked_objects::Location baseLocation(location.functionName(), location.fileName(), 0, nullptr);
     base::WorkerPool::PostTask(baseLocation, base::Bind(&RunBackgroundTask, closure), taskSize == TaskSizeLongRunningTask);
