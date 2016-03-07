@@ -9,12 +9,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.ConditionVariable;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.FlakyTest;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.TextView;
-
-import org.chromium.base.test.util.Feature;
 
 /**
  * Base test class for all CronetSample based tests.
@@ -29,8 +27,12 @@ public class CronetSampleTest extends
         super(CronetSampleActivity.class);
     }
 
+    /*
     @SmallTest
     @Feature({"Cronet"})
+    https://crbug.com/592444
+    */
+    @FlakyTest
     public void testLoadUrl() throws Exception {
         CronetSampleActivity activity = launchCronetSampleWithUrl(URL);
 

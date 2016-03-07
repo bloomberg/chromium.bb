@@ -5,6 +5,7 @@
 package org.chromium.net;
 
 import android.os.ConditionVariable;
+import android.test.FlakyTest;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
@@ -1448,8 +1449,12 @@ public class CronetUrlRequestTest extends CronetTestBase {
                 callback.mOnCanceledCalled);
     }
 
+    /*
     @SmallTest
     @Feature({"Cronet"})
+    https://crbug.com/592444
+    */
+    @FlakyTest
     public void testFailures() throws Exception {
         throwOrCancel(FailureType.CANCEL_SYNC, ResponseStep.ON_RECEIVED_REDIRECT,
                 false, false);

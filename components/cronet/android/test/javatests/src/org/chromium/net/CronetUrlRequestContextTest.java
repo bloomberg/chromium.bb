@@ -11,6 +11,7 @@ import android.content.ContextWrapper;
 import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
@@ -320,9 +321,13 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mTestFramework.mCronetEngine.shutdown();
     }
 
+    /*
     @SmallTest
     @Feature({"Cronet"})
     @SuppressWarnings("deprecation")
+    https://crbug.com/592444
+    */
+    @FlakyTest
     public void testRequestFinishedListenerFailedRequest() throws Exception {
         String connectionRefusedUrl = "http://127.0.0.1:3";
         mTestFramework = startCronetTestFramework();
@@ -528,8 +533,12 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         }
     }
 
+    /*
     @SmallTest
     @Feature({"Cronet"})
+    https://crbug.com/592444
+    */
+    @FlakyTest
     public void testShutdownAfterError() throws Exception {
         mTestFramework = startCronetTestFramework();
         TestUrlRequestCallback callback = new ShutdownTestUrlRequestCallback();
