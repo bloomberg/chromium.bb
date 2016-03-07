@@ -373,6 +373,52 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   result.clear();
 }
 
+TEST_F(LoginDatabaseTest, TestFederatedMatching) {
+  ScopedVector<autofill::PasswordForm> result;
+
+  // Example password form.
+  PasswordForm form;
+  form.origin = GURL("https://foo.com/");
+  form.action = GURL("https://foo.com/login");
+  form.username_value = ASCIIToUTF16("test@gmail.com");
+  form.password_value = ASCIIToUTF16("test");
+  form.signon_realm = "https://foo.com/";
+  form.ssl_valid = true;
+  form.preferred = false;
+  form.scheme = PasswordForm::SCHEME_HTML;
+
+  // We go to the mobile site.
+  PasswordForm form2(form);
+  form2.origin = GURL("https://mobile.foo.com/");
+  form2.action = GURL("https://mobile.foo.com/login");
+  form2.signon_realm = "federation://mobile.foo.com/accounts.google.com";
+  form2.username_value = ASCIIToUTF16("test1@gmail.com");
+  form2.type = autofill::PasswordForm::TYPE_API;
+  form2.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+
+  // Add it and make sure it is there.
+  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+  EXPECT_EQ(AddChangeForForm(form2), db().AddLogin(form2));
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
+  EXPECT_EQ(2U, result.size());
+
+  // Match against desktop.
+  PasswordForm form_request;
+  form_request.origin = GURL("https://foo.com/");
+  form_request.signon_realm = "https://foo.com/";
+  form_request.scheme = PasswordForm::SCHEME_HTML;
+  EXPECT_TRUE(db().GetLogins(form_request, &result));
+  EXPECT_THAT(result, testing::ElementsAre(testing::Pointee(form)));
+
+  // Match against the mobile site.
+  form_request.origin = GURL("https://mobile.foo.com/");
+  form_request.signon_realm = "https://mobile.foo.com/";
+  EXPECT_TRUE(db().GetLogins(form_request, &result));
+  form.is_public_suffix_match = true;
+  EXPECT_THAT(result, testing::UnorderedElementsAre(testing::Pointee(form),
+                                                    testing::Pointee(form2)));
+}
+
 TEST_F(LoginDatabaseTest, TestPublicSuffixDisabledForNonHTMLForms) {
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_BASIC);
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_DIGEST);
@@ -435,8 +481,58 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
 
   // Match against the other site. Should not match since feature should not be
   // enabled for this domain.
+  ASSERT_FALSE(ShouldPSLDomainMatchingApply(
+      GetRegistryControlledDomain(GURL(form2.signon_realm))));
+
   EXPECT_TRUE(db().GetLogins(form2, &result));
   EXPECT_EQ(0U, result.size());
+}
+
+TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
+  ScopedVector<autofill::PasswordForm> result;
+
+  // Example password form.
+  PasswordForm form;
+  form.origin = GURL("https://accounts.google.com/");
+  form.action = GURL("https://accounts.google.com/login");
+  form.username_value = ASCIIToUTF16("test@gmail.com");
+  form.password_value = ASCIIToUTF16("test");
+  form.signon_realm = "https://accounts.google.com/";
+  form.ssl_valid = true;
+  form.preferred = false;
+  form.scheme = PasswordForm::SCHEME_HTML;
+
+  // We go to a different site on the same domain where PSL is disabled.
+  PasswordForm form2(form);
+  form2.origin = GURL("https://some.other.google.com/");
+  form2.action = GURL("https://some.other.google.com/login");
+  form2.signon_realm = "federation://some.other.google.com/accounts.google.com";
+  form2.username_value = ASCIIToUTF16("test1@gmail.com");
+  form2.type = autofill::PasswordForm::TYPE_API;
+  form2.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+
+  // Add it and make sure it is there.
+  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+  EXPECT_EQ(AddChangeForForm(form2), db().AddLogin(form2));
+  EXPECT_TRUE(db().GetAutofillableLogins(&result));
+  EXPECT_EQ(2U, result.size());
+
+  // Match against the first one.
+  PasswordForm form_request;
+  form_request.origin = form.origin;
+  form_request.signon_realm = form.signon_realm;
+  form_request.scheme = PasswordForm::SCHEME_HTML;
+  EXPECT_TRUE(db().GetLogins(form_request, &result));
+  EXPECT_THAT(result, testing::ElementsAre(testing::Pointee(form)));
+
+  // Match against the second one.
+  ASSERT_FALSE(ShouldPSLDomainMatchingApply(
+      GetRegistryControlledDomain(GURL(form2.signon_realm))));
+  form_request.origin = form2.origin;
+  form_request.signon_realm = form2.signon_realm;
+  EXPECT_TRUE(db().GetLogins(form_request, &result));
+  form.is_public_suffix_match = true;
+  EXPECT_THAT(result, testing::ElementsAre(testing::Pointee(form2)));
 }
 
 // This test fails if the implementation of GetLogins uses GetCachedStatement

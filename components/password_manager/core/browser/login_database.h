@@ -83,7 +83,8 @@ class LoginDatabase {
   // All Get* methods below overwrite |forms| with the returned credentials. On
   // success, those methods return true.
 
-  // Gets a list of credentials matching |form|, including blacklisted matches.
+  // Gets a list of credentials matching |form|, including blacklisted matches
+  // and federated credentials.
   bool GetLogins(const autofill::PasswordForm& form,
                  ScopedVector<autofill::PasswordForm>* forms) const
       WARN_UNUSED_RESULT;
@@ -188,10 +189,10 @@ class LoginDatabase {
       ScopedVector<autofill::PasswordForm>* forms) const;
 
   // Overwrites |forms| with credentials retrieved from |statement|. If
-  // |psl_match| is not null, filters out all results but thos PSL-matching
-  // |*psl_match|. On success returns true.
+  // |matched_form| is not null, filters out all results but those PSL-matching
+  // |*matched_form| or federated credentials for it. On success returns true.
   static bool StatementToForms(sql::Statement* statement,
-                               const autofill::PasswordForm* psl_match,
+                               const autofill::PasswordForm* matched_form,
                                ScopedVector<autofill::PasswordForm>* forms);
 
   base::FilePath db_path_;

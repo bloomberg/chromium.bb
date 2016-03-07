@@ -21,7 +21,7 @@ TEST(PSLMatchingUtilsTest, IsPublicSuffixDomainMatch) {
     bool should_match;
   };
 
-  TestPair pairs[] = {
+  const TestPair pairs[] = {
       {"http://facebook.com", "http://facebook.com", true},
       {"http://facebook.com/path", "http://facebook.com/path", true},
       {"http://facebook.com/path1", "http://facebook.com/path2", true},
@@ -44,17 +44,45 @@ TEST(PSLMatchingUtilsTest, IsPublicSuffixDomainMatch) {
       {"", "http://www.example.com", false},
       {"http://www.example.com", "bad url", false},
       {"http://www.example.com/%00", "http://www.example.com/%00", false},
+      {"federation://example.com/google.com", "https://example.com/", false},
   };
 
-  for (size_t i = 0; i < arraysize(pairs); ++i) {
+  for (const TestPair& pair : pairs) {
     autofill::PasswordForm form1;
-    form1.signon_realm = pairs[i].url1;
+    form1.signon_realm = pair.url1;
     autofill::PasswordForm form2;
-    form2.signon_realm = pairs[i].url2;
-    EXPECT_EQ(pairs[i].should_match,
+    form2.signon_realm = pair.url2;
+    EXPECT_EQ(pair.should_match,
               IsPublicSuffixDomainMatch(form1.signon_realm, form2.signon_realm))
-        << "First URL = " << pairs[i].url1
-        << ", second URL = " << pairs[i].url2;
+        << "First URL = " << pair.url1 << ", second URL = " << pair.url2;
+  }
+}
+
+TEST(PSLMatchingUtilsTest, IsFederatedMatch) {
+  struct TestPair {
+    const char* signon_realm;
+    const char* origin;
+    bool should_match;
+  };
+
+  const TestPair pairs[] = {
+      {"https://facebook.com", "https://facebook.com", false},
+      {"", "", false},
+      {"", "https://facebook.com/", false},
+      {"https://facebook.com/", "", false},
+      {"federation://example.com/google.com", "https://example.com/", true},
+      {"federation://example.com/google.com", "http://example.com/", true},
+      {"federation://example.com/google.com", "example.com", false},
+      {"federation://example.com/", "http://example.com/", false},
+      {"federation://example.com/google.com", "example", false},
+  };
+
+  for (const TestPair& pair : pairs) {
+    std::string signon_realm = pair.signon_realm;
+    GURL origin(pair.origin);
+    EXPECT_EQ(pair.should_match, IsFederatedMatch(signon_realm, origin))
+        << "signon_realm = " << pair.signon_realm
+        << ", origin = " << pair.origin;
   }
 }
 

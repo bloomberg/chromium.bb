@@ -185,6 +185,10 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
   ScopedVector<PasswordForm> forms;
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
+  const bool allow_psl_match =
+      lookup_form && password_manager::ShouldPSLDomainMatchingApply(
+                         password_manager::GetRegistryControlledDomain(
+                             GURL(lookup_form->signon_realm)));
   for (GList* element = g_list_first(found); element;
        element = g_list_next(element)) {
     GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
@@ -193,15 +197,21 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
     scoped_ptr<PasswordForm> form(FormFromAttributes(attrs));
     if (form) {
       if (lookup_form && form->signon_realm != lookup_form->signon_realm) {
-        // This is not an exact match, we try PSL matching.
         if (lookup_form->scheme != PasswordForm::SCHEME_HTML ||
-            form->scheme != PasswordForm::SCHEME_HTML ||
-            !(password_manager::IsPublicSuffixDomainMatch(
-                lookup_form->signon_realm, form->signon_realm))) {
+            form->scheme != PasswordForm::SCHEME_HTML)
+          continue;  // Ignore non-HTML matches.
+        // This is not an exact match, we try PSL matching and federated match.
+        if (allow_psl_match &&
+            password_manager::IsPublicSuffixDomainMatch(
+                form->signon_realm, lookup_form->signon_realm)) {
+          psl_domain_match_metric = password_manager::PSL_DOMAIN_MATCH_FOUND;
+          form->is_public_suffix_match = true;
+        } else if (!form->federation_origin.unique() &&
+                   password_manager::IsFederatedMatch(form->signon_realm,
+                                                      lookup_form->origin)) {
+        } else {
           continue;
         }
-        psl_domain_match_metric = password_manager::PSL_DOMAIN_MATCH_FOUND;
-        form->is_public_suffix_match = true;
       }
       if (data->secret) {
         form->password_value = UTF8ToUTF16(data->secret);
@@ -214,15 +224,11 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
     }
   }
   if (lookup_form) {
-    const GURL signon_realm(lookup_form->signon_realm);
-    std::string registered_domain =
-        password_manager::GetRegistryControlledDomain(signon_realm);
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.PslDomainMatchTriggering",
-        password_manager::ShouldPSLDomainMatchingApply(registered_domain)
-            ? psl_domain_match_metric
-            : password_manager::PSL_DOMAIN_MATCH_NOT_USED,
-        password_manager::PSL_DOMAIN_MATCH_COUNT);
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
+                              allow_psl_match
+                                  ? psl_domain_match_metric
+                                  : password_manager::PSL_DOMAIN_MATCH_NOT_USED,
+                              password_manager::PSL_DOMAIN_MATCH_COUNT);
   }
   return forms;
 }
@@ -426,7 +432,9 @@ void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   if (!password_manager::ShouldPSLDomainMatchingApply(
           password_manager::GetRegistryControlledDomain(
-              GURL(form.signon_realm)))) {
+              GURL(form.signon_realm))) &&
+      form.scheme != PasswordForm::SCHEME_HTML) {
+    // Don't retrieve the PSL matched and federated credentials.
     AppendString(&attrs, "signon_realm", form.signon_realm);
   }
   AppendString(&attrs, "application", app_string);

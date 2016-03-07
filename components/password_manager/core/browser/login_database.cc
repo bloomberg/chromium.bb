@@ -1127,7 +1127,7 @@ bool LoginDatabase::GetLogins(
     ScopedVector<autofill::PasswordForm>* forms) const {
   DCHECK(forms);
   // You *must* change LoginTableColumns if this query changes.
-  const std::string sql_query =
+  std::string sql_query =
       "SELECT origin_url, action_url, "
       "username_element, username_value, "
       "password_element, password_value, submit_element, "
@@ -1136,12 +1136,23 @@ bool LoginDatabase::GetLogins(
       "date_synced, display_name, icon_url, "
       "federation_url, skip_zero_click, generation_upload_status "
       "FROM logins WHERE signon_realm == ? ";
-  sql::Statement s;
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain = GetRegistryControlledDomain(signon_realm);
   const bool should_PSL_matching_apply =
       form.scheme == PasswordForm::SCHEME_HTML &&
       ShouldPSLDomainMatchingApply(registered_domain);
+  const bool should_federated_apply = form.scheme == PasswordForm::SCHEME_HTML;
+  if (should_PSL_matching_apply)
+    sql_query += "OR signon_realm REGEXP ? ";
+  if (should_federated_apply)
+    sql_query += "OR (signon_realm LIKE ? AND password_type == 2) ";
+
+  // TODO(nyquist) Consider usage of GetCachedStatement when
+  // http://crbug.com/248608 is fixed.
+  sql::Statement s(db_.GetUniqueStatement(sql_query.c_str()));
+  s.BindString(0, form.signon_realm);
+  int placeholder = 1;
+
   // PSL matching only applies to HTML forms.
   if (should_PSL_matching_apply) {
     // We are extending the original SQL query with one that includes more
@@ -1150,11 +1161,6 @@ bool LoginDatabase::GetLogins(
     // in the |logins| table. The result (scheme, domain and port) is verified
     // further down using GURL. See the functions SchemeMatches,
     // RegistryControlledDomainMatches and PortMatches.
-    const std::string extended_sql_query =
-        sql_query + "OR signon_realm REGEXP ? ";
-    // TODO(nyquist) Re-enable usage of GetCachedStatement when
-    // http://crbug.com/248608 is fixed.
-    s.Assign(db_.GetUniqueStatement(extended_sql_query.c_str()));
     // We need to escape . in the domain. Since the domain has already been
     // sanitized using GURL, we do not need to escape any other characters.
     base::ReplaceChars(registered_domain, ".", "\\.", &registered_domain);
@@ -1170,18 +1176,24 @@ bool LoginDatabase::GetLogins(
     // The scheme and port has to be the same as the observed form.
     std::string regexp = "^(" + scheme + ":\\/\\/)([\\w-]+\\.)*" +
                          registered_domain + "(:" + port + ")?\\/$";
-    s.BindString(0, form.signon_realm);
-    s.BindString(1, regexp);
-  } else {
+    s.BindString(placeholder++, regexp);
+  }
+  if (should_federated_apply) {
+    std::string expression =
+        base::StringPrintf("federation://%s/%%", form.origin.host().c_str());
+    s.BindString(placeholder++, expression);
+  }
+
+  if (!should_PSL_matching_apply && !should_federated_apply) {
+    // Otherwise the histogram is reported in StatementToForms.
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
                               PSL_DOMAIN_MATCH_NOT_USED,
                               PSL_DOMAIN_MATCH_COUNT);
-    s.Assign(db_.GetCachedStatement(SQL_FROM_HERE, sql_query.c_str()));
-    s.BindString(0, form.signon_realm);
   }
 
-  return StatementToForms(&s, should_PSL_matching_apply ? &form : nullptr,
-                          forms);
+  return StatementToForms(
+      &s, should_PSL_matching_apply || should_federated_apply ? &form : nullptr,
+      forms);
 }
 
 bool LoginDatabase::GetLoginsCreatedBetween(
@@ -1297,7 +1309,7 @@ std::string LoginDatabase::GetEncryptedPassword(
 // static
 bool LoginDatabase::StatementToForms(
     sql::Statement* statement,
-    const autofill::PasswordForm* psl_match,
+    const autofill::PasswordForm* matched_form,
     ScopedVector<autofill::PasswordForm>* forms) {
   PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
 
@@ -1310,23 +1322,26 @@ bool LoginDatabase::StatementToForms(
       return false;
     if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
       continue;
-    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
-    if (psl_match && psl_match->signon_realm != new_form->signon_realm) {
+    DCHECK_EQ(ENCRYPTION_RESULT_SUCCESS, result);
+    if (matched_form && matched_form->signon_realm != new_form->signon_realm) {
       if (new_form->scheme != PasswordForm::SCHEME_HTML)
         continue;  // Ignore non-HTML matches.
 
-      if (!IsPublicSuffixDomainMatch(new_form->signon_realm,
-                                     psl_match->signon_realm)) {
+      if (IsPublicSuffixDomainMatch(new_form->signon_realm,
+                                    matched_form->signon_realm)) {
+        psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
+        new_form->is_public_suffix_match = true;
+      } else if (!new_form->federation_origin.unique() &&
+                 IsFederatedMatch(new_form->signon_realm,
+                                  matched_form->origin)) {
+      } else {
         continue;
       }
-
-      psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
-      new_form->is_public_suffix_match = true;
     }
     forms->push_back(std::move(new_form));
   }
 
-  if (psl_match) {
+  if (matched_form) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
                               psl_domain_match_metric, PSL_DOMAIN_MATCH_COUNT);
   }

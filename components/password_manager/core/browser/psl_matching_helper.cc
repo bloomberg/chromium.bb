@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -47,6 +48,14 @@ std::string GetRegistryControlledDomain(const GURL& signon_realm) {
   return net::registry_controlled_domains::GetDomainAndRegistry(
       signon_realm,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+bool IsFederatedMatch(const std::string& signon_realm, const GURL& origin) {
+  // The format should be "federation://origin.host/federation.host;
+  std::string federated_realm = "federation://" + origin.host() + "/";
+  return signon_realm.size() > federated_realm.size() &&
+         base::StartsWith(signon_realm, federated_realm,
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 }  // namespace password_manager

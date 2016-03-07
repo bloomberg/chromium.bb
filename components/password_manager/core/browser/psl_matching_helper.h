@@ -44,6 +44,10 @@ bool IsPublicSuffixDomainMatch(const std::string& url1,
 // registry-controlled domain part.
 std::string GetRegistryControlledDomain(const GURL& signon_realm);
 
+// Returns true iff |signon_realm| designates a federated credential for the
+// |origin|.
+bool IsFederatedMatch(const std::string& signon_realm, const GURL& origin);
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PSL_MATCHING_HELPER_H_

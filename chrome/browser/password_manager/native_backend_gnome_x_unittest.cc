@@ -884,6 +884,14 @@ TEST_F(NativeBackendGnomeTest, PSLUpdatingStrictAddLogin) {
   CheckPSLUpdate(UPDATE_BY_ADDLOGIN);
 }
 
+TEST_F(NativeBackendGnomeTest, FetchFederatedCredential) {
+  other_auth_.signon_realm = "federation://www.example.com/google.com";
+  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
+                                          GURL("http://www.example.com/"),
+                                          PasswordForm::SCHEME_HTML, nullptr));
+}
+
 TEST_F(NativeBackendGnomeTest, BasicUpdateLogin) {
   NativeBackendGnome backend(42);
   backend.Init();

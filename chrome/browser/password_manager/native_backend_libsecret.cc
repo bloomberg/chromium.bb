@@ -541,7 +541,8 @@ bool NativeBackendLibsecret::GetLoginsList(
   if (lookup_form &&
       !password_manager::ShouldPSLDomainMatchingApply(
           password_manager::GetRegistryControlledDomain(
-              GURL(lookup_form->signon_realm))))
+              GURL(lookup_form->signon_realm))) &&
+      lookup_form->scheme != PasswordForm::SCHEME_HTML)
     attrs.Append("signon_realm", lookup_form->signon_realm);
 
   GError* error = nullptr;
@@ -631,6 +632,10 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
   GError* error = nullptr;
+  const bool allow_psl_match =
+      lookup_form && password_manager::ShouldPSLDomainMatchingApply(
+                         password_manager::GetRegistryControlledDomain(
+                             GURL(lookup_form->signon_realm)));
   for (GList* element = g_list_first(found); element != nullptr;
        element = g_list_next(element)) {
     SecretItem* secretItem = static_cast<SecretItem*>(element->data);
@@ -646,15 +651,21 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
     g_hash_table_unref(attrs);
     if (form) {
       if (lookup_form && form->signon_realm != lookup_form->signon_realm) {
-        // This is not an exact match, we try PSL matching.
         if (lookup_form->scheme != PasswordForm::SCHEME_HTML ||
-            form->scheme != PasswordForm::SCHEME_HTML ||
-            !(password_manager::IsPublicSuffixDomainMatch(
-                lookup_form->signon_realm, form->signon_realm))) {
+            form->scheme != PasswordForm::SCHEME_HTML)
+          continue;
+        // This is not an exact match, we try PSL matching and federated match.
+        if (allow_psl_match &&
+            password_manager::IsPublicSuffixDomainMatch(
+                form->signon_realm, lookup_form->signon_realm)) {
+          psl_domain_match_metric = password_manager::PSL_DOMAIN_MATCH_FOUND;
+          form->is_public_suffix_match = true;
+        } else if (!form->federation_origin.unique() &&
+                   password_manager::IsFederatedMatch(form->signon_realm,
+                                                      lookup_form->origin)) {
+        } else {
           continue;
         }
-        psl_domain_match_metric = password_manager::PSL_DOMAIN_MATCH_FOUND;
-        form->is_public_suffix_match = true;
       }
       SecretValue* secretValue = secret_item_get_secret(secretItem);
       if (secretValue) {
@@ -670,15 +681,11 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
   }
 
   if (lookup_form) {
-    const GURL signon_realm(lookup_form->signon_realm);
-    std::string registered_domain =
-        password_manager::GetRegistryControlledDomain(signon_realm);
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.PslDomainMatchTriggering",
-        password_manager::ShouldPSLDomainMatchingApply(registered_domain)
-            ? psl_domain_match_metric
-            : password_manager::PSL_DOMAIN_MATCH_NOT_USED,
-        password_manager::PSL_DOMAIN_MATCH_COUNT);
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
+                              allow_psl_match
+                                  ? psl_domain_match_metric
+                                  : password_manager::PSL_DOMAIN_MATCH_NOT_USED,
+                              password_manager::PSL_DOMAIN_MATCH_COUNT);
   }
   g_list_free(found);
   return forms;
