@@ -17,7 +17,7 @@ namespace blimp {
 ExactMatchCertVerifier::ExactMatchCertVerifier(
     scoped_refptr<net::X509Certificate> engine_cert)
     : engine_cert_(std::move(engine_cert)) {
-  DCHECK(engine_cert);
+  DCHECK(engine_cert_);
 
   net::SHA1HashValue sha1_hash;
   sha1_hash = net::X509Certificate::CalculateFingerprint(
