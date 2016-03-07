@@ -109,40 +109,6 @@ crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
 
-crbug.com/559258 fast/borders/border-image-01.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-border-radius.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-longhand.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-massive-scale.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-omit-right-slice.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-outset-in-shorthand.html [ NeedsRebaseline ]
-
-crbug.com/559258 fast/borders/border-image-outset-split-inline.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-outset.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-repeat-round.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-repeat.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
-
-crbug.com/559258 fast/borders/border-image-scale-transform.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-scaled.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-scrambled.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-side-reduction.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-slice-constrained.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-slices.html [ NeedsRebaseline ]
-
-crbug.com/559258 fast/borders/border-image-source.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/border-image-trumps-radius.html [ NeedsRebaseline ]
-crbug.com/559258 fast/borders/scaled-border-image.html [ NeedsRebaseline ]
-crbug.com/559258 fast/writing-mode/border-image-vertical-lr.html [ NeedsRebaseline ]
-crbug.com/559258 fast/writing-mode/border-image-vertical-rl.html [ NeedsRebaseline ]
-
-crbug.com/559258 css3/images/pixelated-border-image.html [ NeedsRebaseline ]
-crbug.com/559258 fast/gradients/border-image-gradient.html [ NeedsRebaseline ]
-crbug.com/559258 fast/images/webp-flip.html [ NeedsRebaseline ]
-crbug.com/559258 fast/repaint/border-outline-0.html [ NeedsRebaseline ]
-crbug.com/559258 scrollbars/listbox-scrollbar-combinations.html [ NeedsRebaseline ]
-crbug.com/559258 svg/as-border-image/svg-as-border-image-2.html [ NeedsRebaseline ]
-crbug.com/559258 svg/as-border-image/svg-as-border-image.html [ NeedsRebaseline ]
-
 crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Crash ]
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Crash ]
 
@@ -226,10 +192,6 @@ crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-d
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
-
-# SK_SUPPORT_LEGACY_SAMPLER_BIAS
-crbug.com/581870 fast/gradients/border-image-gradient-sides-and-corners.html [ NeedsRebaseline ]
-crbug.com/581870 svg/W3C-SVG-1.1/coords-units-01-b.svg [ NeedsRebaseline ]
 
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
