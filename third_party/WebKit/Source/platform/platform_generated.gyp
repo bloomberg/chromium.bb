@@ -142,6 +142,7 @@
           'action_name': 'CharacterData',
           'inputs': [
             'fonts/CharacterDataGenerator.cpp',
+            'fonts/CharacterData.h'
           ],
           'outputs': [
             '<(blink_platform_output_dir)/CharacterData.cpp',
