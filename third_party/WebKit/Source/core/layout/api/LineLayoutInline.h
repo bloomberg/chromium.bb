@@ -87,6 +87,11 @@ public:
         return toInline()->firstLineBoxIncludingCulling();
     }
 
+    InlineBox* lastLineBoxIncludingCulling() const
+    {
+        return toInline()->lastLineBoxIncludingCulling();
+    }
+
     LineBoxList* lineBoxes()
     {
         return toInline()->lineBoxes();

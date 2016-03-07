@@ -34,6 +34,11 @@ public:
         return toText()->firstTextBox();
     }
 
+    InlineTextBox* lastTextBox() const
+    {
+        return toText()->lastTextBox();
+    }
+
     InlineTextBox* createInlineTextBox(int start, unsigned short length)
     {
         return toText()->createInlineTextBox(start, length);

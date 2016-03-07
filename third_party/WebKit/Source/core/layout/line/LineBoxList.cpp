@@ -256,15 +256,15 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container, LineLayou
             continue;
 
         if (curr.isAtomicInlineLevel()) {
-            InlineBox* wrapper = toLayoutBox(curr)->inlineBoxWrapper();
+            InlineBox* wrapper = LineLayoutBox(curr).inlineBoxWrapper();
             if (wrapper)
                 box = &wrapper->root();
         } else if (curr.isText()) {
-            InlineTextBox* textBox = toLayoutText(curr)->lastTextBox();
+            InlineTextBox* textBox = LineLayoutText(curr).lastTextBox();
             if (textBox)
                 box = &textBox->root();
         } else if (curr.isLayoutInline()) {
-            InlineBox* lastSiblingBox = toLayoutInline(curr)->lastLineBoxIncludingCulling();
+            InlineBox* lastSiblingBox = LineLayoutInline(curr).lastLineBoxIncludingCulling();
             if (lastSiblingBox)
                 box = &lastSiblingBox->root();
         }

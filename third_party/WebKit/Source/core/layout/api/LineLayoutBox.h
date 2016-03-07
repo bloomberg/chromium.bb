@@ -114,6 +114,11 @@ public:
         return toBox()->createInlineBox();
     }
 
+    InlineBox* inlineBoxWrapper() const
+    {
+        return toBox()->inlineBoxWrapper();
+    }
+
 private:
     LayoutBox* toBox()
     {
