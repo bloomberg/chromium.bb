@@ -26,7 +26,6 @@ using web_modal::WebContentsModalDialogManager;
 
 namespace {
 
-#if !defined(OS_MACOSX)
 static const char kTestDataURL[] = "data:text/html,<!doctype html>"
     "<body></body>"
     "<style>"
@@ -42,7 +41,6 @@ std::string GetChangeDimensionsScript(int dimension) {
   return base::StringPrintf("window.document.body.style.width = %d + 'px';"
       "window.document.body.style.height = %d + 'px';", dimension, dimension);
 }
-#endif
 
 class ConstrainedWebDialogBrowserTestObserver
     : public content::WebContentsObserver {
@@ -147,7 +145,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   EXPECT_TRUE(observer.contents_destroyed());
 }
 
-#if !defined(OS_MACOSX)
 // Tests that dialog autoresizes based on web contents when autoresizing
 // is enabled.
 IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
@@ -173,6 +170,12 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   gfx::Size min_size = gfx::Size(100, 100);
   gfx::Size max_size = gfx::Size(200, 200);
   gfx::Size initial_dialog_size;
+// OSX windows are initially created with non-empty dimensions. The
+// autoresizeable dialog's window dimensions are determined after initial
+// creation.
+#if defined(OS_MACOSX)
+  initial_dialog_size = gfx::Size(1, 1);
+#endif
   delegate->GetDialogSize(&initial_dialog_size);
 
   ConstrainedWebDialogDelegate* dialog_delegate =
@@ -186,7 +189,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   EXPECT_EQ(max_size, dialog_delegate->GetMaximumSize());
 
   // Check for initial sizing. Dialog was created as a 400x400 dialog.
-  EXPECT_EQ(gfx::Size(), web_contents->GetPreferredSize());
   ASSERT_EQ(initial_dialog_size, dialog_delegate->GetPreferredSize());
 
   observer.Wait();
@@ -250,7 +252,6 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
   delegate->GetDialogSize(&initial_dialog_size);
 
   // Check for initial sizing. Dialog was created as a 400x400 dialog.
-  EXPECT_EQ(gfx::Size(), web_contents->GetPreferredSize());
   ASSERT_EQ(initial_dialog_size, dialog_delegate->GetPreferredSize());
 
   // Resize <body> to dimension smaller than dialog.
@@ -269,4 +270,3 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
       initial_dialog_size,
       dialog_delegate)));
 }
-#endif  // !OS_MACOSX

@@ -66,8 +66,7 @@ CollectedCookiesMac::CollectedCookiesMac(content::WebContents* web_contents) {
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:[sheet_controller_ window]]);
-  window_.reset(new ConstrainedWindowMac(
-      this, web_contents, sheet));
+  window_ = CreateAndShowWebModalDialogMac(this, web_contents, sheet);
 }
 
 CollectedCookiesMac::~CollectedCookiesMac() {

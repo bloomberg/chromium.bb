@@ -47,7 +47,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<ConstrainedWindowMac> window_;
+  std::unique_ptr<ConstrainedWindowMac> window_;
 
   base::scoped_nsobject<CollectedCookiesWindowController> sheet_controller_;
 

@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller.h"
@@ -60,7 +59,7 @@ class ProfileSigninConfirmationDialogCocoa : ConstrainedWindowMacDelegate {
   base::scoped_nsobject<ProfileSigninConfirmationViewController> controller_;
 
   // The constrained window that contains the dialog view.
-  scoped_ptr<ConstrainedWindowMac> window_;
+  std::unique_ptr<ConstrainedWindowMac> window_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationDialogCocoa);
 };

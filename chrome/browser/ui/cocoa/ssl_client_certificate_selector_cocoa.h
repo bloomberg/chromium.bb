@@ -35,7 +35,7 @@ class SSLClientAuthObserverCocoaBridge;
   // A C++ object to bridge SSLClientAuthObserver notifications to us.
   scoped_ptr<SSLClientAuthObserverCocoaBridge> observer_;
   base::scoped_nsobject<SFChooseIdentityPanel> panel_;
-  scoped_ptr<ConstrainedWindowMac> constrainedWindow_;
+  std::unique_ptr<ConstrainedWindowMac> constrainedWindow_;
   base::scoped_nsobject<NSWindow> overlayWindow_;
   BOOL closePending_;
   // A copy of the sheet's frame used to restore on show.

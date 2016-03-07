@@ -102,8 +102,8 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
     base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
         [[CustomConstrainedWindowSheet alloc]
             initWithCustomWindow:[alert_ window]]);
-    window_.reset(new ConstrainedWindowMac(
-        this, controller->WebContents(), sheet));
+    window_ = CreateAndShowWebModalDialogMac(
+        this, controller->WebContents(), sheet);
   }
 }
 
