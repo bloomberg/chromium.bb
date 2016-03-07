@@ -98,7 +98,7 @@ below:
 1.  Add `target_os = [ "ios" ]` to the bottom of your `chromium/.gclient`
 file.
 
-1.  Make sure you have the following in your `chromium/chromium.gyp_env`
+2.  Make sure you have the following in your `chromium/chromium.gyp_env`
 file (removing the `chromium_ios_signing=0` if you want to make
 developer-signed builds):
 
@@ -109,7 +109,7 @@ developer-signed builds):
 }
 ```
 
-1.  Make sure to sync again to fetch the iOS specific dependencies and
+3.  Make sure to sync again to fetch the iOS specific dependencies and
 regenerate build rules using:
 
 ```shell
