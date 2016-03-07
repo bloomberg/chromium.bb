@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <vector>
 
 #include "base/bind.h"
@@ -16,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
@@ -32,6 +32,32 @@
 #include "media/filters/opus_audio_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#include "media/base/android/media_codec_util.h"
+#include "media/filters/android/media_codec_audio_decoder.h"
+
+// Helper macro to skip the test if MediaCodec is not available.
+#define SKIP_TEST_IF_NO_MEDIA_CODEC()                                \
+  do {                                                               \
+    if (GetParam().decoder_type == MEDIA_CODEC) {                    \
+      if (!MediaCodecUtil::IsMediaCodecAvailable()) {                \
+        VLOG(0) << "Could not run test - no MediaCodec on device.";  \
+        return;                                                      \
+      }                                                              \
+      if (GetParam().codec == kCodecOpus &&                          \
+          base::android::BuildInfo::GetInstance()->sdk_int() < 21) { \
+        VLOG(0) << "Could not run test - Opus is not supported";     \
+        return;                                                      \
+      }                                                              \
+    }                                                                \
+  } while (0)
+#else
+#define SKIP_TEST_IF_NO_MEDIA_CODEC() \
+  do {                                \
+  } while (0)
+#endif  // !defined(OS_ANDROID)
+
 namespace media {
 
 // The number of packets to read and then decode from each file.
@@ -44,6 +70,9 @@ static const uint8_t kOpusExtraData[] = {
 enum AudioDecoderType {
   FFMPEG,
   OPUS,
+#if defined(OS_ANDROID)
+  MEDIA_CODEC,
+#endif
 };
 
 struct DecodedBufferExpectations {
@@ -113,6 +142,11 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
         decoder_.reset(
             new OpusAudioDecoder(message_loop_.task_runner()));
         break;
+#if defined(OS_ANDROID)
+      case MEDIA_CODEC:
+        decoder_.reset(new MediaCodecAudioDecoder(message_loop_.task_runner()));
+        break;
+#endif
     }
   }
 
@@ -126,10 +160,12 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     ASSERT_FALSE(pending_decode_);
     pending_decode_ = true;
     last_decode_status_ = AudioDecoder::kDecodeError;
+
+    base::RunLoop run_loop;
     decoder_->Decode(
-        buffer,
-        base::Bind(&AudioDecoderTest::DecodeFinished, base::Unretained(this)));
-    base::RunLoop().RunUntilIdle();
+        buffer, base::Bind(&AudioDecoderTest::DecodeFinished,
+                           base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
     ASSERT_FALSE(pending_decode_);
   }
 
@@ -225,11 +261,13 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     decoded_audio_.push_back(buffer);
   }
 
-  void DecodeFinished(AudioDecoder::Status status) {
+  void DecodeFinished(const base::Closure& quit_closure,
+                      AudioDecoder::Status status) {
     EXPECT_TRUE(pending_decode_);
     EXPECT_FALSE(pending_reset_);
     pending_decode_ = false;
     last_decode_status_ = status;
+    quit_closure.Run();
   }
 
   void ResetFinished() {
@@ -321,30 +359,37 @@ class OpusAudioDecoderBehavioralTest : public AudioDecoderTest {};
 class FFmpegAudioDecoderBehavioralTest : public AudioDecoderTest {};
 
 TEST_P(AudioDecoderTest, Initialize) {
+  SKIP_TEST_IF_NO_MEDIA_CODEC();
   ASSERT_NO_FATAL_FAILURE(Initialize());
 }
 
 // Verifies decode audio as well as the Decode() -> Reset() sequence.
 TEST_P(AudioDecoderTest, ProduceAudioSamples) {
+  SKIP_TEST_IF_NO_MEDIA_CODEC();
   ASSERT_NO_FATAL_FAILURE(Initialize());
 
   // Run the test multiple times with a seek back to the beginning in between.
   std::vector<std::string> decoded_audio_md5_hashes;
   for (int i = 0; i < 2; ++i) {
-    for (size_t j = 0; j < kDecodeRuns; ++j) {
-      do {
-        Decode();
-        ASSERT_EQ(last_decode_status(), AudioDecoder::kOk);
-        // Some codecs have a multiple buffer delay and require an extra
-        // Decode() step to extract the desired number of output buffers.
-      } while (j == 0 && decoded_audio_size() == 0);
+    // Run decoder until we get at least |kDecodeRuns| output buffers.
+    // Keeping Decode() in a loop seems to be the simplest way to guarantee that
+    // the predefined number of output buffers are produced without draining
+    // (i.e. decoding EOS).
+    do {
+      Decode();
+      ASSERT_EQ(last_decode_status(), AudioDecoder::kOk);
+    } while (decoded_audio_size() < kDecodeRuns);
 
-      // On the first pass record the exact MD5 hash for each decoded buffer.
-      if (i == 0)
+    // With MediaCodecAudioDecoder the output buffers might appear after
+    // some delay. Since we keep decoding in a loop, the number of output
+    // buffers when they eventually appear might exceed |kDecodeRuns|.
+    ASSERT_LE(kDecodeRuns, decoded_audio_size());
+
+    // On the first pass record the exact MD5 hash for each decoded buffer.
+    if (i == 0) {
+      for (size_t j = 0; j < kDecodeRuns; ++j)
         decoded_audio_md5_hashes.push_back(GetDecodedAudioMD5(j));
     }
-
-    ASSERT_EQ(kDecodeRuns, decoded_audio_size());
 
     // On the first pass verify the basic audio hash and sample info.  On the
     // second, verify the exact MD5 sum for each packet.  It shouldn't change.
@@ -354,7 +399,6 @@ TEST_P(AudioDecoderTest, ProduceAudioSamples) {
     }
 
     SendEndOfStream();
-    ASSERT_EQ(kDecodeRuns, decoded_audio_size());
 
     // Seek back to the beginning.  Calls Reset() on the decoder.
     Seek(start_timestamp());
@@ -362,17 +406,20 @@ TEST_P(AudioDecoderTest, ProduceAudioSamples) {
 }
 
 TEST_P(AudioDecoderTest, Decode) {
+  SKIP_TEST_IF_NO_MEDIA_CODEC();
   ASSERT_NO_FATAL_FAILURE(Initialize());
   Decode();
   EXPECT_EQ(AudioDecoder::kOk, last_decode_status());
 }
 
 TEST_P(AudioDecoderTest, Reset) {
+  SKIP_TEST_IF_NO_MEDIA_CODEC();
   ASSERT_NO_FATAL_FAILURE(Initialize());
   Reset();
 }
 
 TEST_P(AudioDecoderTest, NoTimestamp) {
+  SKIP_TEST_IF_NO_MEDIA_CODEC();
   ASSERT_NO_FATAL_FAILURE(Initialize());
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(0));
   buffer->set_timestamp(kNoTimestamp());
@@ -455,8 +502,20 @@ INSTANTIATE_TEST_CASE_P(OpusAudioDecoderBehavioralTest,
                         OpusAudioDecoderBehavioralTest,
                         testing::ValuesIn(kOpusBehavioralTest));
 
+#if defined(OS_ANDROID)
+
+const DecoderTestData kMediaCodecTests[] = {
+    {MEDIA_CODEC, kCodecOpus, "bear-opus.ogg", kBearOpusExpectations, 24, 48000,
+     CHANNEL_LAYOUT_STEREO},
+};
+
+INSTANTIATE_TEST_CASE_P(MediaCodecAudioDecoderTest,
+                        AudioDecoderTest,
+                        testing::ValuesIn(kMediaCodecTests));
+
+#else  // !defined(OS_ANDROID)
+
 // Disable all FFmpeg decoder tests on Android. http://crbug.com/570762.
-#if !defined(OS_ANDROID)
 
 #if defined(USE_PROPRIETARY_CODECS)
 const DecodedBufferExpectations kSfxMp3Expectations[] = {

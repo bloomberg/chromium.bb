@@ -15,12 +15,7 @@
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
-
-namespace media {
+#include "media/base/media_export.h"
 
 // MediaCodecAudioDecoder is based on Android's MediaCodec API.
 // The MediaCodec API is required to play encrypted (as in EME) content on
@@ -97,7 +92,15 @@ namespace media {
 //                 |                          |             |
 //              [Error]                    [Ready]       [Error]
 
-class MediaCodecAudioDecoder : public AudioDecoder {
+namespace base {
+class SingleThreadTaskRunner;
+}
+
+namespace media {
+
+class AudioTimestampHelper;
+
+class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
  public:
   explicit MediaCodecAudioDecoder(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
@@ -150,9 +153,14 @@ class MediaCodecAudioDecoder : public AudioDecoder {
   // dequeues output buffers.
   void DoIOTask();
 
-  // Enqueues one pending input buffer into MediaCodec if MediaCodec has room.
+  // Enqueues pending input buffers into MediaCodec as long as it can happen
+  // without delay in dequeuing and enqueueing input buffers.
   // Returns true if any input was processed.
   bool QueueInput();
+
+  // Enqueues one pending input buffer into MediaCodec if MediaCodec has room.
+  // Returns true if any input was processed.
+  bool QueueOneInputBuffer();
 
   // A helper method for QueueInput(). Dequeues an empty input buffer from the
   // codec and returns the information about it. OutputBufferInfo.buf_index is
@@ -221,6 +229,8 @@ class MediaCodecAudioDecoder : public AudioDecoder {
   OutputCB output_cb_;
 
   scoped_ptr<MediaCodecBridge> media_codec_;
+
+  scoped_ptr<AudioTimestampHelper> timestamp_helper_;
 
   // Repeating timer that kicks MediaCodec operation.
   base::RepeatingTimer io_timer_;

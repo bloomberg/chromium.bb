@@ -11,7 +11,9 @@
 #include "base/thread_task_runner_handle.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/audio_buffer.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/timestamp_constants.h"
 
 namespace media {
 
@@ -116,6 +118,8 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
   }
 
   config_ = config;
+  timestamp_helper_.reset(
+      new AudioTimestampHelper(config_.samples_per_second()));
   output_cb_ = BindToCurrentLoop(output_cb);
 
   SetState(STATE_READY);
@@ -126,8 +130,15 @@ void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                                     const DecodeCB& decode_cb) {
   DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
 
+  if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp()) {
+    DVLOG(2) << __FUNCTION__ << " " << buffer->AsHumanReadableString()
+             << ": no timestamp, skipping this buffer";
+    bound_decode_cb.Run(kDecodeError);
+    return;
+  }
+
   if (state_ == STATE_ERROR) {
-    // We get here if an error happens in DecodeOutput() or Reset().
+    // We get here if an error happens in DequeueOutput() or Reset().
     DVLOG(2) << __FUNCTION__ << " " << buffer->AsHumanReadableString()
              << ": Error state, returning decode error for all buffers";
     ClearInputQueue(kDecodeError);
@@ -171,6 +182,9 @@ void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
     success = !!media_codec_;
   }
 
+  // Reset AudioTimestampHelper.
+  timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
+
   SetState(success ? STATE_READY : STATE_ERROR);
 
   task_runner_->PostTask(FROM_HERE, closure);
@@ -202,6 +216,16 @@ void MediaCodecAudioDecoder::DoIOTask() {
 }
 
 bool MediaCodecAudioDecoder::QueueInput() {
+  DVLOG(2) << __FUNCTION__;
+
+  bool did_work = false;
+  while (QueueOneInputBuffer())
+    did_work = true;
+
+  return did_work;
+}
+
+bool MediaCodecAudioDecoder::QueueOneInputBuffer() {
   DVLOG(2) << __FUNCTION__;
 
   if (input_queue_.empty())
@@ -277,6 +301,7 @@ MediaCodecAudioDecoder::DequeueInputBuffer() {
       media_codec_->DequeueInputBuffer(NoWaitTimeout(), &input_buf_index);
   switch (status) {
     case media::MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
+      DVLOG(2) << __FUNCTION__ << ": MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER";
       break;
 
     case media::MEDIA_CODEC_ERROR:
@@ -501,8 +526,17 @@ void MediaCodecAudioDecoder::OnDecodedFrame(const OutputBufferInfo& out) {
       kSampleFormatS16, config_.channel_layout(), channel_count,
       config_.samples_per_second(), frame_count);
 
-  // Set timestamp.
-  audio_buffer->set_timestamp(out.pts);
+  // Calculate and set buffer timestamp.
+
+  const bool first_buffer =
+      timestamp_helper_->base_timestamp() == kNoTimestamp();
+  if (first_buffer) {
+    // Clamp the base timestamp to zero.
+    timestamp_helper_->SetBaseTimestamp(std::max(base::TimeDelta(), out.pts));
+  }
+
+  audio_buffer->set_timestamp(timestamp_helper_->GetTimestamp());
+  timestamp_helper_->AddFrames(frame_count);
 
   // Copy data into AudioBuffer.
   CHECK_LE(out.size, audio_buffer->data_size());
