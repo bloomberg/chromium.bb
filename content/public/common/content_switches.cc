@@ -212,9 +212,6 @@ const char kDisableLocalStorage[]           = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
-// Disables Media Source API (i.e., the MediaSource object).
-const char kDisableMediaSource[]            = "disable-media-source";
-
 // Disables usage of the namespace sandbox.
 const char kDisableNamespaceSandbox[]       = "disable-namespace-sandbox";
 
@@ -346,9 +343,6 @@ const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
 const char kEnableDisplayList2dCanvas[]     = "enable-display-list-2d-canvas";
 const char kForceDisplayList2dCanvas[]      = "force-display-list-2d-canvas";
 const char kDisableDisplayList2dCanvas[]    = "disable-display-list-2d-canvas";
-
-// Disables (unprefixed) Encrypted Media Extensions.
-const char kDisableEncryptedMedia[] = "disable-encrypted-media";
 
 // Enable experimental canvas features, e.g. canvas 2D context attributes
 const char kEnableExperimentalCanvasFeatures[] =

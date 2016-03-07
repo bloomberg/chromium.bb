@@ -5,7 +5,6 @@
 // http://w3c.github.io/encrypted-media/#mediakeysystemaccess-interface
 
 [
-    RuntimeEnabled=EncryptedMedia,
     GarbageCollected,
 ] interface MediaKeySystemAccess {
     readonly attribute DOMString keySystem;

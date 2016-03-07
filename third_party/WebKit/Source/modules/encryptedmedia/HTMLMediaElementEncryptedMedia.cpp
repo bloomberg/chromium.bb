@@ -19,7 +19,6 @@
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "platform/ContentDecryptionModuleResult.h"
 #include "platform/Logging.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Functional.h"
 
 namespace blink {
@@ -357,20 +356,17 @@ void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType ini
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::encrypted");
 
-    if (RuntimeEnabledFeatures::encryptedMediaEnabled()) {
-        // Send event for WD EME.
-        RefPtrWillBeRawPtr<Event> event;
-        if (m_mediaElement->isMediaDataCORSSameOrigin(m_mediaElement->executionContext()->securityOrigin())) {
-            event = createEncryptedEvent(initDataType, initData, initDataLength);
-        } else {
-            // Current page is not allowed to see content from the media file,
-            // so don't return the initData. However, they still get an event.
-            event = createEncryptedEvent(WebEncryptedMediaInitDataType::Unknown, nullptr, 0);
-        }
-
-        event->setTarget(m_mediaElement);
-        m_mediaElement->scheduleEvent(event.release());
+    RefPtrWillBeRawPtr<Event> event;
+    if (m_mediaElement->isMediaDataCORSSameOrigin(m_mediaElement->executionContext()->securityOrigin())) {
+        event = createEncryptedEvent(initDataType, initData, initDataLength);
+    } else {
+        // Current page is not allowed to see content from the media file,
+        // so don't return the initData. However, they still get an event.
+        event = createEncryptedEvent(WebEncryptedMediaInitDataType::Unknown, nullptr, 0);
     }
+
+    event->setTarget(m_mediaElement);
+    m_mediaElement->scheduleEvent(event.release());
 }
 
 void HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey()

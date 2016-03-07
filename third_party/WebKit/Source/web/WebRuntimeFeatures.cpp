@@ -100,16 +100,6 @@ void WebRuntimeFeatures::enableDisplayList2dCanvas(bool enable)
     RuntimeEnabledFeatures::setDisplayList2dCanvasEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableEncryptedMedia(bool enable)
-{
-    RuntimeEnabledFeatures::setEncryptedMediaEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isEncryptedMediaEnabled()
-{
-    return RuntimeEnabledFeatures::encryptedMediaEnabled();
-}
-
 void WebRuntimeFeatures::enableExperimentalCanvasFeatures(bool enable)
 {
     RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(enable);
@@ -148,11 +138,6 @@ void WebRuntimeFeatures::enableMediaCapture(bool enable)
 void WebRuntimeFeatures::enableMediaRecorder(bool enable)
 {
     RuntimeEnabledFeatures::setMediaRecorderEnabled(enable);
-}
-
-void WebRuntimeFeatures::enableMediaSource(bool enable)
-{
-    RuntimeEnabledFeatures::setMediaSourceEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableNotificationActionIcons(bool enable)

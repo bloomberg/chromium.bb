@@ -67,8 +67,6 @@ DurableStorage status=experimental
 ForceDisplayList2dCanvas
 // See crbug.com/585250.
 ForceDisable2dCanvasCopyOnWrite
-// See https://crbug.com/582618.
-EncryptedMedia status=stable
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
 EventListenerOptions status=stable
@@ -117,8 +115,7 @@ MediaConstraints status=test
 MediaDevices status=stable
 MediaRecorder status=stable
 MediaSession
-MediaSource status=stable
-MediaSourceExperimental depends_on=MediaSource, status=experimental
+MediaSourceExperimental status=experimental
 MediaStreamSpeech status=experimental
 MemoryInfoInWorkers status=experimental
 MobileLayoutTheme

@@ -62,7 +62,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -1488,12 +1487,6 @@ void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  // Do not fire the "encrypted" event if Encrypted Media is not enabled.
-  // EME may not be enabled on Android Jelly Bean.
-  if (!blink::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
-    return;
-  }
 
   // TODO(xhwang): Update this UMA name. https://crbug.com/589251
   UMA_HISTOGRAM_COUNTS("Media.EME.NeedKey", 1);

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 partial interface HTMLMediaElement {
-    [RuntimeEnabled=EncryptedMedia] readonly attribute MediaKeys mediaKeys;
-    [RuntimeEnabled=EncryptedMedia, CallWith=ScriptState] Promise setMediaKeys(MediaKeys? mediaKeys);
-    [RuntimeEnabled=EncryptedMedia] attribute EventHandler onencrypted;
+    readonly attribute MediaKeys mediaKeys;
+    [CallWith=ScriptState] Promise setMediaKeys(MediaKeys? mediaKeys);
+    attribute EventHandler onencrypted;
 };

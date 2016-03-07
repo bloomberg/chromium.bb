@@ -25,7 +25,6 @@
 
 [
     DependentLifetime,
-    RuntimeEnabled=EncryptedMedia,
     GarbageCollected,
 ] interface MediaKeySession : EventTarget {
     // session properties

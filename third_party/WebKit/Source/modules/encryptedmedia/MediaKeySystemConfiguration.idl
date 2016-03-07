@@ -10,9 +10,7 @@ enum MediaKeysRequirement {
     "not-allowed"
 };
 
-[
-    RuntimeEnabled=EncryptedMedia
-] dictionary MediaKeySystemConfiguration {
+dictionary MediaKeySystemConfiguration {
     sequence<DOMString> initDataTypes;
     sequence<MediaKeySystemMediaCapability> audioCapabilities;
     sequence<MediaKeySystemMediaCapability> videoCapabilities;

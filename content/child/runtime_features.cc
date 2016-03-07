@@ -19,23 +19,12 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 
-#if defined(OS_ANDROID)
-#include <cpu-features.h>
-#include "base/android/build_info.h"
-#include "media/base/android/media_codec_util.h"
-#endif
-
 using blink::WebRuntimeFeatures;
 
 namespace content {
 
 static void SetRuntimeFeatureDefaultsForPlatform() {
 #if defined(OS_ANDROID)
-  // EME implementation needs Android MediaCodec API.
-  if (!media::MediaCodecUtil::IsMediaCodecAvailable()) {
-    WebRuntimeFeatures::enableEncryptedMedia(false);
-  }
-
   // Android does not have support for PagePopup
   WebRuntimeFeatures::enablePagePopup(false);
   // Android does not yet support SharedWorker. crbug.com/154571
@@ -80,9 +69,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kDisableDatabases))
     WebRuntimeFeatures::enableDatabase(false);
-
-  if (command_line.HasSwitch(switches::kDisableMediaSource))
-    WebRuntimeFeatures::enableMediaSource(false);
 
   if (command_line.HasSwitch(switches::kDisableNotifications)) {
     WebRuntimeFeatures::enableNotifications(false);

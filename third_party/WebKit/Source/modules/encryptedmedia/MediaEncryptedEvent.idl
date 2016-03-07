@@ -27,7 +27,6 @@
 
 [
     Constructor(DOMString type, optional MediaEncryptedEventInit eventInitDict),
-    RuntimeEnabled=EncryptedMedia,
 ] interface MediaEncryptedEvent : Event {
     readonly attribute DOMString initDataType;
     readonly attribute ArrayBuffer? initData;

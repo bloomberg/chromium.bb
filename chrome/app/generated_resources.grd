@@ -5561,12 +5561,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ALTSVC_DESCRIPTION" desc="Description for the flag for Alternative Services.  Please do not translate &quot;Alternative Services&quot;.">
         Enable support for Alternative Services, an experimental HTTP feature.
       </message>
-      <message name="IDS_FLAGS_MEDIA_SOURCE_NAME" desc="Title for the flag for the Media Source API.">
-        Media Source API
-      </message>
-      <message name="IDS_FLAGS_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag for the Media Source API.">
-        The MediaSource object allows JavaScript to send media data directly to a video element.
-      </message>
       <message name="IDS_FLAGS_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME" desc="Title for the flag for gesture requiment for media playback">
         Gesture requirement for media playback
       </message>
