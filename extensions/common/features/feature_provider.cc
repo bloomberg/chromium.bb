@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/common/content_switches.h"
@@ -23,7 +23,7 @@ namespace {
 class Static {
  public:
   FeatureProvider* GetFeatures(const std::string& name) const {
-    FeatureProviderMap::const_iterator it = feature_providers_.find(name);
+    auto it = feature_providers_.find(name);
     if (it == feature_providers_.end())
       CRASH_WITH_MINIDUMP("FeatureProvider \"" + name + "\" not found");
     return it->second.get();
@@ -37,14 +37,11 @@ class Static {
     base::Time begin_time = base::Time::Now();
 
     ExtensionsClient* client = ExtensionsClient::Get();
-    feature_providers_["api"] =
-        make_linked_ptr(client->CreateFeatureProvider("api").release());
-    feature_providers_["manifest"] =
-        make_linked_ptr(client->CreateFeatureProvider("manifest").release());
+    feature_providers_["api"] = client->CreateFeatureProvider("api");
+    feature_providers_["manifest"] = client->CreateFeatureProvider("manifest");
     feature_providers_["permission"] =
-        make_linked_ptr(client->CreateFeatureProvider("permission").release());
-    feature_providers_["behavior"] =
-        make_linked_ptr(client->CreateFeatureProvider("behavior").release());
+        client->CreateFeatureProvider("permission");
+    feature_providers_["behavior"] = client->CreateFeatureProvider("behavior");
 
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     std::string process_type =
@@ -61,10 +58,7 @@ class Static {
     }
   }
 
-  typedef std::map<std::string, linked_ptr<FeatureProvider> >
-      FeatureProviderMap;
-
-  FeatureProviderMap feature_providers_;
+  std::map<std::string, scoped_ptr<FeatureProvider>> feature_providers_;
 };
 
 base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;

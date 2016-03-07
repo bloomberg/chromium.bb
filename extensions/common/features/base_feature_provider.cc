@@ -11,6 +11,7 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/complex_feature.h"
 #include "extensions/common/features/simple_feature.h"
@@ -52,7 +53,7 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
     }
 
     if (iter.value().GetType() == base::Value::TYPE_DICTIONARY) {
-      linked_ptr<SimpleFeature> feature((*factory_)());
+      scoped_ptr<SimpleFeature> feature((*factory_)());
 
       std::vector<std::string> split = base::SplitString(
           iter.key(), ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -106,7 +107,7 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
       if (parse_error)
         continue;
 
-      features_[iter.key()] = feature;
+      features_[iter.key()] = std::move(feature);
     } else if (iter.value().GetType() == base::Value::TYPE_LIST) {
       // This is a complex feature.
       const base::ListValue* list =
@@ -133,11 +134,11 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
         features->push_back(std::move(feature));
       }
 
-      linked_ptr<ComplexFeature> feature(
+      scoped_ptr<ComplexFeature> feature(
           new ComplexFeature(std::move(features)));
       feature->set_name(iter.key());
 
-      features_[iter.key()] = feature;
+      features_[iter.key()] = std::move(feature);
     } else {
       LOG(ERROR) << iter.key() << ": Feature description must be dictionary or"
                  << " list of dictionaries.";
@@ -151,10 +152,8 @@ BaseFeatureProvider::~BaseFeatureProvider() {
 const std::vector<std::string>& BaseFeatureProvider::GetAllFeatureNames()
     const {
   if (feature_names_.empty()) {
-    for (FeatureMap::const_iterator iter = features_.begin();
-         iter != features_.end(); ++iter) {
-      feature_names_.push_back(iter->first);
-    }
+    for (const auto& feature : features_)
+      feature_names_.push_back(feature.first);
     // A std::map is sorted by its keys, so we don't need to sort feature_names_
     // now.
   }
@@ -162,7 +161,7 @@ const std::vector<std::string>& BaseFeatureProvider::GetAllFeatureNames()
 }
 
 Feature* BaseFeatureProvider::GetFeature(const std::string& name) const {
-  FeatureMap::const_iterator iter = features_.find(name);
+  const auto iter = features_.find(name);
   if (iter != features_.end())
     return iter->second.get();
   else
@@ -187,17 +186,15 @@ Feature* BaseFeatureProvider::GetParent(Feature* feature) const {
 std::vector<Feature*> BaseFeatureProvider::GetChildren(const Feature& parent)
     const {
   std::string prefix = parent.name() + ".";
-  const FeatureMap::const_iterator first_child = features_.lower_bound(prefix);
+  const auto first_child = features_.lower_bound(prefix);
 
   // All children have names before (parent.name() + ('.'+1)).
   ++prefix[prefix.size() - 1];
-  const FeatureMap::const_iterator after_children =
-      features_.lower_bound(prefix);
+  const auto after_children = features_.lower_bound(prefix);
 
   std::vector<Feature*> result;
   result.reserve(std::distance(first_child, after_children));
-  for (FeatureMap::const_iterator it = first_child; it != after_children;
-       ++it) {
+  for (auto it = first_child; it != after_children; ++it) {
     result.push_back(it->second.get());
   }
   return result;
