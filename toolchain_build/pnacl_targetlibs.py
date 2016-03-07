@@ -21,6 +21,9 @@ NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 CLANG_VER = '3.7.0'
 
+def ToolName(name):
+  return 'pnacl-' + name
+
 # Return the path to a tool to build target libraries
 # msys should be false if the path will be called directly rather than passed to
 # an msys or cygwin tool such as sh or make.
@@ -34,7 +37,7 @@ def PnaclTool(toolname, arch='le32', msys=True):
     # binary.
     base = toolname
   elif IsBCArch(arch):
-    base = 'pnacl-' + toolname
+    base = ToolName(toolname)
   else:
     base = '-'.join([TargetArch(arch), 'nacl', toolname])
   return command.path.join('%(abs_target_lib_compiler)s',
@@ -42,9 +45,7 @@ def PnaclTool(toolname, arch='le32', msys=True):
 
 # PNaCl tools for newlib's environment, e.g. CC_FOR_TARGET=/path/to/pnacl-clang
 TOOL_ENV_NAMES = { 'CC': 'clang', 'CXX': 'clang++', 'AR': 'ar', 'NM': 'nm',
-                   'RANLIB': 'ranlib', 'READELF': 'readelf',
-                   'OBJDUMP': 'illegal', 'AS': 'as', 'LD': 'illegal',
-                   'STRIP': 'illegal' }
+                   'RANLIB': 'ranlib', 'READELF': 'readelf', 'AS': 'as' }
 
 def TargetTools(arch):
   return [ tool + '_FOR_TARGET=' + PnaclTool(name, arch=arch, msys=True)
@@ -109,7 +110,10 @@ def BiasedBitcodeTargetFlag(bias_arch):
       'arm':    ('armv7-unknown-nacl-gnueabihf',  ['-mfloat-abi=hard']),
       'mipsel': ('mipsel-unknown-nacl',           []),
   }
-  return ['--target=%s' % flagmap[arch][0]] + flagmap[arch][1]
+  # The -emit-llvm flag is only needed for native Clang drivers since
+  # pnacl-clang already passes that option to every Clang invocation.
+  # TODO(phosek): Refactor the per-toolchain options into a separate class.
+  return ['--target=%s' % flagmap[arch][0], '-emit-llvm'] + flagmap[arch][1]
 
 
 def TranslatorArchToBiasArch(arch):
@@ -151,7 +155,8 @@ def LibCxxCflags(bias_arch):
   # HAS_THREAD_LOCAL is used by libc++abi's exception storage, the fallback is
   # pthread otherwise.
   return ' '.join([TargetLibCflags(bias_arch), NewlibIsystemCflags(bias_arch),
-                   '-DHAS_THREAD_LOCAL=1', '-D__ARM_DWARF_EH__'])
+                   '-fexceptions', '-DHAS_THREAD_LOCAL=1',
+                   '-D__ARM_DWARF_EH__'])
 
 
 def NativeTargetFlag(bias_arch):
@@ -912,10 +917,11 @@ def SDKCompiler(arches):
   return compiler
 
 
-def SDKLibs(arch, is_canonical):
+def SDKLibs(arch, is_canonical, extra_flags=[]):
   scons_flags = ['--verbose', 'MODE=nacl', '-j%(cores)s', 'naclsdk_validate=0',
                  'pnacl_newlib_dir=%(abs_sdk_compiler)s',
                  'DESTINATION_ROOT=%(work_dir)s']
+  scons_flags.extend(extra_flags)
   if arch == 'le32':
     scons_flags.extend(['bitcode=1', 'platform=x86-32'])
   elif not IsBCArch(arch):

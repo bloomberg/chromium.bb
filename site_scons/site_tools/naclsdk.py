@@ -190,7 +190,10 @@ def _SetEnvForPnacl(env, root):
   translator_root = os.path.join(os.path.dirname(root), 'pnacl_translator')
 
   binroot = os.path.join(root, 'bin')
-  binprefix = os.path.join(binroot, 'pnacl-')
+  if env.Bit('pnacl_native_clang_driver'):
+    binprefix = os.path.join(binroot, 'le32-nacl-')
+  else:
+    binprefix = os.path.join(binroot, 'pnacl-')
   binext = ''
   if env.Bit('host_windows'):
     binext = '.bat'

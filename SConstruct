@@ -263,6 +263,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'bitcode', default=False,
     desc='We are building bitcode')
 
+  BitFromArgument(env, 'pnacl_native_clang_driver', default=False,
+    desc='Use the (experimental) native PNaCl Clang driver')
+
   BitFromArgument(env, 'nacl_clang', default=(not env.Bit('bitcode') and
                                               not env.Bit('nacl_glibc')),
     desc='Use the native nacl-clang newlib compiler instead of nacl-gcc')

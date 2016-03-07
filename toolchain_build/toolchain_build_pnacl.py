@@ -642,6 +642,20 @@ def CreateSymLinksToDirectToNaClTools(host):
                                           arch + '-nacl-clang++')])
        for arch in DIRECT_TO_NACL_ARCHES])
 
+def CreateSymLinksToPNaClTools(host):
+  return (
+      [command.Command(['ln', '-f',
+                        command.path.join('%(output)s', 'bin', tool),
+                        command.path.join('%(output)s', 'bin',
+                                          'le32-nacl-' + tool)])
+       for tool in ['clang', 'clang++']] +
+      [command.Command(['ln', '-f',
+                        command.path.join('%(output)s', 'bin',
+                                          'llvm-' + tool),
+                        command.path.join('%(output)s', 'bin',
+                                          'le32-nacl-' + tool)])
+       for tool in ['ar', 'nm', 'ranlib', 'as']])
+
 def HostLibs(host, options):
   def H(component_name):
     # Return a package name for a component name with a host triple.
@@ -889,7 +903,8 @@ def HostTools(host, options):
                                path_dirs=GomaPathDirs(host, options),
                                env=AflFuzzEnvMap(host, options)),
                command.Command(NinjaCommand(host, options) + ['install'])] +
-              CreateSymLinksToDirectToNaClTools(host)
+              CreateSymLinksToDirectToNaClTools(host) +
+              CreateSymLinksToPNaClTools(host)
       },
   }
   cleanup_static_libs = []
@@ -967,6 +982,7 @@ def HostTools(host, options):
                                Exe('c-index-test'), Exe('clang-tblgen'),
                                Exe('llvm-tblgen')])] +
               CreateSymLinksToDirectToNaClTools(host) +
+              CreateSymLinksToPNaClTools(host) +
               CopyWindowsHostLibs(host),
       },
   }
@@ -1296,6 +1312,8 @@ def main():
                       help="Use LLVM's cmake ninja build instead of autoconf")
   parser.add_argument('--gcc', action='store_true', default=False,
                       help="Use the default compiler 'cc' instead of clang")
+  parser.add_argument('--native-clang-driver', action='store_true',
+                      default=False, help="Use native Clang toolchain driver")
   parser.add_argument('--sanitize', choices=['address', 'thread', 'memory',
                                              'undefined'],
                       help="Use a sanitizer with LLVM's clang cmake build")
@@ -1349,6 +1367,14 @@ def main():
     print '--afl-fuzz-dir not allowed when using gcc'
     sys.exit(1)
 
+  if args.native_clang_driver:
+    def ToolName(toolname):
+      if toolname in ['llc', 'opt']:
+        return 'pnacl-' + toolname
+      else:
+        return 'le32-nacl-' + toolname
+    pnacl_targetlibs.ToolName = ToolName
+
   packages = {}
   upload_packages = {}
 
@@ -1399,7 +1425,8 @@ def main():
     packages.update(Metadata(rev, is_canonical))
     packages.update(pnacl_targetlibs.SDKCompiler(
                     ['le32'] + DIRECT_TO_NACL_ARCHES))
-    packages.update(pnacl_targetlibs.SDKLibs('le32', is_canonical))
+    packages.update(pnacl_targetlibs.SDKLibs('le32', is_canonical,
+        ['pnacl_native_clang_driver=1'] if args.native_clang_driver else []))
     unsandboxed_runtime_canonical = is_canonical or pynacl.platform.IsMac()
     packages.update(pnacl_targetlibs.UnsandboxedRuntime(
         'x86-32-%s' % pynacl.platform.GetOS(), unsandboxed_runtime_canonical))

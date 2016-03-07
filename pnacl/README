@@ -24,3 +24,8 @@ translator/
 **These are not generally needed directly by developers of PNaCl modules
  in Chrome, but may be useful for others, e.g. those who want to build tools
  which target PNaCl as a platform
+
+There are currently two different versions of the PNaCl toolchain: (1) the
+legacy Python-based toolchain driver which uses the pnacl- prefix for the
+individual tool names; and (2) the experimental native PNaCl Clang toolchain
+driver which uses the le32-nacl- prefix.
