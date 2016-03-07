@@ -32,15 +32,21 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
 
   // Localized strings (alphabetical order).
+  source->AddLocalizedString("cancel", IDS_CANCEL);
   source->AddLocalizedString("clearBrowsingData",
                              IDS_CLEAR_BROWSING_DATA_TITLE);
   source->AddLocalizedString("clearSearch", IDS_MD_HISTORY_CLEAR_SEARCH);
-  source->AddLocalizedString("cancel", IDS_CANCEL);
   source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
+  source->AddLocalizedString("foundSearchResults",
+                             IDS_HISTORY_FOUND_SEARCH_RESULTS);
   source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
+  source->AddLocalizedString("noResults", IDS_HISTORY_NO_RESULTS);
+  source->AddLocalizedString("noSearchResults", IDS_HISTORY_NO_SEARCH_RESULTS);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
   source->AddLocalizedString("search", IDS_MD_HISTORY_SEARCH);
+  source->AddLocalizedString("searchResult", IDS_HISTORY_SEARCH_RESULT);
+  source->AddLocalizedString("searchResults", IDS_HISTORY_SEARCH_RESULTS);
   source->AddLocalizedString("title", IDS_HISTORY_TITLE);
 
   bool allow_deleting_history =

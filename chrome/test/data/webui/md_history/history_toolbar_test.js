@@ -7,6 +7,7 @@ cr.define('md_history.history_toolbar_test', function() {
   var TEST_HISTORY_RESULTS = [
     {
       "dateRelativeDay": "Today - Wednesday, December 9, 2015",
+      "title": "Google",
       "url": "https://www.google.com"
     }
   ];
@@ -22,7 +23,7 @@ cr.define('md_history.history_toolbar_test', function() {
       });
 
       test('selecting checkbox causes toolbar to change', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS);
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
 
         flush(function() {
           var item = element.$$('history-item');
@@ -47,7 +48,17 @@ cr.define('md_history.history_toolbar_test', function() {
         });
       });
 
+      test('search term gathered correctly from toolbar', function(done) {
+        registerMessageCallback('queryHistory', this, function (info) {
+          assertEquals(info[0], 'Test');
+          done();
+        });
+
+        toolbar.onSearch('Test');
+      });
+
       teardown(function() {
+        element.historyData = [];
         toolbar.count = 0;
       });
     });

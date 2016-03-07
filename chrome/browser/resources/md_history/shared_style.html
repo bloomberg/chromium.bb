@@ -7,6 +7,10 @@
         --card-min-width: 500px;
       }
 
+      [hidden] {
+        display: none !important;
+      }
+
       .card-title {
         @apply(--layout-center);
         @apply(--layout-horizontal);
@@ -18,6 +22,16 @@
         font-size: 14px;
         font-weight: 500;
         height: 48px;
+      }
+
+      .centered-message {
+        align-items: center;
+        color: #b4b4b4;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        justify-content: center;
       }
 
       .website-icon {

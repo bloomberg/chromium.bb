@@ -3,9 +3,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html">
 <link rel="import" href="chrome://history/history_item.html">
+<link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-list">
   <template>
+    <style include="shared-style"></style>
     <style>
       :host {
         display: flex;
@@ -27,20 +29,27 @@
         background: #eaeaea;
       }
     </style>
+    <div id="no-results" class="centered-message"
+        hidden$="{{hasResults(historyData.length)}}">
+      {{noResultsMessage_(searchTerm, loading_)}}
+    </div>
     <iron-list items="{{historyData}}" as="historyDay" id="infinite-list"
-        on-scroll="scrollHandler_">
+        on-scroll="scrollHandler_"
+        hidden$="{{!hasResults(historyData.length)}}">
       <template>
         <history-item history-date="[[historyDay.dateRelativeDay]]"
             website-title="[[historyDay.title]]"
             website-url="[[historyDay.url]]"
             website-domain="[[historyDay.domain]]"
-            time-accessed="[[historyDay.dateTimeOfDay]]"
+            readable-timestamp="[[historyDay.readableTimestamp]]"
             starred="[[historyDay.starred]]"
             timestamp="[[historyDay.time]]"
             selected="{{historyDay.selected}}"
             is-card-start="[[historyDay.isFirstItem]]"
             is-card-end="[[historyDay.isLastItem]]"
-            has-time-gap="[[historyDay.needsTimeGap]]">
+            has-time-gap="[[historyDay.needsTimeGap]]"
+            search-term="[[searchTerm]]"
+            number-of-items="[[historyData.length]]">
         </history-item>
       </template>
     </iron-list>

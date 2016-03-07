@@ -11,12 +11,20 @@ Polymer({
       value: 0,
       observer: 'changeToolbarView_'
     },
+
     // True if 1 or more history items are selected. When this value changes
     // the background colour changes.
     itemsSelected_: {
       type: Boolean,
       value: false,
       reflectToAttribute: true
+    },
+
+    // The most recent term entered in the search field. Updated incrementally
+    // as the user types.
+    searchTerm: {
+      type: String,
+      value: ''
     }
   },
 
@@ -27,6 +35,22 @@ Polymer({
    */
   changeToolbarView_: function() {
     this.itemsSelected_ = this.count > 0;
+  },
+
+  /**
+   * If the search term has changed reload for the new search.
+   */
+  onSearch: function(searchTerm) {
+    if (searchTerm != this.searchTerm)
+      this.fire('search-changed', {search: searchTerm});
+    this.searchTerm = searchTerm;
+  },
+
+  attached: function() {
+    this.async(function() {
+      this.searchFieldDelegate_ = new ToolbarSearchFieldDelegate(this);
+      this.$['search-input'].setDelegate(this.searchFieldDelegate_);
+    });
   },
 
   onClearSelectionTap_: function() {
@@ -57,3 +81,19 @@ Polymer({
     return count > 0 ? loadTimeData.getStringF('itemsSelected', count) : '';
   }
 });
+
+/**
+ * @constructor
+ * @implements {SearchFieldDelegate}
+ * @param {!Object} toolbar This history-toolbar.
+ */
+function ToolbarSearchFieldDelegate(toolbar) {
+  this.toolbar_ = toolbar;
+}
+
+ToolbarSearchFieldDelegate.prototype = {
+  /** @override */
+  onSearchTermSearch: function(searchTerm) {
+    this.toolbar_.onSearch(searchTerm);
+  }
+};

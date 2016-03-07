@@ -50,6 +50,15 @@ window.addEventListener('delete-selected', function() {
   chrome.send('removeVisits', toBeRemoved);
 });
 
+
+/**
+ * When the search is changed refresh the results from the backend.
+ */
+window.addEventListener('search-changed', function(e) {
+  $('history-list').setLoading();
+  chrome.send('queryHistory', [e.detail.search, 0, 0, 0, RESULTS_PER_PAGE]);
+});
+
 // Chrome Callbacks-------------------------------------------------------------
 
 /**
@@ -58,7 +67,7 @@ window.addEventListener('delete-selected', function() {
  * @param {Array<HistoryEntry>} results A list of results.
  */
 function historyResult(info, results) {
-  $('history-list').addNewResults(results);
+  $('history-list').addNewResults(results, info.term);
   if (info.finished)
     $('history-list').disableResultLoading();
 }

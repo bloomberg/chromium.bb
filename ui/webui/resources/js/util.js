@@ -456,3 +456,12 @@ function elide(original, maxLength) {
     return original;
   return original.substring(0, maxLength - 1) + '\u2026';
 }
+
+/**
+ * Quote a string so it can be used in a regular expression.
+ * @param {string} str The source string.
+ * @return {string} The escaped string.
+ */
+function quoteString(str) {
+  return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
+}

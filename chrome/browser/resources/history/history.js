@@ -368,7 +368,7 @@ Object.defineProperty(Visit.prototype, 'dropDown', {
 Visit.prototype.addHighlightedText_ = function(node, content, highlightText) {
   var i = 0;
   if (highlightText) {
-    var re = new RegExp(Visit.pregQuote_(highlightText), 'gim');
+    var re = new RegExp(quoteString(highlightText), 'gim');
     var match;
     while (match = re.exec(content)) {
       if (match.index > i)
@@ -534,18 +534,6 @@ Visit.prototype.removeEntryFromHistory_ = function(e) {
   this.model_.getView().onBeforeRemove(this);
   this.removeFromHistory();
   e.preventDefault();
-};
-
-// Visit, private, static: ----------------------------------------------------
-
-/**
- * Quote a string so it can be used in a regular expression.
- * @param {string} str The source string.
- * @return {string} The escaped string.
- * @private
- */
-Visit.pregQuote_ = function(str) {
-  return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
 };
 
 ///////////////////////////////////////////////////////////////////////////////

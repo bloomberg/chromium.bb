@@ -18,6 +18,17 @@ Polymer({
       value: 0
     },
 
+    searchTerm: {
+      type: String,
+      value: ''
+    },
+
+    // True if there is a pending request to the backend.
+    loading_: {
+      type: Boolean,
+      value: true
+    },
+
     resultLoadingDisabled_: {
       type: Boolean,
       value: false
@@ -36,6 +47,13 @@ Polymer({
    */
   closeMenu_: function() {
     this.$.sharedMenu.closeMenu();
+  },
+
+  /**
+   * Mark the page as currently loading new data from the back-end.
+   */
+  setLoading: function() {
+    this.loading_ = true;
   },
 
   /**
@@ -60,9 +78,17 @@ Polymer({
    * for each result.
    * @param {!Array<!HistoryEntry>} historyResults The new history results.
    */
-  addNewResults: function(historyResults) {
-    if (historyResults.length == 0)
+  addNewResults: function(historyResults, searchTerm) {
+    this.loading_ = false;
+
+    if (this.searchTerm != searchTerm) {
+      this.splice('historyData', 0, this.historyData.length);
+      this.searchTerm = searchTerm;
+    }
+
+    if (historyResults.length == 0) {
       return;
+    }
 
     // Creates a copy of historyResults to prevent accidentally modifying this
     // field.
@@ -85,6 +111,8 @@ Polymer({
       results[i].isLastItem = false;
       results[i].isFirstItem = false;
       results[i].needsTimeGap = this.needsTimeGap_(results, i);
+      results[i].readableTimestamp =
+          searchTerm == '' ? results[i].dateTimeOfDay : results[i].dateShort;
 
       if (results[i].dateRelativeDay != currentDate) {
         results[i - 1].isLastItem = true;
@@ -204,10 +232,11 @@ Polymer({
     var scrollOffset = 10;
     var scrollElem = this.$['infinite-list'];
 
-    if (scrollElem.scrollHeight <=
+    if (!this.loading_ && scrollElem.scrollHeight <=
         scrollElem.scrollTop + scrollElem.clientHeight + scrollOffset) {
+      this.loading_ = true;
       chrome.send('queryHistory',
-          ['', 0, 0, this.lastVisitedTime, RESULTS_PER_PAGE]);
+          [this.searchTerm, 0, 0, this.lastVisitedTime, RESULTS_PER_PAGE]);
     }
   },
 
@@ -220,13 +249,29 @@ Polymer({
    * @private
    */
   needsTimeGap_: function(results, index) {
+    // TODO(tsergeant): Allow the final item from one batch of results to have a
+    // timegap once more results are added.
+    if (index == results.length - 1)
+      return false;
+
     var currentItem = results[index];
     var nextItem = results[index + 1];
 
-    if (index + 1 >= results.length)
-      return false;
+    if (this.searchTerm)
+      return currentItem.dateShort != nextItem.dateShort;
 
     return currentItem.time - nextItem.time > BROWSING_GAP_TIME &&
-      currentItem.dateRelativeDay == nextItem.dateRelativeDay;
+        currentItem.dateRelativeDay == nextItem.dateRelativeDay;
+  },
+
+  hasResults: function(historyDataLength) {
+    return historyDataLength > 0;
+  },
+
+  noResultsMessage_: function(searchTerm, isLoading) {
+    if (isLoading)
+      return '';
+    var messageId = searchTerm !== '' ? 'noSearchResults' : 'noResults';
+    return loadTimeData.getString(messageId);
   }
 });

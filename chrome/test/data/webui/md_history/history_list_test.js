@@ -7,18 +7,22 @@ cr.define('md_history.history_list_test', function() {
   var TEST_HISTORY_RESULTS = [
     {
       "dateRelativeDay": "Today - Wednesday, December 9, 2015",
+      "title": "Google",
       "url": "https://www.google.com"
     },
     {
       "dateRelativeDay": "Yesterday - Tuesday, December 8, 2015",
+      "title": "Wikipedia",
       "url": "https://en.wikipedia.com"
     },
     {
       "dateRelativeDay": "Monday, December 7, 2015",
+      "title": "Example",
       "url": "https://www.example.com"
     },
     {
       "dateRelativeDay": "Monday, December 7, 2015",
+      "title": "Google",
       "url": "https://www.google.com"
     }
   ];
@@ -52,11 +56,8 @@ cr.define('md_history.history_list_test', function() {
         toolbar = $('toolbar');
       });
 
-      setup(function() {
-        element.addNewResults(TEST_HISTORY_RESULTS);
-      });
-
       test('setting first and last items', function() {
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
         assertTrue(element.historyData[0].isLastItem);
         assertTrue(element.historyData[0].isFirstItem);
         assertTrue(element.historyData[2].isFirstItem);
@@ -64,6 +65,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('cancelling selection of multiple items', function(done) {
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
         flush(function() {
           var items = Polymer.dom(element.root)
               .querySelectorAll('history-item');
@@ -95,7 +97,8 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('updating history results', function(done) {
-        element.addNewResults(ADDITIONAL_RESULTS);
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
+        element.addNewResults(ADDITIONAL_RESULTS, '');
 
         flush(function() {
           assertTrue(element.historyData[2].isFirstItem);
@@ -112,6 +115,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('removeVisits for multiple items', function(done) {
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
         // Ensure that the correct identifying data is being used for removal.
         registerMessageCallback('removeVisits', this, function (toBeRemoved) {
 
@@ -136,7 +140,8 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('deleting multiple items from view', function(done) {
-        element.addNewResults(ADDITIONAL_RESULTS);
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
+        element.addNewResults(ADDITIONAL_RESULTS, '');
         flush(function() {
           items = Polymer.dom(element.root).querySelectorAll('history-item');
 
@@ -167,6 +172,41 @@ cr.define('md_history.history_list_test', function() {
             assertTrue(element.historyData[4].isFirstItem);
             assertTrue(element.historyData[4].isLastItem)
 
+            done();
+          });
+        });
+      });
+
+      test('search results display with correct item title', function(done) {
+        element.addNewResults(TEST_HISTORY_RESULTS, 'Google');
+
+        flush(function() {
+          var heading =
+              element.$$('history-item').$$('#date-accessed').textContent;
+          var title = element.$$('history-item').$.title;
+
+          // Check that the card title displays the search term somewhere.
+          var index = heading.indexOf('Google');
+          assertTrue(index != -1);
+
+          // Check that the search term is bolded correctly in the history-item.
+          assertEquals(title.innerHTML, '<b>Google</b>');
+          done();
+        });
+      });
+
+      test('correct display message when no history available', function(done) {
+        element.addNewResults([], '');
+
+        flush(function() {
+          assertFalse(element.$['no-results'].hidden);
+          assertTrue(element.$['infinite-list'].hidden);
+
+          element.addNewResults(TEST_HISTORY_RESULTS, '');
+
+          flush(function() {
+            assertTrue(element.$['no-results'].hidden);
+            assertFalse(element.$['infinite-list'].hidden);
             done();
           });
         });

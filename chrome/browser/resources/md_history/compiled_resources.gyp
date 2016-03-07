@@ -14,6 +14,7 @@
           '../../../../third_party/polymer/v1_0/components-chromium/iron-list/iron-list-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/iron-resizable-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-scroll-target-behavior/iron-scroll-target-behavior-extracted.js',
+          '../../../../ui/webui/resources/cr_elements/cr_search_field/cr_search_field.js',
           '../../../../ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources.gyp:cr_shared_menu',
           '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../ui/webui/resources/js/load_time_data.js',

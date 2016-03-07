@@ -12,7 +12,7 @@ Polymer({
       value: ''
     },
 
-    timeAccessed: {
+    readableTimestamp: {
       type: String,
       value: ''
     },
@@ -53,6 +53,12 @@ Polymer({
       value: 0
     },
 
+    // Search term used to obtain this history-item.
+    searchTerm: {
+      type: String,
+      value: '',
+    },
+
     selected: {
       type: Boolean,
       value: false,
@@ -74,8 +80,17 @@ Polymer({
     hasTimeGap: {
       type: Boolean,
       value: false
+    },
+
+    numberOfItems: {
+      type: Number,
+      value: 0
     }
   },
+
+  observers: [
+    'setSearchedTextToBold_(websiteTitle, searchTerm)'
+  ],
 
   /**
    * When a history-item is selected the toolbar is notified and increases
@@ -111,7 +126,55 @@ Polymer({
     e.stopPropagation();
   },
 
+  /**
+   * If the results shown are search results set the search term to be bold
+   * where it is displayed in the history-item title.
+   * @private
+   */
+  setSearchedTextToBold_: function() {
+    var i = 0;
+    var title = this.$.title;
+
+    if (this.searchTerm == '' || this.searchTerm == null) {
+      title.textContent = this.websiteTitle;
+      return;
+    }
+
+    var re = new RegExp(quoteString(this.searchTerm), 'gim');
+    var match;
+    title.textContent = '';
+    while (match = re.exec(this.websiteTitle)) {
+      if (match.index > i)
+        title.appendChild(document.createTextNode(
+            this.websiteTitle.slice(i, match.index)));
+      i = re.lastIndex;
+      // Mark the highlighted text in bold.
+      var b = document.createElement('b');
+      b.textContent = this.websiteTitle.substring(match.index, i);
+      title.appendChild(b);
+    }
+    if (i < this.websiteTitle.length)
+      title.appendChild(document.createTextNode(this.websiteTitle.slice(i)));
+  },
+
   selectionNotAllowed_: function() {
     return !loadTimeData.getBoolean('allowDeletingHistory');
+  },
+
+  /**
+   * Generates the title for this history card.
+   * @param {number} numberOfItems The number of items in the card.
+   * @param {string} search The search term associated with these results.
+   * @private
+   */
+  cardTitle_: function(numberOfItems, historyDate, search) {
+    var resultId = numberOfItems == 1 ? 'searchResult' : 'searchResults';
+
+    if (search) {
+      return loadTimeData.getStringF('foundSearchResults', numberOfItems,
+                                     loadTimeData.getString(resultId), search);
+    } else {
+      return historyDate;
+    }
   }
 });

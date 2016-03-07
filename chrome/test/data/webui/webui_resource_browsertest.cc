@@ -234,3 +234,8 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, SplitterTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI_SPLITTER);
   LoadFile(base::FilePath(FILE_PATH_LITERAL("splitter_test.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, UtilTest) {
+  AddLibrary(IDR_WEBUI_JS_UTIL);
+  LoadFile(base::FilePath(FILE_PATH_LITERAL("util_test.html")));
+}

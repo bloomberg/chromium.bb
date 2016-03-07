@@ -115,17 +115,17 @@
       }
     </style>
     <div id="main-container">
-      <div id="date-accessed" class="card-title">[[historyDate]]</div>
+      <div id="date-accessed" class="card-title">
+        {{cardTitle_(numberOfItems, historyDate, searchTerm)}}
+      </div>
       <div id="item-container">
         <paper-checkbox id="checkbox" on-tap="onCheckboxSelected_"
             checked="{{selected}}" disabled="[[selectionNotAllowed_()]]">
         </paper-checkbox>
-        <span id="time-accessed">{{timeAccessed}}</span>
+        <span id="time-accessed">{{readableTimestamp}}</span>
         <div class="website-icon" id="icon"></div>
         <div id="title-and-domain">
-          <a href$="{{websiteUrl}}" id="title" class="website-title">
-            {{websiteTitle}}
-          </a>
+          <a href$="{{websiteUrl}}" id="title" class="website-title"></a>
           <span id="domain">{{websiteDomain}}</span>
         </div>
         <iron-icon icon="star" id="bookmark-star"></iron-icon>

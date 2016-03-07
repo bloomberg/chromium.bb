@@ -11,6 +11,12 @@ cr.define('md_history.history_item_test', function() {
     {"time": "1"}
   ];
 
+  var SEARCH_HISTORY_RESULTS = [
+    {"dateShort": "Feb 22, 2016"},
+    {"dateShort": "Feb 21, 2016"},
+    {"dateShort": "Feb 21, 2016"},
+  ];
+
   function registerTests() {
     suite('history-item', function() {
       var element;
@@ -20,12 +26,12 @@ cr.define('md_history.history_item_test', function() {
       });
 
       setup(function() {
-        element.addNewResults(TEST_HISTORY_RESULTS);
+        element.addNewResults(TEST_HISTORY_RESULTS, '');
       });
 
       test('basic separator insertion', function(done) {
         flush(function() {
-          // Check that the correct numbegitr of time gaps are inserted.
+          // Check that the correct number of time gaps are inserted.
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
@@ -34,6 +40,20 @@ cr.define('md_history.history_item_test', function() {
           assertFalse(items[2].hasTimeGap);
           assertTrue(items[3].hasTimeGap);
           assertFalse(items[4].hasTimeGap);
+
+          done();
+        });
+      });
+
+      test('separator insertion for search', function(done) {
+        element.addNewResults(SEARCH_HISTORY_RESULTS, 'search');
+        flush(function() {
+          var items =
+              Polymer.dom(element.root).querySelectorAll('history-item');
+
+          assertTrue(items[0].hasTimeGap);
+          assertFalse(items[1].hasTimeGap);
+          assertFalse(items[2].hasTimeGap);
 
           done();
         });
