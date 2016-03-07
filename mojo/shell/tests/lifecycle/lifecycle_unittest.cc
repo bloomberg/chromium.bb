@@ -39,7 +39,7 @@ void DecrementCountAndQuitWhenZero(base::RunLoop* loop, size_t* count) {
 }
 
 struct Instance {
-  Instance() : id(mojom::Connector::kInvalidApplicationID), pid(0) {}
+  Instance() : id(shell::mojom::kInvalidInstanceID), pid(0) {}
   Instance(const std::string& name, const std::string& qualifier, uint32_t id,
            uint32_t pid)
       : name(name), qualifier(qualifier), id(id), pid(pid) {}

@@ -29,7 +29,7 @@ class ShellTestClient
  public:
   explicit ShellTestClient(mojo::test::ShellTest* test)
       : mojo::test::ShellTestClient(test),
-        target_id_(mojom::Connector::kInvalidApplicationID),
+        target_id_(shell::mojom::kInvalidInstanceID),
         binding_(this) {}
   ~ShellTestClient() override {}
 
@@ -173,9 +173,9 @@ TEST_F(ShellTest, CreateInstance) {
   //    mojo:shell_unittest)
   base::MessageLoop::current()->Run();
 
-  uint32_t remote_id = mojom::Connector::kInvalidApplicationID;
-  EXPECT_TRUE(connection->GetRemoteApplicationID(&remote_id));
-  EXPECT_NE(mojom::Connector::kInvalidApplicationID, remote_id);
+  EXPECT_FALSE(connection->IsPending());
+  uint32_t remote_id = connection->GetRemoteInstanceID();
+  EXPECT_NE(shell::mojom::kInvalidInstanceID, remote_id);
 
   // 3. Validate that this test suite's name was received from the application
   //    manager.

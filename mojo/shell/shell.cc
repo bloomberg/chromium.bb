@@ -66,7 +66,7 @@ class Shell::Instance : public mojom::Connector,
         shell_->GetLoaderForName(identity_.name())) {
       pid_ = base::Process::Current().Pid();
     }
-    DCHECK_NE(kInvalidApplicationID, id_);
+    DCHECK_NE(mojom::kInvalidInstanceID, id_);
   }
 
   ~Instance() override {}
@@ -80,7 +80,7 @@ class Shell::Instance : public mojom::Connector,
   }
 
   void ConnectToClient(scoped_ptr<ConnectParams> params) {
-    params->connect_callback().Run(mojom::ConnectResult::OK,
+    params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
                                    identity_.user_id(), id_);
     AllowedInterfaces interfaces;
     interfaces.insert("*");
@@ -88,7 +88,7 @@ class Shell::Instance : public mojom::Connector,
       interfaces = GetAllowedInterfaces(params->source().filter(), identity_);
 
     Instance* source = shell_->GetExistingInstance(params->source());
-    uint32_t source_id = source ? source->id() : kInvalidApplicationID;
+    uint32_t source_id = source ? source->id() : mojom::kInvalidInstanceID;
     shell_client_->AcceptConnection(
         params->source().name(), params->source().user_id(), source_id,
         params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
@@ -139,13 +139,13 @@ class Shell::Instance : public mojom::Connector,
     if (!IsValidName(app_name)) {
       LOG(ERROR) << "Error: invalid Name: " << app_name;
       callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
-                   mojom::kInheritUserID, kInvalidApplicationID);
+                   mojom::kInheritUserID, mojom::kInvalidInstanceID);
       return;
     }
     if (!base::IsValidGUID(user_id)) {
       LOG(ERROR) << "Error: invalid user_id: " << user_id;
       callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
-                   mojom::kInheritUserID, kInvalidApplicationID);
+                   mojom::kInheritUserID, mojom::kInvalidInstanceID);
       return;
     }
     // TODO(beng): perform checking on policy of whether this instance is
@@ -162,8 +162,8 @@ class Shell::Instance : public mojom::Connector,
     } else {
       LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
           identity_.name() << " to: " << app_name;
-      callback.Run(mojom::ConnectResult::PERMISSION_DENIED,
-                   mojom::kInheritUserID, kInvalidApplicationID);
+      callback.Run(mojom::ConnectResult::ACCESS_DENIED,
+                   mojom::kInheritUserID, mojom::kInvalidInstanceID);
     }
   }
   void Clone(mojom::ConnectorRequest request) override {
@@ -207,7 +207,7 @@ class Shell::Instance : public mojom::Connector,
     instance->pid_receiver_binding_.Bind(std::move(pid_receiver));
     instance->factory_ = std::move(factory);
     instance->factory_->CreateShellClient(std::move(request), name);
-    callback.Run(mojom::ConnectResult::OK);
+    callback.Run(mojom::ConnectResult::SUCCEEDED);
   }
   void AddInstanceListener(mojom::InstanceListenerPtr listener) override {
     // TODO(beng): this should only track the instances matching this user, and
@@ -216,9 +216,9 @@ class Shell::Instance : public mojom::Connector,
   }
 
   uint32_t GenerateUniqueID() const {
-    static uint32_t id = kInvalidApplicationID;
+    static uint32_t id = mojom::kInvalidInstanceID;
     ++id;
-    CHECK_NE(kInvalidApplicationID, id);
+    CHECK_NE(mojom::kInvalidInstanceID, id);
     return id;
   }
 
@@ -340,11 +340,9 @@ bool Shell::AcceptConnection(Connection* connection) {
   // is brokered by a policy specific to each caller, managed by the caller's
   // instance. Here we look to see who's calling, and forward to the caller's
   // instance to continue.
-  uint32_t caller_instance_id = mojom::Connector::kInvalidApplicationID;
-  CHECK(connection->GetRemoteApplicationID(&caller_instance_id));
   Instance* instance = nullptr;
   for (const auto& entry : identity_to_instance_) {
-    if (entry.second->id() == caller_instance_id) {
+    if (entry.second->id() == connection->GetRemoteInstanceID()) {
       instance = entry.second;
       break;
     }

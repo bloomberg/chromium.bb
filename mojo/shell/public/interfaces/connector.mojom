@@ -9,9 +9,11 @@ import "mojo/shell/public/interfaces/interface_provider.mojom";
 const string kRootUserID = "505C0EE9-3013-43C0-82B0-A84F50CF8D84";
 const string kInheritUserID = "D26290E4-4485-4EAE-81A2-66D1EEB40A9D";
 
+const uint32 kInvalidInstanceID = 0;
+
 enum ConnectResult {
   // The connection was established successfully.
-  OK,
+  SUCCEEDED,
 
   // The name or user id supplied was malformed, or the application specified
   // by |name| could not be loaded.
@@ -21,13 +23,11 @@ enum ConnectResult {
   // forbidden from this app by the CapabilityFilter, or the application
   // attempted to connect using a user id other than its own,
   // kInheritUserID or kRootUserID.
-  PERMISSION_DENIED
+  ACCESS_DENIED
 };
 
 // Encapsulates establishing connections with other Mojo applications.
 interface Connector {
-  const uint32 kInvalidApplicationID = 0;
-
   // Requests a connection with another application. The application originating
   // the request is referred to as the "source" and the one receiving the
   // "target".

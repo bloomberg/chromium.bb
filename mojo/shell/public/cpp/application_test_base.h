@@ -70,7 +70,7 @@ class ApplicationTestBase : public testing::Test {
   }
   uint32_t test_instance_id() const {
     return test_helper_ ? test_helper_->test_instance_id() :
-        shell::mojom::Connector::kInvalidApplicationID;
+        shell::mojom::kInvalidInstanceID;
   }
 
   // Get the ShellClient for the application to be tested.

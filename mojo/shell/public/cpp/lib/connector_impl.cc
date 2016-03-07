@@ -58,9 +58,9 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   shell::mojom::InterfaceProviderRequest remote_request =
       GetProxy(&remote_interfaces);
   scoped_ptr<internal::ConnectionImpl> registry(new internal::ConnectionImpl(
-      application_name, application_name,
-      shell::mojom::Connector::kInvalidApplicationID, params->user_id(),
-      std::move(remote_interfaces), std::move(local_request), allowed));
+      application_name, application_name, shell::mojom::kInvalidInstanceID,
+      params->user_id(), std::move(remote_interfaces), std::move(local_request),
+      allowed, Connection::State::PENDING));
   connector_->Connect(application_name,
                       params->user_id(),
                       std::move(remote_request),

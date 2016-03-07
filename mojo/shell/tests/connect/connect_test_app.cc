@@ -51,8 +51,7 @@ class ConnectTestApp : public ShellClient,
     connection->AddInterface<test::mojom::StandaloneApp>(this);
     connection->AddInterface<test::mojom::BlockedInterface>(this);
 
-    uint32_t remote_id = mojom::Connector::kInvalidApplicationID;
-    connection->GetRemoteApplicationID(&remote_id);
+    uint32_t remote_id = connection->GetRemoteInstanceID();
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_local_name = connection->GetConnectionName();
     state->connection_remote_name = connection->GetRemoteApplicationName();
@@ -146,7 +145,7 @@ class ConnectTestApp : public ShellClient,
 
   Connector* connector_ = nullptr;
   std::string name_;
-  uint32_t id_ = mojom::Connector::kInvalidApplicationID;
+  uint32_t id_ = shell::mojom::kInvalidInstanceID;
   std::string userid_ = mojom::kRootUserID;
   BindingSet<test::mojom::ConnectTestService> bindings_;
   BindingSet<test::mojom::StandaloneApp> standalone_bindings_;

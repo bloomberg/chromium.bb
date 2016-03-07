@@ -40,6 +40,19 @@ class Connection {
  public:
   virtual ~Connection() {}
 
+  enum class State {
+    // The shell has not yet processed the connection.
+    PENDING,
+
+    // The shell processed the connection and it was established. GetResult()
+    // returns mojom::shell::ConnectionResult::SUCCESS.
+    CONNECTED,
+
+    // The shell processed the connection and establishment was prevented by
+    // an error, call GetResult().
+    DISCONNECTED
+  };
+
   class TestApi {
    public:
     explicit TestApi(Connection* connection) : connection_(connection) {}
@@ -88,22 +101,21 @@ class Connection {
   // remote application's InterfaceProvider.
   virtual void SetConnectionLostClosure(const Closure& handler) = 0;
 
-  // Returns true if |result| has been modified to include the result of the
-  // connection (see mojo/shell/public/interfaces/connector.mojom for error
-  // codes), false if the connection is still pending and |result| has not been
-  // modified. Call AddConnectionCompletedClosure() to schedule a closure to be
-  // run when the connection is completed and the result is available.
-  virtual bool GetConnectionResult(
-      shell::mojom::ConnectResult* result) const = 0;
+  // Returns the result of the connection. This function should only be called
+  // when the connection state is not pending. Call
+  // AddConnectionCompletedClosure() to schedule a closure to be run when the
+  // connection is processed by the shell.
+  virtual shell::mojom::ConnectResult GetResult() const = 0;
 
-  // Returns true if |remote_id| has been modified to include the instance id of
-  // the remote application. For connections created via Connector::Connect(),
-  // this will not be determined until the connection has been completed by the
-  // shell. Use AddConnectionCompletedClosure() to schedule a closure to be run
-  // when the connection is completed and the remote id is available. Returns
-  // false if the connection has not yet been completed and |remote_id| is not
-  // modified.
-  virtual bool GetRemoteApplicationID(uint32_t* remote_id) const = 0;
+  // Returns true if the connection has not yet been processed by the shell.
+  virtual bool IsPending() const = 0;
+
+  // Returns the instance id of the remote application if it is known at the
+  // time this function is called. When IsPending() returns true, this function
+  // will return shell::mojom::kInvalidInstanceID. Use
+  // AddConnectionCompletedClosure() to schedule a closure to be run when the
+  // connection is processed by the shell and remote id is available.
+  virtual uint32_t GetRemoteInstanceID() const = 0;
 
   // Register a closure to be run when the connection has been completed by the
   // shell and remote metadata is available. Useful only for connections created

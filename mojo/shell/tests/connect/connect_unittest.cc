@@ -117,9 +117,8 @@ TEST_F(ConnectTest, Connect) {
   service->GetTitle(base::Bind(&ReceiveTitle, &title, &run_loop));
   run_loop.Run();
   EXPECT_EQ("APP", title);
-  uint32_t id = mojom::Connector::kInvalidApplicationID;
-  EXPECT_TRUE(connection->GetRemoteApplicationID(&id));
-  EXPECT_NE(id, mojom::Connector::kInvalidApplicationID);
+  EXPECT_FALSE(connection->IsPending());
+  EXPECT_NE(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
   EXPECT_EQ(connection->GetRemoteApplicationName(), kTestAppName);
 }
 
@@ -147,9 +146,8 @@ TEST_F(ConnectTest, PackagedApp) {
   service_a->GetTitle(base::Bind(&ReceiveTitle, &a_name, &run_loop));
   run_loop.Run();
   EXPECT_EQ("A", a_name);
-  uint32_t id = mojom::Connector::kInvalidApplicationID;
-  EXPECT_TRUE(connection->GetRemoteApplicationID(&id));
-  EXPECT_NE(id, mojom::Connector::kInvalidApplicationID);
+  EXPECT_FALSE(connection->IsPending());
+  EXPECT_NE(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
   EXPECT_EQ(connection->GetRemoteApplicationName(), kTestAppAName);
 }
 
@@ -189,9 +187,9 @@ TEST_F(ConnectTest, BlockedPackagedApplication) {
   base::RunLoop run_loop;
   connection->SetConnectionLostClosure(base::Bind(&QuitLoop, &run_loop));
   run_loop.Run();
-  uint32_t id = mojom::Connector::kInvalidApplicationID;
-  EXPECT_TRUE(connection->GetRemoteApplicationID(&id));
-  EXPECT_EQ(id, mojom::Connector::kInvalidApplicationID);
+  EXPECT_FALSE(connection->IsPending());
+  EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, connection->GetResult());
+  EXPECT_EQ(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
 }
 
 // Tests that we can expose an interface to targets on outbound connections.
@@ -205,16 +203,17 @@ TEST_F(ConnectTest, LocalInterface) {
     connection->GetInterface(&service);
     connection->AddInterface<test::mojom::ExposedInterface>(this);
 
-    uint32_t remote_id = mojom::Connector::kInvalidApplicationID;
+    uint32_t remote_id = shell::mojom::kInvalidInstanceID;
     {
       base::RunLoop run_loop;
-      EXPECT_FALSE(connection->GetRemoteApplicationID(&remote_id));
-      EXPECT_EQ(mojom::Connector::kInvalidApplicationID, remote_id);
+      EXPECT_TRUE(connection->IsPending());
+      EXPECT_EQ(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
       connection->AddConnectionCompletedClosure(
           base::Bind(&QuitLoop, &run_loop));
       run_loop.Run();
-      EXPECT_TRUE(connection->GetRemoteApplicationID(&remote_id));
-      EXPECT_NE(mojom::Connector::kInvalidApplicationID, remote_id);
+      EXPECT_FALSE(connection->IsPending());
+      remote_id = connection->GetRemoteInstanceID();
+      EXPECT_NE(mojom::kInvalidInstanceID, remote_id);
     }
 
     {
@@ -234,16 +233,17 @@ TEST_F(ConnectTest, LocalInterface) {
     connection->GetInterface(&service_a);
     connection->AddInterface<test::mojom::ExposedInterface>(this);
 
-    uint32_t remote_id = mojom::Connector::kInvalidApplicationID;
+    uint32_t remote_id = shell::mojom::kInvalidInstanceID;
     {
       base::RunLoop run_loop;
-      EXPECT_FALSE(connection->GetRemoteApplicationID(&remote_id));
-      EXPECT_EQ(mojom::Connector::kInvalidApplicationID, remote_id);
+      EXPECT_TRUE(connection->IsPending());
+      EXPECT_EQ(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
       connection->AddConnectionCompletedClosure(
           base::Bind(&QuitLoop, &run_loop));
       run_loop.Run();
-      EXPECT_TRUE(connection->GetRemoteApplicationID(&remote_id));
-      EXPECT_NE(mojom::Connector::kInvalidApplicationID, remote_id);
+      EXPECT_FALSE(connection->IsPending());
+      remote_id = connection->GetRemoteInstanceID();
+      EXPECT_NE(mojom::kInvalidInstanceID, remote_id);
     }
 
     {

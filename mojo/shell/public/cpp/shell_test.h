@@ -97,8 +97,7 @@ class ShellTest : public testing::Test {
   Connector* connector_ = nullptr;
   std::string initialize_name_;
   std::string initialize_userid_ = shell::mojom::kInheritUserID;
-  uint32_t initialize_instance_id_ =
-      shell::mojom::Connector::kInvalidApplicationID;
+  uint32_t initialize_instance_id_ = shell::mojom::kInvalidInstanceID;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTest);
 };

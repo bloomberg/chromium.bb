@@ -20,7 +20,7 @@ namespace test {
 namespace {
 // Share the application name with multiple application tests.
 String g_name;
-uint32_t g_id = shell::mojom::Connector::kInvalidApplicationID;
+uint32_t g_id = shell::mojom::kInvalidInstanceID;
 String g_user_id = shell::mojom::kRootUserID;
 
 // ShellClient request handle passed from the shell in MojoMain, stored in

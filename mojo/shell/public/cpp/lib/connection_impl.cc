@@ -26,12 +26,12 @@ ConnectionImpl::ConnectionImpl(
     const std::string& remote_user_id,
     shell::mojom::InterfaceProviderPtr remote_interfaces,
     shell::mojom::InterfaceProviderRequest local_interfaces,
-    const std::set<std::string>& allowed_interfaces)
+    const std::set<std::string>& allowed_interfaces,
+    State initial_state)
     : connection_name_(connection_name),
       remote_name_(remote_name),
+      state_(initial_state),
       remote_id_(remote_id),
-      connection_completed_(
-          remote_id != shell::mojom::Connector::kInvalidApplicationID),
       remote_user_id_(remote_user_id),
       local_registry_(std::move(local_interfaces), this),
       remote_interfaces_(std::move(remote_interfaces)),
@@ -71,29 +71,23 @@ void ConnectionImpl::SetConnectionLostClosure(const Closure& handler) {
   remote_interfaces_.set_connection_error_handler(handler);
 }
 
-bool ConnectionImpl::GetConnectionResult(
-    shell::mojom::ConnectResult* result) const {
-  if (!connection_completed_)
-    return false;
-  *result = result_;
-  return true;
+shell::mojom::ConnectResult ConnectionImpl::GetResult() const {
+  return result_;
 }
 
+bool ConnectionImpl::IsPending() const {
+  return state_ == State::PENDING;
+}
 
-bool ConnectionImpl::GetRemoteApplicationID(uint32_t* remote_id) const {
-  if (!connection_completed_)
-    return false;
-
-  *remote_id = remote_id_;
-  return true;
+uint32_t ConnectionImpl::GetRemoteInstanceID() const {
+  return remote_id_;
 }
 
 void ConnectionImpl::AddConnectionCompletedClosure(const Closure& callback) {
-  if (connection_completed_) {
+  if (IsPending())
+    connection_completed_callbacks_.push_back(callback);
+  else
     callback.Run();
-    return;
-  }
-  connection_completed_callbacks_.push_back(callback);
 }
 
 bool ConnectionImpl::AllowsInterface(const std::string& interface_name) const {
@@ -118,10 +112,11 @@ base::WeakPtr<Connection> ConnectionImpl::GetWeakPtr() {
 void ConnectionImpl::OnConnectionCompleted(shell::mojom::ConnectResult result,
                                            const std::string& target_user_id,
                                            uint32_t target_application_id) {
-  DCHECK(!connection_completed_);
-  connection_completed_ = true;
+  DCHECK(State::PENDING == state_);
 
   result_ = result;
+  state_ = result_ == shell::mojom::ConnectResult::SUCCEEDED ?
+      State::CONNECTED : State::DISCONNECTED;
   remote_id_ = target_application_id;
   remote_user_id_= target_user_id;
   std::vector<Closure> callbacks;
