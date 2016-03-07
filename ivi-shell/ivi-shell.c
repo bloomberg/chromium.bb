@@ -121,6 +121,19 @@ ivi_shell_surface_configure(struct weston_surface *surface,
 	}
 }
 
+static int
+ivi_shell_surface_get_label(struct weston_surface *surface,
+			    char *buf,
+			    size_t len)
+{
+	struct ivi_shell_surface *shell_surf = get_ivi_shell_surface(surface);
+
+	if (!shell_surf)
+		return snprintf(buf, len, "unidentified window in ivi-shell");
+
+	return snprintf(buf, len, "ivi-surface %#x", shell_surf->id_surface);
+}
+
 static void
 layout_surface_cleanup(struct ivi_shell_surface *ivisurf)
 {
@@ -131,6 +144,7 @@ layout_surface_cleanup(struct ivi_shell_surface *ivisurf)
 
 	ivisurf->surface->configure = NULL;
 	ivisurf->surface->configure_private = NULL;
+	weston_surface_set_label_func(ivisurf->surface, NULL);
 	ivisurf->surface = NULL;
 
 	// destroy weston_surface destroy signal.
@@ -262,6 +276,8 @@ application_surface_create(struct wl_client *client,
 
 	weston_surface->configure = ivi_shell_surface_configure;
 	weston_surface->configure_private = ivisurf;
+	weston_surface_set_label_func(weston_surface,
+				      ivi_shell_surface_get_label);
 
 	res = wl_resource_create(client, &ivi_surface_interface, 1, id);
 	if (res == NULL) {
