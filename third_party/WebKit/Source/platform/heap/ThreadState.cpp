@@ -205,7 +205,7 @@ void ThreadState::attachMainThread()
 {
     RELEASE_ASSERT(!Heap::s_shutdownCalled);
     MutexLocker locker(threadAttachMutex());
-    ThreadState* state = new(s_mainThreadStateStorage) ThreadState();
+    ThreadState* state = new (s_mainThreadStateStorage) ThreadState();
     attachedThreads().add(state);
 }
 
@@ -216,6 +216,11 @@ void ThreadState::detachMainThread()
     // threadAttachMutex and waiting for other threads to pause or reach a
     // safepoint.
     ThreadState* state = mainThreadState();
+    ASSERT(state == ThreadState::current());
+    ASSERT(state->checkThread());
+    // You must call unregisterTraceDOMWrappers before detaching
+    // the main thread.
+    ASSERT(!state->m_isolate);
 
     // 1. Finish sweeping.
     state->completeSweep();

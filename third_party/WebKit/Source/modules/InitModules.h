@@ -13,7 +13,7 @@ namespace blink {
 class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
 public:
     void init() override;
-    static void terminateThreads();
+    void shutdown() override;
 };
 
 } // namespace blink

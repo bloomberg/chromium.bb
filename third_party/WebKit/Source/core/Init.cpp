@@ -74,8 +74,8 @@ void CoreInitializer::registerEventFactory()
 
 void CoreInitializer::init()
 {
-    ASSERT(!m_isInited);
-    m_isInited = true;
+    ASSERT(!isInitialized());
+    m_isInitialized = true;
     // Note: in order to add core static strings for a new module (1)
     // the value of 'coreStaticStringsCount' must be updated with the
     // added strings count, (2) if the added strings are quialified names
@@ -143,17 +143,14 @@ void CoreInitializer::init()
     ScriptStreamerThread::init();
 }
 
-void CoreInitializer::terminateThreads()
+void CoreInitializer::shutdown()
 {
     // Make sure we stop the HTMLParserThread before Platform::current() is
     // cleared.
+    ASSERT(Platform::current());
     HTMLParserThread::shutdown();
 
     WorkerThread::terminateAndWaitForAllWorkers();
-}
-
-void CoreInitializer::shutdown()
-{
 }
 
 } // namespace blink

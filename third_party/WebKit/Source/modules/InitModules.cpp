@@ -51,9 +51,12 @@ void ModulesInitializer::init()
     ASSERT(isInitialized());
 }
 
-void ModulesInitializer::terminateThreads()
+void ModulesInitializer::shutdown()
 {
+    ASSERT(isInitialized());
     DatabaseManager::terminateDatabaseThread();
+    CoreInitializer::shutdown();
+
 }
 
 } // namespace blink

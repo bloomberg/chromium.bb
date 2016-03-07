@@ -120,6 +120,9 @@ void SandboxIPCHandler::Run() {
     }
   }
 
+  if (blink_platform_impl_)
+    blink::shutdownWithoutV8();
+
   VLOG(1) << "SandboxIPCHandler stopping.";
 }
 
@@ -434,9 +437,6 @@ void SandboxIPCHandler::SendRendererReply(
 }
 
 SandboxIPCHandler::~SandboxIPCHandler() {
-  if (blink_platform_impl_)
-    blink::shutdownWithoutV8();
-
   if (IGNORE_EINTR(close(lifeline_fd_)) < 0)
     PLOG(ERROR) << "close";
   if (IGNORE_EINTR(close(browser_socket_)) < 0)

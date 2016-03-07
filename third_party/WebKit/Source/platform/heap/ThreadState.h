@@ -432,6 +432,11 @@ public:
         m_isolate = isolate;
         m_traceDOMWrappers = traceDOMWrappers;
     }
+    void unregisterTraceDOMWrappers()
+    {
+        m_isolate = nullptr;
+        m_traceDOMWrappers = nullptr;
+    }
 
     // By entering a gc-forbidden scope, conservative GCs will not
     // be allowed while handling an out-of-line allocation request.

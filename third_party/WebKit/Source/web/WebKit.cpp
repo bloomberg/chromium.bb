@@ -141,6 +141,12 @@ static void adjustAmountOfExternalAllocatedMemory(int size)
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(size);
 }
 
+static ModulesInitializer& modulesInitializer()
+{
+    DEFINE_STATIC_LOCAL(OwnPtr<ModulesInitializer>, initializer, (adoptPtr(new ModulesInitializer)));
+    return *initializer;
+}
+
 void initializeWithoutV8(Platform* platform)
 {
     ASSERT(!s_webKitInitialized);
@@ -161,8 +167,7 @@ void initializeWithoutV8(Platform* platform)
         s_gcTaskRunner = new GCTaskRunner(currentThread);
     }
 
-    DEFINE_STATIC_LOCAL(ModulesInitializer, initializer, ());
-    initializer.init();
+    modulesInitializer().init();
 
     setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
 }
@@ -194,26 +199,16 @@ void shutdown()
         // the shutdown() is called.
         delete s_endOfTaskRunner;
         s_endOfTaskRunner = nullptr;
-
-        ASSERT(s_gcTaskRunner);
-        delete s_gcTaskRunner;
-        s_gcTaskRunner = nullptr;
     }
 
     // Shutdown V8-related background threads before V8 is ramped down. Note
     // that this will wait the thread to stop its operations.
     ScriptStreamerThread::shutdown();
 
+    ThreadState::current()->unregisterTraceDOMWrappers();
+
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
     V8PerIsolateData::willBeDestroyed(isolate);
-
-    CoreInitializer::terminateThreads();
-
-    ModulesInitializer::terminateThreads();
-
-    // Detach the main thread before starting the shutdown sequence
-    // so that the main thread won't get involved in a GC during the shutdown.
-    ThreadState::detachMainThread();
 
     V8PerIsolateData::destroy(isolate);
 
@@ -222,8 +217,21 @@ void shutdown()
 
 void shutdownWithoutV8()
 {
+    ASSERT(isMainThread());
+    modulesInitializer().shutdown();
+
+    // currentThread() is null if we are running on a thread without a message loop.
+    if (Platform::current()->currentThread()) {
+        ASSERT(s_gcTaskRunner);
+        delete s_gcTaskRunner;
+        s_gcTaskRunner = nullptr;
+    }
+
+    // Detach the main thread before starting the shutdown sequence
+    // so that the main thread won't get involved in a GC during the shutdown.
+    ThreadState::detachMainThread();
+
     ASSERT(!s_endOfTaskRunner);
-    CoreInitializer::shutdown();
     Heap::shutdown();
     WTF::shutdown();
     Platform::shutdown();

@@ -38,23 +38,22 @@ namespace blink {
 
 class CORE_EXPORT CoreInitializer {
     USING_FAST_MALLOC(CoreInitializer);
+    WTF_MAKE_NONCOPYABLE(CoreInitializer);
 public:
-    CoreInitializer() : m_isInited(false) { }
+    CoreInitializer() : m_isInitialized(false) { }
+    virtual ~CoreInitializer() { }
+
     // Should be called by clients before trying to create Frames.
     virtual void init();
-
-    static void terminateThreads();
-
-    // FIXME: Why is this function static?
-    static void shutdown();
+    virtual void shutdown();
 
 protected:
-    bool isInitialized() const { return m_isInited; }
+    bool isInitialized() const { return m_isInitialized; }
 
 private:
     void registerEventFactory();
 
-    bool m_isInited;
+    bool m_isInitialized;
 };
 
 } // namespace blink
