@@ -778,6 +778,8 @@
       'browser/frame_host/render_widget_host_view_child_frame.h',
       'browser/frame_host/render_widget_host_view_guest.cc',
       'browser/frame_host/render_widget_host_view_guest.h',
+      'browser/frame_host/traced_frame_tree_node.cc',
+      'browser/frame_host/traced_frame_tree_node.h',
       'browser/gamepad/gamepad_consumer.h',
       'browser/gamepad/gamepad_data_fetcher.cc',
       'browser/gamepad/gamepad_data_fetcher.h',
