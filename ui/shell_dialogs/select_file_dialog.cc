@@ -21,7 +21,7 @@
 #elif defined(OS_ANDROID)
 #include "ui/shell_dialogs/select_file_dialog_android.h"
 #elif defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "ui/shell_dialogs/linux_shell_dialog.h"
+#include "ui/shell_dialogs/shell_dialog_linux.h"
 #endif
 
 namespace {
@@ -80,7 +80,7 @@ scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
   }
 
 #if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  const ui::LinuxShellDialog* shell_dialogs = ui::LinuxShellDialog::instance();
+  const ui::ShellDialogLinux* shell_dialogs = ui::ShellDialogLinux::instance();
   if (shell_dialogs)
     return shell_dialogs->CreateSelectFileDialog(listener, policy);
 #endif

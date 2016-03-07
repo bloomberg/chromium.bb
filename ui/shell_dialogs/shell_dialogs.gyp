@@ -29,8 +29,6 @@
         'base_shell_dialog.h',
         'base_shell_dialog_win.cc',
         'base_shell_dialog_win.h',
-        'linux_shell_dialog.cc',
-        'linux_shell_dialog.h',
         'select_file_dialog.cc',
         'select_file_dialog.h',
         'select_file_dialog_android.cc',
@@ -45,6 +43,8 @@
         'select_file_policy.h',
         'selected_file_info.cc',
         'selected_file_info.h',
+        'shell_dialog_linux.cc',
+        'shell_dialog_linux.h',
       ],
       'conditions': [
         ['use_aura==1',

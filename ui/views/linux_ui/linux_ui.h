@@ -12,7 +12,7 @@
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/events/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/linux_font_delegate.h"
-#include "ui/shell_dialogs/linux_shell_dialog.h"
+#include "ui/shell_dialogs/shell_dialog_linux.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 #include "ui/views/views_export.h"
@@ -52,7 +52,7 @@ class WindowButtonOrderObserver;
 // liuigtk3.so, etc.
 class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
                              public gfx::LinuxFontDelegate,
-                             public ui::LinuxShellDialog,
+                             public ui::ShellDialogLinux,
                              public ui::TextEditKeyBindingsDelegateAuraLinux {
  public:
   // Describes the window management actions that could be taken in response to

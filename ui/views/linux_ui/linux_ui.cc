@@ -6,7 +6,7 @@
 
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/gfx/linux_font_delegate.h"
-#include "ui/shell_dialogs/linux_shell_dialog.h"
+#include "ui/shell_dialogs/shell_dialog_linux.h"
 
 namespace {
 
@@ -21,7 +21,7 @@ void LinuxUI::SetInstance(LinuxUI* instance) {
   g_linux_ui = instance;
   LinuxInputMethodContextFactory::SetInstance(instance);
   LinuxFontDelegate::SetInstance(instance);
-  LinuxShellDialog::SetInstance(instance);
+  ShellDialogLinux::SetInstance(instance);
   ui::SetTextEditKeyBindingsDelegate(instance);
 }
 

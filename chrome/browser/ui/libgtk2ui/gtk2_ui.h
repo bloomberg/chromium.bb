@@ -66,7 +66,7 @@ class Gtk2UI : public views::LinuxUI {
       int* style_out,
       gfx::FontRenderParams* params_out) const override;
 
-  // ui::LinuxShellDialog:
+  // ui::ShellDialogLinux:
   ui::SelectFileDialog* CreateSelectFileDialog(
       ui::SelectFileDialog::Listener* listener,
       ui::SelectFilePolicy* policy) const override;
