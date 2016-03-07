@@ -149,7 +149,7 @@ void StyleEngine::injectAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> a
 {
     m_injectedAuthorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
     markDocumentDirty();
-    resolverChanged(AnalyzedStyleUpdate);
+    resolverChanged(FullStyleUpdate);
 }
 
 void StyleEngine::addPendingSheet()
