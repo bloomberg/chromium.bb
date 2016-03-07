@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -81,12 +81,6 @@ uint16_t SSLProtocolVersionFromString(const std::string& version_str) {
     version = net::SSL_PROTOCOL_VERSION_TLS1_2;
   }
   return version;
-}
-
-bool IsRC4EnabledByDefault() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("RC4Ciphers");
-  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 const base::Feature kSSLVersionFallbackTLSv11 {
@@ -197,10 +191,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
     : ssl_config_service_(new SSLConfigServicePref(io_task_runner)),
       io_task_runner_(io_task_runner) {
   DCHECK(local_state);
-
-  local_state->SetDefaultPrefValue(
-      ssl_config::prefs::kRC4Enabled,
-      new base::FundamentalValue(IsRC4EnabledByDefault()));
 
   // Restore the TLS 1.1 fallback leg if enabled via features.
   // TODO(davidben): Remove this when the fallback removal has succeeded.
