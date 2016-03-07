@@ -134,8 +134,8 @@
     // http://w3c.github.io/selection-api/#extensions-to-window-interface
     Selection? getSelection();
 
-    // Console API (non-standard but widely implemented in some form)
-    // https://developer.chrome.com/devtools/docs/console-api
+    // Console API
+    // https://console.spec.whatwg.org/#console-interface
     [Replaceable] readonly attribute Console console;
 
     // Non-standard APIs

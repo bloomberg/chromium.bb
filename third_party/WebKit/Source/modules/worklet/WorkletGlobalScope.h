@@ -10,6 +10,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SecurityContext.h"
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/heap/Handle.h"
@@ -17,9 +18,11 @@
 namespace blink {
 
 class EventQueue;
+class LocalFrame;
 class WorkerOrWorkletScriptController;
+class WorkletConsole;
 
-class WorkletGlobalScope : public RefCountedWillBeGarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public WorkerOrWorkletGlobalScope, public ScriptWrappable {
+class WorkletGlobalScope : public RefCountedWillBeGarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public WorkerOrWorkletGlobalScope, public ScriptWrappable, public LocalFrameLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
 public:
@@ -30,11 +33,13 @@ public:
 
     // The url, userAgent and securityOrigin arguments are inherited from the
     // parent ExecutionContext for Worklets.
-    static PassRefPtrWillBeRawPtr<WorkletGlobalScope> create(const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
+    static PassRefPtrWillBeRawPtr<WorkletGlobalScope> create(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
     ~WorkletGlobalScope() override;
 
     bool isWorkletGlobalScope() const final { return true; }
 
+    // WorkletGlobalScope
+    WorkletConsole* console();
 
     // WorkerOrWorkletGlobalScope
     ScriptWrappable* scriptWrappable() const final { return const_cast<WorkletGlobalScope*>(this); }
@@ -61,10 +66,9 @@ public:
         ASSERT_NOT_REACHED();
     }
 
-    // TODO(ikilpatrick): implement when we implement devtools support.
-    void reportBlockedScriptExecutionToInspector(const String& directiveText) final { }
-    void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) final { }
-    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) final { }
+    void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
+    void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) final;
+    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) final;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -74,13 +78,15 @@ private:
     void derefExecutionContext() final { deref(); }
 #endif
 
-    WorkletGlobalScope(const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
+    WorkletGlobalScope(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
 
     const KURL& virtualURL() const final { return m_url; }
     KURL virtualCompleteURL(const String&) const final;
 
     EventTarget* errorEventTarget() final { return nullptr; }
     void didUpdateSecurityOrigin() final { }
+
+    mutable PersistentWillBeMember<WorkletConsole> m_console;
 
     KURL m_url;
     String m_userAgent;

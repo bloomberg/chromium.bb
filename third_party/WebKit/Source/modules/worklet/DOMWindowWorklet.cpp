@@ -42,7 +42,7 @@ Worklet* DOMWindowWorklet::renderWorklet(ExecutionContext* executionContext, DOM
 Worklet* DOMWindowWorklet::renderWorklet(ExecutionContext* executionContext) const
 {
     if (!m_renderWorklet && frame())
-        m_renderWorklet = Worklet::create(executionContext);
+        m_renderWorklet = Worklet::create(frame(), executionContext);
     return m_renderWorklet.get();
 }
 

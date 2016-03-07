@@ -321,6 +321,7 @@
       'webusb/USBIsochronousOutTransferResult.idl',
       'webusb/USBOutTransferResult.idl',
       'worklet/Worklet.idl',
+      'worklet/WorkletConsole.idl',
       'worklet/WorkletGlobalScope.idl',
     ],
     # 'partial interface' or target (right side of) 'implements'
@@ -1887,6 +1888,8 @@
       'worklet/DOMWindowWorklet.h',
       'worklet/Worklet.cpp',
       'worklet/Worklet.h',
+      'worklet/WorkletConsole.cpp',
+      'worklet/WorkletConsole.h',
       'worklet/WorkletGlobalScope.cpp',
       'worklet/WorkletGlobalScope.h',
     ],

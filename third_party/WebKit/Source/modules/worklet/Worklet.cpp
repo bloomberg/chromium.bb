@@ -10,20 +10,21 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/worklet/WorkletGlobalScope.h"
 
 namespace blink {
 
 // static
-Worklet* Worklet::create(ExecutionContext* executionContext)
+Worklet* Worklet::create(LocalFrame* frame, ExecutionContext* executionContext)
 {
-    Worklet* worklet = new Worklet(executionContext);
+    Worklet* worklet = new Worklet(frame, executionContext);
     worklet->suspendIfNeeded();
     return worklet;
 }
 
-Worklet::Worklet(ExecutionContext* executionContext)
+Worklet::Worklet(LocalFrame* frame, ExecutionContext* executionContext)
     : ActiveDOMObject(executionContext)
-    , m_workletGlobalScope(WorkletGlobalScope::create(executionContext->url(), executionContext->userAgent(), executionContext->securityOrigin(), toIsolate(executionContext)))
+    , m_workletGlobalScope(WorkletGlobalScope::create(frame, executionContext->url(), executionContext->userAgent(), executionContext->securityOrigin(), toIsolate(executionContext)))
 {
 }
 

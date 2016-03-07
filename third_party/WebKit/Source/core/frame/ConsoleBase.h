@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/DOMWindowProperty.h"
@@ -43,7 +44,7 @@ namespace blink {
 class ConsoleMessage;
 class ScriptArguments;
 
-class ConsoleBase : public GarbageCollectedFinalized<ConsoleBase>, public ScriptWrappable {
+class CORE_EXPORT ConsoleBase : public GarbageCollectedFinalized<ConsoleBase>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     void debug(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);

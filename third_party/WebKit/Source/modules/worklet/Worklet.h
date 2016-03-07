@@ -26,7 +26,7 @@ class Worklet final : public GarbageCollectedFinalized<Worklet>, public ScriptWr
 public:
     // The ExecutionContext argument is the parent document of the Worklet. The
     // Worklet inherits the url and userAgent, from the document.
-    static Worklet* create(ExecutionContext*);
+    static Worklet* create(LocalFrame*, ExecutionContext*);
 
     ScriptPromise import(ScriptState*, const String& url);
 
@@ -36,7 +36,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    explicit Worklet(ExecutionContext*);
+    Worklet(LocalFrame*, ExecutionContext*);
 
     void onResponse();
     void onFinished(WorkerScriptLoader*, ScriptPromiseResolver*);
