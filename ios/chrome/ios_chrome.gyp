@@ -655,6 +655,8 @@
         'browser/web/dom_altering_lock.mm',
         'browser/web/web_view_type_util.h',
         'browser/web/web_view_type_util.mm',
+        'browser/web/resubmit_data_controller.h',
+        'browser/web/resubmit_data_controller.mm',
         'browser/web_data_service_factory.cc',
         'browser/web_data_service_factory.h',
         'browser/web_resource/web_resource_util.cc',
