@@ -8,9 +8,11 @@ source_set("tests") {
   sources = [
     "core_unittest.cc",
     "macros_unittest.cc",
+    "watcher_unittest.cc",
   ]
 
   deps = [
+    "//base",
     "//mojo/public/c/system/tests",
     "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/system",

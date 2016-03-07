@@ -11,6 +11,8 @@ source_set("system") {
     "handle.h",
     "macros.h",
     "message_pipe.h",
+    "watcher.cc",
+    "watcher.h",
   ]
 
   public_deps = [

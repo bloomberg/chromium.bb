@@ -150,6 +150,7 @@
       'dependencies': [
         '../testing/gtest.gyp:gtest',
         'mojo_edk.gyp:mojo_run_all_unittests',
+        'mojo_public.gyp:mojo_cpp_system',
         'mojo_public.gyp:mojo_public_test_utils',
       ],
       'sources': [
