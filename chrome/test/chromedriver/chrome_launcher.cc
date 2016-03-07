@@ -471,6 +471,8 @@ Status LaunchAndroidChrome(
     switches.SetUnparsedSwitch(common_switch);
   for (auto android_switch : kAndroidSwitches)
     switches.SetUnparsedSwitch(android_switch);
+  for (auto excluded_switch : capabilities.exclude_switches)
+    switches.RemoveSwitch(excluded_switch);
   status = device->SetUp(capabilities.android_package,
                          capabilities.android_activity,
                          capabilities.android_process,
