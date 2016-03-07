@@ -76,9 +76,9 @@ IN_PROC_BROWSER_TEST_F(ImeWindowBrowserTest, CreateFollowCursorWindow) {
 IN_PROC_BROWSER_TEST_F(ImeWindowBrowserTest, FollowCursor) {
   gfx::Rect expected_bounds(100, 200, 100, 100);
   CreateImeWindow(expected_bounds, true);
-  ime_window_->FollowCursor(gfx::Rect(10, 20, 1, 10));
-  expected_bounds.set_x(10);  // cursor left.
-  expected_bounds.set_y(33);  // cursor top + cursor height + margin(3).
+  ime_window_->FollowCursor(gfx::Rect(50, 50, 1, 10));
+  expected_bounds.set_x(18);  // cursor left - titlebar width(32).
+  expected_bounds.set_y(63);  // cursor top + cursor height + margin(3).
   VerifyImeWindow(expected_bounds);
 }
 

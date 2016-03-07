@@ -29,8 +29,8 @@ const int kButtonSize = 24;
 const int kBorderThickness = 1;
 const int kIconSize = 16;
 const int kTitleAndButtonPadding = 11;
-const int kTitlebarHeight = 36;
-const int kTitlebarLeftPadding = 10;
+const int kTitlebarHeight = 32;
+const int kTitlebarLeftPadding = 8;
 const int kTitlebarRightPadding = 6;
 
 // Colors used to draw border, titlebar background and title text.

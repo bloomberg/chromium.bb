@@ -23,6 +23,9 @@ namespace {
 // The vertical margin between the cursor and the follow-cursor window.
 const int kFollowCursorMargin = 3;
 
+// The offset from the left of follow cursor window to the left of cursor.
+const int kFollowCursorOffset = 32;
+
 }  // namespace
 
 namespace ui {
@@ -38,7 +41,7 @@ ImeWindow::ImeWindow(Profile* profile,
     title_ = extension->name();
     icon_.reset(new extensions::IconImage(
         profile, extension, extensions::IconsInfo::GetIcons(extension),
-        extension_misc::EXTENSION_ICON_SMALL, gfx::ImageSkia(), this));
+        extension_misc::EXTENSION_ICON_BITTY, gfx::ImageSkia(), this));
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
@@ -97,13 +100,13 @@ void ImeWindow::FollowCursor(const gfx::Rect& cursor_bounds) {
   int screen_height = screen_bounds.height();
   int width = window_bounds.width();
   int height = window_bounds.height();
-  // By default, aligns the left of the window to the left of the cursor, and
-  // aligns the top of the window to the bottom of the cursor.
+  // By default, aligns the left of the window client area to the left of the
+  // cursor, and aligns the top of the window to the bottom of the cursor.
   // If the right of the window would go beyond the screen bounds, aligns the
   // right of the window to the screen bounds.
   // If the bottom of the window would go beyond the screen bounds, aligns the
   // bottom of the window to the cursor top.
-  int x = cursor_bounds.x();
+  int x = cursor_bounds.x() - kFollowCursorOffset;
   int y = cursor_bounds.y() + cursor_bounds.height() + kFollowCursorMargin;
   if (width < screen_width && x + width > screen_width)
     x = screen_width - width;
@@ -167,8 +170,20 @@ void ImeWindow::CloseContents(content::WebContents* source) {
 
 void ImeWindow::MoveContents(content::WebContents* source,
                                  const gfx::Rect& pos) {
-  if (native_window_)
+  if (!native_window_)
+    return;
+
+  if (mode_ == NORMAL) {
     native_window_->SetBounds(pos);
+    return;
+  }
+
+  // Follow-cursor window needs to remain the x/y and only allow JS to
+  // change the size.
+  gfx::Rect bounds = native_window_->GetBounds();
+  bounds.set_width(pos.width());
+  bounds.set_height(pos.height());
+  native_window_->SetBounds(bounds);
 }
 
 bool ImeWindow::IsPopupOrPanel(const content::WebContents* source) const {
