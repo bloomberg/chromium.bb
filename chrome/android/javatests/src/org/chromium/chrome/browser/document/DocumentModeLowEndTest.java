@@ -4,18 +4,15 @@
 
 package org.chromium.chrome.browser.document;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_DEVICE;
-
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Context;
 import android.os.Build;
-import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -35,8 +32,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
 public class DocumentModeLowEndTest extends DocumentModeTestBase {
 
-    @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
-    @MediumTest
+    // @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
+    // @MediumTest
+    @DisabledTest // https://crbug.com/592404
     public void testNewTabLoadLowEnd() throws Exception {
         launchViaLaunchDocumentInstance(false, HREF_LINK, "href link page");
 
@@ -80,8 +78,9 @@ public class DocumentModeLowEndTest extends DocumentModeTestBase {
      * Tests that "Open in new tab" command doesn't create renderer per tab
      * on low end devices.
      */
-    @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
-    @MediumTest
+    // @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
+    // @MediumTest
+    @DisabledTest // https://crbug.com/592404
     public void testNewTabRenderersLowEnd() throws Exception {
         launchViaLaunchDocumentInstance(false, HREF_LINK, "href link page");
 

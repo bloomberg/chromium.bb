@@ -4,18 +4,13 @@
 
 package org.chromium.chrome.browser;
 
-import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
-
 import android.content.Context;
 import android.os.Build;
-import android.test.suitebuilder.annotation.LargeTest;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 
-import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.document.DocumentModeTestBase;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
@@ -162,9 +157,10 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
      * Verifies that the .setProcessInForeground() signal is called correctly as the tabs are
      * created and switched.
      */
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @LargeTest
-    @Feature({"ProcessManagement"})
+    // @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    // @LargeTest
+    // @Feature({"ProcessManagement"})
+    @DisabledTest // https://crbug.com/592404
     public void testTabSwitching() throws Exception {
         // Create two tabs and wait until they are loaded, so that their renderers are around.
         final Tab[] tabs = new Tab[2];
@@ -206,8 +202,9 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
      * Verifies that a renderer that crashes in foreground has the correct visibility when
      * recreated.
      */
-    @LargeTest
-    @Feature({"ProcessManagement"})
+    // @LargeTest
+    // @Feature({"ProcessManagement"})
+    @DisabledTest // https://crbug.com/592404
     public void testCrashInForeground() throws Exception {
         // Create a tab in foreground and wait until it is loaded.
         final Tab tab = ChromeApplication.getDocumentTabModelSelector().getTabById(
@@ -260,9 +257,10 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
      * Ensures correctness of the visibilityDetermined() calls, that should be always preceded by
      * setInForeground().
      */
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @LargeTest
-    @Feature({"ProcessManagement"})
+    // @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    // @LargeTest
+    // @Feature({"ProcessManagement"})
+    @DisabledTest // https://crbug.com/592404
     public void testVisibilityDetermined() throws Exception {
         // Create a tab in foreground and wait until it is loaded.
         final Tab fgTab = ChromeApplication.getDocumentTabModelSelector().getTabById(
@@ -308,9 +306,10 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
      * Verifies that BindingManager.releaseAllModerateBindings() is called once all the sandboxed
      * services are allocated.
      */
-    @CommandLineFlags.Add(ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4")
-    @LargeTest
-    @Feature({"ProcessManagement"})
+    // @CommandLineFlags.Add(ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4")
+    // @LargeTest
+    // @Feature({"ProcessManagement"})
+    @DisabledTest // https://crbug.com/592404
     public void testReleaseAllModerateBindings() throws Exception {
         launchViaViewIntent(false, URL_1, "Page 1");
         launchViaViewIntent(false, URL_1, "Page 1");

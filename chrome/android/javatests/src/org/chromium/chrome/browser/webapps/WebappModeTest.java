@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
@@ -16,7 +15,7 @@ import android.view.View;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -220,8 +219,9 @@ public class WebappModeTest extends MultiActivityTestBase {
     /**
      * Tests that WebappActivities handle window.open() properly in document mode.
      */
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @MediumTest
+    // @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    // @MediumTest
+    @DisabledTest // https://crbug.com/592404
     public void testWebappHandlesWindowOpenInDocumentMode() throws Exception {
         triggerWindowOpenAndWaitForLoad(DocumentActivity.class, ONCLICK_LINK, true);
     }
@@ -238,8 +238,9 @@ public class WebappModeTest extends MultiActivityTestBase {
     /**
      * Tests that WebappActivities handle suppressed window.open() properly in document mode.
      */
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-    @MediumTest
+    // @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    // @MediumTest
+    @DisabledTest // https://crbug.com/592404
     public void testWebappHandlesSuppressedWindowOpenInDocumentMode() throws Exception {
         triggerWindowOpenAndWaitForLoad(DocumentActivity.class, HREF_NO_REFERRER_LINK, false);
     }
