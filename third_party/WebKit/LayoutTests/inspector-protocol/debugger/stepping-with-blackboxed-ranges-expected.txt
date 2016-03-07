@@ -25,12 +25,12 @@ action: stepOut
 testFunction: 9:4
 
 action: stepInto
-notBlackboxedBoo: 16:4
+notBlackboxedBoo: 16:12
 testFunction: 9:4
 
 action: stepOver
 action: stepInto
-notBlackboxedFoo: 2:4
+notBlackboxedFoo: 2:12
 blackboxedFoo: 10:12
 notBlackboxedBoo: 17:12
 testFunction: 9:4
