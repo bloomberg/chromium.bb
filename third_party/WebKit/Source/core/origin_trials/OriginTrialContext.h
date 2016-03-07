@@ -8,7 +8,9 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+#include "wtf/HashSet.h"
 #include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -56,6 +58,11 @@ private:
     bool isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
 
     bool hasValidToken(Vector<String> tokens, const String& featureName, String* errorMessage, WebTrialTokenValidator*);
+
+    // Records whether an error message has been generated, for each feature
+    // name. Since these messages are generally written to the console, this is
+    // used to avoid cluttering the console with messages on every access.
+    HashSet<String> m_errorMessageGeneratedForFeature;
 };
 
 } // namespace blink

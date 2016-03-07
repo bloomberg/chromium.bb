@@ -28,6 +28,11 @@ String getDisabledMessage(const String& featureName)
     return "The '" + featureName + "' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.";
 }
 
+String getInvalidTokenMessage(const String& featureName)
+{
+    return "The provided token(s) are not valid for the '" + featureName + "' feature.";
+}
+
 } // namespace
 
 const char OriginTrialContext::kTrialHeaderName[] = "origin-trial";
@@ -78,13 +83,23 @@ bool OriginTrialContext::hasValidToken(Vector<String> tokens, const String& feat
         }
     }
 
-    if (errorMessage) {
-        if (tokens.size()) {
-            *errorMessage = "The provided token(s) are not valid for the '" + featureName + "' feature.";
-        } else {
-            *errorMessage = getDisabledMessage(featureName);
-        }
+    if (!errorMessage)
+        return false;
+
+    // If an error message has already been generated in this context, for this
+    // feature, do not generate another one. (This avoids cluttering the console
+    // with error messages on every attempt to access the feature.)
+    if (m_errorMessageGeneratedForFeature.contains(featureName)) {
+        *errorMessage = "";
+        return false;
     }
+
+    if (tokens.size()) {
+        *errorMessage = getInvalidTokenMessage(featureName);
+    } else {
+        *errorMessage = getDisabledMessage(featureName);
+    }
+    m_errorMessageGeneratedForFeature.add(featureName);
     return false;
 }
 

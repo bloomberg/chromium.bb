@@ -200,6 +200,38 @@ TEST_F(OriginTrialContextTest, InvalidTokenResponseFromPlatform)
     EXPECT_EQ(1, tokenValidator()->callCount());
 }
 
+TEST_F(OriginTrialContextTest, OnlyOneErrorMessageGenerated)
+{
+    String errorMessage1;
+    String errorMessage2;
+    tokenValidator()->setResponse(false);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage1);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage2);
+    EXPECT_FALSE(errorMessage1.isEmpty());
+    EXPECT_TRUE(errorMessage2.isEmpty());
+}
+
+TEST_F(OriginTrialContextTest, ErrorMessageClearedIfStringReused)
+{
+    String errorMessage;
+    tokenValidator()->setResponse(false);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage);
+    EXPECT_FALSE(errorMessage.isEmpty());
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage);
+    EXPECT_TRUE(errorMessage.isEmpty());
+}
+
+TEST_F(OriginTrialContextTest, ErrorMessageGeneratedPerFeature)
+{
+    String errorMessage1;
+    String errorMessage2;
+    tokenValidator()->setResponse(false);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kFrobulateFeatureName, kGoodToken, &errorMessage1);
+    isFeatureEnabled(kFrobulateEnabledOrigin, kNonExistingFeatureName, kGoodToken, &errorMessage2);
+    EXPECT_FALSE(errorMessage1.isEmpty());
+    EXPECT_FALSE(errorMessage2.isEmpty());
+}
+
 TEST_F(OriginTrialContextTest, EnabledSecureRegisteredOriginWithoutErrorMessage)
 {
     tokenValidator()->setResponse(true);
