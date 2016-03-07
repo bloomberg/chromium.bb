@@ -5,13 +5,13 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef LIBWEBM_HDR_UTIL_H_
-#define LIBWEBM_HDR_UTIL_H_
+#ifndef LIBWEBM_COMMON_HDR_UTIL_H_
+#define LIBWEBM_COMMON_HDR_UTIL_H_
 
 #include <memory>
 
-#include "mkvmuxer.hpp"
-#include "mkvparser.hpp"
+#include "../mkvmuxer.hpp"
+#include "../mkvparser.hpp"
 
 namespace libwebm {
 
@@ -39,4 +39,4 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
 
 }  // namespace libwebm
 
-#endif  // LIBWEBM_HDR_UTIL_H_
+#endif  // LIBWEBM_COMMON_HDR_UTIL_H_
