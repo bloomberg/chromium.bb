@@ -10,6 +10,7 @@
 import optparse
 import os
 import sys
+import traceback
 from xml.dom import minidom
 
 from util import build_utils
@@ -123,11 +124,12 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
 
     try:
       build_utils.CheckOutput(cmd, cwd=_SRC_ROOT)
-    except build_utils.CalledProcessError as e:
+    except build_utils.CalledProcessError:
+      if can_fail_build:
+        traceback.print_exc()
+
       # There is a problem with lint usage
       if not os.path.exists(result_path):
-        print 'Something is wrong:'
-        print e
         raise
 
       # There are actual lint issues
