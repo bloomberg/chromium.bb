@@ -18,11 +18,11 @@ base::LazyInstance<base::ThreadLocalPointer<RequestContext>>::Leaky
 
 }  // namespace
 
-RequestContext::RequestContext() {
+RequestContext::RequestContext() : tls_context_(g_current_context.Pointer()){
   // We allow nested RequestContexts to exist as long as they aren't actually
   // used for anything.
-  if (!g_current_context.Pointer()->Get())
-    g_current_context.Pointer()->Set(this);
+  if (!tls_context_->Get())
+    tls_context_->Set(this);
 }
 
 RequestContext::~RequestContext() {
@@ -30,7 +30,7 @@ RequestContext::~RequestContext() {
   // EDK requests on this thread, so we need to reset the thread-local context
   // pointer before calling them.
   if (IsCurrent())
-    g_current_context.Pointer()->Set(nullptr);
+    tls_context_->Set(nullptr);
 
   for (const WatchNotifyFinalizer& watch :
       watch_notify_finalizers_.container()) {
@@ -66,7 +66,7 @@ void RequestContext::AddWatchCancelFinalizer(scoped_refptr<Watcher> watcher) {
 }
 
 bool RequestContext::IsCurrent() const {
-  return g_current_context.Pointer()->Get() == this;
+  return tls_context_->Get() == this;
 }
 
 RequestContext::WatchNotifyFinalizer::WatchNotifyFinalizer(

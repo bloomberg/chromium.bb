@@ -10,6 +10,10 @@
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/watcher.h"
 
+namespace base {
+template<typename T> class ThreadLocalPointer;
+}
+
 namespace mojo {
 namespace edk {
 
@@ -72,6 +76,11 @@ class RequestContext {
 
   WatchNotifyFinalizerList watch_notify_finalizers_;
   WatchCancelFinalizerList watch_cancel_finalizers_;
+
+  // Pointer to the TLS context. Although this can easily be accessed via the
+  // global LazyInstance, accessing a LazyInstance has a large cost relative to
+  // the rest of this class and its usages.
+  base::ThreadLocalPointer<RequestContext>* tls_context_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestContext);
 };
