@@ -1260,12 +1260,6 @@ bool test_readdir(const char *test_file) {
 
 // isatty returns 1 for TTY descriptors and 0 on error (setting errno)
 bool test_isatty(const char *test_file) {
-  // TODO(mseaborn): Implement isatty() for unsandboxed mode.
-  // We need to write two if-statements two avoid clang's warning.
-  if (NONSFI_MODE)
-    if (TESTS_USE_IRT)
-      return true;
-
   // TODO(sbc): isatty() in glibc is not yet hooked up to the IRT
   // interfaces. Remove this conditional once this gets addressed:
   // https://code.google.com/p/nativeclient/issues/detail?id=3709

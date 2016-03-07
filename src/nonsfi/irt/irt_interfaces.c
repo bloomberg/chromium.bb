@@ -596,6 +596,13 @@ static int irt_ftruncate(int fd, nacl_irt_off_t length) {
   return check_error(ftruncate(fd, length));
 }
 
+static int irt_isatty(int fd, int *result) {
+  *result = isatty(fd);
+  if (!*result)
+    return errno;
+  return 0;
+}
+
 static int irt_pread(int fd, void *buf, size_t count,
                      nacl_irt_off_t offset, size_t *nread) {
   int result = pread(fd, buf, count, offset);
@@ -701,7 +708,6 @@ const struct nacl_irt_dev_fdio_v0_2 nacl_irt_dev_fdio_v0_2 = {
   irt_ftruncate,
 };
 
-DEFINE_STUB(isatty)
 const struct nacl_irt_dev_fdio_v0_3 nacl_irt_dev_fdio_v0_3 = {
   irt_close,
   irt_dup,
@@ -716,7 +722,7 @@ const struct nacl_irt_dev_fdio_v0_3 nacl_irt_dev_fdio_v0_3 = {
   irt_fsync,
   irt_fdatasync,
   irt_ftruncate,
-  USE_STUB(nacl_irt_dev_fdio_v0_3, isatty),
+  irt_isatty,
 };
 
 const struct nacl_irt_dev_fdio nacl_irt_dev_fdio = {
@@ -733,7 +739,7 @@ const struct nacl_irt_dev_fdio nacl_irt_dev_fdio = {
   irt_fsync,
   irt_fdatasync,
   irt_ftruncate,
-  USE_STUB(nacl_irt_dev_fdio, isatty),
+  irt_isatty,
   irt_pread,
   irt_pwrite,
 };
