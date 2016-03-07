@@ -210,13 +210,11 @@ FakeHostAuthenticatorFactory::FakeHostAuthenticatorFactory(
       action_(action), async_(async) {
 }
 
-FakeHostAuthenticatorFactory::~FakeHostAuthenticatorFactory() {
-}
+FakeHostAuthenticatorFactory::~FakeHostAuthenticatorFactory() {}
 
 scoped_ptr<Authenticator> FakeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
-    const std::string& remote_jid,
-    const buzz::XmlElement* first_message) {
+    const std::string& remote_jid) {
   scoped_ptr<FakeAuthenticator> authenticator(new FakeAuthenticator(
       FakeAuthenticator::HOST, round_trips_, action_, async_));
   authenticator->set_messages_till_started(messages_till_started_);

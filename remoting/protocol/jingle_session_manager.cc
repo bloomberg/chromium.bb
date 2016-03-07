@@ -82,8 +82,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
 
     scoped_ptr<Authenticator> authenticator =
         authenticator_factory_->CreateAuthenticator(
-            signal_strategy_->GetLocalJid(), message.from,
-            message.description->authenticator_message());
+            signal_strategy_->GetLocalJid(), message.from);
 
     JingleSession* session = new JingleSession(this);
     session->InitializeIncomingConnection(message, std::move(authenticator));

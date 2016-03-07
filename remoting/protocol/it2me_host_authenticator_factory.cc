@@ -27,8 +27,7 @@ It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() {}
 
 scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
-    const std::string& remote_jid,
-    const buzz::XmlElement* first_message) {
+    const std::string& remote_jid) {
   // Check the client domain policy.
   if (!required_client_domain_.empty()) {
     std::string client_username = remote_jid;

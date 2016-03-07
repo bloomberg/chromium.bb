@@ -167,12 +167,10 @@ PamAuthorizationFactory::PamAuthorizationFactory(
 PamAuthorizationFactory::~PamAuthorizationFactory() {}
 
 scoped_ptr<protocol::Authenticator>
-PamAuthorizationFactory::CreateAuthenticator(
-    const std::string& local_jid,
-    const std::string& remote_jid,
-    const buzz::XmlElement* first_message) {
+PamAuthorizationFactory::CreateAuthenticator(const std::string& local_jid,
+                                             const std::string& remote_jid) {
   scoped_ptr<protocol::Authenticator> authenticator(
-      underlying_->CreateAuthenticator(local_jid, remote_jid, first_message));
+      underlying_->CreateAuthenticator(local_jid, remote_jid));
   return make_scoped_ptr(new PamAuthorizer(std::move(authenticator)));
 }
 

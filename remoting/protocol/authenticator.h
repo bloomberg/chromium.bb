@@ -134,8 +134,7 @@ class AuthenticatorFactory {
   // for the result of this method.
   virtual scoped_ptr<Authenticator> CreateAuthenticator(
       const std::string& local_jid,
-      const std::string& remote_jid,
-      const buzz::XmlElement* first_message) = 0;
+      const std::string& remote_jid) = 0;
 };
 
 }  // namespace protocol

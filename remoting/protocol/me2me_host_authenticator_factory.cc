@@ -62,16 +62,13 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
   return std::move(result);
 }
 
-Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory() {
-}
+Me2MeHostAuthenticatorFactory::Me2MeHostAuthenticatorFactory() {}
 
-Me2MeHostAuthenticatorFactory::~Me2MeHostAuthenticatorFactory() {
-}
+Me2MeHostAuthenticatorFactory::~Me2MeHostAuthenticatorFactory() {}
 
 scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
-    const std::string& remote_jid,
-    const buzz::XmlElement* first_message) {
+    const std::string& remote_jid) {
 
   std::string remote_jid_prefix;
 
