@@ -86,6 +86,7 @@ size_t SupervisedUserSiteList::HostnameHash::hash() const {
 
 void SupervisedUserSiteList::Load(const std::string& id,
                                   const base::string16& title,
+                                  const base::FilePath& large_icon_path,
                                   const base::FilePath& path,
                                   const LoadedCallback& callback) {
   base::PostTaskAndReplyWithResult(
@@ -94,19 +95,21 @@ void SupervisedUserSiteList::Load(const std::string& id,
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
           .get(),
       FROM_HERE, base::Bind(&ReadFileOnBlockingThread, path),
-      base::Bind(&SupervisedUserSiteList::OnJsonLoaded, id, title, path,
-                 base::TimeTicks::Now(), callback));
+      base::Bind(&SupervisedUserSiteList::OnJsonLoaded, id, title,
+                 large_icon_path, path, base::TimeTicks::Now(), callback));
 }
 
 SupervisedUserSiteList::SupervisedUserSiteList(
     const std::string& id,
     const base::string16& title,
     const GURL& entry_point,
+    const base::FilePath& large_icon_path,
     const base::ListValue* patterns,
     const base::ListValue* hostname_hashes)
     : SupervisedUserSiteList(id,
                              title,
                              entry_point,
+                             large_icon_path,
                              ConvertListValues(patterns),
                              ConvertListValues(hostname_hashes)) {}
 
@@ -114,9 +117,14 @@ SupervisedUserSiteList::SupervisedUserSiteList(
     const std::string& id,
     const base::string16& title,
     const GURL& entry_point,
+    const base::FilePath& large_icon_path,
     const std::vector<std::string>& patterns,
     const std::vector<std::string>& hostname_hashes)
-    : id_(id), title_(title), entry_point_(entry_point), patterns_(patterns) {
+    : id_(id),
+      title_(title),
+      entry_point_(entry_point),
+      large_icon_path_(large_icon_path),
+      patterns_(patterns) {
   for (const std::string& hostname_hash : hostname_hashes) {
     std::vector<uint8_t> hash_bytes;
     if (hostname_hash.size() != 2 * base::kSHA1Length ||
@@ -136,6 +144,7 @@ SupervisedUserSiteList::~SupervisedUserSiteList() {
 void SupervisedUserSiteList::OnJsonLoaded(
     const std::string& id,
     const base::string16& title,
+    const base::FilePath& large_icon_path,
     const base::FilePath& path,
     base::TimeTicks start_time,
     const SupervisedUserSiteList::LoadedCallback& callback,
@@ -183,6 +192,7 @@ void SupervisedUserSiteList::OnJsonLoaded(
   base::ListValue* hostname_hashes = nullptr;
   dict->GetList(kHostnameHashesKey, &hostname_hashes);
 
-  callback.Run(make_scoped_refptr(new SupervisedUserSiteList(
-      id, title, GURL(entry_point_url), patterns, hostname_hashes)));
+  callback.Run(make_scoped_refptr(
+      new SupervisedUserSiteList(id, title, GURL(entry_point_url),
+                                 large_icon_path, patterns, hostname_hashes)));
 }

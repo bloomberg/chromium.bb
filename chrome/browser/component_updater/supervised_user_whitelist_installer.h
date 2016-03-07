@@ -33,6 +33,7 @@ class SupervisedUserWhitelistInstaller {
   using WhitelistReadyCallback =
       base::Callback<void(const std::string& crx_id,
                           const base::string16& title,
+                          const base::FilePath& large_icon_path,
                           const base::FilePath& whitelist_path)>;
 
   virtual ~SupervisedUserWhitelistInstaller() {}

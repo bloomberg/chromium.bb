@@ -117,7 +117,7 @@ void SupervisedUserWhitelistService::LoadWhitelistForTesting(
     const base::FilePath& path) {
   bool result = registered_whitelists_.insert(id).second;
   DCHECK(result);
-  OnWhitelistReady(id, title, path);
+  OnWhitelistReady(id, title, base::FilePath(), path);
 }
 
 void SupervisedUserWhitelistService::UnloadWhitelist(const std::string& id) {
@@ -332,6 +332,7 @@ void SupervisedUserWhitelistService::NotifyWhitelistsChanged() {
 void SupervisedUserWhitelistService::OnWhitelistReady(
     const std::string& id,
     const base::string16& title,
+    const base::FilePath& large_icon_path,
     const base::FilePath& whitelist_path) {
   // If we did not register the whitelist or it has been unregistered in the
   // mean time, ignore it.
@@ -339,7 +340,7 @@ void SupervisedUserWhitelistService::OnWhitelistReady(
     return;
 
   SupervisedUserSiteList::Load(
-      id, title, whitelist_path,
+      id, title, large_icon_path, whitelist_path,
       base::Bind(&SupervisedUserWhitelistService::OnWhitelistLoaded,
                  weak_ptr_factory_.GetWeakPtr(), id, base::TimeTicks::Now()));
 }

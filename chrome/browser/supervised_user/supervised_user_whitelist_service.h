@@ -115,6 +115,7 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
 
   void OnWhitelistReady(const std::string& id,
                         const base::string16& title,
+                        const base::FilePath& large_icon_path,
                         const base::FilePath& whitelist_path);
   void OnWhitelistLoaded(
       const std::string& id,

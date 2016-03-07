@@ -52,6 +52,7 @@ const char kOtherClientId[] = "other-client-id";
 const char kVersion[] = "1.2.3.4";
 const char kWhitelistContents[] = "{\"foo\": \"bar\"}";
 const char kWhitelistFile[] = "whitelist.json";
+const char kLargeIconFile[] = "icon.png";
 
 std::string CrxIdToHashToCrxId(const std::string& kCrxId) {
   CrxComponent component;
@@ -165,17 +166,22 @@ class WhitelistLoadObserver {
 
   void Wait() { run_loop_.Run(); }
 
-  const base::FilePath& whitelist_path() { return whitelist_path_; }
+  const base::FilePath& large_icon_path() const { return large_icon_path_; }
+  const base::FilePath& whitelist_path() const { return whitelist_path_; }
 
  private:
   void OnWhitelistReady(const std::string& crx_id,
                         const base::string16& title,
+                        const base::FilePath& large_icon_path,
                         const base::FilePath& whitelist_path) {
+    EXPECT_EQ(base::FilePath::StringType(), large_icon_path_.value());
     EXPECT_EQ(base::FilePath::StringType(), whitelist_path_.value());
     whitelist_path_ = whitelist_path;
+    large_icon_path_ = large_icon_path;
     run_loop_.Quit();
   }
 
+  base::FilePath large_icon_path_;
   base::FilePath whitelist_path_;
 
   base::RunLoop run_loop_;
@@ -226,6 +232,12 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
         new base::DictionaryValue);
     whitelist_dict->SetString("sites", kWhitelistFile);
     manifest_.Set("whitelisted_content", whitelist_dict.release());
+
+    large_icon_path_ = whitelist_version_directory_.AppendASCII(kLargeIconFile);
+    scoped_ptr<base::DictionaryValue> icons_dict(new base::DictionaryValue);
+    icons_dict->SetString("128", kLargeIconFile);
+    manifest_.Set("icons", icons_dict.release());
+
     manifest_.SetString("version", kVersion);
 
     scoped_ptr<base::DictionaryValue> crx_dict(new base::DictionaryValue);
@@ -287,6 +299,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   base::FilePath whitelist_version_directory_;
   base::FilePath installed_whitelist_directory_;
   base::FilePath whitelist_path_;
+  base::FilePath large_icon_path_;
   base::DictionaryValue manifest_;
   base::DictionaryValue pref_;
 };
@@ -336,6 +349,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
 
   observer.Wait();
   EXPECT_EQ(whitelist_path_.value(), observer.whitelist_path().value());
+  EXPECT_EQ(large_icon_path_.value(), observer.large_icon_path().value());
 
   std::string whitelist_contents;
   ASSERT_TRUE(base::ReadFileToString(whitelist_path_, &whitelist_contents));

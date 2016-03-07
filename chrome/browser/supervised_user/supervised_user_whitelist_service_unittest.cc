@@ -48,9 +48,10 @@ class MockSupervisedUserWhitelistInstaller
 
   void NotifyWhitelistReady(const std::string& crx_id,
                             const base::string16& title,
-                            const base::FilePath& path) {
+                            const base::FilePath& large_icon_path,
+                            const base::FilePath& whitelist_path) {
     for (const auto& callback : ready_callbacks_)
-      callback.Run(crx_id, title, path);
+      callback.Run(crx_id, title, large_icon_path, whitelist_path);
   }
 
   // SupervisedUserWhitelistInstaller implementation:
@@ -200,7 +201,7 @@ TEST_F(SupervisedUserWhitelistServiceTest, MergeExisting) {
   base::FilePath whitelist_path =
       test_data_dir.AppendASCII("whitelists/content_pack/site_list.json");
   installer_->NotifyWhitelistReady("aaaa", base::ASCIIToUTF16("Title"),
-                                   whitelist_path);
+                                   base::FilePath(), whitelist_path);
   run_loop.Run();
 
   ASSERT_EQ(1u, site_lists_.size());
@@ -260,7 +261,7 @@ TEST_F(SupervisedUserWhitelistServiceTest, ApplyChanges) {
 
   // If whitelist A now becomes ready, it should be ignored.
   installer_->NotifyWhitelistReady(
-      "aaaa", base::ASCIIToUTF16("Title"),
+      "aaaa", base::ASCIIToUTF16("Title"), base::FilePath(),
       base::FilePath(FILE_PATH_LITERAL("/path/to/aaaa")));
   EXPECT_EQ(0u, site_lists_.size());
 
