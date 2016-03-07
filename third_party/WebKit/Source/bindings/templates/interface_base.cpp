@@ -301,7 +301,7 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> interfac
     {% if interface_name == 'Window' %}{{newline}}
     prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
     {% endif %}
-    {% if is_global or interface_name == 'HTMLDocument' %}{{newline}}
+    {% if is_global %}{{newline}}
     interfaceTemplate->SetHiddenPrototype(true);
     {% endif %}
     {% endif %}

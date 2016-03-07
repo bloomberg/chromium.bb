@@ -31,8 +31,6 @@
 #include "bindings/core/v8/V8DOMWrapper.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8HTMLCollection.h"
-#include "bindings/core/v8/V8HTMLDocument.h"
 #include "bindings/core/v8/V8Location.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8PerContextData.h"
@@ -41,34 +39,6 @@
 #include "bindings/core/v8/V8Window.h"
 
 namespace blink {
-
-static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper, ScriptWrappable* scriptWrappable, v8::Isolate* isolate)
-{
-    static int shadowTemplateKey; // This address is used for a key to look up the dom template.
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Local<v8::FunctionTemplate> shadowTemplate = data->existingDOMTemplate(&shadowTemplateKey);
-    if (shadowTemplate.IsEmpty()) {
-        shadowTemplate = v8::FunctionTemplate::New(isolate);
-        if (shadowTemplate.IsEmpty())
-            return v8::Local<v8::Object>();
-        shadowTemplate->SetClassName(v8AtomicString(isolate, "HTMLDocument"));
-        shadowTemplate->Inherit(V8HTMLDocument::domTemplate(isolate));
-        shadowTemplate->InstanceTemplate()->SetInternalFieldCount(V8HTMLDocument::internalFieldCount);
-        data->setDOMTemplate(&shadowTemplateKey, shadowTemplate);
-    }
-
-    v8::Local<v8::Function> shadowConstructor;
-    if (!shadowTemplate->GetFunction(isolate->GetCurrentContext()).ToLocal(&shadowConstructor))
-        return v8::Local<v8::Object>();
-
-    v8::Local<v8::Object> shadow;
-    if (!V8ScriptRunner::instantiateObject(isolate, shadowConstructor).ToLocal(&shadow))
-        return v8::Local<v8::Object>();
-    if (!v8CallBoolean(shadow->SetPrototype(isolate->GetCurrentContext(), wrapper)))
-        return v8::Local<v8::Object>();
-    V8DOMWrapper::setNativeInfo(wrapper, &V8HTMLDocument::wrapperTypeInfo, scriptWrappable);
-    return shadow;
-}
 
 v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Local<v8::Object> creationContext, const WrapperTypeInfo* type, ScriptWrappable* scriptWrappable)
 {
@@ -87,9 +57,6 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Loca
         if (!type->domTemplate(isolate)->InstanceTemplate()->NewInstance(scope.context()).ToLocal(&wrapper))
             return v8::Local<v8::Object>();
     }
-
-    if (type == &V8HTMLDocument::wrapperTypeInfo && !wrapper.IsEmpty())
-        wrapper = wrapInShadowTemplate(wrapper, scriptWrappable, isolate);
 
     return wrapper;
 }

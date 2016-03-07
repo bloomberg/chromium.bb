@@ -74,7 +74,6 @@ namespace blink {
 static void checkDocumentWrapper(v8::Local<v8::Object> wrapper, Document* document)
 {
     ASSERT(V8Document::toImpl(wrapper) == document);
-    ASSERT(!document->isHTMLDocument() || (V8Document::toImpl(v8::Local<v8::Object>::Cast(wrapper->GetPrototype())) == document));
 }
 
 PassOwnPtrWillBeRawPtr<WindowProxy> WindowProxy::create(v8::Isolate* isolate, Frame* frame, DOMWrapperWorld& world)
