@@ -321,7 +321,7 @@ static void initializeV8Common(v8::Isolate* isolate)
 
     v8::Debug::SetLiveEditEnabled(isolate, false);
 
-    isolate->SetAutorunMicrotasks(false);
+    isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
 }
 
 namespace {

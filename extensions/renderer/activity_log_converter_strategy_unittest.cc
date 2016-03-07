@@ -6,6 +6,7 @@
 #include "base/values.h"
 #include "extensions/renderer/activity_log_converter_strategy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "v8/include/v8.h"
 
 using content::V8ValueConverter;
@@ -122,6 +123,7 @@ TEST_F(ActivityLogConverterStrategyTest, ConversionTest) {
       "};"
       "})();";
 
+  blink::WebScopedMicrotaskSuppression microtasks_scope;
   v8::Local<v8::Script> script(
       v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
   v8::Local<v8::Object> v8_object = script->Run().As<v8::Object>();

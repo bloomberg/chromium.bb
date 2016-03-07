@@ -304,7 +304,7 @@ TEST_F(ReadableStreamTest, CloseWhenReadable)
 
     stream->read(scriptState());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_EQ(ReadableStream::Readable, stream->stateInternal());
     EXPECT_FALSE(stream->isPulling());
@@ -335,7 +335,7 @@ TEST_F(ReadableStreamTest, CancelWhenClosed)
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ("undefined", onFulfilled);
     EXPECT_TRUE(onRejected.isNull());
 }
@@ -358,7 +358,7 @@ TEST_F(ReadableStreamTest, CancelWhenErrored)
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_EQ("NotFoundError: error", onRejected);
 }
@@ -392,7 +392,7 @@ TEST_F(ReadableStreamTest, CancelWhenReadable)
     EXPECT_TRUE(onCancelFulfilled.isNull());
     EXPECT_TRUE(onCancelRejected.isNull());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ("undefined", onCancelFulfilled);
     EXPECT_TRUE(onCancelRejected.isNull());
 }
@@ -416,7 +416,7 @@ TEST_F(ReadableStreamTest, CancelWhenLocked)
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_EQ("TypeError: this stream is locked to a ReadableStreamReader", onRejected);
@@ -563,7 +563,7 @@ TEST_F(ReadableStreamTest, GetClosedReader)
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ("undefined", onFulfilled);
     EXPECT_TRUE(onRejected.isNull());
 }
@@ -586,7 +586,7 @@ TEST_F(ReadableStreamTest, GetErroredReader)
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_EQ("SyntaxError: some error", onRejected);
 }
