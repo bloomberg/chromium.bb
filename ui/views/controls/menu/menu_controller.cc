@@ -2638,8 +2638,12 @@ void MenuController::SetInitialHotTrackedView(
 }
 
 void MenuController::SetHotTrackedButton(CustomButton* hot_button) {
-  if (hot_button == hot_button_)
+  if (hot_button == hot_button_) {
+    // Hot-tracked state may change outside of the MenuController. Correct it.
+    if (hot_button && !hot_button->IsHotTracked())
+      hot_button->SetHotTracked(true);
     return;
+  }
   if (hot_button_)
     hot_button_->SetHotTracked(false);
   hot_button_ = hot_button;
