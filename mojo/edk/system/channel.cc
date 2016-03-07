@@ -57,7 +57,12 @@ Channel::Message::Message(size_t payload_size,
   size_ = sizeof(Header) + extra_header_size + payload_size;
   data_ = static_cast<char*>(base::AlignedAlloc(size_,
                                                 kChannelMessageAlignment));
-  memset(data_, 0, size_);
+  // Only zero out the header and not the payload. Since the payload is going to
+  // be memcpy'd, zeroing the payload is unnecessary work and a significant
+  // performance issue when dealing with large messages. Any sanitizer errors
+  // complaining about an uninitialized read in the payload area should be
+  // treated as an error and fixed.
+  memset(data_, 0, sizeof(Header) + extra_header_size);
   header_ = reinterpret_cast<Header*>(data_);
 
   DCHECK_LE(size_, std::numeric_limits<uint32_t>::max());
