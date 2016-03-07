@@ -230,6 +230,9 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         } else if (mode == TileDrawInfo::OOM_MODE) {
           color = DebugColors::OOMTileBorderColor();
           width = DebugColors::OOMTileBorderWidth(layer_tree_impl());
+        } else if (iter->draw_info().has_compressed_resource()) {
+          color = DebugColors::CompressedTileBorderColor();
+          width = DebugColors::CompressedTileBorderWidth(layer_tree_impl());
         } else if (iter.resolution() == HIGH_RESOLUTION) {
           color = DebugColors::HighResTileBorderColor();
           width = DebugColors::HighResTileBorderWidth(layer_tree_impl());

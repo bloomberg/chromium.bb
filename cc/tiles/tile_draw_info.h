@@ -73,6 +73,10 @@ class CC_EXPORT TileDrawInfo {
 
   inline bool has_resource() const { return !!resource_; }
 
+  inline bool has_compressed_resource() const {
+    return resource_ ? IsResourceFormatCompressed(resource_->format()) : false;
+  }
+
   void SetSolidColorForTesting(SkColor color) { set_solid_color(color); }
 
   void AsValueInto(base::trace_event::TracedValue* state) const;

@@ -62,6 +62,9 @@ class DebugColors {
   static SkColor DirectPictureBorderColor();
   static int DirectPictureBorderWidth(const LayerTreeImpl* tree_impl);
 
+  static SkColor CompressedTileBorderColor();
+  static int CompressedTileBorderWidth(const LayerTreeImpl* tree_impl);
+
   static SkColor DefaultCheckerboardColor();
   static SkColor EvictedTileCheckerboardColor();
   static SkColor InvalidatedTileCheckerboardColor();

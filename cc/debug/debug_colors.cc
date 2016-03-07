@@ -146,6 +146,14 @@ int DebugColors::DirectPictureBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(1, tree_impl);
 }
 
+// Compressed tile borders are blue.
+SkColor DebugColors::CompressedTileBorderColor() {
+  return SkColorSetARGB(100, 20, 20, 240);
+}
+int DebugColors::CompressedTileBorderWidth(const LayerTreeImpl* tree_impl) {
+  return Scale(2, tree_impl);
+}
+
 // ======= Checkerboard colors =======
 
 // Non-debug checkerboards are grey.
