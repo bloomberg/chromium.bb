@@ -36,6 +36,7 @@ extern const char kErrorEvents[];
 extern const char kAbortChainSizeReload[];
 extern const char kAbortChainSizeForwardBack[];
 extern const char kAbortChainSizeNewNavigation[];
+extern const char kAbortChainSizeNoCommit[];
 extern const char kAbortChainSizeSameURL[];
 
 }  // namespace internal
@@ -152,12 +153,17 @@ class PageLoadTracker {
 
  private:
   PageLoadExtraInfo GetPageLoadMetricsInfo();
+
   // Only valid to call post-commit.
   const GURL& committed_url();
 
   void UpdateAbortInternal(UserAbortType abort_type,
                            base::TimeTicks timestamp);
-  void LogAbortChainHistograms(ui::PageTransition committed_transition);
+
+  // If |final_navigation| is null, then this is an "unparented" abort chain,
+  // and represents a sequence of provisional aborts that never ends with a
+  // committed load.
+  void LogAbortChainHistograms(content::NavigationHandle* final_navigation);
 
   // Whether the renderer should be sending timing IPCs to this page load.
   bool renderer_tracked_;

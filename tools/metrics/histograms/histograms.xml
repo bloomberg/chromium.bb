@@ -33509,6 +33509,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Internal.ProvisionalAbortChainSize.NoCommit"
+    units="length">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    This histogram counts the number of provisional loads aborted by new
+    navigations. In this case the chain never ends with a commit. This is logged
+    on the next abort signal comes in (e.g. tab close or new navigation).
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Internal.ProvisionalAbortChainSize.Reload"
     units="length">
   <owner>csharrison@chromium.org</owner>

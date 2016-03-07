@@ -339,4 +339,29 @@ TEST_F(MetricsWebContentsObserverTest, LogAbortChainsSameURL) {
   histogram_tester_.ExpectBucketCount(internal::kAbortChainSizeSameURL, 3, 1);
 }
 
+TEST_F(MetricsWebContentsObserverTest, LogAbortChainsNoCommit) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  // Start and abort three loads before one finally commits.
+  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
+  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
+  rfh_tester->SimulateNavigationStop();
+
+  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl2));
+  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl2), net::ERR_ABORTED);
+  rfh_tester->SimulateNavigationStop();
+
+  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
+  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
+  rfh_tester->SimulateNavigationStop();
+
+  web_contents()->Stop();
+
+  histogram_tester_.ExpectTotalCount(internal::kAbortChainSizeNoCommit, 1);
+  histogram_tester_.ExpectBucketCount(internal::kAbortChainSizeNoCommit, 3,
+                                      1);
+}
+
 }  // namespace page_load_metrics

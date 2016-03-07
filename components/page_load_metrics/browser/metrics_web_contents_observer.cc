@@ -42,6 +42,8 @@ const char kAbortChainSizeNewNavigation[] =
     "PageLoad.Internal.ProvisionalAbortChainSize.NewNavigation";
 const char kAbortChainSizeSameURL[] =
     "PageLoad.Internal.ProvisionalAbortChainSize.SameURL";
+const char kAbortChainSizeNoCommit[] =
+    "PageLoad.Internal.ProvisionalAbortChainSize.NoCommit";
 
 }  // namespace internal
 
@@ -162,9 +164,10 @@ UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
 }
 
 void LogAbortChainSameURLHistogram(int aborted_chain_size_same_url) {
-  DCHECK_GT(aborted_chain_size_same_url, 0);
-  UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeSameURL,
-                       aborted_chain_size_same_url);
+  if (aborted_chain_size_same_url > 0) {
+    UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeSameURL,
+                         aborted_chain_size_same_url);
+  }
 }
 
 }  // namespace
@@ -196,15 +199,41 @@ PageLoadTracker::~PageLoadTracker() {
       timing_.IsEmpty()) {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
   }
+  // Recall that trackers that are given ABORT_UNKNOWN_NAVIGATION have their
+  // chain length added to the next navigation. Take care not to double count
+  // them. Also do not double count committed loads, which call this already.
+  if (commit_time_.is_null() && abort_type_ != ABORT_UNKNOWN_NAVIGATION)
+    LogAbortChainHistograms(nullptr);
+
   for (const auto& observer : observers_) {
     observer->OnComplete(timing_, info);
   }
 }
 
 void PageLoadTracker::LogAbortChainHistograms(
-    ui::PageTransition committed_transition) {
+    content::NavigationHandle* final_navigation) {
   if (aborted_chain_size_ == 0)
     return;
+  // Note that this could be broken out by this navigation's abort type, if more
+  // granularity is needed. Add one to the chain size to count the current
+  // navigation. In the other cases, the current navigation is the final
+  // navigation (which commits).
+  if (!final_navigation) {
+    UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeNoCommit,
+                         aborted_chain_size_ + 1);
+    LogAbortChainSameURLHistogram(aborted_chain_size_same_url_ + 1);
+    return;
+  }
+
+  // The following is only executed for committing trackers.
+  DCHECK(!commit_time_.is_null());
+
+  // Note that histograms could be separated out by this commit's transition
+  // type, but for simplicity they will all be bucketed together.
+  LogAbortChainSameURLHistogram(aborted_chain_size_same_url_);
+
+  ui::PageTransition committed_transition =
+      final_navigation->GetPageTransition();
   switch (AbortTypeForPageTransition(committed_transition)) {
     case ABORT_RELOAD:
       UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeReload,
@@ -256,11 +285,7 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   for (const auto& observer : observers_) {
     observer->OnCommit(navigation_handle);
   }
-  LogAbortChainHistograms(navigation_handle->GetPageTransition());
-  // Note that histograms could be separated out by this commit's transition
-  // type, but for simplicity they will all be bucketed together.
-  if (aborted_chain_size_same_url_ > 0)
-    LogAbortChainSameURLHistogram(aborted_chain_size_same_url_);
+  LogAbortChainHistograms(navigation_handle);
 }
 
 void PageLoadTracker::FailedProvisionalLoad(
