@@ -36,6 +36,11 @@ Polymer({
     },
   },
 
+  listeners: {
+    'passwordList.scroll': 'closeMenu_',
+    'tap': 'closeMenu_',
+  },
+
   /**
    * Fires an event that should delete the passwordException.
    * @param {!{model: !{item: !string}}} e The polymer event.
@@ -52,5 +57,24 @@ Polymer({
    * @private
    */
   getEmptyPassword_: function(length) { return ' '.repeat(length); },
+
+  /**
+   * Toggles the overflow menu.
+   * @param {Event} e
+   * @private
+   */
+  toggleMenu_: function(e) {
+    this.$.menu.toggleMenu(Polymer.dom(e).localTarget);
+    // Prevent the tap event from closing the menu.
+    e.stopPropagation();
+  },
+
+  /**
+   * Closes the overflow menu.
+   * @private
+   */
+  closeMenu_: function() {
+    this.$.menu.closeMenu();
+  },
 });
 })();

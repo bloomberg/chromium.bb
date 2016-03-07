@@ -4,20 +4,12 @@
 {
   'targets': [
     {
-      'target_name': 'passwords_and_forms_page',
+      'target_name': 'cr_shared_menu',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        '<(EXTERNS_GYP):passwords_private',
-        'passwords_section',
-      ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'passwords_section',
-      'dependencies': [
-        '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
-        '<(EXTERNS_GYP):passwords_private',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:position_util',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

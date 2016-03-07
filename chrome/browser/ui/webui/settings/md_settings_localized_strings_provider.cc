@@ -573,6 +573,10 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING);
   html_source->AddLocalizedString("deletePasswordException",
                                   IDS_SETTINGS_PASSWORDS_DELETE_EXCEPTION);
+  html_source->AddLocalizedString("passwordMenu", IDS_SETTINGS_PASSWORDS_MENU);
+  html_source->AddLocalizedString("editPassword", IDS_SETTINGS_PASSWORDS_EDIT);
+  html_source->AddLocalizedString("removePassword",
+                                  IDS_SETTINGS_PASSWORDS_REMOVE);
 }
 
 void AddPeopleStrings(content::WebUIDataSource* html_source) {

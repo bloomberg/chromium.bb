@@ -138,6 +138,15 @@
   <message name="IDS_SETTINGS_PASSWORDS_DELETE_EXCEPTION" desc="The alt text for a button that deletes a site for which passwords would not be saved.">
     Delete this item
   </message>
+  <message name="IDS_SETTINGS_PASSWORDS_MENU" desc="Label for a button shows options available for this password item. Available options should be 'Edit' and 'Remove'">
+   Menu
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_EDIT" desc="Label for a menu item that shows a dialog with edit options for a password.">
+   Edit
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_REMOVE" desc="Label for a menu item that removes a saved password.">
+   Remove
+  </message>
 
   <!-- Default Browser Page -->
   <if expr="not chromeos">
