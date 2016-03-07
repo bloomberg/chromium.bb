@@ -164,7 +164,7 @@ void od_filter_dering_orthogonal_c(int16_t *y, int ystride, const int16_t *in,
   int i;
   int j;
   int offset;
-  if (dir <= 4) offset = OD_FILT_BSTRIDE;
+  if (dir > 0 && dir < 4) offset = OD_FILT_BSTRIDE;
   else offset = 1;
   for (i = 0; i < 1 << ln; i++) {
     for (j = 0; j < 1 << ln; j++) {
