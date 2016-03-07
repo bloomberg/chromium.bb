@@ -31,6 +31,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -4471,6 +4472,98 @@ TEST_F(ViewTest, ScopedTargetHandlerReceivesEvents) {
                           ui::EventTimeForNow(), 0, 0);
   root->OnMouseReleased(released);
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, v->last_mouse_event_type_);
+}
+
+// See comment above test for details.
+class WidgetWithCustomTheme : public Widget {
+ public:
+  explicit WidgetWithCustomTheme(ui::NativeTheme* theme) : theme_(theme) {}
+  ~WidgetWithCustomTheme() override {}
+
+  // Widget:
+  const ui::NativeTheme* GetNativeTheme() const override { return theme_; }
+
+ private:
+  ui::NativeTheme* theme_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetWithCustomTheme);
+};
+
+// See comment above test for details.
+class ViewThatAddsViewInOnNativeThemeChanged : public View {
+ public:
+  ViewThatAddsViewInOnNativeThemeChanged() { SetPaintToLayer(true); }
+  ~ViewThatAddsViewInOnNativeThemeChanged() override {}
+
+  bool on_native_theme_changed_called() const {
+    return on_native_theme_changed_called_;
+  }
+
+  // View:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+    on_native_theme_changed_called_ = true;
+    GetWidget()->GetRootView()->AddChildView(new View);
+  }
+
+ private:
+  bool on_native_theme_changed_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewThatAddsViewInOnNativeThemeChanged);
+};
+
+// See comment above test for details.
+class TestNativeTheme : public ui::NativeTheme {
+ public:
+  TestNativeTheme() {}
+  ~TestNativeTheme() override {}
+
+  // ui::NativeTheme:
+  SkColor GetSystemColor(ColorId color_id) const override {
+    return SK_ColorRED;
+  }
+  gfx::Size GetPartSize(Part part,
+                        State state,
+                        const ExtraParams& extra) const override {
+    return gfx::Size();
+  }
+  void Paint(SkCanvas* canvas,
+             Part part,
+             State state,
+             const gfx::Rect& rect,
+             const ExtraParams& extra) const override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestNativeTheme);
+};
+
+// Creates and adds a new child view to |parent| that has a layer.
+void AddViewWithChildLayer(View* parent) {
+  View* child = new View;
+  child->SetPaintToLayer(true);
+  parent->AddChildView(child);
+}
+
+// This test does the following:
+// . creates a couple of views with layers added to the root.
+// . Add a view that overrides OnNativeThemeChanged(). In
+//   OnNativeThemeChanged() another view is added.
+// This sequence triggered DCHECKs or crashes previously. This tests verifies
+// that doesn't happen. Reason for crash was OnNativeThemeChanged() was called
+// before the layer hierarchy was updated. OnNativeThemeChanged() should be
+// called after the layer hierarchy matches the view hierarchy.
+TEST_F(ViewTest, CrashOnAddFromFromOnNativeThemeChanged) {
+  TestNativeTheme theme;
+  WidgetWithCustomTheme widget(&theme);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 350, 350);
+  widget.Init(params);
+
+  AddViewWithChildLayer(widget.GetRootView());
+  ViewThatAddsViewInOnNativeThemeChanged* v =
+      new ViewThatAddsViewInOnNativeThemeChanged;
+  widget.GetRootView()->AddChildView(v);
+  EXPECT_TRUE(v->on_native_theme_changed_called());
 }
 
 }  // namespace views

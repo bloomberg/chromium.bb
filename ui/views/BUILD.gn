@@ -227,6 +227,7 @@ test("views_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
+    "//ui/native_theme",
     "//ui/resources",
     "//ui/strings",
     "//url",
