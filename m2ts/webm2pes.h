@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef LIBWEBM_WEBM2PES_H_
-#define LIBWEBM_WEBM2PES_H_
+#ifndef LIBWEBM_M2TS_WEBM2PES_H_
+#define LIBWEBM_M2TS_WEBM2PES_H_
 
 #include <cstdint>
 #include <memory>
@@ -223,4 +223,4 @@ class Webm2Pes {
 
 }  // namespace libwebm
 
-#endif  // LIBWEBM_WEBM2PES_H_
+#endif  // LIBWEBM_M2TS_WEBM2PES_H_

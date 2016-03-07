@@ -1,11 +1,11 @@
-// Copyright (c) 2016 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2015 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "vpxpes2ts.h"
+#include "m2ts/webm2pes.h"
 
 #include <cstdio>
 #include <string>
@@ -27,6 +27,6 @@ int main(int argc, const char* argv[]) {
   const std::string input_path = argv[1];
   const std::string output_path = argv[2];
 
-  libwebm::VpxPes2Ts converter(input_path, output_path);
+  libwebm::Webm2Pes converter(input_path, output_path);
   return converter.ConvertToFile() == true ? EXIT_SUCCESS : EXIT_FAILURE;
 }

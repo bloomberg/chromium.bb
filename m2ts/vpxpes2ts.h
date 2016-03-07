@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef LIBWEBM_VPXPES2TS_H_
-#define LIBWEBM_VPXPES2TS_H_
+#ifndef LIBWEBM_M2TS_VPXPES2TS_H_
+#define LIBWEBM_M2TS_VPXPES2TS_H_
 
 #include <cstdio>
 #include <cstdint>
@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "common/libwebm_util.h"
-#include "webm2pes.h"
+#include "m2ts/webm2pes.h"
 
 namespace libwebm {
 
@@ -45,4 +45,4 @@ class VpxPes2Ts : public PacketReceiverInterface {
 
 }  // namespace libwebm
 
-#endif  // LIBWEBM_VPXPES2TS_H_
+#endif  // LIBWEBM_M2TS_VPXPES2TS_H_

@@ -159,18 +159,18 @@ if (ENABLE_WEBMTS)
   add_library(webmts
               "${LIBWEBM_SRC_DIR}/common/libwebm_util.cc"
               "${LIBWEBM_SRC_DIR}/common/libwebm_util.h"
-              "${LIBWEBM_SRC_DIR}/webm2pes.cc"
-              "${LIBWEBM_SRC_DIR}/webm2pes.h"
-              "${LIBWEBM_SRC_DIR}/vpxpes2ts.cc"
-              "${LIBWEBM_SRC_DIR}/vpxpes2ts.h")
+              "${LIBWEBM_SRC_DIR}/m2ts/webm2pes.cc"
+              "${LIBWEBM_SRC_DIR}/m2ts/webm2pes.h"
+              "${LIBWEBM_SRC_DIR}/m2ts/vpxpes2ts.cc"
+              "${LIBWEBM_SRC_DIR}/m2ts/vpxpes2ts.h")
 
   # webm2pes section.
   add_executable(webm2pes
-                "${LIBWEBM_SRC_DIR}/webm2pes_main.cc")
+                "${LIBWEBM_SRC_DIR}/m2ts/webm2pes_main.cc")
   target_link_libraries(webm2pes LINK_PUBLIC webm webmts)
 
   # webm2ts section.
-  add_executable(webm2ts "${LIBWEBM_SRC_DIR}/vpxpes2ts_main.cc")
+  add_executable(webm2ts "${LIBWEBM_SRC_DIR}/m2ts/vpxpes2ts_main.cc")
   target_link_libraries(webm2ts LINK_PUBLIC webm webmts)
 endif ()
 
@@ -194,7 +194,7 @@ if (ENABLE_TESTS)
     add_executable(webm2pes_tests
                   "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
                   "${LIBWEBM_SRC_DIR}/testing/test_util.h"
-                  "${LIBWEBM_SRC_DIR}/testing/webm2pes_tests.cc")
+                  "${LIBWEBM_SRC_DIR}/m2ts/tests/webm2pes_tests.cc")
     target_link_libraries(webm2pes_tests LINK_PUBLIC gtest webm webmts)
   endif ()
 endif ()

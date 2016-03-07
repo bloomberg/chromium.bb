@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "vpxpes2ts.h"
+#include "m2ts/vpxpes2ts.h"
 
 #include <algorithm>
 #include <cstdio>
