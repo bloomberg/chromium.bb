@@ -845,7 +845,8 @@ TEST_F(WindowServerTest, Activation) {
             ValidIndexOf(parent->children(), child1));
 }
 
-TEST_F(WindowServerTest, ActivationNext) {
+// Very flaky: http://crbug.com/592313.
+TEST_F(WindowServerTest, DISABLED_ActivationNext) {
   Window* parent = GetFirstWMRoot();
   Window* child1 = NewVisibleWindow(parent, window_manager());
   Window* child2 = NewVisibleWindow(parent, window_manager());
