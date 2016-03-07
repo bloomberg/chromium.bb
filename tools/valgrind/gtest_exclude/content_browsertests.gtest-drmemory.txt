@@ -61,3 +61,6 @@ RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
 
 # https://crbug.com/577796
 WebRtcMediaRecorderTest.MediaRecorderPeerConnection
+
+# https://crbug.com/592320
+SitePerProcessBrowserTest.SubframeGestureEventRouting
