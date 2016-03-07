@@ -1327,7 +1327,9 @@ template("java_prebuilt_impl") {
       data_deps += invoker.data_deps
     }
     if (defined(invoker.main_class)) {
-      data_deps += [ ":$_binary_script_target_name" ]
+      # Some targets use the generated script while building, so make it a dep
+      # rather than a data_dep.
+      deps += [ ":$_binary_script_target_name" ]
     }
   }
 }
@@ -1456,6 +1458,7 @@ template("compile_java") {
     if (_enable_incremental_javac) {
       args += [ "--incremental" ]
       deps += [ "//third_party/jmake" ]
+      inputs += [ "$root_out_dir/bin/jmake" ]
       outputs += [ "${_javac_jar_path}.pdb" ]
     }
     if (_supports_android) {
@@ -1693,7 +1696,9 @@ template("java_library_impl") {
   }
 
   if (defined(invoker.main_class)) {
-    _final_datadeps += [ ":${_template_name}__java_binary_script" ]
+    # Targets might use the generated script while building, so make it a dep
+    # rather than a data_dep.
+    _final_deps += [ ":${_template_name}__java_binary_script" ]
     java_binary_script("${_template_name}__java_binary_script") {
       forward_variables_from(invoker,
                              [
