@@ -12,6 +12,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 
@@ -234,7 +236,9 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
 
         int maxId = Math.max(getMaxId(selector0), getMaxId(selector1));
         RecordHistogram.disableForTests();
-        assertEquals("Invalid next id", maxId + 1, storeIn.loadStateInternal());
+        storeIn.loadState();
+        assertEquals("Invalid next id", maxId + 1,
+                TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID));
     }
 
     /**
@@ -261,8 +265,8 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
                 getInstrumentation().getTargetContext(), null, null);
 
         RecordHistogram.disableForTests();
-        storeIn0.loadStateInternal();
-        storeIn1.loadStateInternal();
+        storeIn0.loadState();
+        storeIn1.loadState();
 
         assertEquals("Unexpected number of tabs to load", 6, storeIn0.getRestoredTabCount());
         assertEquals("Unexpected number of tabst o load", 3, storeIn1.getRestoredTabCount());

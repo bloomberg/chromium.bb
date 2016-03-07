@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
@@ -278,8 +277,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
      * tabs shall not be restored until {@link #restoreTabs} is called.
      */
     public void loadState() {
-        int nextId = mTabSaver.loadState();
-        if (nextId >= 0) TabIdManager.getInstance().incrementIdCounterTo(nextId);
+        mTabSaver.loadState();
     }
 
     /**
