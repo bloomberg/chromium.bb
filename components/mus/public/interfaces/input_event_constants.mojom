@@ -4,6 +4,15 @@
 
 module mus.mojom;
 
+// Denotes during which phase of event targeting that an accelerator will be
+// notified of an event. PRE_TARGET will be notified instead of the target
+// window. POST_TARGET will be notified after the target window, and only if the
+// event was not consumed by the target.
+enum AcceleratorPhase {
+  PRE_TARGET,
+  POST_TARGET,
+};
+
 enum EventType {
   UNKNOWN,
   KEY_PRESSED,

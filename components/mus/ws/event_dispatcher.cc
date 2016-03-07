@@ -58,11 +58,13 @@ class EventMatcher {
  public:
   explicit EventMatcher(const mojom::EventMatcher& matcher)
       : fields_to_match_(NONE),
+        accelerator_phase_(mojom::AcceleratorPhase::PRE_TARGET),
         event_type_(ui::ET_UNKNOWN),
         event_flags_(ui::EF_NONE),
         ignore_event_flags_(ui::EF_NONE),
         keyboard_code_(ui::VKEY_UNKNOWN),
         pointer_type_(ui::EventPointerType::POINTER_TYPE_UNKNOWN) {
+    accelerator_phase_ = matcher.accelerator_phase;
     if (matcher.type_matcher) {
       fields_to_match_ |= TYPE;
       switch (matcher.type_matcher->type) {
@@ -124,7 +126,10 @@ class EventMatcher {
 
   ~EventMatcher() {}
 
-  bool MatchesEvent(const ui::Event& event) const {
+  bool MatchesEvent(const ui::Event& event,
+                    const mojom::AcceleratorPhase phase) const {
+    if (accelerator_phase_ != phase)
+      return false;
     if ((fields_to_match_ & TYPE) && event.type() != event_type_)
       return false;
     int flags = event.flags() & ~ignore_event_flags_;
@@ -154,6 +159,7 @@ class EventMatcher {
 
   bool Equals(const EventMatcher& matcher) const {
     return fields_to_match_ == matcher.fields_to_match_ &&
+           accelerator_phase_ == matcher.accelerator_phase_ &&
            event_type_ == matcher.event_type_ &&
            event_flags_ == matcher.event_flags_ &&
            ignore_event_flags_ == matcher.ignore_event_flags_ &&
@@ -173,6 +179,7 @@ class EventMatcher {
   };
 
   uint32_t fields_to_match_;
+  mojom::AcceleratorPhase accelerator_phase_;
   ui::EventType event_type_;
   // Bitfields of kEventFlag* and kMouseEventFlag* values in
   // input_event_constants.mojom.
@@ -296,7 +303,8 @@ void EventDispatcher::ProcessEvent(const ui::Event& event) {
     const ui::KeyEvent* key_event = event.AsKeyEvent();
     if (event.type() == ui::ET_KEY_PRESSED && !key_event->is_char()) {
       uint32_t accelerator = 0u;
-      if (FindAccelerator(*key_event, &accelerator)) {
+      if (FindAccelerator(*key_event, mojom::AcceleratorPhase::PRE_TARGET,
+                          &accelerator)) {
         delegate_->OnAccelerator(accelerator, event);
         return;
       }
@@ -504,9 +512,10 @@ bool EventDispatcher::IsObservingWindow(ServerWindow* window) {
 }
 
 bool EventDispatcher::FindAccelerator(const ui::KeyEvent& event,
+                                      const mojom::AcceleratorPhase phase,
                                       uint32_t* accelerator_id) {
   for (const auto& pair : accelerators_) {
-    if (pair.second.MatchesEvent(event)) {
+    if (pair.second.MatchesEvent(event, phase)) {
       *accelerator_id = pair.first;
       return true;
     }

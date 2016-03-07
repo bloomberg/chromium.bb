@@ -355,6 +355,26 @@ TEST_F(EventDispatcherTest, EventMatching) {
   EXPECT_EQ(0u, event_dispatcher_delegate->GetAndClearLastAccelerator());
 }
 
+// Tests that a post-target accelerator is not triggered by ProcessEvent.
+TEST_F(EventDispatcherTest, PostTargetAccelerator) {
+  TestEventDispatcherDelegate* event_dispatcher_delegate =
+      test_event_dispatcher_delegate();
+  EventDispatcher* dispatcher = event_dispatcher();
+
+  mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
+      mus::mojom::KeyboardCode::W, mus::mojom::kEventFlagControlDown);
+  matcher->accelerator_phase = mojom::AcceleratorPhase::POST_TARGET;
+  uint32_t accelerator_1 = 1;
+  dispatcher->AddAccelerator(accelerator_1, std::move(matcher));
+
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  dispatcher->ProcessEvent(key);
+  EXPECT_EQ(0u, event_dispatcher_delegate->GetAndClearLastAccelerator());
+
+  // TODO(jonross): Update this test to include actual invokation of PostTarget
+  // acceleratos once events acking includes consuming.
+}
+
 TEST_F(EventDispatcherTest, Capture) {
   ServerWindow* root = root_window();
   scoped_ptr<ServerWindow> child(CreateChildWindow(WindowId(1, 3)));

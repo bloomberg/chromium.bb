@@ -137,11 +137,13 @@ class EventDispatcher : public ServerWindowObserver {
   // observer for a window if any pointer events are targeting it.
   bool IsObservingWindow(ServerWindow* window);
 
-  // Looks to see if there is an accelerator bound to the specified code/flags.
-  // If there is one, sets |accelerator_id| to the id of the accelerator invoked
-  // and returns true. If there is none, returns false so normal key event
-  // processing can continue.
-  bool FindAccelerator(const ui::KeyEvent& event, uint32_t* accelerator_id);
+  // Looks to see if there is an accelerator bound to the specified code/flags,
+  // and of the matching |phase|. If there is one, sets |accelerator_id| to the
+  // id of the accelerator invoked and returns true. If there is none, returns
+  // false so normal key event processing can continue.
+  bool FindAccelerator(const ui::KeyEvent& event,
+                       const mojom::AcceleratorPhase phase,
+                       uint32_t* accelerator_id);
 
   // ServerWindowObserver:
   void OnWillChangeWindowHierarchy(ServerWindow* window,
