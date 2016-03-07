@@ -263,22 +263,6 @@ void LayoutSVGText::subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*
         m_layoutAttributesBuilder.buildLayoutAttributesForText(affectedAttributes[i]->context());
 }
 
-void LayoutSVGText::subtreeStyleDidChange()
-{
-    if (!shouldHandleSubtreeMutations() || documentBeingDestroyed())
-        return;
-
-    checkLayoutAttributesConsistency(this, m_layoutAttributes);
-
-    // Only update the metrics cache, but not the text positioning element cache
-    // nor the layout attributes cached in the leaf #text layoutObjects.
-    FontCachePurgePreventer fontCachePurgePreventer;
-    for (LayoutObject* descendant = firstChild(); descendant; descendant = descendant->nextInPreOrder(this)) {
-        if (descendant->isSVGInlineText())
-            m_layoutAttributesBuilder.rebuildMetricsForTextLayoutObject(toLayoutSVGInlineText(descendant));
-    }
-}
-
 void LayoutSVGText::subtreeTextDidChange(LayoutSVGInlineText* text)
 {
     ASSERT(text);
@@ -318,8 +302,6 @@ void LayoutSVGText::layout()
 {
     ASSERT(needsLayout());
     LayoutAnalyzer::Scope analyzer(*this);
-
-    subtreeStyleDidChange();
 
     bool updateCachedBoundariesInParents = false;
     if (m_needsTransformUpdate) {

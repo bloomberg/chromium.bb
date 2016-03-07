@@ -88,8 +88,10 @@ void LayoutSVGInlineText::styleDidChange(StyleDifference diff, const ComputedSty
         return;
 
     // The text metrics may be influenced by style changes.
-    if (LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(this))
+    if (LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(this)) {
+        textLayoutObject->setNeedsTextMetricsUpdate();
         textLayoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
+    }
 }
 
 InlineTextBox* LayoutSVGInlineText::createTextBox(int start, unsigned short length)

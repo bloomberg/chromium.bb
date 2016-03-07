@@ -55,7 +55,6 @@ public:
     void subtreeChildWasAdded(LayoutObject*);
     void subtreeChildWillBeRemoved(LayoutObject*, Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
     void subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*, 2>& affectedAttributes);
-    void subtreeStyleDidChange();
     void subtreeTextDidChange(LayoutSVGInlineText*);
 
     const AffineTransform& localToParentTransform() const override { return m_localTransform; }
