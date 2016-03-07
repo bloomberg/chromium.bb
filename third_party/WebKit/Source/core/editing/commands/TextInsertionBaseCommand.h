@@ -40,6 +40,7 @@ public:
 
 protected:
     explicit TextInsertionBaseCommand(Document&);
+    static void applyTextInsertionCommand(LocalFrame*, PassRefPtrWillBeRawPtr<TextInsertionBaseCommand>, const VisibleSelection& selectionForInsertion, const VisibleSelection& endingSelection);
 };
 
 } // namespace blink

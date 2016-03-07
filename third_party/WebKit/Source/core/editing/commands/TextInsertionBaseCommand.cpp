@@ -39,4 +39,18 @@ TextInsertionBaseCommand::TextInsertionBaseCommand(Document& document)
 {
 }
 
+void TextInsertionBaseCommand::applyTextInsertionCommand(LocalFrame* frame, PassRefPtrWillBeRawPtr<TextInsertionBaseCommand> command, const VisibleSelection& selectionForInsertion, const VisibleSelection& endingSelection)
+{
+    bool changeSelection = !equalSelectionsInDOMTree(selectionForInsertion, endingSelection);
+    if (changeSelection) {
+        command->setStartingSelection(selectionForInsertion);
+        command->setEndingSelection(selectionForInsertion);
+    }
+    command->apply();
+    if (changeSelection) {
+        command->setEndingSelection(endingSelection);
+        frame->selection().setSelection(endingSelection);
+    }
+}
+
 } // namespace blink
