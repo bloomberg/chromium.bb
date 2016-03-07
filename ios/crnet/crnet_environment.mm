@@ -445,6 +445,8 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   params.enable_http2 = spdy_enabled();
   params.parse_alternative_services = false;
   params.enable_quic = quic_enabled();
+  params.alternative_service_probability_threshold =
+      alternate_protocol_threshold_;
 
   if (!params.channel_id_service) {
     // The main context may not have a ChannelIDService, since it is lazily

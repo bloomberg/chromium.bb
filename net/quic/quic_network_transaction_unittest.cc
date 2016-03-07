@@ -61,10 +61,14 @@ namespace {
 
 static const char kQuicAlternateProtocolHeader[] =
     "Alternate-Protocol: 443:quic\r\n\r\n";
+static const char kQuicAlternateProtocol50pctHeader[] =
+    "Alternate-Protocol: 443:quic,p=.5\r\n\r\n";
 static const char kQuicAlternateProtocolDifferentPortHeader[] =
     "Alternate-Protocol: 137:quic\r\n\r\n";
 static const char kQuicAlternativeServiceHeader[] =
     "Alt-Svc: quic=\":443\"\r\n\r\n";
+static const char kQuicAlternativeService50pctHeader[] =
+    "Alt-Svc: quic=\":443\";p=\".5\"\r\n\r\n";
 static const char kQuicAlternativeServiceDifferentPortHeader[] =
     "Alt-Svc: quic=\":137\"\r\n\r\n";
 
@@ -513,7 +517,7 @@ class QuicNetworkTransactionTest
     AlternativeService alternative_service(QUIC, host_port_pair.host(), 443);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_.SetAlternativeService(
-        host_port_pair, alternative_service, expiration);
+        host_port_pair, alternative_service, 1.0, expiration);
   }
 
   void AddQuicRemoteAlternativeServiceMapping(
@@ -525,7 +529,7 @@ class QuicNetworkTransactionTest
                                            alternative.port());
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_.SetAlternativeService(
-        host_port_pair, alternative_service, expiration);
+        host_port_pair, alternative_service, 1.0, expiration);
   }
 
   void ExpectBrokenAlternateProtocolMapping() {
@@ -1348,6 +1352,84 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
       alternative_service));
 }
 
+TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceProbabilityForQuic) {
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(kQuicAlternativeService50pctHeader), MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
+                                    GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  AddHangingNonAlternateProtocolSocketData();
+  params_.alternative_service_probability_threshold = 0.25;
+  CreateSession();
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectQuicResponse("hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest,
+       DontUseAlternativeServiceProbabilityForQuic) {
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(kQuicAlternativeService50pctHeader), MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  params_.alternative_service_probability_threshold = 0.75;
+  CreateSession();
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectHttpResponse("hello world");
+}
+
+TEST_P(QuicNetworkTransactionTest,
+       DontUseAlternativeServiceWithBadProbabilityForQuic) {
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Alt-Svc: quic=\":443\";p=2\r\n\r\n"), MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  params_.alternative_service_probability_threshold = 0.75;
+  CreateSession();
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectHttpResponse("hello world");
+}
+
 TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuicForHttps) {
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"), MockRead(kQuicAlternativeServiceHeader),
@@ -1505,6 +1587,90 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternateProtocol) {
       alternative_service));
 }
 
+TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
+  params_.parse_alternative_services = false;
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(kQuicAlternateProtocol50pctHeader), MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddWrite(
+      ConstructRequestHeadersPacket(1, kClientDataStreamId1, true, true,
+                                    GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(ConstructResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(
+      ConstructDataPacket(2, kClientDataStreamId1, false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  params_.alternative_service_probability_threshold = .25;
+  params_.parse_alternative_services = false;
+  CreateSession();
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectQuicResponse("hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
+  params_.parse_alternative_services = false;
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(kQuicAlternateProtocol50pctHeader), MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  params_.alternative_service_probability_threshold = .75;
+  CreateSession();
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectHttpResponse("hello world");
+}
+
+TEST_P(QuicNetworkTransactionTest,
+       DontUseAlternateProtocolWithBadProbabilityForQuic) {
+  params_.parse_alternative_services = false;
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Alternate-Protocol: 443:quic,p=2\r\n\r\n"),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads), nullptr,
+                                     0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  params_.alternative_service_probability_threshold = .75;
+  CreateSession();
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectHttpResponse("hello world");
+}
+
 TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
   params_.parse_alternative_services = false;
   MockRead http_reads[] = {
@@ -1591,7 +1757,7 @@ class QuicAltSvcCertificateVerificationTest
     AlternativeService alternative_service(QUIC, alternative);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     session_->http_server_properties()->SetAlternativeService(
-        origin, alternative_service, expiration);
+        origin, alternative_service, 1.0, expiration);
     scoped_ptr<HttpNetworkTransaction> trans(
         new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
     TestCompletionCallback callback;

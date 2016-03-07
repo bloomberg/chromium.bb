@@ -138,18 +138,22 @@ struct NET_EXPORT AlternativeService {
 };
 
 struct NET_EXPORT AlternativeServiceInfo {
-  AlternativeServiceInfo() : alternative_service() {}
+  AlternativeServiceInfo() : alternative_service(), probability(0.0) {}
 
   AlternativeServiceInfo(const AlternativeService& alternative_service,
+                         double probability,
                          base::Time expiration)
       : alternative_service(alternative_service),
+        probability(probability),
         expiration(expiration) {}
 
   AlternativeServiceInfo(AlternateProtocol protocol,
                          const std::string& host,
                          uint16_t port,
+                         double probability,
                          base::Time expiration)
       : alternative_service(protocol, host, port),
+        probability(probability),
         expiration(expiration) {}
 
   AlternativeServiceInfo(
@@ -159,7 +163,7 @@ struct NET_EXPORT AlternativeServiceInfo {
 
   bool operator==(const AlternativeServiceInfo& other) const {
     return alternative_service == other.alternative_service &&
-           expiration == other.expiration;
+           probability == other.probability && expiration == other.expiration;
   }
 
   bool operator!=(const AlternativeServiceInfo& other) const {
@@ -169,6 +173,7 @@ struct NET_EXPORT AlternativeServiceInfo {
   std::string ToString() const;
 
   AlternativeService alternative_service;
+  double probability;
   base::Time expiration;
 };
 
@@ -260,7 +265,8 @@ class NET_EXPORT HttpServerProperties {
   virtual void MaybeForceHTTP11(const HostPortPair& server,
                                 SSLConfig* ssl_config) = 0;
 
-  // Return all alternative services for |origin|, including broken ones.
+  // Return all alternative services for |origin| with probability greater than
+  // or equal to the threshold, including broken ones.
   // Returned alternative services never have empty hostnames.
   virtual AlternativeServiceVector GetAlternativeServices(
       const HostPortPair& origin) = 0;
@@ -272,6 +278,7 @@ class NET_EXPORT HttpServerProperties {
   virtual bool SetAlternativeService(
       const HostPortPair& origin,
       const AlternativeService& alternative_service,
+      double alternative_probability,
       base::Time expiration) = 0;
 
   // Set alternative services for |origin|.  Previous alternative services for
@@ -317,6 +324,13 @@ class NET_EXPORT HttpServerProperties {
   // Returns all alternative service mappings as human readable strings.
   // Empty alternative service hostnames will be printed as such.
   virtual scoped_ptr<base::Value> GetAlternativeServiceInfoAsValue() const = 0;
+
+  // Sets the threshold to be used when evaluating alternative service
+  // advertisments. Only advertisements with a probability greater than or equal
+  // to |threshold| will be honored. |threshold| must be between 0.0 and 1.0
+  // inclusive. Hence, a threshold of 0.0 implies that all advertisements will
+  // be honored.
+  virtual void SetAlternativeServiceProbabilityThreshold(double threshold) = 0;
 
   // Gets a reference to the SettingsMap stored for a host.
   // If no settings are stored, returns an empty SettingsMap.

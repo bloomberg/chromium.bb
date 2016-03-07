@@ -634,6 +634,8 @@ void IOSChromeIOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->parse_alternative_services);
   globals.enable_alternative_service_with_different_host.CopyToIfSet(
       &params->enable_alternative_service_with_different_host);
+  globals.alternative_service_probability_threshold.CopyToIfSet(
+      &params->alternative_service_probability_threshold);
 
   globals.enable_npn.CopyToIfSet(&params->enable_npn);
 
@@ -804,6 +806,14 @@ void IOSChromeIOThread::ConfigureQuicGlobals(
     supported_versions.push_back(version);
     globals->quic_supported_versions.set(supported_versions);
   }
+
+  double threshold =
+      GetAlternativeProtocolProbabilityThreshold(quic_trial_params);
+  if (threshold >= 0 && threshold <= 1) {
+    globals->alternative_service_probability_threshold.set(threshold);
+    globals->http_server_properties->SetAlternativeServiceProbabilityThreshold(
+        threshold);
+  }
 }
 
 bool IOSChromeIOThread::ShouldEnableQuic(base::StringPiece quic_trial_group) {
@@ -830,6 +840,26 @@ net::QuicTagVector IOSChromeIOThread::GetQuicConnectionOptions(
   }
 
   return net::QuicUtils::ParseQuicConnectionOptions(it->second);
+}
+
+double IOSChromeIOThread::GetAlternativeProtocolProbabilityThreshold(
+    const VariationParameters& quic_trial_params) {
+  double value;
+  // TODO(bnc): Remove when new parameter name rolls out and server
+  // configuration is changed.
+  if (base::StringToDouble(
+          GetVariationParam(quic_trial_params,
+                            "alternate_protocol_probability_threshold"),
+          &value)) {
+    return value;
+  }
+  if (base::StringToDouble(
+          GetVariationParam(quic_trial_params,
+                            "alternative_service_probability_threshold"),
+          &value)) {
+    return value;
+  }
+  return -1;
 }
 
 bool IOSChromeIOThread::ShouldQuicAlwaysRequireHandshakeConfirmation(

@@ -16,6 +16,7 @@ static BOOL g_quic_enabled = NO;
 static BOOL g_sdch_enabled = NO;
 static NSString* g_user_agent = nil;
 static NSString* g_sdch_pref_store_filename = nil;
+static double g_alternate_protocol_threshold = 1.0;
 static RequestFilterBlock g_request_filter_block = nil;
 
 @implementation CrNet
@@ -38,6 +39,10 @@ static RequestFilterBlock g_request_filter_block = nil;
   g_user_agent = userAgent;
 }
 
++ (void)setAlternateProtocolThreshold:(double)alternateProtocolThreshold {
+  g_alternate_protocol_threshold = alternateProtocolThreshold;
+}
+
 + (void)installInternal {
   CrNetEnvironment::Initialize();
   std::string partial_user_agent = base::SysNSStringToUTF8(g_user_agent);
@@ -50,6 +55,8 @@ static RequestFilterBlock g_request_filter_block = nil;
     std::string filename = base::SysNSStringToUTF8(g_sdch_pref_store_filename);
     g_chrome_net->set_sdch_pref_store_filename(filename);
   }
+  g_chrome_net->set_alternate_protocol_threshold(
+      g_alternate_protocol_threshold);
 
   g_chrome_net->Install();
   g_chrome_net->SetHTTPProtocolHandlerRegistered(true);
