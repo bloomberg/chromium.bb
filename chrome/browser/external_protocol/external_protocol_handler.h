@@ -29,8 +29,9 @@ class ExternalProtocolHandler {
   // Delegate to allow unit testing to provide different behavior.
   class Delegate {
    public:
-    virtual shell_integration::DefaultProtocolClientWorker* CreateShellWorker(
-        shell_integration::DefaultWebClientObserver* observer,
+    virtual scoped_refptr<shell_integration::DefaultProtocolClientWorker>
+    CreateShellWorker(
+        const shell_integration::DefaultWebClientWorkerCallback& callback,
         const std::string& protocol) = 0;
     virtual BlockState GetBlockState(const std::string& scheme) = 0;
     virtual void BlockRequest() = 0;

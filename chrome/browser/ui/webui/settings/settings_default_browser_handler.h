@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_DEFAULT_BROWSER_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
@@ -24,19 +25,13 @@ namespace settings {
 // The application used by the OS to open web documents (e.g. *.html)
 // is the "default browser".  This class is an API for the JavaScript
 // settings code to change the default browser settings.
-class DefaultBrowserHandler
-    : public SettingsPageUIHandler,
-      public shell_integration::DefaultWebClientObserver {
+class DefaultBrowserHandler : public SettingsPageUIHandler {
  public:
   explicit DefaultBrowserHandler(content::WebUI* webui);
   ~DefaultBrowserHandler() override;
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
-
-  // shell_integration::DefaultWebClientObserver implementation.
-  void SetDefaultWebClientUIState(
-      shell_integration::DefaultWebClientUIState state) override;
 
  private:
   // Called from WebUI to request the current state.
@@ -45,12 +40,20 @@ class DefaultBrowserHandler
   // Makes this the default browser. Called from WebUI.
   void SetAsDefaultBrowser(const base::ListValue* args);
 
+  // Called with the default browser state when the DefaultBrowserWorker is
+  // done.
+  void OnDefaultBrowserWorkerFinished(
+      shell_integration::DefaultWebClientUIState state);
+
   // Reference to a background worker that handles default browser settings.
   scoped_refptr<shell_integration::DefaultBrowserWorker>
       default_browser_worker_;
 
   // Policy setting to determine if default browser setting is managed.
   BooleanPrefMember default_browser_policy_;
+
+  // Used to invalidate the DefaultBrowserWorker callback.
+  base::WeakPtrFactory<DefaultBrowserHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserHandler);
 };

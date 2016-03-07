@@ -876,15 +876,11 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
     // side effects on other tests.
   }
 
-  shell_integration::DefaultProtocolClientWorker* CreateShellWorker(
-      shell_integration::DefaultWebClientObserver* observer,
+  scoped_refptr<shell_integration::DefaultProtocolClientWorker>
+  CreateShellWorker(
+      const shell_integration::DefaultWebClientWorkerCallback& callback,
       const std::string& protocol) override {
     VLOG(1) << "CreateShellWorker";
-    return NULL;
-  }
-
-  ProtocolHandlerRegistry::DefaultClientObserver* CreateShellObserver(
-      ProtocolHandlerRegistry* registry) override {
     return NULL;
   }
 

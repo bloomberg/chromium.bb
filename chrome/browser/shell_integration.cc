@@ -151,13 +151,11 @@ base::string16 GetAppShortcutsSubdirName() {
 //
 
 DefaultWebClientWorker::DefaultWebClientWorker(
-    DefaultWebClientObserver* observer,
-    bool delete_observer)
-    : observer_(observer), delete_observer_(delete_observer) {}
+    const DefaultWebClientWorkerCallback& callback)
+    : callback_(callback) {}
 
 void DefaultWebClientWorker::StartCheckIsDefault() {
-  if (observer_)
-    observer_->SetDefaultWebClientUIState(STATE_PROCESSING);
+  RunCallback(STATE_PROCESSING);
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -176,8 +174,7 @@ void DefaultWebClientWorker::StartSetAsDefault() {
   }
 
   set_as_default_in_progress_ = true;
-  if (observer_)
-    observer_->SetDefaultWebClientUIState(STATE_PROCESSING);
+  RunCallback(STATE_PROCESSING);
 
   set_as_default_initialized_ = InitializeSetAsDefault();
 
@@ -187,21 +184,6 @@ void DefaultWebClientWorker::StartSetAsDefault() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DefaultWebClientWorker::SetAsDefault, this));
-}
-
-void DefaultWebClientWorker::ObserverDestroyed() {
-  // Our associated view has gone away, so we shouldn't call back to it if
-  // our worker thread returns after the view is dead.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  observer_ = nullptr;
-
-  if (set_as_default_initialized_) {
-    FinalizeSetAsDefault();
-    set_as_default_initialized_ = false;
-  }
-
-  if (set_as_default_in_progress_)
-    ReportAttemptResult(AttemptResult::ABANDONED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -220,13 +202,6 @@ void DefaultWebClientWorker::OnCheckIsDefaultComplete(
     ReportAttemptResult(state == DefaultWebClientState::IS_DEFAULT
                             ? AttemptResult::SUCCESS
                             : AttemptResult::NO_ERRORS_NOT_DEFAULT);
-  }
-
-  // The worker has finished everything it needs to do, so free the observer
-  // if we own it.
-  if (observer_ && delete_observer_) {
-    delete observer_;
-    observer_ = nullptr;
   }
 }
 
@@ -253,10 +228,15 @@ void DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
     if (!check_default_should_report_success_)
       ReportAttemptResult(result);
 
-    // Start the default browser check which will notify the observer as to
-    // whether Chrome was sucessfully set as the default web client.
+    // Start the default browser check. The default state will be reported to
+    // the caller via the |callback_|.
     StartCheckIsDefault();
   }
+}
+
+void DefaultWebClientWorker::RunCallback(DefaultWebClientUIState state) {
+  if (!callback_.is_null())
+    callback_.Run(state);
 }
 
 void DefaultWebClientWorker::ReportAttemptResult(AttemptResult result) {
@@ -288,27 +268,24 @@ bool DefaultWebClientWorker::InitializeSetAsDefault() {
 void DefaultWebClientWorker::FinalizeSetAsDefault() {}
 
 void DefaultWebClientWorker::UpdateUI(DefaultWebClientState state) {
-  if (observer_) {
-    switch (state) {
-      case NOT_DEFAULT:
-        observer_->SetDefaultWebClientUIState(STATE_NOT_DEFAULT);
-        break;
-      case IS_DEFAULT:
-        observer_->SetDefaultWebClientUIState(STATE_IS_DEFAULT);
-        break;
-      case UNKNOWN_DEFAULT:
-        observer_->SetDefaultWebClientUIState(STATE_UNKNOWN);
-        break;
-      default:
-        break;
-    }
+  switch (state) {
+    case NOT_DEFAULT:
+      RunCallback(STATE_NOT_DEFAULT);
+      break;
+    case IS_DEFAULT:
+      RunCallback(STATE_IS_DEFAULT);
+      break;
+    case UNKNOWN_DEFAULT:
+      RunCallback(STATE_UNKNOWN);
+      break;
+    case NUM_DEFAULT_STATES:
+      break;
   }
 }
 
 bool DefaultWebClientWorker::ShouldReportDurationForResult(
     AttemptResult result) {
-  return result == SUCCESS || result == FAILURE || result == ABANDONED ||
-         result == RETRY;
+  return result == SUCCESS || result == FAILURE || result == RETRY;
 }
 
 const char* DefaultWebClientWorker::AttemptResultToString(
@@ -320,8 +297,6 @@ const char* DefaultWebClientWorker::AttemptResultToString(
       return "AlreadyDefault";
     case FAILURE:
       return "Failure";
-    case ABANDONED:
-      return "Abandoned";
     case LAUNCH_FAILURE:
       return "LaunchFailure";
     case OTHER_WORKER:
@@ -341,9 +316,9 @@ const char* DefaultWebClientWorker::AttemptResultToString(
 // DefaultBrowserWorker
 //
 
-DefaultBrowserWorker::DefaultBrowserWorker(DefaultWebClientObserver* observer,
-                                           bool delete_observer)
-    : DefaultWebClientWorker(observer, delete_observer) {}
+DefaultBrowserWorker::DefaultBrowserWorker(
+    const DefaultWebClientWorkerCallback& callback)
+    : DefaultWebClientWorker(callback) {}
 
 DefaultBrowserWorker::~DefaultBrowserWorker() {}
 
@@ -408,10 +383,9 @@ const char* DefaultBrowserWorker::GetHistogramPrefix() {
 //
 
 DefaultProtocolClientWorker::DefaultProtocolClientWorker(
-    DefaultWebClientObserver* observer,
-    const std::string& protocol,
-    bool delete_observer)
-    : DefaultWebClientWorker(observer, delete_observer), protocol_(protocol) {}
+    const DefaultWebClientWorkerCallback& callback,
+    const std::string& protocol)
+    : DefaultWebClientWorker(callback), protocol_(protocol) {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultProtocolClientWorker, private:

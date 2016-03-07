@@ -21,18 +21,17 @@ bool IsDisabledByPolicy(const BooleanPrefMember& pref) {
 }  // namespace
 
 DefaultBrowserHandler::DefaultBrowserHandler(content::WebUI* webui)
-    : default_browser_worker_(new shell_integration::DefaultBrowserWorker(
-          this,
-          /*delete_observer=*/false)) {
+    : weak_ptr_factory_(this) {
+  default_browser_worker_ = new shell_integration::DefaultBrowserWorker(
+      base::Bind(&DefaultBrowserHandler::OnDefaultBrowserWorkerFinished,
+                 weak_ptr_factory_.GetWeakPtr()));
   default_browser_policy_.Init(
       prefs::kDefaultBrowserSettingEnabled, g_browser_process->local_state(),
       base::Bind(&DefaultBrowserHandler::RequestDefaultBrowserState,
                  base::Unretained(this), nullptr));
 }
 
-DefaultBrowserHandler::~DefaultBrowserHandler() {
-  default_browser_worker_->ObserverDestroyed();
-}
+DefaultBrowserHandler::~DefaultBrowserHandler() {}
 
 void DefaultBrowserHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -45,7 +44,23 @@ void DefaultBrowserHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void DefaultBrowserHandler::SetDefaultWebClientUIState(
+void DefaultBrowserHandler::RequestDefaultBrowserState(
+    const base::ListValue* /*args*/) {
+  default_browser_worker_->StartCheckIsDefault();
+}
+
+void DefaultBrowserHandler::SetAsDefaultBrowser(const base::ListValue* args) {
+  CHECK(!IsDisabledByPolicy(default_browser_policy_));
+
+  default_browser_worker_->StartSetAsDefault();
+
+  // If the user attempted to make Chrome the default browser, notify
+  // them when this changes.
+  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
+      prefs::kCheckDefaultBrowser, true);
+}
+
+void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
     shell_integration::DefaultWebClientUIState state) {
   if (state == shell_integration::STATE_PROCESSING)
     return;
@@ -67,22 +82,6 @@ void DefaultBrowserHandler::SetDefaultWebClientUIState(
 
   web_ui()->CallJavascriptFunction("Settings.updateDefaultBrowserState",
                                    is_default, can_be_default);
-}
-
-void DefaultBrowserHandler::RequestDefaultBrowserState(
-    const base::ListValue* /*args*/) {
-  default_browser_worker_->StartCheckIsDefault();
-}
-
-void DefaultBrowserHandler::SetAsDefaultBrowser(const base::ListValue* args) {
-  CHECK(!IsDisabledByPolicy(default_browser_policy_));
-
-  default_browser_worker_->StartSetAsDefault();
-
-  // If the user attempted to make Chrome the default browser, notify
-  // them when this changes.
-  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-      prefs::kCheckDefaultBrowser, true);
 }
 
 }  // namespace settings

@@ -1211,10 +1211,9 @@ void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
     // The worker pointer is reference counted. While it is running, the
     // message loops of the FILE and UI thread will hold references to it
     // and it will be automatically freed once all its tasks have finished.
-    scoped_refptr<shell_integration::DefaultWebClientWorker>
-        set_browser_worker = new shell_integration::DefaultBrowserWorker(
-            nullptr,
-            /*delete_observer=*/false);
+    scoped_refptr<shell_integration::DefaultBrowserWorker> set_browser_worker =
+        new shell_integration::DefaultBrowserWorker(
+            shell_integration::DefaultWebClientWorkerCallback());
     // The user interaction must always be disabled when applying the default
     // browser policy since it is done at each browser startup and the result
     // of the interaction cannot be forced.

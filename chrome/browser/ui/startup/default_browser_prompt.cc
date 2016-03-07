@@ -180,8 +180,8 @@ bool DefaultBrowserInfoBarDelegate::Accept() {
   // message loops of the FILE and UI thread will hold references to it
   // and it will be automatically freed once all its tasks have finished.
   scoped_refptr<shell_integration::DefaultBrowserWorker>(
-      new shell_integration::DefaultBrowserWorker(nullptr,
-                                                  /*delete_observer=*/false))
+      new shell_integration::DefaultBrowserWorker(
+          shell_integration::DefaultWebClientWorkerCallback()))
       ->StartSetAsDefault();
   return true;
 }
@@ -198,61 +198,14 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
   return true;
 }
 
-// A shell_integration::DefaultWebClientObserver that handles the check to
-// determine whether or not to show the default browser prompt. If Chrome is the
-// default browser, then the kCheckDefaultBrowser pref is reset.  Otherwise, the
-// prompt is shown.
-class CheckDefaultBrowserObserver
-    : public shell_integration::DefaultWebClientObserver {
- public:
-  CheckDefaultBrowserObserver(const base::FilePath& profile_path,
-                              bool show_prompt);
-  ~CheckDefaultBrowserObserver() override;
-
- private:
-  void SetDefaultWebClientUIState(
-      shell_integration::DefaultWebClientUIState state) override;
-
-  void ResetCheckDefaultBrowserPref();
-  void ShowPrompt();
-
-  // The path to the profile for which the prompt is to be shown.
-  base::FilePath profile_path_;
-
-  // True if the prompt is to be shown if Chrome is not the default browser.
-  bool show_prompt_;
-
-  DISALLOW_COPY_AND_ASSIGN(CheckDefaultBrowserObserver);
-};
-
-CheckDefaultBrowserObserver::CheckDefaultBrowserObserver(
-    const base::FilePath& profile_path,
-    bool show_prompt)
-    : profile_path_(profile_path), show_prompt_(show_prompt) {}
-
-CheckDefaultBrowserObserver::~CheckDefaultBrowserObserver() {}
-
-void CheckDefaultBrowserObserver::SetDefaultWebClientUIState(
-    shell_integration::DefaultWebClientUIState state) {
-  if (state == shell_integration::STATE_IS_DEFAULT) {
-    // Notify the user in the future if Chrome ceases to be the user's chosen
-    // default browser.
-    ResetCheckDefaultBrowserPref();
-  } else if (show_prompt_ && state == shell_integration::STATE_NOT_DEFAULT &&
-             shell_integration::CanSetAsDefaultBrowser() !=
-                 shell_integration::SET_DEFAULT_NOT_ALLOWED) {
-    ShowPrompt();
-  }
-}
-
-void CheckDefaultBrowserObserver::ResetCheckDefaultBrowserPref() {
+void ResetCheckDefaultBrowserPref(const base::FilePath& profile_path) {
   Profile* profile =
-      g_browser_process->profile_manager()->GetProfileByPath(profile_path_);
+      g_browser_process->profile_manager()->GetProfileByPath(profile_path);
   if (profile)
     profile->GetPrefs()->SetBoolean(prefs::kCheckDefaultBrowser, true);
 }
 
-void CheckDefaultBrowserObserver::ShowPrompt() {
+void ShowPrompt() {
   Browser* browser = chrome::FindLastActive();
   if (!browser)
     return;  // Reached during ui tests.
@@ -268,6 +221,21 @@ void CheckDefaultBrowserObserver::ShowPrompt() {
       InfoBarService::FromWebContents(web_contents),
       Profile::FromBrowserContext(web_contents->GetBrowserContext())
           ->GetPrefs());
+}
+
+void OnCheckIsDefaultBrowserFinished(
+    const base::FilePath& profile_path,
+    bool show_prompt,
+    shell_integration::DefaultWebClientUIState state) {
+  if (state == shell_integration::STATE_IS_DEFAULT) {
+    // Notify the user in the future if Chrome ceases to be the user's chosen
+    // default browser.
+    ResetCheckDefaultBrowserPref(profile_path);
+  } else if (show_prompt && state == shell_integration::STATE_NOT_DEFAULT &&
+             shell_integration::CanSetAsDefaultBrowser() !=
+                 shell_integration::SET_DEFAULT_NOT_ALLOWED) {
+    ShowPrompt();
+  }
 }
 
 }  // namespace
@@ -314,9 +282,8 @@ void ShowDefaultBrowserPrompt(Profile* profile) {
   }
 
   scoped_refptr<shell_integration::DefaultBrowserWorker>(
-      new shell_integration::DefaultBrowserWorker(
-          new CheckDefaultBrowserObserver(profile->GetPath(), show_prompt),
-          /*delete_observer=*/true))
+      new shell_integration::DefaultBrowserWorker(base::Bind(
+          &OnCheckIsDefaultBrowserFinished, profile->GetPath(), show_prompt)))
       ->StartCheckIsDefault();
 }
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_BROWSER_OPTIONS_HANDLER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -61,9 +62,6 @@ class BrowserOptionsHandler
       public sync_driver::SyncServiceObserver,
       public SigninManagerBase::Observer,
       public ui::SelectFileDialog::Listener,
-#if !defined(OS_CHROMEOS)
-      public shell_integration::DefaultWebClientObserver,
-#endif
 #if defined(OS_CHROMEOS)
       public chromeos::system::PointerDeviceObserver::Observer,
       public policy::ConsumerManagementService::Observer,
@@ -177,9 +175,9 @@ class BrowserOptionsHandler
   // Makes this the default browser. Called from WebUI.
   void BecomeDefaultBrowser(const base::ListValue* args);
 
-  // shell_integration::DefaultWebClientObserver implementation.
-  void SetDefaultWebClientUIState(
-      shell_integration::DefaultWebClientUIState state) override;
+  // Receives the default browser state when the worker is done.
+  void OnDefaultBrowserWorkerFinished(
+      shell_integration::DefaultWebClientUIState state);
 
   // Updates the UI with the given state for the default browser.
   void SetDefaultBrowserUIString(int status_string_id);

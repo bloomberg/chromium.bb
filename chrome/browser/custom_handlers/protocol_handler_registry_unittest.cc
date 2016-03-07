@@ -136,6 +136,42 @@ base::DictionaryValue* GetProtocolHandlerValueWithDefault(std::string protocol,
   return value;
 }
 
+class FakeProtocolClientWorker
+    : public shell_integration::DefaultProtocolClientWorker {
+ public:
+  FakeProtocolClientWorker(
+      const shell_integration::DefaultWebClientWorkerCallback& callback,
+      const std::string& protocol,
+      bool force_failure)
+      : shell_integration::DefaultProtocolClientWorker(callback, protocol),
+        force_failure_(force_failure) {}
+
+ private:
+  ~FakeProtocolClientWorker() override {}
+
+  void CheckIsDefault() override {
+    shell_integration::DefaultWebClientState state =
+        shell_integration::IS_DEFAULT;
+    if (force_failure_)
+      state = shell_integration::NOT_DEFAULT;
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&FakeProtocolClientWorker::OnCheckIsDefaultComplete, this,
+                   state));
+  }
+
+  void SetAsDefault() override {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&FakeProtocolClientWorker::OnSetAsDefaultAttemptComplete,
+                   this, AttemptResult::SUCCESS));
+  }
+
+ private:
+  bool force_failure_;
+};
+
 class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
  public:
   FakeDelegate() : force_os_failure_(false) {}
@@ -150,19 +186,16 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
     registered_protocols_.erase(protocol);
   }
 
-  shell_integration::DefaultProtocolClientWorker* CreateShellWorker(
-      shell_integration::DefaultWebClientObserver* observer,
-      const std::string& protocol) override;
-
-  ProtocolHandlerRegistry::DefaultClientObserver* CreateShellObserver(
-      ProtocolHandlerRegistry* registry) override;
-
-  void RegisterWithOSAsDefaultClient(const std::string& protocol,
-                                     ProtocolHandlerRegistry* reg) override {
-    ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(protocol,
-                                                                     reg);
-    ASSERT_FALSE(IsFakeRegisteredWithOS(protocol));
+  scoped_refptr<shell_integration::DefaultProtocolClientWorker>
+  CreateShellWorker(
+      const shell_integration::DefaultWebClientWorkerCallback& callback,
+      const std::string& protocol) override {
+    return new FakeProtocolClientWorker(callback, protocol, force_os_failure_);
   }
+
+  void RegisterWithOSAsDefaultClient(
+      const std::string& protocol,
+      ProtocolHandlerRegistry* registry) override;
 
   bool IsExternalHandlerRegistered(const std::string& protocol) override {
     return registered_protocols_.find(protocol) != registered_protocols_.end();
@@ -193,78 +226,29 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
   bool force_os_failure_;
 };
 
-class FakeClientObserver
-    : public ProtocolHandlerRegistry::DefaultClientObserver {
- public:
-  FakeClientObserver(ProtocolHandlerRegistry* registry,
-                     FakeDelegate* registry_delegate)
-      : ProtocolHandlerRegistry::DefaultClientObserver(registry),
-        delegate_(registry_delegate) {}
-
-  void SetDefaultWebClientUIState(
-      shell_integration::DefaultWebClientUIState state) override {
-    ProtocolHandlerRegistry::DefaultClientObserver::SetDefaultWebClientUIState(
-        state);
-    if (state == shell_integration::STATE_IS_DEFAULT) {
-      delegate_->FakeRegisterWithOS(worker_->protocol());
-    }
-    if (state != shell_integration::STATE_PROCESSING) {
-      base::MessageLoop::current()->QuitWhenIdle();
-    }
+void OnShellWorkerFinished(ProtocolHandlerRegistry* registry,
+                           FakeDelegate* delegate,
+                           const std::string& protocol,
+                           shell_integration::DefaultWebClientUIState state) {
+  registry->GetDefaultWebClientCallback(protocol).Run(state);
+  if (state == shell_integration::STATE_IS_DEFAULT) {
+    delegate->FakeRegisterWithOS(protocol);
   }
-
- private:
-  FakeDelegate* delegate_;
-};
-
-class FakeProtocolClientWorker
-    : public shell_integration::DefaultProtocolClientWorker {
- public:
-  FakeProtocolClientWorker(
-      shell_integration::DefaultWebClientObserver* observer,
-      const std::string& protocol,
-      bool force_failure)
-      : shell_integration::DefaultProtocolClientWorker(
-            observer,
-            protocol,
-            /*delete_observer*/ true),
-        force_failure_(force_failure) {}
-
- private:
-  ~FakeProtocolClientWorker() override {}
-
-  void CheckIsDefault() override {
-    shell_integration::DefaultWebClientState state =
-        shell_integration::IS_DEFAULT;
-    if (force_failure_)
-      state = shell_integration::NOT_DEFAULT;
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeProtocolClientWorker::OnCheckIsDefaultComplete, this,
-                   state));
+  if (state != shell_integration::STATE_PROCESSING) {
+    base::MessageLoop::current()->QuitWhenIdle();
   }
-
-  void SetAsDefault() override {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeProtocolClientWorker::OnSetAsDefaultAttemptComplete,
-                   this, AttemptResult::SUCCESS));
-  }
-
- private:
-  bool force_failure_;
-};
-
-ProtocolHandlerRegistry::DefaultClientObserver*
-    FakeDelegate::CreateShellObserver(ProtocolHandlerRegistry* registry) {
-  return new FakeClientObserver(registry, this);
 }
 
-shell_integration::DefaultProtocolClientWorker* FakeDelegate::CreateShellWorker(
-    shell_integration::DefaultWebClientObserver* observer,
-    const std::string& protocol) {
-  return new FakeProtocolClientWorker(observer, protocol, force_os_failure_);
+void FakeDelegate::RegisterWithOSAsDefaultClient(
+    const std::string& protocol,
+    ProtocolHandlerRegistry* registry) {
+  // The worker pointer is reference counted. While it is running, the
+  // message loops of the FILE and UI thread will hold references to it
+  // and it will be automatically freed once all its tasks have finished.
+  CreateShellWorker(base::Bind(OnShellWorkerFinished, registry, this, protocol),
+                    protocol)
+      ->StartSetAsDefault();
+  ASSERT_FALSE(IsFakeRegisteredWithOS(protocol));
 }
 
 class NotificationCounter : public content::NotificationObserver {
@@ -333,8 +317,8 @@ class TestMessageLoop : public base::MessageLoop {
       case base::MessageLoop::TYPE_IO:
         return BrowserThread::CurrentlyOn(BrowserThread::IO);
 #if defined(OS_ANDROID)
-      case base::MessageLoop::TYPE_JAVA: // fall-through
-#endif // defined(OS_ANDROID)
+      case base::MessageLoop::TYPE_JAVA:  // fall-through
+#endif  // defined(OS_ANDROID)
       case base::MessageLoop::TYPE_CUSTOM:
       case base::MessageLoop::TYPE_DEFAULT:
         return !BrowserThread::CurrentlyOn(BrowserThread::UI) &&
@@ -753,7 +737,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestDisablePreventsHandling) {
 
 // TODO(smckay): This is much more appropriately an integration
 // test. Make that so, then update the
-// ShellIntegretion{Delegate,Observer,Worker} test classes we use to fully
+// ShellIntegretion{Delegate,Callback,Worker} test classes we use to fully
 // isolate this test from the FILE thread.
 TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
   ProtocolHandler ph_do1 = CreateProtocolHandler("do", "test1");
@@ -785,7 +769,7 @@ TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
 
 // TODO(smckay): This is much more appropriately an integration
 // test. Make that so, then update the
-// ShellIntegretion{Delegate,Observer,Worker} test classes we use to fully
+// ShellIntegretion{Delegate,Callback,Worker} test classes we use to fully
 // isolate this test from the FILE thread.
 TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestOSRegistrationFailure) {
   ProtocolHandler ph_do = CreateProtocolHandler("do", "test1");

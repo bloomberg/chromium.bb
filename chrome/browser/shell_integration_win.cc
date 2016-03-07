@@ -646,8 +646,8 @@ bool DefaultBrowserWorker::InitializeSetAsDefault() {
   //    instead call OnSetAsDefaultAttemptComplete(), passing true to indicate
   //    success.
   // 5. If Chrome is not selected, the url is opened in the selected browser.
-  //    After a certain amount of time, we notify the observer that the
-  //    process failed.
+  //    After a certain amount of time, we notify the caller via the |callback_|
+  //    that the process failed.
 
   if (!StartupBrowserCreator::SetDefaultBrowserCallback(
           base::Bind(&DefaultBrowserWorker::OnSetAsDefaultAttemptComplete, this,

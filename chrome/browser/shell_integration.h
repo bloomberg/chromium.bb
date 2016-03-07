@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -189,12 +190,10 @@ enum DefaultWebClientUIState {
   STATE_UNKNOWN
 };
 
-class DefaultWebClientObserver {
- public:
-  virtual ~DefaultWebClientObserver() {}
-  // Updates the UI state to reflect the current default browser state.
-  virtual void SetDefaultWebClientUIState(DefaultWebClientUIState state) = 0;
-};
+// The type of callback used to communicate processing state to consumers of
+// DefaultBrowserWorker and DefaultProtocolClientWorker.
+using DefaultWebClientWorkerCallback =
+    base::Callback<void(DefaultWebClientUIState)>;
 
 //  Helper objects that handle checking if Chrome is the default browser
 //  or application for a url protocol on Windows and Linux, and also setting
@@ -208,11 +207,8 @@ class DefaultWebClientObserver {
 class DefaultWebClientWorker
     : public base::RefCountedThreadSafe<DefaultWebClientWorker> {
  public:
-  // Constructor. The worker will post updates to |observer|. If
-  // |delete_observer| is true, the worker owns the observer and it will be
-  // freed in the destructor.
-  DefaultWebClientWorker(DefaultWebClientObserver* observer,
-                         bool delete_observer);
+  explicit DefaultWebClientWorker(
+      const DefaultWebClientWorkerCallback& callback);
 
   // Controls whether the worker can use user interaction to set the default
   // web client. If false, the set-as-default operation will fail on OS where
@@ -221,18 +217,15 @@ class DefaultWebClientWorker
     interactive_permitted_ = interactive_permitted;
   }
 
-  // Checks to see if Chrome is the default web client application. The result
-  // will be passed back to the observer via the SetDefaultWebClientUIState
-  // function. If there is no observer, this function does not do anything.
+  // Checks to see if Chrome is the default web client application. The
+  // instance's callback will be run to communicate the default state to the
+  // caller.
   void StartCheckIsDefault();
 
-  // Sets Chrome as the default web client application. If there is an
-  // observer, once the operation has completed the new default will be
-  // queried and the current status reported via SetDefaultWebClientUIState.
+  // Sets Chrome as the default web client application. Once done, it will
+  // trigger a check for the default state using StartCheckIsDefault() to return
+  // the default state to the caller.
   void StartSetAsDefault();
-
-  // Called to notify the worker that the view is gone.
-  void ObserverDestroyed();
 
  protected:
   friend class base::RefCountedThreadSafe<DefaultWebClientWorker>;
@@ -241,42 +234,46 @@ class DefaultWebClientWorker
   // Do not modify the ordering as it is important for UMA.
   enum AttemptResult {
     // Chrome was set as the default web client.
-    SUCCESS,
+    SUCCESS = 0,
     // Chrome was already the default web client. This counts as a successful
     // attempt.
-    ALREADY_DEFAULT,
+    ALREADY_DEFAULT = 1,
     // Chrome was not set as the default web client.
-    FAILURE,
+    FAILURE = 2,
     // The attempt was abandoned because the observer was destroyed.
-    ABANDONED,
+    // Note: This result is no longer used since the removal of
+    // DefaultWebClientObserver.
+    // ABANDONED = 3,
     // Failed to launch the process to set Chrome as the default web client
     // asynchronously.
-    LAUNCH_FAILURE,
+    LAUNCH_FAILURE = 4,
     // Another worker is already in progress to make Chrome the default web
     // client.
-    OTHER_WORKER,
+    OTHER_WORKER = 5,
     // The user initiated another attempt while the asynchronous operation was
     // already in progress.
-    RETRY,
+    RETRY = 6,
     // No errors were encountered yet Chrome is still not the default web
     // client.
-    NO_ERRORS_NOT_DEFAULT,
+    NO_ERRORS_NOT_DEFAULT = 7,
     NUM_ATTEMPT_RESULT_TYPES
   };
 
   virtual ~DefaultWebClientWorker();
 
-  // Communicates the result to the observer. In contrast to
+  // Communicates the result via the |callback_|. In contrast to
   // OnSetAsDefaultAttemptComplete(), this should not be called multiple
   // times.
   void OnCheckIsDefaultComplete(DefaultWebClientState state);
 
   // Called when the set as default operation is completed. This then invokes
-  // FinalizeSetAsDefault() and, if an observer is present, starts the check
-  // is default process.
+  // FinalizeSetAsDefault() and starts the check is default process.
   // It is safe to call this multiple times. Only the first call is processed
   // after StartSetAsDefault() is invoked.
   void OnSetAsDefaultAttemptComplete(AttemptResult result);
+
+  // Runs the callback but only if it is not null.
+  void RunCallback(DefaultWebClientUIState state);
 
   // Returns true if FinalizeSetAsDefault() will be called.
   bool set_as_default_initialized() const {
@@ -288,7 +285,7 @@ class DefaultWebClientWorker
   bool interactive_permitted_ = true;
 
   // Flag that indicates if the set-as-default operation is in progess to
-  // prevent multiple notifications to the observer.
+  // prevent multiple notifications to the |callback_|.
   bool set_as_default_in_progress_ = false;
 
  private:
@@ -328,10 +325,8 @@ class DefaultWebClientWorker
   // Returns a string based on |result|. This is used for UMA reports.
   static const char* AttemptResultToString(AttemptResult result);
 
-  DefaultWebClientObserver* observer_;
-
-  // Indicates if the the observer will be automatically freed by the worker.
-  bool delete_observer_;
+  // Called with the default state after the worker is done.
+  DefaultWebClientWorkerCallback callback_;
 
   // Flag that indicates the return value of InitializeSetAsDefault(). If
   // true, FinalizeSetAsDefault() will be called to clear what was
@@ -351,11 +346,7 @@ class DefaultWebClientWorker
 // Worker for checking and setting the default browser.
 class DefaultBrowserWorker : public DefaultWebClientWorker {
  public:
-  // Constructor. The worker will post updates to |observer|. If
-  // |delete_observer| is true, the worker owns the observer and it will be
-  // freed in the destructor.
-  DefaultBrowserWorker(DefaultWebClientObserver* observer,
-                       bool delete_observer);
+  explicit DefaultBrowserWorker(const DefaultWebClientWorkerCallback& callback);
 
  private:
   ~DefaultBrowserWorker() override;
@@ -395,12 +386,8 @@ class DefaultBrowserWorker : public DefaultWebClientWorker {
 // multiple protocols you should use multiple worker objects.
 class DefaultProtocolClientWorker : public DefaultWebClientWorker {
  public:
-  // Constructor. The worker will post updates to |observer|. If
-  // |delete_observer| is true, the worker owns the observer and it will be
-  // freed in the destructor.
-  DefaultProtocolClientWorker(DefaultWebClientObserver* observer,
-                              const std::string& protocol,
-                              bool delete_observer);
+  DefaultProtocolClientWorker(const DefaultWebClientWorkerCallback& callback,
+                              const std::string& protocol);
 
   const std::string& protocol() const { return protocol_; }
 

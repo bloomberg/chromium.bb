@@ -7,8 +7,6 @@
 #include <stddef.h>
 
 #include <set>
-#include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -197,8 +195,9 @@ BrowserOptionsHandler::BrowserOptionsHandler()
   // message loops of the FILE and UI thread will hold references to it
   // and it will be automatically freed once all its tasks have finished.
   default_browser_worker_ = new shell_integration::DefaultBrowserWorker(
-      this, /*delete_observer=*/false);
-#endif
+      base::Bind(&BrowserOptionsHandler::OnDefaultBrowserWorkerFinished,
+                 weak_ptr_factory_.GetWeakPtr()));
+#endif  // !defined(OS_CHROMEOS)
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   cloud_print_mdns_ui_enabled_ = true;
@@ -211,10 +210,6 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
   if (sync_service)
     sync_service->RemoveObserver(this);
 
-#if !defined(OS_CHROMEOS)
-  if (default_browser_worker_.get())
-    default_browser_worker_->ObserverDestroyed();
-#endif
   if (template_url_service_)
     template_url_service_->RemoveObserver(this);
   // There may be pending file dialogs, we need to tell them that we've gone
@@ -1106,6 +1101,7 @@ bool BrowserOptionsHandler::ShouldAllowAdvancedSettings() {
 }
 
 #if !defined(OS_CHROMEOS)
+
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {
   default_browser_worker_->StartCheckIsDefault();
 }
@@ -1128,7 +1124,7 @@ void BrowserOptionsHandler::BecomeDefaultBrowser(const base::ListValue* args) {
   prefs->SetBoolean(prefs::kCheckDefaultBrowser, true);
 }
 
-void BrowserOptionsHandler::SetDefaultWebClientUIState(
+void BrowserOptionsHandler::OnDefaultBrowserWorkerFinished(
     shell_integration::DefaultWebClientUIState state) {
   int status_string_id;
 

@@ -14,13 +14,10 @@ class FakeExternalProtocolHandlerWorker
     : public shell_integration::DefaultProtocolClientWorker {
  public:
   FakeExternalProtocolHandlerWorker(
-      shell_integration::DefaultWebClientObserver* observer,
+      const shell_integration::DefaultWebClientWorkerCallback& callback,
       const std::string& protocol,
       shell_integration::DefaultWebClientState os_state)
-      : shell_integration::DefaultProtocolClientWorker(
-            observer,
-            protocol,
-            /*delete_observer=*/true),
+      : shell_integration::DefaultProtocolClientWorker(callback, protocol),
         os_state_(os_state) {}
 
  private:
@@ -54,10 +51,11 @@ class FakeExternalProtocolHandlerDelegate
         has_prompted_(false),
         has_blocked_(false) {}
 
-  shell_integration::DefaultProtocolClientWorker* CreateShellWorker(
-      shell_integration::DefaultWebClientObserver* observer,
+  scoped_refptr<shell_integration::DefaultProtocolClientWorker>
+  CreateShellWorker(
+      const shell_integration::DefaultWebClientWorkerCallback& callback,
       const std::string& protocol) override {
-    return new FakeExternalProtocolHandlerWorker(observer, protocol, os_state_);
+    return new FakeExternalProtocolHandlerWorker(callback, protocol, os_state_);
   }
 
   ExternalProtocolHandler::BlockState GetBlockState(
