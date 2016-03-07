@@ -37,6 +37,13 @@
 #include "testing/perf/perf_test.h"
 #include "ui/gl/gl_switches.h"
 
+namespace {
+std::string MakeLabel(const char* test_name, const std::string& video_codec) {
+  std::string codec_label = video_codec.empty() ? "" : "_" + video_codec;
+  return base::StringPrintf("%s%s", test_name, codec_label.c_str());
+}
+}  // namespace
+
 static const base::FilePath::CharType kFrameAnalyzerExecutable[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("frame_analyzer.exe");
@@ -195,7 +202,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
   // |width| x |height|.
   // All measurements calculated are printed as perf parsable numbers to stdout.
   bool CompareVideosAndPrintResult(
-      const char* test_label,
+      const std::string& test_label,
       int width,
       int height,
       const base::FilePath& captured_video_filename,
@@ -236,7 +243,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     EXPECT_TRUE(GetPythonCommand(&compare_command));
 
     compare_command.AppendArgPath(path_to_compare_script);
-    compare_command.AppendArg(base::StringPrintf("--label=%s", test_label));
+    compare_command.AppendArg("--label=" + test_label);
     compare_command.AppendArg("--ref_video");
     compare_command.AppendArgPath(reference_video_filename);
     compare_command.AppendArg("--test_video");
@@ -270,12 +277,61 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     return true;
   }
 
+  void TestVideoQuality(const std::string& video_codec) {
+    ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150)
+        << "This is a long-running test; you must specify "
+           "--ui-test-action-max-timeout to have a value of at least 150000.";
+    ASSERT_TRUE(test::HasReferenceFilesInCheckout());
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    content::WebContents* left_tab =
+        OpenPageAndGetUserMediaInNewTabWithConstraints(
+            embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage),
+            test_config_.constraints);
+    content::WebContents* right_tab =
+        OpenPageAndGetUserMediaInNewTabWithConstraints(
+            embedded_test_server()->GetURL(kCapturingWebrtcHtmlPage),
+            test_config_.constraints);
+
+    SetupPeerconnectionWithLocalStream(left_tab);
+    SetupPeerconnectionWithLocalStream(right_tab);
+
+    NegotiateCall(left_tab, right_tab, video_codec);
+
+    // Poll slower here to avoid flooding the log with messages: capturing and
+    // sending frames take quite a bit of time.
+    int polling_interval_msec = 1000;
+
+    EXPECT_TRUE(test::PollingWaitUntil("doneFrameCapturing()", "done-capturing",
+                                       right_tab, polling_interval_msec));
+
+    HangUp(left_tab);
+
+    WriteCapturedFramesToWorkingDir(right_tab);
+
+    // Shut everything down to avoid having the javascript race with the
+    // analysis tools. For instance, dont have console log printouts interleave
+    // with the RESULT lines from the analysis tools (crbug.com/323200).
+    chrome::CloseWebContents(browser(), left_tab, false);
+    chrome::CloseWebContents(browser(), right_tab, false);
+
+    ASSERT_TRUE(
+        RunARGBtoI420Converter(test_config_.width, test_config_.height,
+                               GetWorkingDir().Append(kCapturedYuvFileName)));
+
+    ASSERT_TRUE(CompareVideosAndPrintResult(
+        MakeLabel(test_config_.test_name, video_codec), test_config_.width,
+        test_config_.height, GetWorkingDir().Append(kCapturedYuvFileName),
+        test::GetReferenceFilesDir()
+            .Append(test_config_.reference_video)
+            .AddExtension(test::kYuvFileExtension),
+        GetWorkingDir().Append(kStatsFileName)));
+  }
+
  protected:
   VideoQualityTestConfig test_config_;
 
-  base::FilePath GetWorkingDir() {
-    return temp_working_dir_.path();
-  }
+  base::FilePath GetWorkingDir() { return temp_working_dir_.path(); }
 
  private:
   base::FilePath GetSourceDir() {
@@ -300,56 +356,21 @@ INSTANTIATE_TEST_CASE_P(
     WebRtcVideoQualityBrowserTest,
     testing::ValuesIn(kVideoConfigurations));
 
+// The video codec name is now appended to the test label (e.g. '720p_VP8').
+// TODO(asapersson): Keep test below using the default video codec (which do
+// not have the codec name appended ('720p')) until new tests have been
+// running for some time.
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MANUAL_TestVideoQuality) {
-  ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150) <<
-      "This is a long-running test; you must specify "
-      "--ui-test-action-max-timeout to have a value of at least 150000.";
-  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
-  ASSERT_TRUE(embedded_test_server()->Start());
+                       MANUAL_TestVideoQualityDefault) {
+  TestVideoQuality("");
+}
 
-  content::WebContents* left_tab =
-      OpenPageAndGetUserMediaInNewTabWithConstraints(
-          embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage),
-          test_config_.constraints);
-  content::WebContents* right_tab =
-      OpenPageAndGetUserMediaInNewTabWithConstraints(
-          embedded_test_server()->GetURL(kCapturingWebrtcHtmlPage),
-          test_config_.constraints);
+IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
+                       MANUAL_TestVideoQualityVp8) {
+  TestVideoQuality("VP8");
+}
 
-  SetupPeerconnectionWithLocalStream(left_tab);
-  SetupPeerconnectionWithLocalStream(right_tab);
-
-  NegotiateCall(left_tab, right_tab);
-
-  // Poll slower here to avoid flooding the log with messages: capturing and
-  // sending frames take quite a bit of time.
-  int polling_interval_msec = 1000;
-
-  EXPECT_TRUE(test::PollingWaitUntil(
-      "doneFrameCapturing()", "done-capturing", right_tab,
-      polling_interval_msec));
-
-  HangUp(left_tab);
-
-  WriteCapturedFramesToWorkingDir(right_tab);
-
-  // Shut everything down to avoid having the javascript race with the analysis
-  // tools. For instance, dont have console log printouts interleave with the
-  // RESULT lines from the analysis tools (crbug.com/323200).
-  chrome::CloseWebContents(browser(), left_tab, false);
-  chrome::CloseWebContents(browser(), right_tab, false);
-
-  ASSERT_TRUE(RunARGBtoI420Converter(
-      test_config_.width, test_config_.height,
-      GetWorkingDir().Append(kCapturedYuvFileName)));
-  ASSERT_TRUE(CompareVideosAndPrintResult(
-      test_config_.test_name,
-      test_config_.width,
-      test_config_.height,
-      GetWorkingDir().Append(kCapturedYuvFileName),
-      test::GetReferenceFilesDir()
-          .Append(test_config_.reference_video)
-          .AddExtension(test::kYuvFileExtension),
-      GetWorkingDir().Append(kStatsFileName)));
+IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
+                       MANUAL_TestVideoQualityVp9) {
+  TestVideoQuality("VP9");
 }
