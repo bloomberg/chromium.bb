@@ -4,6 +4,7 @@
 
 #include "components/sync_driver/device_info_service.h"
 
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -69,8 +70,59 @@ scoped_ptr<MetadataChangeList> DeviceInfoService::CreateMetadataChangeList() {
 SyncError DeviceInfoService::MergeSyncData(
     scoped_ptr<MetadataChangeList> metadata_change_list,
     EntityDataMap entity_data_map) {
-  // TODO(skym): crbug.com/543406: Implementation.
-  return SyncError();
+  if (!has_provider_initialized_ || !has_data_loaded_ || !change_processor()) {
+    return SyncError(
+        FROM_HERE, SyncError::DATATYPE_ERROR,
+        "Cannot call MergeSyncData without provider, data, and processor.",
+        syncer::DEVICE_INFO);
+  }
+
+  // Local data should typically be near empty, with the only possible value
+  // corresponding to this device. This is because on signout all device info
+  // data is blown away. However, this simplification is being ignored here and
+  // a full difference is going to be calculated to explore what other service
+  // implementations may look like.
+  std::set<std::string> local_only_tags;
+  for (const auto& kv : all_data_) {
+    local_only_tags.insert(kv.first);
+  }
+
+  bool has_changes = false;
+  std::string local_tag =
+      local_device_info_provider_->GetLocalDeviceInfo()->guid();
+  scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  for (const auto& kv : entity_data_map) {
+    const std::string tag = GetClientTag(kv.second.value());
+    const DeviceInfoSpecifics& specifics =
+        kv.second.value().specifics.device_info();
+
+    // Ignore any remote changes that have our local cache guid.
+    if (tag == local_tag) {
+      continue;
+    }
+
+    // Remote data wins conflicts.
+    local_only_tags.erase(tag);
+    StoreSpecifics(make_scoped_ptr(new DeviceInfoSpecifics(specifics)),
+                   batch.get());
+    has_changes = true;
+  }
+
+  for (const std::string& tag : local_only_tags) {
+    change_processor()->Put(tag, CopyIntoNewEntityData(*all_data_[tag]),
+                            metadata_change_list.get());
+  }
+
+  // Transfer at the end because processor Put calls may update metadata.
+  static_cast<SimpleMetadataChangeList*>(metadata_change_list.get())
+      ->TransferChanges(store_.get(), batch.get());
+  store_->CommitWriteBatch(
+      std::move(batch),
+      base::Bind(&DeviceInfoService::OnCommit, weak_factory_.GetWeakPtr()));
+  if (has_changes) {
+    NotifyObservers();
+  }
+  return syncer::SyncError();
 }
 
 SyncError DeviceInfoService::ApplySyncChanges(
@@ -128,8 +180,8 @@ void DeviceInfoService::GetData(ClientTagList client_tags,
 
   syncer::SyncError error;
   scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
-  for (auto& tag : client_tags) {
-    auto iter = all_data_.find(tag);
+  for (const auto& tag : client_tags) {
+    const auto iter = all_data_.find(tag);
     if (iter != all_data_.end()) {
       batch->Put(tag, CopyIntoNewEntityData(*iter->second));
     }
@@ -148,7 +200,7 @@ void DeviceInfoService::GetAllData(DataCallback callback) {
 
   syncer::SyncError error;
   scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
-  for (auto& kv : all_data_) {
+  for (const auto& kv : all_data_) {
     batch->Put(kv.first, CopyIntoNewEntityData(*kv.second));
   }
   callback.Run(error, std::move(batch));
@@ -169,7 +221,7 @@ bool DeviceInfoService::IsSyncing() const {
 
 scoped_ptr<DeviceInfo> DeviceInfoService::GetDeviceInfo(
     const std::string& client_id) const {
-  ClientIdToSpecifics::const_iterator iter = all_data_.find(client_id);
+  const ClientIdToSpecifics::const_iterator iter = all_data_.find(client_id);
   if (iter == all_data_.end()) {
     return scoped_ptr<DeviceInfo>();
   }

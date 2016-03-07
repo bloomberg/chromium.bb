@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "sync/api/data_batch.h"
+#include "sync/api/entity_data.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/model_type_store.h"
 #include "sync/internal_api/public/test/model_type_store_test_util.h"
@@ -29,6 +30,7 @@ using syncer_v2::DataBatch;
 using syncer_v2::EntityChange;
 using syncer_v2::EntityChangeList;
 using syncer_v2::EntityData;
+using syncer_v2::EntityDataMap;
 using syncer_v2::EntityDataPtr;
 using syncer_v2::MetadataBatch;
 using syncer_v2::MetadataChangeList;
@@ -95,6 +97,18 @@ void AssertExpectedFromDataBatch(
     expected.erase(iter);
   }
   ASSERT_TRUE(expected.empty());
+}
+
+// Creats an EntityData/EntityDataPtr around a copy of the given specifics.
+EntityDataPtr SpecificsToEntity(const DeviceInfoSpecifics& specifics) {
+  EntityData data;
+  // These tests do not care about the tag hash, but EntityData and friends
+  // cannot differentiate between the default EntityData object if the hash
+  // is unset, which causes pass/copy operations to no-op and things start to
+  // break, so we throw in a junk value and forget about it.
+  data.client_tag_hash = "junk";
+  *data.specifics.mutable_device_info() = specifics;
+  return data.PassToPtr();
 }
 
 // Instead of actually processing anything, simply accumulates all instructions
@@ -206,6 +220,13 @@ class DeviceInfoServiceTest : public testing::Test,
     return specifics;
   }
 
+  // Override to allow specific cache guids.
+  DeviceInfoSpecifics GenerateTestSpecifics(const std::string& guid) {
+    DeviceInfoSpecifics specifics(GenerateTestSpecifics());
+    specifics.set_cache_guid(guid);
+    return specifics;
+  }
+
   // Helper method to reduce duplicated code between tests. Wraps the given
   // specifics object in an EntityData and EntityChange of type ACTION_ADD, and
   // pushes them onto the given change list. The corresponding client tag the
@@ -213,15 +234,9 @@ class DeviceInfoServiceTest : public testing::Test,
   // service to generate the tag.
   std::string PushBackEntityChangeAdd(const DeviceInfoSpecifics& specifics,
                                       EntityChangeList* changes) {
-    EntityData data;
-    // These tests do not care about the tag hash, but EntityData and friends
-    // cannot differentiate between the default EntityData object if the hash
-    // is unset, which causes pass/copy operations to no-op and things start to
-    // break, so we throw in a junk value and forget about it.
-    data.client_tag_hash = "junk";
-    *data.specifics.mutable_device_info() = specifics;
-    const std::string tag = service()->GetClientTag(data);
-    changes->push_back(EntityChange::CreateAdd(tag, data.PassToPtr()));
+    EntityDataPtr ptr = SpecificsToEntity(specifics);
+    const std::string tag = service()->GetClientTag(ptr.value());
+    changes->push_back(EntityChange::CreateAdd(tag, ptr));
     return tag;
   }
 
@@ -537,8 +552,8 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesWithLocalGuid) {
   // The point of this test is to try to apply remote changes that have the same
   // cache guid as the local device. The service should ignore these changes
   // since only it should be performing writes on its data.
-  DeviceInfoSpecifics specifics = GenerateTestSpecifics();
-  specifics.set_cache_guid(local_device()->GetLocalDeviceInfo()->guid());
+  DeviceInfoSpecifics specifics =
+      GenerateTestSpecifics(local_device()->GetLocalDeviceInfo()->guid());
 
   EntityChangeList data_changes;
   const std::string tag = PushBackEntityChangeAdd(specifics, &data_changes);
@@ -558,6 +573,94 @@ TEST_F(DeviceInfoServiceTest, ApplyDeleteNonexistent) {
       service()->CreateMetadataChangeList(), delete_changes);
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(0, change_count());
+}
+
+TEST_F(DeviceInfoServiceTest, MergeBeforeInit) {
+  InitializeService();
+  const SyncError error = service()->MergeSyncData(
+      service()->CreateMetadataChangeList(), EntityDataMap());
+  EXPECT_TRUE(error.IsSet());
+  EXPECT_EQ(0, change_count());
+}
+
+TEST_F(DeviceInfoServiceTest, MergeEmpty) {
+  InitializeAndPump();
+  SetProcessorAndPump();
+  const SyncError error = service()->MergeSyncData(
+      service()->CreateMetadataChangeList(), EntityDataMap());
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_EQ(0, change_count());
+}
+
+TEST_F(DeviceInfoServiceTest, MergeWithData) {
+  const DeviceInfoSpecifics unique_local(GenerateTestSpecifics("unique_local"));
+  const DeviceInfoSpecifics conflict_local(GenerateTestSpecifics("conflict"));
+  DeviceInfoSpecifics conflict_remote(GenerateTestSpecifics("conflict"));
+  DeviceInfoSpecifics unique_remote(GenerateTestSpecifics("unique_remote"));
+
+  scoped_ptr<WriteBatch> batch = store()->CreateWriteBatch();
+  store()->WriteData(batch.get(), unique_local.cache_guid(),
+                     unique_local.SerializeAsString());
+  store()->WriteData(batch.get(), conflict_local.cache_guid(),
+                     conflict_local.SerializeAsString());
+  store()->CommitWriteBatch(std::move(batch),
+                            base::Bind(&AssertResultIsSuccess));
+
+  InitializeAndPump();
+  SetProcessorAndPump();
+
+  EntityDataMap remote_input;
+  remote_input[conflict_remote.cache_guid()] =
+      SpecificsToEntity(conflict_remote);
+  remote_input[unique_remote.cache_guid()] = SpecificsToEntity(unique_remote);
+
+  DataTypeState state;
+  state.set_encryption_key_name("ekn");
+  scoped_ptr<MetadataChangeList> metadata_changes(
+      service()->CreateMetadataChangeList());
+  metadata_changes->UpdateDataTypeState(state);
+
+  const SyncError error =
+      service()->MergeSyncData(std::move(metadata_changes), remote_input);
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_EQ(1, change_count());
+
+  // The remote should beat the local in conflict.
+  EXPECT_EQ(3u, service()->GetAllDeviceInfo().size());
+  AssertEqual(unique_local, *service()->GetDeviceInfo("unique_local").get());
+  AssertEqual(unique_remote, *service()->GetDeviceInfo("unique_remote").get());
+  AssertEqual(conflict_remote, *service()->GetDeviceInfo("conflict").get());
+
+  // Service should have told the processor about the existance of unique_local.
+  EXPECT_TRUE(processor()->delete_set().empty());
+  EXPECT_EQ(1u, processor()->put_map().size());
+  const auto& it = processor()->put_map().find("unique_local");
+  ASSERT_NE(processor()->put_map().end(), it);
+  AssertEqual(unique_local, it->second->specifics.device_info());
+
+  // TODO(skym): Uncomment once SimpleMetadataChangeList::TransferChanges is
+  // implemented.
+  // ASSERT_EQ(state.encryption_key_name(),
+  // processor()->metadata()->GetDataTypeState().encryption_key_name());
+}
+
+TEST_F(DeviceInfoServiceTest, MergeLocalGuid) {
+  InitializeAndPump();
+  SetProcessorAndPump();
+
+  // Service should ignore this because it uses the local device's guid.
+  DeviceInfoSpecifics specifics(
+      GenerateTestSpecifics(local_device()->GetLocalDeviceInfo()->guid()));
+  EntityDataMap remote_input;
+  remote_input[specifics.cache_guid()] = SpecificsToEntity(specifics);
+
+  const SyncError error = service()->MergeSyncData(
+      service()->CreateMetadataChangeList(), remote_input);
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_EQ(0, change_count());
+  EXPECT_TRUE(service()->GetAllDeviceInfo().empty());
+  EXPECT_TRUE(processor()->delete_set().empty());
+  EXPECT_TRUE(processor()->put_map().empty());
 }
 
 }  // namespace

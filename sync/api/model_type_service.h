@@ -38,8 +38,19 @@ class SYNC_EXPORT ModelTypeService {
   // model type store.
   virtual scoped_ptr<MetadataChangeList> CreateMetadataChangeList() = 0;
 
-  // Perform the initial merge of data from the sync server. Should only need
-  // to be called when sync is first turned on, not on every restart.
+  // Perform the initial merge between local and sync data. This should only be
+  // called when a data type is first enabled to start syncing, and there is no
+  // sync metadata. Best effort should be made to match local and sync data. The
+  // keys in the |entity_data_map| will have been created via GetClientTag(...),
+  // and if a local and sync data should match/merge but disagree on tags, the
+  // service should use the sync data's tag. Any local pieces of data that are
+  // not present in sync should immediately be Put(...) to the processor before
+  // returning. The same MetadataChangeList that was passed into this function
+  // can be passed to Put(...) calls. Delete(...) can also be called but should
+  // not be needed for most model types. Durable storage writes, if not able to
+  // combine all change atomically, should save the metadata after the data
+  // changes, so that this merge will be re-driven by sync if is not completely
+  // saved during the current run.
   virtual syncer::SyncError MergeSyncData(
       scoped_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) = 0;
