@@ -18,8 +18,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallba
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -38,7 +36,8 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
     private static final String TAG = "OfflinePageUtilsTest";
     private static final String TEST_PAGE = "/chrome/test/data/android/about.html";
     private static final int TIMEOUT_MS = 5000;
-    private static final BookmarkId BOOKMARK_ID = new BookmarkId(1234, BookmarkType.NORMAL);
+    private static final ClientId BOOKMARK_ID =
+            new ClientId(OfflinePageBridge.BOOKMARK_NAMESPACE, "1234");
 
     private OfflinePageBridge mOfflinePageBridge;
     private EmbeddedTestServer mTestServer;

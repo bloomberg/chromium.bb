@@ -5,25 +5,26 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.bookmarks.BookmarkType;
 
 /**
  * Simple object representing an offline page.
  */
 public class OfflinePageItem {
     private final String mUrl;
-    private final BookmarkId mBookmarId;
+    private final long mOfflineId;
+    private final ClientId mClientId;
     private final String mOfflineUrl;
     private final long mFileSize;
     private final long mCreationTimeMs;
     private final int mAccessCount;
     private final long mLastAccessTimeMs;
 
-    public OfflinePageItem(String url, long bookmarkId, String offlineUrl, long fileSize,
-            long creationTimeMs, int accessCount, long lastAccessTimeMs) {
+    public OfflinePageItem(String url, long offlineId, String clientNamespace, String clientId,
+            String offlineUrl, long fileSize, long creationTimeMs, int accessCount,
+            long lastAccessTimeMs) {
         mUrl = url;
-        mBookmarId = new BookmarkId(bookmarkId, BookmarkType.NORMAL);
+        mOfflineId = offlineId;
+        mClientId = new ClientId(clientNamespace, clientId);
         mOfflineUrl = offlineUrl;
         mFileSize = fileSize;
         mCreationTimeMs = creationTimeMs;
@@ -37,10 +38,16 @@ public class OfflinePageItem {
         return mUrl;
     }
 
-    /** @return Bookmark Id related to the offline page. */
+    /** @return offline id for this offline page. */
     @VisibleForTesting
-    public BookmarkId getBookmarkId() {
-        return mBookmarId;
+    public long getOfflineId() {
+        return mOfflineId;
+    }
+
+    /** @return Client Id related to the offline page. */
+    @VisibleForTesting
+    public ClientId getClientId() {
+        return mClientId;
     }
 
     /** @return Path to the offline copy of the page. */
@@ -50,7 +57,6 @@ public class OfflinePageItem {
     }
 
     /** @return Size of the offline copy of the page. */
-    @VisibleForTesting
     public long getFileSize() {
         return mFileSize;
     }

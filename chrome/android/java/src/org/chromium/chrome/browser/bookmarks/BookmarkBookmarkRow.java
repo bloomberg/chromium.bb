@@ -18,6 +18,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -90,7 +91,8 @@ public class BookmarkBookmarkRow extends BookmarkRow implements LargeIconCallbac
         OfflinePageItem offlinePage = null;
         OfflinePageBridge bridge = mDelegate.getModel().getOfflinePageBridge();
         if (mDelegate.getCurrentState() == BookmarkUIState.STATE_FILTER && bridge != null) {
-            offlinePage = bridge.getPageByBookmarkId(bookmarkId);
+            offlinePage =
+                    bridge.getPageByClientId(ClientId.createClientIdForBookmarkId(bookmarkId));
         }
         TextView textView = (TextView) findViewById(R.id.offline_page_size);
         View bookmarkRowView = findViewById(R.id.bookmark_row);

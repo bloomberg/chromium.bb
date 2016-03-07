@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkPromoHeader.PromoHeaderShowingChangeListener;
+import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageFreeUpSpaceCallback;
@@ -282,9 +283,10 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 }
 
                 @Override
-                public void offlinePageDeleted(BookmarkId bookmarkId) {
+                public void offlinePageDeleted(long offlineId, ClientId clientId) {
                     if (mDelegate.getCurrentState() == BookmarkUIState.STATE_FILTER) {
-                        int deletedPosition = getPositionForBookmark(bookmarkId);
+                        BookmarkId id = BookmarkModel.getBookmarkIdForOfflineClientId(clientId);
+                        int deletedPosition = getPositionForBookmark(id);
                         if (deletedPosition >= 0) {
                             removeItem(deletedPosition);
                         }

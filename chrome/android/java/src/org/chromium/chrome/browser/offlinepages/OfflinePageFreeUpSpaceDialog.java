@@ -17,7 +17,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCallback;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +88,7 @@ public class OfflinePageFreeUpSpaceDialog
             return;
         }
 
-        mOfflinePageBridge.deletePages(getBookmarkIdsToDelete(), new DeletePageCallback() {
+        mOfflinePageBridge.deletePages(getOfflineIdsToDelete(), new DeletePageCallback() {
             @Override
             public void onDeletePageDone(int deletePageResult) {
                 RecordUserAction.record("OfflinePages.FreeUpSpaceDialogButtonClicked");
@@ -98,13 +97,13 @@ public class OfflinePageFreeUpSpaceDialog
         });
     }
 
-    /** Returns a list of Bookmark IDs for which the offline pages will be deleted. */
-    private List<BookmarkId> getBookmarkIdsToDelete() {
-        List<BookmarkId> bookmarkIds = new ArrayList<BookmarkId>();
+    /** Returns a list of IDs for which the offline pages will be deleted. */
+    private List<Long> getOfflineIdsToDelete() {
+        List<Long> offlineIds = new ArrayList<>();
         for (OfflinePageItem offlinePage : mOfflinePagesToDelete) {
-            bookmarkIds.add(offlinePage.getBookmarkId());
+            offlineIds.add(offlinePage.getOfflineId());
         }
-        return bookmarkIds;
+        return offlineIds;
     }
 
     /** Returns a total size of offline pages that will be deleted. */
