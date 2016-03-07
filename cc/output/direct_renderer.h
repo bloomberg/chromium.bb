@@ -110,6 +110,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
                      DrawingFrame* frame,
                      const gfx::Rect& render_pass_scissor,
                      bool use_render_pass_scissor);
+  void DrawRenderPassAndExecuteCopyRequests(DrawingFrame* frame,
+                                            RenderPass* render_pass);
   void DrawRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
   bool UseRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
 

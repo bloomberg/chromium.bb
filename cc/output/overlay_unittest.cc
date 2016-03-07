@@ -403,19 +403,14 @@ TEST_F(SingleOverlayOnTopTest, SuccessfulOverlay) {
   CreateFullscreenOpaqueQuad(resource_provider_.get(),
                              pass->shared_quad_state_list.back(), pass.get());
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-
-  ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
 
-  RenderPass* main_pass = pass_list.back().get();
+  RenderPass* main_pass = pass.get();
   // Check that the quad is gone.
   EXPECT_EQ(2U, main_pass->quad_list.size());
   const QuadList& quad_list = main_pass->quad_list;
@@ -442,9 +437,6 @@ TEST_F(SingleOverlayOnTopTest, DamageRect) {
   CreateFullscreenOpaqueQuad(resource_provider_.get(),
                              pass->shared_quad_state_list.back(), pass.get());
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
 
@@ -456,7 +448,7 @@ TEST_F(SingleOverlayOnTopTest, DamageRect) {
   output_surface_plane.overlay_handled = true;
   candidate_list.push_back(output_surface_plane);
 
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
   DCHECK(damage_rect_.IsEmpty());
@@ -476,9 +468,9 @@ TEST_F(SingleOverlayOnTopTest, NoCandidates) {
   RenderPass::CopyAll(pass_list, &original_pass_list);
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
-                                         &candidate_list, nullptr,
-                                         &damage_rect_);
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), pass_list.back().get(), &candidate_list,
+      nullptr, &damage_rect_);
   EXPECT_EQ(0U, candidate_list.size());
   // There should be nothing new here.
   CompareRenderPassLists(pass_list, original_pass_list);
@@ -502,9 +494,9 @@ TEST_F(SingleOverlayOnTopTest, OccludedCandidates) {
   RenderPass::CopyAll(pass_list, &original_pass_list);
 
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
-                                         &candidate_list, nullptr,
-                                         &damage_rect_);
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), pass_list.back().get(), &candidate_list,
+      nullptr, &damage_rect_);
   EXPECT_EQ(0U, candidate_list.size());
   // There should be nothing new here.
   CompareRenderPassLists(pass_list, original_pass_list);
@@ -512,9 +504,6 @@ TEST_F(SingleOverlayOnTopTest, OccludedCandidates) {
 
 // Test with multiple render passes.
 TEST_F(SingleOverlayOnTopTest, MultipleRenderPasses) {
-  RenderPassList pass_list;
-  pass_list.push_back(CreateRenderPass());
-
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateQuad(resource_provider_.get(),
                                 pass->shared_quad_state_list.back(),
@@ -526,20 +515,12 @@ TEST_F(SingleOverlayOnTopTest, MultipleRenderPasses) {
   CreateFullscreenOpaqueQuad(resource_provider_.get(),
                              pass->shared_quad_state_list.back(), pass.get());
 
-  pass_list.push_back(std::move(pass));
-
-  RenderPassList original_pass_list;
-  RenderPass::CopyAll(pass_list, &original_pass_list);
-
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
   EXPECT_EQ(1U, candidate_list.size());
-
-  // This should be the same.
-  ASSERT_EQ(2U, pass_list.size());
 }
 
 TEST_F(SingleOverlayOnTopTest, RejectPremultipliedAlpha) {
@@ -550,13 +531,10 @@ TEST_F(SingleOverlayOnTopTest, RejectPremultipliedAlpha) {
                                     pass.get());
   quad->premultiplied_alpha = true;
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
 
@@ -568,13 +546,10 @@ TEST_F(SingleOverlayOnTopTest, RejectBlending) {
                                     pass.get());
   quad->needs_blending = true;
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
 
@@ -586,13 +561,10 @@ TEST_F(SingleOverlayOnTopTest, RejectBackgroundColor) {
                                     pass.get());
   quad->background_color = SK_ColorBLACK;
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
 
@@ -603,13 +575,10 @@ TEST_F(SingleOverlayOnTopTest, RejectBlendMode) {
                                 pass.get());
   pass->shared_quad_state_list.back()->blend_mode = SkXfermode::kScreen_Mode;
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
 
@@ -620,13 +589,10 @@ TEST_F(SingleOverlayOnTopTest, RejectOpacity) {
                                 pass.get());
   pass->shared_quad_state_list.back()->opacity = 0.5f;
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
 
@@ -638,13 +604,10 @@ TEST_F(SingleOverlayOnTopTest, RejectNonAxisAlignedTransform) {
   pass->shared_quad_state_list.back()
       ->quad_to_target_transform.RotateAboutXAxis(45.f);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
 
@@ -656,13 +619,10 @@ TEST_F(SingleOverlayOnTopTest, AllowClipped) {
   pass->shared_quad_state_list.back()->is_clipped = true;
   pass->shared_quad_state_list.back()->clip_rect = kOverlayClipRect;
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
 
@@ -675,14 +635,10 @@ TEST_F(SingleOverlayOnTopTest, AllowVerticalFlip) {
                         pass->shared_quad_state_list.back(), pass.get(), rect);
   pass->shared_quad_state_list.back()->quad_to_target_transform.Scale(2.0f,
                                                                       -1.0f);
-
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL,
             candidate_list.back().transform);
@@ -698,13 +654,10 @@ TEST_F(SingleOverlayOnTopTest, AllowHorizontalFlip) {
   pass->shared_quad_state_list.back()->quad_to_target_transform.Scale(-1.0f,
                                                                       2.0f);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL,
             candidate_list.back().transform);
@@ -718,14 +671,10 @@ TEST_F(SingleOverlayOnTopTest, AllowPositiveScaleTransform) {
                         pass->shared_quad_state_list.back(), pass.get(), rect);
   pass->shared_quad_state_list.back()->quad_to_target_transform.Scale(2.0f,
                                                                       1.0f);
-
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
 
@@ -738,13 +687,10 @@ TEST_F(SingleOverlayOnTopTest, Allow90DegreeRotation) {
   pass->shared_quad_state_list.back()
       ->quad_to_target_transform.RotateAboutZAxis(90.f);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90, candidate_list.back().transform);
 }
@@ -758,13 +704,10 @@ TEST_F(SingleOverlayOnTopTest, Allow180DegreeRotation) {
   pass->shared_quad_state_list.back()
       ->quad_to_target_transform.RotateAboutZAxis(180.f);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_180, candidate_list.back().transform);
 }
@@ -778,13 +721,10 @@ TEST_F(SingleOverlayOnTopTest, Allow270DegreeRotation) {
   pass->shared_quad_state_list.back()
       ->quad_to_target_transform.RotateAboutZAxis(270.f);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_270, candidate_list.back().transform);
 }
@@ -799,17 +739,10 @@ TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
                         pass.get(),
                         kOverlayBottomRightRect);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
-  RenderPassList original_pass_list;
-  RenderPass::CopyAll(pass_list, &original_pass_list);
-
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
 
@@ -824,17 +757,10 @@ TEST_F(SingleOverlayOnTopTest, AllowTransparentOnTop) {
   CreateCandidateQuadAt(resource_provider_.get(), shared_state, pass.get(),
                         kOverlayBottomRightRect);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
-  RenderPassList original_pass_list;
-  RenderPass::CopyAll(pass_list, &original_pass_list);
-
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
 
@@ -847,17 +773,10 @@ TEST_F(SingleOverlayOnTopTest, AllowTransparentColorOnTop) {
                         pass->shared_quad_state_list.back(), pass.get(),
                         kOverlayBottomRightRect);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
-  RenderPassList original_pass_list;
-  RenderPass::CopyAll(pass_list, &original_pass_list);
-
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
 
@@ -872,17 +791,10 @@ TEST_F(SingleOverlayOnTopTest, RejectOpaqueColorOnTop) {
   CreateCandidateQuadAt(resource_provider_.get(), shared_state, pass.get(),
                         kOverlayBottomRightRect);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
-  RenderPassList original_pass_list;
-  RenderPass::CopyAll(pass_list, &original_pass_list);
-
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
 
@@ -895,17 +807,10 @@ TEST_F(SingleOverlayOnTopTest, RejectTransparentColorOnTopWithoutBlending) {
   CreateCandidateQuadAt(resource_provider_.get(), shared_state, pass.get(),
                         kOverlayBottomRightRect);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
-  RenderPassList original_pass_list;
-  RenderPass::CopyAll(pass_list, &original_pass_list);
-
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  EXPECT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
 
@@ -915,13 +820,10 @@ TEST_F(SingleOverlayOnTopTest, RejectVideoSwapTransform) {
                                      pass->shared_quad_state_list.back(),
                                      pass.get(), kSwapTransform);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(0U, candidate_list.size());
 }
 
@@ -931,13 +833,10 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoXMirrorTransform) {
                                      pass->shared_quad_state_list.back(),
                                      pass.get(), kXMirrorTransform);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
 
@@ -947,13 +846,10 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoBothMirrorTransform) {
                                      pass->shared_quad_state_list.back(),
                                      pass.get(), kBothMirrorTransform);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
 
@@ -963,13 +859,10 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoNormalTransform) {
                                      pass->shared_quad_state_list.back(),
                                      pass.get(), kNormalTransform);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
 
@@ -979,13 +872,10 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoYMirrorTransform) {
                                      pass->shared_quad_state_list.back(),
                                      pass.get(), kYMirrorTransform);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  ASSERT_EQ(1U, pass_list.size());
   EXPECT_EQ(1U, candidate_list.size());
 }
 
@@ -997,19 +887,15 @@ TEST_F(UnderlayTest, OverlayLayerUnderMainLayer) {
                         pass->shared_quad_state_list.back(), pass.get(),
                         kOverlayBottomRightRect);
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  EXPECT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
-  EXPECT_EQ(2U, pass_list[0]->quad_list.size());
+  EXPECT_EQ(2U, pass->quad_list.size());
   // The overlay quad should have changed to a SOLID_COLOR quad.
-  EXPECT_EQ(pass_list[0]->quad_list.back()->material, DrawQuad::SOLID_COLOR);
+  EXPECT_EQ(pass->quad_list.back()->material, DrawQuad::SOLID_COLOR);
 }
 
 TEST_F(UnderlayTest, AllowOnTop) {
@@ -1021,18 +907,14 @@ TEST_F(UnderlayTest, AllowOnTop) {
   CreateFullscreenOpaqueQuad(resource_provider_.get(),
                              pass->shared_quad_state_list.back(), pass.get());
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
-  EXPECT_EQ(1U, pass_list.size());
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
   // The overlay quad should have changed to a SOLID_COLOR quad.
-  EXPECT_EQ(pass_list[0]->quad_list.front()->material, DrawQuad::SOLID_COLOR);
+  EXPECT_EQ(pass->quad_list.front()->material, DrawQuad::SOLID_COLOR);
 }
 
 // The first time an underlay is scheduled its damage must not be subtracted.
@@ -1044,11 +926,8 @@ TEST_F(UnderlayTest, InitialUnderlayDamageNotSubtracted) {
 
   damage_rect_ = kOverlayRect;
 
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
   OverlayCandidateList candidate_list;
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &candidate_list, nullptr,
                                          &damage_rect_);
 
@@ -1070,10 +949,8 @@ TEST_F(UnderlayTest, DamageSubtractedForConsecutiveIdenticalUnderlays) {
     CreateFullscreenOpaqueQuad(resource_provider_.get(),
                                pass->shared_quad_state_list.back(), pass.get());
 
-    RenderPassList pass_list;
-    pass_list.push_back(std::move(pass));
     OverlayCandidateList candidate_list;
-    overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+    overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                            &candidate_list, nullptr,
                                            &damage_rect_);
   }
@@ -1096,10 +973,8 @@ TEST_F(UnderlayTest, DamageNotSubtractedForNonIdenticalConsecutiveUnderlays) {
 
     damage_rect_ = overlay_rects[i];
 
-    RenderPassList pass_list;
-    pass_list.push_back(std::move(pass));
     OverlayCandidateList candidate_list;
-    overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+    overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                            &candidate_list, nullptr,
                                            &damage_rect_);
 
@@ -1119,10 +994,8 @@ TEST_F(UnderlayTest, DamageNotSubtractedWhenQuadsAboveOverlap) {
 
     damage_rect_ = kOverlayRect;
 
-    RenderPassList pass_list;
-    pass_list.push_back(std::move(pass));
     OverlayCandidateList candidate_list;
-    overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+    overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                            &candidate_list, nullptr,
                                            &damage_rect_);
   }
@@ -1143,10 +1016,8 @@ TEST_F(UnderlayTest, DamageSubtractedWhenQuadsAboveDontOverlap) {
 
     damage_rect_ = kOverlayBottomRightRect;
 
-    RenderPassList pass_list;
-    pass_list.push_back(std::move(pass));
     OverlayCandidateList candidate_list;
-    overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+    overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                            &candidate_list, nullptr,
                                            &damage_rect_);
   }
@@ -1175,16 +1046,12 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
       ->quad_to_target_transform.RotateAboutZAxis(45.f);
 
   gfx::Rect damage_rect;
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(
-      BackbufferOverlayList(pass_list.back().get()));
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
-  ASSERT_EQ(1U, pass_list.size());
-  EXPECT_EQ(0U, pass_list.back()->quad_list.size());
+  EXPECT_EQ(0U, pass->quad_list.size());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
@@ -1199,16 +1066,11 @@ TEST_F(CALayerOverlayTest, ThreeDTransform) {
       ->quad_to_target_transform.RotateAboutXAxis(45.f);
 
   gfx::Rect damage_rect;
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(
-      BackbufferOverlayList(pass_list.back().get()));
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
-  ASSERT_EQ(1U, pass_list.size());
-  EXPECT_EQ(0U, pass_list.back()->quad_list.size());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
   gfx::Transform expected_transform;
@@ -1227,16 +1089,12 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
   pass->shared_quad_state_list.back()->clip_rect = kOverlayRect;
 
   gfx::Rect damage_rect;
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(
-      BackbufferOverlayList(pass_list.back().get()));
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
-  ASSERT_EQ(1U, pass_list.size());
-  EXPECT_EQ(0U, pass_list.back()->quad_list.size());
+  EXPECT_EQ(0U, pass->quad_list.size());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
@@ -1251,17 +1109,12 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
   pass->shared_quad_state_list.back()->clip_rect = gfx::Rect(64, 64, 128, 128);
 
   gfx::Rect damage_rect;
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(
-      BackbufferOverlayList(pass_list.back().get()));
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
-
-  ASSERT_EQ(1U, pass_list.size());
-  EXPECT_EQ(0U, pass_list.back()->quad_list.size());
+  EXPECT_EQ(0U, pass->quad_list.size());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
   EXPECT_TRUE(ca_layer_list.back().is_clipped);
@@ -1277,16 +1130,12 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
   pass->shared_quad_state_list.back()->opacity = 0;
 
   gfx::Rect damage_rect;
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(
-      BackbufferOverlayList(pass_list.back().get()));
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
-  ASSERT_EQ(1U, pass_list.size());
-  EXPECT_EQ(0U, pass_list.back()->quad_list.size());
+  EXPECT_EQ(0U, pass->quad_list.size());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(0U, ca_layer_list.size());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());

@@ -26,7 +26,7 @@ class CC_EXPORT OverlayProcessor {
     // and adds any additional passes necessary to represent overlays to
     // |render_passes|.
     virtual bool Attempt(ResourceProvider* resource_provider,
-                         RenderPassList* render_passes,
+                         RenderPass* render_pass,
                          OverlayCandidateList* candidates) = 0;
   };
   using StrategyList = std::vector<scoped_ptr<Strategy>>;
@@ -38,14 +38,13 @@ class CC_EXPORT OverlayProcessor {
 
   gfx::Rect GetAndResetOverlayDamage();
 
+  // Attempt to replace quads from the specified root render pass with overlays
+  // or CALayers. This must be called every frame.
   void ProcessForOverlays(ResourceProvider* resource_provider,
-                          RenderPassList* render_passes,
+                          RenderPass* root_render_pass,
                           OverlayCandidateList* overlay_candidates,
                           CALayerOverlayList* ca_layer_overlays,
                           gfx::Rect* damage_rect);
-
-  // Notify the processor that ProcessForOverlays is being skipped this frame.
-  void SkipProcessForOverlays();
 
  protected:
   StrategyList strategies_;
@@ -55,7 +54,7 @@ class CC_EXPORT OverlayProcessor {
 
  private:
   bool ProcessForCALayers(ResourceProvider* resource_provider,
-                          RenderPassList* render_passes,
+                          RenderPass* render_pass,
                           OverlayCandidateList* overlay_candidates,
                           CALayerOverlayList* ca_layer_overlays,
                           gfx::Rect* damage_rect);

@@ -20,9 +20,9 @@ OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
 OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
 bool OverlayStrategySingleOnTop::Attempt(ResourceProvider* resource_provider,
-                                         RenderPassList* render_passes,
+                                         RenderPass* render_pass,
                                          OverlayCandidateList* candidate_list) {
-  QuadList* quad_list = &render_passes->back()->quad_list;
+  QuadList* quad_list = &render_pass->quad_list;
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
     if (OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate) &&

@@ -1958,7 +1958,7 @@ class TestOverlayProcessor : public OverlayProcessor {
     ~Strategy() override {}
     MOCK_METHOD3(Attempt,
                  bool(ResourceProvider* resource_provider,
-                      RenderPassList* render_passes,
+                      RenderPass* render_pass,
                       OverlayCandidateList* candidates));
   };
 

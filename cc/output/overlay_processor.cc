@@ -34,57 +34,59 @@ gfx::Rect OverlayProcessor::GetAndResetOverlayDamage() {
 
 bool OverlayProcessor::ProcessForCALayers(
     ResourceProvider* resource_provider,
-    RenderPassList* render_passes,
+    RenderPass* render_pass,
     OverlayCandidateList* overlay_candidates,
     CALayerOverlayList* ca_layer_overlays,
     gfx::Rect* damage_rect) {
-  RenderPass* root_render_pass = render_passes->back().get();
-
   OverlayCandidateValidator* overlay_validator =
       surface_->GetOverlayCandidateValidator();
   if (!overlay_validator || !overlay_validator->AllowCALayerOverlays())
     return false;
 
-  if (!ProcessForCALayerOverlays(
-          resource_provider, gfx::RectF(root_render_pass->output_rect),
-          root_render_pass->quad_list, ca_layer_overlays))
+  if (!ProcessForCALayerOverlays(resource_provider,
+                                 gfx::RectF(render_pass->output_rect),
+                                 render_pass->quad_list, ca_layer_overlays))
     return false;
 
   // CALayer overlays are all-or-nothing. If all quads were replaced with
   // layers then clear the list and remove the backbuffer from the overcandidate
   // list.
   overlay_candidates->clear();
-  render_passes->back()->quad_list.clear();
-  overlay_damage_rect_ = root_render_pass->output_rect;
+  render_pass->quad_list.clear();
+  overlay_damage_rect_ = render_pass->output_rect;
   *damage_rect = gfx::Rect();
   return true;
 }
 
 void OverlayProcessor::ProcessForOverlays(ResourceProvider* resource_provider,
-                                          RenderPassList* render_passes,
+                                          RenderPass* render_pass,
                                           OverlayCandidateList* candidates,
                                           CALayerOverlayList* ca_layer_overlays,
                                           gfx::Rect* damage_rect) {
+  // If we have any copy requests, we can't remove any quads for overlays or
+  // CALayers because the framebuffer would be missing the removed quads'
+  // contents.
+  if (!render_pass->copy_requests.empty()) {
+    // If overlay processing was skipped for a frame there's no way to be sure
+    // of the state of the previous frame, so reset.
+    previous_frame_underlay_rect_ = gfx::Rect();
+    return;
+  }
+
   // First attempt to process for CALayers.
-  if (ProcessForCALayers(resource_provider, render_passes, candidates,
+  if (ProcessForCALayers(resource_provider, render_pass, candidates,
                          ca_layer_overlays, damage_rect)) {
     return;
   }
 
   // Only if that fails, attempt hardware overlay strategies.
   for (const auto& strategy : strategies_) {
-    if (!strategy->Attempt(resource_provider, render_passes, candidates))
+    if (!strategy->Attempt(resource_provider, render_pass, candidates))
       continue;
 
     UpdateDamageRect(candidates, damage_rect);
     return;
   }
-}
-
-void OverlayProcessor::SkipProcessForOverlays() {
-  // If overlay processing was skipped for a frame there's no way to be sure
-  // of the state of the previous frame, so reset.
-  previous_frame_underlay_rect_ = gfx::Rect();
 }
 
 // Subtract on-top overlays from the damage rect, unless the overlays use

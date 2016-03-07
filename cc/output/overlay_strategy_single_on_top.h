@@ -19,7 +19,7 @@ class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
   ~OverlayStrategySingleOnTop() override;
 
   bool Attempt(ResourceProvider* resource_provider,
-               RenderPassList* render_passes,
+               RenderPass* render_pass,
                OverlayCandidateList* candidate_list) override;
 
  private:

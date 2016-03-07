@@ -24,7 +24,7 @@ class CC_EXPORT OverlayStrategyUnderlay : public OverlayProcessor::Strategy {
   ~OverlayStrategyUnderlay() override;
 
   bool Attempt(ResourceProvider* resource_provider,
-               RenderPassList* render_passes,
+               RenderPass* render_pass,
                OverlayCandidateList* candidate_list) override;
 
  private:
