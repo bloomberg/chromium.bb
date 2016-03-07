@@ -273,6 +273,8 @@ bool RecentTabsSubMenuModel::GetAcceleratorForCommandId(
 }
 
 void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction",
+                             menu_opened_timer_.Elapsed());
   if (command_id == IDC_SHOW_HISTORY) {
     UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu", SHOW_MORE,
                               LIMIT_RECENT_TAB_ACTION);
