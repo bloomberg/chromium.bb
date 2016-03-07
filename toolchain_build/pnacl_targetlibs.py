@@ -694,7 +694,6 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
     setjmp_arch = setjmp_arch[:-len('-nonsfi')]
   bias_arch = TranslatorArchToBiasArch(arch)
   translator_lib_dir = os.path.join('translator', arch, 'lib')
-  has_nacl_clang = arch in ['arm', 'x86-32', 'x86-64']
 
   arch_cmds = []
   if arch == 'arm':
@@ -711,22 +710,21 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
          BuildTargetTranslatorCmd('entry_linux_arm.S', 'entry_linux_asm.o',
                                   arch)])
 
-  # For arches with nacl-clang, we take the native newlib implementation of
-  # these functions, which are optimized assembly. Otherwise we build a
-  # C implementation.
-  if has_nacl_clang:
+  if not IsNonSFIArch(arch):
     def ClangLib(lib):
       return GSDJoin(lib, bias_arch)
     clang_deps = [ ClangLib('newlib'), ClangLib('libs_support') ]
     # Extract the object files from the newlib archive into our working dir.
     # libcrt_platform.a is later created by archiving all the object files
     # there.
+    crt_objs = ['memmove', 'memcmp', 'memset', 'memcpy']
+    if arch == 'mips32':
+      crt_objs.extend(['memset-stub', 'memcpy-stub'])
     libcrt_platform_string_cmds = [command.Command([
         PnaclTool('ar'), 'x',
         os.path.join('%(' + ClangLib('newlib') + ')s',
                      MultilibLibDir(bias_arch), 'libcrt_common.a'),
-        ] + ['lib_a-%s.o' % f
-             for f in ['memcpy', 'memset', 'memmove', 'memcmp']])]
+        ] + ['lib_a-%s.o' % f for f in crt_objs])]
     # Copy compiler_rt from nacl-clang
     clang_libdir = os.path.join(
         'lib', 'clang', CLANG_VER, 'lib', TripleFromArch(bias_arch))
@@ -736,11 +734,7 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
         os.path.join('%(output)s', 'libgcc.a'))]
   else:
     clang_deps = []
-    extra_flags = []
-    if IsNonSFIArch(arch):
-      extra_flags.extend(NonSFITargetLibCflags(bias_arch).split())
-    else:
-      extra_flags.extend(BiasedBitcodeTargetFlag(bias_arch))
+    extra_flags = NonSFITargetLibCflags(bias_arch).split()
     libcrt_platform_string_cmds = [BuildTargetTranslatorCmd(
         'string.c', 'string.o', arch, ['-std=c99'],
         source_dir='%(newlib_subset)s')]
