@@ -498,7 +498,7 @@ void ThreadState::threadLocalWeakProcessing()
 
     if (isMainThread()) {
         double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - startTime;
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForWeakHistogram, ("BlinkGC.timeForThreadLocalWeakProcessing", 1, 10 * 1000, 50));
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForWeakHistogram, ("BlinkGC.TimeForThreadLocalWeakProcessing", 1, 10 * 1000, 50));
         timeForWeakHistogram.count(timeForThreadLocalWeakProcessing);
     }
 }

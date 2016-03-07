@@ -528,7 +528,7 @@ void Heap::globalWeakProcessing(Visitor* visitor)
     ASSERT(s_markingStack->isEmpty());
 
     double timeForGlobalWeakProcessing = WTF::currentTimeMS() - startTime;
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, globalWeakTimeHistogram, new CustomCountHistogram("BlinkGC.TimeForGlobalWeakPrcessing", 1, 10 * 1000, 50));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, globalWeakTimeHistogram, new CustomCountHistogram("BlinkGC.TimeForGlobalWeakProcessing", 1, 10 * 1000, 50));
     globalWeakTimeHistogram.count(timeForGlobalWeakProcessing);
 }
 
