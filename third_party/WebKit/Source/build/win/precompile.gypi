@@ -33,9 +33,10 @@
   'conditions': [
       ['OS=="win" and chromium_win_pch==1', {
           'target_defaults': {
-              'msvs_precompiled_header': '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.h',
+              'msvs_precompiled_header': 'third_party/WebKit/Source/build/win/Precompile.h',
               'msvs_precompiled_source': '<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp',
               'sources': ['<(DEPTH)/third_party/WebKit/Source/build/win/Precompile.cpp'],
+              'include_dirs': [ '<(DEPTH)' ],
           }
       }],
   ],
