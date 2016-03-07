@@ -50,7 +50,6 @@
       'app/nibs/Toolbar.xib',
     ],  # mac_translated_xibs
     'mac_untranslated_xibs': [
-      'app/nibs/ActionBoxMenuItem.xib',
       'app/nibs/BookmarkBarFolderWindow.xib',
       'app/nibs/DevicePermissionsPrompt.xib',
       'app/nibs/ExtensionInstalledBubbleBundle.xib',
