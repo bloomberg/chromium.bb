@@ -1,0 +1,2 @@
+[libfuzzer]
+max_len = random(4, 32)

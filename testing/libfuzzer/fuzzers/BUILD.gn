@@ -311,3 +311,14 @@ fuzzer_test("third_party_re2_fuzzer") {
   ]
   libfuzzer_options = "re2_fuzzer.options"
 }
+
+fuzzer_test("libxml_xml_regexp_compile_fuzzer") {
+  sources = [
+    "libxml_xml_regexp_compile_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/libxml",
+  ]
+  libfuzzer_options = "libxml_xml_regexp_compile_fuzzer.options"
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+}
