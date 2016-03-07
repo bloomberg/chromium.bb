@@ -3270,7 +3270,8 @@ SubclassWindowHelper* SubclassWindowHelper::instance_ = nullptr;
 // 1. Posting a WM_NCMOUSEMOVE message for a different location.
 // 2. Posting a WM_NCMOUSEMOVE message with a different hittest code.
 // 3. Posting a WM_MOUSEMOVE message.
-TEST_F(WidgetTest, SysCommandMoveOnNCLButtonDownOnCaptionAndMoveTest) {
+// Disabled because of flaky timeouts: http://crbug.com/592742
+TEST_F(WidgetTest, DISABLED_SysCommandMoveOnNCLButtonDownOnCaptionAndMoveTest) {
   Widget widget;
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -3343,7 +3344,8 @@ TEST_F(WidgetTest, SysCommandMoveOnNCLButtonDownOnCaptionAndMoveTest) {
 
 // This test validates that destroying the window in the context of the
 // WM_SYSCOMMAND message with SC_MOVE does not crash.
-TEST_F(WidgetTest, DestroyInSysCommandNCLButtonDownOnCaption) {
+// Disabled because of flaky timeouts: http://crbug.com/592742
+TEST_F(WidgetTest, DISABLED_DestroyInSysCommandNCLButtonDownOnCaption) {
   Widget widget;
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
