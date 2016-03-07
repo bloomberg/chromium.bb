@@ -2325,7 +2325,7 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
   AlternativeServiceInfoVector alternative_service_info_vector;
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service1, 1.0, expiration));
+      AlternativeServiceInfo(alternative_service1, expiration));
 
   http_server_properties_.SetAlternativeServices(
       host_port_pair_, alternative_service_info_vector);
@@ -3398,7 +3398,7 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   AlternativeServiceInfoVector alternative_service_info_vector;
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service1, 1.0, expiration));
+      AlternativeServiceInfo(alternative_service1, expiration));
 
   http_server_properties_.SetAlternativeServices(
       host_port_pair_, alternative_service_info_vector);

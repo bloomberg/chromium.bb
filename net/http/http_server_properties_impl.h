@@ -90,7 +90,6 @@ class NET_EXPORT HttpServerPropertiesImpl
       const HostPortPair& origin) override;
   bool SetAlternativeService(const HostPortPair& origin,
                              const AlternativeService& alternative_service,
-                             double alternative_probability,
                              base::Time expiration) override;
   bool SetAlternativeServices(const HostPortPair& origin,
                               const AlternativeServiceInfoVector&
@@ -108,7 +107,6 @@ class NET_EXPORT HttpServerPropertiesImpl
   void ClearAlternativeServices(const HostPortPair& origin) override;
   const AlternativeServiceMap& alternative_service_map() const override;
   scoped_ptr<base::Value> GetAlternativeServiceInfoAsValue() const override;
-  void SetAlternativeServiceProbabilityThreshold(double threshold) override;
   const SettingsMap& GetSpdySettings(
       const HostPortPair& host_port_pair) override;
   bool SetSpdySetting(const HostPortPair& host_port_pair,
@@ -183,8 +181,6 @@ class NET_EXPORT HttpServerPropertiesImpl
   // Contains list of suffixes (for exmaple ".c.youtube.com",
   // ".googlevideo.com", ".googleusercontent.com") of canonical hostnames.
   CanonicalSufficList canonical_suffixes_;
-
-  double alternative_service_probability_threshold_;
 
   QuicServerInfoMap quic_server_info_map_;
   size_t max_server_configs_stored_in_properties_;

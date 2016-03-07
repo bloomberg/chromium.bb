@@ -484,10 +484,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     }
   }
 
-  // Currently (circa M39) enabling QUIC requires setting probability threshold.
   if (config->enable_quic) {
-    context_->http_server_properties()
-        ->SetAlternativeServiceProbabilityThreshold(0.0f);
     for (auto hint = config->quic_hints.begin();
          hint != config->quic_hints.end(); ++hint) {
       const URLRequestContextConfig::QuicHint& quic_hint = **hint;
@@ -524,8 +521,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
           net::AlternateProtocol::QUIC, "",
           static_cast<uint16_t>(quic_hint.alternate_port));
       context_->http_server_properties()->SetAlternativeService(
-          quic_hint_host_port_pair, alternative_service, 1.0f,
-          base::Time::Max());
+          quic_hint_host_port_pair, alternative_service, base::Time::Max());
     }
   }
 

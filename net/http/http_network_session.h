@@ -101,9 +101,6 @@ class NET_EXPORT HttpNetworkSession
     // Whether to enable Alt-Svc entries with hostname different than that of
     // the origin.
     bool enable_alternative_service_with_different_host;
-    // Only honor alternative service entries which have a higher probability
-    // than this value.
-    double alternative_service_probability_threshold;
 
     // Enables NPN support.  Note that ALPN is always enabled.
     bool enable_npn;
