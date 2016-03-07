@@ -383,10 +383,37 @@ static inline void removeDisallowedElementsFromSubtree(SVGElement& subtree)
     }
 }
 
+static void moveChildrenToReplacementElement(ContainerNode& sourceRoot, ContainerNode& destinationRoot)
+{
+    for (RefPtrWillBeRawPtr<Node> child = sourceRoot.firstChild(); child; ) {
+        RefPtrWillBeRawPtr<Node> nextChild = child->nextSibling();
+        destinationRoot.appendChild(child);
+        child = nextChild.release();
+    }
+}
+
 PassRefPtrWillBeRawPtr<Element> SVGUseElement::createInstanceTree(SVGElement& targetRoot) const
 {
     RefPtrWillBeRawPtr<Element> instanceRoot = targetRoot.cloneElementWithChildren();
     ASSERT(instanceRoot->isSVGElement());
+    if (isSVGSymbolElement(targetRoot)) {
+        // Spec: The referenced 'symbol' and its contents are deep-cloned into
+        // the generated tree, with the exception that the 'symbol' is replaced
+        // by an 'svg'. This generated 'svg' will always have explicit values
+        // for attributes width and height. If attributes width and/or height
+        // are provided on the 'use' element, then these attributes will be
+        // transferred to the generated 'svg'. If attributes width and/or
+        // height are not specified, the generated 'svg' element will use
+        // values of 100% for these attributes.
+        RefPtrWillBeRawPtr<SVGSVGElement> svgElement = SVGSVGElement::create(targetRoot.document());
+        // Transfer all data (attributes, etc.) from the <symbol> to the new
+        // <svg> element.
+        svgElement->cloneDataFromElement(*instanceRoot);
+        // Move already cloned elements to the new <svg> element.
+        moveChildrenToReplacementElement(*instanceRoot, *svgElement);
+        instanceRoot = svgElement.release();
+    }
+    transferUseWidthAndHeightIfNeeded(*this, toSVGElement(*instanceRoot), targetRoot);
     associateCorrespondingElements(targetRoot, toSVGElement(*instanceRoot));
     removeDisallowedElementsFromSubtree(toSVGElement(*instanceRoot));
     return instanceRoot.release();
@@ -433,15 +460,12 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
         return;
     }
 
-    // Expand all <symbol> elements in the shadow tree.
-    // Expand means: replace the actual <symbol> element by the <svg> element.
-    expandSymbolElementsInShadowTree();
-
+    // If the instance root was a <use>, it could have been replaced now, so
+    // reset |m_targetElementInstance|.
     m_targetElementInstance = toSVGElement(shadowTreeRootElement->firstChild());
-    transferUseWidthAndHeightIfNeeded(*this, *m_targetElementInstance, *m_targetElementInstance->correspondingElement());
-    cloneNonMarkupEventListeners();
-
     ASSERT(m_targetElementInstance->parentNode() == shadowTreeRootElement);
+
+    cloneNonMarkupEventListeners();
 
     // Update relative length information.
     updateRelativeLengthsInformation();
@@ -553,15 +577,6 @@ bool SVGUseElement::hasCycleUseReferencing(const SVGUseElement& use, const Conta
     return false;
 }
 
-static void moveChildrenToReplacementElement(ContainerNode& sourceRoot, ContainerNode& destinationRoot)
-{
-    for (RefPtrWillBeRawPtr<Node> child = sourceRoot.firstChild(); child; ) {
-        RefPtrWillBeRawPtr<Node> nextChild = child->nextSibling();
-        destinationRoot.appendChild(child);
-        child = nextChild.release();
-    }
-}
-
 // Spec: In the generated content, the 'use' will be replaced by 'g', where all
 // attributes from the 'use' element except for x, y, width, height and
 // xlink:href are transferred to the generated 'g' element.
@@ -607,11 +622,8 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         // Move already cloned elements to the new <g> element.
         moveChildrenToReplacementElement(*use, *cloneParent);
 
-        if (target) {
-            RefPtrWillBeRawPtr<Element> instanceRoot = use->createInstanceTree(*target);
-            transferUseWidthAndHeightIfNeeded(*use, toSVGElement(*instanceRoot), *target);
-            cloneParent->appendChild(instanceRoot.release());
-        }
+        if (target)
+            cloneParent->appendChild(use->createInstanceTree(*target));
 
         RefPtrWillBeRawPtr<SVGElement> replacingElement(cloneParent.get());
 
@@ -621,34 +633,6 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         use = Traversal<SVGUseElement>::next(*replacingElement, shadowRoot);
     }
     return true;
-}
-
-void SVGUseElement::expandSymbolElementsInShadowTree()
-{
-    ShadowRoot* shadowRoot = userAgentShadowRoot();
-    for (RefPtrWillBeRawPtr<SVGSymbolElement> symbol = Traversal<SVGSymbolElement>::firstWithin(*shadowRoot); symbol; ) {
-        // Spec: The referenced 'symbol' and its contents are deep-cloned into the generated tree,
-        // with the exception that the 'symbol' is replaced by an 'svg'. This generated 'svg' will
-        // always have explicit values for attributes width and height. If attributes width and/or
-        // height are provided on the 'use' element, then these attributes will be transferred to
-        // the generated 'svg'. If attributes width and/or height are not specified, the generated
-        // 'svg' element will use values of 100% for these attributes.
-        SVGElement& originalSymbol = *symbol->correspondingElement();
-        RefPtrWillBeRawPtr<SVGSVGElement> svgElement = SVGSVGElement::create(originalSymbol.document());
-        // Transfer all data (attributes, etc.) from <symbol> to the new <svg> element.
-        svgElement->cloneDataFromElement(*symbol);
-        svgElement->setCorrespondingElement(&originalSymbol);
-
-        // Move already cloned elements to the new <svg> element.
-        moveChildrenToReplacementElement(*symbol, *svgElement);
-
-        RefPtrWillBeRawPtr<SVGElement> replacingElement(svgElement.get());
-
-        // Replace <symbol> with <svg>.
-        symbol->parentNode()->replaceChild(svgElement.release(), symbol);
-
-        symbol = Traversal<SVGSymbolElement>::next(*replacingElement, shadowRoot);
-    }
 }
 
 void SVGUseElement::invalidateShadowTree()
