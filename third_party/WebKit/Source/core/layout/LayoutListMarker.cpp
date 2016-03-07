@@ -395,7 +395,7 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::getListStyleCategory() con
 
 bool LayoutListMarker::isInside() const
 {
-    return m_listItem->notInList() || style()->listStylePosition() == INSIDE;
+    return m_listItem->notInList() || style()->listStylePosition() == ListStylePositionInside;
 }
 
 IntRect LayoutListMarker::getRelativeMarkerRect() const

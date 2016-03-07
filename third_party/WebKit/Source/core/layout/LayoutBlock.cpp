@@ -2034,11 +2034,11 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
         RefPtr<ComputedStyle> childStyle = child->mutableStyle();
         if (child->isFloating() || (child->isBox() && toLayoutBox(child)->avoidsFloats())) {
             LayoutUnit floatTotalWidth = floatLeftWidth + floatRightWidth;
-            if (childStyle->clear() & CLEFT) {
+            if (childStyle->clear() & ClearLeft) {
                 maxLogicalWidth = std::max(floatTotalWidth, maxLogicalWidth);
                 floatLeftWidth = LayoutUnit();
             }
-            if (childStyle->clear() & CRIGHT) {
+            if (childStyle->clear() & ClearRight) {
                 maxLogicalWidth = std::max(floatTotalWidth, maxLogicalWidth);
                 floatRightWidth = LayoutUnit();
             }

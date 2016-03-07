@@ -1458,7 +1458,7 @@ void LayoutBlockFlow::marginBeforeEstimateForChild(LayoutBox& child, LayoutUnit&
     // If we have a 'clear' value but also have a margin we may not actually require clearance to move past any floats.
     // If that's the case we want to be sure we estimate the correct position including margins after any floats rather
     // than use 'clearance' later which could give us the wrong position.
-    if (grandchildBox->style()->clear() != CNONE && childBlockFlow->marginBeforeForChild(*grandchildBox) == 0)
+    if (grandchildBox->style()->clear() != ClearNone && childBlockFlow->marginBeforeForChild(*grandchildBox) == 0)
         return;
 
     // Collapse the margin of the grandchild box with our own to produce an estimate.
@@ -1818,18 +1818,18 @@ LayoutUnit LayoutBlockFlow::getClearDelta(LayoutBox* child, LayoutUnit logicalTo
         return LayoutUnit();
 
     // At least one float is present. We need to perform the clearance computation.
-    bool clearSet = child->style()->clear() != CNONE;
+    bool clearSet = child->style()->clear() != ClearNone;
     LayoutUnit logicalBottom;
     switch (child->style()->clear()) {
-    case CNONE:
+    case ClearNone:
         break;
-    case CLEFT:
+    case ClearLeft:
         logicalBottom = lowestFloatLogicalBottom(FloatingObject::FloatLeft);
         break;
-    case CRIGHT:
+    case ClearRight:
         logicalBottom = lowestFloatLogicalBottom(FloatingObject::FloatRight);
         break;
-    case CBOTH:
+    case ClearBoth:
         logicalBottom = lowestFloatLogicalBottom();
         break;
     }
@@ -2117,13 +2117,13 @@ void LayoutBlockFlow::clearFloats(EClear clear)
     // set y position
     LayoutUnit newY;
     switch (clear) {
-    case CLEFT:
+    case ClearLeft:
         newY = lowestFloatLogicalBottom(FloatingObject::FloatLeft);
         break;
-    case CRIGHT:
+    case ClearRight:
         newY = lowestFloatLogicalBottom(FloatingObject::FloatRight);
         break;
-    case CBOTH:
+    case ClearBoth:
         newY = lowestFloatLogicalBottom();
     default:
         break;
@@ -2380,9 +2380,9 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width)
         childBox->setMayNeedPaintInvalidation();
 
         LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection() ? marginStartForChild(*childBox) : marginEndForChild(*childBox);
-        if (childBox->style()->clear() & CLEFT)
+        if (childBox->style()->clear() & ClearLeft)
             logicalTop = std::max(lowestFloatLogicalBottom(FloatingObject::FloatLeft), logicalTop);
-        if (childBox->style()->clear() & CRIGHT)
+        if (childBox->style()->clear() & ClearRight)
             logicalTop = std::max(lowestFloatLogicalBottom(FloatingObject::FloatRight), logicalTop);
 
         LayoutPoint floatLogicalLocation = computeLogicalLocationForFloat(floatingObject, logicalTop);

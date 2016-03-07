@@ -955,16 +955,16 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ECaptionSide e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case CAPLEFT:
+    case CaptionSideLeft:
         m_value.valueID = CSSValueLeft;
         break;
-    case CAPRIGHT:
+    case CaptionSideRight:
         m_value.valueID = CSSValueRight;
         break;
-    case CAPTOP:
+    case CaptionSideTop:
         m_value.valueID = CSSValueTop;
         break;
-    case CAPBOTTOM:
+    case CaptionSideBottom:
         m_value.valueID = CSSValueBottom;
         break;
     }
@@ -975,19 +975,19 @@ template<> inline ECaptionSide CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueLeft:
-        return CAPLEFT;
+        return CaptionSideLeft;
     case CSSValueRight:
-        return CAPRIGHT;
+        return CaptionSideRight;
     case CSSValueTop:
-        return CAPTOP;
+        return CaptionSideTop;
     case CSSValueBottom:
-        return CAPBOTTOM;
+        return CaptionSideBottom;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return CAPTOP;
+    return CaptionSideTop;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EClear e)
@@ -995,16 +995,16 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EClear e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case CNONE:
+    case ClearNone:
         m_value.valueID = CSSValueNone;
         break;
-    case CLEFT:
+    case ClearLeft:
         m_value.valueID = CSSValueLeft;
         break;
-    case CRIGHT:
+    case ClearRight:
         m_value.valueID = CSSValueRight;
         break;
-    case CBOTH:
+    case ClearBoth:
         m_value.valueID = CSSValueBoth;
         break;
     }
@@ -1015,19 +1015,19 @@ template<> inline EClear CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueNone:
-        return CNONE;
+        return ClearNone;
     case CSSValueLeft:
-        return CLEFT;
+        return ClearLeft;
     case CSSValueRight:
-        return CRIGHT;
+        return ClearRight;
     case CSSValueBoth:
-        return CBOTH;
+        return ClearBoth;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return CNONE;
+    return ClearNone;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ECursor e)
@@ -1250,34 +1250,34 @@ template<> inline EDisplay CSSPrimitiveValue::convertTo() const
     return display;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EEmptyCell e)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EEmptyCells e)
     : CSSValue(PrimitiveClass)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case SHOW:
+    case EmptyCellsShow:
         m_value.valueID = CSSValueShow;
         break;
-    case HIDE:
+    case EmptyCellsHide:
         m_value.valueID = CSSValueHide;
         break;
     }
 }
 
-template<> inline EEmptyCell CSSPrimitiveValue::convertTo() const
+template<> inline EEmptyCells CSSPrimitiveValue::convertTo() const
 {
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueShow:
-        return SHOW;
+        return EmptyCellsShow;
     case CSSValueHide:
-        return HIDE;
+        return EmptyCellsHide;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return SHOW;
+    return EmptyCellsShow;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EFlexDirection e)
@@ -1440,10 +1440,10 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStylePosition e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case OUTSIDE:
+    case ListStylePositionOutside:
         m_value.valueID = CSSValueOutside;
         break;
-    case INSIDE:
+    case ListStylePositionInside:
         m_value.valueID = CSSValueInside;
         break;
     }
@@ -1454,15 +1454,15 @@ template<> inline EListStylePosition CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueOutside:
-        return OUTSIDE;
+        return ListStylePositionOutside;
     case CSSValueInside:
-        return INSIDE;
+        return ListStylePositionInside;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return OUTSIDE;
+    return ListStylePositionOutside;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
@@ -1909,10 +1909,10 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ETableLayout e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case TAUTO:
+    case TableLayoutAuto:
         m_value.valueID = CSSValueAuto;
         break;
-    case TFIXED:
+    case TableLayoutFixed:
         m_value.valueID = CSSValueFixed;
         break;
     }
@@ -1923,15 +1923,15 @@ template<> inline ETableLayout CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueFixed:
-        return TFIXED;
+        return TableLayoutFixed;
     case CSSValueAuto:
-        return TAUTO;
+        return TableLayoutAuto;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return TAUTO;
+    return TableLayoutAuto;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ETextAlign e)

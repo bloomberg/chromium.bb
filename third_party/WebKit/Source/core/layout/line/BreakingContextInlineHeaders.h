@@ -310,7 +310,7 @@ inline void BreakingContext::handleBR(EClear& clear)
         // A <br> with clearance always needs a linebox in case the lines below it get dirtied later and
         // need to check for floats to clear - so if we're ignoring spaces, stop ignoring them and add a
         // run for this object.
-        if (m_ignoringSpaces && m_currentStyle->clear() != CNONE)
+        if (m_ignoringSpaces && m_currentStyle->clear() != ClearNone)
             ensureLineBoxInsideIgnoredSpaces(&m_lineMidpointState, br);
 
         if (!m_lineInfo.isEmpty())

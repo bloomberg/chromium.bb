@@ -1332,8 +1332,8 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 bool clearPreviousFloat;
                 if (child->isFloating()) {
                     clearPreviousFloat = (prevFloat
-                        && ((prevFloat->styleRef().floating() == LeftFloat && (childStyle.clear() & CLEFT))
-                            || (prevFloat->styleRef().floating() == RightFloat && (childStyle.clear() & CRIGHT))));
+                        && ((prevFloat->styleRef().floating() == LeftFloat && (childStyle.clear() & ClearLeft))
+                            || (prevFloat->styleRef().floating() == RightFloat && (childStyle.clear() & ClearRight))));
                     prevFloat = child;
                 } else {
                     clearPreviousFloat = false;
@@ -1749,7 +1749,7 @@ bool LayoutBlockFlow::lineBoxHasBRWithClearance(RootInlineBox* curr)
     if (!curr->endsWithBreak())
         return false;
     InlineBox* lastBox = style()->isLeftToRightDirection() ? curr->lastLeafChild() : curr->firstLeafChild();
-    return lastBox && lastBox->getLineLayoutItem().isBR() && lastBox->getLineLayoutItem().style()->clear() != CNONE;
+    return lastBox && lastBox->getLineLayoutItem().isBR() && lastBox->getLineLayoutItem().style()->clear() != ClearNone;
 }
 
 void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState, RootInlineBox* startLine, InlineIterator& cleanLineStart, BidiStatus& cleanLineBidiStatus)

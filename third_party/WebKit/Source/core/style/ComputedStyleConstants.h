@@ -137,11 +137,11 @@ enum EVerticalAlign {
 };
 
 enum EClear {
-    CNONE = 0, CLEFT = 1, CRIGHT = 2, CBOTH = 3
+    ClearNone = 0, ClearLeft = 1, ClearRight = 2, ClearBoth = 3
 };
 
 enum ETableLayout {
-    TAUTO, TFIXED
+    TableLayoutAuto, TableLayoutFixed
 };
 
 enum TextCombine {
@@ -358,15 +358,15 @@ enum EBreak {
     BreakAlways // Only needed by {page,-webkit-column}-break-{after,before} shorthands.
 };
 
-enum EEmptyCell {
-    SHOW, HIDE
+enum EEmptyCells {
+    EmptyCellsShow, EmptyCellsHide
 };
 
 enum ECaptionSide {
-    CAPTOP, CAPBOTTOM, CAPLEFT, CAPRIGHT
+    CaptionSideTop, CaptionSideBottom, CaptionSideLeft, CaptionSideRight
 };
 
-enum EListStylePosition { OUTSIDE, INSIDE };
+enum EListStylePosition { ListStylePositionOutside, ListStylePositionInside };
 
 enum EVisibility { VISIBLE, HIDDEN, COLLAPSE };
 

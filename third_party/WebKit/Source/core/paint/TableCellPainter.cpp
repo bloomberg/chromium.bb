@@ -149,7 +149,7 @@ void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, co
         return;
 
     LayoutTable* tableElt = m_layoutTableCell.table();
-    if (!tableElt->collapseBorders() && m_layoutTableCell.style()->emptyCells() == HIDE && !m_layoutTableCell.firstChild())
+    if (!tableElt->collapseBorders() && m_layoutTableCell.style()->emptyCells() == EmptyCellsHide && !m_layoutTableCell.firstChild())
         return;
 
     LayoutRect paintRect = paintBounds(paintOffset, backgroundObject != &m_layoutTableCell ? AddOffsetFromParent : DoNotAddOffsetFromParent);
@@ -183,7 +183,7 @@ void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, co
 void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutTable* table = m_layoutTableCell.table();
-    if (!table->collapseBorders() && m_layoutTableCell.style()->emptyCells() == HIDE && !m_layoutTableCell.firstChild())
+    if (!table->collapseBorders() && m_layoutTableCell.style()->emptyCells() == EmptyCellsHide && !m_layoutTableCell.firstChild())
         return;
 
     bool needsToPaintBorder = m_layoutTableCell.styleRef().hasBorderDecoration() && !table->collapseBorders();
@@ -219,7 +219,7 @@ void TableCellPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
 
     LayoutTable* tableElt = m_layoutTableCell.table();
-    if (!tableElt->collapseBorders() && m_layoutTableCell.style()->emptyCells() == HIDE && !m_layoutTableCell.firstChild())
+    if (!tableElt->collapseBorders() && m_layoutTableCell.style()->emptyCells() == EmptyCellsHide && !m_layoutTableCell.firstChild())
         return;
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableCell, paintInfo.phase))

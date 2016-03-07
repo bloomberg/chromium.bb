@@ -197,7 +197,7 @@ protected:
 
         bool operator!=(const InheritedFlags& other) const { return !(*this == other); }
 
-        unsigned _empty_cells : 1; // EEmptyCell
+        unsigned _empty_cells : 1; // EEmptyCells
         unsigned _caption_side : 2; // ECaptionSide
         unsigned _list_style_type : 7; // EListStyleType
         unsigned _list_style_position : 1; // EListStylePosition
@@ -591,7 +591,7 @@ public:
 
     EClear clear() const { return static_cast<EClear>(noninherited_flags.clear); }
     ETableLayout tableLayout() const { return static_cast<ETableLayout>(noninherited_flags.tableLayout); }
-    bool isFixedTableLayout() const { return tableLayout() == TFIXED && !logicalWidth().isAuto(); }
+    bool isFixedTableLayout() const { return tableLayout() == TableLayoutFixed && !logicalWidth().isAuto(); }
 
     const Font& font() const;
     const FontMetrics& fontMetrics() const;
@@ -711,7 +711,7 @@ public:
     EBorderCollapse borderCollapse() const { return static_cast<EBorderCollapse>(inherited_flags._border_collapse); }
     short horizontalBorderSpacing() const;
     short verticalBorderSpacing() const;
-    EEmptyCell emptyCells() const { return static_cast<EEmptyCell>(inherited_flags._empty_cells); }
+    EEmptyCells emptyCells() const { return static_cast<EEmptyCells>(inherited_flags._empty_cells); }
     ECaptionSide captionSide() const { return static_cast<ECaptionSide>(inherited_flags._caption_side); }
 
     EListStyleType listStyleType() const { return static_cast<EListStyleType>(inherited_flags._list_style_type); }
@@ -1238,7 +1238,7 @@ public:
     void setBorderCollapse(EBorderCollapse collapse) { inherited_flags._border_collapse = collapse; }
     void setHorizontalBorderSpacing(short);
     void setVerticalBorderSpacing(short);
-    void setEmptyCells(EEmptyCell v) { inherited_flags._empty_cells = v; }
+    void setEmptyCells(EEmptyCells v) { inherited_flags._empty_cells = v; }
     void setCaptionSide(ECaptionSide v) { inherited_flags._caption_side = v; }
 
     void setListStyleType(EListStyleType v) { inherited_flags._list_style_type = v; }
@@ -1652,8 +1652,8 @@ public:
     static OutlineIsAuto initialOutlineStyleIsAuto() { return OutlineIsAutoOff; }
     static NinePieceImage initialNinePieceImage() { return NinePieceImage(); }
     static LengthSize initialBorderRadius() { return LengthSize(Length(0, Fixed), Length(0, Fixed)); }
-    static ECaptionSide initialCaptionSide() { return CAPTOP; }
-    static EClear initialClear() { return CNONE; }
+    static ECaptionSide initialCaptionSide() { return CaptionSideTop; }
+    static EClear initialClear() { return ClearNone; }
     static LengthBox initialClip() { return LengthBox(); }
     static Containment initialContain() { return ContainsNone; }
     static TextDirection initialDirection() { return LTR; }
@@ -1663,9 +1663,9 @@ public:
     static ObjectFit initialObjectFit() { return ObjectFitFill; }
     static LengthPoint initialObjectPosition() { return LengthPoint(Length(50.0, Percent), Length(50.0, Percent)); }
     static EDisplay initialDisplay() { return INLINE; }
-    static EEmptyCell initialEmptyCells() { return SHOW; }
+    static EEmptyCells initialEmptyCells() { return EmptyCellsShow; }
     static EFloat initialFloating() { return NoFloat; }
-    static EListStylePosition initialListStylePosition() { return OUTSIDE; }
+    static EListStylePosition initialListStylePosition() { return ListStylePositionOutside; }
     static EListStyleType initialListStyleType() { return Disc; }
     static EOverflow initialOverflowX() { return OverflowVisible; }
     static EOverflow initialOverflowY() { return OverflowVisible; }
@@ -1673,7 +1673,7 @@ public:
     static EBreak initialBreakBefore() { return BreakAuto; }
     static EBreak initialBreakInside() { return BreakAuto; }
     static EPosition initialPosition() { return StaticPosition; }
-    static ETableLayout initialTableLayout() { return TAUTO; }
+    static ETableLayout initialTableLayout() { return TableLayoutAuto; }
     static EUnicodeBidi initialUnicodeBidi() { return UBNormal; }
     static ETextTransform initialTextTransform() { return TTNONE; }
     static EVisibility initialVisibility() { return VISIBLE; }
