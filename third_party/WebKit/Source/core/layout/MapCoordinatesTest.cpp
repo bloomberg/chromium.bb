@@ -978,6 +978,42 @@ TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithScale)
     EXPECT_EQ(FloatPoint(), mappedPoint);
 }
 
+TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffset)
+{
+    setBodyInnerHTML(
+        "<svg id='container' viewBox='100 100 200 200' width='400' height='200'>"
+        "    <g transform='translate(100 50)'>"
+        "        <rect id='target' transform='translate(100 100)' width='100' height='100'/>"
+        "    </g>"
+        "</svg>");
+
+    LayoutObject* target = getLayoutObjectByElementId("target");
+    LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+    EXPECT_EQ(FloatPoint(200, 50), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
+TEST_F(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffsetAndScale)
+{
+    setBodyInnerHTML(
+        "<svg id='container' viewBox='100 100 100 100' width='400' height='200'>"
+        "    <g transform='translate(50 50)'>"
+        "        <rect id='target' transform='translate(100 100)' width='100' height='100'/>"
+        "    </g>"
+        "</svg>");
+
+    LayoutObject* target = getLayoutObjectByElementId("target");
+    LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+
+    FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+    EXPECT_EQ(FloatPoint(200, 100), mappedPoint);
+    mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
+    EXPECT_EQ(FloatPoint(), mappedPoint);
+}
+
 TEST_F(MapCoordinatesTest, SVGForeignObject)
 {
     setBodyInnerHTML(
