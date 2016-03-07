@@ -12,6 +12,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutMediaItem.h"
 #include "core/page/Page.h"
 #include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
@@ -121,8 +122,8 @@ void AutoplayExperimentHelper::registerForPositionUpdatesIfNeeded()
     }
 
     if (LayoutObject* layoutObject = element().layoutObject()) {
-        LayoutMedia* layoutMedia = toLayoutMedia(layoutObject);
-        layoutMedia->setRequestPositionUpdates(true);
+        LayoutMediaItem layoutMediaItem = LayoutMediaItem(toLayoutMedia(layoutObject));
+        layoutMediaItem.setRequestPositionUpdates(true);
     }
 
     // Set this unconditionally, in case we have no layout object yet.
@@ -133,8 +134,8 @@ void AutoplayExperimentHelper::unregisterForPositionUpdatesIfNeeded()
 {
     if (m_registeredWithLayoutObject) {
         if (LayoutObject* obj = element().layoutObject()) {
-            LayoutMedia* layoutMedia = toLayoutMedia(obj);
-            layoutMedia->setRequestPositionUpdates(false);
+            LayoutMediaItem layoutMediaItem = LayoutMediaItem(toLayoutMedia(obj));
+            layoutMediaItem.setRequestPositionUpdates(false);
         }
     }
 
@@ -176,8 +177,8 @@ void AutoplayExperimentHelper::positionChanged(const IntRect& visibleRect)
 void AutoplayExperimentHelper::updatePositionNotificationRegistration()
 {
     if (m_registeredWithLayoutObject) {
-        LayoutMedia* layoutMedia = toLayoutMedia(element().layoutObject());
-        layoutMedia->setRequestPositionUpdates(true);
+        LayoutMediaItem layoutMediaItem = LayoutMediaItem(toLayoutMedia(element().layoutObject()));
+        layoutMediaItem.setRequestPositionUpdates(true);
     }
 }
 

@@ -94,6 +94,11 @@ public:
         return m_layoutObject->isListItem();
     }
 
+    bool isMedia() const
+    {
+        return m_layoutObject->isMedia();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();
