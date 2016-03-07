@@ -169,7 +169,14 @@ class AndroidVideoDecodeAccelerator::OnFrameAvailableHandler
 };
 
 // Helper class to share an IO timer for DoIOTask() execution; prevents each
-// AVDA instance from starting its own high frequency timer.
+// AVDA instance from starting its own high frequency timer.  The intuition
+// behind this is that, if we're waiting for long enough, then either (a)
+// MediaCodec is broken or (b) MediaCodec is waiting on us to change state
+// (e.g., get new demuxed data / get a free picture buffer / return an output
+// buffer to MediaCodec).  This is inherently a race, since we don't know if
+// MediaCodec is broken or just slow.  Since the MediaCodec API doesn't let
+// us wait on MediaCodec state changes prior to L, we more or less have to
+// time out or keep polling forever in some common cases.
 class AVDATimerManager {
  public:
   // Request periodic callback of |avda_instance|->DoIOTask(). Does nothing if
@@ -831,6 +838,11 @@ void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
 
   strategy_->ReuseOnePictureBuffer(i->second);
 
+  // Turn the timer back on.  If it timed out, it might be because MediaCodec
+  // is waiting for us to return a buffer.  We can't assume that it will be
+  // ready to send us a buffer back immediately, though we do try DoIOTask
+  // to be optimistic.
+  ManageTimer(true);
   DoIOTask();
 }
 
