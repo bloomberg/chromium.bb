@@ -100,6 +100,7 @@ void OfflinePageTabHelperTest::SetUp() {
       OfflinePageTabHelper::FromWebContents(web_contents());
 
   // Enables offline pages feature.
+  // TODO(jianli): Remove this once the feature is completely enabled.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableOfflinePages);
 

@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/offline_pages/offline_page_switches.h"
+#include "components/version_info/version_info.h"
 
 #if defined(OS_ANDROID)
 
@@ -62,7 +63,10 @@ FeatureMode GetOfflinePageFeatureMode() {
                        base::CompareCase::SENSITIVE)) {
     return FeatureMode::ENABLED_AS_SAVED_PAGES;
   }
-  return FeatureMode::DISABLED;
+
+  // Enabled by default on trunk.
+  return version_info::IsOfficialBuild() ? FeatureMode::DISABLED
+                                         : FeatureMode::ENABLED_AS_BOOKMARKS;
 }
 
 bool IsOfflinePagesEnabled() {

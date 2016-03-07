@@ -286,7 +286,14 @@ void OfflinePageModel::ClearAll(const base::Closure& callback) {
 }
 
 bool OfflinePageModel::HasOfflinePages() const {
-  DCHECK(is_loaded_);
+  // Since offline pages feature is enabled by default,
+  // NetErrorTabHelper::SetHasOfflinePages might call this before the model is
+  // fully loaded. To address this, we need to switch to asynchonous model
+  // (crbug.com/589526). But for now, we just bail out to work around the test
+  // issue.
+  if (!is_loaded_)
+    return false;
+
   // Check that at least one page is not marked for deletion. Because we have
   // pages marked for deletion, we cannot simply invert result of |empty()|.
   for (const auto& id_page_pair : offline_pages_) {

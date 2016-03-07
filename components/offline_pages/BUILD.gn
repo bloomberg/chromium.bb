@@ -61,6 +61,7 @@ source_set("switches") {
 
   deps = [
     "//base",
+    "//components/version_info",
   ]
 }
 

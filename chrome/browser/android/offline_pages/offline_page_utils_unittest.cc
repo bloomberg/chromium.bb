@@ -95,7 +95,8 @@ OfflinePageUtilsTest::OfflinePageUtilsTest()
 OfflinePageUtilsTest::~OfflinePageUtilsTest() {}
 
 void OfflinePageUtilsTest::SetUp() {
-  // Enable offline pages feature.
+  // Enables offline pages feature.
+  // TODO(jianli): Remove this once the feature is completely enabled.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableOfflinePages);
 
