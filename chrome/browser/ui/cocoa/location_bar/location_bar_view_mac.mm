@@ -198,6 +198,7 @@ void LocationBarViewMac::UpdateSaveCreditCardIcon() {
   command_updater()->UpdateCommandEnabled(IDC_SAVE_CREDIT_CARD_FOR_PAGE,
                                           enabled);
   save_credit_card_decoration_->SetVisible(enabled);
+  OnDecorationsChanged();
 }
 
 void LocationBarViewMac::UpdatePageActions() {
