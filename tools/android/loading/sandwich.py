@@ -477,8 +477,16 @@ def _FilterCacheMain(args):
     logging.info('white-listing %s' % main_resource_request.url)
     whitelisted_urls.add(main_resource_request.url)
     for (first, second, reason) in deps:
+      # Work-around where the protocol may be none for an unclear reason yet.
+      # TODO(gabadie): Follow up on this with Clovis guys and possibly remove
+      #   this work-around.
+      if not second.protocol:
+        logging.info('ignoring %s (no protocol)' % second.url)
+        continue
       # Ignore data protocols.
       if not second.protocol.startswith('http'):
+        logging.info('ignoring %s (`%s` is not HTTP{,S} protocol)' % (
+            second.url, second.protocol))
         continue
       if (first.request_id == main_resource_request.request_id and
           reason == 'parser' and second.url not in whitelisted_urls):
