@@ -15,7 +15,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/surface_id.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
@@ -38,6 +37,7 @@ class DisplayManager;
 class Display;
 class ServerWindow;
 class TargetedEvent;
+class WindowManagerState;
 class WindowTreeTest;
 
 namespace test {
@@ -218,6 +218,7 @@ class WindowTree : public mojom::WindowTree,
 
   // Used when this tree is the window manager.
   Display* GetDisplayForWindowManager();
+  WindowManagerState* GetWindowManagerStateForWindowManager();
 
   bool ShouldRouteToWindowManager(const ServerWindow* window) const;
 

@@ -7,15 +7,30 @@
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_manager_delegate.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/user_display_manager.h"
 
 namespace mus {
 namespace ws {
 
 DisplayManager::DisplayManager(DisplayManagerDelegate* delegate)
-    : delegate_(delegate), next_root_id_(0) {}
+    // |next_root_id_| is used as the lower bits, so that starting at 0 is
+    // fine. |next_display_id_| is used by itself, so we start at 1 to reserve
+    // 0 as invalid.
+    : delegate_(delegate),
+      next_root_id_(0),
+      next_display_id_(1) {}
 
 DisplayManager::~DisplayManager() {
   DestroyAllDisplays();
+}
+
+UserDisplayManager* DisplayManager::GetUserDisplayManager(
+    const UserId& user_id) {
+  if (!user_display_managers_.count(user_id)) {
+    user_display_managers_[user_id] =
+        make_scoped_ptr(new UserDisplayManager(this, user_id));
+  }
+  return user_display_managers_[user_id].get();
 }
 
 void DisplayManager::AddDisplay(Display* display) {
@@ -29,6 +44,9 @@ void DisplayManager::DestroyDisplay(Display* display) {
   if (pending_displays_.count(display)) {
     pending_displays_.erase(display);
   } else {
+    for (const auto& pair : user_display_managers_)
+      pair.second->OnWillDestroyDisplay(display);
+
     DCHECK(displays_.count(display));
     displays_.erase(display);
   }
@@ -112,6 +130,13 @@ WindowId DisplayManager::GetAndAdvanceNextRootId() {
   const uint16_t id = next_root_id_++;
   DCHECK_LT(id, next_root_id_);
   return RootWindowId(id);
+}
+
+uint32_t DisplayManager::GetAndAdvanceNextDisplayId() {
+  // TODO(sky): handle wrapping!
+  const uint32_t id = next_display_id_++;
+  DCHECK_LT(id, next_display_id_);
+  return id;
 }
 
 void DisplayManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {

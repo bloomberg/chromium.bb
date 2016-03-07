@@ -32,11 +32,10 @@ ConnectionManager::ConnectionManager(
     : delegate_(delegate),
       surfaces_state_(surfaces_state),
       next_connection_id_(1),
-      display_manager_(new ws::DisplayManager(this)),
+      display_manager_(new DisplayManager(this)),
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
-      got_valid_frame_decorations_(false),
       window_manager_factory_registry_(this, &user_id_tracker_) {}
 
 ConnectionManager::~ConnectionManager() {
@@ -71,8 +70,7 @@ WindowTree* ConnectionManager::EmbedAtWindow(
     ServerWindow* root,
     uint32_t policy_bitmask,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<WindowTree> tree_ptr(
-      new ws::WindowTree(this, root, policy_bitmask));
+  scoped_ptr<WindowTree> tree_ptr(new WindowTree(this, root, policy_bitmask));
   WindowTree* tree = tree_ptr.get();
 
   mojom::WindowTreePtr window_tree_ptr;
@@ -99,15 +97,14 @@ WindowTree* ConnectionManager::CreateTreeForWindowManager(
     Display* display,
     mojom::WindowManagerFactory* factory,
     ServerWindow* root) {
-  mojom::DisplayPtr display_ptr = DisplayToMojomDisplay(display);
+  mojom::DisplayPtr display_ptr = display->ToMojomDisplay();
   mojom::WindowTreeClientPtr tree_client;
   factory->CreateWindowManager(std::move(display_ptr), GetProxy(&tree_client));
-  scoped_ptr<ws::WindowTree> tree_ptr(new ws::WindowTree(
-      this, root, mojom::WindowTree::kAccessPolicyEmbedRoot));
-  ws::WindowTree* tree = tree_ptr.get();
-  scoped_ptr<ws::DefaultWindowTreeBinding> binding(
-      new ws::DefaultWindowTreeBinding(tree_ptr.get(), this,
-                                       std::move(tree_client)));
+  scoped_ptr<WindowTree> tree_ptr(
+      new WindowTree(this, root, mojom::WindowTree::kAccessPolicyEmbedRoot));
+  WindowTree* tree = tree_ptr.get();
+  scoped_ptr<DefaultWindowTreeBinding> binding(new DefaultWindowTreeBinding(
+      tree_ptr.get(), this, std::move(tree_client)));
   mojom::WindowTreePtr window_tree_ptr = binding->CreateInterfacePtrAndBind();
   AddTree(std::move(tree_ptr), std::move(binding), std::move(window_tree_ptr));
   tree->ConfigureWindowManager();
@@ -214,11 +211,6 @@ const WindowTree* ConnectionManager::GetTreeWithRoot(
   return nullptr;
 }
 
-void ConnectionManager::AddDisplayManagerBinding(
-    mojo::InterfaceRequest<mojom::DisplayManager> request) {
-  display_manager_bindings_.AddBinding(this, std::move(request));
-}
-
 void ConnectionManager::OnFirstWindowManagerFactorySet() {
   if (display_manager_->has_active_or_pending_displays())
     return;
@@ -276,40 +268,6 @@ void ConnectionManager::WindowManagerCreatedTopLevelWindow(
 
   tree->OnWindowManagerCreatedTopLevelWindow(window_manager_change_id,
                                              change.client_change_id, window);
-}
-
-mojom::DisplayPtr ConnectionManager::DisplayToMojomDisplay(Display* display) {
-  size_t i = 0;
-  int next_x = 0;
-  for (Display* display2 : display_manager_->displays()) {
-    const ServerWindow* root = display->root_window();
-    if (display == display2) {
-      mojom::DisplayPtr display_ptr = mojom::Display::New();
-      display_ptr = mojom::Display::New();
-      display_ptr->id = display->id();
-      display_ptr->bounds = mojo::Rect::New();
-      display_ptr->bounds->x = next_x;
-      display_ptr->bounds->y = 0;
-      display_ptr->bounds->width = root->bounds().size().width();
-      display_ptr->bounds->height = root->bounds().size().height();
-      // TODO(sky): window manager needs an API to set the work area.
-      display_ptr->work_area = display_ptr->bounds.Clone();
-      display_ptr->device_pixel_ratio =
-          display->GetViewportMetrics().device_pixel_ratio;
-      display_ptr->rotation = display->GetRotation();
-      // TODO(sky): make this real.
-      display_ptr->is_primary = i == 0;
-      // TODO(sky): make this real.
-      display_ptr->touch_support = mojom::TouchSupport::UNKNOWN;
-      display_ptr->frame_decoration_values =
-          display->frame_decoration_values().Clone();
-      return display_ptr;
-    }
-    next_x += root->bounds().size().width();
-    ++i;
-  }
-  NOTREACHED();
-  return mojom::Display::New();
 }
 
 void ConnectionManager::ProcessWindowBoundsChanged(
@@ -402,23 +360,6 @@ void ConnectionManager::ProcessViewportMetricsChanged(
     pair.second->ProcessViewportMetricsChanged(
         display, old_metrics, new_metrics, IsOperationSource(pair.first));
   }
-
-  if (!got_valid_frame_decorations_)
-    return;
-}
-
-void ConnectionManager::ProcessFrameDecorationValuesChanged(Display* display) {
-  if (!got_valid_frame_decorations_) {
-    got_valid_frame_decorations_ = true;
-    display_manager_observers_.ForAllPtrs([this](
-        mojom::DisplayManagerObserver* observer) { CallOnDisplays(observer); });
-    return;
-  }
-
-  display_manager_observers_.ForAllPtrs(
-      [this, &display](mojom::DisplayManagerObserver* observer) {
-        CallOnDisplayChanged(observer, display);
-      });
 }
 
 bool ConnectionManager::GetAndClearInFlightWindowManagerChange(
@@ -453,32 +394,6 @@ void ConnectionManager::MaybeUpdateNativeCursor(ServerWindow* window) {
   Display* display = display_manager_->GetDisplayContaining(window);
   if (display)
     display->MaybeChangeCursorOnWindowTreeChange();
-}
-
-void ConnectionManager::CallOnDisplays(
-    mojom::DisplayManagerObserver* observer) {
-  std::set<Display*> displays = display_manager_->displays();
-  mojo::Array<mojom::DisplayPtr> display_ptrs(displays.size());
-  {
-    size_t i = 0;
-    // TODO(sky): need ordering!
-    for (Display* display : displays) {
-      display_ptrs[i] = DisplayToMojomDisplay(display);
-      ++i;
-    }
-  }
-  observer->OnDisplays(std::move(display_ptrs));
-}
-
-void ConnectionManager::CallOnDisplayChanged(
-    mojom::DisplayManagerObserver* observer,
-    Display* display) {
-  mojo::Array<mojom::DisplayPtr> displays(1);
-  displays[0] = DisplayToMojomDisplay(display);
-  display_manager_observers_.ForAllPtrs(
-      [&displays](mojom::DisplayManagerObserver* observer) {
-        observer->OnDisplaysChanged(displays.Clone());
-      });
 }
 
 mus::SurfacesState* ConnectionManager::GetSurfacesState() {
@@ -655,20 +570,6 @@ void ConnectionManager::OnTransientWindowRemoved(
     pair.second->ProcessTransientWindowRemoved(window, transient_child,
                                                IsOperationSource(pair.first));
   }
-}
-
-void ConnectionManager::AddObserver(mojom::DisplayManagerObserverPtr observer) {
-  // TODO(sky): this needs to be per user.
-
-  // Many clients key off the frame decorations to size widgets. Wait for frame
-  // decorations before notifying so that we don't have to worry about clients
-  // resizing appropriately.
-  if (!got_valid_frame_decorations_) {
-    display_manager_observers_.AddInterfacePtr(std::move(observer));
-    return;
-  }
-  CallOnDisplays(observer.get());
-  display_manager_observers_.AddInterfacePtr(std::move(observer));
 }
 
 void ConnectionManager::OnWillDestroyDisplay(Display* display) {

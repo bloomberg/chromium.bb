@@ -74,11 +74,13 @@ class Display : public PlatformDisplayDelegate,
 
   uint32_t id() const { return id_; }
 
-  // TODO(sky): move to WMM.
-  void SetFrameDecorationValues(mojom::FrameDecorationValuesPtr values);
-  const mojom::FrameDecorationValues& frame_decoration_values() const {
-    return *frame_decoration_values_;
-  }
+  DisplayManager* display_manager();
+  const DisplayManager* display_manager() const;
+
+  // Returns a mojom::Display for the specified display. WindowManager specific
+  // values are not set. In general you should use
+  // WindowManagerState::ToMojomDisplay().
+  mojom::DisplayPtr ToMojomDisplay() const;
 
   // Schedules a paint for the specified region in the coordinates of |window|.
   void SchedulePaint(const ServerWindow* window, const gfx::Rect& bounds);
@@ -107,7 +109,13 @@ class Display : public PlatformDisplayDelegate,
   WindowManagerState* GetWindowManagerStateWithRoot(const ServerWindow* window);
   // TODO(sky): this is wrong, plumb through user_id.
   WindowManagerState* GetFirstWindowManagerState();
-  WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
+  WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id) {
+    return const_cast<WindowManagerState*>(
+        const_cast<const Display*>(this)->GetWindowManagerStateForUser(
+            user_id));
+  }
+  const WindowManagerState* GetWindowManagerStateForUser(
+      const UserId& user_id) const;
   size_t num_window_manger_states() const {
     return window_manager_state_map_.size();
   }
@@ -177,9 +185,6 @@ class Display : public PlatformDisplayDelegate,
 
   // Inits the necessary state once the display is ready.
   void InitWindowManagersIfNecessary();
-
-  DisplayManager* display_manager();
-  const DisplayManager* display_manager() const;
 
   void OnEventAckTimeout();
 
@@ -273,8 +278,6 @@ class Display : public PlatformDisplayDelegate,
   base::OneShotTimer event_ack_timer_;
 
   WindowManagerStateMap window_manager_state_map_;
-
-  mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

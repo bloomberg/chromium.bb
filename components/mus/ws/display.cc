@@ -54,8 +54,6 @@ scoped_ptr<ui::Event> CoalesceEvents(scoped_ptr<ui::Event> first,
   return second;
 }
 
-uint32_t next_id = 1;
-
 }  // namespace
 
 class Display::ProcessedEventTarget {
@@ -92,18 +90,13 @@ Display::Display(ConnectionManager* connection_manager,
                  mojo::Connector* connector,
                  const scoped_refptr<GpuState>& gpu_state,
                  const scoped_refptr<SurfacesState>& surfaces_state)
-    : id_(next_id++),
+    : id_(connection_manager->display_manager()->GetAndAdvanceNextDisplayId()),
       connection_manager_(connection_manager),
       event_dispatcher_(this),
       platform_display_(
           PlatformDisplay::Create(connector, gpu_state, surfaces_state)),
       tree_awaiting_input_ack_(nullptr),
       last_cursor_(0) {
-  frame_decoration_values_ = mojom::FrameDecorationValues::New();
-  frame_decoration_values_->normal_client_area_insets = mojo::Insets::New();
-  frame_decoration_values_->maximized_client_area_insets = mojo::Insets::New();
-  frame_decoration_values_->max_title_bar_button_width = 0u;
-
   platform_display_->Init(this);
 
   connection_manager_->window_manager_factory_registry()->AddObserver(this);
@@ -133,10 +126,39 @@ void Display::Init(scoped_ptr<DisplayBinding> binding) {
   InitWindowManagersIfNecessary();
 }
 
-void Display::SetFrameDecorationValues(mojom::FrameDecorationValuesPtr values) {
-  // TODO(sky): this needs to be moved to WindowManagerState.
-  frame_decoration_values_ = values.Clone();
-  connection_manager_->ProcessFrameDecorationValuesChanged(this);
+DisplayManager* Display::display_manager() {
+  return connection_manager_->display_manager();
+}
+
+const DisplayManager* Display::display_manager() const {
+  return connection_manager_->display_manager();
+}
+
+mojom::DisplayPtr Display::ToMojomDisplay() const {
+  mojom::DisplayPtr display_ptr = mojom::Display::New();
+  display_ptr = mojom::Display::New();
+  display_ptr->id = id_;
+  display_ptr->bounds = mojo::Rect::New();
+  // TODO(sky): Display should know it's origin.
+  display_ptr->bounds->x = 0;
+  display_ptr->bounds->y = 0;
+  display_ptr->bounds->width = root_->bounds().size().width();
+  display_ptr->bounds->height = root_->bounds().size().height();
+  // TODO(sky): window manager needs an API to set the work area.
+  display_ptr->work_area = display_ptr->bounds.Clone();
+  display_ptr->device_pixel_ratio =
+      platform_display_->GetViewportMetrics().device_pixel_ratio;
+  display_ptr->rotation = platform_display_->GetRotation();
+  // TODO(sky): make this real.
+  display_ptr->is_primary = true;
+  // TODO(sky): make this real.
+  display_ptr->touch_support = mojom::TouchSupport::UNKNOWN;
+  display_ptr->frame_decoration_values = mojom::FrameDecorationValues::New();
+  display_ptr->frame_decoration_values->normal_client_area_insets =
+      mojo::Insets::New();
+  display_ptr->frame_decoration_values->maximized_client_area_insets =
+      mojo::Insets::New();
+  return display_ptr;
 }
 
 void Display::SchedulePaint(const ServerWindow* window,
@@ -185,8 +207,8 @@ WindowManagerState* Display::GetFirstWindowManagerState() {
              : window_manager_state_map_.begin()->second.get();
 }
 
-WindowManagerState* Display::GetWindowManagerStateForUser(
-    const UserId& user_id) {
+const WindowManagerState* Display::GetWindowManagerStateForUser(
+    const UserId& user_id) const {
   auto iter = window_manager_state_map_.find(user_id);
   return iter == window_manager_state_map_.end() ? nullptr : iter->second.get();
 }
@@ -308,14 +330,6 @@ void Display::InitWindowManagersIfNecessary() {
   } else {
     CreateWindowManagerStatesFromRegistry();
   }
-}
-
-DisplayManager* Display::display_manager() {
-  return connection_manager_->display_manager();
-}
-
-const DisplayManager* Display::display_manager() const {
-  return connection_manager_->display_manager();
 }
 
 void Display::OnEventAckTimeout() {
@@ -463,6 +477,8 @@ void Display::OnViewportMetricsChanged(
     for (auto& pair : window_manager_state_map_)
       pair.second->root()->SetBounds(wm_bounds);
   }
+  // TODO(sky): if bounds changed, then need to update
+  // Display/WindowManagerState appropriately (e.g. notify observers).
   connection_manager_->ProcessViewportMetricsChanged(this, old_metrics,
                                                      new_metrics);
 }
@@ -646,7 +662,8 @@ void Display::OnUserIdRemoved(const UserId& id) {
 }
 
 void Display::OnWindowManagerFactorySet(WindowManagerFactoryService* service) {
-  CreateWindowManagerStateFromService(service);
+  if (!binding_)
+    CreateWindowManagerStateFromService(service);
 }
 
 }  // namespace ws

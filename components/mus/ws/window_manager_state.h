@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/ws/user_id.h"
 
 namespace mus {
@@ -34,6 +35,21 @@ class WindowManagerState {
   WindowTree* tree() { return tree_; }
   const WindowTree* tree() const { return tree_; }
 
+  Display* display() { return display_; }
+  const Display* display() const { return display_; }
+
+  void SetFrameDecorationValues(mojom::FrameDecorationValuesPtr values);
+  const mojom::FrameDecorationValues& frame_decoration_values() const {
+    return *frame_decoration_values_;
+  }
+  bool got_frame_decoration_values() const {
+    return got_frame_decoration_values_;
+  }
+
+  // Returns a mojom::Display for the specified display. WindowManager specific
+  // values are not set.
+  mojom::DisplayPtr ToMojomDisplay() const;
+
  private:
   friend class Display;
 
@@ -48,6 +64,10 @@ class WindowManagerState {
   const UserId user_id_;
   scoped_ptr<ServerWindow> root_;
   WindowTree* tree_ = nullptr;
+
+  // Set to true the first time SetFrameDecorationValues() is received.
+  bool got_frame_decoration_values_ = false;
+  mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerState);
 };

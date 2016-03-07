@@ -7,6 +7,7 @@
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/server_window.h"
+#include "components/mus/ws/user_display_manager.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mus {
@@ -26,6 +27,11 @@ WindowManagerState::WindowManagerState(Display* display,
     : display_(display),
       is_user_id_valid_(is_user_id_valid),
       user_id_(user_id) {
+  frame_decoration_values_ = mojom::FrameDecorationValues::New();
+  frame_decoration_values_->normal_client_area_insets = mojo::Insets::New();
+  frame_decoration_values_->maximized_client_area_insets = mojo::Insets::New();
+  frame_decoration_values_->max_title_bar_button_width = 0u;
+
   ConnectionManager* connection_manager = display_->connection_manager();
   root_.reset(connection_manager->CreateServerWindow(
       connection_manager->display_manager()->GetAndAdvanceNextRootId(),
@@ -36,6 +42,23 @@ WindowManagerState::WindowManagerState(Display* display,
   root_->SetBounds(gfx::Rect(display->root_window()->bounds().size()));
   root_->SetVisible(true);
   display->root_window()->Add(root_.get());
+}
+
+void WindowManagerState::SetFrameDecorationValues(
+    mojom::FrameDecorationValuesPtr values) {
+  got_frame_decoration_values_ = true;
+  frame_decoration_values_ = values.Clone();
+  display_->display_manager()
+      ->GetUserDisplayManager(user_id_)
+      ->OnFrameDecorationValuesChanged(this);
+}
+
+mojom::DisplayPtr WindowManagerState::ToMojomDisplay() const {
+  mojom::DisplayPtr display_ptr = display_->ToMojomDisplay();
+  // TODO(sky): set work area.
+  display_ptr->work_area = display_ptr->bounds.Clone();
+  display_ptr->frame_decoration_values = frame_decoration_values_.Clone();
+  return display_ptr;
 }
 
 }  // namespace ws

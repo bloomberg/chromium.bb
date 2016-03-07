@@ -8,13 +8,10 @@
 #include <stdint.h>
 
 #include <map>
-#include <set>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer/timer.h"
-#include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -30,8 +27,6 @@
 #include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace mus {
 namespace ws {
@@ -50,7 +45,6 @@ class WindowTreeBinding;
 // clearer.
 class ConnectionManager : public ServerWindowDelegate,
                           public ServerWindowObserver,
-                          public mojom::DisplayManager,
                           public DisplayManagerDelegate {
  public:
   ConnectionManager(ConnectionManagerDelegate* delegate,
@@ -61,8 +55,8 @@ class ConnectionManager : public ServerWindowDelegate,
 
   UserIdTracker* user_id_tracker() { return &user_id_tracker_; }
 
-  ws::DisplayManager* display_manager() { return display_manager_.get(); }
-  const ws::DisplayManager* display_manager() const {
+  DisplayManager* display_manager() { return display_manager_.get(); }
+  const DisplayManager* display_manager() const {
     return display_manager_.get();
   }
 
@@ -127,9 +121,6 @@ class ConnectionManager : public ServerWindowDelegate,
   }
   const WindowTree* GetTreeWithRoot(const ServerWindow* window) const;
 
-  void AddDisplayManagerBinding(
-      mojo::InterfaceRequest<mojom::DisplayManager> request);
-
   void OnFirstWindowManagerFactorySet();
 
   WindowManagerFactoryRegistry* window_manager_factory_registry() {
@@ -156,9 +147,6 @@ class ConnectionManager : public ServerWindowDelegate,
   // TODO(sky): decide what we want to do here.
   void WindowManagerSentBogusMessage() {}
 
-  // Returns the Display for |display|.
-  mojom::DisplayPtr DisplayToMojomDisplay(Display* display);
-
   // These functions trivially delegate to all WindowTrees, which in
   // term notify their clients.
   void ProcessWindowBoundsChanged(const ServerWindow* window,
@@ -184,7 +172,6 @@ class ConnectionManager : public ServerWindowDelegate,
   void ProcessWindowDeleted(const ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                int32_t cursor_id);
-  void ProcessFrameDecorationValuesChanged(Display* display);
 
  private:
   friend class Operation;
@@ -225,13 +212,6 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Run in response to events which may cause us to change the native cursor.
   void MaybeUpdateNativeCursor(ServerWindow* window);
-
-  // Calls OnDisplays() on |observer|.
-  void CallOnDisplays(mojom::DisplayManagerObserver* observer);
-
-  // Calls observer->OnDisplaysChanged() with the display for |display|.
-  void CallOnDisplayChanged(mojom::DisplayManagerObserver* observer,
-                            Display* display);
 
   // Overridden from ServerWindowDelegate:
   mus::SurfacesState* GetSurfacesState() override;
@@ -275,9 +255,6 @@ class ConnectionManager : public ServerWindowDelegate,
   void OnTransientWindowRemoved(ServerWindow* window,
                                 ServerWindow* transient_child) override;
 
-  // Overriden from mojom::DisplayManager:
-  void AddObserver(mojom::DisplayManagerObserverPtr observer) override;
-
   // DisplayManagerDelegate:
   void OnWillDestroyDisplay(Display* display) override;
   void OnFirstDisplayReady() override;
@@ -293,7 +270,7 @@ class ConnectionManager : public ServerWindowDelegate,
   // ID to use for next WindowTree.
   ConnectionSpecificId next_connection_id_;
 
-  scoped_ptr<ws::DisplayManager> display_manager_;
+  scoped_ptr<DisplayManager> display_manager_;
 
   // Set of WindowTrees.
   WindowTreeMap tree_map_;
@@ -310,14 +287,6 @@ class ConnectionManager : public ServerWindowDelegate,
 
   // Next id supplied to the window manager.
   uint32_t next_wm_change_id_;
-
-  mojo::BindingSet<mojom::DisplayManager> display_manager_bindings_;
-  // WARNING: only use these once |got_valid_frame_decorations_| is true.
-  // TODO(sky): refactor this out into its own class.
-  mojo::InterfacePtrSet<mojom::DisplayManagerObserver>
-      display_manager_observers_;
-
-  bool got_valid_frame_decorations_;
 
   WindowManagerFactoryRegistry window_manager_factory_registry_;
 

@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_MUS_WS_DISPLAY_MANAGER_H_
 #define COMPONENTS_MUS_WS_DISPLAY_MANAGER_H_
 
+#include <map>
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/mus/ws/ids.h"
+#include "components/mus/ws/user_id.h"
 
 namespace mus {
 namespace ws {
@@ -16,6 +19,7 @@ namespace ws {
 class Display;
 class DisplayManagerDelegate;
 class ServerWindow;
+class UserDisplayManager;
 class WindowManagerState;
 
 struct WindowManagerAndDisplay {
@@ -36,6 +40,10 @@ class DisplayManager {
  public:
   explicit DisplayManager(DisplayManagerDelegate* delegate);
   ~DisplayManager();
+
+  // Returns the UserDisplayManager for |user_id|. DisplayManager owns the
+  // return value.
+  UserDisplayManager* GetUserDisplayManager(const UserId& user_id);
 
   // Adds/removes a Display. DisplayManager owns the Displays.
   // TODO(sky): make add take a scoped_ptr.
@@ -66,6 +74,8 @@ class DisplayManager {
   // as well as the root of WindowManagers).
   WindowId GetAndAdvanceNextRootId();
 
+  uint32_t GetAndAdvanceNextDisplayId();
+
   // Called when the AcceleratedWidget is available for |display|.
   void OnDisplayAcceleratedWidgetAvailable(Display* display);
 
@@ -78,8 +88,12 @@ class DisplayManager {
   std::set<Display*> pending_displays_;
   std::set<Display*> displays_;
 
+  std::map<UserId, scoped_ptr<UserDisplayManager>> user_display_managers_;
+
   // ID to use for next root node.
   ConnectionSpecificId next_root_id_;
+
+  uint32_t next_display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };

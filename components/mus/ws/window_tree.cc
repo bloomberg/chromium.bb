@@ -573,19 +573,22 @@ const DisplayManager* WindowTree::display_manager() const {
 }
 
 Display* WindowTree::GetDisplayForWindowManager() {
+  return GetWindowManagerStateForWindowManager()->display();
+}
+
+WindowManagerState* WindowTree::GetWindowManagerStateForWindowManager() {
   // The WindowTree for the wm has one and only one root.
   CHECK_EQ(1u, roots_.size());
 
   // Indicates this connection is for the wm.
   DCHECK(window_manager_internal_);
 
-  Display* display = GetDisplay(*roots_.begin());
-  WindowManagerAndDisplay wm_and_display =
-      display_manager()->GetWindowManagerAndDisplay(*roots_.begin());
-  CHECK(wm_and_display.display);
-  CHECK(wm_and_display.window_manager_state);
-  DCHECK_EQ(this, wm_and_display.window_manager_state->tree());
-  return display;
+  WindowManagerState* wms = display_manager()
+                                ->GetWindowManagerAndDisplay(*roots_.begin())
+                                .window_manager_state;
+  CHECK(wms);
+  DCHECK_EQ(this, wms->tree());
+  return wms;
 }
 
 bool WindowTree::ShouldRouteToWindowManager(const ServerWindow* window) const {
@@ -1327,8 +1330,9 @@ void WindowTree::WmRequestClose(Id transport_window_id) {
 
 void WindowTree::WmSetFrameDecorationValues(
     mojom::FrameDecorationValuesPtr values) {
-  if (GetDisplayForWindowManager())
-    GetDisplayForWindowManager()->SetFrameDecorationValues(std::move(values));
+  WindowManagerState* wm_state = GetWindowManagerStateForWindowManager();
+  if (wm_state)
+    wm_state->SetFrameDecorationValues(std::move(values));
 }
 
 void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,

@@ -7,12 +7,14 @@
 
 #include <stdint.h>
 
+#include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_factory.h"
 #include "components/mus/ws/test_change_tracker.h"
+#include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
@@ -34,6 +36,25 @@ class WindowManagerFactoryRegistryTestApi {
   WindowManagerFactoryRegistry* registry_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerFactoryRegistryTestApi);
+};
+
+// -----------------------------------------------------------------------------
+
+class UserDisplayManagerTestApi {
+ public:
+  explicit UserDisplayManagerTestApi(UserDisplayManager* udm) : udm_(udm) {}
+  ~UserDisplayManagerTestApi() {}
+
+  void SetTestObserver(mojom::DisplayManagerObserver* observer) {
+    udm_->test_observer_ = observer;
+    if (observer)
+      udm_->OnObserverAdded(observer);
+  }
+
+ private:
+  UserDisplayManager* udm_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserDisplayManagerTestApi);
 };
 
 // -----------------------------------------------------------------------------

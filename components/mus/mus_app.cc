@@ -16,6 +16,7 @@
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/display_manager.h"
+#include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "components/mus/ws/window_tree_factory.h"
@@ -181,14 +182,10 @@ void MandolineUIServicesApp::CreateDefaultDisplays() {
 
 void MandolineUIServicesApp::Create(mojo::Connection* connection,
                                     mojom::DisplayManagerRequest request) {
-  if (!connection_manager_->display_manager()->has_displays()) {
-    scoped_ptr<PendingRequest> pending_request(new PendingRequest);
-    pending_request->dm_request.reset(
-        new mojo::InterfaceRequest<mojom::DisplayManager>(std::move(request)));
-    pending_requests_.push_back(std::move(pending_request));
-    return;
-  }
-  connection_manager_->AddDisplayManagerBinding(std::move(request));
+  // TODO(sky): validate id.
+  connection_manager_->display_manager()
+      ->GetUserDisplayManager(connection->GetRemoteUserID())
+      ->AddDisplayManagerBinding(std::move(request));
 }
 
 void MandolineUIServicesApp::Create(
