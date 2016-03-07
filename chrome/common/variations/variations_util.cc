@@ -22,7 +22,9 @@ namespace chrome_variations {
 namespace {
 
 std::string EscapeValue(const std::string& value) {
-  return net::UnescapeURLComponent(value, net::UnescapeRule::URL_SPECIAL_CHARS);
+  return net::UnescapeURLComponent(
+      value, net::UnescapeRule::PATH_SEPARATORS |
+                 net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 }
 
 } // namespace

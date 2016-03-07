@@ -114,11 +114,11 @@ scoped_ptr<net::test_server::HttpResponse> HandleSetHeaderRequest(
   std::string escaped_header =
       request.relative_url.substr(query_string_pos + 1);
 
-  std::string header =
-      net::UnescapeURLComponent(escaped_header,
-                                net::UnescapeRule::NORMAL |
-                                net::UnescapeRule::SPACES |
-                                net::UnescapeRule::URL_SPECIAL_CHARS);
+  std::string header = net::UnescapeURLComponent(
+      escaped_header,
+      net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
+          net::UnescapeRule::PATH_SEPARATORS |
+          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
   size_t colon_pos = header.find(':');
   if (colon_pos == std::string::npos)

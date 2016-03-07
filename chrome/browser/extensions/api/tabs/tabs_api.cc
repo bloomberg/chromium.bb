@@ -1352,9 +1352,11 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
         ->ExecuteScript(
             HostID(HostID::EXTENSIONS, extension_id()),
             ScriptExecutor::JAVASCRIPT,
-            net::UnescapeURLComponent(url.GetContent(),
-                                      net::UnescapeRule::URL_SPECIAL_CHARS |
-                                          net::UnescapeRule::SPACES),
+            net::UnescapeURLComponent(
+                url.GetContent(),
+                net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+                    net::UnescapeRule::PATH_SEPARATORS |
+                    net::UnescapeRule::SPACES),
             ScriptExecutor::SINGLE_FRAME, ExtensionApiFrameIdMap::kTopFrameId,
             ScriptExecutor::DONT_MATCH_ABOUT_BLANK, UserScript::DOCUMENT_IDLE,
             ScriptExecutor::MAIN_WORLD, ScriptExecutor::DEFAULT_PROCESS, GURL(),

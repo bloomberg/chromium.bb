@@ -267,8 +267,8 @@ bool CanImportURLAsSearchEngine(const GURL& url,
   if (url_spec.empty())
     return false;
 
-  url_spec = net::UnescapeURLComponent(url_spec,
-                                       net::UnescapeRule::URL_SPECIAL_CHARS);
+  url_spec = net::UnescapeURLComponent(
+      url_spec, net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
   // Replace replacement terms ("%s") in |url_spec| with {searchTerms}.
   url_spec =

@@ -18,7 +18,8 @@
 
 namespace {
 const net::UnescapeRule::Type kUnescapeRules =
-    net::UnescapeRule::NORMAL | net::UnescapeRule::URL_SPECIAL_CHARS;
+    net::UnescapeRule::NORMAL | net::UnescapeRule::PATH_SEPARATORS |
+    net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
 }
 
 CoreAppLauncherHandler::CoreAppLauncherHandler() {}

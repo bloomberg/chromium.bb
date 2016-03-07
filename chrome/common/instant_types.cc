@@ -105,7 +105,8 @@ EmbeddedSearchRequestParams::EmbeddedSearchRequestParams(const GURL& url) {
 
   const net::UnescapeRule::Type unescape_rules =
       net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS |
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS |
+      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
       net::UnescapeRule::NORMAL | net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
 
   while (url::ExtractQueryKeyValue(url_params.c_str(), &query, &key, &value)) {

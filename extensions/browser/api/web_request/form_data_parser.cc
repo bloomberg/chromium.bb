@@ -352,7 +352,8 @@ scoped_ptr<FormDataParser> FormDataParser::CreateFromContentTypeHeader(
 FormDataParser::FormDataParser() {}
 
 const net::UnescapeRule::Type FormDataParserUrlEncoded::unescape_rules_ =
-    net::UnescapeRule::URL_SPECIAL_CHARS |
+    net::UnescapeRule::PATH_SEPARATORS |
+    net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
     net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS | net::UnescapeRule::SPACES |
     net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
 
