@@ -22,6 +22,7 @@ extern const char CleanupPlaceholderStyles[];
 extern const char CompositorProxy[];
 extern const char ControlValue[];
 extern const char Control[];
+extern const char DeclarativeContent[];
 extern const char DesignMode[];
 extern const char Drag[];
 extern const char FontSizeChange[];

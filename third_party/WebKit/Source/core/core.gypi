@@ -3909,6 +3909,7 @@
             'css/resolver/MatchResultTest.cpp',
             'dom/ActiveDOMObjectTest.cpp',
             'dom/AttrTest.cpp',
+            'dom/CSSSelectorWatchTest.cpp',
             'dom/CrossThreadTaskTest.cpp',
             'dom/DOMImplementationTest.cpp',
             'dom/DocumentStatisticsCollectorTest.cpp',

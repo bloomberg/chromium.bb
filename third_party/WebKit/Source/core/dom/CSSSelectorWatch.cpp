@@ -34,6 +34,7 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/StyleEngine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/style/StyleRareNonInheritedData.h"
@@ -158,7 +159,7 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
 
         m_watchedCallbackSelectors.append(StyleRule::create(std::move(selectorList), callbackPropertySet));
     }
-    document().changedSelectorWatch();
+    document().styleEngine().watchedSelectorsChanged();
 }
 
 DEFINE_TRACE(CSSSelectorWatch)

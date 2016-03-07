@@ -386,7 +386,6 @@ public:
     // do something smarter.
     void removedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
     void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
-    void changedSelectorWatch();
 
     void scheduleUseShadowTreeUpdate(SVGUseElement&);
     void unscheduleUseShadowTreeUpdate(SVGUseElement&);

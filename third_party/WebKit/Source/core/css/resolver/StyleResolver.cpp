@@ -198,6 +198,7 @@ void StyleResolver::dispose()
 
 void StyleResolver::initWatchedSelectorRules()
 {
+    m_watchedSelectorsRules = nullptr;
     CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(*m_document);
     if (!watch)
         return;

@@ -18,6 +18,7 @@ const char CleanupPlaceholderStyles[] = "CleanupPlaceholderStyles";
 const char CompositorProxy[] = "CompositorProxy";
 const char ControlValue[] = "ControlValue";
 const char Control[] = "Control";
+const char DeclarativeContent[] = "Extension declarativeContent.css";
 const char DesignMode[] = "DesignMode";
 const char Drag[] = "Drag";
 const char FontSizeChange[] = "FontSizeChange";

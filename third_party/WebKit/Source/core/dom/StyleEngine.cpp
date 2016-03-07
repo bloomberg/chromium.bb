@@ -238,6 +238,15 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
     resolverChanged(FullStyleUpdate);
 }
 
+void StyleEngine::watchedSelectorsChanged()
+{
+    if (m_resolver) {
+        m_resolver->initWatchedSelectorRules();
+        m_resolver->resetRuleFeatures();
+    }
+    document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::DeclarativeContent));
+}
+
 bool StyleEngine::shouldUpdateDocumentStyleSheetCollection(StyleResolverUpdateMode updateMode) const
 {
     return m_documentScopeDirty || updateMode == FullStyleUpdate;

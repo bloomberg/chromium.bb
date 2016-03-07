@@ -5773,11 +5773,6 @@ void Document::modifiedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode upd
     styleEngine().resolverChanged(updateMode);
 }
 
-void Document::changedSelectorWatch()
-{
-    styleEngine().resolverChanged(FullStyleUpdate);
-}
-
 TextAutosizer* Document::textAutosizer()
 {
     if (!m_textAutosizer)

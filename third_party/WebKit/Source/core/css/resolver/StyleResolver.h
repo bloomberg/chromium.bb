@@ -103,6 +103,7 @@ public:
     // https://bugs.webkit.org/show_bug.cgi?id=108890
     void appendAuthorStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>&);
     void resetAuthorStyle(TreeScope&);
+    void resetRuleFeatures();
     void finishAppendAuthorStyleSheets();
 
     void lazyAppendAuthorStyleSheets(unsigned firstNew, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>&);
@@ -174,13 +175,12 @@ public:
     DECLARE_TRACE();
 
     void addTreeBoundaryCrossingScope(ContainerNode& scope);
+    void initWatchedSelectorRules();
 
 private:
     explicit StyleResolver(Document&);
 
     PassRefPtr<ComputedStyle> initialStyleForElement();
-
-    void initWatchedSelectorRules();
 
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);
@@ -197,7 +197,6 @@ private:
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void collectFeatures();
     void collectTreeBoundaryCrossingRules(const Element&, ElementRuleCollector&);
-    void resetRuleFeatures();
 
     void applyMatchedProperties(StyleResolverState&, const MatchResult&);
     bool applyAnimatedProperties(StyleResolverState&, const Element* animatingElement);

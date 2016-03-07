@@ -90,6 +90,7 @@ public:
     void removeStyleSheetCandidateNode(Node*);
     void removeStyleSheetCandidateNode(Node*, TreeScope&);
     void modifiedStyleSheetCandidateNode(Node*);
+    void watchedSelectorsChanged();
 
     void injectAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet);
 
