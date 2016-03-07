@@ -600,7 +600,7 @@ SkColor ThemeService::GetColor(int id, bool incognito) const {
       return color_utils::GetReadableColor(
           SK_ColorWHITE, GetColor(kLabelBackground, incognito));
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
-      return color_utils::BlendTowardOppositeLuminance(
+      return color_utils::BlendTowardOppositeLuma(
           GetColor(ThemeProperties::COLOR_FRAME, incognito), 0x80);
     case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BORDER:
       return color_utils::AlphaBlend(GetColor(kLabelBackground, incognito),

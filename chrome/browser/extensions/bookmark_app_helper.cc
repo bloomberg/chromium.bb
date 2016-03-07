@@ -93,7 +93,7 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
  private:
   // gfx::CanvasImageSource overrides:
   void Draw(gfx::Canvas* canvas) override {
-    const unsigned char kLuminanceThreshold = 190;
+    const uint8_t kLumaThreshold = 190;
     const int icon_size = output_size_ * 3 / 4;
     const int icon_inset = output_size_ / 8;
     const size_t border_radius = output_size_ / 16;
@@ -117,12 +117,12 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
     // The text rect's size needs to be odd to center the text correctly.
     gfx::Rect text_rect(icon_inset, icon_inset, icon_size + 1, icon_size + 1);
     // Draw the letter onto the rounded rect. The letter's color depends on the
-    // luminance of |color|.
-    unsigned char luminance = color_utils::GetLuminanceForColor(color_);
+    // luma of |color|.
+    const uint8_t luma = color_utils::GetLuma(color_);
     canvas->DrawStringRectWithFlags(
         base::string16(1, std::toupper(letter_)),
         gfx::FontList(gfx::Font(font_name, font_size)),
-        luminance > kLuminanceThreshold ? SK_ColorBLACK : SK_ColorWHITE,
+        (luma > kLumaThreshold) ? SK_ColorBLACK : SK_ColorWHITE,
         text_rect,
         gfx::Canvas::TEXT_ALIGN_CENTER);
   }

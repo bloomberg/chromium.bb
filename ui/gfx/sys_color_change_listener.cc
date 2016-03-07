@@ -20,16 +20,16 @@ bool g_is_inverted_color_scheme = false;
 bool g_is_inverted_color_scheme_initialized = false;
 
 void UpdateInvertedColorScheme() {
-  int foreground_luminance = color_utils::GetLuminanceForColor(
-      color_utils::GetSysSkColor(COLOR_WINDOWTEXT));
-  int background_luminance = color_utils::GetLuminanceForColor(
-      color_utils::GetSysSkColor(COLOR_WINDOW));
+  const uint8_t foreground_luma =
+      color_utils::GetLuma(color_utils::GetSysSkColor(COLOR_WINDOWTEXT));
+  const uint8_t background_luma =
+      color_utils::GetLuma(color_utils::GetSysSkColor(COLOR_WINDOW));
   HIGHCONTRAST high_contrast = {0};
   high_contrast.cbSize = sizeof(HIGHCONTRAST);
   g_is_inverted_color_scheme =
       SystemParametersInfo(SPI_GETHIGHCONTRAST, 0, &high_contrast, 0) &&
       ((high_contrast.dwFlags & HCF_HIGHCONTRASTON) != 0) &&
-      foreground_luminance > background_luminance;
+      foreground_luma > background_luma;
   g_is_inverted_color_scheme_initialized = true;
 }
 

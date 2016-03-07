@@ -61,45 +61,44 @@
 using content::DownloadItem;
 using extensions::ExperienceSamplingEvent;
 
+namespace {
+
 // TODO(paulg): These may need to be adjusted when download progress
 //              animation is added, and also possibly to take into account
 //              different screen resolutions.
-static const int kTextWidth = 140;            // Pixels
-static const int kDangerousTextWidth = 200;   // Pixels
-static const int kVerticalPadding = 3;        // Pixels
-static const int kVerticalTextPadding = 2;    // Pixels
-static const int kTooltipMaxWidth = 800;      // Pixels
+const int kTextWidth = 140;            // Pixels
+const int kDangerousTextWidth = 200;   // Pixels
+const int kVerticalPadding = 3;        // Pixels
+const int kVerticalTextPadding = 2;    // Pixels
+const int kTooltipMaxWidth = 800;      // Pixels
 
 // Padding around progress indicator, on all sides.
-static const int kProgressPadding = 7;
+const int kProgressPadding = 7;
 
 // We add some padding before the left image so that the progress animation icon
 // hides the corners of the left image.
-static const int kLeftPadding = 0;  // Pixels.
+const int kLeftPadding = 0;  // Pixels.
 
 // The space between the Save and Discard buttons when prompting for a dangerous
 // download.
-static const int kButtonPadding = 5;  // Pixels.
+const int kButtonPadding = 5;  // Pixels.
 
 // The space on the left and right side of the dangerous download label.
-static const int kLabelPadding = 4;  // Pixels.
+const int kLabelPadding = 4;  // Pixels.
 
-static const SkColor kFileNameDisabledColor = SkColorSetRGB(171, 192, 212);
+const SkColor kFileNameDisabledColor = SkColorSetRGB(171, 192, 212);
 
 // How long the 'download complete' animation should last for.
-static const int kCompleteAnimationDurationMs = 2500;
+const int kCompleteAnimationDurationMs = 2500;
 
 // How long the 'download interrupted' animation should last for.
-static const int kInterruptedAnimationDurationMs = 2500;
+const int kInterruptedAnimationDurationMs = 2500;
 
 // How long we keep the item disabled after the user clicked it to open the
 // downloaded item.
-static const int kDisabledOnOpenDuration = 3000;
+const int kDisabledOnOpenDuration = 3000;
 
-// Darken light-on-dark download status text by 20% before drawing, thus
-// creating a "muted" version of title text for both dark-on-light and
-// light-on-dark themes.
-static const double kDownloadItemLuminanceMod = 0.8;
+}  // namespace
 
 DownloadItemView::DownloadItemView(DownloadItem* download_item,
     DownloadShelfView* parent)
@@ -699,16 +698,12 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
               kVerticalTextPadding;
       SkColor file_name_color = GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_BOOKMARK_TEXT);
-      // If text is light-on-dark, lightening it alone will do nothing.
-      // Therefore we mute luminance a wee bit before drawing in this case.
-      if (color_utils::RelativeLuminance(file_name_color) > 0.5)
-          file_name_color = SkColorSetRGB(
-              static_cast<int>(kDownloadItemLuminanceMod *
-                               SkColorGetR(file_name_color)),
-              static_cast<int>(kDownloadItemLuminanceMod *
-                               SkColorGetG(file_name_color)),
-              static_cast<int>(kDownloadItemLuminanceMod *
-                               SkColorGetB(file_name_color)));
+      // If text is light-on-dark, lightening it alone will do nothing.  In this
+      // case we multiply color components by 80% before drawing.
+      if (!color_utils::IsDark(file_name_color)) {
+        file_name_color =
+            color_utils::AlphaBlend(SK_ColorBLACK, file_name_color, 255 / 5);
+      }
       canvas->DrawStringRect(status_text_, font_list_, file_name_color,
                              gfx::Rect(mirrored_x, y, kTextWidth,
                                        font_list_.GetHeight()));

@@ -903,7 +903,7 @@ void Gtk2UI::LoadGtkValues() {
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
     colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-        color_utils::BlendTowardOppositeLuminance(label_color, 50);
+        color_utils::BlendTowardOppositeLuma(label_color, 50);
   } else {
     // The inactive frame color never occurs naturally in the theme, as it is a
     // tinted version of |frame_color|. We generate another color based on the

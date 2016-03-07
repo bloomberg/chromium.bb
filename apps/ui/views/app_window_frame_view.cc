@@ -374,10 +374,8 @@ void AppWindowFrameView::SetButtonImagesForFrame() {
 
   // If the frame is dark, we should use the light images so they have
   // some contrast.
-  unsigned char frame_luma =
-      color_utils::GetLuminanceForColor(CurrentFrameColor());
-  const unsigned char kLuminanceThreshold = 100;
-  bool use_light = frame_luma < kLuminanceThreshold;
+  const uint8_t kLumaThreshold = 100;
+  bool use_light = color_utils::GetLuma(CurrentFrameColor()) < kLumaThreshold;
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (use_light) {

@@ -42,8 +42,6 @@ const SkColor kHeaderContentSeparatorInactiveColor =
 const SkColor kDefaultFrameColor = SkColorSetRGB(242, 242, 242);
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
-// Luminance below which to use white caption buttons.
-const int kMaxLuminanceForLightButtons = 125;
 
 // Tiles an image into an area, rounding the top corners.
 void TileRoundRect(gfx::Canvas* canvas,
@@ -279,9 +277,8 @@ void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
 }
 
 bool DefaultHeaderPainter::ShouldUseLightImages() {
-  int luminance = color_utils::GetLuminanceForColor(
-      mode_ == MODE_INACTIVE ? inactive_frame_color_ : active_frame_color_);
-  return luminance < kMaxLuminanceForLightButtons;
+  return color_utils::IsDark(mode_ == MODE_INACTIVE ? inactive_frame_color_
+                                                    : active_frame_color_);
 }
 
 void DefaultHeaderPainter::UpdateAllButtonImages() {

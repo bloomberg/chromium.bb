@@ -42,35 +42,21 @@ int calcHue(double temp1, double temp2, double hue) {
   else if (hue * 3.0 < 2.0)
     result = temp1 + (temp2 - temp1) * (2.0 / 3.0 - hue) * 6.0;
 
-  // Scale the result from 0 - 255 and round off the value.
-  return static_cast<int>(result * 255 + .5);
+  return static_cast<int>(std::round(result * 255));
 }
 
-// Next two functions' formulas from:
-// http://www.w3.org/TR/WCAG20/#relativeluminancedef
-// http://www.w3.org/TR/WCAG20/#contrast-ratiodef
-
-double ConvertSRGB(double eight_bit_component) {
+// Assumes sRGB.
+double Linearize(double eight_bit_component) {
   const double component = eight_bit_component / 255.0;
   return (component <= 0.03928) ?
       (component / 12.92) : pow((component + 0.055) / 1.055, 2.4);
 }
 
-SkColor LumaInvertColor(SkColor color) {
+SkColor LightnessInvertColor(SkColor color) {
   HSL hsl;
   SkColorToHSL(color, &hsl);
   hsl.l = 1.0 - hsl.l;
-  return HSLToSkColor(hsl, 255);
-}
-
-double ContrastRatio(double foreground_luminance, double background_luminance) {
-  DCHECK_GE(foreground_luminance, 0.0);
-  DCHECK_GE(background_luminance, 0.0);
-  foreground_luminance += 0.05;
-  background_luminance += 0.05;
-  return (foreground_luminance > background_luminance) ?
-      (foreground_luminance / background_luminance) :
-      (background_luminance / foreground_luminance);
+  return HSLToSkColor(hsl, SkColorGetA(color));
 }
 
 }  // namespace
@@ -79,20 +65,29 @@ double ContrastRatio(double foreground_luminance, double background_luminance) {
 // ----------------------------------------------------------------------------
 
 double GetContrastRatio(SkColor color_a, SkColor color_b) {
-  return ContrastRatio(RelativeLuminance(color_a), RelativeLuminance(color_b));
+  return GetContrastRatio(GetRelativeLuminance(color_a),
+                          GetRelativeLuminance(color_b));
 }
 
-unsigned char GetLuminanceForColor(SkColor color) {
-  return base::saturated_cast<unsigned char>(
-      (0.3 * SkColorGetR(color)) +
-      (0.59 * SkColorGetG(color)) +
-      (0.11 * SkColorGetB(color)));
+double GetContrastRatio(double luminance_a, double luminance_b) {
+  DCHECK_GE(luminance_a, 0.0);
+  DCHECK_GE(luminance_b, 0.0);
+  luminance_a += 0.05;
+  luminance_b += 0.05;
+  return (luminance_a > luminance_b) ? (luminance_a / luminance_b)
+                                     : (luminance_b / luminance_a);
 }
 
-double RelativeLuminance(SkColor color) {
-  return (0.2126 * ConvertSRGB(SkColorGetR(color))) +
-         (0.7152 * ConvertSRGB(SkColorGetG(color))) +
-         (0.0722 * ConvertSRGB(SkColorGetB(color)));
+double GetRelativeLuminance(SkColor color) {
+  return (0.2126 * Linearize(SkColorGetR(color))) +
+         (0.7152 * Linearize(SkColorGetG(color))) +
+         (0.0722 * Linearize(SkColorGetB(color)));
+}
+
+uint8_t GetLuma(SkColor color) {
+  return static_cast<uint8_t>(std::round((0.299 * SkColorGetR(color)) +
+                                         (0.587 * SkColorGetG(color)) +
+                                         (0.114 * SkColorGetB(color))));
 }
 
 void SkColorToHSL(SkColor c, HSL* hsl) {
@@ -242,7 +237,7 @@ void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]) {
   int pixel_height = bitmap.height();
   for (int y = 0; y < pixel_height; ++y) {
     for (int x = 0; x < pixel_width; ++x)
-      ++histogram[GetLuminanceForColor(bitmap.getColor(x, y))];
+      ++histogram[GetLuma(bitmap.getColor(x, y))];
   }
 }
 
@@ -287,20 +282,28 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
 }
 
 bool IsDark(SkColor color) {
-  return GetLuminanceForColor(color) < 128;
+  return GetLuma(color) < 128;
 }
 
-SkColor BlendTowardOppositeLuminance(SkColor color, SkAlpha alpha) {
+SkColor BlendTowardOppositeLuma(SkColor color, SkAlpha alpha) {
   return AlphaBlend(IsDark(color) ? SK_ColorWHITE : SK_ColorBLACK, color,
                     alpha);
 }
 
 SkColor GetReadableColor(SkColor foreground, SkColor background) {
-  const SkColor foreground2 = LumaInvertColor(foreground);
-  const double background_luminance = RelativeLuminance(background);
-  return (ContrastRatio(RelativeLuminance(foreground), background_luminance) >=
-          ContrastRatio(RelativeLuminance(foreground2), background_luminance)) ?
-      foreground : foreground2;
+  return PickContrastingColor(foreground, LightnessInvertColor(foreground),
+                              background);
+}
+
+SkColor PickContrastingColor(SkColor foreground1,
+                             SkColor foreground2,
+                             SkColor background) {
+  const double background_luminance = GetRelativeLuminance(background);
+  return (GetContrastRatio(GetRelativeLuminance(foreground1),
+                           background_luminance) >=
+          GetContrastRatio(GetRelativeLuminance(foreground2),
+                           background_luminance)) ?
+      foreground1 : foreground2;
 }
 
 SkColor InvertColor(SkColor color) {

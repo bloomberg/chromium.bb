@@ -23,13 +23,21 @@ struct HSL {
 // This value is taken from w3c accessibility guidelines.
 const double kMinimumReadableContrastRatio = 4.5f;
 
-// Determines the contrast ratio of two colors.
+// Determines the contrast ratio of two colors or two relative luminance values
+// (as computed by RelativeLuminance()), calculated according to
+// http://www.w3.org/TR/WCAG20/#contrast-ratiodef .
 GFX_EXPORT double GetContrastRatio(SkColor color_a, SkColor color_b);
+GFX_EXPORT double GetContrastRatio(double luminance_a, double luminance_b);
 
-GFX_EXPORT unsigned char GetLuminanceForColor(SkColor color);
+// The relative luminance of |color|, that is, the weighted sum of the
+// linearized RGB components, normalized to 0..1, per BT.709.  See
+// http://www.w3.org/TR/WCAG20/#relativeluminancedef .
+GFX_EXPORT double GetRelativeLuminance(SkColor color);
 
-// Calculated according to http://www.w3.org/TR/WCAG20/#relativeluminancedef
-GFX_EXPORT double RelativeLuminance(SkColor color);
+// The luma of |color|, that is, the weighted sum of the gamma-compressed R'G'B'
+// components, per BT.601, a.k.a. the Y' in Y'UV.  See
+// https://en.wikipedia.org/wiki/Luma_(video).
+GFX_EXPORT uint8_t GetLuma(SkColor color);
 
 // Note: these transformations assume sRGB as the source color space
 GFX_EXPORT void SkColorToHSL(SkColor c, HSL* hsl);
@@ -50,8 +58,8 @@ GFX_EXPORT bool IsWithinHSLRange(const HSL& hsl,
                                  const HSL& upper_bound);
 
 // Makes |hsl| valid input for HSLShift(). Sets values of hue, saturation
-// and luminosity which are outside of the valid range [0, 1] to -1.
-// -1 is a special value which indicates 'no change'.
+// and lightness which are outside of the valid range [0, 1] to -1.  -1 is a
+// special value which indicates 'no change'.
 GFX_EXPORT void MakeHSLShiftValid(HSL* hsl);
 
 // HSL-Shift an SkColor. The shift values are in the range of 0-1, with the
@@ -70,8 +78,7 @@ GFX_EXPORT void MakeHSLShiftValid(HSL* hsl);
 //    1 = full lightness (make all pixels white).
 GFX_EXPORT SkColor HSLShift(SkColor color, const HSL& shift);
 
-// Builds a histogram based on the Y' of the Y'UV representation of
-// this image.
+// Builds a histogram based on the Y' of the Y'UV representation of this image.
 GFX_EXPORT void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]);
 
 // Calculates how "boring" an image is. The boring score is the
@@ -87,24 +94,29 @@ GFX_EXPORT double CalculateBoringScore(const SkBitmap& bitmap);
 GFX_EXPORT SkColor AlphaBlend(SkColor foreground, SkColor background,
                               SkAlpha alpha);
 
-// Returns true if the luminance of |color| is closer to black than white.
+// Returns true if the luma of |color| is closer to black than white.
 GFX_EXPORT bool IsDark(SkColor color);
 
 // Makes a dark color lighter or a light color darker by blending |color| with
-// white or black depending on its current luminance.  |alpha| controls the
-// amount of white or black that will be alpha-blended into |color|.
-GFX_EXPORT SkColor BlendTowardOppositeLuminance(SkColor color, SkAlpha alpha);
+// white or black depending on its current luma.  |alpha| controls the amount of
+// white or black that will be alpha-blended into |color|.
+GFX_EXPORT SkColor BlendTowardOppositeLuma(SkColor color, SkAlpha alpha);
 
-// Given an opaque foreground and background color, try to return a foreground
-// color that is "readable" over the background color by luma-inverting the
-// foreground color and then picking whichever foreground color has higher
-// contrast against the background color.  You should not pass colors with
-// non-255 alpha to this routine, since determining the correct behavior in such
-// cases can be impossible.
+// Given a foreground and background color, try to return a foreground color
+// that is "readable" over the background color by luma-inverting the foreground
+// color and then using PickContrastingColor() to pick the one with greater
+// contrast.  During this process, alpha values will be ignored; the returned
+// color will have the same alpha as |foreground|.
 //
 // NOTE: This won't do anything but waste time if the supplied foreground color
 // has a luma value close to the midpoint (0.5 in the HSL representation).
 GFX_EXPORT SkColor GetReadableColor(SkColor foreground, SkColor background);
+
+// Returns whichever of |foreground1| or |foreground2| has higher contrast with
+// |background|.
+GFX_EXPORT SkColor PickContrastingColor(SkColor foreground1,
+                                        SkColor foreground2,
+                                        SkColor background);
 
 // Invert a color.
 GFX_EXPORT SkColor InvertColor(SkColor color);
