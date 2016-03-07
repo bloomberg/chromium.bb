@@ -122,36 +122,6 @@ public:
     }
 };
 
-TEST_F(ImageQualityControllerTest, LowQualityFilterForLiveResize)
-{
-    MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);
-    controller()->setTimer(mockTimer);
-    setBodyInnerHTML("<img src='myimage'></img>");
-    LayoutImage* img = toLayoutImage(document().body()->firstChild()->layoutObject());
-
-    RefPtr<TestImageLowQuality> testImage = adoptRef(new TestImageLowQuality);
-
-    // Start a resize
-    document().frame()->view()->willStartLiveResize();
-    EXPECT_EQ(InterpolationLow, controller()->chooseInterpolationQuality(*img, testImage.get(), testImage.get(), LayoutSize(2, 2)));
-
-    document().frame()->view()->willEndLiveResize();
-
-    // End of live resize, but timer has not fired. Therefore paint at non-low quality.
-    EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(*img, testImage.get(), testImage.get(), LayoutSize(3, 3)));
-
-    // Start another resize
-    document().frame()->view()->willStartLiveResize();
-    EXPECT_EQ(InterpolationLow, controller()->chooseInterpolationQuality(*img, testImage.get(), testImage.get(), LayoutSize(3, 3)));
-
-    // While still in resize, expire the timer.
-    document().frame()->view()->willEndLiveResize();
-
-    mockTimer->fire();
-    // End of live resize, and timer has fired. Therefore paint at non-low quality, even though the size has changed.
-    EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(*img, testImage.get(), testImage.get(), LayoutSize(4, 4)));
-}
-
 TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)
 {
     MockTimer* mockTimer = new MockTimer(controller(), &ImageQualityController::highQualityRepaintTimerFired);

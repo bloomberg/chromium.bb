@@ -101,10 +101,6 @@ public:
 
     static bool scrollBehaviorFromString(const String&, ScrollBehavior&);
 
-    bool inLiveResize() const { return m_inLiveResize; }
-    void willStartLiveResize();
-    void willEndLiveResize();
-
     void contentAreaWillPaint() const;
     void mouseEnteredContentArea() const;
     void mouseExitedContentArea() const;
@@ -326,8 +322,6 @@ private:
 
     mutable OwnPtrWillBeMember<ScrollAnimatorBase> m_scrollAnimator;
     mutable OwnPtrWillBeMember<ProgrammaticScrollAnimator> m_programmaticScrollAnimator;
-
-    unsigned m_inLiveResize : 1;
 
     unsigned m_scrollbarOverlayStyle : 2; // ScrollbarOverlayStyle
 

@@ -216,10 +216,7 @@ static NSSize abs(NSSize size)
 
 - (BOOL)inLiveResizeForScrollerImpPair:(id)scrollerImpPair
 {
-    if (!_scrollableArea)
-        return NO;
-
-    return _scrollableArea->inLiveResize();
+    return NO;
 }
 
 - (NSPoint)mouseLocationInContentAreaForScrollerImpPair:(id)scrollerImpPair
@@ -848,25 +845,11 @@ void ScrollAnimatorMac::mouseExitedScrollbar(Scrollbar& scrollbar) const
         [painter mouseExitedScroller];
 }
 
-void ScrollAnimatorMac::willStartLiveResize()
-{
-    if (!scrollableArea()->scrollbarsCanBeActive())
-        return;
-    [m_scrollbarPainterController.get() startLiveResize];
-}
-
 void ScrollAnimatorMac::contentsResized() const
 {
     if (!scrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() contentAreaDidResize];
-}
-
-void ScrollAnimatorMac::willEndLiveResize()
-{
-    if (!scrollableArea()->scrollbarsCanBeActive())
-        return;
-    [m_scrollbarPainterController.get() endLiveResize];
 }
 
 void ScrollAnimatorMac::contentAreaDidShow() const
@@ -921,8 +904,6 @@ void ScrollAnimatorMac::didAddVerticalScrollbar(Scrollbar& scrollbar)
 
     [painter setDelegate:m_verticalScrollbarPainterDelegate.get()];
     [m_scrollbarPainterController.get() setVerticalScrollerImp:painter];
-    if (scrollableArea()->inLiveResize())
-        [painter setKnobAlpha:1];
 }
 
 void ScrollAnimatorMac::willRemoveVerticalScrollbar(Scrollbar& scrollbar)
@@ -950,8 +931,6 @@ void ScrollAnimatorMac::didAddHorizontalScrollbar(Scrollbar& scrollbar)
 
     [painter setDelegate:m_horizontalScrollbarPainterDelegate.get()];
     [m_scrollbarPainterController.get() setHorizontalScrollerImp:painter];
-    if (scrollableArea()->inLiveResize())
-        [painter setKnobAlpha:1];
 }
 
 void ScrollAnimatorMac::willRemoveHorizontalScrollbar(Scrollbar& scrollbar)

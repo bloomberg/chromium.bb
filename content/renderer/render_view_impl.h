@@ -690,7 +690,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnGetRenderedText();
   void OnPluginImeCompositionCompleted(const base::string16& text,
                                        int plugin_id);
-  void OnSetInLiveResize(bool in_live_resize);
   void OnSetWindowVisibility(bool visible);
   void OnWindowFrameChanged(const gfx::Rect& window_frame,
                             const gfx::Rect& view_frame);

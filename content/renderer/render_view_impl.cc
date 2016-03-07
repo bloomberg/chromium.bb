@@ -1418,7 +1418,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
                         OnPluginImeCompositionCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
     IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
 #endif
@@ -1518,17 +1517,6 @@ void RenderViewImpl::OnSetInitialFocus(bool reverse) {
 void RenderViewImpl::OnUpdateWindowScreenRect(gfx::Rect window_screen_rect) {
   RenderWidget::OnUpdateWindowScreenRect(window_screen_rect);
 }
-
-#if defined(OS_MACOSX)
-void RenderViewImpl::OnSetInLiveResize(bool in_live_resize) {
-  if (!webview())
-    return;
-  if (in_live_resize)
-    webview()->willStartLiveResize();
-  else
-    webview()->willEndLiveResize();
-}
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

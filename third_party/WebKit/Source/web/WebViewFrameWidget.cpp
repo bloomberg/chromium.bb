@@ -41,11 +41,6 @@ WebSize WebViewFrameWidget::size()
     return m_webView->size();
 }
 
-void WebViewFrameWidget::willStartLiveResize()
-{
-    return m_webView->willStartLiveResize();
-}
-
 void WebViewFrameWidget::resize(const WebSize& size)
 {
     return m_webView->resize(size);
@@ -54,11 +49,6 @@ void WebViewFrameWidget::resize(const WebSize& size)
 void WebViewFrameWidget::resizeVisualViewport(const WebSize& size)
 {
     return m_webView->resizeVisualViewport(size);
-}
-
-void WebViewFrameWidget::willEndLiveResize()
-{
-    return m_webView->willEndLiveResize();
 }
 
 void WebViewFrameWidget::didEnterFullScreen()

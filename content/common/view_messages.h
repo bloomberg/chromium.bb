@@ -907,11 +907,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_WindowFrameChanged,
                     gfx::Rect /* window frame */,
                     gfx::Rect /* content view frame */)
 
-// Message sent from the browser to the renderer when the user starts or stops
-// resizing the view.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetInLiveResize,
-                    bool /* enable */)
-
 // Tell the renderer that plugin IME has completed.
 IPC_MESSAGE_ROUTED2(ViewMsg_PluginImeCompositionCompleted,
                     base::string16 /* text */,

@@ -63,12 +63,6 @@ public:
     // Returns the current size of the WebWidget.
     virtual WebSize size() { return WebSize(); }
 
-    // Used to group a series of resize events. For example, if the user
-    // drags a resizer then willStartLiveResize will be called, followed by a
-    // sequence of resize events, ending with willEndLiveResize when the user
-    // lets go of the resizer.
-    virtual void willStartLiveResize() { }
-
     // Called to resize the WebWidget.
     virtual void resize(const WebSize&) { }
 
@@ -78,10 +72,6 @@ public:
     // shrink the visible viewport to allow things like the ChromeOS virtual
     // keyboard to overlay over content but allow scrolling it into view.
     virtual void resizeVisualViewport(const WebSize&) { }
-
-    // Ends a group of resize events that was started with a call to
-    // willStartLiveResize.
-    virtual void willEndLiveResize() { }
 
     // Called to notify the WebWidget of entering/exiting fullscreen mode.
     virtual void didEnterFullScreen() { }

@@ -102,9 +102,7 @@ private:
     void mouseMovedInContentArea() const override;
     void mouseEnteredScrollbar(Scrollbar&) const override;
     void mouseExitedScrollbar(Scrollbar&) const override;
-    void willStartLiveResize() override;
     void contentsResized() const override;
-    void willEndLiveResize() override;
     void contentAreaDidShow() const override;
     void contentAreaDidHide() const override;
     void didBeginScrollGesture() const;

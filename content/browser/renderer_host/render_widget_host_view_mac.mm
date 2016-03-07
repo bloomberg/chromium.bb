@@ -3433,20 +3433,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   return requestor;
 }
 
-- (void)viewWillStartLiveResize {
-  [super viewWillStartLiveResize];
-  RenderWidgetHostImpl* widget = renderWidgetHostView_->render_widget_host_;
-  if (widget)
-    widget->Send(new ViewMsg_SetInLiveResize(widget->GetRoutingID(), true));
-}
-
-- (void)viewDidEndLiveResize {
-  [super viewDidEndLiveResize];
-  RenderWidgetHostImpl* widget = renderWidgetHostView_->render_widget_host_;
-  if (widget)
-    widget->Send(new ViewMsg_SetInLiveResize(widget->GetRoutingID(), false));
-}
-
 - (void)updateCursor:(NSCursor*)cursor {
   if (currentCursor_ == cursor)
     return;

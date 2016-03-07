@@ -152,12 +152,6 @@ WebSize WebFrameWidgetImpl::size()
     return m_size;
 }
 
-void WebFrameWidgetImpl::willStartLiveResize()
-{
-    if (m_localRoot->frameView())
-        m_localRoot->frameView()->willStartLiveResize();
-}
-
 void WebFrameWidgetImpl::resize(const WebSize& newSize)
 {
     if (m_size == newSize)
@@ -226,12 +220,6 @@ void WebFrameWidgetImpl::setIgnoreInputEvents(bool newValue)
 {
     ASSERT(m_ignoreInputEvents != newValue);
     m_ignoreInputEvents = newValue;
-}
-
-void WebFrameWidgetImpl::willEndLiveResize()
-{
-    if (m_localRoot->frameView())
-        m_localRoot->frameView()->willEndLiveResize();
 }
 
 void WebFrameWidgetImpl::didEnterFullScreen()

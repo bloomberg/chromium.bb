@@ -82,7 +82,6 @@ private:
 
     ObjectLayerSizeMap m_objectLayerSizeMap;
     OwnPtr<Timer<ImageQualityController>> m_timer;
-    bool m_liveResizeOptimizationIsActive;
 
     // For calling set().
     FRIEND_TEST_ALL_PREFIXES(LayoutPartTest, DestroyUpdatesImageQualityController);

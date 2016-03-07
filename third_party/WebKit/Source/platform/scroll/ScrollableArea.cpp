@@ -80,8 +80,7 @@ int ScrollableArea::maxOverlapBetweenPages()
 }
 
 ScrollableArea::ScrollableArea()
-    : m_inLiveResize(false)
-    , m_scrollbarOverlayStyle(ScrollbarOverlayStyleDefault)
+    : m_scrollbarOverlayStyle(ScrollbarOverlayStyleDefault)
     , m_scrollOriginChanged(false)
     , m_horizontalScrollbarNeedsPaintInvalidation(false)
     , m_verticalScrollbarNeedsPaintInvalidation(false)
@@ -307,24 +306,6 @@ bool ScrollableArea::scrollBehaviorFromString(const String& behaviorString, Scro
 void ScrollableArea::setScrollOffsetFromInternals(const IntPoint& offset)
 {
     scrollPositionChanged(DoublePoint(offset), ProgrammaticScroll);
-}
-
-void ScrollableArea::willStartLiveResize()
-{
-    if (m_inLiveResize)
-        return;
-    m_inLiveResize = true;
-    if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
-        scrollAnimator->willStartLiveResize();
-}
-
-void ScrollableArea::willEndLiveResize()
-{
-    if (!m_inLiveResize)
-        return;
-    m_inLiveResize = false;
-    if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
-        scrollAnimator->willEndLiveResize();
 }
 
 void ScrollableArea::contentAreaWillPaint() const

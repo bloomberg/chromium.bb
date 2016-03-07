@@ -1770,12 +1770,6 @@ void WebViewImpl::close()
     deref();  // Balances ref() acquired in WebView::create
 }
 
-void WebViewImpl::willStartLiveResize()
-{
-    if (mainFrameImpl() && mainFrameImpl()->frameView())
-        mainFrameImpl()->frameView()->willStartLiveResize();
-}
-
 WebSize WebViewImpl::size()
 {
     return m_size;
@@ -1905,12 +1899,6 @@ void WebViewImpl::resize(const WebSize& newSize)
         resizeViewWhileAnchored(view);
     }
     sendResizeEventAndRepaint();
-}
-
-void WebViewImpl::willEndLiveResize()
-{
-    if (mainFrameImpl() && mainFrameImpl()->frameView())
-        mainFrameImpl()->frameView()->willEndLiveResize();
 }
 
 void WebViewImpl::didEnterFullScreen()
