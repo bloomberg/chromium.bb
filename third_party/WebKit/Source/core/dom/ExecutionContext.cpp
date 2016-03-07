@@ -36,6 +36,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/MainThread.h"
@@ -263,6 +264,11 @@ void ExecutionContext::setReferrerPolicy(ReferrerPolicy referrerPolicy)
         UseCounter::count(this, UseCounter::ResetReferrerPolicy);
 
     m_referrerPolicy = referrerPolicy;
+}
+
+PassOwnPtrWillBeRawPtr<OriginTrialContext> ExecutionContext::createOriginTrialContext()
+{
+    return nullptr;
 }
 
 void ExecutionContext::removeURLFromMemoryCache(const KURL& url)

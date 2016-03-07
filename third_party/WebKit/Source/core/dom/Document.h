@@ -140,6 +140,7 @@ class NodeIntersectionObserverData;
 class NodeIterator;
 class NthIndexCache;
 class OriginAccessEntry;
+class OriginTrialContext;
 class Page;
 class PlatformMouseEvent;
 class ProcessingInstruction;
@@ -1079,6 +1080,7 @@ protected:
     ParserSynchronizationPolicy getParserSynchronizationPolicy() const { return m_parserSyncPolicy; }
 
 private:
+    friend class DocumentOriginTrialContextTest;
     friend class IgnoreDestructiveWriteCountIncrementer;
     friend class NthIndexCache;
 
@@ -1161,6 +1163,8 @@ private:
     void setNthIndexCache(NthIndexCache* nthIndexCache) { ASSERT(!m_nthIndexCache || !nthIndexCache); m_nthIndexCache = nthIndexCache; }
 
     const OriginAccessEntry& accessEntryFromURL();
+
+    PassOwnPtrWillBeRawPtr<OriginTrialContext> createOriginTrialContext() override;
 
     DocumentLifecycle m_lifecycle;
 

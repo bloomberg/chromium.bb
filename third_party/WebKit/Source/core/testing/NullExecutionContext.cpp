@@ -25,6 +25,7 @@ public:
 
 NullExecutionContext::NullExecutionContext()
     : m_tasksNeedSuspension(false)
+    , m_isSecureContext(true)
     , m_queue(adoptPtrWillBeNoop(new NullEventQueue()))
 {
 }
@@ -33,9 +34,16 @@ void NullExecutionContext::postTask(const WebTraceLocation&, PassOwnPtr<Executio
 {
 }
 
+void NullExecutionContext::setIsSecureContext(bool isSecureContext)
+{
+    m_isSecureContext = isSecureContext;
+}
+
 bool NullExecutionContext::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
 {
-    return true;
+    if (!m_isSecureContext)
+        errorMessage = "A secure context is required";
+    return m_isSecureContext;
 }
 
 } // namespace blink

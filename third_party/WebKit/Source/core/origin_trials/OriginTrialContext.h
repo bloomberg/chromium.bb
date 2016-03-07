@@ -6,12 +6,13 @@
 #define OriginTrialContext_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExecutionContext.h"
-#include "wtf/text/WTFString.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
+class ExecutionContext;
 class WebTrialTokenValidator;
 
 // The Experimental Framework (EF) provides limited access to experimental
@@ -27,24 +28,34 @@ class WebTrialTokenValidator;
 // feature names. Instead, the EF validates the name provided by the feature
 // implementation against any provided tokens.
 //
-// This class is not intended to be instantiated. Any required state is kept
-// with a WebApiKeyValidator object held in the Platform object.
-// The static methods in this class may be called either from the main thread
-// or from a worker thread.
+// This class is abstract, and should be subclassed for each execution context
+// which supports origin trials.
 //
 // TODO(chasej): Link to documentation, or provide more detail on keys, .etc
-class CORE_EXPORT OriginTrialContext {
+class CORE_EXPORT OriginTrialContext : public NoBaseWillBeGarbageCollectedFinalized<OriginTrialContext> {
+public:
+    static const char kTrialHeaderName[];
+    virtual ~OriginTrialContext() = default;
+
+    virtual ExecutionContext* executionContext() = 0;
+    virtual Vector<String> getTokens() = 0;
+
+    DECLARE_VIRTUAL_TRACE();
+
+protected:
+    OriginTrialContext();
+
 private:
     friend class OriginTrialContextTest;
     friend class OriginTrials;
-
-    OriginTrialContext();
 
     // Returns true if the feature should be considered enabled for the current
     // execution context. This method usually makes use of the token validator
     // object in the platform, but this may be overridden if a custom validator
     // is required (for testing, for instance).
-    static bool isFeatureEnabled(ExecutionContext*, const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
+    bool isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
+
+    bool hasValidToken(Vector<String> tokens, const String& featureName, String* errorMessage, WebTrialTokenValidator*);
 };
 
 } // namespace blink

@@ -17,8 +17,6 @@ namespace blink {
 
 namespace {
 
-const char kTrialHeaderName[] = "origin-trial";
-
 String getCurrentOrigin(ExecutionContext* executionContext)
 {
     return executionContext->securityOrigin()->toString();
@@ -30,40 +28,13 @@ String getDisabledMessage(const String& featureName)
     return "The '" + featureName + "' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.";
 }
 
-bool hasValidToken(ExecutionContext* executionContext, const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
-{
-    bool foundAnyToken = false;
-    String origin = getCurrentOrigin(executionContext);
-
-    // When in a document, the token is provided in a meta tag
-    if (executionContext->isDocument()) {
-        HTMLHeadElement* head = toDocument(executionContext)->head();
-        for (HTMLMetaElement* metaElement = head ? Traversal<HTMLMetaElement>::firstChild(*head) : 0; metaElement; metaElement = Traversal<HTMLMetaElement>::nextSibling(*metaElement)) {
-            if (equalIgnoringCase(metaElement->httpEquiv(), kTrialHeaderName)) {
-                foundAnyToken = true;
-                String tokenString = metaElement->content();
-                // Check with the validator service to verify the signature.
-                if (validator->validateToken(tokenString, origin, featureName)) {
-                    return true;
-                }
-            }
-        }
-    }
-
-    if (errorMessage) {
-        if (foundAnyToken) {
-            *errorMessage = "The provided token(s) are not valid for the '" + featureName + "' feature.";
-        } else {
-            *errorMessage = getDisabledMessage(featureName);
-        }
-    }
-    return false;
-}
-
 } // namespace
 
-// static
-bool OriginTrialContext::isFeatureEnabled(ExecutionContext* executionContext, const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
+const char OriginTrialContext::kTrialHeaderName[] = "origin-trial";
+
+OriginTrialContext::OriginTrialContext() {}
+
+bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
     if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
         // TODO(iclelland): Set an error message here, the first time the
@@ -71,16 +42,16 @@ bool OriginTrialContext::isFeatureEnabled(ExecutionContext* executionContext, co
         return false;
     }
 
-    if (!executionContext) {
-        ASSERT_NOT_REACHED();
-        return false;
-    }
-
     // Feature trials are only enabled for secure origins
     bool isSecure = errorMessage
-        ? executionContext->isSecureContext(*errorMessage)
-        : executionContext->isSecureContext();
+        ? executionContext()->isSecureContext(*errorMessage)
+        : executionContext()->isSecureContext();
     if (!isSecure) {
+        // The execution context should always set a message here, if a valid
+        // pointer was passed in. If it does not, then we should find out why
+        // not, and decide whether the OriginTrialContext should be using its
+        // own error messages for this case.
+        DCHECK(!errorMessage || !errorMessage->isEmpty());
         return false;
     }
 
@@ -93,7 +64,32 @@ bool OriginTrialContext::isFeatureEnabled(ExecutionContext* executionContext, co
         }
     }
 
-    return hasValidToken(executionContext, featureName, errorMessage, validator);
+    return hasValidToken(getTokens(), featureName, errorMessage, validator);
+}
+
+bool OriginTrialContext::hasValidToken(Vector<String> tokens, const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
+{
+    String origin = getCurrentOrigin(executionContext());
+
+    for (const String& token : tokens) {
+        // Check with the validator service to verify the signature.
+        if (validator->validateToken(token, origin, featureName)) {
+            return true;
+        }
+    }
+
+    if (errorMessage) {
+        if (tokens.size()) {
+            *errorMessage = "The provided token(s) are not valid for the '" + featureName + "' feature.";
+        } else {
+            *errorMessage = getDisabledMessage(featureName);
+        }
+    }
+    return false;
+}
+
+DEFINE_TRACE(OriginTrialContext)
+{
 }
 
 } // namespace blink

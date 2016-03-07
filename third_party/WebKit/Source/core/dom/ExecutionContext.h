@@ -53,6 +53,7 @@ class EventQueue;
 class EventTarget;
 class ExecutionContextTask;
 class LocalDOMWindow;
+class OriginTrialContext;
 class PublicURLManager;
 class SecurityOrigin;
 class ScriptCallStack;
@@ -154,6 +155,9 @@ public:
 
     virtual void setReferrerPolicy(ReferrerPolicy);
     ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
+
+    // Override to enable experimental features through origin trials
+    virtual PassOwnPtrWillBeRawPtr<OriginTrialContext> createOriginTrialContext();
 
 protected:
     ExecutionContext();

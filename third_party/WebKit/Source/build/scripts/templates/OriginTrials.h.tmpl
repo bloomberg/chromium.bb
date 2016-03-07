@@ -5,32 +5,43 @@
 #define OriginTrials_h
 
 #include "core/CoreExport.h"
+#include "platform/Supplementable.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class ExecutionContext;
+class OriginTrialContext;
 
 // A class that stores dynamic tests for experimental features which can be
 // enabled through the experimental framework via API keys.
 
-class CORE_EXPORT OriginTrials {
+class CORE_EXPORT OriginTrials final : public NoBaseWillBeGarbageCollected<OriginTrials>, public WillBeHeapSupplement<ExecutionContext> {
+WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(OriginTrials)
 public:
+    OriginTrials(PassOwnPtrWillBeRawPtr<OriginTrialContext>);
+
+    static const char* supplementName();
+    static OriginTrials* from(ExecutionContext*);
+
     {% for feature in features %}
     {% if feature.origin_trial_feature_name %}
+
     static bool {{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext, String& errorMessage);
     static bool {{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext);
     {% endif %}
     {% endfor %}
 
-private:
-    OriginTrials() { }
+    DECLARE_TRACE();
 
+private:
     {% for feature in features %}
     {% if feature.origin_trial_feature_name %}
-    static bool {{feature.first_lowered_name}}EnabledImpl(ExecutionContext* executionContext, String* errorMessage);
+    bool {{feature.first_lowered_name}}EnabledImpl(String* errorMessage);
     {% endif %}
     {% endfor %}
+
+    OwnPtrWillBeMember<OriginTrialContext> m_originTrialContext;
 };
 
 } // namespace blink

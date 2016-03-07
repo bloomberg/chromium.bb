@@ -12,10 +12,12 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/testing/NullExecutionContext.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebTrialTokenValidator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 namespace {
@@ -66,75 +68,76 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MockTokenValidator);
 };
 
+// Concrete subclass of OriginTrialContext which simply maintains a vector of
+// token strings to use for tests.
+class TestOriginTrialContext : public OriginTrialContext {
+public:
+    explicit TestOriginTrialContext()
+        : m_parent(adoptRefWillBeNoop(new NullExecutionContext()))
+    {
+    }
+
+    ~TestOriginTrialContext() override = default;
+
+    ExecutionContext* executionContext() override { return m_parent.get(); }
+
+    void addToken(const String& token)
+    {
+        m_tokens.append(token);
+    }
+
+    void updateSecurityOrigin(const String& origin)
+    {
+        KURL pageURL(ParsedURLString, origin);
+        RefPtr<SecurityOrigin> pageOrigin = SecurityOrigin::create(pageURL);
+        m_parent->setSecurityOrigin(pageOrigin);
+        m_parent->setIsSecureContext(SecurityOrigin::isSecure(pageURL));
+    }
+
+    Vector<String> getTokens() override
+    {
+        Vector<String> tokens;
+        for (String token : m_tokens) {
+            tokens.append(token);
+        }
+        return tokens;
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_parent);
+        OriginTrialContext::trace(visitor);
+    }
+
+private:
+    RefPtrWillBeMember<NullExecutionContext> m_parent;
+    Vector<String> m_tokens;
+};
+
 } // namespace
 
 class OriginTrialContextTest : public ::testing::Test {
 protected:
     OriginTrialContextTest()
-        : m_page(DummyPageHolder::create())
-        , m_frameworkWasEnabled(RuntimeEnabledFeatures::experimentalFrameworkEnabled())
+        : m_frameworkWasEnabled(RuntimeEnabledFeatures::experimentalFrameworkEnabled())
         , m_tokenValidator(adoptPtr(new MockTokenValidator()))
+        , m_originTrialContext(adoptPtrWillBeNoop(new TestOriginTrialContext))
     {
-        if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
-            RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(true);
-        }
+        RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(true);
     }
 
     ~OriginTrialContextTest()
     {
-        if (!m_frameworkWasEnabled) {
-            RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(false);
-        }
-
-        m_page.clear();
+        RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(m_frameworkWasEnabled);
     }
 
-    void SetUp() override
-    {
-        m_document = toHTMLDocument(&m_page->document());
-        setInnerHTML(
-            "<html>"
-            "<head>"
-            "</head>"
-            "<body>"
-            "</body>"
-            "</html>");
-    }
-
-    ExecutionContext* executionContext() { return &(m_page->document()); }
     MockTokenValidator* tokenValidator() { return m_tokenValidator.get(); }
-    HTMLDocument& document() const { return *m_document; }
-
-    void setPageOrigin(const String& origin)
-    {
-        KURL pageURL(ParsedURLString, origin);
-        RefPtr<SecurityOrigin> pageOrigin = SecurityOrigin::create(pageURL);
-        m_page->document().updateSecurityOrigin(pageOrigin);
-    }
-
-    void setInnerHTML(const char* htmlContent)
-    {
-        document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
-        document().view()->updateAllLifecyclePhases();
-    }
-
-    void addTrialToken(const String& token)
-    {
-        HTMLElement* head = document().head();
-        ASSERT_TRUE(head);
-
-        RefPtrWillBeRawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(document());
-        meta->setAttribute(HTMLNames::http_equivAttr, "origin-trial");
-        AtomicString value(token);
-        meta->setAttribute(HTMLNames::contentAttr, value);
-        head->appendChild(meta.release());
-    }
 
     bool isFeatureEnabled(const String& origin, const String& featureName, const String& token, String* errorMessage)
     {
-        setPageOrigin(origin);
-        addTrialToken(token);
-        return OriginTrialContext::isFeatureEnabled(executionContext(), featureName, errorMessage, tokenValidator());
+        m_originTrialContext->updateSecurityOrigin(origin);
+        m_originTrialContext->addToken(token);
+        return m_originTrialContext->isFeatureEnabled(featureName, errorMessage, tokenValidator());
     }
 
     bool isFeatureEnabledWithoutErrorMessage(const String& origin, const String& featureName, const char* token)
@@ -143,10 +146,9 @@ protected:
     }
 
 private:
-    OwnPtr<DummyPageHolder> m_page;
-    RefPtrWillBePersistent<HTMLDocument> m_document;
     const bool m_frameworkWasEnabled;
     OwnPtr<MockTokenValidator> m_tokenValidator;
+    OwnPtrWillBePersistent<TestOriginTrialContext> m_originTrialContext;
 };
 
 TEST_F(OriginTrialContextTest, EnabledNonExistingFeature)
@@ -219,7 +221,17 @@ TEST_F(OriginTrialContextTest, EnabledNonSecureRegisteredOrigin)
         kGoodToken,
         &errorMessage);
     EXPECT_FALSE(isOriginEnabled);
-    EXPECT_TRUE(errorMessage.contains("secure origin")) << "Message should indicate only secure origins are allowed, was: " << errorMessage;
+    EXPECT_EQ(0, tokenValidator()->callCount());
+    EXPECT_FALSE(errorMessage.isEmpty());
+}
+
+TEST_F(OriginTrialContextTest, EnabledNonSecureRegisteredOriginWithoutErrorMessage)
+{
+    bool isOriginEnabled = isFeatureEnabledWithoutErrorMessage(
+        kFrobulateEnabledOriginUnsecure,
+        kFrobulateFeatureName,
+        kGoodToken);
+    EXPECT_FALSE(isOriginEnabled);
     EXPECT_EQ(0, tokenValidator()->callCount());
 }
 

@@ -3,35 +3,63 @@
 
 #include "core/origin_trials/OriginTrials.h"
 
+#include "core/dom/ExecutionContext.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
+
+OriginTrials::OriginTrials(PassOwnPtrWillBeRawPtr<OriginTrialContext> originTrialContext)
+    : m_originTrialContext(originTrialContext) {}
+
+// static
+const char* OriginTrials::supplementName()
+{
+   return "OriginTrials";
+}
+
+// static
+OriginTrials* OriginTrials::from(ExecutionContext* host)
+{
+    OriginTrials* originTrials = reinterpret_cast<OriginTrials*>(WillBeHeapSupplement<ExecutionContext>::from(host, supplementName()));
+    if (!originTrials) {
+        originTrials = new OriginTrials(host->createOriginTrialContext());
+        WillBeHeapSupplement<ExecutionContext>::provideTo(*host, supplementName(), adoptPtrWillBeNoop(originTrials));
+    }
+    return originTrials;
+}
+
 {% for feature in features %}
 {% if feature.origin_trial_feature_name %}
 
 // static
 bool OriginTrials::{{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext, String& errorMessage) {
-    return {{feature.first_lowered_name}}EnabledImpl(executionContext, &errorMessage);
+    return OriginTrials::from(executionContext)->{{feature.first_lowered_name}}EnabledImpl(&errorMessage);
 }
 
 // static
 bool OriginTrials::{{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext) {
-    return {{feature.first_lowered_name}}EnabledImpl(executionContext, nullptr);
+    return OriginTrials::from(executionContext)->{{feature.first_lowered_name}}EnabledImpl(nullptr);
 }
+
 {% endif %}
 {% endfor %}
 
 {% for feature in features %}
 {% if feature.origin_trial_feature_name %}
 
-// static
-bool OriginTrials::{{feature.first_lowered_name}}EnabledImpl(ExecutionContext* executionContext, String* errorMessage) {
+bool OriginTrials::{{feature.first_lowered_name}}EnabledImpl(String* errorMessage) {
     if (RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled())
         return true;
-    return OriginTrialContext::isFeatureEnabled(executionContext, "{{feature.origin_trial_feature_name}}", errorMessage);
+    if (!m_originTrialContext) return false;
+    return m_originTrialContext->isFeatureEnabled("{{feature.origin_trial_feature_name}}", errorMessage);
 }
 {% endif %}
 {% endfor %}
 
+DEFINE_TRACE(OriginTrials)
+{
+    visitor->trace(m_originTrialContext);
+    WillBeHeapSupplement<ExecutionContext>::trace(visitor);
+}
 } // namespace blink
