@@ -174,7 +174,7 @@ SpaceSplitString::Data::~Data()
 
 PassRefPtr<SpaceSplitString::Data> SpaceSplitString::Data::create(const AtomicString& string)
 {
-    Data*& data = sharedDataMap().add(string, 0).storedValue->value;
+    Data*& data = sharedDataMap().add(string, nullptr).storedValue->value;
     if (!data) {
         data = new Data(string);
         return adoptRef(data);

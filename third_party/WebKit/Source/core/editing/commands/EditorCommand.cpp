@@ -1683,7 +1683,7 @@ static const CommandMap& createCommandMap()
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(commands); ++i) {
         const CommandEntry& command = commands[i];
         ASSERT(!commandMap.get(command.name));
-        commandMap.set(command.name, &command.command);
+        commandMap.set(String(command.name), &command.command);
 #if ENABLE(ASSERT)
         ASSERT(!idSet.contains(command.command.idForUserMetrics));
         idSet.add(command.command.idForUserMetrics);

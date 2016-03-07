@@ -274,7 +274,7 @@ template <typename HashFunctions> class IdentityHashTranslator {
 public:
     template <typename T> static unsigned hash(const T& key) { return HashFunctions::hash(key); }
     template <typename T, typename U> static bool equal(const T& a, const U& b) { return HashFunctions::equal(a, b); }
-    template <typename T, typename U, typename V> static void translate(T& location, const U&, const V& value) { location = value; }
+    template <typename T, typename U, typename V> static void translate(T& location, U&&, V&& value) { location = std::forward<V>(value); }
 };
 
 template <typename HashTableType, typename ValueType> struct HashTableAddResult final {
@@ -462,7 +462,7 @@ public:
     // A special version of add() that finds the object by hashing and comparing
     // with some other type, to avoid the cost of type conversion if the object
     // is already in the table.
-    template <typename HashTranslator, typename T, typename Extra> AddResult add(const T& key, const Extra&);
+    template <typename HashTranslator, typename T, typename Extra> AddResult add(T&& key, Extra&&);
     template <typename HashTranslator, typename T, typename Extra> AddResult addPassingHashCode(const T& key, const Extra&);
 
     iterator find(KeyPeekInType key) { return find<IdentityTranslatorType>(key); }
@@ -483,8 +483,8 @@ public:
     static bool isEmptyOrDeletedBucket(const ValueType& value) { return HashTableHelper<ValueType, Extractor, KeyTraits>:: isEmptyOrDeletedBucket(value); }
 
     ValueType* lookup(KeyPeekInType key) { return lookup<IdentityTranslatorType, KeyPeekInType>(key); }
-    template <typename HashTranslator, typename T> ValueType* lookup(T);
-    template <typename HashTranslator, typename T> const ValueType* lookup(T) const;
+    template <typename HashTranslator, typename T> ValueType* lookup(const T&);
+    template <typename HashTranslator, typename T> const ValueType* lookup(const T&) const;
 
     template <typename VisitorDispatcher> void trace(VisitorDispatcher);
 
@@ -634,14 +634,14 @@ void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocato
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 template <typename HashTranslator, typename T>
-inline Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(T key)
+inline Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(const T& key)
 {
-    return const_cast<Value*>(const_cast<const HashTable*>(this)->lookup<HashTranslator, T>(key));
+    return const_cast<Value*>(const_cast<const HashTable*>(this)->lookup<HashTranslator>(key));
 }
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 template <typename HashTranslator, typename T>
-inline const Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(T key) const
+inline const Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(const T& key) const
 {
     ASSERT(!m_accessForbidden);
     ASSERT((HashTableKeyChecker<HashTranslator, KeyTraits, HashFunctions::safeToCompareToEmptyOrDeleted>::checkKey(key)));
@@ -795,7 +795,7 @@ inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, A
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 template <typename HashTranslator, typename T, typename Extra>
-typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::add(const T& key, const Extra& extra)
+typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::add(T&& key, Extra&& extra)
 {
     ASSERT(!m_accessForbidden);
     ASSERT(Allocator::isAllocationAllowed());
@@ -848,7 +848,7 @@ typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allo
         --m_deletedCount;
     }
 
-    HashTranslator::translate(*entry, key, extra);
+    HashTranslator::translate(*entry, std::forward<T>(key), std::forward<Extra>(extra));
     ASSERT(!isEmptyOrDeletedBucket(*entry));
 
     ++m_keyCount;

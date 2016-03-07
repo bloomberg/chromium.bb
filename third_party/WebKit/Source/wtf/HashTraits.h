@@ -107,11 +107,13 @@ template <typename T> struct GenericHashTraits : GenericHashTraitsBase<std::is_i
     // The store function either not be called or called once to store something
     // passed in.  The value passed to the store function will be PassInType.
     typedef const T& PassInType;
-    static void store(const T& value, T& storage) { storage = value; }
+    template <typename IncomingValueType>
+    static void store(IncomingValueType&& value, T& storage) { storage = std::forward<IncomingValueType>(value); }
 
     // Type for return value of functions that transfer ownership, such as take.
     typedef T PassOutType;
-    static const T& passOut(const T& value) { return value; }
+    static T&& passOut(T& value) { return std::move(value); }
+    static T&& passOut(T&& value) { return std::move(value); }
 
     // Type for return value of functions that do not transfer ownership, such
     // as get.
@@ -264,9 +266,10 @@ template <typename KeyTypeArg, typename ValueTypeArg>
 struct KeyValuePair {
     typedef KeyTypeArg KeyType;
 
-    KeyValuePair(const KeyTypeArg& _key, const ValueTypeArg& _value)
-        : key(_key)
-        , value(_value)
+    template <typename IncomingKeyType, typename IncomingValueType>
+    KeyValuePair(IncomingKeyType&& key, IncomingValueType&& value)
+        : key(std::forward<IncomingKeyType>(key))
+        , value(std::forward<IncomingValueType>(value))
     {
     }
 

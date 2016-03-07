@@ -176,7 +176,7 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(v8::Isolate* is
     ASSERT(isIsolatedWorldId(worldId));
 
     WorldMap& map = isolatedWorldMap();
-    WorldMap::AddResult result = map.add(worldId, 0);
+    WorldMap::AddResult result = map.add(worldId, nullptr);
     RefPtr<DOMWrapperWorld> world = result.storedValue->value;
     if (world) {
         ASSERT(world->worldId() == worldId);
