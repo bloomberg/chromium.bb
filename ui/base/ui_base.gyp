@@ -462,6 +462,7 @@
         ['use_ozone==1', {
           'dependencies': [
             '../events/devices/events_devices.gyp:events_devices',
+            '../events/ozone/events_ozone.gyp:events_ozone_evdev',
             '../events/ozone/events_ozone.gyp:events_ozone_layout',
             '../ozone/ozone.gyp:ozone_base',
           ],

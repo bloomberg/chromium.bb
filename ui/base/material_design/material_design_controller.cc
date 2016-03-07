@@ -10,8 +10,16 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "ui/base/touch/touch_device.h"
+#include "ui/events/devices/device_data_manager.h"
+
+#if defined(USE_OZONE)
+#include <fcntl.h>
+
+#include "base/files/file_enumerator.h"
+#include "ui/events/ozone/evdev/event_device_info.h"
+#endif  // defined(USE_OZONE)
+
 #endif  // defined(OS_CHROMEOS)
 
 namespace ui {
@@ -35,14 +43,29 @@ bool MaterialDesignController::IsModeMaterial() {
 
 MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 #if defined(OS_CHROMEOS)
-  // TODO(tdanderson): Enable hybrid by default for touchscreen devices.
-  //                   See crbug.com/588880.
-  const std::string board = base::SysInfo::GetLsbReleaseBoard();
-  if (base::StartsWith(board, "link", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(board, "veyron_minnie", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(board, "samus", base::CompareCase::SENSITIVE)) {
-    return Mode::MATERIAL_HYBRID;
+  if (DeviceDataManager::HasInstance() &&
+      DeviceDataManager::GetInstance()->device_lists_complete()) {
+    return GetTouchScreensAvailability() == TouchScreensAvailability::ENABLED ?
+        Mode::MATERIAL_HYBRID : Mode::MATERIAL_NORMAL;
   }
+
+#if defined(USE_OZONE)
+  base::FileEnumerator file_enum(
+      base::FilePath(FILE_PATH_LITERAL("/dev/input")), false,
+      base::FileEnumerator::FILES, FILE_PATH_LITERAL("event*[0-9]"));
+  for (base::FilePath path = file_enum.Next(); !path.empty();
+       path = file_enum.Next()) {
+    EventDeviceInfo devinfo;
+    int fd = open(path.value().c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC);
+    if (fd >= 0) {
+      if (devinfo.Initialize(fd, path) && devinfo.HasTouchscreen()) {
+        close(fd);
+        return Mode::MATERIAL_HYBRID;
+      }
+      close(fd);
+    }
+  }
+#endif  // defined(USE_OZONE)
   return Mode::MATERIAL_NORMAL;
 #elif defined(OS_LINUX)
   return Mode::MATERIAL_NORMAL;
