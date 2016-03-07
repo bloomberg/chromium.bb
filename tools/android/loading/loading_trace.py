@@ -5,6 +5,7 @@
 """Represents the trace of a page load."""
 
 import json
+
 import page_track
 import request_track
 import tracing

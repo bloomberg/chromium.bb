@@ -76,7 +76,7 @@ class ActivityLens(object):
                      - max(start_msec, event.start_msec)))
 
   @classmethod
-  def _ThreadBusiness(cls, events, start_msec, end_msec):
+  def _ThreadBusyness(cls, events, start_msec, end_msec):
     """Amount of time a thread spent executing from the message loop."""
     busy_duration = 0
     message_loop_events = [
@@ -179,7 +179,7 @@ class ActivityLens(object):
     assert end_msec - start_msec >= 0.
     events = self._OverlappingMainRendererThreadEvents(start_msec, end_msec)
     result = {'edge_cost': end_msec - start_msec,
-              'busy': self._ThreadBusiness(events, start_msec, end_msec),
+              'busy': self._ThreadBusyness(events, start_msec, end_msec),
               'parsing': self._Parsing(events, start_msec, end_msec),
               'script': self._ScriptsExecuting(events, start_msec, end_msec)}
     return result
@@ -218,6 +218,16 @@ class ActivityLens(object):
     breakdown['unrelated_work'] -= sum(
         breakdown[x] for x in ('script', 'parsing', 'other_url', 'unknown_url'))
     return breakdown
+
+  def MainRendererThreadBusyness(self, start_msec, end_msec):
+    """Returns the amount of time the main renderer thread was busy.
+
+    Args:
+      start_msec: (float) Start of the interval.
+      end_msec: (float) End of the interval.
+    """
+    events = self._OverlappingMainRendererThreadEvents(start_msec, end_msec)
+    return self._ThreadBusyness(events, start_msec, end_msec)
 
 
 class _EventsTree(object):

@@ -11,7 +11,7 @@ import test_utils
 import tracing
 
 
-class ActivityLensTestCast(unittest.TestCase):
+class ActivityLensTestCase(unittest.TestCase):
   @classmethod
   def _EventsFromRawEvents(cls, raw_events):
     tracing_track = tracing.TracingTrack(None)
@@ -83,7 +83,7 @@ class ActivityLensTestCast(unittest.TestCase):
     self.assertEquals((1, second_renderer_tid),
                       ActivityLens._GetRendererMainThreadId(events))
 
-  def testThreadBusiness(self):
+  def testThreadBusyness(self):
     raw_events =  [
         {u'args': {},
          u'cat': u'toplevel',
@@ -104,10 +104,10 @@ class ActivityLensTestCast(unittest.TestCase):
          u'ts': 0,
          u'tts': 0}]
     events = self._EventsFromRawEvents(raw_events)
-    self.assertEquals(200, ActivityLens._ThreadBusiness(events, 0, 1000))
+    self.assertEquals(200, ActivityLens._ThreadBusyness(events, 0, 1000))
     # Clamping duration.
-    self.assertEquals(100, ActivityLens._ThreadBusiness(events, 0, 100))
-    self.assertEquals(50, ActivityLens._ThreadBusiness(events, 25, 75))
+    self.assertEquals(100, ActivityLens._ThreadBusyness(events, 0, 100))
+    self.assertEquals(50, ActivityLens._ThreadBusyness(events, 25, 75))
 
   def testScriptExecuting(self):
     url = u'http://example.com/script.js'
@@ -248,6 +248,53 @@ class ActivityLensTestCast(unittest.TestCase):
         {'unrelated_work': 7, 'idle': 0, 'script': 0., 'parsing': 0.,
          'other_url': 6., 'unknown_url': 7.},
         activity.BreakdownEdgeActivityByInitiator(dep))
+
+  def testMainRendererThreadBusyness(self):
+    raw_events =  [
+        {u'args': {u'name': u'CrRendererMain'},
+         u'cat': u'__metadata',
+         u'name': u'thread_name',
+         u'ph': u'M',
+         u'pid': 1,
+         u'tid': 12,
+         u'ts': 0},
+        {u'args': {},
+         u'cat': u'toplevel',
+         u'dur': 200 * 1000,
+         u'name': u'MessageLoop::RunTask',
+         u'ph': u'X',
+         u'pid': 1,
+         u'tid': 12,
+         u'ts': 0,
+         u'tts': 56485},
+        {u'args': {},
+         u'cat': u'toplevel',
+         u'dur': 8 * 200,
+         u'name': u'MessageLoop::NestedSomething',
+         u'ph': u'X',
+         u'pid': 1,
+         u'tid': 12,
+         u'ts': 0,
+         u'tts': 0},
+        {u'args': {},
+         u'cat': u'toplevel',
+         u'dur': 500 * 1000,
+         u'name': u'MessageLoop::RunTask',
+         u'ph': u'X',
+         u'pid': 12,
+         u'tid': 12,
+         u'ts': 0,
+         u'tts': 56485}]
+    lens = self._ActivityLens([], raw_events)
+    # Ignore events from another PID.
+    self.assertEquals(200, lens.MainRendererThreadBusyness(0, 1000))
+    # Clamping duration.
+    self.assertEquals(100, lens.MainRendererThreadBusyness(0, 100))
+    self.assertEquals(50, lens.MainRendererThreadBusyness(25, 75))
+    # Other PID.
+    raw_events[0]['pid'] = 12
+    lens = self._ActivityLens([], raw_events)
+    self.assertEquals(500, lens.MainRendererThreadBusyness(0, 1000))
 
   def _ActivityLens(self, requests, raw_events):
     loading_trace = test_utils.LoadingTraceFromEvents(

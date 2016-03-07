@@ -42,6 +42,41 @@ class FakePageTrack(devtools_monitor.Track):
     return event['frame_id']
 
 
+def MakeRequestWithTiming(
+    url, source_url, timing_dict, magic_content_type=False,
+    initiator_type='other'):
+  """Make a dependent request.
+
+  Args:
+    url: a url, or number which will be used as a url.
+    source_url: a url or number which will be used as the source (initiating)
+      url. If the source url is not present, then url will be a root. The
+      convention in tests is to use a source_url of 'null' in this case.
+    timing_dict: (dict) Suitable to be passed to request_track.TimingFromDict().
+    initiator_type: the initiator type to use.
+
+  Returns:
+    A request_track.Request.
+  """
+  assert initiator_type in ('other', 'parser')
+  timing = request_track.TimingFromDict(timing_dict)
+  rq = request_track.Request.FromJsonDict({
+      'timestamp': timing.request_time,
+      'request_id': str(MakeRequestWithTiming._next_request_id),
+      'url': 'http://' + str(url),
+      'initiator': {'type': initiator_type, 'url': 'http://' + str(source_url)},
+      'response_headers': {'Content-Type':
+                           'null' if not magic_content_type
+                           else 'magic-debug-content' },
+      'timing': request_track.TimingAsList(timing)
+  })
+  MakeRequestWithTiming._next_request_id += 1
+  return rq
+
+
+MakeRequestWithTiming._next_request_id = 0
+
+
 def MakeRequest(
     url, source_url, start_time=None, headers_time=None, end_time=None,
     magic_content_type=False, initiator_type='other'):
@@ -63,7 +98,6 @@ def MakeRequest(
 
   Returns:
     A request_track.Request.
-
   """
   assert ((start_time is None and
            headers_time is None and
@@ -75,29 +109,16 @@ def MakeRequest(
   if start_time is None:
     # Use the request id in seconds for timestamps. This guarantees increasing
     # times which makes request dependencies behave as expected.
-    start_time = headers_time = end_time = MakeRequest._next_request_id * 1000
-  assert initiator_type in ('other', 'parser')
-  timing = request_track.TimingAsList(request_track.TimingFromDict({
+    start_time = headers_time = end_time = (
+        MakeRequestWithTiming._next_request_id * 1000)
+  timing_dict = {
       # connectEnd should be ignored.
       'connectEnd': (end_time - start_time) / 2,
       'receiveHeadersEnd': headers_time - start_time,
       'loadingFinished': end_time - start_time,
-      'requestTime': start_time / 1000.0}))
-  rq = request_track.Request.FromJsonDict({
-      'timestamp': start_time / 1000.0,
-      'request_id': str(MakeRequest._next_request_id),
-      'url': 'http://' + str(url),
-      'initiator': {'type': initiator_type, 'url': 'http://' + str(source_url)},
-      'response_headers': {'Content-Type':
-                           'null' if not magic_content_type
-                           else 'magic-debug-content' },
-      'timing': timing
-  })
-  MakeRequest._next_request_id += 1
-  return rq
-
-
-MakeRequest._next_request_id = 0
+      'requestTime': start_time / 1000.0}
+  return MakeRequestWithTiming(
+      url, source_url, timing_dict, magic_content_type, initiator_type)
 
 
 def LoadingTraceFromEvents(requests, page_events=None, trace_events=None):
