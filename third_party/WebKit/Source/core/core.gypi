@@ -2641,6 +2641,8 @@
             'dom/shadow/ShadowRootRareData.h',
             'dom/shadow/SlotAssignment.cpp',
             'dom/shadow/SlotAssignment.h',
+            'dom/shadow/SlotScopedTraversal.cpp',
+            'dom/shadow/SlotScopedTraversal.h',
             'events/AnimationEvent.cpp',
             'events/AnimationEvent.h',
             'events/AnimationPlayerEvent.cpp',

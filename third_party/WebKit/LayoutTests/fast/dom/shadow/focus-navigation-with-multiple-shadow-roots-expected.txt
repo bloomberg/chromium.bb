@@ -11,12 +11,14 @@ Should move from host//older-A to host//older-B in forward
 PASS
 Should move from host//older-B to host///younger-B in forward
 PASS
-Should move from host///younger-B to B in forward
-Expected innermost activeElement is B, but actual innermost activeElement is #light-child-B
-FAIL
-Should move from B to host///younger-B in backward
-Expected innermost activeElement is host///younger-B, but actual innermost activeElement is #light-child-B
-FAIL
+Should move from host///younger-B to light-child-B in forward
+PASS
+Should move from light-child-B to B in forward
+PASS
+Should move from B to light-child-B in backward
+PASS
+Should move from light-child-B to host///younger-B in backward
+PASS
 Should move from host///younger-B to host//older-B in backward
 PASS
 Should move from host//older-B to host//older-A in backward
