@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/legal_message_line.h"
 
 @class BrowserWindowController;
 @class SaveCardBubbleViewCocoa;
@@ -28,13 +29,22 @@ class SaveCardBubbleViewBridge : public SaveCardBubbleView {
   // Returns the title that should be displayed in the bubble.
   base::string16 GetWindowTitle() const;
 
+  // Returns the explanatory text that should be displayed in the bubble.
+  // Returns an empty string if no message should be displayed.
+  base::string16 GetExplanatoryMessage() const;
+
   // Returns the card that will be uploaded if the user accepts.
   CreditCard GetCard() const;
+
+  // Returns the legal messages that should be displayed in the footer. Result
+  // will be empty if no legal message should be shown.
+  const LegalMessageLines GetLegalMessageLines() const;
 
   // Interaction.
   void OnSaveButton();
   void OnCancelButton();
   void OnLearnMoreClicked();
+  void OnLegalMessageLinkClicked(const GURL& url);
   void OnBubbleClosed();
 
   // SaveCardBubbleView implementation:
@@ -44,6 +54,7 @@ class SaveCardBubbleViewBridge : public SaveCardBubbleView {
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, SaveShouldClose);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, CancelShouldClose);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, LearnMoreShouldNotClose);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, LegalMessageShouldNotClose);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, ReturnInvokesDefaultAction);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewTest, EscapeCloses);
 

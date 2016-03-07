@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "grit/components_strings.h"
@@ -21,11 +22,16 @@
 namespace {
 
 const CGFloat kDesiredBubbleWidth = 370;
+const CGFloat kDividerHeight = 1;
 const CGFloat kFramePadding = 16;
 const CGFloat kRelatedControlHorizontalPadding = 2;
+const CGFloat kRelatedControlVerticalPadding = 5;
 const CGFloat kUnrelatedControlVerticalPadding = 15;
 
-const SkColor kIconBorderColor = 0x10000000;  // SkColorSetARGB(10, 0, 0, 0);
+const SkColor kDividerColor = 0xFFE9E9E9;  // SkColorSetRGB(0xE9, 0xE9, 0xE9);
+const SkColor kFooterColor = 0xFFF5F5F5;   // SkColorSetRGB(0xF5, 0xF5, 0xF5);
+const SkColor kIconBorderColor = 0x10000000;  // SkColorSetARGB(0x10, 0, 0, 0);
+
 }
 
 namespace autofill {
@@ -49,8 +55,17 @@ base::string16 SaveCardBubbleViewBridge::GetWindowTitle() const {
   return controller_ ? controller_->GetWindowTitle() : base::string16();
 }
 
+base::string16 SaveCardBubbleViewBridge::GetExplanatoryMessage() const {
+  return controller_ ? controller_->GetExplanatoryMessage() : base::string16();
+}
+
 CreditCard SaveCardBubbleViewBridge::GetCard() const {
   return controller_ ? controller_->GetCard() : CreditCard();
+}
+
+const LegalMessageLines SaveCardBubbleViewBridge::GetLegalMessageLines() const {
+  return controller_ ? controller_->GetLegalMessageLines()
+                     : LegalMessageLines();
 }
 
 void SaveCardBubbleViewBridge::OnSaveButton() {
@@ -68,6 +83,11 @@ void SaveCardBubbleViewBridge::OnCancelButton() {
 void SaveCardBubbleViewBridge::OnLearnMoreClicked() {
   if (controller_)
     controller_->OnLearnMoreClicked();
+}
+
+void SaveCardBubbleViewBridge::OnLegalMessageLinkClicked(const GURL& url) {
+  if (controller_)
+    controller_->OnLegalMessageLinkClicked(url);
 }
 
 void SaveCardBubbleViewBridge::OnBubbleClosed() {
@@ -91,31 +111,75 @@ void SaveCardBubbleViewBridge::Hide() {
 #pragma mark SaveCardBubbleViewCocoa
 
 @interface SaveCardBubbleViewCocoa ()
-+ (base::scoped_nsobject<NSTextField>)makeTextField;
-+ (base::scoped_nsobject<NSButton>)makeButton;
++ (base::scoped_nsobject<NSTextField>)makeLabel:(NSString*)text;
++ (base::scoped_nsobject<NSTextView>)makeWrappingLabel:(NSString*)text
+                                          withFontSize:(CGFloat)fontSize;
++ (base::scoped_nsobject<HyperlinkTextView>)makeHyperlinkText:(NSString*)text;
++ (base::scoped_nsobject<NSButton>)makeButton:(NSString*)text;
 @end
 
 @implementation SaveCardBubbleViewCocoa {
   autofill::SaveCardBubbleViewBridge* bridge_;  // Weak.
 }
 
-+ (base::scoped_nsobject<NSTextField>)makeTextField {
++ (base::scoped_nsobject<NSTextField>)makeLabel:(NSString*)text {
   base::scoped_nsobject<NSTextField> textField(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
   [textField setEditable:NO];
   [textField setSelectable:NO];
   [textField setDrawsBackground:NO];
   [textField setBezeled:NO];
+  [textField setStringValue:text];
+  [textField sizeToFit];
 
   return textField;
 }
 
-+ (base::scoped_nsobject<NSButton>)makeButton {
++ (base::scoped_nsobject<NSTextView>)makeWrappingLabel:(NSString*)text
+                                          withFontSize:(CGFloat)fontSize {
+  base::scoped_nsobject<NSTextView> textView(
+      [[NSTextView alloc] initWithFrame:NSZeroRect]);
+  NSDictionary* attributes =
+      @{NSFontAttributeName : [NSFont systemFontOfSize:fontSize]};
+  base::scoped_nsobject<NSAttributedString> attributedMessage(
+      [[NSAttributedString alloc] initWithString:text attributes:attributes]);
+  [[textView textStorage] setAttributedString:attributedMessage];
+  [[textView textContainer] setLineFragmentPadding:0.0f];
+  [textView setEditable:NO];
+  [textView setSelectable:NO];
+  [textView setDrawsBackground:NO];
+  [textView setVerticallyResizable:YES];
+  [textView setFrameSize:NSMakeSize(kDesiredBubbleWidth - (2 * kFramePadding),
+                                    MAXFLOAT)];
+  [textView sizeToFit];
+
+  return textView;
+}
+
++ (base::scoped_nsobject<HyperlinkTextView>)makeHyperlinkText:(NSString*)text {
+  base::scoped_nsobject<HyperlinkTextView> lineView(
+      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
+  [lineView setMessage:text
+              withFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]
+          messageColor:[NSColor blackColor]];
+
+  [[lineView textContainer] setLineFragmentPadding:0.0f];
+  [lineView setVerticallyResizable:YES];
+  [lineView setFrameSize:NSMakeSize(kDesiredBubbleWidth - 2 * kFramePadding,
+                                    MAXFLOAT)];
+  [lineView sizeToFit];
+
+  return lineView;
+}
+
++ (base::scoped_nsobject<NSButton>)makeButton:(NSString*)text {
   base::scoped_nsobject<NSButton> button(
       [[NSButton alloc] initWithFrame:NSZeroRect]);
   [button setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
   [button setBezelStyle:NSRoundedBezelStyle];
   [[button cell] setControlSize:NSSmallControlSize];
+  [button setTitle:text];
+  [button sizeToFit];
 
   return button;
 }
@@ -160,24 +224,10 @@ void SaveCardBubbleViewBridge::Hide() {
 }
 
 - (void)loadView {
-  // Title is an NSTextView instead of an NSTextField to allow it to wrap.
+  // Title.
+  NSString* title = SysUTF16ToNSString(bridge_->GetWindowTitle());
   base::scoped_nsobject<NSTextView> titleLabel(
-      [[NSTextView alloc] initWithFrame:NSZeroRect]);
-  NSDictionary* attributes =
-      @{NSFontAttributeName : [NSFont systemFontOfSize:15.0]};
-  base::scoped_nsobject<NSAttributedString> attributedMessage(
-      [[NSAttributedString alloc]
-          initWithString:base::SysUTF16ToNSString(bridge_->GetWindowTitle())
-              attributes:attributes]);
-  [[titleLabel textStorage] setAttributedString:attributedMessage];
-  [[titleLabel textContainer] setLineFragmentPadding:0.0f];
-  [titleLabel setEditable:NO];
-  [titleLabel setSelectable:NO];
-  [titleLabel setDrawsBackground:NO];
-  [titleLabel setVerticallyResizable:YES];
-  [titleLabel setFrameSize:NSMakeSize(kDesiredBubbleWidth - (2 * kFramePadding),
-                                      MAXFLOAT)];
-  [titleLabel sizeToFit];
+      [SaveCardBubbleViewCocoa makeWrappingLabel:title withFontSize:15.0]);
 
   // Credit card info.
   autofill::CreditCard card = bridge_->GetCard();
@@ -196,84 +246,127 @@ void SaveCardBubbleViewBridge::Hide() {
                          .AsNSImage()];
   [cardIcon setFrameSize:[[cardIcon image] size]];
 
-  base::scoped_nsobject<NSTextField> lastFourLabel(
-      [SaveCardBubbleViewCocoa makeTextField]);
   // Midline horizontal ellipsis follwed by last four digits.
-  [lastFourLabel setStringValue:base::SysUTF16ToNSString(
-                                    base::UTF8ToUTF16("\xE2\x8B\xAF") +
-                                    card.LastFourDigits())];
-  [lastFourLabel sizeToFit];
+  base::scoped_nsobject<NSTextField> lastFourLabel([SaveCardBubbleViewCocoa
+      makeLabel:SysUTF16ToNSString(base::UTF8ToUTF16("\xE2\x8B\xAF") +
+                                   card.LastFourDigits())]);
 
   base::scoped_nsobject<NSTextField> expirationDateLabel(
-      [SaveCardBubbleViewCocoa makeTextField]);
-  [expirationDateLabel
-      setStringValue:base::SysUTF16ToNSString(
-                         card.AbbreviatedExpirationDateForDisplay())];
-  [expirationDateLabel sizeToFit];
+      [SaveCardBubbleViewCocoa
+          makeLabel:base::SysUTF16ToNSString(
+                        card.AbbreviatedExpirationDateForDisplay())]);
+
+  // Explanatory text (only shown for upload).
+  base::scoped_nsobject<NSTextView> explanationLabel(
+      [[NSTextView alloc] initWithFrame:NSZeroRect]);
+  base::string16 explanation = bridge_->GetExplanatoryMessage();
+  if (!explanation.empty()) {
+    explanationLabel.reset([SaveCardBubbleViewCocoa
+                               makeWrappingLabel:SysUTF16ToNSString(explanation)
+                                    withFontSize:[NSFont systemFontSize]]
+                               .release());
+  }
 
   // "Learn more" link.
-  base::scoped_nsobject<HyperlinkTextView> learnMoreLink(
-      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
   NSString* learnMoreString = l10n_util::GetNSString(IDS_LEARN_MORE);
-  [learnMoreLink
-        setMessage:learnMoreString
-          withFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]
-      messageColor:[NSColor blackColor]];
+  base::scoped_nsobject<HyperlinkTextView> learnMoreLink(
+      [SaveCardBubbleViewCocoa makeHyperlinkText:learnMoreString]);
   [learnMoreLink setDelegate:self];
+
   NSColor* linkColor =
       skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
-  [learnMoreLink addLinkRange:NSMakeRange(0, [learnMoreString length])
-                      withURL:nil
-                    linkColor:linkColor];
-  NSTextStorage* text = [learnMoreLink textStorage];
-  [text addAttribute:NSUnderlineStyleAttributeName
-               value:[NSNumber numberWithInt:NSUnderlineStyleNone]
-               range:NSMakeRange(0, [learnMoreString length])];
-  [[learnMoreLink textContainer] setLineFragmentPadding:0.0f];
-  [learnMoreLink setVerticallyResizable:YES];
-  [learnMoreLink
-      setFrameSize:NSMakeSize(kDesiredBubbleWidth - 2 * kFramePadding,
-                              MAXFLOAT)];
-  [learnMoreLink sizeToFit];
+  NSRange range = NSMakeRange(0, [learnMoreString length]);
+  [learnMoreLink addLinkRange:range withURL:nil linkColor:linkColor];
+  [[learnMoreLink textStorage] addAttribute:NSUnderlineStyleAttributeName
+                                      value:@(NSUnderlineStyleNone)
+                                      range:range];
 
   // Cancel button.
-  base::scoped_nsobject<NSButton> cancelButton(
-      [SaveCardBubbleViewCocoa makeButton]);
-  [cancelButton
-      setTitle:l10n_util::GetNSString(IDS_AUTOFILL_SAVE_CARD_PROMPT_DENY)];
-  [cancelButton sizeToFit];
+  base::scoped_nsobject<NSButton> cancelButton([SaveCardBubbleViewCocoa
+      makeButton:l10n_util::GetNSString(IDS_AUTOFILL_SAVE_CARD_PROMPT_DENY)]);
   [cancelButton setTarget:self];
   [cancelButton setAction:@selector(onCancelButton:)];
   [cancelButton setKeyEquivalent:@"\e"];
 
   // Save button.
-  base::scoped_nsobject<NSButton> saveButton(
-      [SaveCardBubbleViewCocoa makeButton]);
-  [saveButton
-      setTitle:l10n_util::GetNSString(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT)];
-  [saveButton sizeToFit];
+  base::scoped_nsobject<NSButton> saveButton([SaveCardBubbleViewCocoa
+      makeButton:l10n_util::GetNSString(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT)]);
   [saveButton setTarget:self];
   [saveButton setAction:@selector(onSaveButton:)];
   [saveButton setKeyEquivalent:@"\r"];
 
+  // Footer with legal text (only shown for upload).
+  base::scoped_nsobject<NSBox> divider(
+      [[NSBox alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSView> footerView(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  const autofill::LegalMessageLines& lines = bridge_->GetLegalMessageLines();
+  if (!lines.empty()) {
+    [divider setBoxType:NSBoxCustom];
+    [divider setBorderType:NSLineBorder];
+    [divider setBorderColor:skia::SkColorToCalibratedNSColor(kDividerColor)];
+    [divider setFrameSize:NSMakeSize(kDesiredBubbleWidth, kDividerHeight)];
+
+    [footerView setWantsLayer:YES];
+    [[footerView layer]
+        setBackgroundColor:skia::CGColorCreateFromSkColor(kFooterColor)];
+
+    CGFloat linesHeight = kFramePadding;
+    for (auto lineIter = lines.rbegin(); lineIter != lines.rend(); ++lineIter) {
+      // Create the legal message line view.
+      base::scoped_nsobject<HyperlinkTextView> lineView([SaveCardBubbleViewCocoa
+          makeHyperlinkText:SysUTF16ToNSString(lineIter->text())]);
+      [lineView setDelegate:self];
+
+      // Add the links.
+      for (const autofill::LegalMessageLine::Link& link : lineIter->links()) {
+        NSRange range = NSMakeRange(link.range.start(), link.range.length());
+        [lineView addLinkRange:range withURL:nil linkColor:linkColor];
+        [[lineView textStorage] addAttribute:NSUnderlineStyleAttributeName
+                                       value:@(NSUnderlineStyleNone)
+                                       range:range];
+      }
+
+      // Add the line to the footer view.
+      [footerView addSubview:lineView];
+      [lineView setFrameOrigin:NSMakePoint(kFramePadding, linesHeight)];
+      linesHeight +=
+          [lineView frame].size.height + kRelatedControlVerticalPadding;
+    }
+    [footerView setFrameSize:NSMakeSize(kDesiredBubbleWidth,
+                                        linesHeight + kFramePadding)];
+  }
+
   // Layout.
+  [footerView setFrameOrigin:NSZeroPoint];
+
+  [divider setFrameOrigin:NSMakePoint(0, NSMaxY([footerView frame]))];
+
   [saveButton setFrameOrigin:
       NSMakePoint(kDesiredBubbleWidth - kFramePadding -
                       NSWidth([saveButton frame]),
-                  kFramePadding)];
+                  NSMaxY([divider frame]) + kFramePadding)];
   [cancelButton setFrameOrigin:
       NSMakePoint(NSMinX([saveButton frame]) -
                       kRelatedControlHorizontalPadding -
                       NSWidth([cancelButton frame]),
-                  kFramePadding)];
+                  NSMaxY([divider frame]) + kFramePadding)];
   [learnMoreLink setFrameOrigin:
       NSMakePoint(kFramePadding,
                   NSMidY([saveButton frame]) -
                       (NSHeight([learnMoreLink frame]) / 2.0))];
 
-  [cardIcon setFrameOrigin:
+  [explanationLabel setFrameOrigin:
       NSMakePoint(kFramePadding,
                   NSMaxY([saveButton frame]) +
+                      kUnrelatedControlVerticalPadding)];
+
+  NSView* viewBelowIcon =
+      ([explanationLabel frame].size.height > 0) ? explanationLabel.get()
+                                                 : saveButton.get();
+  [cardIcon setFrameOrigin:
+      NSMakePoint(kFramePadding,
+                  NSMaxY([viewBelowIcon frame]) +
                       kUnrelatedControlVerticalPadding)];
   [lastFourLabel setFrameOrigin:
       NSMakePoint(NSMaxX([cardIcon frame]) + kRelatedControlHorizontalPadding,
@@ -290,13 +383,14 @@ void SaveCardBubbleViewBridge::Hide() {
                   NSMaxY([cardIcon frame]) + kUnrelatedControlVerticalPadding)];
 
   [[[self window] contentView] setSubviews:@[
-    titleLabel, cardIcon, lastFourLabel, expirationDateLabel, learnMoreLink,
-    cancelButton, saveButton
+    titleLabel, cardIcon, lastFourLabel, expirationDateLabel, explanationLabel,
+    learnMoreLink, cancelButton, saveButton, divider, footerView
   ]];
 
   // Update window frame.
   NSRect windowFrame = [[self window] frame];
-  windowFrame.size.height = NSMaxY([titleLabel frame]) + kFramePadding;
+  windowFrame.size.height = NSMaxY([titleLabel frame]) + kFramePadding +
+                            info_bubble::kBubbleArrowHeight;
   windowFrame.size.width = kDesiredBubbleWidth;
   [[self window] setFrame:windowFrame display:NO];
 }
@@ -315,6 +409,24 @@ void SaveCardBubbleViewBridge::Hide() {
     clickedOnLink:(id)link
           atIndex:(NSUInteger)charIndex {
   DCHECK(bridge_);
+
+  // Check each of the links in each of the legal message lines ot see if they
+  // are the source of the click.
+  const autofill::LegalMessageLines& lines = bridge_->GetLegalMessageLines();
+  for (const autofill::LegalMessageLine& line : lines) {
+    if (line.text() ==
+        base::SysNSStringToUTF16([[textView textStorage] string])) {
+      for (const autofill::LegalMessageLine::Link& link : line.links()) {
+        if (link.range.start() <= charIndex && charIndex < link.range.end()) {
+          bridge_->OnLegalMessageLinkClicked(link.url);
+          return YES;
+        }
+      }
+    }
+  }
+
+  // If none of the legal message links are the source of the click, the source
+  // must be the learn more link.
   bridge_->OnLearnMoreClicked();
   return YES;
 }

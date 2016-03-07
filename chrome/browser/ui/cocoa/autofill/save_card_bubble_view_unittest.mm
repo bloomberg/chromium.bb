@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/save_card_bubble_view_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -20,11 +22,12 @@ namespace {
 class TestSaveCardBubbleController : public SaveCardBubbleController {
  public:
   TestSaveCardBubbleController() {
-    lines_.reset(new LegalMessageLines());
+    ParseLegalMessageJson();
 
     on_save_button_was_called_ = false;
     on_cancel_button_was_called_ = false;
     on_learn_more_was_called_ = false;
+    on_legal_message_was_called_ = false;
     on_bubble_closed_was_called_ = false;
   }
 
@@ -42,25 +45,67 @@ class TestSaveCardBubbleController : public SaveCardBubbleController {
   void OnSaveButton() override { on_save_button_was_called_ = true; }
   void OnCancelButton() override { on_cancel_button_was_called_ = true; }
   void OnLearnMoreClicked() override { on_learn_more_was_called_ = true; }
-  void OnLegalMessageLinkClicked(const GURL& url) override {}
+  void OnLegalMessageLinkClicked(const GURL& url) override {
+    on_legal_message_was_called_ = true;
+    legal_message_url_ = url.spec();
+  }
   void OnBubbleClosed() override { on_bubble_closed_was_called_ = true; }
 
   const LegalMessageLines& GetLegalMessageLines() const override {
-    return *lines_;
+    return lines_;
   }
 
   // Testing state.
   bool on_save_button_was_called() { return on_save_button_was_called_; }
   bool on_cancel_button_was_called() { return on_cancel_button_was_called_; }
   bool on_learn_more_was_called() { return on_learn_more_was_called_; }
+  bool on_legal_message_was_called() { return on_legal_message_was_called_; }
+  std::string legal_message_url() { return legal_message_url_; }
   bool on_bubble_closed_was_called() { return on_bubble_closed_was_called_; }
 
  private:
-  scoped_ptr<LegalMessageLines> lines_;
+  void ParseLegalMessageJson() {
+    std::string message_json =
+        "{"
+        "  \"line\" : ["
+        "    {"
+        "      \"template\": \"Please check out our {0}.\","
+        "      \"template_parameter\": ["
+        "        {"
+        "          \"display_text\": \"terms of service\","
+        "          \"url\": \"http://help.example.com/legal_message\""
+        "        }"
+        "      ]"
+        "    },"
+        "    {"
+        "      \"template\": \"We also have a {0} and {1}.\","
+        "      \"template_parameter\": ["
+        "        {"
+        "          \"display_text\": \"mission statement\","
+        "          \"url\": \"http://www.example.com/our_mission\""
+        "        },"
+        "        {"
+        "          \"display_text\": \"privacy policy\","
+        "          \"url\": \"http://help.example.com/privacy_policy\""
+        "        }"
+        "      ]"
+        "    }"
+        "  ]"
+        "}";
+    scoped_ptr<base::Value> value(base::JSONReader::Read(message_json));
+    ASSERT_TRUE(value);
+    base::DictionaryValue* dictionary = nullptr;
+    ASSERT_TRUE(value->GetAsDictionary(&dictionary));
+    LegalMessageLine::Parse(*dictionary, &lines_);
+  }
+
+  LegalMessageLines lines_;
 
   bool on_save_button_was_called_;
   bool on_cancel_button_was_called_;
   bool on_learn_more_was_called_;
+  bool on_legal_message_was_called_;
+  std::string legal_message_url_;
   bool on_bubble_closed_was_called_;
 };
 
@@ -100,6 +145,7 @@ TEST_F(SaveCardBubbleViewTest, SaveShouldClose) {
   EXPECT_TRUE(bubble_controller_->on_save_button_was_called());
   EXPECT_FALSE(bubble_controller_->on_cancel_button_was_called());
   EXPECT_FALSE(bubble_controller_->on_learn_more_was_called());
+  EXPECT_FALSE(bubble_controller_->on_legal_message_was_called());
 
   EXPECT_TRUE(bubble_controller_->on_bubble_closed_was_called());
 }
@@ -110,6 +156,7 @@ TEST_F(SaveCardBubbleViewTest, CancelShouldClose) {
   EXPECT_FALSE(bubble_controller_->on_save_button_was_called());
   EXPECT_TRUE(bubble_controller_->on_cancel_button_was_called());
   EXPECT_FALSE(bubble_controller_->on_learn_more_was_called());
+  EXPECT_FALSE(bubble_controller_->on_legal_message_was_called());
 
   EXPECT_TRUE(bubble_controller_->on_bubble_closed_was_called());
 }
@@ -122,6 +169,29 @@ TEST_F(SaveCardBubbleViewTest, LearnMoreShouldNotClose) {
   EXPECT_FALSE(bubble_controller_->on_save_button_was_called());
   EXPECT_FALSE(bubble_controller_->on_cancel_button_was_called());
   EXPECT_TRUE(bubble_controller_->on_learn_more_was_called());
+  EXPECT_FALSE(bubble_controller_->on_legal_message_was_called());
+
+  EXPECT_FALSE(bubble_controller_->on_bubble_closed_was_called());
+}
+
+TEST_F(SaveCardBubbleViewTest, LegalMessageShouldNotClose) {
+  NSString* legalText = @"We also have a mission statement and privacy policy.";
+  base::scoped_nsobject<NSTextView> textView(
+      [[NSTextView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<NSAttributedString> attributedMessage(
+      [[NSAttributedString alloc] initWithString:legalText attributes:@{}]);
+  [[textView textStorage] setAttributedString:attributedMessage];
+
+  NSObject* link = nil;
+  [bridge_->view_controller_ textView:textView clickedOnLink:link atIndex:40];
+
+  EXPECT_FALSE(bubble_controller_->on_save_button_was_called());
+  EXPECT_FALSE(bubble_controller_->on_cancel_button_was_called());
+  EXPECT_FALSE(bubble_controller_->on_learn_more_was_called());
+  EXPECT_TRUE(bubble_controller_->on_legal_message_was_called());
+
+  std::string url("http://help.example.com/privacy_policy");
+  EXPECT_EQ(url, bubble_controller_->legal_message_url());
 
   EXPECT_FALSE(bubble_controller_->on_bubble_closed_was_called());
 }
