@@ -106,6 +106,8 @@ endif ()
 
 # Libwebm section.
 add_library(webm STATIC
+            "${LIBWEBM_SRC_DIR}/common/file_util.cc"
+            "${LIBWEBM_SRC_DIR}/common/file_util.h"
             "${LIBWEBM_SRC_DIR}/common/hdr_util.cc"
             "${LIBWEBM_SRC_DIR}/common/hdr_util.h"
             "${LIBWEBM_SRC_DIR}/mkvmuxer.cpp"

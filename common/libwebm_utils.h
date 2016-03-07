@@ -16,6 +16,8 @@
 namespace libwebm {
 
 // fclose functor for wrapping FILE in std::unique_ptr.
+// TODO(tomfinegan): Move this to file_util once c++11 restrictions are
+//                   relaxed.
 struct FILEDeleter {
   int operator()(std::FILE* f) {
     if (f != nullptr)

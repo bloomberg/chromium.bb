@@ -17,6 +17,7 @@
 #include "mkvreader.hpp"
 #include "mkvwriter.hpp"
 
+#include "common/file_util.h"
 #include "common/libwebm_utils.h"
 #include "testing/test_util.h"
 

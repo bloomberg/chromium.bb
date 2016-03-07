@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 
+#include "common/file_util.h"
 #include "common/libwebm_utils.h"
 
 namespace libwebm {
@@ -60,49 +61,7 @@ bool CompareFiles(const std::string& file1, const std::string& file2) {
   return std::feof(f1.get()) && std::feof(f2.get());
 }
 
-std::string GetTempFileName() {
-#ifndef _MSC_VER
-  char temp_file_name_template[] = "libwebm_temp.XXXXXX";
-  int fd = mkstemp(temp_file_name_template);
-  if (fd != -1) {
-    close(fd);
-    return std::string(temp_file_name_template);
-  }
-  return std::string();
-#else
-  // TODO(tomfinegan): Add the MSVC version of mkstemp() to quiet the MSVC
-  // version of the security warning.
-  return std::tmpnam(nullptr);
-#endif
-}
 
-std::uint64_t GetFileSize(const std::string& file_name) {
-  std::uint64_t file_size = 0;
-#ifndef _MSC_VER
-  struct stat st;
-  st.st_size = 0;
-  if (stat(file_name.c_str(), &st) == 0) {
-#else
-  struct _stat st;
-  st.st_size = 0;
-  if (_stat(file_name.c_str(), &st) == 0) {
-#endif
-    file_size = st.st_size;
-  }
-  return file_size;
-}
-
-TempFileDeleter::TempFileDeleter() {
-  file_name_ = GetTempFileName();
-}
-
-TempFileDeleter::~TempFileDeleter() {
-  std::ifstream file(file_name_);
-  if (file.good()) {
-    file.close();
-    std::remove(file_name_.c_str());
-  }
-}
 
 }  // namespace test
 }  // namespace libwebm

@@ -14,6 +14,7 @@
 
 #include "gtest/gtest.h"
 
+#include "common/file_util.h"
 #include "common/libwebm_utils.h"
 #include "testing/test_util.h"
 
@@ -96,7 +97,7 @@ class Webm2PesTests : public ::testing::Test {
   void CreateAndLoadTestInput() {
     libwebm::Webm2Pes converter(input_file_name_, temp_file_name_.name());
     ASSERT_TRUE(converter.ConvertToFile());
-    pes_file_size_ = libwebm::test::GetFileSize(pes_file_name());
+    pes_file_size_ = libwebm::GetFileSize(pes_file_name());
     ASSERT_GT(pes_file_size_, 0);
     pes_file_data_.reserve(pes_file_size_);
     libwebm::FilePtr file = libwebm::FilePtr(
@@ -245,7 +246,7 @@ class Webm2PesTests : public ::testing::Test {
   const PesFileData& pes_file_data() const { return pes_file_data_; }
 
  private:
-  const libwebm::test::TempFileDeleter temp_file_name_;
+  const libwebm::TempFileDeleter temp_file_name_;
   const std::string input_file_name_ =
       libwebm::test::GetTestFilePath("bbb_480p_vp9_opus_1second.webm");
   std::int64_t pes_file_size_ = 0;
