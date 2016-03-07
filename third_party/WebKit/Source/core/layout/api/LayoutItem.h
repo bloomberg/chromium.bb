@@ -99,6 +99,11 @@ public:
         return m_layoutObject->isMedia();
     }
 
+    bool isMenuList() const
+    {
+        return m_layoutObject->isMenuList();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();

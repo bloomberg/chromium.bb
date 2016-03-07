@@ -102,6 +102,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutMenuListItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
@@ -2178,8 +2179,8 @@ String Internals::selectMenuListText(HTMLSelectElement* select)
     if (!layoutObject || !layoutObject->isMenuList())
         return String();
 
-    LayoutMenuList* menuList = toLayoutMenuList(layoutObject);
-    return menuList->text();
+    LayoutMenuListItem menuListItem = LayoutMenuListItem(toLayoutMenuList(layoutObject));
+    return menuListItem.text();
 }
 
 bool Internals::isSelectPopupVisible(Node* node)
