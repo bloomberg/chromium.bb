@@ -106,6 +106,9 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
     size_t bufferSize() const;
 
+    // ScriptWrappable
+    bool hasPendingActivity() const final;
+
 private:
     ScriptProcessorNode(AbstractAudioContext&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
 };

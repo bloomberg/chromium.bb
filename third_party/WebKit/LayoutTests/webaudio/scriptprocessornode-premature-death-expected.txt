@@ -7,8 +7,8 @@ Testing with explicitly keeping a reference to the script processor node alive.
 PASS wasCollectedPrematurely is false
 PASS wasCalled is true
 Testing without explicitly keeping a reference to the script processor node alive.
-FAIL wasCollectedPrematurely should be false. Was true.
-FAIL wasCalled should be true. Was false.
+PASS wasCollectedPrematurely is false
+PASS wasCalled is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

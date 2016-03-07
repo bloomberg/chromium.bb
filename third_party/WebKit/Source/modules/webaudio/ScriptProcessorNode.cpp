@@ -294,5 +294,19 @@ size_t ScriptProcessorNode::bufferSize() const
     return static_cast<ScriptProcessorHandler&>(handler()).bufferSize();
 }
 
+bool ScriptProcessorNode::hasPendingActivity() const
+{
+    // To prevent the node from leaking after the context is closed.
+    if (context()->isContextClosed())
+        return false;
+
+    // If |onaudioprocess| event handler is defined, the node should not be
+    // GCed even if it is out of scope.
+    if (hasEventListeners(EventTypeNames::audioprocess))
+        return true;
+
+    return false;
+}
+
 } // namespace blink
 

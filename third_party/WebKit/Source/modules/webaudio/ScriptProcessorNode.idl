@@ -23,7 +23,9 @@
  */
 
 // For real-time audio stream synthesis/processing in JavaScript
-interface ScriptProcessorNode : AudioNode {
+[
+    DependentLifetime
+]interface ScriptProcessorNode : AudioNode {
     // Rendering callback
     attribute EventHandler onaudioprocess;
 
