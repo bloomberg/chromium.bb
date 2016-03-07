@@ -45278,6 +45278,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SequencedWorkerPool.TaskCount">
+  <obsolete>
+    Histogram wasn't even reported anymore when ownership was taken in 11/2015.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     How many pending tasks there are on each request for work from a worker
@@ -45286,6 +45289,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SequencedWorkerPool.UnrunnableTaskCount">
+  <obsolete>
+    Histogram wasn't even reported anymore when ownership was taken in 11/2015.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>How many tasks we skip over to find the next runnable task.</summary>
 </histogram>
