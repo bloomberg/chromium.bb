@@ -874,14 +874,15 @@ void HTMLMediaElement::selectMediaResource()
     if (mode == attribute) {
         m_loadState = LoadingFromSrcAttr;
 
+        const AtomicString& srcValue = fastGetAttribute(srcAttr);
         // If the src attribute's value is the empty string ... jump down to the failed step below
-        KURL mediaURL = getNonEmptyURLAttribute(srcAttr);
-        if (mediaURL.isEmpty()) {
+        if (srcValue.isEmpty()) {
             mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
             WTF_LOG(Media, "HTMLMediaElement::selectMediaResource(%p), empty 'src'", this);
             return;
         }
 
+        KURL mediaURL = document().completeURL(srcValue);
         if (!isSafeToLoadURL(mediaURL, Complain)) {
             mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
             return;
@@ -2640,15 +2641,31 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, InvalidUR
 
         source = toHTMLSourceElement(node);
 
-        // If candidate does not have a src attribute, or if its src attribute's value is the empty string ... jump down to the failed step below
-        mediaURL = source->getNonEmptyURLAttribute(srcAttr);
+        // 2. If candidate does not have a src attribute, or if its src
+        // attribute's value is the empty string ... jump down to the failed
+        // step below
+        const AtomicString& srcValue = source->fastGetAttribute(srcAttr);
 #if !LOG_DISABLED
         if (shouldLog)
             WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild(%p) - 'src' is %s", this, urlForLoggingMedia(mediaURL).utf8().data());
 #endif
-        if (mediaURL.isEmpty())
+        if (srcValue.isEmpty())
             goto checkAgain;
 
+        // 3. Let urlString be the resulting URL string that would have resulted
+        // from parsing the URL specified by candidate's src attribute's value
+        // relative to the candidate's node document when the src attribute was
+        // last changed.
+        mediaURL = source->document().completeURL(srcValue);
+
+        // 4. If urlString was not obtained successfully, then end the
+        // synchronous section, and jump down to the failed with elements step
+        // below.
+        if (!isSafeToLoadURL(mediaURL, actionIfInvalid))
+            goto checkAgain;
+
+        // 5. If candidate has a type attribute whose value, when parsed as a
+        // MIME type ...
         type = source->type();
         if (type.isEmpty() && mediaURL.protocolIsData())
             type = mimeTypeFromDataURL(mediaURL);
@@ -2660,10 +2677,6 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, InvalidUR
             if (!supportsType(ContentType(type)))
                 goto checkAgain;
         }
-
-        // Is it safe to load this url?
-        if (!isSafeToLoadURL(mediaURL, actionIfInvalid))
-            goto checkAgain;
 
         // Making it this far means the <source> looks reasonable.
         canUseSourceElement = true;
