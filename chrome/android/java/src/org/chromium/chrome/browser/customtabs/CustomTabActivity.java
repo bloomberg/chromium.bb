@@ -26,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -33,6 +34,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
@@ -740,7 +742,10 @@ public class CustomTabActivity extends ChromeActivity {
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
-        if (chromeIsDefault) {
+        boolean enableTabReparenting = ChromeVersionInfo.isLocalBuild()
+                || ChromeVersionInfo.isCanaryBuild() || ChromeVersionInfo.isDevBuild()
+                || FieldTrialList.findFullName("TabReparenting").startsWith("Enabled");
+        if (enableTabReparenting && chromeIsDefault) {
             // Take the activity tab and set it aside for reparenting.
             final Tab tab = getActivityTab();
             // TODO(yusufo): The removal should happen as a part of the callback or as a part of
