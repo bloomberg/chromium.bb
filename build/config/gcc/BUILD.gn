@@ -93,6 +93,9 @@ config("executable_ldconfig") {
       # and the new DT_RUNPATH doesn't work without --no-as-needed flag.
       "-Wl,--disable-new-dtags",
     ]
+    if (current_cpu == "mipsel") {
+      ldflags += [ "-pie" ]
+    }
   }
 }
 

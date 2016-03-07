@@ -4228,6 +4228,13 @@
                   '-Wno-uninitialized',
                 ],
               }],
+              ['_toolset=="target" and _type=="executable"', {
+                'conditions': [
+                  ['OS=="linux"', {
+                    'ldflags': ['-pie'],
+                  }],
+                ],
+              }],
             ],
           }],
           ['target_arch=="mips64el"', {
