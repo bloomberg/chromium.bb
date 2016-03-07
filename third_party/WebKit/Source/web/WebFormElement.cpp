@@ -62,11 +62,6 @@ WebString WebFormElement::method() const
     return constUnwrap<HTMLFormElement>()->method();
 }
 
-bool WebFormElement::wasUserSubmitted() const
-{
-    return constUnwrap<HTMLFormElement>()->wasUserSubmitted();
-}
-
 void WebFormElement::getNamedElements(const WebString& name,
                                       WebVector<WebNode>& result)
 {

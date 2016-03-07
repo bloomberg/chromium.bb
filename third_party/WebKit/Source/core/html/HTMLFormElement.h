@@ -89,8 +89,6 @@ public:
     String method() const;
     void setMethod(const AtomicString&);
 
-    bool wasUserSubmitted() const;
-
     // Find the 'default button.'
     // https://html.spec.whatwg.org/multipage/forms.html#default-button
     HTMLFormControlElement* findDefaultButton() const;
@@ -140,7 +138,7 @@ private:
     void copyNonAttributePropertiesFromElement(const Element&) override;
 
     void submitDialog(PassRefPtrWillBeRawPtr<FormSubmission>);
-    void submit(Event*, bool activateSubmitButton, bool processingUserGesture);
+    void submit(Event*, bool activateSubmitButton);
 
     void scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission>);
 
@@ -179,7 +177,6 @@ private:
     bool m_hasElementsAssociatedByFormAttribute : 1;
     bool m_didFinishParsingChildren : 1;
 
-    bool m_wasUserSubmitted : 1;
     bool m_isSubmittingOrInUserJSSubmitEvent : 1;
     bool m_shouldSubmit : 1;
 

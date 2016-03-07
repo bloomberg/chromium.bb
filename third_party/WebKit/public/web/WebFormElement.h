@@ -59,7 +59,6 @@ public:
     BLINK_EXPORT WebString action() const;
     BLINK_EXPORT WebString name() const;
     BLINK_EXPORT WebString method() const;
-    BLINK_EXPORT bool wasUserSubmitted() const;
     // FIXME: Deprecate and replace with WebVector<WebElement>.
     BLINK_EXPORT void getNamedElements(const WebString&, WebVector<WebNode>&);
     BLINK_EXPORT void getFormControlElements(WebVector<WebFormControlElement>&) const;

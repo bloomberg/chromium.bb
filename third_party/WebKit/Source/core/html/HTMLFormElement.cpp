@@ -72,7 +72,6 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_hasElementsAssociatedByParser(false)
     , m_hasElementsAssociatedByFormAttribute(false)
     , m_didFinishParsingChildren(false)
-    , m_wasUserSubmitted(false)
     , m_isSubmittingOrInUserJSSubmitEvent(false)
     , m_shouldSubmit(false)
     , m_isInResetFunction(false)
@@ -332,12 +331,12 @@ void HTMLFormElement::prepareForSubmission(Event* event)
     m_isSubmittingOrInUserJSSubmitEvent = false;
 
     if (m_shouldSubmit)
-        submit(event, true, true);
+        submit(event, true);
 }
 
 void HTMLFormElement::submitFromJavaScript()
 {
-    submit(0, false, UserGestureIndicator::processingUserGesture());
+    submit(0, false);
 }
 
 void HTMLFormElement::submitDialog(PassRefPtrWillBeRawPtr<FormSubmission> formSubmission)
@@ -350,7 +349,7 @@ void HTMLFormElement::submitDialog(PassRefPtrWillBeRawPtr<FormSubmission> formSu
     }
 }
 
-void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool processingUserGesture)
+void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
 {
     FrameView* view = document().view();
     LocalFrame* frame = document().frame();
@@ -363,7 +362,6 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
     }
 
     m_isSubmittingOrInUserJSSubmitEvent = true;
-    m_wasUserSubmitted = processingUserGesture;
 
     RefPtrWillBeRawPtr<HTMLFormControlElement> firstSuccessfulSubmitButton = nullptr;
     bool needButtonActivation = activateSubmitButton; // do we need to activate a submit button?
@@ -666,11 +664,6 @@ String HTMLFormElement::method() const
 void HTMLFormElement::setMethod(const AtomicString& value)
 {
     setAttribute(methodAttr, value);
-}
-
-bool HTMLFormElement::wasUserSubmitted() const
-{
-    return m_wasUserSubmitted;
 }
 
 HTMLFormControlElement* HTMLFormElement::findDefaultButton() const
