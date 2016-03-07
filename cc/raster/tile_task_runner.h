@@ -104,6 +104,9 @@ class CC_EXPORT TileTaskRunner {
   virtual bool GetResourceRequiresSwizzle(bool must_support_alpha) const = 0;
 
  protected:
+  // Check if resource format matches output format.
+  static bool ResourceFormatRequiresSwizzle(ResourceFormat format);
+
   virtual ~TileTaskRunner() {}
 };
 

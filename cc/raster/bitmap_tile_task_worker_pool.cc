@@ -128,8 +128,7 @@ ResourceFormat BitmapTileTaskWorkerPool::GetResourceFormat(
 
 bool BitmapTileTaskWorkerPool::GetResourceRequiresSwizzle(
     bool must_support_alpha) const {
-  return !PlatformColor::SameComponentOrder(
-      GetResourceFormat(must_support_alpha));
+  return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
 }
 
 scoped_ptr<RasterBuffer> BitmapTileTaskWorkerPool::AcquireBufferForRaster(

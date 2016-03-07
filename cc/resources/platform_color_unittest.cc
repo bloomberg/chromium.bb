@@ -21,21 +21,17 @@ TEST(PlatformColorTest, SameComponentOrder) {
       case RGBA_8888:
         EXPECT_EQ(rgba, PlatformColor::SameComponentOrder(format));
         break;
-      case RGBA_4444:
-        // RGBA_4444 indicates the number of bytes per pixel but the format
-        // doesn't actually imply RGBA ordering. It uses the native ordering.
-        EXPECT_EQ(true, PlatformColor::SameComponentOrder(format));
-        break;
       case BGRA_8888:
         EXPECT_NE(rgba, PlatformColor::SameComponentOrder(format));
         break;
+      // The following formats are not platform colors.
       case ALPHA_8:
       case LUMINANCE_8:
       case RGB_565:
+      case RGBA_4444:
       case ETC1:
       case RED_8:
       case LUMINANCE_F16:
-        EXPECT_FALSE(PlatformColor::SameComponentOrder(format));
         break;
     }
   }

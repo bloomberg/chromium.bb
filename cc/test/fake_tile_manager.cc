@@ -50,8 +50,7 @@ class FakeTileTaskRunnerImpl : public TileTaskRunner, public TileTaskClient {
     return RGBA_8888;
   }
   bool GetResourceRequiresSwizzle(bool must_support_alpha) const override {
-    return !PlatformColor::SameComponentOrder(
-        GetResourceFormat(must_support_alpha));
+    return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
   }
 
   // Overridden from TileTaskClient:

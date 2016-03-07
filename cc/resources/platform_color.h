@@ -47,15 +47,25 @@ class PlatformColor {
     return RGBA_8888;
   }
 
-  // Return true if the given texture format has the same component order
-  // as the color on this platform.
+  // Return true if the given 32bpp resource format has the same component order
+  // as the platform color data format.
   static bool SameComponentOrder(ResourceFormat format) {
-    switch (Format()) {
-      case SOURCE_FORMAT_RGBA8:
-        return format == RGBA_8888 || format == RGBA_4444;
-      case SOURCE_FORMAT_BGRA8:
-        return format == BGRA_8888 || format == RGBA_4444;
+    switch (format) {
+      case RGBA_8888:
+        return Format() == SOURCE_FORMAT_RGBA8;
+      case BGRA_8888:
+        return Format() == SOURCE_FORMAT_BGRA8;
+      case ALPHA_8:
+      case LUMINANCE_8:
+      case RGB_565:
+      case RGBA_4444:
+      case ETC1:
+      case RED_8:
+      case LUMINANCE_F16:
+        NOTREACHED();
+        return false;
     }
+
     NOTREACHED();
     return false;
   }
