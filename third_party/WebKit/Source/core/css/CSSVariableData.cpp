@@ -10,7 +10,7 @@
 
 namespace blink {
 
-const StylePropertySet* CSSVariableData::propertySet()
+StylePropertySet* CSSVariableData::propertySet()
 {
     ASSERT(!m_needsVariableResolution);
     if (!m_cachedPropertySet) {

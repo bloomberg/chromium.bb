@@ -156,6 +156,9 @@ public:
     void setHasDirAutoAttribute(bool value) { m_hasDirAutoAttribute = value; }
     bool hasDirAutoAttribute() const { return m_hasDirAutoAttribute; }
 
+    void setCustomPropertySetForApplyAtRule(const String&, StylePropertySet*);
+    StylePropertySet* customPropertySetForApplyAtRule(const String&);
+
 private:
     ElementResolveContext m_elementContext;
     RawPtrWillBeMember<Document> m_document;
@@ -180,6 +183,8 @@ private:
     OwnPtr<CachedUAStyle> m_cachedUAStyle;
 
     ElementStyleResources m_elementStyleResources;
+
+    WillBeHeapHashMap<String, RefPtrWillBeMember<StylePropertySet>> m_customPropertySetsForApplyAtRule;
 };
 
 } // namespace blink

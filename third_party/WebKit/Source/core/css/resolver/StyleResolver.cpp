@@ -102,6 +102,34 @@ void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
         element.ensureElementAnimations().cssAnimations().setPendingUpdate(state.animationUpdate());
 }
 
+// Returns whether any @apply rule sets a custom property
+bool cacheCustomPropertiesForApplyAtRules(StyleResolverState& state, const MatchedPropertiesRange& range)
+{
+    bool ruleSetsCustomProperty = false;
+    if (!state.style()->variables())
+        return false;
+    for (const auto& matchedProperties : range) {
+        const StylePropertySet& properties = *matchedProperties.properties;
+        unsigned propertyCount = properties.propertyCount();
+        for (unsigned i = 0; i < propertyCount; ++i) {
+            StylePropertySet::PropertyReference current = properties.propertyAt(i);
+            if (current.id() != CSSPropertyApplyAtRule)
+                continue;
+            AtomicString name(toCSSCustomIdentValue(current.value())->value());
+            CSSVariableData* variableData = state.style()->variables()->getVariable(name);
+            if (!variableData)
+                continue;
+            StylePropertySet* customPropertySet = variableData->propertySet();
+            if (!customPropertySet)
+                continue;
+            if (customPropertySet->findPropertyIndex(CSSPropertyVariable) != -1)
+                ruleSetsCustomProperty = true;
+            state.setCustomPropertySetForApplyAtRule(name, customPropertySet);
+        }
+    }
+    return ruleSetsCustomProperty;
+}
+
 } // namespace
 
 namespace blink {
@@ -1271,15 +1299,10 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
 template <CSSPropertyPriority priority>
 void StyleResolver::applyPropertiesForApplyAtRule(StyleResolverState& state, const CSSValue* value, bool isImportant, bool inheritedOnly, PropertyWhitelistType propertyWhitelistType)
 {
-    if (priority == ResolveVariables)
-        return;
     if (!state.style()->variables())
         return;
-    AtomicString name(toCSSCustomIdentValue(value)->value());
-    CSSVariableData* variableData = state.style()->variables()->getVariable(name);
-    if (!variableData)
-        return;
-    const StylePropertySet* propertySet = variableData->propertySet();
+    const String& name = toCSSCustomIdentValue(value)->value();
+    const StylePropertySet* propertySet = state.customPropertySetForApplyAtRule(name);
     if (propertySet)
         applyProperties<priority>(state, propertySet, isImportant, inheritedOnly, propertyWhitelistType);
 }
@@ -1404,6 +1427,14 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), true, applyInheritedOnly);
         // TODO(leviw): stop recalculating every time
         CSSVariableResolver::resolveVariableDefinitions(state.style()->variables());
+    }
+
+    if (RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
+        if (cacheCustomPropertiesForApplyAtRules(state, matchResult.authorRules())) {
+            applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), false, applyInheritedOnly);
+            applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), true, applyInheritedOnly);
+            CSSVariableResolver::resolveVariableDefinitions(state.style()->variables());
+        }
     }
 
     // Now we have all of the matched rules in the appropriate order. Walk the rules and apply

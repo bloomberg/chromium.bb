@@ -22,6 +22,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 
 #include "core/animation/css/CSSAnimations.h"
+#include "core/css/StylePropertySet.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameHost.h"
@@ -70,6 +71,16 @@ CSSToLengthConversionData StyleResolverState::fontSizeConversionData() const
 void StyleResolverState::loadPendingResources()
 {
     m_elementStyleResources.loadPendingResources(style());
+}
+
+void StyleResolverState::setCustomPropertySetForApplyAtRule(const String& string, StylePropertySet* customPropertySet)
+{
+    m_customPropertySetsForApplyAtRule.set(string, customPropertySet);
+}
+
+StylePropertySet* StyleResolverState::customPropertySetForApplyAtRule(const String& string)
+{
+    return m_customPropertySetsForApplyAtRule.get(string);
 }
 
 } // namespace blink

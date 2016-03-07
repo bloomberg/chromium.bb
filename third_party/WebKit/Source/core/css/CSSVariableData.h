@@ -37,7 +37,7 @@ public:
 
     bool needsVariableResolution() const { return m_needsVariableResolution; }
 
-    const StylePropertySet* propertySet();
+    StylePropertySet* propertySet();
 
 private:
     CSSVariableData(const CSSParserTokenRange&, bool needsVariableResolution);
