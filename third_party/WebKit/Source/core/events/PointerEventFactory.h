@@ -50,10 +50,11 @@ public:
     // Clear all the existing ids.
     void clear();
 
-    // When a pointerEvent with a particular id is removed that id is considered
-    // free even though there might have been other PointerEvents that were
-    // generated with the same id before.
-    void remove(const PassRefPtrWillBeRawPtr<PointerEvent>);
+    // Returns true if pointerEvent is removed. When a pointerEvent with a
+    // particular id is removed that id is considered free even though there
+    // might have been other PointerEvents that were generated with the same id
+    // before.
+    bool remove(const PassRefPtrWillBeRawPtr<PointerEvent>);
 
     // Returns whether a pointer id exists and active
     bool isActive(const int);
@@ -84,6 +85,7 @@ private:
     bool isPrimary(const int) const;
     void setIdTypeButtons(PointerEventInit &, const WebPointerProperties &,
         unsigned buttons);
+
     static const int s_invalidId;
     static const int s_mouseId;
 

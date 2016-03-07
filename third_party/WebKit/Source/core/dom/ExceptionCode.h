@@ -28,7 +28,7 @@ namespace blink {
 typedef int ExceptionCode;
 
 
-// This list must be in sync with the |domExceptions| in PrivateScriptRunner.h.
+// This list must be in sync with the |domExceptions| in PrivateScriptRunner.js and |coreExceptions| in DOMExceptions.cpp.
 // Some of these are considered historical since they have been
 // changed or removed from the specifications.
 enum {
@@ -86,6 +86,9 @@ enum {
     PermissionDeniedError,
 
     NotAllowedError,
+
+    // Pointer Events
+    InvalidPointerId,
 };
 
 enum V8ErrorType {

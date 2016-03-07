@@ -90,6 +90,7 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventFactory::create(
     pointerEventInit.setScreenY(mouseEvent.globalPosition().y());
     pointerEventInit.setClientX(mouseEvent.position().x());
     pointerEventInit.setClientY(mouseEvent.position().y());
+
     if (pointerEventName == EventTypeNames::pointerdown
         || pointerEventName == EventTypeNames::pointerup) {
         pointerEventInit.setButton(mouseEvent.button());
@@ -266,13 +267,13 @@ int PointerEventFactory::addIdAndActiveButtons(const IncomingId p,
     return mappedId;
 }
 
-void PointerEventFactory::remove(
+bool PointerEventFactory::remove(
     const PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent)
 {
     int mappedId = pointerEvent->pointerId();
     // Do not remove mouse pointer id as it should always be there
     if (mappedId == s_mouseId || !m_pointerIdMapping.contains(mappedId))
-        return;
+        return false;
 
     IncomingId p = m_pointerIdMapping.get(mappedId).incomingId;
     int type = p.pointerType();
@@ -281,6 +282,7 @@ void PointerEventFactory::remove(
     if (m_primaryId[type] == mappedId)
         m_primaryId[type] = PointerEventFactory::s_invalidId;
     m_idCount[type]--;
+    return true;
 }
 
 bool PointerEventFactory::isPrimary(int mappedId) const

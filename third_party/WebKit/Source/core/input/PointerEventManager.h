@@ -54,11 +54,29 @@ public:
     // https://w3c.github.io/pointerevents/#compatibility-mapping-with-mouse-events
     void conditionallyEnableMouseEventForPointerTypeMouse(unsigned);
 
+    void elementRemoved(EventTarget*);
+    void setPointerCapture(int, EventTarget*);
+    void releasePointerCapture(int, EventTarget*);
+    bool isActive(const int);
 
 private:
-    PassRefPtrWillBeRawPtr<Node> getEffectiveTargetForPointerEvent(
-        PassRefPtrWillBeRawPtr<Node>,
-        PassRefPtrWillBeRawPtr<PointerEvent>);
+    typedef WillBeHeapHashMap<int, RefPtrWillBeMember<EventTarget>> PointerCapturingMap;
+    class EventTargetAttributes {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    public:
+        DEFINE_INLINE_TRACE()
+        {
+            visitor->trace(target);
+        }
+        RefPtrWillBeMember<EventTarget> target;
+        bool hasRecievedOverEvent;
+        EventTargetAttributes() {}
+        EventTargetAttributes(PassRefPtrWillBeRawPtr<EventTarget> target,
+            bool hasRecievedOverEvent)
+        : target(target)
+        , hasRecievedOverEvent(hasRecievedOverEvent) {}
+    };
+
     void sendNodeTransitionEvents(
         PassRefPtrWillBeRawPtr<EventTarget> exitedTarget,
         PassRefPtrWillBeRawPtr<EventTarget> enteredTarget,
@@ -67,6 +85,22 @@ private:
         bool sendMouseEvent = false);
     void setNodeUnderPointer(PassRefPtrWillBeRawPtr<PointerEvent>,
         PassRefPtrWillBeRawPtr<EventTarget>);
+    void processPendingPointerCapture(
+        const PassRefPtrWillBeRawPtr<PointerEvent>,
+        const PassRefPtrWillBeRawPtr<EventTarget>,
+        const PlatformMouseEvent& = PlatformMouseEvent(),
+        bool sendMouseEvent = false);
+    void removeTargetFromPointerCapturingMapping(
+        PointerCapturingMap&, const EventTarget*);
+    PassRefPtrWillBeRawPtr<EventTarget> getEffectiveTargetForPointerEvent(
+        PassRefPtrWillBeRawPtr<EventTarget>, int);
+    EventTarget* getCapturingNode(int);
+    void removePointer(const PassRefPtrWillBeRawPtr<PointerEvent>);
+    WebInputEventResult dispatchPointerEvent(
+        PassRefPtrWillBeRawPtr<EventTarget>,
+        PassRefPtrWillBeRawPtr<PointerEvent>,
+        bool checkForListener = false);
+    void releasePointerCapture(int);
 
     // Prevents firing mousedown, mousemove & mouseup in-between a canceled pointerdown and next pointerup/pointercancel.
     // See "PREVENT MOUSE EVENT flag" in the spec:
@@ -77,8 +111,10 @@ private:
     // which might be different than m_nodeUnderMouse in EventHandler. That one
     // keeps track of any compatibility mouse event positions but this map for
     // the pointer with id=1 is only taking care of true mouse related events.
-    WillBeHeapHashMap<int, RefPtrWillBeMember<EventTarget>> m_nodeUnderPointer;
+    WillBeHeapHashMap<int, EventTargetAttributes> m_nodeUnderPointer;
 
+    PointerCapturingMap m_pointerCaptureTarget;
+    PointerCapturingMap m_pendingPointerCaptureTarget;
     PointerEventFactory m_pointerEventFactory;
 };
 

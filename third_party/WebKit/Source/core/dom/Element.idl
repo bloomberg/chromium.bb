@@ -35,6 +35,10 @@ interface Element : Node {
     [Reflect=class] attribute DOMString className;
     [SameObject, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList classList;
 
+    // PointerEvent (http://www.w3.org/TR/pointerevents/#extensions-to-the-element-interface)
+    [RuntimeEnabled=PointerEvent, RaisesException] void setPointerCapture (long pointerId);
+    [RuntimeEnabled=PointerEvent, RaisesException] void releasePointerCapture (long pointerId);
+
     [MeasureAs=HasAttributes] boolean hasAttributes();
     [SameObject, PerWorldBindings, ImplementedAs=attributesForBindings] readonly attribute NamedNodeMap attributes;
     DOMString? getAttribute(DOMString name);

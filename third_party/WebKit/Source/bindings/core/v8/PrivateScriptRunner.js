@@ -63,6 +63,9 @@ function PrivateScriptController()
 
         // Push API
         "PermissionDeniedError",
+
+        // Pointer Events
+        "InvalidPointerId",
     ];
 
     // This list must be in sync with the enum in ExceptionCode.h. The order matters.

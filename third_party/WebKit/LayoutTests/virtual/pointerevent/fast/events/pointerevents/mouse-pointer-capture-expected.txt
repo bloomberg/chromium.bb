@@ -1,0 +1,147 @@
+Verifies that pointer capture works for mouse.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+ ======= Set pointer capture and release implicitly  ======= 
+    **** Move to green box & mouse press & jiggle ***** 
+green received pointerover
+green received mouseover
+grey received pointerenter
+grey received mouseenter
+green received pointerenter
+green received mouseenter
+green received pointermove
+green received mousemove
+green received pointerdown
+    **** Set Pointer Capture  ***** 
+green received mousedown
+green received pointermove
+green received mousemove
+    **** Move to grey box & jiggle ***** 
+green received pointerout
+green received mouseout
+green received pointerleave
+green received mouseleave
+grey received pointerleave
+grey received mouseleave
+green received pointermove
+green received mousemove
+green received pointermove
+green received mousemove
+    **** Move to blue box & jiggle ****
+green received pointermove
+green received mousemove
+green received pointermove
+green received mousemove
+green received pointermove
+green received mousemove
+    **** Move back to green & again to blue & mouse release  ***** 
+green received pointerover
+green received mouseover
+grey received pointerenter
+grey received mouseenter
+green received pointerenter
+green received mouseenter
+green received pointermove
+green received mousemove
+green received pointerout
+green received mouseout
+green received pointerleave
+green received mouseleave
+grey received pointerleave
+grey received mouseleave
+green received pointermove
+green received mousemove
+green received pointerup
+green received mouseup
+    **** Jiggle in blue box ***** 
+blue received pointerover
+blue received mouseover
+blue received pointerenter
+blue received mouseenter
+blue received pointermove
+blue received mousemove
+    **** Move to (0,0) ***** 
+blue received pointerout
+blue received mouseout
+blue received pointerleave
+blue received mouseleave
+
+ ======= Set pointer capture and release explicitly  ======= 
+    **** Move to green box & mouse press & jiggle ***** 
+green received pointerover
+green received mouseover
+grey received pointerenter
+grey received mouseenter
+green received pointerenter
+green received mouseenter
+green received pointermove
+green received mousemove
+green received pointerdown
+    **** Set Pointer Capture  ***** 
+green received mousedown
+green received pointermove
+green received mousemove
+    **** Move to grey box & jiggle ***** 
+green received pointerout
+green received mouseout
+green received pointerleave
+green received mouseleave
+grey received pointerleave
+grey received mouseleave
+green received pointermove
+green received mousemove
+green received pointermove
+green received mousemove
+    **** Move to blue box & jiggle ****
+green received pointermove
+    **** Release Pointer Capture  ***** 
+green received mousemove
+blue received pointerover
+blue received mouseover
+blue received pointerenter
+blue received mouseenter
+blue received pointermove
+blue received mousemove
+blue received pointermove
+blue received mousemove
+    **** Move back to green & again to blue & mouse release  ***** 
+blue received pointerout
+blue received mouseout
+blue received pointerleave
+blue received mouseleave
+green received pointerover
+green received mouseover
+grey received pointerenter
+grey received mouseenter
+green received pointerenter
+green received mouseenter
+green received pointermove
+green received mousemove
+green received pointerout
+green received mouseout
+green received pointerleave
+green received mouseleave
+grey received pointerleave
+grey received mouseleave
+blue received pointerover
+blue received mouseover
+blue received pointerenter
+blue received mouseenter
+blue received pointermove
+blue received mousemove
+blue received pointerup
+blue received mouseup
+    **** Jiggle in blue box ***** 
+blue received pointermove
+blue received mousemove
+    **** Move to (0,0) ***** 
+blue received pointerout
+blue received mouseout
+blue received pointerleave
+blue received mouseleave
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

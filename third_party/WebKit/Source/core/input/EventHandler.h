@@ -178,6 +178,13 @@ public:
     WebInputEventResult sendContextMenuEventForKey(Element* overrideTargetElement = nullptr);
     WebInputEventResult sendContextMenuEventForGesture(const GestureEventWithHitTestResults&);
 
+    // Returns whether pointerId is active or not
+    bool isPointerEventActive(int);
+
+    void setPointerCapture(int, EventTarget*);
+    void releasePointerCapture(int, EventTarget*);
+    void elementRemoved(EventTarget*);
+
     void setMouseDownMayStartAutoscroll() { m_mouseDownMayStartAutoscroll = true; }
 
     static WebInputEventResult mergeEventResult(WebInputEventResult resultA, WebInputEventResult resultB);

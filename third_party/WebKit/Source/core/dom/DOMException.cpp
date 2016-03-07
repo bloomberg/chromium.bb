@@ -85,6 +85,9 @@ static const struct CoreException {
 
     // Used by HTML and Media Session API.
     { "NotAllowedError", "The request is not allowed by the user agent or the platform in the current context.", 0 },
+
+    // Pointer Event
+    { "InvalidPointerId", "PointerId was invalid.", 0 },
 };
 
 static const CoreException* getErrorEntry(ExceptionCode ec)

@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<script src="../../../../../resources/js-test.js"></script>
+<style>
+div.box {
+  margin: 5px;
+  padding: 20px;
+  float: left;
+}
+</style>
+
+<div id="grey" class="box" style="background-color:grey">
+  <div id="green" class="box" style="background-color:green;">
+  </div>
+</div>
+<div id="blue" class="box" style="background-color:blue;">
+</div>
+
+<div id="console"></div>
+
+<script>
+description("Verifies that pointer capture works for mouse.");
+
+var implicitRelease = false;
+var pointerMoveCount = 0;
+
+var rect = document.getElementById("green").getBoundingClientRect();
+var x1 = rect.left + 5;
+var y1 = rect.top + 5;
+
+var rect = document.getElementById("grey").getBoundingClientRect();
+var x2 = rect.left + 5;
+var y2 = rect.top + 5;
+
+var rect = document.getElementById("blue").getBoundingClientRect();
+var x3 = rect.left + 5;
+var y3 = rect.top + 5;
+
+function init() {
+  var eventList = ["mouseenter", "mouseleave", "mouseover", "mouseout", "mousemove", "mousedown", "mouseup",
+                   "pointerenter", "pointerleave", "pointerover", "pointerout", "pointermove", "pointerdown", "pointerup"];
+
+  ["grey", "green", "blue"].forEach(function(id) {
+    var targetDiv = document.getElementById(id);
+    eventList.forEach(function(eventName) {
+      targetDiv.addEventListener(eventName, function(event) {
+        if (event.eventPhase == Event.AT_TARGET) {
+          debug(id + " received " + event.type);
+          if (id == "green" && event.type == "pointerdown") {
+            debug("    **** Set Pointer Capture  ***** ");
+            targetDiv.setPointerCapture(event.pointerId);
+          }
+          if (implicitRelease && id == "green" && event.type == "pointermove") {
+            if (pointerMoveCount++ > 3) {
+              debug("    **** Release Pointer Capture  ***** ");
+              targetDiv.releasePointerCapture(event.pointerId);
+              implicitRelease = false;
+            }
+          }
+        }
+      });
+    });
+
+  });
+}
+
+function testScenario() {
+  debug("    **** Move to green box & mouse press & jiggle ***** ");
+  eventSender.mouseMoveTo(x1, y1);
+  eventSender.mouseDown(1);
+  eventSender.mouseMoveTo(x1+1, y1+1);
+
+  debug("    **** Move to grey box & jiggle ***** ");
+  eventSender.mouseMoveTo(x2, y2);
+  eventSender.mouseMoveTo(x2+1, y2+1);
+
+  debug("    **** Move to blue box & jiggle ****");
+  eventSender.mouseMoveTo(x3, y3);
+  eventSender.mouseMoveTo(x3+1, y3+1);
+  eventSender.mouseMoveTo(x3, y3);
+  
+  debug("    **** Move back to green & again to blue & mouse release  ***** ");
+  eventSender.mouseMoveTo(x1, y1);
+  eventSender.mouseMoveTo(x3, y3);
+  eventSender.mouseUp(1);
+
+  debug("    **** Jiggle in blue box ***** ");
+  eventSender.mouseMoveTo(x3+1, y3+1);
+
+  debug("    **** Move to (0,0) ***** ");
+  eventSender.mouseMoveTo(0, 0);
+}
+
+function runTests() {
+  debug(" ======= Set pointer capture and release implicitly  ======= ");
+  testScenario();
+
+  implicitRelease = true;
+  debug("");
+  debug(" ======= Set pointer capture and release explicitly  ======= ");
+  testScenario();
+  }
+
+init();
+if (window.eventSender)
+  runTests();
+else
+  debug("This test requires eventSender");
+
+</script>

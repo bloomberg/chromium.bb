@@ -435,6 +435,9 @@ public:
     void insertAdjacentText(const String& where, const String& text, ExceptionState&);
     void insertAdjacentHTML(const String& where, const String& html, ExceptionState&);
 
+    void setPointerCapture(int pointerId, ExceptionState&);
+    void releasePointerCapture(int pointerId, ExceptionState&);
+
     String textFromChildren();
 
     virtual String title() const { return String(); }

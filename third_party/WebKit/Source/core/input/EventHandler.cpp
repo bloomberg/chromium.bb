@@ -1662,6 +1662,27 @@ WebInputEventResult EventHandler::dispatchMouseEvent(const AtomicString& eventTy
     return toWebInputEventResult(m_nodeUnderMouse->dispatchEvent(event));
 }
 
+bool EventHandler::isPointerEventActive(int pointerId)
+{
+    return m_pointerEventManager.isActive(pointerId);
+}
+
+void EventHandler::setPointerCapture(int pointerId, EventTarget* target)
+{
+    // TODO(crbug.com/591387): This functionality should be per page not per frame.
+    m_pointerEventManager.setPointerCapture(pointerId, target);
+}
+
+void EventHandler::releasePointerCapture(int pointerId, EventTarget* target)
+{
+    m_pointerEventManager.releasePointerCapture(pointerId, target);
+}
+
+void EventHandler::elementRemoved(EventTarget* target)
+{
+    m_pointerEventManager.elementRemoved(target);
+}
+
 // TODO(mustaq): Make PE drive ME dispatch & bookkeeping in EventHandler.
 WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const AtomicString& mouseEventType, Node* targetNode, int clickCount, const PlatformMouseEvent& mouseEvent)
 {

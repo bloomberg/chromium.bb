@@ -105,6 +105,7 @@
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/input/EventHandler.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
@@ -1507,6 +1508,9 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         if (data->intersectionObserverData())
             data->intersectionObserverData()->deactivateAllIntersectionObservers(*this);
     }
+
+    if (document().frame())
+        document().frame()->eventHandler().elementRemoved(this);
 }
 
 void Element::attach(const AttachContext& context)
@@ -2640,6 +2644,28 @@ void Element::insertAdjacentHTML(const String& where, const String& markup, Exce
     if (!fragment)
         return;
     insertAdjacent(where, fragment.get(), exceptionState);
+}
+
+void Element::setPointerCapture(int pointerId, ExceptionState& exceptionState)
+{
+    if (document().frame()) {
+        if (!document().frame()->eventHandler().isPointerEventActive(pointerId))
+            exceptionState.throwDOMException(InvalidPointerId, "InvalidPointerId");
+        else if (!inDocument())
+            exceptionState.throwDOMException(InvalidStateError, "InvalidStateError");
+        else
+            document().frame()->eventHandler().setPointerCapture(pointerId, this);
+    }
+}
+
+void Element::releasePointerCapture(int pointerId, ExceptionState& exceptionState)
+{
+    if (document().frame()) {
+        if (!document().frame()->eventHandler().isPointerEventActive(pointerId))
+            exceptionState.throwDOMException(InvalidPointerId, "InvalidPointerId");
+        else
+            document().frame()->eventHandler().releasePointerCapture(pointerId, this);
+    }
 }
 
 String Element::innerText()
