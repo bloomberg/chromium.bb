@@ -711,13 +711,13 @@ LayoutUnit LayoutGrid::minSizeForChild(LayoutBox& child, GridTrackSizingDirectio
     if (hasOrthogonalWritingMode)
         return LayoutUnit();
 
-    const Length& childMinSize = direction == ForColumns ? child.style()->logicalMinWidth() : child.style()->logicalMinHeight();
-    if (childMinSize.isAuto()) {
-        // TODO(svillar): Implement intrinsic aspect ratio support (transferred size in specs).
+    bool isRowAxis = direction == ForColumns;
+    const Length& childSize = isRowAxis ? child.styleRef().logicalWidth() : child.styleRef().logicalHeight();
+    const Length& childMinSize = isRowAxis ? child.styleRef().logicalMinWidth() : child.styleRef().logicalMinHeight();
+    if (!childSize.isAuto() || childMinSize.isAuto())
         return minContentForChild(child, direction, columnTracks);
-    }
 
-    if (direction == ForColumns)
+    if (isRowAxis)
         return child.computeLogicalWidthUsing(MinSize, childMinSize, contentLogicalWidth(), this);
 
     return child.computeContentLogicalHeight(MinSize, childMinSize, child.logicalHeight()) + child.scrollbarLogicalHeight();

@@ -3,11 +3,12 @@ Check that min-height is honored when sizing auto rows.
 PASS window.getComputedStyle(gridAuto, '').getPropertyValue('grid-template-rows') is "40px"
 PASS window.getComputedStyle(gridAutoItemSmallerThanMinSize, '').getPropertyValue('grid-template-rows') is "40px"
 PASS window.getComputedStyle(gridMinMaxAutoAuto, '').getPropertyValue('grid-template-rows') is "40px"
-PASS window.getComputedStyle(gridMinMaxAutoMaxContent, '').getPropertyValue('grid-template-rows') is "20px"
+PASS window.getComputedStyle(gridMinMaxAutoMaxContent, '').getPropertyValue('grid-template-rows') is "30px"
 PASS window.getComputedStyle(gridMinMaxMinContentAuto, '').getPropertyValue('grid-template-rows') is "60px"
 PASS window.getComputedStyle(gridAutoMultipleItems, '').getPropertyValue('grid-template-rows') is "60px"
 PASS window.getComputedStyle(gridMinMaxAutoAutoMultipleItemsOneWithoutMinHeight, '').getPropertyValue('grid-template-rows') is "50px"
 PASS window.getComputedStyle(gridMinMaxAutoMaxContentMultipleItemsOneWithAutoMinHeight, '').getPropertyValue('grid-template-rows') is "60px"
+PASS window.getComputedStyle(gridAutoAndAutoFixedHeightChildren, '').getPropertyValue('grid-template-rows') is "200px 50px"
 
 Check that min-height is honored when sizing auto rows and spanning grid items.
 PASS window.getComputedStyle(gridAutoAndAutoOneSpanningOneNonSpannig, '').getPropertyValue('grid-template-rows') is "10px 40px"
@@ -19,10 +20,10 @@ PASS window.getComputedStyle(gridMinMaxAutoMaxContentAndAutoMultipleSpanningMult
 
 Check the interactions between height and min-height and auto tracks.
 PASS window.getComputedStyle(gridAutoWithFixedHeightChild, '').getPropertyValue('grid-template-rows') is "60px"
-PASS window.getComputedStyle(gridAutoWithFixedHeightChildAndMinHeight, '').getPropertyValue('grid-template-rows') is "40px"
+PASS window.getComputedStyle(gridAutoWithFixedHeightChildAndMinHeight, '').getPropertyValue('grid-template-rows') is "60px"
 PASS window.getComputedStyle(gridAutoWithFixedHeightChildAndHigherMinHeight, '').getPropertyValue('grid-template-rows') is "90px"
 PASS window.getComputedStyle(gridAutoAndAutoOneSpanningFixedHeight, '').getPropertyValue('grid-template-rows') is "25px 25px"
-PASS window.getComputedStyle(gridAutoAndAutoOneSpanningFixedHeightAndMinHeight, '').getPropertyValue('grid-template-rows') is "25px 25px"
+PASS window.getComputedStyle(gridAutoAndAutoOneSpanningFixedHeightAndMinHeight, '').getPropertyValue('grid-template-rows') is "30px 30px"
 PASS window.getComputedStyle(gridAutoAndAutoOneSpanningFixedHeightAndHigherMinHeight, '').getPropertyValue('grid-template-rows') is "35px 35px"
 
 Check that borders and paddings are considering when computing min sizes.
