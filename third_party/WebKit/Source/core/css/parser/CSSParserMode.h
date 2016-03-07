@@ -98,6 +98,7 @@ public:
     bool operator!=(const CSSParserContext& other) const { return !(*this == other); }
 
     CSSParserMode mode() const { return m_mode; }
+    CSSParserMode matchMode() const { return m_matchMode; }
     const KURL& baseURL() const { return m_baseURL; }
     const String& charset() const { return m_charset; }
     const Referrer& referrer() const { return m_referrer; }
@@ -127,6 +128,7 @@ private:
     KURL m_baseURL;
     String m_charset;
     CSSParserMode m_mode;
+    CSSParserMode m_matchMode;
     Referrer m_referrer;
     bool m_isHTMLDocument;
     bool m_useLegacyBackgroundSizeShorthandBehavior;
