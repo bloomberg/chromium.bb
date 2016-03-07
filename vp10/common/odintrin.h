@@ -24,11 +24,13 @@ typedef int16_t dering_in;
 #define OD_MINI VPXMIN
 #define OD_CLAMPI(min, val, max) clamp((val), (min), (max))
 
-#  define OD_ILOG_NZ(x) get_msb(x)
+# define OD_CLZ0 (1)
+# define OD_CLZ(x) (-get_msb(x))
+# define OD_ILOG_NZ(x) (OD_CLZ0 - OD_CLZ(x))
 /*Note that __builtin_clz is not defined when x == 0, according to the gcc
- *    documentation (and that of the x86 BSR instruction that implements it), so
- *       we have to special-case it.
- *         We define a special version of the macro to use when x can be zero.*/
-#  define OD_ILOG(x) ((x) ? OD_ILOG_NZ(x) : 0)
+   documentation (and that of the x86 BSR instruction that implements it), so
+   we have to special-case it.
+  We define a special version of the macro to use when x can be zero.*/
+# define OD_ILOG(x) (OD_ILOG_NZ(x) & -!!(x))
 
 #endif
