@@ -99,13 +99,11 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
     HostContentSettingsMap* content_settings =
         HostContentSettingsMapFactory::GetForProfile(
             Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()));
-    ContentSettingsPattern pattern =
-        ContentSettingsPattern::FromURLNoWildcard(example_url_);
-    content_settings->SetContentSetting(pattern, pattern,
-                                        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                                        std::string(), mic_setting);
-    content_settings->SetContentSetting(
-        pattern, pattern, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+    content_settings->SetContentSettingDefaultScope(
+        example_url_, GURL(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+        std::string(), mic_setting);
+    content_settings->SetContentSettingDefaultScope(
+        example_url_, GURL(), CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
         std::string(), cam_setting);
   }
 

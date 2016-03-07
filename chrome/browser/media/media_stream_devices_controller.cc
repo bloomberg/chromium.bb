@@ -458,8 +458,6 @@ void MediaStreamDevicesController::StorePermission(
     ContentSetting new_audio_setting,
     ContentSetting new_video_setting) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ContentSettingsPattern primary_pattern =
-      ContentSettingsPattern::FromURLNoWildcard(request_.security_origin);
 
   bool is_pepper_request =
       request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY;
@@ -467,19 +465,20 @@ void MediaStreamDevicesController::StorePermission(
   if (IsAskingForAudio() && new_audio_setting != CONTENT_SETTING_ASK) {
     if (ShouldPersistContentSetting(new_audio_setting, request_.security_origin,
                                     is_pepper_request)) {
-      HostContentSettingsMapFactory::GetForProfile(profile_)->SetContentSetting(
-          primary_pattern, ContentSettingsPattern::Wildcard(),
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(),
-          new_audio_setting);
+      HostContentSettingsMapFactory::GetForProfile(profile_)
+          ->SetContentSettingDefaultScope(request_.security_origin, GURL(),
+                                          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                                          std::string(), new_audio_setting);
     }
   }
   if (IsAskingForVideo() && new_video_setting != CONTENT_SETTING_ASK) {
     if (ShouldPersistContentSetting(new_video_setting, request_.security_origin,
                                     is_pepper_request)) {
-      HostContentSettingsMapFactory::GetForProfile(profile_)->SetContentSetting(
-          primary_pattern, ContentSettingsPattern::Wildcard(),
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(),
-          new_video_setting);
+      HostContentSettingsMapFactory::GetForProfile(profile_)
+          ->SetContentSettingDefaultScope(
+              request_.security_origin, GURL(),
+              CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(),
+              new_video_setting);
     }
   }
 }
