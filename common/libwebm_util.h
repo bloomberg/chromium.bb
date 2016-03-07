@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef LIBWEBM_COMMON_LIBWEBM_UTILS_H_
-#define LIBWEBM_COMMON_LIBWEBM_UTILS_H_
+#ifndef LIBWEBM_COMMON_LIBWEBM_UTIL_H_
+#define LIBWEBM_COMMON_LIBWEBM_UTIL_H_
 
 #include <cstdint>
 #include <cstdio>
@@ -53,4 +53,4 @@ bool WriteUint8(std::uint8_t val, std::FILE* fileptr);
 
 }  // namespace libwebm
 
-#endif  // LIBWEBM_COMMON_LIBWEBM_UTILS_H_
+#endif  // LIBWEBM_COMMON_LIBWEBM_UTIL_H_

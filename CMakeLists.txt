@@ -157,8 +157,8 @@ target_link_libraries(vttdemux LINK_PUBLIC webm)
 if (ENABLE_WEBMTS)
   # webmts (PES/TS support) library section.
   add_library(webmts
-              "${LIBWEBM_SRC_DIR}/common/libwebm_utils.cc"
-              "${LIBWEBM_SRC_DIR}/common/libwebm_utils.h"
+              "${LIBWEBM_SRC_DIR}/common/libwebm_util.cc"
+              "${LIBWEBM_SRC_DIR}/common/libwebm_util.h"
               "${LIBWEBM_SRC_DIR}/webm2pes.cc"
               "${LIBWEBM_SRC_DIR}/webm2pes.h"
               "${LIBWEBM_SRC_DIR}/vpxpes2ts.cc"

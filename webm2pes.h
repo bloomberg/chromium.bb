@@ -16,7 +16,7 @@
 #include "mkvparser.hpp"
 #include "mkvreader.hpp"
 
-#include "common/libwebm_utils.h"
+#include "common/libwebm_util.h"
 
 namespace libwebm {
 

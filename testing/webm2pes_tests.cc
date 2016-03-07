@@ -15,7 +15,7 @@
 #include "gtest/gtest.h"
 
 #include "common/file_util.h"
-#include "common/libwebm_utils.h"
+#include "common/libwebm_util.h"
 #include "testing/test_util.h"
 
 namespace {

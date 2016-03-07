@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "common/libwebm_utils.h"
+#include "common/libwebm_util.h"
 #include "webm2pes.h"
 
 namespace libwebm {

@@ -22,7 +22,7 @@
 #include <string>
 
 #include "common/file_util.h"
-#include "common/libwebm_utils.h"
+#include "common/libwebm_util.h"
 
 namespace libwebm {
 namespace test {
