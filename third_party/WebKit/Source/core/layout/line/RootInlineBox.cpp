@@ -482,7 +482,7 @@ void RootInlineBox::setLineBreakInfo(LineLayoutItem obj, unsigned breakPos, cons
     // This has security implications because if the LayoutObject does not
     // point to at least one line box, then that LayoutInline can be deleted
     // later without resetting the lineBreakObj, leading to use-after-free.
-    ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj.isText() || !(obj.isLayoutInline() && obj.isBox() && !toLayoutBox(obj)->inlineBoxWrapper()));
+    ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj.isText() || !(obj.isLayoutInline() && obj.isBox() && !LineLayoutBox(obj).inlineBoxWrapper()));
 
     m_lineBreakObj = obj;
     m_lineBreakPos = breakPos;
