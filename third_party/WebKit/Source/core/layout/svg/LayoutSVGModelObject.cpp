@@ -103,7 +103,7 @@ void LayoutSVGModelObject::styleDidChange(StyleDifference diff, const ComputedSt
 {
     if (diff.needsFullLayout()) {
         setNeedsBoundariesUpdate();
-        if (style()->hasTransform())
+        if (diff.transformChanged())
             setNeedsTransformUpdate();
     }
 

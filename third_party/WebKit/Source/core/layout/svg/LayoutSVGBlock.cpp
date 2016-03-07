@@ -68,7 +68,7 @@ void LayoutSVGBlock::styleDidChange(StyleDifference diff, const ComputedStyle* o
 {
     if (diff.needsFullLayout()) {
         setNeedsBoundariesUpdate();
-        if (style()->hasTransform())
+        if (diff.transformChanged())
             setNeedsTransformUpdate();
     }
 
