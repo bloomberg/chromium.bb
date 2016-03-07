@@ -407,6 +407,20 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
   return YES;
 }
 
+- (BOOL)becomeFirstResponder {
+  BOOL result = [super becomeFirstResponder];
+  if (result && hostedView_)
+    hostedView_->GetWidget()->GetFocusManager()->RestoreFocusedView();
+  return result;
+}
+
+- (BOOL)resignFirstResponder {
+  BOOL result = [super resignFirstResponder];
+  if (result && hostedView_)
+    hostedView_->GetWidget()->GetFocusManager()->StoreFocusedView(true);
+  return result;
+}
+
 - (void)viewDidMoveToWindow {
   // When this view is added to a window, AppKit calls setFrameSize before it is
   // added to the window, so the behavior in setFrameSize is not triggered.

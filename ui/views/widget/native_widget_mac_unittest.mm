@@ -71,6 +71,9 @@
 @property(assign, nonatomic) NSRect lastDirtyRect;
 @end
 
+@interface FocusableTestNSView : NSView
+@end
+
 namespace views {
 namespace test {
 
@@ -1309,6 +1312,31 @@ TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Borderless) {
   widget->CloseNow();
 }
 
+// Ensure traversing NSView focus correctly updates the views::FocusManager.
+TEST_F(NativeWidgetMacTest, ChangeFocusOnChangeFirstResponder) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+  widget->GetRootView()->SetFocusable(true);
+  widget->Show();
+
+  base::scoped_nsobject<NSView> child_view([[FocusableTestNSView alloc]
+      initWithFrame:[widget->GetNativeView() bounds]]);
+  [widget->GetNativeView() addSubview:child_view];
+  EXPECT_TRUE([child_view acceptsFirstResponder]);
+  EXPECT_TRUE(widget->GetRootView()->IsFocusable());
+
+  FocusManager* manager = widget->GetFocusManager();
+  manager->SetFocusedView(widget->GetRootView());
+  EXPECT_EQ(manager->GetFocusedView(), widget->GetRootView());
+
+  [widget->GetNativeWindow() makeFirstResponder:child_view];
+  EXPECT_FALSE(manager->GetFocusedView());
+
+  [widget->GetNativeWindow() makeFirstResponder:widget->GetNativeView()];
+  EXPECT_EQ(manager->GetFocusedView(), widget->GetRootView());
+
+  widget->CloseNow();
+}
+
 }  // namespace test
 }  // namespace views
 
@@ -1339,4 +1367,10 @@ TEST_F(NativeWidgetMacTest, SchedulePaintInRect_Borderless) {
   lastDirtyRect_ = dirtyRect;
 }
 
+@end
+
+@implementation FocusableTestNSView
+- (BOOL)acceptsFirstResponder {
+  return YES;
+}
 @end
