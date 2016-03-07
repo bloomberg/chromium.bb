@@ -6,11 +6,11 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
-#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +25,7 @@ double MojoTicksToSeconds(MojoTimeTicks ticks) {
 
 class PingServiceImpl : public test::PingService {
  public:
-  explicit PingServiceImpl() {}
+  PingServiceImpl() {}
   ~PingServiceImpl() override {}
 
   // |PingService| methods:
@@ -52,6 +52,8 @@ class PingPongTest {
   unsigned int iterations_to_run_;
   unsigned int current_iterations_;
 
+  base::Closure quit_closure_;
+
   DISALLOW_COPY_AND_ASSIGN(PingPongTest);
 };
 
@@ -62,14 +64,16 @@ void PingPongTest::Run(unsigned int iterations) {
   iterations_to_run_ = iterations;
   current_iterations_ = 0;
 
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
   service_->Ping([this]() { OnPingDone(); });
-  RunLoop::current()->Run();
+  run_loop.Run();
 }
 
 void PingPongTest::OnPingDone() {
   current_iterations_++;
   if (current_iterations_ >= iterations_to_run_) {
-    RunLoop::current()->Quit();
+    quit_closure_.Run();
     return;
   }
 

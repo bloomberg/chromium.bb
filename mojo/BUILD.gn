@@ -37,6 +37,7 @@ group("tests") {
     "//mojo/edk/js/test:js_unittests",
     "//mojo/edk/system:mojo_message_pipe_perftests",
     "//mojo/edk/system:mojo_system_unittests",
+    "//mojo/edk/test:mojo_public_bindings_perftests",
     "//mojo/edk/test:mojo_public_bindings_unittests",
     "//mojo/edk/test:mojo_public_environment_unittests",
     "//mojo/edk/test:mojo_public_system_perftests",

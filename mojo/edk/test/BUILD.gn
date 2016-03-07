@@ -99,6 +99,14 @@ group("public_tests") {
   ]
 }
 
+test("mojo_public_bindings_perftests") {
+  deps = [
+    ":run_all_perftests",
+    "//mojo/edk/test:test_support",
+    "//mojo/public/cpp/bindings/tests:perftests",
+  ]
+}
+
 test("mojo_public_bindings_unittests") {
   deps = [
     ":run_all_unittests",

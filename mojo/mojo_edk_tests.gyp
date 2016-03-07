@@ -110,7 +110,7 @@
       'dependencies': [
         '../testing/gtest.gyp:gtest',
         'mojo_base.gyp:mojo_common_lib',
-        'mojo_edk.gyp:mojo_run_all_unittests',
+        'mojo_edk.gyp:mojo_run_all_perftests',
         'mojo_public.gyp:mojo_cpp_bindings',
         'mojo_public.gyp:mojo_environment_standalone',
         'mojo_public.gyp:mojo_message_pump_lib',
