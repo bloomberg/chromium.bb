@@ -78,7 +78,7 @@ int NaClCopyInFromUserZStr(struct NaClApp *nap,
  */
 int NaClCopyOutToUser(struct NaClApp  *nap,
                       uintptr_t       dst_usr_addr,
-                      void            *src_sys_ptr,
+                      const void      *src_sys_ptr,
                       size_t          num_bytes) NACL_WUR;
 
 /*

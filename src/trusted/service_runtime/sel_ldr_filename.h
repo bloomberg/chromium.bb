@@ -14,7 +14,10 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_FILENAME_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_FILENAME_H_
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+
+EXTERN_C_BEGIN
 
 /*
  * Given a file path at |src| from the user, copy the path into a buffer |dest|.
@@ -48,5 +51,7 @@ uint32_t CopyHostPathInFromUser(struct NaClApp *nap, char *dest,
  */
 uint32_t CopyHostPathOutToUser(struct NaClApp *nap, uint32_t dst_usr_addr,
                                char *path);
+
+EXTERN_C_END
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_FILENAME_H_ */

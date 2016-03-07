@@ -9,6 +9,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include <string>
+
 #include "native_client/src/include/build_config.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -16,6 +18,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
+namespace {
 
 /*
  * Verifies the path is prefixed by the root directory of the restricted
@@ -25,7 +28,7 @@
  * @param[in] path_len The length of |path|.
  * @return 0 if path does NOT contain the prefix, else 1.
  */
-static int PathContainsRootPrefix(const char *path, size_t path_len) {
+int PathContainsRootPrefix(const char *path, size_t path_len) {
   /* The full path must be at least as long as the root to contain it. */
   if (path_len < NaClRootDirLen)
     return 0;
@@ -40,39 +43,23 @@ static int PathContainsRootPrefix(const char *path, size_t path_len) {
 
 #if !NACL_WINDOWS
 /*
- * Given a |virtual_path| (a path supplied by the user with no knowledge of
- * the mounted directory) transform it into an |real_path|, which is either
- * an absolute path prefixed by the root mount directory, or a relative path.
+ * Given a |virtual_path| (a path supplied by the user with no knowledge of the
+ * mounted directory) transform it into a |real_path|, which is either an
+ * absolute path prefixed by the root mount directory, or a relative path.
  *
  * @param[in] virtual_path Virtual path supplied by user.
  * @param[out] real_path The real path referenced by the |virtual_path|.
- * @param[in] real_path_size The size of the |real_path| buffer.
- * @return 0 on success, else a negated NaCl errno.
  */
-static uint32_t VirtualToRealPath(const char *virtual_path,
-                                  char       *real_path,
-                                  size_t     real_path_max_size) {
-  size_t virtual_path_len = strlen(virtual_path);
+void VirtualToRealPath(const std::string &virtual_path,
+                       std::string *real_path) {
+  real_path->clear();
+  CHECK(virtual_path.length() >= 1);
   if (virtual_path[0] == '/') {
-    /* Absolute Path = Prefix + Absolute Virtual Path + '\0' */
-    if (virtual_path_len + NaClRootDirLen + 1 > real_path_max_size) {
-      NaClLog(LOG_ERROR, "Pathname too long: %s\n", virtual_path);
-      return -NACL_ABI_ENAMETOOLONG;
-    }
-    /* Prefix */
-    strcpy(real_path, NaClRootDir);
-    /* Prefix + Virtual Path */
-    strcat(real_path, virtual_path);
-  } else {
-    /* Relative Path = Relative Virtual Path + '\0' */
-    if (virtual_path_len + 1 > real_path_max_size) {
-      NaClLog(LOG_ERROR, "Pathname too long: %s\n", virtual_path);
-      return -NACL_ABI_ENAMETOOLONG;
-    }
-    strcpy(real_path, virtual_path);
+    /* Absolute Path = Prefix + Absolute Virtual Path */
+    real_path->append(NaClRootDir);
   }
-
-  return 0;
+  /* Relative Path = Relative Virtual Path */
+  real_path->append(virtual_path);
 }
 
 /*
@@ -81,7 +68,7 @@ static uint32_t VirtualToRealPath(const char *virtual_path,
  * @param[in] path Path of file to be checked.
  * @return Nonzero if path is symbolic link.
  */
-static int IsSymbolicLink(const char *path) {
+int IsSymbolicLink(const char *path) {
   struct stat buf;
   int result = lstat(path, &buf);
   return result == 0 && S_ISLNK(buf.st_mode);
@@ -91,14 +78,16 @@ static int IsSymbolicLink(const char *path) {
  * @param[in] path The path to be verified.
  * @return 0 if the path is valid, else a negated NaCl errno.
  */
-static uint32_t ValidatePath(const char *path) {
-  if (strstr(path, "..")) {
-    NaClLog(LOG_WARNING, "Pathname contains ..: %s\n", path);
+uint32_t ValidatePath(const std::string &path) {
+  if (path.find("..") != std::string::npos) {
+    NaClLog(LOG_WARNING, "Pathname contains ..: %s\n", path.c_str());
     return -NACL_ABI_EACCES;
   }
 
-  if (path[0] == '/')
-    CHECK(PathContainsRootPrefix(path, strlen(path)));
+  CHECK(path.length() >= 1);
+  if (path[0] == '/') {
+    CHECK(PathContainsRootPrefix(path.c_str(), path.length()));
+  }
 
   /*
    * This is an informal check, and we still require the users of sel_ldr to
@@ -114,7 +103,7 @@ static uint32_t ValidatePath(const char *path) {
    * Thus, we still require the caller of sel_ldr to guarantee that no symbolic
    * links are inside the mounted directory.
    */
-  if (IsSymbolicLink(path)) {
+  if (IsSymbolicLink(path.c_str())) {
     return -NACL_ABI_EACCES;
   }
   return 0;
@@ -125,36 +114,46 @@ static uint32_t ValidatePath(const char *path) {
  * the mounted file system root (or leave it as a relative path). Also validates
  * the path to ensure it does not access anything outside the mount point.
  *
- * @param[in/out] dest The raw file path from the user
+ * @param[in/out] dest The raw file path from the user.
  * @param[in] dest_max_size The size of the buffer holding dest.
  * @return 0 on success, else a NaCl errno.
  */
-static uint32_t CopyHostPathMounted(char *dest, size_t dest_max_size) {
-  uint32_t retval;
-  char     raw_path[NACL_CONFIG_PATH_MAX];
+uint32_t CopyHostPathMounted(char *dest, size_t dest_max_size) {
+  /* Transform the input C string into a std::string for easier manipulation. */
+  const std::string raw_path(dest);
 
-  if (dest_max_size <= 0 || dest[0] == '\0') {
+  if (raw_path.empty()) {
     NaClLog(LOG_ERROR, "Dest cannot be empty path\n");
     return -NACL_ABI_ENOENT;
   }
 
   CHECK(dest_max_size == NACL_CONFIG_PATH_MAX);
-  CHECK(strlen(dest) < NACL_CONFIG_PATH_MAX);
-  strcpy(raw_path, dest);
+  CHECK(raw_path.length() < NACL_CONFIG_PATH_MAX);
 
   /*
    * Transform the user's raw path into the actual path.
    * The path will reference a file inside the mount directory once
    * VirtualToRealPath returns successfully.
    */
-  retval = VirtualToRealPath(raw_path, dest, dest_max_size);
+  std::string real_path;
+  VirtualToRealPath(raw_path, &real_path);
+
+  /* Verify that the path cannot escape root. */
+  uint32_t retval = ValidatePath(real_path);
   if (retval != 0)
     return retval;
 
-  /* Verify that the path cannot escape root. */
-  return ValidatePath(dest);
+  if (real_path.length() + 1 > dest_max_size) {
+    NaClLog(LOG_WARNING, "Pathname too long: %s\n", real_path.c_str());
+    return -NACL_ABI_ENAMETOOLONG;
+  }
+  /* Copy the C++ string into its C string destination. */
+  strcpy(dest, real_path.c_str()); //NOLINT
+  return 0;
 }
 #endif /* !NACL_WINDOWS */
+
+}  // namespace
 
 uint32_t CopyHostPathInFromUser(struct NaClApp *nap,
                                 char           *dest,
