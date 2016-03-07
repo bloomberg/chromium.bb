@@ -123,7 +123,7 @@ class WebUnitTestSupport;
 struct WebLocalizedString;
 struct WebSize;
 
-class Platform {
+class BLINK_PLATFORM_EXPORT Platform {
 public:
     // HTML5 Database ------------------------------------------------------
 
@@ -133,9 +133,9 @@ public:
     typedef int FileHandle;
 #endif
 
-    BLINK_PLATFORM_EXPORT static void initialize(Platform*);
-    BLINK_PLATFORM_EXPORT static void shutdown();
-    BLINK_PLATFORM_EXPORT static Platform* current();
+    static void initialize(Platform*);
+    static void shutdown();
+    static Platform* current();
 
     // May return null.
     virtual WebCookieJar* cookieJar() { return nullptr; }
@@ -387,7 +387,7 @@ public:
     virtual WebString defaultLocale() { return WebString(); }
 
     // Returns an interface to the main thread. Can be null if blink was initialized on a thread without a message loop.
-    BLINK_PLATFORM_EXPORT WebThread* mainThread() const;
+    WebThread* mainThread() const;
 
     // Returns an interface to the compositor thread. This can be null if the
     // renderer was created with threaded rendering desabled.
@@ -424,10 +424,10 @@ public:
     // registerMemoryDumpProvider() method. |name| is used for debugging
     // (duplicates are allowed) and must be a long-lived C string.
     // See crbug.com/458295 for design docs.
-    BLINK_PLATFORM_EXPORT virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*, const char* name);
+    virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*, const char* name);
 
     // Must be called on the thread that called registerMemoryDumpProvider().
-    BLINK_PLATFORM_EXPORT virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*);
+    virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*);
 
     class TraceLogEnabledStateObserver {
     public:
@@ -609,7 +609,7 @@ public:
     virtual WebTrialTokenValidator* trialTokenValidator() { return nullptr; }
 
 protected:
-    BLINK_PLATFORM_EXPORT Platform();
+    Platform();
     virtual ~Platform() { }
 
     WebThread* m_mainThread;
