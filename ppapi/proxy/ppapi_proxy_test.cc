@@ -138,8 +138,7 @@ bool ProxyTestHarnessBase::SupportsInterface(const char* name) {
   if (!reply_msg)
     return false;
 
-  base::TupleTypes<PpapiMsg_SupportsInterface::ReplyParam>::ValueTuple
-      reply_data;
+  PpapiMsg_SupportsInterface::ReplyParam reply_data;
   EXPECT_TRUE(PpapiMsg_SupportsInterface::ReadReplyParam(
       reply_msg, &reply_data));
 

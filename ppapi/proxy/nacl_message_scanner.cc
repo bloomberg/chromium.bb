@@ -194,8 +194,7 @@ class MessageScannerImpl {
       : msg_(static_cast<const MessageType*>(msg)) {
   }
   bool ScanMessage(ScanningResults* results) {
-    typename base::TupleTypes<typename MessageType::Schema::Param>::ValueTuple
-        params;
+    typename MessageType::Param params;
     if (!MessageType::Read(msg_, &params))
       return false;
     ScanTuple(params, results);
@@ -203,8 +202,7 @@ class MessageScannerImpl {
   }
 
   bool ScanSyncMessage(ScanningResults* results) {
-    typename base::TupleTypes<typename MessageType::Schema::SendParam>
-        ::ValueTuple params;
+    typename MessageType::SendParam params;
     if (!MessageType::ReadSendParam(msg_, &params))
       return false;
     // If we need to rewrite the message, write the message id first.
@@ -218,8 +216,7 @@ class MessageScannerImpl {
   }
 
   bool ScanReply(ScanningResults* results) {
-    typename base::TupleTypes<typename MessageType::Schema::ReplyParam>
-        ::ValueTuple params;
+    typename MessageType::ReplyParam params;
     if (!MessageType::ReadReplyParam(msg_, &params))
       return false;
     // If we need to rewrite the message, write the message id first.

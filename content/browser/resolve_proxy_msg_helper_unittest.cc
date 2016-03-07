@@ -90,8 +90,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
 
  private:
   bool OnMessageReceived(const IPC::Message& msg) override {
-    base::TupleTypes<ViewHostMsg_ResolveProxy::ReplyParam>::ValueTuple
-        reply_data;
+    ViewHostMsg_ResolveProxy::ReplyParam reply_data;
     EXPECT_TRUE(ViewHostMsg_ResolveProxy::ReadReplyParam(&msg, &reply_data));
     DCHECK(!pending_result_.get());
     pending_result_.reset(
