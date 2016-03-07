@@ -88,7 +88,7 @@ static Image* renderableImageForCSSValue(CSSValue* value, const LayoutObject* la
 {
     ImageResource* cachedImage = cachedImageForCSSValue(value, &layoutObject->document());
 
-    if (!cachedImage || !cachedImage->canRender())
+    if (!cachedImage || cachedImage->errorOccurred() || cachedImage->image()->isNull())
         return nullptr;
 
     return cachedImage->image();

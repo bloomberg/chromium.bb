@@ -78,7 +78,7 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImage::computedCSSValue() const
 
 bool StyleFetchedImage::canRender() const
 {
-    return m_image->canRender();
+    return !m_image->errorOccurred() && !m_image->image()->isNull();
 }
 
 bool StyleFetchedImage::isLoaded() const

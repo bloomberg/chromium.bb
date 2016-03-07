@@ -80,7 +80,7 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImageSet::computedCSSValue() const
 
 bool StyleFetchedImageSet::canRender() const
 {
-    return m_bestFitImage->canRender();
+    return !m_bestFitImage->errorOccurred() && !m_bestFitImage->image()->isNull();
 }
 
 bool StyleFetchedImageSet::isLoaded() const

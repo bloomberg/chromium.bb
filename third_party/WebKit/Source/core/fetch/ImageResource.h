@@ -71,9 +71,6 @@ public:
     static std::pair<blink::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.
     bool willPaintBrokenImage() const;
 
-    // Assumes that image rotation or scale doesn't effect the image size being empty or not.
-    bool canRender() { return !errorOccurred() && !imageSize(DoNotRespectImageOrientation, 1).isEmpty(); }
-
     bool usesImageContainerSize() const;
     bool imageHasRelativeSize() const;
     // The device pixel ratio we got from the server for this image, or 1.0.
