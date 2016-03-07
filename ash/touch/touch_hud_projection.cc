@@ -36,7 +36,7 @@ class TouchPointView : public views::View,
         gradient_center_(SkPoint::Make(kPointRadius + 1,
                                        kPointRadius + 1)) {
     SetPaintToLayer(true);
-    SetFillsBoundsOpaquely(false);
+    layer()->SetFillsBoundsOpaquely(false);
 
     SetSize(gfx::Size(2 * kPointRadius + 2, 2 * kPointRadius + 2));
 

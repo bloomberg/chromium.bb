@@ -322,7 +322,7 @@ void CustomFrameViewAsh::HeaderView::OnMaximizeModeEnded() {
 void CustomFrameViewAsh::HeaderView::OnImmersiveRevealStarted() {
   fullscreen_visible_fraction_ = 0;
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
   parent()->Layout();
 }
 

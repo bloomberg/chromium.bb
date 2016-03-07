@@ -436,14 +436,14 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
   app_list_main_view_ = new AppListMainView(delegate_);
   AddChildView(app_list_main_view_);
   app_list_main_view_->SetPaintToLayer(true);
-  app_list_main_view_->SetFillsBoundsOpaquely(false);
+  app_list_main_view_->layer()->SetFillsBoundsOpaquely(false);
   app_list_main_view_->layer()->SetMasksToBounds(true);
 
   // This will be added to the |search_box_widget_| after the app list widget is
   // initialized.
   search_box_view_ = new SearchBoxView(app_list_main_view_, delegate_);
   search_box_view_->SetPaintToLayer(true);
-  search_box_view_->SetFillsBoundsOpaquely(false);
+  search_box_view_->layer()->SetFillsBoundsOpaquely(false);
   search_box_view_->layer()->SetMasksToBounds(true);
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/440224 and
@@ -465,7 +465,7 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
     speech_view_ = new SpeechView(delegate_);
     speech_view_->SetVisible(false);
     speech_view_->SetPaintToLayer(true);
-    speech_view_->SetFillsBoundsOpaquely(false);
+    speech_view_->layer()->SetFillsBoundsOpaquely(false);
     speech_view_->layer()->SetOpacity(0.0f);
     AddChildView(speech_view_);
   }

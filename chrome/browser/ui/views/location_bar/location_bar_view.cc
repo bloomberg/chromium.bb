@@ -182,7 +182,7 @@ void LocationBarView::Init() {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     // Make sure children with layers are clipped. See http://crbug.com/589497
     SetPaintToLayer(true);
-    SetFillsBoundsOpaquely(false);
+    layer()->SetFillsBoundsOpaquely(false);
     layer()->SetMasksToBounds(true);
   } else if (is_popup_mode_) {
     const int kOmniboxPopupBorderImages[] =

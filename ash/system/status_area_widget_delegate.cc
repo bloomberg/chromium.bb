@@ -55,7 +55,7 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate()
   // navigation completion by the user.
   set_allow_deactivate_on_esc(true);
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {

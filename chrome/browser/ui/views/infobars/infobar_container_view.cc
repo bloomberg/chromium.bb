@@ -19,7 +19,7 @@ InfoBarContainerView::InfoBarContainerView(Delegate* delegate)
   set_id(VIEW_ID_INFO_BAR_CONTAINER);
   SetEventTargeter(make_scoped_ptr(new views::ViewTargeter(this)));
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 InfoBarContainerView::~InfoBarContainerView() {

@@ -120,7 +120,7 @@ void BubbleIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
 void BubbleIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   image_->SetPaintToLayer(true);
-  image_->SetFillsBoundsOpaquely(false);
+  image_->layer()->SetFillsBoundsOpaquely(false);
   views::InkDropHostView::AddInkDropLayer(ink_drop_layer);
 }
 

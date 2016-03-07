@@ -49,7 +49,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
 
   // Makes bubble view has a layer and clip its children layers.
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 
   shelf_view_ = shelf_view;

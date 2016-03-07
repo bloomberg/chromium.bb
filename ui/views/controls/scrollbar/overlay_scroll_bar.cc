@@ -48,7 +48,7 @@ OverlayScrollBarThumb::OverlayScrollBarThumb(BaseScrollBar* scroll_bar)
   // This is necessary, otherwise the thumb will be rendered below the views if
   // those views paint to their own layers.
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 OverlayScrollBarThumb::~OverlayScrollBarThumb() {

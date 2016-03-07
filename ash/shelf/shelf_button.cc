@@ -506,7 +506,7 @@ void ShelfButton::Init() {
 
   // TODO: refactor the layers so each button doesn't require 2.
   icon_view_->SetPaintToLayer(true);
-  icon_view_->SetFillsBoundsOpaquely(false);
+  icon_view_->layer()->SetFillsBoundsOpaquely(false);
   icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
   icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
 

@@ -148,7 +148,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
 
   scroller_->SetPaintToLayer(true);
-  scroller_->SetFillsBoundsOpaquely(false);
+  scroller_->layer()->SetFillsBoundsOpaquely(false);
   scroller_->layer()->SetMasksToBounds(true);
 
   empty_list_view_.reset(new NoNotificationMessageView);

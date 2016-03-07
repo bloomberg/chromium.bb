@@ -1437,12 +1437,6 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
 
 // Accelerated Painting --------------------------------------------------------
 
-void View::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
-  // This method should not have the side-effect of creating the layer.
-  if (layer())
-    layer()->SetFillsBoundsOpaquely(fills_bounds_opaquely);
-}
-
 gfx::Vector2d View::CalculateOffsetToAncestorWithLayer(
     ui::Layer** layer_parent) {
   if (layer()) {

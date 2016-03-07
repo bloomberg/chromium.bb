@@ -75,7 +75,7 @@ namespace app_list {
 
 PulsingBlockView::PulsingBlockView(const gfx::Size& size, bool start_delay) {
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
 
   const int max_delay = kAnimationDurationInMs * arraysize(kAnimationOpacity);
   const int delay = start_delay ? base::RandInt(0, max_delay) : 0;

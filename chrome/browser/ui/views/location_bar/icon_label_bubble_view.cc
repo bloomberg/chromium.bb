@@ -151,7 +151,7 @@ void IconLabelBubbleView::OnNativeThemeChanged(
 
 void IconLabelBubbleView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->SetPaintToLayer(true);
-  image()->SetFillsBoundsOpaquely(false);
+  image()->layer()->SetFillsBoundsOpaquely(false);
   InkDropHostView::AddInkDropLayer(ink_drop_layer);
 }
 

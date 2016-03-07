@@ -1538,9 +1538,10 @@ void Tab::AdvanceLoadingAnimation() {
   const bool paint_to_layer = controller_->CanPaintThrobberToLayer();
   if (paint_to_layer != !!throbber_->layer()) {
     throbber_->SetPaintToLayer(paint_to_layer);
-    throbber_->SetFillsBoundsOpaquely(false);
-    if (paint_to_layer)
+    if (paint_to_layer) {
+      throbber_->layer()->SetFillsBoundsOpaquely(false);
       ScheduleIconPaint();  // Ensure the non-layered throbber goes away.
+    }
   }
   if (!throbber_->visible()) {
     ScheduleIconPaint();  // Repaint the icon area to hide the favicon.

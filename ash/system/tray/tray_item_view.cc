@@ -30,7 +30,7 @@ TrayItemView::TrayItemView(SystemTrayItem* owner)
       label_(NULL),
       image_view_(NULL) {
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 }

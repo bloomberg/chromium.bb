@@ -295,13 +295,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns whether the view is enabled.
   bool enabled() const { return enabled_; }
 
-  // This indicates that the view completely fills its bounds in an opaque
-  // color. This doesn't affect compositing but is a hint to the compositor to
-  // optimize painting.
-  // Note that this method does not implicitly create a layer if one does not
-  // already exist for the View, but is a no-op in that case.
-  void SetFillsBoundsOpaquely(bool fills_bounds_opaquely);
-
   // Transformations -----------------------------------------------------------
 
   // Methods for setting transformations for a view (e.g. rotation, scaling).

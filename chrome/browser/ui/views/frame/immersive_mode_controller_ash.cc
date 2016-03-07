@@ -184,7 +184,7 @@ bool ImmersiveModeControllerAsh::UpdateTabIndicators() {
 void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
   visible_fraction_ = 0;
   browser_view_->top_container()->SetPaintToLayer(true);
-  browser_view_->top_container()->SetFillsBoundsOpaquely(false);
+  browser_view_->top_container()->layer()->SetFillsBoundsOpaquely(false);
   UpdateTabIndicators();
   LayoutBrowserRootView();
   FOR_EACH_OBSERVER(Observer, observers_, OnImmersiveRevealStarted());

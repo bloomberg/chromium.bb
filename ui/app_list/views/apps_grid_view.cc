@@ -382,7 +382,7 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
   // Clip any icons that are outside the grid view's bounds. These icons would
   // otherwise be visible to the user when the grid view is off screen.
   layer()->SetMasksToBounds(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
 
   pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
                                            kOverscrollPageTransitionDurationMs);
@@ -803,9 +803,7 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
   AddChildView(view);
   drag_view_ = view;
   drag_view_->SetPaintToLayer(true);
-  // Note: For testing purpose, SetFillsBoundsOpaquely can be set to true to
-  // show the gray background.
-  drag_view_->SetFillsBoundsOpaquely(false);
+  drag_view_->layer()->SetFillsBoundsOpaquely(false);
   drag_view_->SetBoundsRect(drag_view_rect);
   drag_view_->SetDragUIState();  // Hide the title of the drag_view_.
 
@@ -1080,7 +1078,7 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   AppListItemView* view = new AppListItemView(this,
                                               item_list_->item_at(index));
   view->SetPaintToLayer(true);
-  view->SetFillsBoundsOpaquely(false);
+  view->layer()->SetFillsBoundsOpaquely(false);
   return view;
 }
 
@@ -1326,7 +1324,7 @@ void AppsGridView::AnimationBetweenRows(AppListItemView* view,
     layer = view->RecreateLayer();
     layer->SuppressPaint();
 
-    view->SetFillsBoundsOpaquely(false);
+    view->layer()->SetFillsBoundsOpaquely(false);
     view->layer()->SetOpacity(0.f);
   }
 

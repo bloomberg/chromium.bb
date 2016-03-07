@@ -247,7 +247,7 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
   tray_event_filter_.reset(new TrayEventFilter);
 
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
   // Start the tray items not visible, because visibility changes are animated.
   views::View::SetVisible(false);
 }

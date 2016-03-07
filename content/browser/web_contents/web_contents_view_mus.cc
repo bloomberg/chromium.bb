@@ -104,7 +104,6 @@ void WebContentsViewMus::CreateView(const gfx::Size& initial_size,
   aura_window_.reset(new aura::Window(this));
   aura_window_->set_owned_by_parent(false);
   aura_window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
-  aura_window_->SetTransparent(false);
   aura_window_->Init(ui::LAYER_NOT_DRAWN);
   aura::Window* root_window = context ? context->GetRootWindow() : nullptr;
   if (root_window) {

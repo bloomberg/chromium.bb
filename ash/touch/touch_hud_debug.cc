@@ -242,7 +242,7 @@ class TouchHudCanvas : public views::View {
       : touch_log_(touch_log),
         scale_(1) {
     SetPaintToLayer(true);
-    SetFillsBoundsOpaquely(false);
+    layer()->SetFillsBoundsOpaquely(false);
 
     paint_.setStyle(SkPaint::kFill_Style);
   }

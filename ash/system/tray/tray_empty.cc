@@ -46,7 +46,7 @@ views::View* TrayEmpty::CreateDefaultView(user::LoginStatus status) {
   view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
         0, 0, 0));
   view->SetPaintToLayer(true);
-  view->SetFillsBoundsOpaquely(false);
+  view->layer()->SetFillsBoundsOpaquely(false);
   return view;
 }
 

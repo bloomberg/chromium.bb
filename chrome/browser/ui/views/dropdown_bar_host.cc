@@ -45,7 +45,7 @@ void DropdownBarHost::Init(views::View* host_view,
   // Views which also paint to a Layer. See http://crbug.com/589497
   scoped_ptr<views::View> clip_view(new views::View());
   clip_view->SetPaintToLayer(true);
-  clip_view->SetFillsBoundsOpaquely(false);
+  clip_view->layer()->SetFillsBoundsOpaquely(false);
   clip_view->layer()->SetMasksToBounds(true);
   clip_view->AddChildView(view_);
 

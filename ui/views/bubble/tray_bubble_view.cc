@@ -333,7 +333,6 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(true);
 
   bubble_content_mask_.reset(
       new TrayBubbleContentMask(bubble_border_->GetBorderCornerRadius()));
@@ -507,7 +506,6 @@ void TrayBubbleView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this) {
     details.parent->SetPaintToLayer(true);
-    details.parent->SetFillsBoundsOpaquely(true);
     details.parent->layer()->SetMasksToBounds(true);
   }
 }

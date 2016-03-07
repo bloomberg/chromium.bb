@@ -22,7 +22,7 @@ InkDropHostView::~InkDropHostView() {}
 
 void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
+  layer()->SetFillsBoundsOpaquely(false);
   layer()->Add(ink_drop_layer);
   layer()->StackAtBottom(ink_drop_layer);
 }

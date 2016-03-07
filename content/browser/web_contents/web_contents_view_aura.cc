@@ -839,7 +839,6 @@ void WebContentsViewAura::CreateView(
   window_.reset(new aura::Window(this));
   window_->set_owned_by_parent(false);
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
-  window_->SetTransparent(false);
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->AddObserver(this);
   aura::Window* root_window = context ? context->GetRootWindow() : NULL;
