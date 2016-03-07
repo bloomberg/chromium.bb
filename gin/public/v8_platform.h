@@ -19,6 +19,7 @@ class GIN_EXPORT V8Platform : public NON_EXPORTED_BASE(v8::Platform) {
   static V8Platform* Get();
 
   // v8::Platform implementation.
+  size_t NumberOfAvailableBackgroundThreads() override;
   void CallOnBackgroundThread(
       v8::Task* task,
       v8::Platform::ExpectedRuntime expected_runtime) override;
