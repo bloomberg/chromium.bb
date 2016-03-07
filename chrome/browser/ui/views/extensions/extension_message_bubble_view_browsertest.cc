@@ -3,12 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "extensions/browser/extension_registry.h"
+#include "ui/events/event_utils.h"
+
+namespace extensions {
 
 namespace {
 
@@ -53,12 +59,31 @@ class ExtensionMessageBubbleViewBrowserTest
     : public ExtensionMessageBubbleBrowserTest {
  protected:
   ExtensionMessageBubbleViewBrowserTest() {
-    extensions::ExtensionMessageBubbleView::
-        set_bubble_appearance_wait_time_for_testing(0);
+    ExtensionMessageBubbleView::set_bubble_appearance_wait_time_for_testing(0);
   }
   ~ExtensionMessageBubbleViewBrowserTest() override {}
 
+  // Loads and returns an extension that overrides the new tab page.
+  const Extension* LoadNewTabExtension();
+
+  // Clicks on the |bubble|'s dismiss button.
+  void ClickDismissButton(ExtensionMessageBubbleView* bubble) {
+    ClickMessageBubbleButton(bubble, bubble->dismiss_button_);
+  }
+
+  // Clicks on the |bubble|'s action button.
+  void ClickActionButton(ExtensionMessageBubbleView* bubble) {
+    ClickMessageBubbleButton(bubble, bubble->action_button_);
+  }
+
+  ExtensionMessageBubbleView* active_message_bubble() {
+    return ExtensionMessageBubbleView::active_bubble_for_testing_;
+  }
+
  private:
+  void ClickMessageBubbleButton(ExtensionMessageBubbleView* bubble,
+                                views::Button* button);
+
   // ExtensionMessageBubbleBrowserTest:
   void CheckBubble(Browser* browser, AnchorPosition anchor) override;
   void CloseBubble(Browser* browser) override;
@@ -66,6 +91,24 @@ class ExtensionMessageBubbleViewBrowserTest
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleViewBrowserTest);
 };
+
+const Extension* ExtensionMessageBubbleViewBrowserTest::LoadNewTabExtension() {
+  base::FilePath crx_path = PackExtension(test_data_dir_.AppendASCII("api_test")
+                                              .AppendASCII("override")
+                                              .AppendASCII("newtab"));
+  EXPECT_FALSE(crx_path.empty());
+  const Extension* extension = InstallExtensionFromWebstore(crx_path, 1);
+  return extension;
+}
+
+void ExtensionMessageBubbleViewBrowserTest::ClickMessageBubbleButton(
+    ExtensionMessageBubbleView* bubble,
+    views::Button* button) {
+  gfx::Point p(button->x(), button->y());
+  ui::MouseEvent event(ui::ET_MOUSE_RELEASED, p, p, ui::EventTimeForNow(),
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  bubble->ButtonPressed(button, event);
+}
 
 void ExtensionMessageBubbleViewBrowserTest::CheckBubble(Browser* browser,
                                                         AnchorPosition anchor) {
@@ -129,3 +172,97 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestUninstallDangerousExtension) {
   TestUninstallDangerousExtension();
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       TestClickingDismissButton) {
+  const Extension* extension = LoadNewTabExtension();
+  ASSERT_TRUE(extension);
+  const std::string extension_id = extension->id();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("chrome://newtab/"), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  NtpOverriddenBubbleDelegate bubble_delegate(profile());
+  EXPECT_FALSE(bubble_delegate.HasBubbleInfoBeenAcknowledged(extension->id()));
+
+  // Check the bubble is showing.
+  base::RunLoop().RunUntilIdle();
+  ExtensionMessageBubbleView* bubble = active_message_bubble();
+  views::View* anchor_view =
+      GetToolbarViewForBrowser(browser())->app_menu_button();
+  CheckBubbleAndReferenceView(bubble, anchor_view);
+
+  // Click the dismiss button. The bubble should close, and the extension should
+  // be acknowledged (and still installed).
+  ClickDismissButton(bubble);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(active_message_bubble());
+  EXPECT_TRUE(bubble_delegate.HasBubbleInfoBeenAcknowledged(extension->id()));
+  EXPECT_TRUE(ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
+      extension_id));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       TestClickingActionButton) {
+  const Extension* extension = LoadNewTabExtension();
+  ASSERT_TRUE(extension);
+  const std::string extension_id = extension->id();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("chrome://newtab/"), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  NtpOverriddenBubbleDelegate bubble_delegate(profile());
+  EXPECT_FALSE(bubble_delegate.HasBubbleInfoBeenAcknowledged(extension->id()));
+
+  // Check the bubble is showing.
+  base::RunLoop().RunUntilIdle();
+  ExtensionMessageBubbleView* bubble = active_message_bubble();
+  views::View* anchor_view =
+      GetToolbarViewForBrowser(browser())->app_menu_button();
+  CheckBubbleAndReferenceView(bubble, anchor_view);
+
+  // Click the action button. The bubble should close, and the extension should
+  // not be acknowledged. Instead, the extension should be disabled.
+  ClickActionButton(bubble);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(active_message_bubble());
+  EXPECT_FALSE(bubble_delegate.HasBubbleInfoBeenAcknowledged(extension->id()));
+  EXPECT_FALSE(ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
+      extension_id));
+  EXPECT_TRUE(ExtensionRegistry::Get(profile())->disabled_extensions().GetByID(
+      extension_id));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       TestBubbleFocusLoss) {
+  const Extension* extension = LoadNewTabExtension();
+  ASSERT_TRUE(extension);
+  const std::string extension_id = extension->id();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("chrome://newtab/"), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  NtpOverriddenBubbleDelegate bubble_delegate(profile());
+  EXPECT_FALSE(bubble_delegate.HasBubbleInfoBeenAcknowledged(extension->id()));
+
+  // Check the bubble is showing.
+  base::RunLoop().RunUntilIdle();
+  ExtensionMessageBubbleView* bubble = active_message_bubble();
+  views::View* anchor_view =
+      GetToolbarViewForBrowser(browser())->app_menu_button();
+  CheckBubbleAndReferenceView(bubble, anchor_view);
+
+  // Deactivate the bubble's widget (e.g. due to focus loss). This causes the
+  // bubble to close, but the extension should not be acknowledged or removed.
+  bubble->GetWidget()->Deactivate();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(active_message_bubble());
+  EXPECT_FALSE(bubble_delegate.HasBubbleInfoBeenAcknowledged(extension->id()));
+  EXPECT_TRUE(ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
+      extension_id));
+}
+
+}  // namespace extensions

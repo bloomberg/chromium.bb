@@ -34,6 +34,7 @@ class ExtensionMessageBubbleFactory {
 
   // Overrides the default behavior for testing.
   static void set_override_for_tests(OverrideForTesting override);
+  static bool is_enabled_for_testing();
 
  private:
   Browser* browser_;

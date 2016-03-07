@@ -20,8 +20,8 @@ class View;
 }
 
 namespace extensions {
-
 class ExtensionMessageBubbleController;
+class ExtensionMessageBubbleViewBrowserTest;
 
 // This is a class that implements the UI for the bubble showing which
 // extensions look suspicious and have therefore been automatically disabled.
@@ -43,6 +43,8 @@ class ExtensionMessageBubbleView : public views::BubbleDelegateView,
   static void set_bubble_appearance_wait_time_for_testing(int time_in_seconds);
 
  private:
+  friend class ExtensionMessageBubbleViewBrowserTest;
+
   ~ExtensionMessageBubbleView() override;
 
   void ShowBubble();
@@ -79,6 +81,8 @@ class ExtensionMessageBubbleView : public views::BubbleDelegateView,
   bool action_taken_;
 
   base::WeakPtrFactory<ExtensionMessageBubbleView> weak_factory_;
+
+  static ExtensionMessageBubbleView* active_bubble_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleView);
 };

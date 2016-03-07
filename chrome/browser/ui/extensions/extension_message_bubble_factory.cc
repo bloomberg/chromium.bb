@@ -173,3 +173,8 @@ void ExtensionMessageBubbleFactory::set_override_for_tests(
     OverrideForTesting override) {
   g_override_for_testing = override;
 }
+
+// static
+bool ExtensionMessageBubbleFactory::is_enabled_for_testing() {
+  return g_override_for_testing == OVERRIDE_ENABLED;
+}
