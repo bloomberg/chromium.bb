@@ -36,8 +36,6 @@ class InterfacePtr {
   DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(InterfacePtr);
 
  public:
-  using GenericInterface = typename Interface::GenericInterface;
-
   // Constructs an unbound InterfacePtr.
   InterfacePtr() {}
   InterfacePtr(decltype(nullptr)) {}
@@ -70,7 +68,7 @@ class InterfacePtr {
   // Calling with an invalid |info| (containing an invalid message pipe handle)
   // has the same effect as reset(). In this case, the InterfacePtr is not
   // considered as bound.
-  void Bind(InterfacePtrInfo<GenericInterface> info) {
+  void Bind(InterfacePtrInfo<Interface> info) {
     reset();
     if (info.is_valid())
       internal_state_.Bind(std::move(info));
@@ -158,7 +156,7 @@ class InterfacePtr {
   //     on to associated interface endpoint handles at both sides of the
   //     message pipe in order to call this method. We need a way to forcefully
   //     invalidate associated interface endpoint handles.
-  InterfacePtrInfo<GenericInterface> PassInterface() {
+  InterfacePtrInfo<Interface> PassInterface() {
     CHECK(!HasAssociatedInterfaces());
     CHECK(!internal_state_.has_pending_callbacks());
     State state;

@@ -15,12 +15,24 @@
 #include "mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-chromium.h"
-#include "mojo/public/interfaces/bindings/tests/test_native_types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace test {
 namespace {
+
+// Converts a request of Interface1 to a request of Interface0. Interface0 and
+// Interface1 are expected to be two variants of the same mojom interface.
+// In real-world use cases, users shouldn't need to worry about this. Because it
+// is rare to deal with two variants of the same interface in the same app.
+template <typename Interface0, typename Interface1>
+InterfaceRequest<Interface0> ConvertInterfaceRequest(
+    InterfaceRequest<Interface1> request) {
+  DCHECK_EQ(0, strcmp(Interface0::Name_, Interface1::Name_));
+  InterfaceRequest<Interface0> result;
+  result.Bind(request.PassMessagePipe());
+  return result;
+}
 
 template <typename T>
 void DoExpectResult(const T& expected,
@@ -103,12 +115,22 @@ class StructTraitsTest : public testing::Test,
   StructTraitsTest() {}
 
  protected:
-  void BindToChromiumService(mojo::InterfaceRequest<RectService> request) {
+  void BindToChromiumService(chromium::RectServiceRequest request) {
     chromium_bindings_.AddBinding(&chromium_service_, std::move(request));
   }
+  void BindToChromiumService(blink::RectServiceRequest request) {
+    chromium_bindings_.AddBinding(
+        &chromium_service_,
+        ConvertInterfaceRequest<chromium::RectService>(std::move(request)));
+  }
 
-  void BindToBlinkService(mojo::InterfaceRequest<RectService> request) {
+  void BindToBlinkService(blink::RectServiceRequest request) {
     blink_bindings_.AddBinding(&blink_service_, std::move(request));
+  }
+  void BindToBlinkService(chromium::RectServiceRequest request) {
+    blink_bindings_.AddBinding(
+        &blink_service_,
+        ConvertInterfaceRequest<blink::RectService>(std::move(request)));
   }
 
   TraitsTestServicePtr GetTraitsTestProxy() {
@@ -126,12 +148,12 @@ class StructTraitsTest : public testing::Test,
   base::MessageLoop loop_;
 
   ChromiumRectServiceImpl chromium_service_;
-  mojo::BindingSet<chromium::RectService> chromium_bindings_;
+  BindingSet<chromium::RectService> chromium_bindings_;
 
   BlinkRectServiceImpl blink_service_;
-  mojo::BindingSet<blink::RectService> blink_bindings_;
+  BindingSet<blink::RectService> blink_bindings_;
 
-  mojo::BindingSet<TraitsTestService> traits_test_bindings_;
+  BindingSet<TraitsTestService> traits_test_bindings_;
 };
 
 }  // namespace

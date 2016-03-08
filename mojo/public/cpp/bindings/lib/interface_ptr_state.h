@@ -38,8 +38,6 @@ class InterfacePtrState;
 template <typename Interface>
 class InterfacePtrState<Interface, false> {
  public:
-  using GenericInterface = typename Interface::GenericInterface;
-
   InterfacePtrState() : proxy_(nullptr), router_(nullptr), version_(0u) {}
 
   ~InterfacePtrState() {
@@ -94,7 +92,7 @@ class InterfacePtrState<Interface, false> {
     swap(other->version_, version_);
   }
 
-  void Bind(InterfacePtrInfo<GenericInterface> info) {
+  void Bind(InterfacePtrInfo<Interface> info) {
     DCHECK(!proxy_);
     DCHECK(!router_);
     DCHECK(!handle_.is_valid());
@@ -116,8 +114,8 @@ class InterfacePtrState<Interface, false> {
 
   // After this method is called, the object is in an invalid state and
   // shouldn't be reused.
-  InterfacePtrInfo<GenericInterface> PassInterface() {
-    return InterfacePtrInfo<GenericInterface>(
+  InterfacePtrInfo<Interface> PassInterface() {
+    return InterfacePtrInfo<Interface>(
         router_ ? router_->PassMessagePipe() : std::move(handle_), version_);
   }
 
@@ -186,8 +184,6 @@ class InterfacePtrState<Interface, false> {
 template <typename Interface>
 class InterfacePtrState<Interface, true> {
  public:
-  using GenericInterface = typename Interface::GenericInterface;
-
   InterfacePtrState() : version_(0u) {}
 
   ~InterfacePtrState() {
@@ -243,7 +239,7 @@ class InterfacePtrState<Interface, true> {
     swap(other->version_, version_);
   }
 
-  void Bind(InterfacePtrInfo<GenericInterface> info) {
+  void Bind(InterfacePtrInfo<Interface> info) {
     DCHECK(!router_);
     DCHECK(!endpoint_client_);
     DCHECK(!proxy_);
@@ -268,10 +264,10 @@ class InterfacePtrState<Interface, true> {
 
   // After this method is called, the object is in an invalid state and
   // shouldn't be reused.
-  InterfacePtrInfo<GenericInterface> PassInterface() {
+  InterfacePtrInfo<Interface> PassInterface() {
     endpoint_client_.reset();
     proxy_.reset();
-    return InterfacePtrInfo<GenericInterface>(
+    return InterfacePtrInfo<Interface>(
         router_ ? router_->PassMessagePipe() : std::move(handle_), version_);
   }
 

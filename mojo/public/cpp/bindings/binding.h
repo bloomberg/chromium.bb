@@ -55,8 +55,6 @@ class AssociatedGroup;
 template <typename Interface>
 class Binding {
  public:
-  using GenericInterface = typename Interface::GenericInterface;
-
   // Constructs an incomplete binding that will use the implementation |impl|.
   // The binding may be completed with a subsequent call to the |Bind| method.
   // Does not take ownership of |impl|, which must outlive the binding.
@@ -80,7 +78,7 @@ class Binding {
   // Constructs a completed binding of |impl| to the message pipe endpoint in
   // |request|, taking ownership of the endpoint. Does not take ownership of
   // |impl|, which must outlive the binding.
-  Binding(Interface* impl, InterfaceRequest<GenericInterface> request)
+  Binding(Interface* impl, InterfaceRequest<Interface> request)
       : Binding(impl) {
     Bind(request.PassMessagePipe());
   }
@@ -119,7 +117,7 @@ class Binding {
   // Completes a binding that was constructed with only an interface
   // implementation by removing the message pipe endpoint from |request| and
   // binding it to the previously specified implementation.
-  void Bind(InterfaceRequest<GenericInterface> request) {
+  void Bind(InterfaceRequest<Interface> request) {
     Bind(request.PassMessagePipe());
   }
 
@@ -172,7 +170,7 @@ class Binding {
   // on to associated interface endpoint handles at both sides of the
   // message pipe in order to call this method. We need a way to forcefully
   // invalidate associated interface endpoint handles.
-  InterfaceRequest<GenericInterface> Unbind() {
+  InterfaceRequest<Interface> Unbind() {
     CHECK(!HasAssociatedInterfaces());
     return internal_state_.Unbind();
   }

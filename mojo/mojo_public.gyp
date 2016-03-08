@@ -371,7 +371,6 @@
           'public/interfaces/bindings/tests/scoping.mojom',
           'public/interfaces/bindings/tests/serialization_test_structs.mojom',
           'public/interfaces/bindings/tests/test_constants.mojom',
-          'public/interfaces/bindings/tests/test_native_types.mojom',
           'public/interfaces/bindings/tests/test_structs.mojom',
           'public/interfaces/bindings/tests/test_sync_methods.mojom',
           'public/interfaces/bindings/tests/test_unions.mojom',

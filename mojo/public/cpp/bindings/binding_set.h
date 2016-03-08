@@ -20,8 +20,6 @@ namespace mojo {
 template <typename Interface>
 class BindingSet {
  public:
-  using GenericInterface = typename Interface::GenericInterface;
-
   BindingSet() {}
   ~BindingSet() { CloseAllBindings(); }
 
@@ -29,7 +27,7 @@ class BindingSet {
     error_handler_ = error_handler;
   }
 
-  void AddBinding(Interface* impl, InterfaceRequest<GenericInterface> request) {
+  void AddBinding(Interface* impl, InterfaceRequest<Interface> request) {
     auto binding = new Element(impl, std::move(request));
     binding->set_connection_error_handler([this]() { OnConnectionError(); });
     bindings_.push_back(binding->GetWeakPtr());
@@ -58,9 +56,7 @@ class BindingSet {
  private:
   class Element {
    public:
-    using GenericInterface = typename Interface::GenericInterface;
-
-    Element(Interface* impl, InterfaceRequest<GenericInterface> request)
+    Element(Interface* impl, InterfaceRequest<Interface> request)
         : binding_(impl, std::move(request)), weak_ptr_factory_(this) {
       binding_.set_connection_error_handler([this]() { OnConnectionError(); });
     }
