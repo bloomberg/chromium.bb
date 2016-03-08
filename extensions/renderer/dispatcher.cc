@@ -1345,31 +1345,26 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
       // ones.
       const FeatureProvider* api_feature_provider =
           FeatureProvider::GetAPIFeatures();
-      const std::vector<std::string>& apis =
-          api_feature_provider->GetAllFeatureNames();
-      for (const std::string& api_name : apis) {
-        Feature* feature = api_feature_provider->GetFeature(api_name);
-        DCHECK(feature);
-
+      for (const auto& map_entry : api_feature_provider->GetAllFeatures()) {
         // Internal APIs are included via require(api_name) from internal code
         // rather than chrome[api_name].
-        if (feature->IsInternal())
+        if (map_entry.second->IsInternal())
           continue;
 
         // If this API has a parent feature (and isn't marked 'noparent'),
         // then this must be a function or event, so we should not register.
-        if (api_feature_provider->GetParent(feature) != NULL)
+        if (api_feature_provider->GetParent(map_entry.second.get()) != nullptr)
           continue;
 
         // Skip chrome.test if this isn't a test.
-        if (api_name == "test" &&
+        if (map_entry.first == "test" &&
             !base::CommandLine::ForCurrentProcess()->HasSwitch(
                 ::switches::kTestType)) {
           continue;
         }
 
-        if (context->IsAnyFeatureAvailableToContext(*feature))
-          RegisterBinding(api_name, context);
+        if (context->IsAnyFeatureAvailableToContext(*map_entry.second.get()))
+          RegisterBinding(map_entry.first, context);
       }
       break;
     }

@@ -35,7 +35,7 @@ class BaseFeatureProvider : public FeatureProvider {
   Feature* GetParent(Feature* feature) const override;
   std::vector<Feature*> GetChildren(const Feature& parent) const override;
 
-  const std::vector<std::string>& GetAllFeatureNames() const override;
+  const FeatureMap& GetAllFeatures() const override;
 
  private:
   std::map<std::string, scoped_ptr<Feature>> features_;

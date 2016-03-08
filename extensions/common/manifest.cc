@@ -146,20 +146,15 @@ bool Manifest::ValidateManifest(
 
   const FeatureProvider* manifest_feature_provider =
       FeatureProvider::GetManifestFeatures();
-  const std::vector<std::string>& feature_names =
-      manifest_feature_provider->GetAllFeatureNames();
-  for (std::vector<std::string>::const_iterator feature_name =
-           feature_names.begin();
-       feature_name != feature_names.end(); ++feature_name) {
+  for (const auto& map_entry : manifest_feature_provider->GetAllFeatures()) {
     // Use Get instead of HasKey because the former uses path expansion.
-    if (!value_->Get(*feature_name, NULL))
+    if (!value_->Get(map_entry.first, nullptr))
       continue;
 
-    Feature* feature = manifest_feature_provider->GetFeature(*feature_name);
-    Feature::Availability result = feature->IsAvailableToManifest(
+    Feature::Availability result = map_entry.second->IsAvailableToManifest(
         extension_id_, type_, location_, GetManifestVersion());
     if (!result.is_available())
-      warnings->push_back(InstallWarning(result.message(), *feature_name));
+      warnings->push_back(InstallWarning(result.message(), map_entry.first));
   }
 
   // Also generate warnings for keys that are not features.
