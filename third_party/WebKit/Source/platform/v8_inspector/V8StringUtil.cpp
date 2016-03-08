@@ -153,12 +153,20 @@ PassOwnPtr<V8Regex> createSearchRegex(V8DebuggerImpl* debugger, const String& qu
 
 v8::Local<v8::String> toV8String(v8::Isolate* isolate, const String& string)
 {
-    return v8::String::NewFromUtf8(isolate, string.utf8().data(), v8::NewStringType::kNormal).ToLocalChecked();
+    if (string.isNull())
+        return v8::String::Empty(isolate);
+    if (string.is8Bit())
+        return v8::String::NewFromOneByte(isolate, string.characters8(), v8::NewStringType::kNormal, string.length()).ToLocalChecked();
+    return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kNormal, string.length()).ToLocalChecked();
 }
 
 v8::Local<v8::String> toV8StringInternalized(v8::Isolate* isolate, const String& string)
 {
-    return v8::String::NewFromUtf8(isolate, string.utf8().data(), v8::NewStringType::kInternalized).ToLocalChecked();
+    if (string.isNull())
+        return v8::String::Empty(isolate);
+    if (string.is8Bit())
+        return v8::String::NewFromOneByte(isolate, string.characters8(), v8::NewStringType::kInternalized, string.length()).ToLocalChecked();
+    return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kInternalized, string.length()).ToLocalChecked();
 }
 
 String toWTFString(v8::Local<v8::String> value)
