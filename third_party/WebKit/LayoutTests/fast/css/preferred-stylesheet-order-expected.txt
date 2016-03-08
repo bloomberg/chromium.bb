@@ -1,0 +1,12 @@
+Preferred stylesheet where insertion order is reversed tree order
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS getComputedStyle(t1).color is "rgb(0, 128, 0)"
+PASS document.preferredStylesheetSet is "preferred"
+PASS document.selectedStylesheetSet is "preferred"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+This text should be green

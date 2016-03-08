@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<div id="t1">This text should be green</div>
+<script>
+description("Preferred stylesheet where insertion order is reversed tree order");
+
+function createStyleElement(text, title) {
+    var elm = document.createElement("style");
+    elm.setAttribute("title", title);
+    elm.appendChild(document.createTextNode(text));
+    return elm;
+}
+
+document.head.appendChild(createStyleElement("#t1 {color:green}", "preferred"));
+document.head.appendChild(createStyleElement("#t1 {color:red}", "notpreferred"));
+
+shouldBeEqualToString("getComputedStyle(t1).color", "rgb(0, 128, 0)");
+shouldBeEqualToString("document.preferredStylesheetSet", "preferred");
+shouldBeEqualToString("document.selectedStylesheetSet", "preferred");
+</script>
