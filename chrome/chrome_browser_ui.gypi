@@ -2785,6 +2785,8 @@
       'browser/ui/crypto_module_password_dialog_nss.h',
       'browser/ui/webui/options/certificate_manager_handler.cc',
       'browser/ui/webui/options/certificate_manager_handler.h',
+      'browser/ui/webui/settings/certificates_handler.cc',
+      'browser/ui/webui/settings/certificates_handler.h',
     ],
     'chrome_browser_ui_omnibox_non_mobile_sources': [
       'browser/ui/omnibox/alternate_nav_infobar_delegate.cc',

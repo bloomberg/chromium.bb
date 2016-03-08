@@ -37,6 +37,10 @@
 #include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(USE_NSS_CERTS)
+#include "chrome/browser/ui/webui/settings/certificates_handler.h"
+#endif  // defined(USE_NSS_CERTS)
+
 namespace settings {
 
 SettingsPageUIHandler::SettingsPageUIHandler() {
@@ -68,6 +72,11 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       WebContentsObserver(web_ui->GetWebContents()) {
   Profile* profile = Profile::FromWebUI(web_ui);
   AddSettingsPageUIHandler(new AppearanceHandler(web_ui));
+
+#if defined(USE_NSS_CERTS)
+  AddSettingsPageUIHandler(new CertificatesHandler(false));
+#endif  // defined(USE_NSS_CERTS)
+
   AddSettingsPageUIHandler(new ClearBrowsingDataHandler(web_ui));
   AddSettingsPageUIHandler(new DownloadsHandler());
   AddSettingsPageUIHandler(new FontHandler(web_ui));

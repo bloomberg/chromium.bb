@@ -171,6 +171,12 @@
       <structure name="IDR_SETTINGS_CERTIFICATE_MANAGER_PAGE_JS"
                  file="certificate_manager_page/certificate_manager_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CERTIFICATES_BROWSER_PROXY_HTML"
+                 file="certificate_manager_page/certificates_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CERTIFICATES_BROWSER_PROXY_JS"
+                 file="certificate_manager_page/certificates_browser_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_PAGE_CSS"
                  file="clear_browsing_data_page/clear_browsing_data_page.css"
                  type="chrome_html" />
