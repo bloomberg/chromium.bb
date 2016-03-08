@@ -45,6 +45,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "wtf/HashMap.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -138,7 +139,9 @@ public:
 
 static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value)
 {
-    return SkScalarToFixed(value);
+    // We treat HarfBuzz hb_position_t as 16.16 fixed-point.
+    static const int kHbPosition1 = 1 << 16;
+    return clampTo<int>(value * kHbPosition1);
 }
 
 static void SkiaGetGlyphWidthAndExtents(SkPaint* paint, hb_codepoint_t codepoint, hb_position_t* width, hb_glyph_extents_t* extents)

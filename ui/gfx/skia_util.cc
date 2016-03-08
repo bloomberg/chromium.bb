@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/numerics/safe_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -224,6 +225,23 @@ void QuadFToSkPoints(const gfx::QuadF& quad, SkPoint points[4]) {
   points[1] = PointFToSkPoint(quad.p2());
   points[2] = PointFToSkPoint(quad.p3());
   points[3] = PointFToSkPoint(quad.p4());
+}
+
+// We treat HarfBuzz ints as 16.16 fixed-point.
+static const int kHbUnit1 = 1 << 16;
+
+int SkiaScalarToHarfBuzzUnits(SkScalar value) {
+  return base::saturated_cast<int>(value * kHbUnit1);
+}
+
+SkScalar HarfBuzzUnitsToSkiaScalar(int value) {
+  static const SkScalar kSkToHbRatio = SK_Scalar1 / kHbUnit1;
+  return kSkToHbRatio * value;
+}
+
+float HarfBuzzUnitsToFloat(int value) {
+  static const float kFloatToHbRatio = 1.0f / kHbUnit1;
+  return kFloatToHbRatio * value;
 }
 
 }  // namespace gfx

@@ -88,6 +88,15 @@ GFX_EXPORT void ConvertSkiaToRGBA(const unsigned char* skia,
                                   int pixel_width,
                                   unsigned char* rgba);
 
+// Converts a Skia floating-point value to an int appropriate for hb_position_t.
+GFX_EXPORT int SkiaScalarToHarfBuzzUnits(SkScalar value);
+
+// Converts an hb_position_t to a Skia floating-point value.
+GFX_EXPORT SkScalar HarfBuzzUnitsToSkiaScalar(int value);
+
+// Converts an hb_position_t to a float.
+GFX_EXPORT float HarfBuzzUnitsToFloat(int value);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_SKIA_UTIL_H_
