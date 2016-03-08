@@ -105,6 +105,11 @@ void ArcNetHostImpl::GetNetworks(GetNetworksRequestType type,
     DCHECK(!tmp.empty());
     wc->ssid = tmp;
 
+    tmp.clear();
+    network_dict->GetString(onc::network_config::kGUID, &tmp);
+    DCHECK(!tmp.empty());
+    wc->guid = tmp;
+
     base::DictionaryValue* wifi_dict = nullptr;
     network_dict->GetDictionary(onc::network_config::kWiFi, &wifi_dict);
     DCHECK(wifi_dict);

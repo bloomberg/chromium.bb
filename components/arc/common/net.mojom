@@ -25,6 +25,7 @@ struct WifiConfiguration {
   int32 signal_strength;
   string bssid;
   string security;
+  [MinVersion=1] string? guid;
 };
 
 struct NetworkData {
