@@ -192,7 +192,7 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
     if (!checkOne(context, subResult))
         return SelectorFailsLocally;
 
-    if (subResult.dynamicPseudo != NOPSEUDO)
+    if (subResult.dynamicPseudo != PseudoIdNone)
         result.dynamicPseudo = subResult.dynamicPseudo;
 
     if (context.selector->isLastInTagHistory()) {
@@ -208,10 +208,10 @@ SelectorChecker::Match SelectorChecker::matchSelector(const SelectorCheckingCont
         if (nextSelectorExceedsScope(context))
             return SelectorFailsCompletely;
 
-        if (context.pseudoId != NOPSEUDO && context.pseudoId != result.dynamicPseudo)
+        if (context.pseudoId != PseudoIdNone && context.pseudoId != result.dynamicPseudo)
             return SelectorFailsCompletely;
 
-        TemporaryChange<PseudoId> dynamicPseudoScope(result.dynamicPseudo, NOPSEUDO);
+        TemporaryChange<PseudoId> dynamicPseudoScope(result.dynamicPseudo, PseudoIdNone);
         match = matchForRelation(context, result);
     } else {
         match = matchForSubSelector(context, result);
@@ -234,8 +234,8 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
 
     PseudoId dynamicPseudo = result.dynamicPseudo;
-    nextContext.hasScrollbarPseudo = dynamicPseudo != NOPSEUDO && (m_scrollbar || dynamicPseudo == SCROLLBAR_CORNER || dynamicPseudo == RESIZER);
-    nextContext.hasSelectionPseudo = dynamicPseudo == SELECTION;
+    nextContext.hasScrollbarPseudo = dynamicPseudo != PseudoIdNone && (m_scrollbar || dynamicPseudo == PseudoIdScrollbarCorner || dynamicPseudo == PseudoIdResizer);
+    nextContext.hasSelectionPseudo = dynamicPseudo == PseudoIdSelection;
     nextContext.isSubSelector = true;
     return matchSelector(nextContext, result);
 }
@@ -276,7 +276,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     nextContext.inRightmostCompound = false;
     nextContext.isSubSelector = false;
     nextContext.previousElement = context.element;
-    nextContext.pseudoId = NOPSEUDO;
+    nextContext.pseudoId = PseudoIdNone;
 
     switch (relation) {
     case CSSSelector::Descendant:
@@ -995,7 +995,7 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
             return true;
         ASSERT(m_mode != QueryingRules);
         result.dynamicPseudo = CSSSelector::pseudoId(selector.getPseudoType());
-        ASSERT(result.dynamicPseudo != NOPSEUDO);
+        ASSERT(result.dynamicPseudo != PseudoIdNone);
         return true;
     }
 }

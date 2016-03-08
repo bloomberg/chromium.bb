@@ -469,21 +469,21 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
 
     // Try the <body> element first as a scrollbar source.
     Element* body = doc ? doc->body() : 0;
-    if (body && body->layoutObject() && body->layoutObject()->style()->hasPseudoStyle(SCROLLBAR)) {
+    if (body && body->layoutObject() && body->layoutObject()->style()->hasPseudoStyle(PseudoIdScrollbar)) {
         customScrollbarElement = body;
         return true;
     }
 
     // If the <body> didn't have a custom style, then the root element might.
     Element* docElement = doc ? doc->documentElement() : 0;
-    if (docElement && docElement->layoutObject() && docElement->layoutObject()->style()->hasPseudoStyle(SCROLLBAR)) {
+    if (docElement && docElement->layoutObject() && docElement->layoutObject()->style()->hasPseudoStyle(PseudoIdScrollbar)) {
         customScrollbarElement = docElement;
         return true;
     }
 
     // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
     LayoutPart* frameLayoutObject = m_frame->ownerLayoutObject();
-    if (frameLayoutObject && frameLayoutObject->style()->hasPseudoStyle(SCROLLBAR)) {
+    if (frameLayoutObject && frameLayoutObject->style()->hasPseudoStyle(PseudoIdScrollbar)) {
         customScrollbarFrame = m_frame.get();
         return true;
     }
@@ -2314,21 +2314,21 @@ void FrameView::updateScrollCorner()
         // Try the <body> element first as a scroll corner source.
         if (Element* body = doc->body()) {
             if (LayoutObject* layoutObject = body->layoutObject())
-                cornerStyle = layoutObject->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), layoutObject->style());
+                cornerStyle = layoutObject->getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdScrollbarCorner), layoutObject->style());
         }
 
         if (!cornerStyle) {
             // If the <body> didn't have a custom style, then the root element might.
             if (Element* docElement = doc->documentElement()) {
                 if (LayoutObject* layoutObject = docElement->layoutObject())
-                    cornerStyle = layoutObject->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), layoutObject->style());
+                    cornerStyle = layoutObject->getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdScrollbarCorner), layoutObject->style());
             }
         }
 
         if (!cornerStyle) {
             // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
             if (LayoutPart* layoutObject = m_frame->ownerLayoutObject())
-                cornerStyle = layoutObject->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), layoutObject->style());
+                cornerStyle = layoutObject->getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdScrollbarCorner), layoutObject->style());
         }
     }
 

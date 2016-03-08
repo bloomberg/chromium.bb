@@ -254,11 +254,11 @@ public:
     bool isHTMLElement() const { return getFlag(IsHTMLFlag); }
     bool isSVGElement() const { return getFlag(IsSVGFlag); }
 
-    bool isPseudoElement() const { return getPseudoId() != NOPSEUDO; }
-    bool isBeforePseudoElement() const { return getPseudoId() == BEFORE; }
-    bool isAfterPseudoElement() const { return getPseudoId() == AFTER; }
-    bool isFirstLetterPseudoElement() const { return getPseudoId() == FIRST_LETTER; }
-    virtual PseudoId getPseudoId() const { return NOPSEUDO; }
+    bool isPseudoElement() const { return getPseudoId() != PseudoIdNone; }
+    bool isBeforePseudoElement() const { return getPseudoId() == PseudoIdBefore; }
+    bool isAfterPseudoElement() const { return getPseudoId() == PseudoIdAfter; }
+    bool isFirstLetterPseudoElement() const { return getPseudoId() == PseudoIdFirstLetter; }
+    virtual PseudoId getPseudoId() const { return PseudoIdNone; }
 
     bool isCustomElement() const { return getFlag(CustomElementFlag); }
     enum CustomElementState {
@@ -561,7 +561,7 @@ public:
 
     const ComputedStyle& computedStyleRef() const;
 
-    const ComputedStyle* ensureComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return virtualEnsureComputedStyle(pseudoElementSpecifier); }
+    const ComputedStyle* ensureComputedStyle(PseudoId pseudoElementSpecifier = PseudoIdNone) { return virtualEnsureComputedStyle(pseudoElementSpecifier); }
 
     // -----------------------------------------------------------------------------
     // Notification of document structure changes (see ContainerNode.h for more notification methods)
@@ -824,7 +824,7 @@ private:
 
     virtual ComputedStyle* nonLayoutObjectComputedStyle() const { return nullptr; }
 
-    virtual const ComputedStyle* virtualEnsureComputedStyle(PseudoId = NOPSEUDO);
+    virtual const ComputedStyle* virtualEnsureComputedStyle(PseudoId = PseudoIdNone);
 
     void trackForDebugging();
 

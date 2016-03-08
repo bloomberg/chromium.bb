@@ -171,31 +171,31 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
 {
     switch (type) {
     case PseudoFirstLine:
-        return FIRST_LINE;
+        return PseudoIdFirstLine;
     case PseudoFirstLetter:
-        return FIRST_LETTER;
+        return PseudoIdFirstLetter;
     case PseudoSelection:
-        return SELECTION;
+        return PseudoIdSelection;
     case PseudoBefore:
-        return BEFORE;
+        return PseudoIdBefore;
     case PseudoAfter:
-        return AFTER;
+        return PseudoIdAfter;
     case PseudoBackdrop:
-        return BACKDROP;
+        return PseudoIdBackdrop;
     case PseudoScrollbar:
-        return SCROLLBAR;
+        return PseudoIdScrollbar;
     case PseudoScrollbarButton:
-        return SCROLLBAR_BUTTON;
+        return PseudoIdScrollbarButton;
     case PseudoScrollbarCorner:
-        return SCROLLBAR_CORNER;
+        return PseudoIdScrollbarCorner;
     case PseudoScrollbarThumb:
-        return SCROLLBAR_THUMB;
+        return PseudoIdScrollbarThumb;
     case PseudoScrollbarTrack:
-        return SCROLLBAR_TRACK;
+        return PseudoIdScrollbarTrack;
     case PseudoScrollbarTrackPiece:
-        return SCROLLBAR_TRACK_PIECE;
+        return PseudoIdScrollbarTrackPiece;
     case PseudoResizer:
-        return RESIZER;
+        return PseudoIdResizer;
     case PseudoUnknown:
     case PseudoEmpty:
     case PseudoFirstChild:
@@ -265,11 +265,11 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoSpatialNavigationFocus:
     case PseudoListBox:
     case PseudoSlotted:
-        return NOPSEUDO;
+        return PseudoIdNone;
     }
 
     ASSERT_NOT_REACHED();
-    return NOPSEUDO;
+    return PseudoIdNone;
 }
 
 // Could be made smaller and faster by replacing pointer with an

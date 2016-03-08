@@ -1539,7 +1539,7 @@ void Element::attach(const AttachContext& context)
     SelectorFilterParentScope filterScope(*this);
     StyleSharingDepthScope sharingScope(*this);
 
-    createPseudoElementIfNeeded(BEFORE);
+    createPseudoElementIfNeeded(PseudoIdBefore);
 
     // When a shadow root exists, it does the work of attaching the children.
     if (ElementShadow* shadow = this->shadow())
@@ -1547,13 +1547,13 @@ void Element::attach(const AttachContext& context)
 
     ContainerNode::attach(context);
 
-    createPseudoElementIfNeeded(AFTER);
-    createPseudoElementIfNeeded(BACKDROP);
+    createPseudoElementIfNeeded(PseudoIdAfter);
+    createPseudoElementIfNeeded(PseudoIdBackdrop);
 
     // We create the first-letter element after the :before, :after and
     // children are attached because the first letter text could come
     // from any of them.
-    createPseudoElementIfNeeded(FIRST_LETTER);
+    createPseudoElementIfNeeded(PseudoIdFirstLetter);
 }
 
 void Element::detach(const AttachContext& context)
@@ -1624,17 +1624,17 @@ bool Element::pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle, Compu
         RefPtr<ComputedStyle> newPseudoStyle;
         RefPtr<ComputedStyle> oldPseudoStyle = pseudoStyleCache->at(i);
         PseudoId pseudoId = oldPseudoStyle->styleType();
-        if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
+        if (pseudoId == PseudoIdFirstLine || pseudoId == PseudoIdFirstLineInherited)
             newPseudoStyle = layoutObject()->uncachedFirstLineStyle(newStyle);
         else
             newPseudoStyle = layoutObject()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId), newStyle, newStyle);
         if (!newPseudoStyle)
             return true;
         if (*oldPseudoStyle != *newPseudoStyle || oldPseudoStyle->font().loadingCustomFonts() != newPseudoStyle->font().loadingCustomFonts()) {
-            if (pseudoId < FIRST_INTERNAL_PSEUDOID)
+            if (pseudoId < FirstInternalPseudoId)
                 newStyle->setHasPseudoStyle(pseudoId);
             newStyle->addCachedPseudoStyle(newPseudoStyle);
-            if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
+            if (pseudoId == PseudoIdFirstLine || pseudoId == PseudoIdFirstLineInherited)
                 layoutObject()->firstLineStyleDidChange(*oldPseudoStyle, *newPseudoStyle);
             return true;
         }
@@ -1709,7 +1709,7 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
         SelectorFilterParentScope filterScope(*this);
         StyleSharingDepthScope sharingScope(*this);
 
-        updatePseudoElement(BEFORE, change);
+        updatePseudoElement(PseudoIdBefore, change);
 
         if (change > UpdatePseudoElements || childNeedsStyleRecalc()) {
             for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
@@ -1719,14 +1719,14 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
             recalcChildStyle(change);
         }
 
-        updatePseudoElement(AFTER, change);
-        updatePseudoElement(BACKDROP, change);
+        updatePseudoElement(PseudoIdAfter, change);
+        updatePseudoElement(PseudoIdBackdrop, change);
 
         // If our children have changed then we need to force the first-letter
         // checks as we don't know if they effected the first letter or not.
         // This can be seen when a child transitions from floating to
         // non-floating we have to take it into account for the first letter.
-        updatePseudoElement(FIRST_LETTER, childNeedsStyleRecalc() ? Force : change);
+        updatePseudoElement(PseudoIdFirstLetter, childNeedsStyleRecalc() ? Force : change);
 
         clearChildNeedsStyleRecalc();
     }
@@ -2847,7 +2847,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
     PseudoElement* element = pseudoElement(pseudoId);
 
     if (element && (change == UpdatePseudoElements || element->shouldCallRecalcStyle(change))) {
-        if (pseudoId == FIRST_LETTER && updateFirstLetter(element))
+        if (pseudoId == PseudoIdFirstLetter && updateFirstLetter(element))
             return;
 
         // Need to clear the cached style if the PseudoElement wants a recalc so it
@@ -2866,7 +2866,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // PseudoElement's layoutObject for each style recalc.
         if (!layoutObject() || !pseudoElementLayoutObjectIsNeeded(layoutObject()->getCachedPseudoStyle(pseudoId)))
             elementRareData()->setPseudoElement(pseudoId, nullptr);
-    } else if (pseudoId == FIRST_LETTER && element && change >= UpdatePseudoElements && !FirstLetterPseudoElement::firstLetterTextLayoutObject(*element)) {
+    } else if (pseudoId == PseudoIdFirstLetter && element && change >= UpdatePseudoElements && !FirstLetterPseudoElement::firstLetterTextLayoutObject(*element)) {
         // This can happen if we change to a float, for example. We need to cleanup the
         // first-letter pseudoElement and then fix the text of the original remaining
         // text layoutObject.
@@ -2891,7 +2891,7 @@ bool Element::updateFirstLetter(Element* element)
         if (remainingTextLayoutObject)
             element->reattach();
         else
-            elementRareData()->setPseudoElement(FIRST_LETTER, nullptr);
+            elementRareData()->setPseudoElement(PseudoIdFirstLetter, nullptr);
         return true;
     }
     return false;
@@ -2907,7 +2907,7 @@ void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
     if (!element)
         return;
 
-    if (pseudoId == BACKDROP)
+    if (pseudoId == PseudoIdBackdrop)
         document().addToTopLayer(element.get(), this);
     element->insertedInto(this);
     element->attach();

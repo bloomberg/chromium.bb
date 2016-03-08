@@ -162,7 +162,7 @@ static StyleRecalcChange diffPseudoStyles(const ComputedStyle& oldStyle, const C
     // because setStyle will do the right thing with anything else.
     if (!oldStyle.hasAnyPublicPseudoStyles())
         return NoChange;
-    for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < FIRST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
+    for (PseudoId pseudoId = FirstPublicPseudoId; pseudoId < FirstInternalPseudoId; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
         if (!oldStyle.hasPseudoStyle(pseudoId))
             continue;
         const ComputedStyle* newPseudoStyle = newStyle.getCachedPseudoStyle(pseudoId);
@@ -184,7 +184,7 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
         return NoChange;
 
     if (oldStyle->display() != newStyle->display()
-        || oldStyle->hasPseudoStyle(FIRST_LETTER) != newStyle->hasPseudoStyle(FIRST_LETTER)
+        || oldStyle->hasPseudoStyle(PseudoIdFirstLetter) != newStyle->hasPseudoStyle(PseudoIdFirstLetter)
         || !oldStyle->contentDataEquivalent(newStyle)
         || oldStyle->hasTextCombine() != newStyle->hasTextCombine()
         || oldStyle->justifyItems() != newStyle->justifyItems()) // TODO (lajava): We must avoid this Reattach.
@@ -360,7 +360,7 @@ bool ComputedStyle::isStyleAvailable() const
 
 bool ComputedStyle::hasUniquePseudoStyle() const
 {
-    if (!m_cachedPseudoStyles || styleType() != NOPSEUDO)
+    if (!m_cachedPseudoStyles || styleType() != PseudoIdNone)
         return false;
 
     for (size_t i = 0; i < m_cachedPseudoStyles->size(); ++i) {
@@ -377,7 +377,7 @@ ComputedStyle* ComputedStyle::getCachedPseudoStyle(PseudoId pid) const
     if (!m_cachedPseudoStyles || !m_cachedPseudoStyles->size())
         return 0;
 
-    if (styleType() != NOPSEUDO)
+    if (styleType() != PseudoIdNone)
         return 0;
 
     for (size_t i = 0; i < m_cachedPseudoStyles->size(); ++i) {
@@ -394,7 +394,7 @@ ComputedStyle* ComputedStyle::addCachedPseudoStyle(PassRefPtr<ComputedStyle> pse
     if (!pseudo)
         return 0;
 
-    ASSERT(pseudo->styleType() > NOPSEUDO);
+    ASSERT(pseudo->styleType() > PseudoIdNone);
 
     ComputedStyle* result = pseudo.get();
 
@@ -664,7 +664,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
         return true;
     }
 
-    if (hasPseudoStyle(SCROLLBAR) != other.hasPseudoStyle(SCROLLBAR))
+    if (hasPseudoStyle(PseudoIdScrollbar) != other.hasPseudoStyle(PseudoIdScrollbar))
         return true;
 
     // Movement of non-static-positioned object is special cased in ComputedStyle::visualInvalidationDiff().

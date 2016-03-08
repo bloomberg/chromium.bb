@@ -51,7 +51,7 @@ ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
     : m_context(context)
     , m_selectorFilter(filter)
     , m_style(style)
-    , m_pseudoStyleRequest(NOPSEUDO)
+    , m_pseudoStyleRequest(PseudoIdNone)
     , m_mode(SelectorChecker::ResolvingStyle)
     , m_canUseFastReject(m_selectorFilter.parentStackIsConsistent(context.parentNode()))
     , m_sameOriginOnly(false)
@@ -164,7 +164,7 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
             rejected++;
             continue;
         }
-        if (m_pseudoStyleRequest.pseudoId != NOPSEUDO && m_pseudoStyleRequest.pseudoId != result.dynamicPseudo) {
+        if (m_pseudoStyleRequest.pseudoId != PseudoIdNone && m_pseudoStyleRequest.pseudoId != result.dynamicPseudo) {
             rejected++;
             continue;
         }
@@ -294,13 +294,13 @@ void ElementRuleCollector::didMatchRule(const RuleData& ruleData, const Selector
     PseudoId dynamicPseudo = result.dynamicPseudo;
     // If we're matching normal rules, set a pseudo bit if
     // we really just matched a pseudo-element.
-    if (dynamicPseudo != NOPSEUDO && m_pseudoStyleRequest.pseudoId == NOPSEUDO) {
+    if (dynamicPseudo != PseudoIdNone && m_pseudoStyleRequest.pseudoId == PseudoIdNone) {
         if (m_mode == SelectorChecker::CollectingCSSRules || m_mode == SelectorChecker::CollectingStyleRules)
             return;
         // FIXME: Matching should not modify the style directly.
-        if (!m_style || dynamicPseudo >= FIRST_INTERNAL_PSEUDOID)
+        if (!m_style || dynamicPseudo >= FirstInternalPseudoId)
             return;
-        if ((dynamicPseudo == BEFORE || dynamicPseudo == AFTER) && !ruleData.rule()->properties().hasProperty(CSSPropertyContent))
+        if ((dynamicPseudo == PseudoIdBefore || dynamicPseudo == PseudoIdAfter) && !ruleData.rule()->properties().hasProperty(CSSPropertyContent))
             return;
         m_style->setHasPseudoStyle(dynamicPseudo);
     } else {

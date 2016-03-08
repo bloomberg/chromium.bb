@@ -512,7 +512,7 @@ const ComputedStyle* CSSComputedStyleDeclaration::computeComputedStyle() const
 {
     Node* styledNode = this->styledNode();
     ASSERT(styledNode);
-    return styledNode->ensureComputedStyle(styledNode->isPseudoElement() ? NOPSEUDO : m_pseudoElementSpecifier);
+    return styledNode->ensureComputedStyle(styledNode->isPseudoElement() ? PseudoIdNone : m_pseudoElementSpecifier);
 }
 
 Node* CSSComputedStyleDeclaration::styledNode() const

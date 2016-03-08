@@ -212,22 +212,22 @@ static PseudoId pseudoForScrollbarPart(ScrollbarPart part)
     case ForwardButtonStartPart:
     case BackButtonEndPart:
     case ForwardButtonEndPart:
-        return SCROLLBAR_BUTTON;
+        return PseudoIdScrollbarButton;
     case BackTrackPart:
     case ForwardTrackPart:
-        return SCROLLBAR_TRACK_PIECE;
+        return PseudoIdScrollbarTrackPiece;
     case ThumbPart:
-        return SCROLLBAR_THUMB;
+        return PseudoIdScrollbarThumb;
     case TrackBGPart:
-        return SCROLLBAR_TRACK;
+        return PseudoIdScrollbarTrack;
     case ScrollbarBGPart:
-        return SCROLLBAR;
+        return PseudoIdScrollbar;
     case NoPart:
     case AllParts:
         break;
     }
     ASSERT_NOT_REACHED();
-    return SCROLLBAR;
+    return PseudoIdScrollbar;
 }
 
 void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)

@@ -767,8 +767,8 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
         // are floating, then we need to pull the content up also.
         LayoutBlock* anonymousBlock = toLayoutBlock((prev && prev->isAnonymousBlock()) ? prev : next);
         if ((anonymousBlock->previousSibling() || anonymousBlock->nextSibling())
-            && (!anonymousBlock->previousSibling() || (anonymousBlock->previousSibling()->style()->styleType() != NOPSEUDO && anonymousBlock->previousSibling()->isFloating() && !anonymousBlock->previousSibling()->previousSibling()))
-            && (!anonymousBlock->nextSibling() || (anonymousBlock->nextSibling()->style()->styleType() != NOPSEUDO && anonymousBlock->nextSibling()->isFloating() && !anonymousBlock->nextSibling()->nextSibling()))) {
+            && (!anonymousBlock->previousSibling() || (anonymousBlock->previousSibling()->style()->styleType() != PseudoIdNone && anonymousBlock->previousSibling()->isFloating() && !anonymousBlock->previousSibling()->previousSibling()))
+            && (!anonymousBlock->nextSibling() || (anonymousBlock->nextSibling()->style()->styleType() != PseudoIdNone && anonymousBlock->nextSibling()->isFloating() && !anonymousBlock->nextSibling()->nextSibling()))) {
             collapseAnonymousBlockChild(this, anonymousBlock);
         }
     }
@@ -2287,7 +2287,7 @@ LayoutBlock* LayoutBlock::enclosingFirstLineStyleBlock() const
     LayoutBlock* firstLineBlock = const_cast<LayoutBlock*>(this);
     bool hasPseudo = false;
     while (true) {
-        hasPseudo = firstLineBlock->style()->hasPseudoStyle(FIRST_LINE);
+        hasPseudo = firstLineBlock->style()->hasPseudoStyle(PseudoIdFirstLine);
         if (hasPseudo)
             break;
         LayoutObject* parentBlock = firstLineBlock->parent();

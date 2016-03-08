@@ -202,31 +202,31 @@ inline bool ElementRareData::hasPseudoElements() const
 
 inline void ElementRareData::clearPseudoElements()
 {
-    setPseudoElement(BEFORE, nullptr);
-    setPseudoElement(AFTER, nullptr);
-    setPseudoElement(BACKDROP, nullptr);
-    setPseudoElement(FIRST_LETTER, nullptr);
+    setPseudoElement(PseudoIdBefore, nullptr);
+    setPseudoElement(PseudoIdAfter, nullptr);
+    setPseudoElement(PseudoIdBackdrop, nullptr);
+    setPseudoElement(PseudoIdFirstLetter, nullptr);
 }
 
 inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtrWillBeRawPtr<PseudoElement> element)
 {
     switch (pseudoId) {
-    case BEFORE:
+    case PseudoIdBefore:
         if (m_generatedBefore)
             m_generatedBefore->dispose();
         m_generatedBefore = element;
         break;
-    case AFTER:
+    case PseudoIdAfter:
         if (m_generatedAfter)
             m_generatedAfter->dispose();
         m_generatedAfter = element;
         break;
-    case BACKDROP:
+    case PseudoIdBackdrop:
         if (m_backdrop)
             m_backdrop->dispose();
         m_backdrop = element;
         break;
-    case FIRST_LETTER:
+    case PseudoIdFirstLetter:
         if (m_generatedFirstLetter)
             m_generatedFirstLetter->dispose();
         m_generatedFirstLetter = element;
@@ -239,13 +239,13 @@ inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtrWillB
 inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
 {
     switch (pseudoId) {
-    case BEFORE:
+    case PseudoIdBefore:
         return m_generatedBefore.get();
-    case AFTER:
+    case PseudoIdAfter:
         return m_generatedAfter.get();
-    case BACKDROP:
+    case PseudoIdBackdrop:
         return m_backdrop.get();
-    case FIRST_LETTER:
+    case PseudoIdFirstLetter:
         return m_generatedFirstLetter.get();
     default:
         return 0;

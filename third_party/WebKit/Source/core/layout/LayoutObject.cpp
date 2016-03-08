@@ -1871,7 +1871,7 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
 
 void LayoutObject::setPseudoStyle(PassRefPtr<ComputedStyle> pseudoStyle)
 {
-    ASSERT(pseudoStyle->styleType() == BEFORE || pseudoStyle->styleType() == AFTER || pseudoStyle->styleType() == FIRST_LETTER);
+    ASSERT(pseudoStyle->styleType() == PseudoIdBefore || pseudoStyle->styleType() == PseudoIdAfter || pseudoStyle->styleType() == PseudoIdFirstLetter);
 
     // FIXME: We should consider just making all pseudo items use an inherited style.
 
@@ -1901,7 +1901,7 @@ void LayoutObject::firstLineStyleDidChange(const ComputedStyle& oldStyle, const 
         // repainted with the new style, e.g. background, font style, etc.
         LayoutBlockFlow* firstLineContainer = nullptr;
         if (canHaveFirstLineOrFirstLetterStyle()) {
-            // This object is a LayoutBlock having FIRST_LINE pseudo style changed.
+            // This object is a LayoutBlock having PseudoIdFirstLine pseudo style changed.
             firstLineContainer = toLayoutBlock(this)->nearestInnerBlockWithFirstLine();
         } else if (isLayoutInline()) {
             // This object is a LayoutInline having FIRST_LINE_INHERITED pesudo style changed.
@@ -2130,7 +2130,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
 {
     // FIXME: We could save this call when the change only affected non-inherited properties.
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isAnonymous() || child->style()->styleType() != NOPSEUDO)
+        if (!child->isAnonymous() || child->style()->styleType() != PseudoIdNone)
             continue;
 
         if (blockChildrenOnly && !child->isLayoutBlock())
@@ -3029,8 +3029,8 @@ static PassRefPtr<ComputedStyle> firstLineStyleForCachedUncachedType(StyleCacheS
     if (layoutObjectForFirstLineStyle->canHaveFirstLineOrFirstLetterStyle()) {
         if (LayoutBlock* firstLineBlock = toLayoutBlock(layoutObjectForFirstLineStyle)->enclosingFirstLineStyleBlock()) {
             if (type == Cached)
-                return firstLineBlock->getCachedPseudoStyle(FIRST_LINE, style);
-            return firstLineBlock->getUncachedPseudoStyle(PseudoStyleRequest(FIRST_LINE), style, firstLineBlock == layoutObject ? style : 0);
+                return firstLineBlock->getCachedPseudoStyle(PseudoIdFirstLine, style);
+            return firstLineBlock->getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdFirstLine), style, firstLineBlock == layoutObject ? style : 0);
         }
     } else if (!layoutObjectForFirstLineStyle->isAnonymous() && layoutObjectForFirstLineStyle->isLayoutInline()
         && !layoutObjectForFirstLineStyle->node()->isFirstLetterPseudoElement()) {
@@ -3038,10 +3038,10 @@ static PassRefPtr<ComputedStyle> firstLineStyleForCachedUncachedType(StyleCacheS
         if (parentStyle != layoutObjectForFirstLineStyle->parent()->style()) {
             if (type == Cached) {
                 // A first-line style is in effect. Cache a first-line style for ourselves.
-                layoutObjectForFirstLineStyle->mutableStyleRef().setHasPseudoStyle(FIRST_LINE_INHERITED);
-                return layoutObjectForFirstLineStyle->getCachedPseudoStyle(FIRST_LINE_INHERITED, parentStyle);
+                layoutObjectForFirstLineStyle->mutableStyleRef().setHasPseudoStyle(PseudoIdFirstLineInherited);
+                return layoutObjectForFirstLineStyle->getCachedPseudoStyle(PseudoIdFirstLineInherited, parentStyle);
             }
-            return layoutObjectForFirstLineStyle->getUncachedPseudoStyle(PseudoStyleRequest(FIRST_LINE_INHERITED), parentStyle, style);
+            return layoutObjectForFirstLineStyle->getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdFirstLineInherited), parentStyle, style);
         }
     }
     return nullptr;
@@ -3069,7 +3069,7 @@ ComputedStyle* LayoutObject::cachedFirstLineStyle() const
 
 ComputedStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, const ComputedStyle* parentStyle) const
 {
-    if (pseudo < FIRST_INTERNAL_PSEUDOID && !style()->hasPseudoStyle(pseudo))
+    if (pseudo < FirstInternalPseudoId && !style()->hasPseudoStyle(pseudo))
         return nullptr;
 
     ComputedStyle* cachedStyle = style()->getCachedPseudoStyle(pseudo);
@@ -3084,7 +3084,7 @@ ComputedStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, const Compute
 
 PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(const PseudoStyleRequest& pseudoStyleRequest, const ComputedStyle* parentStyle, const ComputedStyle* ownStyle) const
 {
-    if (pseudoStyleRequest.pseudoId < FIRST_INTERNAL_PSEUDOID && !ownStyle && !style()->hasPseudoStyle(pseudoStyleRequest.pseudoId))
+    if (pseudoStyleRequest.pseudoId < FirstInternalPseudoId && !ownStyle && !style()->hasPseudoStyle(pseudoStyleRequest.pseudoId))
         return nullptr;
 
     if (!parentStyle) {
@@ -3099,9 +3099,9 @@ PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(const PseudoStyle
     if (!element)
         return nullptr;
 
-    if (pseudoStyleRequest.pseudoId == FIRST_LINE_INHERITED) {
+    if (pseudoStyleRequest.pseudoId == PseudoIdFirstLineInherited) {
         RefPtr<ComputedStyle> result = document().ensureStyleResolver().styleForElement(element, parentStyle, DisallowStyleSharing);
-        result->setStyleType(FIRST_LINE_INHERITED);
+        result->setStyleType(PseudoIdFirstLineInherited);
         return result.release();
     }
 
@@ -3116,12 +3116,12 @@ PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyleFromParentOrShadow
     if (ShadowRoot* root = node()->containingShadowRoot()) {
         if (root->type() == ShadowRootType::UserAgent) {
             if (Element* shadowHost = node()->shadowHost()) {
-                return shadowHost->layoutObject()->getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
+                return shadowHost->layoutObject()->getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdSelection));
             }
         }
     }
 
-    return getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
+    return getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdSelection));
 }
 
 void LayoutObject::getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode, bool firstlineStyle)

@@ -736,7 +736,7 @@ PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleRe
 
 PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElement(Element* parent, PseudoId pseudoId)
 {
-    if (pseudoId == FIRST_LETTER)
+    if (pseudoId == PseudoIdFirstLetter)
         return FirstLetterPseudoElement::create(parent);
     return PseudoElement::create(parent, pseudoId);
 }
@@ -749,13 +749,13 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
 
     // The first letter pseudo element has to look up the tree and see if any
     // of the ancestors are first letter.
-    if (pseudoId < FIRST_INTERNAL_PSEUDOID && pseudoId != FIRST_LETTER && !parentLayoutObject->style()->hasPseudoStyle(pseudoId))
+    if (pseudoId < FirstInternalPseudoId && pseudoId != PseudoIdFirstLetter && !parentLayoutObject->style()->hasPseudoStyle(pseudoId))
         return nullptr;
 
-    if (pseudoId == BACKDROP && !parent.isInTopLayer())
+    if (pseudoId == PseudoIdBackdrop && !parent.isInTopLayer())
         return nullptr;
 
-    if (pseudoId == FIRST_LETTER && (parent.isSVGElement() || !FirstLetterPseudoElement::firstLetterTextLayoutObject(parent)))
+    if (pseudoId == PseudoIdFirstLetter && (parent.isSVGElement() || !FirstLetterPseudoElement::firstLetterTextLayoutObject(parent)))
         return nullptr;
 
     if (!canHaveGeneratedChildren(*parentLayoutObject))
@@ -790,7 +790,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
 {
     ASSERT(document().frame());
     ASSERT(document().settings());
-    ASSERT(pseudoStyleRequest.pseudoId != FIRST_LINE_INHERITED);
+    ASSERT(pseudoStyleRequest.pseudoId != PseudoIdFirstLineInherited);
     ASSERT(state.parentStyle());
 
     SelectorFilterParentScope::ensureParentStackIsPushed();
@@ -943,7 +943,7 @@ PassRefPtrWillBeRawPtr<StyleRuleList> StyleResolver::styleRulesForElement(Elemen
     StyleResolverState state(document(), element);
     ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
     collector.setMode(SelectorChecker::CollectingStyleRules);
-    collectPseudoRulesForElement(*element, collector, NOPSEUDO, rulesToInclude);
+    collectPseudoRulesForElement(*element, collector, PseudoIdNone, rulesToInclude);
     return collector.matchedStyleRuleList();
 }
 
@@ -959,7 +959,7 @@ PassRefPtrWillBeRawPtr<CSSRuleList> StyleResolver::pseudoCSSRulesForElement(Elem
 
 PassRefPtrWillBeRawPtr<CSSRuleList> StyleResolver::cssRulesForElement(Element* element, unsigned rulesToInclude)
 {
-    return pseudoCSSRulesForElement(element, NOPSEUDO, rulesToInclude);
+    return pseudoCSSRulesForElement(element, PseudoIdNone, rulesToInclude);
 }
 
 void StyleResolver::collectPseudoRulesForElement(const Element& element, ElementRuleCollector& collector, PseudoId pseudoId, unsigned rulesToInclude)

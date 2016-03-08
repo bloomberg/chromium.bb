@@ -58,15 +58,29 @@ enum PrintColorAdjust {
 enum PseudoId {
     // The order must be NOP ID, public IDs, and then internal IDs.
     // If you add or remove a public ID, you must update _pseudoBits in ComputedStyle.
-    NOPSEUDO, FIRST_LINE, FIRST_LETTER, BEFORE, AFTER, BACKDROP, SELECTION, FIRST_LINE_INHERITED, SCROLLBAR,
+    PseudoIdNone,
+    PseudoIdFirstLine,
+    PseudoIdFirstLetter,
+    PseudoIdBefore,
+    PseudoIdAfter,
+    PseudoIdBackdrop,
+    PseudoIdSelection,
+    PseudoIdFirstLineInherited,
+    PseudoIdScrollbar,
     // Internal IDs follow:
-    SCROLLBAR_THUMB, SCROLLBAR_BUTTON, SCROLLBAR_TRACK, SCROLLBAR_TRACK_PIECE, SCROLLBAR_CORNER, RESIZER, INPUT_LIST_BUTTON,
+    PseudoIdScrollbarThumb,
+    PseudoIdScrollbarButton,
+    PseudoIdScrollbarTrack,
+    PseudoIdScrollbarTrackPiece,
+    PseudoIdScrollbarCorner,
+    PseudoIdResizer,
+    PseudoIdInputListButton,
     // Special values follow:
-    AFTER_LAST_INTERNAL_PSEUDOID,
-    FIRST_PUBLIC_PSEUDOID = FIRST_LINE,
-    FIRST_INTERNAL_PSEUDOID = SCROLLBAR_THUMB,
-    PUBLIC_PSEUDOID_MASK = ((1 << FIRST_INTERNAL_PSEUDOID) - 1) & ~((1 << FIRST_PUBLIC_PSEUDOID) - 1),
-    PSEUDO_ELEMENT_MASK = (1 << (BEFORE - 1)) | (1 << (AFTER - 1)) | (1 << (BACKDROP - 1))
+    AfterLastInternalPseudoId,
+    FirstPublicPseudoId = PseudoIdFirstLine,
+    FirstInternalPseudoId = PseudoIdScrollbarThumb,
+    PublicPseudoIdMask = ((1 << FirstInternalPseudoId) - 1) & ~((1 << FirstPublicPseudoId) - 1),
+    ElementPseudoIdMask = (1 << (PseudoIdBefore - 1)) | (1 << (PseudoIdAfter - 1)) | (1 << (PseudoIdBackdrop - 1))
 };
 
 enum ColumnFill { ColumnFillBalance, ColumnFillAuto };

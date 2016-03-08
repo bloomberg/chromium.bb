@@ -405,7 +405,7 @@ Node* Node::pseudoAwarePreviousSibling() const
         if (isAfterPseudoElement() && parent->lastChild())
             return parent->lastChild();
         if (!isBeforePseudoElement())
-            return parent->pseudoElement(BEFORE);
+            return parent->pseudoElement(PseudoIdBefore);
     }
     return previousSibling();
 }
@@ -417,7 +417,7 @@ Node* Node::pseudoAwareNextSibling() const
         if (isBeforePseudoElement() && parent->hasChildren())
             return parent->firstChild();
         if (!isAfterPseudoElement())
-            return parent->pseudoElement(AFTER);
+            return parent->pseudoElement(PseudoIdAfter);
     }
     return nextSibling();
 }
@@ -426,12 +426,12 @@ Node* Node::pseudoAwareFirstChild() const
 {
     if (isElementNode()) {
         const Element* currentElement = toElement(this);
-        Node* first = currentElement->pseudoElement(BEFORE);
+        Node* first = currentElement->pseudoElement(PseudoIdBefore);
         if (first)
             return first;
         first = currentElement->firstChild();
         if (!first)
-            first = currentElement->pseudoElement(AFTER);
+            first = currentElement->pseudoElement(PseudoIdAfter);
         return first;
     }
 
@@ -442,12 +442,12 @@ Node* Node::pseudoAwareLastChild() const
 {
     if (isElementNode()) {
         const Element* currentElement = toElement(this);
-        Node* last = currentElement->pseudoElement(AFTER);
+        Node* last = currentElement->pseudoElement(PseudoIdAfter);
         if (last)
             return last;
         last = currentElement->lastChild();
         if (!last)
-            last = currentElement->pseudoElement(BEFORE);
+            last = currentElement->pseudoElement(PseudoIdBefore);
         return last;
     }
 
@@ -1645,13 +1645,13 @@ static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, 
 
         if (node.isElementNode()) {
             const Element& element = toElement(node);
-            if (Element* pseudo = element.pseudoElement(BEFORE))
+            if (Element* pseudo = element.pseudoElement(PseudoIdBefore))
                 traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
-            if (Element* pseudo = element.pseudoElement(AFTER))
+            if (Element* pseudo = element.pseudoElement(PseudoIdAfter))
                 traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
-            if (Element* pseudo = element.pseudoElement(FIRST_LETTER))
+            if (Element* pseudo = element.pseudoElement(PseudoIdFirstLetter))
                 traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
-            if (Element* pseudo = element.pseudoElement(BACKDROP))
+            if (Element* pseudo = element.pseudoElement(PseudoIdBackdrop))
                 traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
         }
 

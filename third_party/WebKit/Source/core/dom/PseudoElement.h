@@ -68,7 +68,7 @@ inline bool pseudoElementLayoutObjectIsNeeded(const ComputedStyle* style)
         return false;
     if (style->display() == NONE)
         return false;
-    if (style->styleType() == FIRST_LETTER || style->styleType() == BACKDROP)
+    if (style->styleType() == PseudoIdFirstLetter || style->styleType() == PseudoIdBackdrop)
         return true;
     return style->contentData();
 }

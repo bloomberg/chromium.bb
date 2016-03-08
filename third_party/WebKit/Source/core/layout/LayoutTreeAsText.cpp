@@ -831,9 +831,9 @@ String counterValueForElement(Element* element)
     TextStream stream;
     bool isFirstCounter = true;
     // The counter layoutObjects should be children of :before or :after pseudo-elements.
-    if (LayoutObject* before = element->pseudoElementLayoutObject(BEFORE))
+    if (LayoutObject* before = element->pseudoElementLayoutObject(PseudoIdBefore))
         writeCounterValuesFromChildren(stream, before, isFirstCounter);
-    if (LayoutObject* after = element->pseudoElementLayoutObject(AFTER))
+    if (LayoutObject* after = element->pseudoElementLayoutObject(PseudoIdAfter))
         writeCounterValuesFromChildren(stream, after, isFirstCounter);
     return stream.release();
 }

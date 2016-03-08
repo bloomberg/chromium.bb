@@ -76,7 +76,7 @@ public:
             , previousElement(nullptr)
             , scope(nullptr)
             , visitedMatchType(visitedMatchType)
-            , pseudoId(NOPSEUDO)
+            , pseudoId(PseudoIdNone)
             , isSubSelector(false)
             , inRightmostCompound(true)
             , hasScrollbarPseudo(false)
@@ -101,7 +101,7 @@ public:
     struct MatchResult {
         STACK_ALLOCATED();
         MatchResult()
-            : dynamicPseudo(NOPSEUDO)
+            : dynamicPseudo(PseudoIdNone)
             , specificity(0) { }
 
         PseudoId dynamicPseudo;

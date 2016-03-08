@@ -895,7 +895,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
 
     element->updateDistribution();
     RefPtrWillBeRawPtr<CSSRuleList> matchedRules = styleResolver.pseudoCSSRulesForElement(element, elementPseudoId, StyleResolver::AllCSSRules);
-    *matchedCSSRules = buildArrayForMatchedRuleList(matchedRules.get(), originalElement, NOPSEUDO);
+    *matchedCSSRules = buildArrayForMatchedRuleList(matchedRules.get(), originalElement, PseudoIdNone);
 
     // Pseudo elements.
     if (elementPseudoId)
@@ -908,7 +908,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     }
 
     *pseudoIdMatches = protocol::Array<protocol::CSS::PseudoElementMatches>::create();
-    for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < AFTER_LAST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
+    for (PseudoId pseudoId = FirstPublicPseudoId; pseudoId < AfterLastInternalPseudoId; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
         RefPtrWillBeRawPtr<CSSRuleList> matchedRules = styleResolver.pseudoCSSRulesForElement(element, pseudoId, StyleResolver::AllCSSRules);
         protocol::DOM::PseudoType pseudoType;
         if (matchedRules && matchedRules->length() && m_domAgent->getPseudoElementType(pseudoId, &pseudoType)) {
@@ -925,7 +925,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
         StyleResolver& parentStyleResolver = parentElement->ownerDocument()->ensureStyleResolver();
         RefPtrWillBeRawPtr<CSSRuleList> parentMatchedRules = parentStyleResolver.cssRulesForElement(parentElement, StyleResolver::AllCSSRules);
         OwnPtr<protocol::CSS::InheritedStyleEntry> entry = protocol::CSS::InheritedStyleEntry::create()
-            .setMatchedCSSRules(buildArrayForMatchedRuleList(parentMatchedRules.get(), parentElement, NOPSEUDO)).build();
+            .setMatchedCSSRules(buildArrayForMatchedRuleList(parentMatchedRules.get(), parentElement, PseudoIdNone)).build();
         if (parentElement->style() && parentElement->style()->length()) {
             InspectorStyleSheetForInlineStyle* styleSheet = asInspectorStyleSheet(parentElement);
             if (styleSheet)

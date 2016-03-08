@@ -43,19 +43,19 @@ PassRefPtrWillBeRawPtr<PseudoElement> PseudoElement::create(Element* parent, Pse
 const QualifiedName& pseudoElementTagName(PseudoId pseudoId)
 {
     switch (pseudoId) {
-    case AFTER: {
+    case PseudoIdAfter: {
         DEFINE_STATIC_LOCAL(QualifiedName, after, (nullAtom, "<pseudo:after>", nullAtom));
         return after;
     }
-    case BEFORE: {
+    case PseudoIdBefore: {
         DEFINE_STATIC_LOCAL(QualifiedName, before, (nullAtom, "<pseudo:before>", nullAtom));
         return before;
     }
-    case BACKDROP: {
+    case PseudoIdBackdrop: {
         DEFINE_STATIC_LOCAL(QualifiedName, backdrop, (nullAtom, "<pseudo:backdrop>", nullAtom));
         return backdrop;
     }
-    case FIRST_LETTER: {
+    case PseudoIdFirstLetter: {
         DEFINE_STATIC_LOCAL(QualifiedName, firstLetter, (nullAtom, "<pseudo:first-letter>", nullAtom));
         return firstLetter;
     }
@@ -72,9 +72,9 @@ String PseudoElement::pseudoElementNameForEvents(PseudoId pseudoId)
     DEFINE_STATIC_LOCAL(const String, after, ("::after"));
     DEFINE_STATIC_LOCAL(const String, before, ("::before"));
     switch (pseudoId) {
-    case AFTER:
+    case PseudoIdAfter:
         return after;
-    case BEFORE:
+    case PseudoIdBefore:
         return before;
     default:
         return emptyString();
@@ -85,11 +85,11 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
     : Element(pseudoElementTagName(pseudoId), &parent->document(), CreateElement)
     , m_pseudoId(pseudoId)
 {
-    ASSERT(pseudoId != NOPSEUDO);
+    ASSERT(pseudoId != PseudoIdNone);
     parent->treeScope().adoptIfNeeded(*this);
     setParentOrShadowHostNode(parent);
     setHasCustomStyleCallbacks();
-    if ((pseudoId == BEFORE || pseudoId == AFTER) && parent->hasTagName(HTMLNames::inputTag))
+    if ((pseudoId == PseudoIdBefore || pseudoId == PseudoIdAfter) && parent->hasTagName(HTMLNames::inputTag))
         UseCounter::count(parent->document(), UseCounter::PseudoBeforeAfterForInputElement);
 }
 
@@ -125,7 +125,7 @@ void PseudoElement::attach(const AttachContext& context)
         return;
 
     ComputedStyle& style = layoutObject->mutableStyleRef();
-    if (style.styleType() != BEFORE && style.styleType() != AFTER)
+    if (style.styleType() != PseudoIdBefore && style.styleType() != PseudoIdAfter)
         return;
     ASSERT(style.contentData());
 
@@ -177,7 +177,7 @@ Node* PseudoElement::findAssociatedNode() const
     // The ::backdrop element is parented to the LayoutView, not to the node
     // that it's associated with. We need to make sure ::backdrop sends the
     // events to the parent node correctly.
-    if (getPseudoId() == BACKDROP)
+    if (getPseudoId() == PseudoIdBackdrop)
         return parentOrShadowHostNode();
 
     ASSERT(layoutObject());

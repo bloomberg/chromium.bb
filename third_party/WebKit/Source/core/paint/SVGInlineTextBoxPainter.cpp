@@ -86,7 +86,7 @@ void SVGInlineTextBoxPainter::paintTextFragments(const PaintInfo& paintInfo, Lay
     const ComputedStyle* selectionStyle = &style;
     bool shouldPaintSelection = this->shouldPaintSelection(paintInfo);
     if (shouldPaintSelection) {
-        selectionStyle = parentLayoutObject.getCachedPseudoStyle(SELECTION);
+        selectionStyle = parentLayoutObject.getCachedPseudoStyle(PseudoIdSelection);
         if (selectionStyle) {
             const SVGComputedStyle& svgSelectionStyle = selectionStyle->svgStyle();
 

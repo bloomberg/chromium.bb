@@ -286,10 +286,10 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(co
     textBlockStyle->setOverflowX(OverflowScroll);
     textBlockStyle->setOverflowY(OverflowScroll);
     RefPtr<ComputedStyle> noScrollbarStyle = ComputedStyle::create();
-    noScrollbarStyle->setStyleType(SCROLLBAR);
+    noScrollbarStyle->setStyleType(PseudoIdScrollbar);
     noScrollbarStyle->setDisplay(NONE);
     textBlockStyle->addCachedPseudoStyle(noScrollbarStyle);
-    textBlockStyle->setHasPseudoStyle(SCROLLBAR);
+    textBlockStyle->setHasPseudoStyle(PseudoIdScrollbar);
 
     return textBlockStyle.release();
 }

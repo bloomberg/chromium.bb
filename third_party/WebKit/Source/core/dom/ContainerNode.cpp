@@ -1099,7 +1099,7 @@ void ContainerNode::focusStateChanged()
         return;
 
     if (computedStyle()->affectedByFocus()) {
-        StyleChangeType changeType = computedStyle()->hasPseudoStyle(FIRST_LETTER) ? SubtreeStyleChange : LocalStyleChange;
+        StyleChangeType changeType = computedStyle()->hasPseudoStyle(PseudoIdFirstLetter) ? SubtreeStyleChange : LocalStyleChange;
         setNeedsStyleRecalc(changeType, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
     }
     if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
@@ -1152,7 +1152,7 @@ void ContainerNode::setActive(bool down)
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (layoutObject()) {
         if (computedStyle()->affectedByActive()) {
-            StyleChangeType changeType = computedStyle()->hasPseudoStyle(FIRST_LETTER) ? SubtreeStyleChange : LocalStyleChange;
+            StyleChangeType changeType = computedStyle()->hasPseudoStyle(PseudoIdFirstLetter) ? SubtreeStyleChange : LocalStyleChange;
             setNeedsStyleRecalc(changeType, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
         }
         if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
@@ -1181,7 +1181,7 @@ void ContainerNode::setHovered(bool over)
     }
 
     if (computedStyle()->affectedByHover()) {
-        StyleChangeType changeType = computedStyle()->hasPseudoStyle(FIRST_LETTER) ? SubtreeStyleChange : LocalStyleChange;
+        StyleChangeType changeType = computedStyle()->hasPseudoStyle(PseudoIdFirstLetter) ? SubtreeStyleChange : LocalStyleChange;
         setNeedsStyleRecalc(changeType, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
     }
     if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())

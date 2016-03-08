@@ -112,7 +112,7 @@ static bool doesNotInheritTextDecoration(const ComputedStyle& style, const Eleme
 // element to adjustComputedStyle, so we can't just use element->isInTopLayer().
 static bool isInTopLayer(const Element* element, const ComputedStyle& style)
 {
-    return (element && element->isInTopLayer()) || style.styleType() == BACKDROP;
+    return (element && element->isInTopLayer()) || style.styleType() == PseudoIdBackdrop;
 }
 
 static bool parentStyleForcesZIndexToCreateStackingContext(const ComputedStyle& parentStyle)
@@ -222,7 +222,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         LayoutTheme::theme().adjustStyle(style, element);
 
     // If we have first-letter pseudo style, transitions, or animations, do not share this style.
-    if (style.hasPseudoStyle(FIRST_LETTER) || style.transitions() || style.animations())
+    if (style.hasPseudoStyle(PseudoIdFirstLetter) || style.transitions() || style.animations())
         style.setUnique();
 
     // FIXME: when dropping the -webkit prefix on transform-style, we should also have opacity < 1 cause flattening.
@@ -250,7 +250,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 
 void StyleAdjuster::adjustStyleForFirstLetter(ComputedStyle& style)
 {
-    if (style.styleType() != FIRST_LETTER)
+    if (style.styleType() != PseudoIdFirstLetter)
         return;
 
     // Force inline display (except for floating first-letters).
@@ -405,7 +405,7 @@ void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedSt
 
     // FIXME: Don't support this mutation for pseudo styles like first-letter or first-line, since it's not completely
     // clear how that should work.
-    if (style.display() == INLINE && style.styleType() == NOPSEUDO && style.getWritingMode() != parentStyle.getWritingMode())
+    if (style.display() == INLINE && style.styleType() == PseudoIdNone && style.getWritingMode() != parentStyle.getWritingMode())
         style.setDisplay(INLINE_BLOCK);
 
     // After performing the display mutation, check table rows. We do not honor position: relative table rows or cells.

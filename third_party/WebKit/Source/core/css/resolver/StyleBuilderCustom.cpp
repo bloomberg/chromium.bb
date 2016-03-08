@@ -690,7 +690,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
             CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
             ASSERT(functionValue->functionType() == CSSValueAttr);
             // FIXME: Can a namespace be specified for an attr(foo)?
-            if (state.style()->styleType() == NOPSEUDO)
+            if (state.style()->styleType() == PseudoIdNone)
                 state.style()->setUnique();
             else
                 state.parentStyle()->setUnique();

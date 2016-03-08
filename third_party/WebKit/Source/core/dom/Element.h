@@ -362,7 +362,7 @@ public:
 
     bool isInDescendantTreeOf(const Element* shadowHost) const;
 
-    const ComputedStyle* ensureComputedStyle(PseudoId = NOPSEUDO);
+    const ComputedStyle* ensureComputedStyle(PseudoId = PseudoIdNone);
 
     // Methods for indicating the style is affected by dynamic updates (e.g., children changing, our position changing in our sibling list, etc.)
     bool styleAffectedByEmpty() const { return hasElementFlag(StyleAffectedByEmpty); }
@@ -682,7 +682,7 @@ private:
 
     void cancelFocusAppearanceUpdate();
 
-    const ComputedStyle* virtualEnsureComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override { return ensureComputedStyle(pseudoElementSpecifier); }
+    const ComputedStyle* virtualEnsureComputedStyle(PseudoId pseudoElementSpecifier = PseudoIdNone) override { return ensureComputedStyle(pseudoElementSpecifier); }
 
     inline void updateCallbackSelectors(const ComputedStyle* oldStyle, const ComputedStyle* newStyle);
     inline void removeCallbackSelectors();

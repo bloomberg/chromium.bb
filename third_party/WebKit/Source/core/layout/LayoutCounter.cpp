@@ -136,14 +136,14 @@ static bool planCounter(LayoutObject& object, const AtomicString& identifier, bo
     const ComputedStyle& style = object.styleRef();
 
     switch (style.styleType()) {
-    case NOPSEUDO:
+    case PseudoIdNone:
         // Sometimes nodes have more then one layoutObject. Only the first one gets the counter
         // LayoutTests/http/tests/css/counter-crash.html
         if (generatingNode->layoutObject() != &object)
             return false;
         break;
-    case BEFORE:
-    case AFTER:
+    case PseudoIdBefore:
+    case PseudoIdAfter:
         break;
     default:
         return false; // Counters are forbidden from all other pseudo elements.
@@ -401,7 +401,7 @@ PassRefPtr<StringImpl> LayoutCounter::originalText() const
             if (!beforeAfterContainer->isAnonymous() && !beforeAfterContainer->isPseudoElement())
                 return nullptr; // LayoutCounters are restricted to before and after pseudo elements
             PseudoId containerStyle = beforeAfterContainer->style()->styleType();
-            if ((containerStyle == BEFORE) || (containerStyle == AFTER))
+            if ((containerStyle == PseudoIdBefore) || (containerStyle == PseudoIdAfter))
                 break;
             beforeAfterContainer = beforeAfterContainer->parent();
         }

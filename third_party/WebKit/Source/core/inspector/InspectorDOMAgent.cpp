@@ -197,49 +197,49 @@ String InspectorDOMAgent::toErrorString(ExceptionState& exceptionState)
 bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, protocol::DOM::PseudoType* type)
 {
     switch (pseudoId) {
-    case FIRST_LINE:
+    case PseudoIdFirstLine:
         *type = protocol::DOM::PseudoTypeEnum::FirstLine;
         return true;
-    case FIRST_LETTER:
+    case PseudoIdFirstLetter:
         *type = protocol::DOM::PseudoTypeEnum::FirstLetter;
         return true;
-    case BEFORE:
+    case PseudoIdBefore:
         *type = protocol::DOM::PseudoTypeEnum::Before;
         return true;
-    case AFTER:
+    case PseudoIdAfter:
         *type = protocol::DOM::PseudoTypeEnum::After;
         return true;
-    case BACKDROP:
+    case PseudoIdBackdrop:
         *type = protocol::DOM::PseudoTypeEnum::Backdrop;
         return true;
-    case SELECTION:
+    case PseudoIdSelection:
         *type = protocol::DOM::PseudoTypeEnum::Selection;
         return true;
-    case FIRST_LINE_INHERITED:
+    case PseudoIdFirstLineInherited:
         *type = protocol::DOM::PseudoTypeEnum::FirstLineInherited;
         return true;
-    case SCROLLBAR:
+    case PseudoIdScrollbar:
         *type = protocol::DOM::PseudoTypeEnum::Scrollbar;
         return true;
-    case SCROLLBAR_THUMB:
+    case PseudoIdScrollbarThumb:
         *type = protocol::DOM::PseudoTypeEnum::ScrollbarThumb;
         return true;
-    case SCROLLBAR_BUTTON:
+    case PseudoIdScrollbarButton:
         *type = protocol::DOM::PseudoTypeEnum::ScrollbarButton;
         return true;
-    case SCROLLBAR_TRACK:
+    case PseudoIdScrollbarTrack:
         *type = protocol::DOM::PseudoTypeEnum::ScrollbarTrack;
         return true;
-    case SCROLLBAR_TRACK_PIECE:
+    case PseudoIdScrollbarTrackPiece:
         *type = protocol::DOM::PseudoTypeEnum::ScrollbarTrackPiece;
         return true;
-    case SCROLLBAR_CORNER:
+    case PseudoIdScrollbarCorner:
         *type = protocol::DOM::PseudoTypeEnum::ScrollbarCorner;
         return true;
-    case RESIZER:
+    case PseudoIdResizer:
         *type = protocol::DOM::PseudoTypeEnum::Resizer;
         return true;
-    case INPUT_LIST_BUTTON:
+    case PseudoIdInputListButton:
         *type = protocol::DOM::PseudoTypeEnum::InputListButton;
         return true;
     default:
@@ -347,10 +347,10 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
 
     if (node->isElementNode()) {
         Element* element = toElement(node);
-        if (element->pseudoElement(BEFORE))
-            unbind(element->pseudoElement(BEFORE), nodesMap);
-        if (element->pseudoElement(AFTER))
-            unbind(element->pseudoElement(AFTER), nodesMap);
+        if (element->pseudoElement(PseudoIdBefore))
+            unbind(element->pseudoElement(PseudoIdBefore), nodesMap);
+        if (element->pseudoElement(PseudoIdAfter))
+            unbind(element->pseudoElement(PseudoIdAfter), nodesMap);
 
         if (isHTMLLinkElement(*element)) {
             HTMLLinkElement& linkElement = toHTMLLinkElement(*element);
@@ -1593,14 +1593,14 @@ PassOwnPtr<protocol::Array<protocol::DOM::Node>> InspectorDOMAgent::buildArrayFo
 
 PassOwnPtr<protocol::Array<protocol::DOM::Node>> InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
 {
-    if (!element->pseudoElement(BEFORE) && !element->pseudoElement(AFTER))
+    if (!element->pseudoElement(PseudoIdBefore) && !element->pseudoElement(PseudoIdAfter))
         return nullptr;
 
     OwnPtr<protocol::Array<protocol::DOM::Node>> pseudoElements = protocol::Array<protocol::DOM::Node>::create();
-    if (element->pseudoElement(BEFORE))
-        pseudoElements->addItem(buildObjectForNode(element->pseudoElement(BEFORE), 0, nodesMap));
-    if (element->pseudoElement(AFTER))
-        pseudoElements->addItem(buildObjectForNode(element->pseudoElement(AFTER), 0, nodesMap));
+    if (element->pseudoElement(PseudoIdBefore))
+        pseudoElements->addItem(buildObjectForNode(element->pseudoElement(PseudoIdBefore), 0, nodesMap));
+    if (element->pseudoElement(PseudoIdAfter))
+        pseudoElements->addItem(buildObjectForNode(element->pseudoElement(PseudoIdAfter), 0, nodesMap));
     return pseudoElements.release();
 }
 

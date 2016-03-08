@@ -635,7 +635,7 @@ public:
         // LayoutBlock::createAnonymousBlock(). This includes creating an anonymous
         // LayoutBlock having a BLOCK or BOX display. Other classes such as LayoutTextFragment
         // are not LayoutBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
-        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isLayoutBlock() && !isListMarker() && !isLayoutFlowThread() && !isLayoutMultiColumnSet()
+        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == PseudoIdNone && isLayoutBlock() && !isListMarker() && !isLayoutFlowThread() && !isLayoutMultiColumnSet()
             && !isLayoutFullScreen()
             && !isLayoutFullScreenPlaceholder();
     }
@@ -1955,7 +1955,7 @@ inline bool LayoutObject::documentBeingDestroyed() const
 
 inline bool LayoutObject::isBeforeContent() const
 {
-    if (style()->styleType() != BEFORE)
+    if (style()->styleType() != PseudoIdBefore)
         return false;
     // Text nodes don't have their own styles, so ignore the style on a text node.
     if (isText() && !isBR())
@@ -1965,7 +1965,7 @@ inline bool LayoutObject::isBeforeContent() const
 
 inline bool LayoutObject::isAfterContent() const
 {
-    if (style()->styleType() != AFTER)
+    if (style()->styleType() != PseudoIdAfter)
         return false;
     // Text nodes don't have their own styles, so ignore the style on a text node.
     if (isText() && !isBR())

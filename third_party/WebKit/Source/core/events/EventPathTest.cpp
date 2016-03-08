@@ -31,7 +31,7 @@ void EventPathTest::SetUp()
 TEST_F(EventPathTest, ShouldBeEmptyForPseudoElementWithoutParentElement)
 {
     RefPtrWillBeRawPtr<Element> div = document().createElement(HTMLNames::divTag, false);
-    RefPtrWillBeRawPtr<PseudoElement> pseudo = PseudoElement::create(div.get(), FIRST_LETTER);
+    RefPtrWillBeRawPtr<PseudoElement> pseudo = PseudoElement::create(div.get(), PseudoIdFirstLetter);
     pseudo->dispose();
     EventPath eventPath(*pseudo);
     EXPECT_TRUE(eventPath.isEmpty());

@@ -168,7 +168,7 @@ TextPainter::Style TextPainter::selectionPaintingStyle(LineLayoutItem lineLayout
             selectionStyle.emphasisMarkColor = layoutObject.selectionEmphasisMarkColor(paintInfo.getGlobalPaintFlags());
         }
 
-        if (const ComputedStyle* pseudoStyle = layoutObject.getCachedPseudoStyle(SELECTION)) {
+        if (const ComputedStyle* pseudoStyle = layoutObject.getCachedPseudoStyle(PseudoIdSelection)) {
             selectionStyle.strokeColor = usesTextAsClip ? Color::black : layoutObject.resolveColor(*pseudoStyle, CSSPropertyWebkitTextStrokeColor);
             selectionStyle.strokeWidth = pseudoStyle->textStrokeWidth();
             selectionStyle.shadow = usesTextAsClip ? 0 : pseudoStyle->textShadow();

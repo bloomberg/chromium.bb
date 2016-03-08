@@ -335,7 +335,7 @@ protected:
         noninherited_flags.breakBefore = initialBreakBefore();
         noninherited_flags.breakAfter = initialBreakAfter();
         noninherited_flags.breakInside = initialBreakInside();
-        noninherited_flags.styleType = NOPSEUDO;
+        noninherited_flags.styleType = PseudoIdNone;
         noninherited_flags.pseudoBits = 0;
         noninherited_flags.explicitInheritance = false;
         noninherited_flags.variableReference = false;
@@ -2011,26 +2011,26 @@ inline bool ComputedStyle::setTextOrientation(TextOrientation textOrientation)
 
 inline bool ComputedStyle::hasAnyPublicPseudoStyles() const
 {
-    return PUBLIC_PSEUDOID_MASK & noninherited_flags.pseudoBits;
+    return PublicPseudoIdMask & noninherited_flags.pseudoBits;
 }
 
 inline bool ComputedStyle::hasPseudoStyle(PseudoId pseudo) const
 {
-    ASSERT(pseudo > NOPSEUDO);
-    ASSERT(pseudo < FIRST_INTERNAL_PSEUDOID);
+    ASSERT(pseudo > PseudoIdNone);
+    ASSERT(pseudo < FirstInternalPseudoId);
     return (1 << (pseudo - 1)) & noninherited_flags.pseudoBits;
 }
 
 inline void ComputedStyle::setHasPseudoStyle(PseudoId pseudo)
 {
-    ASSERT(pseudo > NOPSEUDO);
-    ASSERT(pseudo < FIRST_INTERNAL_PSEUDOID);
+    ASSERT(pseudo > PseudoIdNone);
+    ASSERT(pseudo < FirstInternalPseudoId);
     noninherited_flags.pseudoBits |= 1 << (pseudo - 1);
 }
 
 inline bool ComputedStyle::hasPseudoElementStyle() const
 {
-    return noninherited_flags.pseudoBits & PSEUDO_ELEMENT_MASK;
+    return noninherited_flags.pseudoBits & ElementPseudoIdMask;
 }
 
 } // namespace blink

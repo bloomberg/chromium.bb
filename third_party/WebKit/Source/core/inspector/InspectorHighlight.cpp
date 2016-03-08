@@ -189,9 +189,9 @@ PassOwnPtr<protocol::DictionaryValue> buildElementInfo(Element* element)
         }
     }
     if (pseudoElement) {
-        if (pseudoElement->getPseudoId() == BEFORE)
+        if (pseudoElement->getPseudoId() == PseudoIdBefore)
             classNames.appendLiteral("::before");
-        else if (pseudoElement->getPseudoId() == AFTER)
+        else if (pseudoElement->getPseudoId() == PseudoIdAfter)
             classNames.appendLiteral("::after");
     }
     if (!classNames.isEmpty())

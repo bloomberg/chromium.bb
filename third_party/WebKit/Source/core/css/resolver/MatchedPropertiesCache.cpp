@@ -150,7 +150,7 @@ void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
 
 bool MatchedPropertiesCache::isCacheable(const ComputedStyle& style, const ComputedStyle& parentStyle)
 {
-    if (style.unique() || (style.styleType() != NOPSEUDO && parentStyle.unique()))
+    if (style.unique() || (style.styleType() != PseudoIdNone && parentStyle.unique()))
         return false;
     if (style.zoom() != ComputedStyle::initialZoom())
         return false;
