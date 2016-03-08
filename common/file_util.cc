@@ -12,6 +12,7 @@
 #include <unistd.h>  // close()
 #endif
 
+#include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <ios>
@@ -29,9 +30,12 @@ std::string GetTempFileName() {
   }
   return std::string();
 #else
-  // TODO(tomfinegan): Add the MSVC version of mkstemp() to quiet the MSVC
-  // version of the security warning.
-  return std::tmpnam(nullptr);
+  char tmp_file_name[_MAX_PATH];
+  errno_t err = tmpnam_s(tmp_file_name);
+  if (err == 0) {
+    return std::string(tmp_file_name);
+  }
+  return std::string();
 #endif
 }
 
