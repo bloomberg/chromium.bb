@@ -1527,8 +1527,6 @@
             'editing/commands/SplitTextNodeCommand.h',
             'editing/commands/SplitTextNodeContainingElementCommand.cpp',
             'editing/commands/SplitTextNodeContainingElementCommand.h',
-            'editing/commands/TextInsertionBaseCommand.cpp',
-            'editing/commands/TextInsertionBaseCommand.h',
             'editing/commands/TypingCommand.cpp',
             'editing/commands/TypingCommand.h',
             'editing/commands/UndoStack.cpp',

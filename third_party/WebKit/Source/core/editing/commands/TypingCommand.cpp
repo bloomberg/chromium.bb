@@ -82,7 +82,7 @@ private:
 };
 
 TypingCommand::TypingCommand(Document& document, ETypingCommand commandType, const String &textToInsert, Options options, TextGranularity granularity, TextCompositionType compositionType)
-    : TextInsertionBaseCommand(document)
+    : CompositeEditCommand(document)
     , m_commandType(commandType)
     , m_textToInsert(textToInsert)
     , m_openForMoreTyping(true)
@@ -222,8 +222,17 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
         return;
     }
 
-    RefPtrWillBeRawPtr<TypingCommand> cmd = TypingCommand::create(document, InsertText, newText, options, compositionType);
-    applyTextInsertionCommand(frame.get(), cmd, selectionForInsertion, currentSelection);
+    RefPtrWillBeRawPtr<TypingCommand> command = TypingCommand::create(document, InsertText, newText, options, compositionType);
+    bool changeSelection = !equalSelectionsInDOMTree(selectionForInsertion, currentSelection);
+    if (changeSelection) {
+        command->setStartingSelection(selectionForInsertion);
+        command->setEndingSelection(selectionForInsertion);
+    }
+    command->apply();
+    if (changeSelection) {
+        command->setEndingSelection(currentSelection);
+        frame->selection().setSelection(currentSelection);
+    }
 }
 
 bool TypingCommand::insertLineBreak(Document& document)

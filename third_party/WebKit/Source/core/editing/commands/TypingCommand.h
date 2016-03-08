@@ -26,11 +26,11 @@
 #ifndef TypingCommand_h
 #define TypingCommand_h
 
-#include "core/editing/commands/TextInsertionBaseCommand.h"
+#include "core/editing/commands/CompositeEditCommand.h"
 
 namespace blink {
 
-class TypingCommand final : public TextInsertionBaseCommand {
+class TypingCommand final : public CompositeEditCommand {
 public:
     enum ETypingCommand {
         DeleteSelection,
