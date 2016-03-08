@@ -1708,6 +1708,23 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest,
+       MAYBE_EME(EncryptedPlayback_MP4_CENC_SENC_Video)) {
+  MockMediaSource source("bear-640x360-v_frag-cenc-senc.mp4", kMP4Video,
+                         kAppendWholeFile);
+  FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
+  StartPipelineWithEncryptedMedia(&source, &encrypted_media);
+
+  source.EndOfStream();
+  ASSERT_EQ(PIPELINE_OK, pipeline_status_);
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Shutdown();
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest,
        MAYBE_EME(EncryptedPlayback_MP4_CENC_KeyRotation_Video)) {
   MockMediaSource source("bear-1280x720-v_frag-cenc-key_rotation.mp4",
                          kMP4Video, kAppendWholeFile);

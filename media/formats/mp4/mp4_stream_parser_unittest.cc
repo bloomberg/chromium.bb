@@ -45,8 +45,8 @@ MATCHER_P(AudioCodecLog, codec_string, "") {
   return CONTAINS_STRING(arg, "Audio codec: " + std::string(codec_string));
 }
 
-MATCHER(AuxInfoUnavailableLog, "") {
-  return CONTAINS_STRING(arg, "Aux Info is not available.");
+MATCHER(SampleEncryptionInfoUnavailableLog, "") {
+  return CONTAINS_STRING(arg, "Sample encryption info is not available.");
 }
 
 MATCHER_P(ErrorLog, error_string, "") {
@@ -284,9 +284,10 @@ TEST_F(MP4StreamParserTest, NoMoovAfterFlush) {
 }
 
 // Test an invalid file where there are encrypted samples, but
-// SampleAuxiliaryInformation{Sizes|Offsets}Box (saiz|saio) are missing.
+// SampleEncryptionBox (senc) and SampleAuxiliaryInformation{Sizes|Offsets}Box
+// (saiz|saio) are missing.
 // The parser should fail instead of crash. See http://crbug.com/361347
-TEST_F(MP4StreamParserTest, MissingSampleAuxInfo) {
+TEST_F(MP4StreamParserTest, MissingSampleEncryptionInfo) {
   InSequence s;
 
   // Encrypted test mp4 files have non-zero duration and are treated as
@@ -296,7 +297,7 @@ TEST_F(MP4StreamParserTest, MissingSampleAuxInfo) {
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-1280x720-a_frag-cenc_missing-saiz-saio.mp4");
   EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2")).Times(2);
-  EXPECT_MEDIA_LOG(AuxInfoUnavailableLog());
+  EXPECT_MEDIA_LOG(SampleEncryptionInfoUnavailableLog());
   EXPECT_FALSE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
 
@@ -321,7 +322,9 @@ TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
             AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
 
-TEST_F(MP4StreamParserTest, CENC) {
+// Sample encryption information is stored as CencSampleAuxiliaryDataFormat
+// (ISO/IEC 23001-7:2015 8) inside 'mdat' box. No SampleEncryption ('senc') box.
+TEST_F(MP4StreamParserTest, CencWithEncryptionInfoStoredAsAuxDataInMdat) {
   // Encrypted test mp4 files have non-zero duration and are treated as
   // recorded streams.
   InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
@@ -329,6 +332,17 @@ TEST_F(MP4StreamParserTest, CENC) {
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
   EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F"));
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+}
+
+TEST_F(MP4StreamParserTest, CencWithSampleEncryptionBox) {
+  // Encrypted test mp4 files have non-zero duration and are treated as
+  // recorded streams.
+  InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
+
+  scoped_refptr<DecoderBuffer> buffer =
+      ReadTestDataFile("bear-640x360-v_frag-cenc-senc.mp4");
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001E"));
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
 

@@ -138,6 +138,65 @@ bool SampleAuxiliaryInformationSize::Parse(BoxReader* reader) {
   return true;
 }
 
+SampleEncryptionEntry::SampleEncryptionEntry() {}
+SampleEncryptionEntry::~SampleEncryptionEntry() {}
+
+bool SampleEncryptionEntry::Parse(BufferReader* reader,
+                                  uint8_t iv_size,
+                                  bool has_subsamples) {
+  // According to ISO/IEC FDIS 23001-7: CENC spec, IV should be either
+  // 64-bit (8-byte) or 128-bit (16-byte).
+  RCHECK(iv_size == 8 || iv_size == 16);
+
+  memset(initialization_vector, 0, sizeof(initialization_vector));
+  for (uint8_t i = 0; i < iv_size; i++)
+    RCHECK(reader->Read1(initialization_vector + i));
+
+  if (!has_subsamples) {
+    subsamples.clear();
+    return true;
+  }
+
+  uint16_t subsample_count;
+  RCHECK(reader->Read2(&subsample_count));
+  RCHECK(subsample_count > 0);
+  subsamples.resize(subsample_count);
+  for (SubsampleEntry& subsample : subsamples) {
+    uint16_t clear_bytes;
+    uint32_t cypher_bytes;
+    RCHECK(reader->Read2(&clear_bytes) && reader->Read4(&cypher_bytes));
+    subsample.clear_bytes = clear_bytes;
+    subsample.cypher_bytes = cypher_bytes;
+  }
+  return true;
+}
+
+bool SampleEncryptionEntry::GetTotalSizeOfSubsamples(size_t* total_size) const {
+  size_t size = 0;
+  for (const SubsampleEntry& subsample : subsamples) {
+    size += subsample.clear_bytes;
+    RCHECK(size >= subsample.clear_bytes);  // overflow
+    size += subsample.cypher_bytes;
+    RCHECK(size >= subsample.cypher_bytes);  // overflow
+  }
+  *total_size = size;
+  return true;
+}
+
+SampleEncryption::SampleEncryption() : use_subsample_encryption(false) {}
+SampleEncryption::~SampleEncryption() {}
+FourCC SampleEncryption::BoxType() const {
+  return FOURCC_SENC;
+}
+
+bool SampleEncryption::Parse(BoxReader* reader) {
+  RCHECK(reader->ReadFullBoxHeader());
+  use_subsample_encryption = (reader->flags() & kUseSubsampleEncryption) != 0;
+  sample_encryption_data.assign(reader->data() + reader->pos(),
+                                reader->data() + reader->size());
+  return true;
+}
+
 OriginalFormat::OriginalFormat() : format(FOURCC_NULL) {}
 OriginalFormat::~OriginalFormat() {}
 FourCC OriginalFormat::BoxType() const { return FOURCC_FRMA; }

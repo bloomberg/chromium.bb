@@ -68,7 +68,8 @@ bear-320x240-opus-av_enc-av.webm - bear-vp9-opus.webm with audio & video encrypt
 bear-320x240-opus-av_enc-v.webm - bear-vp9-opus.webm with video track encrypted using key ID [1] and key[2].
 bear-640x360-a_frag-cenc.mp4 - A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2].
 bear-640x360-a_frag-cenc-key_rotation.mp4 - A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2] with key rotation [3].
-bear-640x360-v_frag-cenc.mp4 - A fragmented MP4 version of the video track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2].
+bear-640x360-v_frag-cenc.mp4 - A fragmented MP4 version of the video track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2]  and with sample encryption auxiliary information in the beginning of mdat box.
+bear-640x360-v_frag-cenc-senc.mp4 - Same as above, but with sample encryption information stored in SampleEncryption ('senc') box.
 bear-640x360-v_frag-cenc-key_rotation.mp4 - A fragmented MP4 version of the video track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2] with key rotation [3].
 bear-a_enc-a.webm - bear-320x240-audio-only.webm encrypted using key ID [1] and key [2].
 frame_size_change-av_enc-v.webm - third_party/WebKit/LayoutTests/media/resources/frame_size_change.webm encrypted using key ID [1] and key [2].

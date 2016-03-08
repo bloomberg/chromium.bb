@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
 #include "media/base/video_codecs.h"
@@ -76,6 +77,39 @@ struct MEDIA_EXPORT SampleAuxiliaryInformationSize : Box {
   uint8_t default_sample_info_size;
   uint32_t sample_count;
   std::vector<uint8_t> sample_info_sizes;
+};
+
+// Represent an entry in SampleEncryption box or CENC auxiliary info.
+struct MEDIA_EXPORT SampleEncryptionEntry {
+  SampleEncryptionEntry();
+  ~SampleEncryptionEntry();
+
+  // Parse SampleEncryptionEntry from |reader|.
+  // |iv_size| specifies the size of initialization vector. |has_subsamples|
+  // indicates whether this sample encryption entry constains subsamples.
+  // Returns false if parsing fails.
+  bool Parse(BufferReader* reader, uint8_t iv_size, bool has_subsamples);
+
+  // Get accumulated size of subsamples. Returns false if there is an overflow
+  // anywhere.
+  bool GetTotalSizeOfSubsamples(size_t* total_size) const;
+
+  uint8_t initialization_vector[16];
+  std::vector<SubsampleEntry> subsamples;
+};
+
+// ISO/IEC 23001-7:2015 8.1.1.
+struct MEDIA_EXPORT SampleEncryption : Box {
+  enum SampleEncryptionFlags {
+    kUseSubsampleEncryption = 2,
+  };
+
+  DECLARE_BOX_METHODS(SampleEncryption);
+
+  bool use_subsample_encryption;
+  // We may not know |iv_size| before reading this box, so we store the box
+  // data for parsing later when |iv_size| is known.
+  std::vector<uint8_t> sample_encryption_data;
 };
 
 struct MEDIA_EXPORT OriginalFormat : Box {
@@ -425,6 +459,7 @@ struct MEDIA_EXPORT TrackFragment : Box {
   IndependentAndDisposableSamples sdtp;
   SampleGroupDescription sample_group_description;
   SampleToGroup sample_to_group;
+  SampleEncryption sample_encryption;
 };
 
 struct MEDIA_EXPORT MovieFragment : Box {

@@ -1023,8 +1023,6 @@
             'formats/mp4/box_definitions.h',
             'formats/mp4/box_reader.cc',
             'formats/mp4/box_reader.h',
-            'formats/mp4/cenc.cc',
-            'formats/mp4/cenc.h',
             'formats/mp4/es_descriptor.cc',
             'formats/mp4/es_descriptor.h',
             'formats/mp4/mp4_stream_parser.cc',

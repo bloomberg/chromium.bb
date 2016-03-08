@@ -35,6 +35,12 @@ struct TrackRunInfo {
   const VideoSampleEntry* video_description;
   const SampleGroupDescription* track_sample_encryption_group;
 
+  // Stores sample encryption entries, which is populated from 'senc' box if it
+  // is available, otherwise will try to load from cenc auxiliary information.
+  std::vector<SampleEncryptionEntry> sample_encryption_entries;
+
+  // These variables are useful to load |sample_encryption_entries| from cenc
+  // auxiliary information when 'senc' box is not available.
   int64_t aux_info_start_offset;  // Only valid if aux_info_total_size > 0.
   int aux_info_default_size;
   std::vector<uint8_t> aux_info_sizes;  // Populated if default_size == 0.
@@ -272,6 +278,16 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
     RCHECK(desc_idx > 0);  // Descriptions are one-indexed in the file
     desc_idx -= 1;
 
+    const std::vector<uint8_t>& sample_encryption_data =
+        traf.sample_encryption.sample_encryption_data;
+    scoped_ptr<BufferReader> sample_encryption_reader;
+    uint32_t sample_encrytion_entries_count = 0;
+    if (!sample_encryption_data.empty()) {
+      sample_encryption_reader.reset(new BufferReader(
+          sample_encryption_data.data(), sample_encryption_data.size()));
+      RCHECK(sample_encryption_reader->Read4(&sample_encrytion_entries_count));
+    }
+
     // Process edit list to remove CTS offset introduced in the presence of
     // B-frames (those that contain a single edit with a nonnegative media
     // time). Other uses of edit lists are not supported, as they are
@@ -306,23 +322,30 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       tri.fragment_sample_encryption_info =
           traf.sample_group_description.entries;
 
+      uint8_t default_iv_size = 0;
       tri.is_audio = (stsd.type == kAudio);
       if (tri.is_audio) {
         RCHECK(!stsd.audio_entries.empty());
         if (desc_idx > stsd.audio_entries.size())
           desc_idx = 0;
         tri.audio_description = &stsd.audio_entries[desc_idx];
+        default_iv_size =
+            tri.audio_description->sinf.info.track_encryption.default_iv_size;
       } else {
         RCHECK(!stsd.video_entries.empty());
         if (desc_idx > stsd.video_entries.size())
           desc_idx = 0;
         tri.video_description = &stsd.video_entries[desc_idx];
+        default_iv_size =
+            tri.video_description->sinf.info.track_encryption.default_iv_size;
       }
 
-      // Collect information from the auxiliary_offset entry with the same index
-      // in the 'saiz' container as the current run's index in the 'trun'
-      // container, if it is present.
-      if (traf.auxiliary_offset.offsets.size() > j) {
+      // Initialize aux_info variables only if no sample encryption entries.
+      if (sample_encrytion_entries_count == 0 &&
+          traf.auxiliary_offset.offsets.size() > j) {
+        // Collect information from the auxiliary_offset entry with the same
+        // index in the 'saiz' container as the current run's index in the
+        // 'trun' container, if it is present.
         // There should be an auxiliary info entry corresponding to each sample
         // in the auxiliary offset entry's corresponding track run.
         RCHECK(traf.auxiliary_size.sample_count >=
@@ -333,8 +356,8 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
         if (tri.aux_info_default_size == 0) {
           const std::vector<uint8_t>& sizes =
               traf.auxiliary_size.sample_info_sizes;
-          tri.aux_info_sizes.insert(tri.aux_info_sizes.begin(),
-              sizes.begin() + sample_count_sum,
+          tri.aux_info_sizes.insert(
+              tri.aux_info_sizes.begin(), sizes.begin() + sample_count_sum,
               sizes.begin() + sample_count_sum + trun.sample_count);
         }
 
@@ -378,6 +401,20 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
           RCHECK(GetSampleEncryptionInfoEntry(tri, index));
         is_sample_to_group_valid = sample_to_group_itr.Advance();
       }
+      if (sample_encrytion_entries_count > 0) {
+        RCHECK(sample_encrytion_entries_count >=
+               sample_count_sum + trun.sample_count);
+        tri.sample_encryption_entries.resize(trun.sample_count);
+        for (size_t k = 0; k < trun.sample_count; k++) {
+          uint32_t index = tri.samples[k].cenc_group_description_index;
+          const uint8_t iv_size =
+              index == 0 ? default_iv_size
+                         : GetSampleEncryptionInfoEntry(tri, index)->iv_size;
+          RCHECK(tri.sample_encryption_entries[k].Parse(
+              sample_encryption_reader.get(), iv_size,
+              traf.sample_encryption.use_subsample_encryption));
+        }
+      }
       runs_.push_back(tri);
       sample_count_sum += trun.sample_count;
     }
@@ -402,7 +439,6 @@ void TrackRunIterator::ResetRun() {
   sample_dts_ = run_itr_->start_dts;
   sample_offset_ = run_itr_->sample_start_offset;
   sample_itr_ = run_itr_->samples.begin();
-  cenc_info_.clear();
 }
 
 void TrackRunIterator::AdvanceSample() {
@@ -416,14 +452,17 @@ void TrackRunIterator::AdvanceSample() {
 // info is available in the stream.
 bool TrackRunIterator::AuxInfoNeedsToBeCached() {
   DCHECK(IsRunValid());
-  return aux_info_size() > 0 && cenc_info_.size() == 0;
+  return is_encrypted() && aux_info_size() > 0 &&
+         run_itr_->sample_encryption_entries.size() == 0;
 }
 
 // This implementation currently only caches CENC auxiliary info.
 bool TrackRunIterator::CacheAuxInfo(const uint8_t* buf, int buf_size) {
   RCHECK(AuxInfoNeedsToBeCached() && buf_size >= aux_info_size());
 
-  cenc_info_.resize(run_itr_->samples.size());
+  std::vector<SampleEncryptionEntry>& sample_encryption_entries =
+      runs_[run_itr_ - runs_.begin()].sample_encryption_entries;
+  sample_encryption_entries.resize(run_itr_->samples.size());
   int64_t pos = 0;
   for (size_t i = 0; i < run_itr_->samples.size(); i++) {
     int info_size = run_itr_->aux_info_default_size;
@@ -432,7 +471,10 @@ bool TrackRunIterator::CacheAuxInfo(const uint8_t* buf, int buf_size) {
 
     if (IsSampleEncrypted(i)) {
       BufferReader reader(buf + pos, info_size);
-      RCHECK(cenc_info_[i].Parse(GetIvSize(i), &reader));
+      const uint8_t iv_size = GetIvSize(i);
+      const bool has_subsamples = info_size > iv_size;
+      RCHECK(
+          sample_encryption_entries[i].Parse(&reader, iv_size, has_subsamples));
     }
     pos += info_size;
   }
@@ -550,19 +592,20 @@ const TrackEncryption& TrackRunIterator::track_encryption() const {
 scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
   DCHECK(is_encrypted());
 
-  if (cenc_info_.empty()) {
+  if (run_itr_->sample_encryption_entries.empty()) {
     DCHECK_EQ(0, aux_info_size());
-    MEDIA_LOG(ERROR, media_log_) << "Aux Info is not available.";
+    MEDIA_LOG(ERROR, media_log_) << "Sample encryption info is not available.";
     return scoped_ptr<DecryptConfig>();
   }
 
   size_t sample_idx = sample_itr_ - run_itr_->samples.begin();
-  DCHECK_LT(sample_idx, cenc_info_.size());
-  const FrameCENCInfo& cenc_info = cenc_info_[sample_idx];
+  DCHECK_LT(sample_idx, run_itr_->sample_encryption_entries.size());
+  const SampleEncryptionEntry& sample_encryption_entry =
+      run_itr_->sample_encryption_entries[sample_idx];
 
   size_t total_size = 0;
-  if (!cenc_info.subsamples.empty() &&
-      (!cenc_info.GetTotalSizeOfSubsamples(&total_size) ||
+  if (!sample_encryption_entry.subsamples.empty() &&
+      (!sample_encryption_entry.GetTotalSizeOfSubsamples(&total_size) ||
        total_size != static_cast<size_t>(sample_size()))) {
     MEDIA_LOG(ERROR, media_log_) << "Incorrect CENC subsample size.";
     return scoped_ptr<DecryptConfig>();
@@ -571,9 +614,10 @@ scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
   const std::vector<uint8_t>& kid = GetKeyId(sample_idx);
   return scoped_ptr<DecryptConfig>(new DecryptConfig(
       std::string(reinterpret_cast<const char*>(&kid[0]), kid.size()),
-      std::string(reinterpret_cast<const char*>(cenc_info.iv),
-                  arraysize(cenc_info.iv)),
-      cenc_info.subsamples));
+      std::string(reinterpret_cast<const char*>(
+                      sample_encryption_entry.initialization_vector),
+                  arraysize(sample_encryption_entry.initialization_vector)),
+      sample_encryption_entry.subsamples));
 }
 
 uint32_t TrackRunIterator::GetGroupDescriptionIndex(
