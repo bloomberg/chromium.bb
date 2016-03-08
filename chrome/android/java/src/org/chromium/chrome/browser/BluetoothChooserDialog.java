@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -35,14 +36,14 @@ public class BluetoothChooserDialog
         implements ItemChooserDialog.ItemSelectedCallback, WindowAndroid.PermissionCallback {
     // These constants match BluetoothChooserAndroid::ShowDiscoveryState, and are used in
     // notifyDiscoveryState().
-    private static final int DISCOVERY_FAILED_TO_START = 0;
-    private static final int DISCOVERING = 1;
-    private static final int DISCOVERY_IDLE = 2;
+    static final int DISCOVERY_FAILED_TO_START = 0;
+    static final int DISCOVERING = 1;
+    static final int DISCOVERY_IDLE = 2;
 
     // Values passed to nativeOnDialogFinished:eventType, and only used in the native function.
-    private static final int DIALOG_FINISHED_DENIED_PERMISSION = 0;
-    private static final int DIALOG_FINISHED_CANCELLED = 1;
-    private static final int DIALOG_FINISHED_SELECTED = 2;
+    static final int DIALOG_FINISHED_DENIED_PERMISSION = 0;
+    static final int DIALOG_FINISHED_CANCELLED = 1;
+    static final int DIALOG_FINISHED_SELECTED = 2;
 
     // The window that owns this dialog.
     final WindowAndroid mWindowAndroid;
@@ -79,7 +80,8 @@ public class BluetoothChooserDialog
      *
      * @param context Context which is used for launching a dialog.
      */
-    private BluetoothChooserDialog(WindowAndroid windowAndroid, String origin, int securityLevel,
+    @VisibleForTesting
+    BluetoothChooserDialog(WindowAndroid windowAndroid, String origin, int securityLevel,
             long nativeBluetoothChooserDialogPtr) {
         mWindowAndroid = windowAndroid;
         mContext = windowAndroid.getActivity().get();
@@ -92,7 +94,8 @@ public class BluetoothChooserDialog
     /**
      * Show the BluetoothChooserDialog.
      */
-    private void show() {
+    @VisibleForTesting
+    void show() {
         // Emphasize the origin.
         Profile profile = Profile.getLastUsedProfile();
         SpannableString origin = new SpannableString(mOrigin);
@@ -287,27 +290,31 @@ public class BluetoothChooserDialog
         return dialog;
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private void addDevice(String deviceId, String deviceName) {
+    void addDevice(String deviceId, String deviceName) {
         List<ItemChooserDialog.ItemChooserRow> devices =
                 new ArrayList<ItemChooserDialog.ItemChooserRow>();
         devices.add(new ItemChooserDialog.ItemChooserRow(deviceId, deviceName));
         mItemChooserDialog.addItemsToList(devices);
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private void closeDialog() {
+    void closeDialog() {
         mNativeBluetoothChooserDialogPtr = 0;
         mItemChooserDialog.dismiss();
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private void removeDevice(String deviceId) {
+    void removeDevice(String deviceId) {
         mItemChooserDialog.setEnabled(deviceId, false);
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private void notifyAdapterTurnedOff() {
+    void notifyAdapterTurnedOff() {
         SpannableString adapterOffMessage = SpanApplier.applySpans(
                 mContext.getString(R.string.bluetooth_adapter_off),
                 new SpanInfo("<link>", "</link>",
@@ -328,8 +335,9 @@ public class BluetoothChooserDialog
         }
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private void notifyDiscoveryState(int discoveryState) {
+    void notifyDiscoveryState(int discoveryState) {
         switch (discoveryState) {
             case DISCOVERY_FAILED_TO_START: {
                 // FAILED_TO_START might be caused by a missing Location permission.
@@ -348,11 +356,16 @@ public class BluetoothChooserDialog
         }
     }
 
-    private native void nativeOnDialogFinished(
+    @VisibleForTesting
+    native void nativeOnDialogFinished(
             long nativeBluetoothChooserAndroid, int eventType, String deviceId);
-    private native void nativeRestartSearch(long nativeBluetoothChooserAndroid);
+    @VisibleForTesting
+    native void nativeRestartSearch(long nativeBluetoothChooserAndroid);
     // Help links.
-    private native void nativeShowBluetoothOverviewLink(long nativeBluetoothChooserAndroid);
-    private native void nativeShowBluetoothAdapterOffLink(long nativeBluetoothChooserAndroid);
-    private native void nativeShowNeedLocationPermissionLink(long nativeBluetoothChooserAndroid);
+    @VisibleForTesting
+    native void nativeShowBluetoothOverviewLink(long nativeBluetoothChooserAndroid);
+    @VisibleForTesting
+    native void nativeShowBluetoothAdapterOffLink(long nativeBluetoothChooserAndroid);
+    @VisibleForTesting
+    native void nativeShowNeedLocationPermissionLink(long nativeBluetoothChooserAndroid);
 }
