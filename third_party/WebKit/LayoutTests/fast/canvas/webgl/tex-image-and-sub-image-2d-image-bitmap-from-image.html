@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="./resources/webgl-test-utils-full.js"></script>
+<script src="./resources/tex-image-and-sub-image-utils.js"></script>
+<script src="./resources/tex-image-and-sub-image-image-bitmap-utils.js"></script>
+<script src="../../../resources/js-test.js"></script>
+<script>
+
+window.jsTestIsAsync = true;
+
+var wtu = WebGLTestUtils;
+var tiu = TexImageUtils;
+var gl = null;
+var internalFormat = "RGBA";
+var pixelFormat = "RGBA";
+var pixelType = "UNSIGNED_BYTE";
+var redColor = [255, 0, 0];
+var greenColor = [0, 255, 0];
+var blackColor = [0, 0, 0];
+var halfRed = [128, 0, 0];
+var halfGreen = [0, 128, 0];
+
+var image = new Image();
+
+function promiseRejected()
+{
+    document.getElementById("results").innerHTML = "Promise <span style='color:red'>REJECTED</span>";
+}
+
+function pass()
+{
+    document.getElementById("results").innerHTML = "Test <span style='color:green'>PASSED</span>";
+}
+
+function generateTest()
+{
+    var bitmaps = [];
+
+    var canvas = document.getElementById("example");
+    gl = canvas.getContext("webgl");
+
+    gl.clearColor(0,0,0,1);
+    gl.clearDepth(1);
+
+    var p1 = createImageBitmap(image).then(function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
+    var p2 = createImageBitmap(image, {imageOrientation: "none", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
+    var p3 = createImageBitmap(image, {imageOrientation: "none", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
+    var p4 = createImageBitmap(image, {imageOrientation: "none", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
+    var p5 = createImageBitmap(image, {imageOrientation: "flipY", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
+    var p6 = createImageBitmap(image, {imageOrientation: "flipY", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
+    var p7 = createImageBitmap(image, {imageOrientation: "flipY", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
+    Promise.all([p1, p2, p3, p4, p5, p6, p7]).then(function() {
+        var alphaVal = 0.5;
+        var testPassed = runTest(bitmaps, alphaVal);
+        if (testPassed)
+            pass();
+        finishJSTest();
+    }, function() {
+        promiseRejected();
+        finishJSTest();
+    });
+}
+
+function init()
+{
+    if (window.testRunner) {
+        testRunner.overridePreference("WebKitWebGLEnabled", "1");
+        testRunner.dumpAsText();
+    }
+    image.onload = function() {
+        generateTest();
+    }
+    image.src = "resources/red-green-semi-transparent.png";
+}
+</script>
+</head>
+<body onload="init()">
+<canvas id="texcanvas" width="2" height="2"></canvas>
+<canvas id="example" width="32" height="32"></canvas>
+<div id="results">Test <span style="color:red">FAILED</span></div>
+</body>
+</html>
