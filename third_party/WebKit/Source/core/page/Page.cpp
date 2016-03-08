@@ -443,7 +443,6 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
             if (frame->isLocalFrame())
                 toLocalFrame(frame)->document()->styleEngine().updateGenericFontFamilySettings();
         }
-        setNeedsRecalcStyleInAllFrames();
         break;
     case SettingsDelegate::AcceleratedCompositingChange:
         updateAcceleratedCompositingSettings();

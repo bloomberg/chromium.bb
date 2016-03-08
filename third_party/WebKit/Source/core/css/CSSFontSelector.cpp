@@ -176,8 +176,7 @@ void CSSFontSelector::updateGenericFontFamilySettings(Document& document)
     if (!document.settings())
         return;
     m_genericFontFamilySettings = document.settings()->genericFontFamilySettings();
-    // Need to increment FontFaceCache version to update ComputedStyles.
-    m_fontFaceCache.incrementVersion();
+    fontCacheInvalidated();
 }
 
 DEFINE_TRACE(CSSFontSelector)
