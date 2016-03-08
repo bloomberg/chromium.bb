@@ -186,28 +186,29 @@ public class FeatureUtilities {
         CommandLine.addResetListener(sResetListener);
     }
 
+    private static boolean isHerbDisallowed(Context context) {
+        return isDocumentMode(context) || ChromeVersionInfo.isStableBuild()
+                || ChromeVersionInfo.isBetaBuild() || DeviceFormFactor.isTablet(context);
+    }
+
     /**
      * @return Which flavor of Herb is being tested.  See {@link ChromeSwitches#HERB_FLAVOR_ANISE}
      *         and its related switches.
      */
     public static String getHerbFlavor() {
+        Context context = ApplicationStatus.getApplicationContext();
+        if (isHerbDisallowed(context)) return ChromeSwitches.HERB_FLAVOR_DISABLED;
+
         if (!sIsHerbFlavorCached) {
             sCachedHerbFlavor = null;
 
-            Context context = ApplicationStatus.getApplicationContext();
-            if (isDocumentMode(context) || ChromeVersionInfo.isStableBuild()
-                    || ChromeVersionInfo.isBetaBuild() || DeviceFormFactor.isTablet(context)) {
-                // Disable Herb.
-                sCachedHerbFlavor = ChromeSwitches.HERB_FLAVOR_DISABLED;
-            } else {
-                // Allowing disk access for preferences while prototyping.
-                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-                try {
-                    sCachedHerbFlavor =
-                            ChromePreferenceManager.getInstance(context).getCachedHerbFlavor();
-                } finally {
-                    StrictMode.setThreadPolicy(oldPolicy);
-                }
+            // Allowing disk access for preferences while prototyping.
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            try {
+                sCachedHerbFlavor =
+                        ChromePreferenceManager.getInstance(context).getCachedHerbFlavor();
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
             }
 
             sIsHerbFlavorCached = true;
@@ -221,6 +222,9 @@ public class FeatureUtilities {
      * Caches which flavor of Herb the user prefers from native.
      */
     public static void cacheHerbFlavor() {
+        Context context = ApplicationStatus.getApplicationContext();
+        if (isHerbDisallowed(context)) return;
+
         String oldFlavor = getHerbFlavor();
 
         // Check the experiment value before the command line to put the user in the correct group.
@@ -258,7 +262,6 @@ public class FeatureUtilities {
         sCachedHerbFlavor = newFlavor;
 
         if (!TextUtils.equals(oldFlavor, newFlavor)) {
-            Context context = ApplicationStatus.getApplicationContext();
             ChromePreferenceManager.getInstance(context).setCachedHerbFlavor(newFlavor);
         }
     }

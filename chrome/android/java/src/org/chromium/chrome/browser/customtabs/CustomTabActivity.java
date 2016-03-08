@@ -181,13 +181,18 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public void onStop() {
-        super.onStop();
-        CustomTabsConnection.getInstance(getApplication())
-                .dontKeepAliveForSession(mIntentDataProvider.getSession());
+        // This happens before super.onStop() to maximize chances of getting the Tab while it's
+        // alive.
+        // TODO(dfalcantara): Once this is addressed on M50, consider transferring the Tab directly
+        //                    via Tab reparenting.
         if (mIntentDataProvider.isOpenedByBrowser()) {
             createHerbResultIntent(RESULT_STOPPED);
             finish();
         }
+
+        super.onStop();
+        CustomTabsConnection.getInstance(getApplication())
+                .dontKeepAliveForSession(mIntentDataProvider.getSession());
     }
 
     @Override
@@ -552,8 +557,7 @@ public class CustomTabActivity extends ChromeActivity {
                                 && TextUtils.equals(getPackageName(), creatorPackage)) {
                             RecordUserAction.record(
                                     "TaskManagement.OpenInChromeActionButtonClicked");
-                            openCurrentUrlInBrowser();
-                            finish();
+                            if (openCurrentUrlInBrowser()) finish();
                         } else {
                             mIntentDataProvider.sendButtonPendingIntentWithUrl(
                                     getApplicationContext(), getActivityTab().getUrl());
@@ -721,9 +725,12 @@ public class CustomTabActivity extends ChromeActivity {
 
     /**
      * Opens the URL currently being displayed in the Custom Tab in the regular browser.
+     *
+     * @return Whether or not the tab was sent over successfully.
      */
-    void openCurrentUrlInBrowser() {
-        if (getActivityTab() == null) return;
+    boolean openCurrentUrlInBrowser() {
+        if (getActivityTab() == null) return false;
+
         String url = getTabModelSelector().getCurrentTab().getUrl();
         if (DomDistillerUrlUtils.isDistilledPage(url)) {
             url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
@@ -776,6 +783,7 @@ public class CustomTabActivity extends ChromeActivity {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+        return true;
     }
 
     /**
