@@ -892,15 +892,11 @@
           'chromium_win_pch%': 1
         }],
 
-        # Whether PDF plugin is enabled, and which options it supports.
+        # Whether PDF plugin is enabled.
         ['OS=="android" or OS=="ios" or (embedded==1 and chromecast==0)', {
           'enable_pdf%': 0,
-          'pdf_enable_v8%': 0,
-          'pdf_enable_xfa%': 0,
         }, {
           'enable_pdf%': 1,
-          'pdf_enable_v8%': 1,
-          'pdf_enable_xfa%': 1,
         }],
 
         ['chromeos==1 or OS=="android" or OS=="ios" or desktop_linux==1', {
@@ -1231,8 +1227,6 @@
     'order_text_section%': '<(order_text_section)',
     'enable_extensions%': '<(enable_extensions)',
     'enable_pdf%': '<(enable_pdf)',
-    'pdf_enable_v8%': '<(pdf_enable_v8)',
-    'pdf_enable_xfa%': '<(pdf_enable_xfa)',
     'enable_plugin_installation%': '<(enable_plugin_installation)',
     'enable_plugins%': '<(enable_plugins)',
     'enable_session_service%': '<(enable_session_service)',
