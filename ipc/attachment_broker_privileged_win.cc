@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include <tuple>
+
 #include "base/process/process.h"
 #include "ipc/attachment_broker_messages.h"
 #include "ipc/brokerable_attachment.h"
@@ -59,7 +61,7 @@ void AttachmentBrokerPrivilegedWin::OnDuplicateWinHandle(
   if (!AttachmentBrokerMsg_DuplicateWinHandle::Read(&message, &param))
     return;
   IPC::internal::HandleAttachmentWin::WireFormat wire_format =
-      base::get<0>(param);
+      std::get<0>(param);
 
   if (wire_format.destination_process == base::kNullProcessId) {
     LogError(NO_DESTINATION);

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "base/mac/scoped_mach_port.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/port_provider_mac.h"
@@ -183,7 +185,7 @@ void AttachmentBrokerPrivilegedMac::OnDuplicateMachPort(
     return;
   }
   IPC::internal::MachPortAttachmentMac::WireFormat wire_format =
-      base::get<0>(param);
+      std::get<0>(param);
 
   if (wire_format.destination_process == base::kNullProcessId) {
     LogError(NO_DESTINATION);

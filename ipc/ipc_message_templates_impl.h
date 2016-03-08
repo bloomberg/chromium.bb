@@ -5,37 +5,39 @@
 #ifndef IPC_IPC_MESSAGE_TEMPLATES_IMPL_H_
 #define IPC_IPC_MESSAGE_TEMPLATES_IMPL_H_
 
+#include <tuple>
+
 namespace IPC {
 
 template <typename... Ts>
 class ParamDeserializer : public MessageReplyDeserializer {
  public:
-  explicit ParamDeserializer(const base::Tuple<Ts&...>& out) : out_(out) {}
+  explicit ParamDeserializer(const std::tuple<Ts&...>& out) : out_(out) {}
 
   bool SerializeOutputParameters(const IPC::Message& msg,
                                  base::PickleIterator iter) override {
     return ReadParam(&msg, &iter, &out_);
   }
 
-  base::Tuple<Ts&...> out_;
+  std::tuple<Ts&...> out_;
 };
 
 template <typename Meta, typename... Ins>
-MessageT<Meta, base::Tuple<Ins...>, void>::MessageT(Routing routing,
+MessageT<Meta, std::tuple<Ins...>, void>::MessageT(Routing routing,
                                                     const Ins&... ins)
     : Message(routing.id, ID, PRIORITY_NORMAL) {
-  WriteParam(this, base::MakeRefTuple(ins...));
+  WriteParam(this, std::tie(ins...));
 }
 
 template <typename Meta, typename... Ins>
-bool MessageT<Meta, base::Tuple<Ins...>, void>::Read(const Message* msg,
+bool MessageT<Meta, std::tuple<Ins...>, void>::Read(const Message* msg,
                                                      Param* p) {
   base::PickleIterator iter(*msg);
   return ReadParam(msg, &iter, p);
 }
 
 template <typename Meta, typename... Ins>
-void MessageT<Meta, base::Tuple<Ins...>, void>::Log(std::string* name,
+void MessageT<Meta, std::tuple<Ins...>, void>::Log(std::string* name,
                                                     const Message* msg,
                                                     std::string* l) {
   if (name)
@@ -48,7 +50,7 @@ void MessageT<Meta, base::Tuple<Ins...>, void>::Log(std::string* name,
 }
 
 template <typename Meta, typename... Ins, typename... Outs>
-MessageT<Meta, base::Tuple<Ins...>, base::Tuple<Outs...>>::MessageT(
+MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>::MessageT(
     Routing routing,
     const Ins&... ins,
     Outs*... outs)
@@ -56,12 +58,12 @@ MessageT<Meta, base::Tuple<Ins...>, base::Tuple<Outs...>>::MessageT(
           routing.id,
           ID,
           PRIORITY_NORMAL,
-          new ParamDeserializer<Outs...>(base::MakeRefTuple(*outs...))) {
-  WriteParam(this, base::MakeRefTuple(ins...));
+          new ParamDeserializer<Outs...>(std::tie(*outs...))) {
+  WriteParam(this, std::tie(ins...));
 }
 
 template <typename Meta, typename... Ins, typename... Outs>
-bool MessageT<Meta, base::Tuple<Ins...>, base::Tuple<Outs...>>::ReadSendParam(
+bool MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>::ReadSendParam(
     const Message* msg,
     SendParam* p) {
   base::PickleIterator iter = SyncMessage::GetDataIterator(msg);
@@ -69,7 +71,7 @@ bool MessageT<Meta, base::Tuple<Ins...>, base::Tuple<Outs...>>::ReadSendParam(
 }
 
 template <typename Meta, typename... Ins, typename... Outs>
-bool MessageT<Meta, base::Tuple<Ins...>, base::Tuple<Outs...>>::ReadReplyParam(
+bool MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>::ReadReplyParam(
     const Message* msg,
     ReplyParam* p) {
   base::PickleIterator iter = SyncMessage::GetDataIterator(msg);
@@ -78,14 +80,14 @@ bool MessageT<Meta, base::Tuple<Ins...>, base::Tuple<Outs...>>::ReadReplyParam(
 
 template <typename Meta, typename... Ins, typename... Outs>
 void MessageT<Meta,
-              base::Tuple<Ins...>,
-              base::Tuple<Outs...>>::WriteReplyParams(Message* reply,
+              std::tuple<Ins...>,
+              std::tuple<Outs...>>::WriteReplyParams(Message* reply,
                                                       const Outs&... outs) {
-  WriteParam(reply, base::MakeRefTuple(outs...));
+  WriteParam(reply, std::tie(outs...));
 }
 
 template <typename Meta, typename... Ins, typename... Outs>
-void MessageT<Meta, base::Tuple<Ins...>, base::Tuple<Outs...>>::Log(
+void MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>::Log(
     std::string* name,
     const Message* msg,
     std::string* l) {

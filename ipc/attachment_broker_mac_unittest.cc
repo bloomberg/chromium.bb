@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <sys/mman.h>
 
+#include <tuple>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -111,7 +113,7 @@ base::SharedMemoryHandle GetSharedMemoryHandleFromMsg1(
     return base::SharedMemoryHandle();
   }
 
-  return base::get<1>(p);
+  return std::get<1>(p);
 }
 
 // |message| must be deserializable as a TestSharedMemoryHandleMsg2. Returns
@@ -132,8 +134,8 @@ bool GetSharedMemoryHandlesFromMsg2(const IPC::Message& message,
     return false;
   }
 
-  *handle1 = base::get<0>(p);
-  *handle2 = base::get<1>(p);
+  *handle1 = std::get<0>(p);
+  *handle2 = std::get<1>(p);
   return true;
 }
 
@@ -868,16 +870,16 @@ void SendPosixFDAndMachPortCallback(IPC::Sender* sender,
     return;
   }
 
-  base::SharedMemoryHandle handle1 = base::get<1>(p);
-  base::SharedMemoryHandle handle2 = base::get<3>(p);
+  base::SharedMemoryHandle handle1 = std::get<1>(p);
+  base::SharedMemoryHandle handle2 = std::get<3>(p);
   bool success1 = CheckContentsOfSharedMemoryHandle(handle1, kDataBuffer1) &&
                   CheckContentsOfSharedMemoryHandle(handle2, kDataBuffer2);
   if (!success1)
     LOG(ERROR) << "SharedMemoryHandles have wrong contents.";
 
   bool success2 =
-      CheckContentsOfFileDescriptor(base::get<0>(p), kDataBuffer3) &&
-      CheckContentsOfFileDescriptor(base::get<2>(p), kDataBuffer4);
+      CheckContentsOfFileDescriptor(std::get<0>(p), kDataBuffer3) &&
+      CheckContentsOfFileDescriptor(std::get<2>(p), kDataBuffer4);
   if (!success2)
     LOG(ERROR) << "FileDescriptors have wrong contents.";
 

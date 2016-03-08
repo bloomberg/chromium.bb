@@ -13,6 +13,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/containers/small_map.h"
@@ -24,7 +25,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/tuple.h"
 #include "build/build_config.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_message_start.h"
@@ -666,18 +666,18 @@ template <class A>
 struct ParamTraits<std::tuple<A>> {
   typedef std::tuple<A> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    GetParamSize(sizer, base::get<0>(p));
+    GetParamSize(sizer, std::get<0>(p));
   }
   static void Write(base::Pickle* m, const param_type& p) {
-    WriteParam(m, base::get<0>(p));
+    WriteParam(m, std::get<0>(p));
   }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r) {
-    return ReadParam(m, iter, &base::get<0>(*r));
+    return ReadParam(m, iter, &std::get<0>(*r));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(base::get<0>(p), l);
+    LogParam(std::get<0>(p), l);
   }
 };
 
@@ -685,23 +685,23 @@ template <class A, class B>
 struct ParamTraits<std::tuple<A, B>> {
   typedef std::tuple<A, B> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    GetParamSize(sizer, base::get<0>(p));
-    GetParamSize(sizer, base::get<1>(p));
+    GetParamSize(sizer, std::get<0>(p));
+    GetParamSize(sizer, std::get<1>(p));
   }
   static void Write(base::Pickle* m, const param_type& p) {
-    WriteParam(m, base::get<0>(p));
-    WriteParam(m, base::get<1>(p));
+    WriteParam(m, std::get<0>(p));
+    WriteParam(m, std::get<1>(p));
   }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r) {
-    return (ReadParam(m, iter, &base::get<0>(*r)) &&
-            ReadParam(m, iter, &base::get<1>(*r)));
+    return (ReadParam(m, iter, &std::get<0>(*r)) &&
+            ReadParam(m, iter, &std::get<1>(*r)));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(base::get<0>(p), l);
+    LogParam(std::get<0>(p), l);
     l->append(", ");
-    LogParam(base::get<1>(p), l);
+    LogParam(std::get<1>(p), l);
   }
 };
 
@@ -709,28 +709,28 @@ template <class A, class B, class C>
 struct ParamTraits<std::tuple<A, B, C>> {
   typedef std::tuple<A, B, C> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    GetParamSize(sizer, base::get<0>(p));
-    GetParamSize(sizer, base::get<1>(p));
-    GetParamSize(sizer, base::get<2>(p));
+    GetParamSize(sizer, std::get<0>(p));
+    GetParamSize(sizer, std::get<1>(p));
+    GetParamSize(sizer, std::get<2>(p));
   }
   static void Write(base::Pickle* m, const param_type& p) {
-    WriteParam(m, base::get<0>(p));
-    WriteParam(m, base::get<1>(p));
-    WriteParam(m, base::get<2>(p));
+    WriteParam(m, std::get<0>(p));
+    WriteParam(m, std::get<1>(p));
+    WriteParam(m, std::get<2>(p));
   }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r) {
-    return (ReadParam(m, iter, &base::get<0>(*r)) &&
-            ReadParam(m, iter, &base::get<1>(*r)) &&
-            ReadParam(m, iter, &base::get<2>(*r)));
+    return (ReadParam(m, iter, &std::get<0>(*r)) &&
+            ReadParam(m, iter, &std::get<1>(*r)) &&
+            ReadParam(m, iter, &std::get<2>(*r)));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(base::get<0>(p), l);
+    LogParam(std::get<0>(p), l);
     l->append(", ");
-    LogParam(base::get<1>(p), l);
+    LogParam(std::get<1>(p), l);
     l->append(", ");
-    LogParam(base::get<2>(p), l);
+    LogParam(std::get<2>(p), l);
   }
 };
 
@@ -738,33 +738,33 @@ template <class A, class B, class C, class D>
 struct ParamTraits<std::tuple<A, B, C, D>> {
   typedef std::tuple<A, B, C, D> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    GetParamSize(sizer, base::get<0>(p));
-    GetParamSize(sizer, base::get<1>(p));
-    GetParamSize(sizer, base::get<2>(p));
-    GetParamSize(sizer, base::get<3>(p));
+    GetParamSize(sizer, std::get<0>(p));
+    GetParamSize(sizer, std::get<1>(p));
+    GetParamSize(sizer, std::get<2>(p));
+    GetParamSize(sizer, std::get<3>(p));
   }
   static void Write(base::Pickle* m, const param_type& p) {
-    WriteParam(m, base::get<0>(p));
-    WriteParam(m, base::get<1>(p));
-    WriteParam(m, base::get<2>(p));
-    WriteParam(m, base::get<3>(p));
+    WriteParam(m, std::get<0>(p));
+    WriteParam(m, std::get<1>(p));
+    WriteParam(m, std::get<2>(p));
+    WriteParam(m, std::get<3>(p));
   }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r) {
-    return (ReadParam(m, iter, &base::get<0>(*r)) &&
-            ReadParam(m, iter, &base::get<1>(*r)) &&
-            ReadParam(m, iter, &base::get<2>(*r)) &&
-            ReadParam(m, iter, &base::get<3>(*r)));
+    return (ReadParam(m, iter, &std::get<0>(*r)) &&
+            ReadParam(m, iter, &std::get<1>(*r)) &&
+            ReadParam(m, iter, &std::get<2>(*r)) &&
+            ReadParam(m, iter, &std::get<3>(*r)));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(base::get<0>(p), l);
+    LogParam(std::get<0>(p), l);
     l->append(", ");
-    LogParam(base::get<1>(p), l);
+    LogParam(std::get<1>(p), l);
     l->append(", ");
-    LogParam(base::get<2>(p), l);
+    LogParam(std::get<2>(p), l);
     l->append(", ");
-    LogParam(base::get<3>(p), l);
+    LogParam(std::get<3>(p), l);
   }
 };
 
@@ -772,38 +772,38 @@ template <class A, class B, class C, class D, class E>
 struct ParamTraits<std::tuple<A, B, C, D, E>> {
   typedef std::tuple<A, B, C, D, E> param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p) {
-    GetParamSize(sizer, base::get<0>(p));
-    GetParamSize(sizer, base::get<1>(p));
-    GetParamSize(sizer, base::get<2>(p));
-    GetParamSize(sizer, base::get<3>(p));
-    GetParamSize(sizer, base::get<4>(p));
+    GetParamSize(sizer, std::get<0>(p));
+    GetParamSize(sizer, std::get<1>(p));
+    GetParamSize(sizer, std::get<2>(p));
+    GetParamSize(sizer, std::get<3>(p));
+    GetParamSize(sizer, std::get<4>(p));
   }
   static void Write(base::Pickle* m, const param_type& p) {
-    WriteParam(m, base::get<0>(p));
-    WriteParam(m, base::get<1>(p));
-    WriteParam(m, base::get<2>(p));
-    WriteParam(m, base::get<3>(p));
-    WriteParam(m, base::get<4>(p));
+    WriteParam(m, std::get<0>(p));
+    WriteParam(m, std::get<1>(p));
+    WriteParam(m, std::get<2>(p));
+    WriteParam(m, std::get<3>(p));
+    WriteParam(m, std::get<4>(p));
   }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r) {
-    return (ReadParam(m, iter, &base::get<0>(*r)) &&
-            ReadParam(m, iter, &base::get<1>(*r)) &&
-            ReadParam(m, iter, &base::get<2>(*r)) &&
-            ReadParam(m, iter, &base::get<3>(*r)) &&
-            ReadParam(m, iter, &base::get<4>(*r)));
+    return (ReadParam(m, iter, &std::get<0>(*r)) &&
+            ReadParam(m, iter, &std::get<1>(*r)) &&
+            ReadParam(m, iter, &std::get<2>(*r)) &&
+            ReadParam(m, iter, &std::get<3>(*r)) &&
+            ReadParam(m, iter, &std::get<4>(*r)));
   }
   static void Log(const param_type& p, std::string* l) {
-    LogParam(base::get<0>(p), l);
+    LogParam(std::get<0>(p), l);
     l->append(", ");
-    LogParam(base::get<1>(p), l);
+    LogParam(std::get<1>(p), l);
     l->append(", ");
-    LogParam(base::get<2>(p), l);
+    LogParam(std::get<2>(p), l);
     l->append(", ");
-    LogParam(base::get<3>(p), l);
+    LogParam(std::get<3>(p), l);
     l->append(", ");
-    LogParam(base::get<4>(p), l);
+    LogParam(std::get<4>(p), l);
   }
 };
 
