@@ -318,8 +318,14 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
   }
 };
 
+// Flakily times out on ChromeOS MSAN bots. See https://crbug.com/592893.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_KeyEventOnLockScreen DISABLED_KeyEventOnLockScreen
+#else
+#define MAYBE_KeyEventOnLockScreen KeyEventOnLockScreen
+#endif
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
-                       KeyEventOnLockScreen) {
+                       MAYBE_KeyEventOnLockScreen) {
   scoped_ptr<ScreenLockerTester> tester(ScreenLocker::GetTester());
   // Log in.
   user_manager::UserManager::Get()->UserLoggedIn(
