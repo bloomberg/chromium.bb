@@ -2448,12 +2448,6 @@ bool DXVAVideoDecodeAccelerator::SetTransformOutputType(
         RETURN_ON_HR_FAILURE(hr, "Failed to set media type attributes", false);
       }
       hr = transform->SetOutputType(0, media_type.get(), 0);  // No flags
-      if (FAILED(hr)) {
-        base::debug::Alias(&hr);
-        // TODO(ananta)
-        // Remove this CHECK when this stabilizes in the field.
-        CHECK(false);
-      }
       RETURN_ON_HR_FAILURE(hr, "Failed to set output type", false);
       return true;
     }
