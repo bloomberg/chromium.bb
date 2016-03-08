@@ -84,6 +84,18 @@ int InputMethodEngine::CreateImeWindow(
   return ime_window->GetFrameId();
 }
 
+void InputMethodEngine::ShowImeWindow(int window_id) {
+  ui::ImeWindow* ime_window = FindWindowById(window_id);
+  if (ime_window)
+    ime_window->Show();
+}
+
+void InputMethodEngine::HideImeWindow(int window_id) {
+  ui::ImeWindow* ime_window = FindWindowById(window_id);
+  if (ime_window)
+    ime_window->Hide();
+}
+
 void InputMethodEngine::CloseImeWindows() {
   if (follow_cursor_window_)
     follow_cursor_window_->Close();
@@ -164,6 +176,18 @@ void InputMethodEngine::OnWindowDestroyed(ui::ImeWindow* ime_window) {
     if (it != normal_windows_.end())
       normal_windows_.erase(it);
   }
+}
+
+ui::ImeWindow* InputMethodEngine::FindWindowById(int window_id) const {
+  if (follow_cursor_window_ &&
+      follow_cursor_window_->GetFrameId() == window_id) {
+    return follow_cursor_window_;
+  }
+  for (auto ime_window : normal_windows_) {
+    if (ime_window->GetFrameId() == window_id)
+      return ime_window;
+  }
+  return nullptr;
 }
 
 }  // namespace input_method

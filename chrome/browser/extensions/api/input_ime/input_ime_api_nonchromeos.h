@@ -53,6 +53,28 @@ class InputImeCreateWindowFunction : public UIThreadExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
+class InputImeShowWindowFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.showWindow", INPUT_IME_SHOWWINDOW)
+
+ protected:
+  ~InputImeShowWindowFunction() override {}
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+};
+
+class InputImeHideWindowFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.hideWindow", INPUT_IME_HIDEWINDOW)
+
+ protected:
+  ~InputImeHideWindowFunction() override {}
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+};
+
 class InputImeActivateFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.activate", INPUT_IME_ACTIVATE)

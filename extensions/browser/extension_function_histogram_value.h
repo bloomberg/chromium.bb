@@ -1169,6 +1169,8 @@ enum HistogramValue {
   ENTERPRISE_PLATFORMKEYS_CHALLENGEMACHINEKEY,
   ENTERPRISE_PLATFORMKEYS_CHALLENGEUSERKEY,
   INPUTMETHODPRIVATE_NOTIFYIMEMENUITEMACTIVATED,
+  INPUT_IME_SHOWWINDOW,
+  INPUT_IME_HIDEWINDOW,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

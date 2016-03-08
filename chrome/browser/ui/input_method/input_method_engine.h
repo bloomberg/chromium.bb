@@ -39,7 +39,8 @@ class InputMethodEngine : public InputMethodEngineBase,
                       ui::ImeWindow::Mode mode,
                       const gfx::Rect& bounds,
                       std::string* error);
-
+  void ShowImeWindow(int window_id);
+  void HideImeWindow(int window_id);
   void CloseImeWindows();
 
  private:
@@ -56,6 +57,8 @@ class InputMethodEngine : public InputMethodEngineBase,
 
   // ui::ImeWindowObserver:
   void OnWindowDestroyed(ui::ImeWindow* ime_window) override;
+
+  ui::ImeWindow* FindWindowById(int window_id) const;
 
   // Holds the IME window instances for properly closing in the destructor.
   // The follow-cursor window is singleton.

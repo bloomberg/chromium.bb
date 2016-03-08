@@ -51,6 +51,7 @@ binding.registerCustomHook(function(api) {
     if (windowParams && windowParams.frameId) {
       view = appWindowNatives.GetFrame(
           windowParams.frameId, false /* notifyBrowser */);
+      view.id = windowParams.frameId;
     }
     callback(view);
   });

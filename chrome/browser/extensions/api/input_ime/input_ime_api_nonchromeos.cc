@@ -239,4 +239,36 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
   return RespondNow(OneArgument(std::move(result)));
 }
 
+ExtensionFunction::ResponseAction InputImeShowWindowFunction::Run() {
+  if (!IsInputImeEnabled())
+    return RespondNow(Error(kErrorAPIDisabled));
+
+  InputMethodEngine* engine =
+      GetActiveEngine(browser_context(), extension_id());
+  if (!engine)
+    return RespondNow(Error(kErrorNoActiveEngine));
+
+  scoped_ptr<api::input_ime::ShowWindow::Params> params(
+      api::input_ime::ShowWindow::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  engine->ShowImeWindow(params->window_id);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction InputImeHideWindowFunction::Run() {
+  if (!IsInputImeEnabled())
+    return RespondNow(Error(kErrorAPIDisabled));
+
+  InputMethodEngine* engine =
+      GetActiveEngine(browser_context(), extension_id());
+  if (!engine)
+    return RespondNow(Error(kErrorNoActiveEngine));
+
+  scoped_ptr<api::input_ime::HideWindow::Params> params(
+      api::input_ime::HideWindow::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  engine->HideImeWindow(params->window_id);
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

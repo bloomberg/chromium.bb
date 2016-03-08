@@ -593,9 +593,49 @@
                 "name": "windowObject",
                 "type": "object",
                 "isInstanceOf": "Window",
-                "description": "The JavaScript 'window' object of the newly created IME window."
+                "description": "The JavaScript 'window' object of the newly created IME window. It contains the additional 'id' property for the parameters of the other functions like showWindow/hideWindow."
               }
             ]
+           }
+         ]
+      },
+      {
+        "name": "showWindow",
+        "type": "function",
+        "description": "Shows the IME window. This makes the hidden window visible.",
+        "platforms": ["win", "linux"],
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "windowId",
+            "description": "The ID of the IME window."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes.",
+            "parameters": []
+           }
+         ]
+      },
+      {
+        "name": "hideWindow",
+        "type": "function",
+        "description": "Hides the IME window. This doesn't close the window. Instead, it makes the window invisible. The extension can cache the window and show/hide it for better performance.",
+        "platforms": ["win", "linux"],
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "windowId",
+            "description": "The ID of the IME window."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes.",
+            "parameters": []
            }
          ]
       },

@@ -66221,6 +66221,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1108" label="ENTERPRISE_PLATFORMKEYS_CHALLENGEMACHINEKEY"/>
   <int value="1109" label="ENTERPRISE_PLATFORMKEYS_CHALLENGEUSERKEY"/>
   <int value="1110" label="INPUTMETHODPRIVATE_NOTIFYIMEMENUITEMACTIVATED"/>
+  <int value="1111" label="INPUT_IME_SHOWWINDOW"/>
+  <int value="1112" label="INPUT_IME_HIDEWINDOW"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
