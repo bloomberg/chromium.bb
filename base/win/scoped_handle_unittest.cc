@@ -51,7 +51,7 @@ TEST(ScopedHandleTest, ActiveVerifierTrackedHasBeenClosed) {
     base::win::ScopedHandle handle_holder(handle);
     ntclose(handle);
     // Destructing a ScopedHandle with an illegally closed handle should fail.
-  }, "CloseHandle failed.");
+  }, "");
 }
 
 TEST(ScopedHandleTest, ActiveVerifierDoubleTracking) {
@@ -62,7 +62,7 @@ TEST(ScopedHandleTest, ActiveVerifierDoubleTracking) {
 
   ASSERT_DEATH({
     base::win::ScopedHandle handle_holder2(handle);
-  }, "Attempt to start tracking already tracked handle.");
+  }, "");
 }
 
 TEST(ScopedHandleTest, ActiveVerifierWrongOwner) {
@@ -73,7 +73,7 @@ TEST(ScopedHandleTest, ActiveVerifierWrongOwner) {
   ASSERT_DEATH({
     base::win::ScopedHandle handle_holder2;
     handle_holder2.handle_ = handle;
-  }, "Attempting to close a handle not owned by opener.");
+  }, "");
   ASSERT_TRUE(handle_holder.IsValid());
   handle_holder.Close();
 }
@@ -85,7 +85,7 @@ TEST(ScopedHandleTest, ActiveVerifierUntrackedHandle) {
   ASSERT_DEATH({
     base::win::ScopedHandle handle_holder;
     handle_holder.handle_ = handle;
-  }, "Attempting to close an untracked handle.");
+  }, "");
 
   ASSERT_TRUE(::CloseHandle(handle));
 }

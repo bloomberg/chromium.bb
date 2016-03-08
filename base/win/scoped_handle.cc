@@ -46,7 +46,7 @@ base::LazyInstance<NativeLock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
 
 bool CloseHandleWrapper(HANDLE handle) {
   if (!::CloseHandle(handle))
-    LOG(FATAL) << "CloseHandle failed.";
+    CHECK(false);  // CloseHandle failed.
   return true;
 }
 
@@ -168,7 +168,7 @@ void ActiveVerifier::StartTracking(HANDLE handle, const void* owner,
   if (!result.second) {
     Info other = result.first->second;
     base::debug::Alias(&other);
-    LOG(FATAL) << "Attempt to start tracking already tracked handle.";
+    CHECK(false);  // Attempt to start tracking already tracked handle.
   }
 }
 
@@ -180,12 +180,12 @@ void ActiveVerifier::StopTracking(HANDLE handle, const void* owner,
   AutoNativeLock lock(*lock_);
   HandleMap::iterator i = map_.find(handle);
   if (i == map_.end())
-    LOG(FATAL) << "Attempting to close an untracked handle.";
+    CHECK(false);  // Attempting to close an untracked handle.
 
   Info other = i->second;
   if (other.owner != owner) {
     base::debug::Alias(&other);
-    LOG(FATAL) << "Attempting to close a handle not owned by opener.";
+    CHECK(false);  // Attempting to close a handle not owned by opener.
   }
 
   map_.erase(i);
@@ -209,7 +209,7 @@ void ActiveVerifier::OnHandleBeingClosed(HANDLE handle) {
 
   Info other = i->second;
   base::debug::Alias(&other);
-  LOG(FATAL) << "CloseHandle called on tracked handle.";
+  CHECK(false);  // CloseHandle called on tracked handle.
 }
 
 }  // namespace
