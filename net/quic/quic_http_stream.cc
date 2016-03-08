@@ -9,6 +9,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -151,6 +152,9 @@ int QuicHttpStream::DoStreamRequest() {
       base::Bind(&QuicHttpStream::OnStreamReady, weak_factory_.GetWeakPtr()));
   if (rv == OK) {
     stream_->SetDelegate(this);
+    if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
+      stream_->DisableConnectionMigration();
+    }
     if (response_info_) {
       next_state_ = STATE_SET_REQUEST_PRIORITY;
     }
@@ -175,6 +179,9 @@ void QuicHttpStream::OnStreamReady(int rv) {
   DCHECK(rv == OK || !stream_);
   if (rv == OK) {
     stream_->SetDelegate(this);
+    if (request_info_->load_flags & LOAD_DISABLE_CONNECTION_MIGRATION) {
+      stream_->DisableConnectionMigration();
+    }
     if (response_info_) {
       // This happens in the case of a asynchronous push rendezvous
       // that ultimately fails (e.g. vary failure).  |response_info_|

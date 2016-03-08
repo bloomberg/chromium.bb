@@ -78327,6 +78327,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="INTERNAL_ERROR"/>
   <int value="4" label="TOO_MANY_CHANGES"/>
   <int value="5" label="SUCCESS"/>
+  <int value="6" label="NON_MIGRATABLE_STREAM"/>
 </enum>
 
 <enum name="QuicDisabledReason" type="int">
@@ -78448,6 +78449,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="81" label="CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS"/>
   <int value="82" label="CONNECTION_MIGRATION_TOO_MANY_CHANGES"/>
   <int value="83" label="CONNECTION_MIGRATION_NO_NEW_NETWORK"/>
+  <int value="84" label="CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM"/>
 </enum>
 
 <enum name="QuicHandshakeFailureReason" type="int">

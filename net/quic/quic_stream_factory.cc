@@ -81,6 +81,7 @@ enum QuicConnectionMigrationStatus {
   MIGRATION_STATUS_INTERNAL_ERROR,
   MIGRATION_STATUS_TOO_MANY_CHANGES,
   MIGRATION_STATUS_SUCCESS,
+  MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
   MIGRATION_STATUS_MAX
 };
 
@@ -1273,6 +1274,7 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(NetworkHandle network,
     }
     // If session has active streams, mark it as going away.
     OnSessionGoingAway(session);
+
     if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
       // No new network was found.
       if (force_close) {
@@ -1281,13 +1283,25 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(NetworkHandle network,
       }
       continue;
     }
+    if (session->HasNonMigratableStreams()) {
+      // Do not migrate sessions with non-migratable streams.
+      if (force_close) {
+        // Close sessions with non-migratable streams.
+        session->CloseSessionOnError(
+            ERR_NETWORK_CHANGED,
+            QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM);
+        HistogramMigrationStatus(MIGRATION_STATUS_NON_MIGRATABLE_STREAM);
+      }
+      continue;
+    }
+
     MigrateSessionToNetwork(session, new_network);
   }
 }
 
 void QuicStreamFactory::MaybeMigrateSessionEarly(
     QuicChromiumClientSession* session) {
-  if (!migrate_sessions_early_) {
+  if (!migrate_sessions_early_ || session->HasNonMigratableStreams()) {
     return;
   }
   NetworkHandle new_network =

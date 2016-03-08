@@ -675,9 +675,11 @@ enum QuicErrorCode {
   // Connection migration was attempted, but there was no new network to
   // migrate to.
   QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK = 83,
+  // Network changed, but connection had one or more non-migratable streams.
+  QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM = 84,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 84,
+  QUIC_LAST_ERROR = 85,
 };
 
 // Must be updated any time a QuicErrorCode is deprecated.

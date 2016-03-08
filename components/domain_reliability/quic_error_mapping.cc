@@ -213,6 +213,9 @@ const struct QuicErrorMapping {
   // migrate to.
   { net::QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK,
     "quic.connection_migration_no_new_network" },
+  // Network changed, but connection had one or more non-migratable streams.
+  { net::QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM,
+    "quic.connection_migration_non_migratable_stream" },
 
   // No error. Used as bound while iterating.
   { net::QUIC_LAST_ERROR, "quic.last_error"}

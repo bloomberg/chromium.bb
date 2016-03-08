@@ -476,6 +476,16 @@ TEST_P(QuicHttpStreamTest, CanReuseConnection) {
   EXPECT_FALSE(stream_->CanReuseConnection());
 }
 
+TEST_P(QuicHttpStreamTest, DisableConnectionMigrationForStream) {
+  request_.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
+  Initialize();
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY, net_log_,
+                                          callback_.callback()));
+  QuicChromiumClientStream* client_stream =
+      QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
+  EXPECT_FALSE(client_stream->can_migrate());
+}
+
 TEST_P(QuicHttpStreamTest, GetRequest) {
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_header_frame_length;

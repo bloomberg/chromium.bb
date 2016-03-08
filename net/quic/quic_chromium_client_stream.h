@@ -94,6 +94,12 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
 
   const BoundNetLog& net_log() const { return net_log_; }
 
+  // Prevents this stream from migrating to a new network. May cause other
+  // concurrent streams within the session to also not migrate.
+  void DisableConnectionMigration();
+
+  bool can_migrate() { return can_migrate_; }
+
   using QuicSpdyStream::HasBufferedData;
 
  private:
@@ -113,6 +119,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   CompletionCallback callback_;
 
   QuicClientSessionBase* session_;
+
+  // Set to false if this stream to not be migrated during connection migration.
+  bool can_migrate_;
 
   // Holds notifications generated before delegate_ is set.
   std::deque<base::Closure> delegate_tasks_;

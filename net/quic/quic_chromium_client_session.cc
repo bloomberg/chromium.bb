@@ -1109,4 +1109,12 @@ bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {
   return CanPool(hostname, server_id_.privacy_mode());
 }
 
+bool QuicChromiumClientSession::HasNonMigratableStreams() const {
+  for (const auto& stream : dynamic_streams()) {
+    if (!static_cast<QuicChromiumClientStream*>(stream.second)->can_migrate())
+      return true;
+  }
+  return false;
+}
+
 }  // namespace net

@@ -25,6 +25,7 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       delegate_(nullptr),
       headers_delivered_(false),
       session_(session),
+      can_migrate_(true),
       weak_factory_(this) {}
 
 QuicChromiumClientStream::~QuicChromiumClientStream() {
@@ -215,6 +216,10 @@ void QuicChromiumClientStream::RunOrBuffer(base::Closure closure) {
   } else {
     delegate_tasks_.push_back(closure);
   }
+}
+
+void QuicChromiumClientStream::DisableConnectionMigration() {
+  can_migrate_ = false;
 }
 
 }  // namespace net
