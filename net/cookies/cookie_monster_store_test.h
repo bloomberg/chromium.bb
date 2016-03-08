@@ -51,9 +51,11 @@ class LoadedCallbackTask
   DISALLOW_COPY_AND_ASSIGN(LoadedCallbackTask);
 };  // Wrapper class LoadedCallbackTask
 
-// Describes a call to one of the 3 functions of PersistentCookieStore.
+// Describes a call to one of the 5 functions of PersistentCookieStore.
 struct CookieStoreCommand {
   enum Type {
+    LOAD,
+    LOAD_COOKIES_FOR_KEY,
     // UPDATE_ACCESS_TIME is not included in this list, because get cookie
     // commands may or may not end updating the access time, unless they have
     // the option set not to do so.
@@ -61,10 +63,27 @@ struct CookieStoreCommand {
     REMOVE,
   };
 
-  CookieStoreCommand(Type type, const CanonicalCookie& cookie)
-      : type(type), cookie(cookie) {}
+  // Constructor for LOAD and LOAD_COOKIES_FOR_KEY calls.  |key| should be empty
+  // for LOAD_COOKIES_FOR_KEY.
+  CookieStoreCommand(Type type,
+                     const CookieMonster::PersistentCookieStore::LoadedCallback&
+                         loaded_callback,
+                     const std::string& key);
+
+  // Constructor for ADD, UPDATE_ACCESS_TIME, and REMOVE calls.
+  CookieStoreCommand(Type type, const CanonicalCookie& cookie);
+
+  ~CookieStoreCommand();
 
   Type type;
+
+  // Only non-null for LOAD and LOAD_COOKIES_FOR_KEY.
+  CookieMonster::PersistentCookieStore::LoadedCallback loaded_callback;
+
+  // Only non-empty for LOAD_COOKIES_FOR_KEY.
+  std::string key;
+
+  // Only non-null for ADD, UPDATE_ACCESS_TIME, and REMOVE.
   CanonicalCookie cookie;
 };
 
@@ -76,6 +95,12 @@ class MockPersistentCookieStore : public CookieMonster::PersistentCookieStore {
   typedef std::vector<CookieStoreCommand> CommandList;
 
   MockPersistentCookieStore();
+
+  // When set, Load() and LoadCookiesForKey() calls are store in the command
+  // list, rather than being automatically executed. Defaults to false.
+  void set_store_load_commands(bool store_load_commands) {
+    store_load_commands_ = store_load_commands;
+  }
 
   void SetLoadExpectation(bool return_value,
                           const std::vector<CanonicalCookie*>& result);
@@ -102,6 +127,8 @@ class MockPersistentCookieStore : public CookieMonster::PersistentCookieStore {
 
  private:
   CommandList commands_;
+
+  bool store_load_commands_;
 
   // Deferred result to use when Load() is called.
   bool load_return_value_;

@@ -349,6 +349,7 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
       started_fetching_all_cookies_(false),
       finished_fetching_all_cookies_(false),
       fetch_strategy_(kUnknownFetch),
+      seen_global_task_(false),
       store_(store),
       last_access_threshold_(base::TimeDelta::FromMilliseconds(
           last_access_threshold_milliseconds)),
@@ -1444,11 +1445,26 @@ void CookieMonster::StoreLoadedCookies(
 void CookieMonster::InvokeQueue() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // Move all per-key tasks into the global queue, if there are any.  This is
+  // protection about a race where the store learns about all cookies loading
+  // before it learned about the cookies for a key loading.
+
+  // Needed to prevent any recursively queued tasks from going back into the
+  // per-key queues.
+  seen_global_task_ = true;
+  for (const auto& tasks_for_key : tasks_pending_for_key_) {
+    tasks_pending_.insert(tasks_pending_.begin(), tasks_for_key.second.begin(),
+                          tasks_for_key.second.end());
+  }
+  tasks_pending_for_key_.clear();
+
   while (!tasks_pending_.empty()) {
     scoped_refptr<CookieMonsterTask> request_task = tasks_pending_.front();
-    tasks_pending_.pop();
+    tasks_pending_.pop_front();
     request_task->Run();
   }
+
+  DCHECK(tasks_pending_for_key_.empty());
 
   finished_fetching_all_cookies_ = true;
   creation_times_.clear();
@@ -2223,9 +2239,10 @@ void CookieMonster::DoCookieTask(
 
   MarkCookieStoreAsInitialized();
   FetchAllCookiesIfNecessary();
+  seen_global_task_ = true;
 
   if (!finished_fetching_all_cookies_ && store_.get()) {
-    tasks_pending_.push(task_item);
+    tasks_pending_.push_back(task_item);
     return;
   }
 
@@ -2235,8 +2252,6 @@ void CookieMonster::DoCookieTask(
 void CookieMonster::DoCookieTaskForURL(
     const scoped_refptr<CookieMonsterTask>& task_item,
     const GURL& url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
   MarkCookieStoreAsInitialized();
   if (ShouldFetchAllCookiesWhenFetchingAnyCookie())
     FetchAllCookiesIfNecessary();
@@ -2244,6 +2259,15 @@ void CookieMonster::DoCookieTaskForURL(
   // If cookies for the requested domain key (eTLD+1) have been loaded from DB
   // then run the task, otherwise load from DB.
   if (!finished_fetching_all_cookies_ && store_.get()) {
+    // If a global task has been previously seen, queue the task as a global
+    // task. Note that the CookieMonster may be in the middle of executing
+    // the global queue, |tasks_pending_| may be empty, which is why another
+    // bool is needed.
+    if (seen_global_task_) {
+      tasks_pending_.push_back(task_item);
+      return;
+    }
+
     // Checks if the domain key has been loaded.
     std::string key(cookie_util::GetEffectiveDomain(url.scheme(), url.host()));
     if (keys_loaded_.find(key) == keys_loaded_.end()) {

@@ -2003,6 +2003,199 @@ TEST_F(CookieMonsterTest, MAYBE_GarbageCollectionTriggers) {
   }
 }
 
+// Tests that if the main load event happens before the loaded event for a
+// particular key, the tasks for that key run first.
+TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
+  const GURL kUrl = GURL(kTopLevelDomainPlus1);
+
+  scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
+  store->set_store_load_commands(true);
+  scoped_ptr<CookieMonster> cm(new CookieMonster(store.get(), nullptr));
+
+  // Get all cookies task that queues a task to set a cookie when executed.
+  ResultSavingCookieCallback<bool> set_cookie_callback;
+  cm->SetCookieWithOptionsAsync(
+      kUrl, "a=b", CookieOptions(),
+      base::Bind(&ResultSavingCookieCallback<bool>::Run,
+                 base::Unretained(&set_cookie_callback)));
+
+  GetCookieListCallback get_cookie_list_callback1;
+  cm->GetAllCookiesAsync(
+      base::Bind(&GetCookieListCallback::Run,
+                 base::Unretained(&get_cookie_list_callback1)));
+
+  // Two load events should have been queued.
+  ASSERT_EQ(2u, store->commands().size());
+  ASSERT_EQ(CookieStoreCommand::LOAD, store->commands()[0].type);
+  ASSERT_EQ(CookieStoreCommand::LOAD_COOKIES_FOR_KEY,
+            store->commands()[1].type);
+
+  // The main load completes first (With no cookies).
+  store->commands()[0].loaded_callback.Run(std::vector<CanonicalCookie*>());
+
+  // The tasks should run in order, and the get should see the cookies.
+
+  set_cookie_callback.WaitUntilDone();
+  EXPECT_TRUE(set_cookie_callback.result());
+
+  get_cookie_list_callback1.WaitUntilDone();
+  EXPECT_EQ(1u, get_cookie_list_callback1.cookies().size());
+
+  // The loaded for key event completes late, with not cookies (Since they
+  // were already loaded).
+  store->commands()[1].loaded_callback.Run(std::vector<CanonicalCookie*>());
+
+  // The just set cookie should still be in the store.
+  GetCookieListCallback get_cookie_list_callback2;
+  cm->GetAllCookiesAsync(
+      base::Bind(&GetCookieListCallback::Run,
+                 base::Unretained(&get_cookie_list_callback2)));
+  get_cookie_list_callback2.WaitUntilDone();
+  EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
+}
+
+// Tests that case that DeleteAll is waiting for load to complete, and then a
+// get is queued. The get should wait to run until after all the cookies are
+// retrieved, and should return nothing, since all cookies were just deleted.
+TEST_F(CookieMonsterTest, WhileLoadingDeleteAllGetForURL) {
+  const GURL kUrl = GURL(kTopLevelDomainPlus1);
+
+  scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
+  store->set_store_load_commands(true);
+  scoped_ptr<CookieMonster> cm(new CookieMonster(store.get(), nullptr));
+
+  ResultSavingCookieCallback<int> delete_callback;
+  cm->DeleteAllAsync(base::Bind(&ResultSavingCookieCallback<int>::Run,
+                                base::Unretained(&delete_callback)));
+
+  GetCookieListCallback get_cookie_list_callback;
+  cm->GetCookieListWithOptionsAsync(
+      kUrl, CookieOptions(),
+      base::Bind(&GetCookieListCallback::Run,
+                 base::Unretained(&get_cookie_list_callback)));
+
+  // Only the main load should have been queued.
+  ASSERT_EQ(1u, store->commands().size());
+  ASSERT_EQ(CookieStoreCommand::LOAD, store->commands()[0].type);
+
+  std::vector<CanonicalCookie*> cookies;
+  // When passed to the CookieMonster, it takes ownership of the pointed to
+  // cookies.
+  cookies.push_back(
+      CanonicalCookie::Create(kUrl, "a=b", base::Time(), CookieOptions())
+          .release());
+  ASSERT_TRUE(cookies[0]);
+  store->commands()[0].loaded_callback.Run(cookies);
+
+  delete_callback.WaitUntilDone();
+  EXPECT_EQ(1, delete_callback.result());
+
+  get_cookie_list_callback.WaitUntilDone();
+  EXPECT_EQ(0u, get_cookie_list_callback.cookies().size());
+}
+
+// Tests that a set cookie call sandwiched between two get all cookies, all
+// before load completes, affects the first but not the second. The set should
+// also not trigger a LoadCookiesForKey (As that could complete only after the
+// main load for the store).
+TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
+  const GURL kUrl = GURL(kTopLevelDomainPlus1);
+
+  scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
+  store->set_store_load_commands(true);
+  scoped_ptr<CookieMonster> cm(new CookieMonster(store.get(), nullptr));
+
+  GetCookieListCallback get_cookie_list_callback1;
+  cm->GetAllCookiesAsync(
+      base::Bind(&GetCookieListCallback::Run,
+                 base::Unretained(&get_cookie_list_callback1)));
+
+  ResultSavingCookieCallback<bool> set_cookie_callback;
+  cm->SetCookieWithOptionsAsync(
+      kUrl, "a=b", CookieOptions(),
+      base::Bind(&ResultSavingCookieCallback<bool>::Run,
+                 base::Unretained(&set_cookie_callback)));
+
+  GetCookieListCallback get_cookie_list_callback2;
+  cm->GetAllCookiesAsync(
+      base::Bind(&GetCookieListCallback::Run,
+                 base::Unretained(&get_cookie_list_callback2)));
+
+  // Only the main load should have been queued.
+  ASSERT_EQ(1u, store->commands().size());
+  ASSERT_EQ(CookieStoreCommand::LOAD, store->commands()[0].type);
+
+  // The load completes (With no cookies).
+  store->commands()[0].loaded_callback.Run(std::vector<CanonicalCookie*>());
+
+  get_cookie_list_callback1.WaitUntilDone();
+  EXPECT_EQ(0u, get_cookie_list_callback1.cookies().size());
+
+  set_cookie_callback.WaitUntilDone();
+  EXPECT_TRUE(set_cookie_callback.result());
+
+  get_cookie_list_callback2.WaitUntilDone();
+  EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
+}
+
+namespace {
+
+void RunClosureOnCookieListReceived(const base::Closure& closure,
+                                    const CookieList& cookie_list) {
+  closure.Run();
+}
+
+}  // namespace
+
+// Tests that if a single cookie task is queued as a result of a task performed
+// on all cookies when loading completes, it will be run after any already
+// queued tasks.
+TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
+  const GURL kUrl = GURL(kTopLevelDomainPlus1);
+
+  scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
+  store->set_store_load_commands(true);
+  scoped_ptr<CookieMonster> cm(new CookieMonster(store.get(), nullptr));
+
+  // Get all cookies task that queues a task to set a cookie when executed.
+  ResultSavingCookieCallback<bool> set_cookie_callback;
+  cm->GetAllCookiesAsync(base::Bind(
+      &RunClosureOnCookieListReceived,
+      base::Bind(&CookieStore::SetCookieWithOptionsAsync,
+                 base::Unretained(cm.get()), kUrl, "a=b", CookieOptions(),
+                 base::Bind(&ResultSavingCookieCallback<bool>::Run,
+                            base::Unretained(&set_cookie_callback)))));
+
+  // Get cookie task. Queued before the delete task is executed, so should not
+  // see the set cookie.
+  GetCookieListCallback get_cookie_list_callback1;
+  cm->GetAllCookiesAsync(
+      base::Bind(&GetCookieListCallback::Run,
+                 base::Unretained(&get_cookie_list_callback1)));
+
+  // Only the main load should have been queued.
+  ASSERT_EQ(1u, store->commands().size());
+  ASSERT_EQ(CookieStoreCommand::LOAD, store->commands()[0].type);
+
+  // The load completes.
+  store->commands()[0].loaded_callback.Run(std::vector<CanonicalCookie*>());
+
+  // The get cookies call should see no cookies set.
+  get_cookie_list_callback1.WaitUntilDone();
+  EXPECT_EQ(0u, get_cookie_list_callback1.cookies().size());
+
+  set_cookie_callback.WaitUntilDone();
+  EXPECT_TRUE(set_cookie_callback.result());
+
+  // A subsequent get cookies call should see the new cookie.
+  GetCookieListCallback get_cookie_list_callback2;
+  cm->GetAllCookiesAsync(
+      base::Bind(&GetCookieListCallback::Run,
+                 base::Unretained(&get_cookie_list_callback2)));
+  get_cookie_list_callback2.WaitUntilDone();
+  EXPECT_EQ(1u, get_cookie_list_callback2.cookies().size());
+}
+
 namespace {
 
 // Mock PersistentCookieStore that keeps track of the number of Flush() calls.

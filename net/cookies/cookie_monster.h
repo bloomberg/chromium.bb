@@ -652,7 +652,14 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Queues tasks that are blocked until all cookies are loaded from the backend
   // store.
-  std::queue<scoped_refptr<CookieMonsterTask>> tasks_pending_;
+  std::deque<scoped_refptr<CookieMonsterTask>> tasks_pending_;
+
+  // Once a global cookie task has been seen, all per-key tasks must be put in
+  // |tasks_pending_| instead of |tasks_pending_for_key_| to ensure a reasonable
+  // view of the cookie store. This more to ensure fancy cookie export/import
+  // code has a consistent view of the CookieStore, rather than out of concern
+  // for typical use.
+  bool seen_global_task_;
 
   scoped_refptr<PersistentCookieStore> store_;
 

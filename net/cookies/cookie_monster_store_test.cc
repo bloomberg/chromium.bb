@@ -25,9 +25,19 @@ LoadedCallbackTask::LoadedCallbackTask(LoadedCallback loaded_callback,
 LoadedCallbackTask::~LoadedCallbackTask() {
 }
 
+CookieStoreCommand::CookieStoreCommand(
+    Type type,
+    const CookieMonster::PersistentCookieStore::LoadedCallback& loaded_callback,
+    const std::string& key)
+    : type(type), loaded_callback(loaded_callback), key(key) {}
+
+CookieStoreCommand::CookieStoreCommand(Type type, const CanonicalCookie& cookie)
+    : type(type), cookie(cookie) {}
+
+CookieStoreCommand::~CookieStoreCommand() {}
+
 MockPersistentCookieStore::MockPersistentCookieStore()
-    : load_return_value_(true), loaded_(false) {
-}
+    : store_load_commands_(false), load_return_value_(true), loaded_(false) {}
 
 void MockPersistentCookieStore::SetLoadExpectation(
     bool return_value,
@@ -37,6 +47,11 @@ void MockPersistentCookieStore::SetLoadExpectation(
 }
 
 void MockPersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
+  if (store_load_commands_) {
+    commands_.push_back(
+        CookieStoreCommand(CookieStoreCommand::LOAD, loaded_callback, ""));
+    return;
+  }
   std::vector<CanonicalCookie*> out_cookies;
   if (load_return_value_) {
     out_cookies = load_result_;
@@ -51,6 +66,11 @@ void MockPersistentCookieStore::Load(const LoadedCallback& loaded_callback) {
 void MockPersistentCookieStore::LoadCookiesForKey(
     const std::string& key,
     const LoadedCallback& loaded_callback) {
+  if (store_load_commands_) {
+    commands_.push_back(CookieStoreCommand(
+        CookieStoreCommand::LOAD_COOKIES_FOR_KEY, loaded_callback, key));
+    return;
+  }
   if (!loaded_) {
     Load(loaded_callback);
   } else {
