@@ -82,7 +82,7 @@ content::WebContents* OpenURLFromTabInternal(
 void OnCheckIsDefaultBrowserFinished(
     content::WebContents* source,
     const content::OpenURLParams& params,
-    shell_integration::DefaultWebClientUIState state) {
+    shell_integration::DefaultWebClientState state) {
   // Open a URL based on if this browser instance is the default system browser.
   // If it is the default, open the URL directly instead of asking the system to
   // open it.
@@ -91,12 +91,15 @@ void OnCheckIsDefaultBrowserFinished(
   if (!profile)
     return;
   switch (state) {
-    case shell_integration::STATE_IS_DEFAULT:
+    case shell_integration::IS_DEFAULT:
       OpenURLFromTabInternal(profile, params);
       break;
-    case shell_integration::STATE_NOT_DEFAULT:
-    case shell_integration::STATE_UNKNOWN:
+    case shell_integration::NOT_DEFAULT:
+    case shell_integration::UNKNOWN_DEFAULT:
       platform_util::OpenExternal(profile, params.url);
+      break;
+    case shell_integration::NUM_DEFAULT_STATES:
+      NOTREACHED();
       break;
   }
 }

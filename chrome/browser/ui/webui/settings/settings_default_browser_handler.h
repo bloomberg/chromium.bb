@@ -43,7 +43,7 @@ class DefaultBrowserHandler : public SettingsPageUIHandler {
   // Called with the default browser state when the DefaultBrowserWorker is
   // done.
   void OnDefaultBrowserWorkerFinished(
-      shell_integration::DefaultWebClientUIState state);
+      shell_integration::DefaultWebClientState state);
 
   // Reference to a background worker that handles default browser settings.
   scoped_refptr<shell_integration::DefaultBrowserWorker>

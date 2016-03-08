@@ -112,7 +112,7 @@ class SetAsDefaultBrowserHandler : public WebUIMessageHandler {
   void ConcludeInteraction(MakeChromeDefaultResult interaction_result);
 
   void OnDefaultBrowserWorkerFinished(
-      shell_integration::DefaultWebClientUIState state);
+      shell_integration::DefaultWebClientState state);
 
   // The worker pointer is reference counted. While it is running, the
   // message loops of the FILE and UI thread will hold references to it
@@ -164,14 +164,14 @@ void SetAsDefaultBrowserHandler::ConcludeInteraction(
 }
 
 void SetAsDefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
-    shell_integration::DefaultWebClientUIState state) {
+    shell_integration::DefaultWebClientState state) {
   // The callback is expected to be invoked once the procedure has completed.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (state == shell_integration::STATE_NOT_DEFAULT) {
+  if (state == shell_integration::NOT_DEFAULT) {
     // The operation concluded, but Chrome is still not the default. This
     // suggests the user has decided not to make Chrome the default.
     ConcludeInteraction(MAKE_CHROME_DEFAULT_REGRETTED);
-  } else if (state == shell_integration::STATE_IS_DEFAULT) {
+  } else if (state == shell_integration::IS_DEFAULT) {
     ConcludeInteraction(MAKE_CHROME_DEFAULT_ACCEPTED);
   }
 

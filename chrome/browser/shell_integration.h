@@ -179,20 +179,10 @@ base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe);
 base::string16 GetAppShortcutsSubdirName();
 #endif
 
-// The current default web client application UI state. This is used when
-// querying if Chrome is the default browser or the default handler
-// application for a url protocol, and communicates the state and result of
-// a request.
-enum DefaultWebClientUIState {
-  STATE_NOT_DEFAULT,
-  STATE_IS_DEFAULT,
-  STATE_UNKNOWN
-};
-
 // The type of callback used to communicate processing state to consumers of
 // DefaultBrowserWorker and DefaultProtocolClientWorker.
 using DefaultWebClientWorkerCallback =
-    base::Callback<void(DefaultWebClientUIState)>;
+    base::Callback<void(DefaultWebClientState)>;
 
 //  Helper objects that handle checking if Chrome is the default browser
 //  or application for a url protocol on Windows and Linux, and also setting

@@ -61,18 +61,17 @@ void DefaultBrowserHandler::SetAsDefaultBrowser(const base::ListValue* args) {
 }
 
 void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
-    shell_integration::DefaultWebClientUIState state) {
-  if (state == shell_integration::STATE_IS_DEFAULT) {
+    shell_integration::DefaultWebClientState state) {
+  if (state == shell_integration::IS_DEFAULT) {
     // Notify the user in the future if Chrome ceases to be the user's chosen
     // default browser.
     Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
         prefs::kCheckDefaultBrowser, true);
   }
 
-  base::FundamentalValue is_default(state ==
-                                    shell_integration::STATE_IS_DEFAULT);
+  base::FundamentalValue is_default(state == shell_integration::IS_DEFAULT);
   base::FundamentalValue can_be_default(
-      state != shell_integration::STATE_UNKNOWN &&
+      state != shell_integration::UNKNOWN_DEFAULT &&
       !IsDisabledByPolicy(default_browser_policy_) &&
       shell_integration::CanSetAsDefaultBrowser() !=
           shell_integration::SET_DEFAULT_NOT_ALLOWED);

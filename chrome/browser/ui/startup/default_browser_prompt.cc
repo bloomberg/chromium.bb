@@ -226,12 +226,12 @@ void ShowPrompt() {
 void OnCheckIsDefaultBrowserFinished(
     const base::FilePath& profile_path,
     bool show_prompt,
-    shell_integration::DefaultWebClientUIState state) {
-  if (state == shell_integration::STATE_IS_DEFAULT) {
+    shell_integration::DefaultWebClientState state) {
+  if (state == shell_integration::IS_DEFAULT) {
     // Notify the user in the future if Chrome ceases to be the user's chosen
     // default browser.
     ResetCheckDefaultBrowserPref(profile_path);
-  } else if (show_prompt && state == shell_integration::STATE_NOT_DEFAULT &&
+  } else if (show_prompt && state == shell_integration::NOT_DEFAULT &&
              shell_integration::CanSetAsDefaultBrowser() !=
                  shell_integration::SET_DEFAULT_NOT_ALLOWED) {
     ShowPrompt();

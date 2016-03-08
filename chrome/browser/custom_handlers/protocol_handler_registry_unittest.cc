@@ -229,9 +229,9 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
 void OnShellWorkerFinished(ProtocolHandlerRegistry* registry,
                            FakeDelegate* delegate,
                            const std::string& protocol,
-                           shell_integration::DefaultWebClientUIState state) {
+                           shell_integration::DefaultWebClientState state) {
   registry->GetDefaultWebClientCallback(protocol).Run(state);
-  if (state == shell_integration::STATE_IS_DEFAULT) {
+  if (state == shell_integration::IS_DEFAULT) {
     delegate->FakeRegisterWithOS(protocol);
   }
 

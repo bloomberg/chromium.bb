@@ -177,7 +177,7 @@ class BrowserOptionsHandler
 
   // Receives the default browser state when the worker is done.
   void OnDefaultBrowserWorkerFinished(
-      shell_integration::DefaultWebClientUIState state);
+      shell_integration::DefaultWebClientState state);
 
   // Updates the UI with the given state for the default browser.
   void SetDefaultBrowserUIString(int status_string_id);

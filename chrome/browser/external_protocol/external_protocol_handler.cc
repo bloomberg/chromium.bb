@@ -100,13 +100,13 @@ void OnDefaultProtocolClientWorkerFinished(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     ExternalProtocolHandler::Delegate* delegate,
-    shell_integration::DefaultWebClientUIState state) {
+    shell_integration::DefaultWebClientState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (delegate)
     delegate->FinishedProcessingCheck();
 
-  if (state == shell_integration::STATE_IS_DEFAULT) {
+  if (state == shell_integration::IS_DEFAULT) {
     if (delegate)
       delegate->BlockRequest();
     return;

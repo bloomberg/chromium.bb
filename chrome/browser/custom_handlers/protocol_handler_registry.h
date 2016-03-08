@@ -318,7 +318,7 @@ class ProtocolHandlerRegistry : public KeyedService {
   // done.
   void OnSetAsDefaultProtocolClientFinished(
       const std::string& protocol,
-      shell_integration::DefaultWebClientUIState state);
+      shell_integration::DefaultWebClientState state);
 
   // Map from protocols (strings) to protocol handlers.
   ProtocolHandlerMultiMap protocol_handlers_;
