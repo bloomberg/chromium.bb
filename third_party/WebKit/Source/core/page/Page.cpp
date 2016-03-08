@@ -316,7 +316,6 @@ void Page::setDeviceScaleFactor(float scaleFactor)
         return;
 
     m_deviceScaleFactor = scaleFactor;
-    setNeedsRecalcStyleInAllFrames();
 
     if (mainFrame() && mainFrame()->isLocalFrame())
         deprecatedLocalMainFrame()->deviceScaleFactorChanged();
