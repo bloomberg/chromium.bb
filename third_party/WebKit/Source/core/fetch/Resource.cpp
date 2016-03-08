@@ -836,6 +836,7 @@ void Resource::revalidationFailed()
     m_resourceRequest = m_revalidatingRequest;
     m_revalidatingRequest = ResourceRequest();
     m_data.clear();
+    m_cachedMetadata.clear();
     destroyDecodedDataForFailedRevalidation();
 }
 
