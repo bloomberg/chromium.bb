@@ -29,13 +29,23 @@ namespace edk {
 
 namespace {
 
-struct MOJO_ALIGNAS(8) SerializedState {
+const uint8_t kFlagPeerClosed = 0x01;
+
+#pragma pack(push, 1)
+
+struct SerializedState {
   MojoCreateDataPipeOptions options;
   uint64_t pipe_id;
-  bool peer_closed;
   uint32_t read_offset;
   uint32_t bytes_available;
+  uint8_t flags;
+  char padding[7];
 };
+
+static_assert(sizeof(SerializedState) % 8 == 0,
+              "Invalid SerializedState size.");
+
+#pragma pack(pop)
 
 }  // namespace
 
@@ -324,13 +334,14 @@ bool DataPipeConsumerDispatcher::EndSerialize(
     PlatformHandle* platform_handles) {
   SerializedState* state = static_cast<SerializedState*>(destination);
   memcpy(&state->options, &options_, sizeof(MojoCreateDataPipeOptions));
+  memset(state->padding, 0, sizeof(state->padding));
 
   base::AutoLock lock(lock_);
   DCHECK(in_transit_);
   state->pipe_id = pipe_id_;
-  state->peer_closed = peer_closed_;
   state->read_offset = read_offset_;
   state->bytes_available = bytes_available_;
+  state->flags = peer_closed_ ? kFlagPeerClosed : 0;
 
   ports[0] = control_port_.name();
 
@@ -405,9 +416,9 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
 
   {
     base::AutoLock lock(dispatcher->lock_);
-    dispatcher->peer_closed_ = state->peer_closed;
     dispatcher->read_offset_ = state->read_offset;
     dispatcher->bytes_available_ = state->bytes_available;
+    dispatcher->peer_closed_ = state->flags & kFlagPeerClosed;
     dispatcher->InitializeNoLock();
   }
 

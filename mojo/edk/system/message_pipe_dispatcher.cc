@@ -14,15 +14,16 @@
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/ports_message.h"
 #include "mojo/edk/system/request_context.h"
-#include "mojo/public/c/system/macros.h"
 
 namespace mojo {
 namespace edk {
 
 namespace {
 
+#pragma pack(push, 1)
+
 // Header attached to every message sent over a message pipe.
-struct MOJO_ALIGNAS(8) MessageHeader {
+struct MessageHeader {
   // The number of serialized dispatchers included in this header.
   uint32_t num_dispatchers;
 
@@ -30,8 +31,10 @@ struct MOJO_ALIGNAS(8) MessageHeader {
   uint32_t header_size;
 };
 
+static_assert(sizeof(MessageHeader) % 8 == 0, "Invalid MessageHeader size.");
+
 // Header for each dispatcher, immediately following the message header.
-struct MOJO_ALIGNAS(8) DispatcherHeader {
+struct DispatcherHeader {
   // The type of the dispatcher, correpsonding to the Dispatcher::Type enum.
   int32_t type;
 
@@ -45,10 +48,19 @@ struct MOJO_ALIGNAS(8) DispatcherHeader {
   uint32_t num_platform_handles;
 };
 
-struct MOJO_ALIGNAS(8) SerializedState {
+static_assert(sizeof(DispatcherHeader) % 8 == 0,
+              "Invalid DispatcherHeader size.");
+
+struct SerializedState {
   uint64_t pipe_id;
   int8_t endpoint;
+  char padding[7];
 };
+
+static_assert(sizeof(SerializedState) % 8 == 0,
+              "Invalid SerializedState size.");
+
+#pragma pack(pop)
 
 }  // namespace
 
@@ -503,6 +515,7 @@ bool MessagePipeDispatcher::EndSerialize(void* destination,
   SerializedState* state = static_cast<SerializedState*>(destination);
   state->pipe_id = pipe_id_;
   state->endpoint = static_cast<int8_t>(endpoint_);
+  memset(state->padding, 0, sizeof(state->padding));
   ports[0] = port_.name();
   return true;
 }
