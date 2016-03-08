@@ -20,13 +20,13 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/shared_memory_region.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/video/picture.h"
@@ -210,8 +210,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
     ~InputBuffer();
 
     int32_t id;
-    size_t size;
-    scoped_ptr<base::SharedMemory> shm;
+    scoped_ptr<SharedMemoryRegion> shm;
   };
 
   // Queue for incoming input buffers.

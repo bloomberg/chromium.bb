@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "content/common/gpu/media/shared_memory_region.h"
 #include "content/common/gpu/media/v4l2_slice_video_decode_accelerator.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
@@ -169,14 +170,12 @@ struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<VideoDecodeAccelerator::Client>& client,
       const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-      base::SharedMemory* shm,
-      size_t size,
+      SharedMemoryRegion* shm,
       int32_t input_id);
   ~BitstreamBufferRef();
   const base::WeakPtr<VideoDecodeAccelerator::Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
-  const scoped_ptr<base::SharedMemory> shm;
-  const size_t size;
+  const scoped_ptr<SharedMemoryRegion> shm;
   off_t bytes_used;
   const int32_t input_id;
 };
@@ -184,13 +183,11 @@ struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
 V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<VideoDecodeAccelerator::Client>& client,
     const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-    base::SharedMemory* shm,
-    size_t size,
+    SharedMemoryRegion* shm,
     int32_t input_id)
     : client(client),
       client_task_runner(client_task_runner),
       shm(shm),
-      size(size),
       bytes_used(0),
       input_id(input_id) {}
 
@@ -1211,9 +1208,8 @@ void V4L2SliceVideoDecodeAccelerator::DecodeTask(
 
   scoped_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
       io_client_, io_task_runner_,
-      new base::SharedMemory(bitstream_buffer.handle(), true),
-      bitstream_buffer.size(), bitstream_buffer.id()));
-  if (!bitstream_record->shm->Map(bitstream_buffer.size())) {
+      new SharedMemoryRegion(bitstream_buffer, true), bitstream_buffer.id()));
+  if (!bitstream_record->shm->Map()) {
     LOGF(ERROR) << "Could not map bitstream_buffer";
     NOTIFY_ERROR(UNREADABLE_INPUT);
     return;
@@ -1245,7 +1241,7 @@ bool V4L2SliceVideoDecodeAccelerator::TrySetNewBistreamBuffer() {
 
   const uint8_t* const data = reinterpret_cast<const uint8_t*>(
       decoder_current_bitstream_buffer_->shm->memory());
-  const size_t data_size = decoder_current_bitstream_buffer_->size;
+  const size_t data_size = decoder_current_bitstream_buffer_->shm->size();
   decoder_->SetStream(data, data_size);
 
   return true;
@@ -1645,7 +1641,7 @@ void V4L2SliceVideoDecodeAccelerator::FlushTask() {
     // which - when reached - will trigger flush sequence.
     decoder_input_queue_.push(
         linked_ptr<BitstreamBufferRef>(new BitstreamBufferRef(
-            io_client_, io_task_runner_, nullptr, 0, kFlushBufferId)));
+            io_client_, io_task_runner_, nullptr, kFlushBufferId)));
     return;
   }
 

@@ -17,6 +17,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "content/common/gpu/media/shared_memory_region.h"
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/bitstream_buffer.h"
@@ -51,13 +52,10 @@
 namespace content {
 
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32_t id,
-                     scoped_ptr<base::SharedMemory> shm,
-                     size_t size)
-      : id(id), shm(std::move(shm)), size(size) {}
+  BitstreamBufferRef(int32_t id, scoped_ptr<SharedMemoryRegion> shm)
+      : id(id), shm(std::move(shm)) {}
   const int32_t id;
-  const scoped_ptr<base::SharedMemory> shm;
-  const size_t size;
+  const scoped_ptr<SharedMemoryRegion> shm;
 };
 
 V4L2VideoEncodeAccelerator::InputRecord::InputRecord() : at_device(false) {
@@ -224,15 +222,14 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  scoped_ptr<base::SharedMemory> shm(
-      new base::SharedMemory(buffer.handle(), false));
-  if (!shm->Map(buffer.size())) {
+  scoped_ptr<SharedMemoryRegion> shm(new SharedMemoryRegion(buffer, false));
+  if (!shm->Map()) {
     NOTIFY_ERROR(kPlatformFailureError);
     return;
   }
 
   scoped_ptr<BitstreamBufferRef> buffer_ref(
-      new BitstreamBufferRef(buffer.id(), std::move(shm), buffer.size()));
+      new BitstreamBufferRef(buffer.id(), std::move(shm)));
   encoder_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask,

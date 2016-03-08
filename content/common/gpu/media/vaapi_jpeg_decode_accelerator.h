@@ -15,6 +15,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/shared_memory_region.h"
 #include "content/common/gpu/media/vaapi_jpeg_decoder.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
 #include "media/base/bitstream_buffer.h"
@@ -47,13 +48,13 @@ class CONTENT_EXPORT VaapiJpegDecodeAccelerator
   // An input buffer and the corresponding output video frame awaiting
   // consumption, provided by the client.
   struct DecodeRequest {
-    DecodeRequest(const media::BitstreamBuffer& bitstream_buffer,
-                  scoped_ptr<base::SharedMemory> shm,
+    DecodeRequest(int32_t bitstream_buffer_id,
+                  scoped_ptr<SharedMemoryRegion> shm,
                   const scoped_refptr<media::VideoFrame>& video_frame);
     ~DecodeRequest();
 
-    media::BitstreamBuffer bitstream_buffer;
-    scoped_ptr<base::SharedMemory> shm;
+    int32_t bitstream_buffer_id;
+    scoped_ptr<SharedMemoryRegion> shm;
     scoped_refptr<media::VideoFrame> video_frame;
   };
 

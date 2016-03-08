@@ -112,10 +112,11 @@ V4L2JpegDecodeAccelerator::BufferRecord::~BufferRecord() {
 }
 
 V4L2JpegDecodeAccelerator::JobRecord::JobRecord(
-    media::BitstreamBuffer bitstream_buffer,
+    const media::BitstreamBuffer& bitstream_buffer,
     scoped_refptr<media::VideoFrame> video_frame)
-    : bitstream_buffer(bitstream_buffer), out_frame(video_frame) {
-}
+    : bitstream_buffer_id(bitstream_buffer.id()),
+      shm(bitstream_buffer, true),
+      out_frame(video_frame) {}
 
 V4L2JpegDecodeAccelerator::JobRecord::~JobRecord() {
 }
@@ -268,11 +269,9 @@ bool V4L2JpegDecodeAccelerator::IsSupported() {
 
 void V4L2JpegDecodeAccelerator::DecodeTask(scoped_ptr<JobRecord> job_record) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
-  job_record->shm.reset(
-      new base::SharedMemory(job_record->bitstream_buffer.handle(), true));
-  if (!job_record->shm->Map(job_record->bitstream_buffer.size())) {
+  if (!job_record->shm.Map()) {
     PLOG(ERROR) << __func__ << ": could not map bitstream_buffer";
-    PostNotifyError(job_record->bitstream_buffer.id(), UNREADABLE_INPUT);
+    PostNotifyError(job_record->bitstream_buffer_id, UNREADABLE_INPUT);
     return;
   }
   input_jobs_.push(make_linked_ptr(job_record.release()));
@@ -296,7 +295,7 @@ bool V4L2JpegDecodeAccelerator::ShouldRecreateInputBuffers() {
   linked_ptr<JobRecord> job_record = input_jobs_.front();
   // Check input buffer size is enough
   return (input_buffer_map_.empty() ||
-          (job_record->bitstream_buffer.size() + sizeof(kDefaultDhtSeg)) >
+          (job_record->shm.size() + sizeof(kDefaultDhtSeg)) >
               input_buffer_map_.front().length);
 }
 
@@ -341,8 +340,7 @@ bool V4L2JpegDecodeAccelerator::CreateInputBuffers() {
   // The input image may miss huffman table. We didn't parse the image before,
   // so we create more to avoid the situation of not enough memory.
   // Reserve twice size to avoid recreating input buffer frequently.
-  size_t reserve_size =
-      (job_record->bitstream_buffer.size() + sizeof(kDefaultDhtSeg)) * 2;
+  size_t reserve_size = (job_record->shm.size() + sizeof(kDefaultDhtSeg)) * 2;
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
@@ -719,17 +717,16 @@ void V4L2JpegDecodeAccelerator::Dequeue() {
       // V4L2_PIX_FMT_YUV420.
       if (!CopyOutputImage(output_buffer_pixelformat_, output_record.address,
                            output_buffer_coded_size_, job_record->out_frame)) {
-        PostNotifyError(job_record->bitstream_buffer.id(), PLATFORM_FAILURE);
+        PostNotifyError(job_record->bitstream_buffer_id, PLATFORM_FAILURE);
         return;
       }
 
       DVLOG(3) << "Decoding finished, returning bitstream buffer, id="
-               << job_record->bitstream_buffer.id();
+               << job_record->bitstream_buffer_id;
 
       child_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&V4L2JpegDecodeAccelerator::VideoFrameReady, weak_ptr_,
-                     job_record->bitstream_buffer.id()));
+          FROM_HERE, base::Bind(&V4L2JpegDecodeAccelerator::VideoFrameReady,
+                                weak_ptr_, job_record->bitstream_buffer_id));
     }
   }
 }
@@ -827,10 +824,9 @@ bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
   DCHECK(!input_record.at_device);
 
   // It will add default huffman segment if it's missing.
-  if (!AddHuffmanTable(job_record->shm->memory(),
-                       job_record->bitstream_buffer.size(),
+  if (!AddHuffmanTable(job_record->shm.memory(), job_record->shm.size(),
                        input_record.address, input_record.length)) {
-    PostNotifyError(job_record->bitstream_buffer.id(), PARSE_JPEG_FAILED);
+    PostNotifyError(job_record->bitstream_buffer_id, PARSE_JPEG_FAILED);
     return false;
   }
 
@@ -844,8 +840,9 @@ bool V4L2JpegDecodeAccelerator::EnqueueInputRecord() {
   running_jobs_.push(job_record);
   free_input_buffers_.pop_back();
 
-  DVLOG(3) << __func__ << ": enqueued frame id="
-           << job_record->bitstream_buffer.id() << " to device.";
+  DVLOG(3) << __func__
+           << ": enqueued frame id=" << job_record->bitstream_buffer_id
+           << " to device.";
   return true;
 }
 

@@ -180,7 +180,8 @@ void GpuJpegDecodeAcceleratorHost::Decode(
 
   decode_params.coded_size = video_frame->coded_size();
   decode_params.output_video_frame_handle = output_handle;
-  decode_params.output_buffer_size = output_buffer_size;
+  decode_params.output_buffer_size =
+      base::checked_cast<uint32_t>(output_buffer_size);
   Send(new AcceleratedJpegDecoderMsg_Decode(decoder_route_id_, decode_params));
 }
 

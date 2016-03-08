@@ -19,6 +19,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/android_copying_backing_strategy.h"
 #include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
+#include "content/common/gpu/media/shared_memory_region.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -476,17 +477,16 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
     return true;
   }
 
-  scoped_ptr<base::SharedMemory> shm;
+  scoped_ptr<SharedMemoryRegion> shm;
 
-  if (pending_input_buf_index_ != -1) {
-    // The buffer is already dequeued from MediaCodec, filled with data and
-    // bitstream_buffer.handle() is closed.
-    shm.reset(new base::SharedMemory());
-  } else {
-    shm.reset(new base::SharedMemory(bitstream_buffer.handle(), true));
+  if (pending_input_buf_index_ == -1) {
+    // When |pending_input_buf_index_| is not -1, the buffer is already dequeued
+    // from MediaCodec, filled with data and bitstream_buffer.handle() is
+    // closed.
+    shm.reset(new SharedMemoryRegion(bitstream_buffer, true));
 
-    if (!shm->Map(bitstream_buffer.size())) {
-      POST_ERROR(UNREADABLE_INPUT, "Failed to SharedMemory::Map()");
+    if (!shm->Map()) {
+      POST_ERROR(UNREADABLE_INPUT, "Failed to SharedMemoryRegion::Map()");
       return false;
     }
   }
@@ -506,7 +506,8 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 
   // Notice that |memory| will be null if we repeatedly enqueue the same buffer,
   // this happens after MEDIA_CODEC_NO_KEY.
-  const uint8_t* memory = static_cast<const uint8_t*>(shm->memory());
+  const uint8_t* memory =
+      shm ? static_cast<const uint8_t*>(shm->memory()) : nullptr;
   const std::string& key_id = bitstream_buffer.key_id();
   const std::string& iv = bitstream_buffer.iv();
   const std::vector<media::SubsampleEntry>& subsamples =

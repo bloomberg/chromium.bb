@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/media/shared_memory_region.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/android/media_codec_util.h"
@@ -421,14 +422,11 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
 
   media::BitstreamBuffer bitstream_buffer = available_bitstream_buffers_.back();
   available_bitstream_buffers_.pop_back();
-  scoped_ptr<base::SharedMemory> shm(
-      new base::SharedMemory(bitstream_buffer.handle(), false));
-  RETURN_ON_FAILURE(shm->Map(bitstream_buffer.size()),
-                    "Failed to map SHM",
-                    kPlatformFailureError);
-  RETURN_ON_FAILURE(size <= shm->mapped_size(),
-                    "Encoded buffer too large: " << size << ">"
-                                                 << shm->mapped_size(),
+  scoped_ptr<SharedMemoryRegion> shm(
+      new SharedMemoryRegion(bitstream_buffer, false));
+  RETURN_ON_FAILURE(shm->Map(), "Failed to map SHM", kPlatformFailureError);
+  RETURN_ON_FAILURE(size <= shm->size(),
+                    "Encoded buffer too large: " << size << ">" << shm->size(),
                     kPlatformFailureError);
 
   media::MediaCodecStatus status = media_codec_->CopyFromOutputBuffer(

@@ -486,6 +486,17 @@ void GpuVideoDecodeAccelerator::OnSetCdm(int cdm_id) {
   video_decode_accelerator_->SetCdm(cdm_id);
 }
 
+void GpuVideoDecodeAccelerator::CallOrPostNotifyError(
+    media::VideoDecodeAccelerator::Error error) {
+  if (child_task_runner_->BelongsToCurrentThread()) {
+    NotifyError(error);
+  } else {
+    child_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuVideoDecodeAccelerator::NotifyError,
+                              base::Unretained(this), error));
+  }
+}
+
 // Runs on IO thread if video_decode_accelerator_->CanDecodeOnIOThread() is
 // true, otherwise on the main thread.
 void GpuVideoDecodeAccelerator::OnDecode(

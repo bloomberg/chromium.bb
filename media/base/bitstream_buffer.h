@@ -24,12 +24,17 @@ class MEDIA_EXPORT BitstreamBuffer {
  public:
   BitstreamBuffer();
 
-  BitstreamBuffer(int32_t id, base::SharedMemoryHandle handle, size_t size);
-
+  // Constructs a new BitstreamBuffer. The content of the bitstream is located
+  // at |offset| bytes away from the start of the shared memory and the payload
+  // is |size| bytes. When not provided, the default value for |offset| is 0.
+  // |presentation_timestamp| is when the decoded frame should be displayed.
+  // When not provided, |presentation_timestamp| will be
+  // |media::kNoTimestamp()|.
   BitstreamBuffer(int32_t id,
                   base::SharedMemoryHandle handle,
                   size_t size,
-                  base::TimeDelta presentation_timestamp);
+                  off_t offset = 0,
+                  base::TimeDelta presentation_timestamp = kNoTimestamp());
 
   BitstreamBuffer(const BitstreamBuffer& other);
 
@@ -39,14 +44,20 @@ class MEDIA_EXPORT BitstreamBuffer {
 
   int32_t id() const { return id_; }
   base::SharedMemoryHandle handle() const { return handle_; }
+
+  // The number of bytes of the actual bitstream data. It is the size of the
+  // content instead of the whole shared memory.
   size_t size() const { return size_; }
 
-  void set_handle(const base::SharedMemoryHandle& handle) { handle_ = handle; }
+  // The offset to the start of actual bitstream data in the shared memory.
+  off_t offset() const { return offset_; }
 
   // The timestamp is only valid if it's not equal to |media::kNoTimestamp()|.
   base::TimeDelta presentation_timestamp() const {
     return presentation_timestamp_;
   }
+
+  void set_handle(const base::SharedMemoryHandle& handle) { handle_ = handle; }
 
   // The following methods come from DecryptConfig.
 
@@ -58,6 +69,7 @@ class MEDIA_EXPORT BitstreamBuffer {
   int32_t id_;
   base::SharedMemoryHandle handle_;
   size_t size_;
+  off_t offset_;
 
   // This is only set when necessary. For example, AndroidVideoDecodeAccelerator
   // needs the timestamp because the underlying decoder may require it to

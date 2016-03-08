@@ -15,12 +15,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "content/common/gpu/media/shared_memory_region.h"
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #include "media/base/media_switches.h"
 #include "media/filters/h264_parser.h"
@@ -65,14 +65,12 @@ struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<Client>& client,
       scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-      base::SharedMemory* shm,
-      size_t size,
+      scoped_ptr<SharedMemoryRegion> shm,
       int32_t input_id);
   ~BitstreamBufferRef();
   const base::WeakPtr<Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
-  const scoped_ptr<base::SharedMemory> shm;
-  const size_t size;
+  const scoped_ptr<SharedMemoryRegion> shm;
   size_t bytes_used;
   const int32_t input_id;
 };
@@ -94,13 +92,11 @@ struct V4L2VideoDecodeAccelerator::PictureRecord {
 V4L2VideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<Client>& client,
     scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-    base::SharedMemory* shm,
-    size_t size,
+    scoped_ptr<SharedMemoryRegion> shm,
     int32_t input_id)
     : client(client),
       client_task_runner(client_task_runner),
-      shm(shm),
-      size(size),
+      shm(std::move(shm)),
       bytes_used(0),
       input_id(input_id) {}
 
@@ -482,9 +478,10 @@ void V4L2VideoDecodeAccelerator::DecodeTask(
 
   scoped_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
       io_client_, io_task_runner_,
-      new base::SharedMemory(bitstream_buffer.handle(), true),
-      bitstream_buffer.size(), bitstream_buffer.id()));
-  if (!bitstream_record->shm->Map(bitstream_buffer.size())) {
+      scoped_ptr<SharedMemoryRegion>(
+          new SharedMemoryRegion(bitstream_buffer, true)),
+      bitstream_buffer.id()));
+  if (!bitstream_record->shm->Map()) {
     LOG(ERROR) << "Decode(): could not map bitstream_buffer";
     NOTIFY_ERROR(UNREADABLE_INPUT);
     return;
@@ -543,54 +540,51 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
     // Setup to use the next buffer.
     decoder_current_bitstream_buffer_.reset(buffer_ref.release());
     decoder_input_queue_.pop();
-    DVLOG(3) << "DecodeBufferTask(): reading input_id="
-             << decoder_current_bitstream_buffer_->input_id
-             << ", addr=" << (decoder_current_bitstream_buffer_->shm ?
-                              decoder_current_bitstream_buffer_->shm->memory() :
-                              NULL)
-             << ", size=" << decoder_current_bitstream_buffer_->size;
+    const auto& shm = decoder_current_bitstream_buffer_->shm;
+    if (shm) {
+      DVLOG(3) << "DecodeBufferTask(): reading input_id="
+               << decoder_current_bitstream_buffer_->input_id
+               << ", addr=" << shm->memory() << ", size=" << shm->size();
+    } else {
+      DCHECK_EQ(decoder_current_bitstream_buffer_->input_id, kFlushBufferId);
+      DVLOG(3) << "DecodeBufferTask(): reading input_id=kFlushBufferId";
+    }
   }
   bool schedule_task = false;
-  const size_t size = decoder_current_bitstream_buffer_->size;
   size_t decoded_size = 0;
-  if (size == 0) {
-    const int32_t input_id = decoder_current_bitstream_buffer_->input_id;
-    if (input_id >= 0) {
-      // This is a buffer queued from the client that has zero size.  Skip.
+  const auto& shm = decoder_current_bitstream_buffer_->shm;
+  if (!shm) {
+    // This is a dummy buffer, queued to flush the pipe.  Flush.
+    DCHECK_EQ(decoder_current_bitstream_buffer_->input_id, kFlushBufferId);
+    // Enqueue a buffer guaranteed to be empty.  To do that, we flush the
+    // current input, enqueue no data to the next frame, then flush that down.
+    schedule_task = true;
+    if (decoder_current_input_buffer_ != -1 &&
+        input_buffer_map_[decoder_current_input_buffer_].input_id !=
+            kFlushBufferId)
+      schedule_task = FlushInputFrame();
+
+    if (schedule_task && AppendToInputFrame(NULL, 0) && FlushInputFrame()) {
+      DVLOG(2) << "DecodeBufferTask(): enqueued flush buffer";
+      decoder_partial_frame_pending_ = false;
       schedule_task = true;
     } else {
-      // This is a buffer of zero size, queued to flush the pipe.  Flush.
-      DCHECK_EQ(decoder_current_bitstream_buffer_->shm.get(),
-                static_cast<base::SharedMemory*>(NULL));
-      // Enqueue a buffer guaranteed to be empty.  To do that, we flush the
-      // current input, enqueue no data to the next frame, then flush that down.
-      schedule_task = true;
-      if (decoder_current_input_buffer_ != -1 &&
-          input_buffer_map_[decoder_current_input_buffer_].input_id !=
-              kFlushBufferId)
-        schedule_task = FlushInputFrame();
-
-      if (schedule_task && AppendToInputFrame(NULL, 0) && FlushInputFrame()) {
-        DVLOG(2) << "DecodeBufferTask(): enqueued flush buffer";
-        decoder_partial_frame_pending_ = false;
-        schedule_task = true;
-      } else {
-        // If we failed to enqueue the empty buffer (due to pipeline
-        // backpressure), don't advance the bitstream buffer queue, and don't
-        // schedule the next task.  This bitstream buffer queue entry will get
-        // reprocessed when the pipeline frees up.
-        schedule_task = false;
-      }
+      // If we failed to enqueue the empty buffer (due to pipeline
+      // backpressure), don't advance the bitstream buffer queue, and don't
+      // schedule the next task.  This bitstream buffer queue entry will get
+      // reprocessed when the pipeline frees up.
+      schedule_task = false;
     }
+  } else if (shm->size() == 0) {
+    // This is a buffer queued from the client that has zero size.  Skip.
+    schedule_task = true;
   } else {
     // This is a buffer queued from the client, with actual contents.  Decode.
     const uint8_t* const data =
-        reinterpret_cast<const uint8_t*>(
-            decoder_current_bitstream_buffer_->shm->memory()) +
+        reinterpret_cast<const uint8_t*>(shm->memory()) +
         decoder_current_bitstream_buffer_->bytes_used;
     const size_t data_size =
-        decoder_current_bitstream_buffer_->size -
-        decoder_current_bitstream_buffer_->bytes_used;
+        shm->size() - decoder_current_bitstream_buffer_->bytes_used;
     if (!AdvanceFrameFragment(data, data_size, &decoded_size)) {
       NOTIFY_ERROR(UNREADABLE_INPUT);
       return;
@@ -619,8 +613,8 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
 
   if (schedule_task) {
     decoder_current_bitstream_buffer_->bytes_used += decoded_size;
-    if (decoder_current_bitstream_buffer_->bytes_used ==
-        decoder_current_bitstream_buffer_->size) {
+    if ((shm ? shm->size() : 0) ==
+        decoder_current_bitstream_buffer_->bytes_used) {
       // Our current bitstream buffer is done; return it.
       int32_t input_id = decoder_current_bitstream_buffer_->input_id;
       DVLOG(3) << "DecodeBufferTask(): finished input_id=" << input_id;
@@ -1276,7 +1270,7 @@ void V4L2VideoDecodeAccelerator::FlushTask() {
   // Queue up an empty buffer -- this triggers the flush.
   decoder_input_queue_.push(
       linked_ptr<BitstreamBufferRef>(new BitstreamBufferRef(
-          io_client_, io_task_runner_, NULL, 0, kFlushBufferId)));
+          io_client_, io_task_runner_, nullptr, kFlushBufferId)));
   decoder_flushing_ = true;
   SendPictureReady();  // Send all pending PictureReady.
 

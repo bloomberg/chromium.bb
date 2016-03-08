@@ -256,8 +256,7 @@ class VaapiVideoDecodeAccelerator::VaapiVP9Accelerator
   DISALLOW_COPY_AND_ASSIGN(VaapiVP9Accelerator);
 };
 
-VaapiVideoDecodeAccelerator::InputBuffer::InputBuffer() : id(0), size(0) {
-}
+VaapiVideoDecodeAccelerator::InputBuffer::InputBuffer() : id(0) {}
 
 VaapiVideoDecodeAccelerator::InputBuffer::~InputBuffer() {
 }
@@ -447,10 +446,10 @@ void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
   DVLOG(4) << "Mapping new input buffer id: " << bitstream_buffer.id()
            << " size: " << (int)bitstream_buffer.size();
 
-  scoped_ptr<base::SharedMemory> shm(
-      new base::SharedMemory(bitstream_buffer.handle(), true));
-  RETURN_AND_NOTIFY_ON_FAILURE(shm->Map(bitstream_buffer.size()),
-                              "Failed to map input buffer", UNREADABLE_INPUT,);
+  scoped_ptr<SharedMemoryRegion> shm(
+      new SharedMemoryRegion(bitstream_buffer, true));
+  RETURN_AND_NOTIFY_ON_FAILURE(shm->Map(), "Failed to map input buffer",
+                               UNREADABLE_INPUT, );
 
   base::AutoLock auto_lock(lock_);
 
@@ -458,7 +457,6 @@ void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
   linked_ptr<InputBuffer> input_buffer(new InputBuffer());
   input_buffer->shm.reset(shm.release());
   input_buffer->id = bitstream_buffer.id();
-  input_buffer->size = bitstream_buffer.size();
 
   ++num_stream_bufs_at_decoder_;
   TRACE_COUNTER1("Video Decoder", "Stream buffers at decoder",
@@ -497,13 +495,12 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
       curr_input_buffer_ = input_buffers_.front();
       input_buffers_.pop();
 
-      DVLOG(4) << "New current bitstream buffer, id: "
-               << curr_input_buffer_->id
-               << " size: " << curr_input_buffer_->size;
+      DVLOG(4) << "New current bitstream buffer, id: " << curr_input_buffer_->id
+               << " size: " << curr_input_buffer_->shm->size();
 
       decoder_->SetStream(
           static_cast<uint8_t*>(curr_input_buffer_->shm->memory()),
-          curr_input_buffer_->size);
+          curr_input_buffer_->shm->size());
       return true;
 
     default:
