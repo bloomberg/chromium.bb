@@ -92,9 +92,19 @@ static GCTaskRunner* s_gcTaskRunner = nullptr;
 // Doing so may cause hard to reproduce crashes.
 static bool s_webKitInitialized = false;
 
+static ModulesInitializer& modulesInitializer()
+{
+    DEFINE_STATIC_LOCAL(OwnPtr<ModulesInitializer>, initializer, (adoptPtr(new ModulesInitializer)));
+    return *initializer;
+}
+
 void initialize(Platform* platform)
 {
     initializeWithoutV8(platform);
+
+    modulesInitializer().init();
+
+    setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
 
     V8Initializer::initializeMainThreadIfNeeded();
 
@@ -141,12 +151,6 @@ static void adjustAmountOfExternalAllocatedMemory(int size)
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(size);
 }
 
-static ModulesInitializer& modulesInitializer()
-{
-    DEFINE_STATIC_LOCAL(OwnPtr<ModulesInitializer>, initializer, (adoptPtr(new ModulesInitializer)));
-    return *initializer;
-}
-
 void initializeWithoutV8(Platform* platform)
 {
     ASSERT(!s_webKitInitialized);
@@ -166,10 +170,6 @@ void initializeWithoutV8(Platform* platform)
         ASSERT(!s_gcTaskRunner);
         s_gcTaskRunner = new GCTaskRunner(currentThread);
     }
-
-    modulesInitializer().init();
-
-    setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
 }
 
 void shutdown()
@@ -212,14 +212,14 @@ void shutdown()
 
     V8PerIsolateData::destroy(isolate);
 
+    modulesInitializer().shutdown();
+
     shutdownWithoutV8();
 }
 
 void shutdownWithoutV8()
 {
     ASSERT(isMainThread());
-    modulesInitializer().shutdown();
-
     // currentThread() is null if we are running on a thread without a message loop.
     if (Platform::current()->currentThread()) {
         ASSERT(s_gcTaskRunner);
