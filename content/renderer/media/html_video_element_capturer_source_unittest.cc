@@ -67,8 +67,8 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   unsigned decodedFrameCount() const override { return 0; }
   unsigned droppedFrameCount() const override { return 0; }
   unsigned corruptedFrameCount() const override { return 0; }
-  unsigned audioDecodedByteCount() const override { return 0; }
-  unsigned videoDecodedByteCount() const override { return 0; }
+  size_t audioDecodedByteCount() const override { return 0; }
+  size_t videoDecodedByteCount() const override { return 0; }
 
   void paint(blink::WebCanvas* canvas,
              const blink::WebRect& paint_rectangle,

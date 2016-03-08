@@ -156,8 +156,8 @@ public:
     virtual unsigned decodedFrameCount() const = 0;
     virtual unsigned droppedFrameCount() const = 0;
     virtual unsigned corruptedFrameCount() const { return 0; }
-    virtual unsigned audioDecodedByteCount() const = 0;
-    virtual unsigned videoDecodedByteCount() const = 0;
+    virtual size_t audioDecodedByteCount() const = 0;
+    virtual size_t videoDecodedByteCount() const = 0;
 
     virtual void paint(WebCanvas*, const WebRect&, unsigned char alpha, SkXfermode::Mode) = 0;
 

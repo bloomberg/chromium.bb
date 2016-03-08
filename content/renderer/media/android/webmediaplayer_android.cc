@@ -794,14 +794,14 @@ unsigned WebMediaPlayerAndroid::droppedFrameCount() const {
   return 0;
 }
 
-unsigned WebMediaPlayerAndroid::audioDecodedByteCount() const {
+size_t WebMediaPlayerAndroid::audioDecodedByteCount() const {
   if (media_source_delegate_)
     return media_source_delegate_->AudioDecodedByteCount();
   NOTIMPLEMENTED();
   return 0;
 }
 
-unsigned WebMediaPlayerAndroid::videoDecodedByteCount() const {
+size_t WebMediaPlayerAndroid::videoDecodedByteCount() const {
   if (media_source_delegate_)
     return media_source_delegate_->VideoDecodedByteCount();
   NOTIMPLEMENTED();

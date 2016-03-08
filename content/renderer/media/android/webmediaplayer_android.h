@@ -174,8 +174,8 @@ class WebMediaPlayerAndroid
   // Provide statistics.
   unsigned decodedFrameCount() const override;
   unsigned droppedFrameCount() const override;
-  unsigned audioDecodedByteCount() const override;
-  unsigned videoDecodedByteCount() const override;
+  size_t audioDecodedByteCount() const override;
+  size_t videoDecodedByteCount() const override;
 
   // cc::VideoFrameProvider implementation. These methods are running on the
   // compositor thread.

@@ -717,14 +717,14 @@ unsigned WebMediaPlayerImpl::droppedFrameCount() const {
   return stats.video_frames_dropped;
 }
 
-unsigned WebMediaPlayerImpl::audioDecodedByteCount() const {
+size_t WebMediaPlayerImpl::audioDecodedByteCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   PipelineStatistics stats = pipeline_.GetStatistics();
   return stats.audio_bytes_decoded;
 }
 
-unsigned WebMediaPlayerImpl::videoDecodedByteCount() const {
+size_t WebMediaPlayerImpl::videoDecodedByteCount() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   PipelineStatistics stats = pipeline_.GetStatistics();

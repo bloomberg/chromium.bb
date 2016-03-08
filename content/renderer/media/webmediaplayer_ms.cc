@@ -368,13 +368,13 @@ unsigned WebMediaPlayerMS::droppedFrameCount() const {
   return compositor_->dropped_frame_count();
 }
 
-unsigned WebMediaPlayerMS::audioDecodedByteCount() const {
+size_t WebMediaPlayerMS::audioDecodedByteCount() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();
   return 0;
 }
 
-unsigned WebMediaPlayerMS::videoDecodedByteCount() const {
+size_t WebMediaPlayerMS::videoDecodedByteCount() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();
   return 0;

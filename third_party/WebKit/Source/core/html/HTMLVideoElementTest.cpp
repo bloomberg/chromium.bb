@@ -46,8 +46,8 @@ public:
     double mediaTimeForTimeValue(double timeValue) const override { return timeValue; };
     unsigned decodedFrameCount() const override { return 0; };
     unsigned droppedFrameCount() const override { return 0; };
-    unsigned audioDecodedByteCount() const override { return 0; };
-    unsigned videoDecodedByteCount() const override { return 0; };
+    size_t audioDecodedByteCount() const override { return 0; };
+    size_t videoDecodedByteCount() const override { return 0; };
     void paint(WebCanvas*, const WebRect&, unsigned char alpha, SkXfermode::Mode) override { };
 };
 
