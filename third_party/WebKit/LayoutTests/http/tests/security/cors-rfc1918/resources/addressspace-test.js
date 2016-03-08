@@ -4,6 +4,10 @@ function createIFrame(origin, type) {
         file = "post-addressspace-to-parent.html";
     } else if (type == "document+csp") {
         file = "post-addressspace-to-parent.html?csp";
+    } else if (type == "document+appcache") {
+        file = "post-addressspace-to-parent-with-appcache.html";
+    } else if (type == "document+appcache+csp") {
+        file = "post-addressspace-to-parent-with-appcache.html?csp";
     } else if (type == "worker") {
         file = "post-addressspace-from-worker.html";
     } else if (type == "sharedworker") {
@@ -15,13 +19,15 @@ function createIFrame(origin, type) {
     return i;
 }
 
-function addressSpaceTest(origin, type, expected) {
+function addressSpaceTest(origin, type, expected, callback) {
     async_test(function (t) {
         var i = createIFrame(origin, type);
         window.addEventListener("message", t.step_func(function (e) {
             if (e.source == i.contentWindow) {
                 assert_equals(e.data.origin, origin);
                 assert_equals(e.data.addressSpace, expected);
+                if (callback)
+                    callback();
                 t.done();
             }
         }));

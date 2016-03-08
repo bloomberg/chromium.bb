@@ -433,6 +433,12 @@ int AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   return net::ERR_IO_PENDING;
 }
 
+net::HostPortPair AppCacheURLRequestJob::GetSocketAddress() const {
+  if (!http_info())
+    return net::HostPortPair();
+  return http_info()->socket_address;
+}
+
 void AppCacheURLRequestJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
   std::string value;

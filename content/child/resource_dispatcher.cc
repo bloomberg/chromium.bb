@@ -572,6 +572,7 @@ void ResourceDispatcher::StartSync(const RequestInfo& request_info,
   response->devtools_info = result.devtools_info;
   response->data.swap(result.data);
   response->download_file_path = result.download_file_path;
+  response->socket_address = result.socket_address;
 }
 
 int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
