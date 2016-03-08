@@ -7,8 +7,8 @@
 
 #include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/public/V8ProfilerAgent.h"
-#include "wtf/text/WTFString.h"
 
 namespace v8 {
 class Isolate;
@@ -35,17 +35,17 @@ public:
     void start(ErrorString*) override;
     void stop(ErrorString*, OwnPtr<protocol::Profiler::CPUProfile>*) override;
 
-    void consoleProfile(const String& title) override;
-    void consoleProfileEnd(const String& title) override;
+    void consoleProfile(const String16& title) override;
+    void consoleProfileEnd(const String16& title) override;
 
     void idleStarted() override;
     void idleFinished() override;
 
 private:
-    String nextProfileId();
+    String16 nextProfileId();
 
-    void startProfiling(const String& title);
-    PassOwnPtr<protocol::Profiler::CPUProfile> stopProfiling(const String& title, bool serialize);
+    void startProfiling(const String16& title);
+    PassOwnPtr<protocol::Profiler::CPUProfile> stopProfiling(const String16& title, bool serialize);
 
     bool isRecording() const;
 
@@ -57,7 +57,7 @@ private:
     bool m_recordingCPUProfile;
     class ProfileDescriptor;
     protocol::Vector<ProfileDescriptor> m_startedProfiles;
-    String m_frontendInitiatedProfileId;
+    String16 m_frontendInitiatedProfileId;
 };
 
 } // namespace blink

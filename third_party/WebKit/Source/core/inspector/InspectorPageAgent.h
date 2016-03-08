@@ -52,8 +52,6 @@ class LocalFrame;
 class SharedBuffer;
 class TextResourceDecoder;
 
-typedef String ErrorString;
-
 using blink::protocol::Maybe;
 
 class CORE_EXPORT InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, protocol::Frontend::Page>, public protocol::Dispatcher::PageCommandHandler {

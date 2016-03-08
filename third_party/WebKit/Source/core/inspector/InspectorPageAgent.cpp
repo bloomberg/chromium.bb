@@ -588,7 +588,7 @@ void InspectorPageAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     if (scripts) {
         for (size_t i = 0; i < scripts->size(); ++i) {
             auto script = scripts->at(i);
-            String scriptText;
+            String16 scriptText;
             if (script.second->asString(&scriptText))
                 frame->script().executeScriptInMainWorld(scriptText);
         }

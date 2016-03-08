@@ -37,8 +37,6 @@ class ConsoleMessageStorage;
 class V8DebuggerAgent;
 class V8RuntimeAgent;
 
-typedef String ErrorString;
-
 class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, protocol::Frontend::Console>, public protocol::Dispatcher::ConsoleCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:

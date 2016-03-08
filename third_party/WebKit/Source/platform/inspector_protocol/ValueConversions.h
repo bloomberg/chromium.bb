@@ -7,8 +7,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/ErrorSupport.h"
+#include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace protocol {
@@ -18,6 +18,8 @@ PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(int value);
 PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(double value);
 
 PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(bool value);
+
+PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(const String16& param);
 
 PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(const String& param);
 
@@ -92,7 +94,19 @@ template<>
 struct FromValue<String> {
     static String parse(protocol::Value* value, ErrorSupport* errors)
     {
-        String result;
+        String16 result;
+        bool success = value ? value->asString(&result) : false;
+        if (!success)
+            errors->addError("string value expected");
+        return result;
+    }
+};
+
+template<>
+struct FromValue<String16> {
+    static String16 parse(protocol::Value* value, ErrorSupport* errors)
+    {
+        String16 result;
         bool success = value ? value->asString(&result) : false;
         if (!success)
             errors->addError("string value expected");
@@ -104,7 +118,6 @@ template<>
 struct FromValue<Value> {
     static PassOwnPtr<Value> parse(protocol::Value* value, ErrorSupport* errors)
     {
-        String result;
         bool success = !!value;
         if (!success)
             errors->addError("value expected");
@@ -116,7 +129,6 @@ template<>
 struct FromValue<DictionaryValue> {
     static PassOwnPtr<DictionaryValue> parse(protocol::Value* value, ErrorSupport* errors)
     {
-        String result;
         bool success = value && value->type() == protocol::Value::TypeObject;
         if (!success)
             errors->addError("object expected");
@@ -128,7 +140,6 @@ template<>
 struct FromValue<ListValue> {
     static PassOwnPtr<ListValue> parse(protocol::Value* value, ErrorSupport* errors)
     {
-        String result;
         bool success = value && value->type() == protocol::Value::TypeArray;
         if (!success)
             errors->addError("list expected");

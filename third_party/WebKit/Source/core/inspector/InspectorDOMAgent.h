@@ -70,8 +70,6 @@ class PlatformTouchEvent;
 class InspectorRevalidateDOMTask;
 class ShadowRoot;
 
-typedef String ErrorString;
-
 class CORE_EXPORT InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, protocol::Frontend::DOM>, public protocol::Dispatcher::DOMCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
 public:
@@ -131,11 +129,11 @@ public:
     void performSearch(ErrorString*, const String& query, const Maybe<bool>& includeUserAgentShadowDOM, String* searchId, int* resultCount) override;
     void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, OwnPtr<protocol::Array<int>>* nodeIds) override;
     void discardSearchResults(ErrorString*, const String& searchId) override;
-    void requestNode(ErrorString*, const String& objectId, int* outNodeId) override;
+    void requestNode(ErrorString*, const String16& objectId, int* outNodeId) override;
     void setInspectMode(ErrorString*, const String& mode, const Maybe<protocol::DOM::HighlightConfig>&) override;
     void highlightRect(ErrorString*, int x, int y, int width, int height, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor) override;
     void highlightQuad(ErrorString*, PassOwnPtr<protocol::Array<double>> quad, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor) override;
-    void highlightNode(ErrorString*, PassOwnPtr<protocol::DOM::HighlightConfig>, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String>& objectId) override;
+    void highlightNode(ErrorString*, PassOwnPtr<protocol::DOM::HighlightConfig>, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String16>& objectId) override;
     void hideHighlight(ErrorString*) override;
     void highlightFrame(ErrorString*, const String& frameId, const Maybe<protocol::DOM::RGBA>& contentColor, const Maybe<protocol::DOM::RGBA>& contentOutlineColor) override;
     void pushNodeByPathToFrontend(ErrorString*, const String& path, int* outNodeId) override;
@@ -184,7 +182,7 @@ public:
 
     static String documentURLString(Document*);
 
-    PassOwnPtr<protocol::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
+    PassOwnPtr<protocol::Runtime::RemoteObject> resolveNode(Node*, const String16& objectGroup);
 
     InspectorHistory* history() { return m_history.get(); }
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Collections_h
-#define Collections_h
+#ifndef String16_h
+#define String16_h
 
-#include "platform/inspector_protocol/CollectionsWTF.h"
+#include "platform/inspector_protocol/String16WTF.h"
 
-#endif // !defined(Collections_h)
+#endif // !defined(String16_h)

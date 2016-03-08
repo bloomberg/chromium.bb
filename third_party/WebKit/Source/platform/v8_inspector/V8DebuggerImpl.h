@@ -58,8 +58,8 @@ public:
     void addAgent(int contextGroupId, V8DebuggerAgentImpl*);
     void removeAgent(int contextGroupId);
 
-    String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
-    void removeBreakpoint(const String& breakpointId);
+    String16 setBreakpoint(const String16& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
+    void removeBreakpoint(const String16& breakpointId);
     void setBreakpointsActivated(bool);
 
     enum PauseOnExceptionsState {
@@ -79,7 +79,7 @@ public:
     void stepOutOfFunction();
     void clearStepping();
 
-    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, Maybe<protocol::Debugger::SetScriptSourceError>*, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged);
+    bool setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged);
     v8::Local<v8::Object> currentCallFrames();
     PassOwnPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
     int frameCount();
@@ -90,12 +90,12 @@ public:
     v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Function>);
     v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&);
     v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&);
-    v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue);
+    v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String16& variableName, v8::Local<v8::Value> newValue);
 
     v8::Isolate* isolate() const { return m_isolate; }
     V8DebuggerClient* client() { return m_client; }
 
-    v8::Local<v8::Script> compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String>, const String& fileName);
+    v8::Local<v8::Script> compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String>, const String16& fileName);
     v8::Local<v8::Context> regexContext();
 
     // V8Debugger implementation

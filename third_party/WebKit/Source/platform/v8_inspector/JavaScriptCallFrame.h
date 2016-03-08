@@ -31,8 +31,9 @@
 #ifndef JavaScriptCallFrame_h
 #define JavaScriptCallFrame_h
 
+#include "platform/inspector_protocol/String16.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
@@ -52,8 +53,8 @@ public:
     int sourceID() const;
     int line() const;
     int column() const;
-    String scriptName() const;
-    String functionName() const;
+    String16 scriptName() const;
+    String16 functionName() const;
     int functionLine() const;
     int functionColumn() const;
 
@@ -63,7 +64,7 @@ public:
     v8::Local<v8::Value> scopeStartLocation(int scopeIndex) const;
     v8::Local<v8::Value> scopeEndLocation(int scopeIndex) const;
     v8::Local<v8::Value> thisObject() const;
-    String stepInPositions() const;
+    String16 stepInPositions() const;
     bool isAtReturn() const;
     v8::Local<v8::Value> returnValue() const;
 
@@ -83,7 +84,7 @@ private:
     JavaScriptCallFrame(V8DebuggerClient*, v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame);
 
     int callV8FunctionReturnInt(const char* name) const;
-    String callV8FunctionReturnString(const char* name) const;
+    String16 callV8FunctionReturnString(const char* name) const;
     v8::Local<v8::Value> callScopeLocationFunction(const char* name, int scopeIndex) const;
 
     V8DebuggerClient* m_client;

@@ -14,7 +14,6 @@ namespace blink {
 class DeviceOrientationController;
 class Page;
 
-typedef String ErrorString;
 
 class MODULES_EXPORT DeviceOrientationInspectorAgent final : public InspectorBaseAgent<DeviceOrientationInspectorAgent, protocol::Frontend::DeviceOrientation>, public protocol::Dispatcher::DeviceOrientationCommandHandler {
     WTF_MAKE_NONCOPYABLE(DeviceOrientationInspectorAgent);

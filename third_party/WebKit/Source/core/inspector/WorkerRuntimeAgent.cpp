@@ -58,7 +58,7 @@ void WorkerRuntimeAgent::enable(ErrorString* errorString)
 
     InspectorRuntimeAgent::enable(errorString);
     ScriptState* scriptState = m_workerGlobalScope->scriptController()->scriptState();
-    reportExecutionContextCreated(scriptState, "", m_workerGlobalScope->url(), "", "");
+    reportExecutionContextCreated(scriptState, "", m_workerGlobalScope->url().getString(), "", "");
 }
 
 ScriptState* WorkerRuntimeAgent::defaultScriptState()

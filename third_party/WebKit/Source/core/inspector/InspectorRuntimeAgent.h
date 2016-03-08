@@ -48,8 +48,6 @@ namespace protocol {
 class ListValue;
 }
 
-typedef String ErrorString;
-
 using protocol::Maybe;
 
 class CORE_EXPORT InspectorRuntimeAgent
@@ -77,17 +75,17 @@ public:
     void restore() override;
 
     // Part of the protocol.
-    void evaluate(ErrorString*, const String& expression, const Maybe<String>& objectGroup, const Maybe<bool>& includeCommandLineAPI, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<int>& contextId, const Maybe<bool>& returnByValue, const Maybe<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>*) override;
-    void callFunctionOn(ErrorString*, const String& objectId, const String& functionDeclaration, const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& arguments, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<bool>& returnByValue, const Maybe<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown) override;
-    void getProperties(ErrorString*, const String& objectId, const Maybe<bool>& ownProperties, const Maybe<bool>& accessorPropertiesOnly, const Maybe<bool>& generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties, Maybe<protocol::Runtime::ExceptionDetails>*) override;
-    void releaseObject(ErrorString*, const String& objectId) override;
-    void releaseObjectGroup(ErrorString*, const String& objectGroup) override;
+    void evaluate(ErrorString*, const String16& expression, const Maybe<String16>& objectGroup, const Maybe<bool>& includeCommandLineAPI, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<int>& contextId, const Maybe<bool>& returnByValue, const Maybe<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>*) override;
+    void callFunctionOn(ErrorString*, const String16& objectId, const String16& functionDeclaration, const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& arguments, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<bool>& returnByValue, const Maybe<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown) override;
+    void getProperties(ErrorString*, const String16& objectId, const Maybe<bool>& ownProperties, const Maybe<bool>& accessorPropertiesOnly, const Maybe<bool>& generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties, Maybe<protocol::Runtime::ExceptionDetails>*) override;
+    void releaseObject(ErrorString*, const String16& objectId) override;
+    void releaseObjectGroup(ErrorString*, const String16& objectGroup) override;
     void run(ErrorString*) override;
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool enabled) override;
-    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, Maybe<String>* scriptId, Maybe<protocol::Runtime::ExceptionDetails>*) override;
-    void runScript(ErrorString*, const String& scriptId, int executionContextId, const Maybe<String>& objectGroup, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<bool>& includeCommandLineAPI, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<protocol::Runtime::ExceptionDetails>*) override;
+    void compileScript(ErrorString*, const String16& expression, const String16& sourceURL, bool persistScript, int executionContextId, Maybe<String16>* scriptId, Maybe<protocol::Runtime::ExceptionDetails>*) override;
+    void runScript(ErrorString*, const String16& scriptId, int executionContextId, const Maybe<String16>& objectGroup, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<bool>& includeCommandLineAPI, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<protocol::Runtime::ExceptionDetails>*) override;
 
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;
@@ -98,7 +96,7 @@ protected:
     InspectorRuntimeAgent(V8Debugger*, Client*);
     virtual ScriptState* defaultScriptState() = 0;
 
-    void reportExecutionContextCreated(ScriptState*, const String& type, const String& origin, const String& humanReadableName, const String& frameId);
+    void reportExecutionContextCreated(ScriptState*, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId);
     void reportExecutionContextDestroyed(ScriptState*);
 
     bool m_enabled;

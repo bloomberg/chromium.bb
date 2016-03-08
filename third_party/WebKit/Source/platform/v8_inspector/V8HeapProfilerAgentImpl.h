@@ -12,8 +12,6 @@ namespace blink {
 
 class V8RuntimeAgentImpl;
 
-typedef String ErrorString;
-
 using protocol::Maybe;
 
 class V8HeapProfilerAgentImpl : public V8HeapProfilerAgent {
@@ -37,9 +35,9 @@ public:
 
     void takeHeapSnapshot(ErrorString*, const Maybe<bool>& reportProgress) override;
 
-    void getObjectByHeapObjectId(ErrorString*, const String& heapSnapshotObjectId, const Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result) override;
-    void addInspectedHeapObject(ErrorString*, const String& inspectedHeapObjectId) override;
-    void getHeapObjectId(ErrorString*, const String& objectId, String* heapSnapshotObjectId) override;
+    void getObjectByHeapObjectId(ErrorString*, const String16& heapSnapshotObjectId, const Maybe<String16>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result) override;
+    void addInspectedHeapObject(ErrorString*, const String16& inspectedHeapObjectId) override;
+    void getHeapObjectId(ErrorString*, const String16& objectId, String16* heapSnapshotObjectId) override;
 
     void startSampling(ErrorString*) override;
     void stopSampling(ErrorString*, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>*) override;

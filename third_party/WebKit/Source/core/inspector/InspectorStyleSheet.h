@@ -51,7 +51,6 @@ class InspectorResourceAgent;
 class InspectorStyleSheetBase;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<CSSRule>> CSSRuleVector;
-typedef String ErrorString;
 typedef Vector<unsigned> LineEndings;
 
 class InspectorStyle final : public RefCountedWillBeGarbageCollectedFinalized<InspectorStyle> {

@@ -90,7 +90,7 @@ function concat(array1, array2)
  */
 function toString(obj)
 {
-    // We don't use String(obj) because String could be overridden.
+    // We don't use String(obj) because String16 could be overridden.
     // Also the ("" + obj) expression may throw.
     try {
         return "" + obj;

@@ -37,11 +37,11 @@ public:
     // Each v8::Context is a part of a group. The group id is used to find approapriate
     // V8DebuggerAgent to notify about events in the context.
     // |contextGroupId| must be non-0.
-    static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextGroupId);
+    static void setContextDebugData(v8::Local<v8::Context>, const String16& type, int contextGroupId);
     static int contextId(v8::Local<v8::Context>);
 
     static v8::Local<v8::Symbol> commandLineAPISymbol(v8::Isolate*);
-    static bool isCommandLineAPIMethod(const AtomicString& name);
+    static bool isCommandLineAPIMethod(const String16& name);
 
     virtual PassOwnPtr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) = 0;
     virtual PassOwnPtr<V8StackTrace> captureStackTrace(size_t maxStackSize) = 0;

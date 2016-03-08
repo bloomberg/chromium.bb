@@ -4,20 +4,20 @@
 
 #include "platform/inspector_protocol/ErrorSupport.h"
 
-#include "wtf/text/StringBuilder.h"
+#include "platform/inspector_protocol/String16.h"
 
 namespace blink {
 namespace protocol {
 
 ErrorSupport::ErrorSupport() : m_errorString(nullptr) { }
-ErrorSupport::ErrorSupport(String* errorString) : m_errorString(errorString) { }
+ErrorSupport::ErrorSupport(String16* errorString) : m_errorString(errorString) { }
 ErrorSupport::~ErrorSupport()
 {
     if (m_errorString && hasErrors())
         *m_errorString = "Internal error(s): " + errors();
 }
 
-void ErrorSupport::setName(const String& name)
+void ErrorSupport::setName(const String16& name)
 {
     ASSERT(m_path.size());
     m_path[m_path.size() - 1] = name;
@@ -25,7 +25,7 @@ void ErrorSupport::setName(const String& name)
 
 void ErrorSupport::push()
 {
-    m_path.append(String());
+    m_path.append(String16());
 }
 
 void ErrorSupport::pop()
@@ -33,9 +33,9 @@ void ErrorSupport::pop()
     m_path.removeLast();
 }
 
-void ErrorSupport::addError(const String& error)
+void ErrorSupport::addError(const String16& error)
 {
-    StringBuilder builder;
+    String16Builder builder;
     for (size_t i = 0; i < m_path.size(); ++i) {
         if (i)
             builder.append(".");
@@ -51,9 +51,9 @@ bool ErrorSupport::hasErrors()
     return m_errors.size();
 }
 
-String ErrorSupport::errors()
+String16 ErrorSupport::errors()
 {
-    StringBuilder builder;
+    String16Builder builder;
     for (size_t i = 0; i < m_errors.size(); ++i) {
         if (i)
             builder.append("; ");

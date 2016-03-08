@@ -4,10 +4,8 @@
 
 #include "platform/inspector_protocol/Parser.h"
 
-#include "platform/Decimal.h"
+#include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/UTF8.h"
 
 namespace blink {
 namespace protocol {
@@ -299,7 +297,7 @@ inline int hexToInt(CharType c)
 }
 
 template<typename CharType>
-bool decodeUTF8(const CharType* start, const CharType* end, const CharType** utf8charEnd, StringBuilder* output)
+bool decodeUTF8(const CharType* start, const CharType* end, const CharType** utf8charEnd, String16Builder* output)
 {
     UChar utf16[4] = {0};
     char utf8[6] = {0};
@@ -318,12 +316,12 @@ bool decodeUTF8(const CharType* start, const CharType* end, const CharType** utf
 
         const char* utf8start = utf8;
         UChar* utf16start = utf16;
-        WTF::Unicode::ConversionResult conversionResult = WTF::Unicode::convertUTF8ToUTF16(&utf8start, utf8start + utf8count, &utf16start, utf16start + WTF_ARRAY_LENGTH(utf16), nullptr, true);
+        String16::ConversionResult conversionResult = String16::convertUTF8ToUTF16(&utf8start, utf8start + utf8count, &utf16start, utf16start + 4, nullptr, true);
 
-        if (conversionResult == WTF::Unicode::sourceIllegal)
+        if (conversionResult == String16::sourceIllegal)
             return false;
 
-        if (conversionResult == WTF::Unicode::conversionOK) {
+        if (conversionResult == String16::conversionOK) {
             // Not all utf8 characters were consumed - failed parsing.
             if (utf8start != utf8 + utf8count)
                 return false;
@@ -335,7 +333,7 @@ bool decodeUTF8(const CharType* start, const CharType* end, const CharType** utf
         }
 
         // Keep accumulating utf8 characters up to buffer length (6 should be enough).
-        if (utf8count >= WTF_ARRAY_LENGTH(utf8))
+        if (utf8count >= 6)
             return false;
     }
 
@@ -343,7 +341,7 @@ bool decodeUTF8(const CharType* start, const CharType* end, const CharType** utf
 }
 
 template<typename CharType>
-bool decodeString(const CharType* start, const CharType* end, StringBuilder* output)
+bool decodeString(const CharType* start, const CharType* end, String16Builder* output)
 {
     while (start < end) {
         UChar c = *start++;
@@ -399,7 +397,7 @@ bool decodeString(const CharType* start, const CharType* end, StringBuilder* out
 }
 
 template<typename CharType>
-bool decodeString(const CharType* start, const CharType* end, String* output)
+bool decodeString(const CharType* start, const CharType* end, String16* output)
 {
     if (start == end) {
         *output = "";
@@ -407,13 +405,13 @@ bool decodeString(const CharType* start, const CharType* end, String* output)
     }
     if (start > end)
         return false;
-    StringBuilder buffer;
+    String16Builder buffer;
     buffer.reserveCapacity(end - start);
     if (!decodeString(start, end, &buffer))
         return false;
     *output = buffer.toString();
     // Validate constructed utf16 string.
-    if (output->utf8(StrictUTF8Conversion).isNull())
+    if (!output->validateUTF8())
         return false;
     return true;
 }
@@ -442,16 +440,14 @@ PassOwnPtr<Value> buildValue(const CharType* start, const CharType* end, const C
         break;
     case Number: {
         bool ok;
-        double value = charactersToDouble(tokenStart, tokenEnd - tokenStart, &ok);
-        if (Decimal::fromDouble(value).isInfinity())
-            ok = false;
+        double value = String16::charactersToDouble(tokenStart, tokenEnd - tokenStart, &ok);
         if (!ok)
             return nullptr;
         result = FundamentalValue::create(value);
         break;
     }
     case StringLiteral: {
-        String value;
+        String16 value;
         bool ok = decodeString(tokenStart + 1, tokenEnd - 1, &value);
         if (!ok)
             return nullptr;
@@ -493,7 +489,7 @@ PassOwnPtr<Value> buildValue(const CharType* start, const CharType* end, const C
         while (token != ObjectEnd) {
             if (token != StringLiteral)
                 return nullptr;
-            String key;
+            String16 key;
             if (!decodeString(tokenStart + 1, tokenEnd - 1, &key))
                 return nullptr;
             start = tokenEnd;
@@ -550,7 +546,7 @@ PassOwnPtr<Value> parseJSONInternal(const CharType* start, unsigned length)
 
 } // anonymous namespace
 
-PassOwnPtr<Value> parseJSON(const String& json)
+PassOwnPtr<Value> parseJSON(const String16& json)
 {
     if (json.isEmpty())
         return nullptr;

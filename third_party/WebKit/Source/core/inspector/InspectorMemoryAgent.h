@@ -37,8 +37,6 @@
 
 namespace blink {
 
-typedef String ErrorString;
-
 class CORE_EXPORT InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent, protocol::Frontend::Memory>, public protocol::Dispatcher::MemoryCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
 public:

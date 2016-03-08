@@ -4,11 +4,11 @@
 
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 
+#include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/StringBuilder.h"
 
 #include <v8-debug.h>
 #include <v8-profiler.h>
@@ -19,16 +19,16 @@ namespace {
 
 V8StackTraceImpl::Frame toCallFrame(v8::Local<v8::StackFrame> frame)
 {
-    String scriptId = String::number(frame->GetScriptId());
-    String sourceName;
+    String16 scriptId = String16::number(frame->GetScriptId());
+    String16 sourceName;
     v8::Local<v8::String> sourceNameValue(frame->GetScriptNameOrSourceURL());
     if (!sourceNameValue.IsEmpty())
-        sourceName = toWTFString(sourceNameValue);
+        sourceName = toProtocolString(sourceNameValue);
 
-    String functionName;
+    String16 functionName;
     v8::Local<v8::String> functionNameValue(frame->GetFunctionName());
     if (!functionNameValue.IsEmpty())
-        functionName = toWTFString(functionNameValue);
+        functionName = toProtocolString(functionNameValue);
 
     int sourceLineNumber = frame->GetLineNumber();
     int sourceColumn = frame->GetColumn();
@@ -58,7 +58,7 @@ V8StackTraceImpl::Frame::Frame()
 {
 }
 
-V8StackTraceImpl::Frame::Frame(const String& functionName, const String& scriptId, const String& scriptName, int lineNumber, int column)
+V8StackTraceImpl::Frame::Frame(const String16& functionName, const String16& scriptId, const String16& scriptName, int lineNumber, int column)
     : m_functionName(functionName)
     , m_scriptId(scriptId)
     , m_scriptName(scriptName)
@@ -84,7 +84,7 @@ PassOwnPtr<protocol::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInspector
         .build();
 }
 
-PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize, const String& description)
+PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize, const String16& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
@@ -102,7 +102,7 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent
     return V8StackTraceImpl::create(description, scriptCallFrames, asyncCallStack.release());
 }
 
-PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agent, size_t maxStackSize, const String& description)
+PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agent, size_t maxStackSize, const String16& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
@@ -114,7 +114,7 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agen
     return V8StackTraceImpl::create(agent, stackTrace, maxStackSize, description);
 }
 
-PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(const String& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
+PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(const String16& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
 {
     return adoptPtr(new V8StackTraceImpl(description, frames, parent));
 }
@@ -136,7 +136,7 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::clone(V8StackTraceImpl* origin, s
     return adoptPtr(new V8StackTraceImpl(origin->m_description, frames, parent.release()));
 }
 
-V8StackTraceImpl::V8StackTraceImpl(const String& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
+V8StackTraceImpl::V8StackTraceImpl(const String16& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)
     : m_description(description)
     , m_parent(parent)
 {
@@ -147,7 +147,7 @@ V8StackTraceImpl::~V8StackTraceImpl()
 {
 }
 
-String V8StackTraceImpl::topSourceURL() const
+String16 V8StackTraceImpl::topSourceURL() const
 {
     ASSERT(m_frames.size());
     return m_frames[0].m_scriptName;
@@ -165,13 +165,13 @@ int V8StackTraceImpl::topColumnNumber() const
     return m_frames[0].m_columnNumber;
 }
 
-String V8StackTraceImpl::topFunctionName() const
+String16 V8StackTraceImpl::topFunctionName() const
 {
     ASSERT(m_frames.size());
     return m_frames[0].m_functionName;
 }
 
-String V8StackTraceImpl::topScriptId() const
+String16 V8StackTraceImpl::topScriptId() const
 {
     ASSERT(m_frames.size());
     return m_frames[0].m_scriptId;
@@ -192,13 +192,13 @@ PassOwnPtr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObject
     return stackTrace.release();
 }
 
-String V8StackTraceImpl::toString() const
+String16 V8StackTraceImpl::toString() const
 {
-    StringBuilder stackTrace;
+    String16Builder stackTrace;
     for (size_t i = 0; i < m_frames.size(); ++i) {
         const Frame& frame = m_frames[i];
         stackTrace.append("\n    at " + (frame.functionName().length() ? frame.functionName() : "(anonymous function)"));
-        stackTrace.appendLiteral(" (");
+        stackTrace.append(" (");
         stackTrace.append(frame.sourceURL());
         stackTrace.append(':');
         stackTrace.appendNumber(frame.lineNumber());

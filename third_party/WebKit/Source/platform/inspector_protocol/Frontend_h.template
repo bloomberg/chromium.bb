@@ -14,8 +14,6 @@
 namespace blink {
 namespace protocol {
 
-using ErrorString = String;
-
 class PLATFORM_EXPORT Frontend {
 public:
     Frontend(FrontendChannel*);

@@ -66,7 +66,7 @@ void InspectorTracingAgent::end(ErrorString* errorString, PassOwnPtr<EndCallback
 
 String InspectorTracingAgent::sessionId()
 {
-    String result;
+    String16 result;
     if (m_state)
         m_state->getString(TracingAgentState::sessionId, &result);
     return result;
@@ -94,7 +94,7 @@ void InspectorTracingAgent::disable(ErrorString*)
 void InspectorTracingAgent::resetSessionId()
 {
     m_state->remove(TracingAgentState::sessionId);
-    m_workerAgent->setTracingSessionId(sessionId());
+    m_workerAgent->setTracingSessionId(String());
 }
 
 } // namespace blink

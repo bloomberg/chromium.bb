@@ -10,7 +10,7 @@
 
 namespace blink {
 
-V8Regex::V8Regex(V8DebuggerImpl* debugger, const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
+V8Regex::V8Regex(V8DebuggerImpl* debugger, const String16& pattern, bool caseSensitive, bool multiline)
     : m_debugger(debugger)
 {
     v8::Isolate* isolate = m_debugger->isolate();
@@ -20,9 +20,9 @@ V8Regex::V8Regex(V8DebuggerImpl* debugger, const String& pattern, TextCaseSensit
     v8::TryCatch tryCatch(isolate);
 
     unsigned flags = v8::RegExp::kNone;
-    if (caseSensitivity == TextCaseInsensitive)
+    if (!caseSensitive)
         flags |= v8::RegExp::kIgnoreCase;
-    if (multilineMode == MultilineEnabled)
+    if (multiline)
         flags |= v8::RegExp::kMultiline;
 
     v8::Local<v8::RegExp> regex;
@@ -30,7 +30,7 @@ V8Regex::V8Regex(V8DebuggerImpl* debugger, const String& pattern, TextCaseSensit
         m_regex.Reset(isolate, regex);
 }
 
-int V8Regex::match(const String& string, int startFrom, int* matchLength) const
+int V8Regex::match(const String16& string, int startFrom, int* matchLength) const
 {
     if (matchLength)
         *matchLength = 0;

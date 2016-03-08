@@ -37,8 +37,6 @@ class LocalFrame;
 class InspectedFrames;
 class InspectorFrontend;
 
-typedef String ErrorString;
-
 class CORE_EXPORT InspectorApplicationCacheAgent final : public InspectorBaseAgent<InspectorApplicationCacheAgent, protocol::Frontend::ApplicationCache>, public protocol::Dispatcher::ApplicationCacheCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorApplicationCacheAgent);

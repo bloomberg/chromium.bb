@@ -12,7 +12,6 @@
 
 namespace blink {
 
-typedef String ErrorString;
 
 class MODULES_EXPORT InspectorCacheStorageAgent final : public InspectorBaseAgent<InspectorCacheStorageAgent, protocol::Frontend::CacheStorage>, public protocol::Dispatcher::CacheStorageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);

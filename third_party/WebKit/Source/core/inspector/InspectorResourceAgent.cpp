@@ -507,9 +507,9 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
     if (headers) {
         for (size_t i = 0; i < headers->size(); ++i) {
             auto header = headers->at(i);
-            String value;
+            String16 value;
             if (header.second->asString(&value))
-                request.setHTTPHeaderField(AtomicString(header.first), AtomicString(value));
+                request.setHTTPHeaderField(AtomicString(header.first), AtomicString(String(value)));
         }
     }
 
@@ -758,7 +758,7 @@ void InspectorResourceAgent::removedResourceFromMemoryCache(Resource* cachedReso
 
 void InspectorResourceAgent::applyUserAgentOverride(String* userAgent)
 {
-    String userAgentOverride;
+    String16 userAgentOverride;
     m_state->getString(ResourceAgentState::userAgentOverride, &userAgentOverride);
     if (!userAgentOverride.isEmpty())
         *userAgent = userAgentOverride;

@@ -31,7 +31,7 @@
 #define V8DebuggerScript_h
 
 #include "platform/inspector_protocol/Allocator.h"
-#include "wtf/text/WTFString.h"
+#include "platform/inspector_protocol/String16.h"
 #include <v8.h>
 
 namespace blink {
@@ -41,12 +41,12 @@ class V8DebuggerScript {
 public:
     V8DebuggerScript();
 
-    String url() const { return m_url; }
+    String16 url() const { return m_url; }
     bool hasSourceURL() const { return !m_sourceURL.isEmpty(); }
-    String sourceURL() const;
-    String sourceMappingURL() const { return m_sourceMappingURL; }
-    String source() const { return m_source; }
-    String hash() const { return m_hash; }
+    String16 sourceURL() const;
+    String16 sourceMappingURL() const { return m_sourceMappingURL; }
+    String16 source() const { return m_source; }
+    String16 hash() const { return m_hash; }
     int startLine() const { return m_startLine; }
     int startColumn() const { return m_startColumn; }
     int endLine() const { return m_endLine; }
@@ -56,11 +56,11 @@ public:
     bool isInternalScript() const { return m_isInternalScript; }
     bool isLiveEdit() const { return m_isLiveEdit; }
 
-    V8DebuggerScript& setURL(const String&);
-    V8DebuggerScript& setSourceURL(const String&);
-    V8DebuggerScript& setSourceMappingURL(const String&);
-    V8DebuggerScript& setSource(const String&);
-    V8DebuggerScript& setHash(const String&);
+    V8DebuggerScript& setURL(const String16&);
+    V8DebuggerScript& setSourceURL(const String16&);
+    V8DebuggerScript& setSourceMappingURL(const String16&);
+    V8DebuggerScript& setSource(const String16&);
+    V8DebuggerScript& setHash(const String16&);
     V8DebuggerScript& setStartLine(int);
     V8DebuggerScript& setStartColumn(int);
     V8DebuggerScript& setEndLine(int);
@@ -71,11 +71,11 @@ public:
     V8DebuggerScript& setIsLiveEdit(bool);
 
 private:
-    String m_url;
-    String m_sourceURL;
-    String m_sourceMappingURL;
-    String m_source;
-    String m_hash;
+    String16 m_url;
+    String16 m_sourceURL;
+    String16 m_sourceMappingURL;
+    String16 m_source;
+    String16 m_hash;
     int m_startLine;
     int m_startColumn;
     int m_endLine;
@@ -87,7 +87,7 @@ private:
 };
 
 struct V8DebuggerParsedScript {
-    String scriptId;
+    String16 scriptId;
     V8DebuggerScript script;
     bool success;
 };

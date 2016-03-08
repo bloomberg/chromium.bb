@@ -13,8 +13,6 @@ class InspectorOverlay;
 class WebLocalFrameImpl;
 class WebViewImpl;
 
-using ErrorString = String;
-
 class InspectorRenderingAgent final : public InspectorBaseAgent<InspectorRenderingAgent, protocol::Frontend::Rendering>, public protocol::Dispatcher::RenderingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRenderingAgent);
 public:

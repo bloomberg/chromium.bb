@@ -164,7 +164,7 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
     m_v8HeapProfilerAgent->takeHeapSnapshot(errorString, reportProgress);
 }
 
-void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const protocol::Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
+void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, const String16& heapSnapshotObjectId, const protocol::Maybe<String16>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
 {
     bool ok;
     unsigned id = heapSnapshotObjectId.toUInt(&ok);
@@ -181,7 +181,7 @@ void InspectorHeapProfilerAgent::getObjectByHeapObjectId(ErrorString* error, con
     m_v8HeapProfilerAgent->getObjectByHeapObjectId(error, heapSnapshotObjectId, objectGroup, result);
 }
 
-void InspectorHeapProfilerAgent::addInspectedHeapObject(ErrorString* error, const String& inspectedHeapObjectId)
+void InspectorHeapProfilerAgent::addInspectedHeapObject(ErrorString* error, const String16& inspectedHeapObjectId)
 {
     bool ok;
     unsigned id = inspectedHeapObjectId.toUInt(&ok);
@@ -198,7 +198,7 @@ void InspectorHeapProfilerAgent::addInspectedHeapObject(ErrorString* error, cons
     m_v8HeapProfilerAgent->addInspectedHeapObject(error, inspectedHeapObjectId);
 }
 
-void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const String& objectId, String* heapSnapshotObjectId)
+void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const String16& objectId, String16* heapSnapshotObjectId)
 {
     m_v8HeapProfilerAgent->getHeapObjectId(errorString, objectId, heapSnapshotObjectId);
 }

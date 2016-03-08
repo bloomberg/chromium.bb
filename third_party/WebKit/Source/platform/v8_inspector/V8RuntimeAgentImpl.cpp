@@ -71,8 +71,8 @@ V8RuntimeAgentImpl::~V8RuntimeAgentImpl()
 
 void V8RuntimeAgentImpl::evaluate(
     ErrorString* errorString,
-    const String& expression,
-    const Maybe<String>& objectGroup,
+    const String16& expression,
+    const Maybe<String16>& objectGroup,
     const Maybe<bool>& includeCommandLineAPI,
     const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
     const Maybe<int>& executionContextId,
@@ -96,8 +96,8 @@ void V8RuntimeAgentImpl::evaluate(
 }
 
 void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
-    const String& objectId,
-    const String& expression,
+    const String16& objectId,
+    const String16& expression,
     const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
     const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
     const Maybe<bool>& returnByValue,
@@ -115,7 +115,7 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
         *errorString = "Inspected frame has gone";
         return;
     }
-    String arguments;
+    String16 arguments;
     if (optionalArguments.isJust())
         arguments = protocol::toValue(optionalArguments.fromJust())->toJSONString();
 
@@ -125,7 +125,7 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
 
 void V8RuntimeAgentImpl::getProperties(
     ErrorString* errorString,
-    const String& objectId,
+    const String16& objectId,
     const Maybe<bool>& ownProperties,
     const Maybe<bool>& accessorPropertiesOnly,
     const Maybe<bool>& generatePreview,
@@ -152,7 +152,7 @@ void V8RuntimeAgentImpl::getProperties(
         injectedScript->getInternalProperties(errorString, objectId, internalProperties, exceptionDetails);
 }
 
-void V8RuntimeAgentImpl::releaseObject(ErrorString* errorString, const String& objectId)
+void V8RuntimeAgentImpl::releaseObject(ErrorString* errorString, const String16& objectId)
 {
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
     if (!remoteId) {
@@ -170,7 +170,7 @@ void V8RuntimeAgentImpl::releaseObject(ErrorString* errorString, const String& o
         m_debugger->setPauseOnNextStatement(true);
 }
 
-void V8RuntimeAgentImpl::releaseObjectGroup(ErrorString*, const String& objectGroup)
+void V8RuntimeAgentImpl::releaseObjectGroup(ErrorString*, const String16& objectGroup)
 {
     bool pausingOnNextStatement = m_debugger->pausingOnNextStatement();
     if (pausingOnNextStatement)
@@ -192,11 +192,11 @@ void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enab
 }
 
 void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
-    const String& expression,
-    const String& sourceURL,
+    const String16& expression,
+    const String16& sourceURL,
     bool persistScript,
     int executionContextId,
-    Maybe<protocol::Runtime::ScriptId>* scriptId,
+    Maybe<String16>* scriptId,
     Maybe<ExceptionDetails>* exceptionDetails)
 {
     if (!m_enabled) {
@@ -226,16 +226,16 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
     if (!persistScript)
         return;
 
-    String scriptValueId = String::number(script->GetUnboundScript()->GetId());
+    String16 scriptValueId = String16::number(script->GetUnboundScript()->GetId());
     OwnPtr<v8::Global<v8::Script>> global = adoptPtr(new v8::Global<v8::Script>(isolate, script));
     m_compiledScripts.set(scriptValueId, global.release());
     *scriptId = scriptValueId;
 }
 
 void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
-    const protocol::Runtime::ScriptId& scriptId,
+    const String16& scriptId,
     int executionContextId,
-    const Maybe<String>& objectGroup,
+    const Maybe<String16>& objectGroup,
     const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
     const Maybe<bool>& includeCommandLineAPI,
     OwnPtr<RemoteObject>* result,
@@ -311,7 +311,7 @@ void V8RuntimeAgentImpl::clearFrontend()
 void V8RuntimeAgentImpl::restore()
 {
     m_frontend->executionContextsCleared();
-    String error;
+    ErrorString error;
     enable(&error);
     if (m_state->booleanProperty(V8RuntimeAgentImplState::customObjectFormatterEnabled, false))
         m_injectedScriptManager->setCustomObjectFormatterEnabled(true);
@@ -347,7 +347,7 @@ void V8RuntimeAgentImpl::setInspectObjectCallback(PassOwnPtr<V8RuntimeAgent::Ins
     m_injectedScriptManager->injectedScriptHost()->setInspectObjectCallback(callback);
 }
 
-PassOwnPtr<RemoteObject> V8RuntimeAgentImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& groupName, bool generatePreview)
+PassOwnPtr<RemoteObject> V8RuntimeAgentImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
 {
     InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
     if (!injectedScript)
@@ -363,12 +363,12 @@ PassOwnPtr<RemoteObject> V8RuntimeAgentImpl::wrapTable(v8::Local<v8::Context> co
     return injectedScript->wrapTable(table, columns);
 }
 
-void V8RuntimeAgentImpl::disposeObjectGroup(const String& groupName)
+void V8RuntimeAgentImpl::disposeObjectGroup(const String16& groupName)
 {
     m_injectedScriptManager->releaseObjectGroup(groupName);
 }
 
-v8::Local<v8::Value> V8RuntimeAgentImpl::findObject(const String& objectId, v8::Local<v8::Context>* context, String* groupName)
+v8::Local<v8::Value> V8RuntimeAgentImpl::findObject(const String16& objectId, v8::Local<v8::Context>* context, String16* groupName)
 {
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
     if (!remoteId)
@@ -393,7 +393,7 @@ void V8RuntimeAgentImpl::clearInspectedObjects()
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 }
 
-void V8RuntimeAgentImpl::reportExecutionContextCreated(v8::Local<v8::Context> context, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
+void V8RuntimeAgentImpl::reportExecutionContextCreated(v8::Local<v8::Context> context, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId)
 {
     if (!m_enabled)
         return;
@@ -422,7 +422,7 @@ void V8RuntimeAgentImpl::reportExecutionContextDestroyed(v8::Local<v8::Context> 
 
 PassOwnPtr<ExceptionDetails> V8RuntimeAgentImpl::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)
 {
-    OwnPtr<ExceptionDetails> exceptionDetails = ExceptionDetails::create().setText(toWTFStringWithTypeCheck(message->Get())).build();
+    OwnPtr<ExceptionDetails> exceptionDetails = ExceptionDetails::create().setText(toProtocolStringWithTypeCheck(message->Get())).build();
     exceptionDetails->setLine(message->GetLineNumber());
     exceptionDetails->setColumn(message->GetStartColumn());
     v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();

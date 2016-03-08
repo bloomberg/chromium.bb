@@ -51,13 +51,13 @@ public:
         InjectedScript* injectedScript = m_runtimeAgent->injectedScriptManager()->findInjectedScript(contextId);
         if (!injectedScript)
             return "";
-        CString name = injectedScript->origin().utf8();
+        String16 name = injectedScript->origin().latin1Data();
         m_strings.append(name);
-        return name.data();
+        return reinterpret_cast<const char *>(name.characters8());
     }
 
 private:
-    protocol::Vector<CString> m_strings;
+    protocol::Vector<String16> m_strings;
     V8RuntimeAgentImpl* m_runtimeAgent;
 };
 
@@ -69,7 +69,7 @@ public:
     int GetChunkSize() override { return 102400; }
     WriteResult WriteAsciiChunk(char* data, int size) override
     {
-        m_frontend->addHeapSnapshotChunk(String(data, size));
+        m_frontend->addHeapSnapshotChunk(String16(data, size));
         m_frontend->flush();
         return kContinue;
     }
@@ -225,7 +225,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
     const_cast<v8::HeapSnapshot*>(snapshot)->Delete();
 }
 
-void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String& heapSnapshotObjectId, const protocol::Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
+void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String16& heapSnapshotObjectId, const protocol::Maybe<String16>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
 {
     bool ok;
     unsigned id = heapSnapshotObjectId.toUInt(&ok);
@@ -245,7 +245,7 @@ void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const 
         *error = "Object is not available";
 }
 
-void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, const String& inspectedHeapObjectId)
+void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, const String16& inspectedHeapObjectId)
 {
     bool ok;
     unsigned id = inspectedHeapObjectId.toUInt(&ok);
@@ -256,7 +256,7 @@ void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, c
     m_runtimeAgent->addInspectedObject(adoptPtr(new InspectableHeapObject(id)));
 }
 
-void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const String& objectId, String* heapSnapshotObjectId)
+void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const String16& objectId, String16* heapSnapshotObjectId)
 {
     v8::HandleScope handles(m_isolate);
     v8::Local<v8::Value> value = m_runtimeAgent->findObject(objectId);
@@ -266,7 +266,7 @@ void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const St
     }
 
     v8::SnapshotObjectId id = m_isolate->GetHeapProfiler()->GetObjectId(value);
-    *heapSnapshotObjectId = String::number(id);
+    *heapSnapshotObjectId = String16::number(id);
 }
 
 void V8HeapProfilerAgentImpl::requestHeapStatsUpdate()
@@ -311,9 +311,9 @@ PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProf
     for (const auto& allocation : node->allocations)
         totalSize += allocation.size * allocation.count;
     OwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> result = protocol::HeapProfiler::SamplingHeapProfileNode::create()
-        .setFunctionName(toWTFString(node->name))
-        .setScriptId(String::number(node->script_id))
-        .setUrl(toWTFString(node->script_name))
+        .setFunctionName(toProtocolString(node->name))
+        .setScriptId(String16::number(node->script_id))
+        .setUrl(toProtocolString(node->script_name))
         .setLineNumber(node->line_number)
         .setColumnNumber(node->column_number)
         .setTotalSize(totalSize)

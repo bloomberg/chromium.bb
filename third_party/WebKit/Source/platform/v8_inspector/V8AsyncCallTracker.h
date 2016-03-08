@@ -26,13 +26,13 @@ public:
     void asyncCallTrackingStateChanged(bool tracking);
     void resetAsyncOperations();
 
-    void didReceiveV8AsyncTaskEvent(v8::Local<v8::Context>, const String& eventType, const String& eventName, int id);
+    void didReceiveV8AsyncTaskEvent(v8::Local<v8::Context>, const String16& eventType, const String16& eventName, int id);
 
     void contextDisposed(int contextId);
 
 private:
     struct Operations {
-        protocol::HashMap<String, int> map;
+        protocol::HashMap<String16, int> map;
         int contextId;
         V8AsyncCallTracker* target;
         v8::Global<v8::Context> context;
@@ -42,9 +42,9 @@ private:
 
     explicit V8AsyncCallTracker(V8DebuggerAgentImpl*);
 
-    void didEnqueueV8AsyncTask(v8::Local<v8::Context>, const String& eventName, int id);
-    void willHandleV8AsyncTask(v8::Local<v8::Context>, const String& eventName, int id);
-    void completeOperations(const protocol::HashMap<String, int>& contextCallChains);
+    void didEnqueueV8AsyncTask(v8::Local<v8::Context>, const String16& eventName, int id);
+    void willHandleV8AsyncTask(v8::Local<v8::Context>, const String16& eventName, int id);
+    void completeOperations(const protocol::HashMap<String16, int>& contextCallChains);
 
     V8DebuggerAgentImpl* m_debuggerAgent;
     protocol::HashMap<int, OwnPtr<Operations>> m_idToOperations;

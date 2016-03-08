@@ -8,9 +8,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Collections.h"
+#include "platform/inspector_protocol/String16.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace protocol {
@@ -47,10 +46,10 @@ public:
     virtual bool asBoolean(bool* output) const;
     virtual bool asNumber(double* output) const;
     virtual bool asNumber(int* output) const;
-    virtual bool asString(String* output) const;
+    virtual bool asString(String16* output) const;
 
-    String toJSONString() const;
-    virtual void writeJSON(StringBuilder* output) const;
+    String16 toJSONString() const;
+    virtual void writeJSON(String16Builder* output) const;
     virtual PassOwnPtr<Value> clone() const;
 
 protected:
@@ -84,7 +83,7 @@ public:
     bool asBoolean(bool* output) const override;
     bool asNumber(double* output) const override;
     bool asNumber(int* output) const override;
-    void writeJSON(StringBuilder* output) const override;
+    void writeJSON(String16Builder* output) const override;
     PassOwnPtr<Value> clone() const override;
 
 private:
@@ -100,7 +99,7 @@ private:
 
 class PLATFORM_EXPORT StringValue : public Value {
 public:
-    static PassOwnPtr<StringValue> create(const String& value)
+    static PassOwnPtr<StringValue> create(const String16& value)
     {
         return adoptPtr(new StringValue(value));
     }
@@ -110,20 +109,20 @@ public:
         return adoptPtr(new StringValue(value));
     }
 
-    bool asString(String* output) const override;
-    void writeJSON(StringBuilder* output) const override;
+    bool asString(String16* output) const override;
+    void writeJSON(String16Builder* output) const override;
     PassOwnPtr<Value> clone() const override;
 
 private:
-    explicit StringValue(const String& value) : Value(TypeString), m_stringValue(value) { }
+    explicit StringValue(const String16& value) : Value(TypeString), m_stringValue(value) { }
     explicit StringValue(const char* value) : Value(TypeString), m_stringValue(value) { }
 
-    String m_stringValue;
+    String16 m_stringValue;
 };
 
 class PLATFORM_EXPORT DictionaryValue : public Value {
 public:
-    using Entry = std::pair<String, Value*>;
+    using Entry = std::pair<String16, Value*>;
     static PassOwnPtr<DictionaryValue> create()
     {
         return adoptPtr(new DictionaryValue());
@@ -141,44 +140,44 @@ public:
         return adoptPtr(DictionaryValue::cast(value.leakPtr()));
     }
 
-    void writeJSON(StringBuilder* output) const override;
+    void writeJSON(String16Builder* output) const override;
     PassOwnPtr<Value> clone() const override;
 
     size_t size() const { return m_data.size(); }
 
-    void setBoolean(const String& name, bool);
-    void setNumber(const String& name, double);
-    void setString(const String& name, const String&);
-    void setValue(const String& name, PassOwnPtr<Value>);
-    void setObject(const String& name, PassOwnPtr<DictionaryValue>);
-    void setArray(const String& name, PassOwnPtr<ListValue>);
+    void setBoolean(const String16& name, bool);
+    void setNumber(const String16& name, double);
+    void setString(const String16& name, const String16&);
+    void setValue(const String16& name, PassOwnPtr<Value>);
+    void setObject(const String16& name, PassOwnPtr<DictionaryValue>);
+    void setArray(const String16& name, PassOwnPtr<ListValue>);
 
-    bool getBoolean(const String& name, bool* output) const;
-    template<class T> bool getNumber(const String& name, T* output) const
+    bool getBoolean(const String16& name, bool* output) const;
+    template<class T> bool getNumber(const String16& name, T* output) const
     {
         Value* value = get(name);
         if (!value)
             return false;
         return value->asNumber(output);
     }
-    bool getString(const String& name, String* output) const;
+    bool getString(const String16& name, String16* output) const;
 
-    DictionaryValue* getObject(const String& name) const;
-    ListValue* getArray(const String& name) const;
-    Value* get(const String& name) const;
+    DictionaryValue* getObject(const String16& name) const;
+    ListValue* getArray(const String16& name) const;
+    Value* get(const String16& name) const;
     Entry at(size_t index) const;
 
-    bool booleanProperty(const String& name, bool defaultValue) const;
-    void remove(const String& name);
+    bool booleanProperty(const String16& name, bool defaultValue) const;
+    void remove(const String16& name);
 
     ~DictionaryValue() override;
 
 private:
     DictionaryValue();
 
-    using Dictionary = protocol::HashMap<String, OwnPtr<Value>>;
+    using Dictionary = protocol::HashMap<String16, OwnPtr<Value>>;
     Dictionary m_data;
-    protocol::Vector<String> m_order;
+    protocol::Vector<String16> m_order;
 };
 
 class PLATFORM_EXPORT ListValue : public Value {
@@ -202,7 +201,7 @@ public:
 
     ~ListValue() override;
 
-    void writeJSON(StringBuilder* output) const override;
+    void writeJSON(String16Builder* output) const override;
     PassOwnPtr<Value> clone() const override;
 
     void pushValue(PassOwnPtr<Value>);

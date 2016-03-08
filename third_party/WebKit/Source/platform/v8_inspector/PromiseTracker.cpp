@@ -4,6 +4,7 @@
 
 #include "platform/v8_inspector/PromiseTracker.h"
 
+#include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
@@ -108,9 +109,9 @@ void PromiseTracker::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8
     bool isNewPromise = false;
     int id = promiseId(promise, &isNewPromise);
 
-    String eventType = isNewPromise ? Debugger::PromiseUpdated::EventTypeEnum::New : Debugger::PromiseUpdated::EventTypeEnum::Update;
+    blink::protocol::String16 eventType = isNewPromise ? Debugger::PromiseUpdated::EventTypeEnum::New : Debugger::PromiseUpdated::EventTypeEnum::Update;
 
-    String promiseStatus;
+    blink::protocol::String16 promiseStatus;
     switch (status) {
     case 0:
         promiseStatus = Debugger::PromiseDetails::StatusEnum::Pending;

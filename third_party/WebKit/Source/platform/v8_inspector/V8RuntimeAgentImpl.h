@@ -44,8 +44,6 @@ namespace protocol {
 class DictionaryValue;
 }
 
-typedef String ErrorString;
-
 using protocol::Maybe;
 
 class V8RuntimeAgentImpl : public V8RuntimeAgent {
@@ -64,8 +62,8 @@ public:
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
     void evaluate(ErrorString*,
-        const String& expression,
-        const Maybe<String>& objectGroup,
+        const String16& expression,
+        const Maybe<String16>& objectGroup,
         const Maybe<bool>& includeCommandLineAPI,
         const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
         const Maybe<int>& executionContextId,
@@ -75,37 +73,37 @@ public:
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void callFunctionOn(ErrorString*,
-        const String& objectId,
-        const String& expression,
+        const String16& objectId,
+        const String16& expression,
         const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
         const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
         OwnPtr<protocol::Runtime::RemoteObject>* result,
         Maybe<bool>* wasThrown) override;
-    void releaseObject(ErrorString*, const String& objectId) override;
+    void releaseObject(ErrorString*, const String16& objectId) override;
     void getProperties(ErrorString*,
-        const String& objectId,
+        const String16& objectId,
         const Maybe<bool>& ownProperties,
         const Maybe<bool>& accessorPropertiesOnly,
         const Maybe<bool>& generatePreview,
         OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result,
         Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
-    void releaseObjectGroup(ErrorString*, const String& objectGroup) override;
+    void releaseObjectGroup(ErrorString*, const String16& objectGroup) override;
     void run(ErrorString*) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) override;
     void compileScript(ErrorString*,
-        const String& expression,
-        const String& sourceURL,
+        const String16& expression,
+        const String16& sourceURL,
         bool persistScript,
         int executionContextId,
-        Maybe<protocol::Runtime::ScriptId>*,
+        Maybe<String16>*,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void runScript(ErrorString*,
-        const protocol::Runtime::ScriptId&,
+        const String16&,
         int executionContextId,
-        const Maybe<String>& objectGroup,
+        const Maybe<String16>& objectGroup,
         const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
         const Maybe<bool>& includeCommandLineAPI,
         OwnPtr<protocol::Runtime::RemoteObject>* result,
@@ -117,15 +115,15 @@ public:
     void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) override;
     void setInspectObjectCallback(PassOwnPtr<InspectCallback>) override;
     int ensureDefaultContextAvailable(v8::Local<v8::Context>) override;
-    PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) override;
+    PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) override;
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
-    void disposeObjectGroup(const String&) override;
-    v8::Local<v8::Value> findObject(const String& objectId, v8::Local<v8::Context>* = nullptr, String* groupName = nullptr) override;
+    void disposeObjectGroup(const String16&) override;
+    v8::Local<v8::Value> findObject(const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* groupName = nullptr) override;
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
     void clearInspectedObjects() override;
 
 private:
-    void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
+    void reportExecutionContextCreated(v8::Local<v8::Context>, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId) override;
     void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
     PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
@@ -135,7 +133,7 @@ private:
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
     bool m_enabled;
-    protocol::HashMap<String, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;
+    protocol::HashMap<String16, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;
 };
 
 } // namespace blink

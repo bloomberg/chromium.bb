@@ -11,15 +11,16 @@
 #include "platform/inspector_protocol/Array.h"
 #include "platform/inspector_protocol/ErrorSupport.h"
 #include "platform/inspector_protocol/Maybe.h"
+#include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/inspector_protocol/ValueConversions.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace protocol {
+
+using ErrorString = String16;
 
 class PLATFORM_EXPORT Object {
 public:
@@ -204,5 +205,7 @@ private:
 
 } // namespace protocol
 } // namespace blink
+
+using blink::protocol::ErrorString;
 
 #endif // !defined({{class_name}}_h)

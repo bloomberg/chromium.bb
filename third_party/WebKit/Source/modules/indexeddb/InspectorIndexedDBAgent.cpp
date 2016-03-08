@@ -466,14 +466,14 @@ public:
             return;
         // FIXME: There are no tests for this error showing when a recursive
         // object is inspected.
-        const String errorMessage("\"Inspection error. Maximum depth reached?\"");
+        const String16 errorMessage("\"Inspection error. Maximum depth reached?\"");
         ScriptState* scriptState = m_scriptState.get();
         ScriptState::Scope scope(scriptState);
         OwnPtr<protocol::Value> keyJsonValue = toProtocolValue(scriptState->context(), idbCursor->key(scriptState).v8Value());
         OwnPtr<protocol::Value> primaryKeyJsonValue = toProtocolValue(scriptState->context(), idbCursor->primaryKey(scriptState).v8Value());
         OwnPtr<protocol::Value> valueJsonValue = toProtocolValue(scriptState->context(), idbCursor->value(scriptState).v8Value());
-        String key = keyJsonValue ? keyJsonValue->toJSONString() : errorMessage;
-        String value = valueJsonValue ? valueJsonValue->toJSONString() : errorMessage;
+        String16 key = keyJsonValue ? keyJsonValue->toJSONString() : errorMessage;
+        String16 value = valueJsonValue ? valueJsonValue->toJSONString() : errorMessage;
         String primaryKey = primaryKeyJsonValue ? primaryKeyJsonValue->toJSONString() : errorMessage;
         OwnPtr<DataEntry> dataEntry = DataEntry::create()
             .setKey(key)

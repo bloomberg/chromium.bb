@@ -21,11 +21,11 @@ public:
     virtual ~V8DebuggerAgent() { }
 
     // API for the embedder to report native activities.
-    virtual void schedulePauseOnNextStatement(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
+    virtual void schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
     virtual void cancelPauseOnNextStatement() = 0;
     virtual bool canBreakProgram() = 0;
-    virtual void breakProgram(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
-    virtual void breakProgramOnException(const String& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
+    virtual void breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
+    virtual void breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) = 0;
     virtual void willExecuteScript(int scriptId) = 0;
     virtual void didExecuteScript() = 0;
     virtual void reset() = 0;
@@ -36,7 +36,7 @@ public:
 
     // Async call stacks implementation
     static const int unknownAsyncOperationId;
-    virtual int traceAsyncOperationStarting(const String& description) = 0;
+    virtual int traceAsyncOperationStarting(const String16& description) = 0;
     virtual void traceAsyncCallbackStarting(int operationId) = 0;
     virtual void traceAsyncCallbackCompleted() = 0;
     virtual void traceAsyncOperationCompleted(int operationId) = 0;

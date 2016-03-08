@@ -5,9 +5,7 @@
 #include "platform/v8_inspector/V8AsyncCallTracker.h"
 
 #include "platform/inspector_protocol/Collections.h"
-#include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
+#include "platform/inspector_protocol/String16.h"
 
 namespace blink {
 
@@ -19,9 +17,9 @@ static const char v8AsyncTaskEventDidHandle[] = "didHandle";
 
 }
 
-static String makeV8AsyncTaskUniqueId(const String& eventName, int id)
+static String16 makeV8AsyncTaskUniqueId(const String16& eventName, int id)
 {
-    StringBuilder builder;
+    String16Builder builder;
     builder.append(eventName);
     builder.append(" -> ");
     builder.appendNumber(id);
@@ -55,7 +53,7 @@ void V8AsyncCallTracker::contextDisposed(int contextId)
     m_idToOperations.remove(contextId);
 }
 
-void V8AsyncCallTracker::didReceiveV8AsyncTaskEvent(v8::Local<v8::Context> context, const String& eventType, const String& eventName, int id)
+void V8AsyncCallTracker::didReceiveV8AsyncTaskEvent(v8::Local<v8::Context> context, const String16& eventType, const String16& eventName, int id)
 {
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (eventType == v8AsyncTaskEventEnqueue)
@@ -73,7 +71,7 @@ void V8AsyncCallTracker::weakCallback(const v8::WeakCallbackInfo<Operations>& da
     data.GetParameter()->target->contextDisposed(data.GetParameter()->contextId);
 }
 
-void V8AsyncCallTracker::didEnqueueV8AsyncTask(v8::Local<v8::Context> context, const String& eventName, int id)
+void V8AsyncCallTracker::didEnqueueV8AsyncTask(v8::Local<v8::Context> context, const String16& eventName, int id)
 {
     ASSERT(!context.IsEmpty());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
@@ -94,13 +92,13 @@ void V8AsyncCallTracker::didEnqueueV8AsyncTask(v8::Local<v8::Context> context, c
     operations->map.set(makeV8AsyncTaskUniqueId(eventName, id), operationId);
 }
 
-void V8AsyncCallTracker::willHandleV8AsyncTask(v8::Local<v8::Context> context, const String& eventName, int id)
+void V8AsyncCallTracker::willHandleV8AsyncTask(v8::Local<v8::Context> context, const String16& eventName, int id)
 {
     ASSERT(!context.IsEmpty());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     int contextId = V8Debugger::contextId(context);
     if (Operations* operations = m_idToOperations.get(contextId)) {
-        String taskId = makeV8AsyncTaskUniqueId(eventName, id);
+        String16 taskId = makeV8AsyncTaskUniqueId(eventName, id);
         int operationId = operations->map.get(taskId);
         m_debuggerAgent->traceAsyncCallbackStarting(operationId);
         m_debuggerAgent->traceAsyncOperationCompleted(operationId);
@@ -110,7 +108,7 @@ void V8AsyncCallTracker::willHandleV8AsyncTask(v8::Local<v8::Context> context, c
     }
 }
 
-void V8AsyncCallTracker::completeOperations(const protocol::HashMap<String, int>& contextCallChains)
+void V8AsyncCallTracker::completeOperations(const protocol::HashMap<String16, int>& contextCallChains)
 {
     for (const auto& it : contextCallChains)
         m_debuggerAgent->traceAsyncOperationCompleted(*it.second);

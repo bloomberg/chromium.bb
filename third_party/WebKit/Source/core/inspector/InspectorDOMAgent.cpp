@@ -1136,7 +1136,7 @@ void InspectorDOMAgent::setInspectMode(ErrorString* errorString, const String& m
     } else if (mode == protocol::DOM::InspectModeEnum::ShowLayoutEditor) {
         searchMode = ShowLayoutEditor;
     } else {
-        *errorString = "Unknown mode \"" + mode + "\" was provided.";
+        *errorString = String("Unknown mode \"" + mode + "\" was provided.");
         return;
     }
 
@@ -1189,7 +1189,7 @@ Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String&
     return node;
 }
 
-void InspectorDOMAgent::highlightNode(ErrorString* errorString, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String>& objectId)
+void InspectorDOMAgent::highlightNode(ErrorString* errorString, PassOwnPtr<protocol::DOM::HighlightConfig> highlightInspectorObject, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String16>& objectId)
 {
     Node* node = nullptr;
     if (nodeId.isJust()) {
@@ -1396,7 +1396,7 @@ void InspectorDOMAgent::getAttributes(ErrorString* errorString, int nodeId, OwnP
     *result = buildArrayForElementAttributes(element);
 }
 
-void InspectorDOMAgent::requestNode(ErrorString* errorString, const String& objectId, int* nodeId)
+void InspectorDOMAgent::requestNode(ErrorString* errorString, const String16& objectId, int* nodeId)
 {
     Node* node = nodeForRemoteId(errorString, objectId);
     if (node)
@@ -2051,7 +2051,7 @@ void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int 
     *result = highlight.asProtocolValue();
 }
 
-PassOwnPtr<protocol::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
+PassOwnPtr<protocol::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String16& objectGroup)
 {
     Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();
     LocalFrame* frame = document ? document->frame() : nullptr;

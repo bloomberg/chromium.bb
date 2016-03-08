@@ -72,7 +72,7 @@ int JavaScriptCallFrame::callV8FunctionReturnInt(const char* name) const
     return result.As<v8::Int32>()->Value();
 }
 
-String JavaScriptCallFrame::callV8FunctionReturnString(const char* name) const
+String16 JavaScriptCallFrame::callV8FunctionReturnString(const char* name) const
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Context::Scope contextScope(v8::Local<v8::Context>::New(m_isolate, m_debuggerContext));
@@ -80,8 +80,8 @@ String JavaScriptCallFrame::callV8FunctionReturnString(const char* name) const
     v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, name)));
     v8::Local<v8::Value> result;
     if (!m_client->callInternalFunction(func, callFrame, 0, nullptr).ToLocal(&result))
-        return String();
-    return toWTFStringWithTypeCheck(result);
+        return String16();
+    return toProtocolStringWithTypeCheck(result);
 }
 
 int JavaScriptCallFrame::sourceID() const
@@ -99,12 +99,12 @@ int JavaScriptCallFrame::column() const
     return callV8FunctionReturnInt("column");
 }
 
-String JavaScriptCallFrame::scriptName() const
+String16 JavaScriptCallFrame::scriptName() const
 {
     return callV8FunctionReturnString("scriptName");
 }
 
-String JavaScriptCallFrame::functionName() const
+String16 JavaScriptCallFrame::functionName() const
 {
     return callV8FunctionReturnString("functionName");
 }
@@ -169,7 +169,7 @@ v8::Local<v8::Value> JavaScriptCallFrame::thisObject() const
     return v8::Local<v8::Object>::New(m_isolate, m_callFrame)->Get(toV8StringInternalized(m_isolate, "thisObject"));
 }
 
-String JavaScriptCallFrame::stepInPositions() const
+String16 JavaScriptCallFrame::stepInPositions() const
 {
     return callV8FunctionReturnString("stepInPositions");
 }

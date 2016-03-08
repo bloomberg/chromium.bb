@@ -8,7 +8,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/StringHash.h"
 
 #include <algorithm>
 #include <unordered_map>

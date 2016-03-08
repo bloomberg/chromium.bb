@@ -31,9 +31,9 @@
 #define InjectedScriptHost_h
 
 #include "platform/inspector_protocol/Collections.h"
+#include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
@@ -69,10 +69,10 @@ public:
     void inspectImpl(PassOwnPtr<protocol::Value> objectToInspect, PassOwnPtr<protocol::Value> hints);
 
     void clearConsoleMessages();
-    void debugFunction(const String& scriptId, int lineNumber, int columnNumber);
-    void undebugFunction(const String& scriptId, int lineNumber, int columnNumber);
-    void monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName);
-    void unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber);
+    void debugFunction(const String16& scriptId, int lineNumber, int columnNumber);
+    void undebugFunction(const String16& scriptId, int lineNumber, int columnNumber);
+    void monitorFunction(const String16& scriptId, int lineNumber, int columnNumber, const String16& functionName);
+    void unmonitorFunction(const String16& scriptId, int lineNumber, int columnNumber);
 
     V8DebuggerImpl* debugger() { return m_debugger; }
 

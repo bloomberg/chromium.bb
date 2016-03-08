@@ -5,8 +5,8 @@
 #ifndef RemoteObjectId_h
 #define RemoteObjectId_h
 
+#include "platform/inspector_protocol/String16.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -22,14 +22,14 @@ protected:
     RemoteObjectIdBase();
     ~RemoteObjectIdBase() { }
 
-    PassOwnPtr<protocol::DictionaryValue> parseInjectedScriptId(const String&);
+    PassOwnPtr<protocol::DictionaryValue> parseInjectedScriptId(const String16&);
 
     int m_injectedScriptId;
 };
 
 class RemoteObjectId final : public RemoteObjectIdBase {
 public:
-    static PassOwnPtr<RemoteObjectId> parse(const String&);
+    static PassOwnPtr<RemoteObjectId> parse(const String16&);
     ~RemoteObjectId() { }
     int id() const { return m_id; }
 
@@ -41,7 +41,7 @@ private:
 
 class RemoteCallFrameId final : public RemoteObjectIdBase {
 public:
-    static PassOwnPtr<RemoteCallFrameId> parse(const String&);
+    static PassOwnPtr<RemoteCallFrameId> parse(const String16&);
     ~RemoteCallFrameId() { }
 
     int frameOrdinal() const { return m_frameOrdinal; }

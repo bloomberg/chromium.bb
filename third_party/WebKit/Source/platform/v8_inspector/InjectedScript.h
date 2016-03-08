@@ -47,7 +47,6 @@ namespace protocol {
 class DictionaryValue;
 }
 
-typedef String ErrorString;
 
 using protocol::Maybe;
 
@@ -57,8 +56,8 @@ public:
 
     void evaluate(
         ErrorString*,
-        const String& expression,
-        const String& objectGroup,
+        const String16& expression,
+        const String16& objectGroup,
         bool includeCommandLineAPI,
         bool returnByValue,
         bool generatePreview,
@@ -67,9 +66,9 @@ public:
         Maybe<protocol::Runtime::ExceptionDetails>*);
     void callFunctionOn(
         ErrorString*,
-        const String& objectId,
-        const String& expression,
-        const String& arguments,
+        const String16& objectId,
+        const String16& expression,
+        const String16& arguments,
         bool returnByValue,
         bool generatePreview,
         OwnPtr<protocol::Runtime::RemoteObject>* result,
@@ -77,38 +76,38 @@ public:
     void evaluateOnCallFrame(
         ErrorString*,
         v8::Local<v8::Object> callFrames,
-        const String& callFrameId,
-        const String& expression,
-        const String& objectGroup,
+        const String16& callFrameId,
+        const String16& expression,
+        const String16& objectGroup,
         bool includeCommandLineAPI,
         bool returnByValue,
         bool generatePreview,
         OwnPtr<protocol::Runtime::RemoteObject>* result,
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*);
-    void restartFrame(ErrorString*, v8::Local<v8::Object> callFrames, const String& callFrameId);
-    void getStepInPositions(ErrorString*, v8::Local<v8::Object> callFrames, const String& callFrameId, Maybe<protocol::Array<protocol::Debugger::Location>>* positions);
-    void setVariableValue(ErrorString*, v8::Local<v8::Object> callFrames, const Maybe<String>& callFrameIdOpt, const Maybe<String>& functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr);
-    void getFunctionDetails(ErrorString*, const String& functionId, OwnPtr<protocol::Debugger::FunctionDetails>* result);
-    void getGeneratorObjectDetails(ErrorString*, const String& functionId, OwnPtr<protocol::Debugger::GeneratorObjectDetails>* result);
-    void getCollectionEntries(ErrorString*, const String& objectId, OwnPtr<protocol::Array<protocol::Debugger::CollectionEntry>>* result);
-    void getProperties(ErrorString*, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
-    void getInternalProperties(ErrorString*, const String& objectId, Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
-    void releaseObject(const String& objectId);
+    void restartFrame(ErrorString*, v8::Local<v8::Object> callFrames, const String16& callFrameId);
+    void getStepInPositions(ErrorString*, v8::Local<v8::Object> callFrames, const String16& callFrameId, Maybe<protocol::Array<protocol::Debugger::Location>>* positions);
+    void setVariableValue(ErrorString*, v8::Local<v8::Object> callFrames, const Maybe<String16>& callFrameIdOpt, const Maybe<String16>& functionObjectIdOpt, int scopeNumber, const String16& variableName, const String16& newValueStr);
+    void getFunctionDetails(ErrorString*, const String16& functionId, OwnPtr<protocol::Debugger::FunctionDetails>* result);
+    void getGeneratorObjectDetails(ErrorString*, const String16& functionId, OwnPtr<protocol::Debugger::GeneratorObjectDetails>* result);
+    void getCollectionEntries(ErrorString*, const String16& objectId, OwnPtr<protocol::Array<protocol::Debugger::CollectionEntry>>* result);
+    void getProperties(ErrorString*, const String16& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
+    void getInternalProperties(ErrorString*, const String16& objectId, Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
+    void releaseObject(const String16& objectId);
     v8::MaybeLocal<v8::Value> runCompiledScript(v8::Local<v8::Script>, bool includeCommandLineAPI);
 
     PassOwnPtr<protocol::Array<protocol::Debugger::CallFrame>> wrapCallFrames(v8::Local<v8::Object>);
 
-    PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) const;
+    PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) const;
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const;
     v8::Local<v8::Value> findObject(const RemoteObjectId&) const;
-    String objectGroupName(const RemoteObjectId&) const;
-    void releaseObjectGroup(const String&);
+    String16 objectGroupName(const RemoteObjectId&) const;
+    void releaseObjectGroup(const String16&);
 
     void setCustomObjectFormatterEnabled(bool);
     int contextId() { return m_contextId; }
-    String origin() const { return m_origin; }
-    void setOrigin(const String& origin) { m_origin = origin; }
+    String16 origin() const { return m_origin; }
+    void setOrigin(const String16& origin) { m_origin = origin; }
 
     v8::Isolate* isolate() { return m_isolate; }
     v8::Local<v8::Context> context() const;
@@ -132,7 +131,7 @@ private:
     V8DebuggerClient* m_client;
     OwnPtr<InjectedScriptNative> m_native;
     int m_contextId;
-    String m_origin;
+    String16 m_origin;
 };
 
 } // namespace blink

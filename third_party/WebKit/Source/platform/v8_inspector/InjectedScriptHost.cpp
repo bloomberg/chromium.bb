@@ -30,11 +30,10 @@
 
 #include "platform/v8_inspector/InjectedScriptHost.h"
 
+#include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
-
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -108,32 +107,32 @@ V8RuntimeAgent::Inspectable* InjectedScriptHost::inspectedObject(unsigned num)
     return m_inspectedObjects[num].get();
 }
 
-void InjectedScriptHost::debugFunction(const String& scriptId, int lineNumber, int columnNumber)
+void InjectedScriptHost::debugFunction(const String16& scriptId, int lineNumber, int columnNumber)
 {
     if (m_debuggerAgent)
         m_debuggerAgent->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
 }
 
-void InjectedScriptHost::undebugFunction(const String& scriptId, int lineNumber, int columnNumber)
+void InjectedScriptHost::undebugFunction(const String16& scriptId, int lineNumber, int columnNumber)
 {
     if (m_debuggerAgent)
         m_debuggerAgent->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
 }
 
-void InjectedScriptHost::monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName)
+void InjectedScriptHost::monitorFunction(const String16& scriptId, int lineNumber, int columnNumber, const String16& functionName)
 {
-    StringBuilder builder;
-    builder.appendLiteral("console.log(\"function ");
+    String16Builder builder;
+    builder.append("console.log(\"function ");
     if (functionName.isEmpty())
-        builder.appendLiteral("(anonymous function)");
+        builder.append("(anonymous function)");
     else
         builder.append(functionName);
-    builder.appendLiteral(" called\" + (arguments.length > 0 ? \" with arguments: \" + Array.prototype.join.call(arguments, \", \") : \"\")) && false");
+    builder.append(" called\" + (arguments.length > 0 ? \" with arguments: \" + Array.prototype.join.call(arguments, \", \") : \"\")) && false");
     if (m_debuggerAgent)
         m_debuggerAgent->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource, builder.toString());
 }
 
-void InjectedScriptHost::unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber)
+void InjectedScriptHost::unmonitorFunction(const String16& scriptId, int lineNumber, int columnNumber)
 {
     if (m_debuggerAgent)
         m_debuggerAgent->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource);

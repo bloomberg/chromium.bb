@@ -12,8 +12,6 @@ namespace blink {
 class WebLocalFrameImpl;
 class WebViewImpl;
 
-using ErrorString = String;
-
 class InspectorEmulationAgent final : public InspectorBaseAgent<InspectorEmulationAgent, protocol::Frontend::Emulation>, public protocol::Dispatcher::EmulationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
 public:

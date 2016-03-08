@@ -408,7 +408,7 @@ PassOwnPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyle
 
 bool LayoutEditor::setCSSPropertyValueInCurrentRule(const String& value)
 {
-    String errorString;
+    ErrorString errorString;
     m_cssAgent->setLayoutEditorValue(&errorString, m_element.get(), m_matchedStyles.at(m_currentRuleIndex), m_changingProperty, value, false);
     return errorString.isEmpty();
 }

@@ -6,10 +6,11 @@
 #define Maybe_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace protocol {
+
+class String16;
 
 template<typename T>
 class Maybe {
@@ -70,7 +71,14 @@ class Maybe<String> : public MaybeBase<String> {
 public:
     Maybe() { }
     Maybe(const String& value) : MaybeBase(value) { }
-    Maybe(const AtomicString& value) : MaybeBase(value) { }
+    using MaybeBase::operator=;
+};
+
+template<>
+class Maybe<String16> : public MaybeBase<String16> {
+public:
+    Maybe() { }
+    Maybe(const String16& value) : MaybeBase(value) { }
     using MaybeBase::operator=;
 };
 

@@ -31,6 +31,7 @@
 #include "platform/v8_inspector/InjectedScript.h"
 
 #include "platform/inspector_protocol/Parser.h"
+#include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/InjectedScriptHost.h"
 #include "platform/v8_inspector/InjectedScriptManager.h"
@@ -40,7 +41,6 @@
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "platform/v8_inspector/public/V8ToProtocolValue.h"
-#include "wtf/text/WTFString.h"
 
 using blink::protocol::Array;
 using blink::protocol::Debugger::CallFrame;
@@ -56,12 +56,12 @@ namespace blink {
 
 static PassOwnPtr<protocol::Runtime::ExceptionDetails> toExceptionDetails(protocol::DictionaryValue* object)
 {
-    String text;
+    String16 text;
     if (!object->getString("text", &text))
         return nullptr;
 
     OwnPtr<protocol::Runtime::ExceptionDetails> exceptionDetails = protocol::Runtime::ExceptionDetails::create().setText(text).build();
-    String url;
+    String16 url;
     if (object->getString("url", &url))
         exceptionDetails->setUrl(url);
     int line = 0;
@@ -87,14 +87,14 @@ static PassOwnPtr<protocol::Runtime::ExceptionDetails> toExceptionDetails(protoc
             if (i == 0 && scriptId == originScriptId)
                 originScriptId = 0;
 
-            String sourceURL;
+            String16 sourceURL;
             stackFrame->getString("scriptNameOrSourceURL", &sourceURL);
-            String functionName;
+            String16 functionName;
             stackFrame->getString("functionName", &functionName);
 
             OwnPtr<protocol::Runtime::CallFrame> callFrame = protocol::Runtime::CallFrame::create()
                 .setFunctionName(functionName)
-                .setScriptId(String::number(scriptId))
+                .setScriptId(String16::number(scriptId))
                 .setUrl(sourceURL)
                 .setLineNumber(lineNumber)
                 .setColumnNumber(column).build();
@@ -106,7 +106,7 @@ static PassOwnPtr<protocol::Runtime::ExceptionDetails> toExceptionDetails(protoc
         exceptionDetails->setStack(stack.release());
     }
     if (originScriptId)
-        exceptionDetails->setScriptId(String::number(originScriptId));
+        exceptionDetails->setScriptId(String16::number(originScriptId));
     return exceptionDetails.release();
 }
 
@@ -131,7 +131,7 @@ InjectedScript::~InjectedScript()
 {
 }
 
-void InjectedScript::evaluate(ErrorString* errorString, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::evaluate(ErrorString* errorString, const String16& expression, const String16& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "evaluate");
@@ -143,7 +143,7 @@ void InjectedScript::evaluate(ErrorString* errorString, const String& expression
     *result = makeEvalCall(errorString, function, wasThrown, exceptionDetails);
 }
 
-void InjectedScript::callFunctionOn(ErrorString* errorString, const String& objectId, const String& expression, const String& arguments, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown)
+void InjectedScript::callFunctionOn(ErrorString* errorString, const String16& objectId, const String16& expression, const String16& arguments, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "callFunctionOn");
@@ -155,7 +155,7 @@ void InjectedScript::callFunctionOn(ErrorString* errorString, const String& obje
     *result = makeEvalCall(errorString, function, wasThrown);
 }
 
-void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId, const String& expression, const String& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String16& callFrameId, const String16& expression, const String16& objectGroup, bool includeCommandLineAPI, bool returnByValue, bool generatePreview, OwnPtr<RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "evaluateOnCallFrame");
@@ -169,7 +169,7 @@ void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, v8::Local<v8:
     *result = makeEvalCall(errorString, function, wasThrown, exceptionDetails);
 }
 
-void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId)
+void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String16& callFrameId)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "restartFrame");
@@ -188,7 +188,7 @@ void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object
     *errorString = "Internal error";
 }
 
-void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String& callFrameId, Maybe<Array<protocol::Debugger::Location>>* positions)
+void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String16& callFrameId, Maybe<Array<protocol::Debugger::Location>>* positions)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getStepInPositions");
@@ -211,11 +211,11 @@ void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::
 
 void InjectedScript::setVariableValue(ErrorString* errorString,
     v8::Local<v8::Object> callFrames,
-    const protocol::Maybe<String>& callFrameIdOpt,
-    const protocol::Maybe<String>&  functionObjectIdOpt,
+    const protocol::Maybe<String16>& callFrameIdOpt,
+    const protocol::Maybe<String16>&  functionObjectIdOpt,
     int scopeNumber,
-    const String& variableName,
-    const String& newValueStr)
+    const String16& variableName,
+    const String16& newValueStr)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "setVariableValue");
@@ -245,7 +245,7 @@ void InjectedScript::setVariableValue(ErrorString* errorString,
     // Normal return.
 }
 
-void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& functionId, OwnPtr<FunctionDetails>* result)
+void InjectedScript::getFunctionDetails(ErrorString* errorString, const String16& functionId, OwnPtr<FunctionDetails>* result)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getFunctionDetails");
@@ -255,7 +255,7 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& 
     *result = FunctionDetails::parse(resultValue.get(), &errors);
 }
 
-void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, OwnPtr<GeneratorObjectDetails>* result)
+void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, OwnPtr<GeneratorObjectDetails>* result)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getGeneratorObjectDetails");
@@ -265,7 +265,7 @@ void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const S
     *result = GeneratorObjectDetails::parse(resultValue.get(), &errors);
 }
 
-void InjectedScript::getCollectionEntries(ErrorString* errorString, const String& objectId, OwnPtr<Array<CollectionEntry>>* result)
+void InjectedScript::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<Array<CollectionEntry>>* result)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getCollectionEntries");
@@ -275,7 +275,7 @@ void InjectedScript::getCollectionEntries(ErrorString* errorString, const String
     *result = Array<CollectionEntry>::parse(resultValue.get(), &errors);
 }
 
-void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::getProperties(ErrorString* errorString, const String16& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getProperties");
@@ -294,7 +294,7 @@ void InjectedScript::getProperties(ErrorString* errorString, const String& objec
     *properties = Array<PropertyDescriptor>::parse(result.get(), &errors);
 }
 
-void InjectedScript::getInternalProperties(ErrorString* errorString, const String& objectId, Maybe<Array<InternalPropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::getInternalProperties(ErrorString* errorString, const String16& objectId, Maybe<Array<InternalPropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "getInternalProperties");
@@ -309,7 +309,7 @@ void InjectedScript::getInternalProperties(ErrorString* errorString, const Strin
         *properties = array.release();
 }
 
-void InjectedScript::releaseObject(const String& objectId)
+void InjectedScript::releaseObject(const String16& objectId)
 {
     OwnPtr<protocol::Value> parsedObjectId = protocol::parseJSON(objectId);
     if (!parsedObjectId)
@@ -357,7 +357,7 @@ PassOwnPtr<Array<CallFrame>> InjectedScript::wrapCallFrames(v8::Local<v8::Object
     return Array<CallFrame>::create();
 }
 
-PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local<v8::Value> value, const String& groupName, bool generatePreview) const
+PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(v8::Local<v8::Value> value, const String16& groupName, bool generatePreview) const
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_client, context(), v8Value(), "wrapObject");
@@ -396,12 +396,12 @@ v8::Local<v8::Value> InjectedScript::findObject(const RemoteObjectId& objectId) 
     return m_native->objectForId(objectId.id());
 }
 
-String InjectedScript::objectGroupName(const RemoteObjectId& objectId) const
+String16 InjectedScript::objectGroupName(const RemoteObjectId& objectId) const
 {
     return m_native->groupName(objectId.id());
 }
 
-void InjectedScript::releaseObjectGroup(const String& objectGroup)
+void InjectedScript::releaseObjectGroup(const String16& objectGroup)
 {
     v8::HandleScope handles(m_isolate);
     m_native->releaseObjectGroup(objectGroup);
@@ -468,7 +468,7 @@ PassOwnPtr<protocol::Value> InjectedScript::makeCall(V8FunctionCall& function)
     if (!hadException) {
         result = toProtocolValue(function.context(), resultValue);
         if (!result)
-            result = protocol::StringValue::create(String::format("Object has too long reference chain(must not be longer than %d)", protocol::Value::maxDepth));
+            result = protocol::StringValue::create("Object has too long reference chain(must not be longer than " + String16::number(protocol::Value::maxDepth) + ")");
     } else {
         result = protocol::StringValue::create("Exception while making a call.");
     }
@@ -517,12 +517,12 @@ PassOwnPtr<protocol::Value> InjectedScript::makeCallWithExceptionDetails(V8Funct
     v8::Local<v8::Value> resultValue = function.callWithoutExceptionHandling();
     if (tryCatch.HasCaught()) {
         v8::Local<v8::Message> message = tryCatch.Message();
-        String text = !message.IsEmpty() ? toWTFStringWithTypeCheck(message->Get()) : "Internal error";
+        String16 text = !message.IsEmpty() ? toProtocolStringWithTypeCheck(message->Get()) : "Internal error";
         *exceptionDetails = protocol::Runtime::ExceptionDetails::create().setText(text).build();
     } else {
         result = toProtocolValue(function.context(), resultValue);
         if (!result)
-            result = protocol::StringValue::create(String::format("Object has too long reference chain(must not be longer than %d)", protocol::Value::maxDepth));
+            result = protocol::StringValue::create("Object has too long reference chain(must not be longer than " + String16::number(protocol::Value::maxDepth) + ")");
     }
     return result.release();
 }

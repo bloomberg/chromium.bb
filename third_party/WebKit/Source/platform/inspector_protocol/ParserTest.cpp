@@ -4,9 +4,9 @@
 
 #include "platform/inspector_protocol/Parser.h"
 
+#include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 namespace protocol {
@@ -16,7 +16,7 @@ TEST(ParserTest, Reading)
     protocol::Value* tmpValue;
     OwnPtr<protocol::Value> root;
     OwnPtr<protocol::Value> root2;
-    String strVal;
+    String16 strVal;
     int intVal = 0;
 
     // some whitespace checking
@@ -190,10 +190,6 @@ TEST(ParserTest, Reading)
     EXPECT_FALSE(root.get());
 
     // INF/-INF/NaN are not valid
-    root = parseJSON("1e1000");
-    EXPECT_FALSE(root.get());
-    root = parseJSON("-1e1000");
-    EXPECT_FALSE(root.get());
     root = parseJSON("NaN");
     EXPECT_FALSE(root.get());
     root = parseJSON("nan");
@@ -234,7 +230,7 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeString, root->type());
     EXPECT_TRUE(root->asString(&strVal));
     UChar tmp1[] = {0x41, 0, 0x1234};
-    EXPECT_EQ(String(tmp1, WTF_ARRAY_LENGTH(tmp1)), strVal);
+    EXPECT_EQ(String16(tmp1, 3), strVal);
 
     // Test invalid strings
     root = parseJSON("\"no closing quote");
@@ -428,7 +424,7 @@ TEST(ParserTest, Reading)
     EXPECT_FALSE(root.get());
 
     // Test stack overflow
-    StringBuilder evil;
+    String16Builder evil;
     evil.reserveCapacity(2000000);
     for (int i = 0; i < 1000000; ++i)
         evil.append('[');
@@ -438,7 +434,7 @@ TEST(ParserTest, Reading)
     EXPECT_FALSE(root.get());
 
     // A few thousand adjacent lists is fine.
-    StringBuilder notEvil;
+    String16Builder notEvil;
     notEvil.reserveCapacity(15010);
     notEvil.append('[');
     for (int i = 0; i < 5000; ++i)
@@ -457,7 +453,7 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeString, root->type());
     EXPECT_TRUE(root->asString(&strVal));
     UChar tmp4[] = {0x7f51, 0x9875};
-    EXPECT_EQ(String(tmp4, WTF_ARRAY_LENGTH(tmp4)), strVal);
+    EXPECT_EQ(String16(tmp4, 2), strVal);
 
     root = parseJSON("{\"path\": \"/tmp/\\xc3\\xa0\\xc3\\xa8\\xc3\\xb2.png\"}");
     ASSERT_TRUE(root.get());
@@ -466,7 +462,7 @@ TEST(ParserTest, Reading)
     ASSERT_TRUE(objectVal);
     EXPECT_TRUE(objectVal->getString("path", &strVal));
     UChar tmp5[] = {0x2f, 0x74, 0x6d, 0x70, 0x2f, 0xe0, 0xe8, 0xf2, 0x2e, 0x70, 0x6e, 0x67};
-    EXPECT_EQ(String(tmp5, WTF_ARRAY_LENGTH(tmp5)), strVal);
+    EXPECT_EQ(String16(tmp5, 12), strVal);
 
     // Test invalid utf8 encoded input
     root = parseJSON("\"345\\xb0\\xa1\\xb0\\xa2\"");
@@ -482,14 +478,14 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeString, root->type());
     EXPECT_TRUE(root->asString(&strVal));
     UChar tmp2[] = {0x20ac, 0x33, 0x2c, 0x31, 0x34};
-    EXPECT_EQ(String(tmp2, WTF_ARRAY_LENGTH(tmp2)), strVal);
+    EXPECT_EQ(String16(tmp2, 5), strVal);
 
     root = parseJSON("\"\\ud83d\\udca9\\ud83d\\udc6c\"");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeString, root->type());
     EXPECT_TRUE(root->asString(&strVal));
     UChar tmp3[] = {0xd83d, 0xdca9, 0xd83d, 0xdc6c};
-    EXPECT_EQ(String(tmp3, WTF_ARRAY_LENGTH(tmp3)), strVal);
+    EXPECT_EQ(String16(tmp3, 4), strVal);
 
     // Test invalid utf16 strings.
     const char* const cases[] = {
@@ -502,7 +498,7 @@ TEST(ParserTest, Reading)
         "\"\\ud83foo\"", // No lower surrogate.
         "\"\\ud83\\foo\"" // No lower surrogate.
     };
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); ++i) {
+    for (size_t i = 0; i < 8; ++i) {
         root = parseJSON(cases[i]);
         EXPECT_FALSE(root.get()) << cases[i];
     }
@@ -543,7 +539,7 @@ TEST(ParserTest, InvalidSanity)
         "//**/"
     };
 
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidJson); ++i) {
+    for (size_t i = 0; i < 11; ++i) {
         OwnPtr<protocol::Value> result = parseJSON(invalidJson[i]);
         EXPECT_FALSE(result.get());
     }

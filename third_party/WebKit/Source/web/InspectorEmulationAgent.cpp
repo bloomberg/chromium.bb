@@ -47,7 +47,7 @@ void InspectorEmulationAgent::restore()
     ErrorString error;
     setScriptExecutionDisabled(&error, m_state->booleanProperty(EmulationAgentState::scriptExecutionDisabled, false));
     setTouchEmulationEnabled(&error, m_state->booleanProperty(EmulationAgentState::touchEventEmulationEnabled, false), protocol::Maybe<String>());
-    String emulatedMedia;
+    String16 emulatedMedia;
     m_state->getString(EmulationAgentState::emulatedMedia, &emulatedMedia);
     setEmulatedMedia(&error, emulatedMedia);
 }

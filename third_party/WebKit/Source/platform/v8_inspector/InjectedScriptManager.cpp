@@ -95,7 +95,7 @@ void InjectedScriptManager::discardInjectedScript(int contextId)
     m_idToInjectedScript.remove(contextId);
 }
 
-void InjectedScriptManager::releaseObjectGroup(const String& objectGroup)
+void InjectedScriptManager::releaseObjectGroup(const String16& objectGroup)
 {
     protocol::Vector<int> keys;
     for (auto& it : m_idToInjectedScript)
@@ -129,7 +129,7 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
         return nullptr;
 
     OwnPtr<InjectedScriptNative> injectedScriptNative = adoptPtr(new InjectedScriptNative(context->GetIsolate()));
-    String injectedScriptSource(reinterpret_cast<const char*>(InjectedScriptSource_js), sizeof(InjectedScriptSource_js));
+    String16 injectedScriptSource(reinterpret_cast<const char*>(InjectedScriptSource_js), sizeof(InjectedScriptSource_js));
 
     v8::Local<v8::Object> object = createInjectedScript(injectedScriptSource, context, contextId, injectedScriptNative.get());
     OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(this, context, object, m_client, injectedScriptNative.release(), contextId));
@@ -141,7 +141,7 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
     return resultPtr;
 }
 
-v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String& source, v8::Local<v8::Context> context, int id, InjectedScriptNative* injectedScriptNative)
+v8::Local<v8::Object> InjectedScriptManager::createInjectedScript(const String16& source, v8::Local<v8::Context> context, int id, InjectedScriptNative* injectedScriptNative)
 {
     v8::Isolate* isolate = context->GetIsolate();
     v8::Context::Scope scope(context);

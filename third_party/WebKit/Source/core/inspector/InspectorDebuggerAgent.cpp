@@ -91,10 +91,10 @@ void InspectorDebuggerAgent::setSkipAllPauses(ErrorString* errorString, bool inS
 
 void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString,
     int inLineNumber,
-    const Maybe<String>& inUrl,
-    const Maybe<String>& inUrlRegex,
+    const Maybe<String16>& inUrl,
+    const Maybe<String16>& inUrlRegex,
     const Maybe<int>& inColumnNumber,
-    const Maybe<String>& inCondition,
+    const Maybe<String16>& inCondition,
     protocol::Debugger::BreakpointId* outBreakpointId,
     OwnPtr<Array<protocol::Debugger::Location>>* outLocations)
 {
@@ -102,7 +102,7 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString,
 }
 
 void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, PassOwnPtr<protocol::Debugger::Location> inLocation,
-    const Maybe<String>& inCondition,
+    const Maybe<String16>& inCondition,
     protocol::Debugger::BreakpointId* outBreakpointId,
     OwnPtr<protocol::Debugger::Location>* outActualLocation)
 {
@@ -110,7 +110,7 @@ void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, PassOwnPtr<
 }
 
 void InspectorDebuggerAgent::removeBreakpoint(ErrorString* errorString,
-    const String& inBreakpointId)
+    const String16& inBreakpointId)
 {
     m_v8DebuggerAgent->removeBreakpoint(errorString, inBreakpointId);
 }
@@ -153,8 +153,8 @@ void InspectorDebuggerAgent::stepIntoAsync(ErrorString* errorString)
 }
 
 void InspectorDebuggerAgent::searchInContent(ErrorString* errorString,
-    const String& inScriptId,
-    const String& inQuery,
+    const String16& inScriptId,
+    const String16& inQuery,
     const Maybe<bool>& inCaseSensitive,
     const Maybe<bool>& inIsRegex,
     OwnPtr<Array<protocol::Debugger::SearchMatch>>* outResult)
@@ -168,8 +168,8 @@ void InspectorDebuggerAgent::canSetScriptSource(ErrorString* errorString, bool* 
 }
 
 void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString,
-    const String& inScriptId,
-    const String& inScriptSource,
+    const String16& inScriptId,
+    const String16& inScriptSource,
     const Maybe<bool>& inPreview,
     Maybe<Array<protocol::Debugger::CallFrame>>* optOutCallFrames,
     Maybe<bool>* optOutStackChanged,
@@ -180,7 +180,7 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* errorString,
 }
 
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString,
-    const String& inCallFrameId,
+    const String16& inCallFrameId,
     OwnPtr<Array<protocol::Debugger::CallFrame>>* outCallFrames,
     Maybe<protocol::Runtime::StackTrace>* optOutAsyncStackTrace)
 {
@@ -188,43 +188,43 @@ void InspectorDebuggerAgent::restartFrame(ErrorString* errorString,
 }
 
 void InspectorDebuggerAgent::getScriptSource(ErrorString* errorString,
-    const String& inScriptId,
-    String* outScriptSource)
+    const String16& inScriptId,
+    String16* outScriptSource)
 {
     m_v8DebuggerAgent->getScriptSource(errorString, inScriptId, outScriptSource);
 }
 
 void InspectorDebuggerAgent::getFunctionDetails(ErrorString* errorString,
-    const String& inFunctionId,
+    const String16& inFunctionId,
     OwnPtr<protocol::Debugger::FunctionDetails>* outDetails)
 {
     m_v8DebuggerAgent->getFunctionDetails(errorString, inFunctionId, outDetails);
 }
 
 void InspectorDebuggerAgent::getGeneratorObjectDetails(ErrorString* errorString,
-    const String& inObjectId,
+    const String16& inObjectId,
     OwnPtr<protocol::Debugger::GeneratorObjectDetails>* outDetails)
 {
     m_v8DebuggerAgent->getGeneratorObjectDetails(errorString, inObjectId, outDetails);
 }
 
 void InspectorDebuggerAgent::getCollectionEntries(ErrorString* errorString,
-    const String& inObjectId,
+    const String16& inObjectId,
     OwnPtr<Array<protocol::Debugger::CollectionEntry>>* outEntries)
 {
     m_v8DebuggerAgent->getCollectionEntries(errorString, inObjectId, outEntries);
 }
 
 void InspectorDebuggerAgent::setPauseOnExceptions(ErrorString* errorString,
-    const String& inState)
+    const String16& inState)
 {
     m_v8DebuggerAgent->setPauseOnExceptions(errorString, inState);
 }
 
 void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString,
-    const String& inCallFrameId,
-    const String& inExpression,
-    const Maybe<String>& inObjectGroup,
+    const String16& inCallFrameId,
+    const String16& inExpression,
+    const Maybe<String16>& inObjectGroup,
     const Maybe<bool>& inIncludeCommandLineAPI,
     const Maybe<bool>& inDoNotPauseOnExceptionsAndMuteConsole,
     const Maybe<bool>& inReturnByValue,
@@ -240,16 +240,16 @@ void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString,
 }
 
 void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int inScopeNumber,
-    const String& inVariableName,
+    const String16& inVariableName,
     PassOwnPtr<protocol::Runtime::CallArgument> inNewValue,
-    const Maybe<String>& inCallFrameId,
-    const Maybe<String>& inFunctionObjectId)
+    const Maybe<String16>& inCallFrameId,
+    const Maybe<String16>& inFunctionObjectId)
 {
     m_v8DebuggerAgent->setVariableValue(errorString, inScopeNumber, inVariableName, inNewValue, inCallFrameId, inFunctionObjectId);
 }
 
 void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString,
-    const String& inCallFrameId,
+    const String16& inCallFrameId,
     Maybe<Array<protocol::Debugger::Location>>* optOutStepInPositions)
 {
     m_v8DebuggerAgent->getStepInPositions(errorString, inCallFrameId, optOutStepInPositions);
@@ -282,7 +282,7 @@ void InspectorDebuggerAgent::disablePromiseTracker(ErrorString* errorString)
 void InspectorDebuggerAgent::getPromiseById(
     ErrorString* errorString,
     int inPromiseId,
-    const Maybe<String>& inObjectGroup,
+    const Maybe<String16>& inObjectGroup,
     OwnPtr<protocol::Runtime::RemoteObject>* outPromise)
 {
     m_v8DebuggerAgent->getPromiseById(errorString, inPromiseId, inObjectGroup, outPromise);
@@ -305,7 +305,7 @@ void InspectorDebuggerAgent::removeAsyncOperationBreakpoint(ErrorString* errorSt
 
 void InspectorDebuggerAgent::setBlackboxedRanges(
     ErrorString* errorString,
-    const String& inScriptId,
+    const String16& inScriptId,
     PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
 {
     m_v8DebuggerAgent->setBlackboxedRanges(errorString, inScriptId, inPositions);

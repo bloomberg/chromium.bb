@@ -43,8 +43,6 @@ class PageConsoleAgent;
 class KURL;
 class WorkerInspectorProxy;
 
-using ErrorString = String;
-
 class CORE_EXPORT InspectorWorkerAgent final : public InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>, public protocol::Dispatcher::WorkerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
 public:

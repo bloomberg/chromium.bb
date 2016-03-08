@@ -44,7 +44,6 @@ class InspectorDatabaseResource;
 class InspectorFrontend;
 class Page;
 
-typedef String ErrorString;
 
 class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, protocol::Frontend::Database>, public protocol::Dispatcher::DatabaseCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);

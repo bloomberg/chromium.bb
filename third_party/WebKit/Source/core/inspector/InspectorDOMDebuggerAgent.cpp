@@ -298,7 +298,7 @@ static int domTypeForName(ErrorString* errorString, const String& typeString)
         return AttributeModified;
     if (typeString == "node-removed")
         return NodeRemoved;
-    *errorString = "Unknown DOM breakpoint type: " + typeString;
+    *errorString = String("Unknown DOM breakpoint type: " + typeString);
     return -1;
 }
 
@@ -355,12 +355,12 @@ void InspectorDOMDebuggerAgent::removeDOMBreakpoint(ErrorString* errorString, in
     didRemoveBreakpoint();
 }
 
-void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, const String& objectId, OwnPtr<protocol::Array<protocol::DOMDebugger::EventListener>>* listenersArray)
+void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, const String16& objectId, OwnPtr<protocol::Array<protocol::DOMDebugger::EventListener>>* listenersArray)
 {
     v8::HandleScope handles(m_isolate);
 
     v8::Local<v8::Context> context;
-    String objectGroup;
+    String16 objectGroup;
     v8::Local<v8::Value> value = m_runtimeAgent->findObject(objectId, &context, &objectGroup);
     if (value.IsEmpty()) {
         *errorString = "No object with passed objectId";
@@ -371,7 +371,7 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
     eventListeners(context, value, objectGroup, listenersArray->get());
 }
 
-void InspectorDOMDebuggerAgent::eventListeners(v8::Local<v8::Context> context, v8::Local<v8::Value> object, const String& objectGroup, protocol::Array<protocol::DOMDebugger::EventListener>* listenersArray)
+void InspectorDOMDebuggerAgent::eventListeners(v8::Local<v8::Context> context, v8::Local<v8::Value> object, const String16& objectGroup, protocol::Array<protocol::DOMDebugger::EventListener>* listenersArray)
 {
     V8EventListenerInfoMap eventInformation;
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(context->GetIsolate(), object, eventInformation);
@@ -393,7 +393,7 @@ void InspectorDOMDebuggerAgent::eventListeners(v8::Local<v8::Context> context, v
     }
 }
 
-PassOwnPtr<protocol::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(v8::Local<v8::Context> context, const V8EventListenerInfo& info, const String& objectGroupId)
+PassOwnPtr<protocol::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(v8::Local<v8::Context> context, const V8EventListenerInfo& info, const String16& objectGroupId)
 {
     if (info.handler.IsEmpty())
         return nullptr;

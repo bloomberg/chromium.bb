@@ -50,8 +50,6 @@ class PictureSnapshot;
 class PaintLayer;
 class PaintLayerCompositor;
 
-typedef String ErrorString;
-
 class CORE_EXPORT InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, protocol::Frontend::LayerTree>, public protocol::Dispatcher::LayerTreeCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorLayerTreeAgent);
 public:

@@ -128,7 +128,7 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
     } else if (type == "touchMove") {
         convertedType = PlatformEvent::TouchMove;
     } else {
-        *error = "Unrecognized type: " + type;
+        *error = String("Unrecognized type: " + type);
         return;
     }
 
@@ -171,7 +171,7 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
         } else if (state == "touchCancelled") {
             convertedState = PlatformTouchPoint::TouchCancelled;
         } else {
-            *error = "Unrecognized state: " + state;
+            *error = String("Unrecognized state: " + state);
             return;
         }
 

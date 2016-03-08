@@ -70,8 +70,8 @@ public:
         return weak.release();
     }
 
-    virtual void dispatch(int sessionId, const String& message);
-    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, ErrorSupport* errors) const;
+    virtual void dispatch(int sessionId, const String16& message);
+    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String16& errorMessage, ErrorSupport* errors) const;
     using Dispatcher::reportProtocolError;
 
     void sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result);
@@ -84,7 +84,7 @@ private:
     friend class CallbackBase;
     friend class DispatcherImplWeakPtr;
     using CallHandler = void (DispatcherImpl::*)(int sessionId, int callId, PassOwnPtr<DictionaryValue> messageObject, ErrorSupport* errors);
-    using DispatchMap = protocol::HashMap<String, CallHandler>;
+    using DispatchMap = protocol::HashMap<String16, CallHandler>;
 
 {% for domain in api.domains %}
   {% for command in domain.commands %}
@@ -110,7 +110,7 @@ private:
         sendResponse(sessionId, callId, invocationError, nullptr, DictionaryValue::create());
     }
 
-    static const char InvalidParamsFormatString[];
+    static const char kInvalidRequest[];
 
     DispatchMap m_dispatchMap;
     protocol::Vector<int> m_commonErrors;
@@ -123,7 +123,8 @@ DispatcherImplWeakPtr::~DispatcherImplWeakPtr()
         m_dispatcher->m_weakPtrs.remove(this);
 }
 
-const char DispatcherImpl::InvalidParamsFormatString[] = "Some arguments of method '%s' can't be processed";
+const char DispatcherImpl::kInvalidRequest[] = "Invalid request";
+
 {% for domain in api.domains %}
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
@@ -161,7 +162,7 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
         errors->addError("{{domain.domain}} handler is not available.");
 
     if (errors->hasErrors()) {
-        reportProtocolError(sessionId, callId, InvalidParams, String::format(InvalidParamsFormatString, "{{domain.domain}}.{{command.name}}"), errors);
+        reportProtocolError(sessionId, callId, InvalidParams, kInvalidRequest, errors);
         return;
     }
     {% if "parameters" in command %}
@@ -184,7 +185,7 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
       {% endfor %}
     errors->pop();
     if (errors->hasErrors()) {
-        reportProtocolError(sessionId, callId, InvalidParams, String::format(InvalidParamsFormatString, "{{domain.domain}}.{{command.name}}"), errors);
+        reportProtocolError(sessionId, callId, InvalidParams, kInvalidRequest, errors);
         return;
     }
     {% endif %}
@@ -246,7 +247,7 @@ PassOwnPtr<Dispatcher> Dispatcher::create(FrontendChannel* frontendChannel)
     return adoptPtr(new DispatcherImpl(frontendChannel));
 }
 
-void DispatcherImpl::dispatch(int sessionId, const String& message)
+void DispatcherImpl::dispatch(int sessionId, const String16& message)
 {
     int callId = 0;
     OwnPtr<protocol::Value> parsedMessage = parseJSON(message);
@@ -259,11 +260,11 @@ void DispatcherImpl::dispatch(int sessionId, const String& message)
     ASSERT_UNUSED(success, success);
 
     protocol::Value* methodValue = messageObject->get("method");
-    String method;
+    String16 method;
     success = methodValue && methodValue->asString(&method);
     ASSERT_UNUSED(success, success);
 
-    protocol::HashMap<String, CallHandler>::iterator it = m_dispatchMap.find(method);
+    protocol::HashMap<String16, CallHandler>::iterator it = m_dispatchMap.find(method);
     if (it == m_dispatchMap.end()) {
         reportProtocolError(sessionId, callId, MethodNotFound, "'" + method + "' wasn't found");
         return;
@@ -287,13 +288,13 @@ void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& 
         m_frontendChannel->sendProtocolResponse(sessionId, callId, responseMessage.release());
 }
 
-void Dispatcher::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage) const
+void Dispatcher::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String16& errorMessage) const
 {
     ErrorSupport errors;
     reportProtocolError(sessionId, callId, code, errorMessage, &errors);
 }
 
-void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String& errorMessage, ErrorSupport* errors) const
+void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String16& errorMessage, ErrorSupport* errors) const
 {
     ASSERT(code >=0);
     ASSERT((unsigned)code < m_commonErrors.size());
@@ -311,7 +312,7 @@ void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorC
         m_frontendChannel->sendProtocolResponse(sessionId, callId, message.release());
 }
 
-bool Dispatcher::getCommandName(const String& message, String* result)
+bool Dispatcher::getCommandName(const String16& message, String16* result)
 {
     OwnPtr<protocol::Value> value = parseJSON(message);
     if (!value)

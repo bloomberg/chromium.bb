@@ -38,7 +38,7 @@
 
 namespace blink {
 
-V8FunctionCall::V8FunctionCall(V8DebuggerClient* client, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String& name)
+V8FunctionCall::V8FunctionCall(V8DebuggerClient* client, v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& name)
     : m_client(client)
     , m_context(context)
     , m_name(toV8String(context->GetIsolate(), name))
@@ -51,7 +51,7 @@ void V8FunctionCall::appendArgument(v8::Local<v8::Value> value)
     m_arguments.append(value);
 }
 
-void V8FunctionCall::appendArgument(const String& argument)
+void V8FunctionCall::appendArgument(const String16& argument)
 {
     m_arguments.append(toV8String(m_context->GetIsolate(), argument));
 }

@@ -46,7 +46,6 @@ namespace protocol {
 class DictionaryValue;
 }
 
-typedef String ErrorString;
 
 class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, protocol::Frontend::DOMStorage>, public protocol::Dispatcher::DOMStorageCommandHandler {
 public:

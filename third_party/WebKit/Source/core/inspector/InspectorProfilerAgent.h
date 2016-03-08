@@ -44,8 +44,6 @@ class InspectorFrontend;
 class V8Debugger;
 class V8ProfilerAgent;
 
-typedef String ErrorString;
-
 class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>, public protocol::Dispatcher::ProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorProfilerAgent);
@@ -67,8 +65,8 @@ public:
     void clearFrontend() override;
     void restore() override;
 
-    void consoleProfile(ExecutionContext*, const String& title);
-    void consoleProfileEnd(const String& title);
+    void consoleProfile(ExecutionContext*, const String16& title);
+    void consoleProfileEnd(const String16& title);
 
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;

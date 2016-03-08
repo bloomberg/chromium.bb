@@ -32,7 +32,7 @@
 
 #include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Collections.h"
-#include "wtf/text/WTFString.h"
+#include "platform/inspector_protocol/String16.h"
 #include <v8.h>
 
 namespace blink {
@@ -58,13 +58,13 @@ public:
     void discardInjectedScripts();
     int discardInjectedScriptFor(v8::Local<v8::Context>);
     void discardInjectedScript(int);
-    void releaseObjectGroup(const String& objectGroup);
+    void releaseObjectGroup(const String16& objectGroup);
     void setCustomObjectFormatterEnabled(bool);
 
 private:
     explicit InjectedScriptManager(V8DebuggerImpl*);
 
-    v8::Local<v8::Object> createInjectedScript(const String& source, v8::Local<v8::Context>, int id, InjectedScriptNative*);
+    v8::Local<v8::Object> createInjectedScript(const String16& source, v8::Local<v8::Context>, int id, InjectedScriptNative*);
 
     typedef protocol::HashMap<int, OwnPtr<InjectedScript>> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;

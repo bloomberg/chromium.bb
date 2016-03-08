@@ -86,13 +86,13 @@ void InspectorProfilerAgent::restore()
 }
 
 // Protocol implementation.
-void InspectorProfilerAgent::consoleProfile(ExecutionContext* context, const String& title)
+void InspectorProfilerAgent::consoleProfile(ExecutionContext* context, const String16& title)
 {
     UseCounter::count(context, UseCounter::DevToolsConsoleProfile);
     m_v8ProfilerAgent->consoleProfile(title);
 }
 
-void InspectorProfilerAgent::consoleProfileEnd(const String& title)
+void InspectorProfilerAgent::consoleProfileEnd(const String16& title)
 {
     m_v8ProfilerAgent->consoleProfileEnd(title);
 }
@@ -119,7 +119,7 @@ void InspectorProfilerAgent::setSamplingInterval(ErrorString* error, int interva
 void InspectorProfilerAgent::start(ErrorString* error)
 {
     m_v8ProfilerAgent->start(error);
-    if (m_client && !*error)
+    if (m_client && error->isEmpty())
         m_client->profilingStarted();
 }
 

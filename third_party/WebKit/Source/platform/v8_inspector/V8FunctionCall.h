@@ -32,8 +32,8 @@
 #define V8FunctionCall_h
 
 #include "platform/inspector_protocol/Collections.h"
+#include "platform/inspector_protocol/String16.h"
 
-#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
@@ -42,10 +42,10 @@ class V8DebuggerClient;
 
 class V8FunctionCall {
 public:
-    V8FunctionCall(V8DebuggerClient*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String& name);
+    V8FunctionCall(V8DebuggerClient*, v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& name);
 
     void appendArgument(v8::Local<v8::Value>);
-    void appendArgument(const String&);
+    void appendArgument(const String16&);
     void appendArgument(int);
     void appendArgument(bool);
     void appendUndefinedArgument();

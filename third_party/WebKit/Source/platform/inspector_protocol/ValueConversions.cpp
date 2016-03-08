@@ -22,6 +22,11 @@ PassOwnPtr<protocol::Value> toValue(bool value)
     return FundamentalValue::create(value);
 }
 
+PassOwnPtr<protocol::Value> toValue(const String16& param)
+{
+    return StringValue::create(param);
+}
+
 PassOwnPtr<protocol::Value> toValue(const String& param)
 {
     return StringValue::create(param);

@@ -54,8 +54,6 @@ namespace protocol {
 class DictionaryValue;
 }
 
-typedef String ErrorString;
-
 class CORE_EXPORT InspectorDOMDebuggerAgent final
     : public InspectorBaseAgent<InspectorDOMDebuggerAgent, protocol::Frontend::DOMDebugger>
     , public protocol::Dispatcher::DOMDebuggerCommandHandler {
@@ -77,7 +75,7 @@ public:
     void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
     void setXHRBreakpoint(ErrorString*, const String& url) override;
     void removeXHRBreakpoint(ErrorString*, const String& url) override;
-    void getEventListeners(ErrorString*, const String& objectId, OwnPtr<protocol::Array<protocol::DOMDebugger::EventListener>>* listeners) override;
+    void getEventListeners(ErrorString*, const String16& objectId, OwnPtr<protocol::Array<protocol::DOMDebugger::EventListener>>* listeners) override;
 
     // InspectorInstrumentation API
     void willInsertDOMNode(Node* parent);
@@ -126,8 +124,8 @@ private:
     void didRemoveBreakpoint();
     void setEnabled(bool);
 
-    void eventListeners(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& objectGroup, protocol::Array<protocol::DOMDebugger::EventListener>* listenersArray);
-    PassOwnPtr<protocol::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const String& objectGroupId);
+    void eventListeners(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& objectGroup, protocol::Array<protocol::DOMDebugger::EventListener>* listenersArray);
+    PassOwnPtr<protocol::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const String16& objectGroupId);
 
     v8::Isolate* m_isolate;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

@@ -18,36 +18,36 @@ V8DebuggerScript::V8DebuggerScript()
 {
 }
 
-String V8DebuggerScript::sourceURL() const
+String16 V8DebuggerScript::sourceURL() const
 {
     return m_sourceURL.isEmpty() ? m_url : m_sourceURL;
 }
 
-V8DebuggerScript& V8DebuggerScript::setURL(const String& url)
+V8DebuggerScript& V8DebuggerScript::setURL(const String16& url)
 {
     m_url = url;
     return *this;
 }
 
-V8DebuggerScript& V8DebuggerScript::setSourceURL(const String& sourceURL)
+V8DebuggerScript& V8DebuggerScript::setSourceURL(const String16& sourceURL)
 {
     m_sourceURL = sourceURL;
     return *this;
 }
 
-V8DebuggerScript& V8DebuggerScript::setSourceMappingURL(const String& sourceMappingURL)
+V8DebuggerScript& V8DebuggerScript::setSourceMappingURL(const String16& sourceMappingURL)
 {
     m_sourceMappingURL = sourceMappingURL;
     return *this;
 }
 
-V8DebuggerScript& V8DebuggerScript::setSource(const String& source)
+V8DebuggerScript& V8DebuggerScript::setSource(const String16& source)
 {
     m_source = source;
     return *this;
 }
 
-V8DebuggerScript& V8DebuggerScript::setHash(const String& hash)
+V8DebuggerScript& V8DebuggerScript::setHash(const String16& hash)
 {
     m_hash = hash;
     return *this;

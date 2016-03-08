@@ -43,8 +43,6 @@ namespace protocol {
 class DictionaryValue;
 }
 
-typedef String ErrorString;
-
 class CORE_EXPORT InspectorInspectorAgent final : public InspectorBaseAgent<InspectorInspectorAgent, protocol::Frontend::Inspector>, public protocol::Dispatcher::InspectorCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInspectorAgent);
 public:

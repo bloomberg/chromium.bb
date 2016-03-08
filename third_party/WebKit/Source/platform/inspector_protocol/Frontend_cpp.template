@@ -6,7 +6,7 @@
 
 #include "platform/inspector_protocol/{{class_name}}.h"
 
-#include "wtf/text/WTFString.h"
+#include "platform/inspector_protocol/String16.h"
 
 namespace blink {
 namespace protocol {

@@ -735,7 +735,7 @@ void WebDevToolsAgent::interruptAndDispatch(int sessionId, MessageDescriptor* ra
 
 bool WebDevToolsAgent::shouldInterruptForMessage(const WebString& message)
 {
-    String commandName;
+    String16 commandName;
     if (!protocol::Dispatcher::getCommandName(message, &commandName))
         return false;
     return commandName == "Debugger.pause"

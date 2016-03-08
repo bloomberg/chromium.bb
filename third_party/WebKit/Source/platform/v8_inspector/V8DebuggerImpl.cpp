@@ -107,10 +107,10 @@ bool V8DebuggerImpl::enabled() const
     return !m_debuggerScript.IsEmpty();
 }
 
-void V8Debugger::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextGroupId)
+void V8Debugger::setContextDebugData(v8::Local<v8::Context> context, const String16& type, int contextGroupId)
 {
     int contextId = atomicIncrement(&s_lastContextId);
-    String debugData = String::number(contextGroupId) + "," + String::number(contextId) + "," + type;
+    String16 debugData = String16::number(contextGroupId) + "," + String16::number(contextId) + "," + type;
     v8::HandleScope scope(context->GetIsolate());
     v8::Context::Scope contextScope(context);
     context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), toV8String(context->GetIsolate(), debugData));
@@ -121,7 +121,7 @@ int V8Debugger::contextId(v8::Local<v8::Context> context)
     v8::Local<v8::Value> data = context->GetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex));
     if (data.IsEmpty() || !data->IsString())
         return 0;
-    String dataString = toWTFString(data.As<v8::String>());
+    String16 dataString = toProtocolString(data.As<v8::String>());
     if (dataString.isEmpty())
         return 0;
     size_t commaPos = dataString.find(",");
@@ -138,7 +138,7 @@ static int getGroupId(v8::Local<v8::Context> context)
     v8::Local<v8::Value> data = context->GetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex));
     if (data.IsEmpty() || !data->IsString())
         return 0;
-    String dataString = toWTFString(data.As<v8::String>());
+    String16 dataString = toProtocolString(data.As<v8::String>());
     if (dataString.isEmpty())
         return 0;
     size_t commaPos = dataString.find(",");
@@ -203,7 +203,7 @@ void V8DebuggerImpl::getCompiledScripts(int contextGroupId, protocol::Vector<V8D
         result[i] = createParsedScript(v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), true);
 }
 
-String V8DebuggerImpl::setBreakpoint(const String& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
+String16 V8DebuggerImpl::setBreakpoint(const String16& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
 {
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(debuggerContext());
@@ -221,10 +221,10 @@ String V8DebuggerImpl::setBreakpoint(const String& sourceID, const ScriptBreakpo
         return "";
     *actualLineNumber = info->Get(v8InternalizedString("lineNumber"))->Int32Value();
     *actualColumnNumber = info->Get(v8InternalizedString("columnNumber"))->Int32Value();
-    return toWTFString(breakpointId.As<v8::String>());
+    return toProtocolString(breakpointId.As<v8::String>());
 }
 
-void V8DebuggerImpl::removeBreakpoint(const String& breakpointId)
+void V8DebuggerImpl::removeBreakpoint(const String16& breakpointId)
 {
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(debuggerContext());
@@ -376,7 +376,7 @@ void V8DebuggerImpl::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged)
+bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged)
 {
     class EnableLiveEditScope {
     public:
@@ -412,7 +412,7 @@ bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newCo
         if (tryCatch.HasCaught()) {
             v8::Local<v8::Message> message = tryCatch.Message();
             if (!message.IsEmpty())
-                *error = toWTFStringWithTypeCheck(message->Get());
+                *error = toProtocolStringWithTypeCheck(message->Get());
             else
                 *error = "Unknown error.";
             return false;
@@ -435,9 +435,9 @@ bool V8DebuggerImpl::setScriptSource(const String& sourceID, const String& newCo
     case 1:
         {
             *errorData = protocol::Debugger::SetScriptSourceError::create()
-                    .setMessage(toWTFStringWithTypeCheck(resultTuple->Get(2)))
-                    .setLineNumber(resultTuple->Get(3)->ToInteger(m_isolate)->Value())
-                    .setColumnNumber(resultTuple->Get(4)->ToInteger(m_isolate)->Value()).build();
+                .setMessage(toProtocolStringWithTypeCheck(resultTuple->Get(2)))
+                .setLineNumber(resultTuple->Get(3)->ToInteger(m_isolate)->Value())
+                .setColumnNumber(resultTuple->Get(4)->ToInteger(m_isolate)->Value()).build();
             return false;
         }
     }
@@ -539,13 +539,13 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
     if (!agent)
         return;
 
-    protocol::Vector<String> breakpointIds;
+    protocol::Vector<String16> breakpointIds;
     if (!hitBreakpointNumbers.IsEmpty()) {
         breakpointIds.resize(hitBreakpointNumbers->Length());
         for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++) {
             v8::Local<v8::Value> hitBreakpointNumber = hitBreakpointNumbers->Get(i);
             ASSERT(!hitBreakpointNumber.IsEmpty() && hitBreakpointNumber->IsInt32());
-            breakpointIds[i] = String::number(hitBreakpointNumber->Int32Value());
+            breakpointIds[i] = String16::number(hitBreakpointNumber->Int32Value());
         }
     }
 
@@ -635,8 +635,8 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
 
 void V8DebuggerImpl::handleV8AsyncTaskEvent(V8DebuggerAgentImpl* agent, v8::Local<v8::Context> context, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
 {
-    String type = toWTFStringWithTypeCheck(callInternalGetterFunction(eventData, "type"));
-    String name = toWTFStringWithTypeCheck(callInternalGetterFunction(eventData, "name"));
+    String16 type = toProtocolStringWithTypeCheck(callInternalGetterFunction(eventData, "type"));
+    String16 name = toProtocolStringWithTypeCheck(callInternalGetterFunction(eventData, "name"));
     int id = callInternalGetterFunction(eventData, "id")->ToInteger(m_isolate)->Value();
 
     m_pausedContext = context;
@@ -669,11 +669,11 @@ V8DebuggerParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8::Object> 
     ASSERT(!id.IsEmpty() && id->IsInt32());
 
     V8DebuggerParsedScript parsedScript;
-    parsedScript.scriptId = String::number(id->Int32Value());
-    parsedScript.script.setURL(toWTFStringWithTypeCheck(object->Get(v8InternalizedString("name"))))
-        .setSourceURL(toWTFStringWithTypeCheck(object->Get(v8InternalizedString("sourceURL"))))
-        .setSourceMappingURL(toWTFStringWithTypeCheck(object->Get(v8InternalizedString("sourceMappingURL"))))
-        .setSource(toWTFStringWithTypeCheck(object->Get(v8InternalizedString("source"))))
+    parsedScript.scriptId = String16::number(id->Int32Value());
+    parsedScript.script.setURL(toProtocolStringWithTypeCheck(object->Get(v8InternalizedString("name"))))
+        .setSourceURL(toProtocolStringWithTypeCheck(object->Get(v8InternalizedString("sourceURL"))))
+        .setSourceMappingURL(toProtocolStringWithTypeCheck(object->Get(v8InternalizedString("sourceMappingURL"))))
+        .setSource(toProtocolStringWithTypeCheck(object->Get(v8InternalizedString("source"))))
         .setStartLine(object->Get(v8InternalizedString("startLine"))->ToInteger(m_isolate)->Value())
         .setStartColumn(object->Get(v8InternalizedString("startColumn"))->ToInteger(m_isolate)->Value())
         .setEndLine(object->Get(v8InternalizedString("endLine"))->ToInteger(m_isolate)->Value())
@@ -745,7 +745,7 @@ v8::Local<v8::Value> V8DebuggerImpl::collectionEntries(v8::Local<v8::Object>& ob
     return callDebuggerMethod("getCollectionEntries", 1, argv).ToLocalChecked();
 }
 
-v8::MaybeLocal<v8::Value> V8DebuggerImpl::setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Local<v8::Value> newValue)
+v8::MaybeLocal<v8::Value> V8DebuggerImpl::setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String16& variableName, v8::Local<v8::Value> newValue)
 {
     if (m_debuggerScript.IsEmpty()) {
         ASSERT_NOT_REACHED();
@@ -767,7 +767,7 @@ bool V8DebuggerImpl::isPaused()
     return !m_pausedContext.IsEmpty();
 }
 
-v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String> code, const String& fileName)
+v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String> code, const String16& fileName)
 {
     // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
     // 1, whereas v8 starts at 0.
@@ -778,7 +778,7 @@ v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Contex
         v8::False(m_isolate), // sharable
         v8::Local<v8::Integer>(),
         v8::True(m_isolate), // internal
-        toV8String(m_isolate, String()), // sourceMap
+        toV8String(m_isolate, String16()), // sourceMap
         v8::True(m_isolate)); // opaqueresource
     v8::ScriptCompiler::Source source(code, origin);
     v8::Local<v8::Script> script;

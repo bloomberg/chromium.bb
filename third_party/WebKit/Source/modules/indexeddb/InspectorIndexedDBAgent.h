@@ -40,7 +40,6 @@ namespace blink {
 
 class InspectedFrames;
 
-typedef String ErrorString;
 
 class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, protocol::Frontend::IndexedDB>, public protocol::Dispatcher::IndexedDBCommandHandler {
 public:

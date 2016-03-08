@@ -8,9 +8,9 @@
 #include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/ErrorSupport.h"
+#include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/ValueConversions.h"
 #include "platform/inspector_protocol/Values.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 namespace protocol {
@@ -33,7 +33,7 @@ public:
         errors->push();
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
         for (size_t i = 0; i < array->size(); ++i) {
-            errors->setName("[" + String::number(i) + "]");
+            errors->setName("[" + String16::number(i) + "]");
             T item = FromValue<T>::parse(array->at(i), errors);
             result->m_vector.append(item);
         }
@@ -71,6 +71,7 @@ private:
 };
 
 template<> class Array<String> : public ArrayBase<String> {};
+template<> class Array<String16> : public ArrayBase<String16> {};
 template<> class Array<int> : public ArrayBase<int> {};
 template<> class Array<double> : public ArrayBase<double> {};
 template<> class Array<bool> : public ArrayBase<bool> {};
@@ -93,7 +94,7 @@ public:
         OwnPtr<Array<T>> result = adoptPtr(new Array<T>());
         errors->push();
         for (size_t i = 0; i < array->size(); ++i) {
-            errors->setName("[" + String::number(i) + "]");
+            errors->setName("[" + String16::number(i) + "]");
             OwnPtr<T> item = FromValue<T>::parse(array->at(i), errors);
             result->m_vector.append(item.release());
         }

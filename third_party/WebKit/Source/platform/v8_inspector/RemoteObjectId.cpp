@@ -12,7 +12,7 @@ namespace blink {
 
 RemoteObjectIdBase::RemoteObjectIdBase() : m_injectedScriptId(0) { }
 
-PassOwnPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(const String& objectId)
+PassOwnPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(const String16& objectId)
 {
     OwnPtr<protocol::Value> parsedValue = protocol::parseJSON(objectId);
     if (!parsedValue || parsedValue->type() != protocol::Value::TypeObject)
@@ -27,7 +27,7 @@ PassOwnPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(
 
 RemoteObjectId::RemoteObjectId() : RemoteObjectIdBase(), m_id(0) { }
 
-PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(const String& objectId)
+PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(const String16& objectId)
 {
     OwnPtr<RemoteObjectId> result = adoptPtr(new RemoteObjectId());
     OwnPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
@@ -42,7 +42,7 @@ PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(const String& objectId)
 
 RemoteCallFrameId::RemoteCallFrameId() : RemoteObjectIdBase(), m_frameOrdinal(0) { }
 
-PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(const String& objectId)
+PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(const String16& objectId)
 {
     OwnPtr<RemoteCallFrameId> result = adoptPtr(new RemoteCallFrameId());
     OwnPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);

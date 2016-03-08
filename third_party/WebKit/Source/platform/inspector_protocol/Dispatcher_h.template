@@ -14,7 +14,6 @@ namespace protocol {
 
 class FrontendChannel;
 class DispatcherImplWeakPtr;
-using ErrorString = String;
 
 class PLATFORM_EXPORT Dispatcher {
 public:
@@ -102,15 +101,13 @@ public:
         LastEntry,
     };
 
-    void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage) const;
-    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String& errorMessage, ErrorSupport*) const = 0;
-    virtual void dispatch(int sessionId, const String& message) = 0;
-    static bool getCommandName(const String& message, String* result);
+    void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String16& errorMessage) const;
+    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String16& errorMessage, ErrorSupport*) const = 0;
+    virtual void dispatch(int sessionId, const String16& message) = 0;
+    static bool getCommandName(const String16& message, String16* result);
 };
 
 } // namespace protocol
 } // namespace blink
-
-using blink::protocol::ErrorString;
 
 #endif // !defined({{class_name}}_h)

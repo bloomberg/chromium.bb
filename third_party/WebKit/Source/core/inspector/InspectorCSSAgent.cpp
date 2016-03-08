@@ -1704,7 +1704,7 @@ InspectorStyleSheet* InspectorCSSAgent::assertInspectorStyleSheetForId(ErrorStri
 
 InspectorStyleSheetBase* InspectorCSSAgent::assertStyleSheetForId(ErrorString* errorString, const String& styleSheetId)
 {
-    String placeholder;
+    ErrorString placeholder;
     InspectorStyleSheetBase* result = assertInspectorStyleSheetForId(&placeholder, styleSheetId);
     if (result)
         return result;

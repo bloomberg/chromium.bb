@@ -84,8 +84,8 @@ void InspectorRuntimeAgent::restore()
 }
 
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
-    const String& expression,
-    const Maybe<String>& objectGroup,
+    const String16& expression,
+    const Maybe<String16>& objectGroup,
     const Maybe<bool>& includeCommandLineAPI,
     const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
     const Maybe<int>& optExecutionContextId,
@@ -110,8 +110,8 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
 }
 
 void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString,
-    const String& objectId,
-    const String& expression,
+    const String16& objectId,
+    const String16& expression,
     const Maybe<protocol::Array<protocol::Runtime::CallArgument>>& optionalArguments,
     const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
     const Maybe<bool>& returnByValue,
@@ -127,7 +127,7 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString,
 }
 
 void InspectorRuntimeAgent::getProperties(ErrorString* errorString,
-    const String& objectId,
+    const String16& objectId,
     const Maybe<bool>& ownProperties,
     const Maybe<bool>& accessorPropertiesOnly,
     const Maybe<bool>& generatePreview,
@@ -139,12 +139,12 @@ void InspectorRuntimeAgent::getProperties(ErrorString* errorString,
     m_v8RuntimeAgent->getProperties(errorString, objectId, ownProperties, accessorPropertiesOnly, generatePreview, result, internalProperties, exceptionDetails);
 }
 
-void InspectorRuntimeAgent::releaseObject(ErrorString* errorString, const String& objectId)
+void InspectorRuntimeAgent::releaseObject(ErrorString* errorString, const String16& objectId)
 {
     m_v8RuntimeAgent->releaseObject(errorString, objectId);
 }
 
-void InspectorRuntimeAgent::releaseObjectGroup(ErrorString* errorString, const String& objectGroup)
+void InspectorRuntimeAgent::releaseObjectGroup(ErrorString* errorString, const String16& objectGroup)
 {
     m_v8RuntimeAgent->releaseObjectGroup(errorString, objectGroup);
 }
@@ -160,8 +160,8 @@ void InspectorRuntimeAgent::setCustomObjectFormatterEnabled(ErrorString* errorSt
 }
 
 void InspectorRuntimeAgent::compileScript(ErrorString* errorString,
-    const String& inExpression,
-    const String& inSourceURL,
+    const String16& inExpression,
+    const String16& inSourceURL,
     bool inPersistScript,
     int inExecutionContextId,
     Maybe<protocol::Runtime::ScriptId>* optOutScriptId,
@@ -171,9 +171,9 @@ void InspectorRuntimeAgent::compileScript(ErrorString* errorString,
 }
 
 void InspectorRuntimeAgent::runScript(ErrorString* errorString,
-    const String& inScriptId,
+    const String16& inScriptId,
     int inExecutionContextId,
-    const Maybe<String>& inObjectGroup,
+    const Maybe<String16>& inObjectGroup,
     const Maybe<bool>& inDoNotPauseOnExceptionsAndMuteConsole,
     const Maybe<bool>& includeCommandLineAPI,
     OwnPtr<protocol::Runtime::RemoteObject>* outResult,
@@ -205,7 +205,7 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
     m_v8RuntimeAgent->disable(errorString);
 }
 
-void InspectorRuntimeAgent::reportExecutionContextCreated(ScriptState* scriptState, const String& type, const String& origin, const String& humanReadableName, const String& frameId)
+void InspectorRuntimeAgent::reportExecutionContextCreated(ScriptState* scriptState, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId)
 {
     v8::HandleScope handles(scriptState->isolate());
     m_v8RuntimeAgent->reportExecutionContextCreated(scriptState->context(), type, origin, humanReadableName, frameId);

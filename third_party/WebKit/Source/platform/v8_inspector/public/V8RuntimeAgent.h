@@ -34,7 +34,7 @@ public:
     virtual ~V8RuntimeAgent() { }
 
     // Embedder notification API.
-    virtual void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) = 0;
+    virtual void reportExecutionContextCreated(v8::Local<v8::Context>, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId) = 0;
     virtual void reportExecutionContextDestroyed(v8::Local<v8::Context>) = 0;
 
     // Embedder API.
@@ -44,11 +44,11 @@ public:
     virtual void setInspectObjectCallback(PassOwnPtr<InspectCallback>) = 0;
     // FIXME: remove while preserving the default context evaluation.
     virtual int ensureDefaultContextAvailable(v8::Local<v8::Context>) = 0;
-    virtual PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String& groupName, bool generatePreview = false) = 0;
+    virtual PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) = 0;
     // FIXME: remove when console.table moves into V8 inspector.
     virtual PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) = 0;
-    virtual v8::Local<v8::Value> findObject(const String& objectId, v8::Local<v8::Context>* = nullptr, String* objectGroup = nullptr) = 0;
-    virtual void disposeObjectGroup(const String&) = 0;
+    virtual v8::Local<v8::Value> findObject(const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* objectGroup = nullptr) = 0;
+    virtual void disposeObjectGroup(const String16&) = 0;
     virtual void addInspectedObject(PassOwnPtr<Inspectable>) = 0;
     virtual void clearInspectedObjects() = 0;
 };

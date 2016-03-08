@@ -4,16 +4,17 @@
 
 #include "platform/v8_inspector/V8StringUtil.h"
 
+#include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8Regex.h"
 #include "platform/v8_inspector/public/V8ContentSearchUtil.h"
-#include "wtf/text/StringBuilder.h"
+#include "platform/v8_inspector/public/V8ToProtocolValue.h"
 
 namespace blink {
 
 namespace {
 
-String findMagicComment(const String& content, const String& name, bool multiline, bool* deprecated)
+String16 findMagicComment(const String16& content, const String16& name, bool multiline, bool* deprecated)
 {
     ASSERT(name.find("=") == kNotFound);
     if (deprecated)
@@ -28,11 +29,11 @@ String findMagicComment(const String& content, const String& name, bool multilin
     while (true) {
         pos = content.reverseFind(name, pos);
         if (pos == kNotFound)
-            return String();
+            return String16();
 
         // Check for a /\/[\/*][@#][ \t]/ regexp (length of 4) before found name.
         if (pos < 4)
-            return String();
+            return String16();
         pos -= 4;
         if (content[pos] != '/')
             continue;
@@ -49,7 +50,7 @@ String findMagicComment(const String& content, const String& name, bool multilin
         if (multiline) {
             closingCommentPos = content.find("*/", equalSignPos + 1);
             if (closingCommentPos == kNotFound)
-                return String();
+                return String16();
         }
 
         break;
@@ -61,7 +62,7 @@ String findMagicComment(const String& content, const String& name, bool multilin
     ASSERT(equalSignPos);
     ASSERT(!multiline || closingCommentPos);
     size_t urlPos = equalSignPos + 1;
-    String match = multiline
+    String16 match = multiline
         ? content.substring(urlPos, closingCommentPos - urlPos)
         : content.substring(urlPos);
 
@@ -70,7 +71,7 @@ String findMagicComment(const String& content, const String& name, bool multilin
         match = match.substring(0, newLine);
     match = match.stripWhiteSpace();
 
-    String disallowedChars("\"' \t");
+    String16 disallowedChars("\"' \t");
     for (unsigned i = 0; i < match.length(); ++i) {
         if (disallowedChars.find(match[i]) != kNotFound)
             return "";
@@ -79,10 +80,10 @@ String findMagicComment(const String& content, const String& name, bool multilin
     return match;
 }
 
-String createSearchRegexSource(const String& text)
+String16 createSearchRegexSource(const String16& text)
 {
-    StringBuilder result;
-    String specials("[](){}+-*.,?\\^$|");
+    String16Builder result;
+    String16 specials("[](){}+-*.,?\\^$|");
 
     for (unsigned i = 0; i < text.length(); i++) {
         if (specials.find(text[i]) != kNotFound)
@@ -93,7 +94,7 @@ String createSearchRegexSource(const String& text)
     return result.toString();
 }
 
-PassOwnPtr<protocol::Vector<unsigned>> lineEndings(const String& text)
+PassOwnPtr<protocol::Vector<unsigned>> lineEndings(const String16& text)
 {
     OwnPtr<protocol::Vector<unsigned>> result(adoptPtr(new protocol::Vector<unsigned>()));
 
@@ -111,9 +112,9 @@ PassOwnPtr<protocol::Vector<unsigned>> lineEndings(const String& text)
     return result.release();
 }
 
-protocol::Vector<std::pair<int, String>> scriptRegexpMatchesByLines(const V8Regex& regex, const String& text)
+protocol::Vector<std::pair<int, String16>> scriptRegexpMatchesByLines(const V8Regex& regex, const String16& text)
 {
-    protocol::Vector<std::pair<int, String>> result;
+    protocol::Vector<std::pair<int, String16>> result;
     if (text.isEmpty())
         return result;
 
@@ -122,20 +123,20 @@ protocol::Vector<std::pair<int, String>> scriptRegexpMatchesByLines(const V8Rege
     unsigned start = 0;
     for (unsigned lineNumber = 0; lineNumber < size; ++lineNumber) {
         unsigned lineEnd = endings->at(lineNumber);
-        String line = text.substring(start, lineEnd - start);
+        String16 line = text.substring(start, lineEnd - start);
         if (line.endsWith('\r'))
             line = line.left(line.length() - 1);
 
         int matchLength;
         if (regex.match(line, 0, &matchLength) != -1)
-            result.append(std::pair<int, String>(lineNumber, line));
+            result.append(std::pair<int, String16>(lineNumber, line));
 
         start = lineEnd + 1;
     }
     return result;
 }
 
-PassOwnPtr<protocol::Debugger::SearchMatch> buildObjectForSearchMatch(int lineNumber, const String& lineContent)
+PassOwnPtr<protocol::Debugger::SearchMatch> buildObjectForSearchMatch(int lineNumber, const String16& lineContent)
 {
     return protocol::Debugger::SearchMatch::create()
         .setLineNumber(lineNumber)
@@ -143,15 +144,15 @@ PassOwnPtr<protocol::Debugger::SearchMatch> buildObjectForSearchMatch(int lineNu
         .build();
 }
 
-PassOwnPtr<V8Regex> createSearchRegex(V8DebuggerImpl* debugger, const String& query, bool caseSensitive, bool isRegex)
+PassOwnPtr<V8Regex> createSearchRegex(V8DebuggerImpl* debugger, const String16& query, bool caseSensitive, bool isRegex)
 {
-    String regexSource = isRegex ? query : createSearchRegexSource(query);
-    return adoptPtr(new V8Regex(debugger, regexSource, caseSensitive ? TextCaseSensitive : TextCaseInsensitive));
+    String16 regexSource = isRegex ? query : createSearchRegexSource(query);
+    return adoptPtr(new V8Regex(debugger, regexSource, caseSensitive));
 }
 
 } // namespace
 
-v8::Local<v8::String> toV8String(v8::Isolate* isolate, const String& string)
+v8::Local<v8::String> toV8String(v8::Isolate* isolate, const String16& string)
 {
     if (string.isNull())
         return v8::String::Empty(isolate);
@@ -160,7 +161,7 @@ v8::Local<v8::String> toV8String(v8::Isolate* isolate, const String& string)
     return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kNormal, string.length()).ToLocalChecked();
 }
 
-v8::Local<v8::String> toV8StringInternalized(v8::Isolate* isolate, const String& string)
+v8::Local<v8::String> toV8StringInternalized(v8::Isolate* isolate, const String16& string)
 {
     if (string.isNull())
         return v8::String::Empty(isolate);
@@ -169,40 +170,40 @@ v8::Local<v8::String> toV8StringInternalized(v8::Isolate* isolate, const String&
     return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kInternalized, string.length()).ToLocalChecked();
 }
 
-String toWTFString(v8::Local<v8::String> value)
+String16 toProtocolString(v8::Local<v8::String> value)
 {
     if (value.IsEmpty() || value->IsNull() || value->IsUndefined())
-        return String();
+        return String16();
     UChar* buffer;
-    String result = String::createUninitialized(value->Length(), buffer);
+    String16 result = String16::createUninitialized(value->Length(), buffer);
     value->Write(reinterpret_cast<uint16_t*>(buffer), 0, value->Length());
     return result;
 }
 
-String toWTFStringWithTypeCheck(v8::Local<v8::Value> value)
+String16 toProtocolStringWithTypeCheck(v8::Local<v8::Value> value)
 {
     if (value.IsEmpty() || !value->IsString())
-        return String();
-    return toWTFString(value.As<v8::String>());
+        return String16();
+    return toProtocolString(value.As<v8::String>());
 }
 
 namespace V8ContentSearchUtil {
 
-String findSourceURL(const String& content, bool multiline, bool* deprecated)
+String16 findSourceURL(const String16& content, bool multiline, bool* deprecated)
 {
     return findMagicComment(content, "sourceURL", multiline, deprecated);
 }
 
-String findSourceMapURL(const String& content, bool multiline, bool* deprecated)
+String16 findSourceMapURL(const String16& content, bool multiline, bool* deprecated)
 {
     return findMagicComment(content, "sourceMappingURL", multiline, deprecated);
 }
 
-PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines(V8Debugger* debugger, const String& text, const String& query, const bool caseSensitive, const bool isRegex)
+PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines(V8Debugger* debugger, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
 {
     OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> result = protocol::Array<protocol::Debugger::SearchMatch>::create();
     OwnPtr<V8Regex> regex = createSearchRegex(static_cast<V8DebuggerImpl*>(debugger), query, caseSensitive, isRegex);
-    protocol::Vector<std::pair<int, String>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
+    protocol::Vector<std::pair<int, String16>> matches = scriptRegexpMatchesByLines(*regex.get(), text);
 
     for (const auto& match : matches)
         result->addItem(buildObjectForSearchMatch(match.first, match.second));
@@ -211,5 +212,73 @@ PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines
 }
 
 } // namespace V8ContentSearchUtil
+
+PassOwnPtr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context, v8::Local<v8::Value> value, int maxDepth)
+{
+    if (value.IsEmpty()) {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
+    if (!maxDepth)
+        return nullptr;
+    maxDepth--;
+
+    if (value->IsNull() || value->IsUndefined())
+        return protocol::Value::null();
+    if (value->IsBoolean())
+        return protocol::FundamentalValue::create(value.As<v8::Boolean>()->Value());
+    if (value->IsNumber())
+        return protocol::FundamentalValue::create(value.As<v8::Number>()->Value());
+    if (value->IsString())
+        return protocol::StringValue::create(toProtocolString(value.As<v8::String>()));
+    if (value->IsArray()) {
+        v8::Local<v8::Array> array = value.As<v8::Array>();
+        OwnPtr<protocol::ListValue> inspectorArray = protocol::ListValue::create();
+        uint32_t length = array->Length();
+        for (uint32_t i = 0; i < length; i++) {
+            v8::Local<v8::Value> value;
+            if (!array->Get(context, i).ToLocal(&value))
+                return nullptr;
+            OwnPtr<protocol::Value> element = toProtocolValue(context, value, maxDepth);
+            if (!element)
+                return nullptr;
+            inspectorArray->pushValue(element.release());
+        }
+        return inspectorArray.release();
+    }
+    if (value->IsObject()) {
+        OwnPtr<protocol::DictionaryValue> jsonObject = protocol::DictionaryValue::create();
+        v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
+        v8::Local<v8::Array> propertyNames;
+        if (!object->GetPropertyNames(context).ToLocal(&propertyNames))
+            return nullptr;
+        uint32_t length = propertyNames->Length();
+        for (uint32_t i = 0; i < length; i++) {
+            v8::Local<v8::Value> name;
+            if (!propertyNames->Get(context, i).ToLocal(&name))
+                return nullptr;
+            // FIXME(yurys): v8::Object should support GetOwnPropertyNames
+            if (name->IsString()) {
+                v8::Maybe<bool> hasRealNamedProperty = object->HasRealNamedProperty(context, v8::Local<v8::String>::Cast(name));
+                if (!hasRealNamedProperty.IsJust() || !hasRealNamedProperty.FromJust())
+                    continue;
+            }
+            v8::Local<v8::String> propertyName;
+            if (!name->ToString(context).ToLocal(&propertyName))
+                continue;
+            v8::Local<v8::Value> property;
+            if (!object->Get(context, name).ToLocal(&property))
+                return nullptr;
+            OwnPtr<protocol::Value> propertyValue = toProtocolValue(context, property, maxDepth);
+            if (!propertyValue)
+                return nullptr;
+            jsonObject->setValue(toProtocolString(propertyName), propertyValue.release());
+        }
+        return jsonObject.release();
+    }
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
 
 } // namespace blink

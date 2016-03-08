@@ -59,7 +59,7 @@ v8::MaybeLocal<v8::Value> ThreadDebugger::callInternalFunction(v8::Local<v8::Fun
     return V8ScriptRunner::callInternalFunction(function, receiver, argc, info, m_isolate);
 }
 
-String ThreadDebugger::valueSubtype(v8::Local<v8::Value> value)
+String16 ThreadDebugger::valueSubtype(v8::Local<v8::Value> value)
 {
     if (V8Node::hasInstance(value, m_isolate))
         return "node";

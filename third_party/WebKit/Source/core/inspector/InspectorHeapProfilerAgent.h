@@ -47,8 +47,6 @@ namespace blink {
 class V8HeapProfilerAgent;
 class V8RuntimeAgent;
 
-typedef String ErrorString;
-
 class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>, public protocol::Dispatcher::HeapProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorHeapProfilerAgent);
@@ -68,9 +66,9 @@ public:
     void stopTrackingHeapObjects(ErrorString*, const Maybe<bool>& reportProgress) override;
     void takeHeapSnapshot(ErrorString*, const Maybe<bool>& reportProgress) override;
     void collectGarbage(ErrorString*) override;
-    void getObjectByHeapObjectId(ErrorString*, const String& objectId, const Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result) override;
-    void addInspectedHeapObject(ErrorString*, const String& heapObjectId) override;
-    void getHeapObjectId(ErrorString*, const String& objectId, String* heapSnapshotObjectId) override;
+    void getObjectByHeapObjectId(ErrorString*, const String16& objectId, const Maybe<String16>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result) override;
+    void addInspectedHeapObject(ErrorString*, const String16& heapObjectId) override;
+    void getHeapObjectId(ErrorString*, const String16& objectId, String16* heapSnapshotObjectId) override;
     void startSampling(ErrorString*) override;
     void stopSampling(ErrorString*, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>*) override;
 

@@ -90,6 +90,8 @@ def patch_full_qualified_refs():
         if not isinstance(json, dict):
             return
         for key in json:
+            if key == "type" and json[key] == "string":
+                json[key] = domain_name + ".string"
             if key != "$ref":
                 patch_full_qualified_refs_in_domain(json[key], domain_name)
                 continue
@@ -139,19 +141,31 @@ def create_any_type_definition():
     }
 
 
-def create_primitive_type_definition(type):
-    if type == "string":
+def create_string_type_definition(domain):
+    if domain in ["Runtime", "Debugger", "Profiler", "HeapProfiler"]:
         return {
-            "return_type": "String",
-            "pass_type": "const String&",
+            "return_type": "String16",
+            "pass_type": "const String16&",
             "to_pass_type": "%s",
             "to_raw_type": "%s",
-            "type": "String",
-            "raw_type": "String",
-            "raw_pass_type": "const String&",
-            "raw_return_type": "String",
+            "type": "String16",
+            "raw_type": "String16",
+            "raw_pass_type": "const String16&",
+            "raw_return_type": "String16",
         }
+    return {
+        "return_type": "String",
+        "pass_type": "const String&",
+        "to_pass_type": "%s",
+        "to_raw_type": "%s",
+        "type": "String",
+        "raw_type": "String",
+        "raw_pass_type": "const String&",
+        "raw_return_type": "String",
+    }
 
+
+def create_primitive_type_definition(type):
     typedefs = {
         "number": "double",
         "integer": "int",
@@ -174,13 +188,11 @@ def create_primitive_type_definition(type):
     }
 
 type_definitions = {}
-type_definitions["string"] = create_primitive_type_definition("string")
 type_definitions["number"] = create_primitive_type_definition("number")
 type_definitions["integer"] = create_primitive_type_definition("integer")
 type_definitions["boolean"] = create_primitive_type_definition("boolean")
 type_definitions["object"] = create_object_type_definition()
 type_definitions["any"] = create_any_type_definition()
-
 
 def wrap_array_definition(type):
     return {
@@ -199,6 +211,7 @@ def wrap_array_definition(type):
 
 def create_type_definitions():
     for domain in json_api["domains"]:
+        type_definitions[domain["domain"] + ".string"] = create_string_type_definition(domain["domain"])
         if not ("types" in domain):
             continue
         for type in domain["types"]:
@@ -207,6 +220,8 @@ def create_type_definitions():
             elif type["type"] == "array":
                 items_type = type["items"]["type"]
                 type_definitions[domain["domain"] + "." + type["id"]] = wrap_array_definition(type_definitions[items_type])
+            elif type["type"] == domain["domain"] + ".string":
+                type_definitions[domain["domain"] + "." + type["id"]] = create_string_type_definition(domain["domain"])
             else:
                 type_definitions[domain["domain"] + "." + type["id"]] = create_primitive_type_definition(type["type"])
 

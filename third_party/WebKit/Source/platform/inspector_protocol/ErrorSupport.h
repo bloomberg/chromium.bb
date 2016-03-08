@@ -7,7 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/Collections.h"
-#include "wtf/text/WTFString.h"
+#include "platform/inspector_protocol/String16.h"
 
 namespace blink {
 namespace protocol {
@@ -15,20 +15,20 @@ namespace protocol {
 class PLATFORM_EXPORT ErrorSupport {
 public:
     ErrorSupport();
-    ErrorSupport(String* errorString);
+    ErrorSupport(String16* errorString);
     ~ErrorSupport();
 
     void push();
-    void setName(const String&);
+    void setName(const String16&);
     void pop();
-    void addError(const String&);
+    void addError(const String16&);
     bool hasErrors();
-    String errors();
+    String16 errors();
 
 private:
-    protocol::Vector<String> m_path;
-    protocol::Vector<String> m_errors;
-    String* m_errorString;
+    protocol::Vector<String16> m_path;
+    protocol::Vector<String16> m_errors;
+    String16* m_errorString;
 };
 
 } // namespace platform
