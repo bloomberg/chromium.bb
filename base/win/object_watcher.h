@@ -46,6 +46,10 @@ namespace win {
 // If the object is already signaled before being watched, OnObjectSignaled is
 // still called after (but not necessarily immediately after) watch is started.
 //
+// NOTE: Use of this class requires that there be a current message loop;
+// otherwise, when the object is signaled, there would be no loop to post the
+// callback task to.  This means that you cannot use ObjectWatcher in test code
+// that doesn't create a message loop (unless you add such a loop).
 class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
  public:
   class BASE_EXPORT Delegate {
@@ -62,14 +66,14 @@ class BASE_EXPORT ObjectWatcher : public MessageLoop::DestructionObserver {
   // When the object is signaled, the given delegate is notified on the thread
   // where StartWatchingOnce is called. The ObjectWatcher is not responsible for
   // deleting the delegate.
-  // Returns true if the watch was started.  Otherwise, false is returned.
+  // Returns whether watching was successfully initiated.
   bool StartWatchingOnce(HANDLE object, Delegate* delegate);
 
   // Notifies the delegate, on the thread where this method is called, each time
   // the object is set. By definition, the handle must be an auto-reset object.
   // The caller must ensure that it (or any Windows system code) doesn't reset
   // the event or else the delegate won't be called.
-  // Returns true if the watch was started.  Otherwise, false is returned.
+  // Returns whether watching was successfully initiated.
   bool StartWatchingMultipleTimes(HANDLE object, Delegate* delegate);
 
   // Stops watching.  Does nothing if the watch has already completed.  If the

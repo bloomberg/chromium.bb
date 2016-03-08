@@ -51,7 +51,7 @@ bool ObjectWatcher::StopWatching() {
   object_ = NULL;
   wait_object_ = NULL;
 
-  MessageLoop::current()->RemoveDestructionObserver(this);
+  origin_loop_->RemoveDestructionObserver(this);
   return true;
 }
 
@@ -82,6 +82,11 @@ bool ObjectWatcher::StartWatchingInternal(HANDLE object, Delegate* delegate,
     NOTREACHED() << "Already watching an object";
     return false;
   }
+
+  origin_loop_ = MessageLoop::current();
+  if (!origin_loop_)
+    return false;
+
   run_once_ = execute_only_once;
 
   // Since our job is to just notice when an object is signaled and report the
@@ -95,7 +100,6 @@ bool ObjectWatcher::StartWatchingInternal(HANDLE object, Delegate* delegate,
   callback_ = base::Bind(&ObjectWatcher::Signal, weak_factory_.GetWeakPtr(),
                          delegate);
   object_ = object;
-  origin_loop_ = MessageLoop::current();
 
   if (!RegisterWaitForSingleObject(&wait_object_, object, DoneWaiting,
                                    this, INFINITE, wait_flags)) {
@@ -107,7 +111,7 @@ bool ObjectWatcher::StartWatchingInternal(HANDLE object, Delegate* delegate,
 
   // We need to know if the current message loop is going away so we can
   // prevent the wait thread from trying to access a dead message loop.
-  MessageLoop::current()->AddDestructionObserver(this);
+  origin_loop_->AddDestructionObserver(this);
   return true;
 }
 
