@@ -204,6 +204,7 @@ static const CPUFeature CPUFeatureDescriptions[(int)NaClCPUFeatureX86_Max] = {
     NACL_CONCAT(CPUID_, idx),                                   \
     str,                                                        \
   },
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86_features.h"
 #undef NACL_X86_CPU_FEATURE
 };
