@@ -352,10 +352,6 @@ component("platform") {
       "scroll/ScrollAnimator.cpp",
       "scroll/ScrollAnimator.h",
 
-      # Mac uses only ScrollAnimatorMac.
-      "scroll/ScrollbarThemeNonMacCommon.cpp",
-      "scroll/ScrollbarThemeNonMacCommon.h",
-
       # Uses LocaleMac instead.
       "text/LocaleICU.cpp",
       "text/LocaleICU.h",

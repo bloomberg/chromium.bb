@@ -290,7 +290,6 @@
           ['include', 'scroll/ScrollbarThemeMac\\.mm$'],
 
           # Mac uses only ScrollAnimatorMac.
-          ['exclude', 'scroll/ScrollbarThemeNonMacCommon\\.(cpp|h)$'],
           ['exclude', 'scroll/ScrollAnimator\\.cpp$'],
           ['exclude', 'scroll/ScrollAnimator\\.h$'],
 

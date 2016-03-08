@@ -31,22 +31,34 @@
 #ifndef ScrollbarThemeAura_h
 #define ScrollbarThemeAura_h
 
-#include "platform/scroll/ScrollbarThemeNonMacCommon.h"
+#include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarThemeNonMacCommon {
+class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
 public:
     int scrollbarThickness(ScrollbarControlSize) override;
 
 protected:
-    bool shouldRepaintAllPartsOnInvalidation() const override;
-    ScrollbarPart invalidateOnThumbPositionChange(const ScrollbarThemeClient&, float oldPosition, float newPosition) const override;
+    bool hasButtons(const ScrollbarThemeClient&) override { return true; }
+    bool hasThumb(const ScrollbarThemeClient&) override;
+
+    IntRect backButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
+    IntRect forwardButtonRect(const ScrollbarThemeClient&, ScrollbarPart, bool painting = false) override;
+    IntRect trackRect(const ScrollbarThemeClient&, bool painting = false) override;
+    int minimumThumbLength(const ScrollbarThemeClient&) override;
+
+    void paintTickmarks(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
+    void paintTrackBackground(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
     void paintTrackPiece(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
     void paintButton(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&, ScrollbarPart) override;
     void paintThumb(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) override;
-    IntSize buttonSize(const ScrollbarThemeClient&) override;
-    int minimumThumbLength(const ScrollbarThemeClient&) override;
+
+    bool shouldRepaintAllPartsOnInvalidation() const override;
+    ScrollbarPart invalidateOnThumbPositionChange(const ScrollbarThemeClient&, float oldPosition, float newPosition) const override;
+
+private:
+    IntSize buttonSize(const ScrollbarThemeClient&);
 };
 
 } // namespace blink
