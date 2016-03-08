@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -20,7 +21,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
 #include "grit/browser_resources.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
+#include "grit/generated_resources.h"
 
 namespace {
 
@@ -45,6 +46,10 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->AddResourcePath("gaia_auth_host.js", IDR_GAIA_AUTH_AUTHENTICATOR_JS);
 
   source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);
+  source->AddLocalizedString(
+      "accessibleCloseButtonLabel", IDS_SIGNIN_ACCESSIBLE_CLOSE_BUTTON);
+  source->AddLocalizedString(
+      "accessibleBackButtonLabel", IDS_SIGNIN_ACCESSIBLE_BACK_BUTTON);
   return source;
 }
 
@@ -72,4 +77,3 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
 }
 
 InlineLoginUI::~InlineLoginUI() {}
-

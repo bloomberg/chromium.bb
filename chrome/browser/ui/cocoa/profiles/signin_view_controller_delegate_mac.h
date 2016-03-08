@@ -15,7 +15,6 @@
 
 @class ConstrainedWindowCustomWindow;
 class ConstrainedWindowMac;
-@class NavigationButtonClickedHandler;
 class Profile;
 
 namespace content {
@@ -46,7 +45,6 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
       content::WebContents* host_web_contents,
       NSRect frame);
 
-  void ButtonClicked();
   void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
 
   // Creates the web view that contains the signin flow in |mode| using
@@ -62,19 +60,13 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
       Profile* profile);
 
  private:
-  void ShowBackArrow() override;
-  void ShowCloseButton() override;
   void PerformClose() override;
 
   ~SigninViewControllerDelegateMac() override;
-  void AddNavigationButton();
 
-  base::scoped_nsobject<NSButton> back_button_;
-  base::scoped_nsobject<NSView> host_view_;
   scoped_ptr<ConstrainedWindowMac> constrained_window_;
   scoped_ptr<content::WebContents> web_contents_;
   base::scoped_nsobject<ConstrainedWindowCustomWindow> window_;
-  base::scoped_nsobject<NavigationButtonClickedHandler> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegateMac);
 };

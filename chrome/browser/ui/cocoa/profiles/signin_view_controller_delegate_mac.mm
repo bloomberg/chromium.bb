@@ -17,9 +17,6 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons.h"
 
 namespace {
 
@@ -40,44 +37,16 @@ const int kSyncConfirmationDialogHeight = 351;
 
 }  // namespace
 
-class ModalSigninDelegateMac;
-
-@interface NavigationButtonClickedHandler : NSObject {
- @private
-  SigninViewControllerDelegateMac* delegate_;
-}
-- (id)initWithModalSigninDelegate:(SigninViewControllerDelegateMac*)delegate;
-- (void)buttonClicked:(id)sender;
-@end
-
-@implementation NavigationButtonClickedHandler
-
-- (id)initWithModalSigninDelegate:(SigninViewControllerDelegateMac*)delegate {
-  if (self = [super init]) {
-    delegate_ = delegate;
-  }
-
-  return self;
-}
-
-- (void)buttonClicked:(id)sender {
-  delegate_->ButtonClicked();
-}
-
-@end
-
 SigninViewControllerDelegateMac::SigninViewControllerDelegateMac(
     SigninViewController* signin_view_controller,
     scoped_ptr<content::WebContents> web_contents,
     content::WebContents* host_web_contents,
     NSRect frame)
     : SigninViewControllerDelegate(signin_view_controller, web_contents.get()),
-      host_view_([[NSView alloc] initWithFrame:frame]),
       web_contents_(std::move(web_contents)),
       window_(
           [[ConstrainedWindowCustomWindow alloc] initWithContentRect:frame]) {
-  window_.get().contentView = host_view_;
-  [host_view_ addSubview:web_contents_->GetNativeView()];
+  window_.get().contentView = web_contents_->GetNativeView();
 
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window_]);
@@ -86,24 +55,6 @@ SigninViewControllerDelegateMac::SigninViewControllerDelegateMac(
 }
 
 SigninViewControllerDelegateMac::~SigninViewControllerDelegateMac() {}
-
-SigninViewControllerDelegateMac*
-SigninViewControllerDelegateMac::CreateModalSigninDelegateWithNavigation(
-    SigninViewController* signin_view_controller,
-    scoped_ptr<content::WebContents> web_contents,
-    content::WebContents* host_web_contents,
-    NSRect frame) {
-  SigninViewControllerDelegateMac* delegate =
-      new SigninViewControllerDelegateMac(signin_view_controller,
-                                          std::move(web_contents),
-                                          host_web_contents, frame);
-  delegate->AddNavigationButton();
-  return delegate;
-}
-
-void SigninViewControllerDelegateMac::ButtonClicked() {
-  NavigationButtonClicked(web_contents_.get());
-}
 
 void SigninViewControllerDelegateMac::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
@@ -161,47 +112,8 @@ SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
   return web_contents;
 }
 
-void SigninViewControllerDelegateMac::ShowBackArrow() {
-  gfx::ImageSkia image = gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK,
-                                               16, SK_ColorWHITE);
-  NSImage* converted_image = NSImageFromImageSkia(image);
-  [back_button_ setImage:converted_image];
-  [back_button_ setNeedsDisplay:YES];
-}
-
-void SigninViewControllerDelegateMac::ShowCloseButton() {
-  gfx::ImageSkia image = gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_STOP,
-                                               16, SK_ColorWHITE);
-  NSImage* converted_image = NSImageFromImageSkia(image);
-  [back_button_ setImage:converted_image];
-  [back_button_ setNeedsDisplay:YES];
-}
-
 void SigninViewControllerDelegateMac::PerformClose() {
   constrained_window_->CloseWebContentsModalDialog();
-}
-
-void SigninViewControllerDelegateMac::AddNavigationButton() {
-  NSRect button_frame = NSMakeRect(16, kFixedGaiaViewHeight - 32, 16, 16);
-  back_button_.reset([[NSButton alloc] initWithFrame:button_frame]);
-  [back_button_ setImagePosition:NSImageOnly];
-  [back_button_ setBordered:NO];
-  [back_button_ setButtonType:NSMomentaryChangeButton];
-  ShowCloseButton();
-
-  handler_.reset([[NavigationButtonClickedHandler alloc]
-      initWithModalSigninDelegate:this]);
-  [back_button_ setTarget:handler_];
-  [back_button_ setAction:@selector(buttonClicked:)];
-
-  // NSView clipping/drawing/invalidating is undefined between overlapping
-  // views if one is layer-backed and the other is not. Since we want to
-  // overlap an NSView on top of what is ultimately a
-  // RenderWidgetHostViewCocoa, which itself is layer-backed, we must request
-  // that our back button be layer-backed as well.
-  [back_button_ setWantsLayer:YES];
-
-  [host_view_ addSubview:back_button_];
 }
 
 // static
@@ -211,8 +123,7 @@ SigninViewControllerDelegate::CreateModalSigninDelegate(
     profiles::BubbleViewMode mode,
     Browser* browser,
     signin_metrics::AccessPoint access_point) {
-  return SigninViewControllerDelegateMac::
-      CreateModalSigninDelegateWithNavigation(
+  return new SigninViewControllerDelegateMac(
           signin_view_controller,
           SigninViewControllerDelegateMac::CreateGaiaWebContents(
               nullptr, mode, browser->profile(), access_point),

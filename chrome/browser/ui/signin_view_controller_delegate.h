@@ -35,7 +35,6 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
       Browser* browser);
 
   void CloseModalSignin();
-  void NavigationButtonClicked(content::WebContents* web_contents);
 
  protected:
   SigninViewControllerDelegate(SigninViewController* signin_view_controller,
@@ -49,15 +48,9 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
 
-  // This will be called by this base class when the navigation state of the
-  // sign in page allows for backwards navigation. It should display a "back"
-  // navigation button to the user.
-  virtual void ShowBackArrow() = 0;
-
-  // This will be called by this base class when the navigation state of the
-  // sign in page doesn't allow for backwards navigation. It should display a
-  // "close" button to the user.
-  virtual void ShowCloseButton() = 0;
+  // Handles the web ui message sent when the navigation button is clicked by
+  // the user, requesting either a back navigation or closing the dialog.
+  void HandleNavigationButtonClicked(const base::ListValue* args);
 
   // This will be called by this base class when the tab-modal window must be
   // closed. This should close the platform-specific window that is currently
@@ -68,6 +61,7 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
   bool CanGoBack(content::WebContents* web_ui_web_contents) const;
 
   SigninViewController* signin_view_controller_;  // Not owned.
+  content::WebContents* web_contents_;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegate);
 };
 

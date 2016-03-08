@@ -8,11 +8,9 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
-class HostView;
 class Profile;
 
 namespace content {
@@ -32,7 +30,6 @@ class WebView;
 // Instances of this class delete themselves when the window they're managing
 // closes (in the DeleteDelegate callback).
 class SigninViewControllerDelegateViews : public views::DialogDelegateView,
-                                          public views::ButtonListener,
                                           public SigninViewControllerDelegate {
  public:
   SigninViewControllerDelegateViews(
@@ -60,18 +57,12 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
   bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
  private:
-  void ShowBackArrow() override;
-  void ShowCloseButton() override;
   void PerformClose() override;
 
   ~SigninViewControllerDelegateViews() override;
 
   views::WebView* content_view_;
-  HostView* host_view_;
   views::Widget* modal_signin_widget_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegateViews);

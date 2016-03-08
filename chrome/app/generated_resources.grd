@@ -10807,6 +10807,14 @@ I don't think this site should be blocked!
         Undo
       </message>
 
+      <!-- Sign-in section of the tab modal signin flow -->
+      <message name="IDS_SIGNIN_ACCESSIBLE_CLOSE_BUTTON" desc="Accessibility label for the close button of the tab modal signin flow">
+        Close
+      </message>
+      <message name="IDS_SIGNIN_ACCESSIBLE_BACK_BUTTON" desc="Accessibility label for the back button of the tab modal signin flow">
+        Back
+      </message>
+
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Info Bar message when an outdated plugin was disabled">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> was blocked because it is out of date.
       </message>

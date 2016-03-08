@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 
+#include "base/bind.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/webui/signin/get_auth_frame.h"
 #include "content/public/browser/web_contents.h"
@@ -20,8 +21,13 @@ content::WebContents* GetAuthFrameWebContents(
 SigninViewControllerDelegate::SigninViewControllerDelegate(
     SigninViewController* signin_view_controller,
     content::WebContents* web_contents)
-    : signin_view_controller_(signin_view_controller) {
-  web_contents->SetDelegate(this);
+    : signin_view_controller_(signin_view_controller),
+      web_contents_(web_contents) {
+  web_contents_->SetDelegate(this);
+  web_contents_->GetWebUI()->RegisterMessageCallback(
+      "navigationButtonClicked",
+      base::Bind(&SigninViewControllerDelegate::HandleNavigationButtonClicked,
+                 base::Unretained(this)));
 }
 
 SigninViewControllerDelegate::~SigninViewControllerDelegate() {}
@@ -38,16 +44,6 @@ void SigninViewControllerDelegate::ResetSigninViewControllerDelegate() {
   }
 }
 
-void SigninViewControllerDelegate::NavigationButtonClicked(
-    content::WebContents* web_contents) {
-  if (CanGoBack(web_contents)) {
-    auto auth_web_contents = GetAuthFrameWebContents(web_contents);
-    auth_web_contents->GetController().GoBack();
-  } else {
-    CloseModalSignin();
-  }
-}
-
 bool SigninViewControllerDelegate::CanGoBack(
     content::WebContents* web_ui_web_contents) const {
   auto auth_web_contents = GetAuthFrameWebContents(web_ui_web_contents);
@@ -59,7 +55,17 @@ void SigninViewControllerDelegate::LoadingStateChanged(
     content::WebContents* source,
     bool to_different_document) {
   if (CanGoBack(source))
-    ShowBackArrow();
+    source->GetWebUI()->CallJavascriptFunction("inline.login.showBackButton");
   else
-    ShowCloseButton();
+    source->GetWebUI()->CallJavascriptFunction("inline.login.showCloseButton");
+}
+
+void SigninViewControllerDelegate::HandleNavigationButtonClicked(
+    const base::ListValue* args) {
+  if (CanGoBack(web_contents_)) {
+    auto auth_web_contents = GetAuthFrameWebContents(web_contents_);
+    auth_web_contents->GetController().GoBack();
+  } else {
+    CloseModalSignin();
+  }
 }

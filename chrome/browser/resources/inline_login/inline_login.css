@@ -33,3 +33,14 @@ body,
 #contents:not(.loading) #spinner-container {
   display: none;
 }
+
+#navigation-button {
+  color: white;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+}
+
+#navigation-button.enabled {
+  visibility: visible;
+}

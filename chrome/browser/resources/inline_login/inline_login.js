@@ -53,6 +53,7 @@ cr.define('inline.login', function() {
    * Initialize the UI.
    */
   function initialize() {
+    $('navigation-button').addEventListener('click', navigationButtonClicked);
     authExtHost = new cr.login.GaiaAuthHost('signin-frame');
     authExtHost.addEventListener('dropLink', onDropLink);
     authExtHost.addEventListener('ready', onAuthReady);
@@ -105,13 +106,36 @@ cr.define('inline.login', function() {
     return authReadyFired;
   }
 
+  function showBackButton() {
+
+    $('navigation-button').icon =
+        isRTL() ? 'icons:arrow-forward' : 'icons:arrow-back';
+
+    $('navigation-button').setAttribute(
+        'aria-label', loadTimeData.getString('accessibleBackButtonLabel'));
+  }
+
+  function showCloseButton() {
+    $('navigation-button').icon = 'icons:close';
+    $('navigation-button').classList.add('enabled');
+    $('navigation-button').setAttribute(
+        'aria-label', loadTimeData.getString('accessibleCloseButtonLabel'));
+  }
+
+  function navigationButtonClicked() {
+    chrome.send('navigationButtonClicked');
+  }
+
   return {
-    getAuthExtHost: getAuthExtHost,
-    isAuthReady: isAuthReady,
-    initialize: initialize,
-    loadAuthExtension: loadAuthExtension,
     closeDialog: closeDialog,
-    handleOAuth2TokenFailure: handleOAuth2TokenFailure
+    getAuthExtHost: getAuthExtHost,
+    handleOAuth2TokenFailure: handleOAuth2TokenFailure,
+    initialize: initialize,
+    isAuthReady: isAuthReady,
+    loadAuthExtension: loadAuthExtension,
+    navigationButtonClicked: navigationButtonClicked,
+    showBackButton: showBackButton,
+    showCloseButton: showCloseButton
   };
 });
 
