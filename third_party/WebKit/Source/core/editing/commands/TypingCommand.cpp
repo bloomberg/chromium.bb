@@ -48,39 +48,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-class TypingCommandLineOperation {
-    STACK_ALLOCATED();
-public:
-    TypingCommandLineOperation(TypingCommand* typingCommand, bool selectInsertedText, const String& text)
-    : m_typingCommand(typingCommand)
-    , m_selectInsertedText(selectInsertedText)
-    , m_text(text)
-    { }
-
-    void operator()(size_t lineOffset, size_t lineLength, bool isLastLine, EditingState* editingState) const
-    {
-        if (isLastLine) {
-            if (!lineOffset || lineLength > 0) {
-                m_typingCommand->insertTextRunWithoutNewlines(m_text.substring(lineOffset, lineLength), m_selectInsertedText, editingState);
-                if (editingState->isAborted())
-                    return;
-            }
-        } else {
-            if (lineLength > 0) {
-                m_typingCommand->insertTextRunWithoutNewlines(m_text.substring(lineOffset, lineLength), false, editingState);
-                if (editingState->isAborted())
-                    return;
-            }
-            m_typingCommand->insertParagraphSeparator(editingState);
-        }
-    }
-
-private:
-    RawPtrWillBeMember<TypingCommand> m_typingCommand;
-    bool m_selectInsertedText;
-    const String& m_text;
-};
-
 TypingCommand::TypingCommand(Document& document, ETypingCommand commandType, const String &textToInsert, Options options, TextGranularity granularity, TextCompositionType compositionType)
     : CompositeEditCommand(document)
     , m_commandType(commandType)
@@ -374,37 +341,42 @@ void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedT
     frame->editor().appliedEditing(this);
 }
 
-// LineOperation should define member function "opeartor (size_t lineOffset, size_t lineLength, bool isLastLine)".
-// lienLength doesn't include the newline character. So the value of lineLength could be 0.
-template <class LineOperation>
-static void forEachLineInString(const String& string, const LineOperation& operation, EditingState* editingState)
-{
-    unsigned offset = 0;
-    size_t newline;
-    while ((newline = string.find('\n', offset)) != kNotFound) {
-        operation(offset, newline - offset, false, editingState);
-        if (editingState->isAborted())
-            return;
-        offset = newline + 1;
-    }
-    if (!offset) {
-        operation(0, string.length(), true, editingState);
-    } else {
-        unsigned length = string.length();
-        if (length != offset)
-            operation(offset, length - offset, true, editingState);
-    }
-}
-
 void TypingCommand::insertText(const String &text, bool selectInsertedText, EditingState* editingState)
 {
+    if (text.isEmpty()) {
+        insertTextRunWithoutNewlines(text, selectInsertedText, editingState);
+        return;
+    }
     // FIXME: Need to implement selectInsertedText for cases where more than one insert is involved.
     // This requires support from insertTextRunWithoutNewlines and insertParagraphSeparator for extending
     // an existing selection; at the moment they can either put the caret after what's inserted or
     // select what's inserted, but there's no way to "extend selection" to include both an old selection
     // that ends just before where we want to insert text and the newly inserted text.
-    TypingCommandLineOperation operation(this, selectInsertedText, text);
-    forEachLineInString(text, operation, editingState);
+    unsigned offset = 0;
+    size_t newline;
+    while ((newline = text.find('\n', offset)) != kNotFound) {
+        if (newline > offset) {
+            const bool notSelectInsertedText = false;
+            insertTextRunWithoutNewlines(text.substring(offset, newline - offset), notSelectInsertedText, editingState);
+            if (editingState->isAborted())
+                return;
+        }
+
+        insertParagraphSeparator(editingState);
+        if (editingState->isAborted())
+            return;
+
+        offset = newline + 1;
+    }
+
+    if (!offset) {
+        insertTextRunWithoutNewlines(text, selectInsertedText, editingState);
+        return;
+    }
+
+    if (text.length() > offset)
+        insertTextRunWithoutNewlines(text.substring(offset, text.length() - offset), selectInsertedText, editingState);
+
 }
 
 void TypingCommand::insertTextRunWithoutNewlines(const String &text, bool selectInsertedText, EditingState* editingState)
