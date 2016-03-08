@@ -181,8 +181,7 @@ void RecordPermissionAction(PermissionType permission,
   sample->SetStringField("Port", requesting_origin.port());
   sample->SetStringField("Domain",
       rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
-  sample->SetFlagsField("Actions",
-                        1 << action,
+  sample->SetFlagsField("Actions", static_cast<uint64_t>(1) << action,
                         PermissionAction::PERMISSION_ACTION_NUM);
   rappor_service->RecordSampleObj("Permissions.Action." + permission_str,
                                   std::move(sample));

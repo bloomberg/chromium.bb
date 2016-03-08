@@ -313,7 +313,7 @@ void OAuth2TokenService::Fetcher::OnGetTokenFailure(
 int64_t OAuth2TokenService::Fetcher::ComputeExponentialBackOffMilliseconds(
     int retry_num) {
   DCHECK(retry_num < max_fetch_retry_num_);
-  int64_t exponential_backoff_in_seconds = 1 << retry_num;
+  int exponential_backoff_in_seconds = 1 << retry_num;
   // Returns a backoff with randomness < 1000ms
   return (exponential_backoff_in_seconds + base::RandDouble()) * 1000;
 }

@@ -188,7 +188,7 @@ TEST_F(RtcpTest, RoundTripTimesDeterminedFromReportPingPong) {
   base::TimeDelta expected_rtt_according_to_sender;
   for (int i = 0; i < iterations; ++i) {
     const base::TimeDelta one_way_trip_time =
-        base::TimeDelta::FromMilliseconds(1 << i);
+        base::TimeDelta::FromMilliseconds(static_cast<int64_t>(1) << i);
     sender_to_receiver_.set_packet_delay(one_way_trip_time);
     receiver_to_sender_.set_packet_delay(one_way_trip_time);
 

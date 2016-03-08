@@ -861,7 +861,8 @@ void JobScheduler::UpdateWait() {
 
   // Exponential backoff: https://developers.google.com/drive/handle-errors.
   base::TimeDelta delay =
-      base::TimeDelta::FromSeconds(1 << (throttle_count_ - 1)) +
+      base::TimeDelta::FromSeconds(static_cast<int64_t>(1)
+                                   << (throttle_count_ - 1)) +
       base::TimeDelta::FromMilliseconds(base::RandInt(0, 1000));
   VLOG(1) << "Throttling for " << delay.InMillisecondsF();
 
