@@ -53,6 +53,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   // Implement GLSurface.
   EGLDisplay GetDisplay() override;
   EGLConfig GetConfig() override;
+  GLSurface::Format GetFormat() override;
 
   static bool InitializeOneOff();
   static EGLDisplay GetHardwareDisplay();

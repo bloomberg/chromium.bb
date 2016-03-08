@@ -500,6 +500,10 @@ bool GLSurfaceEGL::InitializeOneOff() {
   return true;
 }
 
+GLSurface::Format GLSurfaceEGL::GetFormat() {
+  return format_;
+}
+
 EGLDisplay GLSurfaceEGL::GetDisplay() {
   return g_display;
 }
