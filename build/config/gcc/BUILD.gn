@@ -60,7 +60,7 @@ config("rpath_for_built_shared_libraries") {
   }
 }
 
-# Settings for executables and shared libraries.
+# Settings for executables.
 config("executable_ldconfig") {
   if (is_android) {
     ldflags = [
