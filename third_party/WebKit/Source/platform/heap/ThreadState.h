@@ -342,7 +342,6 @@ public:
     bool isAtSafePoint() const { return m_atSafePoint; }
 
     void addInterruptor(PassOwnPtr<BlinkGCInterruptor>);
-    void removeInterruptor(BlinkGCInterruptor*);
 
     void recordStackEnd(intptr_t* endOfStack)
     {

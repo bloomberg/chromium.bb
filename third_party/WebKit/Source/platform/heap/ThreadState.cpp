@@ -1346,18 +1346,6 @@ void ThreadState::addInterruptor(PassOwnPtr<BlinkGCInterruptor> interruptor)
     }
 }
 
-void ThreadState::removeInterruptor(BlinkGCInterruptor* interruptor)
-{
-    ASSERT(checkThread());
-    SafePointScope scope(BlinkGC::HeapPointersOnStack);
-    {
-        MutexLocker locker(threadAttachMutex());
-        size_t index = m_interruptors.find(interruptor);
-        RELEASE_ASSERT(index != kNotFound);
-        m_interruptors.remove(index);
-    }
-}
-
 #if defined(LEAK_SANITIZER)
 void ThreadState::registerStaticPersistentNode(PersistentNode* node)
 {
