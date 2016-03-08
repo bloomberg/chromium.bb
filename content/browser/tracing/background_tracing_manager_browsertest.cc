@@ -184,18 +184,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   }
 }
 
-#if defined(THREAD_SANITIZER)
-// There's a race in ConvertableToTraceFormat that's hard to suppress,
-// see http://crbug.com/559117.
-#define MAYBE_CallTriggersMoreThanOnceOnlyGatherOnce \
-    DISABLED_CallTriggersMoreThanOnceOnlyGatherOnce
-#else
-#define MAYBE_CallTriggersMoreThanOnceOnlyGatherOnce \
-    CallTriggersMoreThanOnceOnlyGatherOnce
-#endif
 // This tests triggering more than once still only gathers once.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       MAYBE_CallTriggersMoreThanOnceOnlyGatherOnce) {
+                       CallTriggersMoreThanOnceOnlyGatherOnce) {
   {
     SetupBackgroundTracingManager();
 
