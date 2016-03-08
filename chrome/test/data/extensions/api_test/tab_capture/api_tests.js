@@ -156,6 +156,8 @@ chrome.test.runTests([
   function noAudioOrVideoRequested() {
     // If not specified, video is not requested.
     tabCapture.capture({audio: false}, function(stream) {
+      chrome.test.assertLastError(
+          'Capture failed. No audio or video requested.');
       chrome.test.assertTrue(!stream);
       chrome.test.succeed();
     });

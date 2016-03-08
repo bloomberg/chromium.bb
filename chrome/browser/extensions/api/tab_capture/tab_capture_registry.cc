@@ -206,8 +206,8 @@ bool TabCaptureRegistry::AddRequest(content::WebContents* target_contents,
 
   // Currently, we do not allow multiple active captures for same tab.
   if (request != NULL) {
-    if (request->capture_state() != tab_capture::TAB_CAPTURE_STATE_STOPPED &&
-        request->capture_state() != tab_capture::TAB_CAPTURE_STATE_ERROR) {
+    if (request->capture_state() == tab_capture::TAB_CAPTURE_STATE_PENDING ||
+        request->capture_state() == tab_capture::TAB_CAPTURE_STATE_ACTIVE) {
       return false;
     } else {
       // Delete the request before creating its replacement (below).

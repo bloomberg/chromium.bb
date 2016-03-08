@@ -22,6 +22,8 @@ chrome.test.runTests([
          function(stream) {
            if (streamsSoFar.length == 3) {
              // 4th off-screen tab capture should fail.
+             chrome.test.assertLastError(
+                 'Extension has already started too many off-screen tabs.');
              chrome.test.assertFalse(!!stream);
              stopAllStreams(streamsSoFar);
              chrome.test.succeed();

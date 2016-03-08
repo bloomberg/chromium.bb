@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var expectedLastErrorMessage =
+    ('Extension has not been invoked for the current page (see activeTab ' +
+     'permission). Chrome pages cannot be captured.');
+
 var afterWhitelistExtension = function(msg) {
   chrome.tabCapture.capture({audio: true, video: true}, function(stream) {
     chrome.test.assertTrue(!!stream);
@@ -13,6 +17,7 @@ var afterWhitelistExtension = function(msg) {
 
 var afterOpenNewTab = function(msg) {
   chrome.tabCapture.capture({audio: true, video: true}, function(stream) {
+    chrome.test.assertLastError(expectedLastErrorMessage);
     chrome.test.assertTrue(!stream);
     chrome.test.sendMessage('ready4', afterWhitelistExtension);
   });
@@ -29,9 +34,7 @@ var afterGrantPermission = function(msg) {
 
 var afterOpenTab = function(msg) {
   chrome.tabCapture.capture({audio: true, video: true}, function(stream) {
-    chrome.test.assertLastError(
-      'Extension has not been invoked for the current page (see activeTab ' +
-      'permission). Chrome pages cannot be captured.');
+    chrome.test.assertLastError(expectedLastErrorMessage);
     chrome.test.assertTrue(!stream);
 
     chrome.test.sendMessage('ready2', afterGrantPermission);

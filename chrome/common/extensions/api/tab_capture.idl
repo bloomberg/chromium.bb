@@ -55,8 +55,10 @@ namespace tabCapture {
     // by the extension.
     //
     // |options| : Configures the returned media stream.
-    // |callback| : Callback with either the tab capture stream or
-    //   <code>null</code>.
+    // |callback| : Callback with either the tab capture MediaStream or
+    //   <code>null</code>.  <code>null</code> indicates an error has occurred
+    //   and the client may query chrome.runtime.lastError to access the error
+    //   details.
     static void capture(CaptureOptions options,
                         GetTabMediaCallback callback);
 
@@ -90,7 +92,10 @@ namespace tabCapture {
     // and may change without notice.
     //
     // |options| : Constraints for the capture and returned MediaStream.
-    // |callback| : <code>null</code> on error.
+    // |callback| : Callback with either the tab capture MediaStream or
+    //   <code>null</code>.  <code>null</code> indicates an error has occurred
+    //   and the client may query chrome.runtime.lastError to access the error
+    //   details.
     static void captureOffscreenTab(DOMString startUrl,
                                     CaptureOptions options,
                                     GetTabMediaCallback callback);
