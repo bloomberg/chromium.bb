@@ -83,11 +83,16 @@ class CC_EXPORT CompositorTimingHistory {
   void SetBeginMainFrameCommittingContinuously(bool active);
   void SetCompositorDrawingContinuously(bool active);
 
+  bool ShouldReportUma() const;
+
   static scoped_ptr<UMAReporter> CreateUMAReporter(UMACategory category);
   virtual base::TimeTicks Now() const;
 
   bool using_synchronous_renderer_compositor_;
   bool enabled_;
+
+  // Used to limit the recorded UMA data to once every N frames.
+  int draw_count_;
 
   // Used to calculate frame rates of Main and Impl threads.
   bool did_send_begin_main_frame_;
