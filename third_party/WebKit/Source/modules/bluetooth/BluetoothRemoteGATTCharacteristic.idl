@@ -10,7 +10,8 @@
     GarbageCollected,
     DependentLifetime,
     RuntimeEnabled=WebBluetooth,
-    OriginTrialEnabled=WebBluetooth,
+    // TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
+    // OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothRemoteGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {
     // TODO(ortuno): Add test to make sure service matches the service
     // used to call getCharacteristic.

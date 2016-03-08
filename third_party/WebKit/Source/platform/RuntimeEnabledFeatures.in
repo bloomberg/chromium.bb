@@ -199,7 +199,9 @@ UnsandboxedAuxiliary status=stable
 UserSelectAll status=experimental
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental
-WebBluetooth origin_trial_feature_name=WebBluetooth
+// TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
+// WebBluetooth origin_trial_feature_name=WebBluetooth
+WebBluetooth
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
 WebUSB status=experimental

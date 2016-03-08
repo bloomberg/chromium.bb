@@ -1537,7 +1537,8 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
 
         bool enableWebBluetooth = RuntimeEnabledFeatures::webBluetoothEnabled();
 #if OS(CHROMEOS) || OS(ANDROID)
-        enableWebBluetooth = true;
+// TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
+// enableWebBluetooth = true;
 #endif
 
         if (enableWebBluetooth) {

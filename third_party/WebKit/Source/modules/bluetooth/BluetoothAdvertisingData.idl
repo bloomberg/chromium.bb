@@ -9,7 +9,8 @@
 [
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
-    OriginTrialEnabled=WebBluetooth,
+    // TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
+    // OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothAdvertisingData {
     // readonly attribute unsigned short? appearance;
     readonly attribute byte? txPower;

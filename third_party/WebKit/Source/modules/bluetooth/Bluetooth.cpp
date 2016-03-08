@@ -129,12 +129,15 @@ static void convertRequestDeviceOptions(const RequestDeviceOptions& options, Web
 // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetooth-requestdevice
 ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState, const RequestDeviceOptions& options, ExceptionState& exceptionState)
 {
+    // TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
+    // Restore this logic when re-enabling the experiment:
+    //
     // By adding the "OriginTrialEnabled" extended binding, we enable the
     // requestDevice function on all platforms for whitelisted domains. Since we
     // only support Chrome OS and Android for this experiment we reject any
     // promises from other platforms unless they have the enable-web-bluetooth
     // flag on.
-#if !OS(CHROMEOS) && !OS(ANDROID)
+#if 0 // !OS(CHROMEOS) && !OS(ANDROID)
     if (!RuntimeEnabledFeatures::webBluetoothEnabled()) {
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "Web Bluetooth is not enabled on this platform. To find out how to enable it and the current implementation status visit https://goo.gl/HKa2If"));
     }

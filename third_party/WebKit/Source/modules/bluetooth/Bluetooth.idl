@@ -8,7 +8,8 @@
     GarbageCollected,
     NoInterfaceObject,
     RuntimeEnabled=WebBluetooth,
-    OriginTrialEnabled=WebBluetooth,
+    // TODO(https://crbug.com/584113) Enable Web Bluetooth Experiment.
+    // OriginTrialEnabled=WebBluetooth,
 ] interface Bluetooth {
     [CallWith=ScriptState, RaisesException] Promise<BluetoothDevice> requestDevice (
         RequestDeviceOptions options
