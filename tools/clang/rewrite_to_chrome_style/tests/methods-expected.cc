@@ -2,7 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+namespace v8 {
+
+class InterfaceOutsideOfBlink {
+ public:
+  virtual void nonBlinkVirtual() = 0;
+};
+
+}  // namespace v8
+
 namespace blink {
+
+class InsideOfBlink : public v8::InterfaceOutsideOfBlink {
+ public:
+  // This function overrides something outside of blink so don't rename it.
+  void nonBlinkVirtual() override {}
+  // This function is in blink so rename it.
+  virtual void BlinkVirtual() {}
+};
 
 class MyIterator {};
 using my_iterator = char*;
@@ -109,6 +126,23 @@ bool G() {
   blink::Testable<int> tt;
   return tt;
 }
+
+class SubclassOfInsideOfBlink : public blink::InsideOfBlink {
+ public:
+  // This function overrides something outside of blink so don't rename it.
+  void nonBlinkVirtual() override {}
+  // This function overrides something in blink so rename it.
+  void BlinkVirtual() override {}
+};
+
+class TestSubclassInsideOfBlink : public SubclassOfInsideOfBlink {
+ public:
+ public:
+  // This function overrides something outside of blink so don't rename it.
+  void nonBlinkVirtual() override {}
+  // This function overrides something in blink so rename it.
+  void BlinkVirtual() override {}
+};
 
 namespace blink {
 

@@ -88,15 +88,36 @@ bool IsDeclContextInBlinkOrWTF(const clang::DeclContext* decl_context,
 // A method is from Blink if it is from the Blink namespace or overrides a
 // method from the Blink namespace.
 bool IsBlinkOrWTFMethod(const clang::CXXMethodDecl& decl) {
-  if (IsDeclContextInBlinkOrWTF(decl.getDeclContext(), true, true))
-    return true;
+  bool overrides_blink = false;
+  bool overrides_non_blink = false;
 
   for (auto it = decl.begin_overridden_methods();
        it != decl.end_overridden_methods(); ++it) {
     if (IsBlinkOrWTFMethod(**it))
-      return true;
+      overrides_blink = true;
+    else
+      overrides_non_blink = true;
   }
-  return false;
+
+  // If this fires we have a class overriding a method from a class in blink,
+  // and also overriding a method of the same name from a class not in blink,
+  // without a common base class. The blink method will be renamed but the
+  // non-blink method will not, meaning no matter what we do here we stop
+  // overriding one of the two which creates a behaviour change. So assert and
+  // demand the user to fix the code first. T_T
+  if (overrides_blink || overrides_non_blink)
+    assert(overrides_blink != overrides_non_blink);
+
+  // If the method overrides something from outside blink then it's not a blink
+  // method.
+  if (overrides_non_blink)
+    return false;
+  // If the method overrides something from inside blink, then it is also a
+  // blink method.
+  if (overrides_blink)
+    return true;
+  // Otherwise decide for itself.
+  return IsDeclContextInBlinkOrWTF(decl.getDeclContext(), true, true);
 }
 
 AST_MATCHER(clang::CXXMethodDecl, isBlinkOrWTFMethod) {
