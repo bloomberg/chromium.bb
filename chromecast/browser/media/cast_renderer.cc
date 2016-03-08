@@ -98,6 +98,7 @@ void CastRenderer::Initialize(
       init_cb.Run(status);
       return;
     }
+    audio_stream->EnableBitstreamConverter();
   }
 
   // Initialize video.
@@ -124,6 +125,7 @@ void CastRenderer::Initialize(
       init_cb.Run(status);
       return;
     }
+    video_stream->EnableBitstreamConverter();
   }
 
   ended_cb_ = ended_cb;

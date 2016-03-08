@@ -58,7 +58,7 @@ DemuxerStream::Type MojoDemuxerStreamAdapter::type() const {
 }
 
 void MojoDemuxerStreamAdapter::EnableBitstreamConverter() {
-  NOTIMPLEMENTED();
+  demuxer_stream_->EnableBitstreamConverter();
 }
 
 bool MojoDemuxerStreamAdapter::SupportsConfigChanges() {

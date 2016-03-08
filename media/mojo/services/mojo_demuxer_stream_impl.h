@@ -30,6 +30,7 @@ class MojoDemuxerStreamImpl : public interfaces::DemuxerStream {
   // interfaces::DemuxerStream.
   void Initialize(const InitializeCallback& callback) override;
   void Read(const ReadCallback& callback) override;
+  void EnableBitstreamConverter() override;
 
  private:
   void OnBufferReady(const ReadCallback& callback,

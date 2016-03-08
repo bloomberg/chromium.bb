@@ -53,4 +53,8 @@ interface DemuxerStream {
              DecoderBuffer? buffer,
              AudioDecoderConfig? audio_config,
              VideoDecoderConfig? video_config);
+
+  // Enables converting bitstream to a format that is expected by the decoder.
+  // For example, H.264/AAC bitstream based packets into H.264 Annex B format.
+  EnableBitstreamConverter();
 };

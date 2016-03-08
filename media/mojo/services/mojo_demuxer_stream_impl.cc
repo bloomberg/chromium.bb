@@ -75,6 +75,10 @@ void MojoDemuxerStreamImpl::Read(const ReadCallback& callback)  {
                            weak_factory_.GetWeakPtr(), callback));
 }
 
+void MojoDemuxerStreamImpl::EnableBitstreamConverter() {
+  stream_->EnableBitstreamConverter();
+}
+
 void MojoDemuxerStreamImpl::OnBufferReady(
     const ReadCallback& callback,
     media::DemuxerStream::Status status,
