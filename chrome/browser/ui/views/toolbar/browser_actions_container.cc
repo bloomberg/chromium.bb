@@ -21,9 +21,9 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
-#include "chrome/browser/ui/views/extensions/extension_toolbar_icon_surfacing_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/grit/generated_resources.h"
@@ -196,11 +196,9 @@ views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
 void BrowserActionsContainer::OnMouseEnteredToolbarActionView() {
   if (!shown_bubble_ && !toolbar_action_views_.empty() &&
       toolbar_actions_bar_->show_icon_surfacing_bubble()) {
-    ExtensionToolbarIconSurfacingBubble* bubble =
-        new ExtensionToolbarIconSurfacingBubble(
-            this,
-            make_scoped_ptr(new ExtensionToolbarIconSurfacingBubbleDelegate(
-                browser_->profile())));
+    ToolbarActionsBarBubbleViews* bubble = new ToolbarActionsBarBubbleViews(
+        this, make_scoped_ptr(new ExtensionToolbarIconSurfacingBubbleDelegate(
+                  browser_->profile())));
     views::BubbleDelegateView::CreateBubble(bubble);
     bubble->Show();
   }
