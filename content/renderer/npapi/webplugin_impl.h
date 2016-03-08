@@ -75,7 +75,7 @@ class WebPluginImpl : public WebPlugin,
   NPObject* scriptableObject() override;
   struct _NPP* pluginNPP() override;
   bool getFormValue(blink::WebString& value) override;
-  void layoutIfNeeded() override;
+  void updateAllLifecyclePhases() override;
   void paint(blink::WebCanvas* canvas,
              const blink::WebRect& paint_rect) override;
   void updateGeometry(const blink::WebRect& window_rect,

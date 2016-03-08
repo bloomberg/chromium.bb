@@ -78,7 +78,7 @@ public:
     bool supportsInputMethod() const override;
     bool canProcessDrag() const override;
     bool wantsWheelEvents() override;
-    void layoutIfNeeded() override;
+    void updateAllLifecyclePhases() override;
     void invalidatePaintIfNeeded() override { issuePaintInvalidations(); }
 
     // Widget methods
@@ -102,7 +102,7 @@ public:
     void invalidate() override;
     void invalidateRect(const WebRect&) override;
     void scrollRect(const WebRect&) override;
-    void setNeedsLayout() override;
+    void scheduleAnimation() override;
     void reportGeometry() override;
     void allowScriptObjects() override;
     void clearScriptObjects() override;

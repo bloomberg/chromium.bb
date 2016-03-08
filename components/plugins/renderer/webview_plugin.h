@@ -88,7 +88,7 @@ class WebViewPlugin : public blink::WebPlugin,
 
   v8::Local<v8::Object> v8ScriptableObject(v8::Isolate* isolate) override;
 
-  void layoutIfNeeded() override;
+  void updateAllLifecyclePhases() override;
   void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override;
 
   // Coordinates are relative to the containing window.

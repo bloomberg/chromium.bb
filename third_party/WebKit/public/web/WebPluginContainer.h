@@ -65,11 +65,8 @@ public:
     virtual void invalidateRect(const WebRect&) = 0;
     virtual void scrollRect(const WebRect&) = 0;
 
-    // Causes the container to be marked as needing layout, which in turn will cause
-    // layoutIfNeeded() to be called on any contained WebPlugin during the container's
-    // web view's lifecycle update, and in particular before calling paint() on the
-    // WebPlugin.
-    virtual void setNeedsLayout() = 0;
+    // Schedules an animation of the WebView that contains the plugin, as well as the plugin.
+    virtual void scheduleAnimation() = 0;
 
     // Causes the container to report its current geometry via
     // WebPlugin::updateGeometry.

@@ -134,8 +134,8 @@ bool WebViewPlugin::initialize(WebPluginContainer* container) {
     // scheduleAnimation, but due to timers controlling widget update,
     // scheduleAnimation may be invoked before this initialize call (which
     // comes through the widget update process). It doesn't hurt to mark
-    // for layout again, and it does help us in the race-condition situation.
-    container_->setNeedsLayout();
+    // for animation again, and it does help us in the race-condition situation.
+    container_->scheduleAnimation();
 
     old_title_ = container_->element().getAttribute("title");
 
@@ -164,9 +164,7 @@ v8::Local<v8::Object> WebViewPlugin::v8ScriptableObject(v8::Isolate* isolate) {
   return delegate_->GetV8ScriptableObject(isolate);
 }
 
-// TODO(wkorman): Look into renaming this to something more in line with
-// either the Blink lifecycle or Compositor layer tree host nomenclature.
-void WebViewPlugin::layoutIfNeeded() {
+void WebViewPlugin::updateAllLifecyclePhases() {
   web_view_->updateAllLifecyclePhases();
 }
 
@@ -313,7 +311,7 @@ void WebViewPlugin::scheduleAnimation() {
   if (container_) {
     // This should never happen; see also crbug.com/545039 for context.
     CHECK(!is_painting_);
-    container_->setNeedsLayout();
+    container_->scheduleAnimation();
   }
 }
 

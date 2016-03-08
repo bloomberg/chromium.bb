@@ -134,8 +134,9 @@ void LayoutEmbeddedObject::layout()
 
     Widget* widget = this->widget();
     if (widget) {
+        // TODO(chrishtr): remove this code. It's now called in FrameView::updateStyleAndLayoutIfNeededRecursive.
         if (widget->isPluginView())
-            toPluginView(widget)->layoutIfNeeded();
+            toPluginView(widget)->updateAllLifecyclePhases();
     } else if (frameView()) {
         frameView()->addPartToUpdate(*this);
     }

@@ -52,7 +52,7 @@ public:
     void destroy() override;
     NPObject* scriptableObject() override { return 0; }
     bool canProcessDrag() const override { return false; }
-    void layoutIfNeeded() override { }
+    void updateAllLifecyclePhases() override { }
     void paint(WebCanvas*, const WebRect&) override { }
     void updateGeometry(const WebRect& clientRect, const WebRect& clipRect, const WebRect& windowClipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) override { }
     void updateFocus(bool, WebFocusType) override { }
