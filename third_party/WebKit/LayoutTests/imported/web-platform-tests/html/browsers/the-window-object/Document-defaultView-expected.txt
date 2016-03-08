@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS Document in a browsing context 
+FAIL Document created with the Document constructor Illegal constructor
+PASS Document created with createDocument 
+PASS Document created with createHTMLDocument 
+PASS Document created with XML DOMParser 
+PASS Document created with HTML DOMParser 
+Harness: the test ran to completion.
+

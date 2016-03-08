@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS location assign 
-FAIL URL that fails to parse Failed to execute 'assign' on 'Location': 'http://:' is not a valid URL.
-Harness: the test ran to completion.
-

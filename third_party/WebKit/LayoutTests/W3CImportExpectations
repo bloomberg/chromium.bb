@@ -199,6 +199,7 @@ imported/web-platform-tests/common [ Skip ]
 imported/web-platform-tests/config.default.json [ Skip ]
 imported/web-platform-tests/conformance-checkers [ Skip ]
 imported/web-platform-tests/content-security-policy [ Skip ]
+imported/web-platform-tests/cookies [ Skip ]
 imported/web-platform-tests/cors [ Skip ]
 imported/web-platform-tests/csp [ Skip ]
 imported/web-platform-tests/cssom-view [ Skip ]
@@ -279,7 +280,8 @@ imported/web-platform-tests/streams [ Skip ]
 imported/web-platform-tests/subresource-integrity [ Skip ]
 imported/web-platform-tests/svg [ Skip ]
 imported/web-platform-tests/tools [ Skip ]
-imported/web-platform-tests/touch-events [ Skip ]
+## Owners: chongz@chromium.org
+# imported/web-platform-tests/touch-events [ Pass ]
 imported/web-platform-tests/typedarrays [ Skip ]
 imported/web-platform-tests/uievents [ Skip ]
 imported/web-platform-tests/url [ Skip ]
@@ -315,6 +317,7 @@ imported/web-platform-tests/hr-time/OWNERS [ Skip ]
 imported/web-platform-tests/pointerevents/OWNERS [ Skip ]
 imported/web-platform-tests/webstorage/OWNERS [ Skip ]
 imported/web-platform-tests/mediacapture-streams/OWNERS [ Skip ]
+imported/web-platform-tests/touch-events/OWNERS [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the
 # upstream tests that we shouldn't bother importing until they are
@@ -501,6 +504,7 @@ imported/web-platform-tests/html/browsers/the-window-object/accessing-other-brow
 imported/web-platform-tests/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name [ Skip ]
 imported/web-platform-tests/html/browsers/the-window-object/garbage-collection-and-browsing-contexts [ Skip ]
 imported/web-platform-tests/html/browsers/the-window-object/named-access-on-the-window-object/named-objects.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/Window-document.html [ Skip ]
 imported/web-platform-tests/html/browsers/windows/browsing-context-names/001.html [ Skip ]
 imported/web-platform-tests/html/browsers/windows/browsing-context-names/002.html [ Skip ]
 imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-choose-existing.html [ Skip ]
@@ -634,6 +638,9 @@ imported/web-platform-tests/html/semantics/forms/the-input-element/email.html [ 
 
 # This test requires manual interventions.
 imported/web-platform-tests/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html [ Skip ]
+
+# Uses TAB character for indentation
+imported/web-platform-tests/touch-events/multi-touch-interactions.js [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests require writing-mode: sideways-*, which we do not plan to support today.
 imported/csswg-test/css-writing-modes-3/block-flow-direction-slr-043.xht [ Skip ]
