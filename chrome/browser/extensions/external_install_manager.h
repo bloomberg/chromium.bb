@@ -43,6 +43,20 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
   // acknowledged.
   void AcknowledgeExternalExtension(const std::string& extension_id);
 
+  // Notifies the manager that |external_install_error| has changed its alert
+  // visibility.
+  void DidChangeInstallAlertVisibility(
+      ExternalInstallError* external_install_error,
+      bool visible);
+
+  bool has_currently_visible_install_alert() {
+    return currently_visible_install_alert_ != nullptr;
+  }
+
+  ExternalInstallError* currently_visible_install_alert_for_testing() const {
+    return currently_visible_install_alert_;
+  }
+
   // Returns a mutable copy of the list of global errors for testing purposes.
   std::vector<ExternalInstallError*> GetErrorsForTesting();
 
@@ -84,6 +98,9 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
   std::map<std::string, scoped_ptr<ExternalInstallError>> errors_;
 
   std::set<std::string> shown_ids_;
+
+  // The error that is currently showing an alert dialog/bubble.
+  ExternalInstallError* currently_visible_install_alert_;
 
   content::NotificationRegistrar registrar_;
 

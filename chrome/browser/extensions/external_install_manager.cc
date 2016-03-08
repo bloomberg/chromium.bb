@@ -62,6 +62,7 @@ ExternalInstallManager::ExternalInstallManager(
     : browser_context_(browser_context),
       is_first_run_(is_first_run),
       extension_prefs_(ExtensionPrefs::Get(browser_context_)),
+      currently_visible_install_alert_(nullptr),
       extension_registry_observer_(this) {
   DCHECK(browser_context_);
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
@@ -94,8 +95,14 @@ void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
 
 void ExternalInstallManager::RemoveExternalInstallError(
     const std::string& extension_id) {
-  if (errors_.erase(extension_id) > 0)
+  std::map<std::string, scoped_ptr<ExternalInstallError>>::iterator iter =
+      errors_.find(extension_id);
+  if (iter != errors_.end()) {
+    if (iter->second.get() == currently_visible_install_alert_)
+      currently_visible_install_alert_ = nullptr;
+    errors_.erase(iter);
     UpdateExternalExtensionAlert();
+  }
 }
 
 void ExternalInstallManager::UpdateExternalExtensionAlert() {
@@ -139,6 +146,17 @@ void ExternalInstallManager::AcknowledgeExternalExtension(
     const std::string& id) {
   extension_prefs_->AcknowledgeExternalExtension(id);
   UpdateExternalExtensionAlert();
+}
+
+void ExternalInstallManager::DidChangeInstallAlertVisibility(
+    ExternalInstallError* external_install_error,
+    bool visible) {
+  if (visible) {
+    currently_visible_install_alert_ = external_install_error;
+  } else if (!visible &&
+             currently_visible_install_alert_ == external_install_error) {
+    currently_visible_install_alert_ = nullptr;
+  }
 }
 
 std::vector<ExternalInstallError*>

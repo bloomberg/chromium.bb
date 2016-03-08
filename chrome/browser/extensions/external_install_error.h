@@ -52,6 +52,9 @@ class ExternalInstallError : public WebstoreDataFetcherDelegate {
 
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
 
+  void DidOpenBubbleView();
+  void DidCloseBubbleView();
+
   // Show the associated dialog. This should only be called once the dialog is
   // ready.
   void ShowDialog(Browser* browser);

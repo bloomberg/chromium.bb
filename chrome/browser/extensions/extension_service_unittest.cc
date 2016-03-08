@@ -69,6 +69,9 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/ui/global_error/global_error.h"
+#include "chrome/browser/ui/global_error/global_error_service.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
@@ -193,7 +196,25 @@ const char theme_crx[] = "iamefpfkojoapidjnbafmgkgncegbkad";
 const char theme2_crx[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const char permissions_crx[] = "eagpmdpfmaekmmcejjbmjoecnejeiiin";
 const char updates_from_webstore[] = "akjooamlhcgeopfifcmlggaebeocgokj";
+const char updates_from_webstore2[] = "oolblhbomdbcpmafphaodhjfcgbihcdg";
+const char updates_from_webstore3[] = "bmfoocgfinpmkmlbjhcbofejhkhlbchk";
 const char permissions_blocklist[] = "noffkehfcaggllbcojjbopcmlhcnhcdn";
+
+struct BubbleErrorsTestData {
+  BubbleErrorsTestData(const std::string& id,
+                       const std::string& version,
+                       const base::FilePath& crx_path,
+                       size_t expected_bubble_error_count)
+      : id(id),
+        version(version),
+        crx_path(crx_path),
+        expected_bubble_error_count(expected_bubble_error_count) {}
+  std::string id;
+  std::string version;
+  base::FilePath crx_path;
+  size_t expected_bubble_error_count;
+  bool expect_has_shown_bubble_view;
+};
 
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
@@ -223,6 +244,15 @@ bool HasExternalInstallBubble(ExtensionService* service) {
     return error->alert_type() == ExternalInstallError::BUBBLE_ALERT;
   });
   return found != errors.end();
+}
+
+size_t GetExternalInstallBubbleCount(ExtensionService* service) {
+  size_t bubble_count = 0u;
+  std::vector<ExternalInstallError*> errors =
+      service->external_install_manager()->GetErrorsForTesting();
+  for (const auto& error : errors)
+    bubble_count += error->alert_type() == ExternalInstallError::BUBBLE_ALERT;
+  return bubble_count;
 }
 
 }  // namespace
@@ -6071,6 +6101,221 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallErrors) {
   EXPECT_FALSE(GetError(extension_ids[2]));
 
   EXPECT_FALSE(HasExternalInstallErrors(service_));
+}
+
+TEST_F(ExtensionServiceTest, MultipleExternalInstallBubbleErrors) {
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+  // This sets up the ExtensionPrefs used by our ExtensionService to be
+  // post-first run.
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.is_first_run = false;
+  InitializeExtensionService(params);
+
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+
+  std::vector<BubbleErrorsTestData> data;
+  data.push_back(
+      BubbleErrorsTestData(updates_from_webstore, "1",
+                           temp_dir().path().AppendASCII("webstore.crx"), 1u));
+  data.push_back(
+      BubbleErrorsTestData(updates_from_webstore2, "1",
+                           temp_dir().path().AppendASCII("webstore2.crx"), 2u));
+  data.push_back(BubbleErrorsTestData(good_crx, "1.0.0.0",
+                                      data_dir().AppendASCII("good.crx"), 2u));
+
+  PackCRX(data_dir().AppendASCII("update_from_webstore"),
+          data_dir().AppendASCII("update_from_webstore.pem"), data[0].crx_path);
+  PackCRX(data_dir().AppendASCII("update_from_webstore2"),
+          data_dir().AppendASCII("update_from_webstore2.pem"),
+          data[1].crx_path);
+
+  // Install extensions from |data| one by one and expect each of them to result
+  // in an error. The first two extensions are from webstore, so they will
+  // trigger BUBBLE_ALERT type errors. After each step, we verify that we got
+  // the expected number of errors in external_install_manager(). We also verify
+  // that only the first BUBBLE_ALERT error is shown.
+  for (size_t i = 0; i < data.size(); ++i) {
+    content::WindowedNotificationObserver global_error_observer(
+        chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+        content::NotificationService::AllSources());
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    provider->UpdateOrAddExtension(data[i].id, data[i].version,
+                                   data[i].crx_path);
+    service()->CheckForExternalUpdates();
+    observer.Wait();
+    // Make sure ExternalInstallError::OnDialogReady() fires.
+    global_error_observer.Wait();
+
+    const size_t expected_error_count = i + 1u;
+    std::vector<ExternalInstallError*> errors =
+        service_->external_install_manager()->GetErrorsForTesting();
+    EXPECT_EQ(expected_error_count, errors.size());
+    EXPECT_EQ(data[i].expected_bubble_error_count,
+              GetExternalInstallBubbleCount(service()));
+    EXPECT_TRUE(service()
+                    ->external_install_manager()
+                    ->has_currently_visible_install_alert());
+    // Make sure that the first error is only being shown.
+    EXPECT_EQ(errors[0], service()
+                             ->external_install_manager()
+                             ->currently_visible_install_alert_for_testing());
+    EXPECT_FALSE(service()->IsExtensionEnabled(data[i].id));
+  }
+
+  // Cancel all the install prompts.
+  for (size_t i = 0; i < data.size(); ++i) {
+    const std::string& extension_id = data[i].id;
+    EXPECT_TRUE(GetError(extension_id));
+    GetError(extension_id)
+        ->OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
+    EXPECT_FALSE(GetError(extension_id));
+  }
+  EXPECT_FALSE(service()
+                   ->external_install_manager()
+                   ->has_currently_visible_install_alert());
+  EXPECT_EQ(0u, GetExternalInstallBubbleCount(service()));
+  EXPECT_FALSE(HasExternalInstallErrors(service()));
+
+  // Add a new webstore install. Verify that this shows an error bubble since
+  // there are no error bubbles pending at this point. Also verify that the
+  // error bubble is for this newly added extension.
+  {
+    base::FilePath webstore_crx_three =
+        temp_dir().path().AppendASCII("webstore3.crx");
+    PackCRX(data_dir().AppendASCII("update_from_webstore3"),
+            data_dir().AppendASCII("update_from_webstore3.pem"),
+            webstore_crx_three);
+
+    content::WindowedNotificationObserver global_error_observer(
+        chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+        content::NotificationService::AllSources());
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    provider->UpdateOrAddExtension(
+        updates_from_webstore3, "1",
+        temp_dir().path().AppendASCII("webstore3.crx"));
+    service()->CheckForExternalUpdates();
+    observer.Wait();
+    // Make sure ExternalInstallError::OnDialogReady() fires.
+    global_error_observer.Wait();
+
+    std::vector<ExternalInstallError*> errors =
+        service_->external_install_manager()->GetErrorsForTesting();
+    EXPECT_EQ(1u, errors.size());
+    EXPECT_EQ(1u, GetExternalInstallBubbleCount(service()));
+    EXPECT_TRUE(service()
+                    ->external_install_manager()
+                    ->has_currently_visible_install_alert());
+    // Verify that the visible alert is for the current error.
+    EXPECT_EQ(errors[0], service()
+                             ->external_install_manager()
+                             ->currently_visible_install_alert_for_testing());
+    EXPECT_FALSE(service()->IsExtensionEnabled(updates_from_webstore3));
+  }
+}
+
+// Verifies that an error alert of type BUBBLE_ALERT does not replace an
+// existing visible alert that was previously opened by clicking menu item.
+TEST_F(ExtensionServiceTest, BubbleAlertDoesNotHideAnotherAlertFromMenu) {
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+  // This sets up the ExtensionPrefs used by our ExtensionService to be
+  // post-first run.
+  ExtensionServiceInitParams params = CreateDefaultInitParams();
+  params.is_first_run = false;
+  InitializeExtensionService(params);
+
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service(), Manifest::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+
+  std::vector<BubbleErrorsTestData> data;
+  data.push_back(
+      BubbleErrorsTestData(updates_from_webstore, "1",
+                           temp_dir().path().AppendASCII("webstore.crx"), 1u));
+  data.push_back(
+      BubbleErrorsTestData(updates_from_webstore2, "1",
+                           temp_dir().path().AppendASCII("webstore2.crx"), 2u));
+
+  PackCRX(data_dir().AppendASCII("update_from_webstore"),
+          data_dir().AppendASCII("update_from_webstore.pem"), data[0].crx_path);
+  PackCRX(data_dir().AppendASCII("update_from_webstore2"),
+          data_dir().AppendASCII("update_from_webstore2.pem"),
+          data[1].crx_path);
+  {
+    content::WindowedNotificationObserver global_error_observer(
+        chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+        content::NotificationService::AllSources());
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    provider->UpdateOrAddExtension(data[0].id, data[0].version,
+                                   data[0].crx_path);
+    service()->CheckForExternalUpdates();
+    observer.Wait();
+    // Make sure ExternalInstallError::OnDialogReady() fires.
+    global_error_observer.Wait();
+
+    std::vector<ExternalInstallError*> errors =
+        service_->external_install_manager()->GetErrorsForTesting();
+    EXPECT_EQ(1u, errors.size());
+    EXPECT_EQ(1u, GetExternalInstallBubbleCount(service()));
+    EXPECT_TRUE(service()
+                    ->external_install_manager()
+                    ->has_currently_visible_install_alert());
+    // Verify that the visible alert is for the current error.
+    EXPECT_EQ(errors[0], service()
+                             ->external_install_manager()
+                             ->currently_visible_install_alert_for_testing());
+  }
+
+  ExternalInstallError* first_extension_error = GetError(data[0].id);
+
+  // Close the bubble alert.
+  GlobalError* global_error =
+      GlobalErrorServiceFactory::GetForProfile(profile())
+          ->GetHighestSeverityGlobalErrorWithAppMenuItem();
+  first_extension_error->DidCloseBubbleView();
+
+  // Bring the bubble alert error again by clicking its menu item.
+  global_error->ExecuteMenuItem(nullptr);
+
+  // Install another webstore extension that will trigger an erorr of type
+  // BUBBLE_ALERT.
+  // Make sure that this bubble alert does not replace the current bubble alert.
+  {
+    content::WindowedNotificationObserver global_error_observer(
+        chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
+        content::NotificationService::AllSources());
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    provider->UpdateOrAddExtension(data[1].id, data[1].version,
+                                   data[1].crx_path);
+    service()->CheckForExternalUpdates();
+    observer.Wait();
+    // Make sure ExternalInstallError::OnDialogReady() fires.
+    global_error_observer.Wait();
+
+    std::vector<ExternalInstallError*> errors =
+        service_->external_install_manager()->GetErrorsForTesting();
+    EXPECT_EQ(2u, errors.size());
+    EXPECT_EQ(2u, GetExternalInstallBubbleCount(service()));
+    EXPECT_TRUE(service()
+                    ->external_install_manager()
+                    ->has_currently_visible_install_alert());
+    // Verify that the old bubble alert was *not* replaced by the new alert.
+    EXPECT_EQ(first_extension_error,
+              service()
+                  ->external_install_manager()
+                  ->currently_visible_install_alert_for_testing());
+  }
 }
 
 // Test that there is a bubble for external extensions that update

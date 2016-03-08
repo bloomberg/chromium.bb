@@ -197,7 +197,10 @@ base::string16 ExternalInstallBubbleAlert::MenuItemLabel() {
 }
 
 void ExternalInstallBubbleAlert::ExecuteMenuItem(Browser* browser) {
-  ShowBubbleView(browser);
+  // |browser| is nullptr in unit test.
+  if (browser)
+    ShowBubbleView(browser);
+  error_->DidOpenBubbleView();
 }
 
 gfx::Image ExternalInstallBubbleAlert::GetBubbleViewIcon() {
@@ -264,6 +267,7 @@ base::string16 ExternalInstallBubbleAlert::GetBubbleViewCancelButtonLabel() {
 }
 
 void ExternalInstallBubbleAlert::OnBubbleViewDidClose(Browser* browser) {
+  error_->DidCloseBubbleView();
 }
 
 void ExternalInstallBubbleAlert::BubbleViewAcceptButtonPressed(
@@ -339,9 +343,18 @@ void ExternalInstallError::OnInstallPromptDone(
       }
       break;
     case ExtensionInstallPrompt::Result::ABORTED:
+      manager_->DidChangeInstallAlertVisibility(this, false);
       break;
   }
   // NOTE: We may be deleted here!
+}
+
+void ExternalInstallError::DidOpenBubbleView() {
+  manager_->DidChangeInstallAlertVisibility(this, true);
+}
+
+void ExternalInstallError::DidCloseBubbleView() {
+  manager_->DidChangeInstallAlertVisibility(this, false);
 }
 
 void ExternalInstallError::ShowDialog(Browser* browser) {
@@ -352,6 +365,7 @@ void ExternalInstallError::ShowDialog(Browser* browser) {
   web_contents = browser->tab_strip_model()->GetActiveWebContents();
   install_ui_show_params_.reset(
       new ExtensionInstallPromptShowParams(web_contents));
+  manager_->DidChangeInstallAlertVisibility(this, true);
   ExtensionInstallPrompt::GetDefaultShowDialogCallback().Run(
       install_ui_show_params_.get(),
       base::Bind(&ExternalInstallError::OnInstallPromptDone,
@@ -422,10 +436,16 @@ void ExternalInstallError::OnDialogReady(
     global_error_.reset(new ExternalInstallBubbleAlert(this, prompt_.get()));
     error_service_->AddGlobalError(global_error_.get());
 
-    Browser* browser = chrome::FindTabbedBrowser(
-        Profile::FromBrowserContext(browser_context_), true);
-    if (browser)
-      global_error_->ShowBubbleView(browser);
+    if (!manager_->has_currently_visible_install_alert()) {
+      // |browser| is nullptr during unit tests, so call
+      // DidChangeInstallAlertVisibility() regardless because we depend on this
+      // in unit tests.
+      manager_->DidChangeInstallAlertVisibility(this, true);
+      Browser* browser = chrome::FindTabbedBrowser(
+          Profile::FromBrowserContext(browser_context_), true);
+      if (browser)
+        global_error_->ShowBubbleView(browser);
+    }
   } else {
     DCHECK(alert_type_ == MENU_ALERT);
     global_error_.reset(new ExternalInstallMenuAlert(this));
