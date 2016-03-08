@@ -57,6 +57,8 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
+#include "content/public/common/features.h"
 #include "grit/components_strings.h"
 #include "media/base/media_switches.h"
 #include "media/midi/midi_switches.h"
@@ -1786,13 +1788,20 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(ENABLE_EXTENSIONS)
     {"enable-tab-for-desktop-share", IDS_FLAG_ENABLE_TAB_FOR_DESKTOP_SHARE,
      IDS_FLAG_ENABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(extensions::switches::kEnableTabForDesktopShare)}
+     SINGLE_VALUE_TYPE(extensions::switches::kEnableTabForDesktopShare)},
 #endif
 #if defined(OS_ANDROID)
     {"enable-ntp-snippets", IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME,
      IDS_FLAGS_ENABLE_NTP_SNIPPETS_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPSnippetsFeature)},
 #endif  // defined(OS_ANDROID)
+#if defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
+    {"enable-webrtc-h264-with-openh264-ffmpeg",
+     IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_NAME,
+     IDS_FLAGS_WEBRTC_H264_WITH_OPENH264_FFMPEG_DESCRIPTION,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(content::kWebRtcH264WithOpenH264FFmpeg)},
+#endif  // defined(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264)
 #if defined(OS_ANDROID)
     {"ime-thread", IDS_FLAGS_IME_THREAD_NAME,
      IDS_FLAGS_IME_THREAD_DESCRIPTION, kOsAndroid,
