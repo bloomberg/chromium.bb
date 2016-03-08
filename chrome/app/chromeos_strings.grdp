@@ -998,6 +998,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_SORT_BUTTON_TOOLTIP" desc="Tooltip for the button which provides sort options in Files.app.">
     Sort options
   </message>
+  <message name="IDS_FILE_BROWSER_DETAIL_BUTTON_TOOLTIP" desc="Tooltip for the detals button to show the details panel which provides information of selected files in Files.app.">
+    View details
+  </message>
   <message name="IDS_FILE_BROWSER_GEAR_BUTTON_TOOLTIP" desc="Tooltip for the gear button in Files.app.">
     Settings
   </message>

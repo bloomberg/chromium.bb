@@ -119,6 +119,9 @@ const char kEnableArc[] = "enable-arc";
 // locate the device.
 const char kEnableConsumerManagement[] = "enable-consumer-management";
 
+// Enables details panel in Files app.
+const char kEnableFilesDetailsPanel[] = "enable-files-details-panel";
+
 // If this switch is set, the device cannot be remotely disabled by its owner.
 const char kDisableDeviceDisabling[] = "disable-device-disabling";
 

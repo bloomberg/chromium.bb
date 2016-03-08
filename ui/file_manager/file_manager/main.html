@@ -309,7 +309,13 @@
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>
-      <button id="gear-button" class="icon-button" tabindex="18"
+      <button id="details-button" class="icon-button" tabindex="18"
+              i18n-values="aria-label:DETAIL_BUTTON_TOOLTIP"
+              has-tooltip>
+        <files-toggle-ripple></files-toggle-ripple>
+        <div class="icon"></div>
+      </button>
+      <button id="gear-button" class="icon-button" tabindex="19"
               menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu"
@@ -342,7 +348,7 @@
     <div class="dialog-container">
       <div class="dialog-navigation-list">
         <div class="dialog-navigation-list-contents">
-          <tree id="directory-tree" tabindex="19"></tree>
+          <tree id="directory-tree" tabindex="20"></tree>
         </div>
         <div class="dialog-navigation-list-footer">
           <div id="progress-center" hidden>
@@ -402,6 +408,9 @@
             <button id="format-button" command="#format"></button>
           </div>
         </div>
+      </div>
+      <div class="splitter" id="list-details-splitter"></div>
+      <div id="details-container" class="details-container">
       </div>
     </div>
     <div class="dialog-footer progressable" tabindex="-1"

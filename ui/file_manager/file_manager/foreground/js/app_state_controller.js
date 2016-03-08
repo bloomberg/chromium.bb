@@ -79,6 +79,7 @@ AppStateController.prototype.initialize = function(ui, directoryModel) {
   // Restore preferences.
   this.ui_.setCurrentListType(
       this.viewOptions_.listType || ListContainer.ListType.DETAIL);
+  this.ui_.setDetailsVisibility(!!this.viewOptions_.detailsVisibility);
   this.directoryModel_.getFileList().sort(
       this.viewOptions_.sortField || 'modificationTime',
       this.viewOptions_.sortDirection || 'desc');
@@ -97,7 +98,12 @@ AppStateController.prototype.saveViewOptions = function() {
     sortField: sortStatus.field,
     sortDirection: sortStatus.direction,
     columnConfig: {},
-    listType: this.ui_.listContainer.currentListType
+    listType: this.ui_.listContainer.currentListType,
+    /**
+     * TODO(ryoh): Simplify this line after we finally implement details panel.
+     */
+    detailsVisibility: this.ui_.detailsContainer &&
+        this.ui_.detailsContainer.visible || false
   };
   var cm = this.ui_.listContainer.table.columnModel;
   prefs.columnConfig = cm.exportColumnConfig();

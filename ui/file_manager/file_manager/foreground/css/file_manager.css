@@ -124,6 +124,24 @@ a:focus {
   flex-direction: column;
 }
 
+/* Details pane */
+.details-container {
+  background-color: rgb(250, 250, 250);
+  flex: none;
+  max-width: 30%;
+  min-width: 100px;
+  overflow: hidden;
+  position: relative;
+}
+
+#list-details-splitter:not([activated]) {
+  display: none;
+}
+
+.details-container:not([activated]) {
+  display: none;
+}
+
 /* Directory tree at the left. */
 .dialog-navigation-list {
   -webkit-border-end: 1px solid rgba(0, 0, 0, 0.15);
@@ -446,6 +464,24 @@ body.check-select #view-button.thumbnail {
 }
 
 body.check-select #sort-button {
+  display: none;
+}
+
+#details-button {
+  /**
+   * TODO(ryoh): This should be removed after we finally implement details
+   *     panel.
+   */
+  display: none;
+}
+
+#details-button > .icon {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/details_white.png) 1x,
+      url(../images/files/ui/2x/details_white.png) 2x);
+}
+
+body.check-select #details-button {
   display: none;
 }
 

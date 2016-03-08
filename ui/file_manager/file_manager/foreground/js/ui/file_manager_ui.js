@@ -163,6 +163,23 @@ function FileManagerUI(providersModel, element, launchParam) {
       '#sort-button', cr.ui.MenuButton);
 
   /**
+   * The button to open the details panel.
+   * @type {!Element}
+   * @const
+   */
+  this.detailsButton = queryRequiredElement(
+      '#details-button', this.element);
+
+  /**
+   * Ripple effect of details button.
+   * @private {!FilesToggleRipple}
+   * @const
+   */
+  this.detailsButtonToggleRipple_ =
+      /** @type {!FilesToggleRipple} */ (queryRequiredElement(
+          'files-toggle-ripple', this.detailsButton));
+
+  /**
    * Ripple effect of sort button.
    * @private {!FilesToggleRipple}
    * @const
@@ -213,6 +230,12 @@ function FileManagerUI(providersModel, element, launchParam) {
    * @type {ListContainer}
    */
   this.listContainer = null;
+
+  /**
+   * Details container.
+   * @type {DetailsContainer}
+   */
+  this.detailsContainer = null;
 
   /**
    * @type {!HTMLElement}
@@ -326,6 +349,22 @@ FileManagerUI.prototype.initAdditionalUI = function(
   // Splitter.
   this.decorateSplitter_(
       queryRequiredElement('#navigation-list-splitter', this.element));
+
+  // Details container.
+  chrome.commandLinePrivate.hasSwitch('enable-files-details-panel',
+      function(enabled) {
+    if (enabled) {
+      this.detailsButton.style.display = 'block';
+      var listDetailsSplitter =
+          queryRequiredElement('#list-details-splitter', this.element);
+      this.decorateSplitter_(listDetailsSplitter);
+      this.detailsContainer = new DetailsContainer(
+          queryRequiredElement('#details-container', this.element),
+          listDetailsSplitter,
+          this.detailsButton,
+          this.detailsButtonToggleRipple_);
+    }
+  }.bind(this));
 
   // Location line.
   this.locationLine = locationLine;
@@ -444,6 +483,17 @@ FileManagerUI.prototype.setCurrentListType = function(listType) {
                            str('CHANGE_TO_LISTVIEW_BUTTON_LABEL');
   this.toggleViewButton.setAttribute('aria-label', label);
   this.relayout();
+};
+
+/**
+ * Sets the details panel visibility
+ * @param {boolean} visibility True if the details panel is visible.
+ */
+FileManagerUI.prototype.setDetailsVisibility = function(visibility) {
+  if (this.detailsContainer) {
+    this.detailsContainer.setVisibility(visibility);
+    this.relayout();
+  }
 };
 
 /**

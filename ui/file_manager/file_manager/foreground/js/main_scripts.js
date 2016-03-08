@@ -140,6 +140,7 @@
 //<include src="ui/actions_submenu.js">
 //<include src="ui/banners.js" >
 //<include src="ui/default_task_dialog.js">
+//<include src="ui/details_container.js">
 //<include src="ui/dialog_footer.js">
 //<include src="ui/directory_tree.js">
 //<include src="ui/drag_selector.js">

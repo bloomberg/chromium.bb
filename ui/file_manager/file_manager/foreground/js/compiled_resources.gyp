@@ -124,6 +124,7 @@
           './ui/actions_submenu.js',
           './ui/banners.js',
           './ui/default_task_dialog.js',
+          './ui/details_container.js',
           './ui/dialog_footer.js',
           './ui/directory_tree.js',
           './ui/drag_selector.js',
