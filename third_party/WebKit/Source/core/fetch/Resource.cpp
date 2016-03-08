@@ -164,9 +164,6 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_status(Pending)
     , m_needsSynchronousCacheHit(false)
     , m_linkPreload(false)
-#ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
-    , m_deleted(false)
-#endif
 {
     ASSERT(m_type == unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
     InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
@@ -186,12 +183,6 @@ Resource::Resource(const ResourceRequest& request, Type type)
 
 Resource::~Resource()
 {
-    assertAlive();
-
-#ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
-    m_deleted = true;
-#endif
-
     InstanceCounters::decrementCounter(InstanceCounters::ResourceCounter);
 }
 
@@ -836,7 +827,6 @@ void Resource::revalidationSucceeded(const ResourceResponse& validatingResponse)
         m_response.setHTTPHeaderField(header.key, header.value);
     }
 
-    assertAlive();
     m_resourceRequest = m_revalidatingRequest;
     m_revalidatingRequest = ResourceRequest();
 }
@@ -963,13 +953,11 @@ void Resource::ResourceCallback::schedule(Resource* resource)
 {
     if (!m_callbackTaskFactory->isPending())
         Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(BLINK_FROM_HERE, m_callbackTaskFactory->cancelAndCreate());
-    resource->assertAlive();
     m_resourcesWithPendingClients.add(resource);
 }
 
 void Resource::ResourceCallback::cancel(Resource* resource)
 {
-    resource->assertAlive();
     m_resourcesWithPendingClients.remove(resource);
     if (m_callbackTaskFactory->isPending() && m_resourcesWithPendingClients.isEmpty())
         m_callbackTaskFactory->cancel();
@@ -987,14 +975,8 @@ void Resource::ResourceCallback::runTask()
         resources.append(resource.get());
     m_resourcesWithPendingClients.clear();
 
-    for (const auto& resource : resources) {
-        resource->assertAlive();
-        resource->finishPendingClients();
-        resource->assertAlive();
-    }
-
     for (const auto& resource : resources)
-        resource->assertAlive();
+        resource->finishPendingClients();
 }
 
 static const char* initatorTypeNameToString(const AtomicString& initiatorTypeName)

@@ -40,9 +40,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-// FIXME(crbug.com/352043): This is temporarily enabled even on RELEASE to diagnose a wild crash.
-#define ENABLE_RESOURCE_IS_DELETED_CHECK
-
 namespace blink {
 
 struct FetchInitiatorInfo;
@@ -51,7 +48,6 @@ class FetchRequest;
 class ResourceClient;
 class ResourceFetcher;
 class ResourceTimingInfo;
-class InspectorResource;
 class ResourceLoader;
 class SecurityOrigin;
 class SharedBuffer;
@@ -62,8 +58,6 @@ class SharedBuffer;
 class CORE_EXPORT Resource : public RefCountedWillBeGarbageCollectedFinalized<Resource> {
     WTF_MAKE_NONCOPYABLE(Resource);
     USING_FAST_MALLOC_WITH_TYPE_NAME_WILL_BE_REMOVED(blink::Resource);
-    friend class InspectorResource;
-
 public:
     enum Type {
         MainResource,
@@ -260,12 +254,6 @@ public:
     // TODO(japhet): Remove once oilpan ships, it doesn't need the WeakPtr.
     WeakPtrWillBeRawPtr<Resource> asWeakPtr();
 
-#ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
-    void assertAlive() const { RELEASE_ASSERT(!m_deleted); }
-#else
-    void assertAlive() const { }
-#endif
-
 protected:
     Resource(const ResourceRequest&, Type);
 
@@ -378,10 +366,6 @@ private:
 
     unsigned m_needsSynchronousCacheHit : 1;
     unsigned m_linkPreload : 1;
-
-#ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
-    bool m_deleted;
-#endif
 
     // Ordered list of all redirects followed while fetching this resource.
     Vector<RedirectPair> m_redirectChain;
