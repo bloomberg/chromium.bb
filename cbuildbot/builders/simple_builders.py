@@ -218,7 +218,7 @@ class SimpleBuilder(generic_builders.Builder):
         self._RunStage(build_stages.SetupBoardStage, board,
                        builder_run=builder_run)
 
-  def _RunMasterPaladinOrChromePFQBuild(self):
+  def _RunMasterPaladinOrPFQBuild(self):
     """Runs through the stages of the paladin or chrome PFQ master build."""
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
@@ -238,8 +238,8 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(build_stages.RegenPortageCacheStage)
     self.RunSetupBoard()
     self._RunStage(chrome_stages.SyncChromeStage)
-    self._RunStage(android_stages.UprevAndroidStage)
     self._RunStage(chrome_stages.PatchChromeStage)
+    self._RunStage(android_stages.UprevAndroidStage)
 
   def RunBuildTestStages(self):
     """Runs through the stages to test before building."""
@@ -315,9 +315,10 @@ class SimpleBuilder(generic_builders.Builder):
     if self._run.config.build_type == constants.PRE_CQ_LAUNCHER_TYPE:
       self._RunStage(sync_stages.PreCQLauncherStage)
     elif ((self._run.config.build_type == constants.PALADIN_TYPE or
-           self._run.config.build_type == constants.CHROME_PFQ_TYPE) and
+           self._run.config.build_type == constants.CHROME_PFQ_TYPE or
+           self._run.config.build_type == constants.ANDROID_PFQ_TYPE) and
           self._run.config.master):
-      self._RunMasterPaladinOrChromePFQBuild()
+      self._RunMasterPaladinOrPFQBuild()
     else:
       self._RunDefaultTypeBuild()
 

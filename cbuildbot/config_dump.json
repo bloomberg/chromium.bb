@@ -193,7 +193,6 @@
             "_template": "android-pfq",
             "android_rev": "latest_release",
             "build_type": "android",
-            "builder_class_name": "android_pfq_builders.AndroidPFQBuilder",
             "description": "Preflight Android Uprev & Build (internal)",
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 5400,\n    \"warn_only\": false\n}",
@@ -11330,7 +11329,6 @@
         "_template": "android-pfq",
         "active_waterfall": "chromeos",
         "boards": [],
-        "builder_class_name": "android_pfq_builders.AndroidPFQMasterBuilder",
         "buildslave_type": "gce_wimpy",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",

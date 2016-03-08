@@ -112,6 +112,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # Sub-directories for LKGM and Chrome LKGM's.
   LKGM_SUBDIR = 'LKGM-candidates'
   CHROME_PFQ_SUBDIR = 'chrome-LKGM-candidates'
+  ANDROID_PFQ_SUBDIR = 'android-LKGM-candidates'
   COMMIT_QUEUE_SUBDIR = 'paladin'
 
   def __init__(self, source_repo, manifest_repo, build_names, build_type,
@@ -147,6 +148,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # must have separate subdirs in the manifest-versions repository.
     if self.build_type == constants.CHROME_PFQ_TYPE:
       self.rel_working_dir = self.CHROME_PFQ_SUBDIR
+    elif self.build_type == constants.ANDROID_PFQ_TYPE:
+      self.rel_working_dir = self.ANDROID_PFQ_SUBDIR
     elif config_lib.IsCQType(self.build_type):
       self.rel_working_dir = self.COMMIT_QUEUE_SUBDIR
     else:
@@ -476,7 +479,8 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     # building on the master branch i.e. revving the build number.
     return (self.incr_type == 'build' and
             config_lib.IsPFQType(self.build_type) and
-            self.build_type != constants.CHROME_PFQ_TYPE)
+            self.build_type != constants.CHROME_PFQ_TYPE and
+            self.build_type != constants.ANDROID_PFQ_TYPE)
 
   def GenerateBlameListSinceLKGM(self):
     """Prints out links to all CL's that have been committed since LKGM.
