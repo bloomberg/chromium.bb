@@ -148,15 +148,15 @@ class PatchChromeStage(generic_stages.BuilderStage):
       commands.PatchChrome(self._run.options.chrome_root, patch, subdir)
 
 
-class ChromeSDKStage(generic_stages.BoardSpecificBuilderStage,
-                     generic_stages.ArchivingStageMixin):
+class SimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
+                                generic_stages.ArchivingStageMixin):
   """Run through the simple chrome workflow."""
 
   option_name = 'chrome_sdk'
   config_name = 'chrome_sdk'
 
   def __init__(self, *args, **kwargs):
-    super(ChromeSDKStage, self).__init__(*args, **kwargs)
+    super(SimpleChromeWorkflowStage, self).__init__(*args, **kwargs)
     self._upload_queue = multiprocessing.Queue()
     self._pkg_dir = os.path.join(
         self._build_root, constants.DEFAULT_CHROOT_DIR,

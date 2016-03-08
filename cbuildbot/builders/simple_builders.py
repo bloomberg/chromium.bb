@@ -171,7 +171,7 @@ class SimpleBuilder(generic_builders.Builder):
     if changes:
       stage_list += [[report_stages.DetectIrrelevantChangesStage, board,
                       changes]]
-    stage_list += [[chrome_stages.ChromeSDKStage, board]]
+    stage_list += [[chrome_stages.SimpleChromeWorkflowStage, board]]
 
     if config.vm_test_runs > 1:
       # Run the VMTests multiple times to see if they fail.
