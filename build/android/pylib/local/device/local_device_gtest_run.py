@@ -315,8 +315,11 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
     # Query all devices in case one fails.
     test_lists = self._env.parallel_devices.pMap(list_tests).pGet(None)
-    # TODO(agrieve): Make this fail rather than return an empty list when
-    #     all devices fail.
+
+    # If all devices failed to list tests, raise an exception.
+    if all([tl is None for tl in test_lists]):
+      raise device_errors.CommandFailedError(
+          'Failed to list tests on any device')
     return list(sorted(set().union(*[set(tl) for tl in test_lists if tl])))
 
   #override
