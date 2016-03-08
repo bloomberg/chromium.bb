@@ -33,12 +33,8 @@ class OfflinePageTabHelper :
   // Overridden from content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidFailProvisionalLoad(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      int error_code,
-      const base::string16& error_description,
-      bool was_ignored_by_handler) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   void RedirectFromOfflineToOnline(const GURL& online_url);
   void RedirectFromOnlineToOffline(const GURL& offline_url);

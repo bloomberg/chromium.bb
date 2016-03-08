@@ -139,13 +139,17 @@ void OfflinePageTabHelperTest::StartLoad(const GURL& url) {
 
 void OfflinePageTabHelperTest::CommitLoad(const GURL& url) {
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  content::RenderFrameHostTester::For(main_rfh())->SendNavigate(
-      0, entry_id, true, url);
+  content::RenderFrameHostTester::For(main_rfh())
+      ->SendNavigate(0, entry_id, true, url);
 }
 
 void OfflinePageTabHelperTest::FailLoad(const GURL& url) {
-  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationError(
-      url, net::ERR_INTERNET_DISCONNECTED);
+  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationStart(url);
+  // Set up the error code for the failed navigation.
+  content::RenderFrameHostTester::For(main_rfh())->
+      SimulateNavigationError(url, net::ERR_INTERNET_DISCONNECTED);
+  content::RenderFrameHostTester::For(main_rfh())->
+      SimulateNavigationErrorPageCommit();
   // Gives a chance to run delayed task to do redirection.
   RunUntilIdle();
 }

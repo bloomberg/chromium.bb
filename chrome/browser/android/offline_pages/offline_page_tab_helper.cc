@@ -61,18 +61,14 @@ void OfflinePageTabHelper::DidStartNavigation(
                  online_url));
 }
 
-void OfflinePageTabHelper::DidFailProvisionalLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description,
-    bool was_ignored_by_handler) {
+void OfflinePageTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
   GURL last_redirect_from_url_copy = last_redirect_from_url_;
   last_redirect_from_url_ = GURL();
 
   // Skips non-main frame or load failure other than no network.
-  if (error_code != net::ERR_INTERNET_DISCONNECTED ||
-      render_frame_host->GetParent() != nullptr) {
+  if (navigation_handle->GetNetErrorCode() != net::ERR_INTERNET_DISCONNECTED ||
+      !navigation_handle->IsInMainFrame()) {
     return;
   }
 
@@ -83,14 +79,14 @@ void OfflinePageTabHelper::DidFailProvisionalLoad(
 
   // Skips if not loading an online version of saved page.
   GURL offline_url = offline_pages::OfflinePageUtils::GetOfflineURLForOnlineURL(
-      web_contents()->GetBrowserContext(), validated_url);
+      web_contents()->GetBrowserContext(), navigation_handle->GetURL());
   if (!offline_url.is_valid())
     return;
 
   // Avoids looping between online and offline redirections.
   if (last_redirect_from_url_copy == offline_url)
     return;
-  last_redirect_from_url_ = validated_url;
+  last_redirect_from_url_ = navigation_handle->GetURL();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
