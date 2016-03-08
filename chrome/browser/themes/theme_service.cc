@@ -54,10 +54,6 @@
 #include "chrome/browser/supervised_user/supervised_user_theme.h"
 #endif
 
-#if defined(OS_WIN)
-#include "ui/base/win/shell.h"
-#endif
-
 using base::UserMetricsAction;
 using content::BrowserThread;
 using extensions::Extension;
@@ -413,6 +409,79 @@ bool ThemeService::ShouldInitWithSystemTheme() const {
   return false;
 }
 
+SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
+  // For backward compat with older themes, some newer colors are generated from
+  // older ones if they are missing.
+  const int kNtpText = ThemeProperties::COLOR_NTP_TEXT;
+  const int kLabelBackground =
+      ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND;
+  switch (id) {
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
+      return color_utils::HSLShift(
+          gfx::kChromeIconGrey,
+          GetTint(ThemeProperties::TINT_BUTTONS, incognito));
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
+      // The active color is overridden in Gtk2UI.
+      return SkColorSetA(
+          GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
+          0x33);
+    case ThemeProperties::COLOR_BACKGROUND_TAB: {
+      // The tints here serve a different purpose than TINT_BACKGROUND_TAB.
+      // That tint is used to create background tab images for custom themes by
+      // lightening the frame images.  The tints here create solid colors for
+      // background tabs by darkening the foreground tab (toolbar) color.
+      const color_utils::HSL kTint = {-1, -1, 0.4296875};
+      const color_utils::HSL kTintIncognito = {-1, -1, 0.34375};
+      return color_utils::HSLShift(
+          GetColor(ThemeProperties::COLOR_TOOLBAR, incognito),
+          incognito ? kTintIncognito : kTint);
+    }
+    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
+      if (UsingDefaultTheme())
+        break;
+      return GetColor(ThemeProperties::COLOR_TOOLBAR, incognito);
+    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
+      if (UsingDefaultTheme())
+        break;
+      // Use 50% of bookmark text color as separator color.
+      return SkColorSetA(
+          GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito), 128);
+    case ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT:
+      return IncreaseLightness(GetColor(kNtpText, incognito), 0.30);
+    case ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
+      return GetColor(kNtpText, incognito);
+    case ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE:
+      return IncreaseLightness(GetColor(kNtpText, incognito), 0.70);
+    case ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
+      return IncreaseLightness(GetColor(kNtpText, incognito), 0.86);
+    case ThemeProperties::COLOR_NTP_TEXT_LIGHT:
+      return IncreaseLightness(GetColor(kNtpText, incognito), 0.40);
+    case ThemeProperties::COLOR_TAB_THROBBER_SPINNING:
+    case ThemeProperties::COLOR_TAB_THROBBER_WAITING: {
+      SkColor base_color =
+          ui::GetAuraColor(id == ThemeProperties::COLOR_TAB_THROBBER_SPINNING
+                               ? ui::NativeTheme::kColorId_ThrobberSpinningColor
+                               : ui::NativeTheme::kColorId_ThrobberWaitingColor,
+                           nullptr);
+      color_utils::HSL hsl = GetTint(ThemeProperties::TINT_BUTTONS, incognito);
+      return color_utils::HSLShift(base_color, hsl);
+    }
+#if defined(ENABLE_SUPERVISED_USERS)
+    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL:
+      return color_utils::GetReadableColor(
+          SK_ColorWHITE, GetColor(kLabelBackground, incognito));
+    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
+      return color_utils::BlendTowardOppositeLuma(
+          GetColor(ThemeProperties::COLOR_FRAME, incognito), 0x80);
+    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BORDER:
+      return color_utils::AlphaBlend(GetColor(kLabelBackground, incognito),
+                                     SK_ColorBLACK, 230);
+#endif
+  }
+
+  return ThemeProperties::GetDefaultColor(id, incognito);
+}
+
 color_utils::HSL ThemeService::GetTint(int id, bool incognito) const {
   DCHECK(CalledOnValidThread());
 
@@ -513,6 +582,15 @@ void ThemeService::FreePlatformCaches() {
 }
 #endif
 
+bool ThemeService::ShouldUseNativeFrame() const {
+  return false;
+}
+
+bool ThemeService::HasCustomImage(int id) const {
+  return BrowserThemePack::IsPersistentImageID(id) && theme_supplier_ &&
+         theme_supplier_->HasCustomImage(id);
+}
+
 gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id, bool incognito) const {
   gfx::Image image = GetImageNamed(id, incognito);
   if (image.IsEmpty())
@@ -539,76 +617,7 @@ SkColor ThemeService::GetColor(int id, bool incognito) const {
   if (theme_supplier_ && theme_supplier_->GetColor(theme_supplier_id, &color))
     return color;
 
-  // For backward compat with older themes, some newer colors are generated from
-  // older ones if they are missing.
-  const int kNtpText = ThemeProperties::COLOR_NTP_TEXT;
-  const int kLabelBackground =
-      ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND;
-  switch (id) {
-    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
-      return color_utils::HSLShift(
-          gfx::kChromeIconGrey,
-          GetTint(ThemeProperties::TINT_BUTTONS, incognito));
-    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
-      // The active color is overridden in Gtk2UI.
-      return SkColorSetA(
-          GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
-          0x33);
-    case ThemeProperties::COLOR_BACKGROUND_TAB: {
-      // The tints here serve a different purpose than TINT_BACKGROUND_TAB.
-      // That tint is used to create background tab images for custom themes by
-      // lightening the frame images.  The tints here create solid colors for
-      // background tabs by darkening the foreground tab (toolbar) color.
-      const color_utils::HSL kTint = {-1, -1, 0.4296875};
-      const color_utils::HSL kTintIncognito = {-1, -1, 0.34375};
-      return color_utils::HSLShift(
-          GetColor(ThemeProperties::COLOR_TOOLBAR, incognito),
-          incognito ? kTintIncognito : kTint);
-    }
-    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
-      if (UsingDefaultTheme())
-        break;
-      return GetColor(ThemeProperties::COLOR_TOOLBAR, incognito);
-    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
-      if (UsingDefaultTheme())
-        break;
-      // Use 50% of bookmark text color as separator color.
-      return SkColorSetA(
-          GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito), 128);
-    case ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT:
-      return IncreaseLightness(GetColor(kNtpText, incognito), 0.30);
-    case ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
-      return GetColor(kNtpText, incognito);
-    case ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE:
-      return IncreaseLightness(GetColor(kNtpText, incognito), 0.70);
-    case ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
-      return IncreaseLightness(GetColor(kNtpText, incognito), 0.86);
-    case ThemeProperties::COLOR_NTP_TEXT_LIGHT:
-      return IncreaseLightness(GetColor(kNtpText, incognito), 0.40);
-    case ThemeProperties::COLOR_TAB_THROBBER_SPINNING:
-    case ThemeProperties::COLOR_TAB_THROBBER_WAITING: {
-      SkColor base_color =
-          ui::GetAuraColor(id == ThemeProperties::COLOR_TAB_THROBBER_SPINNING
-                               ? ui::NativeTheme::kColorId_ThrobberSpinningColor
-                               : ui::NativeTheme::kColorId_ThrobberWaitingColor,
-                           nullptr);
-      color_utils::HSL hsl = GetTint(ThemeProperties::TINT_BUTTONS, incognito);
-      return color_utils::HSLShift(base_color, hsl);
-    }
-#if defined(ENABLE_SUPERVISED_USERS)
-    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL:
-      return color_utils::GetReadableColor(
-          SK_ColorWHITE, GetColor(kLabelBackground, incognito));
-    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
-      return color_utils::BlendTowardOppositeLuma(
-          GetColor(ThemeProperties::COLOR_FRAME, incognito), 0x80);
-    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BORDER:
-      return color_utils::AlphaBlend(GetColor(kLabelBackground, incognito),
-                                     SK_ColorBLACK, 230);
-#endif
-  }
-
-  return ThemeProperties::GetDefaultColor(id, incognito);
+  return GetDefaultColor(id, incognito);
 }
 
 int ThemeService::GetDisplayProperty(int id) const {
@@ -636,21 +645,6 @@ int ThemeService::GetDisplayProperty(int id) const {
     default:
       return -1;
   }
-}
-
-bool ThemeService::ShouldUseNativeFrame() const {
-  if (HasCustomImage(IDR_THEME_FRAME))
-    return false;
-#if defined(OS_WIN)
-  return ui::win::IsAeroGlassEnabled();
-#else
-  return false;
-#endif
-}
-
-bool ThemeService::HasCustomImage(int id) const {
-  return BrowserThemePack::IsPersistentImageID(id) && theme_supplier_ &&
-         theme_supplier_->HasCustomImage(id);
 }
 
 base::RefCountedMemory* ThemeService::GetRawData(
