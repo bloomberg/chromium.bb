@@ -79,11 +79,8 @@ void UninstallView::SetupControls() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (dist->GetDefaultBrowserControlPolicy() !=
           BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED &&
-      shell_integration::GetDefaultBrowser() == shell_integration::IS_DEFAULT &&
-      (shell_integration::CanSetAsDefaultBrowser() ==
-           shell_integration::SET_DEFAULT_NOT_ALLOWED ||
-       shell_integration::CanSetAsDefaultBrowser() ==
-           shell_integration::SET_DEFAULT_UNATTENDED)) {
+      ShellUtil::CanMakeChromeDefaultUnattended() &&
+      shell_integration::GetDefaultBrowser() == shell_integration::IS_DEFAULT) {
     browsers_.reset(new BrowsersMap());
     ShellUtil::GetRegisteredBrowsers(dist, browsers_.get());
     if (!browsers_->empty()) {
