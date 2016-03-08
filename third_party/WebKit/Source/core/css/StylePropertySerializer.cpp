@@ -60,6 +60,8 @@ StylePropertySerializer::StylePropertySetForSerializer::StylePropertySetForSeria
                 continue;
             m_needToExpandAll = true;
         }
+        if (property.id() < firstCSSProperty || property.id() > lastCSSProperty)
+            continue;
         m_longhandPropertyUsed.set(property.id() - firstCSSProperty);
     }
 }
@@ -105,6 +107,8 @@ bool StylePropertySerializer::StylePropertySetForSerializer::shouldProcessProper
         StylePropertySet::PropertyReference property = m_propertySet->propertyAt(index);
         if (property.id() == CSSPropertyAll || !CSSProperty::isAffectedByAllProperty(property.id()))
             return true;
+        if (property.id() < firstCSSProperty || property.id() > lastCSSProperty)
+            return false;
         return m_longhandPropertyUsed.get(property.id() - firstCSSProperty);
     }
 
