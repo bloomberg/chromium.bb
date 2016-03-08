@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.snackbar;
 
+import org.chromium.chrome.browser.snackbar.SnackbarManager.ActionDataMatcher;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 
 import java.util.Deque;
@@ -96,6 +97,20 @@ class SnackbarCollection {
             Snackbar snackbar = iter.next();
             if (snackbar.getController() == controller
                     && objectsAreEqual(snackbar.getActionData(), data)) {
+                iter.remove();
+                snackbarRemoved = true;
+            }
+        }
+        return snackbarRemoved;
+    }
+
+    boolean removeMatchingSnackbars(SnackbarController controller, ActionDataMatcher selector) {
+        boolean snackbarRemoved = false;
+        Iterator<Snackbar> iter = mSnackbars.iterator();
+        while (iter.hasNext()) {
+            Snackbar snackbar = iter.next();
+            if (snackbar.getController() == controller
+                    && selector.match(snackbar.getActionData())) {
                 iter.remove();
                 snackbarRemoved = true;
             }
