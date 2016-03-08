@@ -74,6 +74,18 @@ AST_MATCHER_P(clang::FunctionTemplateDecl,
   return InnerMatcher.matches(*Node.getTemplatedDecl(), Finder, Builder);
 }
 
+// This will narrow CXXCtorInitializers down for both FieldDecls and
+// IndirectFieldDecls (ie. anonymous unions and such). In both cases
+// getAnyMember() will return a FieldDecl which we can match against.
+AST_MATCHER_P(clang::CXXCtorInitializer,
+              forAnyField,
+              clang::ast_matchers::internal::Matcher<clang::FieldDecl>,
+              InnerMatcher) {
+  const clang::FieldDecl* NodeAsDecl = Node.getAnyMember();
+  return (NodeAsDecl != nullptr &&
+          InnerMatcher.matches(*NodeAsDecl, Finder, Builder));
+}
+
 bool IsDeclContextInBlinkOrWTF(const clang::DeclContext* decl_context,
                                bool blink,
                                bool wtf) {
@@ -672,9 +684,9 @@ int main(int argc, const char* argv[]) {
   //   };
   // matches each initializer in the constructor for S.
   auto constructor_initializer_matcher =
-      cxxConstructorDecl(forEachConstructorInitializer(
-          id("initializer",
-             cxxCtorInitializer(forField(field_decl_matcher), isWritten()))));
+      cxxConstructorDecl(forEachConstructorInitializer(id(
+          "initializer",
+          cxxCtorInitializer(forAnyField(field_decl_matcher), isWritten()))));
 
   ConstructorInitializerRewriter constructor_initializer_rewriter(
       &replacements);
