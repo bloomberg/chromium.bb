@@ -1339,36 +1339,42 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     case RUNNING:
       RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
       return;
+    case STARTING:
+      DCHECK(!start_callbacks_.empty());
+      break;
     case STOPPING:
     case STOPPED:
-    case STARTING:
       if (start_callbacks_.empty()) {
         start_callbacks_.push_back(
             base::Bind(&ServiceWorkerVersion::RecordStartWorkerResult,
                        weak_factory_.GetWeakPtr()));
       }
-      // Keep the live registration while starting the worker.
-      start_callbacks_.push_back(
-          base::Bind(&RunStartWorkerCallback, callback, protect));
-      StartWorkerInternal();
-      return;
+      break;
   }
+
+  // Keep the live registration while starting the worker.
+  start_callbacks_.push_back(
+      base::Bind(&RunStartWorkerCallback, callback, protect));
+
+  if (running_status() == STOPPED)
+    StartWorkerInternal();
+  DCHECK(timeout_timer_.IsRunning());
 }
 
 void ServiceWorkerVersion::StartWorkerInternal() {
-  if (!metrics_)
-    metrics_.reset(new Metrics(this));
+  DCHECK_EQ(STOPPED, running_status());
 
-  if (!timeout_timer_.IsRunning())
-    StartTimeoutTimer();
-  if (running_status() == STOPPED) {
-    DCHECK(!pause_after_download_ || !IsInstalled(status()));
-    embedded_worker_->Start(
-        version_id_, scope_, script_url_,
-        base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
-                   weak_factory_.GetWeakPtr()),
-        pause_after_download_);
-  }
+  DCHECK(!metrics_);
+  metrics_.reset(new Metrics(this));
+
+  StartTimeoutTimer();
+
+  DCHECK(!pause_after_download_ || !IsInstalled(status()));
+  embedded_worker_->Start(
+      version_id_, scope_, script_url_,
+      base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
+                 weak_factory_.GetWeakPtr()),
+      pause_after_download_);
 }
 
 void ServiceWorkerVersion::StartTimeoutTimer() {
