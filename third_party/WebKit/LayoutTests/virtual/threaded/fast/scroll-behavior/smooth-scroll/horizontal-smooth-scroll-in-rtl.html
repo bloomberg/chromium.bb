@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src="../../../../../resources/js-test.js"></script>
+<style>
+
+html {
+    writing-mode: vertical-rl;
+    width: 1000px;
+}
+
+</style>
+<script>
+
+var jsTestIsAsync = true;
+
+description("This test verifies that both input-driven and programmatic " +
+    "smooth scrolls serviced by the compositor thread go to the correct " +
+    "scroll position on RTL pages with horizontal overflow.");
+
+onload = function() {
+    if (!window.eventSender) {
+        debug("This test requires window.eventSender.")
+        finishJSTest();
+        return;
+    }
+
+    // Start scrolled due to http://crbug.com/592799.
+    scrollBy(-120, 0);
+
+    // Click scrollbar stepper.
+    eventSender.mouseMoveTo(795, 595);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+
+    shouldBecomeEqual("scrollX", "-80", function() {
+        scrollBy({left: 40, behavior: "smooth"});
+        shouldBecomeEqual("scrollX", "-40", finishJSTest);
+    });
+};
+
+</script>

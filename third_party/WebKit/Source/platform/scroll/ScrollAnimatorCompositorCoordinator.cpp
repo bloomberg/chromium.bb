@@ -227,4 +227,16 @@ CompositorAnimationPlayer* ScrollAnimatorCompositorCoordinator::compositorPlayer
     return m_compositorPlayer.get();
 }
 
+FloatPoint ScrollAnimatorCompositorCoordinator::compositorOffsetFromBlinkOffset(FloatPoint offset)
+{
+    offset.moveBy(scrollableArea()->scrollOrigin());
+    return offset;
+}
+
+FloatPoint ScrollAnimatorCompositorCoordinator::blinkOffsetFromCompositorOffset(FloatPoint offset)
+{
+    offset.moveBy(-scrollableArea()->scrollOrigin());
+    return offset;
+}
+
 } // namespace blink

@@ -10,6 +10,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -56,6 +57,9 @@ protected:
     bool addAnimation(PassOwnPtr<CompositorAnimation>);
     void removeAnimation();
     virtual void abortAnimation();
+
+    FloatPoint compositorOffsetFromBlinkOffset(FloatPoint);
+    FloatPoint blinkOffsetFromCompositorOffset(FloatPoint);
 
     void compositorAnimationFinished(int groupId);
     // Returns true if the compositor player was attached to a new layer.

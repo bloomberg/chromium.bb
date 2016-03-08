@@ -149,7 +149,8 @@ bool ScrollAnimator::willAnimateToOffset(const FloatPoint& targetPos)
         // Running on the main thread, simply update the target offset instead
         // of sending to the compositor.
         if (m_runState == RunState::RunningOnMainThread) {
-            m_animationCurve->updateTarget(m_timeFunction() - m_startTime, targetPos);
+            m_animationCurve->updateTarget(m_timeFunction() - m_startTime,
+                compositorOffsetFromBlinkOffset(targetPos));
             return true;
         }
 
@@ -187,8 +188,9 @@ void ScrollAnimator::tickAnimation(double monotonicTime)
     double elapsedTime = monotonicTime - m_startTime;
 
     bool isFinished = (elapsedTime > m_animationCurve->duration());
-    FloatPoint offset = isFinished ? m_animationCurve->targetValue()
-        : m_animationCurve->getValue(elapsedTime);
+    FloatPoint offset = blinkOffsetFromCompositorOffset(isFinished
+        ? m_animationCurve->targetValue()
+        : m_animationCurve->getValue(elapsedTime));
 
     offset = FloatPoint(m_scrollableArea->clampScrollPosition(offset));
 
@@ -286,18 +288,18 @@ void ScrollAnimator::updateCompositorAnimations()
             m_compositorAnimationGroupId = 0;
 
             m_animationCurve->updateTarget(m_timeFunction() - m_startTime,
-                m_targetOffset);
+                compositorOffsetFromBlinkOffset(m_targetOffset));
             m_runState = RunState::WaitingToSendToCompositor;
         }
 
         if (!m_animationCurve) {
             m_animationCurve = adoptPtr(CompositorFactory::current().createScrollOffsetAnimationCurve(
-                m_targetOffset,
+                compositorOffsetFromBlinkOffset(m_targetOffset),
                 CompositorAnimationCurve::TimingFunctionTypeEaseInOut,
                 m_lastGranularity == ScrollByPixel ?
                     CompositorScrollOffsetAnimationCurve::ScrollDurationInverseDelta :
                     CompositorScrollOffsetAnimationCurve::ScrollDurationConstant));
-            m_animationCurve->setInitialValue(currentPosition());
+            m_animationCurve->setInitialValue(compositorOffsetFromBlinkOffset(currentPosition()));
         }
 
         bool runningOnMainThread = false;

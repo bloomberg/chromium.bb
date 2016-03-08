@@ -890,6 +890,7 @@ crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-r
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Skip ]
 
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/fixed-background-in-iframe.html [ Skip ]
+crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-added.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Skip ]
 
