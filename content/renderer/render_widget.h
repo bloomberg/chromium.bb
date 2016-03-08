@@ -500,8 +500,8 @@ class CONTENT_EXPORT RenderWidget
   // the ACK that the screen has been updated. For a given paint operation,
   // these overrides will always be called in the order DidInitiatePaint,
   // DidFlushPaint.
-  virtual void DidInitiatePaint() {}
-  virtual void DidFlushPaint() {}
+  virtual void DidInitiatePaint();
+  virtual void DidFlushPaint();
 
   virtual GURL GetURLForGraphicsContext3D();
 

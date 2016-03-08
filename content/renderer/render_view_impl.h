@@ -461,8 +461,6 @@ class CONTENT_EXPORT RenderViewImpl
   void CloseForFrame() override;
   void Close() override;
   void OnResize(const ResizeParams& params) override;
-  void DidInitiatePaint() override;
-  void DidFlushPaint() override;
   gfx::Vector2d GetScrollOffset() override;
   void OnSetFocus(bool enable) override;
   void OnWasHidden() override;
@@ -584,6 +582,8 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebGestureEvent& event) override;
   bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) override;
+  void RenderWidgetDidCommitAndDrawCompositorFrame() override;
+  void RenderWidgetDidFlushPaint() override;
 
   // Old WebFrameClient implementations ----------------------------------------
 

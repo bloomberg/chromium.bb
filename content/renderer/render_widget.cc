@@ -1701,6 +1701,16 @@ bool RenderWidget::SetDeviceColorProfile(
 void RenderWidget::OnOrientationChange() {
 }
 
+void RenderWidget::DidInitiatePaint() {
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidCommitAndDrawCompositorFrame();
+}
+
+void RenderWidget::DidFlushPaint() {
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidFlushPaint();
+}
+
 gfx::Vector2d RenderWidget::GetScrollOffset() {
   // Bare RenderWidgets don't support scroll offset.
   return gfx::Vector2d();

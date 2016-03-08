@@ -2696,7 +2696,7 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
     has_scrolled_focused_editable_node_into_rect_ = false;
 }
 
-void RenderViewImpl::DidInitiatePaint() {
+void RenderViewImpl::RenderWidgetDidCommitAndDrawCompositorFrame() {
 #if defined(ENABLE_PLUGINS)
   // Notify all instances that we painted.  The same caveats apply as for
   // ViewFlushedPaint regarding instances closing themselves, so we take
@@ -2709,7 +2709,7 @@ void RenderViewImpl::DidInitiatePaint() {
 #endif
 }
 
-void RenderViewImpl::DidFlushPaint() {
+void RenderViewImpl::RenderWidgetDidFlushPaint() {
   // If the RenderWidget is closing down then early-exit, otherwise we'll crash.
   // See crbug.com/112921.
   if (!webview())
