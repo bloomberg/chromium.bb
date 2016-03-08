@@ -40,25 +40,25 @@ or <a href="pageAction">page actions</a>.
 Each extension can have at most one browser action or page action.
 Choose a <b>browser action</b> when the extension is relevant to most pages.
 Choose a <b>page action</b> when the extension's icon
-should appear or disappear,
+should be active or inactive (and grayed out),
 depending on the page.
 </p>
 
 <table class="simple">
 <tr>
   <td width="33%">
-    <img src="{{static}}/images/overview/browser-action.png"
-      width="147" height="100"
+    <img src="{{static}}/images/overview/browser_arrow.png"
+      width="102" height="90"
       alt="screenshot" />
   </td>
   <td width="33%">
-    <img src="{{static}}/images/overview/page-action.png"
-      width="147" height="100"
+    <img src="{{static}}/images/overview/mappy.png"
+      width="79" height="90"
       alt="screenshot" />
   </td>
   <td>
-    <img src="{{static}}/images/overview/browser-action-with-popup.png"
-      width="147" height="100"
+    <img src="{{static}}/images/overview/page_color.png"
+      width="107" height="90"
       alt="screenshot" />
   </td>
 </tr>
@@ -66,18 +66,16 @@ depending on the page.
 <tr>
   <td>
     This <a href="samples#google-mail-checker">Google Mail Checker extension</a>
-    uses a <em>browser action</em>
-    (icon in the toolbar).
+    uses a <em>browser action</em>.
   </td>
   <td>
     This <a href="samples#mappy">Mappy extension</a>
     uses a <em>page action</em>
-    (icon in the address bar)
     and <em>content script</em>
     (code injected into a web page).
   </td>
   <td>
-    This <a href="samples#news-reader">News Reader extension</a>
+    This <a href="samples#set_page_color">Set Page Color extension</a>
     features a browser action that,
     when clicked,
     shows a <em>popup</em>.
@@ -236,23 +234,9 @@ then the extension must use a content script.
 <h3 id="background_page">The background page</h3>
 
 <p>
-The following figure shows a browser
-that has at least two extensions installed:
-a browser action (yellow icon)
-and a page action (blue icon).
-Both the browser action and the page action
-have background pages.
-This figure shows the browser action's background page,
-which is defined by <code>background.html</code>
-and has JavaScript code that controls
-the behavior of the browser action in both windows.
-</p>
-
-<img src="{{static}}/images/overview/arch-1.gif"
- width="232" height="168"
- alt="Two windows and a box representing a background page (background.html). One window has a yellow icon; the other has both a yellow icon and a blue icon. The yellow icons are connected to the background page." />
-
-<p>
+Background pages defined by <code>background.html</code>
+can include JavaScript code that controls
+the behavior of the extension.
 There are two types of background pages:
 <a href="background_pages">persistent background pages</a>,
 and <a href="event_pages">event pages</a>. Persistent

@@ -13,12 +13,22 @@ that lets you subscribe to
 the RSS feed for the current page.
 </p>
 
-<img src="{{static}}/images/page-action.png"
-  width="361" height="79" />
+<img src="{{static}}/images/page_action.png"
+  width="600" height="43" />
 
 <p>
-If you want the extension's icon to always be visible,
-use a <a href="browserAction">browser action</a> instead.
+Hidden page actions appear grayed out.
+For example,
+the RSS feed below is grayed out,
+as you can't subscribe to the feed for the current page:
+</p>
+
+<img src="{{static}}/images/page_action_grey.png"
+  width="600" height="43" />
+
+<p>
+Please consider using a  <a href="browserAction">browser action</a> instead,
+so that users can always interact with your extension.
 </p>
 
 <h2 id="manifest">Manifest</h2>
@@ -70,17 +80,17 @@ Like browser actions,
 page actions can have an icon,
 a tooltip, and popup;
 they can't have badges, however.
-In addition, page actions can appear and disappear.
+In addition, page actions can be grayed out.
 You can find information about icons, tooltips, and popups
 by reading about the
 <a href="browserAction#ui">browser action UI</a>.
 </p>
 
 <p>
-You make a page action appear and disappear using the
+You make a page action appear and be grayed out using the
 $(ref:pageAction.show) and
 $(ref:pageAction.hide) methods, respectively.
-By default, a page action is hidden.
+By default, a page action appears grayed out.
 When you show it, you specify the tab
 in which the icon should appear.
 The icon remains visible
@@ -88,9 +98,6 @@ until the tab is closed
 or starts displaying a different URL
 (because the user clicks a link, for example).
 </p>
-
-
-
 
 <h2 id="tips">Tips</h2>
 

@@ -5,7 +5,7 @@
 [
   {
     "namespace": "pageAction",
-    "description": "Use the <code>chrome.pageAction</code> API to put icons inside the address bar. Page actions represent actions that can be taken on the current page, but that aren't applicable to all pages.",
+    "description": "Use the <code>chrome.pageAction</code> API to put icons in the main Google Chrome toolbar, to the right of the address bar. Page actions represent actions that can be taken on the current page, but that aren't applicable to all pages. Page actions appear grayed out when inactive.",
     "types": [
       {
         "id": "ImageDataType",
@@ -27,7 +27,7 @@
       {
         "name": "hide",
         "type": "function",
-        "description": "Hides the page action.",
+        "description": "Hides the page action. Hidden page actions still appear in the Chrome toolbar, but are grayed out.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."}
         ]
