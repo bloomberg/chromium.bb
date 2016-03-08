@@ -763,7 +763,7 @@ class ReportStage(generic_stages.BuilderStage,
         output = StringIO.StringIO()
         self.CollectComparativeBuildTimings(output, build_id, db)
         # Bunch up our output, so it doesn't interleave with CIDB logs.
-        sys.output.write(output.getvalue())
+        sys.stdout.write(output.getvalue())
 
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
