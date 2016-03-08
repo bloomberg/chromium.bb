@@ -1,0 +1,10 @@
+Tests that the 2D context of OffscreenCanvas can be constructed on a worker thread.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS getContext('2d') correctly returns [object OffscreenCanvasRenderingContext2D].
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

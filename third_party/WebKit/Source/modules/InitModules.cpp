@@ -16,6 +16,8 @@
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
+#include "modules/offscreencanvas/OffscreenCanvas.h"
+#include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
@@ -47,6 +49,9 @@ void ModulesInitializer::init()
     HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new WebGLRenderingContext::Factory()));
     HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new WebGL2RenderingContext::Factory()));
     HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new ImageBitmapRenderingContext::Factory()));
+
+    // OffscreenCanvas context types must be registered with the OffscreenCanvas.
+    OffscreenCanvas::registerRenderingContextFactory(adoptPtr(new OffscreenCanvasRenderingContext2D::Factory()));
 
     ASSERT(isInitialized());
 }

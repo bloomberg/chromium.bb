@@ -3696,8 +3696,21 @@ interface OffscreenCanvas
     getter height
     getter width
     method constructor
+    method getContext
     setter height
     setter width
+interface OffscreenCanvasRenderingContext2D
+    getter offscreenCanvas
+    method arc
+    method arcTo
+    method bezierCurveTo
+    method closePath
+    method constructor
+    method ellipse
+    method lineTo
+    method moveTo
+    method quadraticCurveTo
+    method rect
 interface Option
     method constructor
 interface OscillatorNode : AudioSourceNode

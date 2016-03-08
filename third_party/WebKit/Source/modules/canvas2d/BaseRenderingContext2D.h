@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPathMethods.h"

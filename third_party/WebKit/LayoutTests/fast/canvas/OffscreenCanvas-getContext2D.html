@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+description("Tests basic functionalities of offscreenCanvas.getContext on the main thread");
+
+// Tests onstructor of OffscreenCanvas and length/width change
+var aCanvas = new OffscreenCanvas(40, 60);
+shouldBe("aCanvas.width", "40");
+shouldBe("aCanvas.height", "60");
+
+aCanvas.width = 110;
+aCanvas.height = 90;
+shouldBe("aCanvas.width", "110");
+shouldBe("aCanvas.height", "90");
+
+aCanvas.width = 0; // Zero dimension is allowed
+shouldBe("aCanvas.width", "0");
+
+// Tests object type of getContext('2d')
+var ctx;
+shouldNotThrow("ctx = aCanvas.getContext('2d')");
+shouldBeType("ctx", "OffscreenCanvasRenderingContext2D");
+
+// Calling getContext on a different context type will return null
+var ctx2 = aCanvas.getContext("webgl");
+shouldBeNull("ctx2");
+
+// Calling getContext on the same context type will return the original context type
+var ctx3 = aCanvas.getContext("2d");
+shouldBeNonNull("ctx3");
+shouldBeTrue("ctx3 == ctx");
+
+// TODO: change the below part of the test when webgl is supported.
+// Calling getContext on an unimplemented context type will return null
+var bogusCanvas = new OffscreenCanvas(20, 20);
+var bogusCtx = bogusCanvas.getContext("webgl");
+shouldBeNull("bogusCtx");
+</script>

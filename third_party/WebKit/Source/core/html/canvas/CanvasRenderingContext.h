@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/html/HTMLCanvasElement.h"
-#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringHash.h"
@@ -126,7 +125,6 @@ public:
 protected:
     CanvasRenderingContext(HTMLCanvasElement*);
     DECLARE_VIRTUAL_TRACE();
-
     virtual void stop() = 0;
 
 private:
