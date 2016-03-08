@@ -122,7 +122,7 @@ const int kReloadMenuCommands[]  = {
     return;
   }
 
-  [self resetIcons];
+  [self resetButtonStateImages];
   if (anInt == IDC_RELOAD) {
     [self setToolTip:l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_RELOAD)];
   } else if (anInt == IDC_STOP) {
@@ -156,7 +156,7 @@ const int kReloadMenuCommands[]  = {
              [[self cell] isMouseInside]) {
     id cell = [self cell];
     if (ui::MaterialDesignController::IsModeMaterial()) {
-      [self setImagesFromIconId:gfx::VectorIconId::NAVIGATE_STOP];
+      [self resetButtonStateImages];
       NSImage* disabledStopImage =
           [[self cell] imageForState:image_button_cell::kDisabledState
                                 view:self];
@@ -236,6 +236,18 @@ const int kReloadMenuCommands[]  = {
   return VIEW_ID_RELOAD_BUTTON;
 }
 
+- (gfx::VectorIconId)vectorIconId {
+  if ([self tag] == IDC_RELOAD) {
+    return gfx::VectorIconId::NAVIGATE_RELOAD;
+  } else if ([self tag] == IDC_STOP) {
+    return gfx::VectorIconId::NAVIGATE_STOP;
+  } else {
+    NOTREACHED();
+  }
+
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+}
+
 - (void)mouseInsideStateDidChange:(BOOL)isInside {
   [pendingReloadTimer_ fire];
 }
@@ -284,25 +296,6 @@ const int kReloadMenuCommands[]  = {
   int event_flags = ui::EventFlagsFromNative([NSApp currentEvent]);
   commandUpdater_->ExecuteCommandWithDisposition(
       command, ui::DispositionFromEventFlags(event_flags));
-}
-
-- (void)resetIcons {
-  if ([self tag] == IDC_RELOAD) {
-    [self setImagesFromIconId:gfx::VectorIconId::NAVIGATE_RELOAD];
-  } else if ([self tag] == IDC_STOP) {
-    [self setImagesFromIconId:gfx::VectorIconId::NAVIGATE_STOP];
-  } else {
-    NOTREACHED();
-  }
-}
-
-- (void)viewDidMoveToWindow {
-  // If a dark theme in Material Design, make sure the icon is the correct
-  // color.
-  if ([self window] && ui::MaterialDesignController::IsModeMaterial() &&
-      [[self window] hasDarkTheme]) {
-    [self resetIcons];
-  }
 }
 
 @end  // ReloadButton

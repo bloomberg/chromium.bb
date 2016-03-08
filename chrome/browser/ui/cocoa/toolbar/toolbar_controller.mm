@@ -78,9 +78,6 @@ namespace {
 // Duration of the toolbar animation.
 const NSTimeInterval kToolBarAnimationDuration = 0.12;
 
-// The size of toolbar buttons in Material Design.
-const NSSize kMaterialDesignToolbarButtonSize = NSMakeSize(28, 28);
-
 // The height of the location bar in Material Design.
 const CGFloat kMaterialDesignLocationBarHeight = 28;
 
@@ -292,6 +289,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
   if (isModeMaterial) {
     ToolbarView* toolbarView = [self toolbarView];
+    NSSize toolbarButtonSize = [ToolbarButton toolbarButtonSize];
 
     // Set the toolbar height.
     NSRect frame = [toolbarView frame];
@@ -301,25 +299,25 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     NSRect backButtonFrame = [backButton_ frame];
     backButtonFrame.origin.x = kMaterialDesignElementPadding;
     backButtonFrame.origin.y -= 1;
-    backButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    backButtonFrame.size = toolbarButtonSize;
     [backButton_ setFrame:backButtonFrame];
 
     NSRect forwardButtonFrame = [forwardButton_ frame];
     forwardButtonFrame.origin.x = NSMaxX(backButtonFrame);
     forwardButtonFrame.origin.y = backButtonFrame.origin.y;
-    forwardButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    forwardButtonFrame.size = toolbarButtonSize;
     [forwardButton_ setFrame:forwardButtonFrame];
 
     NSRect reloadButtonFrame = [reloadButton_ frame];
     reloadButtonFrame.origin.x = NSMaxX(forwardButtonFrame);
     reloadButtonFrame.origin.y = forwardButtonFrame.origin.y;
-    reloadButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    reloadButtonFrame.size = toolbarButtonSize;
     [reloadButton_ setFrame:reloadButtonFrame];
 
     NSRect homeButtonFrame = [homeButton_ frame];
     homeButtonFrame.origin.x = NSMaxX(reloadButtonFrame);
     homeButtonFrame.origin.y = reloadButtonFrame.origin.y;
-    homeButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    homeButtonFrame.size = toolbarButtonSize;
     [homeButton_ setFrame:homeButtonFrame];
 
     // Replace the app button from the nib with an AppToolbarButton instance for
@@ -336,10 +334,9 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     NSRect toolbarBounds = [toolbarView bounds];
     NSRect menuButtonFrame = [appMenuButton_ frame];
     menuButtonFrame.origin.x = NSMaxX(toolbarBounds) -
-        [ToolbarController appMenuLeftPadding] -
-            kMaterialDesignToolbarButtonSize.width;
+        [ToolbarController appMenuLeftPadding] - toolbarButtonSize.width;
     menuButtonFrame.origin.y = homeButtonFrame.origin.y;
-    menuButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    menuButtonFrame.size = toolbarButtonSize;
     [appMenuButton_ setFrame:menuButtonFrame];
 
     // Adjust the size and location on the location bar to take up the
@@ -352,8 +349,14 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     locationBarFrame.size.width =
         (menuButtonFrame.origin.x - kMaterialDesignElementPadding) -
             locationBarFrame.origin.x;
-    locationBarFrame.size.height = kMaterialDesignToolbarButtonSize.height;
+    locationBarFrame.size.height = toolbarButtonSize.height;
     [locationBar_ setFrame:locationBarFrame];
+
+    // Correctly position the extension buttons' container view.
+    NSRect containerFrame = [browserActionsContainerView_ frame];
+    containerFrame.origin.y = locationBarFrame.origin.y;
+    containerFrame.size.height = toolbarButtonSize.height;
+    [browserActionsContainerView_ setFrame:containerFrame];
   } else {
     [[backButton_ cell] setImageID:IDR_BACK
                     forButtonState:image_button_cell::kDefaultState];
@@ -876,6 +879,11 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   } else {
     leftDistance = NSMinX([browserActionsContainerView_ animationEndFrame]) -
         locationBarXPos;
+    // Equalize the distance between the location bar and the first extension
+    // button, and the distance between the location bar and home/reload button.
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      leftDistance -= 4;
+    }
   }
   if (leftDistance != 0.0)
     [self adjustLocationSizeBy:leftDistance animate:animate];

@@ -10,6 +10,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
+#import "chrome/browser/ui/cocoa/toolbar/toolbar_button_cocoa.h"
 
 class Browser;
 @class BrowserActionsController;
@@ -22,7 +23,7 @@ extern NSString* const kBrowserActionButtonDraggingNotification;
 // Fired when the user drops the button.
 extern NSString* const kBrowserActionButtonDragEndNotification;
 
-@interface BrowserActionButton : NSButton<NSMenuDelegate> {
+@interface BrowserActionButton : ToolbarButton<NSMenuDelegate> {
  @private
   // Used to move the button and query whether a button is currently animating.
   base::scoped_nsobject<NSViewAnimation> moveAnimation_;

@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
@@ -26,6 +27,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/menu_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
@@ -201,15 +203,16 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
         accessibilitySetOverrideValue:base::SysUTF16ToNSString(
             viewController_->GetAccessibleName([controller currentWebContents]))
         forAttribute:NSAccessibilityDescriptionAttribute];
-    [cell setImageID:IDR_BROWSER_ACTION
-      forButtonState:image_button_cell::kDefaultState];
-    [cell setImageID:IDR_BROWSER_ACTION_H
-      forButtonState:image_button_cell::kHoverState];
-    [cell setImageID:IDR_BROWSER_ACTION_P
-      forButtonState:image_button_cell::kPressedState];
-    [cell setImageID:IDR_BROWSER_ACTION
-      forButtonState:image_button_cell::kDisabledState];
-
+    if (!ui::MaterialDesignController::IsModeMaterial()) {
+      [cell setImageID:IDR_BROWSER_ACTION
+        forButtonState:image_button_cell::kDefaultState];
+      [cell setImageID:IDR_BROWSER_ACTION_H
+        forButtonState:image_button_cell::kHoverState];
+      [cell setImageID:IDR_BROWSER_ACTION_P
+        forButtonState:image_button_cell::kPressedState];
+      [cell setImageID:IDR_BROWSER_ACTION
+        forButtonState:image_button_cell::kDisabledState];
+    }
     [self setTitle:@""];
     [self setButtonType:NSMomentaryChangeButton];
     [self setShowsBorderOnlyWhileMouseInside:YES];

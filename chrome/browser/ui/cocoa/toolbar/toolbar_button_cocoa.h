@@ -25,15 +25,20 @@ enum class ToolbarButtonImageBackgroundStyle {
   BOOL handleMiddleClick_;
 }
 
+// Return the size of toolbar buttons.
++ (NSSize)toolbarButtonSize;
 // Whether or not to handle the mouse middle click events.
 @property(assign, nonatomic) BOOL handleMiddleClick;
-// Override point for subclasses to return their icon color.
-- (SkColor)iconColor:(BOOL)themeIsDark;
-// Sets images for each of the ToolbarButton's states from the specified
-// vector icon.
-- (void)setImagesFromIconId:(gfx::VectorIconId)iconId;
-// Override point for subclasses to set the button's icons.
-- (void)resetIcons;
+// Override point for subclasses to return their vector icon id.
+- (gfx::VectorIconId)vectorIconId;
+// Override point for subclasses to return their vector icon color.
+- (SkColor)vectorIconColor:(BOOL)themeIsDark;
+// When in Material Design mode, sets the images for each of the ToolbarButton's
+// states from the specified image.
+- (void)setImage:(NSImage*)anImage;
+// Resets the images for each of the ToolbarButton's states from its vector icon
+// id or its main image. Should only be called when in Material Design mode.
+- (void)resetButtonStateImages;
 @end
 
 @interface ToolbarButton (ExposedForTesting)

@@ -48,7 +48,11 @@ class AppMenuButtonIconPainterDelegateMac :
   severity_ = AppMenuIconPainter::Severity::SEVERITY_NONE;
 }
 
-- (SkColor)iconColor:(BOOL)themeIsDark {
+- (gfx::VectorIconId)vectorIconId {
+  return gfx::VectorIconId::BROWSER_TOOLS;
+}
+
+- (SkColor)vectorIconColor:(BOOL)themeIsDark {
   const SkColor normalColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
   const SkColor normalIncognitoColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
   const SkColor severityMedColor = SkColorSetRGB(0xF0, 0x93, 0x00);
@@ -79,8 +83,8 @@ class AppMenuButtonIconPainterDelegateMac :
       shouldAnimate:(BOOL)shouldAnimate {
   if (severity != severity_) {
     severity_ = severity;
-    [self setImagesFromIconId:gfx::VectorIconId::BROWSER_TOOLS];
-    [self setNeedsDisplay:YES];
+    // Update the button state images with the new severity color.
+    [self resetButtonStateImages];
   }
 }
 

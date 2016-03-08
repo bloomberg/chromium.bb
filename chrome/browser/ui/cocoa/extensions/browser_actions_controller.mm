@@ -31,6 +31,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/cocoa/appkit_utils.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 NSString* const kBrowserActionVisibilityChangedNotification =
     @"BrowserActionVisibilityChangedNotification";
@@ -178,6 +179,18 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Sets the current focused view. Should only be used for the overflow
 // container.
 - (void)setFocusedViewIndex:(NSInteger)index;
+
+@end
+
+// A subclass of MenuButton that draws the chevron button in MD style.
+@interface ChevronMenuButton : MenuButton
+@end
+
+@implementation ChevronMenuButton
+
+- (gfx::VectorIconId)vectorIconId {
+  return gfx::VectorIconId::OVERFLOW_CHEVRON;
+}
 
 @end
 
@@ -958,18 +971,24 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     return;
 
   if (!chevronMenuButton_.get()) {
-    chevronMenuButton_.reset([[MenuButton alloc] init]);
+    bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+    if (isModeMaterial) {
+      chevronMenuButton_.reset([[ChevronMenuButton alloc] init]);
+    } else {
+      chevronMenuButton_.reset([[MenuButton alloc] init]);
+    }
     [chevronMenuButton_ setOpenMenuOnClick:YES];
     [chevronMenuButton_ setBordered:NO];
     [chevronMenuButton_ setShowsBorderOnlyWhileMouseInside:YES];
 
-    [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW
-                           forButtonState:image_button_cell::kDefaultState];
-    [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW_H
-                           forButtonState:image_button_cell::kHoverState];
-    [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW_P
-                           forButtonState:image_button_cell::kPressedState];
-
+    if (!isModeMaterial) {
+      [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW
+                             forButtonState:image_button_cell::kDefaultState];
+      [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW_H
+                             forButtonState:image_button_cell::kHoverState];
+      [[chevronMenuButton_ cell] setImageID:IDR_BROWSER_ACTIONS_OVERFLOW_P
+                             forButtonState:image_button_cell::kPressedState];
+    }
     overflowMenu_.reset([[NSMenu alloc] initWithTitle:@""]);
     [overflowMenu_ setAutoenablesItems:NO];
     [overflowMenu_ setDelegate:self];
