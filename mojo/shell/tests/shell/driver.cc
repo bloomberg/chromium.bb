@@ -85,13 +85,6 @@ class Driver : public mojo::ShellClient,
     mojo::ScopedMessagePipeHandle pipe =
         mojo::edk::CreateParentMessagePipe(primordial_pipe_token);
 
-    mojo::shell::mojom::CapabilityFilterPtr filter(
-        mojo::shell::mojom::CapabilityFilter::New());
-    mojo::Array<mojo::String> test_interfaces;
-    test_interfaces.push_back(
-        mojo::shell::test::mojom::CreateInstanceTest::Name_);
-    filter->filter.insert("mojo:shell_unittest", std::move(test_interfaces));
-
     mojo::shell::mojom::ShellClientFactoryPtr factory;
     factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
         std::move(pipe), 0u));
@@ -103,7 +96,7 @@ class Driver : public mojo::ShellClient,
     target->user_id = mojo::shell::mojom::kInheritUserID;
     target->instance = "";
     shell->CreateInstance(std::move(factory), std::move(target),
-                          std::move(filter), std::move(request),
+                          std::move(request),
                           base::Bind(&Driver::OnConnectionCompleted,
                                      base::Unretained(this)));
 

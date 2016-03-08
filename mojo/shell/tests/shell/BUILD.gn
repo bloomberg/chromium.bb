@@ -76,8 +76,15 @@ executable("shell_unittest_target") {
 
   deps = [
     ":interfaces",
+    ":target_manifest",
     "//base",
     "//mojo/shell/public/cpp",
     "//mojo/shell/runner/child:test_native_main",
   ]
+}
+
+mojo_application_manifest("target_manifest") {
+  type = "exe"
+  application_name = "shell_unittest_target"
+  source = "target_manifest.json"
 }

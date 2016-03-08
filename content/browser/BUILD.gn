@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//content/browser/browser.gni")
 import("//media/media_options.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 
 source_set("browser") {
   # Only the public target should depend on this. All other targets (even
@@ -22,6 +23,7 @@ source_set("browser") {
 
   # Shared deps. See also non-iOS deps below.
   deps = [
+    ":chrome_renderer_manifest",
     "//base",
     "//base:base_static",
     "//components/mime_util",
@@ -534,4 +536,10 @@ source_set("browser") {
       "vr/android/cardboard/cardboard_vr_device_provider.h",
     ]
   }
+}
+
+mojo_application_manifest("chrome_renderer_manifest") {
+  type = "exe"
+  application_name = "chrome_renderer"
+  source = "mojo/chrome_renderer_manifest.json"
 }

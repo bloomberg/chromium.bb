@@ -120,7 +120,6 @@ std::string RegisterChildWithExternalShell(
                                            instance_id));
   shell->CreateInstance(std::move(factory),
                         mojo::shell::mojom::Identity::From(target),
-                        CreateCapabilityFilterForRenderer(),
                         std::move(request), base::Bind(&OnConnectionComplete));
 
   // Store the Identity on the RPH so client code can access it later via

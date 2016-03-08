@@ -1097,7 +1097,6 @@
       'browser/mojo/mojo_shell_client_host.h',
       'browser/mojo/mojo_shell_context.cc',
       'browser/mojo/mojo_shell_context.h',
-      'browser/mojo/renderer_capability_filter.cc',
       'browser/mojo/service_registrar_android.cc',
       'browser/mojo/service_registrar_android.h',
       'browser/mojo/service_registry_android.cc',

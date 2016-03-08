@@ -203,12 +203,6 @@ class LifecycleTest : public mojo::test::ShellTest {
     mojo::ScopedMessagePipeHandle pipe =
         mojo::edk::CreateParentMessagePipe(primordial_pipe_token);
 
-    mojo::shell::mojom::CapabilityFilterPtr filter(
-        mojo::shell::mojom::CapabilityFilter::New());
-    mojo::Array<mojo::String> test_interfaces;
-    test_interfaces.push_back("*");
-    filter->filter.insert("*", std::move(test_interfaces));
-
     mojo::shell::mojom::ShellPtr shell;
     connector()->ConnectToInterface("mojo:shell", &shell);
 
@@ -216,12 +210,10 @@ class LifecycleTest : public mojo::test::ShellTest {
     factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
         std::move(pipe), 0u));
     base::RunLoop loop;
-    mojo::shell::mojom::IdentityPtr target(mojo::shell::mojom::Identity::New());
-    target->name = kTestExeName;
-    target->user_id = mojom::kInheritUserID;
-    target->instance = "";
-    shell->CreateInstance(std::move(factory), std::move(target),
-                          std::move(filter), std::move(request),
+    mojo::Identity target(kTestExeName, mojom::kInheritUserID);
+    shell->CreateInstance(std::move(factory),
+                          mojo::shell::mojom::Identity::From(target),
+                          std::move(request),
                           base::Bind(&LifecycleTest::OnConnectionCompleted,
                                      base::Unretained(this), &loop));
     loop.Run();

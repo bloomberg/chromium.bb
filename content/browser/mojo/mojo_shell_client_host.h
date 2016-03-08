@@ -34,13 +34,6 @@ std::string RegisterChildWithExternalShell(
 // new connection to this renderer.
 mojo::Identity GetMojoIdentity(RenderProcessHost* render_process_host);
 
-// Constructs a Capability Filter for the renderer's application instance in the
-// external shell. This contains the restrictions imposed on what applications
-// and interfaces the renderer can see. The implementation lives in
-// renderer_capability_filter.cc so that it can be subject to specific security
-// review.
-mojo::shell::mojom::CapabilityFilterPtr CreateCapabilityFilterForRenderer();
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_MOJO_MOJO_SHELL_CLIENT_HOST_H_

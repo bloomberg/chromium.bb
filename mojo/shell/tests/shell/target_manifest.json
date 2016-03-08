@@ -1,0 +1,5 @@
+{
+  "name": "exe:shell_unittest_target",
+  "display_name": "Shell Unittest: Target",
+  "capabilities": { "mojo:shell_unittest": [ "mojo::shell::test::mojom::CreateInstanceTest" ] }
+}

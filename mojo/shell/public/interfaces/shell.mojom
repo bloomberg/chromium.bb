@@ -67,7 +67,6 @@ interface Shell {
   // creation.
   CreateInstance(ShellClientFactory factory,
                  Identity target,
-                 CapabilityFilter filter,
                  PIDReceiver& pid_receiver) => (ConnectResult result);
 
   // The listener is removed when the |listener| pipe is closed.

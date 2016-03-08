@@ -213,9 +213,31 @@ class Shell::Instance : public mojom::Connector,
   // mojom::Shell implementation:
   void CreateInstance(mojom::ShellClientFactoryPtr factory,
                       mojom::IdentityPtr target,
-                      mojom::CapabilityFilterPtr filter,
                       mojom::PIDReceiverRequest pid_receiver,
                       const CreateInstanceCallback& callback) override {
+    // We need to bounce through the package manager to load the
+    // CapabilityFilter.
+    std::string name = target->name;
+    shell_->shell_resolver_->ResolveMojoName(name, base::Bind(
+        &mojo::shell::Shell::Instance::OnResolvedNameForCreateInstance,
+        weak_factory_.GetWeakPtr(), base::Passed(std::move(factory)),
+        base::Passed(std::move(target)), base::Passed(std::move(pid_receiver)),
+        callback));
+  }
+  void AddInstanceListener(mojom::InstanceListenerPtr listener) override {
+    // TODO(beng): this should only track the instances matching this user, and
+    // root.
+    shell_->AddInstanceListener(std::move(listener));
+  }
+
+  void OnResolvedNameForCreateInstance(mojom::ShellClientFactoryPtr factory,
+                                       mojom::IdentityPtr target,
+                                       mojom::PIDReceiverRequest pid_receiver,
+                                       const CreateInstanceCallback& callback,
+                                       const String& resolved_name,
+                                       const String& resolved_instance,
+                                       mojom::CapabilityFilterPtr filter,
+                                       const String& file_url) {
     if (!base::IsValidGUID(target->user_id))
       callback.Run(mojom::ConnectResult::INVALID_ARGUMENT);
 
@@ -228,7 +250,7 @@ class Shell::Instance : public mojom::Connector,
 
     mojom::ShellClientRequest request;
     Instance* instance = shell_->CreateInstance(
-        target_id, filter->filter.To<CapabilityFilter>(), &request);
+      target_id, filter->filter.To<CapabilityFilter>(), &request);
     instance->pid_receiver_binding_.Bind(std::move(pid_receiver));
     instance->factory_ = std::move(factory);
     instance->factory_->CreateShellClient(std::move(request), target->name);
@@ -237,11 +259,6 @@ class Shell::Instance : public mojom::Connector,
     // manually by other code, not in response to a Connect() request. The newly
     // created instance is identified by |name| and may be subsequently reached
     // by client code using this identity.
-  }
-  void AddInstanceListener(mojom::InstanceListenerPtr listener) override {
-    // TODO(beng): this should only track the instances matching this user, and
-    // root.
-    shell_->AddInstanceListener(std::move(listener));
   }
 
   uint32_t GenerateUniqueID() const {
