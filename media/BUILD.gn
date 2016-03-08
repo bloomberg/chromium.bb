@@ -842,3 +842,33 @@ if (proprietary_codecs) {
     ]
   }
 }
+
+fuzzer_test("media_h264_parser_fuzzer") {
+  sources = [
+    "filters/h264_parser_fuzzertest.cc",
+  ]
+  deps = [
+    ":media",
+    "//base",
+  ]
+}
+
+fuzzer_test("media_vp8_parser_fuzzer") {
+  sources = [
+    "filters/vp8_parser_fuzzertest.cc",
+  ]
+  deps = [
+    ":media",
+    "//base",
+  ]
+}
+
+fuzzer_test("media_vp9_parser_fuzzer") {
+  sources = [
+    "filters/vp9_parser_fuzzertest.cc",
+  ]
+  deps = [
+    ":media",
+    "//base",
+  ]
+}
