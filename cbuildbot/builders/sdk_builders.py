@@ -10,6 +10,7 @@ import datetime
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.builders import simple_builders
+from chromite.cbuildbot.stages import android_stages
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import chrome_stages
@@ -28,7 +29,7 @@ class ChrootSdkBuilder(simple_builders.SimpleBuilder):
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
     self._RunStage(chrome_stages.SyncChromeStage)
-    self._RunStage(chrome_stages.UprevAndroidStage)
+    self._RunStage(android_stages.UprevAndroidStage)
     self._RunStage(chrome_stages.PatchChromeStage)
     self._RunStage(sdk_stages.SDKBuildToolchainsStage)
     self._RunStage(sdk_stages.SDKPackageStage, version=version)
