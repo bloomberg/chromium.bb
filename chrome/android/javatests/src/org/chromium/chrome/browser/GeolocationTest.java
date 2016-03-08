@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -97,6 +98,7 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
     @Smoke
     @MediumTest
     @Feature({"Location", "Main"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/592953")
     public void testGeolocationPlumbing() throws Exception {
         final String url = mTestServer.getURL(TEST_FILE);
 
@@ -119,6 +121,7 @@ public class GeolocationTest extends ChromeActivityTestCaseBase<ChromeActivity> 
      */
     @MediumTest
     @Feature({"Location"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/592953")
     public void testGeolocationWatch() throws Exception {
         final String url = mTestServer.getURL(TEST_FILE);
 
