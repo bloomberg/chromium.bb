@@ -116,7 +116,7 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
     [RuntimeEnabled=ExperimentalCanvasFeatures] void clearHitRegions();
 
     // pixel manipulation
-    ImageData createImageData(ImageData imagedata);
+    [RaisesException] ImageData createImageData(ImageData imagedata);
     [RaisesException] ImageData createImageData(double sw, double sh);
     [RaisesException] ImageData getImageData(double sx, double sy, double sw, double sh);
     [RaisesException] void putImageData(ImageData imagedata, double dx, double dy);

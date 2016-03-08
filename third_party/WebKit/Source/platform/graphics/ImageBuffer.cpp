@@ -292,7 +292,12 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
         return false;
 
     if (!isSurfaceValid()) {
-        WTF::ArrayBufferContents result(rect.width() * rect.height(), 4, WTF::ArrayBufferContents::NotShared, WTF::ArrayBufferContents::ZeroInitialize);
+        size_t allocSizeInBytes = rect.width() * rect.height() * 4;
+        void* data;
+        WTF::ArrayBufferContents::allocateMemoryOrNull(allocSizeInBytes, WTF::ArrayBufferContents::ZeroInitialize, data);
+        if (!data)
+            return false;
+        WTF::ArrayBufferContents result(data, allocSizeInBytes, WTF::ArrayBufferContents::NotShared);
         result.transfer(contents);
         return true;
     }
@@ -308,12 +313,13 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
         || rect.y() < 0
         || rect.maxX() > m_surface->size().width()
         || rect.maxY() > m_surface->size().height();
-    WTF::ArrayBufferContents result(
-        rect.width() * rect.height(), 4,
-        WTF::ArrayBufferContents::NotShared,
-        mayHaveStrayArea
-        ? WTF::ArrayBufferContents::ZeroInitialize
-        : WTF::ArrayBufferContents::DontInitialize);
+    size_t allocSizeInBytes = rect.width() * rect.height() * 4;
+    void* data;
+    WTF::ArrayBufferContents::InitializationPolicy initializationPolicy = mayHaveStrayArea ? WTF::ArrayBufferContents::ZeroInitialize : WTF::ArrayBufferContents::DontInitialize;
+    WTF::ArrayBufferContents::allocateMemoryOrNull(allocSizeInBytes, initializationPolicy, data);
+    if (!data)
+        return false;
+    WTF::ArrayBufferContents result(data, allocSizeInBytes, WTF::ArrayBufferContents::NotShared);
 
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), kRGBA_8888_SkColorType, alphaType);

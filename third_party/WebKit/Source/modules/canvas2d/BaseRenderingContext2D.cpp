@@ -1145,9 +1145,12 @@ bool BaseRenderingContext2D::computeDirtyRect(const FloatRect& localRect, const 
     return true;
 }
 
-ImageData* BaseRenderingContext2D::createImageData(ImageData* imageData) const
+ImageData* BaseRenderingContext2D::createImageData(ImageData* imageData, ExceptionState &exceptionState) const
 {
-    return ImageData::create(imageData->size());
+    ImageData* result = ImageData::create(imageData->size());
+    if (!result)
+        exceptionState.throwRangeError("Out of memory at ImageData creation");
+    return result;
 }
 
 ImageData* BaseRenderingContext2D::createImageData(double sw, double sh, ExceptionState& exceptionState) const
@@ -1167,7 +1170,10 @@ ImageData* BaseRenderingContext2D::createImageData(double sw, double sh, Excepti
     if (size.height() < 1)
         size.setHeight(1);
 
-    return ImageData::create(size);
+    ImageData* result = ImageData::create(size);
+    if (!result)
+        exceptionState.throwRangeError("Out of memory at ImageData creation");
+    return result;
 }
 
 ImageData* BaseRenderingContext2D::getImageData(double sx, double sy, double sw, double sh, ExceptionState& exceptionState) const
@@ -1199,12 +1205,18 @@ ImageData* BaseRenderingContext2D::getImageData(double sx, double sy, double sw,
 
     IntRect imageDataRect = enclosingIntRect(logicalRect);
     ImageBuffer* buffer = imageBuffer();
-    if (!buffer || isContextLost())
-        return ImageData::create(imageDataRect.size());
+    if (!buffer || isContextLost()) {
+        ImageData* result = ImageData::create(imageDataRect.size());
+        if (!result)
+            exceptionState.throwRangeError("Out of memory at ImageData creation");
+        return result;
+    }
 
     WTF::ArrayBufferContents contents;
-    if (!buffer->getImageData(Unmultiplied, imageDataRect, contents))
+    if (!buffer->getImageData(Unmultiplied, imageDataRect, contents)) {
+        exceptionState.throwRangeError("Out of memory at ImageData creation");
         return nullptr;
+    }
 
     RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(contents);
     return ImageData::create(

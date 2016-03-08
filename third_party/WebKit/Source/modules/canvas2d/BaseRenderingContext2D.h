@@ -115,7 +115,7 @@ public:
     CanvasGradient* createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1, ExceptionState&);
     CanvasPattern* createPattern(const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
 
-    ImageData* createImageData(ImageData*) const;
+    ImageData* createImageData(ImageData*, ExceptionState&) const;
     ImageData* createImageData(double width, double height, ExceptionState&) const;
     ImageData* getImageData(double sx, double sy, double sw, double sh, ExceptionState&) const;
     void putImageData(ImageData*, double dx, double dy, ExceptionState&);
