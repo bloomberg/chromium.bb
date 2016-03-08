@@ -252,9 +252,12 @@ def _buildbucket_retry(operation_name, http, *args, **kwargs):
 
     # Buildbucket could return an error even if status==200.
     if content_json and content_json.get('error'):
+      error = content_json.get('error')
+      if error.get('code') == 403:
+        raise BuildbucketResponseException(
+            'Access denied: %s' % error.get('message', ''))
       msg = 'Error in response. Reason: %s. Message: %s.' % (
-          content_json['error'].get('reason', ''),
-          content_json['error'].get('message', ''))
+          error.get('reason', ''), error.get('message', ''))
       raise BuildbucketResponseException(msg)
 
     if response.status == 200:
