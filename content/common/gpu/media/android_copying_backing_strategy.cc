@@ -18,10 +18,6 @@
 
 namespace content {
 
-const static GLfloat kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-                                            0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-                                            0.0f, 0.0f, 0.0f, 1.0f};
-
 AndroidCopyingBackingStrategy::AndroidCopyingBackingStrategy(
     AVDAStateProvider* state_provider)
     : state_provider_(state_provider),
@@ -114,8 +110,11 @@ void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
     surface_texture_->UpdateTexImage();
   }
 
-  float transfrom_matrix[16];
-  surface_texture_->GetTransformMatrix(transfrom_matrix);
+  float transform_matrix[16];
+  surface_texture_->GetTransformMatrix(transform_matrix);
+  // add y-flip to correct UV coordinate systems.
+  transform_matrix[13] += transform_matrix[5];
+  transform_matrix[5] = -transform_matrix[5];
 
   uint32_t picture_buffer_texture_id = picture_buffer.texture_id();
 
@@ -135,13 +134,11 @@ void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
   //    attached.
   // 2. SurfaceTexture requires us to apply a transform matrix when we show
   //    the texture.
-  // TODO(hkuang): get the StreamTexture transform matrix in GPU process
-  // instead of using default matrix crbug.com/226218.
   copier_->DoCopyTextureWithTransform(
       state_provider_->GetGlDecoder().get(), GL_TEXTURE_EXTERNAL_OES,
       surface_texture_id_, GL_TEXTURE_2D, picture_buffer_texture_id,
       state_provider_->GetSize().width(), state_provider_->GetSize().height(),
-      false, false, false, kIdentityMatrix);
+      false, false, false, transform_matrix);
 }
 
 void AndroidCopyingBackingStrategy::CodecChanged(
