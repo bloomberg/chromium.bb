@@ -597,6 +597,14 @@ static int irt_ftruncate(int fd, nacl_irt_off_t length) {
 }
 
 static int irt_isatty(int fd, int *result) {
+  /*
+   * isatty() is unusual in that, on error, it may set errno, but it
+   * is not required to do so.  (According to
+   * http://pubs.opengroup.org/onlinepubs/9699919799/functions/isatty.html,
+   * it "may set errno to indicate the error".)  This means that we
+   * must reset errno first to avoid returning an old value of errno.
+   */
+  errno = 0;
   *result = isatty(fd);
   if (!*result)
     return errno;
