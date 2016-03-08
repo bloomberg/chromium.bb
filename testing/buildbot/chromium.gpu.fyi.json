@@ -476,6 +476,9 @@
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "browser_tests",
         "use_xvfb": false
       },
@@ -896,6 +899,9 @@
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "browser_tests",
         "use_xvfb": false
       },
@@ -2544,6 +2550,9 @@
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
         "name": "tab_capture_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "browser_tests",
         "use_xvfb": false
       },
