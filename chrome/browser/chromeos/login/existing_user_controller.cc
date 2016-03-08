@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -86,6 +86,19 @@ namespace chromeos {
 
 namespace {
 
+// Enum types for Login.PasswordChangeFlow.
+// Don't change the existing values and update LoginPasswordChangeFlow in
+// histogram.xml when making changes here.
+enum LoginPasswordChangeFlow {
+  // User is sent to the password changed flow. This is the normal case.
+  LOGIN_PASSWORD_CHANGE_FLOW_PASSWORD_CHANGED = 0,
+  // User is sent to the unrecoverable cryptohome failure flow. This is the
+  // case when http://crbug.com/547857 happens.
+  LOGIN_PASSWORD_CHANGE_FLOW_CRYPTOHOME_FAILURE = 1,
+
+  LOGIN_PASSWORD_CHANGE_FLOW_COUNT,  // Must be the last entry.
+};
+
 // Delay for transferring the auth cache to the system profile.
 const long int kAuthCacheTransferDelayMs = 2000;
 
@@ -137,6 +150,11 @@ bool CanShowDebuggingFeatures() {
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kLoginManager) &&
          !user_manager::UserManager::Get()->IsSessionStarted();
+}
+
+void RecordPasswordChangeFlow(LoginPasswordChangeFlow flow) {
+  UMA_HISTOGRAM_ENUMERATION("Login.PasswordChangeFlow", flow,
+                            LOGIN_PASSWORD_CHANGE_FLOW_COUNT);
 }
 
 }  // namespace
@@ -498,6 +516,8 @@ void ExistingUserController::ShowTPMError() {
 }
 
 void ExistingUserController::ShowPasswordChangedDialog() {
+  RecordPasswordChangeFlow(LOGIN_PASSWORD_CHANGE_FLOW_PASSWORD_CHANGED);
+
   VLOG(1) << "Show password changed dialog"
           << ", count=" << login_performer_->password_changed_callback_count();
 
@@ -1244,6 +1264,7 @@ void ExistingUserController::OnTokenHandleChecked(
 
   // Otherwise, show the unrecoverable cryptohome error UI and ask user's
   // permission to collect a feedback.
+  RecordPasswordChangeFlow(LOGIN_PASSWORD_CHANGE_FLOW_CRYPTOHOME_FAILURE);
   VLOG(1) << "Show unrecoverable cryptohome error dialog.";
   login_display_->ShowUnrecoverableCrypthomeErrorDialog();
 }

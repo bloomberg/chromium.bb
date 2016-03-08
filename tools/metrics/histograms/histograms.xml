@@ -18757,6 +18757,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Login.PasswordChangeFlow" enum="LoginPasswordChangeFlow">
+  <owner>xiyuan@chromium.org</owner>
+  <owner>omrilio@chromium.org</owner>
+  <summary>
+    Records the UI flow after a possible password change is detected.
+  </summary>
+</histogram>
+
 <histogram name="Login.PolicyFilesStatePerBoot" enum="LoginPolicyFilesState">
   <owner>cmasone@chromium.org</owner>
   <summary>The state of Chrome OS owner key and device policy files.</summary>
@@ -72770,6 +72778,11 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="LoginIsKnownUser" type="int">
   <int value="0" label="Unknown user"/>
   <int value="1" label="Known user"/>
+</enum>
+
+<enum name="LoginPasswordChangeFlow" type="int">
+  <int value="0" label="Password change"/>
+  <int value="1" label="Cryptohome failure"/>
 </enum>
 
 <enum name="LoginPolicyFilesState" type="int">
