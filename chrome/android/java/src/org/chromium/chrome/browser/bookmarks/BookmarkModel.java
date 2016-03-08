@@ -321,8 +321,8 @@ public class BookmarkModel extends BookmarkBridge {
      * @return The bookmark id contained in the specified client id.
      */
     public static BookmarkId getBookmarkIdForOfflineClientId(ClientId id) {
-        if (id.getNamespace() != OfflinePageBridge.BOOKMARK_NAMESPACE) {
-            return new BookmarkId(BookmarkType.NORMAL, -1);
+        if (!id.getNamespace().equals(OfflinePageBridge.BOOKMARK_NAMESPACE)) {
+            return new BookmarkId(-1, BookmarkType.NORMAL);
         }
         return BookmarkId.getBookmarkIdFromString(id.getId());
     }
