@@ -104,17 +104,6 @@ bool GLHelperReadbackSupport::SupportsFormat(GLenum format, GLenum type) {
   if (format == GL_RGBA && type == GL_UNSIGNED_BYTE)
     return true;
 
-  if (format == GL_BGRA_EXT && type == GL_UNSIGNED_BYTE) {
-    const GLubyte* tmp = gl_->GetString(GL_EXTENSIONS);
-    if (tmp) {
-      std::string extensions =
-          " " + std::string(reinterpret_cast<const char*>(tmp)) + " ";
-      if (extensions.find(" GL_EXT_read_format_bgra ") != std::string::npos) {
-        return true;
-      }
-    }
-  }
-
   bool supports_format = false;
   GLenum ext_format = 0, ext_type = 0;
   GetAdditionalFormat(format, type, &ext_format, &ext_type);

@@ -178,7 +178,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       emulate_primitive_restart_fixed_index(false),
       ext_render_buffer_format_bgra8888(false),
       ext_multisample_compatibility(false),
-      ext_blend_func_extended(false) {}
+      ext_blend_func_extended(false),
+      ext_read_format_bgra(false) {}
 
 FeatureInfo::Workarounds::Workarounds() :
 #define GPU_OP(type, name) name(false),
@@ -647,6 +648,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (enable_read_format_bgra) {
+    feature_flags_.ext_read_format_bgra = true;
     AddExtensionString("GL_EXT_read_format_bgra");
     validators_.read_pixel_format.AddValue(GL_BGRA_EXT);
   }

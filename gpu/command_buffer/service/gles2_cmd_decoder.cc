@@ -5114,7 +5114,9 @@ bool GLES2DecoderImpl::GetHelper(
               return true;
           }
           *params = GLES2Util::GetGLReadPixelsImplementationFormat(
-              GetBoundReadFrameBufferInternalFormat());
+              GetBoundReadFrameBufferInternalFormat(),
+              GetBoundReadFrameBufferTextureType(),
+              feature_info_->feature_flags().ext_read_format_bgra);
         }
         return true;
       case GL_IMPLEMENTATION_COLOR_READ_TYPE:

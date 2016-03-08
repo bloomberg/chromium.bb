@@ -201,6 +201,7 @@ TEST_P(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().nv_draw_buffers);
   EXPECT_FALSE(info_->feature_flags().ext_discard_framebuffer);
   EXPECT_FALSE(info_->feature_flags().angle_depth_texture);
+  EXPECT_FALSE(info_->feature_flags().ext_read_format_bgra);
 
 #define GPU_OP(type, name) EXPECT_FALSE(info_->workarounds().name);
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
@@ -398,6 +399,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GL) {
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_CHROMIUM_renderbuffer_format_BGRA8888"));
   EXPECT_TRUE(info_->feature_flags().ext_render_buffer_format_bgra8888);
+  EXPECT_TRUE(info_->feature_flags().ext_read_format_bgra);
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
@@ -426,6 +428,7 @@ TEST_P(FeatureInfoTest, InitializeGLES2EXT_read_format_bgra) {
       "GL_EXT_read_format_bgra", "", "OpenGL ES 2.0");
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_EXT_read_format_bgra"));
+  EXPECT_TRUE(info_->feature_flags().ext_read_format_bgra);
   EXPECT_FALSE(info_->validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
@@ -441,6 +444,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_read_format_bgra) {
   SetupInitExpectations("GL_EXT_read_format_bgra");
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_EXT_read_format_bgra"));
+  EXPECT_TRUE(info_->feature_flags().ext_read_format_bgra);
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(

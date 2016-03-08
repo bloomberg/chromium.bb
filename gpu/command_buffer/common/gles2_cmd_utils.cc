@@ -979,7 +979,9 @@ size_t GLES2Util::GLTargetToFaceIndex(uint32_t target) {
 }
 
 uint32_t GLES2Util::GetGLReadPixelsImplementationFormat(
-    uint32_t internal_format) {
+    uint32_t internal_format,
+    uint32_t texture_type,
+    bool supports_bgra) {
   switch (internal_format) {
     case GL_R8:
     case GL_R16F:
@@ -1018,6 +1020,14 @@ uint32_t GLES2Util::GetGLReadPixelsImplementationFormat(
     case GL_RGBA32UI:
     case GL_RGBA32I:
       return GL_RGBA_INTEGER;
+    case GL_BGRA_EXT:
+    case GL_BGRA8_EXT:
+      // If the internal format is BGRA, we prefer reading back BGRA if
+      // possible.
+      if (texture_type == GL_UNSIGNED_BYTE && supports_bgra)
+        return GL_BGRA_EXT;
+      else
+        return GL_RGBA;
     default:
       return GL_RGBA;
   }

@@ -87,6 +87,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_render_buffer_format_bgra8888;
     bool ext_multisample_compatibility;
     bool ext_blend_func_extended;
+    bool ext_read_format_bgra;
   };
 
   struct Workarounds {

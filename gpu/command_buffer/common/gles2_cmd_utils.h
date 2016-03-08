@@ -175,8 +175,9 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   static size_t GLTargetToFaceIndex(uint32_t target);
 
-  static uint32_t GetGLReadPixelsImplementationFormat(
-      uint32_t internal_format);
+  static uint32_t GetGLReadPixelsImplementationFormat(uint32_t internal_format,
+                                                      uint32_t texture_type,
+                                                      bool supports_bgra);
 
   static uint32_t GetGLReadPixelsImplementationType(
       uint32_t internal_format, uint32_t texture_type);
