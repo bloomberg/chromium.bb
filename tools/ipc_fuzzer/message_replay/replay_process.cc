@@ -77,10 +77,6 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
 }
 
 void ReplayProcess::OpenChannel() {
-  std::string channel_name =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessChannelID);
-
   // TODO(morrita): As the adoption of ChannelMojo spreads, this
   // criteria has to be updated.
   std::string process_type =
@@ -91,9 +87,11 @@ void ReplayProcess::OpenChannel() {
   if (should_use_mojo) {
     channel_ = IPC::ChannelProxy::Create(
         IPC::ChannelMojo::CreateClientFactory(
-            io_thread_.task_runner(), channel_name), this,
-        io_thread_.task_runner());
+            mojo::edk::GenerateRandomToken()), this, io_thread_.task_runner());
   } else {
+    std::string channel_name =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kProcessChannelID);
     channel_ =
         IPC::ChannelProxy::Create(channel_name, IPC::Channel::MODE_CLIENT, this,
                                   io_thread_.task_runner());
