@@ -72,7 +72,8 @@ EXTRA_ENV = {
                   '-fno-common ${PTHREAD ? -pthread} ' +
                   '-nostdinc ${BIAS_%BIAS%} ' +
                   '-fno-gnu-inline-asm ' +
-                  '-target ${FRONTEND_TRIPLE}',
+                  '-target ${FRONTEND_TRIPLE} ' +
+                  '${IS_CXX ? -fexceptions}',
 
 
   'ISYSTEM'        : '${ISYSTEM_USER} ${STDINC ? ${ISYSTEM_BUILTIN}}',

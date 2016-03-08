@@ -51,7 +51,9 @@ EXTRA_ENV = {
   'TRANSLATE_FLAGS_USER': '',
 
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
-                      '-plugin-opt=emit-llvm',
+                      '-plugin-opt=emit-llvm ' +
+                      '-plugin-opt=no-abi-simplify ' +
+                      '-plugin-opt=no-finalize',
 
   'LD_FLAGS'       : '-nostdlib ${@AddPrefix:-L:SEARCH_DIRS} ' +
                      '${STATIC ? -static} ' +
