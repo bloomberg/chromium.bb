@@ -174,9 +174,9 @@ static inline void findFirstAndLastAttributesInVector(Vector<SVGTextLayoutAttrib
     unsigned attributesSize = attributes.size();
     for (unsigned i = 0; i < attributesSize; ++i) {
         SVGTextLayoutAttributes* current = attributes[i];
-        if (!first && firstContext == current->context())
+        if (!first && firstContext.isEqual(current->context()))
             first = current;
-        if (!last && lastContext == current->context())
+        if (!last && lastContext.isEqual(current->context()))
             last = current;
         if (first && last)
             break;
