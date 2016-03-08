@@ -59,12 +59,8 @@ class DrmOverlayValidator {
 
   using OverlayHintsList = std::vector<OverlayHints>;
 
-  // Check if we can optimize format for reducing Display controller read
-  // bandwidth for |plane_list| and cache the value.
-  void UpdateOverlayHintsCache(
-      const scoped_refptr<DrmDevice>& drm,
-      const OverlayPlaneList& plane_list,
-      std::vector<scoped_refptr<ScanoutBuffer>>* reusable_buffers);
+  // Update hints cache.
+  void UpdateOverlayHintsCache(const OverlayPlaneList& plane_list);
 
   DrmWindow* window_;  // Not owned.
   ScanoutBufferGenerator* buffer_generator_;  // Not owned.

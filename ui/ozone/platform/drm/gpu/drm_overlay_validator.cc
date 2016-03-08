@@ -69,7 +69,6 @@ uint32_t FindOptimalBufferFormat(uint32_t original_format,
                                  const gfx::Rect& window_bounds,
                                  HardwareDisplayController* controller) {
   bool force_primary_format = false;
-  uint32_t optimal_format = original_format;
   uint32_t z_order = plane_z_order;
   // If Overlay completely covers primary and isn't transparent, try to find
   // optimal format w.r.t primary plane. This guarantees that optimal format
@@ -85,17 +84,17 @@ uint32_t FindOptimalBufferFormat(uint32_t original_format,
 #endif
   }
 
-  if (force_primary_format) {
-    optimal_format = DRM_FORMAT_XRGB8888;
-  } else {
-    if (controller->IsFormatSupported(DRM_FORMAT_UYVY, z_order)) {
-      optimal_format = DRM_FORMAT_UYVY;
-    } else if (controller->IsFormatSupported(DRM_FORMAT_XRGB8888, z_order)) {
-      optimal_format = DRM_FORMAT_XRGB8888;
-    }
+  if (force_primary_format)
+    return DRM_FORMAT_XRGB8888;
+
+  // YUV is preferable format if supported.
+  if (controller->IsFormatSupported(DRM_FORMAT_UYVY, z_order)) {
+    return DRM_FORMAT_UYVY;
+  } else if (controller->IsFormatSupported(DRM_FORMAT_XRGB8888, z_order)) {
+    return DRM_FORMAT_XRGB8888;
   }
 
-  return optimal_format;
+  return original_format;
 }
 
 }  // namespace
@@ -142,9 +141,10 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
     gfx::Size scaled_buffer_size = GetScaledSize(
         overlay.buffer_size, overlay.display_rect, overlay.crop_rect);
 
-    scoped_refptr<ScanoutBuffer> buffer = GetBufferForPageFlipTest(
-        drm, scaled_buffer_size, GetFourCCFormatForFramebuffer(overlay.format),
-        buffer_generator_, &reusable_buffers);
+    uint32_t original_format = GetFourCCFormatForFramebuffer(overlay.format);
+    scoped_refptr<ScanoutBuffer> buffer =
+        GetBufferForPageFlipTest(drm, scaled_buffer_size, original_format,
+                                 buffer_generator_, &reusable_buffers);
     DCHECK(buffer);
 
     OverlayPlane plane(buffer, overlay.plane_z_order, overlay.transform,
@@ -153,6 +153,37 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
 
     if (controller->TestPageFlip(test_list)) {
       overlay.is_overlay_candidate = true;
+
+      // If size scaling is needed, find an optimal format.
+      if (overlay.plane_z_order && scaled_buffer_size != overlay.buffer_size) {
+        uint32_t optimal_format = FindOptimalBufferFormat(
+            original_format, overlay.plane_z_order, overlay.display_rect,
+            window_->bounds(), controller);
+
+        if (original_format != optimal_format) {
+          OverlayPlane original_plain = test_list.back();
+          test_list.pop_back();
+          scoped_refptr<ScanoutBuffer> optimal_buffer =
+              GetBufferForPageFlipTest(drm, scaled_buffer_size, optimal_format,
+                                       buffer_generator_, &reusable_buffers);
+          DCHECK(optimal_buffer);
+
+          OverlayPlane optimal_plane(optimal_buffer, overlay.plane_z_order,
+                                     overlay.transform, overlay.display_rect,
+                                     overlay.crop_rect);
+          test_list.push_back(optimal_plane);
+
+          // If test failed here, it means even though optimal_format is
+          // supported, platform cannot support it with current combination of
+          // layers. This is usually the case when optimal_format needs certain
+          // capabilites (i.e. conversion, scaling etc) and needed hardware
+          // resources might be already in use. Fall back to original format.
+          if (!controller->TestPageFlip(test_list)) {
+            test_list.pop_back();
+            test_list.push_back(original_plain);
+          }
+        }
+      }
     } else {
       // If test failed here, platform cannot support this configuration
       // with current combination of layers. This is usually the case when this
@@ -166,7 +197,7 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
     }
   }
 
-  UpdateOverlayHintsCache(drm, test_list, &reusable_buffers);
+  UpdateOverlayHintsCache(test_list);
 
   return validated_params;
 }
@@ -208,7 +239,8 @@ OverlayPlaneList DrmOverlayValidator::PrepareBuffersForPageFlip(
         target_size = original_size;
     }
 
-    if (original_size != target_size || original_format != target_format) {
+    // The size scaling piggybacks the format conversion.
+    if (original_size != target_size) {
       scoped_refptr<ScanoutBuffer> processed_buffer =
           plane.processing_callback.Run(target_size, target_format);
 
@@ -225,58 +257,26 @@ void DrmOverlayValidator::ClearCache() {
 }
 
 void DrmOverlayValidator::UpdateOverlayHintsCache(
-    const scoped_refptr<DrmDevice>& drm,
-    const OverlayPlaneList& plane_list,
-    std::vector<scoped_refptr<ScanoutBuffer>>* reusable_buffers) {
+    const OverlayPlaneList& plane_list) {
   const auto& iter = overlay_hints_cache_.Get(plane_list);
   if (iter != overlay_hints_cache_.end())
     return;
 
-  OverlayPlaneList preferred_format_test_list = plane_list;
-  HardwareDisplayController* controller = window_->GetController();
+  OverlayPlaneList hints_plane_list = plane_list;
   OverlayHintsList overlay_hints;
-  for (auto& plane : preferred_format_test_list) {
-    uint32_t original_format = plane.buffer->GetFramebufferPixelFormat();
-
-    if (plane.z_order == 0) {
-      overlay_hints.push_back(
-          OverlayHints(original_format, true /* scaling */));
-      continue;
-    }
-
-    uint32_t optimal_format = FindOptimalBufferFormat(
-        original_format, plane.z_order, plane.display_bounds, window_->bounds(),
-        controller);
-
-    if (optimal_format != original_format) {
-      scoped_refptr<ScanoutBuffer> original_buffer = plane.buffer;
-      plane.buffer =
-          GetBufferForPageFlipTest(drm, plane.buffer->GetSize(), optimal_format,
-                                   buffer_generator_, reusable_buffers);
-
-      if (!controller->TestPageFlip(preferred_format_test_list)) {
-        // If test failed here, it means even though optimal_format is
-        // supported, platform cannot support it with current combination of
-        // layers. This is usually the case when optimal_format needs certain
-        // capabilites (i.e. conversion, scaling etc) and needed hardware
-        // resources might be already in use. Fall back to original format.
-        optimal_format = original_format;
-        plane.buffer = original_buffer;
-      }
-    }
-
+  for (auto& plane : hints_plane_list) {
+    uint32_t format = plane.buffer->GetFramebufferPixelFormat();
     // TODO(kalyank): We always request scaling to be done by 3D engine, VPP
     // etc. We should use them only if downscaling is needed and let display
     // controller handle up-scaling on platforms which support it.
-    overlay_hints.push_back(OverlayHints(optimal_format, true /* scaling */));
+    overlay_hints.push_back(OverlayHints(format, true /* scaling */));
+
+    // Make sure we dont hold reference to buffer when caching this plane list.
+    plane.buffer = nullptr;
   }
 
-  // Make sure we dont hold reference to buffer when caching this plane list.
-  for (auto& plane : preferred_format_test_list)
-    plane.buffer = nullptr;
-
-  DCHECK(preferred_format_test_list.size() == overlay_hints.size());
-  overlay_hints_cache_.Put(preferred_format_test_list, overlay_hints);
+  DCHECK(hints_plane_list.size() == overlay_hints.size());
+  overlay_hints_cache_.Put(hints_plane_list, overlay_hints);
 }
 
 }  // namespace ui
