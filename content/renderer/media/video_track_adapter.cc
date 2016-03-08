@@ -266,8 +266,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     const gfx::Rect region_in_frame =
         media::ComputeLetterboxRegion(frame->visible_rect(), desired_size);
 
-    video_frame =
-        media::VideoFrame::WrapVideoFrame(frame, region_in_frame, desired_size);
+    video_frame = media::VideoFrame::WrapVideoFrame(
+        frame, frame->format(), region_in_frame, desired_size);
     if (!video_frame)
       return;
     video_frame->AddDestructionObserver(

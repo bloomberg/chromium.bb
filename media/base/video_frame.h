@@ -245,6 +245,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // frame->visible_rect().
   static scoped_refptr<VideoFrame> WrapVideoFrame(
       const scoped_refptr<VideoFrame>& frame,
+      VideoPixelFormat format,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size);
 

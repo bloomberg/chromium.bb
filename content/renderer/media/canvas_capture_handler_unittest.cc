@@ -22,8 +22,11 @@ using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::SaveArg;
 using ::testing::Test;
+using ::testing::TestWithParam;
 
 namespace content {
+
+namespace {
 
 static const int kTestCanvasCaptureWidth = 320;
 static const int kTestCanvasCaptureHeight = 240;
@@ -32,12 +35,15 @@ static const double kTestCanvasCaptureFramesPerSecond = 55.5;
 static const int kTestCanvasCaptureFrameWidth = 2;
 static const int kTestCanvasCaptureFrameHeight = 2;
 static const int kTestCanvasCaptureFrameErrorTolerance = 2;
+static const int kTestAlphaValue = 175;
 
 ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-class CanvasCaptureHandlerTest : public Test {
+}  // namespace
+
+class CanvasCaptureHandlerTest : public TestWithParam<bool> {
  public:
   CanvasCaptureHandlerTest() {}
 
@@ -76,27 +82,37 @@ class CanvasCaptureHandlerTest : public Test {
   void OnRunning(bool state) { DoOnRunning(state); }
 
   // Verify returned frames.
-  static skia::RefPtr<SkImage> GenerateTestImage() {
+  static skia::RefPtr<SkImage> GenerateTestImage(bool opaque) {
+
     SkBitmap testBitmap;
     testBitmap.allocN32Pixels(kTestCanvasCaptureFrameWidth,
-                              kTestCanvasCaptureFrameHeight);
-    testBitmap.eraseColor(SK_ColorBLUE);
+                              kTestCanvasCaptureFrameHeight, opaque);
+    testBitmap.eraseARGB(kTestAlphaValue, 30, 60, 200);
     return skia::AdoptRef(SkImage::NewFromBitmap(testBitmap));
   }
 
   void OnVerifyDeliveredFrame(
+      bool opaque,
       const scoped_refptr<media::VideoFrame>& video_frame,
       base::TimeTicks estimated_capture_time) {
-    EXPECT_EQ(media::PIXEL_FORMAT_I420, video_frame->format());
+    if (opaque)
+      EXPECT_EQ(media::PIXEL_FORMAT_I420, video_frame->format());
+    else
+      EXPECT_EQ(media::PIXEL_FORMAT_YV12A, video_frame->format());
+
     const gfx::Size& size = video_frame->coded_size();
     EXPECT_EQ(kTestCanvasCaptureFrameWidth, size.width());
     EXPECT_EQ(kTestCanvasCaptureFrameHeight, size.height());
-    const uint8_t* y_plane = video_frame->data(0);
-    EXPECT_NEAR(41, y_plane[0], kTestCanvasCaptureFrameErrorTolerance);
-    const uint8_t* u_plane = video_frame->data(1);
-    EXPECT_NEAR(239, u_plane[0], kTestCanvasCaptureFrameErrorTolerance);
-    const uint8_t* v_plane = video_frame->data(2);
-    EXPECT_NEAR(110, v_plane[0], kTestCanvasCaptureFrameErrorTolerance);
+    const uint8_t* y_plane = video_frame->data(media::VideoFrame::kYPlane);
+    EXPECT_NEAR(74, y_plane[0], kTestCanvasCaptureFrameErrorTolerance);
+    const uint8_t* u_plane = video_frame->data(media::VideoFrame::kUPlane);
+    EXPECT_NEAR(193, u_plane[0], kTestCanvasCaptureFrameErrorTolerance);
+    const uint8_t* v_plane = video_frame->data(media::VideoFrame::kVPlane);
+    EXPECT_NEAR(105, v_plane[0], kTestCanvasCaptureFrameErrorTolerance);
+    if (!opaque) {
+      const uint8_t* a_plane = video_frame->data(media::VideoFrame::kAPlane);
+      EXPECT_EQ(kTestAlphaValue, a_plane[0]);
+    }
   }
 
   blink::WebMediaStreamTrack track_;
@@ -125,7 +141,7 @@ TEST_F(CanvasCaptureHandlerTest, ConstructAndDestruct) {
 }
 
 // Checks that VideoCapturerSource call sequence works fine.
-TEST_F(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
+TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   InSequence s;
   const blink::WebMediaStreamSource& web_media_stream_source = track_.source();
   EXPECT_FALSE(web_media_stream_source.isNull());
@@ -146,7 +162,7 @@ TEST_F(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
       media::limits::kMaxFramesPerSecond /* max_requested_frame_rate */,
       base::Bind(&CanvasCaptureHandlerTest::OnVideoCaptureDeviceFormats,
                  base::Unretained(this)));
-  ASSERT_EQ(1u, formats.size());
+  ASSERT_EQ(2u, formats.size());
   EXPECT_EQ(kTestCanvasCaptureWidth, formats[0].frame_size.width());
   EXPECT_EQ(kTestCanvasCaptureHeight, formats[0].frame_size.height());
   media::VideoCaptureParams params;
@@ -162,14 +178,15 @@ TEST_F(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
       params, base::Bind(&CanvasCaptureHandlerTest::OnDeliverFrame,
                          base::Unretained(this)),
       base::Bind(&CanvasCaptureHandlerTest::OnRunning, base::Unretained(this)));
-  canvas_capture_handler_->sendNewFrame(GenerateTestImage().get());
+  canvas_capture_handler_->sendNewFrame(GenerateTestImage(GetParam()).get());
   run_loop.Run();
 
   source->StopCapture();
 }
 
 // Verifies that SkImage is processed and produces VideoFrame as expected.
-TEST_F(CanvasCaptureHandlerTest, VerifyFrame) {
+TEST_P(CanvasCaptureHandlerTest, VerifyOpaqueFrame) {
+  const bool isOpaque = GetParam();
   InSequence s;
   media::VideoCapturerSource* const source =
       GetVideoCapturerSource(static_cast<MediaStreamVideoCapturerSource*>(
@@ -181,9 +198,9 @@ TEST_F(CanvasCaptureHandlerTest, VerifyFrame) {
   media::VideoCaptureParams params;
   source->StartCapture(
       params, base::Bind(&CanvasCaptureHandlerTest::OnVerifyDeliveredFrame,
-                         base::Unretained(this)),
+                         base::Unretained(this), isOpaque),
       base::Bind(&CanvasCaptureHandlerTest::OnRunning, base::Unretained(this)));
-  canvas_capture_handler_->sendNewFrame(GenerateTestImage().get());
+  canvas_capture_handler_->sendNewFrame(GenerateTestImage(isOpaque).get());
   run_loop.RunUntilIdle();
 }
 
@@ -198,5 +215,7 @@ TEST_F(CanvasCaptureHandlerTest, CheckNeedsNewFrame) {
   source->StopCapture();
   EXPECT_FALSE(canvas_capture_handler_->needsNewFrame());
 }
+
+INSTANTIATE_TEST_CASE_P(, CanvasCaptureHandlerTest, ::testing::Bool());
 
 }  // namespace content

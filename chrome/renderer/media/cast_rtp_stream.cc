@@ -30,6 +30,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/net/cast_transport_config.h"
@@ -322,11 +323,22 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
       const CastRtpStream::ErrorCallback& error_callback,
       const scoped_refptr<media::cast::VideoFrameInput> frame_input,
       // These parameters are passed for each frame.
-      const scoped_refptr<media::VideoFrame>& frame,
+      const scoped_refptr<media::VideoFrame>& video_frame,
       base::TimeTicks estimated_capture_time) {
     const base::TimeTicks timestamp = estimated_capture_time.is_null()
                                           ? base::TimeTicks::Now()
                                           : estimated_capture_time;
+
+    if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
+          video_frame->format() == media::PIXEL_FORMAT_YV12 ||
+          video_frame->format() == media::PIXEL_FORMAT_YV12A)) {
+      NOTREACHED();
+      return;
+    }
+    scoped_refptr<media::VideoFrame> frame = video_frame;
+    // Drop alpha channel since we do not support it yet.
+    if (frame->format() == media::PIXEL_FORMAT_YV12A)
+      frame = media::WrapAsI420VideoFrame(video_frame);
 
     // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
     TRACE_EVENT_INSTANT2(

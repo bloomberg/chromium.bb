@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "ui/gfx/geometry/size.h"
 
 extern "C" {
@@ -186,11 +187,22 @@ void VideoTrackRecorder::VpxEncoder::StartFrameEncode(
 }
 
 void VideoTrackRecorder::VpxEncoder::EncodeOnEncodingThread(
-    const scoped_refptr<VideoFrame>& frame,
+    const scoped_refptr<VideoFrame>& video_frame,
     base::TimeTicks capture_timestamp) {
   TRACE_EVENT0("video",
                "VideoTrackRecorder::VpxEncoder::EncodeOnEncodingThread");
   DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
+
+  if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
+        video_frame->format() == media::PIXEL_FORMAT_YV12 ||
+        video_frame->format() == media::PIXEL_FORMAT_YV12A)) {
+    NOTREACHED();
+    return;
+  }
+  scoped_refptr<media::VideoFrame> frame = video_frame;
+  // Drop alpha channel since we do not support it yet.
+  if (frame->format() == media::PIXEL_FORMAT_YV12A)
+    frame = media::WrapAsI420VideoFrame(video_frame);
 
   const gfx::Size frame_size = frame->visible_rect().size();
   if (!IsInitialized() ||

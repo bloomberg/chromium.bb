@@ -495,7 +495,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
       video_weblayer_.reset(new cc_blink::WebLayerImpl(
           cc::VideoLayer::Create(cc::LayerSettings(),
                                  compositor_.get(), media::VIDEO_ROTATION_0)));
-      video_weblayer_->layer()->SetContentsOpaque(true);
+      video_weblayer_->layer()->SetContentsOpaque(false);
       video_weblayer_->SetContentsOpaqueIsFixed(true);
       get_client()->setWebLayer(video_weblayer_.get());
     }

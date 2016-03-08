@@ -11,6 +11,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_pool.h"
+#include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/webrtc/common_video/include/video_frame_buffer.h"
@@ -94,7 +95,8 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
 
     const gfx::Size output_size(output_width, output_height);
     scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::WrapVideoFrame(frame_, visible_rect, output_size);
+        media::VideoFrame::WrapVideoFrame(frame_, frame_->format(),
+                                          visible_rect, output_size);
     if (!video_frame)
       return nullptr;
     video_frame->AddDestructionObserver(
@@ -216,16 +218,22 @@ bool WebRtcVideoCapturerAdapter::GetBestCaptureFormat(
 }
 
 void WebRtcVideoCapturerAdapter::OnFrameCaptured(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    const scoped_refptr<media::VideoFrame>& video_frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("video", "WebRtcVideoCapturerAdapter::OnFrameCaptured");
-  if (!(frame->IsMappable() && (frame->format() == media::PIXEL_FORMAT_I420 ||
-                                frame->format() == media::PIXEL_FORMAT_YV12))) {
+  if (!(video_frame->IsMappable() &&
+        (video_frame->format() == media::PIXEL_FORMAT_I420 ||
+         video_frame->format() == media::PIXEL_FORMAT_YV12 ||
+         video_frame->format() == media::PIXEL_FORMAT_YV12A))) {
     // Since connecting sources and sinks do not check the format, we need to
     // just ignore formats that we can not handle.
     NOTREACHED();
     return;
   }
+  scoped_refptr<media::VideoFrame> frame = video_frame;
+  // Drop alpha channel since we do not support it yet.
+  if (frame->format() == media::PIXEL_FORMAT_YV12A)
+    frame = media::WrapAsI420VideoFrame(video_frame);
 
   // Inject the frame via the VideoFrameFactory of base class.
   MediaVideoFrameFactory* media_video_frame_factory =

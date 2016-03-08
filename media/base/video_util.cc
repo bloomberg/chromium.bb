@@ -14,6 +14,13 @@
 
 namespace media {
 
+namespace {
+
+// Empty method used for keeping a reference to the original media::VideoFrame.
+void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {}
+
+}  // namespace
+
 gfx::Size GetNaturalSize(const gfx::Size& visible_size,
                          int aspect_ratio_numerator,
                          int aspect_ratio_denominator) {
@@ -314,6 +321,22 @@ void CopyRGBToVideoFrame(const uint8_t* source,
                     stride,
                     frame->stride(kY),
                     uv_stride);
+}
+
+scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
+    const scoped_refptr<VideoFrame>& frame) {
+  DCHECK_EQ(VideoFrame::STORAGE_OWNED_MEMORY, frame->storage_type());
+  DCHECK_EQ(PIXEL_FORMAT_YV12A, frame->format());
+
+  scoped_refptr<media::VideoFrame> wrapped_frame =
+      media::VideoFrame::WrapVideoFrame(frame, PIXEL_FORMAT_I420,
+                                        frame->visible_rect(),
+                                        frame->natural_size());
+  if (!wrapped_frame)
+    return nullptr;
+  wrapped_frame->AddDestructionObserver(
+      base::Bind(&ReleaseOriginalFrame, frame));
+  return wrapped_frame;
 }
 
 }  // namespace media

@@ -39,11 +39,13 @@ class CanvasCaptureHandler::VideoCapturerSource
       double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) override {
     const blink::WebSize& size = canvas_handler_->GetSourceSize();
-    const media::VideoCaptureFormat format(gfx::Size(size.width, size.height),
-                                           frame_rate_,
-                                           media::PIXEL_FORMAT_I420);
     media::VideoCaptureFormats formats;
-    formats.push_back(format);
+    formats.push_back(
+        media::VideoCaptureFormat(gfx::Size(size.width, size.height),
+                                  frame_rate_, media::PIXEL_FORMAT_I420));
+    formats.push_back(
+        media::VideoCaptureFormat(gfx::Size(size.width, size.height),
+                                  frame_rate_, media::PIXEL_FORMAT_YV12A));
     callback.Run(formats);
   }
   void StartCapture(const media::VideoCaptureParams& params,
@@ -166,8 +168,8 @@ void CanvasCaptureHandler::StopVideoCapture() {
 
 void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   DCHECK(image);
+
   const gfx::Size size(image->width(), image->height());
   if (size != last_size) {
     temp_data_.resize(
@@ -176,16 +178,23 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
         media::VideoFrame::RowBytes(0, media::PIXEL_FORMAT_ARGB, size.width());
     image_info_ =
         SkImageInfo::Make(size.width(), size.height(), kBGRA_8888_SkColorType,
-                          kPremul_SkAlphaType);
+                          kUnpremul_SkAlphaType);
     last_size = size;
   }
 
-  image->readPixels(image_info_, &temp_data_[0], row_bytes_, 0, 0);
-  scoped_refptr<media::VideoFrame> video_frame =
-      frame_pool_.CreateFrame(media::PIXEL_FORMAT_I420, size, gfx::Rect(size),
-                              size, base::TimeTicks::Now() - base::TimeTicks());
+  if(!image->readPixels(image_info_, &temp_data_[0], row_bytes_, 0, 0)) {
+    DLOG(ERROR) << "Couldn't read SkImage pixels";
+    return;
+  }
+
+  const bool isOpaque = image->isOpaque();
+  scoped_refptr<media::VideoFrame> video_frame = frame_pool_.CreateFrame(
+      isOpaque ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_YV12A, size,
+      gfx::Rect(size), size, base::TimeTicks::Now() - base::TimeTicks());
   DCHECK(video_frame);
 
+  // TODO(emircan): Use https://code.google.com/p/libyuv/issues/detail?id=572
+  // when it becomes available.
   libyuv::ARGBToI420(temp_data_.data(), row_bytes_,
                      video_frame->data(media::VideoFrame::kYPlane),
                      video_frame->stride(media::VideoFrame::kYPlane),
@@ -194,6 +203,11 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
                      video_frame->data(media::VideoFrame::kVPlane),
                      video_frame->stride(media::VideoFrame::kVPlane),
                      size.width(), size.height());
+  if (!isOpaque) {
+    for (int p = 0; p < size.GetArea(); ++p)
+      video_frame->data(media::VideoFrame::kAPlane)[p] = temp_data_[p * 4 + 3];
+  }
+
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::

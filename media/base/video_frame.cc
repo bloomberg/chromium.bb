@@ -83,6 +83,18 @@ static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
        storage_type == VideoFrame::STORAGE_MOJO_SHARED_BUFFER);
 }
 
+// Checks if |source_format| can be wrapped into a |target_format| frame.
+static bool AreValidPixelFormatsForWrap(VideoPixelFormat source_format,
+                                        VideoPixelFormat target_format) {
+  if (source_format == target_format)
+    return true;
+
+  // It is possible to add other planar to planar format conversions here if the
+  // use case is there.
+  return source_format == PIXEL_FORMAT_YV12A &&
+         target_format == PIXEL_FORMAT_I420;
+}
+
 // static
 bool VideoFrame::IsValidConfig(VideoPixelFormat format,
                                StorageType storage_type,
@@ -378,32 +390,39 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
-      const scoped_refptr<VideoFrame>& frame,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size) {
+    const scoped_refptr<VideoFrame>& frame,
+    VideoPixelFormat format,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size) {
   // Frames with textures need mailbox info propagated, and there's no support
   // for that here yet, see http://crbug/362521.
   CHECK(!frame->HasTextures());
-
   DCHECK(frame->visible_rect().Contains(visible_rect));
 
-  if (!IsValidConfig(frame->format(), frame->storage_type(),
-                     frame->coded_size(), visible_rect, natural_size)) {
+  if (!AreValidPixelFormatsForWrap(frame->format(), format)) {
+    LOG(DFATAL) << __FUNCTION__ << " Invalid format conversion."
+                << VideoPixelFormatToString(frame->format()) << " to "
+                << VideoPixelFormatToString(format);
+    return nullptr;
+  }
+
+  if (!IsValidConfig(format, frame->storage_type(), frame->coded_size(),
+                     visible_rect, natural_size)) {
     LOG(DFATAL) << __FUNCTION__ << " Invalid config."
-                << ConfigToString(frame->format(), frame->storage_type(),
+                << ConfigToString(format, frame->storage_type(),
                                   frame->coded_size(), visible_rect,
                                   natural_size);
     return nullptr;
   }
 
-  scoped_refptr<VideoFrame> wrapping_frame(new VideoFrame(
-      frame->format(), frame->storage_type(), frame->coded_size(), visible_rect,
-      natural_size, frame->timestamp()));
+  scoped_refptr<VideoFrame> wrapping_frame(
+      new VideoFrame(format, frame->storage_type(), frame->coded_size(),
+                     visible_rect, natural_size, frame->timestamp()));
 
   // Copy all metadata to the wrapped frame.
   wrapping_frame->metadata()->MergeMetadataFrom(frame->metadata());
 
-  for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
+  for (size_t i = 0; i < NumPlanes(format); ++i) {
     wrapping_frame->strides_[i] = frame->stride(i);
     wrapping_frame->data_[i] = frame->data(i);
   }

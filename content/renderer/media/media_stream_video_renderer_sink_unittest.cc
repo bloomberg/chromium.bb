@@ -39,12 +39,11 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
     registry_.AddVideoTrack(kTestVideoTrackId);
 
     // Extract the Blink Video Track for the MSVRSink.
-    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    registry_.test_stream().videoTracks(video_tracks);
-    EXPECT_EQ(1u, video_tracks.size());
+    registry_.test_stream().videoTracks(video_tracks_);
+    EXPECT_EQ(1u, video_tracks_.size());
 
     media_stream_video_renderer_sink_ = new MediaStreamVideoRendererSink(
-        video_tracks[0],
+        video_tracks_[0],
         base::Bind(&MediaStreamVideoRendererSinkTest::ErrorCallback,
                    base::Unretained(this)),
         base::Bind(&MediaStreamVideoRendererSinkTest::RepaintCallback,
@@ -91,6 +90,8 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
   // and Sources in |registry_| into believing they are on the right threads.
   base::MessageLoopForUI message_loop_;
   const ChildProcess child_process_;
+
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks_;
   MockMediaStreamRegistry registry_;
 
  private:
@@ -153,6 +154,42 @@ TEST_F(MediaStreamVideoRendererSinkAsyncAddFrameReadyTest,
 
   EXPECT_CALL(*this, RepaintCallback(video_frame)).Times(1);
   frame_ready_cbs_[0].Run();
+  message_loop_.RunUntilIdle();
+
+  media_stream_video_renderer_sink_->Stop();
+}
+
+class MediaStreamVideoRendererSinkTransparencyTest
+    : public MediaStreamVideoRendererSinkTest {
+ public:
+  MediaStreamVideoRendererSinkTransparencyTest() {
+    media_stream_video_renderer_sink_ = new MediaStreamVideoRendererSink(
+        video_tracks_[0],
+        base::Bind(&MediaStreamVideoRendererSinkTest::ErrorCallback,
+                   base::Unretained(this)),
+        base::Bind(&MediaStreamVideoRendererSinkTransparencyTest::
+                       VerifyTransparentFrame,
+                   base::Unretained(this)),
+        message_loop_.task_runner(), message_loop_.task_runner().get(),
+        nullptr /* gpu_factories */);
+  }
+
+  void VerifyTransparentFrame(const scoped_refptr<media::VideoFrame>& frame) {
+    EXPECT_EQ(media::PIXEL_FORMAT_YV12A, frame->format());
+  }
+};
+
+TEST_F(MediaStreamVideoRendererSinkTransparencyTest,
+       SendTransparentFrame) {
+  media_stream_video_renderer_sink_->Start();
+
+  InSequence s;
+  const gfx::Size kSize(10, 10);
+  const base::TimeDelta kTimestamp = base::TimeDelta();
+  const scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12A, kSize,
+                                     gfx::Rect(kSize), kSize, kTimestamp);
+  OnVideoFrame(video_frame);
   message_loop_.RunUntilIdle();
 
   media_stream_video_renderer_sink_->Stop();

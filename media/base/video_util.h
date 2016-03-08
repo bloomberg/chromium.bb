@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/ref_counted.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -91,6 +92,10 @@ MEDIA_EXPORT void CopyRGBToVideoFrame(const uint8_t* source,
                                       int stride,
                                       const gfx::Rect& region_in_frame,
                                       VideoFrame* frame);
+
+// Converts a frame with YV12A format into I420 by dropping alpha channel.
+MEDIA_EXPORT scoped_refptr<VideoFrame> WrapAsI420VideoFrame(
+    const scoped_refptr<VideoFrame>& frame);
 
 }  // namespace media
 

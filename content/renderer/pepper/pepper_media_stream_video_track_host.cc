@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/video_util.h"
 #include "media/base/yuv_convert.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_media_stream_video_track.h"
@@ -370,10 +371,14 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
 }
 
 void PepperMediaStreamVideoTrackHost::OnVideoFrame(
-    const scoped_refptr<VideoFrame>& frame,
+    const scoped_refptr<VideoFrame>& video_frame,
     base::TimeTicks estimated_capture_time) {
-  DCHECK(frame.get());
+  DCHECK(video_frame.get());
   // TODO(penghuang): Check |frame->end_of_stream()| and close the track.
+  scoped_refptr<media::VideoFrame> frame = video_frame;
+  // Drop alpha channel since we do not support it yet.
+  if (frame->format() == media::PIXEL_FORMAT_YV12A)
+    frame = media::WrapAsI420VideoFrame(video_frame);
   PP_VideoFrame_Format ppformat = ToPpapiFormat(frame->format());
   if (ppformat == PP_VIDEOFRAME_FORMAT_UNKNOWN)
     return;
