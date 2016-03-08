@@ -35,7 +35,8 @@ namespace blink {
 class CORE_EXPORT V8Initializer {
     STATIC_ONLY(V8Initializer);
 public:
-    static void initializeMainThreadIfNeeded();
+    static void initializeMainThread();
+    static void shutdownMainThread();
     static void initializeWorker(v8::Isolate*);
 
     static void reportRejectedPromisesOnMainThread();

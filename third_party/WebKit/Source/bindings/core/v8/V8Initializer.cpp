@@ -351,14 +351,9 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
 
 } // namespace
 
-void V8Initializer::initializeMainThreadIfNeeded()
+void V8Initializer::initializeMainThread()
 {
     ASSERT(isMainThread());
-
-    static bool initialized = false;
-    if (initialized)
-        return;
-    initialized = true;
 
     DEFINE_STATIC_LOCAL(ArrayBufferAllocator, arrayBufferAllocator, ());
     auto v8ExtrasMode = RuntimeEnabledFeatures::experimentalV8ExtrasEnabled() ? gin::IsolateHolder::kStableAndExperimentalV8Extras : gin::IsolateHolder::kStableV8Extras;
@@ -382,6 +377,14 @@ void V8Initializer::initializeMainThreadIfNeeded()
 
     if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler())
         profiler->SetWrapperClassInfoProvider(WrapperTypeInfo::NodeClassId, &RetainedDOMInfo::createRetainedDOMInfo);
+}
+
+void V8Initializer::shutdownMainThread()
+{
+    ASSERT(isMainThread());
+    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+    V8PerIsolateData::willBeDestroyed(isolate);
+    V8PerIsolateData::destroy(isolate);
 }
 
 static void reportFatalErrorInWorker(const char* location, const char* message)

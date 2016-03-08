@@ -103,10 +103,9 @@ void initialize(Platform* platform)
     initializeWithoutV8(platform);
 
     modulesInitializer().init();
-
     setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
 
-    V8Initializer::initializeMainThreadIfNeeded();
+    V8Initializer::initializeMainThread();
 
     OwnPtr<V8IsolateInterruptor> interruptor = adoptPtr(new V8IsolateInterruptor(V8PerIsolateData::mainThreadIsolate()));
     ThreadState::current()->addInterruptor(interruptor.release());
@@ -207,10 +206,7 @@ void shutdown()
 
     ThreadState::current()->unregisterTraceDOMWrappers();
 
-    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    V8PerIsolateData::willBeDestroyed(isolate);
-
-    V8PerIsolateData::destroy(isolate);
+    V8Initializer::shutdownMainThread();
 
     modulesInitializer().shutdown();
 
