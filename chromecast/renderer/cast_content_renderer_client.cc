@@ -25,7 +25,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
@@ -72,31 +71,6 @@ void PlatformPollFreemem(void) {
 // though the comment of WebColor says it is in RGBA.
 const blink::WebColor kColorBlack = 0xFF000000;
 
-class CastRenderViewObserver : content::RenderViewObserver {
- public:
-  CastRenderViewObserver(CastContentRendererClient* client,
-                         content::RenderView* render_view);
-  ~CastRenderViewObserver() override {}
-
-  void DidClearWindowObject(blink::WebLocalFrame* frame) override;
-
- private:
-  CastContentRendererClient* const client_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastRenderViewObserver);
-};
-
-CastRenderViewObserver::CastRenderViewObserver(
-    CastContentRendererClient* client,
-    content::RenderView* render_view)
-    : content::RenderViewObserver(render_view),
-      client_(client) {
-}
-
-void CastRenderViewObserver::DidClearWindowObject(blink::WebLocalFrame* frame) {
-  client_->AddRendererNativeBindings(frame);
-}
-
 }  // namespace
 
 CastContentRendererClient::CastContentRendererClient()
@@ -106,10 +80,6 @@ CastContentRendererClient::CastContentRendererClient()
 }
 
 CastContentRendererClient::~CastContentRendererClient() {
-}
-
-void CastContentRendererClient::AddRendererNativeBindings(
-    blink::WebLocalFrame* frame) {
 }
 
 void CastContentRendererClient::RenderThreadStarted() {
@@ -168,9 +138,6 @@ void CastContentRendererClient::RenderViewCreated(
     // application running.
     webview->settings()->setOfflineWebApplicationCacheEnabled(false);
   }
-
-  // Note: RenderView will own the lifetime of its observer.
-  new CastRenderViewObserver(this, render_view);
 }
 
 void CastContentRendererClient::AddKeySystems(

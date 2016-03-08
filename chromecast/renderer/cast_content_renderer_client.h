@@ -31,9 +31,6 @@ class CastContentRendererClient : public content::ContentRendererClient {
 
   ~CastContentRendererClient() override;
 
-  // Adds any platform-specific bindings to the current frame.
-  virtual void AddRendererNativeBindings(blink::WebLocalFrame* frame);
-
   // ContentRendererClient implementation:
   void RenderThreadStarted() override;
   void RenderViewCreated(content::RenderView* render_view) override;
