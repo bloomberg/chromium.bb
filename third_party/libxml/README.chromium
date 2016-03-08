@@ -36,6 +36,9 @@ On a Windows box:
 cd libxml2-2.9.2\win32
 cscript //E:jscript configure.js compiler=msvc iconv=no icu=yes ftp=no http=no
 Then copy VC10/config.h and include/libxml/xmlversion.h to win32/ on Linux.
+Patch win32/config.h to wrap the #define snprintf with:
+  #if _MSC_VER < 1900
+  #endif
 
 Remove:
   src/doc/
