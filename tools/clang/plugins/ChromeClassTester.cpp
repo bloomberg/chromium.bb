@@ -120,7 +120,11 @@ bool ChromeClassTester::InBannedDirectory(SourceLocation loc) {
 #if defined(LLVM_ON_UNIX)
   // Resolve the symlinktastic relative path and make it absolute.
   char resolvedPath[MAXPATHLEN];
-  if (realpath(filename.c_str(), resolvedPath)) {
+  if (options_.no_realpath) {
+    // Same reason as windows below, but we don't need to do
+    // the '\\' manipulation on linux.
+    filename.insert(filename.begin(), '/');
+  } else if (realpath(filename.c_str(), resolvedPath)) {
     filename = resolvedPath;
   }
 #endif

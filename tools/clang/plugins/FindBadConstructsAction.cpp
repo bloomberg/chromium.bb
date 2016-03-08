@@ -61,6 +61,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       options_.follow_macro_expansion = true;
     } else if (args[i] == "check-implicit-copy-ctors") {
       options_.check_implicit_copy_ctors = true;
+    } else if (args[i] == "no-realpath") {
+      options_.no_realpath = true;
     } else {
       parsed = false;
       llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";
