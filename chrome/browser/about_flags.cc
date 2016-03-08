@@ -1808,6 +1808,11 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableImeThread,
                                switches::kDisableImeThread)},
 #endif  // defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+    {"offline-pages-ntp", IDS_FLAGS_NTP_OFFLINE_PAGES_NAME,
+     IDS_FLAGS_NTP_OFFLINE_PAGES_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kNTPOfflinePagesFeature)},
+#endif  // defined(OS_ANDROID)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
