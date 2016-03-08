@@ -193,6 +193,12 @@ public class FindToolbar extends LinearLayout
             public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
                 deactivate();
             }
+
+            @Override
+            public void tabRemoved(Tab tab) {
+                if (tab != mCurrentTab) return;
+                deactivate();
+            }
         };
     }
 
