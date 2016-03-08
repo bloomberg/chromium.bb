@@ -10,6 +10,9 @@
 #include <sys/stat.h>
 #ifndef _MSC_VER
 #include <unistd.h>  // close()
+#else
+// Disable MSVC warnings that suggest making code non-portable.
+#pragma warning(disable:4996)
 #endif
 
 #include <cstdint>
@@ -28,7 +31,8 @@ namespace libwebm {
 namespace test {
 
 std::string GetTestDataDir() {
-  return std::getenv("LIBWEBM_TEST_DATA_PATH");
+  const char* test_data_path = std::getenv("LIBWEBM_TEST_DATA_PATH");
+  return test_data_path ? std::string(test_data_path) : std::string();
 }
 
 std::string GetTestFilePath(const std::string& name) {
