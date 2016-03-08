@@ -945,6 +945,11 @@ public:
     // See LayoutBlock.h for some extra explanations on containing blocks.
     LayoutBlock* containingBlock() const;
 
+    bool canContainAbsolutePositionObjects() const
+    {
+        return isPositioned() || canContainFixedPositionObjects();
+    }
+
     bool canContainFixedPositionObjects() const
     {
         return isLayoutView() || (hasTransformRelatedProperty() && isLayoutBlock()) || isSVGForeignObject() || style()->containsPaint();
