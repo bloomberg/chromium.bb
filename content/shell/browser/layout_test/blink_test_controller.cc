@@ -374,7 +374,7 @@ void BlinkTestController::OpenURL(const GURL& url) {
                          gfx::Size());
 }
 
-void BlinkTestController::TestFinishedInSecondaryWindow() {
+void BlinkTestController::TestFinishedInSecondaryRenderer() {
   RenderViewHost* render_view_host =
       main_window_->web_contents()->GetRenderViewHost();
   render_view_host->Send(

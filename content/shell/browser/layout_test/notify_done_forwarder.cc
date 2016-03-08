@@ -19,15 +19,15 @@ NotifyDoneForwarder::~NotifyDoneForwarder() {}
 bool NotifyDoneForwarder::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotifyDoneForwarder, message)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinishedInSecondaryWindow,
-                        OnTestFinishedInSecondaryWindow)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_TestFinishedInSecondaryRenderer,
+                        OnTestFinishedInSecondaryRenderer)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void NotifyDoneForwarder::OnTestFinishedInSecondaryWindow() {
-  BlinkTestController::Get()->TestFinishedInSecondaryWindow();
+void NotifyDoneForwarder::OnTestFinishedInSecondaryRenderer() {
+  BlinkTestController::Get()->TestFinishedInSecondaryRenderer();
 }
 
 }  // namespace content

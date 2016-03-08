@@ -140,7 +140,7 @@ class BlinkTestController : public base::NonThreadSafe,
   void RendererUnresponsive();
   void OverrideWebkitPrefs(WebPreferences* prefs);
   void OpenURL(const GURL& url);
-  void TestFinishedInSecondaryWindow();
+  void TestFinishedInSecondaryRenderer();
   bool IsMainWindow(WebContents* web_contents) const;
   scoped_ptr<BluetoothChooser> RunBluetoothChooser(
       RenderFrameHost* frame,

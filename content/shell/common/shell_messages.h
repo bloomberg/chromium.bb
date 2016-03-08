@@ -48,8 +48,8 @@ IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
 IPC_MESSAGE_ROUTED1(ShellViewMsg_SetTestConfiguration,
                     content::ShellTestConfiguration)
 
-// Tells the main window that a secondary window in a different process invoked
-// notifyDone().
+// Tells the main window that a secondary renderer in a different process thinks
+// the test is finished.
 IPC_MESSAGE_ROUTED0(ShellViewMsg_NotifyDone)
 
 // Pushes a snapshot of the current session history from the browser process.
@@ -100,7 +100,7 @@ IPC_MESSAGE_ROUTED0(ShellViewHostMsg_TestFinished)
 
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ResetDone)
 
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_TestFinishedInSecondaryWindow)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_TestFinishedInSecondaryRenderer)
 
 // WebTestDelegate related.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_OverridePreferences,

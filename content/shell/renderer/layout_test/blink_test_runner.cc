@@ -611,8 +611,8 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
 }
 
 void BlinkTestRunner::TestFinished() {
-  if (!is_main_window_) {
-    Send(new ShellViewHostMsg_TestFinishedInSecondaryWindow(routing_id()));
+  if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
+    Send(new ShellViewHostMsg_TestFinishedInSecondaryRenderer(routing_id()));
     return;
   }
   test_runner::WebTestInterfaces* interfaces =

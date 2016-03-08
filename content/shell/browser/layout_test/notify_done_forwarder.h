@@ -24,7 +24,7 @@ class NotifyDoneForwarder : public WebContentsObserver,
 
   explicit NotifyDoneForwarder(WebContents* web_contents);
 
-  void OnTestFinishedInSecondaryWindow();
+  void OnTestFinishedInSecondaryRenderer();
 
   DISALLOW_COPY_AND_ASSIGN(NotifyDoneForwarder);
 };
