@@ -83,8 +83,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       clip_tree_index_(-1),
       scroll_tree_index_(-1),
       draw_depth_(0.f),
-      needs_push_properties_(false),
-      num_dependents_need_push_properties_(0),
       sorting_context_id_(0),
       current_draw_mode_(DRAW_MODE_NONE),
       element_id_(0),
@@ -129,6 +127,7 @@ LayerImpl::~LayerImpl() {
     layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
   layer_tree_impl_->UnregisterScrollLayer(this);
   layer_tree_impl_->UnregisterLayer(this);
+  layer_tree_impl_->RemoveLayerShouldPushProperties(this);
 
   layer_tree_impl_->RemoveFromElementMap(this);
 
@@ -158,12 +157,6 @@ scoped_ptr<LayerImpl> LayerImpl::RemoveChild(LayerImpl* child) {
 }
 
 void LayerImpl::SetParent(LayerImpl* parent) {
-  if (parent_should_know_need_push_properties()) {
-    if (parent_)
-      parent_->RemoveDependentNeedsPushProperties();
-    if (parent)
-      parent->AddDependentNeedsPushProperties();
-  }
   parent_ = parent;
 }
 
@@ -631,8 +624,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   // Reset any state that should be cleared for the next update.
   layer_property_changed_ = false;
   update_rect_ = gfx::Rect();
-  needs_push_properties_ = false;
-  num_dependents_need_push_properties_ = 0;
+  layer_tree_impl()->RemoveLayerShouldPushProperties(this);
 }
 
 bool LayerImpl::IsAffectedByPageScale() const {
@@ -763,7 +755,7 @@ const char* LayerImpl::LayerTypeAsString() const {
   return "cc::LayerImpl";
 }
 
-void LayerImpl::ResetAllChangeTrackingForSubtree() {
+void LayerImpl::ResetAllChangeTrackingForSubtreeInternal() {
   layer_property_changed_ = false;
   if (TransformNode* transform_node =
           layer_tree_impl_->property_trees()->transform_tree.Node(
@@ -778,18 +770,20 @@ void LayerImpl::ResetAllChangeTrackingForSubtree() {
     render_surface_->ResetPropertyChangedFlag();
 
   if (mask_layer_)
-    mask_layer_->ResetAllChangeTrackingForSubtree();
+    mask_layer_->ResetAllChangeTrackingForSubtreeInternal();
 
   if (replica_layer_) {
     // This also resets the replica mask, if it exists.
-    replica_layer_->ResetAllChangeTrackingForSubtree();
+    replica_layer_->ResetAllChangeTrackingForSubtreeInternal();
   }
 
   for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->ResetAllChangeTrackingForSubtree();
+    children_[i]->ResetAllChangeTrackingForSubtreeInternal();
+}
 
-  needs_push_properties_ = false;
-  num_dependents_need_push_properties_ = 0;
+void LayerImpl::ResetAllChangeTrackingForSubtree() {
+  layer_tree_impl()->LayersThatShouldPushProperties().clear();
+  ResetAllChangeTrackingForSubtreeInternal();
 }
 
 int LayerImpl::num_copy_requests_in_target_subtree() {
@@ -1568,28 +1562,8 @@ gfx::Vector2dF LayerImpl::ClampScrollToMaxScrollOffset() {
 }
 
 void LayerImpl::SetNeedsPushProperties() {
-  if (needs_push_properties_)
-    return;
-  if (!parent_should_know_need_push_properties() && parent_)
-    parent_->AddDependentNeedsPushProperties();
-  needs_push_properties_ = true;
-}
-
-void LayerImpl::AddDependentNeedsPushProperties() {
-  DCHECK_GE(num_dependents_need_push_properties_, 0);
-
-  if (!parent_should_know_need_push_properties() && parent_)
-    parent_->AddDependentNeedsPushProperties();
-
-  num_dependents_need_push_properties_++;
-}
-
-void LayerImpl::RemoveDependentNeedsPushProperties() {
-  num_dependents_need_push_properties_--;
-  DCHECK_GE(num_dependents_need_push_properties_, 0);
-
-  if (!parent_should_know_need_push_properties() && parent_)
-      parent_->RemoveDependentNeedsPushProperties();
+  if (layer_tree_impl_)
+    layer_tree_impl()->AddLayerShouldPushProperties(this);
 }
 
 void LayerImpl::GetAllPrioritizedTilesForTracing(

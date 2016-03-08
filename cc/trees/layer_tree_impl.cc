@@ -956,6 +956,24 @@ LayerImpl* LayerTreeImpl::LayerById(int id) const {
   return iter != layer_id_map_.end() ? iter->second : NULL;
 }
 
+void LayerTreeImpl::AddLayerShouldPushProperties(LayerImpl* layer) {
+  layers_that_should_push_properties_.insert(layer);
+}
+
+void LayerTreeImpl::RemoveLayerShouldPushProperties(LayerImpl* layer) {
+  layers_that_should_push_properties_.erase(layer);
+}
+
+std::unordered_set<LayerImpl*>&
+LayerTreeImpl::LayersThatShouldPushProperties() {
+  return layers_that_should_push_properties_;
+}
+
+bool LayerTreeImpl::LayerNeedsPushPropertiesForTesting(LayerImpl* layer) {
+  return layers_that_should_push_properties_.find(layer) !=
+         layers_that_should_push_properties_.end();
+}
+
 void LayerTreeImpl::RegisterLayer(LayerImpl* layer) {
   DCHECK(!LayerById(layer->id()));
   layer_id_map_[layer->id()] = layer;

@@ -38,9 +38,8 @@ class CC_EXPORT TreeSynchronizer {
  private:
   TreeSynchronizer();  // Not instantiable.
 
-  template <typename LayerType>
   static void PushPropertiesInternal(
-      LayerType* layer,
+      Layer* layer,
       LayerImpl* layer_impl,
       int* num_dependents_need_push_properties_for_parent);
 

@@ -591,16 +591,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual size_t GPUMemoryUsageInBytes() const;
 
   void SetNeedsPushProperties();
-  void AddDependentNeedsPushProperties();
-  void RemoveDependentNeedsPushProperties();
-  bool parent_should_know_need_push_properties() const {
-    return needs_push_properties() || descendant_needs_push_properties();
-  }
-
-  bool needs_push_properties() const { return needs_push_properties_; }
-  bool descendant_needs_push_properties() const {
-    return num_dependents_need_push_properties_ > 0;
-  }
 
   virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark);
 
@@ -701,6 +691,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void NoteLayerPropertyChangedForDescendantsInternal();
   void PushLayerPropertyChangedForSubtreeInternal();
+  void ResetAllChangeTrackingForSubtreeInternal();
 
   virtual const char* LayerTypeAsString() const;
 
@@ -803,15 +794,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
  protected:
   friend class TreeSynchronizer;
-
-  // This flag is set when the layer needs to push properties to the active
-  // side.
-  bool needs_push_properties_;
-
-  // The number of direct children or dependent layers that need to be recursed
-  // to in order for them or a descendent of them to push properties to the
-  // active side.
-  int num_dependents_need_push_properties_;
 
   // Layers that share a sorting context id will be sorted together in 3d
   // space.  0 is a special value that means this layer will not be sorted and

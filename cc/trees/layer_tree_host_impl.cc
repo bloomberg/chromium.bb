@@ -1983,8 +1983,14 @@ void LayerTreeHostImpl::ActivateSyncTree() {
       else
         active_tree_->root_layer()->PushLayerPropertyChangedForSubtree();
     }
-    TreeSynchronizer::PushProperties(pending_tree_->root_layer(),
-                                     active_tree_->root_layer());
+
+    std::unordered_set<LayerImpl*> layers_that_should_push_properties =
+        pending_tree_->LayersThatShouldPushProperties();
+    for (auto pending_layer : layers_that_should_push_properties) {
+      LayerImpl* active_layer = active_tree_->LayerById(pending_layer->id());
+      DCHECK(active_layer);
+      pending_layer->PushPropertiesTo(active_layer);
+    }
     pending_tree_->PushPropertiesTo(active_tree_.get());
     if (pending_tree_->root_layer())
       pending_tree_->property_trees()->ResetAllChangeTracking(

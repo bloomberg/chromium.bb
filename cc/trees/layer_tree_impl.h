@@ -299,6 +299,11 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerImpl* LayerById(int id) const;
 
+  void AddLayerShouldPushProperties(LayerImpl* layer);
+  void RemoveLayerShouldPushProperties(LayerImpl* layer);
+  std::unordered_set<LayerImpl*>& LayersThatShouldPushProperties();
+  bool LayerNeedsPushPropertiesForTesting(LayerImpl* layer);
+
   // These should be called by LayerImpl's ctor/dtor.
   void RegisterLayer(LayerImpl* layer);
   void UnregisterLayer(LayerImpl* layer);
@@ -515,6 +520,8 @@ class CC_EXPORT LayerTreeImpl {
 
   using LayerIdMap = std::unordered_map<int, LayerImpl*>;
   LayerIdMap layer_id_map_;
+  // Set of layers that need to push properties.
+  std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
 
   std::unordered_map<uint64_t, ElementLayers> element_layers_map_;
 

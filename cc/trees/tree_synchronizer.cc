@@ -129,10 +129,8 @@ scoped_ptr<LayerImpl> SynchronizeTreesRecursive(
       new_layers, old_layers, layer, tree_impl);
 }
 
-// static
-template <typename LayerType>
 void TreeSynchronizer::PushPropertiesInternal(
-    LayerType* layer,
+    Layer* layer,
     LayerImpl* layer_impl,
     int* num_dependents_need_push_properties_for_parent) {
   if (!layer) {
@@ -244,12 +242,6 @@ void TreeSynchronizer::PushProperties(Layer* layer,
 #if DCHECK_IS_ON()
   CheckScrollAndClipPointersRecursive(layer, layer_impl);
 #endif
-}
-
-void TreeSynchronizer::PushProperties(LayerImpl* layer, LayerImpl* layer_impl) {
-  int num_dependents_need_push_properties = 0;
-  PushPropertiesInternal(
-      layer, layer_impl, &num_dependents_need_push_properties);
 }
 
 }  // namespace cc

@@ -140,7 +140,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   // We always need to push properties.
   // See http://crbug.com/303943
   // TODO(danakj): Stop always pushing properties since we don't swap tilings.
-  needs_push_properties_ = true;
+  layer_tree_impl()->AddLayerShouldPushProperties(this);
 }
 
 void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
