@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <intrin.h>
 #include <stdlib.h>
 #include <stdio.h>
 

@@ -13,6 +13,7 @@
 #pragma comment(lib, "winmm.lib")
 
 #include <windows.h>
+#include <intrin.h>
 #include <mmsystem.h>
 #include <sys/timeb.h>
 #include <time.h>

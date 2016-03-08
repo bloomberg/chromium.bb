@@ -12,7 +12,7 @@
 /*
  * This header declares the _mm_getcsr function.
  */
-#include <mmintrin.h>
+#include <intrin.h>
 #endif
 
 #include "native_client/src/shared/platform/nacl_log.h"

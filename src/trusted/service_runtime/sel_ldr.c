@@ -10,6 +10,11 @@
  * NaCl Simple/secure ELF loader (NaCl SEL).
  */
 #include "native_client/src/include/build_config.h"
+
+#if NACL_WINDOWS
+#include <intrin.h>
+#endif
+
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
