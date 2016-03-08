@@ -126,6 +126,7 @@ void Heap::init()
     s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     s_estimatedMarkingTimePerByte = 0.0;
     s_isLowEndDevice = base::SysInfo::IsLowEndDevice();
+    s_lastGCReason = BlinkGC::NumberOfGCReason;
 #if ENABLE(ASSERT)
     s_gcGeneration = 1;
 #endif
@@ -420,6 +421,8 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gcReasonHistogram, new EnumerationHistogram("BlinkGC.GCReason", BlinkGC::NumberOfGCReason));
     gcReasonHistogram.count(reason);
 
+    s_lastGCReason = reason;
+
     Heap::reportMemoryUsageHistogram();
     WTF::Partitions::reportMemoryUsageHistogram();
 
@@ -685,6 +688,7 @@ size_t Heap::s_collectedWrapperCount = 0;
 size_t Heap::s_partitionAllocSizeAtLastGC = 0;
 double Heap::s_estimatedMarkingTimePerByte = 0.0;
 bool Heap::s_isLowEndDevice = false;
+BlinkGC::GCReason Heap::s_lastGCReason = BlinkGC::NumberOfGCReason;
 #if ENABLE(ASSERT)
 uint16_t Heap::s_gcGeneration = 0;
 #endif

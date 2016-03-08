@@ -1134,6 +1134,26 @@ void ThreadState::postSweep()
         collectionRateHistogram.count(static_cast<int>(100 * collectionRate));
         DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForSweepHistogram, ("BlinkGC.TimeForSweepingAllObjects", 1, 10 * 1000, 50));
         timeForSweepHistogram.count(m_accumulatedSweepingTime);
+
+
+#define COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(GCReason)                \
+    case BlinkGC::GCReason: {                                                 \
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, histogram,                  \
+            ("BlinkGC.CollectionRate_" #GCReason, 1, 100, 20));             \
+        histogram.count(static_cast<int>(100 * collectionRate));              \
+        break;                                                                \
+    }
+
+        switch (Heap::lastGCReason()) {
+            COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(IdleGC)
+            COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(PreciseGC)
+            COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(ConservativeGC)
+            COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(ForcedGC)
+            COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(MemoryPressureGC)
+            COUNT_COLLECTION_RATE_HISTOGRAM_BY_GC_REASON(PageNavigationGC)
+        default:
+            break;
+        }
     }
 
     switch (gcState()) {

@@ -69441,6 +69441,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Precise GC"/>
   <int value="2" label="Conservative GC"/>
   <int value="3" label="Forced GC for testing"/>
+  <int value="4" label="Memory pressure GC"/>
+  <int value="5" label="Page navigation GC"/>
 </enum>
 
 <enum name="GDataAuthResult" type="int">
@@ -84296,6 +84298,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.NonSymNAT"/>
   <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.SymNAT"/>
   <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.UnknownNAT"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="BlinkGCReason">
+  <suffix name="IdleGC" label="Idle GC"/>
+  <suffix name="PreciseGC" label="Precise GC"/>
+  <suffix name="ConservativeGC" label="Conservative GC"/>
+  <suffix name="ForcedGC" label="Forced GC for testing"/>
+  <suffix name="MemoryPressureGC" label="Memory pressure GC"/>
+  <suffix name="PageNavigationGC" label="Page navigation GC"/>
+  <affected-histogram name="BlinkGC.CollectionRate"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CacheInstance" separator="." ordering="prefix">
