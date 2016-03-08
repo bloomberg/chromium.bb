@@ -9,7 +9,7 @@
     GarbageCollected,
     RuntimeEnabled=PushMessaging,
 ] interface PushManager {
-    [CallWith=ScriptState, RaisesException] Promise<PushSubscription> subscribe(optional PushSubscriptionOptions options);
+    [CallWith=ScriptState] Promise<PushSubscription> subscribe(optional PushSubscriptionOptions options);
     [CallWith=ScriptState] Promise<PushSubscription?> getSubscription();
-    [CallWith=ScriptState, RaisesException] Promise permissionState(optional PushSubscriptionOptions options);
+    [CallWith=ScriptState] Promise permissionState(optional PushSubscriptionOptions options);
 };

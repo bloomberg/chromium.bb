@@ -44,7 +44,6 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_messaging_status.h"
-#include "content/public/common/push_subscription_options.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
@@ -345,9 +344,10 @@ GURL PushMessagingServiceImpl::GetPushEndpoint() {
 void PushMessagingServiceImpl::SubscribeFromDocument(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
+    const std::string& sender_id,
     int renderer_id,
     int render_frame_id,
-    const content::PushSubscriptionOptions& options,
+    bool user_visible,
     const content::PushMessagingService::RegisterCallback& callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::Generate(requesting_origin,
@@ -367,7 +367,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   if (!web_contents)
     return;
 
-  if (!options.user_visible_only) {
+  if (!user_visible) {
     web_contents->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR, kSilentPushUnsupportedMessage);
 
@@ -381,14 +381,15 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
       content::PermissionType::PUSH_MESSAGING, web_contents->GetMainFrame(),
       requesting_origin,
       base::Bind(&PushMessagingServiceImpl::DidRequestPermission,
-                 weak_factory_.GetWeakPtr(), app_identifier, options,
+                 weak_factory_.GetWeakPtr(), app_identifier, sender_id,
                  callback));
 }
 
 void PushMessagingServiceImpl::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    const content::PushSubscriptionOptions& options,
+    const std::string& sender_id,
+    bool user_visible,
     const content::PushMessagingService::RegisterCallback& register_callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::Generate(requesting_origin,
@@ -403,7 +404,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
 
   blink::WebPushPermissionStatus permission_status =
       PushMessagingServiceImpl::GetPermissionStatus(requesting_origin,
-                                                    options.user_visible_only);
+                                                    user_visible);
 
   if (permission_status != blink::WebPushPermissionStatusGranted) {
     SubscribeEndWithError(register_callback,
@@ -412,7 +413,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
   }
 
   IncreasePushSubscriptionCount(1, true /* is_pending */);
-  std::vector<std::string> sender_ids(1, options.sender_info);
+  std::vector<std::string> sender_ids(1, sender_id);
   GetGCMDriver()->Register(app_identifier.app_id(), sender_ids,
                            base::Bind(&PushMessagingServiceImpl::DidSubscribe,
                                       weak_factory_.GetWeakPtr(),
@@ -515,7 +516,7 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
 
 void PushMessagingServiceImpl::DidRequestPermission(
     const PushMessagingAppIdentifier& app_identifier,
-    const content::PushSubscriptionOptions& options,
+    const std::string& sender_id,
     const content::PushMessagingService::RegisterCallback& register_callback,
     content::PermissionStatus permission_status) {
   if (permission_status != content::PermissionStatus::GRANTED) {
@@ -525,7 +526,7 @@ void PushMessagingServiceImpl::DidRequestPermission(
   }
 
   IncreasePushSubscriptionCount(1, true /* is_pending */);
-  std::vector<std::string> sender_ids(1, options.sender_info);
+  std::vector<std::string> sender_ids(1, sender_id);
   GetGCMDriver()->Register(app_identifier.app_id(), sender_ids,
                            base::Bind(&PushMessagingServiceImpl::DidSubscribe,
                                       weak_factory_.GetWeakPtr(),

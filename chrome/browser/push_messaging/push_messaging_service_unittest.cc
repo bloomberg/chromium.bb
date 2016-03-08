@@ -27,7 +27,6 @@
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "content/public/common/push_event_payload.h"
-#include "content/public/common/push_subscription_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -154,11 +153,8 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
 
   // (2) Subscribe for Push Messaging, and verify that we've got the required
   // information in order to be able to create encrypted messages.
-  content::PushSubscriptionOptions options;
-  options.user_visible_only = true;
-  options.sender_info = kTestSenderId;
   push_service->SubscribeFromWorker(
-      origin, kTestServiceWorkerId, options,
+      origin, kTestServiceWorkerId, kTestSenderId, true /* user_visible */,
       base::Bind(&PushMessagingServiceTest::DidRegister, base::Unretained(this),
                  &subscription_id, &p256dh, &auth));
 

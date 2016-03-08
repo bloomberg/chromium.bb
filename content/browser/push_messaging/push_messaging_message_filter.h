@@ -23,7 +23,6 @@ namespace content {
 
 class PushMessagingService;
 class ServiceWorkerContextWrapper;
-struct PushSubscriptionOptions;
 
 extern const char kPushSenderIdServiceWorkerKey[];
 extern const char kPushRegistrationIdServiceWorkerKey[];
@@ -51,25 +50,26 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void OnSubscribeFromDocument(int render_frame_id,
                                int request_id,
-                               const PushSubscriptionOptions& options,
+                               const std::string& sender_id,
+                               bool user_visible,
                                int64_t service_worker_registration_id);
 
   void OnSubscribeFromWorker(int request_id,
                              int64_t service_worker_registration_id,
-                             const PushSubscriptionOptions& options);
+                             bool user_visible);
 
-  void DidPersistSenderInfo(const RegisterData& data,
-                            const PushSubscriptionOptions& options,
-                            ServiceWorkerStatusCode service_worker_status);
+  void DidPersistSenderId(const RegisterData& data,
+                          const std::string& sender_id,
+                          ServiceWorkerStatusCode service_worker_status);
 
   // sender_id is ignored if data.FromDocument() is false.
   void CheckForExistingRegistration(const RegisterData& data,
-                                    const PushSubscriptionOptions& options);
+                                    const std::string& sender_id);
 
   // sender_id is ignored if data.FromDocument() is false.
   void DidCheckForExistingRegistration(
       const RegisterData& data,
-      const PushSubscriptionOptions& options,
+      const std::string& sender_id,
       const std::string& push_registration_id,
       ServiceWorkerStatusCode service_worker_status);
 

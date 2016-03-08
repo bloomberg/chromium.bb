@@ -35,7 +35,6 @@
 class Profile;
 class PushMessagingAppIdentifier;
 class PushMessagingServiceObserver;
-struct PushSubscriptionOptions;
 
 namespace gcm {
 class GCMDriver;
@@ -75,14 +74,16 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SubscribeFromDocument(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
+      const std::string& sender_id,
       int renderer_id,
       int render_frame_id,
-      const content::PushSubscriptionOptions& options,
+      bool user_visible,
       const content::PushMessagingService::RegisterCallback& callback) override;
   void SubscribeFromWorker(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
-      const content::PushSubscriptionOptions& options,
+      const std::string& sender_id,
+      bool user_visible,
       const content::PushMessagingService::RegisterCallback& callback) override;
   void GetEncryptionInfo(
       const GURL& origin,
@@ -164,7 +165,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   void DidRequestPermission(
       const PushMessagingAppIdentifier& app_identifier,
-      const content::PushSubscriptionOptions& options,
+      const std::string& sender_id,
       const content::PushMessagingService::RegisterCallback& callback,
       content::PermissionStatus permission_status);
 

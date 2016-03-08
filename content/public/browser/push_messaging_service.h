@@ -19,7 +19,6 @@ namespace content {
 
 class BrowserContext;
 class ServiceWorkerContext;
-struct PushSubscriptionOptions;
 
 // A push service-agnostic interface that the Push API uses for talking to
 // push messaging services like GCM. Must only be used on the UI thread.
@@ -50,22 +49,24 @@ class CONTENT_EXPORT PushMessagingService {
   // origins and push registrations.
   virtual GURL GetPushEndpoint() = 0;
 
-  // Subscribe the given |options.sender_info| with the push messaging service
-  // in a document context. The frame is known and a permission UI may be
-  // displayed to the user.
+  // Subscribe the given |sender_id| with the push messaging service in a
+  // document context. The frame is known and a permission UI may be displayed
+  // to the user.
   virtual void SubscribeFromDocument(const GURL& requesting_origin,
                                      int64_t service_worker_registration_id,
+                                     const std::string& sender_id,
                                      int renderer_id,
                                      int render_frame_id,
-                                     const PushSubscriptionOptions& options,
+                                     bool user_visible,
                                      const RegisterCallback& callback) = 0;
 
-  // Subscribe the given |options.sender_info| with the push messaging service.
-  // The frame is not known so if permission was not previously granted by the
-  // user this request should fail.
+  // Subscribe the given |sender_id| with the push messaging service. The frame
+  // is not known so if permission was not previously granted by the user this
+  // request should fail.
   virtual void SubscribeFromWorker(const GURL& requesting_origin,
                                    int64_t service_worker_registration_id,
-                                   const PushSubscriptionOptions& options,
+                                   const std::string& sender_id,
+                                   bool user_visible,
                                    const RegisterCallback& callback) = 0;
 
   // Retrieves the encryption information associated with the subscription
