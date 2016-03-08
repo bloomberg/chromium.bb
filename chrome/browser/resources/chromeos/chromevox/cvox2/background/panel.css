@@ -79,12 +79,12 @@ button {
 #caption {
   color: #fff;
   flex-grow: 1;
-  margin-left: 12px;
+  margin: 0 12px;
 }
 
 #speech-container {
   height: 35px;
-  margin-left: 12px;
+  margin: 0 12px;
 }
 
 #speech {
@@ -121,6 +121,23 @@ button {
   height: 17px;
   line-height: 17px;
   white-space: pre;
+}
+
+#search-container {
+  height: 35px;
+  margin: 0 12px;
+}
+
+#search {
+  background-color: #000;
+  border: 1px solid #fff;
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12pt;
+  height: 35px;
+  line-height: 35px;
+  overflow: hidden;
+  width: 100%;
 }
 
 #menus_background {
