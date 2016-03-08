@@ -30,6 +30,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
+#include "content/public/common/features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -374,3 +376,19 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQualityVp9) {
   TestVideoQuality("VP9");
 }
+
+#if BUILDFLAG(RTC_USE_H264)
+
+IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
+                       MANUAL_TestVideoQualityH264) {
+  // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
+  if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
+    LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
+        "Skipping WebRtcVideoQualityBrowserTest.MANUAL_TestVideoQualityH264 "
+        "(test \"OK\")";
+    return;
+  }
+  TestVideoQuality("H264");
+}
+
+#endif  // BUILDFLAG(RTC_USE_H264)
