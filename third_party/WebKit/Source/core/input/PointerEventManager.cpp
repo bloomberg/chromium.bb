@@ -100,11 +100,13 @@ PassRefPtrWillBeRawPtr<EventTarget> PointerEventManager::getEffectiveTargetForPo
 
 // Sends node transition events (pointer|mouse)(out|leave|over|enter) to the corresponding targets
 void PointerEventManager::sendNodeTransitionEvents(
-    PassRefPtrWillBeRawPtr<Node> exitedNode,
-    PassRefPtrWillBeRawPtr<Node> enteredNode,
+    PassRefPtrWillBeRawPtr<Node> prpExitedNode,
+    PassRefPtrWillBeRawPtr<Node> prpEnteredNode,
     const PlatformMouseEvent& mouseEvent,
     PassRefPtrWillBeRawPtr<AbstractView> view)
 {
+    RefPtrWillBeRawPtr<Node> exitedNode = prpExitedNode;
+    RefPtrWillBeRawPtr<Node> enteredNode = prpEnteredNode;
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent =
         m_pointerEventFactory.create(EventTypeNames::mouseout, mouseEvent,
         nullptr, view);
@@ -272,11 +274,10 @@ void PointerEventManager::setNodeUnderPointer(
     }
 }
 
-void PointerEventManager::sendTouchCancelPointerEvent(PassRefPtrWillBeRawPtr<EventTarget> target,
-    const PlatformTouchPoint& point)
+void PointerEventManager::sendTouchCancelPointerEvent(PassRefPtrWillBeRawPtr<EventTarget> prpTarget, const PlatformTouchPoint& point)
 {
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent =
-        m_pointerEventFactory.createPointerCancel(point);
+    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.createPointerCancel(point);
 
     processPendingPointerCapture(pointerEvent, target);
 
@@ -322,11 +323,12 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
 }
 
 WebInputEventResult PointerEventManager::sendMousePointerEvent(
-    PassRefPtrWillBeRawPtr<Node> target, const AtomicString& mouseEventType,
+    PassRefPtrWillBeRawPtr<Node> prpTarget, const AtomicString& mouseEventType,
     int clickCount, const PlatformMouseEvent& mouseEvent,
     PassRefPtrWillBeRawPtr<Node> relatedTarget,
     PassRefPtrWillBeRawPtr<AbstractView> view)
 {
+    RefPtrWillBeRawPtr<Node> target = prpTarget;
     RefPtrWillBeRawPtr<PointerEvent> pointerEvent =
         m_pointerEventFactory.create(mouseEventType, mouseEvent,
         relatedTarget, view);
@@ -449,8 +451,9 @@ EventTarget* PointerEventManager::getCapturingNode(int pointerId)
 }
 
 void PointerEventManager::removePointer(
-    const PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent)
+    const PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent)
 {
+    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
     if (m_pointerEventFactory.remove(pointerEvent)) {
         int pointerId = pointerEvent->pointerId();
         m_pendingPointerCaptureTarget.remove(pointerId);
