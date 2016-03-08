@@ -279,6 +279,8 @@ void BridgedNativeWidgetTest::SetUp() {
 }
 
 void BridgedNativeWidgetTest::TearDown() {
+  if (bridge())
+    bridge()->SetRootView(nullptr);
   view_.reset();
   BridgedNativeWidgetTestBase::TearDown();
 }

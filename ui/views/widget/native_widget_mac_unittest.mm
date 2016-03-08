@@ -555,12 +555,12 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   [[native_parent contentView] addSubview:anchor_view];
 
   // Note: Don't use WidgetTest::CreateChildPlatformWidget because that makes
-  // windows of TYPE_CONTROL which are automatically made visible. But still
-  // mark it as a child to test window positioning.
+  // windows of TYPE_CONTROL which need a parent Widget to obtain the focus
+  // manager.
   Widget* child = new Widget;
   Widget::InitParams init_params;
   init_params.parent = anchor_view;
-  init_params.child = true;
+  init_params.type = Widget::InitParams::TYPE_POPUP;
   child->Init(init_params);
 
   TestWidgetObserver child_observer(child);
@@ -577,7 +577,8 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
       NativeWidgetMac::GetBridgeForNativeWindow(child->GetNativeWindow());
   EXPECT_EQ(native_parent, bridged_native_widget->parent()->GetNSWindow());
 
-  child->SetBounds(gfx::Rect(50, 50, 200, 100));
+  const gfx::Rect child_bounds(50, 50, 200, 100);
+  child->SetBounds(child_bounds);
   EXPECT_FALSE(child->IsVisible());
   EXPECT_EQ(0u, [[native_parent childWindows] count]);
 
@@ -588,11 +589,9 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
             [[native_parent childWindows] objectAtIndex:0]);
   EXPECT_EQ(native_parent, [child->GetNativeWindow() parentWindow]);
 
-  // Child should be positioned on screen relative to the parent, but note we
-  // positioned the parent in Cocoa coordinates, so we need to convert.
-  gfx::Point parent_origin = gfx::ScreenRectFromNSRect(ParentRect()).origin();
-  EXPECT_EQ(gfx::Rect(150, parent_origin.y() + 50, 200, 100),
-            child->GetWindowBoundsInScreen());
+  // Only non-toplevel Widgets are positioned relative to the parent, so the
+  // bounds set above should be in screen coordinates.
+  EXPECT_EQ(child_bounds, child->GetWindowBoundsInScreen());
 
   // Removing the anchor_view from its view hierarchy is permitted. This should
   // not break the relationship between the two windows.
