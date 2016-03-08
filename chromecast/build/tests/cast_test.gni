@@ -139,6 +139,13 @@ template("cast_test_group") {
     ]
 
     args += _test_names
+
+    deps = []
+    if (defined(invoker.deps)) {
+      foreach(_dep, invoker.deps) {
+        deps += [ _dep + "_create_list" ]
+      }
+    }
   }
 
   # This action generates a list of test filters, which will have a priority
@@ -158,6 +165,13 @@ template("cast_test_group") {
     ]
 
     args += _filters
+
+    deps = []
+    if (defined(invoker.deps)) {
+      foreach(_dep, invoker.deps) {
+        deps += [ _dep + "_filters" ]
+      }
+    }
   }
 
   # This target allows us to reference each test as a fully-qualified GN path,
@@ -167,6 +181,11 @@ template("cast_test_group") {
   group(target_name + "_build_tests") {
     testonly = true
     deps = invoker.tests
+    if (defined(invoker.deps)) {
+      foreach(_dep, invoker.deps) {
+        deps += [ _dep + "_build_tests" ]
+      }
+    }
   }
 }
 
