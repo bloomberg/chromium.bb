@@ -10,6 +10,7 @@
 
 #include "platform/LayoutUnit.h"
 #include "wtf/Allocator.h"
+#include "wtf/HashTableDeletedValueType.h"
 
 namespace blink {
 
@@ -24,11 +25,18 @@ class LineLayoutAPIShim;
 
 enum HitTestFilter;
 
+static LayoutObject* const kHashTableDeletedValue = reinterpret_cast<LayoutObject*>(-1);
+
 class LineLayoutItem {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     explicit LineLayoutItem(LayoutObject* layoutObject)
         : m_layoutObject(layoutObject)
+    {
+    }
+
+    explicit LineLayoutItem(WTF::HashTableDeletedValueType)
+        : m_layoutObject(kHashTableDeletedValue)
     {
     }
 
@@ -395,6 +403,21 @@ public:
         return m_layoutObject->hasOverflowClip();
     }
 
+    bool isHashTableDeletedValue() const
+    {
+        return m_layoutObject == kHashTableDeletedValue;
+    }
+
+    struct LineLayoutItemHash {
+        STATIC_ONLY(LineLayoutItemHash);
+        static unsigned hash(const LineLayoutItem& key) { return WTF::PtrHash<LayoutObject*>::hash(key.m_layoutObject); }
+        static bool equal(const LineLayoutItem& a, const LineLayoutItem& b)
+        {
+            return WTF::PtrHash<LayoutObject*>::equal(a.m_layoutObject, b.m_layoutObject);
+        }
+        static const bool safeToCompareToEmptyOrDeleted = true;
+    };
+
 #ifndef NDEBUG
 
     const char* name() const
@@ -425,5 +448,20 @@ private:
 };
 
 } // namespace blink
+
+namespace WTF {
+
+template <>
+struct DefaultHash<blink::LineLayoutItem> {
+    using Hash = blink::LineLayoutItem::LineLayoutItemHash;
+};
+
+template <>
+struct HashTraits<blink::LineLayoutItem> : SimpleClassHashTraits<blink::LineLayoutItem> {
+    STATIC_ONLY(HashTraits);
+};
+
+} // namespace WTF
+
 
 #endif // LineLayoutItem_h
