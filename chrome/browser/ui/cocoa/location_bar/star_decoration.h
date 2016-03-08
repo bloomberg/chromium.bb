@@ -20,7 +20,7 @@ class StarDecoration : public ImageDecoration {
   ~StarDecoration() override;
 
   // Sets the image and tooltip based on |starred|.
-  void SetStarred(bool starred);
+  void SetStarred(bool starred, bool locationBarIsDark);
 
   // Returns true if the star is lit.
   bool starred() const { return starred_; }

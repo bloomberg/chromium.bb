@@ -1266,6 +1266,8 @@
       'browser/ui/cocoa/task_manager_mac.mm',
       'browser/ui/cocoa/themed_window.h',
       'browser/ui/cocoa/themed_window.mm',
+      'browser/ui/cocoa/toolbar/app_toolbar_button.h',
+      'browser/ui/cocoa/toolbar/app_toolbar_button.mm',
       'browser/ui/cocoa/toolbar/app_toolbar_button_cell.h',
       'browser/ui/cocoa/toolbar/app_toolbar_button_cell.mm',
       'browser/ui/cocoa/toolbar/back_forward_menu_controller.h',

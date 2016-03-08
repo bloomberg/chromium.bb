@@ -20,4 +20,16 @@
   return NSZeroPoint;
 }
 
+- (BOOL)inIncognitoMode {
+  return NO;
+}
+
+- (BOOL)inIncognitoModeWithSystemTheme {
+  return NO;
+}
+
+- (BOOL)hasDarkTheme {
+  return NO;
+}
+
 @end

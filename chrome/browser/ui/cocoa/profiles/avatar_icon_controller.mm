@@ -41,7 +41,7 @@
     [self setView:container];
 
     bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
-    NSRect frameRect = NSMakeRect(4, 5, profiles::kAvatarIconWidth,
+    NSRect frameRect = NSMakeRect(5, 5, profiles::kAvatarIconWidth,
         profiles::kAvatarIconHeight);
     if (!isModeMaterial) {
       frameRect.origin = NSZeroPoint;

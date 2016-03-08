@@ -7,9 +7,19 @@
 
 #import <Cocoa/Cocoa.h>
 
-// NSButton subclass which handles middle mouse clicking.
+#import "chrome/browser/ui/cocoa/themed_window.h"
+#import "ui/gfx/color_utils.h"
+#include "ui/gfx/vector_icons_public.h"
 
-@interface ToolbarButton : NSButton {
+enum class ToolbarButtonImageBackgroundStyle {
+  HOVER,
+  HOVER_THEMED,
+  PRESSED,
+  PRESSED_THEMED,
+};
+
+// NSButton subclass which handles middle mouse clicking.
+@interface ToolbarButton : NSButton<ThemedWindowDrawing>  {
  @protected
   // YES when middle mouse clicks should be handled.
   BOOL handleMiddleClick_;
@@ -17,7 +27,13 @@
 
 // Whether or not to handle the mouse middle click events.
 @property(assign, nonatomic) BOOL handleMiddleClick;
-
+// Override point for subclasses to return their icon color.
+- (SkColor)iconColor:(BOOL)themeIsDark;
+// Sets images for each of the ToolbarButton's states from the specified
+// vector icon.
+- (void)setImagesFromIconId:(gfx::VectorIconId)iconId;
+// Override point for subclasses to set the button's icons.
+- (void)resetIcons;
 @end
 
 @interface ToolbarButton (ExposedForTesting)

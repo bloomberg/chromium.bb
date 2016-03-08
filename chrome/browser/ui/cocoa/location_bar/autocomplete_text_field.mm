@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
@@ -14,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
@@ -363,23 +365,34 @@ const CGFloat kAnimationDuration = 0.2;
 }
 
 - (void)viewDidMoveToWindow {
-  if ([self window]) {
-    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self
-           selector:@selector(windowDidResignKey:)
-               name:NSWindowDidResignKeyNotification
-             object:[self window]];
-    [nc addObserver:self
-           selector:@selector(windowDidResize:)
-               name:NSWindowDidResizeNotification
-             object:[self window]];
-    // Only register for drops if not in a popup window. Lazily create the
-    // drop handler when the type of window is known.
-    BrowserWindowController* windowController =
-        [BrowserWindowController browserWindowControllerForView:self];
-    if ([windowController isTabbedWindow])
-      dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
+  if (![self window]) {
+    return;
   }
+
+  // Invert the textfield's colors when Material Design and Incognito and not
+  // a custom theme.
+  if (ui::MaterialDesignController::IsModeMaterial() &&
+      [[self window] inIncognitoModeWithSystemTheme]) {
+    [self setTextColor:[NSColor whiteColor]];
+    [self setBackgroundColor:
+        [NSColor colorWithCalibratedWhite:115 / 255. alpha:1]];
+  }
+
+  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+  [nc addObserver:self
+         selector:@selector(windowDidResignKey:)
+             name:NSWindowDidResignKeyNotification
+           object:[self window]];
+  [nc addObserver:self
+         selector:@selector(windowDidResize:)
+             name:NSWindowDidResizeNotification
+           object:[self window]];
+  // Only register for drops if not in a popup window. Lazily create the
+  // drop handler when the type of window is known.
+  BrowserWindowController* windowController =
+      [BrowserWindowController browserWindowControllerForView:self];
+  if ([windowController isTabbedWindow])
+      dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
 }
 
 // NSTextField becomes first responder by installing a "field editor"

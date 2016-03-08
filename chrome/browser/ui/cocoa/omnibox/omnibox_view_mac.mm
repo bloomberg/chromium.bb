@@ -14,8 +14,10 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
@@ -32,6 +34,7 @@
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
@@ -79,17 +82,36 @@ NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
                                    alpha:1.0];
 }
 
-NSColor* HostTextColor() {
-  return [NSColor blackColor];
+NSColor* HostTextColor(bool inDarkMode) {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return [NSColor blackColor];
+  }
+  return inDarkMode ? [NSColor whiteColor] : [NSColor blackColor];
 }
-NSColor* BaseTextColor() {
-  return [NSColor darkGrayColor];
+NSColor* BaseTextColor(bool inDarkMode) {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return [NSColor darkGrayColor];
+  }
+  return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5] :
+                      [NSColor colorWithCalibratedWhite:0 alpha:0.5];
 }
-NSColor* SecureSchemeColor() {
-  return ColorWithRGBBytes(0x07, 0x95, 0x00);
+NSColor* SecureSchemeColor(bool inDarkMode) {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return ColorWithRGBBytes(0x07, 0x95, 0x00);
+  }
+  return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5] :
+                      ColorWithRGBBytes(0x0B, 0x80, 0x43);
 }
-NSColor* SecurityErrorSchemeColor() {
-  return ColorWithRGBBytes(0xa2, 0x00, 0x00);
+NSColor* SecurityWarningSchemeColor(bool inDarkMode) {
+  return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5] :
+                      ColorWithRGBBytes(0xF0, 0x93, 0x00);
+}
+NSColor* SecurityErrorSchemeColor(bool inDarkMode) {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return ColorWithRGBBytes(0xa2, 0x00, 0x00);
+  }
+  return inDarkMode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5] :
+                      ColorWithRGBBytes(0xC5, 0x39, 0x29);
 }
 
 const char kOmniboxViewMacStateKey[] = "OmniboxViewMacState";
@@ -512,6 +534,7 @@ void OmniboxViewMac::ApplyTextAttributes(
     NSMutableAttributedString* attributedString) {
   NSUInteger as_length = [attributedString length];
   NSRange as_entire_string = NSMakeRange(0, as_length);
+  bool inDarkMode = [[field_ window] inIncognitoModeWithSystemTheme];
 
   ApplyTextStyle(attributedString);
 
@@ -530,12 +553,12 @@ void OmniboxViewMac::ApplyTextAttributes(
   if (model()->CurrentTextIsURL() &&
       (host.is_nonempty() || grey_out_url)) {
     [attributedString addAttribute:NSForegroundColorAttributeName
-                             value:BaseTextColor()
+                             value:BaseTextColor(inDarkMode)
                              range:as_entire_string];
 
     if (!grey_out_url) {
       [attributedString addAttribute:NSForegroundColorAttributeName
-                               value:HostTextColor()
+                               value:HostTextColor(inDarkMode)
                                range:ComponentToNSRange(host)];
     }
   }
@@ -553,24 +576,28 @@ void OmniboxViewMac::ApplyTextAttributes(
     NSColor* color;
     if (security_level == security_state::SecurityStateModel::EV_SECURE ||
         security_level == security_state::SecurityStateModel::SECURE) {
-      color = SecureSchemeColor();
+      color = SecureSchemeColor(inDarkMode);
     } else if (security_level ==
                security_state::SecurityStateModel::SECURITY_ERROR) {
-      color = SecurityErrorSchemeColor();
+      color = SecurityErrorSchemeColor(inDarkMode);
       // Add a strikethrough through the scheme.
       [attributedString addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
                  range:ComponentToNSRange(scheme)];
     } else if (security_level ==
                security_state::SecurityStateModel::SECURITY_WARNING) {
-      color = BaseTextColor();
+      color = SecurityWarningSchemeColor(inDarkMode);
     } else {
       NOTREACHED();
-      color = BaseTextColor();
+      color = BaseTextColor(inDarkMode);
     }
     [attributedString addAttribute:NSForegroundColorAttributeName
                              value:color
                              range:ComponentToNSRange(scheme)];
+  } else if (as_length) {
+    [attributedString addAttribute:NSForegroundColorAttributeName
+                             value:BaseTextColor(inDarkMode)
+                             range:as_entire_string];
   }
 }
 

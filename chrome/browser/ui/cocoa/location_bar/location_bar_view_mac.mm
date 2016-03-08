@@ -332,7 +332,8 @@ void LocationBarViewMac::SetStarred(bool starred) {
   if (star_decoration_->starred() == starred)
     return;
 
-  star_decoration_->SetStarred(starred);
+  star_decoration_->SetStarred(starred,
+      [[field_ window] inIncognitoModeWithSystemTheme]);
   UpdateBookmarkStarVisibility();
   OnDecorationsChanged();
 }
@@ -552,6 +553,11 @@ void LocationBarViewMac::OnChanged() {
   location_icon_decoration_->SetImage(image);
   ev_bubble_decoration_->SetImage(image);
   Layout();
+
+  // Make sure we're displaying the correct icon color for a dark location bar.
+  if ([[field_ window] inIncognitoModeWithSystemTheme]) {
+    star_decoration_->SetStarred(star_decoration_->starred(), true);
+  }
 }
 
 void LocationBarViewMac::OnSetFocus() {

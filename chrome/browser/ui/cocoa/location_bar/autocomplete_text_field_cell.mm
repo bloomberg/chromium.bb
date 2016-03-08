@@ -10,14 +10,17 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/cocoa/scoped_cg_context_smooth_fonts.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 using extensions::FeatureSwitch;
 
@@ -289,39 +292,119 @@ size_t CalculatePositionsInFrame(
 - (void)drawWithFrame:(NSRect)frame inView:(NSView*)controlView {
   // Background color.
   const CGFloat lineWidth = [controlView cr_lineWidth];
-  if (isPopupMode_) {
-    [[self backgroundColor] set];
-    NSRectFillUsingOperation(NSInsetRect(frame, 1, 1), NSCompositeSourceOver);
-  } else {
-    CGFloat insetSize = lineWidth == 0.5 ? 1.5 : 2.0;
-    NSRect fillRect = NSInsetRect(frame, insetSize, insetSize);
-    [[self backgroundColor] set];
-    [[NSBezierPath bezierPathWithRoundedRect:fillRect
-                                     xRadius:kCornerRadius
-                                     yRadius:kCornerRadius] fill];
+  BOOL isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+  BOOL inDarkMode = [[controlView window] inIncognitoModeWithSystemTheme];
+  BOOL showingFirstResponder = [self showsFirstResponder];
+  // Adjust the inset by 1/2 the line width to get a crisp line (screen pixels
+  // lay between cooridnate space lines).
+  CGFloat insetSize = 1 - lineWidth / 2.;
+  if (isModeMaterial && showingFirstResponder && !inDarkMode) {
+    insetSize++;
+  } else if (!isModeMaterial) {
+    insetSize = lineWidth == 0.5 ? 1.5 : 2.0;
   }
 
-  // Border.
-  ui::DrawNinePartImage(frame,
-                        isPopupMode_ ? kPopupBorderImageIds
-                                     : kNormalBorderImageIds,
-                        NSCompositeSourceOver,
-                        1.0,
-                        true);
+  // Compute the border's bezier path.
+  NSRect pathRect = NSInsetRect(frame, insetSize, insetSize);
+  // In dark mode, make room for a shadow beneath the bottom edge.
+  if (inDarkMode && isModeMaterial) {
+    pathRect.size.height -= lineWidth;
+  }
+  NSBezierPath* path =
+      [NSBezierPath bezierPathWithRoundedRect:pathRect
+                                      xRadius:kCornerRadius
+                                      yRadius:kCornerRadius];
+  if (isModeMaterial) {
+    [path setLineWidth:showingFirstResponder ? lineWidth * 2 : lineWidth];
+  }
 
-  // Interior contents. Drawn after the border as some of the interior controls
-  // draw over the border.
+  // Fill the background.
+  [[self backgroundColor] set];
+  if (isPopupMode_) {
+    NSRectFillUsingOperation(NSInsetRect(frame, 1, 1), NSCompositeSourceOver);
+  } else {
+    [path fill];
+  }
+
+  // Draw the border.
+  if (isModeMaterial) {
+    if (!inDarkMode) {
+      [[NSColor colorWithCalibratedWhite:168 / 255. alpha:1] set];
+      [path stroke];
+    } else {
+      // In dark mode the top, middle, and bottom portions of the stroke are
+      // drawn in different colors.
+      {
+        gfx::ScopedNSGraphicsContextSaveGState saveState;
+        [[NSColor colorWithCalibratedWhite:52 / 255. alpha:1] set];
+        [NSBezierPath clipRect:NSMakeRect(NSMinX(frame), NSMaxY(frame) - 2,
+                                          NSWidth(frame), 2)];
+        [path stroke];
+      }
+      {
+        gfx::ScopedNSGraphicsContextSaveGState saveState;
+        [[NSColor colorWithCalibratedWhite:61 / 255. alpha:1] set];
+        [NSBezierPath clipRect:NSMakeRect(NSMinX(frame), NSMinY(frame) + 3,
+                                          NSWidth(frame), NSHeight(frame) - 5)];
+        [path stroke];
+      }
+      {
+        gfx::ScopedNSGraphicsContextSaveGState saveState;
+        [[NSColor colorWithCalibratedWhite:71 / 255. alpha:1] set];
+        [NSBezierPath clipRect:NSMakeRect(NSMinX(frame), NSMinY(frame),
+                                          NSWidth(frame), 3)];
+        [path stroke];
+      }
+
+      // Draw a highlight beneath the top edge, and a shadow beneath the bottom
+      // edge.
+      {
+        gfx::ScopedNSGraphicsContextSaveGState saveState;
+        [NSBezierPath setDefaultLineWidth:lineWidth];
+
+        [[NSColor colorWithCalibratedWhite:120 / 255. alpha:1] set];
+        NSPoint origin = NSMakePoint(NSMinX(pathRect) + 3,
+                                     NSMinY(pathRect) + lineWidth);
+        NSPoint destination = NSMakePoint(NSMaxX(pathRect) - 3,
+                                          NSMinY(pathRect) + lineWidth);
+        [NSBezierPath strokeLineFromPoint:origin
+                                  toPoint:destination];
+
+        origin.y = destination.y = NSMaxY(pathRect) + lineWidth;
+        [[NSColor colorWithCalibratedWhite:69 / 255. alpha:1] set];
+        [NSBezierPath strokeLineFromPoint:origin
+                                  toPoint:destination];
+      }
+    }
+  } else {
+    ui::DrawNinePartImage(frame,
+                          isPopupMode_ ? kPopupBorderImageIds
+                                       : kNormalBorderImageIds,
+                          NSCompositeSourceOver,
+                          1.0,
+                          true);
+  }
+
+  // Draw the interior contents. We do this after drawing the border as some
+  // of the interior controls draw over it.
   [self drawInteriorWithFrame:frame inView:controlView];
 
-  // Focus ring.
-  if ([self showsFirstResponder]) {
-    NSRect focusRingRect = NSInsetRect(frame, lineWidth, lineWidth);
+  // Draw the focus ring.
+  if (showingFirstResponder) {
+    if (!isModeMaterial) {
+      NSRect focusRingRect = NSInsetRect(frame, lineWidth, lineWidth);
+      path = [NSBezierPath bezierPathWithRoundedRect:focusRingRect
+                                             xRadius:kCornerRadius
+                                             yRadius:kCornerRadius];
+      [path setLineWidth:lineWidth * 2.0];
+    }
+
+    CGFloat alphaComponent = 0.5 / lineWidth;
+    if (isModeMaterial && inDarkMode) {
+      alphaComponent = 1;
+    }
     [[[NSColor keyboardFocusIndicatorColor]
-        colorWithAlphaComponent:0.5 / lineWidth] set];
-    NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:focusRingRect
-                                                         xRadius:kCornerRadius
-                                                         yRadius:kCornerRadius];
-    [path setLineWidth:lineWidth * 2.0];
+        colorWithAlphaComponent:alphaComponent] set];
     [path stroke];
   }
 }

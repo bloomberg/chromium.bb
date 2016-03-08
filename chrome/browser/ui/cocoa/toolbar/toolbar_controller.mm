@@ -38,6 +38,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
+#import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/back_forward_menu_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/reload_button_cocoa.h"
@@ -64,6 +65,7 @@
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 
@@ -76,20 +78,17 @@ namespace {
 // Duration of the toolbar animation.
 const NSTimeInterval kToolBarAnimationDuration = 0.12;
 
-// Height of the location bar. Used for animating the toolbar in and out when
-// the location bar is displayed stand-alone for bookmark apps.
-const CGFloat kLocationBarHeight = 29.0;
+// The size of toolbar buttons in Material Design.
+const NSSize kMaterialDesignToolbarButtonSize = NSMakeSize(28, 28);
 
-// The padding above the toolbar elements. This is calculated from the values
-// in Toolbar.xib: the height of the toolbar (35) minus the height of the child
-// elements (29) minus the y-origin of the elements (4).
-const CGFloat kToolbarElementTopPadding = 2.0;
+// The height of the location bar in Material Design.
+const CGFloat kMaterialDesignLocationBarHeight = 28;
+
+// The padding between Material Design elements (when they don't abut).
+const CGFloat kMaterialDesignElementPadding = 4;
 
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
-
-// The amount of left padding that the app menu should have.
-const CGFloat kAppMenuLeftPadding = 3.0;
 
 class BrowserActionsContainerDelegate :
     public BrowserActionsContainerViewSizeDelegate {
@@ -131,11 +130,18 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 
 @interface ToolbarController()
 @property(assign, nonatomic) Browser* browser;
+// Height of the location bar. Used for animating the toolbar in and out when
+// the location bar is displayed stand-alone for bookmark apps.
++ (CGFloat)locationBarHeight;
+// Return the amount of left padding that the app menu should have.
++ (CGFloat)appMenuLeftPadding;
 - (void)cleanUp;
 - (void)addAccessibilityDescriptions;
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(const std::string&)prefName;
 - (ToolbarView*)toolbarView;
+// Height of the toolbar in pixels when the bookmark bar is closed.
+- (CGFloat)baseToolbarHeight;
 - (void)toolbarFrameChanged;
 - (void)showLocationBarOnly;
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate;
@@ -214,6 +220,22 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 
 @synthesize browser = browser_;
 
++ (CGFloat)locationBarHeight {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return 29;
+  }
+
+  return kMaterialDesignLocationBarHeight;
+}
+
++ (CGFloat)appMenuLeftPadding {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return 3;
+  }
+
+  return kMaterialDesignElementPadding;
+}
+
 - (id)initWithCommands:(CommandUpdater*)commands
                profile:(Profile*)profile
                browser:(Browser*)browser
@@ -266,44 +288,122 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     return;
   }
 
-  [[backButton_ cell] setImageID:IDR_BACK
-                  forButtonState:image_button_cell::kDefaultState];
-  [[backButton_ cell] setImageID:IDR_BACK_H
-                  forButtonState:image_button_cell::kHoverState];
-  [[backButton_ cell] setImageID:IDR_BACK_P
-                  forButtonState:image_button_cell::kPressedState];
-  [[backButton_ cell] setImageID:IDR_BACK_D
-                  forButtonState:image_button_cell::kDisabledState];
+  // Make Material Design layout adjustments to the NIB items.
+  bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+  if (isModeMaterial) {
+    ToolbarView* toolbarView = [self toolbarView];
 
-  [[forwardButton_ cell] setImageID:IDR_FORWARD
-                     forButtonState:image_button_cell::kDefaultState];
-  [[forwardButton_ cell] setImageID:IDR_FORWARD_H
-                     forButtonState:image_button_cell::kHoverState];
-  [[forwardButton_ cell] setImageID:IDR_FORWARD_P
-                     forButtonState:image_button_cell::kPressedState];
-  [[forwardButton_ cell] setImageID:IDR_FORWARD_D
-                     forButtonState:image_button_cell::kDisabledState];
+    // Set the toolbar height.
+    NSRect frame = [toolbarView frame];
+    frame.size.height = [self baseToolbarHeight];
+    [toolbarView setFrame:frame];
 
-  [[reloadButton_ cell] setImageID:IDR_RELOAD
+    NSRect backButtonFrame = [backButton_ frame];
+    backButtonFrame.origin.x = kMaterialDesignElementPadding;
+    backButtonFrame.origin.y -= 1;
+    backButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    [backButton_ setFrame:backButtonFrame];
+
+    NSRect forwardButtonFrame = [forwardButton_ frame];
+    forwardButtonFrame.origin.x = NSMaxX(backButtonFrame);
+    forwardButtonFrame.origin.y = backButtonFrame.origin.y;
+    forwardButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    [forwardButton_ setFrame:forwardButtonFrame];
+
+    NSRect reloadButtonFrame = [reloadButton_ frame];
+    reloadButtonFrame.origin.x = NSMaxX(forwardButtonFrame);
+    reloadButtonFrame.origin.y = forwardButtonFrame.origin.y;
+    reloadButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    [reloadButton_ setFrame:reloadButtonFrame];
+
+    NSRect homeButtonFrame = [homeButton_ frame];
+    homeButtonFrame.origin.x = NSMaxX(reloadButtonFrame);
+    homeButtonFrame.origin.y = reloadButtonFrame.origin.y;
+    homeButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    [homeButton_ setFrame:homeButtonFrame];
+
+    // Replace the app button from the nib with an AppToolbarButton instance for
+    // Material Design.
+    AppToolbarButton* newMenuButton =
+        [[[AppToolbarButton alloc] initWithFrame:[appMenuButton_ frame]]
+            autorelease];
+    [newMenuButton setAutoresizingMask:[appMenuButton_ autoresizingMask]];
+    [[appMenuButton_ superview] addSubview:newMenuButton];
+    [appMenuButton_ removeFromSuperview];
+    appMenuButton_ = newMenuButton;
+
+    // Adjust the menu button's position.
+    NSRect toolbarBounds = [toolbarView bounds];
+    NSRect menuButtonFrame = [appMenuButton_ frame];
+    menuButtonFrame.origin.x = NSMaxX(toolbarBounds) -
+        [ToolbarController appMenuLeftPadding] -
+            kMaterialDesignToolbarButtonSize.width;
+    menuButtonFrame.origin.y = homeButtonFrame.origin.y;
+    menuButtonFrame.size = kMaterialDesignToolbarButtonSize;
+    [appMenuButton_ setFrame:menuButtonFrame];
+
+    // Adjust the size and location on the location bar to take up the
+    // space between the reload and menu buttons.
+    NSRect locationBarFrame = [locationBar_ frame];
+    locationBarFrame.origin.x = NSMaxX(homeButtonFrame) +
+        kMaterialDesignElementPadding;
+    locationBarFrame.origin.y = NSMaxY(toolbarBounds) -
+        kMaterialDesignElementPadding - [ToolbarController locationBarHeight];
+    locationBarFrame.size.width =
+        (menuButtonFrame.origin.x - kMaterialDesignElementPadding) -
+            locationBarFrame.origin.x;
+    locationBarFrame.size.height = kMaterialDesignToolbarButtonSize.height;
+    [locationBar_ setFrame:locationBarFrame];
+  } else {
+    [[backButton_ cell] setImageID:IDR_BACK
                     forButtonState:image_button_cell::kDefaultState];
-  [[reloadButton_ cell] setImageID:IDR_RELOAD_H
+    [[backButton_ cell] setImageID:IDR_BACK_H
                     forButtonState:image_button_cell::kHoverState];
-  [[reloadButton_ cell] setImageID:IDR_RELOAD_P
+    [[backButton_ cell] setImageID:IDR_BACK_P
+                    forButtonState:image_button_cell::kPressedState];
+    [[backButton_ cell] setImageID:IDR_BACK_D
+                    forButtonState:image_button_cell::kDisabledState];
+
+    [[forwardButton_ cell] setImageID:IDR_FORWARD
+                       forButtonState:image_button_cell::kDefaultState];
+    [[forwardButton_ cell] setImageID:IDR_FORWARD_H
+                       forButtonState:image_button_cell::kHoverState];
+    [[forwardButton_ cell] setImageID:IDR_FORWARD_P
+                       forButtonState:image_button_cell::kPressedState];
+    [[forwardButton_ cell] setImageID:IDR_FORWARD_D
+                       forButtonState:image_button_cell::kDisabledState];
+
+    [[reloadButton_ cell] setImageID:IDR_RELOAD
+                      forButtonState:image_button_cell::kDefaultState];
+    [[reloadButton_ cell] setImageID:IDR_RELOAD_H
+                      forButtonState:image_button_cell::kHoverState];
+    [[reloadButton_ cell] setImageID:IDR_RELOAD_P
+                      forButtonState:image_button_cell::kPressedState];
+
+    [[homeButton_ cell] setImageID:IDR_HOME
+                    forButtonState:image_button_cell::kDefaultState];
+    [[homeButton_ cell] setImageID:IDR_HOME_H
+                    forButtonState:image_button_cell::kHoverState];
+    [[homeButton_ cell] setImageID:IDR_HOME_P
                     forButtonState:image_button_cell::kPressedState];
 
-  [[homeButton_ cell] setImageID:IDR_HOME
-                  forButtonState:image_button_cell::kDefaultState];
-  [[homeButton_ cell] setImageID:IDR_HOME_H
-                  forButtonState:image_button_cell::kHoverState];
-  [[homeButton_ cell] setImageID:IDR_HOME_P
-                  forButtonState:image_button_cell::kPressedState];
+    [[appMenuButton_ cell] setImageID:IDR_TOOLS
+                       forButtonState:image_button_cell::kDefaultState];
+    [[appMenuButton_ cell] setImageID:IDR_TOOLS_H
+                       forButtonState:image_button_cell::kHoverState];
+    [[appMenuButton_ cell] setImageID:IDR_TOOLS_P
+                       forButtonState:image_button_cell::kPressedState];
 
-  [[appMenuButton_ cell] setImageID:IDR_TOOLS
-                     forButtonState:image_button_cell::kDefaultState];
-  [[appMenuButton_ cell] setImageID:IDR_TOOLS_H
-                     forButtonState:image_button_cell::kHoverState];
-  [[appMenuButton_ cell] setImageID:IDR_TOOLS_P
-                     forButtonState:image_button_cell::kPressedState];
+    // Adjust the toolbar height if running on Retina - see the comment in
+    // -baseToolbarHeight.
+    CGFloat toolbarHeight = [self baseToolbarHeight];
+    ToolbarView* toolbarView = [self toolbarView];
+    NSRect toolbarFrame = [toolbarView frame];
+    if (toolbarFrame.size.height != toolbarHeight) {
+      toolbarFrame.size.height = toolbarHeight;
+      [toolbarView setFrame:toolbarFrame];
+    }
+  }
 
   notificationBridge_.reset(
       new ToolbarControllerInternal::NotificationBridge(self));
@@ -324,15 +424,9 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 
   locationBarView_.reset(new LocationBarViewMac(locationBar_, commands_,
                                                 profile_, browser_));
-  [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
-
-  // Adjust the toolbar height if running on Retina - see the comment in
-  // -baseToolbarHeight.
-  CGFloat toolbarHeight = [self baseToolbarHeight];
-  NSRect toolbarFrame = [[locationBar_ superview] frame];
-  if (toolbarFrame.size.height != toolbarHeight) {
-    toolbarFrame.size.height = toolbarHeight;
-    [[locationBar_ superview] setFrame:toolbarFrame];
+  [locationBar_ setFont:[NSFont systemFontOfSize:14]];
+  if (!isModeMaterial) {
+    [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
   }
 
   // Register pref observers for the optional home and page/options buttons
@@ -660,7 +754,10 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   // Always shift the text field by the width of the home button minus one pixel
   // since the frame edges of each button are right on top of each other. When
   // hiding the button, reverse the direction of the movement (to the left).
-  CGFloat moveX = [homeButton_ frame].size.width - 1.0;
+  CGFloat moveX = [homeButton_ frame].size.width;
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    moveX -= 1.0;
+  }
   if (hide)
     moveX *= -1;  // Reverse the direction of the move.
 
@@ -683,9 +780,15 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 
 - (void)updateAppMenuButtonSeverity:(AppMenuIconPainter::Severity)severity
                             animate:(BOOL)animate {
-  AppToolbarButtonCell* cell =
-      base::mac::ObjCCastStrict<AppToolbarButtonCell>([appMenuButton_ cell]);
-  [cell setSeverity:severity shouldAnimate:animate];
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    AppToolbarButtonCell* cell =
+        base::mac::ObjCCastStrict<AppToolbarButtonCell>([appMenuButton_ cell]);
+    [cell setSeverity:severity shouldAnimate:animate];
+    return;
+  }
+  AppToolbarButton* appMenuButton =
+      base::mac::ObjCCastStrict<AppToolbarButton>(appMenuButton_);
+  [appMenuButton setSeverity:severity shouldAnimate:animate];
 }
 
 - (void)prefChanged:(const std::string&)prefName {
@@ -729,7 +832,7 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 }
 
 - (void)updateVisibility:(BOOL)visible withAnimation:(BOOL)animate {
-  CGFloat newHeight = visible ? kLocationBarHeight : 0;
+  CGFloat newHeight = visible ? [ToolbarController locationBarHeight] : 0;
 
   // Perform the animation, which will cause the BrowserWindowController to
   // resize this view in the browser layout as required.
@@ -768,7 +871,8 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 
   if ([browserActionsContainerView_ isHidden]) {
     CGFloat edgeXPos = [appMenuButton_ frame].origin.x;
-    leftDistance = edgeXPos - locationBarXPos - kAppMenuLeftPadding;
+    leftDistance = edgeXPos - locationBarXPos -
+        [ToolbarController appMenuLeftPadding];
   } else {
     leftDistance = NSMinX([browserActionsContainerView_ animationEndFrame]) -
         locationBarXPos;
@@ -800,11 +904,18 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
     // bounds (if, for instance, the bookmark bar was added).
     // This will advance to the end of the animation, so we also need to adjust
     // it afterwards.
+    CGFloat elementTopPadding = kMaterialDesignElementPadding;
+    if (!ui::MaterialDesignController::IsModeMaterial()) {
+      // Pre-Material Design, this value is calculated from the values in
+      // Toolbar.xib: the height of the toolbar (35) minus the height of the
+      // child elements (29) minus the y-origin of the elements (4).
+      elementTopPadding = 2;
+    }
     [browserActionsContainerView_ stopAnimation];
     NSRect containerFrame = [browserActionsContainerView_ frame];
     containerFrame.origin.y =
         NSHeight([[self view] frame]) - NSHeight(containerFrame) -
-        kToolbarElementTopPadding;
+        elementTopPadding;
     [browserActionsContainerView_ setFrame:containerFrame];
     [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
   }
@@ -857,11 +968,11 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 
   // Ensure the location bar fills the toolbar.
   NSRect toolbarFrame = [[self view] frame];
-  toolbarFrame.size.height = kLocationBarHeight;
+  toolbarFrame.size.height = [ToolbarController locationBarHeight];
   [[self view] setFrame:toolbarFrame];
 
   [locationBar_ setFrame:NSMakeRect(0, 0, NSWidth([[self view] frame]),
-                                    kLocationBarHeight)];
+                                    [ToolbarController locationBarHeight])];
 
   [backButton_ setHidden:YES];
   [forwardButton_ setHidden:YES];
@@ -909,7 +1020,8 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 
 - (CGFloat)baseToolbarHeight {
   // Height of the toolbar in pixels when the bookmark bar is closed.
-  const CGFloat baseToolbarHeightNormal = 35.0;
+  const CGFloat baseToolbarHeightNormal =
+      ui::MaterialDesignController::IsModeMaterial() ? 37 : 35;
 
   // Not all lines are drawn at 2x normal height when running on Retina, which
   // causes the toolbar controls to be visually 1pt too high within the toolbar

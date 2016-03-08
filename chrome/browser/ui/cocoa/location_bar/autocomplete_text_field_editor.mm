@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
@@ -15,6 +16,7 @@
 #include "chrome/grit/generated_resources.h"
 #import "ui/base/cocoa/find_pasteboard.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 namespace {
 
@@ -65,6 +67,31 @@ BOOL ThePasteboardIsTooDamnBig() {
     [self setEnabledTextCheckingTypes:checkingTypes];
   }
   return self;
+}
+
+- (void)viewDidMoveToWindow {
+  // Only care about landing in a window when in Material Design mode.
+  if (![self window] || !ui::MaterialDesignController::IsModeMaterial()) {
+    return;
+  }
+
+  // Only care about Incognito mode with a non-custom theme.
+  if (![[self window] inIncognitoModeWithSystemTheme]) {
+    return;
+  }
+
+  // Draw a light insertion point for MD Incognito.
+  [self setInsertionPointColor:
+      [NSColor colorWithCalibratedWhite:1 alpha:0.75]];
+  // In MD Incognito the text is light gray against a dark background. When
+  // selected, the light gray text against the selection color is illegible.
+  // Rather than tweak or change the selection color, make the text black when
+  // selected.
+  NSColor* textSelectionColor = [NSColor selectedTextBackgroundColor];
+  [self setSelectedTextAttributes:@{
+    NSForegroundColorAttributeName : [NSColor blackColor],
+    NSBackgroundColorAttributeName : textSelectionColor
+  }];
 }
 
 // If the entire field is selected, drag the same data as would be
