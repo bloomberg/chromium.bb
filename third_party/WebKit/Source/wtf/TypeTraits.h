@@ -64,7 +64,8 @@ template <typename T> struct IsTriviallyDestructible {
     static const bool value = __has_trivial_destructor(T);
 };
 
-template <typename T, typename U> class IsSubclass {
+template <typename T, typename U> struct IsSubclass {
+private:
     typedef char YesType;
     struct NoType {
         char padding[8];
@@ -77,7 +78,8 @@ public:
     static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
 };
 
-template <typename T, template <typename... V> class U> class IsSubclassOfTemplate {
+template <typename T, template <typename... V> class U> struct IsSubclassOfTemplate {
+private:
     typedef char YesType;
     struct NoType {
         char padding[8];
@@ -91,7 +93,8 @@ public:
 };
 
 template <typename T, template <typename V, size_t W> class U>
-class IsSubclassOfTemplateTypenameSize {
+struct IsSubclassOfTemplateTypenameSize {
+private:
     typedef char YesType;
     struct NoType {
         char padding[8];
@@ -105,7 +108,8 @@ public:
 };
 
 template <typename T, template <typename V, size_t W, typename X> class U>
-class IsSubclassOfTemplateTypenameSizeTypename {
+struct IsSubclassOfTemplateTypenameSizeTypename {
+private:
     typedef char YesType;
     struct NoType {
         char padding[8];
@@ -137,13 +141,11 @@ struct RemoveTemplate<OuterTemplate<T>, OuterTemplate> {
 // Here, we use a template specialization for same type case to allow incomplete
 // types.
 
-template <typename T, typename U> class IsBaseOf {
-public:
+template <typename T, typename U> struct IsBaseOf {
     static const bool value = std::is_base_of<T, U>::value;
 };
 
-template <typename T> class IsBaseOf<T, T> {
-public:
+template <typename T> struct IsBaseOf<T, T> {
     static const bool value = true;
 };
 
