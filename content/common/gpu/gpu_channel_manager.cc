@@ -18,7 +18,6 @@
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/image_transport_surface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -119,20 +118,24 @@ void GpuChannelManager::RemoveChannel(int client_id) {
 }
 
 #if defined(OS_MACOSX)
-void GpuChannelManager::AddImageTransportSurface(
+void GpuChannelManager::AddBufferPresentedCallback(
     int32_t surface_id,
-    ImageTransportHelper* image_transport_helper) {
-  image_transport_map_.AddWithID(image_transport_helper, surface_id);
+    const BufferPresentedCallback& callback) {
+  DCHECK(buffer_presented_callback_map_.find(surface_id) ==
+         buffer_presented_callback_map_.end());
+  buffer_presented_callback_map_[surface_id] = callback;
 }
 
-void GpuChannelManager::RemoveImageTransportSurface(int32_t surface_id) {
-  image_transport_map_.Remove(surface_id);
+void GpuChannelManager::RemoveBufferPresentedCallback(int32_t surface_id) {
+  auto it = buffer_presented_callback_map_.find(surface_id);
+  DCHECK(it != buffer_presented_callback_map_.end());
+  buffer_presented_callback_map_.erase(it);
 }
 
 void GpuChannelManager::BufferPresented(const BufferPresentedParams& params) {
-  ImageTransportHelper* helper = image_transport_map_.Lookup(params.surface_id);
-  if (helper)
-    helper->BufferPresented(params);
+  auto it = buffer_presented_callback_map_.find(params.surface_id);
+  if (it != buffer_presented_callback_map_.end())
+    it->second.Run(params);
 }
 #endif
 

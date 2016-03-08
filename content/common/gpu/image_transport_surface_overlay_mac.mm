@@ -20,12 +20,16 @@
 typedef void* GLeglImageOES;
 #endif
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/accelerated_surface_buffers_swapped_params_mac.h"
 #include "content/common/gpu/buffer_presented_params_mac.h"
 #include "content/common/gpu/ca_layer_partial_damage_tree_mac.h"
 #include "content/common/gpu/ca_layer_tree_mac.h"
+#include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
@@ -115,25 +119,39 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
-    : use_remote_layer_api_(ui::RemoteLayerAPISupported()),
+    : manager_(manager),
+      stub_(stub->AsWeakPtr()),
+      handle_(handle),
+      use_remote_layer_api_(ui::RemoteLayerAPISupported()),
       scale_factor_(1),
       gl_renderer_id_(0),
       vsync_parameters_valid_(false),
       display_pending_swap_timer_(true, false),
       weak_factory_(this) {
-  helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
+  manager_->AddBufferPresentedCallback(
+      handle_, base::Bind(&ImageTransportSurfaceOverlayMac::BufferPresented,
+                          base::Unretained(this)));
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
 
 ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
+  if (stub_.get()) {
+    stub_->SetLatencyInfoCallback(
+        base::Callback<void(const std::vector<ui::LatencyInfo>&)>());
+  }
   Destroy();
+  manager_->RemoveBufferPresentedCallback(handle_);
 }
 
 bool ImageTransportSurfaceOverlayMac::Initialize(
     gfx::GLSurface::Format format) {
-  if (!helper_->Initialize(format))
+  if (!stub_.get() || !stub_->decoder())
     return false;
+
+  stub_->SetLatencyInfoCallback(
+      base::Bind(&ImageTransportSurfaceOverlayMac::SetLatencyInfo,
+                 base::Unretained(this)));
 
   // Create the CAContext to send this to the GPU process, and the layer for
   // the context.
@@ -158,6 +176,38 @@ void ImageTransportSurfaceOverlayMac::Destroy() {
 
 bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
   return false;
+}
+
+void ImageTransportSurfaceOverlayMac::SetLatencyInfo(
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  latency_info_.insert(latency_info_.end(), latency_info.begin(),
+                       latency_info.end());
+}
+
+void ImageTransportSurfaceOverlayMac::BufferPresented(
+    const BufferPresentedParams& params) {
+  vsync_timebase_ = params.vsync_timebase;
+  vsync_interval_ = params.vsync_interval;
+  vsync_parameters_valid_ = (vsync_interval_ != base::TimeDelta());
+
+  // Compute |vsync_timebase_| to be the first vsync after time zero.
+  if (vsync_parameters_valid_) {
+    vsync_timebase_ -=
+        vsync_interval_ *
+        ((vsync_timebase_ - base::TimeTicks()) / vsync_interval_);
+  }
+}
+
+void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
+    AcceleratedSurfaceBuffersSwappedParams params) {
+  // TRACE_EVENT for gpu tests:
+  TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers", TRACE_EVENT_SCOPE_THREAD,
+                       "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
+                       "width", params.size.width());
+  // On mac, handle_ is a surface id. See
+  // GpuProcessTransportFactory::CreatePerCompositorData
+  params.surface_id = handle_;
+  manager_->delegate()->SendAcceleratedSurfaceBuffersSwapped(params);
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
@@ -320,7 +370,7 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
   params.size = swap->pixel_size;
   params.scale_factor = swap->scale_factor;
   params.latency_info.swap(swap->latency_info);
-  helper_->SendAcceleratedSurfaceBuffersSwapped(params);
+  SendAcceleratedSurfaceBuffersSwapped(params);
 
   // Remove this from the queue, and reset any callback timers.
   pending_swaps_.pop_front();
@@ -455,20 +505,6 @@ bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {
   return true;
 }
 
-void ImageTransportSurfaceOverlayMac::BufferPresented(
-    const BufferPresentedParams& params) {
-  vsync_timebase_ = params.vsync_timebase;
-  vsync_interval_ = params.vsync_interval;
-  vsync_parameters_valid_ = (vsync_interval_ != base::TimeDelta());
-
-  // Compute |vsync_timebase_| to be the first vsync after time zero.
-  if (vsync_parameters_valid_) {
-    vsync_timebase_ -=
-        vsync_interval_ *
-        ((vsync_timebase_ - base::TimeTicks()) / vsync_interval_);
-  }
-}
-
 bool ImageTransportSurfaceOverlayMac::Resize(const gfx::Size& pixel_size,
                                              float scale_factor,
                                              bool has_alpha) {
@@ -477,12 +513,6 @@ bool ImageTransportSurfaceOverlayMac::Resize(const gfx::Size& pixel_size,
   pixel_size_ = pixel_size;
   scale_factor_ = scale_factor;
   return true;
-}
-
-void ImageTransportSurfaceOverlayMac::SetLatencyInfo(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  latency_info_.insert(
-      latency_info_.end(), latency_info.begin(), latency_info.end());
 }
 
 void ImageTransportSurfaceOverlayMac::OnGpuSwitched() {

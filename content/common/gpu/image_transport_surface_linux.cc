@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/image_transport_surface.h"
 
+#include "content/common/gpu/pass_through_image_transport_surface.h"
+
 namespace content {
 
 // static

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,6 +24,11 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 #include "url/gurl.h"
+
+#if defined(OS_MACOSX)
+#include "base/callback.h"
+#include "base/containers/hash_tables.h"
+#endif
 
 namespace base {
 class WaitableEvent;
@@ -58,7 +62,6 @@ class GpuChannel;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferFactory;
 class GpuWatchdog;
-class ImageTransportHelper;
 struct EstablishChannelParams;
 #if defined(OS_MACOSX)
 struct BufferPresentedParams;
@@ -69,6 +72,10 @@ struct BufferPresentedParams;
 // browser process to them based on the corresponding renderer ID.
 class CONTENT_EXPORT GpuChannelManager {
  public:
+#if defined(OS_MACOSX)
+  typedef base::Callback<void(const BufferPresentedParams&)>
+      BufferPresentedCallback;
+#endif
   GpuChannelManager(const gpu::GpuPreferences& gpu_preferences,
                     GpuChannelManagerDelegate* delegate,
                     GpuWatchdog* watchdog,
@@ -100,9 +107,9 @@ class CONTENT_EXPORT GpuChannelManager {
   void LoseAllContexts();
 
 #if defined(OS_MACOSX)
-  void AddImageTransportSurface(int32_t routing_id,
-                                ImageTransportHelper* image_transport_helper);
-  void RemoveImageTransportSurface(int32_t routing_id);
+  void AddBufferPresentedCallback(int32_t routing_id,
+                                  const BufferPresentedCallback& callback);
+  void RemoveBufferPresentedCallback(int32_t routing_id);
   void BufferPresented(const BufferPresentedParams& params);
 #endif
 
@@ -176,7 +183,8 @@ class CONTENT_EXPORT GpuChannelManager {
 
   GpuChannelManagerDelegate* const delegate_;
 #if defined(OS_MACOSX)
-  IDMap<ImageTransportHelper> image_transport_map_;
+  base::hash_map<int32_t, BufferPresentedCallback>
+      buffer_presented_callback_map_;
 #endif
 
   GpuWatchdog* watchdog_;

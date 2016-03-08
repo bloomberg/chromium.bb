@@ -12,6 +12,7 @@
 #include "base/timer/timer.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/image_transport_surface.h"
+#include "ui/events/latency_info.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_observer.h"
 
@@ -22,9 +23,10 @@ namespace content {
 
 class CALayerTree;
 class CALayerPartialDamageTree;
+struct AcceleratedSurfaceBuffersSwappedParams;
+struct BufferPresentedParams;
 
 class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
-                                        public ImageTransportSurface,
                                         public ui::GpuSwitchingObserver {
  public:
   ImageTransportSurfaceOverlayMac(GpuChannelManager* manager,
@@ -62,10 +64,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                        int sorting_context_id) override;
   bool IsSurfaceless() const override;
 
-  // ImageTransportSurface implementation
-  void BufferPresented(const BufferPresentedParams& params) override;
-  void SetLatencyInfo(const std::vector<ui::LatencyInfo>&) override;
-
   // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
 
@@ -75,6 +73,10 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   ~ImageTransportSurfaceOverlayMac() override;
 
+  void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
+  void BufferPresented(const BufferPresentedParams& params);
+  void SendAcceleratedSurfaceBuffersSwapped(
+      AcceleratedSurfaceBuffersSwappedParams params);
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
 
   // Returns true if the front of |pending_swaps_| has completed, or has timed
@@ -102,14 +104,17 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   base::TimeTicks GetNextVSyncTimeAfter(
       const base::TimeTicks& from, double interval_fraction);
 
-  scoped_ptr<ImageTransportHelper> helper_;
+  GpuChannelManager* manager_;
+  base::WeakPtr<GpuCommandBufferStub> stub_;
+  gfx::PluginWindowHandle handle_;
+  std::vector<ui::LatencyInfo> latency_info_;
+
   bool use_remote_layer_api_;
   base::scoped_nsobject<CAContext> ca_context_;
   base::scoped_nsobject<CALayer> ca_root_layer_;
 
   gfx::Size pixel_size_;
   float scale_factor_;
-  std::vector<ui::LatencyInfo> latency_info_;
 
   // The renderer ID that all contexts made current to this surface should be
   // targeting.

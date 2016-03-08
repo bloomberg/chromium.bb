@@ -5,10 +5,8 @@
 #include "content/common/gpu/image_transport_surface.h"
 
 #include "base/macros.h"
-#include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/pass_through_image_transport_surface.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_osmesa.h"
 
 namespace content {

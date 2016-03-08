@@ -433,6 +433,8 @@
       'common/gpu/media/media_service.h',
       'common/gpu/media/shared_memory_region.cc',
       'common/gpu/media/shared_memory_region.h',
+      'common/gpu/pass_through_image_transport_surface.cc',
+      'common/gpu/pass_through_image_transport_surface.h',
       'common/gpu/stream_texture_android.cc',
       'common/gpu/stream_texture_android.h',
       'common/host_discardable_shared_memory_manager.cc',

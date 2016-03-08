@@ -12,6 +12,7 @@
 #include "base/win/windows_version.h"
 #include "content/common/gpu/child_window_surface_win.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/pass_through_image_transport_surface.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_bindings.h"
