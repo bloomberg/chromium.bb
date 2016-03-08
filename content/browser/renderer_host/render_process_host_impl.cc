@@ -1283,8 +1283,8 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   if (IsZeroCopyUploadEnabled())
     command_line->AppendSwitch(switches::kEnableZeroCopy);
-  if (IsPartialRasterEnabled())
-    command_line->AppendSwitch(switches::kEnablePartialRaster);
+  if (!IsPartialRasterEnabled())
+    command_line->AppendSwitch(switches::kDisablePartialRaster);
 
   if (IsForceGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kForceGpuRasterization);

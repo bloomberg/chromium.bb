@@ -222,6 +222,10 @@ const char kDisableNativeGpuMemoryBuffers[] =
 // Disables the Web Notification and the Push APIs.
 const char kDisableNotifications[]          = "disable-notifications";
 
+// Disable partial raster in renderer. Disabling this switch also disables
+// the use of persistent gpu memory buffers.
+const char kDisablePartialRaster[] = "disable-partial-raster";
+
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
@@ -394,10 +398,6 @@ const char kEnableNetworkInformation[]      = "enable-network-information";
 // Enables action button icons for the Web Notification API.
 const char kEnableNotificationActionIcons[] =
     "enable-notification-action-icons";
-
-// Enables partial raster. Enabling this switch also enables the use of
-// persistent gpu memory buffers.
-const char kEnablePartialRaster[] = "enable-partial-raster";
 
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";

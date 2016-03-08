@@ -743,7 +743,7 @@ void RenderThreadImpl::Init() {
 
   is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
   is_partial_raster_enabled_ =
-      command_line.HasSwitch(switches::kEnablePartialRaster);
+      !command_line.HasSwitch(switches::kDisablePartialRaster);
   is_gpu_memory_buffer_compositor_resources_enabled_ = command_line.HasSwitch(
       switches::kEnableGpuMemoryBufferCompositorResources);
 
