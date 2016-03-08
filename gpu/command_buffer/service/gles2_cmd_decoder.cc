@@ -11117,9 +11117,10 @@ void GLES2DecoderImpl::DoCompressedTexSubImage3D(
         "glCompressedTexSubImage3D", format, "format");
     return;
   }
-  if (width < 0 || height < 0 || depth < 0) {
+  if (!texture_manager()->ValidForTarget(target, level, width, height, depth)) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCompressedTexSubImage3D", "size < 0");
+        GL_INVALID_VALUE,
+        "glCompressedTexSubImage3D", "dimensions out of range");
     return;
   }
   if (image_size < 0) {
@@ -11339,6 +11340,12 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCompressedTexSubImage2D", "unknown texture for target");
+    return;
+  }
+  if (!texture_manager()->ValidForTarget(target, level, width, height, 1)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE,
+        "glCompressedTexSubImage2D", "dimensions out of range");
     return;
   }
   Texture* texture = texture_ref->texture();
