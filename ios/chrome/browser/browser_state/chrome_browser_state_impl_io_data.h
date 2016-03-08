@@ -116,9 +116,9 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
       scoped_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       ProtocolHandlerMap* protocol_handlers) const override;
-  net::URLRequestContext* InitializeAppRequestContext(
+  AppRequestContext* InitializeAppRequestContext(
       net::URLRequestContext* main_context) const override;
-  net::URLRequestContext* AcquireIsolatedAppRequestContext(
+  AppRequestContext* AcquireIsolatedAppRequestContext(
       net::URLRequestContext* main_context) const override;
 
   // Deletes all network related data since |time|. It deletes transport

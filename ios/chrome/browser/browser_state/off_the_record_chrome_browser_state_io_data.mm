@@ -226,14 +226,14 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
   main_context->set_sdch_manager(sdch_manager_.get());
 }
 
-net::URLRequestContext*
+ChromeBrowserStateIOData::AppRequestContext*
 OffTheRecordChromeBrowserStateIOData::InitializeAppRequestContext(
     net::URLRequestContext* main_context) const {
   NOTREACHED();
   return nullptr;
 }
 
-net::URLRequestContext*
+ChromeBrowserStateIOData::AppRequestContext*
 OffTheRecordChromeBrowserStateIOData::AcquireIsolatedAppRequestContext(
     net::URLRequestContext* main_context) const {
   NOTREACHED();

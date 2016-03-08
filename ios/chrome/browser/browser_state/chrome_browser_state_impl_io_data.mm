@@ -410,7 +410,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   lazy_params_.reset();
 }
 
-net::URLRequestContext*
+ChromeBrowserStateIOData::AppRequestContext*
 ChromeBrowserStateImplIOData::InitializeAppRequestContext(
     net::URLRequestContext* main_context) const {
   // Copy most state from the main context.
@@ -447,11 +447,11 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
   return context;
 }
 
-net::URLRequestContext*
+ChromeBrowserStateIOData::AppRequestContext*
 ChromeBrowserStateImplIOData::AcquireIsolatedAppRequestContext(
     net::URLRequestContext* main_context) const {
   // We create per-app contexts on demand, unlike the others above.
-  net::URLRequestContext* app_request_context =
+  AppRequestContext* app_request_context =
       InitializeAppRequestContext(main_context);
   DCHECK(app_request_context);
   return app_request_context;

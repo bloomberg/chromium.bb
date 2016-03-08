@@ -91,6 +91,11 @@ class ChromeBrowserStateIOData {
       net::URLRequestContext* main_context,
       const base::FilePath& partition_path) const;
 
+  // Sets the cookie store associated with a partition path.
+  // The path must exist. If there is already a cookie store, it is deleted.
+  void SetCookieStoreForPartitionPath(scoped_ptr<net::CookieStore> cookie_store,
+                                      const base::FilePath& partition_path);
+
   // These are useful when the Chrome layer is called from the content layer
   // with a content::ResourceContext, and they want access to Chrome data for
   // that browser state.
@@ -136,9 +141,9 @@ class ChromeBrowserStateIOData {
         scoped_ptr<net::HttpTransactionFactory> http_factory);
     void SetJobFactory(scoped_ptr<net::URLRequestJobFactory> job_factory);
 
-   private:
     ~AppRequestContext() override;
 
+   private:
     scoped_ptr<net::CookieStore> cookie_store_;
     scoped_ptr<net::HttpTransactionFactory> http_factory_;
     scoped_ptr<net::URLRequestJobFactory> job_factory_;
@@ -220,8 +225,7 @@ class ChromeBrowserStateIOData {
       scoped_ptr<net::HttpCache::BackendFactory> backend) const;
 
  private:
-  typedef std::map<base::FilePath, net::URLRequestContext*>
-      URLRequestContextMap;
+  typedef std::map<base::FilePath, AppRequestContext*> URLRequestContextMap;
 
   // --------------------------------------------
   // Virtual interface for subtypes to implement:
@@ -236,12 +240,12 @@ class ChromeBrowserStateIOData {
 
   // Does an on-demand initialization of a RequestContext for the given
   // isolated app.
-  virtual net::URLRequestContext* InitializeAppRequestContext(
+  virtual AppRequestContext* InitializeAppRequestContext(
       net::URLRequestContext* main_context) const = 0;
 
   // These functions are used to transfer ownership of the lazily initialized
   // context from ChromeBrowserStateIOData to the URLRequestContextGetter.
-  virtual net::URLRequestContext* AcquireIsolatedAppRequestContext(
+  virtual AppRequestContext* AcquireIsolatedAppRequestContext(
       net::URLRequestContext* main_context) const = 0;
 
   // The order *DOES* matter for the majority of these member variables, so

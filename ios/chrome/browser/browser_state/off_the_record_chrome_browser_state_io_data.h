@@ -95,9 +95,9 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
       scoped_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       ProtocolHandlerMap* protocol_handlers) const override;
-  net::URLRequestContext* InitializeAppRequestContext(
+  AppRequestContext* InitializeAppRequestContext(
       net::URLRequestContext* main_context) const override;
-  net::URLRequestContext* AcquireIsolatedAppRequestContext(
+  AppRequestContext* AcquireIsolatedAppRequestContext(
       net::URLRequestContext* main_context) const override;
 
   mutable scoped_ptr<IOSChromeNetworkDelegate> network_delegate_;
