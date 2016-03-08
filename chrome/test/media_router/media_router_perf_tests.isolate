@@ -6,6 +6,7 @@
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
+          'python',
           'telemetry/run_benchmark',
           '--browser=release',
           '--also-run-disabled-tests',
