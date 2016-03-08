@@ -87,9 +87,14 @@ class Map {
     return TypeConverter<U, Map>::Convert(*this);
   }
 
+  // Indicates whether the map is null (which is distinct from empty).
   bool is_null() const { return is_null_; }
 
-  // Indicates the number of keys in the map.
+  // Indicates whether the map is empty (which is distinct from null).
+  bool empty() const { return map_.empty() && !is_null_; }
+
+  // Indicates the number of keys in the map, which will be zero if the map is
+  // null.
   size_t size() const { return map_.size(); }
 
   // Inserts a key-value pair into the map. Like std::map, this does not insert

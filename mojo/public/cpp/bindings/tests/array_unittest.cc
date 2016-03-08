@@ -26,6 +26,23 @@ using mojo::internal::String_Data;
 
 using ArrayTest = testing::Test;
 
+// Tests null and empty arrays.
+TEST_F(ArrayTest, NullAndEmpty) {
+  Array<char> array0;
+  EXPECT_TRUE(array0.empty());
+  EXPECT_FALSE(array0.is_null());
+  array0 = nullptr;
+  EXPECT_TRUE(array0.is_null());
+  EXPECT_FALSE(array0.empty());
+
+  Array<char> array1(nullptr);
+  EXPECT_TRUE(array1.is_null());
+  EXPECT_FALSE(array1.empty());
+  array1.SetToEmpty();
+  EXPECT_TRUE(array1.empty());
+  EXPECT_FALSE(array1.is_null());
+}
+
 // Tests that basic Array operations work.
 TEST_F(ArrayTest, Basic) {
   Array<char> array(8);

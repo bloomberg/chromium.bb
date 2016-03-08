@@ -42,6 +42,23 @@ const size_t kStringIntDataSize = 4;
 
 using MapTest = testing::Test;
 
+// Tests null and empty maps.
+TEST_F(MapTest, NullAndEmpty) {
+  Map<char, char> map0;
+  EXPECT_TRUE(map0.empty());
+  EXPECT_FALSE(map0.is_null());
+  map0 = nullptr;
+  EXPECT_TRUE(map0.is_null());
+  EXPECT_FALSE(map0.empty());
+
+  Map<char, char> map1(nullptr);
+  EXPECT_TRUE(map1.is_null());
+  EXPECT_FALSE(map1.empty());
+  map1.SetToEmpty();
+  EXPECT_TRUE(map1.empty());
+  EXPECT_FALSE(map1.is_null());
+}
+
 // Tests that basic Map operations work.
 TEST_F(MapTest, InsertWorks) {
   Map<String, int> map;
