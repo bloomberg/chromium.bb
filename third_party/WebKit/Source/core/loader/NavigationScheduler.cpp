@@ -274,9 +274,9 @@ bool NavigationScheduler::locationChangePending()
     return m_redirect && m_redirect->isLocationChange();
 }
 
-bool NavigationScheduler::isNavigationScheduled() const
+bool NavigationScheduler::isNavigationScheduledWithin(double interval) const
 {
-    return m_redirect;
+    return m_redirect && m_redirect->delay() <= interval;
 }
 
 inline bool NavigationScheduler::shouldScheduleReload() const

@@ -133,8 +133,8 @@ public:
     // instead.
     virtual bool isResourceLoadInProgress() const = 0;
 
-    // Returns true if there is a pending redirect or location change.
-    // This could be caused by:
+    // Returns true if there is a pending redirect or location change
+    // within specified interval (in seconds). This could be caused by:
     // * an HTTP Refresh header
     // * an X-Frame-Options header
     // * the respective http-equiv meta tags
@@ -142,7 +142,7 @@ public:
     // * CSP policy block
     // * reload
     // * form submission
-    virtual bool isNavigationScheduled() const = 0;
+    virtual bool isNavigationScheduledWithin(double intervalInSeconds) const = 0;
 
     // Override the normal rules for whether a load has successfully committed
     // in this frame. Used to propagate state when this frame has navigated

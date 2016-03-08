@@ -1996,9 +1996,9 @@ bool WebLocalFrameImpl::isResourceLoadInProgress() const
     return frame()->document()->fetcher()->requestCount();
 }
 
-bool WebLocalFrameImpl::isNavigationScheduled() const
+bool WebLocalFrameImpl::isNavigationScheduledWithin(double intervalInSeconds) const
 {
-    return frame() && frame()->navigationScheduler().isNavigationScheduled();
+    return frame() && frame()->navigationScheduler().isNavigationScheduledWithin(intervalInSeconds);
 }
 
 void WebLocalFrameImpl::setCommittedFirstRealLoad()

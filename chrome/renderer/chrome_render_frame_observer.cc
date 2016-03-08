@@ -64,6 +64,10 @@ static const size_t kMaxIndexChars = 65535;
 // Constants for UMA statistic collection.
 static const char kTranslateCaptureText[] = "Translate.CaptureText";
 
+// For a page that auto-refreshes, we still show the bubble, if
+// the refresh delay is less than this value (in seconds).
+static const double kLocationChangeIntervalInSeconds = 10;
+
 namespace {
 
 // If the source image is null or occupies less area than
@@ -338,7 +342,7 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
     return;
 
   // Don't capture pages that have pending redirect or location change.
-  if (frame->isNavigationScheduled())
+  if (frame->isNavigationScheduledWithin(kLocationChangeIntervalInSeconds))
     return;
 
   // Don't index/capture pages that are in view source mode.

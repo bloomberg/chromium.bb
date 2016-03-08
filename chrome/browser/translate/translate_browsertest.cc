@@ -42,6 +42,7 @@ const base::FilePath::CharType kTranslateRoot[] =
 const char kFrenchTestPath[] = "/fr_test.html";
 const char kBasicFrenchTestPath[] = "/basic_fr_test.html";
 const char kRefreshMetaTagTestPath[] = "/refresh_meta_tag.html";
+const char kRefreshMetaTagLongDelayTestPath[] = "/refresh_meta_tag_long.html";
 const char kRefreshMetaTagCaseInsensitiveTestPath[] =
     "/refresh_meta_tag_casei.html";
 const char kRefreshMetaTagAtOnloadTestPath[] =
@@ -272,6 +273,11 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, BasicTranslation) {
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
   ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(
       kRefreshMetaTagTestPath, false));
+}
+
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateRefreshMetaTagLongDelay) {
+  ASSERT_NO_FATAL_FAILURE(
+      CheckForTranslateUI(kRefreshMetaTagLongDelayTestPath, true));
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
