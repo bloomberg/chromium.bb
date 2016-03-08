@@ -223,11 +223,12 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
     }
 
     m_responseHttpStatusCode = response.httpStatusCode();
+    FetchRequestData::Tainting tainting = m_request->responseTainting();
 
     if (response.url().protocolIsData()) {
         if (m_request->url() == response.url()) {
             // A direct request to data.
-            m_request->setResponseTainting(FetchRequestData::BasicTainting);
+            tainting = FetchRequestData::BasicTainting;
         } else {
             // A redirect to data: scheme occured.
             // Redirects to data URLs are rejected by the spec because
@@ -236,7 +237,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             // mode is also rejected by Chromium side.
             switch (m_request->mode()) {
             case WebURLRequest::FetchRequestModeNoCORS:
-                m_request->setResponseTainting(FetchRequestData::OpaqueTainting);
+                tainting = FetchRequestData::OpaqueTainting;
                 break;
             case WebURLRequest::FetchRequestModeSameOrigin:
             case WebURLRequest::FetchRequestModeCORS:
@@ -254,13 +255,36 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             ASSERT_NOT_REACHED();
             break;
         case WebURLRequest::FetchRequestModeNoCORS:
-            m_request->setResponseTainting(FetchRequestData::OpaqueTainting);
+            tainting = FetchRequestData::OpaqueTainting;
             break;
         case WebURLRequest::FetchRequestModeCORS:
         case WebURLRequest::FetchRequestModeCORSWithForcedPreflight:
-            m_request->setResponseTainting(FetchRequestData::CORSTainting);
+            tainting = FetchRequestData::CORSTainting;
             break;
         case WebURLRequest::FetchRequestModeNavigate:
+            RELEASE_ASSERT_NOT_REACHED();
+            break;
+        }
+    }
+    if (response.wasFetchedViaServiceWorker()) {
+        switch (response.serviceWorkerResponseType()) {
+        case WebServiceWorkerResponseTypeBasic:
+        case WebServiceWorkerResponseTypeDefault:
+            tainting = FetchRequestData::BasicTainting;
+            break;
+        case WebServiceWorkerResponseTypeCORS:
+            tainting = FetchRequestData::CORSTainting;
+            break;
+        case WebServiceWorkerResponseTypeOpaque:
+            tainting = FetchRequestData::OpaqueTainting;
+            break;
+        case WebServiceWorkerResponseTypeOpaqueRedirect:
+            // ServiceWorker can't respond to the request from fetch() with an
+            // opaque redirect response.
+        case WebServiceWorkerResponseTypeError:
+            // When ServiceWorker respond to the request from fetch() with an
+            // error response, FetchManager::Loader::didFail() must be called
+            // instead.
             RELEASE_ASSERT_NOT_REACHED();
             break;
         }
@@ -302,7 +326,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         // as a redirect response, and execute tainting.
     }
     if (!taintedResponse) {
-        switch (m_request->responseTainting()) {
+        switch (tainting) {
         case FetchRequestData::BasicTainting:
             taintedResponse = responseData->createBasicFilteredResponse();
             break;
@@ -532,6 +556,8 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     ResourceRequest request(m_request->url());
     request.setRequestContext(m_request->context());
     request.setHTTPMethod(m_request->method());
+    request.setFetchRequestMode(m_request->mode());
+    request.setFetchCredentialsMode(m_request->credentials());
     const Vector<OwnPtr<FetchHeaderList::Header>>& list = m_request->headerList()->list();
     for (size_t i = 0; i < list.size(); ++i) {
         request.addHTTPHeaderField(AtomicString(list[i]->first), AtomicString(list[i]->second));
