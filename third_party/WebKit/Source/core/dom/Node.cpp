@@ -2234,27 +2234,15 @@ unsigned Node::connectedSubframeCount() const
     return hasRareData() ? rareData()->connectedSubframeCount() : 0;
 }
 
-void Node::incrementConnectedSubframeCount(unsigned amount)
+void Node::incrementConnectedSubframeCount()
 {
     ASSERT(isContainerNode());
-    ensureRareData().incrementConnectedSubframeCount(amount);
+    ensureRareData().incrementConnectedSubframeCount();
 }
 
-void Node::decrementConnectedSubframeCount(unsigned amount)
+void Node::decrementConnectedSubframeCount()
 {
-    rareData()->decrementConnectedSubframeCount(amount);
-}
-
-void Node::updateAncestorConnectedSubframeCountForInsertion() const
-{
-    unsigned count = connectedSubframeCount();
-
-    if (!count)
-        return;
-
-    ScriptForbiddenScope forbidScriptDuringRawIteration;
-    for (Node* node = parentOrShadowHostNode(); node; node = node->parentOrShadowHostNode())
-        node->incrementConnectedSubframeCount(count);
+    rareData()->decrementConnectedSubframeCount();
 }
 
 PassRefPtrWillBeRawPtr<StaticNodeList> Node::getDestinationInsertionPoints()

@@ -82,12 +82,11 @@ public:
     }
 
     unsigned connectedSubframeCount() const { return m_connectedFrameCount; }
-    void incrementConnectedSubframeCount(unsigned amount);
-    void decrementConnectedSubframeCount(unsigned amount)
+    void incrementConnectedSubframeCount();
+    void decrementConnectedSubframeCount()
     {
         ASSERT(m_connectedFrameCount);
-        ASSERT(amount <= m_connectedFrameCount);
-        m_connectedFrameCount -= amount;
+        --m_connectedFrameCount;
     }
 
     bool hasElementFlag(ElementFlags mask) const { return m_elementFlags & mask; }

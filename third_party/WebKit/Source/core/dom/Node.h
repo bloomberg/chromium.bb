@@ -665,9 +665,8 @@ public:
     void notifyMutationObserversNodeWillDetach();
 
     unsigned connectedSubframeCount() const;
-    void incrementConnectedSubframeCount(unsigned amount = 1);
-    void decrementConnectedSubframeCount(unsigned amount = 1);
-    void updateAncestorConnectedSubframeCountForInsertion() const;
+    void incrementConnectedSubframeCount();
+    void decrementConnectedSubframeCount();
 
     PassRefPtrWillBeRawPtr<StaticNodeList> getDestinationInsertionPoints();
     HTMLSlotElement* assignedSlot() const;

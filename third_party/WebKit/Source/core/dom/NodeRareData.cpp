@@ -73,10 +73,10 @@ void NodeRareData::finalizeGarbageCollectedObject()
         this->~NodeRareData();
 }
 
-void NodeRareData::incrementConnectedSubframeCount(unsigned amount)
+void NodeRareData::incrementConnectedSubframeCount()
 {
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION((m_connectedFrameCount + amount) <= FrameHost::maxNumberOfFrames);
-    m_connectedFrameCount += amount;
+    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION((m_connectedFrameCount + 1) <= FrameHost::maxNumberOfFrames);
+    ++m_connectedFrameCount;
 }
 
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow

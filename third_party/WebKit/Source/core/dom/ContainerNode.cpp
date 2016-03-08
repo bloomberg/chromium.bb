@@ -327,7 +327,7 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
 
         treeScope().adoptIfNeeded(*newChild);
         insertBeforeCommon(nextChild, *newChild);
-        newChild->updateAncestorConnectedSubframeCountForInsertion();
+        ASSERT(newChild->connectedSubframeCount() == 0);
         ChildListMutationScope(*this).childAdded(*newChild);
     }
 
@@ -807,7 +807,7 @@ void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
 
         treeScope().adoptIfNeeded(*newChild);
         appendChildCommon(*newChild);
-        newChild->updateAncestorConnectedSubframeCountForInsertion();
+        ASSERT(newChild->connectedSubframeCount() == 0);
         ChildListMutationScope(*this).childAdded(*newChild);
     }
 
