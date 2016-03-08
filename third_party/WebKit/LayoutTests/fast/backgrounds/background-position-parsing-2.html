@@ -412,27 +412,27 @@ shouldBe("style.background", "'left 30% top 10% / 10em round fixed border-box bo
 shouldBe("computedStyle.background", "'rgb(128, 128, 128) none round fixed left 30% top 10% / 160px border-box border-box'");
 
 style.background = "right top 15px / 10em gray round fixed border-box";
-shouldBe("style.background", "'right 0% top 15px / 10em round fixed border-box border-box gray'");
-shouldBe("computedStyle.background", "'rgb(128, 128, 128) none round fixed right 0% top 15px / 160px border-box border-box'");
+shouldBe("style.background", "'right top 15px / 10em round fixed border-box border-box gray'");
+shouldBe("computedStyle.background", "'rgb(128, 128, 128) none round fixed 100% top 15px / 160px border-box border-box'");
 
 style.background = "left 10px center / 10em gray round fixed border-box";
-shouldBe("style.background", "'left 10px top 50% / 10em round fixed border-box border-box gray'");
-shouldBe("computedStyle.background", "'rgb(128, 128, 128) none round fixed left 10px top 50% / 160px border-box border-box'");
+shouldBe("style.background", "'left 10px center / 10em round fixed border-box border-box gray'");
+shouldBe("computedStyle.background", "'rgb(128, 128, 128) none round fixed left 10px 50% / 160px border-box border-box'");
 
 style.background = "left 10px center round fixed border-box";
-shouldBe("style.background", "'left 10px top 50% round fixed border-box border-box'");
-shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left 10px top 50% / auto border-box border-box'");
+shouldBe("style.background", "'left 10px center round fixed border-box border-box'");
+shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left 10px 50% / auto border-box border-box'");
 
 style.background = "center top 20px round fixed border-box";
-shouldBe("style.background", "'left 50% top 20px round fixed border-box border-box'");
-shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left 50% top 20px / auto border-box border-box'");
+shouldBe("style.background", "'center top 20px round fixed border-box border-box'");
+shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed 50% top 20px / auto border-box border-box'");
 
 style.background = "top 20px center round fixed border-box";
-shouldBe("style.background", "'left 50% top 20px round fixed border-box border-box'");
-shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left 50% top 20px / auto border-box border-box'");
+shouldBe("style.background", "'center top 20px round fixed border-box border-box'");
+shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed 50% top 20px / auto border-box border-box'");
 
 style.background = "top center round fixed border-box";
-shouldBe("style.background", "'50% 0% round fixed border-box border-box'");
+shouldBe("style.background", "'center top round fixed border-box border-box'");
 shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed 50% 0% / auto border-box border-box'");
 
 style.background = "50px 60px / 50px round fixed border-box";
@@ -440,24 +440,24 @@ shouldBe("style.background", "'50px 60px / 50px round fixed border-box border-bo
 shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed 50px 60px / 50px border-box border-box'");
 
 style.background = "50px / 50px round fixed border-box";
-shouldBe("style.background", "'50px 50% / 50px round fixed border-box border-box'");
+shouldBe("style.background", "'50px center / 50px round fixed border-box border-box'");
 shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed 50px 50% / 50px border-box border-box'");
 
 style.background = "left top 60px / 50px round fixed border-box";
-shouldBe("style.background", "'left 0% top 60px / 50px round fixed border-box border-box'");
-shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left 0% top 60px / 50px border-box border-box'");
+shouldBe("style.background", "'left top 60px / 50px round fixed border-box border-box'");
+shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed 0% top 60px / 50px border-box border-box'");
 
 style.background = "left -20px top 60px / 50px round fixed border-box";
 shouldBe("style.background", "'left -20px top 60px / 50px round fixed border-box border-box'");
 shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left -20px top 60px / 50px border-box border-box'");
 
 style.background = "border-box left 20px top / 50px round fixed";
-shouldBe("style.background", "'left 20px top 0% / 50px round fixed border-box border-box'");
-shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left 20px top 0% / 50px border-box border-box'");
+shouldBe("style.background", "'left 20px top / 50px round fixed border-box border-box'");
+shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left 20px 0% / 50px border-box border-box'");
 
 style.background = "border-box round fixed left 20px top / 50px";
-shouldBe("style.background", "'left 20px top 0% / 50px round fixed border-box border-box'");
-shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left 20px top 0% / 50px border-box border-box'");
+shouldBe("style.background", "'left 20px top / 50px round fixed border-box border-box'");
+shouldBe("computedStyle.background", "'rgba(0, 0, 0, 0) none round fixed left 20px 0% / 50px border-box border-box'");
 
 style.background = "border-box round fixed left 20px top 40px / 50px";
 shouldBe("style.background", "'left 20px top 40px / 50px round fixed border-box border-box'");

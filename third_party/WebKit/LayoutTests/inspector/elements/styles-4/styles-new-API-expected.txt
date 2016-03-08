@@ -40,15 +40,15 @@ body.main1: [regular, 21:29-21:67] {
 body.main2: [regular, 23:0-23:10] {
     ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] 
     ['background-image':'initial' is-important] @[undefined-undefined] 
+    ['background-position-x':'initial' is-important] @[undefined-undefined] 
+    ['background-position-y':'initial' is-important] @[undefined-undefined] 
+    ['background-size':'initial' is-important] @[undefined-undefined] 
     ['background-repeat-x':'initial' is-important] @[undefined-undefined] 
     ['background-repeat-y':'initial' is-important] @[undefined-undefined] 
     ['background-attachment':'initial' is-important] @[undefined-undefined] 
-    ['background-position-x':'initial' is-important] @[undefined-undefined] 
-    ['background-position-y':'initial' is-important] @[undefined-undefined] 
     ['background-origin':'initial' is-important] @[undefined-undefined] 
     ['background-clip':'initial' is-important] @[undefined-undefined] 
     ['background-color':'green' is-important] @[undefined-undefined] 
-    ['background-size':'initial' is-important] @[undefined-undefined] 
 }
 body.mainpage: [regular, 3:0-3:13] {
     ['text-decoration':'none'] @[4:4-4:26] 
@@ -116,15 +116,15 @@ body.main1: [regular, 21:29-21:67] {
 body.main2: [regular, 23:0-23:10] {
     ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] 
     ['background-image':'initial' is-important] @[undefined-undefined] 
+    ['background-position-x':'initial' is-important] @[undefined-undefined] 
+    ['background-position-y':'initial' is-important] @[undefined-undefined] 
+    ['background-size':'initial' is-important] @[undefined-undefined] 
     ['background-repeat-x':'initial' is-important] @[undefined-undefined] 
     ['background-repeat-y':'initial' is-important] @[undefined-undefined] 
     ['background-attachment':'initial' is-important] @[undefined-undefined] 
-    ['background-position-x':'initial' is-important] @[undefined-undefined] 
-    ['background-position-y':'initial' is-important] @[undefined-undefined] 
     ['background-origin':'initial' is-important] @[undefined-undefined] 
     ['background-clip':'initial' is-important] @[undefined-undefined] 
     ['background-color':'green' is-important] @[undefined-undefined] 
-    ['background-size':'initial' is-important] @[undefined-undefined] 
 }
 body.mainpage: [regular, 3:0-3:13] {
     ['text-decoration':'none'] @[4:4-4:26] 
@@ -194,15 +194,15 @@ body.main1: [regular, 21:29-21:67] {
 body.main2: [regular, 23:0-23:10] {
     ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] 
     ['background-image':'initial' is-important] @[undefined-undefined] 
+    ['background-position-x':'initial' is-important] @[undefined-undefined] 
+    ['background-position-y':'initial' is-important] @[undefined-undefined] 
+    ['background-size':'initial' is-important] @[undefined-undefined] 
     ['background-repeat-x':'initial' is-important] @[undefined-undefined] 
     ['background-repeat-y':'initial' is-important] @[undefined-undefined] 
     ['background-attachment':'initial' is-important] @[undefined-undefined] 
-    ['background-position-x':'initial' is-important] @[undefined-undefined] 
-    ['background-position-y':'initial' is-important] @[undefined-undefined] 
     ['background-origin':'initial' is-important] @[undefined-undefined] 
     ['background-clip':'initial' is-important] @[undefined-undefined] 
     ['background-color':'green' is-important] @[undefined-undefined] 
-    ['background-size':'initial' is-important] @[undefined-undefined] 
 }
 body.mainpage: [regular, 3:0-3:13] {
     ['text-decoration':'none'] @[4:4-4:26] 

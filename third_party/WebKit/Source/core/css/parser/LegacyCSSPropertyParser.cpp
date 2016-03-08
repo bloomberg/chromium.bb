@@ -362,20 +362,6 @@ bool CSSPropertyParser::legacyParseShorthand(CSSPropertyID propertyID, bool impo
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridShorthand(important);
 
-    case CSSPropertyBackground: {
-        // Position must come before color in this array because a plain old "0" is a legal color
-        // in quirks mode but it's usually the X coordinate of a position.
-        const CSSPropertyID properties[] = { CSSPropertyBackgroundImage, CSSPropertyBackgroundRepeat,
-                                   CSSPropertyBackgroundAttachment, CSSPropertyBackgroundPosition, CSSPropertyBackgroundOrigin,
-                                   CSSPropertyBackgroundClip, CSSPropertyBackgroundColor, CSSPropertyBackgroundSize };
-        return parseFillShorthand(propertyID, properties, WTF_ARRAY_LENGTH(properties), important);
-    }
-    case CSSPropertyWebkitMask: {
-        const CSSPropertyID properties[] = { CSSPropertyWebkitMaskImage, CSSPropertyWebkitMaskRepeat,
-            CSSPropertyWebkitMaskPosition, CSSPropertyWebkitMaskOrigin, CSSPropertyWebkitMaskClip, CSSPropertyWebkitMaskSize };
-        return parseFillShorthand(propertyID, properties, WTF_ARRAY_LENGTH(properties), important);
-    }
-
     // The remaining shorthands are handled in CSSPropertyParser.cpp
     default:
         return false;

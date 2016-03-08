@@ -2,15 +2,15 @@ CONSOLE WARNING: 'getMatchedCSSRules()' is deprecated. For more help, check http
 Note that background is buggy right now!
 Test
 background-image: initial
+background-position-x: initial
+background-position-y: initial
+background-size: initial
 background-repeat-x: initial
 background-repeat-y: initial
 background-attachment: initial
-background-position-x: initial
-background-position-y: initial
 background-origin: initial
 background-clip: initial
 background-color: purple
-background-size: initial
 margin-top: 1em
 margin-right: 1em
 margin-bottom: 1em

@@ -4560,6 +4560,93 @@ static bool consumeRepeatStyle(CSSParserTokenRange& range, RefPtrWillBeRawPtr<CS
     return true;
 }
 
+// Note: consumeBackgroundShorthand assumes y properties (for example background-position-y) follow
+// the x properties in the shorthand array.
+bool CSSPropertyParser::consumeBackgroundShorthand(const StylePropertyShorthand& shorthand, bool important)
+{
+    const unsigned longhandCount = shorthand.length();
+    RefPtrWillBeRawPtr<CSSValue> longhands[10];
+    ASSERT(longhandCount <= 10);
+#if ENABLE(OILPAN)
+    // Zero initialize the array of raw pointers.
+    memset(&longhands, 0, sizeof(longhands));
+#endif
+    bool implicit = false;
+    do {
+        bool parsedLonghand[10] = { false };
+        RefPtrWillBeRawPtr<CSSValue> originValue = nullptr;
+        do {
+            bool foundProperty = false;
+            for (size_t i = 0; i < longhandCount; ++i) {
+                if (parsedLonghand[i])
+                    continue;
+
+                RefPtrWillBeRawPtr<CSSValue> value = nullptr;
+                RefPtrWillBeRawPtr<CSSValue> valueY = nullptr;
+                CSSPropertyID property = shorthand.properties()[i];
+                if (property == CSSPropertyBackgroundRepeatX || property == CSSPropertyWebkitMaskRepeatX) {
+                    consumeRepeatStyleComponent(m_range, value, valueY, implicit);
+                } else if (property == CSSPropertyBackgroundPositionX || property == CSSPropertyWebkitMaskPositionX) {
+                    CSSParserTokenRange rangeCopy = m_range;
+                    if (!consumePosition(rangeCopy, m_context.mode(), UnitlessQuirk::Forbid, value, valueY))
+                        continue;
+                    m_range = rangeCopy;
+                } else if (property == CSSPropertyBackgroundSize || property == CSSPropertyWebkitMaskSize) {
+                    if (!consumeSlashIncludingWhitespace(m_range))
+                        continue;
+                    value = consumeBackgroundSize(property, m_range, m_context.mode());
+                    if (!value || !parsedLonghand[i - 1]) // Position must have been parsed in the current layer.
+                        return false;
+                } else if (property == CSSPropertyBackgroundPositionY || property == CSSPropertyBackgroundRepeatY
+                    || property == CSSPropertyWebkitMaskPositionY || property == CSSPropertyWebkitMaskRepeatY) {
+                    continue;
+                } else {
+                    value = consumeBackgroundComponent(property, m_range, m_context);
+                }
+                if (value) {
+                    if (property == CSSPropertyBackgroundOrigin || property == CSSPropertyWebkitMaskOrigin)
+                        originValue = value;
+                    parsedLonghand[i] = true;
+                    foundProperty = true;
+                    addBackgroundValue(longhands[i], value.release());
+                    if (valueY) {
+                        parsedLonghand[i + 1] = true;
+                        addBackgroundValue(longhands[i + 1], valueY.release());
+                    }
+                }
+            }
+            if (!foundProperty)
+                return false;
+        } while (!m_range.atEnd() && m_range.peek().type() != CommaToken);
+
+        // TODO(timloh): This will make invalid longhands, see crbug.com/386459
+        for (size_t i = 0; i < longhandCount; ++i) {
+            CSSPropertyID property = shorthand.properties()[i];
+            if (property == CSSPropertyBackgroundColor && !m_range.atEnd()) {
+                if (parsedLonghand[i])
+                    return false; // Colors are only allowed in the last layer.
+                continue;
+            }
+            if ((property == CSSPropertyBackgroundClip || property == CSSPropertyWebkitMaskClip) && !parsedLonghand[i] && originValue) {
+                addBackgroundValue(longhands[i], originValue.release());
+                continue;
+            }
+            if (!parsedLonghand[i])
+                addBackgroundValue(longhands[i], cssValuePool().createImplicitInitialValue());
+        }
+    } while (consumeCommaIncludingWhitespace(m_range));
+    if (!m_range.atEnd())
+        return false;
+
+    for (size_t i = 0; i < longhandCount; ++i) {
+        CSSPropertyID property = shorthand.properties()[i];
+        if (property == CSSPropertyBackgroundSize && longhands[i] && m_context.useLegacyBackgroundSizeShorthandBehavior())
+            continue;
+        addProperty(property, longhands[i].release(), important, implicit);
+    }
+    return true;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -4722,6 +4809,10 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         addProperty(property == CSSPropertyBackgroundRepeat ? CSSPropertyBackgroundRepeatY : CSSPropertyWebkitMaskRepeatY, resultY.release(), important, implicit);
         return true;
     }
+    case CSSPropertyBackground:
+        return consumeBackgroundShorthand(backgroundShorthand(), important);
+    case CSSPropertyWebkitMask:
+        return consumeBackgroundShorthand(webkitMaskShorthand(), important);
     default:
         m_currentShorthand = oldShorthand;
         CSSParserValueList valueList(m_range);
