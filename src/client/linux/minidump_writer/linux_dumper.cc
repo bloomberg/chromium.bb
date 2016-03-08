@@ -351,7 +351,8 @@ bool LinuxDumper::EnumerateMappings() {
             MappingInfo* module = mappings_.back();
             if ((start_addr == module->start_addr + module->size) &&
                 (my_strlen(name) == my_strlen(module->name)) &&
-                (my_strncmp(name, module->name, my_strlen(name)) == 0)) {
+                (my_strncmp(name, module->name, my_strlen(name)) == 0) &&
+                (exec == module->exec)) {
               module->size = end_addr - module->start_addr;
               line_reader->PopLine(line_len);
               continue;
