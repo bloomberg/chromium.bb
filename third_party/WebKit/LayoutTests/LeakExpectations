@@ -94,8 +94,6 @@ crbug.com/482050 svg/zoom/text/zoom-foreignObject.svg [ Leak ]
 crbug.com/564571 virtual/threaded/animations/svg-length-unittype-crash.html [ Leak ]
 crbug.com/571534 virtual/threaded/animations/svg-element-css-animation-crash.html [ Leak ]
 
-crbug.com/588598 web-animations-api/player-cancel-event.html [ Leak ]
-
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (fast).
 # -----------------------------------------------------------------
