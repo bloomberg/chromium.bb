@@ -33,7 +33,8 @@ def IncrementalInstall(device, apk_helper, installer_script):
   from incremental_install import installer
   installer.Install(device, apk_helper, split_globs=params['splits'],
                     native_libs=params['native_libs'],
-                    dex_files=params['dex_files'])
+                    dex_files=params['dex_files'],
+                    permissions=None)  # Auto-grant permissions from manifest.
 
 
 def handle_shard_failures(f):

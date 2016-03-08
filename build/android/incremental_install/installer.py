@@ -86,7 +86,7 @@ def Uninstall(device, package, enable_device_cache=False):
 
 def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
             enable_device_cache=False, use_concurrency=True,
-            show_proguard_warning=False):
+            show_proguard_warning=False, permissions=()):
   """Installs the given incremental apk and all required supporting files.
 
   Args:
@@ -99,6 +99,8 @@ def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
     use_concurrency: Whether to speed things up using multiple threads.
     show_proguard_warning: Whether to print a warning about Proguard not being
         enabled after installing.
+    permissions: A list of the permissions to grant, or None to grant all
+                 non-blacklisted permissions in the manifest.
   """
   main_timer = time_profile.TimeProfile()
   install_timer = time_profile.TimeProfile()
@@ -117,9 +119,9 @@ def Install(device, apk, split_globs=None, native_libs=None, dex_files=None,
       for split_glob in split_globs:
         splits.extend((f for f in glob.glob(split_glob)))
       device.InstallSplitApk(apk, splits, reinstall=True,
-                             allow_cached_props=True, permissions=())
+                             allow_cached_props=True, permissions=permissions)
     else:
-      device.Install(apk, reinstall=True, permissions=())
+      device.Install(apk, reinstall=True, permissions=permissions)
     install_timer.Stop(log=False)
 
   # Push .so and .dex files to the device (if they have changed).
