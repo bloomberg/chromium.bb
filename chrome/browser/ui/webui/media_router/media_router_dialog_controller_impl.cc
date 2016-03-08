@@ -41,8 +41,12 @@ using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 
 namespace {
+#if defined(OS_MACOSX)
+const int kFixedHeight = 350;
+#else
 const int kMaxHeight = 2000;
 const int kMinHeight = 80;
+#endif
 const int kWidth = 340;
 }
 
@@ -110,10 +114,15 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
 
 void MediaRouterDialogDelegate::GetDialogSize(gfx::Size* size) const {
   DCHECK(size);
+  // TODO(apacible): Remove after autoresizing is implemented for OSX.
+#if defined(OS_MACOSX)
+  *size = gfx::Size(kWidth, kFixedHeight);
+#else
   // GetDialogSize() is called when the browser window resizes. We may want to
   // update the maximum height of the dialog and scale the WebUI to the new
   // height. |size| is not set because the dialog is auto-resizeable.
   controller_->UpdateMaxDialogSize();
+#endif
 }
 
 }  // namespace
@@ -234,21 +243,29 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
       Profile::FromBrowserContext(initiator()->GetBrowserContext());
   DCHECK(profile);
 
-  // |web_dialog_delegate|'s owner is |constrained_delegate|.
-  // |constrained_delegate| is owned by the parent |views::View|.
   WebDialogDelegate* web_dialog_delegate =
       new MediaRouterDialogDelegate(action_, weak_ptr_factory_.GetWeakPtr());
+  // |web_dialog_delegate|'s owner is |constrained_delegate|.
+  // |constrained_delegate| is owned by the parent |views::View|.
+  // TODO(apacible): Remove after autoresizing is implemented for OSX.
+#if defined(OS_MACOSX)
+  ConstrainedWebDialogDelegate* constrained_delegate =
+      ShowConstrainedWebDialog(profile, web_dialog_delegate, initiator());
+#else
+  // TODO(apacible): Adjust min and max sizes based on new WebUI design.
+  gfx::Size min_size = gfx::Size(kWidth, kMinHeight);
+  gfx::Size max_size = gfx::Size(kWidth, kMaxHeight);
 
   // |ShowConstrainedWebDialogWithAutoResize()| will end up creating
   // ConstrainedWebDialogDelegateViewViews containing a WebContents containing
   // the MediaRouterUI, using the provided |web_dialog_delegate|. Then, the
   // view is shown as a modal dialog constrained to the |initiator| WebContents.
-  // The dialog will resize between the given minimum and maximum size bounds
-  // based on the currently rendered contents.
+  // The dialog will resize between the |min_size| and |max_size| bounds based
+  // on the currently rendered contents.
   ConstrainedWebDialogDelegate* constrained_delegate =
       ShowConstrainedWebDialogWithAutoResize(
-          profile, web_dialog_delegate, initiator(),
-              gfx::Size(kWidth, kMinHeight), gfx::Size(kWidth, kMaxHeight));
+          profile, web_dialog_delegate, initiator(), min_size, max_size);
+#endif
 
   WebContents* media_router_dialog = constrained_delegate->GetWebContents();
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("media_router", "UI", initiator(),
