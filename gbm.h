@@ -205,8 +205,7 @@ enum gbm_bo_flags {
     */
    GBM_BO_USE_RENDERING    = (1 << 2),
    /**
-    * Buffer can be used for gbm_bo_write.  This is guaranteed to work
-    * with GBM_BO_USE_CURSOR. but may not work for other combinations.
+    * Deprecated
     */
    GBM_BO_USE_WRITE    = (1 << 3),
    /**
@@ -297,9 +296,6 @@ gbm_bo_get_plane_size(struct gbm_bo *bo, size_t plane);
 
 uint32_t
 gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane);
-
-int
-gbm_bo_write(struct gbm_bo *bo, const void *buf, size_t count);
 
 void
 gbm_bo_set_user_data(struct gbm_bo *bo, void *data,
