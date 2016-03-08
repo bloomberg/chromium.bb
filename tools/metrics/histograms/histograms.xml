@@ -18140,6 +18140,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Kiosk.LaunchType" enum="KioskLaunchType">
+  <owner>xiyuan@chromium.org</owner>
+  <owner>blumberg@chromium.org</owner>
+  <summary>
+    Records kiosk launches, whether it is an enterprise or consumer kiosk and
+    whether it is an auto launch or manual launch.
+  </summary>
+</histogram>
+
 <histogram name="LanguageUsage.AcceptLanguage" enum="LanguageCode">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Accept languages.</summary>
@@ -71251,6 +71260,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Migration succeeded"/>
   <int value="2" label="Migation failed once"/>
   <int value="3" label="Migration failed twice"/>
+</enum>
+
+<enum name="KioskLaunchType" type="int">
+  <int value="0" label="Enterprise auto launch"/>
+  <int value="1" label="Enterprise manual launch"/>
+  <int value="2" label="Consumer auto launch"/>
+  <int value="3" label="Consumer manual launch"/>
 </enum>
 
 <enum name="LanguageCode" type="int">

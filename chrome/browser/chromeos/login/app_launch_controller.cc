@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -40,8 +41,37 @@ namespace chromeos {
 
 namespace {
 
+// Enum types for Kiosk.LaunchType UMA so don't change its values.
+// KioskLaunchType in histogram.xml must be updated when making changes here.
+enum KioskLaunchType {
+  KIOSK_LAUNCH_ENTERPRISE_AUTO_LAUNCH = 0,
+  KIOKS_LAUNCH_ENTERPRISE_MANUAL_LAUNCH = 1,
+  KIOSK_LAUNCH_CONSUMER_AUTO_LAUNCH = 2,
+  KIOSK_LAUNCH_CONSUMER_MANUAL_LAUNCH = 3,
+
+  KIOSK_LAUNCH_TYPE_COUNT  // This must be the last entry.
+};
+
 // Application install splash screen minimum show time in milliseconds.
 const int kAppInstallSplashScreenMinTimeMS = 3000;
+
+bool IsEnterpriseManaged() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->IsEnterpriseManaged();
+}
+
+void RecordKioskLaunchUMA(bool is_auto_launch) {
+  const KioskLaunchType launch_type =
+      IsEnterpriseManaged()
+          ? (is_auto_launch ? KIOSK_LAUNCH_ENTERPRISE_AUTO_LAUNCH
+                            : KIOKS_LAUNCH_ENTERPRISE_MANUAL_LAUNCH)
+          : (is_auto_launch ? KIOSK_LAUNCH_CONSUMER_AUTO_LAUNCH
+                            : KIOSK_LAUNCH_CONSUMER_MANUAL_LAUNCH);
+
+  UMA_HISTOGRAM_ENUMERATION("Kiosk.LaunchType", launch_type,
+                            KIOSK_LAUNCH_TYPE_COUNT);
+}
 
 }  // namespace
 
@@ -129,6 +159,8 @@ AppLaunchController::~AppLaunchController() {
 
 void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
   DVLOG(1) << "Starting kiosk mode...";
+
+  RecordKioskLaunchUMA(is_auto_launch);
 
   // Ensure WebUILoginView is enabled so that bailout shortcut key works.
   host_->GetWebUILoginView()->SetUIEnabled(true);
@@ -308,9 +340,7 @@ bool AppLaunchController::CanConfigureNetwork() {
   if (can_configure_network_callback_)
     return can_configure_network_callback_->Run();
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->IsEnterpriseManaged()) {
+  if (IsEnterpriseManaged()) {
     bool should_prompt;
     if (CrosSettings::Get()->GetBoolean(
             kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline,
@@ -329,9 +359,7 @@ bool AppLaunchController::NeedOwnerAuthToConfigureNetwork() {
   if (need_owner_auth_to_configure_network_callback_)
     return need_owner_auth_to_configure_network_callback_->Run();
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return !connector->IsEnterpriseManaged();
+  return !IsEnterpriseManaged();
 }
 
 void AppLaunchController::MaybeShowNetworkConfigureUI() {
