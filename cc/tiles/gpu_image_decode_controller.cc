@@ -68,6 +68,7 @@ bool GpuImageDecodeController::GetTaskForImageAndRef(
     existing_task = make_scoped_refptr(
         new ImageDecodeTaskImpl(this, image, prepare_tiles_id));
   }
+  *task = existing_task;
   return false;
 }
 
