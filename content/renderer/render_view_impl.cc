@@ -1254,7 +1254,6 @@ void RenderViewImpl::OnGetRenderedText() {
   // sends text in the wrong order. See http://crbug.com/584798.
   // TODO(dglazkov): WebFrameContentDumper should only be used for
   // testing purposes. See http://crbug.com/585164.
-  webview()->updateAllLifecyclePhases();
   std::string text =
       WebFrameContentDumper::dumpFrameTreeAsText(
           webview()->mainFrame()->toWebLocalFrame(), kMaximumMessageSize)

@@ -1419,7 +1419,6 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       // Retrieve the content of this page and compare it with the expected
       // result.
       const int kMaxOutputCharacters = 128;
-      view()->GetWebView()->updateAllLifecyclePhases();
       base::string16 output = WebFrameContentDumper::dumpFrameTreeAsText(
           GetMainFrame(), kMaxOutputCharacters);
       EXPECT_EQ(base::WideToUTF16(ime_message->result), output);
@@ -1470,7 +1469,6 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
     // Copy the document content to std::wstring and compare with the
     // expected result.
     const int kMaxOutputCharacters = 16;
-    view()->GetWebView()->updateAllLifecyclePhases();
     base::string16 output = WebFrameContentDumper::dumpFrameTreeAsText(
         GetMainFrame(), kMaxOutputCharacters);
     EXPECT_EQ(base::WideToUTF16(kTextDirection[i].expected_result), output);
@@ -1801,7 +1799,6 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   // Copy the document content to std::wstring and compare with the
   // expected result.
   const int kMaxOutputCharacters = 256;
-  view()->GetWebView()->updateAllLifecyclePhases();
   std::string output = base::UTF16ToUTF8(
       base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
           GetMainFrame(), kMaxOutputCharacters)));
@@ -1924,7 +1921,6 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
   main_frame->didFailProvisionalLoad(web_frame, error,
                                      blink::WebStandardCommit);
   const int kMaxOutputCharacters = 22;
-  view()->GetWebView()->updateAllLifecyclePhases();
   EXPECT_EQ("", base::UTF16ToASCII(base::StringPiece16(
                     WebFrameContentDumper::dumpFrameTreeAsText(
                         web_frame, kMaxOutputCharacters))));
@@ -1960,7 +1956,6 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   // The error page itself is loaded asynchronously.
   FrameLoadWaiter(main_frame).Wait();
   const int kMaxOutputCharacters = 22;
-  view()->GetWebView()->updateAllLifecyclePhases();
   EXPECT_EQ("A suffusion of yellow.",
             base::UTF16ToASCII(
                 base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
@@ -1996,7 +1991,6 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   // The error page itself is loaded asynchronously.
   FrameLoadWaiter(main_frame).Wait();
   const int kMaxOutputCharacters = 22;
-  view()->GetWebView()->updateAllLifecyclePhases();
   EXPECT_EQ("A suffusion of yellow.",
             base::UTF16ToASCII(
                 base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
