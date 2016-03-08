@@ -35,6 +35,7 @@ const char PseudoClass[] = "PseudoClass";
 const char SVGContainerSizeChange[] = "SVGContainerSizeChange";
 const char SVGCursor[] = "SVGCursor";
 const char SVGFilterLayerUpdate[] = "SVGFilterLayerUpdate";
+const char Settings[] = "Settings";
 const char Shadow[] = "Shadow";
 const char SiblingSelector[] = "SiblingSelector";
 const char StyleInvalidator[] = "StyleInvalidator";

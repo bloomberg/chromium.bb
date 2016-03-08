@@ -39,6 +39,7 @@ extern const char PseudoClass[];
 extern const char SVGContainerSizeChange[];
 extern const char SVGCursor[];
 extern const char SVGFilterLayerUpdate[];
+extern const char Settings[];
 extern const char Shadow[];
 extern const char SiblingSelector[];
 extern const char StyleInvalidator[];

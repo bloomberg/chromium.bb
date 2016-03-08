@@ -21,6 +21,7 @@
 
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/ClientRectList.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/editing/DragCaretController.h"
 #include "core/editing/commands/UndoStack.h"
@@ -241,7 +242,7 @@ void Page::setNeedsRecalcStyleInAllFrames()
 {
     for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalFrame())
-            toLocalFrame(frame)->document()->styleEngine().resolverChanged(FullStyleUpdate);
+            toLocalFrame(frame)->document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Settings));
     }
 }
 
