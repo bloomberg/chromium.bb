@@ -6,6 +6,7 @@ module mojo.shell.test.mojom;
 
 interface ConnectTestService {
   GetTitle() => (string title);
+  GetInstance() => (string instance);
 };
 
 // Interface implemented by a standalone (non-package) app.
@@ -14,8 +15,6 @@ interface StandaloneApp {
   // the standalone app's CapabilityFilter, but whose enclosing package is not.
   // The connection should be blocked and title should be "uninitialized".
   ConnectToAllowedAppInBlockedPackage() => (string title);
-
-  GetInstance() => (string instance);
 };
 
 struct ConnectionState {

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_suite.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/shell/public/cpp/names.h"
 #include "mojo/shell/public/cpp/shell_test.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/tests/connect/connect_test.mojom.h"
@@ -136,20 +137,18 @@ TEST_F(ConnectTest, Instances) {
   scoped_ptr<Connection> connection_a1 = ConnectTo(&params_a);
   scoped_ptr<Connection> connection_a2 = ConnectTo(&params_a);
   std::string instance_a1, instance_a2;
-  test::mojom::StandaloneAppPtr standalone_app_a1;
+  test::mojom::ConnectTestServicePtr service_a1;
   {
-    connection_a1->GetInterface(&standalone_app_a1);
+    connection_a1->GetInterface(&service_a1);
     base::RunLoop loop;
-    standalone_app_a1->GetInstance(
-        base::Bind(&ReceiveTitle, &instance_a1, &loop));
+    service_a1->GetInstance(base::Bind(&ReceiveTitle, &instance_a1, &loop));
     loop.Run();
   }
-  test::mojom::StandaloneAppPtr standalone_app_a2;
+  test::mojom::ConnectTestServicePtr service_a2;
   {
-    connection_a2->GetInterface(&standalone_app_a2);
+    connection_a2->GetInterface(&service_a2);
     base::RunLoop loop;
-    standalone_app_a2->GetInstance(
-        base::Bind(&ReceiveTitle, &instance_a2, &loop));
+    service_a2->GetInstance(base::Bind(&ReceiveTitle, &instance_a2, &loop));
     loop.Run();
   }
   EXPECT_EQ(instance_a1, instance_a2);
@@ -158,16 +157,41 @@ TEST_F(ConnectTest, Instances) {
       Identity(kTestAppName, mojom::kInheritUserID, "B"));
   scoped_ptr<Connection> connection_b = ConnectTo(&params_b);
   std::string instance_b;
-  test::mojom::StandaloneAppPtr standalone_app_b;
+  test::mojom::ConnectTestServicePtr service_b;
   {
-    connection_b->GetInterface(&standalone_app_b);
+    connection_b->GetInterface(&service_b);
     base::RunLoop loop;
-    standalone_app_b->GetInstance(
-        base::Bind(&ReceiveTitle, &instance_b, &loop));
+    service_b->GetInstance(base::Bind(&ReceiveTitle, &instance_b, &loop));
     loop.Run();
   }
 
   EXPECT_NE(instance_a1, instance_b);
+}
+
+// When both the unresolved and resolved instance names are their default
+// values, the instance name from the unresolved name must be used.
+// (The case where the instance names differ is covered by
+// LifecycleTest.PackagedApp_CrashCrashesOtherProvidedApp).
+TEST_F(ConnectTest, PreferUnresolvedDefaultInstanceName) {
+  // Connect to an app with no manifest-supplied instance name provided by a
+  // package, the instance name must be derived from the application instance
+  // name, not the package.
+  scoped_ptr<Connection> connection = connector()->Connect(kTestAppName);
+  {
+    base::RunLoop loop;
+    connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
+    loop.Run();
+  }
+
+  std::string instance;
+  {
+    test::mojom::ConnectTestServicePtr service;
+    connection->GetInterface(&service);
+    base::RunLoop loop;
+    service->GetInstance(base::Bind(&ReceiveTitle, &instance, &loop));
+    loop.Run();
+  }
+  EXPECT_EQ(GetNamePath(kTestAppName), instance);
 }
 
 // BlockedInterface should not be exposed to this application because it is not

@@ -529,8 +529,10 @@ void Shell::OnGotResolvedName(scoped_ptr<ConnectParams> params,
                               mojom::CapabilityFilterPtr base_filter,
                               const String& file_url) {
   std::string instance_name = params->target().instance();
-  if (instance_name == GetNamePath(params->target().name()))
+  if (instance_name == GetNamePath(params->target().name()) &&
+      resolved_instance != GetNamePath(resolved_name)) {
     instance_name = resolved_instance;
+  }
   Identity target(params->target().name(), params->target().user_id(),
                   instance_name);
   params->set_target(target);
@@ -562,7 +564,7 @@ void Shell::OnGotResolvedName(scoped_ptr<ConnectParams> params,
     // from the original request rather than for the package itself, which will
     // always be the same.
     CreateShellClient(
-        source, Identity(resolved_name, target.user_id(), resolved_instance),
+        source, Identity(resolved_name, target.user_id(), instance_name),
         target.name(), std::move(request));
   } else {
     bool start_sandboxed = false;

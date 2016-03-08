@@ -52,8 +52,7 @@ class ProvidedShellClient
   // mojo::ShellClient:
   void Initialize(Connector* connector, const Identity& identity,
                   uint32_t id) override {
-    name_ = identity.name();
-    userid_ = identity.user_id();
+    identity_ = identity;
     id_ = id;
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedShellClient::OnConnectionError,
@@ -69,9 +68,9 @@ class ProvidedShellClient
     state->connection_remote_name = connection->GetRemoteIdentity().name();
     state->connection_remote_userid = connection->GetRemoteIdentity().user_id();
     state->connection_remote_id = remote_id;
-    state->initialize_local_name = name_;
+    state->initialize_local_name = identity_.name();
     state->initialize_id = id_;
-    state->initialize_userid = userid_;
+    state->initialize_userid = identity_.user_id();
     connection->GetInterface(&caller_);
     caller_->ConnectionAccepted(std::move(state));
 
@@ -94,6 +93,9 @@ class ProvidedShellClient
   void GetTitle(const GetTitleCallback& callback) override {
     callback.Run(title_);
   }
+  void GetInstance(const GetInstanceCallback& callback) override {
+    callback.Run(identity_.instance());
+  }
 
   // test::mojom::BlockedInterface:
   void GetTitleBlocked(const GetTitleBlockedCallback& callback) override {
@@ -112,9 +114,8 @@ class ProvidedShellClient
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  std::string name_;
+  Identity identity_;
   uint32_t id_ = shell::mojom::kInvalidInstanceID;
-  std::string userid_ = mojom::kRootUserID;
   const std::string title_;
   mojom::ShellClientRequest request_;
   test::mojom::ExposedInterfacePtr caller_;
@@ -138,6 +139,7 @@ class ConnectTestShellClient
   // mojo::ShellClient:
   void Initialize(Connector* connector, const Identity& identity,
                   uint32_t id) override {
+    identity_ = identity;
     bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestShellClient::OnConnectionError,
                    base::Unretained(this)));
@@ -179,12 +181,16 @@ class ConnectTestShellClient
   void GetTitle(const GetTitleCallback& callback) override {
     callback.Run("ROOT");
   }
+  void GetInstance(const GetInstanceCallback& callback) override {
+    callback.Run(identity_.instance());
+  }
 
   void OnConnectionError() {
     if (bindings_.empty())
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
+  Identity identity_;
   std::vector<scoped_ptr<ShellClient>> delegates_;
   BindingSet<mojom::ShellClientFactory> shell_client_factory_bindings_;
   BindingSet<test::mojom::ConnectTestService> bindings_;

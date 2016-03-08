@@ -93,6 +93,9 @@ class ConnectTestApp : public ShellClient,
   void GetTitle(const GetTitleCallback& callback) override {
     callback.Run("APP");
   }
+  void GetInstance(const GetInstanceCallback& callback) override {
+    callback.Run(identity_.instance());
+  }
 
   // test::mojom::StandaloneApp:
   void ConnectToAllowedAppInBlockedPackage(
@@ -115,9 +118,6 @@ class ConnectTestApp : public ShellClient,
           base::MessageLoop::current());
       run_loop.Run();
     }
-  }
-  void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(identity_.instance());
   }
 
   // test::mojom::BlockedInterface:
