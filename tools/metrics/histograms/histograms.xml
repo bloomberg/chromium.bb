@@ -21948,6 +21948,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Mojo.Shell.RenderProcessInitializationTime" units="ms">
+  <owner>rockot@chromium.org</owner>
+  <summary>
+    Measures the time it takes for a new render process to receive an
+    initialization request from the Mojo shell. This is precisely the duration
+    of the MojoShellConnectionImpl::Create() call in RendererMain.
+  </summary>
+</histogram>
+
 <histogram name="Mojo.System.Node.ConnectedPeers">
   <owner>rockot@chromium.org</owner>
   <summary>
