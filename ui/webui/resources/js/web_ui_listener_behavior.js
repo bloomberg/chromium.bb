@@ -7,43 +7,37 @@
  * automatically remove WebUI listeners when detached.
  */
 
-cr.define('settings', function() {
-  /** @polymerBehavior */
-  var WebUIListenerBehavior = {
-    properties: {
-      /**
-       * Holds WebUI listeners that need to be removed when this element is
-       * destroyed.
-       * @private {!Array<!WebUIListener>}
-       */
-      webUIListeners_: {
-        type: Array,
-        value: function() { return []; },
-      },
-    },
-
+/** @polymerBehavior */
+var WebUIListenerBehavior = {
+  properties: {
     /**
-     * Adds a WebUI listener and registers it for automatic removal when this
-     * element is detached.
-     * Note: Do not use this method if you intend to remove this listener
-     * manually (use cr.addWebUIListener directly instead).
-     *
-     * @param {string} eventName The event to listen to.
-     * @param {!Function} callback The callback run when the event is fired.
+     * Holds WebUI listeners that need to be removed when this element is
+     * destroyed.
+     * @private {!Array<!WebUIListener>}
      */
-    addWebUIListener: function(eventName, callback) {
-      this.webUIListeners_.push(cr.addWebUIListener(eventName, callback));
+    webUIListeners_: {
+      type: Array,
+      value: function() { return []; },
     },
+  },
 
-    /** @override */
-    detached: function() {
-      while (this.webUIListeners_.length > 0) {
-        cr.removeWebUIListener(this.webUIListeners_.pop());
-      }
-    },
-  };
+  /**
+   * Adds a WebUI listener and registers it for automatic removal when this
+   * element is detached.
+   * Note: Do not use this method if you intend to remove this listener
+   * manually (use cr.addWebUIListener directly instead).
+   *
+   * @param {string} eventName The event to listen to.
+   * @param {!Function} callback The callback run when the event is fired.
+   */
+  addWebUIListener: function(eventName, callback) {
+    this.webUIListeners_.push(cr.addWebUIListener(eventName, callback));
+  },
 
-  return {
-    WebUIListenerBehavior: WebUIListenerBehavior,
-  };
-});
+  /** @override */
+  detached: function() {
+    while (this.webUIListeners_.length > 0) {
+      cr.removeWebUIListener(this.webUIListeners_.pop());
+    }
+  },
+};

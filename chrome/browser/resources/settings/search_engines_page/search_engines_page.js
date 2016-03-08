@@ -12,7 +12,7 @@
 Polymer({
   is: 'settings-search-engines-page',
 
-  behaviors: [settings.WebUIListenerBehavior],
+  behaviors: [WebUIListenerBehavior],
 
   properties: {
     /** @type {!Array<!SearchEngine>} */

@@ -70,5 +70,12 @@
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'web_ui_listener_behavior',
+      'dependencies': [
+        'cr',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }
