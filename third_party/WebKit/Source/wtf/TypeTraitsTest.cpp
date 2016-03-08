@@ -23,7 +23,11 @@
 
 #include "wtf/Noncopyable.h"
 
+// No gtest tests; only static_assert checks.
+
 namespace WTF {
+
+namespace {
 
 struct VirtualClass {
     virtual void A() { }
@@ -98,5 +102,7 @@ static_assert((IsSubclassOfTemplate<TestDerivedClass, TestBaseClass>::value), "D
 
 typedef int IntArray[];
 typedef int IntArraySized[4];
+
+} // anonymous namespace
 
 } // namespace WTF
