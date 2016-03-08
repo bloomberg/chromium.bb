@@ -607,7 +607,7 @@ def IsMoveOnlyKind(kind):
       IsAnyHandleKind(kind) or IsInterfaceKind(kind) or IsAssociatedKind(kind)
 
 
-def IsCloneableKind(kind):
+def IsCloneableKind(kind, filter):
   def _IsCloneable(kind, visited_kinds):
     if kind in visited_kinds:
       # No need to examine the kind again.
@@ -618,7 +618,7 @@ def IsCloneableKind(kind):
     if IsArrayKind(kind):
       return _IsCloneable(kind.kind, visited_kinds)
     if IsStructKind(kind) or IsUnionKind(kind):
-      if IsStructKind(kind) and kind.native_only:
+      if IsStructKind(kind) and (kind.native_only or filter(kind)):
         return False
       for field in kind.fields:
         if not _IsCloneable(field.kind, visited_kinds):

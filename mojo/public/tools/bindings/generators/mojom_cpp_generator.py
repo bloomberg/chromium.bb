@@ -105,6 +105,9 @@ def IsTypemappedKind(kind):
   return hasattr(kind, "name") and \
       GetFullMojomNameForKind(kind) in _current_typemap
 
+def IsCloneableKind(kind):
+  return mojom.IsCloneableKind(kind, IsTypemappedKind)
+
 def IsNativeOnlyKind(kind):
   return mojom.IsStructKind(kind) and kind.native_only
 
@@ -477,7 +480,7 @@ class Generator(generator.Generator):
     "should_inline": ShouldInlineStruct,
     "should_inline_union": ShouldInlineUnion,
     "is_array_kind": mojom.IsArrayKind,
-    "is_cloneable_kind": mojom.IsCloneableKind,
+    "is_cloneable_kind": IsCloneableKind,
     "is_enum_kind": mojom.IsEnumKind,
     "is_integral_kind": mojom.IsIntegralKind,
     "is_move_only_kind": mojom.IsMoveOnlyKind,
