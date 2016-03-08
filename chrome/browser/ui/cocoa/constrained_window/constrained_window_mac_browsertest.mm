@@ -79,15 +79,14 @@ class ConstrainedWindowMacTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInInactiveTab) {
   // Show dialog in non active tab.
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  std::unique_ptr<ConstrainedWindowMac> dialog(
-      CreateAndShowWebModalDialogMac(&delegate, tab0_, sheet_));
+  ConstrainedWindowMac dialog(&delegate, tab0_, sheet_);
   EXPECT_EQ(0.0, [sheet_window_ alphaValue]);
 
   // Switch to inactive tab.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
-  dialog->CloseWebContentsModalDialog();
+  dialog.CloseWebContentsModalDialog();
 }
 
 // If a tab has never been shown then the associated tab view for the web
@@ -106,8 +105,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
 
   // Show dialog and verify that it's not visible yet.
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  std::unique_ptr<ConstrainedWindowMac> dialog(
-      CreateAndShowWebModalDialogMac(&delegate, tab2, sheet_));
+  ConstrainedWindowMac dialog(&delegate, tab2, sheet_);
   EXPECT_FALSE([sheet_window_ isVisible]);
 
   // Activate the tab and verify that the constrained window is shown.
@@ -116,27 +114,25 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, ShowInUninitializedTab) {
   EXPECT_TRUE([sheet_window_ isVisible]);
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
-  dialog->CloseWebContentsModalDialog();
+  dialog.CloseWebContentsModalDialog();
 }
 
 // Test that adding a sheet disables tab dragging.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabDragging) {
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  std::unique_ptr<ConstrainedWindowMac> dialog(
-      CreateAndShowWebModalDialogMac(&delegate, tab1_, sheet_));
+  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
 
   // Verify that the dialog disables dragging.
   EXPECT_TRUE([controller_ isTabDraggable:tab_view0_]);
   EXPECT_FALSE([controller_ isTabDraggable:tab_view1_]);
 
-  dialog->CloseWebContentsModalDialog();
+  dialog.CloseWebContentsModalDialog();
 }
 
 // Test that closing a browser window with a sheet works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  std::unique_ptr<ConstrainedWindowMac> dialog(
-      CreateAndShowWebModalDialogMac(&delegate, tab1_, sheet_));
+  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   // Close the browser window.
@@ -150,8 +146,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowClose) {
 // Test that closing a tab with a sheet works.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  std::unique_ptr<ConstrainedWindowMac> dialog(
-      CreateAndShowWebModalDialogMac(&delegate, tab1_, sheet_));
+  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   // Close the tab.
@@ -165,8 +160,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
 // Test that the sheet is still visible after entering and exiting fullscreen.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowFullscreen) {
   NiceMock<ConstrainedWindowDelegateMock> delegate;
-  std::unique_ptr<ConstrainedWindowMac> dialog(
-      CreateAndShowWebModalDialogMac(&delegate, tab1_, sheet_));
+  ConstrainedWindowMac dialog(&delegate, tab1_, sheet_);
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   // Toggle fullscreen twice: one for entering and one for exiting.
@@ -186,5 +180,5 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, BrowserWindowFullscreen) {
     EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
   }
 
-  dialog->CloseWebContentsModalDialog();
+  dialog.CloseWebContentsModalDialog();
 }

@@ -58,12 +58,8 @@ void SingleWebContentsDialogManagerCocoa::Close() {
   [[ConstrainedWindowSheetController controllerForSheet:sheet_]
       closeSheet:sheet_];
   client_->set_manager(nullptr);
-
-  bool dialog_was_open = client_->DialogWasShown();
   client_->OnDialogClosing();      // |client_| might delete itself here.
-
-  if (dialog_was_open)
-    delegate_->WillClose(dialog());  // Deletes |this|.
+  delegate_->WillClose(dialog());  // Deletes |this|.
 }
 
 void SingleWebContentsDialogManagerCocoa::Focus() {

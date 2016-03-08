@@ -24,7 +24,7 @@ namespace net {
   base::scoped_nsobject<NSArray> certificates_;
   scoped_ptr<SSLCertificateViewerCocoaBridge> observer_;
   base::scoped_nsobject<SFCertificatePanel> panel_;
-  std::unique_ptr<ConstrainedWindowMac> constrainedWindow_;
+  scoped_ptr<ConstrainedWindowMac> constrainedWindow_;
   base::scoped_nsobject<NSWindow> overlayWindow_;
   BOOL closePending_;
   // A copy of the sheet's frame used to restore on show.

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_COCOA_H_
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
@@ -64,7 +65,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   // Closes the sheet and ends the modal loop. Triggers cleanup sequence.
   void CloseNow();
 
-  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
+  scoped_ptr<ConstrainedWindowMac> constrained_window_;
   base::scoped_nsobject<AutofillDialogWindowController> sheet_delegate_;
 
   // The delegate |this| queries for logic and state.

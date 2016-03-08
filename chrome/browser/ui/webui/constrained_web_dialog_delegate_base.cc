@@ -113,8 +113,3 @@ gfx::Size ConstrainedWebDialogDelegateBase::GetPreferredSize() const {
   NOTREACHED();
   return gfx::Size();
 }
-
-void ConstrainedWebDialogDelegateBase::ResizeToGivenSize(
-    const gfx::Size size) {
-  NOTREACHED();
-}

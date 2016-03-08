@@ -38,8 +38,8 @@ void AutofillDialogCocoa::Show() {
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:[sheet_delegate_ window]]);
-  constrained_window_ =
-      CreateAndShowWebModalDialogMac(this, delegate_->GetWebContents(), sheet);
+  constrained_window_.reset(
+      new ConstrainedWindowMac(this, delegate_->GetWebContents(), sheet));
   [sheet_delegate_ show];
 }
 
