@@ -751,6 +751,11 @@ bool WebMediaPlayerAndroid::hasSingleSecurityOrigin() const {
   if (!info_loader_ || !info_loader_->HasSingleOrigin())
     return false;
 
+  // TODO(qinmin): After fixing crbug.com/592017, remove this command line.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kReduceSecurityForTesting))
+    return true;
+
   // TODO(qinmin): The url might be redirected when android media player
   // requests the stream. As a result, we cannot guarantee there is only
   // a single origin. Only if the HTTP request was made without credentials,

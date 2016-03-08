@@ -12,7 +12,7 @@
         PerfTestRunner.prepareToMeasureValuesAsync({unit: 'runs/s',
             description: test.description, done: testDone});
         if (!test.doRun) {
-            CanvasRunner.logFatalError("\ndoRun must be set.\n");
+            CanvasRunner.logFatalError("doRun must be set.");
             return;
         }
         currentTest = test;
@@ -40,7 +40,7 @@
 
             PerfTestRunner.measureValueAsync(MEASURE_DRAW_TIMES * count * 1000 / elapsedTime);
         } catch(err) {
-            CanvasRunner.logFatalError("\ntest fails due to GPU issue. " + err + "\n");
+            CanvasRunner.logFatalError("test fails due to GPU issue. " + err);
             return;
         }
 
@@ -54,6 +54,40 @@
 
     CanvasRunner.logFatalError = function (text) {
         PerfTestRunner.logFatalError(text);
+    }
+
+    CanvasRunner.startPlayingAndWaitForVideo = function (video, callback) {
+        var gotPlaying = false;
+        var gotTimeUpdate = false;
+
+        var maybeCallCallback = function() {
+            if (gotPlaying && gotTimeUpdate && callback) {
+                callback(video);
+                callback = undefined;
+                video.removeEventListener('playing', playingListener, true);
+                video.removeEventListener('timeupdate', timeupdateListener, true);
+            }
+        };
+
+        var playingListener = function() {
+            gotPlaying = true;
+            maybeCallCallback();
+        };
+
+        var timeupdateListener = function() {
+            // Checking to make sure the current time has advanced beyond
+            // the start time seems to be a reliable heuristic that the
+            // video element has data that can be consumed.
+            if (video.currentTime > 0.0) {
+                gotTimeUpdate = true;
+                maybeCallCallback();
+            }
+        };
+
+        video.addEventListener('playing', playingListener, true);
+        video.addEventListener('timeupdate', timeupdateListener, true);
+        video.loop = true;
+        video.play();
     }
 
     window.CanvasRunner = CanvasRunner;

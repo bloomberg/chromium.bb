@@ -133,7 +133,7 @@ if (window.testRunner) {
     }
 
     PerfTestRunner.logFatalError = function (text) {
-        PerfTestRunner.log(text);
+        PerfTestRunner.log("FATAL: " + text);
         finish();
     }
 

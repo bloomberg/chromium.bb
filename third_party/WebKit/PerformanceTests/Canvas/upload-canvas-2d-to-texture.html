@@ -10,7 +10,7 @@ var ctx2D = canvas2D.getContext("2d");
 var canvas3D = document.createElement('canvas');
 var gl = canvas3D.getContext('webgl');
 if(!gl)
-    CanvasRunner.logFatalError("\nWebGL is not supported or enabled on this platform!\n");
+    CanvasRunner.logFatalError("WebGL is not supported or enabled on this platform!");
 var tex = null;
 
 function setSize(width, height) {

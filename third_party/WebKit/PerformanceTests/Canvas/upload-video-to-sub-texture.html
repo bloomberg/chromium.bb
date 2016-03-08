@@ -9,29 +9,12 @@ var videoElement = document.getElementById("video");
 var canvas3D = document.createElement('canvas');
 var gl = canvas3D.getContext('webgl');
 if(!gl)
-    CanvasRunner.logFatalError("\nWebGL is not supported or enabled on this platform!\n");
+    CanvasRunner.logFatalError("WebGL is not supported or enabled on this platform!");
 
 function setSize(width, height) {
     canvas3D.width = width;
     canvas3D.height = height;
 }
-
-function addPlayCallback(videoElement) {
-    // This logic makes sure this perf test starts after playing the video.
-    videoElement.addEventListener("canplaythrough", startVideo, true);
-    videoElement.addEventListener("play", startPerfTest, true);
-    videoElement.addEventListener('error', function(ev) {
-        CanvasRunner.logFatalError("\nmp4 codec is not supported on this platform. Received error event:" + ev.target.error.code + "\n");
-    }, false);
-    videoElement.src = "../resources/bear-1280x720.mp4";
-}
-
-function startVideo() {
-    // loop can emit this event again.
-    videoElement.removeEventListener("canplaythrough", startVideo, true);
-    videoElement.play();
-}
-
 
 function startPerfTest() {
     CanvasRunner.start({
@@ -74,7 +57,12 @@ function postRun() {
 
 window.onload = function () {
     setSize(1, 1);
-    addPlayCallback(videoElement);
+
+    videoElement.src = "resources/bear-1280x720.mp4";
+    if(!videoElement.canPlayType('video/mp4').replace(/no/, '')) {
+      CanvasRunner.logFatalError("video/mp4 is unsupported");
+    };
+    CanvasRunner.startPlayingAndWaitForVideo(videoElement, startPerfTest);
 }
 
 </script>

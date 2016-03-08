@@ -14,22 +14,6 @@ function setSize(width, height) {
     destCanvas2D.height = height;
 }
 
-function addPlayCallback(videoElement) {
-    // This logic makes sure this perf test starts after playing the video.
-    videoElement.addEventListener("canplaythrough", startVideo, true);
-    videoElement.addEventListener("play", startPerfTest, true);
-    videoElement.addEventListener('error', function(ev) {
-        CanvasRunner.logFatalError("\nmp4 codec is not supported on this platform. Received error event:" + ev.target.error.code + "\n");
-    }, false);
-    videoElement.src = "../resources/bear-1280x720.mp4";
-}
-
-function startVideo() {
-    // loop can emit this event again.
-    videoElement.removeEventListener("canplaythrough", startVideo, true);
-    videoElement.play();
-}
-
 function startPerfTest() {
     CanvasRunner.start({
         description: "This bench test checks the speed on drawing Video element to HW accelerated Canvas2D(1024x1024).",
@@ -53,7 +37,12 @@ window.onload = function () {
     // but this API is not available in JS or WebPage. Assume the threshold size is 256x257
     // and the dest canvas is HW accelerated Canvas when setting its size to 1024x1024.
     setSize(1024, 1024);
-    addPlayCallback(videoElement);
+
+    videoElement.src = "resources/bear-1280x720.mp4";
+    if(!videoElement.canPlayType('video/mp4').replace(/no/, '')) {
+      CanvasRunner.logFatalError("video/mp4 is unsupported");
+    };
+    CanvasRunner.startPlayingAndWaitForVideo(videoElement, startPerfTest);
 }
 
 </script>

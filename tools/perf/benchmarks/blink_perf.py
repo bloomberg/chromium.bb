@@ -88,7 +88,9 @@ class _BlinkPerfMeasurement(page_test.PageTest):
         '--js-flags=--expose_gc',
         '--enable-experimental-web-platform-features',
         '--disable-gesture-requirement-for-media-playback',
-        '--enable-experimental-canvas-features'
+        '--enable-experimental-canvas-features',
+        # TODO(qinmin): After fixing crbug.com/592017, remove this command line.
+        '--reduce-security-for-testing'
     ])
     if 'content-shell' in options.browser_type:
       options.AppendExtraBrowserArgs('--expose-internals-for-testing')
@@ -99,6 +101,9 @@ class _BlinkPerfMeasurement(page_test.PageTest):
     log = tab.EvaluateJavaScript('document.getElementById("log").innerHTML')
 
     for line in log.splitlines():
+      if line.startswith("FATAL: "):
+        print line
+        continue
       if not line.startswith('values '):
         continue
       parts = line.split()
@@ -166,8 +171,7 @@ class BlinkPerfCSS(perf_benchmark.PerfBenchmark):
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Disabled('android',  # http://crbug.com/496707
-                    'reference')  # http://crbug.com/576779
+@benchmark.Disabled('reference')  # http://crbug.com/576779
 class BlinkPerfCanvas(perf_benchmark.PerfBenchmark):
   tag = 'canvas'
   test = _BlinkPerfMeasurement
