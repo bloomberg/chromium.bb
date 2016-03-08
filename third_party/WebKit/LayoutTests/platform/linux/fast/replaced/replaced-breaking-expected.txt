@@ -45,6 +45,8 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {INPUT} at (6,390) size 13x13
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
+        LayoutImage {EMBED} at (1,457) size 27x27 [border: (1px solid #000000)]
+        LayoutImage {EMBED} at (1,484) size 27x27 [border: (1px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
 layer at (11,12) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
@@ -74,7 +76,3 @@ layer at (9,438) size 27x27
     layer at (0,0) size 25x25
       LayoutBlockFlow {HTML} at (0,0) size 25x25
         LayoutBlockFlow {BODY} at (8,8) size 9x9
-layer at (9,465) size 27x27
-  LayoutEmbeddedObject {EMBED} at (1,457) size 27x27 [border: (1px solid #000000)]
-layer at (9,492) size 27x27
-  LayoutEmbeddedObject {EMBED} at (1,484) size 27x27 [border: (1px solid #000000)]
