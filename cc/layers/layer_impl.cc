@@ -321,6 +321,14 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
   layer_tree_impl()->set_needs_update_draw_properties();
 }
 
+bool LayerImpl::AnchestorHasCopyRequest() const {
+  for (const LayerImpl* layer = this; layer; layer = layer->parent()) {
+    if (layer->HasCopyRequest())
+      return true;
+  }
+  return false;
+}
+
 void LayerImpl::ClearRenderSurfaceLayerList() {
   if (render_surface_)
     render_surface_->ClearLayerLists();

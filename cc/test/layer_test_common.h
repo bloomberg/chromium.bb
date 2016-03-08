@@ -137,6 +137,12 @@ class LayerTestCommon {
     void AppendSurfaceQuadsWithOcclusion(RenderSurfaceImpl* surface_impl,
                                          const gfx::Rect& occluded);
 
+    void RequestCopyOfOutput();
+
+    void SetSecureOutputSurface(bool secure_output) {
+      host_->host_impl()->output_surface()->set_is_secure(secure_output);
+    }
+
     OutputSurface* output_surface() const {
       return host_->host_impl()->output_surface();
     }

@@ -8,6 +8,7 @@
 
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
+#include "cc/quads/draw_quad.h"
 #include "cc/test/layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,6 +100,62 @@ TEST(TextureLayerImplTest, Occlusion) {
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);
+  }
+}
+
+TEST(TextureLayerImplTest, Protected) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+
+  gpu::Mailbox mailbox;
+  impl.output_surface()->context_provider()->ContextGL()->GenMailboxCHROMIUM(
+      mailbox.name);
+  TextureMailbox texture_mailbox(
+      mailbox,
+      gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0x123,
+                     gpu::CommandBufferId::FromUnsafeValue(0x234), 0x456),
+      GL_TEXTURE_2D, layer_size, false, true);
+
+  TextureLayerImpl* texture_layer_impl =
+      impl.AddChildToRoot<TextureLayerImpl>();
+  texture_layer_impl->SetBounds(layer_size);
+  texture_layer_impl->SetDrawsContent(true);
+  texture_layer_impl->SetTextureMailbox(
+      texture_mailbox,
+      SingleReleaseCallbackImpl::Create(base::Bind(&IgnoreCallback)));
+
+  impl.CalcDrawProps(viewport_size);
+
+  {
+    gfx::Rect occluded;
+    impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
+
+    EXPECT_EQ(1u, impl.quad_list().size());
+    EXPECT_EQ(DrawQuad::Material::SOLID_COLOR,
+              impl.quad_list().front()->material);
+  }
+
+  {
+    impl.SetSecureOutputSurface(true);
+    gfx::Rect occluded;
+    impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
+
+    EXPECT_EQ(1u, impl.quad_list().size());
+    EXPECT_NE(DrawQuad::Material::SOLID_COLOR,
+              impl.quad_list().front()->material);
+  }
+
+  {
+    impl.SetSecureOutputSurface(false);
+    impl.RequestCopyOfOutput();
+    gfx::Rect occluded;
+    impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
+
+    EXPECT_EQ(1u, impl.quad_list().size());
+    EXPECT_EQ(DrawQuad::Material::SOLID_COLOR,
+              impl.quad_list().front()->material);
   }
 }
 

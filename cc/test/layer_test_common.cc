@@ -12,6 +12,8 @@
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/layers/append_quads_data.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/animation_test_common.h"
@@ -206,6 +208,15 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
       Occlusion(gfx::Transform(), SimpleEnclosedRegion(occluded),
                 SimpleEnclosedRegion()),
       SK_ColorBLACK, 1.f, nullptr, &data, RenderPassId(1, 1));
+}
+
+void EmptyCopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
+
+void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {
+  std::vector<scoped_ptr<CopyOutputRequest>> copy_requests;
+  copy_requests.push_back(
+      CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
+  root_layer_impl_->PassCopyRequests(&copy_requests);
 }
 
 }  // namespace cc

@@ -408,6 +408,9 @@ scoped_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
                     texture_target_, query_type_));
   }
 
+  // TODO(dcastagna): Set properly based on the flag on the imported buffer.
+  bool secure_output_only = false;
+
   if (use_zero_copy_) {
     // Zero-copy means using the contents texture directly.
     Texture* texture = contents_texture_.get();
@@ -415,9 +418,10 @@ scoped_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
     // This binds the latest contents of this buffer to |texture|.
     gpu::SyncToken sync_token = texture->BindTexImage();
 
-    *texture_mailbox = cc::TextureMailbox(
-        texture->mailbox(), sync_token, texture_target_,
-        gpu_memory_buffer_->GetSize(), is_overlay_candidate_);
+    *texture_mailbox =
+        cc::TextureMailbox(texture->mailbox(), sync_token, texture_target_,
+                           gpu_memory_buffer_->GetSize(), is_overlay_candidate_,
+                           secure_output_only);
     // The contents texture will be released when no longer used by the
     // compositor.
     return cc::SingleReleaseCallback::Create(
@@ -439,9 +443,10 @@ scoped_ptr<cc::SingleReleaseCallback> Buffer::ProduceTextureMailbox(
   gpu::SyncToken sync_token = contents_texture->CopyTexImage(
       texture, base::Bind(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
                           base::Passed(&contents_texture_)));
-  *texture_mailbox = cc::TextureMailbox(
-      texture->mailbox(), sync_token, GL_TEXTURE_2D,
-      gpu_memory_buffer_->GetSize(), false /* is_overlay_candidate */);
+  *texture_mailbox =
+      cc::TextureMailbox(texture->mailbox(), sync_token, GL_TEXTURE_2D,
+                         gpu_memory_buffer_->GetSize(),
+                         false /* is_overlay_candidate */, secure_output_only);
   // The mailbox texture will be released when no longer used by the
   // compositor.
   return cc::SingleReleaseCallback::Create(

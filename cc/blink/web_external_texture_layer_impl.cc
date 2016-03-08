@@ -94,7 +94,7 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
 
     *mailbox =
         cc::TextureMailbox(name, sync_token, client_mailbox.textureTarget, size,
-                           client_mailbox.allowOverlay);
+                           client_mailbox.allowOverlay, false);
   }
   mailbox->set_nearest_neighbor(client_mailbox.nearestNeighbor);
 

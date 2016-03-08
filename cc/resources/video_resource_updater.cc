@@ -611,7 +611,7 @@ void VideoResourceUpdater::CopyPlaneTexture(
 
   external_resources->mailboxes.push_back(
       TextureMailbox(resource->mailbox, sync_token, GL_TEXTURE_2D,
-                     video_frame->coded_size(), false));
+                     video_frame->coded_size(), false, false));
 
   external_resources->release_callbacks.push_back(
       base::Bind(&RecycleResource, AsWeakPtr(), resource->resource_id));
@@ -648,7 +648,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
           mailbox_holder.mailbox, mailbox_holder.sync_token,
           mailbox_holder.texture_target, video_frame->coded_size(),
           video_frame->metadata()->IsTrue(
-              media::VideoFrameMetadata::ALLOW_OVERLAY)));
+              media::VideoFrameMetadata::ALLOW_OVERLAY),
+          false));
 
       external_resources.release_callbacks.push_back(
           base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));

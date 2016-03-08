@@ -198,7 +198,7 @@ ResourceId CreateResource(ResourceProvider* resource_provider,
                           bool is_overlay_candidate) {
   TextureMailbox mailbox =
       TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
-                     size, is_overlay_candidate);
+                     size, is_overlay_candidate, false);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
 
