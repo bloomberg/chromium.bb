@@ -47,7 +47,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             R.id.contextmenu_open_in_incognito_tab,
             R.id.contextmenu_save_link_as,
             R.id.contextmenu_load_original_image,
-            R.id.contextmenu_open_image,
+            R.id.contextmenu_open_image_in_new_tab,
             R.id.contextmenu_search_by_image,
     };
 
@@ -77,6 +77,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_SAVE_LINK = 5;
         static final int ACTION_SAVE_IMAGE = 6;
         static final int ACTION_OPEN_IMAGE = 7;
+        static final int ACTION_OPEN_IMAGE_IN_NEW_TAB = 8;
         static final int ACTION_SEARCH_BY_IMAGE = 11;
         static final int ACTION_LOAD_IMAGES = 12;
         static final int ACTION_LOAD_ORIGINAL_IMAGE = 13;
@@ -279,6 +280,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_open_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IMAGE);
             mDelegate.onOpenImageUrl(params.getSrcUrl(), params.getReferrer());
+        } else if (itemId == R.id.contextmenu_open_image_in_new_tab) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IMAGE_IN_NEW_TAB);
+            mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_load_images) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_LOAD_IMAGES);
             DataReductionProxyUma.dataReductionProxyLoFiUIAction(
