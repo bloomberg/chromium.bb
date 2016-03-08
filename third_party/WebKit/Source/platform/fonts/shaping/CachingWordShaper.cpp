@@ -25,6 +25,7 @@
 
 #include "platform/fonts/shaping/CachingWordShaper.h"
 
+#include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
@@ -105,14 +106,14 @@ float CachingWordShaper::fillGlyphBufferForTextEmphasis(const Font* font,
     return buffer.fillGlyphBufferForTextEmphasis(glyphBuffer, run, emphasisData, from, to);
 }
 
-FloatRect CachingWordShaper::selectionRect(const Font* font, const TextRun& run,
-    const FloatPoint& point, int height, unsigned from, unsigned to)
+CharacterRange CachingWordShaper::getCharacterRange(const Font* font,
+    const TextRun& run, unsigned from, unsigned to)
 {
     ShapeResultBuffer buffer;
     float totalWidth = shapeResultsForRun(m_shapeCache, font, run, nullptr,
         &buffer);
 
-    return buffer.selectionRect(run.direction(), totalWidth, point, height, from, to);
+    return buffer.getCharacterRange(run.direction(), totalWidth, from, to);
 }
 
 }; // namespace blink

@@ -5,6 +5,7 @@
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
 
 #include "platform/fonts/Character.h"
+#include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
@@ -258,8 +259,8 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer
     return advance;
 }
 
-FloatRect ShapeResultBuffer::selectionRect(TextDirection direction, float totalWidth,
-    const FloatPoint& point, int height, unsigned absoluteFrom, unsigned absoluteTo) const
+CharacterRange ShapeResultBuffer::getCharacterRange(TextDirection direction,
+    float totalWidth, unsigned absoluteFrom, unsigned absoluteTo) const
 {
     float currentX = 0;
     float fromX = 0;
@@ -334,8 +335,8 @@ FloatRect ShapeResultBuffer::selectionRect(TextDirection direction, float totalW
     if (!foundToX && !foundFromX)
         fromX = toX = 0;
     if (fromX < toX)
-        return FloatRect(point.x() + fromX, point.y(), toX - fromX, height);
-    return FloatRect(point.x() + toX, point.y(), fromX - toX, height);
+        return CharacterRange(fromX, toX);
+    return CharacterRange(toX, fromX);
 }
 
 int ShapeResultBuffer::offsetForPosition(const TextRun& run, float targetX) const

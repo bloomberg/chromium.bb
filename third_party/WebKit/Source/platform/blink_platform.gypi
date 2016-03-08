@@ -392,6 +392,7 @@
       'fonts/AcceptLanguagesResolver.cpp',
       'fonts/AcceptLanguagesResolver.h',
       'fonts/AlternateFontFamily.h',
+      'fonts/CharacterRange.h',
       'fonts/Character.cpp',
       'fonts/Character.h',
       'fonts/CharacterEmoji.cpp',

@@ -12,6 +12,7 @@
 
 namespace blink {
 
+struct CharacterRange;
 class GlyphBuffer;
 class TextRun;
 
@@ -34,7 +35,7 @@ public:
     float fillGlyphBufferForTextEmphasis(GlyphBuffer*, const TextRun&,
         const GlyphData* emphasisData, unsigned from, unsigned to) const;
     int offsetForPosition(const TextRun&, float targetX) const;
-    FloatRect selectionRect(TextDirection, float totalWidth, const FloatPoint&, int height,
+    CharacterRange getCharacterRange(TextDirection, float totalWidth,
         unsigned from, unsigned to) const;
 
 private:

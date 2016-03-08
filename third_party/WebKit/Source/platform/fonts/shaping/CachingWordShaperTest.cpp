@@ -4,6 +4,7 @@
 
 #include "platform/fonts/shaping/CachingWordShaper.h"
 
+#include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
@@ -174,9 +175,8 @@ TEST_F(CachingWordShaperTest, SubRunWithZeroGlyphs)
     GlyphBuffer glyphBuffer;
     shaper.fillGlyphBuffer(&font, textRun, fallbackFonts, &glyphBuffer, 0, 8);
 
-    FloatPoint point;
-    int height = 16;
-    shaper.selectionRect(&font, textRun, point, height, 0, 8);
+
+    shaper.getCharacterRange(&font, textRun, 0, 8);
 }
 
 TEST_F(CachingWordShaperTest, SegmentCJKByCharacter)

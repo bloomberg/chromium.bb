@@ -35,6 +35,7 @@
 
 namespace blink {
 
+struct CharacterRange;
 class Font;
 class GlyphBuffer;
 class SimpleFontData;
@@ -58,8 +59,8 @@ public:
     float fillGlyphBufferForTextEmphasis(const Font*, const TextRun&,
         const GlyphData* emphasisData, GlyphBuffer*,
         unsigned from, unsigned to);
-    FloatRect selectionRect(const Font*, const TextRun&, const FloatPoint&,
-        int height, unsigned from, unsigned to);
+    CharacterRange getCharacterRange(const Font*, const TextRun&,
+        unsigned from, unsigned to);
 
 private:
     ShapeCache* m_shapeCache;
