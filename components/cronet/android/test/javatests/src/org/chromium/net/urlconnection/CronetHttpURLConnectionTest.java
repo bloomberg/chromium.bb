@@ -1078,6 +1078,25 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         connection.disconnect();
     }
 
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    // Test that Cronet strips content-encoding header.
+    public void testStripContentEncoding() throws Exception {
+        URL url = new URL(NativeTestServer.getFileURL("/gzipped.html"));
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        assertEquals("foo", connection.getHeaderFieldKey(0));
+        assertEquals("bar", connection.getHeaderField(0));
+        assertEquals(null, connection.getHeaderField("content-encoding"));
+        Map<String, List<String>> responseHeaders = connection.getHeaderFields();
+        assertEquals(1, responseHeaders.size());
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        // Make sure Cronet decodes the gzipped content.
+        assertEquals("Hello, World!", TestUtil.getResponseAsString(connection));
+        connection.disconnect();
+    }
+
     private static enum CacheSetting { USE_CACHE, DONT_USE_CACHE };
 
     private static enum ExpectedOutcome { SUCCESS, FAILURE };

@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +48,8 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     private UrlRequestException mException;
     private boolean mOnRedirectCalled = false;
     private boolean mHasResponse = false;
+    private List<Map.Entry<String, String>> mResponseHeadersList;
+    private Map<String, List<String>> mResponseHeadersMap;
 
     public CronetHttpURLConnection(URL url, CronetEngine cronetEngine) {
         super(url);
@@ -109,7 +112,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         } catch (IOException e) {
             return Collections.emptyMap();
         }
-        return mResponseInfo.getAllHeaders();
+        return getAllHeaders();
     }
 
     /**
@@ -124,7 +127,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         } catch (IOException e) {
             return null;
         }
-        Map<String, List<String>> map = mResponseInfo.getAllHeaders();
+        Map<String, List<String>> map = getAllHeaders();
         if (!map.containsKey(fieldName)) {
             return null;
         }
@@ -544,7 +547,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         } catch (IOException e) {
             return null;
         }
-        List<Map.Entry<String, String>> headers = mResponseInfo.getAllHeadersAsList();
+        List<Map.Entry<String, String>> headers = getAllHeadersAsList();
         if (pos >= headers.size()) {
             return null;
         }
@@ -557,5 +560,39 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      */
     private boolean isChunkedUpload() {
         return chunkLength > 0;
+    }
+
+    // TODO(xunjieli): Refactor to reuse code in UrlResponseInfo.
+    private Map<String, List<String>> getAllHeaders() {
+        if (mResponseHeadersMap != null) {
+            return mResponseHeadersMap;
+        }
+        Map<String, List<String>> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        for (Map.Entry<String, String> entry : getAllHeadersAsList()) {
+            List<String> values = new ArrayList<String>();
+            if (map.containsKey(entry.getKey())) {
+                values.addAll(map.get(entry.getKey()));
+            }
+            values.add(entry.getValue());
+            map.put(entry.getKey(), Collections.unmodifiableList(values));
+        }
+        mResponseHeadersMap = Collections.unmodifiableMap(map);
+        return mResponseHeadersMap;
+    }
+
+    private List<Map.Entry<String, String>> getAllHeadersAsList() {
+        if (mResponseHeadersList != null) {
+            return mResponseHeadersList;
+        }
+        mResponseHeadersList = new ArrayList<Map.Entry<String, String>>();
+        for (Map.Entry<String, String> entry : mResponseInfo.getAllHeadersAsList()) {
+            // Strips Content-Encoding response header. See crbug.com/592700.
+            if (!entry.getKey().equalsIgnoreCase("Content-Encoding")) {
+                mResponseHeadersList.add(
+                        new AbstractMap.SimpleImmutableEntry<String, String>(entry));
+            }
+        }
+        mResponseHeadersList = Collections.unmodifiableList(mResponseHeadersList);
+        return mResponseHeadersList;
     }
 }
