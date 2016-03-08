@@ -3547,6 +3547,7 @@ interface Navigator
     method constructor
     method getBattery
     method getGamepads
+    method getInstalledRelatedApps
     method getVRDevices
     method isProtocolHandlerRegistered
     method javaEnabled
@@ -4045,6 +4046,11 @@ interface ReadableStream
     method constructor
     method getReader
     method tee
+interface RelatedApplication
+    getter id
+    getter platform
+    getter url
+    method constructor
 interface RelatedEvent : Event
     getter relatedTarget
     method constructor

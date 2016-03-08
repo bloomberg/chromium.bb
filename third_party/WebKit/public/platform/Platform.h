@@ -80,6 +80,7 @@ class WebGeofencingProvider;
 class WebGestureCurve;
 class WebGraphicsContext3DProvider;
 class WebIDBFactory;
+class WebInstalledApp;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebMediaPlayer;

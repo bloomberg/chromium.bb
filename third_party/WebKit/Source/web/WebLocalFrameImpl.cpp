@@ -158,6 +158,7 @@
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/geolocation/GeolocationController.h"
+#include "modules/installedapp/InstalledAppController.h"
 #include "modules/notifications/NotificationPermissionClient.h"
 #include "modules/permissions/PermissionController.h"
 #include "modules/presentation/PresentationController.h"
@@ -1559,6 +1560,9 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
             ScreenWakeLock::provideTo(*m_frame, m_client ? m_client->wakeLockClient() : nullptr);
         if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
             provideAudioOutputDeviceClientTo(*m_frame, AudioOutputDeviceClientImpl::create());
+        if (RuntimeEnabledFeatures::installedAppEnabled()) {
+            InstalledAppController::provideTo(*m_frame, m_client ? m_client->installedAppClient() : nullptr);
+        }
     }
 }
 

@@ -75,6 +75,7 @@ class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
 class WebFormElement;
 class WebGeolocationClient;
+class WebInstalledAppClient;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
 class WebMediaSession;
@@ -356,6 +357,10 @@ public:
     // Used to access the embedder for the Presentation API.
     virtual WebPresentationClient* presentationClient() { return 0; }
 
+    // InstalledApp API ----------------------------------------------------
+
+    // Used to access the embedder for the InstalledApp API.
+    virtual WebInstalledAppClient* installedAppClient() { return nullptr; }
 
     // Editing -------------------------------------------------------------
 

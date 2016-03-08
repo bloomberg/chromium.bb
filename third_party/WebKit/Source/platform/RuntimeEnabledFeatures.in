@@ -99,6 +99,7 @@ InertTopControls status=experimental
 InputDeviceCapabilities status=stable
 InputEvent status=experimental
 InputModeAttribute status=experimental
+InstalledApp status=experimental
 IntersectionObserver status=experimental
 IterableCollections status=experimental
 KeyboardEventCode status=stable
