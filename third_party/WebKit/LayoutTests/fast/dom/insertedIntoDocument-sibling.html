@@ -21,6 +21,7 @@ window.onload = function()
     
     object.innerHTML = "<embed width=\"2\"/><element id=\"foo\"/>";
     embed = object.firstChild;
+    embed.setAttribute("type", "image/png");
     
     attr = document.createAttribute("width");
     object.setAttributeNode(attr);

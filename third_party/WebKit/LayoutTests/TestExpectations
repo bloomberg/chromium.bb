@@ -450,7 +450,6 @@ crbug.com/108417 imported/web-platform-tests/html/rendering/non-replaced-element
 crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure Pass ]
 crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-elements/the-hr-element-0/width.html [ Failure Pass ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
-crbug.com/525896 imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-01.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html [ Failure ]
@@ -1269,7 +1268,8 @@ crbug.com/581468 http/tests/inspector/resource-tree/resource-tree-non-unique-url
 crbug.com/571710 http/tests/inspector/search/source-frame-search.html [ Timeout Pass ]
 
 crbug.com/571716 inspector/audits/audits-panel-functional.html [ Crash Pass ]
-
+crbug.com/525896 [ Linux ] fast/replaced/replaced-breaking.html [ NeedsRebaseline ]
+crbug.com/525896 [ Linux ] fast/block/float/4145535Crash.html [ NeedsRebaseline ]
 crbug.com/571721 inspector/console/console-xpath.html [ Timeout Pass ]
 
 crbug.com/580378 [ Mac ] fast/replaced/width100percent-searchfield.html [ Failure Pass ]

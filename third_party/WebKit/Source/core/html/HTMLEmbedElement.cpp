@@ -157,8 +157,20 @@ bool HTMLEmbedElement::layoutObjectIsNeeded(const ComputedStyle& style)
     if (isImageType())
         return HTMLPlugInElement::layoutObjectIsNeeded(style);
 
-    // If my parent is an <object> and is not set to use fallback content, I
-    // should be ignored and not get a layoutObject.
+    // https://html.spec.whatwg.org/multipage/embedded-content.html#the-embed-element
+    // While any of the following conditions are occurring, any plugin
+    // instantiated for the element must be removed, and the embed element
+    // represents nothing:
+
+    // * The element has neither a src attribute nor a type attribute.
+    if (!fastHasAttribute(srcAttr) && !fastHasAttribute(typeAttr))
+        return false;
+
+    // * The element has a media element ancestor.
+    // -> It's realized by LayoutMedia::isChildAllowed.
+
+    // * The element has an ancestor object element that is not showing its
+    //   fallback content.
     ContainerNode* p = parentNode();
     if (isHTMLObjectElement(p)) {
         ASSERT(p->layoutObject());
