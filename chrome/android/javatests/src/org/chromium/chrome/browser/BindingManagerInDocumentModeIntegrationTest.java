@@ -140,7 +140,7 @@ public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTes
 
         @Override
         public void startModerateBindingManagement(
-                Context context, int maxSize, float lowReduceRatio, float highReduceRatio) {}
+                Context context, int maxSize, boolean moderateBindingTillBackgrounded) {}
 
         @Override
         public void releaseAllModerateBindings() {

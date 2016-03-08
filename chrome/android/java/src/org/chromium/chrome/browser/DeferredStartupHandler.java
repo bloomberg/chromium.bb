@@ -30,11 +30,6 @@ import org.chromium.content.browser.ChildProcessLauncher;
  * Handler for application level tasks to be completed on deferred startup.
  */
 public class DeferredStartupHandler {
-    // Low reduce ratio of moderate binding.
-    private static final float MODERATE_BINDING_LOW_REDUCE_RATIO = 0.25f;
-    // High reduce ratio of moderate binding.
-    private static final float MODERATE_BINDING_HIGH_REDUCE_RATIO = 0.5f;
-
     private static DeferredStartupHandler sDeferredStartupHandler;
     private boolean mDeferredStartupComplete;
 
@@ -146,8 +141,11 @@ public class DeferredStartupHandler {
         // Moderate binding doesn't apply to low end devices.
         if (SysUtils.isLowEndDevice()) return;
 
+        boolean moderateBindingTillBackgrounded =
+                FieldTrialList.findFullName("ModerateBindingOnBackgroundTabCreation")
+                        .equals("Enabled");
         ChildProcessLauncher.startModerateBindingManagement(
-                context, MODERATE_BINDING_LOW_REDUCE_RATIO, MODERATE_BINDING_HIGH_REDUCE_RATIO);
+                context, moderateBindingTillBackgrounded);
     }
 
     /**

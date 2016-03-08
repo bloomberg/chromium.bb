@@ -551,11 +551,15 @@ public class ChildProcessLauncher {
 
     /**
      * Starts moderate binding management.
+     * @param context Android's context.
+     * @param moderateBindingTillBackgrounded true if the BindingManager should add a moderate
+     * binding to a render process when it is created and remove the moderate binding when Chrome is
+     * sent to the background.
      */
     public static void startModerateBindingManagement(
-            Context context, float lowReduceRatio, float highReduceRatio) {
+            Context context, boolean moderateBindingTillBackgrounded) {
         sBindingManager.startModerateBindingManagement(
-                context, getNumberOfServices(context, true), lowReduceRatio, highReduceRatio);
+                context, getNumberOfServices(context, true), moderateBindingTillBackgrounded);
     }
 
     /**
