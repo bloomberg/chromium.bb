@@ -231,6 +231,10 @@ void GpuChannelMessageQueue::PauseMessageProcessing() {
   base::AutoLock auto_lock(channel_lock_);
   DCHECK(!channel_messages_.empty());
 
+  // If we have been preempted by another channel, just post a task to wake up.
+  if (scheduled_)
+    channel_->PostHandleMessage(this);
+
   sync_point_order_data_->PauseProcessingOrderNumber(
       channel_messages_.front()->order_number);
 }
