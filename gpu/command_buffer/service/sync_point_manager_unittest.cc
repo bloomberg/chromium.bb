@@ -28,6 +28,15 @@ class SyncPointManagerTest : public testing::Test {
   // Simple static function which can be used to test callbacks.
   static void SetIntegerFunction(int* test, int value) { *test = value; }
 
+  // Simple static function used for testing OnWaitCallback.
+  static void OnWait(CommandBufferNamespace* namespace_id_ptr,
+                     CommandBufferId* client_id_ptr,
+                     CommandBufferNamespace namespace_id,
+                     CommandBufferId client_id) {
+    *namespace_id_ptr = namespace_id;
+    *client_id_ptr = client_id;
+  }
+
   scoped_ptr<SyncPointManager> sync_point_manager_;
 };
 
@@ -427,6 +436,57 @@ TEST_F(SyncPointManagerTest, NonExistentOrderNumRelease) {
   release_stream.BeginProcessing();
   ASSERT_EQ(4u, release_stream.order_data->current_order_num());
   EXPECT_TRUE(release_stream.client->client_state()->IsFenceSyncReleased(1));
+  EXPECT_EQ(123, test_num);
+}
+
+TEST_F(SyncPointManagerTest, OnWaitCallbackTest) {
+  const CommandBufferNamespace kNamespaceId =
+      gpu::CommandBufferNamespace::GPU_IO;
+  const CommandBufferId kBufferId1 = CommandBufferId::FromUnsafeValue(0x123);
+  const CommandBufferId kBufferId2 = CommandBufferId::FromUnsafeValue(0x234);
+
+  SyncPointStream release_stream(sync_point_manager_.get(), kNamespaceId,
+                                 kBufferId1);
+  SyncPointStream wait_stream(sync_point_manager_.get(), kNamespaceId,
+                              kBufferId2);
+
+  CommandBufferNamespace namespace_id = CommandBufferNamespace::INVALID;
+  CommandBufferId client_id;
+  release_stream.client->SetOnWaitCallback(
+      base::Bind(&SyncPointManagerTest::OnWait, &namespace_id, &client_id));
+
+  release_stream.AllocateOrderNum(sync_point_manager_.get());
+  wait_stream.AllocateOrderNum(sync_point_manager_.get());
+  release_stream.AllocateOrderNum(sync_point_manager_.get());
+
+  wait_stream.BeginProcessing();
+  int test_num = 10;
+  bool valid_wait = wait_stream.client->Wait(
+      release_stream.client->client_state().get(), 1,
+      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+  EXPECT_TRUE(valid_wait);
+  EXPECT_EQ(10, test_num);
+  EXPECT_EQ(kNamespaceId, namespace_id);
+  EXPECT_EQ(kBufferId2, client_id);
+
+  release_stream.BeginProcessing();
+  release_stream.client->ReleaseFenceSync(1);
+  EXPECT_EQ(123, test_num);
+
+  wait_stream.EndProcessing();
+
+  namespace_id = CommandBufferNamespace::INVALID;
+  client_id = CommandBufferId();
+  test_num = 10;
+  valid_wait = wait_stream.client->WaitOutOfOrder(
+      release_stream.client->client_state().get(), 2,
+      base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
+  EXPECT_TRUE(valid_wait);
+  EXPECT_EQ(10, test_num);
+  EXPECT_EQ(kNamespaceId, namespace_id);
+  EXPECT_EQ(kBufferId2, client_id);
+
+  release_stream.client->ReleaseFenceSync(2);
   EXPECT_EQ(123, test_num);
 }
 

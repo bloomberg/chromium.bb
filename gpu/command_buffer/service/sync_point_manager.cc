@@ -191,7 +191,9 @@ SyncPointClientState::SyncPointClientState(
 SyncPointClientState::~SyncPointClientState() {
 }
 
-bool SyncPointClientState::WaitForRelease(uint32_t wait_order_num,
+bool SyncPointClientState::WaitForRelease(CommandBufferNamespace namespace_id,
+                                          CommandBufferId client_id,
+                                          uint32_t wait_order_num,
                                           uint64_t release,
                                           const base::Closure& callback) {
   // Lock must be held the whole time while we validate otherwise it could be
@@ -205,6 +207,8 @@ bool SyncPointClientState::WaitForRelease(uint32_t wait_order_num,
       } else {
         // Add the callback which will be called upon release.
         release_callback_queue_.push(ReleaseCallback(release, callback));
+        if (!on_wait_callback_.is_null())
+          on_wait_callback_.Run(namespace_id, client_id);
         return true;
       }
     }
@@ -258,6 +262,10 @@ void SyncPointClientState::ReleaseFenceSyncLocked(
   }
 }
 
+void SyncPointClientState::SetOnWaitCallback(const OnWaitCallback& callback) {
+  on_wait_callback_ = callback;
+}
+
 SyncPointClient::~SyncPointClient() {
   if (namespace_id_ != gpu::CommandBufferNamespace::INVALID) {
     // Release all fences on destruction.
@@ -279,7 +287,8 @@ bool SyncPointClient::Wait(SyncPointClientState* release_state,
 
   // If waiting on self or wait was invalid, call the callback and return false.
   if (client_state_ == release_state ||
-      !release_state->WaitForRelease(wait_order_number, release_count,
+      !release_state->WaitForRelease(namespace_id_, client_id_,
+                                     wait_order_number, release_count,
                                      wait_complete_callback)) {
     wait_complete_callback.Run();
     return false;
@@ -308,8 +317,8 @@ bool SyncPointClient::WaitOutOfOrder(
   // No order number associated with the current execution context, using
   // UINT32_MAX will just assume the release is in the SyncPointClientState's
   // order numbers to be executed.
-  if (!release_state->WaitForRelease(UINT32_MAX, release_count,
-                                     wait_complete_callback)) {
+  if (!release_state->WaitForRelease(namespace_id_, client_id_, UINT32_MAX,
+                                     release_count, wait_complete_callback)) {
     wait_complete_callback.Run();
     return false;
   }
@@ -331,6 +340,10 @@ void SyncPointClient::ReleaseFenceSync(uint64_t release) {
   // FinishProcessingOrderNumber(), or else we may deadlock.
   DCHECK(client_state_->order_data()->IsProcessingOrderNumber());
   client_state_->ReleaseFenceSync(release);
+}
+
+void SyncPointClient::SetOnWaitCallback(const OnWaitCallback& callback) {
+  client_state_->SetOnWaitCallback(callback);
 }
 
 SyncPointClient::SyncPointClient()

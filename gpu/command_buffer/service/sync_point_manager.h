@@ -176,7 +176,9 @@ class GPU_EXPORT SyncPointClientState
   // Queues the callback to be called if the release is valid. If the release
   // is invalid this function will return False and the callback will never
   // be called.
-  bool WaitForRelease(uint32_t wait_order_num,
+  bool WaitForRelease(CommandBufferNamespace namespace_id,
+                      CommandBufferId client_id,
+                      uint32_t wait_order_num,
                       uint64_t release,
                       const base::Closure& callback);
 
@@ -184,6 +186,10 @@ class GPU_EXPORT SyncPointClientState
   void EnsureReleased(uint64_t release);
   void ReleaseFenceSyncLocked(uint64_t release,
                               std::vector<base::Closure>* callback_list);
+
+  typedef base::Callback<void(CommandBufferNamespace, CommandBufferId)>
+      OnWaitCallback;
+  void SetOnWaitCallback(const OnWaitCallback& callback);
 
   // Global order data where releases will originate from.
   scoped_refptr<SyncPointOrderData> order_data_;
@@ -197,6 +203,9 @@ class GPU_EXPORT SyncPointClientState
   // In well defined fence sync operations, fence syncs are released in order
   // so simply having a priority queue for callbacks is enough.
   ReleaseCallbackQueue release_callback_queue_;
+
+  // Called when a release callback is queued.
+  OnWaitCallback on_wait_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointClientState);
 };
@@ -243,6 +252,14 @@ class GPU_EXPORT SyncPointClient {
       const base::Closure& wait_complete_callback);
 
   void ReleaseFenceSync(uint64_t release);
+
+  // This callback is called with the namespace and id of the waiting client
+  // when a release callback is queued. The callback is called on the thread
+  // where the Wait... happens and synchronization is the responsibility of the
+  // caller.
+  typedef base::Callback<void(CommandBufferNamespace, CommandBufferId)>
+      OnWaitCallback;
+  void SetOnWaitCallback(const OnWaitCallback& callback);
 
  private:
   friend class SyncPointManager;
