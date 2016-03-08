@@ -41,8 +41,10 @@ cat > chromium.gyp_env <<EOF
 EOF
 ```
 
-Also, you should [install API
-keys](https://www.chromium.org/developers/how-tos/api-keys).
+Before you build, you may want to
+[install API keys](https://sites.google.com/a/chromium.org/dev/developers/how-tos/api-keys)
+so that Chrome-integrated Google services work. This step is optional if you
+aren't testing those features.
 
 ## Getting the Code
 
