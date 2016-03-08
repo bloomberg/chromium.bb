@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -128,6 +129,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature({"NewTabPage"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/593007")
     public void testSearchFromFakebox() throws InterruptedException {
         singleClickView(mFakebox);
         waitForFakeboxFocusAnimationComplete(mNtp);
