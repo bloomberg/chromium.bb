@@ -249,7 +249,7 @@ public:
     {
         ScriptValue onReject;
         promise.then(UnreachableFunction::create(scriptState()), TestFunction::create(scriptState(), &onReject));
-        v8::MicrotasksScope::PerformCheckpoint(isolate());
+        isolate()->RunMicrotasks();
         return onReject;
     }
 
@@ -263,7 +263,7 @@ public:
     {
         ScriptValue onResolve;
         promise.then(TestFunction::create(scriptState(), &onResolve), UnreachableFunction::create(scriptState()));
-        v8::MicrotasksScope::PerformCheckpoint(isolate());
+        isolate()->RunMicrotasks();
         return onResolve;
     }
 

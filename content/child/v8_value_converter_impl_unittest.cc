@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "content/child/v8_value_converter_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "v8/include/v8.h"
 
 namespace content {
@@ -288,7 +287,6 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
 
   // Set up objects to throw when reading or writing 'foo'.
   const char* source =
@@ -331,7 +329,6 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
 
   const char* source = "(function() {"
       "var arr = [];"
@@ -408,7 +405,6 @@ TEST_F(V8ValueConverterImplTest, Prototype) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
 
   const char* source = "(function() {"
       "Object.prototype.foo = 'foo';"
@@ -433,7 +429,6 @@ TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
 
   const char* source = "(function() {"
       "return { foo: undefined, bar: null };"
@@ -492,7 +487,6 @@ TEST_F(V8ValueConverterImplTest, WeirdProperties) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
 
   const char* source = "(function() {"
       "return {"
@@ -531,7 +525,6 @@ TEST_F(V8ValueConverterImplTest, ArrayGetters) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
 
   const char* source = "(function() {"
       "var a = [0];"
@@ -556,7 +549,6 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
   v8::Context::Scope context_scope(context);
-  blink::WebScopedMicrotaskSuppression microtasks_scope;
 
   v8::Local<v8::Object> object;
   {

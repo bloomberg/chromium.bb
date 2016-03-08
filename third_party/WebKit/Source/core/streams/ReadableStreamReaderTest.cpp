@@ -179,7 +179,7 @@ TEST_F(ReadableStreamReaderTest, Release)
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_EQ("AbortError: the reader is already released", onRejected);
 
@@ -208,7 +208,7 @@ TEST_F(ReadableStreamReaderTest, ReadAfterRelease)
 
     EXPECT_FALSE(result.isSet);
     EXPECT_TRUE(onRejected.isNull());
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_FALSE(result.isSet);
     EXPECT_EQ("TypeError: the reader is already released", onRejected);
@@ -250,7 +250,7 @@ TEST_F(ReadableStreamReaderTest, EnqueueThenRead)
     EXPECT_FALSE(result.isSet);
     EXPECT_TRUE(onRejected.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_TRUE(result.isSet);
     EXPECT_FALSE(result.isDone);
@@ -264,7 +264,7 @@ TEST_F(ReadableStreamReaderTest, EnqueueThenRead)
     EXPECT_FALSE(result2.isSet);
     EXPECT_TRUE(onRejected2.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_TRUE(result2.isSet);
     EXPECT_FALSE(result2.isDone);
@@ -290,7 +290,7 @@ TEST_F(ReadableStreamReaderTest, ReadThenEnqueue)
     EXPECT_FALSE(result2.isSet);
     EXPECT_TRUE(onRejected2.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_FALSE(result.isSet);
     EXPECT_TRUE(onRejected.isNull());
@@ -298,7 +298,7 @@ TEST_F(ReadableStreamReaderTest, ReadThenEnqueue)
     EXPECT_TRUE(onRejected2.isNull());
 
     m_stream->enqueue("hello");
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_TRUE(result.isSet);
     EXPECT_FALSE(result.isDone);
@@ -308,7 +308,7 @@ TEST_F(ReadableStreamReaderTest, ReadThenEnqueue)
     EXPECT_TRUE(onRejected2.isNull());
 
     m_stream->enqueue("world");
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_TRUE(result2.isSet);
     EXPECT_FALSE(result2.isDone);
@@ -330,7 +330,7 @@ TEST_F(ReadableStreamReaderTest, ClosedReader)
     String onClosedFulfilled, onClosedRejected;
     ReadResult result;
     String onReadRejected;
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     reader->closed(scriptState()).then(createCaptor(&onClosedFulfilled), createCaptor(&onClosedRejected));
     reader->read(scriptState()).then(createResultCaptor(&result), createCaptor(&onReadRejected));
     EXPECT_TRUE(onClosedFulfilled.isNull());
@@ -338,7 +338,7 @@ TEST_F(ReadableStreamReaderTest, ClosedReader)
     EXPECT_FALSE(result.isSet);
     EXPECT_TRUE(onReadRejected.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_EQ("undefined", onClosedFulfilled);
     EXPECT_TRUE(onClosedRejected.isNull());
     EXPECT_TRUE(result.isSet);
@@ -361,7 +361,7 @@ TEST_F(ReadableStreamReaderTest, ErroredReader)
 
     String onClosedFulfilled, onClosedRejected;
     String onReadFulfilled, onReadRejected;
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     reader->closed(scriptState()).then(createCaptor(&onClosedFulfilled), createCaptor(&onClosedRejected));
     reader->read(scriptState()).then(createCaptor(&onReadFulfilled), createCaptor(&onReadRejected));
     EXPECT_TRUE(onClosedFulfilled.isNull());
@@ -369,7 +369,7 @@ TEST_F(ReadableStreamReaderTest, ErroredReader)
     EXPECT_TRUE(onReadFulfilled.isNull());
     EXPECT_TRUE(onReadRejected.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_TRUE(onClosedFulfilled.isNull());
     EXPECT_EQ("SyntaxError: some error", onClosedRejected);
     EXPECT_TRUE(onReadFulfilled.isNull());
@@ -389,7 +389,7 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenClosed)
     reader->read(scriptState()).then(createResultCaptor(&result), createCaptor(&onRejected));
     reader->read(scriptState()).then(createResultCaptor(&result2), createCaptor(&onRejected2));
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_FALSE(result.isSet);
     EXPECT_TRUE(onRejected.isNull());
     EXPECT_FALSE(result2.isSet);
@@ -401,7 +401,7 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenClosed)
     EXPECT_FALSE(result2.isSet);
     EXPECT_TRUE(onRejected2.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_TRUE(result.isSet);
     EXPECT_TRUE(result.isDone);
@@ -427,7 +427,7 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeRejectedWhenErrored)
     reader->read(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
     reader->read(scriptState()).then(createCaptor(&onFulfilled2), createCaptor(&onRejected2));
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
     EXPECT_TRUE(onFulfilled2.isNull());
@@ -439,7 +439,7 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeRejectedWhenErrored)
     EXPECT_TRUE(onFulfilled2.isNull());
     EXPECT_TRUE(onRejected2.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_EQ(onRejected, "SyntaxError: some error");
@@ -460,7 +460,7 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenCanceled)
     reader->read(scriptState()).then(createResultCaptor(&result), createCaptor(&onRejected));
     reader->read(scriptState()).then(createResultCaptor(&result2), createCaptor(&onRejected2));
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_FALSE(result.isSet);
     EXPECT_TRUE(onRejected.isNull());
     EXPECT_FALSE(result2.isSet);
@@ -473,7 +473,7 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenCanceled)
     EXPECT_FALSE(result2.isSet);
     EXPECT_TRUE(onRejected2.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_TRUE(result.isSet);
     EXPECT_TRUE(result.isDone);
@@ -502,7 +502,7 @@ TEST_F(ReadableStreamReaderTest, CancelShouldNotWorkWhenNotActive)
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_EQ("TypeError: the reader is already released", onRejected);
@@ -528,7 +528,7 @@ TEST_F(ReadableStreamReaderTest, Cancel)
     EXPECT_TRUE(onCancelFulfilled.isNull());
     EXPECT_TRUE(onCancelRejected.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_EQ("undefined", onClosedFulfilled);
     EXPECT_TRUE(onClosedRejected.isNull());
     EXPECT_EQ("undefined", onCancelFulfilled);
@@ -552,7 +552,7 @@ TEST_F(ReadableStreamReaderTest, Close)
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_EQ("undefined", onFulfilled);
     EXPECT_TRUE(onRejected.isNull());
     EXPECT_FALSE(exceptionState.hadException());
@@ -574,7 +574,7 @@ TEST_F(ReadableStreamReaderTest, Error)
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_EQ("SyntaxError: some error", onRejected);
     EXPECT_FALSE(exceptionState.hadException());
