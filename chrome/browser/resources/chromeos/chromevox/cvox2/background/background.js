@@ -170,9 +170,9 @@ Background.prototype = {
     // cvox.KeySequence.deserialize which gets called by cvox.KeyMap.
     cvox.ChromeVox.sequenceSwitchKeyCodes = [];
     if (mode === ChromeVoxMode.CLASSIC || mode === ChromeVoxMode.COMPAT)
-      cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
+      window['prefs'].switchToKeyMap('keymap_classic');
     else
-      cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromNext();
+      window['prefs'].switchToKeyMap('keymap_next');
 
     if (mode == ChromeVoxMode.CLASSIC) {
       if (chrome.commands &&

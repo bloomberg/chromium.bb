@@ -110,6 +110,7 @@ cvox.ChromeVoxPrefs.prototype.switchToKeyMap = function(selectedKeyMap) {
   // class to manage multiple key maps.
   localStorage['currentKeyMap'] = selectedKeyMap;
   this.keyMap_ = cvox.KeyMap.fromCurrentKeyMap();
+  cvox.ChromeVoxKbHandler.handlerKeyMap = this.keyMap_;
   this.keyMap_.toLocalStorage();
   this.keyMap_.resetModifier();
   this.sendPrefsToAllTabs(false, true);
