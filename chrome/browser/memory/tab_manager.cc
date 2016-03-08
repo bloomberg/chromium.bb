@@ -257,15 +257,27 @@ std::vector<content::RenderProcessHost*> TabManager::GetOrderedRenderers() {
 
   std::vector<content::RenderProcessHost*> sorted_renderers;
   std::set<content::RenderProcessHost*> seen_renderers;
+  std::set<content::RenderProcessHost*> visible_renderers;
   sorted_renderers.reserve(tab_stats.size());
 
   // Convert the tab sort order to a process sort order. The process inherits
   // the priority of its highest priority tab.
   for (auto& tab : tab_stats) {
+    auto renderer = tab.render_process_host;
+
+    // Skip renderers associated with visible tabs as handling memory pressure
+    // notifications in these processes can cause jank. This code works because
+    // visible tabs always come first in |tab_stats|.
+    if (tab.is_selected) {
+      visible_renderers.insert(renderer);
+      continue;
+    }
+    if (visible_renderers.count(renderer) > 0)
+      continue;
+
     // Skip renderers that have already been encountered. This can occur when
     // multiple tabs are folded into a single renderer process. In this case the
     // process takes the priority of its highest priority contained tab.
-    auto renderer = tab.render_process_host;
     if (!seen_renderers.insert(renderer).second)
       continue;
 
@@ -755,8 +767,8 @@ void TabManager::DoChildProcessDispatch() {
   auto renderers = GetOrderedRenderers();
 
   // The following code requires at least one renderer to be present or it will
-  // busyloop. It's possible (however unlikely) for no renderers to exist, so
-  // bail early if that's the case.
+  // busyloop. It's possible for no renderers to exist (we eliminate visible
+  // renderers to avoid janking them), so bail early if that's the case.
   if (renderers.empty())
     return;
 

@@ -475,12 +475,20 @@ TEST_F(TabManagerTest, ChildProcessNotifications) {
       &TabManagerTest::NotifyRendererProcess, base::Unretained(this));
 
   // Create two dummy tabs.
+  auto tab0 = CreateWebContents();
   auto tab1 = CreateWebContents();
   auto tab2 = CreateWebContents();
-  tabstrip.AppendWebContents(tab1, true);   // Foreground tab.
-  tabstrip.AppendWebContents(tab2, false);  // Opened in background.
+  tabstrip.AppendWebContents(tab0, true);   // Foreground tab.
+  tabstrip.AppendWebContents(tab1, false);  // Background tab.
+  tabstrip.AppendWebContents(tab2, false);  // Background tab.
   const content::RenderProcessHost* renderer1 = tab1->GetRenderProcessHost();
   const content::RenderProcessHost* renderer2 = tab2->GetRenderProcessHost();
+
+  // Make sure that tab2 has a lower priority than tab1 by its access time.
+  test_clock.Advance(base::TimeDelta::FromMilliseconds(1));
+  tab2->SetLastActiveTime(test_clock.NowTicks());
+  test_clock.Advance(base::TimeDelta::FromMilliseconds(1));
+  tab1->SetLastActiveTime(test_clock.NowTicks());
 
   // Expect that the tab manager has not yet encountered memory pressure.
   EXPECT_FALSE(tm.under_memory_pressure_);
@@ -499,7 +507,7 @@ TEST_F(TabManagerTest, ChildProcessNotifications) {
   // START OF MEMORY PRESSURE
 
   // Simulate a memory pressure situation that persists. This should cause a
-  // task to be scheduled.
+  // task to be scheduled, and a background renderer to be notified.
   tm.get_current_pressure_level_ = base::Bind(
       &ReturnSpecifiedPressure, base::Unretained(&level));
   EXPECT_CALL(mock_task_runner, PostDelayedTask(
