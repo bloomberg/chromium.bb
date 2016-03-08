@@ -271,8 +271,18 @@ public class OmniboxTestUtils {
      * @param urlBar The UrlBar whose focus is being changed.
      * @param gainFocus Whether focus should be requested or cleared.
      */
-    public static void toggleUrlBarFocus(final UrlBar urlBar, boolean gainFocus) {
+    public static void toggleUrlBarFocus(final UrlBar urlBar,
+                                         boolean gainFocus) throws InterruptedException {
         if (gainFocus) {
+            // During early startup (before completion of its first onDraw), the UrlBar
+            // is not focusable. Tests have to wait for that to happen before trying to focus it.
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria("UrlBar was not focusable") {
+                @Override
+                public boolean isSatisfied() {
+                    return urlBar.isFocusable();
+                }
+            });
+
             TouchCommon.singleClickView(urlBar);
         } else {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
