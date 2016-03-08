@@ -172,11 +172,14 @@ cvox.LayoutLineWalker.prototype.isVisualLineBreak_ = function(lSel, rSel) {
  * Determines if node should force a line break.
  * This is used for elements with unusual semantics, such as multi-line
  * text fields, where the behaviour would otherwise be confusing.
- * @param {!Node} node Node.
+ * @param {Node} node Node.
  * @return {boolean} True if the node should appear next to a line break.
  * @private
  */
 cvox.LayoutLineWalker.prototype.wantsOwnLine_ = function(node) {
+  if (!node) {
+    return false;
+  }
   return node instanceof HTMLTextAreaElement ||
       node.parentNode instanceof HTMLTextAreaElement;
 };

@@ -16,7 +16,7 @@ goog.require('cvox.QueueMode');
 
 /**
  * The current PDF we're processing, or null if we're not processing one.
- * @type {HTMLEmbedElement}
+ * @type {Element}
  */
 cvox.PdfProcessor.pdfEmbed = null;
 

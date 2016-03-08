@@ -593,7 +593,7 @@ cvox.AriaUtil.getNextLevel = function(parentControl, role) {
 /**
  * Recursively finds the first node(s) that match the role.
  *
- * @param {Element} current The node to start looking at.
+ * @param {Node} current The node to start looking at.
  * @param {Array<string>} role The role(s) to match.
  * @return {Array<Element>} The array of matching nodes.
  */

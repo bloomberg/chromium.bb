@@ -60,16 +60,16 @@ ShadowTableNode.prototype.colSpan;
 
 /**
  * The row index of the corresponding active table cell
- * @type {?number}
+ * @type {number}
  */
-ShadowTableNode.prototype.i;
+ShadowTableNode.prototype.i = -1;
 
 
 /**
  * The column index of the corresponding active table cell
- * @type {?number}
+ * @type {number}
  */
-ShadowTableNode.prototype.j;
+ShadowTableNode.prototype.j = -1;
 
 
 /**
@@ -261,10 +261,13 @@ cvox.TraverseTable.prototype.initialize = function(tableNode) {
 /**
  * Finds the cell cursor containing the specified node within the table.
  * Returns null if there is no close cell.
- * @param {!Node} node The node for which to find the cursor.
+ * @param {Node} node The node for which to find the cursor.
  * @return {Array<number>} The table index for the node.
  */
 cvox.TraverseTable.prototype.findNearestCursor = function(node) {
+  if (!node) {
+    return null;
+  }
   // TODO (stoarca): The current structure for representing the
   // shadow table is not optimal for this query, but it's not urgent
   // since this only gets executed at most once per user action.

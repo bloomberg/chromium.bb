@@ -39,7 +39,9 @@ goog.inherits(cvox.AbstractNodeWalker, cvox.AbstractWalker);
 cvox.AbstractNodeWalker.prototype.next = function(sel) {
   var r = sel.isReversed();
   var node = sel.end.node || document.body;
-
+  if (!node) {
+    return null;
+  }
   do {
     node = cvox.DomUtil.directedNextLeafLikeNode(node, r,
         goog.bind(this.stopNodeDescent, this));
@@ -87,7 +89,7 @@ cvox.AbstractNodeWalker.prototype.privateSync_ = function(sel) {
     node = node.parentNode;
   }
 
-  while (!this.stopNodeDescent(node)) {
+  while (node && !this.stopNodeDescent(node)) {
     node = cvox.DomUtil.directedFirstChild(node, r);
   }
 

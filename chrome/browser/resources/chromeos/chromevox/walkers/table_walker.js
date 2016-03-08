@@ -384,6 +384,9 @@ cvox.TableWalker.prototype.isInTable = function(sel) {
  * @private
  */
 cvox.TableWalker.prototype.goTo_ = function(sel, f) {
+  if (!sel.end.node) {
+    return null;
+  }
   this.tt.initialize(this.getTableNode_(sel));
   var position = this.tt.findNearestCursor(sel.end.node);
   if (!position) {

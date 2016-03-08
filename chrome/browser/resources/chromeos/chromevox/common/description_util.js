@@ -301,8 +301,8 @@ cvox.DescriptionUtil.getRawDescriptions_ = function(prevSel, sel) {
 /**
  * Returns the full descriptions of the child nodes that would be gotten by an
  * object walker.
- * @param {?Element} prevnode The previous element if there is one.
- * @param {!Element} node The target element.
+ * @param {?Node} prevnode The previous element if there is one.
+ * @param {!Node} node The target element.
  * @return {!Array<!cvox.NavDescription>} The descriptions.
  */
 cvox.DescriptionUtil.getFullDescriptionsFromChildren =
@@ -330,21 +330,22 @@ cvox.DescriptionUtil.getFullDescriptionsFromChildren =
   if (!curSel) {
     return descriptions;
   }
-  node = cvox.DescriptionUtil.subWalker_.sync(curSel).start.node;
-  curSel = cvox.CursorSelection.fromNode(node);
+  var newNode = cvox.DescriptionUtil.subWalker_.sync(curSel).start.node;
+  curSel = cvox.CursorSelection.fromNode(newNode);
   if (!curSel) {
     return descriptions;
   }
-  while (cvox.DomUtil.isDescendantOfNode(node, originalNode)) {
+  while (newNode && cvox.DomUtil.isDescendantOfNode(newNode, originalNode)) {
     descriptions = descriptions.concat(
-        cvox.DescriptionUtil.getFullDescriptionsFromChildren(prevnode, node));
+        cvox.DescriptionUtil.getFullDescriptionsFromChildren(
+            prevnode, newNode));
     curSel = cvox.DescriptionUtil.subWalker_.next(curSel);
     if (!curSel) {
       break;
     }
     curSel = /** @type {!cvox.CursorSelection} */ (curSel);
-    prevnode = node;
-    node = curSel.start.node;
+    prevnode = newNode;
+    newNode = curSel.start.node;
   }
   return descriptions;
 };
@@ -451,10 +452,13 @@ cvox.DescriptionUtil.shouldDescribeExit_ = function(ancestors) {
 // TODO(sorge): Bad naming...this thing returns *multiple* descriptions.
 /**
  * Generates a description for a math node.
- * @param {!Node} node The given node.
+ * @param {Node} node The given node.
  * @return {!Array<cvox.NavDescription>} A list of Navigation descriptions.
  */
 cvox.DescriptionUtil.getMathDescription = function(node) {
+  if (!node) {
+    return [];
+  }
   // TODO (sorge) This function should evantually be removed. Descriptions
   //     should come directly from the speech rule engine, taking information on
   //     verbosity etc. into account.
