@@ -16,6 +16,7 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "third_party/sqlite/src/src/recover.h"
 
 namespace sql {
 

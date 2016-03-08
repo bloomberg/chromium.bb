@@ -106,6 +106,9 @@
             'amalgamation/config.h',
             'amalgamation/sqlite3.h',
             'amalgamation/sqlite3.c',
+            'src/src/recover_varint.c',
+            'src/src/recover.c',
+            'src/src/recover.h',
           ],
           'variables': {
             'clang_warning_flags': [

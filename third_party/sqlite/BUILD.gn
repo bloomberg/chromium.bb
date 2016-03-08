@@ -39,6 +39,9 @@ if (!use_system_sqlite) {
       "amalgamation/config.h",
       "amalgamation/sqlite3.c",
       "amalgamation/sqlite3.h",
+      "src/src/recover.c",
+      "src/src/recover.h",
+      "src/src/recover_varint.c",
     ]
 
     cflags = []

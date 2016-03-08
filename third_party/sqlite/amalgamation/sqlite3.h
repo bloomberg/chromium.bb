@@ -7411,22 +7411,6 @@ SQLITE_API int SQLITE_STDCALL sqlite3_strnicmp(const char *, const char *, int);
 */
 SQLITE_API int SQLITE_STDCALL sqlite3_strglob(const char *zGlob, const char *zStr);
 
-/* Begin recover virtual table patch for Chromium */
-/* Our patches don't conform to SQLite's amalgamation processing. Hack it. */
-#ifndef CHROMIUM_SQLITE_API
-#define CHROMIUM_SQLITE_API SQLITE_API
-#endif
-/*
-** Call to initialize the recover virtual-table modules (see recover.c).
-**
-** This could be loaded by default in main.c, but that would make the
-** virtual table available to Web SQL.  Breaking it out allows only
-** selected users to enable it (currently sql/recovery.cc).
-*/
-CHROMIUM_SQLITE_API
-int recoverVtableInit(sqlite3 *db);
-/* End recover virtual table patch for Chromium */
-
 /* Begin WebDatabase patch for Chromium */
 /* Expose some SQLite internals for the WebDatabase vfs.
 ** DO NOT EXTEND THE USE OF THIS.
