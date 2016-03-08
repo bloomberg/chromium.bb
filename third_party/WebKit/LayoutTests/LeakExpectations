@@ -48,13 +48,10 @@ crbug.com/327574 fast/loader/data-images-with-images-disabled.html [ Leak ]
 # Untriaged but known leaks which may be false positives.
 # -----------------------------------------------------------------
 
-crbug.com/364411 fast/frames/location-observe-callback-crash.html [ Leak ]
-
 crbug.com/364417 editing/selection/selection-in-iframe-removed-crash.html [ Leak ]
 crbug.com/364417 editing/selection/user-select-js-property.html [ Leak ]
 crbug.com/364417 fast/events/touch/gesture/context-menu-on-long-tap.html [ Leak ]
 crbug.com/364417 fast/repaint/japanese-rl-selection-clear.html [ Leak ]
-crbug.com/364417 virtual/spv2/fast/repaint/japanese-rl-selection-clear.html [ Leak ]
 crbug.com/364417 fast/text/international/hebrew-selection.html [ Leak ]
 
 crbug.com/455369 fast/html/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
@@ -115,7 +112,6 @@ crbug.com/506752 storage/indexeddb/ [ Skip ]
 # Untriaged but known leaks of ActiveDOMObject (http).
 # -----------------------------------------------------------------
 crbug.com/506754 http/tests/cachestorage/window/cache-put.html [ Leak ]
-crbug.com/506754 http/tests/inspector/filesystem/request-file-content.html [ Leak ]
 crbug.com/506754 http/tests/inspector/network/network-xhr-replay.html [ Leak ]
 crbug.com/506754 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Leak ]
 crbug.com/506754 http/tests/security/cross-origin-indexeddb-allowed.html [ Leak ]
