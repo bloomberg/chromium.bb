@@ -722,6 +722,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             setChecked(!value.isNull());
             m_reflectsCheckedAttribute = true;
         }
+        pseudoStateChanged(CSSSelector::PseudoDefault);
     } else if (name == maxlengthAttr) {
         parseMaxLengthAttribute(value);
     } else if (name == minlengthAttr) {

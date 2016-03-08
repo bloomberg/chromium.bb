@@ -216,6 +216,7 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == selectedAttr) {
         if (oldValue.isNull() != value.isNull() && !m_isDirty)
             setSelected(!value.isNull());
+        pseudoStateChanged(CSSSelector::PseudoDefault);
     } else if (name == labelAttr) {
         updateLabel();
     } else {
