@@ -183,4 +183,12 @@ const char kExtensionCacheSize[] = "cros.device.extension_cache_size";
 // 3 = 270 degrees clockwise rotation
 const char kDisplayRotationDefault[] = "cros.display_rotation_default";
 
+// An integer pref that sets the behavior of the login authentication flow.
+// 0 = authentication using the default GAIA flow.
+// 1 = authentication using an interstitial screen that offers the user to go
+// ahead via the SAML IdP of the device's enrollment domain, or go back to the
+// normal GAIA login flow.
+const char kLoginAuthenticationBehavior[] =
+    "cros.device.login_authentication_behavior";
+
 }  // namespace chromeos

@@ -67,7 +67,7 @@ const char* const kKnownSettings[] = {
     kExtensionCacheSize,
     kHeartbeatEnabled,
     kHeartbeatFrequency,
-    kSystemLogUploadEnabled,
+    kLoginAuthenticationBehavior,
     kPolicyMissingMitigationMode,
     kRebootOnShutdown,
     kReleaseChannel,
@@ -85,6 +85,7 @@ const char* const kKnownSettings[] = {
     kSignedDataRoamingEnabled,
     kStartUpFlags,
     kStatsReportingPref,
+    kSystemLogUploadEnabled,
     kSystemTimezonePolicy,
     kSystemUse24HourClock,
     kUpdateDisabled,
@@ -257,6 +258,14 @@ void DecodeLoginPolicies(
     new_values_cache->SetString(kAccountsPrefLoginScreenDomainAutoComplete,
                                 policy.login_screen_domain_auto_complete()
                                     .login_screen_domain_auto_complete());
+  }
+
+  if (policy.has_login_authentication_behavior() &&
+      policy.login_authentication_behavior()
+          .has_login_authentication_behavior()) {
+    new_values_cache->SetInteger(
+        kLoginAuthenticationBehavior,
+        policy.login_authentication_behavior().login_authentication_behavior());
   }
 }
 

@@ -2666,6 +2666,14 @@
 
   "AllowKioskAppControlChromeVersion": {
   },
+  
+  "LoginAuthenticationBehavior": {
+    "os": ["chromeos"],
+    "test_policy": { "LoginAuthenticationBehavior": 1 },
+    "pref_mappings": [
+      { "pref": "cros.device.login_authentication_behavior" }
+    ]
+  },
 
   "----- Chrome Frame policies -------------------------------------------": {},
 

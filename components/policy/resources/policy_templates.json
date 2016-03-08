@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 320
+#   For your editing convenience: highest ID currently used: 321
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8268,6 +8268,40 @@
       If the policy is set to true, the value of required_platform_version manifest key of the auto launched with zero delay kiosk app is used as auto update target version prefix.
 
       If the policy is not configured or set to false, the required_platform_version manifest key is ignored and auto update proceeds as normal.''',
+    },
+    {
+      'name': 'LoginAuthenticationBehavior',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'GAIA',
+          'value': 0,
+          'caption': '''Authentication via the default GAIA flow''',
+        },
+        {
+          'name': 'SAML_INTERSTITIAL',
+          'value': 1,
+          'caption': '''Redirect to SAML IdP after user confirmation''',
+        },
+      ],
+      'supported_on': ['chrome_os:51-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 0,
+      'id': 321,
+      'caption': '''Configure the login authentication behavior''',
+      'tags': [],
+      'desc': '''When this policy is set, the login authentication flow will be in one of the following ways depending on the value of the setting:
+
+      If set to GAIA, login will be done via the normal GAIA authentication flow.
+
+      If set to SAML_INTERSTITIAL, login will show an interstitial screen offering the user to go forward with authentication via the SAML IdP of the device's enrollment domain, or go back to the normal GAIA login flow.'''
     },
   ],
   'messages': {

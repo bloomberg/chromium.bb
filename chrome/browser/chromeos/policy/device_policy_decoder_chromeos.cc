@@ -300,6 +300,20 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     NULL);
     }
   }
+
+  if (policy.has_login_authentication_behavior()) {
+    const em::LoginAuthenticationBehaviorProto& container(
+        policy.login_authentication_behavior());
+    if (container.has_login_authentication_behavior()) {
+      policies->Set(key::kLoginAuthenticationBehavior,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD,
+                    DecodeIntegerValue(
+                        container.login_authentication_behavior()).release(),
+                    nullptr);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,

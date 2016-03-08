@@ -655,6 +655,18 @@ message AllowKioskAppControlChromeVersionProto {
   optional bool allow_kiosk_app_control_chrome_version = 1 [default = false];
 }
 
+// Settings that control the flow of the login authentication to be either via
+// GAIA (default), or via an interstitial screen that can redirect to a SAML IdP
+// endpoint or return back to the default GAIA flow.
+message LoginAuthenticationBehaviorProto {
+  enum LoginBehavior {
+    GAIA = 0;
+    SAML_INTERSTITIAL = 1;
+  };
+  
+  optional LoginBehavior login_authentication_behavior = 1 [default = GAIA];
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -701,4 +713,5 @@ message ChromeDeviceSettingsProto {
   optional DisplayRotationDefaultProto display_rotation_default = 39;
   optional AllowKioskAppControlChromeVersionProto
       allow_kiosk_app_control_chrome_version = 40;
+  optional LoginAuthenticationBehaviorProto login_authentication_behavior = 41;
 }

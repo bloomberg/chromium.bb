@@ -94,6 +94,8 @@ CHROMEOS_EXPORT extern const char kExtensionCacheSize[];
 
 CHROMEOS_EXPORT extern const char kDisplayRotationDefault[];
 
+CHROMEOS_EXPORT extern const char kLoginAuthenticationBehavior[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_
