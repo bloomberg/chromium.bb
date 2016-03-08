@@ -815,21 +815,6 @@ hooks = [
     ],
   },
   {
-    'name': 'blimp_fonts',
-    'pattern': '\\.sha1',
-    'action': [ 'download_from_google_storage',
-                '--no_resume',
-                '--platform=linux*',
-                '--directory',
-                '--recursive',
-                '--quiet',
-                '--no_auth',
-                '--num_threads=16',
-                '--bucket', 'chromium-fonts',
-                'src/third_party/blimp_fonts',
-    ],
-  },
-  {
     # Pull sanitizer-instrumented third-party libraries if requested via
     # GYP_DEFINES.
     'name': 'instrumented_libraries',

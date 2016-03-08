@@ -100,8 +100,6 @@ also start a new shell and keep the following command running:
   compositor.
 * `--disable-cached-picture-raster`: Ensures that rasterized content is not
   destroyed before serialization.
-* `--android-fonts-path=$PATH`: Path to where the fonts are located.
-  Typically this would be `out-linux/Debug/gen/third_party/blimp_fonts`.
 
 #### Typical invocation
 When the client connects to a manually specified engine instead of using the
@@ -124,7 +122,6 @@ out-linux/Debug/blimp_engine_app \
   --disable-cached-picture-raster \
   --blimp-client-token-path=/tmp/blimpengine-token \
   --user-data-dir=/tmp/blimpengine \
-  --android-fonts-path=out-linux/Debug/gen/third_party/blimp_fonts \
   --enable-logging=stderr \
   --vmodule="blimp*=1"
 ```

@@ -8,12 +8,11 @@ stunnel \
   -p /engine/data/stunnel.pem \
   -P /engine/stunnel.pid \
   -d 25466 -r 25467 -f &
-LD_LIBRARY_PATH=/engine/ /engine/blimp_engine_app \
+/engine/blimp_engine_app \
   --disable-gpu \
   --use-remote-compositing \
   --disable-cached-picture-raster \
   --blimp-client-token-path=/engine/data/client_token \
-  --android-fonts-path=/engine/fonts \
   $@ &
 
 # Stop execution if either stunnel or blimp_engine_app die.

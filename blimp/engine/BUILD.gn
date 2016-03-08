@@ -223,7 +223,6 @@ if (is_linux) {
       ":blimp_engine_app",
       ":pak",
       "//sandbox/linux:chrome_sandbox",
-      "//third_party/blimp_fonts",
     ]
 
     # List dependencies as both deps and data_deps to ensure changes trigger a

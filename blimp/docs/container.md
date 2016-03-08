@@ -43,7 +43,7 @@ dependencies. From time to time, this list may need to be updated. Use
 
 ```bash
 ./blimp/tools/generate-engine-manifest.py \
-    --build-dir out-chromeos/Debug \
+    --build-dir out-linux/Debug \
     --target //blimp/engine:blimp_engine \
     --output blimp/engine/engine-manifest.txt
 ```
@@ -56,7 +56,7 @@ dependencies.
 Using the tarfile you can create a Docker image:
 
 ```bash
-docker build -t blimp_engine - < ./out-chromeos/Debug/blimp_engine_bundle.tar.gz
+docker build -t blimp_engine - < ./out-linux/Debug/blimp_engine_bundle.tar
 ```
 
 ## Running the Engine in a Docker Container
@@ -74,8 +74,7 @@ few files that are not provided by the container. You need:
     public certificate. Permissions should be set to 644.
 *   `$CONFIG_DIR/client_token`: A file with a non-empty string used as the
     client token (the shared secret between the client and the engine).
-    Permissions should also be set to 644. See [running](running.md) for how
-    to get the default token from the source code.
+    Persmissions should also be set to 644.
 
 This setup step is only required once and can be reused for all the rest of the
 runs of the engine.
@@ -95,3 +94,4 @@ docker run ... blimp_engine --with-my-flags
 ```
 See the [blimp engine `Dockerfile`](../engine/Dockerfile) to find out what flags
 are passed by default.
+

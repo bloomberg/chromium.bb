@@ -2,11 +2,13 @@
 # Wildcards (* or ?) are allowed.
 
 *.mojo
-*mojom.js
 ./libfont_service_library.so
 ./libtracing_library.so
 ./libmus_library.so
 ./libosmesa.so
 ./libresource_provider_library.so
 ./mojo_runner
+gen/*
+mus/mus.mojo
 snapshot_blob.bin
+
