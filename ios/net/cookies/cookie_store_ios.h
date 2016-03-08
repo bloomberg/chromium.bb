@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -202,7 +203,7 @@ class CookieStoreIOS : public net::CookieStore,
                                const DeleteCallback& callback);
 
   scoped_ptr<net::CookieMonster> cookie_monster_;
-  NSHTTPCookieStorage* system_store_;
+  base::scoped_nsobject<NSHTTPCookieStorage> system_store_;
   scoped_ptr<CookieCreationTimeManager> creation_time_manager_;
   bool metrics_enabled_;
   base::TimeDelta flush_delay_;

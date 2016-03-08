@@ -293,7 +293,7 @@ CookieStoreIOS::CookieStoreIOS(
     net::CookieMonster::PersistentCookieStore* persistent_store,
     NSHTTPCookieStorage* system_store)
     : cookie_monster_(new net::CookieMonster(persistent_store, nullptr)),
-      system_store_(system_store),
+      system_store_([system_store retain]),
       creation_time_manager_(new CookieCreationTimeManager),
       metrics_enabled_(false),
       flush_delay_(base::TimeDelta::FromSeconds(10)),
