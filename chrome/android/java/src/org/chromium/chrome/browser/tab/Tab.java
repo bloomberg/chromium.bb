@@ -79,6 +79,7 @@ import org.chromium.components.navigation_interception.InterceptNavigationDelega
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
+import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
@@ -2295,6 +2296,15 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         mContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
         mContentViewCore.onShow();
         mContentViewCore.attachImeAdapter();
+
+        // If the URL has already committed (e.g. prerendering), tell process management logic that
+        // it can rely on the process visibility signal for binding management.
+        // TODO: Call ChildProcessLauncher#determinedVisibility() at a more intuitive time.
+        // See crbug.com/537671
+        if (!mContentViewCore.getWebContents().getLastCommittedUrl().equals("")) {
+            ChildProcessLauncher.determinedVisibility(mContentViewCore.getCurrentRenderProcessId());
+        }
+
         destroyNativePageInternal(previousNativePage);
         mWebContentsObserver.didChangeThemeColor(
                 getWebContents().getThemeColor(mDefaultThemeColor));

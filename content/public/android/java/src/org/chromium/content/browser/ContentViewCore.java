@@ -343,7 +343,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             // Signal to the process management logic that we can now rely on the process
             // visibility signal for binding management. Before the navigation commits, its
             // renderer is considered background even if the pending navigation happens in the
-            // foreground renderer.
+            // foreground renderer. See crbug.com/421041 for more details.
             ChildProcessLauncher.determinedVisibility(contentViewCore.getCurrentRenderProcessId());
         }
     }
