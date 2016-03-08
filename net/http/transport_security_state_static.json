@@ -4914,7 +4914,6 @@
     { "name": "holifestival-freyung.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "huaxueba.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ideadozz.hu", "include_subdomains": true, "mode": "force-https" },
-    { "name": "idealsvdr.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ikvts.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "interaffairs.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "isitamor.pm", "include_subdomains": true, "mode": "force-https" },
