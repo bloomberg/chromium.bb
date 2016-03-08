@@ -25,26 +25,26 @@
 namespace content {
 namespace {
 
-const char kMojoShellInstanceURL[] = "mojo_shell_instance_url";
+const char kMojoShellInstanceIdentity[] = "mojo_shell_instance_identity";
 
-class InstanceURL : public base::SupportsUserData::Data {
+class InstanceIdentity : public base::SupportsUserData::Data {
  public:
-  explicit InstanceURL(const std::string& instance_url)
-      : instance_url_(instance_url) {}
-  ~InstanceURL() override {}
+  explicit InstanceIdentity(const mojo::Identity& identity)
+      : identity_(identity) {}
+  ~InstanceIdentity() override {}
 
-  std::string get() const { return instance_url_; }
+  mojo::Identity get() const { return identity_; }
 
  private:
-  std::string instance_url_;
+  mojo::Identity identity_;
 
-  DISALLOW_COPY_AND_ASSIGN(InstanceURL);
+  DISALLOW_COPY_AND_ASSIGN(InstanceIdentity);
 };
 
-void SetMojoApplicationInstanceURL(RenderProcessHost* render_process_host,
-                                   const std::string& instance_url) {
-  render_process_host->SetUserData(kMojoShellInstanceURL,
-                                   new InstanceURL(instance_url));
+void SetMojoIdentity(RenderProcessHost* render_process_host,
+                     const mojo::Identity& identity) {
+  render_process_host->SetUserData(kMojoShellInstanceIdentity,
+                                   new InstanceIdentity(identity));
 }
 
 class PIDSender : public RenderProcessHostObserver {
@@ -105,16 +105,6 @@ std::string RegisterChildWithExternalShell(
   MojoShellConnection::Get()->GetConnector()->ConnectToInterface(
       "mojo:shell", &shell);
 
-  // The content of the URL/qualifier we pass is actually meaningless, it's only
-  // important that they're unique per process.
-  // TODO(beng): We need to specify a restrictive CapabilityFilter here that
-  //             matches the needs of the target process. Figure out where that
-  //             specification is best determined (not here, this is a common
-  //             chokepoint for all process types) and how to wire it through.
-  //             http://crbug.com/555393
-  std::string url = base::StringPrintf(
-      "exe:chrome_renderer%d_%d", child_process_id, instance_id);
-
   mojo::shell::mojom::PIDReceiverPtr pid_receiver;
   mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =
       GetProxy(&pid_receiver);
@@ -124,26 +114,26 @@ std::string RegisterChildWithExternalShell(
   factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
       std::move(request_pipe), 0u));
 
-  mojo::shell::mojom::IdentityPtr target(mojo::shell::mojom::Identity::New());
-  target->name = url;
-  target->user_id = mojo::shell::mojom::kInheritUserID;
-  target->instance = "";
-  shell->CreateInstance(std::move(factory), std::move(target),
+  mojo::Identity target("exe:chrome_renderer",
+                        mojo::shell::mojom::kInheritUserID,
+                        base::StringPrintf("%d_%d", child_process_id,
+                                           instance_id));
+  shell->CreateInstance(std::move(factory),
+                        mojo::shell::mojom::Identity::From(target),
                         CreateCapabilityFilterForRenderer(),
                         std::move(request), base::Bind(&OnConnectionComplete));
 
-  // Store the URL on the RPH so client code can access it later via
-  // GetMojoApplicationInstanceURL().
-  SetMojoApplicationInstanceURL(render_process_host, url);
+  // Store the Identity on the RPH so client code can access it later via
+  // GetMojoIdentity().
+  SetMojoIdentity(render_process_host, target);
 
   return pipe_token;
 }
 
-std::string GetMojoApplicationInstanceURL(
-    RenderProcessHost* render_process_host) {
-  InstanceURL* instance_url = static_cast<InstanceURL*>(
-      render_process_host->GetUserData(kMojoShellInstanceURL));
-  return instance_url ? instance_url->get() : std::string();
+mojo::Identity GetMojoIdentity(RenderProcessHost* render_process_host) {
+  InstanceIdentity* instance_identity = static_cast<InstanceIdentity*>(
+      render_process_host->GetUserData(kMojoShellInstanceIdentity));
+  return instance_identity ? instance_identity->get() : mojo::Identity();
 }
 
 }  // namespace content

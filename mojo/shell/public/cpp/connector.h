@@ -62,6 +62,12 @@ class Connector {
       connection->GetInterface(ptr);
   }
   template <typename Interface>
+  void ConnectToInterface(const Identity& target,
+                          InterfacePtr<Interface>* ptr) {
+    ConnectParams params(target);
+    return ConnectToInterface(&params, ptr);
+  }
+  template <typename Interface>
   void ConnectToInterface(const std::string& name,
                           InterfacePtr<Interface>* ptr) {
     ConnectParams params(name);

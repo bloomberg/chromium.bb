@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/process/process_handle.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace content {
@@ -28,11 +29,10 @@ std::string RegisterChildWithExternalShell(
     int instance_id,
     RenderProcessHost* render_process_host);
 
-// Returns the URL associated with an instance corresponding to the renderer
-// process in the external shell. This URL can be passed to
-// ConnectToApplication() to open a new connection to this renderer.
-std::string GetMojoApplicationInstanceURL(
-    RenderProcessHost* render_process_host);
+// Returns the Identity associated with an instance corresponding to the
+// renderer process in shell. This Identity can be passed to Connect() to open a
+// new connection to this renderer.
+mojo::Identity GetMojoIdentity(RenderProcessHost* render_process_host);
 
 // Constructs a Capability Filter for the renderer's application instance in the
 // external shell. This contains the restrictions imposed on what applications
