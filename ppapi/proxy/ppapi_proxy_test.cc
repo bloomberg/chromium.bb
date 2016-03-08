@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
 #include <sstream>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -143,7 +144,7 @@ bool ProxyTestHarnessBase::SupportsInterface(const char* name) {
       reply_msg, &reply_data));
 
   sink().ClearMessages();
-  return base::get<0>(reply_data);
+  return std::get<0>(reply_data);
 }
 
 // PluginProxyTestHarness ------------------------------------------------------

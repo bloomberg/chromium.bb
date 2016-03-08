@@ -10,6 +10,8 @@
 #ifndef PPAPI_PROXY_DISPATCH_REPLY_MESSAGE_H_
 #define PPAPI_PROXY_DISPATCH_REPLY_MESSAGE_H_
 
+#include <tuple>
+
 #include "base/callback.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
@@ -22,46 +24,46 @@ class ResourceMessageReplyParams;
 template <class ObjT, class Method>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const base::Tuple<>& arg) {
+                                  const std::tuple<>& arg) {
   (obj->*method)(params);
 }
 
 template <class ObjT, class Method, class A>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const base::Tuple<A>& arg) {
-  (obj->*method)(params, base::get<0>(arg));
+                                  const std::tuple<A>& arg) {
+  (obj->*method)(params, std::get<0>(arg));
 }
 
 template<class ObjT, class Method, class A, class B>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const base::Tuple<A, B>& arg) {
-  (obj->*method)(params, base::get<0>(arg), base::get<1>(arg));
+                                  const std::tuple<A, B>& arg) {
+  (obj->*method)(params, std::get<0>(arg), std::get<1>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const base::Tuple<A, B, C>& arg) {
-  (obj->*method)(params, base::get<0>(arg), base::get<1>(arg),
-                 base::get<2>(arg));
+                                  const std::tuple<A, B, C>& arg) {
+  (obj->*method)(params, std::get<0>(arg), std::get<1>(arg),
+                 std::get<2>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const base::Tuple<A, B, C, D>& arg) {
-  (obj->*method)(params, base::get<0>(arg), base::get<1>(arg),
-                 base::get<2>(arg), base::get<3>(arg));
+                                  const std::tuple<A, B, C, D>& arg) {
+  (obj->*method)(params, std::get<0>(arg), std::get<1>(arg),
+                 std::get<2>(arg), std::get<3>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D, class E>
 inline void DispatchResourceReply(ObjT* obj, Method method,
                                   const ResourceMessageReplyParams& params,
-                                  const base::Tuple<A, B, C, D, E>& arg) {
-  (obj->*method)(params, base::get<0>(arg), base::get<1>(arg),
-                 base::get<2>(arg), base::get<3>(arg), base::get<4>(arg));
+                                  const std::tuple<A, B, C, D, E>& arg) {
+  (obj->*method)(params, std::get<0>(arg), std::get<1>(arg),
+                 std::get<2>(arg), std::get<3>(arg), std::get<4>(arg));
 }
 
 // Used to dispatch resource replies. In most cases, you should not call this

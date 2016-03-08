@@ -12,6 +12,8 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "base/profiler/scoped_profile.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
@@ -24,47 +26,47 @@ struct HostMessageContext;
 template <class ObjT, class Method>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    base::Tuple<>& arg) {
+                                    std::tuple<>& arg) {
   return (obj->*method)(context);
 }
 
 template <class ObjT, class Method, class A>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    base::Tuple<A>& arg) {
-  return (obj->*method)(context, base::get<0>(arg));
+                                    std::tuple<A>& arg) {
+  return (obj->*method)(context, std::get<0>(arg));
 }
 
 template<class ObjT, class Method, class A, class B>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    base::Tuple<A, B>& arg) {
-  return (obj->*method)(context, base::get<0>(arg), base::get<1>(arg));
+                                    std::tuple<A, B>& arg) {
+  return (obj->*method)(context, std::get<0>(arg), std::get<1>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    base::Tuple<A, B, C>& arg) {
-  return (obj->*method)(context, base::get<0>(arg), base::get<1>(arg),
-                        base::get<2>(arg));
+                                    std::tuple<A, B, C>& arg) {
+  return (obj->*method)(context, std::get<0>(arg), std::get<1>(arg),
+                        std::get<2>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    base::Tuple<A, B, C, D>& arg) {
-  return (obj->*method)(context, base::get<0>(arg), base::get<1>(arg),
-                        base::get<2>(arg), base::get<3>(arg));
+                                    std::tuple<A, B, C, D>& arg) {
+  return (obj->*method)(context, std::get<0>(arg), std::get<1>(arg),
+                        std::get<2>(arg), std::get<3>(arg));
 }
 
 template<class ObjT, class Method, class A, class B, class C, class D, class E>
 inline int32_t DispatchResourceCall(ObjT* obj, Method method,
                                     HostMessageContext* context,
-                                    base::Tuple<A, B, C, D, E>& arg) {
-  return (obj->*method)(context, base::get<0>(arg), base::get<1>(arg),
-                        base::get<2>(arg), base::get<3>(arg),
-                        base::get<4>(arg));
+                                    std::tuple<A, B, C, D, E>& arg) {
+  return (obj->*method)(context, std::get<0>(arg), std::get<1>(arg),
+                        std::get<2>(arg), std::get<3>(arg),
+                        std::get<4>(arg));
 }
 
 // Note that this only works for message with 1 or more parameters. For

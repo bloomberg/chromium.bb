@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "ipc/ipc_test_sink.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
@@ -58,9 +60,9 @@ class PluginVarTrackerTest : public PluginProxyTest {
     if (!release_msg)
       return -1;
 
-    base::Tuple<int64_t> id;
+    std::tuple<int64_t> id;
     PpapiHostMsg_PPBVar_ReleaseObject::Read(release_msg, &id);
-    return base::get<0>(id);
+    return std::get<0>(id);
   }
 };
 

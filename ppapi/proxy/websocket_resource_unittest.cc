@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "ppapi/c/pp_errors.h"
@@ -80,9 +82,9 @@ TEST_F(WebSocketResourceTest, Connect) {
       PpapiHostMsg_WebSocket_Connect::ID, &params, &msg));
   PpapiHostMsg_WebSocket_Connect::Schema::Param p;
   PpapiHostMsg_WebSocket_Connect::Read(&msg, &p);
-  EXPECT_EQ(url, base::get<0>(p));
-  EXPECT_EQ(protocol0, base::get<1>(p)[0]);
-  EXPECT_EQ(protocol1, base::get<1>(p)[1]);
+  EXPECT_EQ(url, std::get<0>(p));
+  EXPECT_EQ(protocol0, std::get<1>(p)[0]);
+  EXPECT_EQ(protocol1, std::get<1>(p)[1]);
 
   // Synthesize a response.
   ResourceMessageReplyParams reply_params(params.pp_resource(),

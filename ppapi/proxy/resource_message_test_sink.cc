@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <tuple>
+
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/serialized_handle.h"
@@ -26,8 +28,8 @@ std::vector<std::pair<Params, IPC::Message>> GetAllResourceMessagesMatching(
     if (msg->type() == WrapperMessage::ID) {
       typename WrapperMessage::Param params;
       WrapperMessage::Read(msg, &params);
-      Params cur_params = base::get<0>(params);
-      IPC::Message cur_msg = base::get<1>(params);
+      Params cur_params = std::get<0>(params);
+      IPC::Message cur_msg = std::get<1>(params);
       if (cur_msg.type() == id) {
         result.push_back(std::make_pair(cur_params, cur_msg));
       }
@@ -131,8 +133,8 @@ bool ResourceSyncCallHandler::OnMessageReceived(const IPC::Message& msg) {
   bool success = PpapiHostMsg_ResourceSyncCall::ReadSendParam(
       &msg, &send_params);
   DCHECK(success);
-  ResourceMessageCallParams call_params = base::get<0>(send_params);
-  IPC::Message call_msg = base::get<1>(send_params);
+  ResourceMessageCallParams call_params = std::get<0>(send_params);
+  IPC::Message call_msg = std::get<1>(send_params);
   if (call_msg.type() != incoming_type_)
     return false;
   IPC::Message* wrapper_reply_msg = IPC::SyncMessage::GenerateReply(&msg);
