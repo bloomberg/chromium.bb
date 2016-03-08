@@ -249,6 +249,11 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
               break;
             }
           }
+          // Find the possibly nearest one below the last selected picture.
+          if (newIndex === null && this.pictures[0].element.offsetTop >
+              this.pictures[leadIndex].element.offsetTop) {
+            newIndex = 0;
+          }
           changeSelection(newIndex);
         }
       }
