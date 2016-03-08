@@ -85,10 +85,14 @@
   public static boolean dumpWithoutCrashing(...);
 }
 
-#TODO(hush): remove after N release. crbug.com/543272, crbug.com/584789
+#TODO(hush): remove after N release. crbug.com/543272, crbug.com/584789.
+#TODO(hush): Also remove getHandler and findFocus when removing others here
+#            and add @Override to these methods.
 -keep class com.android.webview.chromium.WebViewChromium {
   public void onActivityResult(int,int,android.content.Intent);
   public boolean onDragEvent(android.view.DragEvent);
+  public android.os.Handler getHandler(android.os.Handler);
+  public android.view.View findFocus(android.view.View);
 }
 
 #TODO(hush): remove after N release. crbug.com/546762
