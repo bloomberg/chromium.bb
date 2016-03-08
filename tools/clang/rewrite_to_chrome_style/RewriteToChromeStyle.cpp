@@ -432,19 +432,26 @@ class RewriterBase : public MatchFinder::MatchCallback {
 
   void run(const MatchFinder::MatchResult& result) override {
     const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
-    // If the decl originates inside a macro, just skip it completely.
-    clang::SourceLocation decl_loc =
-        TargetNodeTraits<clang::NamedDecl>::GetLoc(*decl);
-    if (decl_loc.isMacroID())
-      return;
     // If false, there's no name to be renamed.
     if (!decl->getIdentifier())
       return;
-    // If false, the name was not suitable for renaming.
+    clang::SourceLocation decl_loc =
+        TargetNodeTraits<clang::NamedDecl>::GetLoc(*decl);
+    if (decl_loc.isMacroID()) {
+      // Get the location of the spelling of the declaration. If token pasting
+      // was used this will be in "scratch space" and we don't know how to get
+      // from there back to/ the actual macro with the foo##bar text. So just
+      // don't replace in that case.
+      clang::SourceLocation spell =
+          result.SourceManager->getSpellingLoc(decl_loc);
+      if (strcmp(result.SourceManager->getBufferName(spell),
+                 "<scratch space>") == 0)
+        return;
+    }
     clang::ASTContext* context = result.Context;
     std::string new_name;
     if (!GetNameForDecl(*decl, *context, new_name))
-      return;
+      return;  // If false, the name was not suitable for renaming.
     llvm::StringRef old_name = decl->getName();
     if (old_name == new_name)
       return;
