@@ -99,7 +99,8 @@ const char StyledLabel::kViewClassName[] = "StyledLabel";
 
 StyledLabel::StyledLabel(const base::string16& text,
                          StyledLabelListener* listener)
-    : specified_line_height_(0),
+    : font_list_(Label().font_list()),
+      specified_line_height_(0),
       listener_(listener),
       width_at_last_size_calculation_(0),
       width_at_last_layout_(0),

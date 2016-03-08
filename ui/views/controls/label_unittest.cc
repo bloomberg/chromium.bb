@@ -322,7 +322,7 @@ TEST_F(LabelTest, TextChangeWithoutLayout) {
 
 TEST_F(LabelTest, EmptyLabelSizing) {
   Label label;
-  const gfx::Size expected_size(0, gfx::FontList().GetHeight());
+  const gfx::Size expected_size(0, label.font_list().GetHeight());
   EXPECT_EQ(expected_size, label.GetPreferredSize());
   label.SetMultiLine(!label.multi_line());
   EXPECT_EQ(expected_size, label.GetPreferredSize());
