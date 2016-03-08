@@ -1139,6 +1139,7 @@
       'fonts/CharacterTest.cpp',
       'fonts/FontCacheTest.cpp',
       'fonts/FontDescriptionTest.cpp',
+      'fonts/FontPlatformDataTest.cpp',
       'fonts/GlyphBufferTest.cpp',
       'fonts/GlyphPageTreeNodeTest.cpp',
       'fonts/OrientationIteratorTest.cpp',
@@ -1211,8 +1212,6 @@
     # object. Do not add more unless the test requires a Platform object.
     # These tests are a part of the web:webkit_unit_tests binary.
     'platform_web_unittest_files': [
-      'fonts/FontPlatformDataTest.cpp',
-      'fonts/TestFontSelector.h',
       'graphics/BitmapImageTest.cpp',
       'graphics/Canvas2DLayerBridgeTest.cpp',
       'graphics/DeferredImageDecoderTest.cpp',
@@ -1232,6 +1231,8 @@
     'platform_test_support_files': [
       'graphics/test/FakeGraphicsLayerFactory.cpp',
       'graphics/test/FakeGraphicsLayerFactory.h',
+      'testing/FontTestHelpers.cpp',
+      'testing/FontTestHelpers.h',
       'testing/GeometryPrinters.cpp',
       'testing/GeometryPrinters.h',
       'testing/MessageLoopForMojo.h',

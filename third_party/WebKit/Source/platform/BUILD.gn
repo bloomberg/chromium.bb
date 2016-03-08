@@ -556,9 +556,19 @@ test("blink_platform_unittests") {
     "//url",
   ]
 
+  data_deps = [
+    ":blink_platform_unittests_data",
+  ]
+
   defines = [ "INSIDE_BLINK" ]
 
   include_dirs = [ "$root_gen_dir/blink" ]
+}
+
+group("blink_platform_unittests_data") {
+  data = [
+    "testing/data/",
+  ]
 }
 
 if (current_cpu == "arm") {
