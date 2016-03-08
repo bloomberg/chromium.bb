@@ -96,8 +96,7 @@ void MandolineUIServicesApp::InitializeResources(mojo::Connector* connector) {
 }
 
 void MandolineUIServicesApp::Initialize(mojo::Connector* connector,
-                                        const std::string& url,
-                                        const std::string& user_id,
+                                        const mojo::Identity& identity,
                                         uint32_t id) {
   connector_ = connector;
   surfaces_state_ = new SurfacesState;
@@ -135,7 +134,7 @@ void MandolineUIServicesApp::Initialize(mojo::Connector* connector,
   gpu_state_ = new GpuState();
   connection_manager_.reset(new ws::ConnectionManager(this, surfaces_state_));
 
-  tracing_.Initialize(connector, url);
+  tracing_.Initialize(connector, identity.name());
 }
 
 bool MandolineUIServicesApp::AcceptConnection(Connection* connection) {
@@ -184,7 +183,7 @@ void MandolineUIServicesApp::Create(mojo::Connection* connection,
                                     mojom::DisplayManagerRequest request) {
   // TODO(sky): validate id.
   connection_manager_->display_manager()
-      ->GetUserDisplayManager(connection->GetRemoteUserID())
+      ->GetUserDisplayManager(connection->GetRemoteIdentity().user_id())
       ->AddDisplayManagerBinding(std::move(request));
 }
 
@@ -192,7 +191,7 @@ void MandolineUIServicesApp::Create(
     mojo::Connection* connection,
     mojom::WindowManagerFactoryServiceRequest request) {
   connection_manager_->window_manager_factory_registry()->Register(
-      connection->GetRemoteUserID(), std::move(request));
+      connection->GetRemoteIdentity().user_id(), std::move(request));
 }
 
 void MandolineUIServicesApp::Create(Connection* connection,

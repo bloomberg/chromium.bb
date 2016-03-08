@@ -76,6 +76,7 @@ source_set("lib") {
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
     "//mojo/shell",
+    "//mojo/shell/public/cpp:sources",
     "//mojo/shell/public/interfaces",
     "//mojo/shell/runner:init",
     "//mojo/shell/runner/common",

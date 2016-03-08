@@ -14,9 +14,9 @@ namespace test {
 ShellTestClient::ShellTestClient(ShellTest* test) : test_(test) {}
 ShellTestClient::~ShellTestClient() {}
 
-void ShellTestClient::Initialize(Connector* connector, const std::string& name,
-                                 const std::string& user_id, uint32_t id) {
-  test_->InitializeCalled(connector, name, user_id, id);
+void ShellTestClient::Initialize(Connector* connector, const Identity& identity,
+                                 uint32_t id) {
+  test_->InitializeCalled(connector, identity.name(), identity.user_id(), id);
 }
 
 ShellTest::ShellTest() {}

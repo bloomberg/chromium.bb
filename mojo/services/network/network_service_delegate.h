@@ -35,8 +35,8 @@ class NetworkServiceDelegate : public ShellClient,
 
  private:
   // mojo::ShellClient implementation.
-  void Initialize(Connector* connector, const std::string& url,
-                  const std::string& user_id, uint32_t id) override;
+  void Initialize(Connector* connector, const Identity& identity,
+                  uint32_t id) override;
   bool AcceptConnection(Connection* connection) override;
 
   // InterfaceFactory<NetworkService> implementation.

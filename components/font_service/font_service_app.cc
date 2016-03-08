@@ -59,9 +59,9 @@ FontServiceApp::FontServiceApp() {}
 FontServiceApp::~FontServiceApp() {}
 
 void FontServiceApp::Initialize(mojo::Connector* connector,
-                                const std::string& url,
-                                const std::string& user_id, uint32_t id) {
-  tracing_.Initialize(connector, url);
+                                const mojo::Identity& identity,
+                                uint32_t id) {
+  tracing_.Initialize(connector, identity.name());
 }
 
 bool FontServiceApp::AcceptConnection(mojo::Connection* connection) {

@@ -38,10 +38,9 @@ FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {}
 FileSystemApp::~FileSystemApp() {}
 
 void FileSystemApp::Initialize(mojo::Connector* connector,
-                               const std::string& url,
-                               const std::string& user_id,
+                               const mojo::Identity& identity,
                                uint32_t id) {
-  tracing_.Initialize(connector, url);
+  tracing_.Initialize(connector, identity.name());
 }
 
 bool FileSystemApp::AcceptConnection(mojo::Connection* connection) {

@@ -50,11 +50,11 @@ class ProvidedShellClient
 
  private:
   // mojo::ShellClient:
-  void Initialize(Connector* connector, const std::string& name,
-                  const std::string& user_id, uint32_t id) override {
-    name_ = name;
+  void Initialize(Connector* connector, const Identity& identity,
+                  uint32_t id) override {
+    name_ = identity.name();
+    userid_ = identity.user_id();
     id_ = id;
-    userid_ = user_id;
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedShellClient::OnConnectionError,
                    base::Unretained(this)));
@@ -66,8 +66,8 @@ class ProvidedShellClient
     uint32_t remote_id = connection->GetRemoteInstanceID();
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_local_name = connection->GetConnectionName();
-    state->connection_remote_name = connection->GetRemoteApplicationName();
-    state->connection_remote_userid = connection->GetRemoteUserID();
+    state->connection_remote_name = connection->GetRemoteIdentity().name();
+    state->connection_remote_userid = connection->GetRemoteIdentity().user_id();
     state->connection_remote_id = remote_id;
     state->initialize_local_name = name_;
     state->initialize_id = id_;
@@ -136,8 +136,8 @@ class ConnectTestShellClient
 
  private:
   // mojo::ShellClient:
-  void Initialize(Connector* connector, const std::string& name,
-                  const std::string& user_id, uint32_t id) override {
+  void Initialize(Connector* connector, const Identity& identity,
+                  uint32_t id) override {
     bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestShellClient::OnConnectionError,
                    base::Unretained(this)));

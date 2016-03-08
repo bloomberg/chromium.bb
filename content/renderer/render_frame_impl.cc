@@ -6088,8 +6088,11 @@ mojo::shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
   if (!connector_)
     GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&connector_));
   mojo::shell::mojom::InterfaceProviderPtr interface_provider;
-  connector_->Connect(url.spec(), mojo::shell::mojom::kInheritUserID,
-                      GetProxy(&interface_provider), nullptr,
+  mojo::shell::mojom::IdentityPtr target(mojo::shell::mojom::Identity::New());
+  target->name = url.spec();
+  target->user_id = mojo::shell::mojom::kInheritUserID;
+  target->instance = "";
+  connector_->Connect(std::move(target), GetProxy(&interface_provider), nullptr,
                       base::Bind(&OnGotInstanceID));
   return interface_provider;
 }

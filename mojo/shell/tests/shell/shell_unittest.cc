@@ -127,11 +127,11 @@ class ShellTest : public mojo::test::ShellTest,
   void SetExistingInstances(Array<mojom::InstanceInfoPtr> instances) override {
     for (size_t i = 0; i < instances.size(); ++i) {
       initial_instances_.push_back(InstanceInfo(instances[i]->id,
-                                                instances[i]->name));
+                                                instances[i]->identity->name));
     }
   }
   void InstanceCreated(mojom::InstanceInfoPtr instance) override {
-    instances_.push_back(InstanceInfo(instance->id, instance->name));
+    instances_.push_back(InstanceInfo(instance->id, instance->identity->name));
   }
   void InstanceDestroyed(uint32_t id) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {

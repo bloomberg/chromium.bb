@@ -18,8 +18,7 @@ ShellApplicationDelegate::ShellApplicationDelegate()
 ShellApplicationDelegate::~ShellApplicationDelegate() {}
 
 void ShellApplicationDelegate::Initialize(mojo::Connector* connector,
-                                          const std::string& url,
-                                          const std::string& user_id,
+                                          const mojo::Identity& identity,
                                           uint32_t id) {
   connector_ = connector;
   StartBrowserDriver();

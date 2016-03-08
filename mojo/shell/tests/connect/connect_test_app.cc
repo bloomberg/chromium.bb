@@ -33,12 +33,11 @@ class ConnectTestApp : public ShellClient,
 
  private:
   // mojo::ShellClient:
-  void Initialize(Connector* connector, const std::string& name,
-                  const std::string& user_id, uint32_t id) override {
+  void Initialize(Connector* connector, const Identity& identity,
+                  uint32_t id) override {
     connector_ = connector;
-    name_ = name;
+    identity_ = identity;
     id_ = id;
-    userid_ = user_id;
     bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestApp::OnConnectionError,
                    base::Unretained(this)));
@@ -54,12 +53,12 @@ class ConnectTestApp : public ShellClient,
     uint32_t remote_id = connection->GetRemoteInstanceID();
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_local_name = connection->GetConnectionName();
-    state->connection_remote_name = connection->GetRemoteApplicationName();
-    state->connection_remote_userid = connection->GetRemoteUserID();
+    state->connection_remote_name = connection->GetRemoteIdentity().name();
+    state->connection_remote_userid = connection->GetRemoteIdentity().user_id();
     state->connection_remote_id = remote_id;
-    state->initialize_local_name = name_;
+    state->initialize_local_name = identity_.name();
     state->initialize_id = id_;
-    state->initialize_userid = userid_;
+    state->initialize_userid = identity_.user_id();
     connection->GetInterface(&caller_);
     caller_->ConnectionAccepted(std::move(state));
 
@@ -117,6 +116,9 @@ class ConnectTestApp : public ShellClient,
       run_loop.Run();
     }
   }
+  void GetInstance(const GetInstanceCallback& callback) override {
+    callback.Run(identity_.instance());
+  }
 
   // test::mojom::BlockedInterface:
   void GetTitleBlocked(const GetTitleBlockedCallback& callback) override {
@@ -144,9 +146,8 @@ class ConnectTestApp : public ShellClient,
   }
 
   Connector* connector_ = nullptr;
-  std::string name_;
+  Identity identity_;
   uint32_t id_ = shell::mojom::kInvalidInstanceID;
-  std::string userid_ = mojom::kRootUserID;
   BindingSet<test::mojom::ConnectTestService> bindings_;
   BindingSet<test::mojom::StandaloneApp> standalone_bindings_;
   BindingSet<test::mojom::BlockedInterface> blocked_bindings_;

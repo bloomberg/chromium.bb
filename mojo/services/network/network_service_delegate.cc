@@ -48,8 +48,7 @@ void NetworkServiceDelegate::RemoveObserver(
 }
 
 void NetworkServiceDelegate::Initialize(Connector* connector,
-                                        const std::string& name,
-                                        const std::string& user_id,
+                                        const Identity& identity,
                                         uint32_t id) {
   // TODO(erg): Find everything else that writes to the filesystem and
   // transition it to proxying mojo:filesystem. We shouldn't have any path
@@ -67,7 +66,7 @@ void NetworkServiceDelegate::Initialize(Connector* connector,
   }
 
   context_.reset(new NetworkContext(base_path, this));
-  tracing_.Initialize(connector, name);
+  tracing_.Initialize(connector, identity.name());
 }
 
 bool NetworkServiceDelegate::AcceptConnection(Connection* connection) {

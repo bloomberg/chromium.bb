@@ -36,13 +36,12 @@ void ProfileApp::AssociateMojoUserIDWithProfileDir(
 }
 
 void ProfileApp::Initialize(mojo::Connector* connector,
-                            const std::string& url,
-                            const std::string& user_id,
+                            const mojo::Identity& identity,
                             uint32_t id) {
-  tracing_.Initialize(connector, url);
+  tracing_.Initialize(connector, identity.name());
   leveldb_service_.reset(new leveldb::LevelDBServiceImpl);
 
-  auto it = g_user_id_to_data_dir.Get().find(user_id);
+  auto it = g_user_id_to_data_dir.Get().find(identity.user_id());
   DCHECK(it != g_user_id_to_data_dir.Get().end());
   profile_data_dir_ = it->second;
 }

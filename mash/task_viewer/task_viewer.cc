@@ -142,8 +142,9 @@ class TaskViewerContents : public views::WidgetDelegateView,
     DCHECK(instances_.empty());
     mojo::Array<mojo::String> names;
     for (size_t i = 0; i < instances.size(); ++i) {
-      InsertInstance(instances[i]->id, instances[i]->name, instances[i]->pid);
-      names.push_back(instances[i]->name);
+      InsertInstance(instances[i]->id, instances[i]->identity->name,
+                     instances[i]->pid);
+      names.push_back(instances[i]->identity->name);
     }
     catalog_->GetEntries(std::move(names),
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
@@ -151,10 +152,10 @@ class TaskViewerContents : public views::WidgetDelegateView,
   }
   void InstanceCreated(InstanceInfoPtr instance) override {
     DCHECK(!ContainsId(instance->id));
-    InsertInstance(instance->id, instance->name, instance->pid);
+    InsertInstance(instance->id, instance->identity->name, instance->pid);
     observer_->OnItemsAdded(static_cast<int>(instances_.size()), 1);
     mojo::Array<mojo::String> names;
-    names.push_back(instance->name);
+    names.push_back(instance->identity->name);
     catalog_->GetEntries(std::move(names),
                          base::Bind(&TaskViewerContents::OnGotCatalogEntries,
                                     weak_ptr_factory_.GetWeakPtr()));
@@ -259,10 +260,9 @@ TaskViewer::TaskViewer() {}
 TaskViewer::~TaskViewer() {}
 
 void TaskViewer::Initialize(mojo::Connector* connector,
-                            const std::string& url,
-                            const std::string& user_id,
+                            const mojo::Identity& identity,
                             uint32_t id) {
-  tracing_.Initialize(connector, url);
+  tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(connector);

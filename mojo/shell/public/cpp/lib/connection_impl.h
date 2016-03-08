@@ -12,6 +12,7 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/public/cpp/connection.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
@@ -28,9 +29,8 @@ class ConnectionImpl : public Connection {
   // an application to expose to another application. If this set contains only
   // the string value "*" all interfaces may be exposed.
   ConnectionImpl(const std::string& connection_name,
-                 const std::string& remote_name,
+                 const Identity& remote,
                  uint32_t remote_id,
-                 const std::string& remote_user_id,
                  shell::mojom::InterfaceProviderPtr remote_interfaces,
                  shell::mojom::InterfaceProviderRequest local_interfaces,
                  const std::set<std::string>& allowed_interfaces,
@@ -42,8 +42,7 @@ class ConnectionImpl : public Connection {
  private:
   // Connection:
   const std::string& GetConnectionName() override;
-  const std::string& GetRemoteApplicationName() override;
-  const std::string& GetRemoteUserID() const override;
+  const Identity& GetRemoteIdentity() const override;
   void SetConnectionLostClosure(const Closure& handler) override;
   shell::mojom::ConnectResult GetResult() const override;
   bool IsPending() const override;
@@ -59,13 +58,12 @@ class ConnectionImpl : public Connection {
                              uint32_t target_application_id);
 
   const std::string connection_name_;
-  const std::string remote_name_;
+  Identity remote_;
+  uint32_t remote_id_ = shell::mojom::kInvalidInstanceID;
 
   State state_;
   shell::mojom::ConnectResult result_ = shell::mojom::ConnectResult::SUCCEEDED;
-  uint32_t remote_id_ = shell::mojom::kInvalidInstanceID;
   std::vector<Closure> connection_completed_callbacks_;
-  std::string remote_user_id_ = shell::mojom::kInheritUserID;
 
   InterfaceRegistry local_registry_;
   shell::mojom::InterfaceProviderPtr remote_interfaces_;

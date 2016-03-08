@@ -124,8 +124,11 @@ std::string RegisterChildWithExternalShell(
   factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
       std::move(request_pipe), 0u));
 
-  shell->CreateInstance(std::move(factory), url,
-                        mojo::shell::mojom::kInheritUserID,
+  mojo::shell::mojom::IdentityPtr target(mojo::shell::mojom::Identity::New());
+  target->name = url;
+  target->user_id = mojo::shell::mojom::kInheritUserID;
+  target->instance = "";
+  shell->CreateInstance(std::move(factory), std::move(target),
                         CreateCapabilityFilterForRenderer(),
                         std::move(request), base::Bind(&OnConnectionComplete));
 

@@ -26,6 +26,37 @@ enum ConnectResult {
   ACCESS_DENIED
 };
 
+// A collection of metadata that disambiguates instances in the shell.
+struct Identity {
+  // A mojo: or exe: name identifying an application.
+  string name;
+
+  // The user id of the target application instance to connect to. If no such
+  // instance exists, the shell may start one. This user id will be passed to
+  // the new instance via Initialize().
+  // When connecting to other applications, applications must generally pass
+  // kInheritUserID for this value, and the shell will either connect to an
+  // existing instance matching the caller's user id, create a new instance
+  // matching the caller's user id, or connect to an existing instance running
+  // as kRootUserID. By default, applications do not have the ability to set
+  // arbitrary values to this field, and doing so will result in a connection
+  // error on the remote service provider. An application with the ability to
+  // launch applications with arbitrary user ids (e.g. a login app) may set this
+  // value to something meaningful to it. The user id string is a valid guid of
+  // the form "%08X-%04X-%04X-%04X-%012llX", and (aside from the root user whose
+  // guid is defined above) intended to be not-guessable.
+  // When an application is initialized or receives a connection from another
+  // application, this value is always the resolved user id, never
+  // kInheritUserID.
+  string user_id;
+
+  // An application may spawn multiple instances with the same name,user_id
+  // pair, provided they are started with unique values of this field.
+  // TODO(beng): enforce the emptiness of this parameter unless the client bears
+  //             the appropriate capability.
+  string instance;
+};
+
 // Encapsulates establishing connections with other Mojo applications.
 interface Connector {
   // Requests a connection with another application. The application originating
@@ -43,24 +74,8 @@ interface Connector {
   //
   // Parameters:
   //
-  //  name
-  //    A mojo: or exe: name identifying the target application.
-  //
-  //  user_id
-  //    The user id of the target application instance to connect to. If no such
-  //    instance exists, the shell may start one. This user id will be passed
-  //    to the new instance via Initialize(). Applications must generally pass
-  //    kInheritUserID for this value, and the shell will either connect to an
-  //    existing instance matching the caller's user id, create a new instance
-  //    matching the caller's user id, or connect to an existing instance
-  //    running as kRootUserID. By default, applications do not have the ability
-  //    to pass arbitrary values to this method, and doing so will result in a
-  //    connection error on the remote service provider. An application with
-  //    the ability to launch applications with arbitrary user ids (e.g. a login
-  //    app) may set this value to something meaningful to it. The user id
-  //    string is a valid guid of the form "%08X-%04X-%04X-%04X-%012llX", and
-  //    (aside from the root user whose guid is defined above) intended to be
-  //    not-guessable.
+  //  target
+  //    Identifies the target application instance to connect to.
   //
   //  remote_interfaces
   //    Allows the source application access to interface implementations
@@ -87,8 +102,7 @@ interface Connector {
   //  application_id
   //    A unique identifier for the instance that was connected to.
   //
-  Connect(string name,
-          string user_id,
+  Connect(Identity target,
           InterfaceProvider&? remote_interfaces,
           InterfaceProvider? local_interfaces) => (ConnectResult result,
                                                    string user_id,

@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/system/handle.h"
-#include "mojo/shell/identity.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mojo {
@@ -39,7 +39,7 @@ inline void ConnectToInterface(Shell* shell,
                                const std::string& name,
                                InterfacePtr<Interface>* ptr) {
   ScopedMessagePipeHandle service_handle = ConnectToInterfaceByName(
-      shell, source, Identity(name, std::string(), mojom::kInheritUserID),
+      shell, source, Identity(name, mojom::kInheritUserID),
       Interface::Name_);
   ptr->Bind(InterfacePtrInfo<Interface>(std::move(service_handle), 0u));
 }

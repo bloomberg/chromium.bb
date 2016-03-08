@@ -50,10 +50,10 @@ BrowserDriverApplicationDelegate::BrowserDriverApplicationDelegate()
 
 BrowserDriverApplicationDelegate::~BrowserDriverApplicationDelegate() {}
 
-void BrowserDriverApplicationDelegate::Initialize(mojo::Connector* connector,
-                                                  const std::string& url,
-                                                  const std::string& user_id,
-                                                  uint32_t id) {
+void BrowserDriverApplicationDelegate::Initialize(
+    mojo::Connector* connector,
+    const mojo::Identity& identity,
+    uint32_t id) {
   connector_ = connector;
   AddAccelerators();
 }

@@ -17,9 +17,9 @@ class FilePath;
 }
 
 namespace mojo {
+class Identity;
 namespace shell {
 
-class Identity;
 
 // Shell requires implementations of NativeRunner and NativeRunnerFactory to run
 // native applications.

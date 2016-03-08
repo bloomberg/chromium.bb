@@ -123,7 +123,7 @@ class TestLoader : public Loader,
   // mojo::ShellClient implementation.
   bool AcceptConnection(Connection* connection) override {
     connection->AddInterface<TestService>(this);
-    last_requestor_name_ = connection->GetRemoteApplicationName();
+    last_requestor_name_ = connection->GetRemoteIdentity().name();
     return true;
   }
 
@@ -353,14 +353,14 @@ class Tester : public ShellClient,
 
   bool AcceptConnection(Connection* connection) override {
     if (!requestor_name_.empty() &&
-        requestor_name_ != connection->GetRemoteApplicationName()) {
+        requestor_name_ != connection->GetRemoteIdentity().name()) {
       context_->set_tester_called_quit();
       context_->QuitSoon();
       base::MessageLoop::current()->QuitWhenIdle();
       return false;
     }
     // If we're coming from A, then add B, otherwise A.
-    if (connection->GetRemoteApplicationName() == kTestAURLString)
+    if (connection->GetRemoteIdentity().name() == kTestAURLString)
       connection->AddInterface<TestB>(this);
     else
       connection->AddInterface<TestA>(this);
@@ -433,7 +433,7 @@ class LoaderTest : public testing::Test {
     mojom::InterfaceProviderPtr remote_interfaces;
     scoped_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(CreateShellIdentity());
-    params->set_target(Identity(name));
+    params->set_target(Identity(name, mojom::kRootUserID));
     params->set_remote_interfaces(GetProxy(&remote_interfaces));
     params->set_connect_callback(
         base::Bind(&OnConnect, base::Unretained(&loop)));
@@ -523,7 +523,7 @@ TEST_F(LoaderTest, TestEndApplicationClosure) {
   bool called = false;
   scoped_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateShellIdentity());
-  params->set_target(Identity("test:test", "", mojom::kRootUserID));
+  params->set_target(Identity("test:test", mojom::kRootUserID));
   shell_->SetInstanceQuitCallback(
       base::Bind(&QuitClosure, params->target(), &called));
   shell_->Connect(std::move(params));

@@ -35,8 +35,7 @@ class ShellTestClient : public mojo::ShellClient {
 
  protected:
   void Initialize(Connector* connector,
-                  const std::string& name,
-                  const std::string& user_id,
+                  const Identity& identity,
                   uint32_t id) override;
 
  private:

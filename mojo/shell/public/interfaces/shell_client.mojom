@@ -20,20 +20,18 @@ interface ShellClient {
   //    An interface back to the shell by which new connections may be
   //    established.
   //
-  //  name
-  //    The resolved name used in the connection request that resulted in this
-  //    application being initialized.
-  //
-  //  user_id
-  //    Identifies the user this instance is run as in the shell. This may
-  //    differ from the user the application that caused this application to be
-  //    instantiated is run as. This will always be a valid user id, never
-  //    Shell::kUserInherit.
+  //  identity
+  //    The identity of this instance in the shell. Includes:
+  //    * The resolved name used in the connection request that resulted in this
+  //      instance being initialized.
+  //    * The user associated with this instance in the shell. This will never
+  //      be kInheritUserID.
+  //    * The instance group this instance belongs to.
   //
   //  id
   //    A unique identifier used by the shell to identify this instance.
   //
-  Initialize(Connector connector, string name, string user_id, uint32 id);
+  Initialize(Connector connector, Identity identity, uint32 id);
 
   // Called when another application attempts to open a connection to this
   // application. An application implements this method to complete the exchange
@@ -44,18 +42,11 @@ interface ShellClient {
   //
   // Parameters:
   //
-  //  requestor_name
-  //    The name of the source application.
+  //  source
+  //    The identity of the instance originating the connection.
   //
-  //  requestor_id
-  //    A unique identifier used by the shell to identify the source
-  //    application's instance.
-  //
-  //  requestor_user_id
-  //    An identifier for the user the source application is run as. This may
-  //    differ from the application the target is run as (i.e. the one received
-  //    via Initialize() above). This will always be a valid user id, never
-  //    kInheritUserID.
+  //  source_id
+  //    A unique identifier used by the shell to identify the source instance.
   //
   //  local_interfaces
   //    A request for an InterfaceProvider by which the source application may
@@ -74,9 +65,8 @@ interface ShellClient {
   //  resolved_name
   //    The resolved name used to complete this connection.
   //
-  AcceptConnection(string requestor_name,
-                   string requestor_user_id,
-                   uint32 requestor_id,
+  AcceptConnection(Identity source,
+                   uint32 source_id,
                    InterfaceProvider&? local_interfaces,
                    InterfaceProvider? remote_interfaces,
                    array<string> allowed_interfaces,

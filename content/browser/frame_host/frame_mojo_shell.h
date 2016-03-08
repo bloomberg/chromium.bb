@@ -29,8 +29,7 @@ class FrameMojoShell : public mojo::shell::mojom::Connector {
  private:
   // mojo::Connector:
   void Connect(
-      const mojo::String& application_name,
-      const mojo::String& user_id,
+      mojo::shell::mojom::IdentityPtr target,
       mojo::shell::mojom::InterfaceProviderRequest services,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services,
       const mojo::shell::mojom::Connector::ConnectCallback& callback) override;

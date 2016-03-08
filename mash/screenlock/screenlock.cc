@@ -75,9 +75,10 @@ class ScreenlockView : public views::WidgetDelegateView,
 Screenlock::Screenlock() {}
 Screenlock::~Screenlock() {}
 
-void Screenlock::Initialize(mojo::Connector* connector, const std::string& url,
-                            const std::string& user_id, uint32_t id) {
-  tracing_.Initialize(connector, url);
+void Screenlock::Initialize(mojo::Connector* connector,
+                            const mojo::Identity& identity,
+                            uint32_t id) {
+  tracing_.Initialize(connector, identity.name());
 
   mash::shell::mojom::ShellPtr mash_shell;
   connector->ConnectToInterface("mojo:mash_shell", &mash_shell);

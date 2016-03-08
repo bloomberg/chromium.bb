@@ -104,11 +104,10 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
 }
 
 void WindowManagerApplication::Initialize(mojo::Connector* connector,
-                                          const std::string& url,
-                                          const std::string& user_id,
+                                          const mojo::Identity& identity,
                                           uint32_t id) {
   connector_ = connector;
-  tracing_.Initialize(connector, url);
+  tracing_.Initialize(connector, identity.name());
 
   mus::mojom::WindowManagerFactoryServicePtr wm_factory_service;
   connector_->ConnectToInterface("mojo:mus", &wm_factory_service);
@@ -121,7 +120,7 @@ void WindowManagerApplication::Initialize(mojo::Connector* connector,
 bool WindowManagerApplication::AcceptConnection(mojo::Connection* connection) {
   connection->AddInterface<mash::wm::mojom::UserWindowController>(this);
   connection->AddInterface<mus::mojom::AcceleratorRegistrar>(this);
-  if (connection->GetRemoteApplicationName() == "mojo:mash_shell")
+  if (connection->GetRemoteIdentity().name() == "mojo:mash_shell")
     connection->GetInterface(&mash_shell_);
   return true;
 }

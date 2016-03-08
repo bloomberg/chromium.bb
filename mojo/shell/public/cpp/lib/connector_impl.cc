@@ -4,14 +4,15 @@
 
 #include "mojo/shell/public/cpp/lib/connector_impl.h"
 
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/cpp/lib/connection_impl.h"
 
 namespace mojo {
 
+Connector::ConnectParams::ConnectParams(const Identity& target)
+    : target_(target) {}
 Connector::ConnectParams::ConnectParams(const std::string& name)
-    : name_(name),
-      user_id_(shell::mojom::kInheritUserID) {
-}
+    : target_(name, shell::mojom::kInheritUserID) {}
 Connector::ConnectParams::~ConnectParams() {}
 
 ConnectorImpl::ConnectorImpl(shell::mojom::ConnectorPtrInfo unbound_state)
@@ -43,7 +44,6 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   DCHECK(thread_checker_->CalledOnValidThread());
 
   DCHECK(params);
-  std::string application_name = params->name();
   // We allow all interfaces on outgoing connections since we are presumably in
   // a position to know who we're talking to.
   // TODO(beng): We should filter outgoing interfaces also. The shell must pass
@@ -58,14 +58,13 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   shell::mojom::InterfaceProviderRequest remote_request =
       GetProxy(&remote_interfaces);
   scoped_ptr<internal::ConnectionImpl> registry(new internal::ConnectionImpl(
-      application_name, application_name, shell::mojom::kInvalidInstanceID,
-      params->user_id(), std::move(remote_interfaces), std::move(local_request),
-      allowed, Connection::State::PENDING));
-  connector_->Connect(application_name,
-                      params->user_id(),
-                      std::move(remote_request),
-                      std::move(local_interfaces),
-                      registry->GetConnectCallback());
+      params->target().name(), params->target(),
+      shell::mojom::kInvalidInstanceID, std::move(remote_interfaces),
+      std::move(local_request), allowed, Connection::State::PENDING));
+  connector_->Connect(
+      shell::mojom::Identity::From(params->target()),
+      std::move(remote_request), std::move(local_interfaces),
+      registry->GetConnectCallback());
   return std::move(registry);
 }
 

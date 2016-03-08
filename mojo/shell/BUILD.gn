@@ -24,8 +24,6 @@ source_set("shell") {
     "connect_params.h",
     "connect_util.cc",
     "connect_util.h",
-    "identity.cc",
-    "identity.h",
     "loader.h",
     "native_runner.h",
     "native_runner_delegate.h",

@@ -21,18 +21,16 @@ namespace internal {
 
 ConnectionImpl::ConnectionImpl(
     const std::string& connection_name,
-    const std::string& remote_name,
+    const Identity& remote,
     uint32_t remote_id,
-    const std::string& remote_user_id,
     shell::mojom::InterfaceProviderPtr remote_interfaces,
     shell::mojom::InterfaceProviderRequest local_interfaces,
     const std::set<std::string>& allowed_interfaces,
     State initial_state)
     : connection_name_(connection_name),
-      remote_name_(remote_name),
-      state_(initial_state),
+      remote_(remote),
       remote_id_(remote_id),
-      remote_user_id_(remote_user_id),
+      state_(initial_state),
       local_registry_(std::move(local_interfaces), this),
       remote_interfaces_(std::move(remote_interfaces)),
       allowed_interfaces_(allowed_interfaces),
@@ -59,12 +57,8 @@ const std::string& ConnectionImpl::GetConnectionName() {
   return connection_name_;
 }
 
-const std::string& ConnectionImpl::GetRemoteApplicationName() {
-  return remote_name_;
-}
-
-const std::string& ConnectionImpl::GetRemoteUserID() const {
-  return remote_user_id_;
+const Identity& ConnectionImpl::GetRemoteIdentity() const {
+  return remote_;
 }
 
 void ConnectionImpl::SetConnectionLostClosure(const Closure& handler) {
@@ -118,7 +112,7 @@ void ConnectionImpl::OnConnectionCompleted(shell::mojom::ConnectResult result,
   state_ = result_ == shell::mojom::ConnectResult::SUCCEEDED ?
       State::CONNECTED : State::DISCONNECTED;
   remote_id_ = target_application_id;
-  remote_user_id_= target_user_id;
+  remote_.set_user_id(target_user_id);
   std::vector<Closure> callbacks;
   callbacks.swap(connection_completed_callbacks_);
   for (auto callback : callbacks)

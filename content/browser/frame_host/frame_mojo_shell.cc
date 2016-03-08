@@ -48,8 +48,7 @@ void FrameMojoShell::BindRequest(mojo::shell::mojom::ConnectorRequest request) {
 // drop it and replace it with services we provide in the browser. In the
 // future we may need to support both.
 void FrameMojoShell::Connect(
-    const mojo::String& application_name,
-    const mojo::String& user_id,
+    mojo::shell::mojom::IdentityPtr target,
     mojo::shell::mojom::InterfaceProviderRequest services,
     mojo::shell::mojom::InterfaceProviderPtr /* exposed_services */,
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {
@@ -60,7 +59,7 @@ void FrameMojoShell::Connect(
                                         GetProxy(&frame_services));
 
   MojoShellContext::ConnectToApplication(
-      application_name,
+      target->name,
       frame_host_->GetSiteInstance()->GetSiteURL().spec(), std::move(services),
       std::move(frame_services), callback);
 }

@@ -34,8 +34,12 @@ define('main', [
     var connector = new connectorMojom.Connector.proxyClass(
         new router.Router(connectorPipe));
 
+    var identity = {};
+    identity.name = TEST_APP_URL;
+    identity.user_id = connectorMojom.kInheritUserID;
+    identity.instance = "";
     connector.connect(
-        TEST_APP_URL, connectorMojom.kInheritUserID,
+        identity,
         function (services) {
           var test = connectToService(services, testMojom.TestMojoService);
           test.getRequestorName().then(function(response) {

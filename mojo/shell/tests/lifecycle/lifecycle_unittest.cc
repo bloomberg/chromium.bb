@@ -13,6 +13,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/cpp/shell_test.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/runner/common/switches.h"
@@ -40,12 +41,10 @@ void DecrementCountAndQuitWhenZero(base::RunLoop* loop, size_t* count) {
 
 struct Instance {
   Instance() : id(shell::mojom::kInvalidInstanceID), pid(0) {}
-  Instance(const std::string& name, const std::string& qualifier, uint32_t id,
-           uint32_t pid)
-      : name(name), qualifier(qualifier), id(id), pid(pid) {}
+  Instance(const Identity& identity, uint32_t id, uint32_t pid)
+      : identity(identity), id(id), pid(pid) {}
 
-  std::string name;
-  std::string qualifier;
+  Identity identity;
   uint32_t id;
   uint32_t pid;
 };
@@ -74,17 +73,17 @@ class InstanceState : public mojom::InstanceListener {
   // mojom::InstanceListener:
   void SetExistingInstances(Array<mojom::InstanceInfoPtr> instances) override {
     for (const auto& instance : instances) {
-      Instance i(instance->name, instance->qualifier, instance->id,
+      Instance i(instance->identity.To<Identity>(), instance->id,
                  instance->pid);
-      initial_instances_[i.name] = i;
-      instances_[i.name] = i;
+      initial_instances_[i.identity.name()] = i;
+      instances_[i.identity.name()] = i;
     }
     loop_->Quit();
   }
   void InstanceCreated(mojom::InstanceInfoPtr instance) override {
-    instances_[instance->name] =
-       Instance(instance->name, instance->qualifier, instance->id,
-                instance->pid);
+    instances_[instance->identity->name] =
+        Instance(instance->identity.To<Identity>(), instance->id,
+                 instance->pid);
   }
   void InstanceDestroyed(uint32_t id) override {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
@@ -217,9 +216,12 @@ class LifecycleTest : public mojo::test::ShellTest {
     factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
         std::move(pipe), 0u));
     base::RunLoop loop;
-    shell->CreateInstance(std::move(factory), kTestExeName,
-                          mojom::kInheritUserID, std::move(filter),
-                          std::move(request),
+    mojo::shell::mojom::IdentityPtr target(mojo::shell::mojom::Identity::New());
+    target->name = kTestExeName;
+    target->user_id = mojom::kInheritUserID;
+    target->instance = "";
+    shell->CreateInstance(std::move(factory), std::move(target),
+                          std::move(filter), std::move(request),
                           base::Bind(&LifecycleTest::OnConnectionCompleted,
                                      base::Unretained(this), &loop));
     loop.Run();

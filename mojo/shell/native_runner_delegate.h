@@ -10,9 +10,8 @@ class CommandLine;
 }
 
 namespace mojo {
-namespace shell {
-
 class Identity;
+namespace shell {
 
 class NativeRunnerDelegate {
  public:

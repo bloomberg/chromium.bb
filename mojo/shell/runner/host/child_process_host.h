@@ -19,7 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "mojo/shell/identity.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
 #include "mojo/shell/runner/host/child_process_host.h"
 
@@ -28,9 +28,9 @@ class TaskRunner;
 }
 
 namespace mojo {
+class Identity;
 namespace shell {
 
-class Identity;
 class NativeRunnerDelegate;
 
 // This class represents a "child process host". Handles launching and

@@ -26,9 +26,9 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/shell/connect_params.h"
-#include "mojo/shell/identity.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/native_runner.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/runner/host/in_process_native_runner.h"
@@ -285,15 +285,9 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {
   scoped_ptr<mojo::shell::ConnectParams> params(new mojo::shell::ConnectParams);
   // TODO(beng): kRootUserID is obviously wrong.
-  // TODO(beng): We need to set a permissive filter here temporarily because
-  //             content is known as a bogus system: name that the application
-  //             manager doesn't understand.
-  mojo::shell::Identity source_id(
-      requestor_name, std::string(), mojo::shell::mojom::kRootUserID);
-  source_id.set_filter(mojo::shell::GetPermissiveCapabilityFilter());
+  mojo::Identity source_id(requestor_name, mojo::shell::mojom::kRootUserID);
   params->set_source(source_id);
-  params->set_target(mojo::shell::Identity(
-      name, std::string(), mojo::shell::mojom::kRootUserID));
+  params->set_target(mojo::Identity(name, mojo::shell::mojom::kRootUserID));
   params->set_remote_interfaces(std::move(request));
   params->set_local_interfaces(std::move(exposed_services));
   params->set_connect_callback(callback);

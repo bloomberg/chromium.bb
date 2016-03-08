@@ -9,8 +9,7 @@ import "mojo/shell/public/interfaces/shell_client_factory.mojom";
 
 struct InstanceInfo {
   uint32 id;
-  string name;
-  string qualifier;
+  Identity identity;
   uint32 pid;
 };
 
@@ -67,8 +66,7 @@ interface Shell {
   // code, see connector.mojom for definitions) the status of the instance
   // creation.
   CreateInstance(ShellClientFactory factory,
-                 string name,
-                 string user_id,
+                 Identity target,
                  CapabilityFilter filter,
                  PIDReceiver& pid_receiver) => (ConnectResult result);
 

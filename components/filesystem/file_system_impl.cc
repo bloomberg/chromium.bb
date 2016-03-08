@@ -24,7 +24,7 @@ FileSystemImpl::FileSystemImpl(mojo::Connection* connection,
                                mojo::InterfaceRequest<FileSystem> request,
                                base::FilePath persistent_dir,
                                LockTable* lock_table)
-    : remote_application_name_(connection->GetRemoteApplicationName()),
+    : remote_application_name_(connection->GetRemoteIdentity().name()),
       binding_(this, std::move(request)),
       lock_table_(lock_table),
       persistent_dir_(persistent_dir) {}

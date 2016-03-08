@@ -16,9 +16,9 @@
 #include "mojo/services/package_manager/package_manager.h"
 #include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/connect_params.h"
-#include "mojo/shell/identity.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/native_runner.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
@@ -35,6 +35,25 @@ class SequencedWorkerPool;
 namespace mojo {
 class ShellConnection;
 namespace shell {
+
+// A set of names of interfaces that may be exposed to an application.
+using AllowedInterfaces = std::set<std::string>;
+// A map of allowed applications to allowed interface sets. See shell.mojom for
+// more details.
+using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
+
+// Creates an identity for the Shell, used when the Shell connects to
+// applications.
+Identity CreateShellIdentity();
+
+// Returns a capability filter that allows an application to connect to any
+// other application and any service exposed by other applications.
+CapabilityFilter GetPermissiveCapabilityFilter();
+
+// Returns the set of interfaces that an application instance with |filter| is
+// allowed to see from an instance with |identity|.
+AllowedInterfaces GetAllowedInterfaces(const CapabilityFilter& filter,
+                                       const Identity& identity);
 
 class Shell : public ShellClient {
  public:
@@ -119,6 +138,7 @@ class Shell : public ShellClient {
   bool ConnectToExistingInstance(scoped_ptr<ConnectParams>* params);
 
   Instance* CreateInstance(const Identity& target_id,
+                           const CapabilityFilter& filter,
                            mojom::ShellClientRequest* request);
 
   // Called from the instance implementing mojom::Shell. |user_id| must be
@@ -152,7 +172,7 @@ class Shell : public ShellClient {
   // run with, from its manifest.
   void OnGotResolvedName(scoped_ptr<ConnectParams> params,
                          const String& resolved_name,
-                         const String& resolved_qualifier,
+                         const String& resolved_instance,
                          mojom::CapabilityFilterPtr base_filter,
                          const String& file_url);
 

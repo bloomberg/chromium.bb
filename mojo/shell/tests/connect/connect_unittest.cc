@@ -49,6 +49,14 @@ class ConnectTest : public mojo::test::ShellTest,
   ~ConnectTest() override {}
 
  protected:
+  scoped_ptr<Connection> ConnectTo(Connector::ConnectParams* params) {
+    scoped_ptr<Connection> connection = connector()->Connect(params);
+    base::RunLoop loop;
+    connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
+    loop.Run();
+    return connection;
+  }
+
   void set_ping_callback(const base::Closure& callback) {
     ping_callback_ = callback;
   }
@@ -119,7 +127,47 @@ TEST_F(ConnectTest, Connect) {
   EXPECT_EQ("APP", title);
   EXPECT_FALSE(connection->IsPending());
   EXPECT_NE(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
-  EXPECT_EQ(connection->GetRemoteApplicationName(), kTestAppName);
+  EXPECT_EQ(connection->GetRemoteIdentity().name(), kTestAppName);
+}
+
+TEST_F(ConnectTest, Instances) {
+  Connector::ConnectParams params_a(
+      Identity(kTestAppName, mojom::kInheritUserID, "A"));
+  scoped_ptr<Connection> connection_a1 = ConnectTo(&params_a);
+  scoped_ptr<Connection> connection_a2 = ConnectTo(&params_a);
+  std::string instance_a1, instance_a2;
+  test::mojom::StandaloneAppPtr standalone_app_a1;
+  {
+    connection_a1->GetInterface(&standalone_app_a1);
+    base::RunLoop loop;
+    standalone_app_a1->GetInstance(
+        base::Bind(&ReceiveTitle, &instance_a1, &loop));
+    loop.Run();
+  }
+  test::mojom::StandaloneAppPtr standalone_app_a2;
+  {
+    connection_a2->GetInterface(&standalone_app_a2);
+    base::RunLoop loop;
+    standalone_app_a2->GetInstance(
+        base::Bind(&ReceiveTitle, &instance_a2, &loop));
+    loop.Run();
+  }
+  EXPECT_EQ(instance_a1, instance_a2);
+
+  Connector::ConnectParams params_b(
+      Identity(kTestAppName, mojom::kInheritUserID, "B"));
+  scoped_ptr<Connection> connection_b = ConnectTo(&params_b);
+  std::string instance_b;
+  test::mojom::StandaloneAppPtr standalone_app_b;
+  {
+    connection_b->GetInterface(&standalone_app_b);
+    base::RunLoop loop;
+    standalone_app_b->GetInstance(
+        base::Bind(&ReceiveTitle, &instance_b, &loop));
+    loop.Run();
+  }
+
+  EXPECT_NE(instance_a1, instance_b);
 }
 
 // BlockedInterface should not be exposed to this application because it is not
@@ -148,7 +196,7 @@ TEST_F(ConnectTest, PackagedApp) {
   EXPECT_EQ("A", a_name);
   EXPECT_FALSE(connection->IsPending());
   EXPECT_NE(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
-  EXPECT_EQ(connection->GetRemoteApplicationName(), kTestAppAName);
+  EXPECT_EQ(connection->GetRemoteIdentity().name(), kTestAppAName);
 }
 
 // Ask the target application to attempt to connect to a third application
@@ -222,7 +270,7 @@ TEST_F(ConnectTest, LocalInterface) {
       run_loop.Run();
       CompareConnectionState(
           kTestAppName, test_name(), test_userid(), test_instance_id(),
-          kTestAppName, connection->GetRemoteUserID(), remote_id);
+          kTestAppName, connection->GetRemoteIdentity().user_id(), remote_id);
     }
   }
 
@@ -252,7 +300,7 @@ TEST_F(ConnectTest, LocalInterface) {
       run_loop.Run();
       CompareConnectionState(
           kTestAppAName, test_name(), test_userid(), test_instance_id(),
-          kTestAppAName, connection->GetRemoteUserID(), remote_id);
+          kTestAppAName, connection->GetRemoteIdentity().user_id(), remote_id);
     }
 
   }

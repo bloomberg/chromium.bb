@@ -22,7 +22,7 @@ TestMojoApp::~TestMojoApp() {
 }
 
 bool TestMojoApp::AcceptConnection(mojo::Connection* connection) {
-  requestor_name_ = connection->GetRemoteApplicationName();
+  requestor_name_ = connection->GetRemoteIdentity().name();
   connection->AddInterface<TestMojoService>(this);
   return true;
 }

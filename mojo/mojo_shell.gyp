@@ -16,8 +16,6 @@
       'shell/connect_params.h',
       'shell/connect_util.cc',
       'shell/connect_util.h',
-      'shell/identity.cc',
-      'shell/identity.h',
       'shell/native_runner.h',
       'shell/native_runner_delegate.h',
       'shell/shell.cc',

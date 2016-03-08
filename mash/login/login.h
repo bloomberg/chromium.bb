@@ -29,8 +29,8 @@ class Login : public mojo::ShellClient {
 
  private:
   // mojo::ShellClient:
-  void Initialize(mojo::Connector* connector, const std::string& url,
-                  const std::string& user_id, uint32_t id) override;
+  void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
+                  uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
 
   mojo::TracingImpl tracing_;

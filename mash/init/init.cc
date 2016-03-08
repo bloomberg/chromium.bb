@@ -15,8 +15,9 @@ namespace init {
 Init::Init() : connector_(nullptr) {}
 Init::~Init() {}
 
-void Init::Initialize(mojo::Connector* connector, const std::string& url,
-                      const std::string& user_id, uint32_t id) {
+void Init::Initialize(mojo::Connector* connector,
+                      const mojo::Identity& identity,
+                      uint32_t id) {
   connector_ = connector;
   mus_connection_ = connector_->Connect("mojo:mus");
   StartWindowManager();
@@ -26,8 +27,8 @@ void Init::Initialize(mojo::Connector* connector, const std::string& url,
 void Init::LoginAs(const mojo::String& user_id) {
   connections_["mojo:mash_login"].reset();
   connections_["mojo:desktop_wm"].reset();
-  mojo::Connector::ConnectParams params("mojo:mash_shell");
-  params.set_user_id(user_id);
+  mojo::Connector::ConnectParams params(
+      mojo::Identity("mojo:mash_shell", user_id));
   connector_->Connect(&params);
 }
 
@@ -36,16 +37,14 @@ void Init::Create(mojo::Connection* connection, mojom::LoginRequest request) {
 }
 
 void Init::StartWindowManager() {
-  mojo::Connector::ConnectParams params("mojo:desktop_wm");
-  params.set_user_id("2");
+  mojo::Connector::ConnectParams params(mojo::Identity("mojo:desktop_wm", "2"));
   StartRestartableService(
       &params,
       base::Bind(&Init::StartWindowManager, base::Unretained(this)));
 }
 
 void Init::StartLogin() {
-  mojo::Connector::ConnectParams params("mojo:mash_login");
-  params.set_user_id("2");
+  mojo::Connector::ConnectParams params(mojo::Identity("mojo:mash_login", "2"));
   StartRestartableService(
       &params,
       base::Bind(&Init::StartLogin, base::Unretained(this)));
@@ -60,7 +59,7 @@ void Init::StartRestartableService(mojo::Connector::ConnectParams* params,
   if (connection) {
     connection->SetConnectionLostClosure(restart_callback);
     connection->AddInterface<mojom::Login>(this);
-    connections_[params->name()] = std::move(connection);
+    connections_[params->target().name()] = std::move(connection);
   }
 }
 

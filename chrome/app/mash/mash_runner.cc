@@ -21,9 +21,9 @@
 #include "mash/wm/window_manager_application.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/background/background_shell.h"
-#include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner_delegate.h"
 #include "mojo/shell/public/cpp/connector.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
@@ -136,7 +136,7 @@ class NativeRunnerDelegateImpl : public mojo::shell::NativeRunnerDelegate {
  private:
   // mojo::shell::NativeRunnerDelegate:
   void AdjustCommandLineArgumentsForTarget(
-      const mojo::shell::Identity& target,
+      const mojo::Identity& target,
       base::CommandLine* command_line) override {
     if (target.name() != "exe:chrome") {
       if (target.name() == "exe:chrome_mash")

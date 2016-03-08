@@ -10,6 +10,7 @@
 
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/shell/public/cpp/connection.h"
+#include "mojo/shell/public/cpp/identity.h"
 
 namespace mojo {
 
@@ -26,14 +27,12 @@ class ShellClient {
   virtual ~ShellClient();
 
   // Called once a bidirectional connection with the shell has been established.
-  // |name| is the name used to start the application.
+  // |identity| is the identity of the instance.
   // |id| is a unique identifier the shell uses to identify this specific
   // instance of the application.
-  // |user_id| identifies the user this instance is run as.
   // Called exactly once before any other method.
   virtual void Initialize(Connector* connector,
-                          const std::string& name,
-                          const std::string& user_id,
+                          const Identity& identity,
                           uint32_t id);
 
   // Called when a connection to this client is brokered by the shell. Override

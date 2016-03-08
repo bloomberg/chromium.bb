@@ -14,10 +14,9 @@ LevelDBApp::LevelDBApp() {}
 LevelDBApp::~LevelDBApp() {}
 
 void LevelDBApp::Initialize(mojo::Connector* connector,
-                            const std::string& url,
-                            const std::string& user_id,
+                            const mojo::Identity& identity,
                             uint32_t id) {
-  tracing_.Initialize(connector, url);
+  tracing_.Initialize(connector, identity.name());
   service_.reset(new LevelDBServiceImpl);
 }
 

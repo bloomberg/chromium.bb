@@ -119,7 +119,7 @@ PackageManager::~PackageManager() {}
 bool PackageManager::AcceptConnection(mojo::Connection* connection) {
   connection->AddInterface<mojom::Catalog>(this);
   connection->AddInterface<mojom::Resolver>(this);
-  if (connection->GetRemoteApplicationName() == "mojo:shell")
+  if (connection->GetRemoteIdentity().name() == "mojo:shell")
     connection->AddInterface<mojom::ShellResolver>(this);
   return true;
 }

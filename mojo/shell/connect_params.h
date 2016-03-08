@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/identity.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
 
@@ -22,8 +22,8 @@ namespace shell {
 // application.
 class ConnectParams {
  public:
-   ConnectParams();
-   ~ConnectParams();
+  ConnectParams();
+  ~ConnectParams();
 
   void set_source(const Identity& source) { source_ = source;  }
   const Identity& source() const { return source_; }

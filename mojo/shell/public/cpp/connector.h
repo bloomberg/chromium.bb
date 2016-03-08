@@ -6,6 +6,7 @@
 #define MOJO_SHELL_PUBLIC_CPP_CONNECTOR_H_
 
 #include "mojo/shell/public/cpp/connection.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mojo {
@@ -30,16 +31,15 @@ class Connector {
 
   class ConnectParams {
    public:
+    explicit ConnectParams(const Identity& target);
     explicit ConnectParams(const std::string& name);
     ~ConnectParams();
 
-    const std::string& name() { return name_; }
-    void set_user_id(const std::string& user_id) { user_id_ = user_id; }
-    const std::string& user_id() const { return user_id_; }
+    const Identity& target() { return target_; }
+    void set_target(const Identity& target) { target_ = target; }
 
    private:
-    std::string name_;
-    std::string user_id_;
+    Identity target_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);
   };

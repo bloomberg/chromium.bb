@@ -93,9 +93,10 @@ class LoginView : public views::WidgetDelegateView,
 Login::Login() {}
 Login::~Login() {}
 
-void Login::Initialize(mojo::Connector* connector, const std::string& url,
-                       const std::string& user_id, uint32_t id) {
-  tracing_.Initialize(connector, url);
+void Login::Initialize(mojo::Connector* connector,
+                       const mojo::Identity& identity,
+                       uint32_t id) {
+  tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(connector);
@@ -118,7 +119,7 @@ void Login::Initialize(mojo::Connector* connector, const std::string& url,
 }
 
 bool Login::AcceptConnection(mojo::Connection* connection) {
-  if (connection->GetRemoteApplicationName() == "mojo:mash_init") {
+  if (connection->GetRemoteIdentity().name() == "mojo:mash_init") {
     connection->GetInterface(&login_);
     return true;
   }

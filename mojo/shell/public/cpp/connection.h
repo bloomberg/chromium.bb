@@ -12,6 +12,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/cpp/interface_registry.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/public/interfaces/interface_provider.mojom.h"
@@ -88,14 +89,12 @@ class Connection {
   // same as the value returned by GetRemoveApplicationName().
   virtual const std::string& GetConnectionName() = 0;
 
-  // Returns the name identifying the remote application on this connection.
-  virtual const std::string& GetRemoteApplicationName() = 0;
-
-  // Returns the User ID for the remote application. Prior to the Connect()
-  // callback being fired, this will return the value passed via Connect().
-  // After the Connect() callback (call AddRemoteIDCallback to register one)
-  // this will return the actual user id the shell ran the target as.
-  virtual const std::string& GetRemoteUserID() const = 0;
+  // Returns the remote identity. While the connection is in the pending state,
+  // the user_id() field will be the value passed via Connect(). After the
+  // connection is completed, it will change to the value assigned by the shell.
+  // Call AddConnectionCompletedClosure() to schedule a closure to be run when
+  // the resolved user id is available.
+  virtual const Identity& GetRemoteIdentity() const = 0;
 
   // Register a handler to receive an error notification on the pipe to the
   // remote application's InterfaceProvider.
