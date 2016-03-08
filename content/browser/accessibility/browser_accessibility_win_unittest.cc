@@ -161,8 +161,7 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
       MakeAXTreeUpdate(root, button, checkbox),
       NULL, new CountedBrowserAccessibilityFactory()));
   ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
-  IAccessible* root_accessible =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
+  IAccessible* root_accessible = ToBrowserAccessibilityWin(manager->GetRoot());
   IDispatch* root_iaccessible = NULL;
   IDispatch* child1_iaccessible = NULL;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -215,7 +214,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   // value.
   base::win::ScopedVariant one(1);
   base::win::ScopedComPtr<IDispatch> text_dispatch;
-  HRESULT hr = manager->GetRoot()->ToBrowserAccessibilityWin()->get_accChild(
+  HRESULT hr = ToBrowserAccessibilityWin(manager->GetRoot())->get_accChild(
       one, text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
 
@@ -249,7 +248,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
 
   // Query for the text IAccessible and verify that it now returns "new text"
   // as its value.
-  hr = manager->GetRoot()->ToBrowserAccessibilityWin()->get_accChild(
+  hr = ToBrowserAccessibilityWin(manager->GetRoot())->get_accChild(
       one, text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
 
@@ -396,12 +395,12 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ASSERT_EQ(7, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(manager->GetRoot());
   ASSERT_NE(nullptr, root_obj);
   ASSERT_EQ(1U, root_obj->PlatformChildCount());
 
   BrowserAccessibilityWin* text_field_obj =
-      root_obj->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_obj->PlatformGetChild(0));
   ASSERT_NE(nullptr, text_field_obj);
 
   long text_len;
@@ -516,7 +515,7 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(manager->GetRoot());
 
   long text_len;
   EXPECT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
@@ -637,7 +636,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   ASSERT_EQ(9, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(manager->GetRoot());
 
   long text_len;
   EXPECT_EQ(S_OK, root_obj->get_nCharacters(&text_len));
@@ -821,8 +820,8 @@ TEST_F(BrowserAccessibilityTest, EmptyDocHasUniqueIdWin) {
             1 << ui::AX_STATE_ENABLED,
             root->GetState());
 
-  LONG unique_id_win = root->ToBrowserAccessibilityWin()->unique_id_win();
-  ASSERT_EQ(root, manager->GetFromUniqueIdWin(unique_id_win));
+  int32_t unique_id = ToBrowserAccessibilityWin(root)->unique_id();
+  ASSERT_EQ(root, BrowserAccessibility::GetFromUniqueID(unique_id));
 }
 
 TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
@@ -855,13 +854,13 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityWin* root_accessible =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
-      ASSERT_NE(nullptr, root_accessible);
-      ASSERT_EQ(2U, root_accessible->PlatformChildCount());
+      ToBrowserAccessibilityWin(manager->GetRoot());
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(2U, root_accessible->PlatformChildCount());
 
-      BrowserAccessibilityWin* pseudo_accessible =
-          root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
-      ASSERT_NE(nullptr, pseudo_accessible);
+  BrowserAccessibilityWin* pseudo_accessible =
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
+  ASSERT_NE(nullptr, pseudo_accessible);
 
   base::win::ScopedBstr attributes;
   HRESULT hr = pseudo_accessible->get_attributes(attributes.Receive());
@@ -871,7 +870,7 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   EXPECT_EQ(L"display:none;tag:<pseudo\\:before>;", attributes_str);
 
   BrowserAccessibilityWin* checkbox_accessible =
-      root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(1));
   ASSERT_NE(nullptr, checkbox_accessible);
 
   attributes.Reset();
@@ -962,27 +961,27 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityWin* root_accessible =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(manager->GetRoot());
   ASSERT_NE(nullptr, root_accessible);
   ASSERT_EQ(5U, root_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* combo_box_accessible =
-      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, combo_box_accessible);
   manager->SetFocusLocallyForTesting(combo_box_accessible);
   ASSERT_EQ(combo_box_accessible,
-            manager->GetFocus()->ToBrowserAccessibilityWin());
+            ToBrowserAccessibilityWin(manager->GetFocus()));
   BrowserAccessibilityWin* search_box_accessible =
-      root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(1));
   ASSERT_NE(nullptr, search_box_accessible);
   BrowserAccessibilityWin* text_field_accessible =
-      root_accessible->PlatformGetChild(2)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(2));
   ASSERT_NE(nullptr, text_field_accessible);
   BrowserAccessibilityWin* link_accessible =
-      root_accessible->PlatformGetChild(3)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(3));
   ASSERT_NE(nullptr, link_accessible);
   BrowserAccessibilityWin* slider_accessible =
-      root_accessible->PlatformGetChild(4)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(4));
   ASSERT_NE(nullptr, slider_accessible);
 
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -1124,15 +1123,15 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityWin* root_accessible =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(manager->GetRoot());
   ASSERT_NE(nullptr, root_accessible);
   ASSERT_EQ(2U, root_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* textarea_accessible =
-      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, textarea_accessible);
   BrowserAccessibilityWin* text_field_accessible =
-      root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(1));
   ASSERT_NE(nullptr, text_field_accessible);
 
   base::win::ScopedComPtr<IAccessibleText> textarea_object;
@@ -1223,18 +1222,18 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityWin* root_accessible =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
-      ASSERT_NE(nullptr, root_accessible);
-      ASSERT_EQ(2U, root_accessible->PlatformChildCount());
+      ToBrowserAccessibilityWin(manager->GetRoot());
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(2U, root_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* combo_box_accessible =
-      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, combo_box_accessible);
   manager->SetFocusLocallyForTesting(combo_box_accessible);
   ASSERT_EQ(combo_box_accessible,
-      manager->GetFocus()->ToBrowserAccessibilityWin());
+            ToBrowserAccessibilityWin(manager->GetFocus()));
   BrowserAccessibilityWin* text_field_accessible =
-      root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(1));
   ASSERT_NE(nullptr, text_field_accessible);
 
   // -2 is never a valid offset.
@@ -1255,7 +1254,7 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   // Move the focus to the text field.
   manager->SetFocusLocallyForTesting(text_field_accessible);
   ASSERT_EQ(text_field_accessible,
-      manager->GetFocus()->ToBrowserAccessibilityWin());
+            ToBrowserAccessibilityWin(manager->GetFocus()));
 
   // The caret should not have moved.
   hr = text_field_accessible->get_caretOffset(&caret_offset);
@@ -1343,12 +1342,12 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityWin* root_accessible =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
-      ASSERT_NE(nullptr, root_accessible);
-      ASSERT_EQ(1U, root_accessible->PlatformChildCount());
+      ToBrowserAccessibilityWin(manager->GetRoot());
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(1U, root_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* div_editable_accessible =
-      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, div_editable_accessible);
   ASSERT_EQ(2U, div_editable_accessible->PlatformChildCount());
 
@@ -1369,18 +1368,18 @@ TEST_F(BrowserAccessibilityTest, TestCaretInContentEditables) {
   // Move the focus to the content editable.
   manager->SetFocusLocallyForTesting(div_editable_accessible);
   ASSERT_EQ(div_editable_accessible,
-      manager->GetFocus()->ToBrowserAccessibilityWin());
+            ToBrowserAccessibilityWin(manager->GetFocus()));
 
   BrowserAccessibilityWin* text_accessible =
-      div_editable_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(div_editable_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, text_accessible);
   BrowserAccessibilityWin* link_accessible =
-      div_editable_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(div_editable_accessible->PlatformGetChild(1));
   ASSERT_NE(nullptr, link_accessible);
   ASSERT_EQ(1U, link_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* link_text_accessible =
-      link_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(link_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, link_text_accessible);
 
   // The caret should not have moved.
@@ -1461,12 +1460,12 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityWin* root_accessible =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
-      ASSERT_NE(nullptr, root_accessible);
-      ASSERT_EQ(1U, root_accessible->PlatformChildCount());
+      ToBrowserAccessibilityWin(manager->GetRoot());
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(1U, root_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* div_editable_accessible =
-      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, div_editable_accessible);
   ASSERT_EQ(2U, div_editable_accessible->PlatformChildCount());
 
@@ -1477,15 +1476,15 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   LONG selection_end = -2;
 
   BrowserAccessibilityWin* text_accessible =
-      div_editable_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(div_editable_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, text_accessible);
   BrowserAccessibilityWin* link_accessible =
-      div_editable_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(div_editable_accessible->PlatformGetChild(1));
   ASSERT_NE(nullptr, link_accessible);
   ASSERT_EQ(1U, link_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* link_text_accessible =
-      link_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(link_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, link_text_accessible);
 
   // get_nSelections should work on all objects.
@@ -1535,7 +1534,7 @@ TEST_F(BrowserAccessibilityTest, TestSelectionInContentEditables) {
   // Move the focus to the content editable.
   manager->SetFocusLocallyForTesting(div_editable_accessible);
   ASSERT_EQ(div_editable_accessible,
-      manager->GetFocus()->ToBrowserAccessibilityWin());
+            ToBrowserAccessibilityWin(manager->GetFocus()));
 
   // The caret should not have moved.
   hr = div_editable_accessible->get_caretOffset(&caret_offset);
@@ -1597,20 +1596,20 @@ TEST_F(BrowserAccessibilityTest, TestIAccessibleHyperlink) {
 
   ASSERT_NE(nullptr, manager->GetRoot());
   BrowserAccessibilityWin* root_accessible =
-      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(manager->GetRoot());
   ASSERT_NE(nullptr, root_accessible);
   ASSERT_EQ(1U, root_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* div_accessible =
-      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, div_accessible);
   ASSERT_EQ(2U, div_accessible->PlatformChildCount());
 
   BrowserAccessibilityWin* text_accessible =
-      div_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(div_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, text_accessible);
   BrowserAccessibilityWin* link_accessible =
-      div_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(div_accessible->PlatformGetChild(1));
   ASSERT_NE(nullptr, link_accessible);
 
   // -1 is never a valid value.
@@ -1817,9 +1816,9 @@ TEST_F(BrowserAccessibilityTest, UniqueIdWinInvalidAfterDeletingTree) {
           new CountedBrowserAccessibilityFactory()));
 
   BrowserAccessibility* root = manager->GetRoot();
-  LONG root_unique_id = root->ToBrowserAccessibilityWin()->unique_id_win();
+  int32_t root_unique_id = root->unique_id();
   BrowserAccessibility* child = root->PlatformGetChild(0);
-  LONG child_unique_id = child->ToBrowserAccessibilityWin()->unique_id_win();
+  int32_t child_unique_id = child->unique_id();
 
   // Now destroy that original tree and create a new tree.
   manager.reset(
@@ -1828,37 +1827,37 @@ TEST_F(BrowserAccessibilityTest, UniqueIdWinInvalidAfterDeletingTree) {
           nullptr,
           new CountedBrowserAccessibilityFactory()));
   root = manager->GetRoot();
-  LONG root_unique_id_2 = root->ToBrowserAccessibilityWin()->unique_id_win();
+  int32_t root_unique_id_2 = root->unique_id();
   child = root->PlatformGetChild(0);
-  LONG child_unique_id_2 = child->ToBrowserAccessibilityWin()->unique_id_win();
+  int32_t child_unique_id_2 = child->unique_id();
 
   // The nodes in the new tree should not have the same ids.
   EXPECT_NE(root_unique_id, root_unique_id_2);
   EXPECT_NE(child_unique_id, child_unique_id_2);
 
   // Trying to access the unique IDs of the old, deleted objects should fail.
-  base::win::ScopedVariant old_root_variant(root_unique_id);
+  base::win::ScopedVariant old_root_variant(-root_unique_id);
   base::win::ScopedComPtr<IDispatch> old_root_dispatch;
-  HRESULT hr = root->ToBrowserAccessibilityWin()->get_accChild(
+  HRESULT hr = ToBrowserAccessibilityWin(root)->get_accChild(
       old_root_variant, old_root_dispatch.Receive());
   EXPECT_EQ(E_INVALIDARG, hr);
 
-  base::win::ScopedVariant old_child_variant(child_unique_id);
+  base::win::ScopedVariant old_child_variant(-child_unique_id);
   base::win::ScopedComPtr<IDispatch> old_child_dispatch;
-  hr = root->ToBrowserAccessibilityWin()->get_accChild(
+  hr = ToBrowserAccessibilityWin(root)->get_accChild(
       old_child_variant, old_child_dispatch.Receive());
   EXPECT_EQ(E_INVALIDARG, hr);
 
   // Trying to access the unique IDs of the new objects should succeed.
-  base::win::ScopedVariant new_root_variant(root_unique_id_2);
+  base::win::ScopedVariant new_root_variant(-root_unique_id_2);
   base::win::ScopedComPtr<IDispatch> new_root_dispatch;
-  hr = root->ToBrowserAccessibilityWin()->get_accChild(
+  hr = ToBrowserAccessibilityWin(root)->get_accChild(
       new_root_variant, new_root_dispatch.Receive());
   EXPECT_EQ(S_OK, hr);
 
-  base::win::ScopedVariant new_child_variant(child_unique_id_2);
+  base::win::ScopedVariant new_child_variant(-child_unique_id_2);
   base::win::ScopedComPtr<IDispatch> new_child_dispatch;
-  hr = root->ToBrowserAccessibilityWin()->get_accChild(
+  hr = ToBrowserAccessibilityWin(root)->get_accChild(
       new_child_variant, new_child_dispatch.Receive());
   EXPECT_EQ(S_OK, hr);
 }

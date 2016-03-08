@@ -224,6 +224,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   bool UseRootScrollOffsetsWhenComputingBounds() override;
 
  private:
+  BrowserAccessibilityAndroid* GetFromUniqueID(int32_t unique_id);
+
   // This gives BrowserAccessibilityManager::Create access to the class
   // constructor.
   friend class BrowserAccessibilityManager;

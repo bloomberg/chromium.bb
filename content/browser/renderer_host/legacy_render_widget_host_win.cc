@@ -181,7 +181,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     return static_cast<LRESULT>(0L);
 
   base::win::ScopedComPtr<IAccessible> root(
-      manager->GetRoot()->ToBrowserAccessibilityWin());
+      ToBrowserAccessibilityWin(manager->GetRoot()));
   return LresultFromObject(IID_IAccessible, w_param,
       static_cast<IAccessible*>(root.Detach()));
 }

@@ -46,9 +46,17 @@ class AX_EXPORT AXPlatformNode {
   static AXPlatformNode* FromNativeViewAccessible(
       gfx::NativeViewAccessible accessible);
 
+  // Each platform accessibility object has a unique id that's guaranteed
+  // to be a positive number. (It's stored in an int32_t as opposed to
+  // uint32_t because some platforms want to negate it, so we want to ensure
+  // the range is below the signed int max.) This can be used when the
+  // id has to be unique across multiple frames, since node ids are
+  // only unique within one tree.
+  static int32_t GetNextUniqueId();
+
   // Call Destroy rather than deleting this, because the subclass may
   // use reference counting.
-  virtual void Destroy() = 0;
+  virtual void Destroy();
 
   // Get the platform-specific accessible object type for this instance.
   // On some platforms this is just a type cast, on others it may be a
@@ -65,6 +73,10 @@ class AX_EXPORT AXPlatformNode {
  protected:
   AXPlatformNode();
   virtual ~AXPlatformNode();
+
+  AXPlatformNode* GetFromUniqueId(int32_t unique_id);
+
+  int32_t unique_id_;
 };
 
 }  // namespace ui

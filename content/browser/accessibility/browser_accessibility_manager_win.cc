@@ -20,10 +20,6 @@
 
 namespace content {
 
-// Map from unique_id_win to BrowserAccessibility
-using UniqueIDWinMap = base::hash_map<LONG, BrowserAccessibility*>;
-base::LazyInstance<UniqueIDWinMap> g_unique_id_map = LAZY_INSTANCE_INITIALIZER;
-
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
@@ -149,7 +145,11 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
   else if (focus_event_on_root_needed_)
     OnWindowFocused();
 
-  LONG child_id = node->ToBrowserAccessibilityWin()->unique_id_win();
+  // Pass the negation of this node's unique id in the |child_id|
+  // argument to NotifyWinEvent; the AT client will then call get_accChild
+  // on the HWND's accessibility object and pass it that same id, which
+  // we can use to retrieve the IAccessible for this node.
+  LONG child_id = -node->unique_id();
   ::NotifyWinEvent(event, hwnd, OBJID_CLIENT, child_id);
 }
 
@@ -293,13 +293,9 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   if (!node)
     return;
 
-  if (event_id != EVENT_MIN) {
-    // Pass the node's unique id in the |child_id| argument to NotifyWinEvent;
-    // the AT client will then call get_accChild on the HWND's accessibility
-    // object and pass it that same id, which we can use to retrieve the
-    // IAccessible for this node.
+  if (event_id != EVENT_MIN)
     MaybeCallNotifyWinEvent(event_id, node);
-  }
+
 
   // If this is a layout complete notification (sent when a container scrolls)
   // and there is a descendant tracked object, send a notification on it.
@@ -323,8 +319,6 @@ void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
     return;
   if (!obj->IsNative())
     return;
-  LONG unique_id_win = obj->ToBrowserAccessibilityWin()->unique_id_win();
-  g_unique_id_map.Get()[unique_id_win] = obj;
 }
 
 void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
@@ -332,8 +326,6 @@ void BrowserAccessibilityManagerWin::OnNodeWillBeDeleted(ui::AXTree* tree,
   DCHECK(node);
   BrowserAccessibility* obj = GetFromAXNode(node);
   if (obj && obj->IsNative()) {
-    g_unique_id_map.Get().erase(
-        obj->ToBrowserAccessibilityWin()->unique_id_win());
     if (obj == tracked_scroll_object_) {
       tracked_scroll_object_->Release();
       tracked_scroll_object_ = NULL;
@@ -367,7 +359,7 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
-      obj->ToBrowserAccessibilityWin()->UpdateStep1ComputeWinAttributes();
+      ToBrowserAccessibilityWin(obj)->UpdateStep1ComputeWinAttributes();
   }
 
   // The next step updates the hypertext of each node, which is a
@@ -378,7 +370,7 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
-      obj->ToBrowserAccessibilityWin()->UpdateStep2ComputeHypertext();
+      ToBrowserAccessibilityWin(obj)->UpdateStep2ComputeHypertext();
   }
 
   // The third step fires events on nodes based on what's changed - like
@@ -394,7 +386,7 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf()) {
-      obj->ToBrowserAccessibilityWin()->UpdateStep3FireEvents(
+      ToBrowserAccessibilityWin(obj)->UpdateStep3FireEvents(
           changes[i].type == AXTreeDelegate::SUBTREE_CREATED);
     }
   }
@@ -406,15 +398,6 @@ void BrowserAccessibilityManagerWin::TrackScrollingObject(
     tracked_scroll_object_->Release();
   tracked_scroll_object_ = node;
   tracked_scroll_object_->AddRef();
-}
-
-BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetFromUniqueIdWin(
-    LONG unique_id_win) {
-  auto iter = g_unique_id_map.Get().find(unique_id_win);
-  if (iter == g_unique_id_map.Get().end())
-    return nullptr;
-
-  return iter->second->ToBrowserAccessibilityWin();
 }
 
 }  // namespace content

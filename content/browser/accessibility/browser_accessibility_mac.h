@@ -11,10 +11,18 @@
 
 #include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility.h"
+#include "content/common/content_export.h"
 
 @class BrowserAccessibilityCocoa;
 
 namespace content {
+
+#if __OBJC__
+CONTENT_EXPORT const BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa(
+    const BrowserAccessibility* obj);
+CONTENT_EXPORT BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa(
+    BrowserAccessibility* obj);
+#endif
 
 class BrowserAccessibilityMac : public BrowserAccessibility {
  public:

@@ -75,6 +75,8 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   virtual ~BrowserAccessibility();
 
+  static BrowserAccessibility* GetFromUniqueID(int32_t unique_id);
+
   // Called only once, immediately after construction. The constructor doesn't
   // take any arguments because in the Windows subclass we use a special
   // function to construct a COM object.
@@ -194,6 +196,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibilityManager* manager() const { return manager_; }
   bool instance_active() const { return node_ != NULL; }
   ui::AXNode* node() const { return node_; }
+  int32_t unique_id() const { return unique_id_; }
 
   // These access the internal accessibility tree, which doesn't necessarily
   // reflect the accessibility tree that should be exposed on each platform.
@@ -219,17 +222,6 @@ class CONTENT_EXPORT BrowserAccessibility {
   // cross-platform generic object. Don't call ToBrowserAccessibilityXXX if
   // IsNative returns false.
   virtual bool IsNative() const;
-
-#if defined(OS_MACOSX) && __OBJC__
-  const BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa() const;
-  BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
-#elif defined(OS_WIN)
-  const BrowserAccessibilityWin* ToBrowserAccessibilityWin() const;
-  BrowserAccessibilityWin* ToBrowserAccessibilityWin();
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_X11)
-  const BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux() const;
-  BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux();
-#endif
 
   // Accessing accessibility attributes:
   //
@@ -327,6 +319,9 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   // The underlying node.
   ui::AXNode* node_;
+
+  // A unique ID, since node IDs are frame-local.
+  int32_t unique_id_;
 
  private:
   // |GetInnerText| recursively includes all the text from descendants such as

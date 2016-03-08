@@ -53,10 +53,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
   void TrackScrollingObject(BrowserAccessibilityWin* node);
 
-  // Return a pointer to the object corresponding to the given windows-specific
-  // unique id, does not make a new reference.
-  BrowserAccessibilityWin* GetFromUniqueIdWin(LONG unique_id_win);
-
   // Called when |accessible_hwnd_| is deleted by its parent.
   void OnAccessibleHwndDeleted();
 

@@ -97,10 +97,6 @@ BrowserAccessibilityWin
 
   CONTENT_EXPORT ~BrowserAccessibilityWin() override;
 
-  // The Windows-specific unique ID, used as the child ID for MSAA methods
-  // like NotifyWinEvent, and as the unique ID for IAccessible2 and ISimpleDOM.
-  LONG unique_id_win() const { return unique_id_win_; }
-
   // Called after an atomic tree update completes. See
   // BrowserAccessibilityManagerWin::OnAtomicUpdateFinished for more
   // details on what these do.
@@ -867,11 +863,6 @@ BrowserAccessibilityWin
   void AddRelations(ui::AXIntListAttribute src_attr,
                     const base::string16& iaccessiblerelation_type);
 
-  // Windows-specific unique ID (unique within the browser process),
-  // used for get_accChild, NotifyWinEvent, and as the unique ID for
-  // IAccessible2 and ISimpleDOM.
-  LONG unique_id_win_;
-
   struct WinAttributes {
     WinAttributes();
     ~WinAttributes();
@@ -918,15 +909,18 @@ BrowserAccessibilityWin
   int previous_scroll_x_;
   int previous_scroll_y_;
 
-  // The next unique id to use.
-  static LONG next_unique_id_win_;
-
   // Give BrowserAccessibility::Create access to our constructor.
   friend class BrowserAccessibility;
   friend class BrowserAccessibilityRelation;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityWin);
 };
+
+CONTENT_EXPORT BrowserAccessibilityWin*
+ToBrowserAccessibilityWin(BrowserAccessibility* obj);
+
+CONTENT_EXPORT const BrowserAccessibilityWin*
+ToBrowserAccessibilityWin(const BrowserAccessibility* obj);
 
 }  // namespace content
 

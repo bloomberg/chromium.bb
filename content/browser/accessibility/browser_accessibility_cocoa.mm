@@ -16,6 +16,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/app/strings/grit/content_strings.h"
+#include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
@@ -539,8 +540,8 @@ bool InitializeAccessibilityTreeSearch(
     children_.reset([[NSMutableArray alloc] initWithCapacity:childCount]);
     for (uint32_t index = 0; index < childCount; ++index) {
       BrowserAccessibilityCocoa* child =
-          browserAccessibility_->PlatformGetChild(index)->
-              ToBrowserAccessibilityCocoa();
+          ToBrowserAccessibilityCocoa(
+              browserAccessibility_->PlatformGetChild(index));
       if ([child isIgnored])
         [children_ addObjectsFromArray:[child children]];
       else
@@ -560,7 +561,7 @@ bool InitializeAccessibilityTreeSearch(
       // a DCHECK in the future.
       if (child) {
         BrowserAccessibilityCocoa* child_cocoa =
-            child->ToBrowserAccessibilityCocoa();
+            ToBrowserAccessibilityCocoa(child);
         [children_ addObject:child_cocoa];
       }
     }
@@ -572,8 +573,8 @@ bool InitializeAccessibilityTreeSearch(
   if (![self isIgnored]) {
     children_.reset();
   } else {
-    [browserAccessibility_->GetParent()->ToBrowserAccessibilityCocoa()
-       childrenChanged];
+    [ToBrowserAccessibilityCocoa(browserAccessibility_->GetParent())
+         childrenChanged];
   }
 }
 
@@ -591,7 +592,7 @@ bool InitializeAccessibilityTreeSearch(
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromID(id);
     if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER)
-      [ret addObject:cell->ToBrowserAccessibilityCocoa()];
+      [ret addObject:ToBrowserAccessibilityCocoa(cell)];
   }
   return ret;
 }
@@ -807,7 +808,7 @@ bool InitializeAccessibilityTreeSearch(
     BrowserAccessibility* headerObject =
         browserAccessibility_->manager()->GetFromID(headerElementId);
     if (headerObject)
-      return headerObject->ToBrowserAccessibilityCocoa();
+      return ToBrowserAccessibilityCocoa(headerObject);
   }
   return nil;
 }
@@ -896,7 +897,7 @@ bool InitializeAccessibilityTreeSearch(
     BrowserAccessibility* element =
         browserAccessibility_->manager()->GetFromID(attributeValues[i]);
     if (element)
-      [outArray addObject:element->ToBrowserAccessibilityCocoa()];
+      [outArray addObject:ToBrowserAccessibilityCocoa(element)];
   }
 }
 
@@ -957,7 +958,7 @@ bool InitializeAccessibilityTreeSearch(
   // A nil parent means we're the root.
   if (browserAccessibility_->GetParent()) {
     return NSAccessibilityUnignoredAncestor(
-        browserAccessibility_->GetParent()->ToBrowserAccessibilityCocoa());
+        ToBrowserAccessibilityCocoa(browserAccessibility_->GetParent()));
   } else {
     // Hook back up to RenderWidgetHostViewCocoa.
     BrowserAccessibilityManagerMac* manager =
@@ -1185,7 +1186,7 @@ bool InitializeAccessibilityTreeSearch(
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromID(id);
     if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER)
-      [ret addObject:cell->ToBrowserAccessibilityCocoa()];
+      [ret addObject:ToBrowserAccessibilityCocoa(cell)];
   }
   return ret;
 }
@@ -1223,7 +1224,7 @@ bool InitializeAccessibilityTreeSearch(
       BrowserAccessibility* rowElement =
           browserAccessibility_->manager()->GetFromID(id);
       if (rowElement)
-        [ret addObject:rowElement->ToBrowserAccessibilityCocoa()];
+        [ret addObject:ToBrowserAccessibilityCocoa(rowElement)];
     }
   }
 
@@ -1242,7 +1243,7 @@ bool InitializeAccessibilityTreeSearch(
   if (!GetState(browserAccessibility_, ui::AX_STATE_MULTISELECTABLE)) {
     // First try the focused child.
     if (focusedChild && focusedChild != browserAccessibility_) {
-      [ret addObject:focusedChild->ToBrowserAccessibilityCocoa()];
+      [ret addObject:ToBrowserAccessibilityCocoa(focusedChild)];
       return ret;
     }
 
@@ -1253,7 +1254,7 @@ bool InitializeAccessibilityTreeSearch(
       BrowserAccessibility* activeDescendant =
           manager->GetFromID(activeDescendantId);
       if (activeDescendant) {
-        [ret addObject:activeDescendant->ToBrowserAccessibilityCocoa()];
+        [ret addObject:ToBrowserAccessibilityCocoa(activeDescendant)];
         return ret;
       }
     }
@@ -1267,14 +1268,14 @@ bool InitializeAccessibilityTreeSearch(
     BrowserAccessibility* child =
       browserAccessibility_->PlatformGetChild(index);
     if (child->HasState(ui::AX_STATE_SELECTED))
-      [ret addObject:child->ToBrowserAccessibilityCocoa()];
+      [ret addObject:ToBrowserAccessibilityCocoa(child)];
   }
 
   // And if nothing's selected but one has focus, use the focused one.
   if ([ret count] == 0 &&
       focusedChild &&
       focusedChild != browserAccessibility_) {
-    [ret addObject:focusedChild->ToBrowserAccessibilityCocoa()];
+    [ret addObject:ToBrowserAccessibilityCocoa(focusedChild)];
   }
 
   return ret;
@@ -1437,7 +1438,7 @@ bool InitializeAccessibilityTreeSearch(
     BrowserAccessibility* titleElement =
         browserAccessibility_->manager()->GetFromID(labelledby_ids[0]);
     if (titleElement)
-      return titleElement->ToBrowserAccessibilityCocoa();
+      return ToBrowserAccessibilityCocoa(titleElement);
   }
 
   return nil;
@@ -1539,7 +1540,7 @@ bool InitializeAccessibilityTreeSearch(
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromID(id);
     if (cell)
-      [ret addObject:cell->ToBrowserAccessibilityCocoa()];
+      [ret addObject:ToBrowserAccessibilityCocoa(cell)];
   }
   return ret;
 }
@@ -1548,9 +1549,8 @@ bool InitializeAccessibilityTreeSearch(
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
   uint32_t childCount = browserAccessibility_->PlatformChildCount();
   for (uint32_t index = 0; index < childCount; ++index) {
-    BrowserAccessibilityCocoa* child =
-        browserAccessibility_->PlatformGetChild(index)->
-            ToBrowserAccessibilityCocoa();
+    BrowserAccessibilityCocoa* child = ToBrowserAccessibilityCocoa(
+        browserAccessibility_->PlatformGetChild(index));
     [ret addObject:child];
   }
   return ret;
@@ -1737,7 +1737,7 @@ bool InitializeAccessibilityTreeSearch(
           continue;
         }
         if (colIndex == column)
-          return cell->ToBrowserAccessibilityCocoa();
+          return ToBrowserAccessibilityCocoa(cell);
         if (colIndex > column)
           break;
       }
@@ -1749,7 +1749,7 @@ bool InitializeAccessibilityTreeSearch(
     BrowserAccessibility* object;
     int offset;
     if (GetTextMarkerData(parameter, &object, &offset))
-      return object->ToBrowserAccessibilityCocoa();
+      return ToBrowserAccessibilityCocoa(object);
 
     return nil;
   }
@@ -1864,7 +1864,7 @@ bool InitializeAccessibilityTreeSearch(
       NSMutableArray* result = [NSMutableArray arrayWithCapacity:count];
       for (size_t i = 0; i < count; ++i) {
         BrowserAccessibility* match = search.GetMatchAtIndex(i);
-        [result addObject:match->ToBrowserAccessibilityCocoa()];
+        [result addObject:ToBrowserAccessibilityCocoa(match)];
       }
       return result;
     }

@@ -208,32 +208,32 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   // the Android system that the accessibility hierarchy rooted at this
   // node has changed.
   Java_BrowserAccessibilityManager_handleContentChanged(
-      env, obj.obj(), node->GetId());
+      env, obj.obj(), node->unique_id());
 
   switch (event_type) {
     case ui::AX_EVENT_LOAD_COMPLETE:
       Java_BrowserAccessibilityManager_handlePageLoaded(
-          env, obj.obj(), GetFocus()->GetId());
+          env, obj.obj(), GetFocus()->unique_id());
       break;
     case ui::AX_EVENT_FOCUS:
       Java_BrowserAccessibilityManager_handleFocusChanged(
-          env, obj.obj(), node->GetId());
+          env, obj.obj(), node->unique_id());
       break;
     case ui::AX_EVENT_CHECKED_STATE_CHANGED:
       Java_BrowserAccessibilityManager_handleCheckStateChanged(
-          env, obj.obj(), node->GetId());
+          env, obj.obj(), node->unique_id());
       break;
     case ui::AX_EVENT_CLICKED:
       Java_BrowserAccessibilityManager_handleClicked(env, obj.obj(),
-                                                     node->GetId());
+                                                     node->unique_id());
       break;
     case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
       Java_BrowserAccessibilityManager_handleScrollPositionChanged(
-          env, obj.obj(), node->GetId());
+          env, obj.obj(), node->unique_id());
       break;
     case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
       Java_BrowserAccessibilityManager_handleScrolledToAnchor(
-          env, obj.obj(), node->GetId());
+          env, obj.obj(), node->unique_id());
       break;
     case ui::AX_EVENT_ALERT:
       // An alert is a special case of live region. Fall through to the
@@ -249,16 +249,16 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
     }
     case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
       Java_BrowserAccessibilityManager_handleTextSelectionChanged(
-          env, obj.obj(), node->GetId());
+          env, obj.obj(), node->unique_id());
       break;
     case ui::AX_EVENT_TEXT_CHANGED:
     case ui::AX_EVENT_VALUE_CHANGED:
       if (android_node->IsEditableText() && GetFocus() == node) {
         Java_BrowserAccessibilityManager_handleEditableTextChanged(
-            env, obj.obj(), node->GetId());
+            env, obj.obj(), node->unique_id());
       } else if (android_node->IsSlider()) {
         Java_BrowserAccessibilityManager_handleSliderChanged(
-            env, obj.obj(), node->GetId());
+            env, obj.obj(), node->unique_id());
       }
       break;
     default:
@@ -291,7 +291,7 @@ jint BrowserAccessibilityManagerAndroid::GetRootId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   if (GetRoot())
-    return static_cast<jint>(GetRoot()->GetId());
+    return static_cast<jint>(GetRoot()->unique_id());
   else
     return -1;
 }
@@ -300,7 +300,7 @@ jboolean BrowserAccessibilityManagerAndroid::IsNodeValid(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint id) {
-  return GetFromID(id) != NULL;
+  return GetFromUniqueID(id) != NULL;
 }
 
 void BrowserAccessibilityManagerAndroid::HitTest(
@@ -316,8 +316,7 @@ jboolean BrowserAccessibilityManagerAndroid::IsEditableText(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint id) {
-  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromID(id));
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
@@ -328,8 +327,7 @@ jint BrowserAccessibilityManagerAndroid::GetEditableTextSelectionStart(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint id) {
-  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromID(id));
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
@@ -340,8 +338,7 @@ jint BrowserAccessibilityManagerAndroid::GetEditableTextSelectionEnd(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint id) {
-  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromID(id));
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
@@ -353,18 +350,17 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& info,
     jint id) {
-  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromID(id));
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
   if (node->GetParent()) {
     Java_BrowserAccessibilityManager_setAccessibilityNodeInfoParent(
-        env, obj, info, node->GetParent()->GetId());
+        env, obj, info, node->GetParent()->unique_id());
   }
   for (unsigned i = 0; i < node->PlatformChildCount(); ++i) {
     Java_BrowserAccessibilityManager_addAccessibilityNodeInfoChild(
-        env, obj, info, node->InternalGetChild(i)->GetId());
+        env, obj, info, node->InternalGetChild(i)->unique_id());
   }
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoBooleanAttributes(
       env, obj, info,
@@ -472,8 +468,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityEvent(
     const JavaParamRef<jobject>& event,
     jint id,
     jint event_type) {
-  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromID(id));
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
@@ -575,7 +570,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityEvent(
 void BrowserAccessibilityManagerAndroid::Click(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
                                                jint id) {
-  BrowserAccessibility* node = GetFromID(id);
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node)
     DoDefaultAction(*node);
 }
@@ -583,7 +578,7 @@ void BrowserAccessibilityManagerAndroid::Click(JNIEnv* env,
 void BrowserAccessibilityManagerAndroid::Focus(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
                                                jint id) {
-  BrowserAccessibility* node = GetFromID(id);
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node)
     SetFocus(*node);
 }
@@ -598,7 +593,7 @@ void BrowserAccessibilityManagerAndroid::ScrollToMakeNodeVisible(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint id) {
-  BrowserAccessibility* node = GetFromID(id);
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node)
     ScrollToMakeVisible(*node, gfx::Rect(node->GetLocation().size()));
 }
@@ -608,7 +603,7 @@ void BrowserAccessibilityManagerAndroid::SetTextFieldValue(
     const JavaParamRef<jobject>& obj,
     jint id,
     const JavaParamRef<jstring>& value) {
-  BrowserAccessibility* node = GetFromID(id);
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node) {
     BrowserAccessibilityManager::SetValue(
         *node, base::android::ConvertJavaStringToUTF16(env, value));
@@ -621,7 +616,7 @@ void BrowserAccessibilityManagerAndroid::SetSelection(
     jint id,
     jint start,
     jint end) {
-  BrowserAccessibility* node = GetFromID(id);
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node)
     SetTextSelection(*node, start, end);
 }
@@ -631,7 +626,7 @@ jboolean BrowserAccessibilityManagerAndroid::AdjustSlider(
     const JavaParamRef<jobject>& obj,
     jint id,
     jboolean increment) {
-  BrowserAccessibility* node = GetFromID(id);
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
@@ -681,7 +676,7 @@ void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
   }
 
   Java_BrowserAccessibilityManager_handleHover(
-      env, obj.obj(), node->GetId());
+      env, obj.obj(), node->unique_id());
 }
 
 jint BrowserAccessibilityManagerAndroid::FindElementType(
@@ -690,7 +685,7 @@ jint BrowserAccessibilityManagerAndroid::FindElementType(
     jint start_id,
     const JavaParamRef<jstring>& element_type_str,
     jboolean forwards) {
-  BrowserAccessibility* start_node = GetFromID(start_id);
+  BrowserAccessibilityAndroid* start_node = GetFromUniqueID(start_id);
   if (!start_node)
     return 0;
 
@@ -719,7 +714,7 @@ jint BrowserAccessibilityManagerAndroid::FindElementType(
   if (tree_search.CountMatches() == 0)
     return 0;
 
-  return tree_search.GetMatchAtIndex(0)->GetId();
+  return tree_search.GetMatchAtIndex(0)->unique_id();
 }
 
 jboolean BrowserAccessibilityManagerAndroid::NextAtGranularity(
@@ -729,8 +724,7 @@ jboolean BrowserAccessibilityManagerAndroid::NextAtGranularity(
     jboolean extend_selection,
     jint id,
     jint cursor_index) {
-  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromID(id));
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
@@ -759,8 +753,7 @@ jboolean BrowserAccessibilityManagerAndroid::PreviousAtGranularity(
     jboolean extend_selection,
     jint id,
     jint cursor_index) {
-  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromID(id));
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
@@ -880,8 +873,7 @@ bool BrowserAccessibilityManagerAndroid::IsSlider(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint id) {
-  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromID(id));
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
@@ -893,8 +885,7 @@ bool BrowserAccessibilityManagerAndroid::Scroll(
     const JavaParamRef<jobject>& obj,
     jint id,
     int direction) {
-  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
-      GetFromID(id));
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (!node)
     return false;
 
@@ -919,6 +910,12 @@ bool
 BrowserAccessibilityManagerAndroid::UseRootScrollOffsetsWhenComputingBounds() {
   // The Java layer handles the root scroll offset.
   return false;
+}
+
+BrowserAccessibilityAndroid*
+BrowserAccessibilityManagerAndroid::GetFromUniqueID(int32_t unique_id) {
+  return static_cast<BrowserAccessibilityAndroid*>(
+      BrowserAccessibility::GetFromUniqueID(unique_id));
 }
 
 bool RegisterBrowserAccessibilityManager(JNIEnv* env) {

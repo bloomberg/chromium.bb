@@ -64,13 +64,17 @@ void BrowserAccessibilityMac::RecreateNativeObject() {
 }
 
 const BrowserAccessibilityCocoa*
-BrowserAccessibility::ToBrowserAccessibilityCocoa() const {
-  return static_cast<const BrowserAccessibilityMac*>(this)->native_view();
+ToBrowserAccessibilityCocoa(const BrowserAccessibility* obj) {
+  DCHECK(obj);
+  DCHECK(obj->IsNative());
+  return static_cast<const BrowserAccessibilityMac*>(obj)->native_view();
 }
 
-BrowserAccessibilityCocoa* BrowserAccessibility::ToBrowserAccessibilityCocoa() {
-  return static_cast<BrowserAccessibilityMac*>(this)->
-      native_view();
+BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa(
+    BrowserAccessibility* obj) {
+  DCHECK(obj);
+  DCHECK(obj->IsNative());
+  return static_cast<BrowserAccessibilityMac*>(obj)->native_view();
 }
 
 }  // namespace content

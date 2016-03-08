@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
+#include "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +54,7 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
             nil,
             MakeAXTreeUpdate(root, child1, child2),
             NULL));
-    accessibility_.reset([manager_->GetRoot()->ToBrowserAccessibilityCocoa()
+    accessibility_.reset([ToBrowserAccessibilityCocoa(manager_->GetRoot())
         retain]);
   }
 

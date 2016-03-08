@@ -140,7 +140,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     }
   }
 
-  auto native_node = node->ToBrowserAccessibilityCocoa();
+  auto native_node = ToBrowserAccessibilityCocoa(node);
   DCHECK(native_node);
 
   // Refer to |AXObjectCache::postPlatformNotification| in WebKit source code.
@@ -187,7 +187,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       BrowserAccessibility* focus = GetFocus();
       if (!focus)
         break;
-      NSAccessibilityPostNotification(focus->ToBrowserAccessibilityCocoa(),
+      NSAccessibilityPostNotification(ToBrowserAccessibilityCocoa(focus),
                                       mac_notification);
 
       if (base::mac::IsOSElCapitanOrLater()) {
@@ -203,9 +203,9 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
           return;
 
         NSAccessibilityPostNotificationWithUserInfo(
-            focus->ToBrowserAccessibilityCocoa(), mac_notification, user_info);
+            ToBrowserAccessibilityCocoa(focus), mac_notification, user_info);
         NSAccessibilityPostNotificationWithUserInfo(
-            root->ToBrowserAccessibilityCocoa(), mac_notification, user_info);
+            ToBrowserAccessibilityCocoa(root), mac_notification, user_info);
         return;
       }
       break;
@@ -318,7 +318,7 @@ NSDictionary* BrowserAccessibilityManagerMac::
   BrowserAccessibility* focus_object = GetFromID(focus_id);
   if (focus_object) {
     focus_object = focus_object->GetClosestPlatformObject();
-    auto native_focus_object = focus_object->ToBrowserAccessibilityCocoa();
+    auto native_focus_object = ToBrowserAccessibilityCocoa(focus_object);
     if (native_focus_object) {
       [user_info setObject:[native_focus_object selectedTextMarkerRange]
                     forKey:NSAccessibilitySelectedTextMarkerRangeAttribute];

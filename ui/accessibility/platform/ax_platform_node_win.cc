@@ -78,33 +78,11 @@ namespace ui {
 
 namespace {
 
-typedef base::hash_map<LONG, AXPlatformNodeWin*> UniqueIdWinMap;
-// Map from each AXPlatformNodeWin's unique id to its instance.
-base::LazyInstance<UniqueIdWinMap> g_unique_id_win_map =
-    LAZY_INSTANCE_INITIALIZER;
-
 typedef base::hash_set<AXPlatformNodeWin*> AXPlatformNodeWinSet;
 // Set of all AXPlatformNodeWin objects that were the target of an
 // alert event.
 base::LazyInstance<AXPlatformNodeWinSet> g_alert_targets =
     LAZY_INSTANCE_INITIALIZER;
-
-LONG GetNextNegativeUniqueIdForWinAccessibility(AXPlatformNodeWin* obj) {
-  static LONG next_unique_id = -1;
-  LONG unique_id = next_unique_id;
-  if (next_unique_id == LONG_MIN)
-    next_unique_id = -1;
-  else
-    next_unique_id--;
-
-  g_unique_id_win_map.Get().insert(std::make_pair(unique_id, obj));
-
-  return unique_id;
-}
-
-void UnregisterNegativeUniqueId(LONG unique_id) {
-  g_unique_id_win_map.Get().erase(unique_id);
-}
 
 base::LazyInstance<base::ObserverList<IAccessible2UsageObserver>>
     g_iaccessible2_usage_observer_list = LAZY_INSTANCE_INITIALIZER;
@@ -156,8 +134,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
 // AXPlatformNodeWin
 //
 
-AXPlatformNodeWin::AXPlatformNodeWin()
-    : unique_id_win_(GetNextNegativeUniqueIdForWinAccessibility(this)) {
+AXPlatformNodeWin::AXPlatformNodeWin() {
 }
 
 AXPlatformNodeWin::~AXPlatformNodeWin() {
@@ -170,7 +147,6 @@ AXPlatformNodeWin::~AXPlatformNodeWin() {
 
 void AXPlatformNodeWin::Destroy() {
   delegate_ = nullptr;
-  UnregisterNegativeUniqueId(unique_id_win_);
   RemoveAlertTarget();
   Release();
 }
@@ -194,7 +170,7 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ui::AXEvent event_type) {
   if (native_event < EVENT_MIN)
     return;
 
-  ::NotifyWinEvent(native_event, hwnd, OBJID_CLIENT, unique_id_win_);
+  ::NotifyWinEvent(native_event, hwnd, OBJID_CLIENT, -unique_id_);
 
   // Keep track of objects that are a target of an alert event.
   if (event_type == ui::AX_EVENT_ALERT)
@@ -366,10 +342,10 @@ STDMETHODIMP AXPlatformNodeWin::get_accChild(VARIANT var_child,
     return E_FAIL;
 
   // Negative child ids can be used to map to any descendant.
-  UniqueIdWinMap* unique_ids = g_unique_id_win_map.Pointer();
-  auto iter = unique_ids->find(child_id);
-  if (iter != unique_ids->end()) {
-    *disp_child = iter->second;
+  AXPlatformNodeWin* child = static_cast<AXPlatformNodeWin*>(
+      GetFromUniqueId(-child_id));
+  if (child) {
+    *disp_child = child;
     (*disp_child)->AddRef();
     return S_OK;
   }
@@ -531,7 +507,7 @@ STDMETHODIMP AXPlatformNodeWin::get_states(AccessibleStates* states) {
 
 STDMETHODIMP AXPlatformNodeWin::get_uniqueID(LONG* unique_id) {
   COM_OBJECT_VALIDATE_1_ARG(unique_id);
-  *unique_id = unique_id_win_;
+  *unique_id = -unique_id_;
   return S_OK;
 }
 

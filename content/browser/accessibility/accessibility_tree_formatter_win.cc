@@ -157,7 +157,7 @@ void AccessibilityTreeFormatterWin::AddProperties(
     const BrowserAccessibility& node, base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
   BrowserAccessibilityWin* ax_object =
-      const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityWin();
+      ToBrowserAccessibilityWin(const_cast<BrowserAccessibility*>(&node));
   DCHECK(ax_object);
 
   VARIANT variant_self;
@@ -247,7 +247,7 @@ void AccessibilityTreeFormatterWin::AddProperties(
   LONG root_left, root_top, root_width, root_height;
   if (SUCCEEDED(ax_object->accLocation(
           &left, &top, &width, &height, variant_self)) &&
-      SUCCEEDED(root->ToBrowserAccessibilityWin()->accLocation(
+      SUCCEEDED(ToBrowserAccessibilityWin(root)->accLocation(
           &root_left, &root_top, &root_width, &root_height, variant_self))) {
     base::DictionaryValue* location = new base::DictionaryValue;
     location->SetInteger("x", left - root_left);

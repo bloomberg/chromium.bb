@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -87,6 +88,12 @@ class BrowserAccessibilityAuraLinux : public BrowserAccessibility {
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityAuraLinux);
 };
+
+CONTENT_EXPORT const BrowserAccessibilityAuraLinux*
+ToBrowserAccessibilityAuraLinux(const BrowserAccessibility* obj);
+
+CONTENT_EXPORT BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
+    BrowserAccessibility* obj);
 
 }  // namespace content
 

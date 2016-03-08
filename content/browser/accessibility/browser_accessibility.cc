@@ -15,8 +15,17 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/accessibility_messages.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 
 namespace content {
+
+namespace {
+
+// Map from unique_id to BrowserAccessibility
+using UniqueIDMap = base::hash_map<int32_t, BrowserAccessibility*>;
+base::LazyInstance<UniqueIDMap> g_unique_id_map = LAZY_INSTANCE_INITIALIZER;
+
+}
 
 #if !defined(PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL)
 // static
@@ -27,10 +36,23 @@ BrowserAccessibility* BrowserAccessibility::Create() {
 
 BrowserAccessibility::BrowserAccessibility()
     : manager_(NULL),
-      node_(NULL) {
+      node_(NULL),
+      unique_id_(ui::AXPlatformNode::GetNextUniqueId()) {
+  g_unique_id_map.Get()[unique_id_] = this;
 }
 
 BrowserAccessibility::~BrowserAccessibility() {
+  if (unique_id_)
+    g_unique_id_map.Get().erase(unique_id_);
+}
+
+// static
+BrowserAccessibility* BrowserAccessibility::GetFromUniqueID(int32_t unique_id) {
+  auto iter = g_unique_id_map.Get().find(unique_id);
+  if (iter == g_unique_id_map.Get().end())
+    return nullptr;
+
+  return iter->second;
 }
 
 void BrowserAccessibility::Init(BrowserAccessibilityManager* manager,
@@ -593,6 +615,10 @@ void BrowserAccessibility::Destroy() {
   manager_->NotifyAccessibilityEvent(ui::AX_EVENT_HIDE, this);
   node_ = NULL;
   manager_ = NULL;
+
+  if (unique_id_)
+    g_unique_id_map.Get().erase(unique_id_);
+  unique_id_ = 0;
 
   NativeReleaseReference();
 }

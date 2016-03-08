@@ -42,14 +42,14 @@ scoped_ptr<base::DictionaryValue> PopulatePosition(
   // confusing, convert it to local window coordinates using the top-left
   // corner when dumping the position.
   BrowserAccessibility* root = node.manager()->GetRootManager()->GetRoot();
-  BrowserAccessibilityCocoa* cocoa_root = root->ToBrowserAccessibilityCocoa();
+  BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);
   NSPoint root_position = [[cocoa_root position] pointValue];
   NSSize root_size = [[cocoa_root size] sizeValue];
   int root_top = -static_cast<int>(root_position.y + root_size.height);
   int root_left = static_cast<int>(root_position.x);
 
   BrowserAccessibilityCocoa* cocoa_node =
-      const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityCocoa();
+      ToBrowserAccessibilityCocoa(const_cast<BrowserAccessibility*>(&node));
   NSPoint node_position = [[cocoa_node position] pointValue];
   NSSize node_size = [[cocoa_node size] sizeValue];
 
@@ -221,7 +221,7 @@ void AccessibilityTreeFormatterMac::AddProperties(
     base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
   BrowserAccessibilityCocoa* cocoa_node =
-      const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityCocoa();
+      ToBrowserAccessibilityCocoa(const_cast<BrowserAccessibility*>(&node));
   NSArray* supportedAttributes = [cocoa_node accessibilityAttributeNames];
 
   string role = SysNSStringToUTF8(

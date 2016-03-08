@@ -31,6 +31,7 @@
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
+#import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/bad_message.h"
 #import "content/browser/cocoa/system_hotkey_helper_mac.h"
@@ -2823,8 +2824,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (([attribute isEqualToString:NSAccessibilityChildrenAttribute] ||
           [attribute isEqualToString:NSAccessibilityContentsAttribute]) &&
       manager) {
-    return [NSArray arrayWithObjects:manager->
-        GetRoot()->ToBrowserAccessibilityCocoa(), nil];
+    return [NSArray arrayWithObjects:ToBrowserAccessibilityCocoa(
+        manager->GetRoot()), nil];
   } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
     return NSAccessibilityScrollAreaRole;
   }
@@ -2849,7 +2850,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   NSPoint localPoint = [self convertPoint:pointInWindow fromView:nil];
   localPoint.y = NSHeight([self bounds]) - localPoint.y;
   BrowserAccessibilityCocoa* root =
-      manager->GetRoot()->ToBrowserAccessibilityCocoa();
+      ToBrowserAccessibilityCocoa(manager->GetRoot());
   id obj = [root accessibilityHitTest:localPoint];
   return obj;
 }
@@ -2867,7 +2868,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
           ->GetRootBrowserAccessibilityManager();
   // Only child is root.
   if (manager &&
-      manager->GetRoot()->ToBrowserAccessibilityCocoa() == child) {
+      ToBrowserAccessibilityCocoa(manager->GetRoot()) == child) {
     return 0;
   } else {
     return NSNotFound;
@@ -2883,7 +2884,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     DCHECK(focused_item);
     if (focused_item) {
       BrowserAccessibilityCocoa* focused_item_cocoa =
-          focused_item->ToBrowserAccessibilityCocoa();
+          ToBrowserAccessibilityCocoa(focused_item);
       DCHECK(focused_item_cocoa);
       if (focused_item_cocoa)
         return focused_item_cocoa;

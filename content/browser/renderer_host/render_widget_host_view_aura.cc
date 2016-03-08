@@ -747,7 +747,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
   BrowserAccessibilityManager* manager =
       host_->GetOrCreateRootBrowserAccessibilityManager();
   if (manager)
-    return manager->GetRoot()->ToBrowserAccessibilityWin();
+    return ToBrowserAccessibilityWin(manager->GetRoot());
 #endif
 
   NOTIMPLEMENTED();

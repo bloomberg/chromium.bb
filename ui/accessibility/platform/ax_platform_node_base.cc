@@ -44,6 +44,7 @@ gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) {
 // AXPlatformNode overrides.
 
 void AXPlatformNodeBase::Destroy() {
+  AXPlatformNode::Destroy();
   delegate_ = nullptr;
   delete this;
 }

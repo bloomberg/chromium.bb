@@ -46,8 +46,7 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
     base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
   BrowserAccessibilityAuraLinux* acc_obj =
-      const_cast<BrowserAccessibility*>(&node)
-          ->ToBrowserAccessibilityAuraLinux();
+      ToBrowserAccessibilityAuraLinux(const_cast<BrowserAccessibility*>(&node));
 
   AtkObject* atk_object = acc_obj->GetAtkObject();
   AtkRole role = acc_obj->atk_role();

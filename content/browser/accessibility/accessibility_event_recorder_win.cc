@@ -287,7 +287,7 @@ HRESULT AccessibilityEventRecorderWin::AccessibleObjectFromWindowWrapper(
   if (accessibility_hwnd != hwnd)
     return E_FAIL;
 
-  IAccessible* obj = manager_->GetRoot()->ToBrowserAccessibilityWin();
+  IAccessible* obj = ToBrowserAccessibilityWin(manager_->GetRoot());
   obj->AddRef();
   *ppv_object = obj;
   return S_OK;
