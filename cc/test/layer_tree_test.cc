@@ -1005,6 +1005,7 @@ void LayerTreeTest::CreateRemoteClientHost(
   proto::InitializeImpl initialize_proto = proto.initialize_impl_message();
   LayerTreeSettings settings;
   settings.FromProtobuf(initialize_proto.layer_tree_settings());
+  settings.abort_commit_before_output_surface_creation = false;
   remote_client_layer_tree_host_ = LayerTreeHostForTesting::Create(
       this, mode_, client_.get(), &remote_proto_channel_bridge_.channel_impl,
       nullptr, nullptr, task_graph_runner_.get(), settings,

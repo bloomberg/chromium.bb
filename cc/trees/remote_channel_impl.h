@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/completion_event.h"
+#include "cc/proto/compositor_message_to_impl.pb.h"
 #include "cc/trees/channel_impl.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_impl.h"
@@ -102,6 +103,14 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
     RemoteProtoChannel* remote_proto_channel;
 
     bool started;
+
+    // This is set to true if we lost the output surface and can not push any
+    // commits to the impl thread.
+    bool waiting_for_output_surface_initialization;
+
+    // The queue of messages received from the server. The messages are added to
+    // this queue if we are waiting for a new output surface to be initialized.
+    std::queue<proto::CompositorMessageToImpl> pending_messages;
 
     RendererCapabilities renderer_capabilities;
 

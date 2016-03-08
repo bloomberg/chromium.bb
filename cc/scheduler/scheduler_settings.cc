@@ -16,9 +16,9 @@ SchedulerSettings::SchedulerSettings()
       timeout_and_draw_when_animation_checkerboards(true),
       using_synchronous_renderer_compositor(false),
       throttle_frame_production(true),
+      abort_commit_before_output_surface_creation(true),
       maximum_number_of_failed_draws_before_draw_is_forced(3),
-      background_frame_interval(base::TimeDelta::FromSeconds(1)) {
-}
+      background_frame_interval(base::TimeDelta::FromSeconds(1)) {}
 
 SchedulerSettings::~SchedulerSettings() {}
 
@@ -42,6 +42,8 @@ SchedulerSettings::AsValue() const {
   state->SetBoolean("throttle_frame_production", throttle_frame_production);
   state->SetInteger("background_frame_interval",
                     background_frame_interval.InMicroseconds());
+  state->SetBoolean("abort_commit_before_output_surface_creation",
+                    abort_commit_before_output_surface_creation);
   return std::move(state);
 }
 

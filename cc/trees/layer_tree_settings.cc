@@ -101,6 +101,7 @@ LayerTreeSettings::LayerTreeSettings()
       image_decode_tasks_enabled(false),
       use_compositor_animation_timelines(true),
       wait_for_beginframe_interval(true),
+      abort_commit_before_output_surface_creation(true),
       use_mouse_wheel_gestures(false),
       max_staging_buffer_usage_in_bytes(32 * 1024 * 1024),
       memory_policy_(64 * 1024 * 1024,
@@ -322,6 +323,8 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
   scheduler_settings.throttle_frame_production = wait_for_beginframe_interval;
   scheduler_settings.background_frame_interval =
       base::TimeDelta::FromSecondsD(1.0 / background_animation_rate);
+  scheduler_settings.abort_commit_before_output_surface_creation =
+      abort_commit_before_output_surface_creation;
   return scheduler_settings;
 }
 

@@ -3606,6 +3606,61 @@ TEST_F(SchedulerTest, ImplLatencyTakesPriority) {
   EXPECT_FALSE(scheduler_->ImplLatencyTakesPriority());
 }
 
+TEST_F(SchedulerTest, NoOutputSurfaceCreationWhileCommitPending) {
+  SetUpScheduler(true);
+
+  // SetNeedsBeginMainFrame should begin the frame.
+  scheduler_->SetNeedsBeginMainFrame();
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
+
+  // Lose the output surface and trigger the deadline.
+  client_->Reset();
+  scheduler_->DidLoseOutputSurface();
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_NO_ACTION(client_);
+
+  // The scheduler should not trigger the output surface creation till the
+  // commit is aborted.
+  task_runner_->RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_SINGLE_ACTION("SendBeginMainFrameNotExpectedSoon", client_);
+
+  // Abort the commit.
+  client_->Reset();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks::Now());
+  scheduler_->BeginMainFrameAborted(
+      CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST);
+  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+}
+
+TEST_F(SchedulerTest, OutputSurfaceCreationWhileCommitPending) {
+  scheduler_settings_.abort_commit_before_output_surface_creation = false;
+  SetUpScheduler(true);
+
+  // SetNeedsBeginMainFrame should begin the frame.
+  scheduler_->SetNeedsBeginMainFrame();
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
+
+  // Lose the output surface and trigger the deadline.
+  client_->Reset();
+  scheduler_->DidLoseOutputSurface();
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_NO_ACTION(client_);
+
+  // The scheduler should trigger the output surface creation immediately after
+  // the begin_impl_frame_state_ is cleared.
+  task_runner_->RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 2);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
+}
+
 // The three letters appeneded to each version of this test mean the following:s
 // tree_priority: B = both trees same priority; A = active tree priority;
 // scroll_handler_state: H = affects scroll handler; N = does not affect scroll

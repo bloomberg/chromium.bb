@@ -30,6 +30,7 @@ class CC_EXPORT SchedulerSettings {
   bool timeout_and_draw_when_animation_checkerboards;
   bool using_synchronous_renderer_compositor;
   bool throttle_frame_production;
+  bool abort_commit_before_output_surface_creation;
 
   int maximum_number_of_failed_draws_before_draw_is_forced;
   base::TimeDelta background_frame_interval;

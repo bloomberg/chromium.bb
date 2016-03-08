@@ -315,8 +315,14 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
 
   // We only want to start output surface initialization after the
   // previous commit is complete.
-  if (begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE)
+  // We make an exception if the embedder explicitly allows beginning output
+  // surface creation while the previous commit has not been aborted. This
+  // assumes that any state passed from the client during the commit will not be
+  // tied to the output surface.
+  if (begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE &&
+      settings_.abort_commit_before_output_surface_creation) {
     return false;
+  }
 
   // Make sure the BeginImplFrame from any previous OutputSurfaces
   // are complete before creating the new OutputSurface.
@@ -731,7 +737,11 @@ void SchedulerStateMachine::WillBeginOutputSurfaceCreation() {
   // The following DCHECKs make sure we are in the proper quiescent state.
   // The pipeline should be flushed entirely before we start output
   // surface creation to avoid complicated corner cases.
-  DCHECK_EQ(begin_main_frame_state_, BEGIN_MAIN_FRAME_STATE_IDLE);
+
+  // We allow output surface creation while the previous commit has not been
+  // aborted if the embedder explicitly allows it.
+  DCHECK(!settings_.abort_commit_before_output_surface_creation ||
+         begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_IDLE);
   DCHECK(!has_pending_tree_);
   DCHECK(!active_tree_needs_first_draw_);
 }

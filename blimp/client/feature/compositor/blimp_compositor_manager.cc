@@ -129,6 +129,8 @@ cc::LayerTreeSettings* BlimpCompositorManager::GetLayerTreeSettings() {
     // client. Since it currently overrides all settings, ignore them.
     // See crbug/577985.
     GenerateLayerTreeSettings(settings_.get());
+    settings_
+      ->abort_commit_before_output_surface_creation = false;
   }
 
   return settings_.get();

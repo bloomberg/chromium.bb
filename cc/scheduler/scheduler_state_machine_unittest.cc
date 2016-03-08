@@ -2106,5 +2106,69 @@ TEST(SchedulerStateMachineTest, EarlyOutCommitWantsProactiveBeginFrame) {
   EXPECT_FALSE(state.ProactiveBeginFrameWanted());
 }
 
+TEST(SchedulerStateMachineTest, NoOutputSurfaceCreationWhileCommitPending) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // Set up the request for a commit and start a frame.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame();
+  PerformAction(&state, SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+
+  // Lose the output surface.
+  state.DidLoseOutputSurface();
+
+  // The scheduler shouldn't trigger the output surface creation till the
+  // previous commit has been cleared.
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Trigger the deadline and ensure that the scheduler does not trigger any
+  // actions until we receive a response for the pending commit.
+  state.OnBeginImplFrameDeadlinePending();
+  state.OnBeginImplFrameDeadline();
+  state.OnBeginImplFrameIdle();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Abort the commit, since that is what we expect the main thread to do if the
+  // output surface was lost due to a synchronous call from the main thread to
+  // release the output surface.
+  state.NotifyBeginMainFrameStarted();
+  state.BeginMainFrameAborted(
+      CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST);
+
+  // The scheduler should begin the output surface creation now.
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+}
+
+TEST(SchedulerStateMachineTest, OutputSurfaceCreationWhileCommitPending) {
+  SchedulerSettings settings;
+  settings.abort_commit_before_output_surface_creation = false;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  // Set up the request for a commit and start a frame.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame();
+  PerformAction(&state, SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+
+  // Lose the output surface.
+  state.DidLoseOutputSurface();
+
+  // The scheduler shouldn't trigger the output surface creation till the
+  // previous begin impl frame state is cleared from the pipeline.
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Cycle through the frame stages to clear the scheduler state.
+  state.OnBeginImplFrameDeadlinePending();
+  state.OnBeginImplFrameDeadline();
+  state.OnBeginImplFrameIdle();
+
+  // The scheduler should begin the output surface creation now.
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+}
+
 }  // namespace
 }  // namespace cc

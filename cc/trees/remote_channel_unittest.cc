@@ -182,4 +182,50 @@ class RemoteChannelTestBeginMainFrameAborted : public RemoteChannelTest {
 
 REMOTE_DIRECT_RENDERER_TEST_F(RemoteChannelTestBeginMainFrameAborted);
 
+class RemoteChannelTestReleaseOutputSurfaceDuringCommit
+    : public RemoteChannelTest {
+ public:
+  RemoteChannelTestReleaseOutputSurfaceDuringCommit()
+      : output_surface_initialized_count_(0), commit_count_(0) {}
+  void BeginChannelTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidInitializeOutputSurface() override {
+    ++output_surface_initialized_count_;
+
+    // We should not have any commits at this point. This call runs either after
+    // the first output surface is initialized so no commits should have been
+    // started, or after the output surface was released by the main thread. In
+    // which case, we should have queued the commit and it should only go
+    // through after the new output surface is initialized.
+    EXPECT_EQ(0, commit_count_);
+  }
+
+  void ReceivedBeginMainFrame() override {
+    // Release the output surface before we respond to the BeginMainFrame.
+    SetVisibleOnLayerTreeHost(false);
+    ReleaseOutputSurfaceOnLayerTreeHost();
+    SetVisibleOnLayerTreeHost(true);
+  }
+
+  void StartCommitOnImpl() override {
+    // The commit should go through only when the second output surface is
+    // initialized.
+    EXPECT_EQ(2, output_surface_initialized_count_);
+    EXPECT_EQ(0, commit_count_);
+    ++commit_count_;
+    EndTest();
+  }
+
+  void AfterTest() override {
+    EXPECT_EQ(2, output_surface_initialized_count_);
+    EXPECT_EQ(1, commit_count_);
+  }
+
+  int output_surface_initialized_count_;
+  int commit_count_;
+};
+
+REMOTE_DIRECT_RENDERER_TEST_F(
+    RemoteChannelTestReleaseOutputSurfaceDuringCommit);
+
 }  // namespace cc

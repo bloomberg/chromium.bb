@@ -60,13 +60,20 @@ void RemoteChannelImpl::OnProtoReceived(
   DCHECK(main().started);
   DCHECK(proto->has_to_impl());
 
-  HandleProto(proto->to_impl());
+  // If we don't have an output surface, queue the message and defer processing
+  // it till we initialize a new output surface.
+  if (main().waiting_for_output_surface_initialization) {
+    main().pending_messages.push(proto->to_impl());
+  } else {
+    HandleProto(proto->to_impl());
+  }
 }
 
 void RemoteChannelImpl::HandleProto(
     const proto::CompositorMessageToImpl& proto) {
   DCHECK(task_runner_provider_->IsMainThread());
   DCHECK(proto.has_message_type());
+  DCHECK(!main().waiting_for_output_surface_initialization);
 
   switch (proto.message_type()) {
     case proto::CompositorMessageToImpl::UNKNOWN:
@@ -162,12 +169,18 @@ void RemoteChannelImpl::SetOutputSurface(OutputSurface* output_surface) {
 
 void RemoteChannelImpl::ReleaseOutputSurface() {
   DCHECK(task_runner_provider_->IsMainThread());
-  CompletionEvent completion;
-  DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
-  ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyImpl::ReleaseOutputSurfaceOnImpl,
-                            proxy_impl_weak_ptr_, &completion));
-  completion.Wait();
+  DCHECK(!main().waiting_for_output_surface_initialization);
+
+  {
+    CompletionEvent completion;
+    DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&ProxyImpl::ReleaseOutputSurfaceOnImpl,
+                              proxy_impl_weak_ptr_, &completion));
+    completion.Wait();
+  }
+
+  main().waiting_for_output_surface_initialization = true;
 }
 
 void RemoteChannelImpl::SetVisible(bool visible) {
@@ -406,6 +419,15 @@ void RemoteChannelImpl::DidInitializeOutputSurfaceOnMain(
 
   main().renderer_capabilities = capabilities;
   main().layer_tree_host->DidInitializeOutputSurface();
+
+  // If we were waiting for output surface initialization, we might have queued
+  // some messages. Relay them now that a new output surface has been
+  // initialized.
+  main().waiting_for_output_surface_initialization = false;
+  while (!main().pending_messages.empty()) {
+    HandleProto(main().pending_messages.front());
+    main().pending_messages.pop();
+  }
 }
 
 void RemoteChannelImpl::SendMessageProtoOnMain(
@@ -476,6 +498,7 @@ RemoteChannelImpl::MainThreadOnly::MainThreadOnly(
     : layer_tree_host(layer_tree_host),
       remote_proto_channel(remote_proto_channel),
       started(false),
+      waiting_for_output_surface_initialization(false),
       remote_channel_weak_factory(remote_channel_impl) {
   DCHECK(layer_tree_host);
   DCHECK(remote_proto_channel);
