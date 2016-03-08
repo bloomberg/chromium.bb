@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/model_view_channel.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -147,9 +148,14 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
   // Called when the page is ready and handler can do initialization.
   virtual void Initialize() = 0;
 
-  // Show selected WebUI |screen|. Optionally it can pass screen initialization
-  // data via |data| parameter.
-  void ShowScreen(const char* screen, const base::DictionaryValue* data);
+  // Show selected WebUI |screen|.
+  void ShowScreen(OobeScreen screen);
+  // Show selected WebUI |screen|. Pass screen initialization using the |data|
+  // parameter.
+  void ShowScreenWithData(OobeScreen screen, const base::DictionaryValue* data);
+
+  // Returns current visible OOBE screen.
+  OobeScreen GetCurrentScreen() const;
 
   // Whether page is ready.
   bool page_is_ready() const { return page_is_ready_; }

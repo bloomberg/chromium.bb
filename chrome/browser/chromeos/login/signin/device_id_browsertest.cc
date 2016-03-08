@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/common/chrome_switches.h"

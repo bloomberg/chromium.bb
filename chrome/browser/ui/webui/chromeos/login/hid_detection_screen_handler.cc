@@ -10,8 +10,9 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_model.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
@@ -52,7 +53,7 @@ void HIDDetectionScreenHandler::Show() {
   local_state->SetInteger(prefs::kTimesHIDDialogShown,
                           num_of_times_dialog_was_shown + 1);
 
-  ShowScreen(OobeUI::kScreenHIDDetection, NULL);
+  ShowScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION);
 }
 
 void HIDDetectionScreenHandler::Hide() {

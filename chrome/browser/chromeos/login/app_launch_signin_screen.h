@@ -41,7 +41,7 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
     virtual ~Delegate() {}
   };
 
-  AppLaunchSigninScreen(OobeUI* oobe_display, Delegate *delegate);
+  AppLaunchSigninScreen(OobeUI* oobe_ui, Delegate* delegate);
   ~AppLaunchSigninScreen() override;
 
   void Show();

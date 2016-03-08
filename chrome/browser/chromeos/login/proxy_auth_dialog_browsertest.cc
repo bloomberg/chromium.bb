@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
       static_cast<OobeUI*>(web_ui_login_view->GetWebUI()->GetController());
 
   {
-    OobeScreenWaiter screen_waiter(OobeDisplay::SCREEN_ACCOUNT_PICKER);
+    OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ACCOUNT_PICKER);
     ProxyAuthDialogWaiter auth_dialog_waiter;
     screen_waiter.Wait();
     auth_dialog_waiter.Wait();
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
   }
 
   {
-    OobeScreenWaiter screen_waiter(OobeDisplay::SCREEN_GAIA_SIGNIN);
+    OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_GAIA_SIGNIN);
     ProxyAuthDialogWaiter auth_dialog_waiter;
     ASSERT_TRUE(content::ExecuteScript(oobe_ui->web_ui()->GetWebContents(),
                                        "window.domAutomationController.send(!!("

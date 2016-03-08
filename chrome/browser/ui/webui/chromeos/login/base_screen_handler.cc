@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -70,15 +71,26 @@ void BaseScreenHandler::CallJS(const std::string& method) {
   web_ui()->CallJavascriptFunction(FullMethodPath(method));
 }
 
-void BaseScreenHandler::ShowScreen(const char* screen_name,
-                                   const base::DictionaryValue* data) {
+void BaseScreenHandler::ShowScreen(OobeScreen screen) {
+  ShowScreenWithData(screen, nullptr);
+}
+
+void BaseScreenHandler::ShowScreenWithData(OobeScreen screen,
+                                           const base::DictionaryValue* data) {
   if (!web_ui())
     return;
   base::DictionaryValue screen_params;
-  screen_params.SetString("id", screen_name);
+  screen_params.SetString("id", GetOobeScreenName(screen));
   if (data)
     screen_params.SetWithoutPathExpansion("data", data->DeepCopy());
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen_params);
+}
+
+OobeScreen BaseScreenHandler::GetCurrentScreen() const {
+  OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
+  if (!oobe_ui)
+    return OobeScreen::SCREEN_UNKNOWN;
+  return oobe_ui->current_screen();
 }
 
 gfx::NativeWindow BaseScreenHandler::GetNativeWindow() {

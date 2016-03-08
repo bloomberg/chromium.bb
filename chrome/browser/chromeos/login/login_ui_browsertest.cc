@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_InterruptedAutoStartEnrollment) {
 // Tests that the default first screen is the network screen after OOBE
 // when auto enrollment is enabled and device is not yet enrolled.
 IN_PROC_BROWSER_TEST_F(LoginUITest, InterruptedAutoStartEnrollment) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_NETWORK).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUITest, OobeNoExceptions) {
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_LoginNoExceptions) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUITest, LoginNoExceptions) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
   JSExpect("cr.ErrorStore.getInstance().length == 0");
 }
 

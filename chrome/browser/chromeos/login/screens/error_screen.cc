@@ -59,9 +59,6 @@ ErrorScreen::ErrorScreen(BaseScreenDelegate* base_screen_delegate,
                          NetworkErrorView* view)
     : NetworkErrorModel(base_screen_delegate),
       view_(view),
-      ui_state_(NetworkError::UI_STATE_UNKNOWN),
-      error_state_(NetworkError::ERROR_STATE_UNKNOWN),
-      parent_screen_(OobeUI::SCREEN_UNKNOWN),
       weak_factory_(this) {
   network_state_informer_ = new NetworkStateInformer();
   network_state_informer_->Init();
@@ -163,7 +160,7 @@ NetworkError::ErrorState ErrorScreen::GetErrorState() const {
   return error_state_;
 }
 
-OobeUI::Screen ErrorScreen::GetParentScreen() const {
+OobeScreen ErrorScreen::GetParentScreen() const {
   return parent_screen_;
 }
 
@@ -191,7 +188,7 @@ void ErrorScreen::SetErrorState(NetworkError::ErrorState error_state,
       .SetString(kContextKeyErrorStateNetwork, network);
 }
 
-void ErrorScreen::SetParentScreen(OobeUI::Screen parent_screen) {
+void ErrorScreen::SetParentScreen(OobeScreen parent_screen) {
   parent_screen_ = parent_screen;
   // Not really used on JS side yet so no need to propagate to screen context.
 }
@@ -255,8 +252,8 @@ ErrorScreen::RegisterConnectRequestCallback(const base::Closure& callback) {
 }
 
 void ErrorScreen::DefaultHideCallback() {
-  if (parent_screen_ != OobeUI::SCREEN_UNKNOWN && view_)
-    view_->ShowScreen(parent_screen_);
+  if (parent_screen_ != OobeScreen::SCREEN_UNKNOWN && view_)
+    view_->ShowOobeScreen(parent_screen_);
 
   // TODO(antrim): Due to potential race with GAIA reload and hiding network
   // error UI we can't just reset parent screen to SCREEN_UNKNOWN here.

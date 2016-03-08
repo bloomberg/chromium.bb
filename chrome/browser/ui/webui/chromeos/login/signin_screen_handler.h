@@ -196,8 +196,8 @@ class SigninScreenHandlerDelegate {
   virtual ~SigninScreenHandlerDelegate() {}
 };
 
-// A class that handles the WebUI hooks in sign-in screen in OobeDisplay
-// and LoginDisplay.
+// A class that handles the WebUI hooks in sign-in screen in OobeUI and
+// LoginDisplay.
 class SigninScreenHandler
     : public BaseScreenHandler,
       public LoginDisplayWebUIHandler,
@@ -239,8 +239,8 @@ class SigninScreenHandler
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // OobeUI::Observer implemetation.
-  void OnCurrentScreenChanged(OobeUI::Screen current_screen,
-                              OobeUI::Screen new_screen) override;
+  void OnCurrentScreenChanged(OobeScreen current_screen,
+                              OobeScreen new_screen) override;
 
   void SetFocusPODCallbackForTesting(base::Closure callback);
 
@@ -381,9 +381,6 @@ class SigninScreenHandler
   // Cancels password changed flow - switches back to login screen.
   // Called as a callback after cookies are cleared.
   void CancelPasswordChangedFlowInternal();
-
-  // Returns current visible screen.
-  OobeUI::Screen GetCurrentScreen() const;
 
   // Returns true if current visible screen is the Gaia sign-in page.
   bool IsGaiaVisible() const;

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -95,7 +96,7 @@ void AppLaunchSplashScreenHandler::Show(const std::string& app_id) {
   data.Set("appInfo", app_info);
 
   SetLaunchText(l10n_util::GetStringUTF8(GetProgressMessageFromState(state_)));
-  ShowScreen(OobeUI::kScreenAppLaunchSplash, &data);
+  ShowScreenWithData(OobeScreen::SCREEN_APP_LAUNCH_SPLASH, &data);
 }
 
 void AppLaunchSplashScreenHandler::RegisterMessages() {
@@ -183,13 +184,13 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
       break;
   }
 
-  OobeUI::Screen screen = OobeUI::SCREEN_UNKNOWN;
+  OobeScreen screen = OobeScreen::SCREEN_UNKNOWN;
   OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
   if (oobe_ui)
     screen = oobe_ui->current_screen();
 
-  if (screen != OobeUI::SCREEN_ERROR_MESSAGE)
-    network_error_model_->SetParentScreen(OobeUI::SCREEN_APP_LAUNCH_SPLASH);
+  if (screen != OobeScreen::SCREEN_ERROR_MESSAGE)
+    network_error_model_->SetParentScreen(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   network_error_model_->Show();
 }
 

@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest, CheckPodForSupervisedUser) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
 
   // Open pod menu
   JSEval("$('pod-row').pods[0].querySelector('.action-box-button').click()");

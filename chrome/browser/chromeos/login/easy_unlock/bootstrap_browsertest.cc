@@ -117,7 +117,7 @@ class BootstrapTest : public OobeBaseTest {
         WizardController::default_controller();
     ASSERT_TRUE(wizard_controller);
     wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-    OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   }
 
   void OnBootstrapInitialized(bool success, const UserContext& user_context) {

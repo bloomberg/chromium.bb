@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
 #include "grit/generated_resources.h"
@@ -112,7 +112,7 @@ void HostPairingScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(OobeUI::kScreenHostPairing, NULL);
+  ShowScreen(OobeScreen::SCREEN_OOBE_HOST_PAIRING);
 }
 
 void HostPairingScreenHandler::Hide() {

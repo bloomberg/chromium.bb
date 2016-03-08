@@ -44,7 +44,7 @@ class MockNetworkErrorView : public NetworkErrorView {
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(MockBind, void(NetworkErrorModel& model));
   MOCK_METHOD0(MockUnbind, void());
-  MOCK_METHOD1(ShowScreen, void(OobeUI::Screen screen));
+  MOCK_METHOD1(ShowOobeScreen, void(OobeScreen screen));
 
  private:
   NetworkErrorModel* model_;

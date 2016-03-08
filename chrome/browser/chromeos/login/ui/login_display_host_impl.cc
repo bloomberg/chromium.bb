@@ -42,7 +42,6 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/ui/keyboard_driven_oobe_key_handler.h"
-#include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -561,9 +560,8 @@ void LoginDisplayHostImpl::StartUserAdding(
   existing_user_controller_.reset(new chromeos::ExistingUserController(this));
 
   if (!signin_screen_controller_.get()) {
-    OobeDisplay* oobe_display = GetOobeUI();
     signin_screen_controller_.reset(new SignInScreenController(
-        oobe_display, webui_login_display_->delegate()));
+        GetOobeUI(), webui_login_display_->delegate()));
   }
 
   SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
@@ -620,9 +618,8 @@ void LoginDisplayHostImpl::StartSignInScreen(
   existing_user_controller_.reset(new chromeos::ExistingUserController(this));
 
   if (!signin_screen_controller_.get()) {
-    OobeDisplay* oobe_display = GetOobeUI();
     signin_screen_controller_.reset(new SignInScreenController(
-        oobe_display, webui_login_display_->delegate()));
+        GetOobeUI(), webui_login_display_->delegate()));
   }
 
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
@@ -728,8 +725,8 @@ void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id,
 
 WizardController* LoginDisplayHostImpl::CreateWizardController() {
   // TODO(altimofeev): ensure that WebUI is ready.
-  OobeDisplay* oobe_display = GetOobeUI();
-  return new WizardController(this, oobe_display);
+  OobeUI* oobe_ui = GetOobeUI();
+  return new WizardController(this, oobe_ui);
 }
 
 void LoginDisplayHostImpl::OnBrowserCreated() {

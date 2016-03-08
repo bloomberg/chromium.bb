@@ -10,10 +10,8 @@
 
 namespace chromeos {
 
-OobeScreenWaiter::OobeScreenWaiter(OobeDisplay::Screen expected_screen)
-    : waiting_for_screen_(false),
-      expected_screen_(expected_screen) {
-}
+OobeScreenWaiter::OobeScreenWaiter(OobeScreen expected_screen)
+    : expected_screen_(expected_screen) {}
 
 OobeScreenWaiter::~OobeScreenWaiter() {
   if (waiting_for_screen_) {
@@ -39,9 +37,8 @@ void OobeScreenWaiter::WaitNoAssertCurrentScreen() {
   ASSERT_FALSE(waiting_for_screen_);
 }
 
-void OobeScreenWaiter::OnCurrentScreenChanged(
-    OobeDisplay::Screen current_screen,
-    OobeDisplay::Screen new_screen) {
+void OobeScreenWaiter::OnCurrentScreenChanged(OobeScreen current_screen,
+                                              OobeScreen new_screen) {
   if (waiting_for_screen_ && new_screen == expected_screen_) {
     runner_->Quit();
     waiting_for_screen_ = false;

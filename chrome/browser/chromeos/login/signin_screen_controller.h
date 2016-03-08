@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/notification_observer.h"
@@ -20,13 +19,14 @@ class AccountId;
 namespace chromeos {
 
 class LoginDisplayWebUIHandler;
+class OobeUI;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
 class SignInScreenController : public user_manager::RemoveUserDelegate,
                                public content::NotificationObserver {
  public:
-  SignInScreenController(OobeDisplay* oobe_display,
+  SignInScreenController(OobeUI* oobe_ui,
                          LoginDisplay::Delegate* login_display_delegate);
   ~SignInScreenController() override;
 
@@ -64,10 +64,10 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
 
   static SignInScreenController* instance_;
 
-  OobeDisplay* oobe_display_;
+  OobeUI* oobe_ui_ = nullptr;
 
   // Reference to the WebUI handling layer for the login screen
-  LoginDisplayWebUIHandler* webui_handler_;
+  LoginDisplayWebUIHandler* webui_handler_ = nullptr;
 
   scoped_ptr<GaiaScreen> gaia_screen_;
   scoped_ptr<UserSelectionScreen> user_selection_screen_;

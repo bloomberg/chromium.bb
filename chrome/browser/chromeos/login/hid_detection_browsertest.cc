@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/oobe_display.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -114,11 +114,11 @@ class HidDetectionSkipTest : public HidDetectionTest {
 };
 
 IN_PROC_BROWSER_TEST_F(HidDetectionTest, NoDevicesConnected) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_HID_DETECTION).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_HID_DETECTION).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(HidDetectionSkipTest, BothDevicesPreConnected) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_NETWORK).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
 }
 
 }  // namespace chromeos

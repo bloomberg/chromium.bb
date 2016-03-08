@@ -46,7 +46,7 @@ class ErrorScreen;
 struct Geoposition;
 class LoginDisplayHost;
 class LoginScreenContext;
-class OobeDisplay;
+class OobeUI;
 class SimpleGeolocationProvider;
 class SupervisedUserCreationScreen;
 class TimeZoneProvider;
@@ -74,7 +74,7 @@ class WizardController : public BaseScreenDelegate,
     virtual void OnSessionStart() = 0;
   };
 
-  WizardController(LoginDisplayHost* host, OobeDisplay* oobe_display);
+  WizardController(LoginDisplayHost* host, OobeUI* oobe_ui);
   ~WizardController() override;
 
   // Returns the default wizard controller if it has been created.
@@ -365,7 +365,7 @@ class WizardController : public BaseScreenDelegate,
 
   base::OneShotTimer smooth_show_timer_;
 
-  OobeDisplay* oobe_display_ = nullptr;
+  OobeUI* oobe_ui_ = nullptr;
 
   // State of Usage stat/error reporting checkbox on EULA screen
   // during wizard lifetime.

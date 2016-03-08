@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 
 namespace base {
 class ListValue;
@@ -55,9 +55,9 @@ class NetworkErrorModel : public BaseScreen {
   virtual NetworkError::ErrorState GetErrorState() const = 0;
 
   // Returns id of the screen behind error screen ("caller" screen).
-  // Returns OobeUI::SCREEN_UNKNOWN if error screen isn't the current
+  // Returns OobeScreen::SCREEN_UNKNOWN if error screen isn't the current
   // screen.
-  virtual OobeUI::Screen GetParentScreen() const = 0;
+  virtual OobeScreen GetParentScreen() const = 0;
 
   // Called when we're asked to hide captive portal dialog.
   virtual void HideCaptivePortal() = 0;
@@ -76,7 +76,7 @@ class NetworkErrorModel : public BaseScreen {
 
   // Sets "parent screen" i.e. one that has initiated this network error screen
   // instance.
-  virtual void SetParentScreen(OobeUI::Screen parent_screen) = 0;
+  virtual void SetParentScreen(OobeScreen parent_screen) = 0;
 
   // Sets callback that is called on hide.
   virtual void SetHideCallback(const base::Closure& on_hide) = 0;

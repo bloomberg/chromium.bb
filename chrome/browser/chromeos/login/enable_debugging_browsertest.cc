@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -207,7 +207,7 @@ class EnableDebuggingTest : public LoginManagerTest {
 
   void InvokeEnableDebuggingScreen() {
     ASSERT_TRUE(JSExecuted("cr.ui.Oobe.handleAccelerator('debugging');"));
-    OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
   }
 
   void CloseEnableDebuggingScreen() {
@@ -404,12 +404,12 @@ class EnableDebuggingRequestedTest : public EnableDebuggingTest {
 
 // Setup screen is automatically shown when the feature is requested.
 IN_PROC_BROWSER_TEST_F(EnableDebuggingRequestedTest, AutoShowSetup) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
 }
 
 // Canceling auto shown setup screen should close it.
 IN_PROC_BROWSER_TEST_F(EnableDebuggingRequestedTest, CancelAutoShowSetup) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
   CloseEnableDebuggingScreen();
   JSExpect("!!document.querySelector('#debugging.hidden')");
 }

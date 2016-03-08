@@ -42,7 +42,7 @@ void ErrorScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  BaseScreenHandler::ShowScreen(OobeUI::kScreenErrorMessage, NULL);
+  BaseScreenHandler::ShowScreen(OobeScreen::SCREEN_ERROR_MESSAGE);
   if (model_)
     model_->OnShow();
   showing_ = true;
@@ -64,19 +64,8 @@ void ErrorScreenHandler::Unbind() {
   BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
-void ErrorScreenHandler::ShowScreen(OobeUI::Screen screen) {
-  std::string screen_name;
-  if (GetScreenName(screen, &screen_name))
-    BaseScreenHandler::ShowScreen(screen_name.c_str(), NULL);
-}
-
-bool ErrorScreenHandler::GetScreenName(OobeUI::Screen screen,
-                                       std::string* name) const {
-  OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
-  if (!oobe_ui)
-    return false;
-  *name = oobe_ui->GetScreenName(screen);
-  return true;
+void ErrorScreenHandler::ShowOobeScreen(OobeScreen screen) {
+  ShowScreen(screen);
 }
 
 void ErrorScreenHandler::HandleHideCaptivePortal() {

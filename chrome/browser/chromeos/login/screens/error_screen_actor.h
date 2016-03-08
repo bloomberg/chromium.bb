@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor_delegate.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 
 namespace base {
 class DictionaryValue;
@@ -27,19 +27,19 @@ class ErrorScreenActor {
   NetworkError::ErrorState error_state() const { return error_state_; }
 
   // Returns id of the screen behind error screen ("caller" screen).
-  // Returns OobeUI::SCREEN_UNKNOWN if error screen isn't the current
+  // Returns OobeScreen::SCREEN_UNKNOWN if error screen isn't the current
   // screen.
-  OobeUI::Screen parent_screen() const { return parent_screen_; }
+  OobeScreen parent_screen() const { return parent_screen_; }
 
   // Sets screen this actor belongs to.
   virtual void SetDelegate(ErrorScreenActorDelegate* delegate) = 0;
 
   // Shows the screen.
-  virtual void Show(OobeDisplay::Screen parent_screen,
+  virtual void Show(OobeScreen parent_screen,
                     base::DictionaryValue* params) = 0;
 
   // Shows the screen and call |on_hide| on hide.
-  virtual void Show(OobeDisplay::Screen parent_screen,
+  virtual void Show(OobeScreen parent_screen,
                     base::DictionaryValue* params,
                     const base::Closure& on_hide) = 0;
 
@@ -65,15 +65,15 @@ class ErrorScreenActor {
   virtual void ShowConnectingIndicator(bool show) = 0;
 
  protected:
-  NetworkError::UIState ui_state_;
-  NetworkError::ErrorState error_state_;
+  NetworkError::UIState ui_state_ = NetworkError::UI_STATE_UNKNOWN;
+  NetworkError::ErrorState error_state_ = NetworkError::ERROR_STATE_UNKNOWN;
   std::string network_;
 
-  bool guest_signin_allowed_;
-  bool offline_login_allowed_;
-  bool show_connecting_indicator_;
+  bool guest_signin_allowed_ = false;
+  bool offline_login_allowed_ = false;
+  bool show_connecting_indicator_ = false;
 
-  OobeUI::Screen parent_screen_;
+  OobeScreen parent_screen_ = OobeScreen::SCREEN_UNKNOWN;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorScreenActor);
 };

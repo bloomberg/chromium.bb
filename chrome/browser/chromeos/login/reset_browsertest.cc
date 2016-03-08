@@ -10,8 +10,8 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -71,7 +71,7 @@ class ResetTest : public LoginManagerTest {
 
   void InvokeResetScreen() {
     ASSERT_TRUE(JSExecuted("cr.ui.Oobe.handleAccelerator('reset');"));
-    OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
   }
 
   void InvokeRollbackOption() {
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ShowAfterBootIfRequested) {
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ShowAfterBootIfRequested) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
   JSExpect("!document.querySelector('#reset').hidden");
   CloseResetScreen();
   JSExpect("document.querySelector('#reset').hidden");
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackUnavailable) {
   EXPECT_EQ(1, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
-  OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
 
   // Next invocation leads to rollback view.
   PrefService* prefs = g_browser_process->local_state();
@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackAvailable) {
   EXPECT_EQ(1, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
-  OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
 
   // Next invocation leads to simple reset, not rollback view.
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
@@ -274,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RollbackAvailable) {
   EXPECT_EQ(2, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   CloseResetScreen();
-  OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
 
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   InvokeResetScreen();
@@ -294,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ErrorOnRollbackRequested) {
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ErrorOnRollbackRequested) {
   update_engine_client_->set_can_rollback_check_result(true);
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
   EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ErrorOnRollbackRequested) {
   error_update_status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
   update_engine_client_->NotifyObserversThatStatusChanged(
       error_update_status);
-  OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ERROR_MESSAGE).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RevertAfterCancel) {
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RevertAfterCancel) {
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RevertAfterCancel) {
   update_engine_client_->set_can_rollback_check_result(true);
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
   EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
   EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RevertAfterCancel) {
   JSExpect("$('reset').classList.contains('rollback-proposal-view')");
   CloseResetScreen();
   InvokeResetScreen();
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
   InvokeRollbackOption();
   JSExpect("$('reset').classList.contains('rollback-proposal-view')");
 }

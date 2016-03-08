@@ -11,7 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -29,8 +29,6 @@
 namespace {
 
 const char kJsScreenPath[] = "login.EnableDebuggingScreen";
-
-const char kEnableDebuggingScreen[] = "debugging";
 
 }  // namespace
 
@@ -52,7 +50,7 @@ void EnableDebuggingScreenHandler::PrepareToShow() {
 }
 
 void EnableDebuggingScreenHandler::ShowWithParams() {
-  ShowScreen(kEnableDebuggingScreen, NULL);
+  ShowScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
 
   UpdateUIState(UI_STATE_WAIT);
 

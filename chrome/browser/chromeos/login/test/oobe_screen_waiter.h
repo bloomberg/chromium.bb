@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_SCREEN_WAITER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/ui/oobe_display.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
 namespace content {
@@ -18,7 +18,7 @@ namespace chromeos {
 // A waiter that blocks until the expected oobe screen is reached.
 class OobeScreenWaiter : public OobeUI::Observer {
  public:
-  explicit OobeScreenWaiter(OobeDisplay::Screen expected_screen);
+  explicit OobeScreenWaiter(OobeScreen expected_screen);
   ~OobeScreenWaiter() override;
 
   // Run message loop to wait for the expected_screen.
@@ -30,14 +30,14 @@ class OobeScreenWaiter : public OobeUI::Observer {
   void WaitNoAssertCurrentScreen();
 
   // OobeUI::Observer implementation:
-  void OnCurrentScreenChanged(OobeDisplay::Screen current_screen,
-                              OobeDisplay::Screen new_screen) override;
+  void OnCurrentScreenChanged(OobeScreen current_screen,
+                              OobeScreen new_screen) override;
 
  private:
   OobeUI* GetOobeUI();
 
-  bool waiting_for_screen_;
-  OobeDisplay::Screen expected_screen_;
+  bool waiting_for_screen_ = false;
+  OobeScreen expected_screen_ = OobeScreen::SCREEN_UNKNOWN;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeScreenWaiter);

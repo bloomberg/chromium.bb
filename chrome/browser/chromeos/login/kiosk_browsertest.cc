@@ -596,15 +596,15 @@ class KioskTest : public OobeBaseTest {
         chromeos::WizardController::default_controller();
     if (wizard_controller) {
       wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-      OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
+      OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
     } else {
       // No wizard and running with an existing profile and it should land
       // on account picker when new kiosk UI is enabled. Otherwise, just
       // wait for the login signal from Gaia.
       if (KioskAppMenuHandler::EnableNewKioskUI())
-        OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+        OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
       else
-        OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
+        OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
     }
   }
 
@@ -757,7 +757,7 @@ class KioskTest : public OobeBaseTest {
 
     // Start app launch and wait for network connectivity timeout.
     StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
-    OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
+    OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
     splash_waiter.Wait();
     WaitForAppLaunchNetworkTimeout();
 
@@ -768,7 +768,7 @@ class KioskTest : public OobeBaseTest {
     LoginDisplayHost::default_host()->GetOobeUI()->ShowOobeUI(false);
 
     // Configure network should bring up lock screen for owner.
-    OobeScreenWaiter lock_screen_waiter(OobeDisplay::SCREEN_ACCOUNT_PICKER);
+    OobeScreenWaiter lock_screen_waiter(OobeScreen::SCREEN_ACCOUNT_PICKER);
     static_cast<AppLaunchSplashScreenActor::Delegate*>(GetAppLaunchController())
         ->OnConfigureNetwork();
     lock_screen_waiter.Wait();
@@ -777,7 +777,7 @@ class KioskTest : public OobeBaseTest {
     JsExpect("$('pod-row').alwaysFocusSinglePod");
 
     // A network error screen should be shown after authenticating.
-    OobeScreenWaiter error_screen_waiter(OobeDisplay::SCREEN_ERROR_MESSAGE);
+    OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
     static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
         ->OnOwnerSigninSuccess();
     error_screen_waiter.Wait();
@@ -953,11 +953,11 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
 
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
-  OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
+  OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   splash_waiter.Wait();
 
   // A network error screen should be shown after authenticating.
-  OobeScreenWaiter error_screen_waiter(OobeDisplay::SCREEN_ERROR_MESSAGE);
+  OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
   // Simulate Ctrl+Alt+N accelerator.
   GetLoginUI()->CallJavascriptFunction(
       "cr.ui.Oobe.handleAccelerator",
@@ -988,7 +988,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
 
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
-  OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
+  OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   splash_waiter.Wait();
   WaitForAppLaunchNetworkTimeout();
 
@@ -1007,13 +1007,13 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppNetworkPortal) {
 
   // Start app launch with network portal state.
   StartAppLaunchFromLoginScreen(SimulateNetworkPortalClosure());
-  OobeScreenWaiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH)
+  OobeScreenWaiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH)
       .WaitNoAssertCurrentScreen();
   WaitForAppLaunchNetworkTimeout();
 
   // Network error should show up automatically since this test does not
   // require owner auth to configure network.
-  OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ERROR_MESSAGE).Wait();
 
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
   SimulateNetworkOnline();
@@ -1024,7 +1024,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
   // Make fake_cws_ return empty update response.
   set_test_app_version("");
   StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
-  OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
+  OobeScreenWaiter splash_waiter(OobeScreen::SCREEN_APP_LAUNCH_SPLASH);
   splash_waiter.Wait();
 
   settings_helper_.SetBoolean(
@@ -1149,7 +1149,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-  OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   GetLoginUI()->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
                                        base::StringValue("kiosk_enable"));
 
@@ -1184,7 +1184,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-  OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   GetLoginUI()->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
                                        base::StringValue("kiosk_enable"));
 
@@ -1216,7 +1216,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
   wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-  OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   GetLoginUI()->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
                                        base::StringValue("kiosk_enable"));
 
@@ -1235,7 +1235,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
 
   // Show signin screen again.
   LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
-  OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
 
   // Show kiosk enable screen again.
   GetLoginUI()->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
@@ -1296,7 +1296,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoConsumerAutoLaunchWhenUntrusted) {
       CrosSettingsProvider::PERMANENTLY_UNTRUSTED);
 
   // Check that the attempt to auto-launch a kiosk app fails with an error.
-  OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ERROR_MESSAGE).Wait();
 }
 
 // Verifies available volumes for kiosk apps in kiosk session.

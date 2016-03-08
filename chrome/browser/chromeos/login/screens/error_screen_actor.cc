@@ -6,14 +6,7 @@
 
 namespace chromeos {
 
-ErrorScreenActor::ErrorScreenActor()
-    : ui_state_(NetworkError::UI_STATE_UNKNOWN),
-      error_state_(NetworkError::ERROR_STATE_UNKNOWN),
-      guest_signin_allowed_(false),
-      offline_login_allowed_(false),
-      show_connecting_indicator_(false),
-      parent_screen_(OobeUI::SCREEN_UNKNOWN) {
-}
+ErrorScreenActor::ErrorScreenActor() {}
 
 ErrorScreenActor::~ErrorScreenActor() {}
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
@@ -38,7 +38,7 @@ void DeviceDisabledScreenHandler::Show() {
     CallJS("setEnrollmentDomain", delegate_->GetEnrollmentDomain());
     CallJS("setMessage", delegate_->GetMessage());
   }
-  ShowScreen(OobeUI::kScreenDeviceDisabled, NULL);
+  ShowScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
 }
 
 void DeviceDisabledScreenHandler::Hide() {

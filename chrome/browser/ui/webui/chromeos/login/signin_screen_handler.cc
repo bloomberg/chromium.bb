@@ -58,7 +58,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -160,9 +159,9 @@ bool IsProxyError(NetworkStateInformer::State state,
            frame_error == net::ERR_TUNNEL_CONNECTION_FAILED));
 }
 
-bool IsSigninScreen(const OobeUI::Screen screen) {
-  return screen == OobeUI::SCREEN_GAIA_SIGNIN ||
-      screen == OobeUI::SCREEN_ACCOUNT_PICKER;
+bool IsSigninScreen(const OobeScreen screen) {
+  return screen == OobeScreen::SCREEN_GAIA_SIGNIN ||
+         screen == OobeScreen::SCREEN_ACCOUNT_PICKER;
 }
 
 bool IsSigninScreenError(NetworkError::ErrorState error_state) {
@@ -601,12 +600,12 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
   switch (ui_state) {
     case UI_STATE_GAIA_SIGNIN:
       ui_state_ = UI_STATE_GAIA_SIGNIN;
-      ShowScreen(OobeUI::kScreenGaiaSignin, params);
+      ShowScreenWithData(OobeScreen::SCREEN_GAIA_SIGNIN, params);
       break;
     case UI_STATE_ACCOUNT_PICKER:
       ui_state_ = UI_STATE_ACCOUNT_PICKER;
       gaia_screen_handler_->CancelShowGaiaAsync();
-      ShowScreen(OobeUI::kScreenAccountPicker, params);
+      ShowScreenWithData(OobeScreen::SCREEN_ACCOUNT_PICKER, params);
       break;
     default:
       NOTREACHED();
@@ -794,9 +793,9 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
           NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT;
   network_error_model_->AllowOfflineLogin(offline_login_allowed);
 
-  if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
+  if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE) {
     network_error_model_->SetUIState(NetworkError::UI_STATE_SIGNIN);
-    network_error_model_->SetParentScreen(OobeUI::SCREEN_GAIA_SIGNIN);
+    network_error_model_->SetParentScreen(OobeScreen::SCREEN_GAIA_SIGNIN);
     network_error_model_->Show();
     histogram_helper_->OnErrorShow(network_error_model_->GetErrorState());
   }
@@ -843,9 +842,9 @@ void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kUsersLRUInputMethod);
 }
 
-void SigninScreenHandler::OnCurrentScreenChanged(OobeUI::Screen current_screen,
-                                                 OobeUI::Screen new_screen) {
-  if (new_screen == OobeUI::SCREEN_ACCOUNT_PICKER) {
+void SigninScreenHandler::OnCurrentScreenChanged(OobeScreen current_screen,
+                                                 OobeScreen new_screen) {
+  if (new_screen == OobeScreen::SCREEN_ACCOUNT_PICKER) {
     // Restore active IME state if returning to user pod row screen.
     input_method::InputMethodManager::Get()->SetState(ime_state_);
   }
@@ -1358,14 +1357,6 @@ OobeUI* SigninScreenHandler::GetOobeUI() const {
   return static_cast<OobeUI*>(web_ui()->GetController());
 }
 
-OobeUI::Screen SigninScreenHandler::GetCurrentScreen() const {
-  OobeUI::Screen screen = OobeUI::SCREEN_UNKNOWN;
-  OobeUI* oobe_ui = GetOobeUI();
-  if (oobe_ui)
-    screen = oobe_ui->current_screen();
-  return screen;
-}
-
 bool SigninScreenHandler::IsGaiaVisible() const {
   return IsSigninScreen(GetCurrentScreen()) &&
       ui_state_ == UI_STATE_GAIA_SIGNIN;
@@ -1377,7 +1368,7 @@ bool SigninScreenHandler::IsGaiaHiddenByError() const {
 }
 
 bool SigninScreenHandler::IsSigninScreenHiddenByError() const {
-  return (GetCurrentScreen() == OobeUI::SCREEN_ERROR_MESSAGE) &&
+  return (GetCurrentScreen() == OobeScreen::SCREEN_ERROR_MESSAGE) &&
          (IsSigninScreen(network_error_model_->GetParentScreen()));
 }
 

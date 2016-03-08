@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
@@ -32,7 +32,7 @@ void AutoEnrollmentCheckScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(OobeUI::kScreenAutoEnrollmentCheck, NULL);
+  ShowScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
 }
 
 void AutoEnrollmentCheckScreenHandler::SetDelegate(Delegate* delegate) {

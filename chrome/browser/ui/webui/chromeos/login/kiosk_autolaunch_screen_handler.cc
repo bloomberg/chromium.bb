@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
@@ -26,9 +27,6 @@
 namespace {
 
 const char kJsScreenPath[] = "login.AutolaunchScreen";
-
-// Autolaunch screen id.
-const char kAutolaunchScreen[] = "autolaunch";
 
 }  // namespace
 
@@ -55,7 +53,7 @@ void KioskAutolaunchScreenHandler::Show() {
     return;
   }
   UpdateKioskApp();
-  ShowScreen(kAutolaunchScreen, NULL);
+  ShowScreen(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
 }
 
 void KioskAutolaunchScreenHandler::SetDelegate(Delegate* delegate) {

@@ -342,14 +342,6 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::set_offline_login_is_active);
 }
 
-OobeUI::Screen GaiaScreenHandler::GetCurrentScreen() const {
-  OobeUI::Screen screen = OobeUI::SCREEN_UNKNOWN;
-  OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
-  if (oobe_ui)
-    screen = oobe_ui->current_screen();
-  return screen;
-}
-
 void GaiaScreenHandler::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
@@ -362,7 +354,7 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
   if (offline_login_is_active() ||
       IsOnline(captive_portal_status_) == IsOnline(previous_status) ||
       disable_restrictive_proxy_check_for_test_ ||
-      GetCurrentScreen() != OobeUI::SCREEN_GAIA_SIGNIN)
+      GetCurrentScreen() != OobeScreen::SCREEN_GAIA_SIGNIN)
     return;
 
   LoadAuthExtension(true /* force */, false /* offline */);

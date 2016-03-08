@@ -173,7 +173,7 @@ void TermsOfServiceScreenHandler::DoShow() {
   // Update the UI to show an error message or the Terms of Service.
   UpdateTermsOfServiceInUI();
 
-  ShowScreen(OobeUI::kScreenTermsOfService, NULL);
+  ShowScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE);
 }
 
 void TermsOfServiceScreenHandler::UpdateDomainInUI() {

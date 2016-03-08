@@ -263,6 +263,8 @@
       'browser/ui/webui/chromeos/login/network_screen_handler.h',
       'browser/ui/webui/chromeos/login/network_state_informer.cc',
       'browser/ui/webui/chromeos/login/network_state_informer.h',
+      'browser/ui/webui/chromeos/login/oobe_screen.cc',
+      'browser/ui/webui/chromeos/login/oobe_screen.h',
       'browser/ui/webui/chromeos/login/oobe_ui.cc',
       'browser/ui/webui/chromeos/login/oobe_ui.h',
       'browser/ui/webui/chromeos/login/reset_screen_handler.cc',

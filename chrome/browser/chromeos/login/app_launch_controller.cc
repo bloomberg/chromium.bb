@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -136,22 +135,13 @@ class AppLaunchController::AppWindowWatcher
 AppLaunchController::AppLaunchController(const std::string& app_id,
                                          bool diagnostic_mode,
                                          LoginDisplayHost* host,
-                                         OobeDisplay* oobe_display)
-    : profile_(NULL),
-      app_id_(app_id),
+                                         OobeUI* oobe_ui)
+    : app_id_(app_id),
       diagnostic_mode_(diagnostic_mode),
       host_(host),
-      oobe_display_(oobe_display),
+      oobe_ui_(oobe_ui),
       app_launch_splash_screen_actor_(
-          oobe_display_->GetAppLaunchSplashScreenActor()),
-      webui_visible_(false),
-      launcher_ready_(false),
-      waiting_for_network_(false),
-      network_wait_timedout_(false),
-      showing_network_dialog_(false),
-      network_config_requested_(false),
-      launch_splash_start_time_(0) {
-}
+          oobe_ui_->GetAppLaunchSplashScreenActor()) {}
 
 AppLaunchController::~AppLaunchController() {
   app_launch_splash_screen_actor_->SetDelegate(NULL);
@@ -232,8 +222,7 @@ void AppLaunchController::OnConfigureNetwork() {
 
   showing_network_dialog_ = true;
   if (CanConfigureNetwork() && NeedOwnerAuthToConfigureNetwork()) {
-    signin_screen_.reset(new AppLaunchSigninScreen(
-       static_cast<OobeUI*>(oobe_display_), this));
+    signin_screen_.reset(new AppLaunchSigninScreen(oobe_ui_, this));
     signin_screen_->Show();
   } else {
     // If kiosk mode was configured through enterprise policy, we may

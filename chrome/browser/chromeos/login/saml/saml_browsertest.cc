@@ -386,7 +386,7 @@ class SamlTest : public OobeBaseTest {
   }
 
   std::string WaitForAndGetFatalErrorMessage() {
-    OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
+    OobeScreenWaiter(OobeScreen::SCREEN_FATAL_ERROR).Wait();
     std::string message_element = "$('fatal-error-card')";
     std::string error_message;
     if (!content::ExecuteScriptAndExtractString(
@@ -497,11 +497,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
   // Lands on confirm password screen.
-  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
 
   // Entering an unknown password should go back to the confirm password screen.
   SendConfirmPassword("wrong_password");
-  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
 
   // Entering a known password should finish login and start session.
   content::WindowedNotificationObserver session_start_waiter(
@@ -531,11 +531,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
   // Lands on confirm password screen.
-  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
 
   // Entering an unknown password should go back to the confirm password screen.
   SendConfirmPassword("wrong_password");
-  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
 
   // Entering a known password should finish login and start session.
   content::WindowedNotificationObserver session_start_waiter(
@@ -556,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   SetSignFormField("Password1", "password1");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
-  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
 
   // Either scraped password should be able to sign-in.
   content::WindowedNotificationObserver session_start_waiter(
@@ -594,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
-  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
 
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
@@ -635,13 +635,13 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
   // Lands on confirm password screen with no error message.
-  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   JsExpect("!$('saml-confirm-password').$.passwordInput.isInvalid");
 
   // Enter an unknown password for the first time should go back to confirm
   // password screen with error message.
   SendConfirmPassword("wrong_password");
-  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   JsExpect("$('saml-confirm-password').$.passwordInput.isInvalid");
 
   // Enter an unknown password 2nd time should go back fatal error message.
@@ -1056,7 +1056,7 @@ void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
-  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
 
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,

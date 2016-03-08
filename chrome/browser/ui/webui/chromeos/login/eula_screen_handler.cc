@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -102,7 +102,7 @@ void EulaScreenHandler::Show() {
     show_on_init_ = true;
     return;
   }
-  ShowScreen(OobeUI::kScreenOobeEula, NULL);
+  ShowScreen(OobeScreen::SCREEN_OOBE_EULA);
 }
 
 void EulaScreenHandler::Hide() {

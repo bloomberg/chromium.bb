@@ -264,12 +264,12 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
 
   // Switch to Gaia.
   js_checker().Evaluate("$('add-user-button').click()");
-  OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   CheckGaiaKeyboard();
 
   // Switch back.
   js_checker().Evaluate("$('gaia-signin').cancel()");
-  OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+  OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
 
   EXPECT_EQ(expected_input_methods,
             input_method::InputMethodManager::Get()

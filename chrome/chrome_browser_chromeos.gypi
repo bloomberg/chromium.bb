@@ -638,7 +638,6 @@
         'browser/chromeos/login/ui/login_web_dialog.h',
         'browser/chromeos/login/ui/models/user_board_model.cc',
         'browser/chromeos/login/ui/models/user_board_model.h',
-        'browser/chromeos/login/ui/oobe_display.h',
         'browser/chromeos/login/ui/proxy_settings_dialog.cc',
         'browser/chromeos/login/ui/simple_web_view_dialog.cc',
         'browser/chromeos/login/ui/simple_web_view_dialog.h',

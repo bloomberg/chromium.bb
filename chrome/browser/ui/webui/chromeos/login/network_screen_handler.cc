@@ -101,7 +101,7 @@ void NetworkScreenHandler::Show() {
   network_screen_params.SetBoolean("isDeveloperMode",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kSystemDevMode));
-  ShowScreen(OobeUI::kScreenOobeNetwork, &network_screen_params);
+  ShowScreenWithData(OobeScreen::SCREEN_OOBE_NETWORK, &network_screen_params);
   core_oobe_actor_->InitDemoModeDetection();
 }
 

@@ -83,6 +83,14 @@ const char* kKnownDisplayTypes[] = {
   OobeUI::kAppLaunchSplashDisplay
 };
 
+OobeScreen kDimOverlayScreenIds[] = {
+  OobeScreen::SCREEN_CONFIRM_PASSWORD,
+  OobeScreen::SCREEN_GAIA_SIGNIN,
+  OobeScreen::SCREEN_OOBE_ENROLLMENT,
+  OobeScreen::SCREEN_PASSWORD_CHANGED,
+  OobeScreen::SCREEN_USER_IMAGE_PICKER
+};
+
 const char kStringsJSPath[] = "strings.js";
 const char kLoginJSPath[] = "login.js";
 const char kOobeJSPath[] = "oobe.js";
@@ -172,66 +180,9 @@ const char OobeUI::kLockDisplay[] = "lock";
 const char OobeUI::kUserAddingDisplay[] = "user-adding";
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
 
-// static
-const char OobeUI::kScreenOobeHIDDetection[] = "hid-detection";
-const char OobeUI::kScreenOobeNetwork[] = "connect";
-const char OobeUI::kScreenOobeEnableDebugging[] = "debugging";
-const char OobeUI::kScreenOobeEula[] = "eula";
-const char OobeUI::kScreenOobeUpdate[] = "update";
-const char OobeUI::kScreenOobeEnrollment[] = "oauth-enrollment";
-const char OobeUI::kScreenOobeReset[] = "reset";
-const char OobeUI::kScreenGaiaSignin[] = "gaia-signin";
-const char OobeUI::kScreenAccountPicker[] = "account-picker";
-const char OobeUI::kScreenKioskAutolaunch[] = "autolaunch";
-const char OobeUI::kScreenKioskEnable[] = "kiosk-enable";
-const char OobeUI::kScreenErrorMessage[] = "error-message";
-const char OobeUI::kScreenUserImagePicker[] = "user-image";
-const char OobeUI::kScreenTpmError[] = "tpm-error-message";
-const char OobeUI::kScreenPasswordChanged[] = "password-changed";
-const char OobeUI::kScreenSupervisedUserCreationFlow[] =
-    "supervised-user-creation";
-const char OobeUI::kScreenTermsOfService[] = "terms-of-service";
-const char OobeUI::kScreenWrongHWID[] = "wrong-hwid";
-const char OobeUI::kScreenAutoEnrollmentCheck[] = "auto-enrollment-check";
-const char OobeUI::kScreenHIDDetection[] = "hid-detection";
-const char OobeUI::kScreenAppLaunchSplash[] = "app-launch-splash";
-const char OobeUI::kScreenConfirmPassword[] = "confirm-password";
-const char OobeUI::kScreenFatalError[] = "fatal-error";
-const char OobeUI::kScreenControllerPairing[] = "controller-pairing";
-const char OobeUI::kScreenHostPairing[] = "host-pairing";
-const char OobeUI::kScreenDeviceDisabled[] = "device-disabled";
-const char OobeUI::kScreenUnrecoverableCryptohomeError[] =
-    "unrecoverable-cryptohome-error";
-
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
-    : WebUIController(web_ui),
-      core_handler_(nullptr),
-      network_dropdown_handler_(nullptr),
-      update_view_(nullptr),
-      network_view_(nullptr),
-      debugging_screen_actor_(nullptr),
-      eula_view_(nullptr),
-      reset_view_(nullptr),
-      hid_detection_view_(nullptr),
-      autolaunch_screen_actor_(nullptr),
-      kiosk_enable_screen_actor_(nullptr),
-      wrong_hwid_screen_actor_(nullptr),
-      auto_enrollment_check_screen_actor_(nullptr),
-      supervised_user_creation_screen_actor_(nullptr),
-      app_launch_splash_screen_actor_(nullptr),
-      controller_pairing_screen_actor_(nullptr),
-      host_pairing_screen_actor_(nullptr),
-      device_disabled_screen_actor_(nullptr),
-      error_screen_handler_(nullptr),
-      signin_screen_handler_(nullptr),
-      terms_of_service_screen_actor_(nullptr),
-      user_image_view_(nullptr),
-      kiosk_app_menu_handler_(nullptr),
-      current_screen_(SCREEN_UNKNOWN),
-      previous_screen_(SCREEN_UNKNOWN),
-      ready_(false) {
+    : WebUIController(web_ui) {
   display_type_ = GetDisplayType(url);
-  InitializeScreenMaps();
 
   network_state_informer_ = new NetworkStateInformer();
   network_state_informer_->Init();
@@ -523,48 +474,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
 }
 
-void OobeUI::InitializeScreenMaps() {
-  screen_names_.resize(SCREEN_UNKNOWN);
-  screen_names_[SCREEN_OOBE_HID_DETECTION] = kScreenOobeHIDDetection;
-  screen_names_[SCREEN_OOBE_NETWORK] = kScreenOobeNetwork;
-  screen_names_[SCREEN_OOBE_EULA] = kScreenOobeEula;
-  screen_names_[SCREEN_OOBE_UPDATE] = kScreenOobeUpdate;
-  screen_names_[SCREEN_OOBE_ENROLLMENT] = kScreenOobeEnrollment;
-  screen_names_[SCREEN_OOBE_ENABLE_DEBUGGING] = kScreenOobeEnableDebugging;
-  screen_names_[SCREEN_OOBE_RESET] = kScreenOobeReset;
-  screen_names_[SCREEN_GAIA_SIGNIN] = kScreenGaiaSignin;
-  screen_names_[SCREEN_ACCOUNT_PICKER] = kScreenAccountPicker;
-  screen_names_[SCREEN_KIOSK_AUTOLAUNCH] = kScreenKioskAutolaunch;
-  screen_names_[SCREEN_KIOSK_ENABLE] = kScreenKioskEnable;
-  screen_names_[SCREEN_ERROR_MESSAGE] = kScreenErrorMessage;
-  screen_names_[SCREEN_USER_IMAGE_PICKER] = kScreenUserImagePicker;
-  screen_names_[SCREEN_TPM_ERROR] = kScreenTpmError;
-  screen_names_[SCREEN_PASSWORD_CHANGED] = kScreenPasswordChanged;
-  screen_names_[SCREEN_CREATE_SUPERVISED_USER_FLOW] =
-      kScreenSupervisedUserCreationFlow;
-  screen_names_[SCREEN_TERMS_OF_SERVICE] = kScreenTermsOfService;
-  screen_names_[SCREEN_WRONG_HWID] = kScreenWrongHWID;
-  screen_names_[SCREEN_AUTO_ENROLLMENT_CHECK] = kScreenAutoEnrollmentCheck;
-  screen_names_[SCREEN_APP_LAUNCH_SPLASH] = kScreenAppLaunchSplash;
-  screen_names_[SCREEN_CONFIRM_PASSWORD] = kScreenConfirmPassword;
-  screen_names_[SCREEN_FATAL_ERROR] = kScreenFatalError;
-  screen_names_[SCREEN_OOBE_CONTROLLER_PAIRING] = kScreenControllerPairing;
-  screen_names_[SCREEN_OOBE_HOST_PAIRING] = kScreenHostPairing;
-  screen_names_[SCREEN_DEVICE_DISABLED] = kScreenDeviceDisabled;
-  screen_names_[SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR] =
-      kScreenUnrecoverableCryptohomeError;
-
-  dim_overlay_screen_ids_.push_back(SCREEN_CONFIRM_PASSWORD);
-  dim_overlay_screen_ids_.push_back(SCREEN_GAIA_SIGNIN);
-  dim_overlay_screen_ids_.push_back(SCREEN_OOBE_ENROLLMENT);
-  dim_overlay_screen_ids_.push_back(SCREEN_PASSWORD_CHANGED);
-  dim_overlay_screen_ids_.push_back(SCREEN_USER_IMAGE_PICKER);
-
-  screen_ids_.clear();
-  for (size_t i = 0; i < screen_names_.size(); ++i)
-    screen_ids_[screen_names_[i]] = static_cast<Screen>(i);
-}
-
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
   web_ui()->AddMessageHandler(handler);
   handlers_.push_back(handler);
@@ -645,20 +554,14 @@ void OobeUI::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-const std::string& OobeUI::GetScreenName(Screen screen) const {
-  DCHECK(screen >= 0 && screen < SCREEN_UNKNOWN);
-  return screen_names_[static_cast<size_t>(screen)];
-}
-
 void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
   previous_screen_ = current_screen_;
-  DCHECK(screen_ids_.count(screen))
-      << "Screen should be registered in InitializeScreenMaps()";
-  Screen new_screen = screen_ids_[screen];
+  OobeScreen new_screen = GetOobeScreenFromName(screen);
 
-  bool should_dim =
-      std::find(dim_overlay_screen_ids_.begin(), dim_overlay_screen_ids_.end(),
-                new_screen) != dim_overlay_screen_ids_.end();
+  const bool should_dim =
+      std::find(std::begin(kDimOverlayScreenIds),
+                std::end(kDimOverlayScreenIds),
+                new_screen) != std::end(kDimOverlayScreenIds);
   ash::ScreenDimmer* screen_dimmer = ash::ScreenDimmer::GetForContainer(
       ash::kShellWindowId_LockScreenContainersContainer);
   screen_dimmer->set_at_bottom(true);

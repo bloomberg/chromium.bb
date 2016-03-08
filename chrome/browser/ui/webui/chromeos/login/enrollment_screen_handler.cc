@@ -15,10 +15,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
+#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -105,7 +106,8 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
       network_error_model_(network_error_model),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
       weak_ptr_factory_(this) {
-  set_async_assets_load_id(OobeUI::kScreenOobeEnrollment);
+  set_async_assets_load_id(
+      GetOobeScreenName(OobeScreen::SCREEN_OOBE_ENROLLMENT));
   DCHECK(network_state_informer_.get());
   DCHECK(network_error_model_);
   network_state_informer_->AddObserver(this);
@@ -350,22 +352,14 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_LOCATION_LABEL);
 }
 
-OobeUI::Screen EnrollmentScreenHandler::GetCurrentScreen() const {
-  OobeUI::Screen screen = OobeUI::SCREEN_UNKNOWN;
-  OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());
-  if (oobe_ui)
-    screen = oobe_ui->current_screen();
-  return screen;
-}
-
 bool EnrollmentScreenHandler::IsOnEnrollmentScreen() const {
-  return (GetCurrentScreen() == OobeUI::SCREEN_OOBE_ENROLLMENT);
+  return (GetCurrentScreen() == OobeScreen::SCREEN_OOBE_ENROLLMENT);
 }
 
 bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() const {
-  return (GetCurrentScreen() == OobeUI::SCREEN_ERROR_MESSAGE &&
+  return (GetCurrentScreen() == OobeScreen::SCREEN_ERROR_MESSAGE &&
           network_error_model_->GetParentScreen() ==
-              OobeUI::SCREEN_OOBE_ENROLLMENT);
+              OobeScreen::SCREEN_OOBE_ENROLLMENT);
 }
 
 void EnrollmentScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
@@ -442,10 +436,10 @@ void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
                                         std::string());
   }
 
-  if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
+  if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE) {
     const std::string network_type = network_state_informer_->network_type();
     network_error_model_->SetUIState(NetworkError::UI_STATE_SIGNIN);
-    network_error_model_->SetParentScreen(OobeUI::SCREEN_OOBE_ENROLLMENT);
+    network_error_model_->SetParentScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
     network_error_model_->SetHideCallback(base::Bind(
         &EnrollmentScreenHandler::DoShow, weak_ptr_factory_.GetWeakPtr()));
     network_error_model_->Show();
@@ -534,7 +528,7 @@ void EnrollmentScreenHandler::DoShow() {
                        ->IsRemoraRequisition();
   screen_data.SetString("flow", cfm ? "cfm" : "enterprise");
 
-  ShowScreen(OobeUI::kScreenOobeEnrollment, &screen_data);
+  ShowScreenWithData(OobeScreen::SCREEN_OOBE_ENROLLMENT, &screen_data);
   if (first_show_) {
     first_show_ = false;
     UpdateStateInternal(NetworkError::ERROR_REASON_UPDATE, true);

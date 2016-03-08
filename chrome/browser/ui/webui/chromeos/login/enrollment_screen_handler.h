@@ -20,6 +20,7 @@
 namespace chromeos {
 
 class ErrorScreensHistogramHelper;
+class HelpAppLauncher;
 
 // WebUIMessageHandler implementation which handles events occurring on the
 // page, such as the user pressing the signin button.
@@ -90,9 +91,6 @@ class EnrollmentScreenHandler
 
   // Shows the screen.
   void DoShow();
-
-  // Returns current visible screen.
-  OobeUI::Screen GetCurrentScreen() const;
 
   // Returns true if current visible screen is the enrollment sign-in page.
   bool IsOnEnrollmentScreen() const;
