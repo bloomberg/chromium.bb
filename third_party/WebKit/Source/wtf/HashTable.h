@@ -1276,16 +1276,18 @@ struct WeakProcessingHashTableHelper<NoWeakHandlingInCollections, Key, Value, Ex
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 struct WeakProcessingHashTableHelper<WeakHandlingInCollections, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
     STATIC_ONLY(WeakProcessingHashTableHelper);
+
+    using HashTableType = HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>;
+    using ValueType = typename HashTableType::ValueType;
+
     // Used for purely weak and for weak-and-strong tables (ephemerons).
     static void process(typename Allocator::Visitor* visitor, void* closure)
     {
-        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
         HashTableType* table = reinterpret_cast<HashTableType*>(closure);
         if (!table->m_table)
             return;
         // Now perform weak processing (this is a no-op if the backing was
         // accessible through an iterator and was already marked strongly).
-        typedef typename HashTableType::ValueType ValueType;
         for (ValueType* element = table->m_table + table->m_tableSize - 1; element >= table->m_table; element--) {
             if (!HashTableType::isEmptyOrDeletedBucket(*element)) {
                 // At this stage calling trace can make no difference
@@ -1310,13 +1312,11 @@ struct WeakProcessingHashTableHelper<WeakHandlingInCollections, Key, Value, Extr
     // Called repeatedly for tables that have both weak and strong pointers.
     static void ephemeronIteration(typename Allocator::Visitor* visitor, void* closure)
     {
-        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
         HashTableType* table = reinterpret_cast<HashTableType*>(closure);
         ASSERT(table->m_table);
         // Check the hash table for elements that we now know will not be
         // removed by weak processing. Those elements need to have their strong
         // pointers traced.
-        typedef typename HashTableType::ValueType ValueType;
         for (ValueType* element = table->m_table + table->m_tableSize - 1; element >= table->m_table; element--) {
             if (!HashTableType::isEmptyOrDeletedBucket(*element))
                 TraceInCollectionTrait<WeakHandlingInCollections, WeakPointersActWeak, ValueType, Traits>::trace(visitor, *element);
@@ -1328,7 +1328,6 @@ struct WeakProcessingHashTableHelper<WeakHandlingInCollections, Key, Value, Extr
     // is resumed.
     static void ephemeronIterationDone(typename Allocator::Visitor* visitor, void* closure)
     {
-        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
         HashTableType* table = reinterpret_cast<HashTableType*>(closure);
         ASSERT(Allocator::weakTableRegistered(visitor, table));
         table->clearEnqueued();
@@ -1366,31 +1365,31 @@ void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocato
         // cases). However, it shouldn't cause any issue.
         Allocator::registerWeakMembers(visitor, this, m_table, WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
     }
-    if (NeedsTracingTrait<Traits>::value) {
-        if (Traits::weakHandlingFlag == WeakHandlingInCollections) {
-            // If we have both strong and weak pointers in the collection then
-            // we queue up the collection for fixed point iteration a la
-            // Ephemerons:
-            // http://dl.acm.org/citation.cfm?doid=263698.263733 - see also
-            // http://www.jucs.org/jucs_14_21/eliminating_cycles_in_weak
-            ASSERT(!enqueued() || Allocator::weakTableRegistered(visitor, this));
-            if (!enqueued()) {
-                Allocator::registerWeakTable(visitor, this,
-                    WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::ephemeronIteration,
-                    WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::ephemeronIterationDone);
-                setEnqueued();
-            }
-            // We don't need to trace the elements here, since registering as a
-            // weak table above will cause them to be traced (perhaps several
-            // times). It's better to wait until everything else is traced
-            // before tracing the elements for the first time; this may reduce
-            // (by one) the number of iterations needed to get to a fixed point.
-            return;
+    if (!NeedsTracingTrait<Traits>::value)
+        return;
+    if (Traits::weakHandlingFlag == WeakHandlingInCollections) {
+        // If we have both strong and weak pointers in the collection then
+        // we queue up the collection for fixed point iteration a la
+        // Ephemerons:
+        // http://dl.acm.org/citation.cfm?doid=263698.263733 - see also
+        // http://www.jucs.org/jucs_14_21/eliminating_cycles_in_weak
+        ASSERT(!enqueued() || Allocator::weakTableRegistered(visitor, this));
+        if (!enqueued()) {
+            Allocator::registerWeakTable(visitor, this,
+                WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::ephemeronIteration,
+                WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::ephemeronIterationDone);
+            setEnqueued();
         }
-        for (ValueType* element = m_table + m_tableSize - 1; element >= m_table; element--) {
-            if (!isEmptyOrDeletedBucket(*element))
-                Allocator::template trace<VisitorDispatcher, ValueType, Traits>(visitor, *element);
-        }
+        // We don't need to trace the elements here, since registering as a
+        // weak table above will cause them to be traced (perhaps several
+        // times). It's better to wait until everything else is traced
+        // before tracing the elements for the first time; this may reduce
+        // (by one) the number of iterations needed to get to a fixed point.
+        return;
+    }
+    for (ValueType* element = m_table + m_tableSize - 1; element >= m_table; element--) {
+        if (!isEmptyOrDeletedBucket(*element))
+            Allocator::template trace<VisitorDispatcher, ValueType, Traits>(visitor, *element);
     }
 }
 
