@@ -32,15 +32,6 @@ const int kMaxErrorTimeoutInSeconds = 1;
 // if input callbacks have started, and false otherwise.
 const int kInputCallbackStartTimeoutInSeconds = 5;
 
-// Replaces AudioManagerMac::kStartDelayInSecsForPowerEvents to allow for a
-// longer delay when calling Start() in conjunction to a power resume event.
-// If it is detected that Start() should be deferred, we wait this amount of
-// time before trying Start() again. The default value in AudioManagerMac is
-// 2 seconds.
-// TODO(henrika): investigate if an increase results in a lower frequency of
-// detecting no input callbacks at startup.
-const int kStartDelayInSecsForPowerEvents = 4;
-
 // Returns true if the format flags in |format_flags| has the "non-interleaved"
 // flag (kAudioFormatFlagIsNonInterleaved) cleared (set to 0).
 static bool FormatIsInterleaved(UInt32 format_flags) {
@@ -485,7 +476,8 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
         &AUAudioInputStream::Start, base::Unretained(this), callback));
     manager_->GetTaskRunner()->PostDelayedTask(
         FROM_HERE, deferred_start_cb_.callback(),
-        base::TimeDelta::FromSeconds(kStartDelayInSecsForPowerEvents));
+        base::TimeDelta::FromSeconds(
+            AudioManagerMac::kStartDelayInSecsForPowerEvents));
     return;
   }
 
