@@ -138,6 +138,6 @@ static_library("usrsctp") {
   }
 
   deps = [
-    "//crypto:platform",
+    "//third_party/boringssl",
   ]
 }
