@@ -1643,6 +1643,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     }.bind(this));
 
     this.setSubMode_(Gallery.SubMode.EDIT);
+    this.editor_.onStartEditing();
   } else {
     this.editor_.getPrompt().hide();
     this.editor_.leaveMode(false /* not to switch mode */);

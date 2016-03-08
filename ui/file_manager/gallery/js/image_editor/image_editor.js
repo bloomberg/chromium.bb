@@ -301,6 +301,7 @@ ImageEditor.prototype.undo = function() {
   this.leaveModeInternal_(false, false /* not to switch mode */);
   this.commandQueue_.undo();
   this.updateUndoRedo();
+  this.calculateModeApplicativity_();
 };
 
 /**
@@ -313,6 +314,7 @@ ImageEditor.prototype.redo = function() {
   this.leaveModeInternal_(false, false /* not to switch mode */);
   this.commandQueue_.redo();
   this.updateUndoRedo();
+  this.calculateModeApplicativity_();
 };
 
 /**
@@ -635,6 +637,7 @@ ImageEditor.prototype.setUpMode_ = function(mode) {
 
   this.currentMode_.setUp();
 
+  this.calculateModeApplicativity_();
   if (this.currentMode_.instant) {  // Instant tool.
     this.leaveModeInternal_(true, false /* not to switch mode */);
     return;
@@ -645,7 +648,6 @@ ImageEditor.prototype.setUpMode_ = function(mode) {
   this.modeToolbar_.clear();
   this.currentMode_.createTools(this.modeToolbar_);
   this.modeToolbar_.show(true);
-  this.calculateModeApplicativity_();
 };
 
 /**
@@ -807,6 +809,13 @@ ImageEditor.prototype.onDoubleTap_ = function(x, y) {
     else if (action === ImageBuffer.DoubleTapAction.CANCEL)
       this.leaveModeInternal_(false, false /* not to switch mode */);
   }
+};
+
+/**
+ * Called when the user starts editing image.
+ */
+ImageEditor.prototype.onStartEditing = function() {
+  this.calculateModeApplicativity_();
 };
 
 /**
