@@ -264,14 +264,16 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   query_result_manager_.reset(new QueryResultManager(router_));
   query_result_manager_->AddObserver(this);
 
-  // These modes are always available.
+  // Desktop mirror mode is always available.
   query_result_manager_->StartSinksQuery(MediaCastMode::DESKTOP_MIRROR,
                                          MediaSourceForDesktop());
   initiator_ = initiator;
-  MediaSource mirroring_source(
-      MediaSourceForTab(SessionTabHelper::IdForTab(initiator)));
-  query_result_manager_->StartSinksQuery(MediaCastMode::TAB_MIRROR,
-                                         mirroring_source);
+  SessionID::id_type tab_id = SessionTabHelper::IdForTab(initiator);
+  if (tab_id != -1) {
+    MediaSource mirroring_source(MediaSourceForTab(tab_id));
+    query_result_manager_->StartSinksQuery(MediaCastMode::TAB_MIRROR,
+                                           mirroring_source);
+  }
   UpdateCastModes();
 }
 

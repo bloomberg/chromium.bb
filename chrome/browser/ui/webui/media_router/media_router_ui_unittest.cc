@@ -8,6 +8,7 @@
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/route_request_result.h"
 #include "chrome/browser/media/router/test_helper.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 #include "chrome/grit/generated_resources.h"
@@ -49,6 +50,7 @@ class MediaRouterUITest : public ::testing::Test {
   void CreateMediaRouterUI(Profile* profile) {
     initiator_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(profile)));
+    SessionTabHelper::CreateForWebContents(initiator_.get());
     web_contents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(profile)));
     web_ui_.set_web_contents(web_contents_.get());
