@@ -17,6 +17,8 @@ namespace mojo {
 namespace edk {
 namespace test {
 
+base::TaskRunner* GetIoTaskRunner();
+
 namespace internal {
 
 class ScopedIPCSupportHelper {

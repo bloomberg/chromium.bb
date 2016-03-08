@@ -13,6 +13,14 @@ namespace mojo {
 namespace edk {
 namespace test {
 
+namespace {
+base::TaskRunner* g_io_task_runner = nullptr;
+}
+
+base::TaskRunner* GetIoTaskRunner() {
+  return g_io_task_runner;
+}
+
 namespace internal {
 
 ScopedIPCSupportHelper::ScopedIPCSupportHelper() {
@@ -38,6 +46,7 @@ void ScopedIPCSupportHelper::OnShutdownCompleteImpl() {
 
 ScopedIPCSupport::ScopedIPCSupport(
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
+  g_io_task_runner = io_thread_task_runner.get();
   helper_.Init(this, std::move(io_thread_task_runner));
 }
 

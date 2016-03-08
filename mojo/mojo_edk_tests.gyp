@@ -108,6 +108,7 @@
       'target_name': 'mojo_public_bindings_perftests',
       'type': 'executable',
       'dependencies': [
+        '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         'mojo_base.gyp:mojo_common_lib',
         'mojo_edk.gyp:mojo_run_all_perftests',
@@ -121,6 +122,7 @@
       ],
       'sources': [
         'public/cpp/bindings/tests/bindings_perftest.cc',
+        'public/cpp/bindings/tests/e2e_perftest.cc',
       ],
     },
     {

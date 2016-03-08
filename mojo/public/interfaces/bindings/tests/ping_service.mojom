@@ -8,3 +8,7 @@ module mojo.test;
 interface PingService {
   Ping() => ();
 };
+
+interface EchoService {
+  Echo(string test_data) => (string echo_data);
+};

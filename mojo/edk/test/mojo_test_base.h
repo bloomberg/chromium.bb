@@ -188,14 +188,13 @@ class MojoTestBase : public testing::Test {
   };                                                                        \
   MULTIPROCESS_TEST_MAIN_WITH_SETUP(                                        \
       client_name##TestChildMain,                                           \
-      test::MultiprocessTestHelper::ChildSetup) {                           \
-        client_name##_MainFixture test;                                     \
-        return test::MultiprocessTestHelper::RunClientMain(                 \
-            base::Bind(&client_name##_MainFixture::Main,                    \
-                       base::Unretained(&test)));                           \
-      }                                                                     \
-      int client_name##_MainFixture::Main(MojoHandle pipe_name)
-
+      ::mojo::edk::test::MultiprocessTestHelper::ChildSetup) {              \
+    client_name##_MainFixture test;                                         \
+    return ::mojo::edk::test::MultiprocessTestHelper::RunClientMain(        \
+        base::Bind(&client_name##_MainFixture::Main,                        \
+                   base::Unretained(&test)));                               \
+  }                                                                         \
+  int client_name##_MainFixture::Main(MojoHandle pipe_name)
 
 // This is a version of DEFINE_TEST_CLIENT_WITH_PIPE which can be used with
 // gtest ASSERT/EXPECT macros.
@@ -207,13 +206,13 @@ class MojoTestBase : public testing::Test {
   };                                                                         \
   MULTIPROCESS_TEST_MAIN_WITH_SETUP(                                         \
       client_name##TestChildMain,                                            \
-      test::MultiprocessTestHelper::ChildSetup) {                            \
-        client_name##_MainFixture test;                                      \
-        return test::MultiprocessTestHelper::RunClientTestMain(              \
-            base::Bind(&client_name##_MainFixture::Main,                     \
-                       base::Unretained(&test)));                            \
-      }                                                                      \
-      void client_name##_MainFixture::Main(MojoHandle pipe_name)
+      ::mojo::edk::test::MultiprocessTestHelper::ChildSetup) {               \
+    client_name##_MainFixture test;                                          \
+    return ::mojo::edk::test::MultiprocessTestHelper::RunClientTestMain(     \
+        base::Bind(&client_name##_MainFixture::Main,                         \
+                   base::Unretained(&test)));                                \
+  }                                                                          \
+  void client_name##_MainFixture::Main(MojoHandle pipe_name)
 #else  // !defined(OS_IOS)
 #define DEFINE_TEST_CLIENT_WITH_PIPE(client_name, test_base, pipe_name)
 #define DEFINE_TEST_CLIENT_TEST_WITH_PIPE(client_name, test_base, pipe_name)
