@@ -35,6 +35,7 @@ public:
     // ScrollAnimatorCompositorCoordinator implementation.
     void resetAnimationState() override;
     void cancelAnimation() override;
+    void takeoverCompositorAnimation() override { };
     ScrollableArea* scrollableArea() const override { return m_scrollableArea; }
     void tickAnimation(double monotonicTime) override;
     void updateCompositorAnimations() override;

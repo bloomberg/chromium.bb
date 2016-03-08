@@ -60,6 +60,7 @@ bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() cons
     case RunState::WaitingToSendToCompositor:
     case RunState::RunningOnMainThread:
     case RunState::RunningOnCompositorButNeedsUpdate:
+    case RunState::RunningOnCompositorButNeedsTakeover:
     case RunState::WaitingToCancelOnCompositor:
         return true;
     }
@@ -96,6 +97,7 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
     case RunState::WaitingToCancelOnCompositor:
     case RunState::PostAnimationCleanup:
         break;
+    case RunState::RunningOnCompositorButNeedsTakeover:
     case RunState::WaitingToSendToCompositor:
         if (m_compositorAnimationId) {
             // We still have a previous animation running on the compositor.
@@ -110,6 +112,30 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
     case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::RunningOnCompositor:
         m_runState = RunState::WaitingToCancelOnCompositor;
+
+        // Get serviced the next time compositor updates are allowed.
+        scrollableArea()->registerForAnimation();
+    }
+}
+
+void ScrollAnimatorCompositorCoordinator::takeoverCompositorAnimation()
+{
+    switch (m_runState) {
+    case RunState::Idle:
+    case RunState::WaitingToCancelOnCompositor:
+    case RunState::PostAnimationCleanup:
+    case RunState::RunningOnCompositorButNeedsTakeover:
+    case RunState::WaitingToSendToCompositor:
+    case RunState::RunningOnMainThread:
+        break;
+    case RunState::RunningOnCompositorButNeedsUpdate:
+    case RunState::RunningOnCompositor:
+        // We call abortAnimation that makes changes to the animation running on
+        // the compositor. Thus, this function should only be called when in
+        // CompositingClean state.
+        abortAnimation();
+
+        m_runState = RunState::RunningOnCompositorButNeedsTakeover;
 
         // Get serviced the next time compositor updates are allowed.
         scrollableArea()->registerForAnimation();
@@ -135,6 +161,7 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
         break;
     case RunState::RunningOnCompositor:
     case RunState::RunningOnCompositorButNeedsUpdate:
+    case RunState::RunningOnCompositorButNeedsTakeover:
     case RunState::WaitingToCancelOnCompositor:
         m_runState = RunState::PostAnimationCleanup;
         // Get serviced the next time compositor updates are allowed.

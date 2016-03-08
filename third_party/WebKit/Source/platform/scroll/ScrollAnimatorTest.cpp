@@ -94,6 +94,34 @@ private:
     bool m_scrollAnimatorEnabled;
 };
 
+class TestScrollAnimator : public ScrollAnimator {
+public:
+    TestScrollAnimator(ScrollableArea* scrollableArea, WTF::TimeFunction timingFunction)
+        : ScrollAnimator(scrollableArea, timingFunction) {};
+    ~TestScrollAnimator() override {};
+
+    void setShouldSendToCompositor(bool send)
+    {
+        m_shouldSendToCompositor = send;
+    }
+
+    bool sendAnimationToCompositor() override
+    {
+        if (m_shouldSendToCompositor) {
+            m_runState = ScrollAnimatorCompositorCoordinator::RunState::RunningOnCompositor;
+            m_compositorAnimationId = 1;
+            return true;
+        }
+        return false;
+    }
+
+protected:
+    void abortAnimation() override {}
+
+private:
+    bool m_shouldSendToCompositor = false;
+};
+
 } // namespace
 
 static void reset(ScrollAnimator& scrollAnimator)
@@ -273,6 +301,59 @@ TEST(ScrollAnimatorTest, AnimatedScrollAborted)
     EXPECT_EQ(x + 100, scrollAnimator->currentPosition().x());
     EXPECT_EQ(0, scrollAnimator->currentPosition().y());
 
+    reset(*scrollAnimator);
+}
+
+// Test that a smooth scroll offset animation running on the compositor is
+// completed on the main thread.
+TEST(ScrollAnimatorTest, AnimatedScrollTakeover)
+{
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea =
+        MockScrollableArea::create(true);
+    OwnPtrWillBeRawPtr<TestScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(
+        new TestScrollAnimator(scrollableArea.get(), getMockedTime));
+
+    EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
+        .WillRepeatedly(Return(IntPoint()));
+    EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1))
+        .WillRepeatedly(Return(IntPoint(1000, 1000)));
+    EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(2);
+    // Called from userScroll, updateCompositorAnimations, then
+    // takeoverCompositorAnimation (to re-register after RunningOnCompositor).
+    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(3);
+    EXPECT_CALL(*scrollableArea, scheduleAnimation()).Times(AtLeast(1))
+        .WillRepeatedly(Return(true));
+
+    EXPECT_FALSE(scrollAnimator->hasAnimationThatRequiresService());
+
+    // Smooth scroll.
+    ScrollResult result = scrollAnimator->userScroll(ScrollByLine, FloatSize(100, 0));
+    EXPECT_TRUE(scrollAnimator->hasAnimationThatRequiresService());
+    EXPECT_TRUE(result.didScrollX);
+    EXPECT_FLOAT_EQ(0.0, result.unusedScrollDeltaX);
+    EXPECT_TRUE(scrollAnimator->hasRunningAnimation());
+
+    // Update compositor animation.
+    gMockedTime += 0.05;
+    scrollAnimator->setShouldSendToCompositor(true);
+    scrollAnimator->updateCompositorAnimations();
+    EXPECT_EQ(scrollAnimator->m_runState,
+        ScrollAnimatorCompositorCoordinator::RunState::RunningOnCompositor);
+
+    // Takeover.
+    scrollAnimator->takeoverCompositorAnimation();
+    EXPECT_EQ(scrollAnimator->m_runState,
+        ScrollAnimatorCompositorCoordinator::RunState::RunningOnCompositorButNeedsTakeover);
+
+    // Animation should now be running on the main thread.
+    scrollAnimator->setShouldSendToCompositor(false);
+    scrollAnimator->updateCompositorAnimations();
+    EXPECT_EQ(scrollAnimator->m_runState,
+        ScrollAnimatorCompositorCoordinator::RunState::RunningOnMainThread);
+    scrollAnimator->tickAnimation(getMockedTime());
+    EXPECT_NE(100, scrollAnimator->currentPosition().x());
+    EXPECT_NE(0, scrollAnimator->currentPosition().x());
+    EXPECT_EQ(0, scrollAnimator->currentPosition().y());
     reset(*scrollAnimator);
 }
 

@@ -143,18 +143,18 @@ bool ScrollAnimator::willAnimateToOffset(const FloatPoint& targetPos)
         m_targetOffset = targetPos;
         ASSERT(m_runState == RunState::RunningOnMainThread
             || m_runState == RunState::RunningOnCompositor
-            || m_runState == RunState::RunningOnCompositorButNeedsUpdate);
-
-        if (m_runState == RunState::RunningOnCompositor
-            || m_runState == RunState::RunningOnCompositorButNeedsUpdate) {
-            if (registerAndScheduleAnimation())
-                m_runState = RunState::RunningOnCompositorButNeedsUpdate;
-            return true;
-        }
+            || m_runState == RunState::RunningOnCompositorButNeedsUpdate
+            || m_runState == RunState::RunningOnCompositorButNeedsTakeover);
 
         // Running on the main thread, simply update the target offset instead
         // of sending to the compositor.
-        m_animationCurve->updateTarget(m_timeFunction() - m_startTime, targetPos);
+        if (m_runState == RunState::RunningOnMainThread) {
+            m_animationCurve->updateTarget(m_timeFunction() - m_startTime, targetPos);
+            return true;
+        }
+
+        if (registerAndScheduleAnimation())
+            m_runState = RunState::RunningOnCompositorButNeedsUpdate;
         return true;
     }
 
@@ -212,6 +212,36 @@ void ScrollAnimator::postAnimationCleanupAndReset()
     resetAnimationState();
 }
 
+bool ScrollAnimator::sendAnimationToCompositor()
+{
+    if (m_scrollableArea->shouldScrollOnMainThread())
+        return false;
+
+    OwnPtr<CompositorAnimation> animation = adoptPtr(
+        CompositorFactory::current().createAnimation(
+            *m_animationCurve,
+            CompositorTargetProperty::SCROLL_OFFSET));
+    // Being here means that either there is an animation that needs
+    // to be sent to the compositor, or an animation that needs to
+    // be updated (a new scroll event before the previous animation
+    // is finished). In either case, the start time is when the
+    // first animation was initiated. This re-targets the animation
+    // using the current time on main thread.
+    animation->setStartTime(m_startTime);
+
+    int animationId = animation->id();
+    int animationGroupId = animation->group();
+
+    bool sentToCompositor = addAnimation(animation.release());
+    if (sentToCompositor) {
+        m_runState = RunState::RunningOnCompositor;
+        m_compositorAnimationId = animationId;
+        m_compositorAnimationGroupId = animationGroupId;
+    }
+
+    return sentToCompositor;
+}
+
 void ScrollAnimator::updateCompositorAnimations()
 {
     if (m_runState == RunState::PostAnimationCleanup) {
@@ -226,9 +256,16 @@ void ScrollAnimator::updateCompositorAnimations()
         // compositor animation that needs to be removed here before the new
         // animation is added below.
         ASSERT(m_runState == RunState::WaitingToCancelOnCompositor
-            || m_runState == RunState::WaitingToSendToCompositor);
+            || m_runState == RunState::WaitingToSendToCompositor
+            || m_runState == RunState::RunningOnCompositorButNeedsTakeover);
 
-        abortAnimation();
+        if (m_runState == RunState::RunningOnCompositorButNeedsTakeover) {
+            // The animation is already aborted when the call to
+            // ::takeoverCompositorAnimation is made.
+            m_runState = RunState::WaitingToSendToCompositor;
+        } else {
+            abortAnimation();
+        }
 
         m_compositorAnimationId = 0;
         m_compositorAnimationGroupId = 0;
@@ -263,32 +300,8 @@ void ScrollAnimator::updateCompositorAnimations()
             m_animationCurve->setInitialValue(currentPosition());
         }
 
-        bool sentToCompositor = false;
-        if (!m_scrollableArea->shouldScrollOnMainThread()) {
-            OwnPtr<CompositorAnimation> animation = adoptPtr(
-                CompositorFactory::current().createAnimation(
-                    *m_animationCurve,
-                    CompositorTargetProperty::SCROLL_OFFSET));
-            // Being here means that either there is an animation that needs
-            // to be sent to the compositor, or an animation that needs to
-            // be updated (a new scroll event before the previous animation
-            // is finished). In either case, the start time is when the
-            // first animation was initiated. This re-targets the animation
-            // using the current time on main thread.
-            animation->setStartTime(m_startTime);
-
-            int animationId = animation->id();
-            int animationGroupId = animation->group();
-
-            sentToCompositor = addAnimation(animation.release());
-            if (sentToCompositor) {
-                m_runState = RunState::RunningOnCompositor;
-                m_compositorAnimationId = animationId;
-                m_compositorAnimationGroupId = animationGroupId;
-            }
-        }
-
         bool runningOnMainThread = false;
+        bool sentToCompositor = sendAnimationToCompositor();
         if (!sentToCompositor) {
             runningOnMainThread = registerAndScheduleAnimation();
             if (runningOnMainThread)
@@ -356,6 +369,15 @@ void ScrollAnimator::notifyAnimationTakeover(
 void ScrollAnimator::cancelAnimation()
 {
     ScrollAnimatorCompositorCoordinator::cancelAnimation();
+}
+
+void ScrollAnimator::takeoverCompositorAnimation()
+{
+    if (m_runState == RunState::RunningOnCompositor
+        || m_runState ==  RunState::RunningOnCompositorButNeedsUpdate)
+        removeMainThreadScrollingReason();
+
+    ScrollAnimatorCompositorCoordinator::takeoverCompositorAnimation();
 }
 
 void ScrollAnimator::layerForCompositedScrollingDidChange(

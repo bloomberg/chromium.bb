@@ -43,7 +43,7 @@ namespace blink {
 class ScrollAnimatorTest;
 class CompositorAnimationTimeline;
 
-class PLATFORM_EXPORT ScrollAnimator final : public ScrollAnimatorBase {
+class PLATFORM_EXPORT ScrollAnimator : public ScrollAnimatorBase {
 public:
     explicit ScrollAnimator(ScrollableArea*, WTF::TimeFunction = WTF::monotonicallyIncreasingTime);
     ~ScrollAnimator() override;
@@ -58,6 +58,7 @@ public:
     // ScrollAnimatorCompositorCoordinator implementation.
     void tickAnimation(double monotonicTime) override;
     void cancelAnimation() override;
+    void takeoverCompositorAnimation() override;
     void resetAnimationState() override;
     void updateCompositorAnimations() override;
     void notifyCompositorAnimationFinished(int groupId) override;
@@ -67,6 +68,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
+    // Returns whether or not the animation was sent to the compositor.
+    virtual bool sendAnimationToCompositor();
+
     void notifyAnimationTakeover(
         double monotonicTime,
         double animationStartTime,

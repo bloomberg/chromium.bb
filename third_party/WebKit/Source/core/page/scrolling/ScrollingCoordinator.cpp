@@ -671,9 +671,12 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
 {
     if (!m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
         return;
-    if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
+    GraphicsLayer* layer = m_page->deprecatedLocalMainFrame()->view()->layerForScrolling();
+    if (WebLayer* scrollLayer = toWebLayer(layer)) {
         m_lastMainThreadScrollingReasons = mainThreadScrollingReasons;
         if (mainThreadScrollingReasons) {
+            if (ScrollAnimatorBase* scrollAnimator = layer->scrollableArea()->existingScrollAnimator())
+                scrollAnimator->takeoverCompositorAnimation();
             scrollLayer->addMainThreadScrollingReasons(mainThreadScrollingReasons);
         } else {
             // Clear all main thread scrolling reasons except the one that's set

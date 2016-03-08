@@ -36,6 +36,10 @@ public:
 
     virtual void resetAnimationState();
     virtual void cancelAnimation();
+    // Aborts the currently running scroll offset animation on the compositor
+    // and continues it on the main thread. This should only be called when in
+    // DocumentLifecycle::LifecycleState::CompositingClean state.
+    virtual void takeoverCompositorAnimation();
 
     virtual ScrollableArea* scrollableArea() const = 0;
     virtual void tickAnimation(double monotonicTime) = 0;
@@ -51,7 +55,7 @@ protected:
 
     bool addAnimation(PassOwnPtr<CompositorAnimation>);
     void removeAnimation();
-    void abortAnimation();
+    virtual void abortAnimation();
 
     void compositorAnimationFinished(int groupId);
     // Returns true if the compositor player was attached to a new layer.
@@ -71,6 +75,7 @@ protected:
 
     friend class Internals;
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, MainThreadStates);
+    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, AnimatedScrollTakeover);
 
     enum class RunState {
         // No animation.
@@ -97,7 +102,12 @@ protected:
         // Finished an animation that was running on the main thread or the
         // compositor thread. When in this state, post animation cleanup can
         // be performed.
-        PostAnimationCleanup
+        PostAnimationCleanup,
+
+        // Running an animation on the compositor but need to continue it
+        // on the main thread. This could happen if a main thread scrolling
+        // reason is added while animating the scroll offset.
+        RunningOnCompositorButNeedsTakeover,
     };
 
     OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
