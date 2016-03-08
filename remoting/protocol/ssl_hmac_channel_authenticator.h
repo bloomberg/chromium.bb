@@ -18,6 +18,7 @@ namespace net {
 class CertVerifier;
 class DrainableIOBuffer;
 class GrowableIOBuffer;
+class SSLServerContext;
 class SSLSocket;
 class TransportSecurityState;
 }  // namespace net
@@ -86,6 +87,7 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   // Used in the SERVER mode only.
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> local_key_pair_;
+  scoped_ptr<net::SSLServerContext> server_context_;
 
   // Used in the CLIENT mode only.
   std::string remote_cert_;

@@ -111,7 +111,30 @@ bool EmbeddedTestServer::InitializeAndListen() {
   port_ = local_endpoint_.port();
 
   listen_socket_->DetachFromThread();
+
+  if (is_using_ssl_)
+    InitializeSSLServerContext();
   return true;
+}
+
+void EmbeddedTestServer::InitializeSSLServerContext() {
+  base::FilePath certs_dir(GetTestCertsDirectory());
+  std::string cert_name = GetCertificateName();
+
+  base::FilePath key_path = certs_dir.AppendASCII(cert_name);
+  std::string key_string;
+  CHECK(base::ReadFileToString(key_path, &key_string));
+  std::vector<std::string> headers;
+  headers.push_back("PRIVATE KEY");
+  PEMTokenizer pem_tokenizer(key_string, headers);
+  pem_tokenizer.GetNext();
+  std::vector<uint8_t> key_vector;
+  key_vector.assign(pem_tokenizer.data().begin(), pem_tokenizer.data().end());
+
+  scoped_ptr<crypto::RSAPrivateKey> server_key(
+      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
+  context_ =
+      CreateSSLServerContext(GetCertificate().get(), *server_key, ssl_config_);
 }
 
 void EmbeddedTestServer::StartAcceptingConnections() {
@@ -276,24 +299,7 @@ scoped_ptr<StreamSocket> EmbeddedTestServer::DoSSLUpgrade(
     scoped_ptr<StreamSocket> connection) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
-  base::FilePath certs_dir(GetTestCertsDirectory());
-  std::string cert_name = GetCertificateName();
-
-  base::FilePath key_path = certs_dir.AppendASCII(cert_name);
-  std::string key_string;
-  CHECK(base::ReadFileToString(key_path, &key_string));
-  std::vector<std::string> headers;
-  headers.push_back("PRIVATE KEY");
-  PEMTokenizer pem_tokenizer(key_string, headers);
-  pem_tokenizer.GetNext();
-  std::vector<uint8_t> key_vector;
-  key_vector.assign(pem_tokenizer.data().begin(), pem_tokenizer.data().end());
-
-  scoped_ptr<crypto::RSAPrivateKey> server_key(
-      crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
-
-  return CreateSSLServerSocket(std::move(connection), GetCertificate().get(),
-                               *server_key, ssl_config_);
+  return context_->CreateSSLServerSocket(std::move(connection));
 }
 
 void EmbeddedTestServer::DoAcceptLoop() {

@@ -151,8 +151,10 @@ class NetStreamSocketAdapter : public net::StreamSocket {
 // Implements P2PStreamSocket interface on top of net::StreamSocket.
 class P2PStreamSocketAdapter : public P2PStreamSocket {
  public:
-  P2PStreamSocketAdapter(scoped_ptr<net::StreamSocket> socket)
-      : socket_(std::move(socket)) {}
+  P2PStreamSocketAdapter(scoped_ptr<net::StreamSocket> socket,
+                         scoped_ptr<net::SSLServerContext> server_context)
+      : server_context_(std::move(server_context)),
+        socket_(std::move(socket)) {}
   ~P2PStreamSocketAdapter() override {}
 
   int Read(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
@@ -165,6 +167,9 @@ class P2PStreamSocketAdapter : public P2PStreamSocket {
   }
 
  private:
+  // The server_context_ will be a nullptr for client sockets.
+  // The server_context_ must outlive any sockets it spawns.
+  scoped_ptr<net::SSLServerContext> server_context_;
   scoped_ptr<net::StreamSocket> socket_;
 };
 
@@ -217,8 +222,8 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     result = net::ERR_FAILED;
 #else
     scoped_refptr<net::X509Certificate> cert =
-        net::X509Certificate::CreateFromBytes(
-            local_cert_.data(), local_cert_.length());
+        net::X509Certificate::CreateFromBytes(local_cert_.data(),
+                                              local_cert_.length());
     if (!cert.get()) {
       LOG(ERROR) << "Failed to parse X509Certificate";
       NotifyError(net::ERR_FAILED);
@@ -228,9 +233,12 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     net::SSLServerConfig ssl_config;
     ssl_config.require_ecdhe = true;
 
-    scoped_ptr<net::SSLServerSocket> server_socket = net::CreateSSLServerSocket(
-        make_scoped_ptr(new NetStreamSocketAdapter(std::move(socket))),
+    server_context_ = net::CreateSSLServerContext(
         cert.get(), *local_key_pair_->private_key(), ssl_config);
+
+    scoped_ptr<net::SSLServerSocket> server_socket =
+        server_context_->CreateSSLServerSocket(
+            make_scoped_ptr(new NetStreamSocketAdapter(std::move(socket))));
     net::SSLServerSocket* raw_server_socket = server_socket.get();
     socket_ = std::move(server_socket);
     result = raw_server_socket->Handshake(
@@ -430,8 +438,8 @@ void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
       *callback_called = true;
 
     base::ResetAndReturn(&done_callback_)
-        .Run(net::OK,
-             make_scoped_ptr(new P2PStreamSocketAdapter(std::move(socket_))));
+        .Run(net::OK, make_scoped_ptr(new P2PStreamSocketAdapter(
+                          std::move(socket_), std::move(server_context_))));
   }
 }
 

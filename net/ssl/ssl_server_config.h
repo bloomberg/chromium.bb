@@ -73,7 +73,7 @@ struct NET_EXPORT SSLServerConfig {
   // Provides the ClientCertVerifier that is to be used to verify
   // client certificates during the handshake.
   // The |client_cert_verifier| continues to be owned by the caller,
-  // and must outlive any sockets using this SSLServerConfig.
+  // and must outlive any sockets spawned from this SSLServerContext.
   // This field is meaningful only if client certificates are requested.
   // If a verifier is not provided then all certificates are accepted.
   ClientCertVerifier* client_cert_verifier;
