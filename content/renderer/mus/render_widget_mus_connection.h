@@ -33,6 +33,7 @@ class RenderWidgetMusConnection : public RenderWidgetInputHandlerDelegate {
 
  private:
   friend class CompositorMusConnection;
+  friend class CompositorMusConnectionTest;
 
   explicit RenderWidgetMusConnection(int routing_id);
   ~RenderWidgetMusConnection() override;
@@ -56,14 +57,14 @@ class RenderWidgetMusConnection : public RenderWidgetInputHandlerDelegate {
 
   void OnConnectionLost();
   void OnWindowInputEvent(scoped_ptr<blink::WebInputEvent> input_event,
-                          const base::Closure& ack);
+                          const base::Callback<void(bool)>& ack);
 
   const int routing_id_;
   RenderWidgetInputHandler* input_handler_;
   scoped_ptr<mus::WindowSurfaceBinding> window_surface_binding_;
   scoped_refptr<CompositorMusConnection> compositor_mus_connection_;
 
-  base::Closure pending_ack_;
+  base::Callback<void(bool)> pending_ack_;
 
   // Used to verify single threaded access.
   base::ThreadChecker thread_checker_;

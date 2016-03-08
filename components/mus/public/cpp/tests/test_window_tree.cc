@@ -132,7 +132,7 @@ void TestWindowTree::SetImeVisibility(uint32_t window_id,
                                       bool visible,
                                       mojo::TextInputStatePtr state) {}
 
-void TestWindowTree::OnWindowInputEventAck(uint32_t event_id) {
+void TestWindowTree::OnWindowInputEventAck(uint32_t event_id, bool handled) {
   EXPECT_FALSE(acked_events_.count(event_id));
   acked_events_.insert(event_id);
 }

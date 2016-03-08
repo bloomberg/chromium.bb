@@ -118,8 +118,8 @@ void RenderWidgetMusConnection::OnDidOverscroll(
 void RenderWidgetMusConnection::OnInputEventAck(
     scoped_ptr<InputEventAck> input_event_ack) {
   DCHECK(!pending_ack_.is_null());
-  // TODO(fsamuel): Use the state in |input_event_ack|.
-  pending_ack_.Run();
+  pending_ack_.Run(input_event_ack->state ==
+                   InputEventAckState::INPUT_EVENT_ACK_STATE_CONSUMED);
   pending_ack_.Reset();
 }
 
@@ -161,12 +161,12 @@ void RenderWidgetMusConnection::OnConnectionLost() {
 
 void RenderWidgetMusConnection::OnWindowInputEvent(
     scoped_ptr<blink::WebInputEvent> input_event,
-    const base::Closure& ack) {
+    const base::Callback<void(bool)>& ack) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If we don't yet have a RenderWidgetInputHandler then we don't yet have
   // an initialized RenderWidget.
   if (!input_handler_) {
-    ack.Run();
+    ack.Run(false);
     return;
   }
   // TODO(fsamuel): It would be nice to add this DCHECK but the reality is an

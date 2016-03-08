@@ -355,7 +355,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     // Ack input events to clear the state on the server. These can be received
     // during test startup. X11Window::DispatchEvent sends a synthetic move
     // event to notify of entry.
-    tree()->OnWindowInputEventAck(event_id);
+    tree()->OnWindowInputEventAck(event_id, true);
     // Don't log input events as none of the tests care about them and they
     // may come in at random points.
   }

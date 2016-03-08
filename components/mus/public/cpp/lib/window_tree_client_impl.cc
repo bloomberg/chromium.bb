@@ -820,17 +820,21 @@ void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,
                                               mojom::EventPtr event) {
   Window* window = GetWindowById(window_id);
   if (!window || !window->input_event_handler_) {
-    tree_->OnWindowInputEventAck(event_id);
+    tree_->OnWindowInputEventAck(event_id, false);
     return;
   }
 
-  scoped_ptr<base::Closure> ack_callback(
-      new base::Closure(base::Bind(&mojom::WindowTree::OnWindowInputEventAck,
-                                   base::Unretained(tree_), event_id)));
+  scoped_ptr<base::Callback<void(bool)>> ack_callback(
+      new base::Callback<void(bool)>(
+          base::Bind(&mojom::WindowTree::OnWindowInputEventAck,
+                     base::Unretained(tree_), event_id)));
   window->input_event_handler_->OnWindowInputEvent(window, std::move(event),
                                                    &ack_callback);
+
+  // The handler did not take ownership of the callback, so we send the ack,
+  // marking the event as not consumed.
   if (ack_callback)
-    ack_callback->Run();
+    ack_callback->Run(false);
 }
 
 void WindowTreeClientImpl::OnWindowFocused(Id focused_window_id) {
