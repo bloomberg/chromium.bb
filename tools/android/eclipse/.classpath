@@ -98,8 +98,8 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/accessibility_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/activity_type_ids_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/android_resource_type_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/autocomplete_match_java/"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/autocomplete_match_type_java/"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/autocomplete_match_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/autocomplete_match_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/ax_enumerations_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/base_java_application_state"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/base_java_library_load_from_apk_status_codes"/>
@@ -107,46 +107,63 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/base_java_memory_pressure_level"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/bitmap_format_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/bookmark_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/browsing_data_time_period_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/browsing_data_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/certificate_mime_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/cert_verify_status_android_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/connection_security_levels_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/chromium_url_request_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/connectivity_check_result_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/console_message_level_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_gamepad_mapping"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_setting_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_settings_type_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/cronet_url_request_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/data_use_ui_message_enum_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/device_sensors_consts_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/gesture_event_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/http_cache_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/infobar_action_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/infobar_delegate_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/invalidate_types_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/investigated_scenario_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/media_android_captureapitype"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/media_android_imageformat"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/model_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/most_visited_tile_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/navigation_controller_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/net_request_priority_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/network_change_notifier_android_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/network_change_notifier_types_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/network_quality_observations_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/offline_page_feature_enums_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/offline_page_model_enums_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/page_info_connection_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/page_transition_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/popup_item_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/private_key_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/profile_account_management_metrics_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/profile_sync_service_model_type_selection_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/readback_response_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/result_codes_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/screen_orientation_values_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/security_state_enums_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/selection_event_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/sensor_manager_android_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/shortcut_source_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/signin_metrics_enum_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/speech_recognition_error_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/stop_source_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/system_ui_resource_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/tab_load_status_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/text_input_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/top_controls_state_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/touch_device_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/touch_handle_orientation_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/traffic_stats_error_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/url_request_error_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/url_request_failed_job_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/usb_descriptors_javagen"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_display_mode"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_input_event_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/website_settings_action_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_text_input_type"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/window_open_disposition_java"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/base_build_config_gen"/>
