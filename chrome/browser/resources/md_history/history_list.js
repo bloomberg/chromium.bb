@@ -46,7 +46,7 @@ Polymer({
    * @private
    */
   closeMenu_: function() {
-    this.$.sharedMenu.closeMenu();
+    /** @type {CrSharedMenuElement} */(this.$.sharedMenu).closeMenu();
   },
 
   /**
@@ -63,7 +63,8 @@ Polymer({
    * @private
    */
   toggleMenu_: function(e) {
-    this.$.sharedMenu.toggleMenu(e.detail.target);
+    var target = e.detail.target;
+    /** @type {CrSharedMenuElement} */(this.$.sharedMenu).toggleMenu(target);
   },
 
   /**
@@ -86,9 +87,8 @@ Polymer({
       this.searchTerm = searchTerm;
     }
 
-    if (historyResults.length == 0) {
+    if (historyResults.length == 0)
       return;
-    }
 
     // Creates a copy of historyResults to prevent accidentally modifying this
     // field.
