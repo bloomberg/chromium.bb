@@ -38,6 +38,7 @@ namespace blink {
 class ImageResource;
 class CSSValue;
 class LayoutObject;
+class SVGImage;
 
 typedef void* WrappedImagePtr;
 
@@ -56,7 +57,7 @@ public:
     virtual bool canRender() const { return true; }
     virtual bool isLoaded() const { return true; }
     virtual bool errorOccurred() const { return false; }
-    virtual LayoutSize imageSize(const LayoutObject*, float multiplier) const = 0;
+    virtual LayoutSize imageSize(const LayoutObject*, float multiplier, const LayoutSize& defaultObjectSize) const = 0;
     virtual void computeIntrinsicDimensions(const LayoutObject*, FloatSize& intrinsicSize, FloatSize& intrinsicRatio) = 0;
     virtual bool imageHasRelativeSize() const = 0;
     virtual bool usesImageContainerSize() const = 0;
@@ -90,6 +91,9 @@ protected:
     bool m_isGeneratedImage:1;
     bool m_isImageResourceSet:1;
     bool m_isInvalidImage:1;
+
+    static LayoutSize applyZoom(const LayoutSize&, float multiplier);
+    LayoutSize imageSizeForSVGImage(SVGImage*, float multiplier, const LayoutSize& defaultObjectSize) const;
 };
 
 #define DEFINE_STYLE_IMAGE_TYPE_CASTS(thisType, function) \

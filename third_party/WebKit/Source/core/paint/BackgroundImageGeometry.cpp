@@ -53,8 +53,7 @@ LayoutSize calculateFillTileSize(const LayoutBoxModelObject& obj, const FillLaye
     StyleImage* image = fillLayer.image();
     EFillSizeType type = fillLayer.size().type;
 
-    LayoutSize imageIntrinsicSize = obj.calculateImageIntrinsicDimensions(image, positioningAreaSize, LayoutBoxModelObject::ScaleByEffectiveZoom);
-    imageIntrinsicSize.scale(1 / image->imageScaleFactor(), 1 / image->imageScaleFactor());
+    LayoutSize imageIntrinsicSize = image->imageSize(&obj, obj.style()->effectiveZoom(), positioningAreaSize);
     switch (type) {
     case SizeLength: {
         LayoutSize tileSize(positioningAreaSize);

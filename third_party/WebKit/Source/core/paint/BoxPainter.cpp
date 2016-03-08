@@ -136,9 +136,11 @@ void BoxPainter::paintBackground(const PaintInfo& paintInfo, const LayoutRect& p
 
 bool BoxPainter::isFillLayerOpaque(const FillLayer& layer, const LayoutObject& imageClient)
 {
+    // The default object size passed down to imageSize is empty with the implication that images
+    // with no intrinsic size are treated as empty.
     return layer.hasOpaqueImage(&imageClient)
         && layer.image()->canRender()
-        && !layer.image()->imageSize(&imageClient, imageClient.style()->effectiveZoom()).isEmpty()
+        && !layer.image()->imageSize(&imageClient, imageClient.style()->effectiveZoom(), LayoutSize()).isEmpty()
         && layer.hasRepeatXY();
 }
 

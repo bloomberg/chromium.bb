@@ -46,33 +46,21 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::computedCSSValue() const
     return m_imageGeneratorValue->valueWithURLsMadeAbsolute();
 }
 
-LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* layoutObject, float multiplier) const
+LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* layoutObject, float multiplier, const LayoutSize& defaultObjectSize) const
 {
     if (m_fixedSize) {
-        LayoutSize fixedSize(m_imageGeneratorValue->fixedSize(layoutObject));
-        if (multiplier == 1.0f)
-            return fixedSize;
-
-        LayoutUnit width(fixedSize.width() * multiplier);
-        LayoutUnit height(fixedSize.height() * multiplier);
-
-        // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
-        if (fixedSize.width() > LayoutUnit())
-            width = max(LayoutUnit(1), width);
-
-        if (fixedSize.height() > LayoutUnit())
-            height = max(LayoutUnit(1), height);
-
-        return LayoutSize(width, height);
+        FloatSize unzoomedDefaultObjectSize(defaultObjectSize);
+        unzoomedDefaultObjectSize.scale(1 / multiplier);
+        return applyZoom(LayoutSize(m_imageGeneratorValue->fixedSize(layoutObject, unzoomedDefaultObjectSize)), multiplier);
     }
 
-    return LayoutSize();
+    return defaultObjectSize;
 }
 
 void StyleGeneratedImage::computeIntrinsicDimensions(const LayoutObject* layoutObject, FloatSize& intrinsicSize, FloatSize& intrinsicRatio)
 {
     // At a zoom level of 1 the image is guaranteed to have an integer size.
-    LayoutSize size = imageSize(layoutObject, 1);
+    LayoutSize size = imageSize(layoutObject, 1, LayoutSize());
     ASSERT(size.fraction().isZero());
     intrinsicSize = intrinsicRatio = FloatSize(size);
 }

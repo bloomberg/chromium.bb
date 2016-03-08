@@ -49,8 +49,7 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext, const Layout
     rectWithOutsets.expand(style.imageOutsets(ninePieceImage));
     LayoutRect borderImageRect = rectWithOutsets;
 
-    IntSize imageSize = roundedIntSize(m_layoutObject.calculateImageIntrinsicDimensions(styleImage, borderImageRect.size(),
-        LayoutBoxModelObject::DoNotScaleByEffectiveZoom));
+    IntSize imageSize = roundedIntSize(styleImage->imageSize(&m_layoutObject, 1, borderImageRect.size()));
 
     IntRectOutsets borderWidths(style.borderTopWidth(), style.borderRightWidth(),
         style.borderBottomWidth(), style.borderLeftWidth());
@@ -67,6 +66,10 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext, const Layout
 
     for (NinePiece piece = MinPiece; piece < MaxPiece; ++piece) {
         NinePieceImageGrid::NinePieceDrawInfo drawInfo = grid.getNinePieceDrawInfo(piece);
+
+        // The nine piece grid is computed in unscaled image coordinates but must be drawn using
+        // scaled image coordinates.
+        drawInfo.source.scale(styleImage->imageScaleFactor());
 
         if (drawInfo.isDrawable) {
             if (drawInfo.isCornerPiece) {

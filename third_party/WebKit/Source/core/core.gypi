@@ -805,6 +805,7 @@
             'style/StyleBoxData.cpp',
             'style/StyleContentAlignmentData.h',
             'style/StyleDeprecatedFlexibleBoxData.cpp',
+            'style/StyleImage.cpp',
             'style/StyleFetchedImage.cpp',
             'style/StyleFetchedImageSet.cpp',
             'style/StyleFilterData.cpp',

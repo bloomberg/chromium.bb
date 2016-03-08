@@ -155,11 +155,11 @@ bool CSSImageGeneratorValue::isFixedSize() const
     return false;
 }
 
-IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject* layoutObject)
+IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject* layoutObject, const FloatSize& defaultObjectSize)
 {
     switch (getClassType()) {
     case CrossfadeClass:
-        return toCSSCrossfadeValue(this)->fixedSize(layoutObject);
+        return toCSSCrossfadeValue(this)->fixedSize(layoutObject, defaultObjectSize);
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->fixedSize(layoutObject);
     case RadialGradientClass:

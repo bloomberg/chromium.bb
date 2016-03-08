@@ -37,6 +37,7 @@ namespace blink {
 class Document;
 class Image;
 class LayoutObject;
+class FloatSize;
 
 struct SizeAndCount {
     DISALLOW_NEW();
@@ -61,7 +62,7 @@ public:
     PassRefPtr<Image> image(const LayoutObject*, const IntSize&);
 
     bool isFixedSize() const;
-    IntSize fixedSize(const LayoutObject*);
+    IntSize fixedSize(const LayoutObject*, const FloatSize& defaultObjectSize);
 
     bool isPending() const;
     bool knownToBeOpaque(const LayoutObject*) const;

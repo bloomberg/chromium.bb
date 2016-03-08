@@ -54,7 +54,7 @@ public:
 
     PassRefPtr<Image> image(const LayoutObject*, const IntSize&);
     bool isFixedSize() const { return true; }
-    IntSize fixedSize(const LayoutObject*);
+    IntSize fixedSize(const LayoutObject*, const FloatSize&);
 
     bool isPending() const;
     bool knownToBeOpaque(const LayoutObject*) const;

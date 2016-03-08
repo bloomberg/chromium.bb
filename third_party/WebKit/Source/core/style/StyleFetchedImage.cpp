@@ -91,9 +91,17 @@ bool StyleFetchedImage::errorOccurred() const
     return m_image->errorOccurred();
 }
 
-LayoutSize StyleFetchedImage::imageSize(const LayoutObject* layoutObject, float multiplier) const
+LayoutSize StyleFetchedImage::imageSize(const LayoutObject* layoutObject, float multiplier, const LayoutSize& defaultObjectSize) const
 {
-    return m_image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject), multiplier);
+    if (m_image->image() && m_image->image()->isSVGImage())
+        return imageSizeForSVGImage(toSVGImage(m_image->image()), multiplier, defaultObjectSize);
+
+    // Image orientation should only be respected for content images,
+    // not decorative images such as StyleImage (backgrounds,
+    // border-image, etc.)
+    //
+    // https://drafts.csswg.org/css-images-3/#the-image-orientation
+    return m_image->imageSize(DoNotRespectImageOrientation, multiplier);
 }
 
 bool StyleFetchedImage::imageHasRelativeSize() const

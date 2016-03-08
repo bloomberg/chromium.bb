@@ -62,7 +62,7 @@ public:
     bool canRender() const override;
     bool isLoaded() const override;
     bool errorOccurred() const override;
-    LayoutSize imageSize(const LayoutObject*, float multiplier) const override;
+    LayoutSize imageSize(const LayoutObject*, float multiplier, const LayoutSize& defaultObjectSize) const override;
     bool imageHasRelativeSize() const override;
     void computeIntrinsicDimensions(const LayoutObject*, FloatSize& intrinsicSize, FloatSize& intrinsicRatio) override;
     bool usesImageContainerSize() const override;

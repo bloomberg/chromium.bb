@@ -55,7 +55,7 @@ public:
 
     bool isSVGImage() const override { return true; }
     bool isTextureBacked() override { return false; }
-    IntSize size() const override { return m_concreteObjectSize; }
+    IntSize size() const override { return m_intrinsicSize; }
 
     bool currentFrameHasSingleSecurityOrigin() const override;
 
@@ -77,6 +77,8 @@ public:
 
     void updateUseCounters(Document&) const;
 
+    FloatSize concreteObjectSize(const FloatSize&) const;
+
     // DisplayItemClient methods.
     String debugName() const final { return "SVGImage"; }
     LayoutRect visualRect() const override;
@@ -90,7 +92,6 @@ private:
 
     String filenameExtension() const override;
 
-    FloatSize calculateConcreteObjectSize(const FloatSize&) const;
     IntSize containerSize() const;
     bool usesContainerSize() const override { return true; }
     void computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio) override;
@@ -116,18 +117,13 @@ private:
     OwnPtrWillBePersistent<SVGImageChromeClient> m_chromeClient;
     OwnPtrWillBePersistent<Page> m_page;
 
-    // "The concrete object size is the result of combining an
-    // object’s intrinsic dimensions and specified size with the
-    // default object size of the context it’s used in, producing a
-    // rectangle with a definite width and height."
-    //
-    // https://drafts.csswg.org/css-images-3/#concrete-object-size
-    //
-    // Note: For SVGImage there are no specified size
-    // constraints. Such constraints are handled by the layout
-    // machinery in LayoutReplaced. An image has only intrinsic size,
-    // aspect ratio and default object size to consider.
-    IntSize m_concreteObjectSize;
+    // When an SVG image has no intrinsic size the size depends on the
+    // default object size, which in turn depends on the
+    // container. SVGImage may belong to multiple containers so the
+    // final image size can't be known in
+    // SVGImage. SVGImageForContainer carried the final image size,
+    // also called concrete object size.
+    IntSize m_intrinsicSize;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);

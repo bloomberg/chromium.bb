@@ -35,14 +35,10 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& ninePieceImage, Int
     , m_verticalTileRule((Image::TileRule)ninePieceImage.verticalRule())
     , m_fill(ninePieceImage.fill())
 {
-    StyleImage* styleImage = ninePieceImage.image();
-    ASSERT(styleImage);
-
-    float imageScaleFactor = styleImage->imageScaleFactor();
-    m_top.slice = computeEdgeSlice(ninePieceImage.imageSlices().top(), imageSize.height()) * imageScaleFactor;
-    m_right.slice = computeEdgeSlice(ninePieceImage.imageSlices().right(), imageSize.width()) * imageScaleFactor;
-    m_bottom.slice = computeEdgeSlice(ninePieceImage.imageSlices().bottom(), imageSize.height()) * imageScaleFactor;
-    m_left.slice = computeEdgeSlice(ninePieceImage.imageSlices().left(), imageSize.width()) * imageScaleFactor;
+    m_top.slice = computeEdgeSlice(ninePieceImage.imageSlices().top(), imageSize.height());
+    m_right.slice = computeEdgeSlice(ninePieceImage.imageSlices().right(), imageSize.width());
+    m_bottom.slice = computeEdgeSlice(ninePieceImage.imageSlices().bottom(), imageSize.height());
+    m_left.slice = computeEdgeSlice(ninePieceImage.imageSlices().left(), imageSize.width());
 
     m_top.width = computeEdgeWidth(ninePieceImage.borderSlices().top(), borderWidths.top(), m_top.slice,
         borderImageArea.height());

@@ -155,7 +155,7 @@ IntSize SVGImage::containerSize() const
     ASSERT(layoutObject->style()->effectiveZoom() == 1);
 
     // No set container size; use concrete object size.
-    return m_concreteObjectSize;
+    return m_intrinsicSize;
 }
 
 static float resolveWidthForRatio(float height, const FloatSize& intrinsicRatio)
@@ -168,7 +168,7 @@ static float resolveHeightForRatio(float width, const FloatSize& intrinsicRatio)
     return width * intrinsicRatio.height() / intrinsicRatio.width();
 }
 
-FloatSize SVGImage::calculateConcreteObjectSize(const FloatSize& defaultObjectSize) const
+FloatSize SVGImage::concreteObjectSize(const FloatSize& defaultObjectSize) const
 {
     SVGSVGElement* svg = svgRootElement(m_page.get());
     if (!svg)
@@ -208,11 +208,25 @@ FloatSize SVGImage::calculateConcreteObjectSize(const FloatSize& defaultObjectSi
     }
 
     if (!intrinsicSizingInfo.aspectRatio.isEmpty()) {
-        // TODO(davve): According to the specification, the concrete object size should resolve as a
-        // contain constraint against the default object size at this stage. Until the
-        // defaultObjectSize is context sensitive, right now it's hard-coded to 300x150, we have to
-        // preserve legacy behavior by returning the aspectRatio as the concrete object size.
-        return intrinsicSizingInfo.aspectRatio;
+        // "A contain constraint is resolved by setting the concrete object size to the largest
+        //  rectangle that has the object's intrinsic aspect ratio and additionally has neither
+        //  width nor height larger than the constraint rectangle's width and height, respectively."
+        float solutionWidth = resolveWidthForRatio(defaultObjectSize.height(), intrinsicSizingInfo.aspectRatio);
+        float solutionHeight = resolveHeightForRatio(defaultObjectSize.width(), intrinsicSizingInfo.aspectRatio);
+        if (solutionWidth <= defaultObjectSize.width()) {
+            if (solutionHeight <= defaultObjectSize.height()) {
+                float areaOne = solutionWidth * defaultObjectSize.height();
+                float areaTwo = defaultObjectSize.width() * solutionHeight;
+                if (areaOne < areaTwo)
+                    return FloatSize(defaultObjectSize.width(), solutionHeight);
+                return FloatSize(solutionWidth, defaultObjectSize.height());
+            }
+
+            return FloatSize(solutionWidth, defaultObjectSize.height());
+        }
+
+        ASSERT(solutionHeight <= defaultObjectSize.height());
+        return FloatSize(defaultObjectSize.width(), solutionHeight);
     }
 
     return defaultObjectSize;
@@ -535,7 +549,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
             AtomicString("UTF-8", AtomicString::ConstructFromLiteral), KURL(), ForceSynchronousLoad)));
 
         // Set the concrete object size before a container size is available.
-        m_concreteObjectSize = roundedIntSize(calculateConcreteObjectSize(FloatSize(300, 150)));
+        m_intrinsicSize = roundedIntSize(concreteObjectSize(FloatSize(300, 150)));
     }
 
     return m_page;

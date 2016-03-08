@@ -159,7 +159,7 @@ PassRefPtrWillBeRawPtr<CSSCrossfadeValue> CSSCrossfadeValue::valueWithURLsMadeAb
     return CSSCrossfadeValue::create(fromValue.release(), toValue.release(), m_percentageValue);
 }
 
-IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* layoutObject)
+IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* layoutObject, const FloatSize& defaultObjectSize)
 {
     Image* fromImage = renderableImageForCSSValue(m_fromValue.get(), layoutObject);
     Image* toImage = renderableImageForCSSValue(m_toValue.get(), layoutObject);
@@ -169,6 +169,12 @@ IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* layoutObject)
 
     IntSize fromImageSize = fromImage->size();
     IntSize toImageSize = toImage->size();
+
+    if (fromImage->isSVGImage())
+        fromImageSize = roundedIntSize(toSVGImage(fromImage)->concreteObjectSize(defaultObjectSize));
+
+    if (toImage->isSVGImage())
+        toImageSize = roundedIntSize(toSVGImage(toImage)->concreteObjectSize(defaultObjectSize));
 
     // Rounding issues can cause transitions between images of equal size to return
     // a different fixed size; avoid performing the interpolation if the images are the same size.
@@ -237,7 +243,7 @@ PassRefPtr<Image> CSSCrossfadeValue::image(const LayoutObject* layoutObject, con
     if (toImage->isSVGImage())
         toImageRef = SVGImageForContainer::create(toSVGImage(toImage), size, 1, urlForCSSValue(m_toValue.get()));
 
-    m_generatedImage = CrossfadeGeneratedImage::create(fromImageRef, toImageRef, m_percentageValue->getFloatValue(), fixedSize(layoutObject), size);
+    m_generatedImage = CrossfadeGeneratedImage::create(fromImageRef, toImageRef, m_percentageValue->getFloatValue(), fixedSize(layoutObject, FloatSize(size)), size);
 
     return m_generatedImage.release();
 }

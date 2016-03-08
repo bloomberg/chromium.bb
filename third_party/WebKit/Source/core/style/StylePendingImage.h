@@ -61,7 +61,7 @@ public:
     CSSCursorImageValue* cssCursorImageValue() const { return m_value->isCursorImageValue() ? toCSSCursorImageValue(m_value.get()) : 0; }
     CSSImageSetValue* cssImageSetValue() const { return m_value->isImageSetValue() ? toCSSImageSetValue(m_value.get()) : 0; }
 
-    LayoutSize imageSize(const LayoutObject*, float /*multiplier*/) const override { return LayoutSize(); }
+    LayoutSize imageSize(const LayoutObject*, float /*multiplier*/, const LayoutSize& /*defaultObjectSize*/) const override { return LayoutSize(); }
     bool imageHasRelativeSize() const override { return false; }
     void computeIntrinsicDimensions(const LayoutObject*, FloatSize& /* intrinsicSize */, FloatSize& /* intrinsicRatio */) override { }
     bool usesImageContainerSize() const override { return false; }
