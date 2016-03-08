@@ -4,7 +4,10 @@
 
 package org.chromium.base.test;
 
+import android.app.ActivityOptions;
 import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -153,5 +156,18 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
             }
             return false;
         }
+    }
+
+    @Override
+    public Context getTargetContext() {
+        return new ContextWrapper(super.getTargetContext()) {
+            @Override
+            public void startActivity(Intent intent) {
+                Context context = getApplicationContext();
+                ActivityOptions activityOptions =
+                        ActivityOptions.makeCustomAnimation(context, 0, 0);
+                startActivity(intent, activityOptions.toBundle());
+            }
+        };
     }
 }
