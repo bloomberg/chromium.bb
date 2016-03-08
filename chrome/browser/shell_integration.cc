@@ -155,8 +155,6 @@ DefaultWebClientWorker::DefaultWebClientWorker(
     : callback_(callback) {}
 
 void DefaultWebClientWorker::StartCheckIsDefault() {
-  RunCallback(STATE_PROCESSING);
-
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DefaultWebClientWorker::CheckIsDefault, this));
@@ -174,8 +172,6 @@ void DefaultWebClientWorker::StartSetAsDefault() {
   }
 
   set_as_default_in_progress_ = true;
-  RunCallback(STATE_PROCESSING);
-
   set_as_default_initialized_ = InitializeSetAsDefault();
 
   // Remember the start time.
@@ -234,11 +230,6 @@ void DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
   }
 }
 
-void DefaultWebClientWorker::RunCallback(DefaultWebClientUIState state) {
-  if (!callback_.is_null())
-    callback_.Run(state);
-}
-
 void DefaultWebClientWorker::ReportAttemptResult(AttemptResult result) {
   const char* histogram_prefix = GetHistogramPrefix();
 
@@ -268,18 +259,20 @@ bool DefaultWebClientWorker::InitializeSetAsDefault() {
 void DefaultWebClientWorker::FinalizeSetAsDefault() {}
 
 void DefaultWebClientWorker::UpdateUI(DefaultWebClientState state) {
-  switch (state) {
-    case NOT_DEFAULT:
-      RunCallback(STATE_NOT_DEFAULT);
-      break;
-    case IS_DEFAULT:
-      RunCallback(STATE_IS_DEFAULT);
-      break;
-    case UNKNOWN_DEFAULT:
-      RunCallback(STATE_UNKNOWN);
-      break;
-    case NUM_DEFAULT_STATES:
-      break;
+  if (!callback_.is_null()) {
+    switch (state) {
+      case NOT_DEFAULT:
+        callback_.Run(STATE_NOT_DEFAULT);
+        break;
+      case IS_DEFAULT:
+        callback_.Run(STATE_IS_DEFAULT);
+        break;
+      case UNKNOWN_DEFAULT:
+        callback_.Run(STATE_UNKNOWN);
+        break;
+      case NUM_DEFAULT_STATES:
+        break;
+    }
   }
 }
 

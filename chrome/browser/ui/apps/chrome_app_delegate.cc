@@ -91,8 +91,6 @@ void OnCheckIsDefaultBrowserFinished(
   if (!profile)
     return;
   switch (state) {
-    case shell_integration::STATE_PROCESSING:
-      break;
     case shell_integration::STATE_IS_DEFAULT:
       OpenURLFromTabInternal(profile, params);
       break;

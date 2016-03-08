@@ -234,9 +234,8 @@ void OnShellWorkerFinished(ProtocolHandlerRegistry* registry,
   if (state == shell_integration::STATE_IS_DEFAULT) {
     delegate->FakeRegisterWithOS(protocol);
   }
-  if (state != shell_integration::STATE_PROCESSING) {
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
+
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void FakeDelegate::RegisterWithOSAsDefaultClient(

@@ -103,11 +103,6 @@ void OnDefaultProtocolClientWorkerFinished(
     shell_integration::DefaultWebClientUIState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // If we are still working out if we're the default, or we've found
-  // out we definately are the default, we end here.
-  if (state == shell_integration::STATE_PROCESSING)
-    return;
-
   if (delegate)
     delegate->FinishedProcessingCheck();
 

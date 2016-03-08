@@ -62,9 +62,6 @@ void DefaultBrowserHandler::SetAsDefaultBrowser(const base::ListValue* args) {
 
 void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
     shell_integration::DefaultWebClientUIState state) {
-  if (state == shell_integration::STATE_PROCESSING)
-    return;
-
   if (state == shell_integration::STATE_IS_DEFAULT) {
     // Notify the user in the future if Chrome ceases to be the user's chosen
     // default browser.

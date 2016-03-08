@@ -184,7 +184,6 @@ base::string16 GetAppShortcutsSubdirName();
 // application for a url protocol, and communicates the state and result of
 // a request.
 enum DefaultWebClientUIState {
-  STATE_PROCESSING,
   STATE_NOT_DEFAULT,
   STATE_IS_DEFAULT,
   STATE_UNKNOWN
@@ -271,9 +270,6 @@ class DefaultWebClientWorker
   // It is safe to call this multiple times. Only the first call is processed
   // after StartSetAsDefault() is invoked.
   void OnSetAsDefaultAttemptComplete(AttemptResult result);
-
-  // Runs the callback but only if it is not null.
-  void RunCallback(DefaultWebClientUIState state);
 
   // Returns true if FinalizeSetAsDefault() will be called.
   bool set_as_default_initialized() const {
