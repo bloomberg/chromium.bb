@@ -1870,6 +1870,12 @@ function TouchHandler(targetElement, slideMode) {
    */
   this.lastZoom_ = 1.0;
 
+  /**
+   * @type {number}
+   * @private
+   */
+  this.mouseWheelZoomOperationId_ = 0;
+
   targetElement.addEventListener('touchstart', this.onTouchStart_.bind(this));
   var onTouchEventBound = this.onTouchEvent_.bind(this);
   targetElement.ownerDocument.addEventListener('touchmove', onTouchEventBound);
@@ -2068,20 +2074,28 @@ TouchHandler.WHEEL_ZOOM_FACTOR = 1.05;
  */
 TouchHandler.prototype.onMouseWheel_ = function(event) {
   var event = assertInstanceof(event, MouseEvent);
-  var viewport = this.slideMode_.getViewport();
   if (!this.enabled_)
     return;
 
   this.stopOperation();
-  this.lastZoom_ = viewport.getZoom();
-  var zoom = this.lastZoom_;
+
+  var viewport = this.slideMode_.getViewport();
+  var zoom = viewport.getZoom();
   if (event.wheelDeltaY > 0) {
     zoom *= TouchHandler.WHEEL_ZOOM_FACTOR;
   } else {
     zoom /= TouchHandler.WHEEL_ZOOM_FACTOR;
   }
-  viewport.setZoom(zoom);
-  this.slideMode_.imageView_.applyViewportChange();
+
+  // Request animation frame not to set zoom more than once in a frame. This is
+  // a fix for https://crbug.com/591033
+  requestAnimationFrame(function(operationId) {
+    if (this.mouseWheelZoomOperationId_ !== operationId)
+      return;
+
+    viewport.setZoom(zoom);
+    this.slideMode_.applyViewportChange();
+  }.bind(this, ++this.mouseWheelZoomOperationId_));
 };
 
 /**
