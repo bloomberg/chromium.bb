@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.preferences.privacy;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.widget.ListView;
@@ -16,6 +15,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BrowsingDataType;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
+import org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SpinnerPreference;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataCounterBridge.BrowsingDataCounterCallback;
@@ -39,19 +39,20 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
                                          Preference.OnPreferenceClickListener {
         private final ClearBrowsingDataPreferences mParent;
         private final DialogOption mOption;
-        private final CheckBoxPreference mCheckbox;
+        private final ClearBrowsingDataCheckBoxPreference mCheckbox;
         private BrowsingDataCounterBridge mCounter;
+        private boolean mShouldAnnounceCounterResult;
 
         public Item(ClearBrowsingDataPreferences parent,
                     DialogOption option,
-                    CheckBoxPreference checkbox,
+                    ClearBrowsingDataCheckBoxPreference checkbox,
                     boolean selected,
                     boolean enabled) {
             super();
             mParent = parent;
             mOption = option;
-            mCounter = new BrowsingDataCounterBridge(this, mOption.getDataType());
             mCheckbox = checkbox;
+            mCounter = new BrowsingDataCounterBridge(this, mOption.getDataType());
 
             mCheckbox.setOnPreferenceClickListener(this);
             mCheckbox.setEnabled(enabled);
@@ -76,6 +77,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             assert mCheckbox == preference;
 
             mParent.updateButtonState();
+            mShouldAnnounceCounterResult = true;
             PrefServiceBridge.getInstance().setBrowsingDataDeletionPreference(
                     mOption.getDataType(), mCheckbox.isChecked());
             return true;
@@ -83,7 +85,19 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
 
         @Override
         public void onCounterFinished(String result) {
-            if (mCheckbox != null) mCheckbox.setSummaryOn(result);
+            mCheckbox.setSummaryOn(result);
+            if (mShouldAnnounceCounterResult) {
+                mCheckbox.announceForAccessibility(result);
+            }
+        }
+
+        /**
+         * Sets whether the BrowsingDataCounter result should be announced. This is when the counter
+         * recalculation was caused by a checkbox state change (as opposed to fragment
+         * initialization or time period change).
+         */
+        public void setShouldAnnounceCounterResult(boolean value) {
+            mShouldAnnounceCounterResult = value;
         }
     }
 
@@ -272,6 +286,12 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
         if (preference.getKey().equals(PREF_TIME_RANGE)) {
+            // Inform the items that a recalculation is going to happen as a result of the time
+            // period change.
+            for (Item item : mItems) {
+                item.setShouldAnnounceCounterResult(false);
+            }
+
             PrefServiceBridge.getInstance().setBrowsingDataDeletionTimePeriod(
                     ((TimePeriodSpinnerOption) value).getTimePeriod());
             return true;
@@ -310,7 +330,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
             mItems[i] = new Item(
                 this,
                 options[i],
-                (CheckBoxPreference) findPreference(options[i].getPreferenceKey()),
+                (ClearBrowsingDataCheckBoxPreference) findPreference(options[i].getPreferenceKey()),
                 isOptionSelectedByDefault(options[i]),
                 enabled);
         }

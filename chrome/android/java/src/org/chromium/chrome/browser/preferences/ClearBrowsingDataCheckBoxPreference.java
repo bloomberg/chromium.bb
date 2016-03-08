@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
  * A preference representing one browsing data type in ClearBrowsingDataPreferences.
  */
 public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPreference {
+    private LinearLayout mView;
 
     /**
      * Constructor for inflating from XML.
@@ -27,18 +28,20 @@ public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPrefe
 
     @Override
     public View onCreateView(ViewGroup parent) {
-        LinearLayout view = (LinearLayout) super.onCreateView(parent);
+        if (mView != null) return mView;
+
+        mView = (LinearLayout) super.onCreateView(parent);
 
         // Checkboxes in the Clear Browsing Data dialog will show and hide the results of
         // BrowsingDataCounter. It is important that they will not change height when doing so.
         // We will therefore set a fixed height.
         int height = getContext().getResources().getDimensionPixelSize(
                 R.dimen.clear_browsing_data_checkbox_height);
-        view.setMinimumHeight(height);
+        mView.setMinimumHeight(height);
 
         // The title and summary are enclosed in a common RelativeLayout. We must remove
         // its vertical padding for it to be correctly vertically centered in the fixed-height view.
-        View textLayout = (View) view.findViewById(android.R.id.title).getParent();
+        View textLayout = (View) mView.findViewById(android.R.id.title).getParent();
         ApiCompatibilityUtils.setPaddingRelative(
                 textLayout,
                 ApiCompatibilityUtils.getPaddingStart(textLayout),
@@ -46,6 +49,10 @@ public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPrefe
                 ApiCompatibilityUtils.getPaddingEnd(textLayout),
                 0);
 
-        return view;
+        return mView;
+    }
+
+    public void announceForAccessibility(CharSequence announcement) {
+        if (mView != null) mView.announceForAccessibility(announcement);
     }
 }

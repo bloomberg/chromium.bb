@@ -23,6 +23,7 @@ public class SpinnerPreference extends Preference {
     private Spinner mSpinner;
     private ArrayAdapter<Object> mAdapter;
     private int mSelectedIndex;
+    private View mView;
 
     /**
      * Constructor for inflating from XML.
@@ -55,10 +56,11 @@ public class SpinnerPreference extends Preference {
 
     @Override
     public View onCreateView(ViewGroup parent) {
-        View view = super.onCreateView(parent);
+        if (mView != null) return mView;
 
-        ((TextView) view.findViewById(R.id.title)).setText(getTitle());
-        mSpinner = (Spinner) view.findViewById(R.id.spinner);
+        mView = super.onCreateView(parent);
+        ((TextView) mView.findViewById(R.id.title)).setText(getTitle());
+        mSpinner = (Spinner) mView.findViewById(R.id.spinner);
         mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(
@@ -76,12 +78,19 @@ public class SpinnerPreference extends Preference {
             }
         });
 
-        return view;
+        return mView;
     }
 
     @Override
     protected void onBindView(View view) {
-        mSpinner.setAdapter(mAdapter);
+        super.onBindView(view);
+
+        // Screen readers notice the setAdapter() call and announce it. We do not want the spinner
+        // to be announced every time the view is bound (e.g. when the user scrolls away from it
+        // and then back). Therefore, only update the adapter if it has actually changed.
+        if (mSpinner.getAdapter() != mAdapter) {
+            mSpinner.setAdapter(mAdapter);
+        }
         mSpinner.setSelection(mSelectedIndex);
     }
 }
