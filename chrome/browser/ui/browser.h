@@ -373,11 +373,6 @@ class Browser : public TabStripModelObserver,
   // FullscreenController::ToggleFullscreenModeWithExtension.
   void ToggleFullscreenModeWithExtension(const GURL& extension_url);
 
-#if defined(OS_WIN)
-  // See the description of FullscreenController::ToggleMetroSnapMode.
-  void SetMetroSnapMode(bool enable);
-#endif
-
   // Returns true if the Browser supports the specified feature. The value of
   // this varies during the lifetime of the browser. For example, if the window
   // is fullscreen this may return a different value. If you only care about

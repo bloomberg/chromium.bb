@@ -14,11 +14,7 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // FullscreenHandler, public:
 
-FullscreenHandler::FullscreenHandler()
-    : hwnd_(NULL),
-      fullscreen_(false),
-      metro_snap_(false) {
-}
+FullscreenHandler::FullscreenHandler() : hwnd_(NULL), fullscreen_(false) {}
 
 FullscreenHandler::~FullscreenHandler() {
 }
@@ -27,15 +23,7 @@ void FullscreenHandler::SetFullscreen(bool fullscreen) {
   if (fullscreen_ == fullscreen)
     return;
 
-  SetFullscreenImpl(fullscreen, false);
-}
-
-void FullscreenHandler::SetMetroSnap(bool metro_snap) {
-  if (metro_snap_ == metro_snap)
-    return;
-
-  SetFullscreenImpl(metro_snap, true);
-  metro_snap_ = metro_snap;
+  SetFullscreenImpl(fullscreen);
 }
 
 gfx::Rect FullscreenHandler::GetRestoreBounds() const {
@@ -45,7 +33,7 @@ gfx::Rect FullscreenHandler::GetRestoreBounds() const {
 ////////////////////////////////////////////////////////////////////////////////
 // FullscreenHandler, private:
 
-void FullscreenHandler::SetFullscreenImpl(bool fullscreen, bool for_metro) {
+void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
   ScopedFullscreenVisibility visibility(hwnd_);
 
   // Save current window state if not already fullscreen.
@@ -73,16 +61,14 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen, bool for_metro) {
 
     // On expand, if we're given a window_rect, grow to it, otherwise do
     // not resize.
-    if (!for_metro) {
-      MONITORINFO monitor_info;
-      monitor_info.cbSize = sizeof(monitor_info);
-      GetMonitorInfo(MonitorFromWindow(hwnd_, MONITOR_DEFAULTTONEAREST),
-                     &monitor_info);
-      gfx::Rect window_rect(monitor_info.rcMonitor);
-      SetWindowPos(hwnd_, NULL, window_rect.x(), window_rect.y(),
-                   window_rect.width(), window_rect.height(),
-                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-    }
+    MONITORINFO monitor_info;
+    monitor_info.cbSize = sizeof(monitor_info);
+    GetMonitorInfo(MonitorFromWindow(hwnd_, MONITOR_DEFAULTTONEAREST),
+                   &monitor_info);
+    gfx::Rect window_rect(monitor_info.rcMonitor);
+    SetWindowPos(hwnd_, NULL, window_rect.x(), window_rect.y(),
+                 window_rect.width(), window_rect.height(),
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
   } else {
     // Reset original window style and size.  The multiple window size/moves
     // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
@@ -90,13 +76,11 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen, bool for_metro) {
     SetWindowLong(hwnd_, GWL_STYLE, saved_window_info_.style);
     SetWindowLong(hwnd_, GWL_EXSTYLE, saved_window_info_.ex_style);
 
-    if (!for_metro) {
-      // On restore, resize to the previous saved rect size.
-      gfx::Rect new_rect(saved_window_info_.window_rect);
-      SetWindowPos(hwnd_, NULL, new_rect.x(), new_rect.y(),
-                   new_rect.width(), new_rect.height(),
-                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-    }
+    // On restore, resize to the previous saved rect size.
+    gfx::Rect new_rect(saved_window_info_.window_rect);
+    SetWindowPos(hwnd_, NULL, new_rect.x(), new_rect.y(), new_rect.width(),
+                 new_rect.height(),
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     if (saved_window_info_.maximized)
       ::SendMessage(hwnd_, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
   }

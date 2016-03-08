@@ -79,7 +79,6 @@
       'browser/ui/browser_navigator_params.h',
       'browser/ui/browser_ui_prefs.cc',
       'browser/ui/browser_ui_prefs.h',
-      'browser/ui/browser_win.cc',
       'browser/ui/browser_window.h',
       'browser/ui/chrome_select_file_policy.cc',
       'browser/ui/chrome_select_file_policy.h',

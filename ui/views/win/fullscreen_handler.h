@@ -25,12 +25,10 @@ class FullscreenHandler {
   void set_hwnd(HWND hwnd) { hwnd_ = hwnd; }
 
   void SetFullscreen(bool fullscreen);
-  void SetMetroSnap(bool metro_snap);
 
   gfx::Rect GetRestoreBounds() const;
 
   bool fullscreen() const { return fullscreen_; }
-  bool metro_snap() const { return metro_snap_; }
 
  private:
   // Information saved before going into fullscreen mode, used to restore the
@@ -42,11 +40,10 @@ class FullscreenHandler {
     RECT window_rect;
   };
 
-  void SetFullscreenImpl(bool fullscreen, bool for_metro);
+  void SetFullscreenImpl(bool fullscreen);
 
   HWND hwnd_;
   bool fullscreen_;
-  bool metro_snap_;
 
   // Saved window information from before entering fullscreen mode.
   // TODO(beng): move to private once GetRestoredBounds() moves onto Widget.

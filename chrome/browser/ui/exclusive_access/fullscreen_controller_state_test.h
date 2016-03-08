@@ -36,8 +36,6 @@ class FullscreenControllerStateTest {
     TOGGLE_FULLSCREEN_CHROME,  // ToggleBrowserFullscreenWithToolbar()
     TAB_FULLSCREEN_TRUE,       // ToggleFullscreenModeForTab(, true)
     TAB_FULLSCREEN_FALSE,      // ToggleFullscreenModeForTab(, false)
-    METRO_SNAP_TRUE,           // SetMetroSnapMode(true)
-    METRO_SNAP_FALSE,          // SetMetroSnapMode(false)
     BUBBLE_EXIT_LINK,          // ExitTabOrBrowserFullscreenToPreviousState()
     BUBBLE_ALLOW,              // OnAcceptFullscreenPermission()
     BUBBLE_DENY,               // OnDenyFullscreenPermission()
@@ -55,9 +53,6 @@ class FullscreenControllerStateTest {
     STATE_BROWSER_FULLSCREEN_NO_CHROME,
     // Mac User-initiated 'Lion Fullscreen' with browser chrome. OSX 10.7+ only.
     STATE_BROWSER_FULLSCREEN_WITH_CHROME,
-    // Windows 8 Metro Snap mode, which puts the window at 20% screen-width.
-    // No TO_ state for Metro, as the windows implementation is only reentrant.
-    STATE_METRO_SNAP,
     // HTML5 tab-initiated fullscreen.
     STATE_TAB_FULLSCREEN,
     // Both tab and browser fullscreen.
@@ -145,7 +140,6 @@ class FullscreenControllerStateTest {
   EXPECTATION_ENUM(FullscreenWithToolbarExpectation, FULLSCREEN_WITH_CHROME);
   EXPECTATION_ENUM(FullscreenForBrowserExpectation, FULLSCREEN_FOR_BROWSER);
   EXPECTATION_ENUM(FullscreenForTabExpectation, FULLSCREEN_FOR_TAB);
-  EXPECTATION_ENUM(InMetroSnapExpectation, IN_METRO_SNAP);
 
   // Generated information about the transitions between states.
   struct StateTransitionInfo {
@@ -180,8 +174,7 @@ class FullscreenControllerStateTest {
   virtual void VerifyWindowStateExpectations(
       FullscreenWithToolbarExpectation fullscreen_with_toolbar,
       FullscreenForBrowserExpectation fullscreen_for_browser,
-      FullscreenForTabExpectation fullscreen_for_tab,
-      InMetroSnapExpectation in_metro_snap);
+      FullscreenForTabExpectation fullscreen_for_tab);
 
   virtual Browser* GetBrowser() = 0;
   FullscreenController* GetFullscreenController();

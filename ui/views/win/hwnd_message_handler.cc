@@ -2221,7 +2221,6 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
       }
       if (monitor && (monitor == last_monitor_) &&
           ((fullscreen_handler_->fullscreen() &&
-            !fullscreen_handler_->metro_snap() &&
             !background_fullscreen_hack_) ||
             work_area_changed)) {
         // A rect for the monitor we're on changed.  Normally Windows notifies

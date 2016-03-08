@@ -131,15 +131,6 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
       return;
   }
 
-#if defined(OS_WIN)
-  // For now, avoid breaking when initiating full screen tab mode while in
-  // a metro snap.
-  // TODO(robertshield): Find a way to reconcile tab-initiated fullscreen
-  //                     modes with metro snap.
-  if (IsInMetroSnapMode())
-    return;
-#endif
-
   SetTabWithExclusiveAccess(web_contents);
   fullscreened_origin_ = origin;
 
@@ -186,15 +177,6 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
     return;
   }
 
-#if defined(OS_WIN)
-  // For now, avoid breaking when initiating full screen tab mode while in
-  // a metro snap.
-  // TODO(robertshield): Find a way to reconcile tab-initiated fullscreen
-  //                     modes with metro snap.
-  if (IsInMetroSnapMode())
-    return;
-#endif
-
   ExclusiveAccessContext* exclusive_access_context =
       exclusive_access_manager()->context();
 
@@ -229,24 +211,6 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
   // a fullscreen notification now because there is no window change.
   PostFullscreenChangeNotification(true);
 }
-
-#if defined(OS_WIN)
-bool FullscreenController::IsInMetroSnapMode() {
-  return exclusive_access_manager()->context()->IsInMetroSnapMode();
-}
-
-void FullscreenController::SetMetroSnapMode(bool enable) {
-  reentrant_window_state_change_call_check_ = false;
-
-  toggled_into_fullscreen_ = false;
-  exclusive_access_manager()->context()->SetMetroSnapMode(enable);
-
-  // FullscreenController unit tests for metro snap assume that on Windows calls
-  // to WindowFullscreenStateChanged are reentrant. If that assumption is
-  // invalidated, the tests must be updated to maintain coverage.
-  CHECK(reentrant_window_state_change_call_check_);
-}
-#endif  // defined(OS_WIN)
 
 void FullscreenController::OnTabDetachedFromView(WebContents* old_contents) {
   if (!IsFullscreenForCapturedTab(old_contents))
@@ -435,12 +399,6 @@ void FullscreenController::RecordBubbleReshowsHistogram(
 
 void FullscreenController::ToggleFullscreenModeInternal(
     FullscreenInternalOption option) {
-#if defined(OS_WIN)
-  // When in Metro snap mode, toggling in and out of fullscreen is prevented.
-  if (IsInMetroSnapMode())
-    return;
-#endif
-
   ExclusiveAccessContext* const exclusive_access_context =
       exclusive_access_manager()->context();
   bool enter_fullscreen = !exclusive_access_context->IsFullscreen();
