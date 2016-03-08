@@ -575,6 +575,27 @@ TEST_F(CrasAudioHandlerTest, SetKeyboardMicActive) {
   EXPECT_FALSE(inactive_keyboard_mic->active);
 }
 
+TEST_F(CrasAudioHandlerTest, KeyboardMicNotSetAsPrimaryActive) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kKeyboardMic);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify keyboard mic is not set as primary active input.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  EXPECT_TRUE(cras_audio_handler_->HasKeyboardMic());
+  EXPECT_EQ(0u, cras_audio_handler_->GetPrimaryActiveInputNode());
+
+  // Verify the internal mic is set as primary input.
+  audio_nodes.push_back(kInternalMic);
+  ChangeAudioNodes(audio_nodes);
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  EXPECT_TRUE(cras_audio_handler_->HasKeyboardMic());
+  EXPECT_EQ(kInternalMic.id, cras_audio_handler_->GetPrimaryActiveInputNode());
+}
+
 TEST_F(CrasAudioHandlerTest, SwitchActiveOutputDevice) {
   AudioNodeList audio_nodes;
   audio_nodes.push_back(kInternalSpeaker);

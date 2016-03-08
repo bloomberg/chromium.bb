@@ -425,6 +425,11 @@ void CrasAudioHandler::SetActiveDevice(const AudioDevice& active_device,
 void CrasAudioHandler::SaveDeviceState(const AudioDevice& device,
                                        bool active,
                                        DeviceActivateType activate_by) {
+  // Don't save the active state for non-simple usage device, which is invisible
+  // to end users.
+  if (!device.is_for_simple_usage())
+    return;
+
   if (!active) {
     audio_pref_handler_->SetDeviceActive(device, false, false);
   } else {
@@ -924,7 +929,7 @@ bool CrasAudioHandler::GetActiveDeviceFromUserPref(bool is_input,
   for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
        it != audio_devices_.end(); ++it) {
     AudioDevice device = it->second;
-    if (device.is_input != is_input)
+    if (device.is_input != is_input || !device.is_for_simple_usage())
       continue;
 
     bool active = false;
@@ -993,7 +998,6 @@ void CrasAudioHandler::HandleNonHotplugNodesChange(
     return;
 
   if (hotplug_nodes.empty()) {
-    // Unplugged a non-active device.
     if (has_device_removed) {
       if (!active_device_removed && has_current_active_node) {
         // Removed a non-active device, keep the current active device.
@@ -1010,7 +1014,7 @@ void CrasAudioHandler::HandleNonHotplugNodesChange(
     // Some unexpected error happens on cras side. See crbug.com/586026.
     // Either cras sent stale nodes to chrome again or cras triggered some
     // error. Restore the previously selected active.
-    VLOG(1) << "Odd case from cras, the active node is lost unexpectedly. ";
+    VLOG(1) << "Odd case from cras, the active node is lost unexpectedly.";
     SwitchToPreviousActiveDeviceIfAvailable(is_input);
   } else {
     // Looks like a new chrome session starts.
@@ -1021,6 +1025,12 @@ void CrasAudioHandler::HandleNonHotplugNodesChange(
 void CrasAudioHandler::HandleHotPlugDevice(
     const AudioDevice& hotplug_device,
     const AudioDevicePriorityQueue& device_priority_queue) {
+  // This most likely may happen during the transition period of cras
+  // initialization phase, in which a non-simple-usage node may appear like
+  // a hotplug node.
+  if (!hotplug_device.is_for_simple_usage())
+    return;
+
   bool last_state_active = false;
   bool last_activate_by_user = false;
   if (!audio_pref_handler_->GetDeviceActive(hotplug_device, &last_state_active,
@@ -1046,12 +1056,14 @@ void CrasAudioHandler::HandleHotPlugDevice(
 void CrasAudioHandler::SwitchToTopPriorityDevice(bool is_input) {
   AudioDevice top_device =
       is_input ? input_devices_pq_.top() : output_devices_pq_.top();
-  SwitchToDevice(top_device, true, ACTIVATE_BY_PRIORITY);
+  if (top_device.is_for_simple_usage())
+    SwitchToDevice(top_device, true, ACTIVATE_BY_PRIORITY);
 }
 
 void CrasAudioHandler::SwitchToPreviousActiveDeviceIfAvailable(bool is_input) {
   AudioDevice previous_active_device;
   if (GetActiveDeviceFromUserPref(is_input, &previous_active_device)) {
+    DCHECK(previous_active_device.is_for_simple_usage());
     // Switch to previous active device stored in user prefs.
     SwitchToDevice(previous_active_device, true,
                    ACTIVATE_BY_RESTORE_PREVIOUS_STATE);
