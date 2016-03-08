@@ -10,10 +10,53 @@
 
 namespace blink {
 
+using Corner = ScrollAnchor::Corner;
+
 class ScrollAnchorTest : public RenderingTest {
 public:
     ScrollAnchorTest() { RuntimeEnabledFeatures::setScrollAnchoringEnabled(true); }
     ~ScrollAnchorTest() { RuntimeEnabledFeatures::setScrollAnchoringEnabled(false); }
+
+protected:
+    void update()
+    {
+        // TODO(skobes): Use SimTest instead of RenderingTest and move into Source/web?
+        document().view()->updateAllLifecyclePhases();
+    }
+
+    ScrollableArea* layoutViewport()
+    {
+        return document().view()->layoutViewportScrollableArea();
+    }
+
+    ScrollableArea* scrollerForElement(Element* element)
+    {
+        return toLayoutBox(element->layoutObject())->scrollableArea();
+    }
+
+    ScrollAnchor& scrollAnchor(ScrollableArea* scroller)
+    {
+        if (scroller->isFrameView())
+            return toFrameView(scroller)->scrollAnchor();
+        ASSERT(scroller->isPaintLayerScrollableArea());
+        return toPaintLayerScrollableArea(scroller)->scrollAnchor();
+    }
+
+    void setHeight(Element* element, int height)
+    {
+        element->setAttribute(HTMLNames::styleAttr,
+            AtomicString(String::format("height: %dpx", height)));
+        update();
+    }
+
+    void scrollLayoutViewport(DoubleSize delta)
+    {
+        Element* scrollingElement = document().scrollingElement();
+        if (delta.width())
+            scrollingElement->setScrollTop(scrollingElement->scrollLeft() + delta.width());
+        if (delta.height())
+            scrollingElement->setScrollTop(scrollingElement->scrollTop() + delta.height());
+    }
 };
 
 TEST_F(ScrollAnchorTest, Basic)
@@ -23,11 +66,21 @@ TEST_F(ScrollAnchorTest, Basic)
         "<div id='block1'>abc</div>"
         "<div id='block2'>def</div>");
 
-    ScrollableArea* viewport = document().view()->layoutViewportScrollableArea();
-    viewport->scrollBy(DoubleSize(0, 150), UserScroll);
-    document().getElementById("block1")->setAttribute(HTMLNames::styleAttr, "height: 200px");
-    document().view()->updateAllLifecyclePhases();
+    ScrollableArea* viewport = layoutViewport();
+
+    // No anchor at origin (0,0).
+    EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
+
+    scrollLayoutViewport(DoubleSize(0, 150));
+    setHeight(document().getElementById("block1"), 200);
+
     EXPECT_EQ(250, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("block2")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
+
+    // ScrollableArea::userScroll should clear the anchor.
+    viewport->userScroll(ScrollByPrecisePixel, FloatSize(0, 100));
+    EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 }
 
 TEST_F(ScrollAnchorTest, AnchorWithLayerInScrollingDiv)
@@ -44,21 +97,139 @@ TEST_F(ScrollAnchorTest, AnchorWithLayerInScrollingDiv)
         "<div id='block2'>def</div>"
         "</div></div>");
 
-    PaintLayerScrollableArea* scroller = toLayoutBox(
-        document().getElementById("scroller")->layoutObject())->scrollableArea();
+    ScrollableArea* scroller = scrollerForElement(document().getElementById("scroller"));
+    Element* block1 = document().getElementById("block1");
+    Element* block2 = document().getElementById("block2");
+
     scroller->scrollBy(DoubleSize(0, 150), UserScroll);
-    document().getElementById("block1")->setAttribute(HTMLNames::styleAttr, "height: 200px");
 
     // In this layout pass we will anchor to #block2 which has its own PaintLayer.
-    document().view()->updateAllLifecyclePhases();
+    setHeight(block1, 200);
     EXPECT_EQ(250, scroller->scrollPosition().y());
-    EXPECT_EQ(document().getElementById("block2")->layoutObject(),
-        scroller->scrollAnchor().anchorObject());
+    EXPECT_EQ(block2->layoutObject(), scrollAnchor(scroller).anchorObject());
 
     // Test that the anchor object can be destroyed without affecting the scroll position.
-    document().getElementById("block2")->remove();
-    document().view()->updateAllLifecyclePhases();
+    block2->remove();
+    update();
     EXPECT_EQ(250, scroller->scrollPosition().y());
+}
+
+TEST_F(ScrollAnchorTest, FullyContainedInlineBlock)
+{
+    // Exercises every WalkStatus value:
+    // html, body -> Constrain
+    // #outer -> Continue
+    // #ib1, br -> Skip
+    // #ib2 -> Return
+    setBodyInnerHTML(
+        "<style>"
+        "    body { height: 1000px }"
+        "    #outer { line-height: 100px }"
+        "    #ib1, #ib2 { display: inline-block }"
+        "</style>"
+        "<span id=outer>"
+        "    <span id=ib1>abc</span>"
+        "    <br><br>"
+        "    <span id=ib2>def</span>"
+        "</span>");
+
+    scrollLayoutViewport(DoubleSize(0, 150));
+
+    Element* ib2 = document().getElementById("ib2");
+    ib2->setAttribute(HTMLNames::styleAttr, "line-height: 150px");
+    update();
+    EXPECT_EQ(ib2->layoutObject(), scrollAnchor(layoutViewport()).anchorObject());
+}
+
+TEST_F(ScrollAnchorTest, TextBounds)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body {"
+        "        position: absolute;"
+        "        font-size: 100px;"
+        "        width: 200px;"
+        "        height: 1000px;"
+        "        line-height: 100px;"
+        "    }"
+        "</style>"
+        "abc <b id=b>def</b> ghi");
+
+    scrollLayoutViewport(DoubleSize(0, 150));
+
+    setHeight(document().body(), 1100);
+    EXPECT_EQ(document().getElementById("b")->layoutObject()->slowFirstChild(),
+        scrollAnchor(layoutViewport()).anchorObject());
+}
+
+TEST_F(ScrollAnchorTest, ExcludeFixedPosition)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body { height: 1000px; padding: 20px }"
+        "    div { position: relative; top: 100px; }"
+        "    #f { position: fixed }"
+        "</style>"
+        "<div id=f>fixed</div>"
+        "<div id=c>content</div>");
+
+    scrollLayoutViewport(DoubleSize(0, 50));
+
+    setHeight(document().body(), 1100);
+    EXPECT_EQ(document().getElementById("c")->layoutObject(),
+        scrollAnchor(layoutViewport()).anchorObject());
+}
+
+class ScrollAnchorCornerTest : public ScrollAnchorTest {
+protected:
+    void checkCorner(const AtomicString& id, Corner corner, DoublePoint startPos, DoubleSize expectedAdjustment)
+    {
+        ScrollableArea* viewport = layoutViewport();
+        Element* element = document().getElementById(id);
+
+        viewport->setScrollPosition(startPos, UserScroll);
+        element->setAttribute(HTMLNames::classAttr, "big");
+        update();
+
+        DoublePoint endPos = startPos;
+        endPos.move(expectedAdjustment);
+
+        EXPECT_EQ(endPos, viewport->scrollPositionDouble());
+        EXPECT_EQ(element->layoutObject(), scrollAnchor(viewport).anchorObject());
+        EXPECT_EQ(corner, scrollAnchor(viewport).corner());
+
+        element->removeAttribute(HTMLNames::classAttr);
+        update();
+    }
+};
+
+TEST_F(ScrollAnchorCornerTest, Corners)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body {"
+        "        position: absolute; border: 10px solid #ccc;"
+        "        width: 1220px; height: 920px;"
+        "    }"
+        "    #a, #b, #c, #d {"
+        "        position: absolute; background-color: #ace;"
+        "        width: 400px; height: 300px;"
+        "    }"
+        "    #a, #b { top: 0; }"
+        "    #a, #c { left: 0; }"
+        "    #b, #d { right: 0; }"
+        "    #c, #d { bottom: 0; }"
+        "    .big { width: 800px !important; height: 600px !important }"
+        "</style>"
+        "<div id=a></div>"
+        "<div id=b></div>"
+        "<div id=c></div>"
+        "<div id=d></div>");
+
+    checkCorner("a", Corner::BottomRight, DoublePoint(20,  20),  DoubleSize(+400, +300));
+    checkCorner("b", Corner::BottomLeft,  DoublePoint(420, 20),  DoubleSize(-400, +300));
+    checkCorner("c", Corner::TopRight,    DoublePoint(20,  320), DoubleSize(+400, -300));
+    checkCorner("d", Corner::TopLeft,     DoublePoint(420, 320), DoubleSize(-400, -300));
 }
 
 }

@@ -1559,9 +1559,6 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scr
         scrollBehavior = scrollBehaviorStyle();
 
     ScrollableArea::setScrollPosition(newScrollPosition, scrollType, scrollBehavior);
-
-    if (RuntimeEnabledFeatures::scrollAnchoringEnabled() && scrollType != AnchoringScroll)
-        m_scrollAnchor.clear();
 }
 
 void FrameView::didUpdateElasticOverscroll()
@@ -3268,6 +3265,9 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
     layoutView()->clearHitTestCache();
     frame().loader().saveScrollState();
     frame().loader().client()->didChangeScrollOffset();
+
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled() && scrollType != AnchoringScroll)
+        m_scrollAnchor.clear();
 }
 
 void FrameView::windowResizerRectChanged()

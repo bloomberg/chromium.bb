@@ -6,14 +6,17 @@
 
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/line/InlineTextBox.h"
 #include "core/paint/PaintLayerScrollableArea.h"
-#include "wtf/Assertions.h"
 
 namespace blink {
+
+using Corner = ScrollAnchor::Corner;
 
 ScrollAnchor::ScrollAnchor(ScrollableArea* scroller)
     : m_scroller(scroller)
     , m_anchorObject(nullptr)
+    , m_corner(Corner::TopLeft)
 {
     ASSERT(m_scroller);
     ASSERT(m_scroller->isFrameView() || m_scroller->isPaintLayerScrollableArea());
@@ -32,43 +35,122 @@ static LayoutBox* scrollerLayoutBox(const ScrollableArea* scroller)
     return box;
 }
 
-static LayoutObject* findAnchor(const ScrollableArea* scroller)
+static Corner cornerFromCandidateRect(LayoutRect candidateRect, LayoutRect visibleRect)
 {
-    LayoutBox* scrollerBox = scrollerLayoutBox(scroller);
-
-    FloatRect absoluteVisibleRect = scroller->isFrameView()
-        ? scroller->visibleContentRect()
-        : scrollerBox->localToAbsoluteQuad(
-            FloatQuad(FloatRect(scrollerBox->overflowClipRect(LayoutPoint())))).boundingBox();
-
-    LayoutObject* child = scrollerBox->nextInPreOrder(scrollerBox);
-    LayoutObject* candidate = nullptr;
-    while (child) {
-        // TODO(skobes): Compute scroller-relative bounds instead of absolute bounds.
-        FloatRect childRect = child->absoluteBoundingBoxFloatRect();
-        if (absoluteVisibleRect.intersects(childRect))
-            candidate = child;
-        if (absoluteVisibleRect.contains(childRect))
-            break;
-        child = child->nextInPreOrder(scrollerBox);
-    }
-    return candidate;
+    if (visibleRect.contains(candidateRect.minXMinYCorner()))
+        return Corner::TopLeft;
+    if (visibleRect.contains(candidateRect.maxXMinYCorner()))
+        return Corner::TopRight;
+    if (visibleRect.contains(candidateRect.minXMaxYCorner()))
+        return Corner::BottomLeft;
+    if (visibleRect.contains(candidateRect.maxXMaxYCorner()))
+        return Corner::BottomRight;
+    return Corner::TopLeft;
 }
 
-static DoublePoint computeRelativeOffset(const ScrollableArea* scroller, const LayoutObject* layoutObject)
+static LayoutPoint cornerPointOfRect(LayoutRect rect, Corner whichCorner)
 {
-    return DoublePoint(layoutObject->localToAbsolute() - scrollerLayoutBox(scroller)->localToAbsolute());
+    switch (whichCorner) {
+    case Corner::TopLeft: return rect.minXMinYCorner();
+    case Corner::TopRight: return rect.maxXMinYCorner();
+    case Corner::BottomLeft: return rect.minXMaxYCorner();
+    case Corner::BottomRight: return rect.maxXMaxYCorner();
+    }
+    ASSERT_NOT_REACHED();
+    return LayoutPoint();
+}
+
+// Bounds of the LayoutObject relative to the scroller's visible content rect.
+static LayoutRect relativeBounds(const LayoutObject* layoutObject, const ScrollableArea* scroller)
+{
+    LayoutRect localBounds;
+    if (layoutObject->isBox()) {
+        localBounds = toLayoutBox(layoutObject)->borderBoxRect();
+    } else if (layoutObject->isText()) {
+        // TODO(skobes): Use first and last InlineTextBox only?
+        for (InlineTextBox* box = toLayoutText(layoutObject)->firstTextBox(); box; box = box->nextTextBox())
+            localBounds.unite(box->calculateBoundaries());
+    } else {
+        // Only LayoutBox and LayoutText are supported.
+        ASSERT_NOT_REACHED();
+    }
+    LayoutRect relativeBounds = LayoutRect(layoutObject->localToAncestorQuad(
+        FloatRect(localBounds), scrollerLayoutBox(scroller)).boundingBox());
+    if (scroller->isFrameView())
+        relativeBounds.moveBy(-LayoutPoint(scroller->scrollPositionDouble()));
+    return relativeBounds;
+}
+
+static LayoutPoint computeRelativeOffset(const LayoutObject* layoutObject, const ScrollableArea* scroller, Corner corner)
+{
+    return cornerPointOfRect(relativeBounds(layoutObject, scroller), corner);
+}
+
+ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate) const
+{
+    if (candidate->isLayoutInline())
+        return ExamineResult(Continue);
+
+    if (!candidate->isText() && !candidate->isBox())
+        return ExamineResult(Skip);
+
+    if (candidate->style() && candidate->style()->hasViewportConstrainedPosition())
+        return ExamineResult(Skip);
+
+    LayoutRect candidateRect = relativeBounds(candidate, m_scroller);
+    LayoutRect visibleRect = scrollerLayoutBox(m_scroller)->overflowClipRect(LayoutPoint());
+
+    bool occupiesSpace = candidateRect.width() > 0 && candidateRect.height() > 0;
+    if (occupiesSpace && visibleRect.intersects(candidateRect)) {
+        return ExamineResult(
+            visibleRect.contains(candidateRect) ? Return : Constrain,
+            cornerFromCandidateRect(candidateRect, visibleRect));
+    } else {
+        return ExamineResult(Skip);
+    }
+}
+
+void ScrollAnchor::findAnchor()
+{
+    LayoutObject* stayWithin = scrollerLayoutBox(m_scroller);
+    LayoutObject* candidate = stayWithin->nextInPreOrder(stayWithin);
+    while (candidate) {
+        ExamineResult result = examine(candidate);
+        if (result.viable) {
+            m_anchorObject = candidate;
+            m_corner = result.corner;
+        }
+        switch (result.status) {
+        case Skip:
+            candidate = candidate->nextInPreOrderAfterChildren(stayWithin);
+            break;
+        case Constrain:
+            stayWithin = candidate;
+            // fall through
+        case Continue:
+            candidate = candidate->nextInPreOrder(stayWithin);
+            break;
+        case Return:
+            return;
+        }
+    }
 }
 
 void ScrollAnchor::save()
 {
+    if (m_scroller->scrollPosition() == IntPoint::zero()) {
+        clear();
+        return;
+    }
     if (m_anchorObject)
         return;
-    m_anchorObject = findAnchor(m_scroller);
+
+    findAnchor();
     if (!m_anchorObject)
         return;
+
     m_anchorObject->setIsScrollAnchorObject();
-    m_savedRelativeOffset = computeRelativeOffset(m_scroller, m_anchorObject);
+    m_savedRelativeOffset = computeRelativeOffset(m_anchorObject, m_scroller, m_corner);
 }
 
 void ScrollAnchor::restore()
@@ -76,9 +158,12 @@ void ScrollAnchor::restore()
     if (!m_anchorObject)
         return;
 
-    DoubleSize adjustment = computeRelativeOffset(m_scroller, m_anchorObject) - m_savedRelativeOffset;
-    if (!adjustment.isZero())
-        m_scroller->setScrollPosition(m_scroller->scrollPositionDouble() + adjustment, AnchoringScroll);
+    LayoutSize adjustment = computeRelativeOffset(m_anchorObject, m_scroller, m_corner) - m_savedRelativeOffset;
+    if (!adjustment.isZero()) {
+        m_scroller->setScrollPosition(
+            m_scroller->scrollPositionDouble() + DoubleSize(adjustment),
+            AnchoringScroll);
+    }
 }
 
 void ScrollAnchor::clear()

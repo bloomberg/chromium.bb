@@ -6,7 +6,7 @@
 #define ScrollAnchor_h
 
 #include "core/CoreExport.h"
-#include "platform/geometry/DoublePoint.h"
+#include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -38,17 +38,55 @@ public:
     // the scroller has been laid out.
     void restore();
 
+    enum class Corner {
+        TopLeft = 0,
+        TopRight,
+        BottomLeft,
+        BottomRight
+    };
+    // Which corner of the anchor object we are currently anchored to.
+    // Only meaningful if anchorObject() is non-null.
+    Corner corner() const { return m_corner; }
+
     DEFINE_INLINE_TRACE() { visitor->trace(m_scroller); }
 
 private:
+    void findAnchor();
+
+    enum WalkStatus {
+        Skip = 0,
+        Constrain,
+        Continue,
+        Return
+    };
+    struct ExamineResult {
+        ExamineResult(WalkStatus s)
+            : status(s)
+            , viable(false)
+            , corner(Corner::TopLeft) {}
+
+        ExamineResult(WalkStatus s, Corner c)
+            : status(s)
+            , viable(true)
+            , corner(c) {}
+
+        WalkStatus status;
+        bool viable;
+        Corner corner;
+    };
+    ExamineResult examine(const LayoutObject*) const;
+
     // The scroller that owns and is adjusted by this ScrollAnchor.
     RawPtrWillBeMember<ScrollableArea> m_scroller;
 
     // The LayoutObject we should anchor to. Lazily computed.
     LayoutObject* m_anchorObject;
 
+    // Which corner of m_anchorObject's bounding box to anchor to.
+    Corner m_corner;
+
     // Location of m_layoutObject relative to scroller at time of save().
-    DoublePoint m_savedRelativeOffset;
+    LayoutPoint m_savedRelativeOffset;
 };
 
 } // namespace blink
