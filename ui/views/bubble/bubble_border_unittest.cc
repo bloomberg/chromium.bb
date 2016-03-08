@@ -224,7 +224,7 @@ TEST_F(BubbleBorderTest, GetSizeForContentsSizeTest) {
   const gfx::Size kMediumSize = gfx::Size(50, 60);
 
   const gfx::Size kSmallHorizArrow(
-      2 * kImages->border_thickness + kImages->top_arrow.width(),
+      2 * kImages->border_thickness + kImages->arrow_width,
       kImages->border_thickness + kImages->arrow_thickness +
           kImages->border_interior_thickness);
 
@@ -345,7 +345,7 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
   const int kArrowOffsetForHorizCenter = kTotalSizeWithHorizArrow.width() / 2;
   const int kArrowOffsetForVertCenter = kTotalSizeWithVertArrow.height() / 2;
   const int kArrowOffsetForNotCenter =
-      kImages->border_thickness + (kImages->top_arrow.width() / 2);
+      kImages->border_thickness + (kImages->arrow_width / 2);
 
   const int kArrowSize =
       kImages->arrow_interior_thickness + BubbleBorder::kStroke -
