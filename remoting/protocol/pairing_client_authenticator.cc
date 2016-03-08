@@ -10,7 +10,6 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/v2_authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -19,29 +18,37 @@ namespace protocol {
 PairingClientAuthenticator::PairingClientAuthenticator(
     const std::string& client_id,
     const std::string& paired_secret,
+    const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
     const FetchSecretCallback& fetch_pin_callback,
     const std::string& authentication_tag)
-    : sent_client_id_(false),
-      client_id_(client_id),
+    : client_id_(client_id),
       paired_secret_(paired_secret),
+      create_base_authenticator_callback_(create_base_authenticator_callback),
       fetch_pin_callback_(fetch_pin_callback),
       authentication_tag_(authentication_tag),
       weak_factory_(this) {
-  v2_authenticator_ = V2Authenticator::CreateForClient(
-      paired_secret_, MESSAGE_READY);
+  spake2_authenticator_ =
+      create_base_authenticator_callback_.Run(paired_secret_, MESSAGE_READY);
   using_paired_secret_ = true;
 }
 
-PairingClientAuthenticator::~PairingClientAuthenticator() {
+PairingClientAuthenticator::~PairingClientAuthenticator() {}
+
+Authenticator::State PairingClientAuthenticator::state() const {
+  if (waiting_for_pin_)
+    return PROCESSING_MESSAGE;
+  return PairingAuthenticatorBase::state();
 }
 
-void PairingClientAuthenticator::CreateV2AuthenticatorWithPIN(
+void PairingClientAuthenticator::CreateSpakeAuthenticatorWithPin(
     State initial_state,
-    const SetAuthenticatorCallback& set_authenticator_callback) {
-  SecretFetchedCallback callback = base::Bind(
-      &PairingClientAuthenticator::OnPinFetched,
-      weak_factory_.GetWeakPtr(), initial_state, set_authenticator_callback);
-  fetch_pin_callback_.Run(true, callback);
+    const base::Closure& resume_callback) {
+  DCHECK(!waiting_for_pin_);
+  waiting_for_pin_ = true;
+  fetch_pin_callback_.Run(
+      true,
+      base::Bind(&PairingClientAuthenticator::OnPinFetched,
+                 weak_factory_.GetWeakPtr(), initial_state, resume_callback));
 }
 
 void PairingClientAuthenticator::AddPairingElements(buzz::XmlElement* message) {
@@ -59,12 +66,16 @@ void PairingClientAuthenticator::AddPairingElements(buzz::XmlElement* message) {
 
 void PairingClientAuthenticator::OnPinFetched(
     State initial_state,
-    const SetAuthenticatorCallback& callback,
+    const base::Closure& resume_callback,
     const std::string& pin) {
-  callback.Run(V2Authenticator::CreateForClient(
+  DCHECK(waiting_for_pin_);
+  DCHECK(!spake2_authenticator_);
+  waiting_for_pin_ = false;
+  spake2_authenticator_ = create_base_authenticator_callback_.Run(
       ApplySharedSecretHashFunction(HashFunction::HMAC_SHA256,
                                     authentication_tag_, pin),
-      initial_state));
+      initial_state);
+  resume_callback.Run();
 }
 
 }  // namespace protocol

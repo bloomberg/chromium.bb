@@ -11,7 +11,6 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/v2_authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {

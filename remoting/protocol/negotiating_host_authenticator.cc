@@ -175,13 +175,17 @@ void NegotiatingHostAuthenticator::CreateAuthenticator(
     // one |ThirdPartyHostAuthenticator| will need to be created per session.
     DCHECK(token_validator_);
     current_authenticator_.reset(new ThirdPartyHostAuthenticator(
-        local_cert_, local_key_pair_, std::move(token_validator_)));
+        base::Bind(&V2Authenticator::CreateForHost, local_cert_,
+                   local_key_pair_),
+        std::move(token_validator_)));
   } else if (current_method_ == AuthenticationMethod::SPAKE2_PAIR &&
              preferred_initial_state == WAITING_MESSAGE) {
     // If the client requested Spake2Pair and sent an initial message, attempt
     // the paired connection protocol.
     current_authenticator_.reset(new PairingHostAuthenticator(
-        pairing_registry_, local_cert_, local_key_pair_, shared_secret_hash_));
+        pairing_registry_, base::Bind(&V2Authenticator::CreateForHost,
+                                      local_cert_, local_key_pair_),
+        shared_secret_hash_));
   } else {
     // In all other cases, use the V2 protocol. Note that this includes the
     // case where the protocol is Spake2Pair but the client is not yet paired.

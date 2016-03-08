@@ -11,9 +11,6 @@
 #include "remoting/protocol/pairing_registry.h"
 
 namespace remoting {
-
-class RsaKeyPair;
-
 namespace protocol {
 
 class PairingRegistry;
@@ -22,8 +19,7 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
  public:
   PairingHostAuthenticator(
       scoped_refptr<PairingRegistry> pairing_registry,
-      const std::string& local_cert,
-      scoped_refptr<RsaKeyPair> key_pair,
+      const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
       const std::string& pin);
   ~PairingHostAuthenticator() override;
 
@@ -34,10 +30,10 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
                       const base::Closure& resume_callback) override;
 
  private:
-  // PairingAuthenticatorBase interface.
-  void CreateV2AuthenticatorWithPIN(
+  // PairingAuthenticatorBase overrides.
+  void CreateSpakeAuthenticatorWithPin(
       State initial_state,
-      const SetAuthenticatorCallback& callback) override;
+      const base::Closure& resume_callback) override;
   void AddPairingElements(buzz::XmlElement* message) override;
 
   // Continue processing a protocol message once the pairing information for
@@ -48,11 +44,10 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
 
   // Protocol state.
   scoped_refptr<PairingRegistry> pairing_registry_;
-  std::string local_cert_;
-  scoped_refptr<RsaKeyPair> key_pair_;
-  const std::string& pin_;
-  bool protocol_error_;
-  bool waiting_for_paired_secret_;
+  CreateBaseAuthenticatorCallback create_base_authenticator_callback_;
+  std::string pin_;
+  bool protocol_error_ = false;
+  bool waiting_for_paired_secret_ = false;
 
   base::WeakPtrFactory<PairingHostAuthenticator> weak_factory_;
 

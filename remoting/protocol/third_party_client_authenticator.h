@@ -55,9 +55,11 @@ class ThirdPartyClientAuthenticator : public ThirdPartyAuthenticatorBase {
         const TokenFetchedCallback& token_fetched_callback) = 0;
   };
 
-  // Creates a third-party client authenticator for the host with the given
-  // |host_public_key|. |token_fetcher| is used to get the authentication token.
-  explicit ThirdPartyClientAuthenticator(
+  // Creates a third-party client authenticator.
+  // |create_base_authenticator_callback| is used to create the base
+  // authenticator. |token_fetcher| is used to get the authentication token.
+  ThirdPartyClientAuthenticator(
+      const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
       scoped_ptr<TokenFetcher> token_fetcher);
   ~ThirdPartyClientAuthenticator() override;
 
@@ -72,8 +74,9 @@ class ThirdPartyClientAuthenticator : public ThirdPartyAuthenticatorBase {
                                 const std::string& third_party_token,
                                 const std::string& shared_secret);
 
-  std::string token_;
+  CreateBaseAuthenticatorCallback create_base_authenticator_callback_;
   scoped_ptr<TokenFetcher> token_fetcher_;
+  std::string token_;
 
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyClientAuthenticator);
 };

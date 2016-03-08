@@ -42,8 +42,7 @@ NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
   }
 }
 
-NegotiatingClientAuthenticator::~NegotiatingClientAuthenticator() {
-}
+NegotiatingClientAuthenticator::~NegotiatingClientAuthenticator() {}
 
 void NegotiatingClientAuthenticator::ProcessMessage(
     const buzz::XmlElement* message,
@@ -120,6 +119,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     // one |ThirdPartyClientAuthenticator| will need to be created per session.
     DCHECK(token_fetcher_);
     current_authenticator_.reset(new ThirdPartyClientAuthenticator(
+        base::Bind(&V2Authenticator::CreateForClient),
         std::move(token_fetcher_)));
     resume_callback.Run();
   } else {
@@ -143,7 +143,8 @@ void NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
     // If the client specified a pairing id and shared secret, then create a
     // PairingAuthenticator.
     current_authenticator_.reset(new PairingClientAuthenticator(
-        client_pairing_id_, shared_secret_, fetch_secret_callback_,
+        client_pairing_id_, shared_secret_,
+        base::Bind(&V2Authenticator::CreateForClient), fetch_secret_callback_,
         authentication_tag_));
     current_method_ = AuthenticationMethod::SPAKE2_PAIR;
   }

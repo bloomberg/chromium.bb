@@ -17,27 +17,36 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
   PairingClientAuthenticator(
       const std::string& client_id,
       const std::string& paired_secret,
+      const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
       const FetchSecretCallback& fetch_pin_callback,
       const std::string& authentication_tag);
   ~PairingClientAuthenticator() override;
 
+  // Authenticator interface.
+  State state() const override;
+
  private:
-  // PairingAuthenticatorBase interface.
-  void CreateV2AuthenticatorWithPIN(
+  // PairingAuthenticatorBase overrides.
+  void CreateSpakeAuthenticatorWithPin(
       State initial_state,
-      const SetAuthenticatorCallback& callback) override;
+      const base::Closure& resume_callback) override;
   void AddPairingElements(buzz::XmlElement* message) override;
 
   void OnPinFetched(State initial_state,
-                    const SetAuthenticatorCallback& callback,
+                    const base::Closure& resume_callback,
                     const std::string& pin);
 
   // Protocol state.
-  bool sent_client_id_;
+  bool sent_client_id_ = false;
   std::string client_id_;
-  const std::string& paired_secret_;
+  std::string paired_secret_;
+  CreateBaseAuthenticatorCallback create_base_authenticator_callback_;
   FetchSecretCallback fetch_pin_callback_;
   std::string authentication_tag_;
+
+  // Set to true if a PIN-based authenticator has been requested but has not
+  // yet been set.
+  bool waiting_for_pin_ = false;
 
   base::WeakPtrFactory<PairingClientAuthenticator> weak_factory_;
 

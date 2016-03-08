@@ -24,35 +24,27 @@ const buzz::StaticQName kPairingFailedTag =
 const buzz::StaticQName kPairingErrorAttribute = { "", "error" };
 }  // namespace
 
-PairingAuthenticatorBase::PairingAuthenticatorBase()
-    : using_paired_secret_(false),
-      waiting_for_authenticator_(false),
-      weak_factory_(this) {
-}
-
-PairingAuthenticatorBase::~PairingAuthenticatorBase() {
-}
+PairingAuthenticatorBase::PairingAuthenticatorBase() : weak_factory_(this) {}
+PairingAuthenticatorBase::~PairingAuthenticatorBase() {}
 
 Authenticator::State PairingAuthenticatorBase::state() const {
-  if (waiting_for_authenticator_) {
-    return PROCESSING_MESSAGE;
-  }
-  return v2_authenticator_->state();
+  DCHECK(spake2_authenticator_);
+  return spake2_authenticator_->state();
 }
 
 bool PairingAuthenticatorBase::started() const {
-  if (!v2_authenticator_) {
+  if (!spake2_authenticator_) {
     return false;
   }
-  return v2_authenticator_->started();
+  return spake2_authenticator_->started();
 }
 
 Authenticator::RejectionReason
 PairingAuthenticatorBase::rejection_reason() const {
-  if (!v2_authenticator_) {
+  if (!spake2_authenticator_) {
     return PROTOCOL_ERROR;
   }
-  return v2_authenticator_->rejection_reason();
+  return spake2_authenticator_->rejection_reason();
 }
 
 void PairingAuthenticatorBase::ProcessMessage(
@@ -63,18 +55,17 @@ void PairingAuthenticatorBase::ProcessMessage(
   // The client authenticator creates the underlying authenticator in the ctor
   // and the host creates it in response to the first message before deferring
   // to this class to process it. Either way, it should exist here.
-  DCHECK(v2_authenticator_);
+  DCHECK(spake2_authenticator_);
 
   // If pairing failed, and we haven't already done so, try again with the PIN.
   if (using_paired_secret_ && HasErrorMessage(message)) {
     using_paired_secret_ = false;
-    waiting_for_authenticator_ = true;
-    v2_authenticator_.reset();
-    SetAuthenticatorCallback set_authenticator = base::Bind(
-        &PairingAuthenticatorBase::SetAuthenticatorAndProcessMessage,
-        weak_factory_.GetWeakPtr(), base::Owned(new buzz::XmlElement(*message)),
-        resume_callback);
-    CreateV2AuthenticatorWithPIN(WAITING_MESSAGE, set_authenticator);
+    spake2_authenticator_.reset();
+    CreateSpakeAuthenticatorWithPin(
+        WAITING_MESSAGE, base::Bind(&PairingAuthenticatorBase::ProcessMessage,
+                                    weak_factory_.GetWeakPtr(),
+                                    base::Owned(new buzz::XmlElement(*message)),
+                                    resume_callback));
     return;
   }
 
@@ -82,7 +73,7 @@ void PairingAuthenticatorBase::ProcessMessage(
   // check for a failed SPAKE exchange if we're using the paired secret. In
   // this case the pairing protocol can continue by communicating the error
   // to the peer and retrying with the PIN.
-  v2_authenticator_->ProcessMessage(
+  spake2_authenticator_->ProcessMessage(
       message,
       base::Bind(&PairingAuthenticatorBase::CheckForFailedSpakeExchange,
                  weak_factory_.GetWeakPtr(), resume_callback));
@@ -90,19 +81,19 @@ void PairingAuthenticatorBase::ProcessMessage(
 
 scoped_ptr<buzz::XmlElement> PairingAuthenticatorBase::GetNextMessage() {
   DCHECK_EQ(state(), MESSAGE_READY);
-  scoped_ptr<buzz::XmlElement> result = v2_authenticator_->GetNextMessage();
+  scoped_ptr<buzz::XmlElement> result = spake2_authenticator_->GetNextMessage();
   AddPairingElements(result.get());
   MaybeAddErrorMessage(result.get());
   return result;
 }
 
 const std::string& PairingAuthenticatorBase::GetAuthKey() const {
-  return v2_authenticator_->GetAuthKey();
+  return spake2_authenticator_->GetAuthKey();
 }
 
 scoped_ptr<ChannelAuthenticator>
 PairingAuthenticatorBase::CreateChannelAuthenticator() const {
-  return v2_authenticator_->CreateChannelAuthenticator();
+  return spake2_authenticator_->CreateChannelAuthenticator();
 }
 
 void PairingAuthenticatorBase::MaybeAddErrorMessage(buzz::XmlElement* message) {
@@ -131,36 +122,17 @@ void PairingAuthenticatorBase::CheckForFailedSpakeExchange(
   // If the SPAKE exchange failed due to invalid credentials, and those
   // credentials were the paired secret, then notify the peer that the
   // PIN-less connection failed and retry using the PIN.
-  if (v2_authenticator_->state() == REJECTED &&
-      v2_authenticator_->rejection_reason() == INVALID_CREDENTIALS &&
+  if (spake2_authenticator_->state() == REJECTED &&
+      spake2_authenticator_->rejection_reason() == INVALID_CREDENTIALS &&
       using_paired_secret_) {
     using_paired_secret_ = false;
     error_message_ = "invalid-shared-secret";
-    v2_authenticator_.reset();
-    buzz::XmlElement* no_message = nullptr;
-    SetAuthenticatorCallback set_authenticator = base::Bind(
-        &PairingAuthenticatorBase::SetAuthenticatorAndProcessMessage,
-        weak_factory_.GetWeakPtr(), no_message, resume_callback);
-    CreateV2AuthenticatorWithPIN(MESSAGE_READY, set_authenticator);
+    spake2_authenticator_.reset();
+    CreateSpakeAuthenticatorWithPin(MESSAGE_READY, resume_callback);
     return;
   }
 
   resume_callback.Run();
-}
-
-void PairingAuthenticatorBase::SetAuthenticatorAndProcessMessage(
-    const buzz::XmlElement* message,
-    const base::Closure& resume_callback,
-    scoped_ptr<Authenticator> authenticator) {
-  DCHECK(!v2_authenticator_);
-  DCHECK(authenticator);
-  waiting_for_authenticator_ = false;
-  v2_authenticator_ = std::move(authenticator);
-  if (message) {
-    ProcessMessage(message, resume_callback);
-  } else {
-    resume_callback.Run();
-  }
 }
 
 }  // namespace protocol

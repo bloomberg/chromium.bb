@@ -17,6 +17,7 @@ class XmlElement;
 namespace remoting {
 namespace protocol {
 
+class Authenticator;
 class ChannelAuthenticator;
 
 typedef base::Callback<void(const std::string& secret)> SecretFetchedCallback;
@@ -25,18 +26,16 @@ typedef base::Callback<void(
     const SecretFetchedCallback& secret_fetched_callback)> FetchSecretCallback;
 
 // Authenticator is an abstract interface for authentication protocol
-// implementations. Different implementations of this interface may be
-// used on each side of the connection depending of type of the auth
-// protocol. Client and host will repeatedly call their Authenticators
-// and deliver the messages they generate, until successful
-// authentication is reported.
+// implementations. Different implementations of this interface may be used on
+// each side of the connection depending of type of the auth protocol. Client
+// and host will repeatedly call their Authenticators and deliver the messages
+// they generate, until successful authentication is reported.
 //
-// Authenticator may exchange multiple messages before session is
-// authenticated. Each message sent/received by an Authenticator is
-// delivered either in a session description inside session-initiate
-// and session-accept messages or in a session-info
-// message. Session-info messages are used only if authenticators need
-// to exchange more than one message.
+// Authenticator may exchange multiple messages before session is authenticated.
+// Each message sent/received by an Authenticator is delivered either in a
+// session description inside session-initiate and session-accept messages or in
+// a session-info message. Session-info messages are used only if authenticators
+// need to exchange more than one message.
 class Authenticator {
  public:
   // Allowed state transitions:
@@ -72,6 +71,14 @@ class Authenticator {
     PROTOCOL_ERROR,
   };
 
+  // Callback used for layered Authenticator implementations, particularly
+  // third-party and pairing authenticators. They use this callback to create
+  // base SPAKE2 authenticators.
+  typedef base::Callback<scoped_ptr<Authenticator>(
+      const std::string& shared_secret,
+      Authenticator::State initial_state)>
+      CreateBaseAuthenticatorCallback;
+
   // Returns true if |message| is an Authenticator message.
   static bool IsAuthenticatorMessage(const buzz::XmlElement* message);
 
@@ -90,7 +97,7 @@ class Authenticator {
   virtual State state() const = 0;
 
   // Returns whether authentication has started. The chromoting host uses this
-  // method to starts the back off process to prevent malicious clients from
+  // method to start the back off process to prevent malicious clients from
   // guessing the PIN by spamming the host with auth requests.
   virtual bool started() const = 0;
 

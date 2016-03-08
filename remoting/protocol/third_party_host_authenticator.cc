@@ -11,26 +11,20 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "remoting/base/constants.h"
-#include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/token_validator.h"
-#include "remoting/protocol/v2_authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {
 
 ThirdPartyHostAuthenticator::ThirdPartyHostAuthenticator(
-    const std::string& local_cert,
-    scoped_refptr<RsaKeyPair> key_pair,
+    const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
     scoped_ptr<TokenValidator> token_validator)
     : ThirdPartyAuthenticatorBase(MESSAGE_READY),
-      local_cert_(local_cert),
-      key_pair_(key_pair),
-      token_validator_(std::move(token_validator)) {
-}
+      create_base_authenticator_callback_(create_base_authenticator_callback),
+      token_validator_(std::move(token_validator)) {}
 
-ThirdPartyHostAuthenticator::~ThirdPartyHostAuthenticator() {
-}
+ThirdPartyHostAuthenticator::~ThirdPartyHostAuthenticator() {}
 
 void ThirdPartyHostAuthenticator::ProcessTokenMessage(
     const buzz::XmlElement* message,
@@ -88,8 +82,8 @@ void ThirdPartyHostAuthenticator::OnThirdPartyTokenValidated(
 
   // The other side already started the SPAKE authentication.
   token_state_ = ACCEPTED;
-  underlying_ = V2Authenticator::CreateForHost(
-      local_cert_, key_pair_, shared_secret, WAITING_MESSAGE);
+  underlying_ =
+      create_base_authenticator_callback_.Run(shared_secret, WAITING_MESSAGE);
   underlying_->ProcessMessage(message, resume_callback);
 }
 

@@ -13,7 +13,6 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/v2_authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "url/gurl.h"
 
@@ -21,13 +20,13 @@ namespace remoting {
 namespace protocol {
 
 ThirdPartyClientAuthenticator::ThirdPartyClientAuthenticator(
+    const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
     scoped_ptr<TokenFetcher> token_fetcher)
     : ThirdPartyAuthenticatorBase(WAITING_MESSAGE),
-      token_fetcher_(std::move(token_fetcher)) {
-}
+      create_base_authenticator_callback_(create_base_authenticator_callback),
+      token_fetcher_(std::move(token_fetcher)) {}
 
-ThirdPartyClientAuthenticator::~ThirdPartyClientAuthenticator() {
-}
+ThirdPartyClientAuthenticator::~ThirdPartyClientAuthenticator() {}
 
 void ThirdPartyClientAuthenticator::ProcessTokenMessage(
     const buzz::XmlElement* message,
@@ -74,8 +73,8 @@ void ThirdPartyClientAuthenticator::OnThirdPartyTokenFetched(
     rejection_reason_ = INVALID_CREDENTIALS;
   } else {
     token_state_ = MESSAGE_READY;
-    underlying_ = V2Authenticator::CreateForClient(
-        shared_secret, MESSAGE_READY);
+    underlying_ =
+        create_base_authenticator_callback_.Run(shared_secret, MESSAGE_READY);
   }
   resume_callback.Run();
 }

@@ -17,6 +17,7 @@
 #include "remoting/protocol/third_party_client_authenticator.h"
 #include "remoting/protocol/third_party_host_authenticator.h"
 #include "remoting/protocol/token_validator.h"
+#include "remoting/protocol/v2_authenticator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -100,14 +101,14 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
 
  protected:
   void InitAuthenticators() {
-    scoped_ptr<TokenValidator> token_validator(new FakeTokenValidator());
-    token_validator_ = static_cast<FakeTokenValidator*>(token_validator.get());
+    token_validator_ = new FakeTokenValidator();
     host_.reset(new ThirdPartyHostAuthenticator(
-        host_cert_, key_pair_, std::move(token_validator)));
-    scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher>
-        token_fetcher(new FakeTokenFetcher());
-    token_fetcher_ = static_cast<FakeTokenFetcher*>(token_fetcher.get());
-    client_.reset(new ThirdPartyClientAuthenticator(std::move(token_fetcher)));
+        base::Bind(&V2Authenticator::CreateForHost, host_cert_, key_pair_),
+        make_scoped_ptr(token_validator_)));
+    token_fetcher_ = new FakeTokenFetcher();
+    client_.reset(new ThirdPartyClientAuthenticator(
+        base::Bind(&V2Authenticator::CreateForClient),
+        make_scoped_ptr(token_fetcher_)));
   }
 
   FakeTokenFetcher* token_fetcher_;
