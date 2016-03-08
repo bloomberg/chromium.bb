@@ -42,8 +42,8 @@ __gCrWeb['plugin'] = {};
 
   /**
    * Returns the first <embed> child of the given node, if any.
-   * @param {HTMLElement} node The node to check.
-   * @return {HTMLElement} The first <embed> child, or null.
+   * @param {Node} node The node to check.
+   * @return {Node} The first <embed> child, or null.
    * @private
    */
   __gCrWeb['plugin'].getEmbedChild_ = function(node) {
