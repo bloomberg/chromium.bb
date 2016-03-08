@@ -15,7 +15,6 @@
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/css/parser/CSSPropertyParser.h"
-#include "core/css/parser/CSSVariableParser.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/StyleVariableData.h"
@@ -92,16 +91,9 @@ void CSSVariableResolver::resolveApplyAtRule(CSSParserTokenRange& range,
     Vector<CSSParserToken>& result)
 {
     ASSERT(range.peek().type() == AtKeywordToken && range.peek().valueEqualsIgnoringASCIICase("apply"));
-    CSSParserTokenRange originalRange = range;
-
     range.consumeIncludingWhitespace();
     const CSSParserToken& variableName = range.consumeIncludingWhitespace();
-    if (!CSSVariableParser::isValidVariableName(variableName)
-        || !(range.atEnd() || range.peek().type() == SemicolonToken || range.peek().type() == RightBraceToken)) {
-        range = originalRange;
-        result.append(range.consume());
-        return;
-    }
+    // TODO(timloh): Should we actually be consuming this?
     if (range.peek().type() == SemicolonToken)
         range.consume();
 

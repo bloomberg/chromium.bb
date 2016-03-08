@@ -48,10 +48,14 @@ bool classifyBlock(CSSParserTokenRange range, bool& hasReferences, bool isTopLev
         const CSSParserToken& token = range.consume();
         switch (token.type()) {
         case AtKeywordToken: {
-            // This might have false positives if the @apply doesn't actually match
-            // the syntax, but that just means we do extra computation work.
-            if (token.valueEqualsIgnoringASCIICase("apply"))
+            if (token.valueEqualsIgnoringASCIICase("apply")) {
+                range.consumeWhitespace();
+                const CSSParserToken& variableName = range.consumeIncludingWhitespace();
+                if (!CSSVariableParser::isValidVariableName(variableName)
+                    || !(range.atEnd() || range.peek().type() == SemicolonToken || range.peek().type() == RightBraceToken))
+                    return false;
                 hasReferences = true;
+            }
             break;
         }
         case DelimiterToken: {
