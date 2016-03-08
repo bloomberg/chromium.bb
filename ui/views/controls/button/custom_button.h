@@ -103,6 +103,8 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
+  InkDropDelegate* ink_drop_delegate() const { return ink_drop_delegate_; }
+
  protected:
   // Construct the Button with a Listener. See comment for Button's ctor.
   explicit CustomButton(ButtonListener* listener);
@@ -135,7 +137,6 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // state). This does not take into account enabled state.
   bool ShouldEnterHoveredState();
 
-  InkDropDelegate* ink_drop_delegate() const { return ink_drop_delegate_; }
   void set_ink_drop_delegate(InkDropDelegate* ink_drop_delegate) {
     ink_drop_delegate_ = ink_drop_delegate;
   }

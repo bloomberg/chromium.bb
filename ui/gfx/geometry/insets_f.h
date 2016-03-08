@@ -11,7 +11,7 @@
 
 namespace gfx {
 
-// A floating versin of gfx::Insets.
+// A floating point version of gfx::Insets.
 class GFX_EXPORT InsetsF {
  public:
   InsetsF();

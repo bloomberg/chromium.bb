@@ -11,12 +11,12 @@
 namespace views {
 
 // Default sizes for ink drop effects.
-const int kInkDropLargeSize = 32;
+const int kInkDropSize = 24;
 const int kInkDropLargeCornerRadius = 4;
-const int kInkDropSmallSize = 24;
 const int kInkDropSmallCornerRadius = 2;
 
-InkDropHostView::InkDropHostView() {}
+InkDropHostView::InkDropHostView()
+    : ink_drop_size_(kInkDropSize, kInkDropSize) {}
 
 InkDropHostView::~InkDropHostView() {}
 
@@ -33,18 +33,19 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 }
 
 scoped_ptr<InkDropAnimation> InkDropHostView::CreateInkDropAnimation() const {
+  gfx::Size large_drop(ink_drop_size_.width() * 4 / 3,
+                       ink_drop_size_.height() * 4 / 3);
+
   scoped_ptr<InkDropAnimation> animation(new SquareInkDropAnimation(
-      gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
-      kInkDropLargeCornerRadius,
-      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
+      large_drop, kInkDropLargeCornerRadius, ink_drop_size_,
       kInkDropSmallCornerRadius, GetInkDropCenter(), GetInkDropBaseColor()));
   return animation;
 }
 
 scoped_ptr<InkDropHover> InkDropHostView::CreateInkDropHover() const {
-  scoped_ptr<InkDropHover> hover(new InkDropHover(
-      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
-      kInkDropSmallCornerRadius, GetInkDropCenter(), GetInkDropBaseColor()));
+  scoped_ptr<InkDropHover> hover(
+      new InkDropHover(ink_drop_size_, kInkDropSmallCornerRadius,
+                       GetInkDropCenter(), GetInkDropBaseColor()));
   return hover;
 }
 

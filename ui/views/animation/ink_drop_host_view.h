@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/view.h"
 
@@ -27,6 +28,8 @@ class VIEWS_EXPORT InkDropHostView : public views::View, public InkDropHost {
   scoped_ptr<InkDropAnimation> CreateInkDropAnimation() const override;
   scoped_ptr<InkDropHover> CreateInkDropHover() const override;
 
+  void set_ink_drop_size(const gfx::Size& size) { ink_drop_size_ = size; }
+
  protected:
   // Overrideable methods to allow views to provide minor tweaks to the default
   // ink drop.
@@ -34,6 +37,8 @@ class VIEWS_EXPORT InkDropHostView : public views::View, public InkDropHost {
   virtual SkColor GetInkDropBaseColor() const;
 
  private:
+  gfx::Size ink_drop_size_;
+
   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);
 };
 }

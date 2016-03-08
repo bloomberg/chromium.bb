@@ -57,6 +57,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -92,7 +93,7 @@ const int kTooltipMaxWidth = 800;
 
 // Padding before the icon and at end of the item.
 const int kStartPadding = 12;
-const int kEndPadding = 19;
+const int kEndPadding = 6;
 
 // Horizontal padding between progress indicator and filename/status text.
 const int kProgressTextPadding = 8;
@@ -101,7 +102,10 @@ const int kProgressTextPadding = 8;
 // download.
 const int kButtonPadding = 5;
 
-// The space on the left and right side of the dangerous download label.
+// The touchable space around the dropdown button's icon.
+const int kDropdownBorderWidth = 10;
+
+// The space on the right side of the dangerous download label.
 const int kLabelPadding = 8;
 
 // Height/width of the warning icon, also in dp.
@@ -167,6 +171,9 @@ DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
   download()->AddObserver(this);
   set_context_menu_controller(this);
 
+  dropdown_button_->SetBorder(
+      views::Border::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
+  dropdown_button_->set_ink_drop_size(gfx::Size(32, 32));
   AddChildView(dropdown_button_);
 
   LoadIcon();
@@ -317,53 +324,55 @@ void DownloadItemViewMd::Layout() {
   UpdateColorsFromTheme();
 
   if (IsShowingWarningDialog()) {
-    int x = kStartPadding + kWarningIconSize + kStartPadding;
-    int y = (height() - dangerous_download_label_->height()) / 2;
-    dangerous_download_label_->SetBounds(x, y,
-                                         dangerous_download_label_->width(),
-                                         dangerous_download_label_->height());
+    gfx::Point child_origin(
+        kStartPadding + kWarningIconSize + kStartPadding,
+        (height() - dangerous_download_label_->height()) / 2);
+    dangerous_download_label_->SetPosition(child_origin);
+
+    child_origin.Offset(dangerous_download_label_->width() + kLabelPadding, 0);
     gfx::Size button_size = GetButtonSize();
-    x += dangerous_download_label_->width() + kLabelPadding;
-    y = (height() - button_size.height()) / 2;
+    child_origin.set_y((height() - button_size.height()) / 2);
     if (save_button_) {
-      save_button_->SetBounds(x, y, button_size.width(), button_size.height());
-      x += button_size.width() + kButtonPadding;
+      save_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
+      child_origin.Offset(button_size.width() + kButtonPadding, 0);
     }
-    discard_button_->SetBounds(x, y, button_size.width(), button_size.height());
+    discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
+    DCHECK_EQ(GetPreferredSize().width(),
+              discard_button_->bounds().right() + kEndPadding);
   } else {
     dropdown_button_->SizeToPreferredSize();
     dropdown_button_->SetPosition(
-        gfx::Point(width() - dropdown_button_->width(),
+        gfx::Point(width() - dropdown_button_->width() - kEndPadding,
                    (height() - dropdown_button_->height()) / 2));
   }
 }
 
 gfx::Size DownloadItemViewMd::GetPreferredSize() const {
-  int width, height;
-
-  // First, we set the height to the height of two rows or text plus margins.
-  height = std::max(kDefaultHeight,
-                    2 * kMinimumVerticalPadding + font_list_.GetBaseline() +
-                        kVerticalTextPadding + status_font_list_.GetHeight());
+  int width = 0;
+  // We set the height to the height of two rows or text plus margins.
+  int child_height = font_list_.GetBaseline() + kVerticalTextPadding +
+                     status_font_list_.GetHeight();
 
   if (IsShowingWarningDialog()) {
-    width = kStartPadding + kWarningIconSize + kLabelPadding +
+    // Width.
+    width = kStartPadding + kWarningIconSize + kStartPadding +
             dangerous_download_label_->width() + kLabelPadding;
     gfx::Size button_size = GetButtonSize();
-    // Make sure the button fits.
-    height = std::max<int>(height,
-                           2 * kMinimumVerticalPadding + button_size.height());
-    // Then we make sure the warning icon fits.
-    height = std::max<int>(
-        height, 2 * kMinimumVerticalPadding + kWarningIconSize);
     if (save_button_)
       width += button_size.width() + kButtonPadding;
     width += button_size.width() + kEndPadding;
+
+    // Height: make sure the button fits and the warning icon fits.
+    child_height =
+        std::max({child_height, button_size.height(), kWarningIconSize});
   } else {
     width = kStartPadding + DownloadShelf::kProgressIndicatorSize +
-            kProgressTextPadding + kTextWidth + kEndPadding;
+            kProgressTextPadding + kTextWidth +
+            dropdown_button_->GetPreferredSize().width() + kEndPadding;
   }
-  return gfx::Size(width, height);
+
+  return gfx::Size(width, std::max(kDefaultHeight,
+                                   2 * kMinimumVerticalPadding + child_height));
 }
 
 // Handle a mouse click and open the context menu if the mouse is
@@ -815,6 +824,9 @@ void DownloadItemViewMd::SetDropdownState(State new_state) {
       new_state == PUSHED ? gfx::VectorIconId::FIND_NEXT
                           : gfx::VectorIconId::FIND_PREV,
       base::Bind(&DownloadItemViewMd::GetTextColor, base::Unretained(this)));
+  dropdown_button_->ink_drop_delegate()->OnAction(
+      new_state == PUSHED ? views::InkDropState::ACTIVATED
+                          : views::InkDropState::DEACTIVATED);
   dropdown_button_->OnThemeChanged();
   dropdown_state_ = new_state;
   SchedulePaint();
@@ -1010,7 +1022,7 @@ void DownloadItemViewMd::SizeLabelToMinWidth() {
     prev_text = current_text;
   }
 
-  dangerous_download_label_->SetBounds(0, 0, size.width(), size.height());
+  dangerous_download_label_->SetSize(size);
   dangerous_download_label_sized_ = true;
 }
 

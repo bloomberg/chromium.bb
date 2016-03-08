@@ -12,10 +12,11 @@
 
 namespace gfx {
 
-// An integer version of gfx::Insets.
 class GFX_EXPORT Insets {
  public:
   Insets();
+  explicit Insets(int all);
+  Insets(int vertical, int horizontal);
   Insets(int top, int left, int bottom, int right);
 
   ~Insets();
