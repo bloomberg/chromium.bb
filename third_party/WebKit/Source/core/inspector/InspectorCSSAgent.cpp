@@ -1060,10 +1060,13 @@ void InspectorCSSAgent::collectPlatformFontsForLayoutObject(LayoutObject* layout
         GlyphBuffer glyphBuffer;
         font.buildGlyphBuffer(paintInfo, glyphBuffer);
         for (unsigned i = 0; i < glyphBuffer.size(); ++i) {
-            String familyName = glyphBuffer.fontDataAt(i)->platformData().fontFamilyName();
+            const SimpleFontData* simpleFontData = glyphBuffer.fontDataAt(i);
+            String familyName = simpleFontData->platformData().fontFamilyName();
             if (familyName.isNull())
                 familyName = "";
-            fontStats->add(familyName);
+            String isCustomFont = simpleFontData->isCustomFont() ? "1" : "0";
+            String fontDescription = isCustomFont + familyName;
+            fontStats->add(fontDescription);
         }
     }
 }
@@ -1088,8 +1091,12 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     }
     *platformFonts = protocol::Array<protocol::CSS::PlatformFontUsage>::create();
     for (auto& font : fontStats) {
+        String fontDescription = font.key;
+        bool isCustomFont = fontDescription.startsWith('1');
+        String fontName = fontDescription.substring(1);
         (*platformFonts)->addItem(protocol::CSS::PlatformFontUsage::create()
-            .setFamilyName(font.key)
+            .setFamilyName(fontName)
+            .setIsCustomFont(isCustomFont)
             .setGlyphCount(font.value).build());
     }
 }

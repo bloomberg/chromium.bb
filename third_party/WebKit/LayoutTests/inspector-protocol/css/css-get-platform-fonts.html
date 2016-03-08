@@ -52,7 +52,15 @@ function test()
         });
         for (var i = 0; i < fonts.length; ++i)
             fonts[i].familyName = "<Some-family-name-" + i + ">";
-        InspectorTest.log(JSON.stringify(fonts));
+        for (var i = 0; i < fonts.length; ++i) {
+            var lines = [
+                "Font #" + i,
+                "    name: " + fonts[i].familyName,
+                "    glyphCount: " + fonts[i].glyphCount,
+                "    isCustomFont: " + fonts[i].isCustomFont
+            ];
+            InspectorTest.log(lines.join("\n"));
+        }
     }
 };
 
@@ -62,8 +70,13 @@ window.addEventListener("DOMContentLoaded", function () {
 
 </script>
 <style>
+@font-face {
+    font-family: "ahem";
+    src: url('./resources/Ahem.ttf');
+}
+
     #fancy {
-        font-family: 'Arial';
+        font-family: "ahem";
         background-color: gray;
     }
     #fancy:first-letter {
