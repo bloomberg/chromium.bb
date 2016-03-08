@@ -1143,7 +1143,6 @@
     ],
     'chrome_unit_tests_desktop_linux_sources': [
       'browser/password_manager/native_backend_kwallet_x_unittest.cc',
-      'browser/profiles/profile_list_desktop_unittest.cc',
       'browser/shell_integration_linux_unittest.cc',
     ],
     # Tests corresponding to the files in chrome_browser_ui_cocoa_sources.
@@ -2420,6 +2419,11 @@
         }],
         ['chromeos==0 and OS=="linux"', {
           'sources': [ '<@(chrome_unit_tests_desktop_linux_sources)' ],
+        }],
+        ['OS!="android" and OS!="ios" and chromeos==0', {
+          'sources': [
+            'browser/profiles/profile_list_desktop_unittest.cc',
+          ],
         }],
         ['chromeos==0 and use_ozone==0 and OS=="linux"', {
           'dependencies': [

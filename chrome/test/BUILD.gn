@@ -1755,6 +1755,9 @@ test("unit_tests") {
             ".",
             "//chrome")
   }
+  if (!is_android && !is_ios && !is_chromeos) {
+    sources += [ "//chrome/browser/profiles/profile_list_desktop_unittest.cc" ]
+  }
   if (!is_chromeos && !use_ozone && is_linux) {
     deps += [
       "//build/linux:gio",
