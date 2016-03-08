@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <tuple>
 
 #include "base/files/file_util_proxy.h"
 #include "base/sequenced_task_runner.h"
@@ -227,7 +228,7 @@ void SandboxFileStreamWriter::DidWrite(
     if (overlapped < 0)
       overlapped = 0;
     observers_.Notify(&FileUpdateObserver::OnUpdate,
-                      base::MakeTuple(url_, write_response - overlapped));
+                      std::make_tuple(url_, write_response - overlapped));
   }
   total_bytes_written_ += write_response;
 

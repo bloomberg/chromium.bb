@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <limits>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -581,7 +582,7 @@ void FileSystemOperationImpl::DidWrite(
   if (complete && write_status != FileWriterDelegate::ERROR_WRITE_NOT_STARTED) {
     DCHECK(operation_context_);
     operation_context_->change_observers()->Notify(
-        &FileChangeObserver::OnModifyFile, base::MakeTuple(url));
+        &FileChangeObserver::OnModifyFile, std::make_tuple(url));
   }
 
   StatusCallback cancel_callback = cancel_callback_;

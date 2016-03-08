@@ -5,6 +5,7 @@
 #include "storage/browser/fileapi/copy_or_move_operation_delegate.h"
 
 #include <stdint.h>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -411,21 +412,21 @@ class StreamCopyOrMoveImpl
   void NotifyOnStartUpdate(const FileSystemURL& url) {
     if (file_system_context_->GetUpdateObservers(url.type())) {
       file_system_context_->GetUpdateObservers(url.type())
-          ->Notify(&FileUpdateObserver::OnStartUpdate, base::MakeTuple(url));
+          ->Notify(&FileUpdateObserver::OnStartUpdate, std::make_tuple(url));
     }
   }
 
   void NotifyOnModifyFile(const FileSystemURL& url) {
     if (file_system_context_->GetChangeObservers(url.type())) {
       file_system_context_->GetChangeObservers(url.type())
-          ->Notify(&FileChangeObserver::OnModifyFile, base::MakeTuple(url));
+          ->Notify(&FileChangeObserver::OnModifyFile, std::make_tuple(url));
     }
   }
 
   void NotifyOnEndUpdate(const FileSystemURL& url) {
     if (file_system_context_->GetUpdateObservers(url.type())) {
       file_system_context_->GetUpdateObservers(url.type())
-          ->Notify(&FileUpdateObserver::OnEndUpdate, base::MakeTuple(url));
+          ->Notify(&FileUpdateObserver::OnEndUpdate, std::make_tuple(url));
     }
   }
 

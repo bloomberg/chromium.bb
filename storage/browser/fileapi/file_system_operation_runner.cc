@@ -5,6 +5,7 @@
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 
 #include <stdint.h>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -637,7 +638,7 @@ void FileSystemOperationRunner::PrepareForWrite(OperationID id,
                                                 const FileSystemURL& url) {
   if (file_system_context_->GetUpdateObservers(url.type())) {
     file_system_context_->GetUpdateObservers(url.type())->Notify(
-        &FileUpdateObserver::OnStartUpdate, base::MakeTuple(url));
+        &FileUpdateObserver::OnStartUpdate, std::make_tuple(url));
   }
   write_target_urls_[id].insert(url);
 }
@@ -646,7 +647,7 @@ void FileSystemOperationRunner::PrepareForRead(OperationID id,
                                                const FileSystemURL& url) {
   if (file_system_context_->GetAccessObservers(url.type())) {
     file_system_context_->GetAccessObservers(url.type())->Notify(
-        &FileAccessObserver::OnAccess, base::MakeTuple(url));
+        &FileAccessObserver::OnAccess, std::make_tuple(url));
   }
 }
 
@@ -668,7 +669,7 @@ void FileSystemOperationRunner::FinishOperation(OperationID id) {
         iter != urls.end(); ++iter) {
       if (file_system_context_->GetUpdateObservers(iter->type())) {
         file_system_context_->GetUpdateObservers(iter->type())->Notify(
-            &FileUpdateObserver::OnEndUpdate, base::MakeTuple(*iter));
+            &FileUpdateObserver::OnEndUpdate, std::make_tuple(*iter));
       }
     }
     write_target_urls_.erase(found);
