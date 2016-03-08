@@ -47,7 +47,7 @@ class InputHandlerManager {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       InputHandlerManagerClient* client,
       scheduler::RendererScheduler* renderer_scheduler);
-  virtual ~InputHandlerManager();
+  ~InputHandlerManager();
 
   // Callable from the main thread only.
   void AddInputHandler(int routing_id,
@@ -68,10 +68,9 @@ class InputHandlerManager {
   void RemoveInputHandler(int routing_id);
 
   // Called from the compositor's thread.
-  virtual InputEventAckState HandleInputEvent(
-      int routing_id,
-      const blink::WebInputEvent* input_event,
-      ui::LatencyInfo* latency_info);
+  InputEventAckState HandleInputEvent(int routing_id,
+                                      const blink::WebInputEvent* input_event,
+                                      ui::LatencyInfo* latency_info);
 
   // Called from the compositor's thread.
   void DidOverscroll(int routing_id, const DidOverscrollParams& params);

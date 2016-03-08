@@ -42,7 +42,6 @@ class CompositorMusConnection
       scoped_ptr<mus::WindowSurfaceBinding> surface_binding);
 
  private:
-  friend class CompositorMusConnectionTest;
   friend class base::RefCountedThreadSafe<CompositorMusConnection>;
 
   ~CompositorMusConnection() override;
@@ -57,20 +56,18 @@ class CompositorMusConnection
 
   void OnWindowInputEventOnMainThread(
       scoped_ptr<blink::WebInputEvent> web_event,
-      const base::Callback<void(bool)>& ack);
+      const base::Closure& ack);
 
-  void OnWindowInputEventAckOnMainThread(const base::Callback<void(bool)>& ack,
-                                         bool handled);
+  void OnWindowInputEventAckOnMainThread(const base::Closure& ack);
 
   // WindowTreeDelegate implementation:
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
   void OnEmbed(mus::Window* root) override;
 
   // InputEventHandler implementation:
-  void OnWindowInputEvent(
-      mus::Window* window,
-      mus::mojom::EventPtr event,
-      scoped_ptr<base::Callback<void(bool)>>* ack_callback) override;
+  void OnWindowInputEvent(mus::Window* window,
+                          mus::mojom::EventPtr event,
+                          scoped_ptr<base::Closure>* ack_callback) override;
 
   const int routing_id_;
   mus::Window* root_;

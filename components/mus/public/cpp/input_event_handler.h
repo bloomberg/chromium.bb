@@ -16,14 +16,11 @@ class Window;
 class InputEventHandler {
  public:
   // The event handler can asynchronously ack the event by taking ownership of
-  // the |ack_callback|. The callback takes a bool representing whether the
-  // handler has consumed the event. If the handler does not take ownership of
-  // the callback, then WindowTreeClientImpl will ack the event as not consumed.
-  virtual void OnWindowInputEvent(
-      Window* target,
-      mojom::EventPtr event,
-      scoped_ptr<base::Callback<void(bool)>>* ack_callback) = 0;
-
+  // the |ack_callback|. If the handler does not take ownership of the callback,
+  // then WindowTreeClientImpl will ack the event.
+  virtual void OnWindowInputEvent(Window* target,
+                                  mojom::EventPtr event,
+                                  scoped_ptr<base::Closure>* ack_callback) = 0;
  protected:
   virtual ~InputEventHandler() {}
 };

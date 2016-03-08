@@ -34,12 +34,12 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
  public:
   RenderWidgetInputHandler(RenderWidgetInputHandlerDelegate* delegate,
                            RenderWidget* widget);
-  virtual ~RenderWidgetInputHandler();
+  ~RenderWidgetInputHandler();
 
   // Handle input events from the input event provider.
-  virtual void HandleInputEvent(const blink::WebInputEvent& input_event,
-                                const ui::LatencyInfo& latency_info,
-                                InputEventDispatchType dispatch_type);
+  void HandleInputEvent(const blink::WebInputEvent& input_event,
+                        const ui::LatencyInfo& latency_info,
+                        InputEventDispatchType dispatch_type);
 
   // Handle overscroll from Blink.
   void DidOverscrollFromBlink(
