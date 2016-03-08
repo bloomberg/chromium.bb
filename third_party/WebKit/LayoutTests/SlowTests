@@ -283,3 +283,5 @@ crbug.com/570656 [ Mac ] fast/text/unicode-fallback-font.html [ Slow ]
 
 crbug.com/584807 printing/webgl-oversized-printing.html [ Slow ]
 crbug.com/584807 virtual/threaded/printing/webgl-oversized-printing.html [ Slow ]
+
+crbug.com/592183 usb/usbDevice.html [ Slow ]
