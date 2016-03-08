@@ -1,0 +1,80 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
+
+#include "ash/system/chromeos/devicetype_utils.h"
+#include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_delegate.h"
+#include "url/gurl.h"
+
+namespace {
+
+// Ids of the notification shown on first run.
+const char kNotifierId[] = "arc_auth";
+const char kDisplaySoruce[] = "arc_auth_source";
+const char kFirstRunNotificationId[] = "arc_auth/first_run";
+
+class ArcAuthNotificationDelegate
+    : public message_center::NotificationDelegate {
+ public:
+  ArcAuthNotificationDelegate() {}
+
+  // message_center::NotificationDelegate
+  void ButtonClick(int button_index) override {
+    if (button_index == 0)
+      arc::ArcAuthService::Get()->EnableArc();
+    else
+      arc::ArcAuthService::Get()->DisableArc();
+  }
+
+ private:
+  ~ArcAuthNotificationDelegate() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ArcAuthNotificationDelegate);
+};
+
+}  // namespace
+
+namespace arc {
+
+// static
+void ArcAuthNotification::Show() {
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
+
+  message_center::RichNotificationData data;
+  data.buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_ARC_OPEN_PLAY_STORE_NOTIFICATION_BUTTON)));
+  data.buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_ARC_CANCEL_NOTIFICATION_BUTTON)));
+  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kFirstRunNotificationId,
+          l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_TITLE),
+          l10n_util::GetStringFUTF16(IDS_ARC_NOTIFICATION_MESSAGE,
+                                     ash::GetChromeOSDeviceName()),
+          resource_bundle.GetImageNamed(IDR_ARC_PLAY_STORE_NOTIFICATION),
+          base::UTF8ToUTF16(kDisplaySoruce), GURL(), notifier_id, data,
+          new ArcAuthNotificationDelegate()));
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
+}
+
+// static
+void ArcAuthNotification::Hide() {
+  message_center::MessageCenter::Get()->RemoveNotification(
+      kFirstRunNotificationId, false);
+}
+
+}  // namespace arc

@@ -8,7 +8,9 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -21,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
@@ -141,7 +144,14 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
         prefs::kArcEnabled,
         base::Bind(&ArcAuthService::OnOptInPreferenceChanged,
                    base::Unretained(this)));
-    OnOptInPreferenceChanged();
+    if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
+      OnOptInPreferenceChanged();
+    } else {
+      if (!disable_ui_for_testing && profile_->IsNewProfile()) {
+        PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
+        OnIsSyncingChanged();
+      }
+    }
   } else {
     auth_code_.clear();
     ArcBridgeService::Get()->HandleStartup();
@@ -149,8 +159,21 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   }
 }
 
+void ArcAuthService::OnIsSyncingChanged() {
+  syncable_prefs::PrefServiceSyncable* const pref_service_syncable =
+      PrefServiceSyncableFromProfile(profile_);
+  if (!pref_service_syncable->IsSyncing())
+    return;
+
+  pref_service_syncable->RemoveObserver(this);
+  if (!profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled))
+    arc::ArcAuthNotification::Show();
+}
+
 void ArcAuthService::Shutdown() {
   ShutdownBridgeAndCloseUI();
+  if (profile_)
+    PrefServiceSyncableFromProfile(profile_)->RemoveObserver(this);
   profile_ = nullptr;
   pref_change_registrar_.RemoveAll();
 }
@@ -261,8 +284,16 @@ void ArcAuthService::CancelAuthCode() {
   if (state_ != State::FETCHING_CODE)
     return;
 
-  ShutdownBridgeAndCloseUI();
+  DisableArc();
+}
 
+void ArcAuthService::EnableArc() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+}
+
+void ArcAuthService::DisableArc() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
 }
 

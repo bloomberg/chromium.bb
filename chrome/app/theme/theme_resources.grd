@@ -450,6 +450,7 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DRIVE" file="cros/notification_drive.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW" file="cros/notification_peripheral_battery_low.png" />
         <structure type="chrome_scaled_image" name="IDR_PORTAL_DETECTION_ALERT" file="cros/captive_portal_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_ARC_PLAY_STORE_NOTIFICATION" file="cros/notification_play_store.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_ICON" file="common/notification_welcome_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_LEARN_MORE" file="common/notification_welcome_learn_more.png" />

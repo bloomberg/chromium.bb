@@ -228,4 +228,19 @@ TEST_F(ArcAuthServiceTest, CloseUIKeepsArcEnabled) {
   auth_service()->Shutdown();
 }
 
+TEST_F(ArcAuthServiceTest, EnableDisablesArc) {
+  PrepareURLResponse(net::HTTP_OK, false);
+  PrefService* pref = profile()->GetPrefs();
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+
+  EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
+  auth_service()->EnableArc();
+  EXPECT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
+  auth_service()->DisableArc();
+  EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
+
+  // Correctly stop service.
+  auth_service()->Shutdown();
+}
+
 }  // namespace arc

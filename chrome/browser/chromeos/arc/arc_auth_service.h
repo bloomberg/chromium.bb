@@ -15,6 +15,7 @@
 #include "components/arc/auth/arc_auth_fetcher.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -43,7 +44,8 @@ class ArcAuthService : public ArcService,
                        public ArcBridgeService::Observer,
                        public ArcAuthFetcher::Delegate,
                        public UbertokenConsumer,
-                       public GaiaAuthConsumer {
+                       public GaiaAuthConsumer,
+                       public syncable_prefs::PrefServiceSyncableObserver {
  public:
   enum class State {
     DISABLE,        // ARC is not allowed to run (default).
@@ -103,6 +105,9 @@ class ArcAuthService : public ArcService,
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();
 
+  void EnableArc();
+  void DisableArc();
+
   // ArcAuthFetcher::Delegate:
   void OnAuthCodeFetched(const std::string& auth_code) override;
   void OnAuthCodeNeedUI() override;
@@ -115,6 +120,9 @@ class ArcAuthService : public ArcService,
   // GaiaAuthConsumer:
   void OnMergeSessionSuccess(const std::string& data) override;
   void OnMergeSessionFailure(const GoogleServiceAuthError& error) override;
+
+  // syncable_prefs::PrefServiceSyncableObserver
+  void OnIsSyncingChanged() override;
 
  private:
   void SetAuthCodeAndStartArc(const std::string& auth_code);

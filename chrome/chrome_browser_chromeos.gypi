@@ -52,6 +52,8 @@
         'browser/chromeos/app_mode/kiosk_session_plugin_handler_delegate.h',
         'browser/chromeos/app_mode/startup_app_launcher.cc',
         'browser/chromeos/app_mode/startup_app_launcher.h',
+        'browser/chromeos/arc/arc_auth_notification.cc',
+        'browser/chromeos/arc/arc_auth_notification.h',
         'browser/chromeos/arc/arc_auth_service.cc',
         'browser/chromeos/arc/arc_auth_service.h',
         'browser/chromeos/arc/arc_intent_helper_bridge.cc',
