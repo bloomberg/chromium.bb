@@ -27,7 +27,7 @@
 #include "components/safe_browsing_db/prefix_set.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -973,12 +973,12 @@ bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
 }
 
 bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(ip_address, &ip_number))
+  net::IPAddress address;
+  if (!address.AssignFromIPLiteral(ip_address))
     return false;
-  if (ip_number.size() == net::kIPv4AddressSize)
-    ip_number = net::ConvertIPv4NumberToIPv6Number(ip_number);
-  if (ip_number.size() != net::kIPv6AddressSize)
+  if (address.IsIPv4())
+    address = net::ConvertIPv4ToIPv4MappedIPv6(address);
+  if (!address.IsIPv6())
     return false;  // better safe than sorry.
 
   scoped_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
@@ -986,10 +986,10 @@ bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
   for (IPBlacklist::const_iterator it = ip_blacklist->begin();
        it != ip_blacklist->end(); ++it) {
     const std::string& mask = it->first;
-    DCHECK_EQ(mask.size(), ip_number.size());
-    std::string subnet(net::kIPv6AddressSize, '\0');
-    for (size_t i = 0; i < net::kIPv6AddressSize; ++i) {
-      subnet[i] = ip_number[i] & mask[i];
+    DCHECK_EQ(mask.size(), address.size());
+    std::string subnet(net::IPAddress::kIPv6AddressSize, '\0');
+    for (size_t i = 0; i < net::IPAddress::kIPv6AddressSize; ++i) {
+      subnet[i] = address.bytes()[i] & mask[i];
     }
     const std::string hash = base::SHA1HashString(subnet);
     DVLOG(2) << "Lookup Malware IP: "

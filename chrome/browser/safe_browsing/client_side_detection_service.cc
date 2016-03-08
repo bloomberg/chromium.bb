@@ -30,6 +30,7 @@
 #include "crypto/sha2.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
+#include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -189,14 +190,14 @@ void ClientSideDetectionService::SendClientReportMalwareRequest(
 
 bool ClientSideDetectionService::IsPrivateIPAddress(
     const std::string& ip_address) const {
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(ip_address, &ip_number)) {
+  net::IPAddress address;
+  if (!address.AssignFromIPLiteral(ip_address)) {
     DVLOG(2) << "Unable to parse IP address: '" << ip_address << "'";
     // Err on the side of safety and assume this might be private.
     return true;
   }
 
-  return net::IsIPAddressReserved(ip_number);
+  return address.IsReserved();
 }
 
 void ClientSideDetectionService::OnURLFetchComplete(

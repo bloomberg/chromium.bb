@@ -21,7 +21,7 @@
 #include "chrome/browser/safe_browsing/chunk.pb.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "crypto/sha2.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -53,11 +53,11 @@ SBFullHash SBFullHashForPrefixAndSuffix(SBPrefix prefix,
 }
 
 std::string HashedIpPrefix(const std::string& ip_prefix, size_t prefix_size) {
-  net::IPAddressNumber ip_number;
-  EXPECT_TRUE(net::ParseIPLiteralToNumber(ip_prefix, &ip_number));
-  EXPECT_EQ(net::kIPv6AddressSize, ip_number.size());
-  const std::string hashed_ip_prefix = base::SHA1HashString(
-      net::IPAddressToPackedString(ip_number));
+  net::IPAddress ip_address;
+  EXPECT_TRUE(ip_address.AssignFromIPLiteral(ip_prefix));
+  EXPECT_TRUE(ip_address.IsIPv6());
+  const std::string hashed_ip_prefix =
+      base::SHA1HashString(net::IPAddressToPackedString(ip_address));
   std::string hash(crypto::kSHA256Length, '\0');
   hash.replace(0, hashed_ip_prefix.size(), hashed_ip_prefix);
   hash[base::kSHA1Length] = static_cast<char>(prefix_size);
