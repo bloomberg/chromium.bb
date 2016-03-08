@@ -5,6 +5,7 @@
 #import "ui/base/cocoa/command_dispatcher.h"
 
 #include "base/logging.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 namespace {
 
@@ -15,8 +16,8 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   // Convert the event's location from the original window's coordinates into
   // our own.
   NSPoint location = [event locationInWindow];
-  location = [[event window] convertBaseToScreen:location];
-  location = [window convertScreenToBase:location];
+  location = ui::ConvertPointFromWindowToScreen([event window], location);
+  location = ui::ConvertPointFromScreenToWindow(window, location);
 
   // Various things *only* apply to key down/up.
   bool is_a_repeat = false;

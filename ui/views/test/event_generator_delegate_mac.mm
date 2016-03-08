@@ -9,6 +9,7 @@
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_target.h"
 #include "ui/events/event_target_iterator.h"
@@ -35,8 +36,8 @@ namespace {
 
 NSPoint ConvertRootPointToTarget(NSWindow* target,
                                  const gfx::Point& point_in_root) {
-  // Normally this would do [NSWindow convertScreenToBase:]. However, Cocoa can
-  // reposition the window on screen and make things flaky. Initially, just
+  // Normally this would do ui::ConvertPointFromScreenToWindow. However, Cocoa
+  // can reposition the window on screen and make things flaky. Initially, just
   // assume that the contentRect of |target| is at the top-left corner of the
   // screen.
   NSRect content_rect = [target contentRectForFrameRect:[target frame]];
@@ -473,7 +474,7 @@ void InitializeMacEventGeneratorDelegate() {
   gfx::Point point_in_root = generator->current_location();
   NSWindow* window = EventGeneratorDelegateMac::GetInstance()->window();
   NSPoint point_in_window = ConvertRootPointToTarget(window, point_in_root);
-  return [window convertBaseToScreen:point_in_window];
+  return ui::ConvertPointFromWindowToScreen(window, point_in_window);
 }
 
 @end

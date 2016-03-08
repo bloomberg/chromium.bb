@@ -4,6 +4,7 @@
 
 #include "ui/base/cocoa/cocoa_base_utils.h"
 
+#include "base/mac/sdk_forward_declarations.h"
 #include "ui/events/cocoa/cocoa_event_utils.h"
 
 namespace ui {
@@ -17,6 +18,16 @@ WindowOpenDisposition WindowOpenDispositionFromNSEventWithFlags(
     NSEvent* event, NSUInteger modifiers) {
   int event_flags = EventFlagsFromNSEventWithModifiers(event, modifiers);
   return DispositionFromEventFlags(event_flags);
+}
+
+NSPoint ConvertPointFromWindowToScreen(NSWindow* window, NSPoint point) {
+  NSRect point_rect = NSMakeRect(point.x, point.y, 0, 0);
+  return [window convertRectToScreen:point_rect].origin;
+}
+
+NSPoint ConvertPointFromScreenToWindow(NSWindow* window, NSPoint point) {
+  NSRect point_rect = NSMakeRect(point.x, point.y, 0, 0);
+  return [window convertRectFromScreen:point_rect].origin;
 }
 
 }  // namespace ui

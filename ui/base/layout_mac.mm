@@ -12,9 +12,7 @@ namespace {
 
 float GetScaleFactorScaleForNativeView(gfx::NativeView view) {
   if (NSWindow* window = [view window]) {
-    if ([window respondsToSelector:@selector(backingScaleFactor)])
-      return [window backingScaleFactor];
-    return [window userSpaceScaleFactor];
+    return [window backingScaleFactor];
   }
 
   NSArray* screens = [NSScreen screens];
@@ -22,9 +20,7 @@ float GetScaleFactorScaleForNativeView(gfx::NativeView view) {
     return 1.0f;
 
   NSScreen* screen = [screens objectAtIndex:0];
-  if ([screen respondsToSelector:@selector(backingScaleFactor)])
-    return [screen backingScaleFactor];
-  return [screen userSpaceScaleFactor];
+  return [screen backingScaleFactor];
 }
 
 }  // namespace

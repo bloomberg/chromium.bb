@@ -4,6 +4,7 @@
 
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/views/cocoa/bridged_content_view.h"
@@ -39,7 +40,8 @@ void TooltipManagerMac::UpdateTooltip() {
   NSWindow* window = widget_->ns_window();
   BridgedContentView* view = widget_->ns_view();
 
-  NSPoint nspoint = [window convertScreenToBase:[NSEvent mouseLocation]];
+  NSPoint nspoint =
+      ui::ConvertPointFromScreenToWindow(window, [NSEvent mouseLocation]);
   // Note: flip in the view's frame, which matches the window's contentRect.
   gfx::Point point(nspoint.x, NSHeight([view frame]) - nspoint.y);
   [view updateTooltipIfRequiredAt:point];

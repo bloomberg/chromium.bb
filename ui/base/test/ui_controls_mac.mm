@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
@@ -242,7 +243,7 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
 
   NSPoint pointInWindow = g_mouse_location;
   if (window)
-    pointInWindow = [window convertScreenToBase:pointInWindow];
+    pointInWindow = ui::ConvertPointFromScreenToWindow(window, pointInWindow);
   NSTimeInterval timestamp = TimeIntervalSinceSystemStartup();
 
   NSEvent* event =
@@ -304,7 +305,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
   NSWindow* window = WindowAtCurrentMouseLocation();
   NSPoint pointInWindow = g_mouse_location;
   if (window)
-    pointInWindow = [window convertScreenToBase:pointInWindow];
+    pointInWindow = ui::ConvertPointFromScreenToWindow(window, pointInWindow);
 
   NSEvent* event =
       [NSEvent mouseEventWithType:etype

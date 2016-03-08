@@ -4,6 +4,7 @@
 
 #import "ui/views/controls/menu/menu_runner_impl_cocoa.h"
 
+#include "base/mac/sdk_forward_declarations.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/events/event_utils.h"
@@ -41,7 +42,7 @@ base::scoped_nsobject<NSView> CreateMenuAnchorView(
     const gfx::Rect& screen_bounds,
     NSMenuItem* checked_item) {
   NSRect rect = gfx::ScreenRectToNSRect(screen_bounds);
-  rect.origin = [window convertScreenToBase:rect.origin];
+  rect = [window convertRectFromScreen:rect];
   rect = [[window contentView] convertRect:rect fromView:nil];
 
   // If there's no checked item (e.g. Combobox::STYLE_ACTION), NSMenu will

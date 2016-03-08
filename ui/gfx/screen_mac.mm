@@ -72,11 +72,7 @@ gfx::Display GetDisplayForScreen(NSScreen* screen) {
     display.set_bounds(ConvertCoordinateSystem(frame));
     display.set_work_area(ConvertCoordinateSystem(visible_frame));
   }
-  CGFloat scale;
-  if ([screen respondsToSelector:@selector(backingScaleFactor)])
-    scale = [screen backingScaleFactor];
-  else
-    scale = [screen userSpaceScaleFactor];
+  CGFloat scale = [screen backingScaleFactor];
 
   if (gfx::Display::HasForceDeviceScaleFactor())
     scale = gfx::Display::GetForcedDeviceScaleFactor();

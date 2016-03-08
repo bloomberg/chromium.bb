@@ -9,6 +9,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/canvas_painter.h"
@@ -50,10 +51,11 @@ gfx::Point MovePointToWindow(const NSPoint& point,
                              NSWindow* source_window,
                              NSWindow* target_window) {
   NSPoint point_in_screen = source_window
-      ? [source_window convertBaseToScreen:point]
+      ? ui::ConvertPointFromWindowToScreen(source_window, point)
       : point;
 
-  NSPoint point_in_window = [target_window convertScreenToBase:point_in_screen];
+  NSPoint point_in_window =
+      ui::ConvertPointFromScreenToWindow(target_window, point_in_screen);
   NSRect content_rect =
       [target_window contentRectForFrameRect:[target_window frame]];
   return gfx::Point(point_in_window.x,

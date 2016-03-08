@@ -9,6 +9,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,7 +110,9 @@ class EventsMacTest : public CocoaTest {
     // of window coordinates (which also requires flipping).
     NSPoint window_point =
         NSPointFromCGPoint(Flip(window_location).ToCGPoint());
-    NSPoint screen_point = [test_window() convertBaseToScreen:window_point];
+    NSRect window_rect = NSMakeRect(window_point.x, window_point.y, 0, 0);
+    NSPoint screen_point =
+        [test_window() convertRectToScreen:window_rect].origin;
     CGFloat primary_screen_height =
         NSHeight([[[NSScreen screens] firstObject] frame]);
     screen_point.y = primary_screen_height - screen_point.y;

@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -72,14 +73,12 @@ NSWindow* WidgetOwnerNSWindowAdapter::GetNSWindow() {
 gfx::Vector2d WidgetOwnerNSWindowAdapter::GetChildWindowOffset() const {
   NSRect rect_in_window =
       [anchor_view_ convertRect:[anchor_view_ bounds] toView:nil];
-  // Ensure we anchor off the top-left of |anchor_view_| (rect_in_window.origin
+  NSRect rect_in_screen = [anchor_window_ convertRectToScreen:rect_in_window];
+  // Ensure we anchor off the top-left of |anchor_view_| (rect_in_screen.origin
   // is the bottom-left of the view).
-  // TODO(tapted): Use -[NSWindow convertRectToScreen:] when we ditch 10.6.
-  NSRect rect_in_screen = NSZeroRect;
-  rect_in_screen.origin =
-      [anchor_window_ convertBaseToScreen:NSMakePoint(NSMinX(rect_in_window),
-                                                      NSMaxY(rect_in_window))];
-  return gfx::ScreenRectFromNSRect(rect_in_screen).OffsetFromOrigin();
+  NSPoint anchor_in_screen =
+      NSMakePoint(NSMinX(rect_in_screen), NSMaxY(rect_in_screen));
+  return gfx::ScreenPointFromNSPoint(anchor_in_screen).OffsetFromOrigin();
 }
 
 bool WidgetOwnerNSWindowAdapter::IsVisibleParent() const {

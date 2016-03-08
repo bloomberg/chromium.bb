@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/task_runner.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
@@ -26,7 +27,7 @@ bool GrabViewSnapshot(gfx::NativeView view,
 
   // Get the view bounds relative to the screen
   NSRect frame = [view convertRect:[view bounds] toView:nil];
-  frame.origin = [window convertBaseToScreen:frame.origin];
+  frame = [window convertRectToScreen:frame];
 
   gfx::Rect view_bounds = gfx::Rect(NSRectToCGRect(frame));
 
