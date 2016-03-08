@@ -259,9 +259,12 @@ void ContentSettingImageView::OnClick() {
     views::Widget* bubble_widget =
         parent_->delegate()->CreateViewsBubble(bubble_view_);
     bubble_widget->AddObserver(this);
-    // This is triggered by an input event, the icon will be in an active state
-    // so the bubble doesn't need an arrow.
-    if (ui::MaterialDesignController::IsModeMaterial())
+    // This is triggered by an input event. If the user clicks the icon while
+    // it's not animating, the icon will be placed in an active state, so the
+    // bubble doesn't need an arrow. If the user clicks during an animation,
+    // the animation simply pauses and no other visible state change occurs, so
+    // show the arrow in this case.
+    if (ui::MaterialDesignController::IsModeMaterial() && !pause_animation_)
       bubble_view_->SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
     bubble_widget->Show();
   }
