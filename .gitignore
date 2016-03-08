@@ -63,6 +63,7 @@ vs-chromium-project.txt
 /build/android/bin
 /build/Debug
 /build/Debug_x64
+/build/goma/client
 /build/gomacc.lock
 /build/ipch/
 /build/Release

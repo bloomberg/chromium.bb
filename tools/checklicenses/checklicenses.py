@@ -621,6 +621,9 @@ EXCLUDED_PATHS = [
     # Don't check generated files
     'out/',
 
+    # Don't check downloaded goma client binaries
+    'build/goma/client',
+
     # Don't check sysroot directories
     'build/linux/debian_wheezy_amd64-sysroot',
     'build/linux/debian_wheezy_arm-sysroot',
