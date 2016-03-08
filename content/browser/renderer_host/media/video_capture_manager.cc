@@ -565,7 +565,8 @@ void VideoCaptureManager::StartCaptureForClient(
   LogVideoCaptureEvent(VIDEO_CAPTURE_START_CAPTURE);
 
   // First client starts the device.
-  if (entry->video_capture_controller()->GetActiveClientCount() == 0) {
+  if (!entry->video_capture_controller()->HasActiveClient() &&
+      !entry->video_capture_controller()->HasPausedClient()) {
     DVLOG(1) << "VideoCaptureManager starting device (type = "
              << entry->stream_type << ", id = " << entry->id << ")";
     QueueStartDevice(session_id, entry, params);
@@ -640,9 +641,6 @@ void VideoCaptureManager::PauseCaptureForClient(
     return;
 
   controller->PauseClient(client_id, client_handler);
-  // Release the capture device if there are no more clients.
-  if (!controller->GetActiveClientCount())
-    DoStopDevice(entry);
 }
 
 void VideoCaptureManager::ResumeCaptureForClient(
@@ -665,15 +663,7 @@ void VideoCaptureManager::ResumeCaptureForClient(
   if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
     return;
 
-  // We can't resume a capturing client, which will crash with Camera2 API.
-  // Refer to crbug/514740 for more details.
-  if (!controller->ResumeClient(client_id, client_handler))
-    return;
-  if (controller->GetActiveClientCount() != 1)
-    return;
-
-  // This is first active client, allocate the camera.
-  QueueStartDevice(session_id, entry, params);
+  controller->ResumeClient(client_id, client_handler);
 }
 
 bool VideoCaptureManager::GetDeviceSupportedFormats(
@@ -896,11 +886,9 @@ VideoCaptureManager::GetDeviceEntryForController(
 
 void VideoCaptureManager::DestroyDeviceEntryIfNoClients(DeviceEntry* entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Removal of the last active client stops the device. It is important to only
-  // check active clients and not all clients, because otherwise this class gets
-  // into a bad state and might crash next time VideoCaptureManager::Open() is
-  // called.
-  if (entry->video_capture_controller()->GetActiveClientCount() == 0) {
+  // Removal of the last client stops the device.
+  if (!entry->video_capture_controller()->HasActiveClient() &&
+      !entry->video_capture_controller()->HasPausedClient()) {
     DVLOG(1) << "VideoCaptureManager stopping device (type = "
              << entry->stream_type << ", id = " << entry->id << ")";
 

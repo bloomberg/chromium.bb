@@ -260,14 +260,22 @@ int VideoCaptureController::GetClientCount() const {
   return controller_clients_.size();
 }
 
-int VideoCaptureController::GetActiveClientCount() const {
+bool VideoCaptureController::HasActiveClient() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  int active_client_count = 0;
   for (ControllerClient* client : controller_clients_) {
     if (!client->paused)
-      ++active_client_count;
+      return true;
   }
-  return active_client_count;
+  return false;
+}
+
+bool VideoCaptureController::HasPausedClient() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (ControllerClient* client : controller_clients_) {
+    if (client->paused)
+      return true;
+  }
+  return false;
 }
 
 void VideoCaptureController::StopSession(int session_id) {

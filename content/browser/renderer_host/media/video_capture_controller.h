@@ -99,8 +99,11 @@ class CONTENT_EXPORT VideoCaptureController {
 
   int GetClientCount() const;
 
-  // Return the number of clients that aren't paused.
-  int GetActiveClientCount() const;
+  // Return true if there is client that isn't paused.
+  bool HasActiveClient() const;
+
+  // Return true if there is client paused.
+  bool HasPausedClient() const;
 
   // API called directly by VideoCaptureManager in case the device is
   // prematurely closed.
