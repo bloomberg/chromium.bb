@@ -6516,9 +6516,13 @@
     },
     "expresso-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "expresso"
-        ]
+        ],
+        "buildslave_type": "gce_beefy",
+        "important": true,
+        "vm_tests": []
     },
     "expresso-release-afdo": {
         "_template": "release-afdo-generate",
@@ -15653,25 +15657,9 @@
                     "-chrome_internal"
                 ],
                 "vm_tests": []
-            },
-            {
-                "_template": "full",
-                "boards": [
-                    "expresso"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "expresso-full",
-                "prebuilts": "public",
-                "unittests": null,
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: clapper, enguarde, expresso)",
+        "description": "Full Builds; Group config (boards: clapper, enguarde)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -15703,21 +15691,9 @@
                 "name": "enguarde-release",
                 "unittests": null,
                 "vm_tests": []
-            },
-            {
-                "_template": "release",
-                "boards": [
-                    "expresso"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "expresso-release",
-                "unittests": null,
-                "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: clapper, enguarde, expresso)",
+        "description": "Release Builds (canary) (internal); Group config (boards: clapper, enguarde)",
         "important": true
     },
     "rambi-b-full-group": {

@@ -35,6 +35,7 @@ daisy-paladin
 daisy_skate-chrome-pfq
 daisy_skate-paladin
 daisy_spring-paladin
+expresso-release
 falco-chrome-pfq
 falco-full-compile-paladin
 falco-paladin
@@ -118,7 +119,6 @@ pre-cq-launcher
 [rambi-a-release-group]
   clapper-release
   enguarde-release
-  expresso-release
 [rambi-b-release-group]
   glimmer-release
   gnawty-release

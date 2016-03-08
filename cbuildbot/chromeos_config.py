@@ -2249,6 +2249,14 @@ def GetConfig():
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
+  site_config.Add(
+      'expresso-release', _release,
+      _base_configs['expresso'],
+      important=True,
+      vm_tests=[],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
   ### Arm release configs.
 
   site_config.Add(
@@ -2602,7 +2610,6 @@ def GetConfig():
   _AddGroupConfig(
       'rambi-a', 'clapper', (
           'enguarde',
-          'expresso',
       )
   )
 
