@@ -100,14 +100,9 @@ public:
 
     String preferredStylesheetSetName() const { return m_preferredStylesheetSetName; }
     String selectedStylesheetSetName() const { return m_selectedStylesheetSetName; }
-    void setPreferredStylesheetSetName(const String& name) { m_preferredStylesheetSetName = name; }
-    void setSelectedStylesheetSetName(const String& name) { m_selectedStylesheetSetName = name; }
-
-    void selectStylesheetSetName(const String& name)
-    {
-        setPreferredStylesheetSetName(name);
-        setSelectedStylesheetSetName(name);
-    }
+    void setPreferredStylesheetSetNameIfNotSet(const String&);
+    void setSelectedStylesheetSetName(const String&);
+    void setHttpDefaultStyle(const String&);
 
     void addPendingSheet();
     void removePendingSheet(Node* styleSheetCandidateNode);

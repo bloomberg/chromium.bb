@@ -69,15 +69,7 @@ void HttpEquiv::processHttpEquivAcceptCH(Document& document, const AtomicString&
 
 void HttpEquiv::processHttpEquivDefaultStyle(Document& document, const AtomicString& content)
 {
-    // The preferred style set has been overridden as per section
-    // 14.3.2 of the HTML4.0 specification. We need to update the
-    // sheet used variable and then update our style selector.
-    // For more info, see the test at:
-    // http://www.hixie.ch/tests/evil/css/import/main/preferred.html
-    // -dwh
-    document.styleEngine().setSelectedStylesheetSetName(content);
-    document.styleEngine().setPreferredStylesheetSetName(content);
-    document.styleEngine().resolverChanged(FullStyleUpdate);
+    document.styleEngine().setHttpDefaultStyle(content);
 }
 
 void HttpEquiv::processHttpEquivRefresh(Document& document, const AtomicString& content)

@@ -3440,7 +3440,6 @@ String Document::selectedStylesheetSet() const
 void Document::setSelectedStylesheetSet(const String& aString)
 {
     styleEngine().setSelectedStylesheetSetName(aString);
-    styleEngine().resolverChanged(FullStyleUpdate);
 }
 
 void Document::evaluateMediaQueryListIfNeeded()

@@ -723,6 +723,38 @@ void StyleEngine::setStatsEnabled(bool enabled)
         m_styleResolverStats->reset();
 }
 
+void StyleEngine::setPreferredStylesheetSetNameIfNotSet(const String& name)
+{
+    if (!m_preferredStylesheetSetName.isEmpty())
+        return;
+    m_preferredStylesheetSetName = name;
+    // TODO(rune@opera.com): Setting the selected set here is wrong if the set
+    // has been previously set by through Document.selectedStylesheetSet. Our
+    // current implementation ignores the effect of Document.selectedStylesheetSet
+    // and either only collects persistent style, or additionally preferred
+    // style when present. We are currently not marking the document scope dirty
+    // because preferred style is updated during active stylesheet update which
+    // would make this method re-entrant. Will need to change for async update.
+    m_selectedStylesheetSetName = name;
+}
+
+void StyleEngine::setSelectedStylesheetSetName(const String& name)
+{
+    m_selectedStylesheetSetName = name;
+    // TODO(rune@opera.com): Setting Document.selectedStylesheetSet currently
+    // has no other effect than the ability to read back the set value using
+    // the same api. If it did have an effect, we should have marked the
+    // document scope dirty and triggered an update of the active stylesheets
+    // from here.
+}
+
+void StyleEngine::setHttpDefaultStyle(const String& content)
+{
+    setPreferredStylesheetSetNameIfNotSet(content);
+    markDocumentDirty();
+    resolverChanged(FullStyleUpdate);
+}
+
 DEFINE_TRACE(StyleEngine)
 {
 #if ENABLE(OILPAN)

@@ -82,10 +82,10 @@ bool StyleSheetCandidate::isEnabledAndLoading() const
     return isHTMLLink() && !toHTMLLinkElement(node()).isDisabled() && toHTMLLinkElement(node()).styleSheetIsLoading();
 }
 
-bool StyleSheetCandidate::hasPreferrableName(const String& currentPreferrableName) const
+bool StyleSheetCandidate::hasPreferrableName() const
 {
     ASSERT(isEnabledAndLoading() || sheet());
-    return !isEnabledViaScript() && !title().isEmpty() && !isAlternate() && currentPreferrableName.isEmpty();
+    return !isEnabledViaScript() && !title().isEmpty() && !isAlternate();
 }
 
 bool StyleSheetCandidate::canBeActivated(const String& currentPreferrableName) const
