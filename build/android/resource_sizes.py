@@ -398,7 +398,7 @@ Pass any number of files to graph their sizes. Any files with the extension
       PrintPakAnalysis(f, options.min_pak_resource_size, options.build_type)
 
   if chartjson:
-    results_path = os.path.join(options.outpur_dir, 'results-chart.json')
+    results_path = os.path.join(options.output_dir, 'results-chart.json')
     with open(results_path, 'w') as json_file:
       json.dump(chartjson, json_file)
 
