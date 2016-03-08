@@ -12,7 +12,7 @@ option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
-// Next tag: 5
+// Next tag: 6
 message CastLogsProto {
   // Cast specific device information.
   // Next tag: 5
@@ -152,4 +152,24 @@ message CastLogsProto {
 
   // Virtual release track for device.
   optional fixed32 virtual_release_track = 4;
+
+  // Cast specific device information which is expected to change over time.
+  // Next tag: 2
+  message CastDeviceMutableInfo {
+    // This is the last type of reboot the device encountered
+    // Next tag: 9
+    enum RebootType {
+      REBOOT_TYPE_UNKNOWN = 0;
+      REBOOT_TYPE_FORCED = 1;
+      REBOOT_TYPE_API = 2;
+      REBOOT_TYPE_NIGHTLY = 3;
+      REBOOT_TYPE_OTA = 4;
+      REBOOT_TYPE_WATCHDOG = 5;
+      REBOOT_TYPE_PROCESS_MANAGER = 6;
+      REBOOT_TYPE_CRASH_UPLOADER = 7;
+      REBOOT_TYPE_FDR = 8;
+    }
+    optional RebootType last_reboot_type = 1;
+  }
+  optional CastDeviceMutableInfo cast_device_mutable_info = 5;
 }
