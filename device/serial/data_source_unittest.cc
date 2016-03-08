@@ -15,7 +15,6 @@
 #include "device/serial/data_source_sender.h"
 #include "device/serial/data_stream.mojom.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/environment/async_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

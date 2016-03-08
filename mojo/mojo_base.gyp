@@ -86,7 +86,6 @@
       'dependencies': [
         '../ui/mojo/geometry/mojo_bindings.gyp:mojo_geometry_bindings',
         '../ui/gfx/gfx.gyp:gfx_geometry',
-        'mojo_environment_chromium',
         '<(mojo_system_for_component)',
       ],
       'sources': [
@@ -109,7 +108,6 @@
         'mojo_edk.gyp:mojo_system_impl',
         'mojo_edk.gyp:mojo_common_test_support',
         'mojo_edk.gyp:mojo_run_all_unittests',
-        'mojo_environment_chromium',
         'mojo_public.gyp:mojo_cpp_bindings',
         'mojo_public.gyp:mojo_message_pump_lib',
         'mojo_public.gyp:mojo_public_test_utils',
@@ -119,59 +117,6 @@
         'common/common_type_converters_unittest.cc',
         'message_pump/handle_watcher_unittest.cc',
         'message_pump/message_pump_mojo_unittest.cc',
-      ],
-    },
-    {
-      # GN version: //mojo/environment:chromium
-      'target_name': 'mojo_environment_chromium',
-      'type': 'static_library',
-      'dependencies': [
-        'mojo_environment_chromium_impl',
-        'mojo_public.gyp:mojo_cpp_bindings',
-      ],
-      'sources': [
-        # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
-        "../mojo/public/cpp/environment/async_waiter.h",
-        "../mojo/public/cpp/environment/lib/async_waiter.cc",
-        "../mojo/public/cpp/environment/lib/logging.cc",
-        "../mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
-        "../mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
-        "../mojo/public/cpp/environment/logging.h",
-        "../mojo/public/cpp/environment/task_tracker.h",
-        'environment/environment.cc',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'export_dependent_settings': [
-        'mojo_environment_chromium_impl',
-      ],
-    },
-    {
-      # GN version: //mojo/environment:chromium_impl
-      'target_name': 'mojo_environment_chromium_impl',
-      'type': '<(component)',
-      'defines': [
-        'MOJO_ENVIRONMENT_IMPL_IMPLEMENTATION',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        'mojo_public.gyp:mojo_message_pump_lib',
-        '<(mojo_system_for_component)',
-      ],
-      'sources': [
-        'environment/default_async_waiter_impl.cc',
-        'environment/default_async_waiter_impl.h',
-        'environment/default_logger_impl.cc',
-        'environment/default_logger_impl.h',
-        'environment/default_run_loop_impl.cc',
-        'environment/default_run_loop_impl.h',
-        'environment/default_task_tracker_impl.cc',
-        'environment/default_task_tracker_impl.h',
-      ],
-      'include_dirs': [
-        '..',
       ],
     },
     {
@@ -268,7 +213,6 @@
         'mojo_application_base',
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_public.gyp:mojo_utility',
-        'mojo_public.gyp:mojo_environment_standalone',
       ],
       'sources': [
         'shell/public/cpp/tests/interface_registry_unittest.cc',
@@ -342,7 +286,6 @@
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             'mojo_common_lib',
             'mojo_edk.gyp:mojo_system_impl',
-            'mojo_environment_chromium',
             'mojo_jni_headers',
             'mojo_public.gyp:mojo_message_pump_lib',
           ],

@@ -25,8 +25,6 @@ mojom("test_interfaces") {
     "test_sync_methods.mojom",
     "validation_test_interfaces.mojom",
   ]
-
-  with_environment = false
 }
 
 mojom("test_struct_traits_interfaces") {
@@ -36,8 +34,6 @@ mojom("test_struct_traits_interfaces") {
   ]
 
   typemaps = [ "struct_with_traits.typemap" ]
-
-  with_environment = false
 }
 
 mojom("test_interfaces_experimental") {
@@ -45,8 +41,6 @@ mojom("test_interfaces_experimental") {
   sources = [
     "test_unions.mojom",
   ]
-
-  with_environment = false
 }
 
 mojom("test_associated_interfaces") {
@@ -57,8 +51,6 @@ mojom("test_associated_interfaces") {
     "test_associated_interfaces.mojom",
     "validation_test_associated_interfaces.mojom",
   ]
-
-  with_environment = false
 }
 
 mojom("versioning_test_service_interfaces") {
@@ -67,8 +59,6 @@ mojom("versioning_test_service_interfaces") {
   sources = [
     "versioning_test_service.mojom",
   ]
-
-  with_environment = false
 }
 
 mojom("versioning_test_client_interfaces") {
@@ -77,8 +67,6 @@ mojom("versioning_test_client_interfaces") {
   sources = [
     "versioning_test_client.mojom",
   ]
-
-  with_environment = false
 }
 
 mojom("test_interfaces_chromium") {
@@ -90,8 +78,6 @@ mojom("test_interfaces_chromium") {
 
   variant = "chromium"
   typemaps = [ "chromium_test.typemap" ]
-
-  with_environment = false
 
   public_deps = [
     ":test_interfaces",
@@ -107,8 +93,6 @@ mojom("test_interfaces_blink") {
 
   variant = "blink"
   typemaps = [ "blink_test.typemap" ]
-
-  with_environment = false
 
   public_deps = [
     ":test_interfaces",

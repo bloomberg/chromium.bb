@@ -42,7 +42,6 @@ mojo_native_application("leveldb") {
     ":manifest",
     "//components/leveldb/public/interfaces",
     "//mojo/common",
-    "//mojo/environment:chromium",
     "//mojo/platform_handle:for_shared_library",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",

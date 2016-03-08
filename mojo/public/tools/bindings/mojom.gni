@@ -46,11 +46,6 @@ mojom_generator_sources = [
 #   import_dirs (optional)
 #       List of import directories that will get added when processing sources.
 #
-#   with_environment (optional)
-#       Set to |false| to omit an implicit bindings dependency on the Chromium
-#       Mojo environment implementation. Defaults to |true| and in general
-#       should only be overridden by mojom targets within the Mojo EDK.
-#
 #   typemaps (optional)
 #       A list of typemap files to apply during bindings generation.
 #
@@ -249,9 +244,6 @@ template("mojom") {
         # get the cpp dependency name.
         full_name = get_label_info(d, "label_no_toolchain")
         deps += [ "${full_name}_${cpp_sources_suffix}" ]
-      }
-      if (!defined(invoker.with_environment) || invoker.with_environment) {
-        deps += [ "//mojo/environment:chromium" ]
       }
     }
   }

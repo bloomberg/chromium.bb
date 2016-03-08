@@ -49,7 +49,6 @@ component("gles2") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
-    "//mojo/environment:chromium",
     "//mojo/platform_handle:for_component",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",

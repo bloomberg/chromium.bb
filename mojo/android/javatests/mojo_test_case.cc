@@ -14,7 +14,6 @@
 #include "base/test/test_support_android.h"
 #include "jni/MojoTestCase_jni.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/public/cpp/environment/environment.h"
 
 namespace {
 

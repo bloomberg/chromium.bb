@@ -12,7 +12,6 @@ component("ime") {
   ]
   deps = [
     "//base",
-    "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//ui/mojo/ime:interfaces",
     "//ui/platform_window",

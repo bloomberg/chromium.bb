@@ -24,7 +24,6 @@
     '../media/blink/media_blink.gyp:media_blink',
     '../media/media.gyp:media',
     '../mojo/mojo_base.gyp:mojo_application_bindings',
-    '../mojo/mojo_base.gyp:mojo_environment_chromium',
     '../mojo/mojo_base.gyp:mojo_geometry_lib',
     '../mojo/mojo_base.gyp:mojo_url_type_converters',
     '../mojo/mojo_edk.gyp:mojo_js_lib',

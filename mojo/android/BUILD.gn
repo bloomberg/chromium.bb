@@ -46,7 +46,6 @@ source_set("libsystem_java") {
     ":system_java_jni_headers",
     "//base",
     "//mojo/edk/system",
-    "//mojo/environment:chromium",
     "//mojo/message_pump",
   ]
 }
@@ -125,7 +124,6 @@ shared_library("mojo_java_unittests") {
     "//mojo/edk/system",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings/tests:mojo_public_bindings_test_utils",
-    "//mojo/public/cpp/environment",
     "//mojo/public/cpp/test_support:test_utils",
   ]
   defines = [ "UNIT_TEST" ]

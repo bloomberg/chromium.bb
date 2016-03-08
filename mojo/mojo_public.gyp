@@ -232,33 +232,6 @@
       ],
     },
     {
-      # GN version: //mojo/public/cpp/environment:standalone
-      'target_name': 'mojo_environment_standalone',
-      'type': 'static_library',
-      'sources': [
-        'public/c/environment/async_waiter.h',
-        'public/c/environment/logger.h',
-        'public/cpp/environment/async_waiter.h',
-        'public/cpp/environment/environment.h',
-        'public/cpp/environment/lib/async_waiter.cc',
-        'public/cpp/environment/lib/default_async_waiter.cc',
-        'public/cpp/environment/lib/default_async_waiter.h',
-        'public/cpp/environment/lib/default_logger.cc',
-        'public/cpp/environment/lib/default_logger.h',
-        'public/cpp/environment/lib/default_task_tracker.cc',
-        'public/cpp/environment/lib/default_task_tracker.h',
-        'public/cpp/environment/lib/environment.cc',
-        'public/cpp/environment/lib/logging.cc',
-        'public/cpp/environment/lib/scoped_task_tracking.cc',
-        'public/cpp/environment/lib/scoped_task_tracking.h',
-        'public/cpp/environment/logging.h',
-        'public/cpp/environment/task_tracker.h',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-    },
-    {
       # GN version: //mojo/public/cpp/utility
       'target_name': 'mojo_utility',
       'type': 'static_library',

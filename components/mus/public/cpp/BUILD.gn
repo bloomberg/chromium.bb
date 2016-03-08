@@ -55,7 +55,6 @@ source_set("cpp") {
     "//mojo/gles2",
     "//mojo/gpu:mojo_gles2_implementation",
     "//mojo/public/cpp/bindings:bindings",
-    "//mojo/public/cpp/environment",
     "//mojo/public/cpp/system",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/interfaces",

@@ -52,7 +52,6 @@ source_set("tests") {
 
   deps = [
     ":mojo_public_bindings_test_utils",
-    "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:callback",
@@ -83,7 +82,6 @@ source_set("perftests") {
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:callback",
-    "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/cpp/utility",

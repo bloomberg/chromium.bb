@@ -367,7 +367,6 @@ source_set("browser") {
       "//media/midi",
       "//mojo/common",
       "//mojo/edk/system",
-      "//mojo/environment:chromium",
       "//mojo/public/cpp/bindings",
       "//mojo/public/js",
       "//mojo/shell/public/cpp",

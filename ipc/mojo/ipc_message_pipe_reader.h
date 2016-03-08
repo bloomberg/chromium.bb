@@ -17,7 +17,6 @@
 #include "base/threading/thread_checker.h"
 #include "ipc/ipc_message.h"
 #include "ipc/mojo/ipc.mojom.h"
-#include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/system/core.h"
 

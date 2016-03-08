@@ -16,7 +16,6 @@ component("blink") {
   deps = [
     "//base",
     "//components/mus/public/interfaces",
-    "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//third_party/WebKit/public:blink",
     "//ui/events",

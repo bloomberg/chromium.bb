@@ -13,7 +13,6 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../mojo/mojo_base.gyp:mojo_url_type_converters',
-        '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../mojo/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../testing/gmock.gyp:gmock',

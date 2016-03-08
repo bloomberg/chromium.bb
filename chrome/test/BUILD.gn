@@ -2223,7 +2223,6 @@ source_set("test_support_unit") {
     "//chrome/browser",
     "//chrome/common",
     "//mojo/edk/system",
-    "//mojo/environment:chromium",
   ]
 
   if (!is_android && use_ash) {

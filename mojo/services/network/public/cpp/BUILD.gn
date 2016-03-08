@@ -16,7 +16,6 @@ source_set("cpp") {
   deps = [
     "../interfaces",
     "//base",
-    "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/c/system",
     "//mojo/public/cpp/system",

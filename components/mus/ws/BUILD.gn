@@ -174,7 +174,6 @@ test("window_manager_unittests") {
     "//mojo/converters/input_events",
     "//mojo/converters/transform",
     "//mojo/edk/test:run_all_unittests",
-    "//mojo/environment:chromium",
     "//mojo/gles2",
     "//mojo/platform_handle:for_shared_library",
     "//mojo/public/cpp/bindings:bindings",

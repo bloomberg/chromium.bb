@@ -14,7 +14,6 @@
         'battor_agent_lib',
         '../../device/serial/serial.gyp:device_serial',
         '../../device/serial/serial.gyp:device_serial_mojo',
-        '../../mojo/mojo_public.gyp:mojo_environment_standalone',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
       ],
       'sources': [
@@ -58,7 +57,6 @@
         '../../device/serial/serial.gyp:device_serial',
         '../../device/serial/serial.gyp:device_serial_test_util',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
-        '../../mojo/mojo_public.gyp:mojo_environment_standalone',
       	'../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
       ],

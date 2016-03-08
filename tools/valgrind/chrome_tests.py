@@ -410,10 +410,6 @@ class ChromeTests:
     return self.SimpleTest("mojo_public_bindings",
                            "mojo_public_bindings_unittests")
 
-  def TestMojoPublicEnv(self):
-    return self.SimpleTest("mojo_public_env",
-                           "mojo_public_environment_unittests")
-
   def TestMojoPublicSystem(self):
     return self.SimpleTest("mojo_public_system",
                            "mojo_public_system_unittests")
@@ -707,8 +703,6 @@ class ChromeTests:
     "mojo_public_utility_unittests": TestMojoPublicUtility,
     "mojo_public_bindings": TestMojoPublicBindings,
     "mojo_public_bindings_unittests": TestMojoPublicBindings,
-    "mojo_public_env": TestMojoPublicEnv,
-    "mojo_public_environment_unittests": TestMojoPublicEnv,
     "mojo_public_sysperf": TestMojoPublicSysPerf,
     "net": TestNet,              "net_unittests": TestNet,
     "net_perf": TestNetPerf,     "net_perftests": TestNetPerf,

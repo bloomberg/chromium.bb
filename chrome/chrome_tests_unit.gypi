@@ -2171,7 +2171,6 @@
         'common',
         'test_support_common',
         '../base/base.gyp:base',
-        '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../mojo/mojo_edk.gyp:mojo_system_impl',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',

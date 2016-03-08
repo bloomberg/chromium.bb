@@ -32,7 +32,6 @@ source_set("child") {
     "//components/webcrypto",
     "//content/common:mojo_bindings",
     "//mojo/common",
-    "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/shell/public/interfaces",
     "//net",

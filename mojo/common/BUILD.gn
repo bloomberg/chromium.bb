@@ -36,11 +36,9 @@ component("common_base") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/environment",
   ]
 }
 
@@ -69,7 +67,6 @@ test("mojo_common_unittests") {
     "//base/test:test_support",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
-    "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/test_support:test_utils",
@@ -97,7 +94,6 @@ test("mojo_common_perftests") {
     ":common",
     "//base",
     "//mojo/edk/test:run_all_perftests",
-    "//mojo/environment:chromium",
     "//mojo/message_pump",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",

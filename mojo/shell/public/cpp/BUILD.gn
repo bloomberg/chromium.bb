@@ -86,7 +86,6 @@ source_set("test_support") {
     "//base/test:test_support",
     "//mojo/logging",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/environment",
     "//mojo/public/cpp/system",
     "//mojo/shell/public/interfaces:interfaces_cpp_sources",
   ]
@@ -111,7 +110,6 @@ source_set("shell_test_support") {
     "//base/test:test_support",
     "//mojo/logging",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/environment",
     "//mojo/public/cpp/system",
     "//mojo/shell/background:lib",
     "//mojo/shell/public/interfaces:interfaces_cpp_sources",

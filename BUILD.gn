@@ -179,7 +179,6 @@ group("both_gn_and_gyp") {
       "//mojo/common:mojo_common_unittests",
       "//mojo/edk/system:mojo_system_unittests",
       "//mojo/edk/test:mojo_public_bindings_unittests",
-      "//mojo/edk/test:mojo_public_environment_unittests",
       "//mojo/edk/test:mojo_public_system_unittests",
       "//mojo/edk/test:mojo_public_utility_unittests",
       "//mojo/shell/public/cpp",

@@ -1590,7 +1590,6 @@ test("net_unittests") {
       ":net_browser_services",
       ":net_utility_services",
       "//mojo/edk/system",
-      "//mojo/environment:chromium",
     ]
   } else {
     sources -= [

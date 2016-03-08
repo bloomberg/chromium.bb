@@ -352,10 +352,6 @@
     "label": "//mojo/edk/test:mojo_public_bindings_unittests",
     "type": "console_test_launcher",
   },
-  "mojo_public_environment_unittests": {
-    "label": "//mojo/edk/test:mojo_public_environment_unittests",
-    "type": "console_test_launcher",
-  },
   "mojo_public_system_unittests": {
     "label": "//mojo/edk/test:mojo_public_system_unittests",
     "type": "console_test_launcher",

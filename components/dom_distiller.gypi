@@ -162,7 +162,6 @@
             'dom_distiller_protos',
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
-            '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../net/net.gyp:net',
             '../skia/skia.gyp:skia',
@@ -214,7 +213,6 @@
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../gin/gin.gyp:gin',
-            '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
           ],
           'include_dirs': [

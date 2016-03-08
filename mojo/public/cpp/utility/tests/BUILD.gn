@@ -10,7 +10,6 @@ source_set("tests") {
   ]
 
   deps = [
-    "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/cpp/utility",

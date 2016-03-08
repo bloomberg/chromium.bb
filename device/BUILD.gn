@@ -58,7 +58,6 @@ test("device_unittests") {
     "//device/nfc",
     "//mojo/common",
     "//mojo/edk/system",
-    "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//net",
     "//testing/gmock",

@@ -21,7 +21,6 @@ component("vibration") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//mojo/edk/system",
-    "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
   ]
 

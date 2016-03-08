@@ -75,7 +75,6 @@ source_set("proxy") {
     "//media/mojo/common",
     "//media/mojo/interfaces",
     "//mojo/common",
-    "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//mojo/shell/public/interfaces",
   ]
@@ -88,7 +87,6 @@ source_set("cdm_service") {
     "//media/mojo/common",
     "//media/mojo/interfaces",
     "//mojo/common",
-    "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//mojo/shell/public/interfaces",
   ]

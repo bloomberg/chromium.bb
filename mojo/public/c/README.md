@@ -3,17 +3,10 @@ Mojo Public C API
 
 This directory contains C language bindings for the Mojo Public API.
 
-Environment
------------
-
-The environment/ subdirectory defines some common things that, while not part of
-the system API, may be required for GLES2 (for example). These are things that a
-Mojo application may be required to provide to the GLES2 (for example) library
-in order to use it. (However, the Mojo application may implement these things as
-it sees fit.)
-
 GLES2
 -----
+
+TODO(yzshen): move GLES2 to where it belongs (likely components/mus).
 
 The gles2/ subdirectory defines the GLES2 C API that's available to Mojo
 applications. To use GLES2, Mojo applications must link against a dynamic

@@ -110,7 +110,6 @@ source_set("unit_tests") {
     "//base",
     "//chromeos",
     "//ipc/mojo:mojo",
-    "//mojo/public/cpp/environment:environment",
     "//mojo/public/cpp/system:system",
     "//testing/gtest",
     "//ui/aura",

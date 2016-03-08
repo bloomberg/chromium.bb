@@ -645,7 +645,6 @@
         'common/resource_usage_reporter.mojom',
       ],
       'dependencies': [
-        '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
     },

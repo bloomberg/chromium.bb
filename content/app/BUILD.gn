@@ -59,7 +59,6 @@ if (is_ios) {
   content_app_deps += [
     "//mojo/shell/public/interfaces",
     "//mojo/edk/system",
-    "//mojo/environment:chromium",
   ]
 }
 

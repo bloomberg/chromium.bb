@@ -9,6 +9,4 @@ mojom("bindings") {
     "interface_control_messages.mojom",
     "pipe_control_messages.mojom",
   ]
-
-  with_environment = false
 }

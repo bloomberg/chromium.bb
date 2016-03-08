@@ -10,7 +10,6 @@
     '../components/tracing.gyp:tracing',
     '../components/webcrypto/webcrypto.gyp:webcrypto',
     '../ipc/ipc.gyp:ipc',
-    '../mojo/mojo_base.gyp:mojo_environment_chromium',
     '../mojo/mojo_base.gyp:mojo_common_lib',
     '../mojo/mojo_public.gyp:mojo_message_pump_lib',
     '../skia/skia.gyp:skia',

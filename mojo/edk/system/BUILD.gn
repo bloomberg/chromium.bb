@@ -168,7 +168,6 @@ test("mojo_system_unittests") {
     "//mojo/edk/system",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
-    "//mojo/public/cpp/environment:standalone",
     "//testing/gtest",
   ]
 
@@ -187,7 +186,6 @@ test("mojo_message_pipe_perftests") {
     "//mojo/edk/system",
     "//mojo/edk/test:run_all_perftests",
     "//mojo/edk/test:test_support",
-    "//mojo/public/cpp/environment:standalone",
     "//testing/gtest",
   ]
 }

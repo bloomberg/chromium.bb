@@ -6,9 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
@@ -70,7 +70,7 @@ class ShellGrabber : public shell::mojom::ShellClient {
 MojoResult RunAllTests(MojoHandle shell_client_request_handle) {
   {
     // This loop is used for init, and then destroyed before running tests.
-    Environment::InstantiateDefaultRunLoop();
+    base::MessageLoop message_loop;
 
     // Grab the shell handle.
     ShellGrabber grabber(
@@ -97,8 +97,6 @@ MojoResult RunAllTests(MojoHandle shell_client_request_handle) {
     argv[argc] = nullptr;
 
     testing::InitGoogleTest(&argc, const_cast<char**>(&(argv[0])));
-
-    Environment::DestroyDefaultRunLoop();
   }
 
   int result = RUN_ALL_TESTS();
@@ -140,8 +138,12 @@ ShellClient* ApplicationTestBase::GetShellClient() {
 void ApplicationTestBase::SetUp() {
   // A run loop is recommended for ShellConnection initialization and
   // communication.
-  if (ShouldCreateDefaultRunLoop())
-    Environment::InstantiateDefaultRunLoop();
+  if (ShouldCreateDefaultRunLoop()) {
+    CHECK(!base::MessageLoop::current());
+    // Not leaked: accessible from |base::MessageLoop::current()|.
+    base::MessageLoop* message_loop = new base::MessageLoop();
+    CHECK_EQ(message_loop, base::MessageLoop::current());
+  }
 
   CHECK(g_shell_client_request.is_pending());
   CHECK(g_connector);
@@ -156,8 +158,11 @@ void ApplicationTestBase::TearDown() {
 
   test_helper_.reset();
 
-  if (ShouldCreateDefaultRunLoop())
-    Environment::DestroyDefaultRunLoop();
+  if (ShouldCreateDefaultRunLoop()) {
+    CHECK(base::MessageLoop::current());
+    delete base::MessageLoop::current();
+    CHECK(!base::MessageLoop::current());
+  }
 }
 
 bool ApplicationTestBase::ShouldCreateDefaultRunLoop() {

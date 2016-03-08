@@ -101,7 +101,6 @@ component("libgtk2ui") {
     "//components/resources",
     "//content/public/browser",
     "//mojo/edk/system",
-    "//mojo/environment:chromium",
     "//printing",
     "//skia",
     "//ui/aura",

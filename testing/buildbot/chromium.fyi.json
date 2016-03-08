@@ -497,12 +497,6 @@
         "test": "mojo_public_bindings_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_public_environment_unittests"
-      },
-      {
         "test": "mojo_public_system_unittests"
       },
       {
@@ -694,12 +688,6 @@
       },
       {
         "test": "mojo_public_bindings_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_public_environment_unittests"
       },
       {
         "swarming": {
@@ -1204,12 +1192,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_public_bindings_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_public_environment_unittests"
       },
       {
         "swarming": {
@@ -1914,12 +1896,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_public_environment_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "mojo_public_system_unittests"
       },
       {
@@ -2213,9 +2189,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_public_bindings_unittests"
-      },
-      {
-        "test": "mojo_public_environment_unittests"
       },
       {
         "test": "mojo_public_system_unittests"
@@ -6466,12 +6439,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_public_environment_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "mojo_public_system_unittests"
       },
       {
@@ -6716,12 +6683,6 @@
       },
       {
         "test": "mojo_public_bindings_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_public_environment_unittests"
       },
       {
         "swarming": {
@@ -7015,9 +6976,6 @@
         "test": "mojo_public_bindings_unittests"
       },
       {
-        "test": "mojo_public_environment_unittests"
-      },
-      {
         "test": "mojo_public_system_unittests"
       },
       {
@@ -7256,9 +7214,6 @@
       },
       {
         "test": "mojo_public_bindings_unittests"
-      },
-      {
-        "test": "mojo_public_environment_unittests"
       },
       {
         "test": "mojo_public_system_unittests"

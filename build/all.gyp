@@ -54,10 +54,8 @@
             # javascript-related targets cause v8 to be built.
             '../mojo/mojo_base.gyp:mojo_common_lib',
             '../mojo/mojo_base.gyp:mojo_common_unittests',
-            '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../mojo/mojo_edk.gyp:mojo_system_impl',
             '../mojo/mojo_edk_tests.gyp:mojo_public_bindings_unittests',
-            '../mojo/mojo_edk_tests.gyp:mojo_public_environment_unittests',
             '../mojo/mojo_edk_tests.gyp:mojo_public_system_unittests',
             '../mojo/mojo_edk_tests.gyp:mojo_public_utility_unittests',
             '../mojo/mojo_edk_tests.gyp:mojo_system_unittests',

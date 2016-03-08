@@ -17,7 +17,6 @@ test("mojo_surfaces_lib_unittests") {
     "//mojo/converters/surfaces",
     "//mojo/converters/transform",
     "//mojo/edk/test:run_all_unittests",
-    "//mojo/environment:chromium",
     "//skia",
     "//testing/gtest",
     "//ui/gfx",

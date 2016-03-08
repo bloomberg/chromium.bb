@@ -942,7 +942,6 @@
             'net',
             'net_interfaces',
             '../mojo/mojo_base.gyp:mojo_common_lib',
-            '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../mojo/mojo_base.gyp:mojo_url_type_converters',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
 

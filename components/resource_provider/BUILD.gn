@@ -34,7 +34,6 @@ if (is_android) {
       "//base",
       "//build/config/sanitizers:deps",
       "//components/resource_provider/public/interfaces",
-      "//mojo/environment:chromium",
       "//mojo/platform_handle:for_shared_library",
       "//mojo/public/c/system:for_shared_library",
       "//mojo/shell/public/cpp",
@@ -75,7 +74,6 @@ if (is_android) {
       ":manifest",
       "//base",
       "//components/resource_provider/public/interfaces",
-      "//mojo/environment:chromium",
       "//mojo/shell/public/cpp",
       "//url",
     ]
@@ -119,7 +117,6 @@ test("resource_provider_unittests") {
     "//base/test:test_config",
     "//components/resource_provider/public/interfaces",
     "//mojo/edk/test:run_all_unittests",
-    "//mojo/environment:chromium",
     "//mojo/platform_handle:for_shared_library",
     "//testing/gtest",
     "//url",

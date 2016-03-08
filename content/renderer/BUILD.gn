@@ -57,7 +57,6 @@ source_set("renderer") {
     "//mojo/common",
     "//mojo/converters/geometry",
     "//mojo/edk/js",
-    "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//mojo/public/js",
     "//mojo/shell/public/cpp",

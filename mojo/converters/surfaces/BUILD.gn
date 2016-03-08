@@ -30,7 +30,6 @@ component("surfaces") {
     "//cc/surfaces:surface_id",
     "//components/mus/public/interfaces",
     "//gpu",
-    "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//skia",
     "//ui/gfx/geometry",

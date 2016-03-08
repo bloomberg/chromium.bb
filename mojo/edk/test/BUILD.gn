@@ -92,7 +92,6 @@ group("public_tests") {
   testonly = true
   deps = [
     ":mojo_public_bindings_unittests",
-    ":mojo_public_environment_unittests",
     ":mojo_public_system_perftests",
     ":mojo_public_system_unittests",
     ":mojo_public_utility_unittests",
@@ -112,13 +111,6 @@ test("mojo_public_bindings_unittests") {
     ":run_all_unittests",
     "//mojo/edk/test:test_support",
     "//mojo/public/cpp/bindings/tests",
-  ]
-}
-
-test("mojo_public_environment_unittests") {
-  deps = [
-    ":run_all_unittests",
-    "//mojo/public/cpp/environment/tests",
   ]
 }
 

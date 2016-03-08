@@ -21,7 +21,6 @@ source_set("common") {
     "//media/mojo/interfaces",
     "//mojo/common",
     "//mojo/converters/geometry",
-    "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
@@ -43,7 +42,6 @@ test("media_mojo_unittests") {
     "//media/mojo/interfaces",
     "//mojo/edk/system",
     "//mojo/edk/test:run_all_unittests",
-    "//mojo/environment:chromium",
     "//testing/gmock",
     "//testing/gtest",
   ]

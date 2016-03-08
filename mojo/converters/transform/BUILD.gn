@@ -9,7 +9,6 @@ component("transform") {
     "//ui/gfx",
   ]
   deps = [
-    "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
     "//skia",
     "//ui/mojo/geometry:interfaces",

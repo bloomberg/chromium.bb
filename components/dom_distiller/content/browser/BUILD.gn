@@ -36,7 +36,6 @@ static_library("browser") {
     "//components/strings",
     "//content/public/browser",
     "//content/public/common",
-    "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//net",
     "//skia",
