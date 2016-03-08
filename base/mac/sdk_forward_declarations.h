@@ -293,7 +293,6 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
 
 @interface NSEvent (LionSDK)
-@property(readonly) NSInteger stage;
 + (BOOL)isSwipeTrackingFromScrollEventsEnabled;
 - (NSEventPhase)momentumPhase;
 - (NSEventPhase)phase;
@@ -541,6 +540,10 @@ BASE_EXPORT extern "C" void NSAccessibilityPostNotificationWithUserInfo(
 // preprocessor block can be removed.
 #if !defined(MAC_OS_X_VERSION_10_10_3) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_10_3
+
+@interface NSEvent (YosemiteSDK)
+@property(readonly) NSInteger stage;
+@end
 
 @interface NSView (YosemiteSDK)
 - (void)setPressureConfiguration:(NSPressureConfiguration*)aConfiguration;
