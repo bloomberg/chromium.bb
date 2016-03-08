@@ -13,7 +13,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.blimp.auth.RetryingTokenSource;
 import org.chromium.blimp.auth.TokenSource;
 import org.chromium.blimp.auth.TokenSourceImpl;
-import org.chromium.blimp.input.TextInputFeature;
+import org.chromium.blimp.input.WebInputBox;
 import org.chromium.blimp.session.BlimpClientSession;
 import org.chromium.blimp.session.TabControlFeature;
 import org.chromium.blimp.toolbar.Toolbar;
@@ -37,7 +37,7 @@ public class BlimpRendererActivity extends Activity
     private Toolbar mToolbar;
     private BlimpClientSession mBlimpClientSession;
     private TabControlFeature mTabControlFeature;
-    private TextInputFeature mTextInputFeature;
+    private WebInputBox mWebInputBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +77,11 @@ public class BlimpRendererActivity extends Activity
         if (mToolbar != null) {
             mToolbar.destroy();
             mToolbar = null;
+        }
+
+        if (mWebInputBox != null) {
+            mWebInputBox.destroy();
+            mWebInputBox = null;
         }
 
         if (mTokenSource != null) {
@@ -135,10 +140,11 @@ public class BlimpRendererActivity extends Activity
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbar.initialize(mBlimpClientSession);
 
+        mWebInputBox = (WebInputBox) findViewById(R.id.editText);
+        mWebInputBox.initialize(mBlimpClientSession);
+
         mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpView);
         mToolbar.loadUrl("http://www.google.com/");
-
-        mTextInputFeature = (TextInputFeature) findViewById(R.id.editText);
     }
 
     // TokenSource.Callback implementation.

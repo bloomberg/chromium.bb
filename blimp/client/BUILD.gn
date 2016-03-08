@@ -224,6 +224,7 @@ if (is_android) {
     sources = [
       "app/android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "app/android/java/src/org/chromium/blimp/BlimpView.java",
+      "app/android/java/src/org/chromium/blimp/input/WebInputBox.java",
       "app/android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
       "app/android/java/src/org/chromium/blimp/session/TabControlFeature.java",
       "app/android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
@@ -317,7 +318,7 @@ if (is_android) {
       "app/android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "app/android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
       "app/android/java/src/org/chromium/blimp/BlimpView.java",
-      "app/android/java/src/org/chromium/blimp/input/TextInputFeature.java",
+      "app/android/java/src/org/chromium/blimp/input/WebInputBox.java",
       "app/android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
       "app/android/java/src/org/chromium/blimp/session/TabControlFeature.java",
       "app/android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
@@ -372,6 +373,8 @@ if (is_android) {
       "app/android/tab_control_feature_android.h",
       "app/android/toolbar.cc",
       "app/android/toolbar.h",
+      "app/android/web_input_box.cc",
+      "app/android/web_input_box.h",
     ]
 
     libs = [ "android" ]
