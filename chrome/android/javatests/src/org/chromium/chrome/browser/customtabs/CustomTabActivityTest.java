@@ -29,6 +29,7 @@ import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.ICustomTabsCallback;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -63,6 +64,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -100,6 +102,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             TEST_ACTION = "org.chromium.chrome.browser.customtabs.TEST_PENDING_INTENT_SENT";
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
+    private static final String FRAGMENT_TEST_PAGE = "/chrome/test/data/android/fragment.html";
     private static final String TEST_MENU_TITLE = "testMenuTitle";
 
     private static int sIdToIncrement = 1;
@@ -772,6 +775,109 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     }
 
     /**
+     * Tests the following scenario:
+     * - warmup() + mayLaunchUrl("http://example.com/page.html#first-fragment")
+     * - loadUrl("http://example.com/page.html#other-fragment")
+     *
+     * The expected behavior is that the prerender shouldn't be dropped, and that the fragment is
+     * updated.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrerenderingAndChangingFragmentIgnoreFragments() throws Exception {
+        prerenderAndChangeFragment(true, true);
+    }
+
+    /** Same as above, but the prerender matching should not ignore the fragment. */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrerenderingAndChangingFragmentDontIgnoreFragments() throws Exception {
+        prerenderAndChangeFragment(false, true);
+    }
+
+    /** Same as above, prerender matching ignores the fragment, don't wait. */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrerenderingAndChangingFragmentDontWait() throws Exception {
+        prerenderAndChangeFragment(true, false);
+    }
+
+    /** Same as above, prerender matching doesn't ignore the fragment, don't wait. */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testPrerenderingAndChangingFragmentDontWaitDrop() throws Exception {
+        prerenderAndChangeFragment(false, false);
+    }
+
+    /**
+     * Tests the following scenario:
+     * - warmup() + mayLaunchUrl("http://example.com/page.html#first-fragment")
+     * - loadUrl("http://example.com/page.html#other-fragment")
+     *
+     * There are two parameters changing the bahavior:
+     * @param ignoreFragments Whether the prerender should be kept.
+     * @param wait Whether to wait for the prerender to load.
+     *
+     * The prerender state is assessed through monitoring the properties of the test page.
+     */
+    private void prerenderAndChangeFragment(boolean ignoreFragments, boolean wait)
+            throws Exception {
+        String testUrl = mTestServer.getURL(FRAGMENT_TEST_PAGE);
+        String initialFragment = "#test";
+        final String initialUrl = testUrl + initialFragment;
+        String fragment = "#yeah";
+        String urlWithFragment = testUrl + fragment;
+
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        final CustomTabsConnection connection = warmUpAndWait();
+        ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
+        connection.newSession(cb);
+        connection.setIgnoreUrlFragmentsForSession(cb.asBinder(), ignoreFragments);
+        assertTrue(connection.mayLaunchUrl(cb, Uri.parse(initialUrl), null, null));
+
+        if (wait) {
+            // Check that there is a prerender.
+            CriteriaHelper.pollForUIThreadCriteria(new Criteria("No Prerender") {
+                @Override
+                public boolean isSatisfied() {
+                    return connection.mPrerender != null
+                            && connection.mPrerender.mWebContents != null
+                            && ExternalPrerenderHandler.hasPrerenderedAndFinishedLoadingUrl(
+                                    Profile.getLastUsedProfile(), initialUrl,
+                                    connection.mPrerender.mWebContents);
+                }
+            });
+        }
+
+        try {
+            startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                    context, urlWithFragment, cb.asBinder()));
+        } catch (InterruptedException e) {
+            fail();
+        }
+        final Tab tab = mActivity.getActivityTab();
+        ElementContentCriteria initialVisibilityCriteria = new ElementContentCriteria(
+                tab, "visibility", ignoreFragments ? "prerender" : "visible");
+        ElementContentCriteria initialFragmentCriteria = new ElementContentCriteria(
+                tab, "initial-fragment", ignoreFragments ? initialFragment : fragment);
+        ElementContentCriteria fragmentCriteria = new ElementContentCriteria(
+                tab, "fragment", fragment);
+
+        if (wait) {
+            // The tab hasn't been reloaded.
+            CriteriaHelper.pollForCriteria(initialVisibilityCriteria, 2000, 200);
+            // No reload (initial fragment is correct).
+            CriteriaHelper.pollForCriteria(initialFragmentCriteria, 2000, 200);
+            if (ignoreFragments) CriteriaHelper.pollForCriteria(fragmentCriteria, 2000, 200);
+        } else {
+            CriteriaHelper.pollForCriteria(new ElementContentCriteria(
+                    tab, "initial-fragment", fragment), 2000, 200);
+        }
+        assertFalse(tab.canGoForward());
+        assertFalse(tab.canGoBack());
+    }
+
+    /**
      * Test whether the url shown on prerender gets updated from about:blank when the prerender
      * completes in the background.
      * Non-regression test for crbug.com/554236.
@@ -906,6 +1012,35 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 mUri = intent.getDataString();
                 mIsSent.set(true);
             }
+        }
+    }
+
+    private static class ElementContentCriteria extends Criteria {
+        private final Tab mTab;
+        private final String mJsFunction;
+        private final String mExpected;
+
+        public ElementContentCriteria(Tab tab, String elementId, String expected) {
+            super("Page element is not as expected.");
+            mTab = tab;
+            mExpected = "\"" + expected + "\"";
+            mJsFunction = "(function () { return document.getElementById(\"" + elementId
+                    + "\").innerHTML; })()";
+        }
+
+        @Override
+        public boolean isSatisfied() {
+            String value = null;
+            try {
+                String jsonText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                        mTab.getWebContents(), mJsFunction);
+                if (jsonText.equalsIgnoreCase("null")) jsonText = "";
+                value = jsonText;
+            } catch (InterruptedException | TimeoutException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return TextUtils.equals(mExpected, value);
         }
     }
 }

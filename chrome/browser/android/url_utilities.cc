@@ -126,6 +126,36 @@ static ScopedJavaLocalRef<jstring> FixupUrl(
              : ScopedJavaLocalRef<jstring>();
 }
 
+static jboolean UrlsMatchIgnoringFragments(JNIEnv* env,
+                                           const JavaParamRef<jclass>& clazz,
+                                           const JavaParamRef<jstring>& url,
+                                           const JavaParamRef<jstring>& url2) {
+  GURL gurl = ConvertJavaStringToGURL(env, url);
+  GURL gurl2 = ConvertJavaStringToGURL(env, url2);
+  if (gurl.is_empty())
+    return gurl2.is_empty();
+  if (!gurl.is_valid() || !gurl2.is_valid())
+    return false;
+
+  GURL::Replacements replacements;
+  replacements.SetRefStr("");
+  return gurl.ReplaceComponents(replacements) ==
+         gurl2.ReplaceComponents(replacements);
+}
+
+static jboolean UrlsFragmentsDiffer(JNIEnv* env,
+                                    const JavaParamRef<jclass>& clazz,
+                                    const JavaParamRef<jstring>& url,
+                                    const JavaParamRef<jstring>& url2) {
+  GURL gurl = ConvertJavaStringToGURL(env, url);
+  GURL gurl2 = ConvertJavaStringToGURL(env, url2);
+  if (gurl.is_empty())
+    return !gurl2.is_empty();
+  if (!gurl.is_valid() || !gurl2.is_valid())
+    return true;
+  return gurl.ref() != gurl2.ref();
+}
+
 // Register native methods
 bool RegisterUrlUtilities(JNIEnv* env) {
   return RegisterNativesImpl(env);

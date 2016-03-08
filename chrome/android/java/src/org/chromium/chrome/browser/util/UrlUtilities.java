@@ -217,6 +217,20 @@ public class UrlUtilities {
         return nativeGetDomainAndRegistry(uri, includePrivateRegistries);
     }
 
+    /** @return whether two URLs match, ignoring the #fragment. */
+    @VisibleForTesting
+    public static boolean urlsMatchIgnoringFragments(String url, String url2) {
+        if (TextUtils.equals(url, url2)) return true;
+        return nativeUrlsMatchIgnoringFragments(url, url2);
+    }
+
+    /** @return whether the #fragmant differs in two URLs. */
+    @VisibleForTesting
+    public static boolean urlsFragmentsDiffer(String url, String url2) {
+        if (TextUtils.equals(url, url2)) return false;
+        return nativeUrlsFragmentsDiffer(url, url2);
+    }
+
     // Patterns used in validateIntentUrl.
     private static final Pattern DNS_HOSTNAME_PATTERN =
             Pattern.compile("^[\\w\\.-]*$");
@@ -385,4 +399,6 @@ public class UrlUtilities {
     public static native String nativeFormatUrlForSecurityDisplay(String url);
     public static native String nativeFormatUrlForSecurityDisplayOmitScheme(String url);
     private static native String nativeFixupUrl(String url, String desiredTld);
+    private static native boolean nativeUrlsMatchIgnoringFragments(String url, String url2);
+    private static native boolean nativeUrlsFragmentsDiffer(String url, String url2);
 }

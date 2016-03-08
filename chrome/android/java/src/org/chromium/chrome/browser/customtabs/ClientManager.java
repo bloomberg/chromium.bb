@@ -52,6 +52,7 @@ class ClientManager {
         public final String packageName;
         public final ICustomTabsCallback callback;
         public final IBinder.DeathRecipient deathRecipient;
+        public boolean mIgnoreFragments;
         private boolean mShouldHideDomain;
         private ServiceConnection mKeepAliveConnection;
         private String mPredictedUrl;
@@ -256,6 +257,20 @@ class ClientManager {
     public synchronized void setHideDomainForSession(IBinder session, boolean hide) {
         SessionParams params = mSessionParams.get(session);
         if (params != null) params.mShouldHideDomain = hide;
+    }
+
+    /**
+     * @return Whether the fragment should be ignored for prerender matching.
+     */
+    public synchronized boolean getIgnoreFragmentsForSession(IBinder session) {
+        SessionParams params = mSessionParams.get(session);
+        return params == null ? false : params.mIgnoreFragments;
+    }
+
+    /** Sets whether the fragment should be ignored for prerender matching. */
+    public synchronized void setIgnoreFragmentsForSession(IBinder session, boolean value) {
+        SessionParams params = mSessionParams.get(session);
+        params.mIgnoreFragments = value;
     }
 
     /** Tries to bind to a client to keep it alive, and returns true for success. */

@@ -11,6 +11,7 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.net.URI;
 
+/** Tests for {@link UrlUtilities}. */
 public class UrlUtilitiesTest extends NativeLibraryTestBase {
     @SmallTest
     public void testIsAcceptedScheme() {
@@ -177,4 +178,27 @@ public class UrlUtilitiesTest extends NativeLibraryTestBase {
                 + "S.goat=&leg;end"));
     }
 
+    @SmallTest
+    public void testUrlsMatchIgnoringFragments() {
+        loadNativeLibraryNoBrowserProcess();
+
+        String url = "http://www.example.com/path";
+        assertTrue(UrlUtilities.urlsMatchIgnoringFragments(url, url));
+        assertTrue(UrlUtilities.urlsMatchIgnoringFragments(url + "#fragment", url));
+        assertTrue(UrlUtilities.urlsMatchIgnoringFragments(url + "#fragment", url + "#fragment2"));
+        assertTrue(UrlUtilities.urlsMatchIgnoringFragments("HTTP://www.example.com/path"
+                        + "#fragment",
+                url + "#fragment2"));
+        assertFalse(UrlUtilities.urlsMatchIgnoringFragments(
+                url + "#fragment", "http://example.com:443/path#fragment"));
+    }
+
+    @SmallTest
+    public void testUrlsFragmentsDiffer() {
+        loadNativeLibraryNoBrowserProcess();
+
+        String url = "http://www.example.com/path";
+        assertFalse(UrlUtilities.urlsFragmentsDiffer(url, url));
+        assertTrue(UrlUtilities.urlsFragmentsDiffer(url + "#fragment", url));
+    }
 }

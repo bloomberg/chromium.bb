@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -95,6 +96,9 @@ public class CustomTabActivity extends ChromeActivity {
     private boolean mShouldReplaceCurrentEntry;
     private boolean mHasCreatedTabEarly;
     private CustomTabObserver mTabObserver;
+
+    private String mPrerenderedUrl;
+    private boolean mHasPrerendered;
 
     // Only the normal tab model is observed because there is no icognito tabmodel in Custom Tabs.
     private TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
@@ -357,8 +361,11 @@ public class CustomTabActivity extends ChromeActivity {
                 Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
                 TabLaunchType.FROM_EXTERNAL_APP, null, null);
         tab.setAppAssociatedWith(customTabsConnection.getClientPackageNameForSession(mSession));
+
+        mPrerenderedUrl = customTabsConnection.getPrerenderedUrl(mSession);
         WebContents webContents =
                 customTabsConnection.takePrerenderedUrl(mSession, url, referrerUrl);
+        mHasPrerendered = webContents != null;
         if (webContents == null) {
             webContents = customTabsConnection.takeSpareWebContents();
             // TODO(lizeb): Remove this once crbug.com/521729 is fixed.
@@ -431,6 +438,15 @@ public class CustomTabActivity extends ChromeActivity {
      */
     private void loadUrlInTab(final Tab tab, final LoadUrlParams params, long timeStamp) {
         Intent intent = getIntent();
+        String url = IntentHandler.getUrlFromIntent(intent);
+        if (mHasPrerendered && UrlUtilities.urlsFragmentsDiffer(mPrerenderedUrl, url)) {
+            mHasPrerendered = false;
+            LoadUrlParams temporaryParams = new LoadUrlParams(mPrerenderedUrl);
+            IntentHandler.addReferrerAndHeaders(temporaryParams, intent, this);
+            tab.loadUrl(temporaryParams);
+            params.setShouldReplaceCurrentEntry(true);
+        }
+
         IntentHandler.addReferrerAndHeaders(params, intent, this);
         if (params.getReferrer() == null) {
             params.setReferrer(CustomTabsConnection.getInstance(getApplication())

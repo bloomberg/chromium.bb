@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -466,6 +467,11 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
      * to call mayLaunchUrl(null) to cancel a current prerender before 2, that
      * is for a mispredict.
      *
+     * Note that this methods accepts URLs that don't exactly match the initially
+     * prerendered URL. More precisely, the #fragment is ignored. In this case,
+     * the client needs to navigate to the correct URL after the WebContents
+     * swap. This can be tested using {@link UrlUtilities#urlsFragmentsDiffer()}.
+     *
      * @param session The Binder object identifying a session.
      * @param url The URL the WebContents is for.
      * @param referrer The referrer to use for |url|.
@@ -480,14 +486,25 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         String prerenderedUrl = mPrerender.mUrl;
         String prerenderReferrer = mPrerender.mReferrer;
         if (referrer == null) referrer = "";
-        if (TextUtils.equals(prerenderedUrl, url)
-                && TextUtils.equals(prerenderReferrer, referrer)) {
+        boolean ignoreFragments = mClientManager.getIgnoreFragmentsForSession(session);
+        boolean urlsMatch = TextUtils.equals(prerenderedUrl, url)
+                || (ignoreFragments
+                        && UrlUtilities.urlsMatchIgnoringFragments(prerenderedUrl, url));
+        if (urlsMatch && TextUtils.equals(prerenderReferrer, referrer)) {
             mPrerender = null;
             return webContents;
         } else {
             cancelPrerender(session);
         }
         return null;
+    }
+
+    /** Returns the URL prerendered for a session, or null. */
+    String getPrerenderedUrl(IBinder session) {
+        if (mPrerender == null || session == null || !session.equals(mPrerender.mSession)) {
+            return null;
+        }
+        return mPrerender.mUrl;
     }
 
     /** See {@link ClientManager#getReferrerForSession(IBinder)} */
@@ -503,6 +520,16 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     /** See {@link ClientManager#getClientPackageNameForSession(IBinder)} */
     public String getClientPackageNameForSession(IBinder session) {
         return mClientManager.getClientPackageNameForSession(session);
+    }
+
+    @VisibleForTesting
+    void setIgnoreUrlFragmentsForSession(IBinder session, boolean value) {
+        mClientManager.setIgnoreFragmentsForSession(session, value);
+    }
+
+    @VisibleForTesting
+    boolean getIgnoreUrlFragmentsForSession(IBinder session) {
+        return mClientManager.getIgnoreFragmentsForSession(session);
     }
 
     /**
