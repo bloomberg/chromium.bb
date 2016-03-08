@@ -168,7 +168,13 @@ void testBoundary(HTMLDocument& document, HTMLTextFormControlElement& textContro
     }
 }
 
-TEST_F(HTMLTextFormControlElementTest, WordAndSentenceBoundary)
+// Flakily failing under MAC ASAN. See https://crbug.com/592880.
+#if OS(MACOSX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_WordAndSentenceBoundary DISABLED_WordAndSentenceBoundary
+#else
+#define MAYBE_WordAndSentenceBoundary WordAndSentenceBoundary
+#endif
+TEST_F(HTMLTextFormControlElementTest, MAYBE_WordAndSentenceBoundary)
 {
     HTMLElement* innerText = textControl().innerEditorElement();
     {
