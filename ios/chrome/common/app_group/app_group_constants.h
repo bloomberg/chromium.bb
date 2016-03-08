@@ -61,6 +61,13 @@ extern const char kChromeAppClientID[];
 // metrics reporting.
 extern const char kUserMetricsEnabledDate[];
 
+// The four keys of the items sent by the share extension to Chrome (URL,
+// title, date, cancel).
+extern NSString* const kShareItemURL;
+extern NSString* const kShareItemTitle;
+extern NSString* const kShareItemDate;
+extern NSString* const kShareItemCancel;
+
 // The current epoch time, on the first run of chrome on this machine. It is set
 // once and must be attached to metrics reports forever thereafter.
 extern const char kInstallDate[];
@@ -71,6 +78,10 @@ extern const char kBrandCode[];
 
 // Gets the application group
 NSString* ApplicationGroup();
+
+// Gets the share extension folder URL.
+// If the folder does not exist, create it.
+NSURL* ShareExtensionItemsFolder();
 
 // Returns an autoreleased pointer to the shared user defaults if an
 // application group is defined. If not (i.e. on simulator, or if entitlements

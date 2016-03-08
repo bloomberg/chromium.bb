@@ -27,6 +27,7 @@ NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
 NSString* const kEnableReadingList = @"EnableReadingList";
+NSString* const kEnableReadingListKeepItems = @"EnableReadingListKeepItems";
 }  // namespace
 
 namespace experimental_flags {
@@ -104,6 +105,11 @@ bool IsTabSwitcherEnabled() {
 
 bool IsReadingListEnabled() {
   return [[NSUserDefaults standardUserDefaults] boolForKey:kEnableReadingList];
+}
+
+bool IsReadingListKeepItemsEnabled() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:kEnableReadingListKeepItems];
 }
 
 }  // namespace experimental_flags

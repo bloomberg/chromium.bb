@@ -18023,6 +18023,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Network channel used for invalidations.</summary>
 </histogram>
 
+<histogram name="IOS.ShareExtension.ReceivedEntriesCount" units="files">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    The number of items received simultaneously in Chrome from the IOS share
+    extension.
+  </summary>
+</histogram>
+
+<histogram name="IOS.ShareExtension.ReceivedEntry"
+    enum="IOSShareExtensionReceivedEntryType">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>Type of the item received from the iOS share extension.</summary>
+</histogram>
+
+<histogram name="IOS.ShareExtension.ReceivedEntryDelay" units="ms">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    The delay in milliseconds between the item creation in the extension and its
+    processing in Chrome.
+  </summary>
+</histogram>
+
 <histogram name="IPC.AttachmentBrokerPrivileged.BrokerAttachmentError"
     enum="IPCAttachmentBrokerPrivilegedBrokerAttachmentError">
   <owner>erikchen@chromium.org</owner>
@@ -71111,6 +71133,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="MainFrameAllowed"/>
   <int value="1" label="SubframeAllowed"/>
   <int value="2" label="SubframeBlocked"/>
+</enum>
+
+<enum name="IOSShareExtensionReceivedEntryType" type="int">
+  <int value="0" label="Invalid item"/>
+  <int value="1" label="Cancelled item"/>
+  <int value="2" label="Reading list item"/>
 </enum>
 
 <enum name="IPCAttachmentBrokerPrivilegedBrokerAttachmentError" type="int">

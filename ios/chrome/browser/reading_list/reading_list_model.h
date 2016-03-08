@@ -25,10 +25,8 @@ class ChromeBrowserState;
 // (Usually the main thread). The observers callbacks are also sent on the main
 // thread.
 class ReadingListModel {
- protected:
-  class ScopedReadingListBatchUpdate;
-
  public:
+  class ScopedReadingListBatchUpdate;
   // Returns true if the model finished loading. Until this returns true the
   // reading list is not ready for use.
   virtual bool loaded() const = 0;
@@ -78,16 +76,6 @@ class ReadingListModel {
   void AddObserver(ReadingListModelObserver* observer);
   void RemoveObserver(ReadingListModelObserver* observer);
 
- protected:
-  ReadingListModel();
-  virtual ~ReadingListModel();
-  // The observers.
-  base::ObserverList<ReadingListModelObserver> observers_;
-
-  // Tells model that batch updates have completed. Called from
-  // ReadingListBatchUpdateToken dtor.
-  void EndBatchUpdates();
-
   // Helper class that is used to scope batch updates.
   class ScopedReadingListBatchUpdate {
    public:
@@ -101,6 +89,17 @@ class ReadingListModel {
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadingListBatchUpdate);
   };
+
+ protected:
+  ReadingListModel();
+  virtual ~ReadingListModel();
+
+  // The observers.
+  base::ObserverList<ReadingListModelObserver> observers_;
+
+  // Tells model that batch updates have completed. Called from
+  // ReadingListBatchUpdateToken dtor.
+  void EndBatchUpdates();
 
  private:
   unsigned int current_batch_updates_count_;

@@ -36,6 +36,11 @@ const char kUserMetricsEnabledDate[] = "UserMetricsEnabledDate";
 const char kInstallDate[] = "InstallDate";
 const char kBrandCode[] = "BrandCode";
 
+NSString* const kShareItemURL = @"URL";
+NSString* const kShareItemTitle = @"Title";
+NSString* const kShareItemDate = @"Date";
+NSString* const kShareItemCancel = @"Cancel";
+
 NSString* ApplicationGroup() {
   NSBundle* bundle = [NSBundle mainBundle];
   NSString* group = [bundle objectForInfoDictionaryKey:@"KSApplicationGroup"];
@@ -68,6 +73,14 @@ NSUserDefaults* GetGroupUserDefaults() {
   // the application. This is not the case on simulator.
   DCHECK(TARGET_IPHONE_SIMULATOR);
   return [NSUserDefaults standardUserDefaults];
+}
+
+NSURL* ShareExtensionItemsFolder() {
+  NSURL* groupURL = [[NSFileManager defaultManager]
+      containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
+  NSURL* readingListURL =
+      [groupURL URLByAppendingPathComponent:@"ShareExtensionItems"];
+  return readingListURL;
 }
 
 }  // namespace app_group
