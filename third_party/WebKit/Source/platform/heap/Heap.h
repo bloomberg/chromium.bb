@@ -108,7 +108,6 @@ class PLATFORM_EXPORT Heap {
 public:
     static void init();
     static void shutdown();
-    static void doShutdown();
 
     static CrossThreadPersistentRegion& crossThreadPersistentRegion();
 

@@ -235,19 +235,6 @@ void ThreadState::detachMainThread()
         attachedThreads().remove(state);
         state->~ThreadState();
     }
-    shutdownHeapIfNecessary();
-}
-
-void ThreadState::shutdownHeapIfNecessary()
-{
-    // We don't need to enter a safe point before acquiring threadAttachMutex
-    // because this thread is already detached.
-
-    MutexLocker locker(threadAttachMutex());
-    // We start shutting down the heap if there is no running thread
-    // and Heap::shutdown() is already called.
-    if (!attachedThreads().size() && Heap::s_shutdownCalled)
-        Heap::doShutdown();
 }
 
 void ThreadState::attach()
@@ -323,7 +310,6 @@ void ThreadState::detach()
     state->cleanup();
     RELEASE_ASSERT(state->gcState() == ThreadState::NoGCScheduled);
     delete state;
-    shutdownHeapIfNecessary();
 }
 
 void ThreadState::visitPersistentRoots(Visitor* visitor)

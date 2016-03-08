@@ -186,7 +186,6 @@ public:
     // thread.
     static void init();
     static void shutdown();
-    static void shutdownHeapIfNecessary();
     bool isTerminating() { return m_isTerminating; }
 
     static void attachMainThread();

@@ -138,19 +138,14 @@ void Heap::init()
 
 void Heap::shutdown()
 {
+    ASSERT(s_markingStack);
+
     if (Platform::current() && Platform::current()->currentThread())
         Platform::current()->unregisterMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
-    s_shutdownCalled = true;
-    ThreadState::shutdownHeapIfNecessary();
-}
 
-void Heap::doShutdown()
-{
-    // We don't want to call doShutdown() twice.
-    if (!s_markingStack)
-        return;
+    // The main thread must be the last thread that gets detached.
+    RELEASE_ASSERT(ThreadState::attachedThreads().size() == 0);
 
-    ASSERT(!ThreadState::attachedThreads().size());
     delete s_heapDoesNotContainCache;
     s_heapDoesNotContainCache = nullptr;
     delete s_freePagePool;
