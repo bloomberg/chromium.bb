@@ -69,7 +69,7 @@ For Chromium contributors that have different nicks on other domains.
 | msw               | msw\_           | msw             |
 | nick              | nickcarter      | ncarter         |
 | oleg              |                 | olege           |
-| ortuno            | gortuno         | ortuno          |
+| ortuno            | ortuno          | ortuno          |
 | pam               | pamg            | pamg            |
 | paulirish         | paul\_irish      | paulirish       |
 | patrick           | pjohnson        | pjohnson        |
