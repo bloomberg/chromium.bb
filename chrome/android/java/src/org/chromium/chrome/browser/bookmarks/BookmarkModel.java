@@ -99,7 +99,7 @@ public class BookmarkModel extends BookmarkBridge {
         // feature is enabled. When it is enabled by default, we should check all the places
         // that checks for nullability of mOfflinePageBridge.
         if (OfflinePageBridge.isEnabled()) {
-            mOfflinePageBridge = new OfflinePageBridge(profile);
+            mOfflinePageBridge = OfflinePageBridge.getForProfile(profile);
             if (mOfflinePageBridge.isOfflinePageModelLoaded()) {
                 mIsOfflinePageModelLoaded = true;
             } else {
@@ -124,7 +124,6 @@ public class BookmarkModel extends BookmarkBridge {
     public void destroy() {
         if (mOfflinePageBridge != null) {
             mOfflinePageBridge.removeObserver(mOfflinePageModelObserver);
-            mOfflinePageBridge.destroy();
             mOfflinePageBridge = null;
         }
 

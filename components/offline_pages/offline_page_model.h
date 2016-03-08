@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
+#include "base/supports_user_data.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
@@ -63,6 +64,7 @@ class OfflinePageMetadataStore;
 // TODO(fgorski): Things to describe:
 // * how to cancel requests and what to expect
 class OfflinePageModel : public KeyedService,
+                         public base::SupportsUserData,
                          public bookmarks::BaseBookmarkModelObserver {
  public:
   // Result of saving a page offline.

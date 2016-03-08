@@ -61,7 +61,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                     NetworkChangeNotifier.init(context);
                 }
                 Profile profile = Profile.getLastUsedProfile();
-                mOfflinePageBridge = new OfflinePageBridge(profile);
+                mOfflinePageBridge = OfflinePageBridge.getForProfile(profile);
                 if (mOfflinePageBridge.isOfflinePageModelLoaded()) {
                     semaphore.release();
                 } else {

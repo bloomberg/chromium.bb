@@ -10,6 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
+#include "base/supports_user_data.h"
 #include "components/offline_pages/offline_page_model.h"
 
 namespace content {
@@ -23,12 +24,13 @@ namespace android {
  * Bridge between C++ and Java for exposing native implementation of offline
  * pages model in managed code.
  */
-class OfflinePageBridge : public OfflinePageModel::Observer {
+class OfflinePageBridge : public OfflinePageModel::Observer,
+                          public base::SupportsUserData::Data {
  public:
   OfflinePageBridge(JNIEnv* env,
-                    jobject obj,
-                    content::BrowserContext* browser_context);
-  void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
+                    content::BrowserContext* browser_context,
+                    OfflinePageModel* offline_page_model);
+  ~OfflinePageBridge() override;
 
   // OfflinePageModel::Observer implementation.
   void OfflinePageModelLoaded(OfflinePageModel* model) override;
@@ -96,6 +98,8 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_online_url);
 
+  base::android::ScopedJavaGlobalRef<jobject> java_ref() { return java_ref_; }
+
  private:
   void NotifyIfDoneLoading() const;
 
@@ -103,7 +107,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
       JNIEnv* env,
       const OfflinePageItem& offline_page) const;
 
-  JavaObjectWeakGlobalRef weak_java_ref_;
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   // Not owned.
   content::BrowserContext* browser_context_;
   // Not owned.

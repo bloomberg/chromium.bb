@@ -30,6 +30,18 @@ public final class OfflinePageBridge {
     public static final String BOOKMARK_NAMESPACE = "bookmark";
     public static final long INVALID_OFFLINE_ID = 0;
 
+    /**
+     * Retrieves the OfflinePageBridge for the given profile, creating it the first time
+     * getForProfile is called for a given profile.  Must be called on the UI thread.
+     *
+     * @param profile The profile associated with the OfflinePageBridge to get.
+     */
+    public static OfflinePageBridge getForProfile(Profile profile) {
+        ThreadUtils.assertOnUiThread();
+
+        return nativeGetOfflinePageBridgeForProfile(profile);
+    }
+
     private long mNativeOfflinePageBridge;
     private boolean mIsNativeOfflinePageModelLoaded;
     private final ObserverList<OfflinePageModelObserver> mObservers =
@@ -154,10 +166,18 @@ public final class OfflinePageBridge {
     }
 
     /**
-     * Creates offline pages bridge for a given profile.
+     * Creates an offline page bridge for a given profile.
      */
-    public OfflinePageBridge(Profile profile) {
-        mNativeOfflinePageBridge = nativeInit(profile);
+    private OfflinePageBridge(long nativeOfflinePageBridge) {
+        mNativeOfflinePageBridge = nativeOfflinePageBridge;
+    }
+
+    /**
+     * Called by the native OfflinePageBridge so that it can cache the new Java OfflinePageBridge.
+     */
+    @CalledByNative
+    private static OfflinePageBridge create(long nativeOfflinePageBridge) {
+        return new OfflinePageBridge(nativeOfflinePageBridge);
     }
 
     /**
@@ -184,17 +204,6 @@ public final class OfflinePageBridge {
      */
     public static boolean canSavePage(String url) {
         return nativeCanSavePage(url);
-    }
-
-    /**
-     * Destroys native offline pages bridge. It should be called during
-     * destruction to ensure proper cleanup.
-     */
-    public void destroy() {
-        assert mNativeOfflinePageBridge != 0;
-        nativeDestroy(mNativeOfflinePageBridge);
-        mIsNativeOfflinePageModelLoaded = false;
-        mNativeOfflinePageBridge = 0;
     }
 
     /**
@@ -487,6 +496,18 @@ public final class OfflinePageBridge {
         }
     }
 
+    /**
+     * Removes references to the native OfflinePageBridge when it is being destroyed.
+     */
+    @CalledByNative
+    private void offlinePageBridgeDestroyed() {
+        ThreadUtils.assertOnUiThread();
+        assert mNativeOfflinePageBridge != 0;
+
+        mIsNativeOfflinePageModelLoaded = false;
+        mNativeOfflinePageBridge = 0;
+    }
+
     @CalledByNative
     private void offlinePageDeleted(long offlineId) {
         ClientId clientId = getClientIdForOfflineId(offlineId);
@@ -513,9 +534,8 @@ public final class OfflinePageBridge {
 
     private static native int nativeGetFeatureMode();
     private static native boolean nativeCanSavePage(String url);
+    private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);
 
-    private native long nativeInit(Profile profile);
-    private native void nativeDestroy(long nativeOfflinePageBridge);
     private native void nativeGetAllPages(
             long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
     private native long[] nativeGetOfflineIdsForClientId(

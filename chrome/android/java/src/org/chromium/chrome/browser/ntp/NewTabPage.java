@@ -345,7 +345,7 @@ public class NewTabPage
             if (mIsDestroyed) return;
             if (isNtpOfflinePagesEnabled()) {
                 if (mOfflinePageBridge == null) {
-                    mOfflinePageBridge = new OfflinePageBridge(mProfile);
+                    mOfflinePageBridge = OfflinePageBridge.getForProfile(mProfile);
                 }
                 url = mOfflinePageBridge.getLaunchUrlFromOnlineUrl(url);
             }
@@ -473,7 +473,9 @@ public class NewTabPage
         public boolean isOfflineAvailable(String pageUrl) {
             if (mIsDestroyed || !isNtpOfflinePagesEnabled()) return false;
             if (isLocalUrl(pageUrl)) return true;
-            if (mOfflinePageBridge == null) mOfflinePageBridge = new OfflinePageBridge(mProfile);
+            if (mOfflinePageBridge == null) {
+                mOfflinePageBridge = OfflinePageBridge.getForProfile(mProfile);
+            }
             return mOfflinePageBridge.getOfflineUrlForOnlineUrl(pageUrl) != null;
         }
 
@@ -753,7 +755,6 @@ public class NewTabPage
         assert getView().getParent() == null : "Destroy called before removed from window";
         if (mIsVisible) recordNTPInteractionTime();
         if (mOfflinePageBridge != null) {
-            mOfflinePageBridge.destroy();
             mOfflinePageBridge = null;
         }
         if (mFaviconHelper != null) {
