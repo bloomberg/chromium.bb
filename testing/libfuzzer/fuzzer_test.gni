@@ -16,6 +16,7 @@ import("//testing/test.gni")
 # - additional_configs - additional configs to be used for compilation
 # - dict - a dictionary file for the fuzzer.
 # - libfuzzer_options - options for the fuzzer (e.g. -max_len or -timeout).
+# - seed_corpus - a directory with seed corpus.
 #
 # If use_libfuzzer gn flag is defined, then proper fuzzer would be build.
 # Without use_libfuzzer a unit-test style binary would be built on linux
@@ -47,6 +48,32 @@ template("fuzzer_test") {
       }
 
       test_deps += [ ":" + target_name + "_libfuzzer_options_copy" ]
+    }
+
+    if (defined(invoker.seed_corpus)) {
+      depfile = "$root_build_dir/$target_name" + ".seed_corpus.d"
+      out = "$root_build_dir/$target_name" + "_seed_corpus.zip"
+
+      action(target_name + "_seed_corpus") {
+        script = "//testing/libfuzzer/archive_corpus.py"
+        args = [
+          "--depfile",
+          rebase_path(depfile),
+          "--corpus",
+          rebase_path(invoker.seed_corpus),
+          "--output",
+          rebase_path(out),
+          "--fuzzer",
+          rebase_path("$root_build_dir/$target_name"),
+        ]
+
+        depfile = depfile
+        outputs = [
+          out,
+        ]
+      }
+
+      test_deps += [ ":" + target_name + "_seed_corpus" ]
     }
 
     if (defined(invoker.dict)) {
@@ -114,6 +141,9 @@ template("fuzzer_test") {
     }
     if (defined(invoker.libfuzzer_options)) {
       assert(invoker.libfuzzer_options == [] || invoker.libfuzzer_options != [])
+    }
+    if (defined(invoker.seed_corpus)) {
+      assert(invoker.seed_corpus == [] || invoker.seed_corpus != [])
     }
 
     group(target_name) {

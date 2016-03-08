@@ -158,6 +158,7 @@ fuzzer_test("boringssl_d2i_x509_fuzzer") {
   deps = [
     ":boringssl_fuzzer",
   ]
+  seed_corpus = "src/fuzz/cert_corpus"
 }
 
 fuzzer_test("boringssl_client_bio_write_fuzzer") {
@@ -167,6 +168,7 @@ fuzzer_test("boringssl_client_bio_write_fuzzer") {
   deps = [
     ":boringssl_fuzzer",
   ]
+  seed_corpus = "src/fuzz/client_corpus"
 }
 
 fuzzer_test("boringssl_d2i_autoprivatekey_fuzzer") {
@@ -176,6 +178,7 @@ fuzzer_test("boringssl_d2i_autoprivatekey_fuzzer") {
   deps = [
     ":boringssl_fuzzer",
   ]
+  seed_corpus = "src/fuzz/privkey_corpus"
 }
 
 fuzzer_test("boringssl_server_bio_write_fuzzer") {
@@ -185,4 +188,5 @@ fuzzer_test("boringssl_server_bio_write_fuzzer") {
   deps = [
     ":boringssl_fuzzer",
   ]
+  seed_corpus = "src/fuzz/server_corpus"
 }
