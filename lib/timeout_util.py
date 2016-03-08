@@ -80,7 +80,7 @@ def Timeout(max_run_time,
 
 
 @contextlib.contextmanager
-def FatalTimeout(max_run_time):
+def FatalTimeout(max_run_time, display_message=None):
   """ContextManager that exits the program if code is run for too long.
 
   This implementation is fairly simple, thus multiple timeouts
@@ -95,6 +95,8 @@ def FatalTimeout(max_run_time):
   Args:
     max_run_time: How long to wait.  May be a number (in seconds) or a
       datetime.timedelta object.
+    display_message: Optional string message to be included in timeout
+      error message, if the timeout occurs.
   """
   max_run_time = int(Timedelta(max_run_time).total_seconds())
 
@@ -113,6 +115,8 @@ def FatalTimeout(max_run_time):
     # failed by buildbot.
     error_message = ("Timeout occurred- waited %i seconds, failing." %
                      max_run_time)
+    if display_message:
+      error_message += ' Timeout reason: %s' % display_message
     logging.PrintBuildbotStepFailure()
     logging.error(error_message)
     raise SystemExit(error_message)

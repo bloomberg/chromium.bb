@@ -1245,6 +1245,7 @@ def main(argv):
     _SetupConnections(options, build_config)
     retry_stats.SetupStats()
 
+    timeout_display_message = None
     # For master-slave builds: Update slave's timeout using master's published
     # deadline.
     if options.buildbot and options.master_build_id is not None:
@@ -1263,11 +1264,14 @@ def main(argv):
           logging.info('Updating slave build timeout to %d seconds enforced '
                        'by the master', slave_timeout)
           options.timeout = slave_timeout
+          timeout_display_message = ('Slave reached the timeout deadline set '
+                                     'by master.')
       else:
         logging.warning('Could not get master deadline for master-slave build. '
                         'Can not set slave timeout.')
 
     if options.timeout > 0:
-      stack.Add(timeout_util.FatalTimeout, options.timeout)
+      stack.Add(timeout_util.FatalTimeout, options.timeout,
+                timeout_display_message)
 
     _RunBuildStagesWrapper(options, site_config, build_config)
