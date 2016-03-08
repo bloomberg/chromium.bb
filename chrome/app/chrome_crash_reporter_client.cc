@@ -178,10 +178,12 @@ bool ChromeCrashReporterClient::GetShouldDumpLargerDumps(
   base::string16 channel_name =
       GoogleUpdateSettings::GetChromeChannel(!is_per_user_install);
 
-  // Capture more detail in crash dumps for beta and dev channel builds.
-  return (channel_name == installer::kChromeChannelDev ||
-          channel_name == installer::kChromeChannelBeta ||
-          channel_name == GoogleChromeSxSDistribution::ChannelName());
+  // Capture more detail in crash dumps for Beta, Dev, Canary channels and
+  // if channel is unknown (e.g. Chromium or developer builds).
+  return (channel_name == installer::kChromeChannelBeta ||
+          channel_name == installer::kChromeChannelDev ||
+          channel_name == GoogleChromeSxSDistribution::ChannelName() ||
+          channel_name == installer::kChromeChannelUnknown);
 }
 
 int ChromeCrashReporterClient::GetResultCodeRespawnFailed() {
