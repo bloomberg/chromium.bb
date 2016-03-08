@@ -21,6 +21,11 @@
 #include "common/libwebm_util.h"
 #include "testing/test_util.h"
 
+#ifdef _MSC_VER
+// Disable MSVC warnings that suggest making code non-portable.
+#pragma warning(disable:4996)
+#endif
+
 using ::mkvmuxer::AudioTrack;
 using ::mkvmuxer::Chapter;
 using ::mkvmuxer::Frame;
@@ -50,7 +55,8 @@ class MuxerTest : public testing::Test {
     filename_ = GetTempFileName();
     ASSERT_GT(filename_.length(), 0u);
     temp_file_ = FilePtr(std::fopen(filename_.c_str(), "wb"), FILEDeleter());
-    ASSERT_TRUE(writer_.Open(filename_.c_str()));
+    ASSERT_TRUE(temp_file_.get() != nullptr);
+    writer_.reset(new MkvWriter(temp_file_.get()));
     is_writer_open_ = true;
     memset(dummy_data_, 0, kFrameLength);
   }
@@ -73,12 +79,12 @@ class MuxerTest : public testing::Test {
 
   void CloseWriter() {
     if (is_writer_open_)
-      writer_.Close();
+      writer_->Close();
     is_writer_open_ = false;
   }
 
   bool SegmentInit(bool output_cues) {
-    if (!segment_.Init(&writer_))
+    if (!segment_.Init(writer_.get()))
       return false;
     SegmentInfo* const info = segment_.GetSegmentInfo();
     info->set_writing_app(kAppString);
@@ -88,7 +94,7 @@ class MuxerTest : public testing::Test {
   }
 
  protected:
-  MkvWriter writer_;
+  std::unique_ptr<MkvWriter> writer_;
   bool is_writer_open_ = false;
   Segment segment_;
   std::string filename_;
@@ -448,8 +454,13 @@ TEST_F(MuxerTest, CuesBeforeClusters) {
                                 6000000, true));
   segment_.Finalize();
   CloseWriter();
+#ifdef _MSC_VER
+  // Close the output file: the MS run time won't allow mkvparser::MkvReader
+  // to open a file for reading when it's still open for writing.
+  temp_file_.reset();
+#endif
   mkvparser::MkvReader reader;
-  reader.Open(filename_.c_str());
+  ASSERT_EQ(0, reader.Open(filename_.c_str()));
   MkvWriter cues_writer;
   std::string cues_filename = GetTempFileName();
   ASSERT_GT(cues_filename.length(), 0u);
