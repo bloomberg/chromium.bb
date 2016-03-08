@@ -856,8 +856,9 @@ static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUn
 void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource, double x, double y, ExceptionState& exceptionState)
 {
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
-    FloatSize sourceRectSize = imageSourceInternal->elementSize();
-    FloatSize destRectSize = imageSourceInternal->defaultDestinationSize();
+    FloatSize defaultObjectSize(width(), height());
+    FloatSize sourceRectSize = imageSourceInternal->elementSize(defaultObjectSize);
+    FloatSize destRectSize = imageSourceInternal->defaultDestinationSize(defaultObjectSize);
     drawImage(imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, destRectSize.width(), destRectSize.height(), exceptionState);
 }
 
@@ -865,7 +866,8 @@ void BaseRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource
     double x, double y, double width, double height, ExceptionState& exceptionState)
 {
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
-    FloatSize sourceRectSize = imageSourceInternal->elementSize();
+    FloatSize defaultObjectSize(this->width(), this->height());
+    FloatSize sourceRectSize = imageSourceInternal->elementSize(defaultObjectSize);
     drawImage(imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
 }
 
@@ -971,10 +973,11 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* imageSource,
         return;
 
     RefPtr<Image> image;
+    FloatSize defaultObjectSize(width(), height());
     SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
     if (!imageSource->isVideoElement()) {
         AccelerationHint hint = imageBuffer()->isAccelerated() ? PreferAcceleration : PreferNoAcceleration;
-        image = imageSource->getSourceImageForCanvas(&sourceImageStatus, hint, SnapshotReasonDrawImage);
+        image = imageSource->getSourceImageForCanvas(&sourceImageStatus, hint, SnapshotReasonDrawImage, defaultObjectSize);
         if (sourceImageStatus == UndecodableSourceImageStatus)
             exceptionState.throwDOMException(InvalidStateError, "The HTMLImageElement provided is in the 'broken' state.");
         if (!image || !image->width() || !image->height())
@@ -991,8 +994,9 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* imageSource,
 
     FloatRect srcRect = normalizeRect(FloatRect(sx, sy, sw, sh));
     FloatRect dstRect = normalizeRect(FloatRect(dx, dy, dw, dh));
+    FloatSize imageSize = imageSource->elementSize(defaultObjectSize);
 
-    clipRectsToImageRect(FloatRect(FloatPoint(), imageSource->elementSize()), &srcRect, &dstRect);
+    clipRectsToImageRect(FloatRect(FloatPoint(), imageSize), &srcRect, &dstRect);
 
     imageSource->adjustDrawRects(&srcRect, &dstRect);
 
@@ -1023,7 +1027,7 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     if (ExpensiveCanvasHeuristicParameters::SVGImageSourcesAreExpensive && imageSource->isSVGSource())
         isExpensive = true;
 
-    if (imageSource->elementSize().width() * imageSource->elementSize().height() > width() * height() * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio)
+    if (imageSize.width() * imageSize.height() > width() * height() * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio)
         isExpensive = true;
 
     if (isExpensive) {
@@ -1083,13 +1087,14 @@ CanvasPattern* BaseRenderingContext2D::createPattern(const CanvasImageSourceUnio
 
     SourceImageStatus status;
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
-    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(&status, PreferNoAcceleration, SnapshotReasonCreatePattern);
+    FloatSize defaultObjectSize(width(), height());
+    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(&status, PreferNoAcceleration, SnapshotReasonCreatePattern, defaultObjectSize);
 
     switch (status) {
     case NormalSourceImageStatus:
         break;
     case ZeroSizeCanvasSourceImageStatus:
-        exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", imageSourceInternal->elementSize().width() ? "height" : "width"));
+        exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", imageSourceInternal->elementSize(defaultObjectSize).width() ? "height" : "width"));
         return nullptr;
     case UndecodableSourceImageStatus:
         exceptionState.throwDOMException(InvalidStateError, "Source image is in the 'broken' state.");

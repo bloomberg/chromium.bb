@@ -261,7 +261,7 @@ void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const Fl
 
 PassRefPtr<SkImage> SVGImage::imageForCurrentFrame()
 {
-    return imageForCurrentFrameForContainer(KURL());
+    return imageForCurrentFrameForContainer(KURL(), FloatSize(size()));
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize containerSize,
@@ -301,14 +301,14 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize
     context.drawRect(dstRect, paint);
 }
 
-PassRefPtr<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url)
+PassRefPtr<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url, const FloatSize& containerSize)
 {
     if (!m_page)
         return nullptr;
 
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(width(), height());
-    drawForContainer(canvas, SkPaint(), FloatSize(size()), 1, rect(), rect(), url);
+    drawForContainer(canvas, SkPaint(), containerSize, 1, rect(), rect(), url);
     RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
 
     return adoptRef(

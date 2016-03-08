@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<title>Sizing SVG image when drawn to canvas</title>
+<script>
+function createCircle(x, y, r, sx, sy)
+{
+    var canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+    document.documentElement.appendChild(canvas);
+
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = "blue";
+
+    ctx.translate(50, 50);
+    ctx.scale(sx || 1, sy || 1);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, 2*Math.PI);
+    ctx.fill();
+}
+createCircle(0, 0, 50);
+createCircle(0, -25, 25);
+createCircle(-25, 0, 25);
+createCircle(0, 0, 25, 1, 2);
+createCircle(0, 0, 25, 2, 1);
+createCircle(-25, 0, 25);
+createCircle(0, -25, 25);
+createCircle(0, -25, 25);
+createCircle(0, 0, 50);
+createCircle(0, 0, 50);
+createCircle(0, -25, 25);
+createCircle(0, 0, 50);
+</script>

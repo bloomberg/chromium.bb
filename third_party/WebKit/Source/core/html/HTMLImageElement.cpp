@@ -603,7 +603,7 @@ bool HTMLImageElement::isInteractiveContent() const
     return fastHasAttribute(usemapAttr);
 }
 
-PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason) const
+PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason, const FloatSize& defaultObjectSize) const
 {
     if (!complete() || !cachedImage()) {
         *status = IncompleteSourceImageStatus;
@@ -617,8 +617,10 @@ PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageStatus* s
 
     RefPtr<Image> sourceImage;
     if (cachedImage()->image()->isSVGImage()) {
-        sourceImage = SVGImageForContainer::create(toSVGImage(cachedImage()->image()),
-            cachedImage()->image()->size(), 1, document().completeURL(imageSourceURL()));
+        SVGImage* svgImage = toSVGImage(cachedImage()->image());
+        IntSize imageSize = roundedIntSize(svgImage->concreteObjectSize(defaultObjectSize));
+        sourceImage = SVGImageForContainer::create(svgImage,
+            imageSize, 1, document().completeURL(imageSourceURL()));
     } else {
         sourceImage = cachedImage()->image();
     }
@@ -640,20 +642,27 @@ bool HTMLImageElement::wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigi
     return !image->isAccessAllowed(destinationSecurityOrigin);
 }
 
-FloatSize HTMLImageElement::elementSize() const
+FloatSize HTMLImageElement::elementSize(const FloatSize& defaultObjectSize) const
 {
     ImageResource* image = cachedImage();
     if (!image)
         return FloatSize();
+
+    if (image->image() && image->image()->isSVGImage())
+        return toSVGImage(cachedImage()->image())->concreteObjectSize(defaultObjectSize);
 
     return FloatSize(image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), 1.0f));
 }
 
-FloatSize HTMLImageElement::defaultDestinationSize() const
+FloatSize HTMLImageElement::defaultDestinationSize(const FloatSize& defaultObjectSize) const
 {
     ImageResource* image = cachedImage();
     if (!image)
         return FloatSize();
+
+    if (image->image() && image->image()->isSVGImage())
+        return toSVGImage(cachedImage()->image())->concreteObjectSize(defaultObjectSize);
+
     LayoutSize size;
     size = image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), 1.0f);
     if (layoutObject() && layoutObject()->isLayoutImage() && image->image() && !image->image()->hasRelativeSize())

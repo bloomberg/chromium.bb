@@ -433,7 +433,7 @@ void ImageBitmap::parseOptions(const ImageBitmapOptions& options, bool& flipY)
     }
 }
 
-PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason) const
+PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason, const FloatSize&) const
 {
     *status = NormalSourceImageStatus;
     return m_image ? m_image : nullptr;
@@ -443,7 +443,7 @@ void ImageBitmap::adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const
 {
 }
 
-FloatSize ImageBitmap::elementSize() const
+FloatSize ImageBitmap::elementSize(const FloatSize&) const
 {
     return FloatSize(width(), height());
 }
