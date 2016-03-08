@@ -26,7 +26,7 @@ class PrinterInfo {
  public:
   bool Init(HANDLE printer) {
     buffer_.reset(GetPrinterInfo(printer, level));
-    return buffer_;
+    return buffer_ != nullptr;
   }
 
   const PrinterInfoType* get() const {
@@ -44,7 +44,7 @@ class DriverInfo {
  public:
   bool Init(HANDLE printer) {
     buffer_.reset(GetDriverInfo(printer, level));
-    return buffer_;
+    return buffer_ != nullptr;
   }
 
   const DriverInfoType* get() const {

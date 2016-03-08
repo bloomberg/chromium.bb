@@ -650,16 +650,6 @@ TEST(ScopedPtrTest, ReferenceCycle) {
   // deletes the underlying pointer. This behaviour is consistent with the
   // definition of unique_ptr::reset in C++11.
   a->b.reset();
-
-  // Go again, but this time, break the cycle by invoking |a|'s destructor. This
-  // tests that the implementation of ~scoped_ptr doesn't infinitely recurse
-  // into the destructors of |a| and |a->b|. Note, deleting |a| instead will
-  // cause |a| to be double-free'd because |a->b| owns |a| and deletes it via
-  // its destructor.
-  a = new StructA;
-  a->b.reset(new StructB);
-  a->b->a.reset(a);
-  a->~StructA();
 }
 
 TEST(ScopedPtrTest, Operators) {

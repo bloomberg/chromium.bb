@@ -362,7 +362,7 @@ scoped_ptr<InputInjector> InputInjector::Create(
 
 // static
 bool InputInjector::SupportsTouchEvents() {
-  return TouchInjectorWinDelegate::Create();
+  return TouchInjectorWinDelegate::Create() != nullptr;
 }
 
 }  // namespace remoting

@@ -250,6 +250,10 @@ void BluetoothRemoteGattServiceWin::RemoveIncludedCharacteristic(
 
 void BluetoothRemoteGattServiceWin::ClearIncludedCharacteristics() {
   discovery_completed_included_charateristics_.clear();
+  // Explicitly reset to null to ensure that calling GetCharacteristic() on the
+  // removed characteristic in GattDescriptorRemoved() returns null.
+  for (auto& entry : included_characteristics_)
+    entry.second.reset();
   included_characteristics_.clear();
 }
 
