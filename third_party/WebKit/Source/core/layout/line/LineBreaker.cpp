@@ -30,15 +30,15 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
     FloatingObject* lastFloatFromPreviousLine, LineWidth& width)
 {
     while (!resolver.position().atEnd() && !requiresLineBox(resolver.position(), lineInfo, LeadingWhitespace)) {
-        LayoutObject* object = resolver.position().getLineLayoutItem();
-        if (object->isOutOfFlowPositioned()) {
-            setStaticPositions(m_block, LineLayoutBox(toLayoutBox(object)), width.indentText());
-            if (object->style()->isOriginalDisplayInlineType()) {
-                resolver.runs().addRun(createRun(0, 1, LineLayoutItem(object), resolver));
+        LineLayoutItem lineLayoutItem = resolver.position().getLineLayoutItem();
+        if (lineLayoutItem.isOutOfFlowPositioned()) {
+            setStaticPositions(m_block, LineLayoutBox(lineLayoutItem), width.indentText());
+            if (lineLayoutItem.style()->isOriginalDisplayInlineType()) {
+                resolver.runs().addRun(createRun(0, 1, LineLayoutItem(lineLayoutItem), resolver));
                 lineInfo.incrementRunsFromLeadingWhitespace();
             }
-        } else if (object->isFloating()) {
-            m_block.positionNewFloatOnLine(*m_block.insertFloatingObject(*toLayoutBox(object)), lastFloatFromPreviousLine, lineInfo, width);
+        } else if (lineLayoutItem.isFloating()) {
+            m_block.positionNewFloatOnLine(*m_block.insertFloatingObject(LineLayoutBox(lineLayoutItem)), lastFloatFromPreviousLine, lineInfo, width);
         }
         resolver.position().increment(&resolver);
     }
