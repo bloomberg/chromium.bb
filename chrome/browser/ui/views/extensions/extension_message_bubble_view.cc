@@ -214,7 +214,7 @@ void ExtensionMessageBubbleView::ButtonPressed(views::Button* sender,
     controller_->OnBubbleAction();
   } else {
     DCHECK_EQ(dismiss_button_, sender);
-    controller_->OnBubbleDismiss(false /* not closed by deactivation */ );
+    controller_->OnBubbleDismiss(false);  // Not closed by deactivation.
   }
   GetWidget()->Close();
 }
