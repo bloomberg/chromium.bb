@@ -86,15 +86,15 @@ OpenFileName::~OpenFileName() {
 }
 
 void OpenFileName::SetFilters(
-    const std::vector<base::Tuple<base::string16, base::string16>>& filters) {
+    const std::vector<std::tuple<base::string16, base::string16>>& filters) {
   openfilename_.lpstrFilter = NULL;
   filter_buffer_.clear();
   if (filters.empty())
     return;
   for (const auto& filter : filters) {
-    filter_buffer_.append(base::get<0>(filter));
+    filter_buffer_.append(std::get<0>(filter));
     filter_buffer_.push_back(0);
-    filter_buffer_.append(base::get<1>(filter));
+    filter_buffer_.append(std::get<1>(filter));
     filter_buffer_.push_back(0);
   }
   filter_buffer_.push_back(0);
@@ -203,9 +203,9 @@ void OpenFileName::SetResult(const base::FilePath& directory,
 }
 
 // static
-std::vector<base::Tuple<base::string16, base::string16>>
+std::vector<std::tuple<base::string16, base::string16>>
 OpenFileName::GetFilters(const OPENFILENAME* openfilename) {
-  std::vector<base::Tuple<base::string16, base::string16>> filters;
+  std::vector<std::tuple<base::string16, base::string16>> filters;
 
   const base::char16* display_string = openfilename->lpstrFilter;
   if (!display_string)
@@ -220,7 +220,7 @@ OpenFileName::GetFilters(const OPENFILENAME* openfilename) {
     while (*pattern_end)
       ++pattern_end;
     filters.push_back(
-        base::MakeTuple(base::string16(display_string, display_string_end),
+        std::make_tuple(base::string16(display_string, display_string_end),
                   base::string16(pattern, pattern_end)));
     display_string = pattern_end + 1;
   }

@@ -8,11 +8,11 @@
 #include <Windows.h>
 #include <Commdlg.h>
 
+#include <tuple>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "base/tuple.h"
 #include "ui/base/ui_base_export.h"
 
 namespace base {
@@ -34,7 +34,7 @@ class UI_BASE_EXPORT OpenFileName {
 
   // Initializes |lpstrFilter| from the label/pattern pairs in |filters|.
   void SetFilters(
-      const std::vector<base::Tuple<base::string16, base::string16>>& filters);
+      const std::vector<std::tuple<base::string16, base::string16>>& filters);
 
   // Sets |lpstrInitialDir| and |lpstrFile|.
   void SetInitialSelection(const base::FilePath& initial_directory,
@@ -68,7 +68,7 @@ class UI_BASE_EXPORT OpenFileName {
 
   // Returns a vector of label/pattern pairs built from
   // |openfilename->lpstrFilter|.
-  static std::vector<base::Tuple<base::string16, base::string16>> GetFilters(
+  static std::vector<std::tuple<base::string16, base::string16>> GetFilters(
       const OPENFILENAME* openfilename);
 
  private:

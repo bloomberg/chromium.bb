@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <set>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -17,7 +18,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "base/tuple.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/shortcut.h"
@@ -457,12 +457,12 @@ bool SelectFileDialogImpl::SaveFileAsWithFilter(
   // Figure out what filter got selected. The filter index is 1-based.
   std::wstring filter_selected;
   if (*index > 0) {
-    std::vector<base::Tuple<base::string16, base::string16>> filters =
+    std::vector<std::tuple<base::string16, base::string16>> filters =
         ui::win::OpenFileName::GetFilters(save_as.GetOPENFILENAME());
     if (*index > filters.size())
       NOTREACHED() << "Invalid filter index.";
     else
-      filter_selected = base::get<1>(filters[*index - 1]);
+      filter_selected = std::get<1>(filters[*index - 1]);
   }
 
   // Get the extension that was suggested to the user (when the Save As dialog
