@@ -14,7 +14,6 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/frame_host/traced_frame_tree_node.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -106,12 +105,6 @@ FrameTreeNode::FrameTreeNode(
       g_frame_tree_node_id_map.Get().insert(
           std::make_pair(frame_tree_node_id_, this));
   CHECK(result.second);
-
-  TRACE_EVENT_OBJECT_CREATED_WITH_ID(
-      "navigation", "FrameTreeNode",
-      TRACE_ID_WITH_SCOPE("FrameTreeNode", frame_tree_node_id_));
-  TraceSnapshot();
-  base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
 }
 
 FrameTreeNode::~FrameTreeNode() {
@@ -123,11 +116,6 @@ FrameTreeNode::~FrameTreeNode() {
     opener_->RemoveObserver(opener_observer_.get());
 
   g_frame_tree_node_id_map.Get().erase(frame_tree_node_id_);
-
-  TRACE_EVENT_OBJECT_DELETED_WITH_ID(
-      "navigation", "FrameTreeNode",
-      TRACE_ID_WITH_SCOPE("FrameTreeNode", frame_tree_node_id_));
-  base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
 }
 
 void FrameTreeNode::AddObserver(Observer* observer) {
@@ -184,7 +172,6 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
 
 void FrameTreeNode::ResetForNewProcess() {
   current_frame_host()->set_last_committed_url(GURL());
-  TraceSnapshot();
 
   // Remove child nodes from the tree, then delete them. This destruction
   // operation will notify observers.
@@ -210,7 +197,6 @@ void FrameTreeNode::SetCurrentURL(const GURL& url) {
   if (!has_committed_real_load_ && url != GURL(url::kAboutBlankURL))
     has_committed_real_load_ = true;
   current_frame_host()->set_last_committed_url(url);
-  TraceSnapshot();
 }
 
 void FrameTreeNode::SetCurrentOrigin(const url::Origin& origin) {
@@ -460,18 +446,6 @@ void FrameTreeNode::BeforeUnloadCanceled() {
     if (pending_frame_host)
       pending_frame_host->ResetLoadingState();
   }
-}
-
-void FrameTreeNode::OnTraceLogEnabled() {
-  TraceSnapshot();
-}
-
-void FrameTreeNode::TraceSnapshot() const {
-  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      "navigation", "FrameTreeNode",
-      TRACE_ID_WITH_SCOPE("FrameTreeNode", frame_tree_node_id_),
-      scoped_ptr<base::trace_event::ConvertableToTraceFormat>(
-          new TracedFrameTreeNode(*this)));
 }
 
 }  // namespace content

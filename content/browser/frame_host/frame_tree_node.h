@@ -32,8 +32,7 @@ class RenderFrameHostImpl;
 // of those frames. We are mirroring this tree in the browser process. This
 // class represents a node in this tree and is a wrapper for all objects that
 // are frame-specific (as opposed to page-specific).
-class CONTENT_EXPORT FrameTreeNode :
-  public base::trace_event::TraceLog::EnabledStateObserver {
+class CONTENT_EXPORT FrameTreeNode {
  public:
   class Observer {
    public:
@@ -65,7 +64,7 @@ class CONTENT_EXPORT FrameTreeNode :
                 const std::string& unique_name,
                 const blink::WebFrameOwnerProperties& frame_owner_properties);
 
-  ~FrameTreeNode() override;
+  ~FrameTreeNode();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -268,16 +267,10 @@ class CONTENT_EXPORT FrameTreeNode :
   // FrameTreeNode.
   void BeforeUnloadCanceled();
 
-  // TraceLog::EnabledStateObserver
-  void OnTraceLogEnabled() override;
-  void OnTraceLogDisabled() override {}
-
  private:
   class OpenerDestroyedObserver;
 
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }
-
-  void TraceSnapshot() const;
 
   // The next available browser-global FrameTreeNode ID.
   static int next_frame_tree_node_id_;
