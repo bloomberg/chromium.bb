@@ -130,13 +130,10 @@ void BrowserNonClientFrameViewMac::UpdateAvatar() {
 // BrowserNonClientFrameViewMac, private:
 
 void BrowserNonClientFrameViewMac::PaintThemedFrame(gfx::Canvas* canvas) {
-  gfx::ImageSkia* image = GetFrameImage();
-  if (image)
-    canvas->TileImageInt(*image, 0, 0, width(), image->height());
-
-  gfx::ImageSkia* overlay = GetFrameOverlayImage();
-  if (overlay)
-    canvas->TileImageInt(*overlay, 0, 0, width(), overlay->height());
+  gfx::ImageSkia image = GetFrameImage();
+  canvas->TileImageInt(image, 0, 0, width(), image.height());
+  gfx::ImageSkia overlay = GetFrameOverlayImage();
+  canvas->TileImageInt(overlay, 0, 0, width(), overlay.height());
 }
 
 void BrowserNonClientFrameViewMac::PaintToolbarBackground(gfx::Canvas* canvas) {
