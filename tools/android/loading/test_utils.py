@@ -163,3 +163,47 @@ class TestResourceGraph(loading_model.ResourceGraph):
   @classmethod
   def FromRequestList(cls, requests, page_events=None, trace_events=None):
     return cls(LoadingTraceFromEvents(requests, page_events, trace_events))
+
+
+class MockConnection(object):
+  """Mock out connection for testing.
+
+  Use Expect* for requests expecting a repsonse. SyncRequestNoResponse puts
+  requests into no_response_requests_seen.
+
+  TODO(mattcary): use a standard mock system (the back-ported python3
+  unittest.mock? devil.utils.mock_calls?)
+
+  """
+  def __init__(self, test_case):
+    # List of (method, params) tuples.
+    self.no_response_requests_seen = []
+
+    self._test_case = test_case
+    self._expected_responses = {}
+
+  def ExpectSyncRequest(self, response, method, params=None):
+    """Test method when the connection is expected to make a SyncRequest.
+
+    Args:
+      response: (dict) the response to generate.
+      method: (str) the expected method in the call.
+      params: (dict) the expected params in the call.
+    """
+    self._expected_responses.setdefault(method, []).append((params, response))
+
+  def AllExpectationsUsed(self):
+    """Returns true when all expectations where used."""
+    return not self._expected_responses
+
+  def SyncRequestNoResponse(self, method, params):
+    """Mocked method."""
+    self.no_response_requests_seen.append((method, params))
+
+  def SyncRequest(self, method, params=None):
+    """Mocked method."""
+    expected_params, response = self._expected_responses[method].pop(0)
+    if not self._expected_responses[method]:
+      del self._expected_responses[method]
+    self._test_case.assertEqual(expected_params, params)
+    return response

@@ -97,6 +97,7 @@ def ForwardPort(device, local, remote):
     device.adb.ForwardRemove(local)
 
 
+# Deprecated
 def _SetUpDevice(device, package_info):
   """Enables root and closes Chrome on a device."""
   device.EnableRoot()
@@ -189,6 +190,7 @@ def WprHost(device, wpr_archive_path, record=False,
     shutil.rmtree(temp_certificate_dir)
 
 
+# Deprecated
 @contextlib.contextmanager
 def _DevToolsConnectionOnDevice(device, flags):
   """Returns a DevToolsConnection context manager for a given device.
@@ -215,6 +217,7 @@ def _DevToolsConnectionOnDevice(device, flags):
           OPTIONS.devtools_hostname, OPTIONS.devtools_port)
 
 
+# Deprecated, use *Controller.
 def DeviceConnection(device, additional_flags=None):
   """Context for starting recording on a device.
 
