@@ -20,4 +20,15 @@ const ShellDialogLinux* ShellDialogLinux::instance() {
   return g_shell_dialog_linux;
 }
 
+SelectFileDialog* CreateSelectFileDialog(SelectFileDialog::Listener* listener,
+                                         SelectFilePolicy* policy) {
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  const ui::ShellDialogLinux* shell_dialogs = ui::ShellDialogLinux::instance();
+  if (shell_dialogs)
+    return shell_dialogs->CreateSelectFileDialog(listener, policy);
+#endif
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 }  // namespace ui

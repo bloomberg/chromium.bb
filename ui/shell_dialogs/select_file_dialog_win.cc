@@ -706,9 +706,8 @@ SelectFileDialog* CreateWinSelectFileDialog(
       listener, policy, get_open_file_name_impl, get_save_file_name_impl);
 }
 
-SelectFileDialog* CreateDefaultWinSelectFileDialog(
-    SelectFileDialog::Listener* listener,
-    SelectFilePolicy* policy) {
+SelectFileDialog* CreateSelectFileDialog(SelectFileDialog::Listener* listener,
+                                         SelectFilePolicy* policy) {
   return CreateWinSelectFileDialog(listener,
                                    policy,
                                    base::Bind(&CallBuiltinGetOpenFileName),

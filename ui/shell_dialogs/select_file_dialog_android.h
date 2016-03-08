@@ -65,10 +65,6 @@ class SelectFileDialogImpl : public SelectFileDialog {
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
-SelectFileDialog* CreateAndroidSelectFileDialog(
-    SelectFileDialog::Listener* listener,
-    SelectFilePolicy* policy);
-
 }  // namespace ui
 
 #endif  // UI_SHELL_DIALOGS_ANDROID_SELECT_FILE_DIALOG_ANDROID_H_

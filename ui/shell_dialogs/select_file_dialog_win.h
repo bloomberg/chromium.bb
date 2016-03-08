@@ -28,10 +28,6 @@ SHELL_DIALOGS_EXPORT SelectFileDialog* CreateWinSelectFileDialog(
     const base::Callback<bool(OPENFILENAME* ofn)>& get_open_file_name_impl,
     const base::Callback<bool(OPENFILENAME* ofn)>& get_save_file_name_impl);
 
-SelectFileDialog* CreateDefaultWinSelectFileDialog(
-    SelectFileDialog::Listener* listener,
-    SelectFilePolicy* policy);
-
 }  // namespace ui
 
 #endif  //  UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_WIN_H_

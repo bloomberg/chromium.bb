@@ -145,9 +145,8 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
   return false;
 }
 
-SelectFileDialog* CreateAndroidSelectFileDialog(
-    SelectFileDialog::Listener* listener,
-    SelectFilePolicy* policy) {
+SelectFileDialog* CreateSelectFileDialog(SelectFileDialog::Listener* listener,
+                                         SelectFilePolicy* policy) {
   return SelectFileDialogImpl::Create(listener, policy);
 }
 

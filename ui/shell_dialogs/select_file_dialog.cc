@@ -14,16 +14,6 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
-#if defined(OS_WIN)
-#include "ui/shell_dialogs/select_file_dialog_win.h"
-#elif defined(OS_MACOSX)
-#include "ui/shell_dialogs/select_file_dialog_mac.h"
-#elif defined(OS_ANDROID)
-#include "ui/shell_dialogs/select_file_dialog_android.h"
-#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "ui/shell_dialogs/shell_dialog_linux.h"
-#endif
-
 namespace {
 
 // Optional dialog factory. Leaked.
@@ -79,22 +69,7 @@ scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
       return dialog;
   }
 
-#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  const ui::ShellDialogLinux* shell_dialogs = ui::ShellDialogLinux::instance();
-  if (shell_dialogs)
-    return shell_dialogs->CreateSelectFileDialog(listener, policy);
-#endif
-
-#if defined(OS_WIN)
-  return CreateDefaultWinSelectFileDialog(listener, policy);
-#elif defined(OS_MACOSX) && !defined(USE_AURA)
-  return CreateMacSelectFileDialog(listener, policy);
-#elif defined(OS_ANDROID)
-  return CreateAndroidSelectFileDialog(listener, policy);
-#else
-  NOTIMPLEMENTED();
-  return NULL;
-#endif
+  return CreateSelectFileDialog(listener, policy);
 }
 
 void SelectFileDialog::SelectFile(

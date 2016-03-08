@@ -213,6 +213,8 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialog);
 };
 
+SelectFileDialog* CreateSelectFileDialog(SelectFileDialog::Listener* listener,
+                                         SelectFilePolicy* policy);
 }  // namespace ui
 
 #endif  // UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_H_

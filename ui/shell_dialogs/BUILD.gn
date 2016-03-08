@@ -63,13 +63,6 @@ component("shell_dialogs") {
     include_dirs = [ "$root_gen_dir/ui" ]
     libs = [ "jnigraphics" ]
   }
-
-  if (is_android && use_aura) {
-    sources += [
-      "select_file_dialog_auraandroid.cc",
-      "select_file_dialog_auraandroid.h",
-    ]
-  }
 }
 
 test("shell_dialogs_unittests") {
