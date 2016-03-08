@@ -80,7 +80,18 @@ const struct {
      PasswordTittleType::SAVE_ACCOUNT, "this site", 0, 0},
     {"https://a.example.com/landing",
      "https://b.example.com/login#form?value=3", true,
-     PasswordTittleType::SAVE_ACCOUNT, "this site", 12, 29}};
+     PasswordTittleType::SAVE_ACCOUNT, "this site", 12, 29},
+
+     // Android update.
+     {"https://another.org", "android://m3HSJL1i83hdltRq0-o9czGb-8KJDKra4t_3JR"
+      "lnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw==@com.example.android",
+      false, PasswordTittleType::SAVE_PASSWORD, "android://com.example.android",
+      0, 0},
+     {"https://another.org","android://m3HSJL1i83hdltRq0-o9czGb-8KJDKra4t_3JR"
+      "lnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw==@com.example.android",
+      true, PasswordTittleType::SAVE_PASSWORD, "android://com.example.android",
+      12, 29},
+};
 
 }  // namespace
 
