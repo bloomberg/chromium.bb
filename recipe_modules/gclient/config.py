@@ -14,7 +14,7 @@ def BaseConfig(USE_MIRROR=True, GIT_MODE=False, CACHE_DIR=None,
                PATCH_PROJECT=None, BUILDSPEC_VERSION=None,
                **_kwargs):
   deps = '.DEPS.git' if GIT_MODE else 'DEPS'
-  cache_dir = str(CACHE_DIR) if GIT_MODE and CACHE_DIR else None
+  cache_dir = str(CACHE_DIR) if CACHE_DIR else None
   return ConfigGroup(
     solutions = ConfigList(
       lambda: ConfigGroup(

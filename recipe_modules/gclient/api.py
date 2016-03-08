@@ -126,11 +126,10 @@ class GclientApi(recipe_api.RecipeApi):
     self._spec_alias = None
 
   def get_config_defaults(self):
-    ret = {
-      'USE_MIRROR': self.use_mirror
+    return {
+      'USE_MIRROR': self.use_mirror,
+      'CACHE_DIR': self.m.path['git_cache'],
     }
-    ret['CACHE_DIR'] = self.m.path['root'].join('git_cache')
-    return ret
 
   def resolve_revision(self, revision):
     if hasattr(revision, 'resolve'):

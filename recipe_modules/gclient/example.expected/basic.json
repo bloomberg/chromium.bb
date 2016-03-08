@@ -89,7 +89,7 @@
       "RECIPE_PACKAGE[depot_tools]/gclient.py",
       "config",
       "--spec",
-      "cache_dir = None\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'WebKit', 'safesync_url': 'https://blink-status.appspot.com/lkgr', 'url': 'svn://svn.chromium.org/blink/trunk'}]"
+      "cache_dir = '[GIT_CACHE]'\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'WebKit', 'safesync_url': 'https://blink-status.appspot.com/lkgr', 'url': 'svn://svn.chromium.org/blink/trunk'}]"
     ],
     "cwd": "[SLAVE_BUILD]/src/third_party",
     "env": {
