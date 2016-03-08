@@ -261,6 +261,7 @@ SRC = \
   $(TOP)/src/printf.c \
   $(TOP)/src/random.c \
   $(TOP)/src/recover.c \
+  $(TOP)/src/recover_varint.c \
   $(TOP)/src/resolve.c \
   $(TOP)/src/rowset.c \
   $(TOP)/src/select.c \

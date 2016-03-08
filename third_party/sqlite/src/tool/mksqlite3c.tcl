@@ -362,6 +362,7 @@ foreach file {
    notify.c
 
    recover.c
+   recover_varint.c
 
    fts3.c
    fts3_aux.c

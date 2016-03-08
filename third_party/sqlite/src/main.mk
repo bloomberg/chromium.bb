@@ -67,7 +67,7 @@ LIBOBJ+= vdbe.o parse.o \
          mutex.o mutex_noop.o mutex_unix.o mutex_w32.o \
          notify.o opcodes.o os.o os_unix.o os_win.o \
          pager.o pcache.o pcache1.o pragma.o prepare.o printf.o \
-         random.o recover.o resolve.o rowset.o rtree.o \
+         random.o recover.o recover_varint.o resolve.o rowset.o rtree.o \
          select.o sqlite3rbu.o status.o \
          table.o threads.o tokenize.o treeview.o trigger.o \
          update.o userauth.o util.o vacuum.o \
@@ -142,6 +142,7 @@ SRC = \
   $(TOP)/src/printf.c \
   $(TOP)/src/random.c \
   $(TOP)/src/recover.c \
+  $(TOP)/src/recover_varint.c \
   $(TOP)/src/resolve.c \
   $(TOP)/src/rowset.c \
   $(TOP)/src/select.c \
@@ -363,6 +364,7 @@ TESTSRC2 = \
   $(TOP)/src/printf.c \
   $(TOP)/src/random.c \
   $(TOP)/src/recover.c \
+  $(TOP)/src/recover_varint.c \
   $(TOP)/src/pcache.c \
   $(TOP)/src/pcache1.c \
   $(TOP)/src/select.c \
@@ -723,6 +725,7 @@ sqlite3_analyzer$(EXE): sqlite3_analyzer.c
 #
 TESTFIXTURE_FLAGS  = -DSQLITE_TEST=1 -DSQLITE_CRASH_TEST=1
 TESTFIXTURE_FLAGS += -DSQLITE_SERVER=1 -DSQLITE_PRIVATE="" -DSQLITE_CORE 
+TESTFIXTURE_FLAGS += -DDEFAULT_ENABLE_RECOVER=1
 
 testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
 	$(TCCX) $(TCL_FLAGS) -DTCLSH=1 $(TESTFIXTURE_FLAGS)                  \

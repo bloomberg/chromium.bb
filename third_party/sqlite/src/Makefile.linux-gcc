@@ -81,10 +81,6 @@ OPTS += -DSQLITE_MEMDEBUG=1
 # TODO(shess) I can't see why I need this setting.
 OPTS += -DOS_UNIX=1
 
-# The recover virtual table is not generally enabled.  Enable it for testing
-# purposes.
-OPTS += -DDEFAULT_ENABLE_RECOVER=1
-
 # Support for loading Chromium ICU data in sqlite3.
 ifeq ($(shell uname -s),Darwin)
 SHELL_ICU =
