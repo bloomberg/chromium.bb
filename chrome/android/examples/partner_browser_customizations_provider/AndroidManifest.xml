@@ -4,11 +4,15 @@
      found in the LICENSE file. -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.android.partnerbrowsercustomizations.example">
+        package="org.chromium.example.partnercustomizations">
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14" />
     <application>
-        <!--android:authorities must remain as it is. -->
+        <!-- Provider for partner bookmarks. android:authorities must not be changed. -->
+        <provider android:name="PartnerBookmarksProviderExample"
+            android:authorities="com.android.partnerbookmarks" />
+
+        <!-- Provider for other partner customizations. android:authorities must not be changed. -->
         <provider android:name="PartnerBrowserCustomizationsProviderExample"
-                android:authorities="com.android.partnerbrowsercustomizations" />
+            android:authorities="com.android.partnerbrowsercustomizations" />
     </application>
 </manifest>

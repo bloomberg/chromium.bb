@@ -1,3 +1,7 @@
+# An example app for partner customizations. When this APK is installed, Chrome
+# will show a homepage button and partner bookmarks, disable incognito mode, and
+# disable bookmark editing.
+
 # Remount /system/ as read-write.
 # < MNC instructions
   adb root && adb wait-for-device
@@ -17,11 +21,16 @@ ant debug
 adb shell mkdir -p /system/app
 adb push bin/PartnerCustomizationProviderExample-debug.apk /system/app/ChromeCustomizations.apk
 
+# If you want partner bookmarks to work, delete the preinstalled partner
+# bookmarks provider (which typically provides zero bookmarks).
+adb shell rm -r /system/app/PartnerBookmarksProvider
+
+# To get partner bookmarks even when Chrome isn't preinstalled, remove the
+# ApplicationInfo.FLAG_SYSTEM check from PartnerBookmarksShim.java
+
 # Restart Java services to ensure dex caching.
 adb shell stop && adb shell start
 
 # Start Chrome.
 adb shell am start -S -n com.android.chrome/.Main
-
-# If it worked correctly, Chrome should enable homepage button, disable incognito mode and partner bookmark editing mode.
 
