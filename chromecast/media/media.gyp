@@ -35,6 +35,7 @@
       'type': '<(component)',
       'dependencies': [
         '../../media/media.gyp:media',
+        'cma_backend_manager',
       ],
       'sources': [
         'audio/cast_audio_manager.cc',
@@ -156,16 +157,28 @@
       'sources': [
         'cma/backend/audio_decoder_default.cc',
         'cma/backend/audio_decoder_default.h',
-        'cma/backend/audio_decoder_wrapper.cc',
-        'cma/backend/audio_decoder_wrapper.h',
         'cma/backend/media_pipeline_backend_default.cc',
         'cma/backend/media_pipeline_backend_default.h',
+        'cma/backend/video_decoder_default.cc',
+        'cma/backend/video_decoder_default.h',
+      ],
+    },
+    {
+      'target_name': 'cma_backend_manager',
+      'type': '<(component)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+      'sources': [
+        'cma/backend/audio_decoder_wrapper.cc',
+        'cma/backend/audio_decoder_wrapper.h',
         'cma/backend/media_pipeline_backend_manager.cc',
         'cma/backend/media_pipeline_backend_manager.h',
         'cma/backend/media_pipeline_backend_wrapper.cc',
         'cma/backend/media_pipeline_backend_wrapper.h',
-        'cma/backend/video_decoder_default.cc',
-        'cma/backend/video_decoder_default.h',
       ],
     },
     {
