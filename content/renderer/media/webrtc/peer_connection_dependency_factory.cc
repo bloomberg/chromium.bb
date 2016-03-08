@@ -473,9 +473,9 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
               switches::kEnforceWebRtcIPPermissionCheck);
       create_media_permission =
           create_media_permission ||
-          StartsWith(base::FieldTrialList::FindFullName(
-                         "WebRTC-LocalIPPermissionCheck"),
-                     "Enabled", base::CompareCase::SENSITIVE);
+          !StartsWith(base::FieldTrialList::FindFullName(
+                          "WebRTC-LocalIPPermissionCheck"),
+                      "Disabled", base::CompareCase::SENSITIVE);
       if (create_media_permission) {
         content::RenderFrameImpl* render_frame =
             content::RenderFrameImpl::FromWebFrame(web_frame);
