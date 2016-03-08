@@ -39,23 +39,6 @@
 
 <script>
 
-function shouldCustomNavigateFocus(from, to, direction)
-{   
-    var fromElement = getNodeInComposedTree(from);
-    if (!fromElement) {
-      return;
-    }
-    fromElement.focus();
-    if (!isInnermostActiveElement(from)) {
-        return;
-    }
-    if (direction == 'forward')
-        navigateFocusForward();
-    else
-        navigateFocusBackward();
-    return isInnermostActiveElement(to);
-}
-
 test(function() {
   var xfoo = document.getElementById('x-foo');
   convertTemplatesToShadowRootsWithin(xfoo);
@@ -80,10 +63,10 @@ test(function() {
   ];
 
   for (var i = 0; i + 1 < elements.length; ++i)
-      assert_true(shouldCustomNavigateFocus(elements[i], elements[i + 1], 'forward'), elements[i]+" to "+ elements[i+1]);
+      assert_true(shouldNavigateFocus(elements[i], elements[i + 1], 'forward'), elements[i]+" to "+ elements[i+1]);
   elements.reverse();
   for (var i = 0; i + 1 < elements.length; ++i)
-      assert_true(shouldCustomNavigateFocus(elements[i], elements[i + 1], 'backward'), elements[i]+" to "+ elements[i+1]);
+      assert_true(shouldNavigateFocus(elements[i], elements[i + 1], 'backward'), elements[i]+" to "+ elements[i+1]);
 }, 'Focus controller should treat slots as a focus scope.');
 
 </script>

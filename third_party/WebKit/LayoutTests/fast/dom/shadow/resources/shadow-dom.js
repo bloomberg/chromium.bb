@@ -1,3 +1,37 @@
+// TODO(yuzus): These two functions below need cleaning up. They are currently
+// from js-test.js.
+function getOrCreateTestElement(id, tagName)
+{
+    var element = document.getElementById(id);
+    if (element)
+        return element;
+
+    element = document.createElement(tagName);
+    element.id = id;
+    var refNode;
+    var parent = document.body || document.documentElement;
+    if (id == "description")
+        refNode = getOrCreateTestElement("console", "div");
+    else
+        refNode = parent.firstChild;
+
+    parent.insertBefore(element, refNode);
+    return element;
+}
+
+function debug(msg)
+{
+    if (self._lazyTestResults) {
+        self._lazyTestResults.push(msg);
+    } else {
+        var span = document.createElement("span");
+        // insert it first so XHTML knows the namespace;
+        getOrCreateTestElement("console", "div").appendChild(span);
+        span.innerHTML = msg + '<br />';
+    };
+}
+
+
 function createShadowRoot()
 {
     var children = Array.prototype.slice.call(arguments);
@@ -227,6 +261,7 @@ function shouldNavigateFocus(from, to, direction)
         debug('PASS');
     else
         debug('FAIL');
+    return isInnermostActiveElement(to);
 }
 
 function navigateFocusForward()
