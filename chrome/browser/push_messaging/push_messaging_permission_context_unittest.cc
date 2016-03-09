@@ -61,20 +61,19 @@ class PushMessagingPermissionContextTest
   void SetContentSetting(Profile* profile,
                          ContentSettingsType setting,
                          ContentSetting value) {
-    // These patterns must match those in
+    // These urls must match those in
     // PermissionContextBase::UpdateContentSetting, since the tests below use
-    // this method to overwrite patterns set as a result of
+    // this method to overwrite urls set as a result of
     // PushMessagingPermissionContext::NotifyPermissionSet.
-    ContentSettingsPattern pattern_a =
-        ContentSettingsPattern::FromURLNoWildcard(GURL(kOriginA));
-    ContentSettingsPattern insecure_pattern =
-        ContentSettingsPattern::FromURLNoWildcard(GURL(kInsecureOrigin));
+    GURL url_a = GURL(kOriginA);
+    GURL insecure_url = GURL(kInsecureOrigin);
     HostContentSettingsMap* host_content_settings_map =
         HostContentSettingsMapFactory::GetForProfile(profile);
-    host_content_settings_map->SetContentSetting(pattern_a, pattern_a, setting,
-                                                 std::string(), value);
-    host_content_settings_map->SetContentSetting(
-        insecure_pattern, insecure_pattern, setting, std::string(), value);
+
+    host_content_settings_map->SetContentSettingDefaultScope(
+        url_a, url_a, setting, std::string(), value);
+    host_content_settings_map->SetContentSettingDefaultScope(
+        insecure_url, insecure_url, setting, std::string(), value);
   }
 };
 

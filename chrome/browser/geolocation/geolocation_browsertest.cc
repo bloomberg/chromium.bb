@@ -26,7 +26,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/content_settings_usages_state.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -478,10 +477,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoPromptForSecondTab) {
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForDeniedOrigin) {
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_BLOCK);
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(), CONTENT_SETTING_BLOCK);
 
   // Check that the bubble wasn't shown but we get an error for this origin.
   WatchPositionAndObservePermissionBubble(false);
@@ -501,10 +499,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForDeniedOrigin) {
 #endif
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoPromptForAllowedOrigin) {
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_ALLOW);
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(), CONTENT_SETTING_ALLOW);
   // The bubble is not shown, there is no error, and the position gets to the
   // script.
   WatchPositionAndObservePermissionBubble(false);
@@ -745,12 +742,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_LastUsageUpdated) {
   clock_->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10));
 
   // Setting the permission should trigger the last usage.
-  GetHostContentSettingsMap()->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      ContentSettingsPattern::FromURLNoWildcard(current_url()),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
+  GetHostContentSettingsMap()->SetContentSettingDefaultScope(
+      current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(), CONTENT_SETTING_ALLOW);
 
   // Permission has been used at the starting time.
   EXPECT_EQ(GetHostContentSettingsMap()->GetLastUsage(

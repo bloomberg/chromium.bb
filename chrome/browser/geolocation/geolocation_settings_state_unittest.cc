@@ -41,21 +41,17 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   load_committed_details.entry = entry.get();
   state.DidNavigate(load_committed_details);
 
-  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url_0),
-      ContentSettingsPattern::FromURLNoWildcard(url_0),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingDefaultScope(url_0, url_0,
+                                      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                      std::string(), CONTENT_SETTING_ALLOW);
   state.OnGeolocationPermissionSet(url_0, true);
 
   GURL url_1("http://www.example1.com");
-  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
-    ContentSettingsPattern::FromURLNoWildcard(url_1),
-    ContentSettingsPattern::FromURLNoWildcard(url_0),
-    CONTENT_SETTINGS_TYPE_GEOLOCATION,
-    std::string(),
-    CONTENT_SETTING_BLOCK);
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingDefaultScope(url_1, url_0,
+                                      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                      std::string(), CONTENT_SETTING_BLOCK);
   state.OnGeolocationPermissionSet(url_1, false);
 
   GeolocationSettingsState::StateMap state_map =
@@ -146,30 +142,24 @@ TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
   load_committed_details.entry = entry.get();
   state.DidNavigate(load_committed_details);
 
-  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url_0),
-      ContentSettingsPattern::FromURLNoWildcard(url_0),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingDefaultScope(url_0, url_0,
+                                      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                      std::string(), CONTENT_SETTING_ALLOW);
   state.OnGeolocationPermissionSet(url_0, true);
 
   GURL url_1("https://www.example.com");
-  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url_1),
-      ContentSettingsPattern::FromURLNoWildcard(url_0),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingDefaultScope(url_1, url_0,
+                                      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                      std::string(), CONTENT_SETTING_ALLOW);
   state.OnGeolocationPermissionSet(url_1, true);
 
   GURL url_2("http://www.example1.com");
-  HostContentSettingsMapFactory::GetForProfile(profile)->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url_2),
-      ContentSettingsPattern::FromURLNoWildcard(url_0),
-      CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(),
-      CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingDefaultScope(url_2, url_0,
+                                      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                      std::string(), CONTENT_SETTING_ALLOW);
   state.OnGeolocationPermissionSet(url_2, true);
 
   GeolocationSettingsState::StateMap state_map =

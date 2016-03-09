@@ -862,10 +862,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
-                          ContentSettingsPattern::FromURLNoWildcard(origin),
-                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, std::string(),
-                          CONTENT_SETTING_DEFAULT);
+      ->SetContentSettingDefaultScope(origin, origin,
+                                      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                                      std::string(), CONTENT_SETTING_DEFAULT);
 
   message_loop_runner->Run();
 
@@ -895,10 +894,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
-                          ContentSettingsPattern::FromURLNoWildcard(origin),
-                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, std::string(),
-                          CONTENT_SETTING_BLOCK);
+      ->SetContentSettingDefaultScope(origin, origin,
+                                      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                                      std::string(), CONTENT_SETTING_BLOCK);
 
   message_loop_runner->Run();
 
@@ -957,10 +955,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
-                          ContentSettingsPattern::Wildcard(),
-                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-                          CONTENT_SETTING_DEFAULT);
+      ->SetContentSettingDefaultScope(origin, GURL(),
+                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      std::string(), CONTENT_SETTING_DEFAULT);
 
   message_loop_runner->Run();
 
@@ -990,10 +987,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
-                          ContentSettingsPattern::Wildcard(),
-                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-                          CONTENT_SETTING_BLOCK);
+      ->SetContentSettingDefaultScope(origin, GURL(),
+                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      std::string(), CONTENT_SETTING_BLOCK);
 
   message_loop_runner->Run();
 
@@ -1023,15 +1019,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   GURL origin = https_server()->GetURL("/").GetOrigin();
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
-                          ContentSettingsPattern::Wildcard(),
-                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-                          CONTENT_SETTING_ALLOW);
+      ->SetContentSettingDefaultScope(origin, GURL(),
+                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
-                          ContentSettingsPattern::FromURLNoWildcard(origin),
-                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, std::string(),
-                          CONTENT_SETTING_ALLOW);
+      ->SetContentSettingDefaultScope(origin, origin,
+                                      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                                      std::string(), CONTENT_SETTING_ALLOW);
 
   message_loop_runner->Run();
 
@@ -1075,15 +1069,13 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                           CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, std::string(),
                           CONTENT_SETTING_ALLOW);
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
-                          ContentSettingsPattern::Wildcard(),
-                          CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-                          CONTENT_SETTING_DEFAULT);
+      ->SetContentSettingDefaultScope(origin, GURL(),
+                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                                      std::string(), CONTENT_SETTING_DEFAULT);
   HostContentSettingsMapFactory::GetForProfile(GetBrowser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromURLNoWildcard(origin),
-                          ContentSettingsPattern::FromURLNoWildcard(origin),
-                          CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, std::string(),
-                          CONTENT_SETTING_DEFAULT);
+      ->SetContentSettingDefaultScope(origin, origin,
+                                      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                                      std::string(), CONTENT_SETTING_DEFAULT);
 
   message_loop_runner->Run();
 
