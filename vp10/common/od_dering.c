@@ -58,7 +58,7 @@ const double OD_DERING_GAIN_TABLE[OD_DERING_LEVELS] = {
    in a particular direction. Since each direction have the same sum(x^2) term,
    that term is never computed. See Section 2, step 2, of:
    http://jmvalin.ca/notes/intra_paint.pdf */
-static int od_dir_find8(const dering_in *img, int stride, int32_t *var,
+static int od_dir_find8(const od_dering_in *img, int stride, int32_t *var,
     int coeff_shift) {
   int i;
   int cost[8] = {0};
@@ -160,7 +160,7 @@ void od_filter_dering_direction_8x8_c(int16_t *y, int ystride,
 
 /* Smooth in the direction orthogonal to what was detected. */
 void od_filter_dering_orthogonal_c(int16_t *y, int ystride, const int16_t *in,
- const dering_in *x, int xstride, int ln, int threshold, int dir) {
+ const od_dering_in *x, int xstride, int ln, int threshold, int dir) {
   int i;
   int j;
   int offset;
@@ -198,12 +198,14 @@ void od_filter_dering_orthogonal_c(int16_t *y, int ystride, const int16_t *in,
 }
 
 void od_filter_dering_orthogonal_4x4_c(int16_t *y, int ystride,
- const int16_t *in, const dering_in *x, int xstride, int threshold, int dir) {
+ const int16_t *in, const od_dering_in *x, int xstride, int threshold,
+ int dir) {
   od_filter_dering_orthogonal_c(y, ystride, in, x, xstride, 2, threshold, dir);
 }
 
 void od_filter_dering_orthogonal_8x8_c(int16_t *y, int ystride,
- const int16_t *in, const dering_in *x, int xstride, int threshold, int dir) {
+ const int16_t *in, const od_dering_in *x, int xstride, int threshold,
+ int dir) {
   od_filter_dering_orthogonal_c(y, ystride, in, x, xstride, 3, threshold, dir);
 }
 
@@ -238,9 +240,9 @@ static void od_compute_thresh(int thresh[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS],
 }
 
 void od_dering(const od_dering_opt_vtbl *vtbl, int16_t *y, int ystride,
- const dering_in *x, int xstride, int nhb, int nvb, int sbx, int sby, int nhsb,
- int nvsb, int xdec, int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS], int pli,
- unsigned char *bskip, int skip_stride, int threshold, int overlap,
+ const od_dering_in *x, int xstride, int nhb, int nvb, int sbx, int sby,
+ int nhsb, int nvsb, int xdec, int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS],
+ int pli, unsigned char *bskip, int skip_stride, int threshold, int overlap,
  int coeff_shift) {
   int i;
   int j;

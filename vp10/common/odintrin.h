@@ -17,7 +17,7 @@
 
 typedef int od_coeff;
 
-typedef int16_t dering_in;
+typedef int16_t od_dering_in;
 
 #define OD_DIVU_SMALL(_x, _d) ((_x) / (_d))
 

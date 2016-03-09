@@ -50,7 +50,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
   int r, c;
   int sbr, sbc;
   int nhsb, nvsb;
-  dering_in *src[3];
+  od_dering_in *src[3];
   unsigned char *bskip;
   int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS] = {{0}};
   int stride;
