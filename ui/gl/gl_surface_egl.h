@@ -72,8 +72,8 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
  protected:
   ~GLSurfaceEGL() override;
 
-  EGLConfig config_;
-  GLSurface::Format format_;
+  EGLConfig config_ = nullptr;
+  GLSurface::Format format_ = GLSurface::SURFACE_DEFAULT;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);
@@ -188,6 +188,7 @@ class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
   explicit SurfacelessEGL(const gfx::Size& size);
 
   // Implement GLSurface.
+  bool Initialize() override;
   bool Initialize(GLSurface::Format format) override;
   void Destroy() override;
   bool IsOffscreen() override;

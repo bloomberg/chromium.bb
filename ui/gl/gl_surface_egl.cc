@@ -283,6 +283,10 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
   }
 #endif
 
+  EGLint surface_type = (format == GLSurface::SURFACE_SURFACELESS)
+                            ? EGL_DONT_CARE
+                            : EGL_WINDOW_BIT | EGL_PBUFFER_BIT;
+
   EGLint config_attribs_8888[] = {
     EGL_BUFFER_SIZE, buffer_size,
     EGL_ALPHA_SIZE, alpha_size,
@@ -290,7 +294,7 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
     EGL_GREEN_SIZE, 8,
     EGL_RED_SIZE, 8,
     EGL_RENDERABLE_TYPE, renderable_type,
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+    EGL_SURFACE_TYPE, surface_type,
     EGL_NONE
   };
 
@@ -301,7 +305,7 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
     EGL_GREEN_SIZE, 6,
     EGL_RED_SIZE, 5,
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+    EGL_SURFACE_TYPE, surface_type,
     EGL_NONE
   };
   if (format == GLSurface::SURFACE_RGB565) {
@@ -436,8 +440,7 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   }
 }
 
-GLSurfaceEGL::GLSurfaceEGL() :
-    config_(nullptr) {}
+GLSurfaceEGL::GLSurfaceEGL() {}
 
 bool GLSurfaceEGL::InitializeOneOff() {
   static bool initialized = false;
@@ -1072,6 +1075,11 @@ PbufferGLSurfaceEGL::~PbufferGLSurfaceEGL() {
 
 SurfacelessEGL::SurfacelessEGL(const gfx::Size& size)
     : size_(size) {
+  format_ = GLSurface::SURFACE_SURFACELESS;
+}
+
+bool SurfacelessEGL::Initialize() {
+  return Initialize(SURFACE_SURFACELESS);
 }
 
 bool SurfacelessEGL::Initialize(GLSurface::Format format) {

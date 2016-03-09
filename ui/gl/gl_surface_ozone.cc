@@ -55,6 +55,15 @@ bool EglGetConfigAttribute(EGLDisplay display,
   return eglGetConfigAttrib(display, config, attribute, value);
 }
 
+// Populates EglConfigCallbacks with appropriate callbacks.
+ui::EglConfigCallbacks GetEglConfigCallbacks(EGLDisplay display) {
+  ui::EglConfigCallbacks callbacks;
+  callbacks.choose_config = base::Bind(EglChooseConfig, display);
+  callbacks.get_config_attribute = base::Bind(EglGetConfigAttribute, display);
+  callbacks.get_last_error_string = base::Bind(&ui::GetLastEGLErrorString);
+  return callbacks;
+}
+
 void WaitForFence(EGLDisplay display, EGLSyncKHR fence) {
   eglClientWaitSyncKHR(display, fence, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
                        EGL_FOREVER_KHR);
@@ -137,14 +146,8 @@ bool GLSurfaceOzoneEGL::ScheduleOverlayPlane(int z_order,
 
 EGLConfig GLSurfaceOzoneEGL::GetConfig() {
   if (!config_) {
-    // Setup callbacks for configuring EGL on platform.
-    EGLDisplay display = GetDisplay();
-    ui::EglConfigCallbacks egl;
-    egl.choose_config = base::Bind(EglChooseConfig, display);
-    egl.get_config_attribute = base::Bind(EglGetConfigAttribute, display);
-    egl.get_last_error_string = base::Bind(&ui::GetLastEGLErrorString);
-
-    config_ = ozone_surface_->GetEGLSurfaceConfig(egl);
+    ui::EglConfigCallbacks callbacks = GetEglConfigCallbacks(GetDisplay());
+    config_ = ozone_surface_->GetEGLSurfaceConfig(callbacks);
   }
   if (config_)
     return config_;
@@ -208,6 +211,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
                           int width,
                           int height,
                           const SwapCompletionCallback& callback) override;
+  EGLConfig GetConfig() override;
 
  protected:
   struct PendingFrame {
@@ -397,6 +401,16 @@ void GLSurfaceOzoneSurfaceless::PostSubBufferAsync(
     const SwapCompletionCallback& callback) {
   // The actual sub buffer handling is handled at higher layers.
   SwapBuffersAsync(callback);
+}
+
+EGLConfig GLSurfaceOzoneSurfaceless::GetConfig() {
+  if (!config_) {
+    ui::EglConfigCallbacks callbacks = GetEglConfigCallbacks(GetDisplay());
+    config_ = ozone_surface_->GetEGLSurfaceConfig(callbacks);
+  }
+  if (config_)
+    return config_;
+  return SurfacelessEGL::GetConfig();
 }
 
 GLSurfaceOzoneSurfaceless::~GLSurfaceOzoneSurfaceless() {
