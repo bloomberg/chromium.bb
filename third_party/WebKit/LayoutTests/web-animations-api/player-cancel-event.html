@@ -7,6 +7,7 @@ var anim1 = document.body.animate([], 100000);
 var anim2 = document.body.animate([], 100000);
 
 var cancelTest = async_test('Cancelling animation should create cancel event.');
+var fired = false;
 
 anim1.oncancel = function(event) {
   cancelTest.step(function() {
@@ -14,9 +15,13 @@ anim1.oncancel = function(event) {
     assert_equals(event.currentTime, null, 'currentTime of cancel event should be null.');
     assert_equals(event.timelineTime, document.timeline.currentTime, 'Event timelineTime should be same as document.timeline.currentTime.');
   });
+  fired = true;
 };
 
 anim2.onfinish = function() {
+  cancelTest.step(function() {
+    assert_true(fired, 'anim1.oncancel should be called.');
+  });
   cancelTest.done();
 };
 
