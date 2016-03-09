@@ -13,8 +13,8 @@ class PresubmitApi(recipe_api.RecipeApi):
     kwargs.setdefault('env', {})
     kwargs['env'].setdefault('PATH', '%(PATH)s')
     kwargs['env']['PATH'] = self.m.path.pathsep.join([
-        kwargs['env']['PATH'], str(self._module.PACKAGE_DIRECTORY)])
+        kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
 
     return self.m.python(
-        name, self.package_resource('presubmit_support.py'), list(args),
+        name, self.package_repo_resource('presubmit_support.py'), list(args),
         **kwargs)

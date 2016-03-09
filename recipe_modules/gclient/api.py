@@ -93,10 +93,10 @@ class GclientApi(recipe_api.RecipeApi):
     kwargs.setdefault('env', {})
     kwargs['env'].setdefault('PATH', '%(PATH)s')
     kwargs['env']['PATH'] = self.m.path.pathsep.join([
-        kwargs['env']['PATH'], str(self._module.PACKAGE_DIRECTORY)])
+        kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
 
     return self.m.python(prefix + name,
-                         self.package_resource('gclient.py'),
+                         self.package_repo_resource('gclient.py'),
                          cmd,
                          infra_step=infra_step,
                          **kwargs)

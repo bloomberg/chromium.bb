@@ -23,7 +23,7 @@ class GitApi(recipe_api.RecipeApi):
     git_cmd = ['git']
     if self.m.platform.is_win:
       self.ensure_win_git_tooling()
-      git_cmd = [self.package_resource('git.bat')]
+      git_cmd = [self.package_repo_resource('git.bat')]
     options = kwargs.pop('git_config_options', {})
     for k, v in sorted(options.iteritems()):
       git_cmd.extend(['-c', '%s=%s' % (k, v)])
@@ -43,9 +43,9 @@ class GitApi(recipe_api.RecipeApi):
       return
     self.m.step(
         'ensure git tooling on windows',
-        [self.package_resource('bootstrap', 'win', 'win_tools.bat')],
+        [self.package_repo_resource('bootstrap', 'win', 'win_tools.bat')],
         infra_step=True,
-        cwd=self.package_resource())
+        cwd=self.package_repo_resource())
     self.initialized_win_git = True
 
   def fetch_tags(self, remote_name=None, **kwargs):
@@ -189,7 +189,8 @@ class GitApi(recipe_api.RecipeApi):
 
     if self.m.platform.is_win:
       self.ensure_win_git_tooling()
-      git_setup_args += ['--git_cmd_path', self.package_resource('git.bat')]
+      git_setup_args += [
+          '--git_cmd_path', self.package_repo_resource('git.bat')]
 
     step_suffix = '' if step_suffix is  None else ' (%s)' % step_suffix
     self.m.python(

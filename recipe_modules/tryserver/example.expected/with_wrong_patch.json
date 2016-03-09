@@ -1,14 +1,14 @@
 [
   {
     "cmd": [
-      "RECIPE_PACKAGE[depot_tools]\\bootstrap\\win\\win_tools.bat"
+      "RECIPE_PACKAGE_REPO[depot_tools]\\bootstrap\\win\\win_tools.bat"
     ],
-    "cwd": "RECIPE_PACKAGE[depot_tools]",
+    "cwd": "RECIPE_PACKAGE_REPO[depot_tools]",
     "name": "ensure git tooling on windows"
   },
   {
     "cmd": [
-      "RECIPE_PACKAGE[depot_tools]\\git.bat",
+      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
       "diff",
       "--cached",
       "--name-only"
