@@ -137,7 +137,7 @@ bool LayoutSVGForeignObject::nodeAtFloatPoint(HitTestResult& result, const Float
         return false;
 
     // FOs establish a stacking context, so we need to hit-test all layers.
-    HitTestLocation hitTestLocation(roundedLayoutPoint(localPoint));
+    HitTestLocation hitTestLocation(localPoint);
     return LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), HitTestForeground)
         || LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), HitTestFloat)
         || LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), HitTestChildBlockBackgrounds);

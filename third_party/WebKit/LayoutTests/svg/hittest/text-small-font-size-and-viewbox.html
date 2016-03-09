@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<title>Hit-test of text with fractional (&lt; 1) font-size and small (high scalefactor) viewBox</title>
+<script src="../../resources/ahem.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+svg {
+  margin: 0px;
+  padding: 0px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 800px;
+}
+</style>
+<svg viewBox="0 0 22 28">
+  <text font-family="Ahem" font-size="0.125" fill="blue" y="2.438"><a xlink:href="#">ABCDEFGH</a></text>
+</svg>
+<script>
+test(function() {
+  var referenceElement = document.querySelector('a');
+  [
+    { x: 2, y: 85 },
+    { x: 4, y: 87 },
+    { x: 2, y: 89 },
+    { x: 6, y: 85 },
+    { x: 4, y: 87 },
+    { x: 6, y: 89 },
+    { x: 10, y: 87 },
+    { x: 14, y: 87 },
+    { x: 18, y: 87 },
+    { x: 22, y: 87 },
+    { x: 26, y: 87 },
+  ].forEach(function(point) {
+    assert_equals(document.elementFromPoint(point.x, point.y), referenceElement, point.x + ',' + point.y);
+  });
+});
+</script>

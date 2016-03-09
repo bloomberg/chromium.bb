@@ -420,7 +420,7 @@ bool LayoutSVGText::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& po
             if (hitRules.canHitBoundingBox && !objectBoundingBox().contains(localPoint))
                 return false;
 
-            HitTestLocation hitTestLocation(LayoutPoint(flooredIntPoint(localPoint)));
+            HitTestLocation hitTestLocation(localPoint);
             return LayoutBlock::nodeAtPoint(result, hitTestLocation, LayoutPoint(), hitTestAction);
         }
     }
