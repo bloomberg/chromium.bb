@@ -7,7 +7,9 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "m2ts/webm2pes.h"
 
+#include <cstdio>
 #include <cstring>
+#include <new>
 #include <vector>
 
 #include "common/libwebm_util.h"

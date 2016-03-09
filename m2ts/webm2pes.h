@@ -8,6 +8,7 @@
 #ifndef LIBWEBM_M2TS_WEBM2PES_H_
 #define LIBWEBM_M2TS_WEBM2PES_H_
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
