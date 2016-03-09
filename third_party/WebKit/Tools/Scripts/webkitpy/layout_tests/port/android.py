@@ -688,12 +688,12 @@ class AndroidPerf(SingleFileOutputProfiler):
     def check_configuration(self):
         # Check that perf is installed
         if not self._android_commands.file_exists('/system/bin/perf'):
-            print "Cannot find /system/bin/perf on device %s" % self._android_commands.get_serial()
+            _log.error("Cannot find /system/bin/perf on device %s" % self._android_commands.get_serial())
             return False
 
         # Check that the device is a userdebug build (or at least has the necessary libraries).
         if self._android_commands.run(['shell', 'getprop', 'ro.build.type']).strip() != 'userdebug':
-            print "Device %s is not flashed with a userdebug build of Android" % self._android_commands.get_serial()
+            _log.error("Device %s is not flashed with a userdebug build of Android" % self._android_commands.get_serial())
             return False
 
         # FIXME: Check that the binary actually is perf-able (has stackframe pointers)?
@@ -702,7 +702,7 @@ class AndroidPerf(SingleFileOutputProfiler):
         return True
 
     def print_setup_instructions(self):
-        print """
+        _log.error("""
 perf on android requires a 'userdebug' build of Android, see:
 http://source.android.com/source/building-devices.html"
 
@@ -718,7 +718,7 @@ build-webkit --chromium-android
 
 Googlers should read:
 http://goto.google.com/cr-android-perf-howto
-"""
+""")
 
     def attach_to_pid(self, pid):
         assert(pid)
@@ -756,7 +756,7 @@ http://goto.google.com/cr-android-perf-howto
     def profile_after_exit(self):
         perf_exitcode = self._perf_process.wait()
         if perf_exitcode != 0:
-            print "Perf failed (exit code: %i), can't process results." % perf_exitcode
+            _log.debug("Perf failed (exit code: %i), can't process results." % perf_exitcode)
             return
 
         self._android_commands.pull('/data/perf.data', self._output_path)
@@ -772,9 +772,9 @@ http://goto.google.com/cr-android-perf-howto
             perfhost_args = [perfhost_path] + perfhost_report_command + ['--call-graph', 'none']
             perf_output = self._host.executive.run_command(perfhost_args)
             # We could save off the full -g report to a file if users found that useful.
-            print self._first_ten_lines_of_profile(perf_output)
+            _log.debug(self._first_ten_lines_of_profile(perf_output))
         else:
-            print """
+            _log.debug("""
 Failed to find perfhost_linux binary, can't process samples from the device.
 
 perfhost_linux can be built from:
@@ -786,11 +786,11 @@ Googlers should read:
 http://goto.google.com/cr-android-perf-howto
 for instructions on installing pre-built copies of perfhost_linux
 http://crbug.com/165250 discusses making these pre-built binaries externally available.
-"""
+""")
 
         perfhost_display_patch = perfhost_path if perfhost_path else 'perfhost_linux'
-        print "To view the full profile, run:"
-        print ' '.join([perfhost_display_patch] + perfhost_report_command)
+        _log.debug("To view the full profile, run:")
+        _log.debug(' '.join([perfhost_display_patch] + perfhost_report_command))
 
 
 class ChromiumAndroidDriver(driver.Driver):
@@ -844,7 +844,7 @@ class ChromiumAndroidDriver(driver.Driver):
         saved_kptr_restrict = self._android_commands.run(['shell', 'cat', KPTR_RESTRICT_PATH]).strip()
         self._android_commands.run(['shell', 'echo', '0', '>', KPTR_RESTRICT_PATH])
 
-        print "Updating kallsyms file (%s) from device" % kallsyms_cache_path
+        _log.debug("Updating kallsyms file (%s) from device" % kallsyms_cache_path)
         self._android_commands.pull("/proc/kallsyms", kallsyms_cache_path)
 
         self._android_commands.run(['shell', 'echo', saved_kptr_restrict, '>', KPTR_RESTRICT_PATH])
@@ -860,7 +860,7 @@ class ChromiumAndroidDriver(driver.Driver):
             symfs_path = env['ANDROID_SYMFS']
         else:
             symfs_path = fs.join(self._port.results_directory(), 'symfs')
-            print "ANDROID_SYMFS not set, using %s" % symfs_path
+            _log.debug("ANDROID_SYMFS not set, using %s" % symfs_path)
 
         # find the installed path, and the path of the symboled built library
         # FIXME: We should get the install path from the device!
@@ -869,7 +869,7 @@ class ChromiumAndroidDriver(driver.Driver):
         assert(fs.exists(built_library_path))
 
         # FIXME: Ideally we'd check the sha1's first and make a soft-link instead of copying (since we probably never care about windows).
-        print "Updating symfs libary (%s) from built copy (%s)" % (symfs_library_path, built_library_path)
+        _log.debug("Updating symfs libary (%s) from built copy (%s)" % (symfs_library_path, built_library_path))
         fs.maybe_make_directory(fs.dirname(symfs_library_path))
         fs.copyfile(built_library_path, symfs_library_path)
 
