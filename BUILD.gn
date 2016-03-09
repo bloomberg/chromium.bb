@@ -203,14 +203,15 @@ source_set("ffmpeg_internal") {
     }
 
     if (current_cpu == "arm" || current_cpu == "arm64") {
+      asmflags = []
       if (arm_float_abi == "hard") {
-        cflags += [ "-DHAVE_VFP_ARGS=1" ]
+        asmflags += [ "-DHAVE_VFP_ARGS=1" ]
       } else {
-        cflags += [ "-DHAVE_VFP_ARGS=0" ]
+        asmflags += [ "-DHAVE_VFP_ARGS=0" ]
       }
       if (is_clang) {
         # TODO(hans) Enable integrated-as (crbug.com/124610).
-        asmflags = [ "-fno-integrated-as" ]
+        asmflags += [ "-fno-integrated-as" ]
         if (is_android) {
           import("//build/config/android/config.gni")
           rebased_android_toolchain_root =
