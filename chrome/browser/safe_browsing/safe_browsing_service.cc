@@ -165,6 +165,17 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
             nullptr));
     safe_browsing_request_context_->set_cookie_store(
         safe_browsing_cookie_store_.get());
+    // The above cookie store will persist cookies, but the ChannelIDService in
+    // the system request context is ephemeral, which could lead to losing the
+    // keys that cookies are bound to. Since this is only used for safe
+    // browsing, any cookie bindings don't matter.
+    //
+    // For crbug.com/548423, the channel ID store and cookie store used for a
+    // request are being tracked to see if an ephemeral channel ID store is used
+    // with a persistent cookie store (which apart from here would be a bug).
+    // The following line tells that tracking to ignore the mismatch from this
+    // URLRequestContext.
+    safe_browsing_request_context_->set_has_known_mismatched_cookie_store();
   }
 
   return safe_browsing_request_context_.get();

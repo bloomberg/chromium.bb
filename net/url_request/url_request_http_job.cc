@@ -41,6 +41,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_info.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/http_user_agent_settings.h"
@@ -62,6 +63,45 @@ namespace {
 bool IsMethodSafe(const std::string& method) {
   return method == "GET" || method == "HEAD" || method == "OPTIONS" ||
          method == "TRACE";
+}
+
+void LogChannelIDAndCookieStores(const net::URLRequestContext* context,
+                                 const net::SSLInfo& ssl_info) {
+  if (!ssl_info.channel_id_sent)
+    return;
+  // This enum is used for an UMA histogram - don't reuse or renumber entries.
+  enum {
+    CID_EPHEMERAL_COOKIE_EPHEMERAL = 0,
+    CID_EPHEMERAL_COOKIE_PERSISTENT = 1,
+    CID_PERSISTENT_COOKIE_EPHEMERAL = 2,
+    CID_PERSISTENT_COOKIE_PERSISTENT = 3,
+    NO_COOKIE_STORE = 4,
+    NO_CHANNEL_ID_STORE = 5,
+    KNOWN_MISMATCH = 6,
+    EPHEMERALITY_MAX
+  } ephemerality;
+  const net::HttpNetworkSession::Params* params =
+      context->GetNetworkSessionParams();
+  net::CookieStore* cookie_store = context->cookie_store();
+  if (params == nullptr || params->channel_id_service == nullptr) {
+    ephemerality = NO_CHANNEL_ID_STORE;
+  } else if (cookie_store == nullptr) {
+    ephemerality = NO_COOKIE_STORE;
+  } else if (params->channel_id_service->GetChannelIDStore()->IsEphemeral()) {
+    if (cookie_store->IsEphemeral()) {
+      ephemerality = CID_EPHEMERAL_COOKIE_EPHEMERAL;
+    } else if (context->has_known_mismatched_cookie_store()) {
+      ephemerality = KNOWN_MISMATCH;
+    } else {
+      ephemerality = CID_EPHEMERAL_COOKIE_PERSISTENT;
+    }
+  } else if (cookie_store->IsEphemeral()) {
+    ephemerality = CID_PERSISTENT_COOKIE_EPHEMERAL;
+  } else {
+    ephemerality = CID_PERSISTENT_COOKIE_PERSISTENT;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.TokenBinding.StoreEphemerality", ephemerality,
+                            EPHEMERALITY_MAX);
 }
 
 }  // namespace
@@ -914,6 +954,8 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
         return;
       }
     }
+    LogChannelIDAndCookieStores(request_->context(),
+                                transaction_->GetResponseInfo()->ssl_info);
 
     SaveCookiesAndNotifyHeadersComplete(OK);
   } else if (IsCertificateError(result)) {

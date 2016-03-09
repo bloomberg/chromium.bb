@@ -179,6 +179,10 @@ class RoundTripTestCookieStore : public net::CookieStore {
     return scoped_ptr<CookieStore::CookieChangedSubscription>();
   }
 
+  bool IsEphemeral() override {
+    return store_->IsEphemeral();
+  }
+
  private:
   void RoundTrip() {
     CookieStoreIOS::SwitchSynchronizedStore(store_.get(), dummy_store_.get());

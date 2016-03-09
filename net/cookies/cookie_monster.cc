@@ -1013,6 +1013,10 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
       base::Bind(&RunAsync, base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
+bool CookieMonster::IsEphemeral() {
+  return store_.get() == nullptr;
+}
+
 CookieMonster::~CookieMonster() {
   DCHECK(thread_checker_.CalledOnValidThread());
 

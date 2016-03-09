@@ -34,7 +34,8 @@ URLRequestContext::URLRequestContext()
       backoff_manager_(nullptr),
       sdch_manager_(nullptr),
       network_quality_estimator_(nullptr),
-      url_requests_(new std::set<const URLRequest*>) {}
+      url_requests_(new std::set<const URLRequest*>),
+      has_known_mismatched_cookie_store_(false) {}
 
 URLRequestContext::~URLRequestContext() {
   AssertNoURLRequests();

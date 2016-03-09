@@ -214,6 +214,10 @@ DelayedCookieMonster::AddCallbackForCookie(
   return scoped_ptr<CookieStore::CookieChangedSubscription>();
 }
 
+bool DelayedCookieMonster::IsEphemeral() {
+  return true;
+}
+
 //
 // CookieURLHelper
 //

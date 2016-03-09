@@ -202,6 +202,11 @@ class NET_EXPORT CookieStore {
       const std::string& name,
       const CookieChangedCallback& callback) = 0;
 
+  // Returns true if this cookie store is ephemeral, and false if it is backed
+  // by some sort of persistence layer.
+  // TODO(nharper): Remove this method once crbug.com/548423 has been closed.
+  virtual bool IsEphemeral() = 0;
+
  protected:
   CookieStore();
 };

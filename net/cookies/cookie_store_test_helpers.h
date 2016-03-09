@@ -93,6 +93,8 @@ class DelayedCookieMonster : public CookieStore {
   AddCallbackForCookie(const GURL& url, const std::string& name,
                        const CookieChangedCallback& callback) override;
 
+  bool IsEphemeral() override;
+
  private:
   // Be called immediately from CookieMonster.
 

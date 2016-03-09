@@ -999,6 +999,10 @@ CookieStoreIOS::AddCallbackForCookie(const GURL& gurl,
   return hook_map_[key]->Add(callback);
 }
 
+bool CookieStoreIOS::IsEphemeral() {
+  return cookie_monster_->IsEphemeral();
+}
+
 bool CookieStoreIOS::UpdateCacheForCookieFromSystem(
     const GURL& gurl,
     const std::string& name,

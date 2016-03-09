@@ -84,6 +84,7 @@ class AwCookieStoreWrapper : public net::CookieStore {
       const GURL& url,
       const std::string& name,
       const CookieChangedCallback& callback) override;
+  bool IsEphemeral() override;
 
  private:
   // Used by CreateWrappedCallback below. Takes an arugment of Type and posts

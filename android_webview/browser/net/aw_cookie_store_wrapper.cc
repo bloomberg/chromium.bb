@@ -335,6 +335,10 @@ AwCookieStoreWrapper::AddCallbackForCookie(
   return subscription->Subscribe(url, name, callback);
 }
 
+bool AwCookieStoreWrapper::IsEphemeral() {
+  return GetCookieStore()->IsEphemeral();
+}
+
 base::Closure AwCookieStoreWrapper::CreateWrappedClosureCallback(
     const base::Closure& callback) {
   if (callback.is_null())

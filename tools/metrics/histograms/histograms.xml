@@ -28651,6 +28651,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.TokenBinding.StoreEphemerality"
+    enum="TokenBinding.StoreEphemerality">
+  <owner>nharper@chromium.org</owner>
+  <summary>
+    For each request on a connection where Channel ID was sent, this logs
+    whether the Cookie store and the Channel ID store were ephemeral or
+    persistent.
+  </summary>
+</histogram>
+
 <histogram name="Net.TokenBinding.Support" enum="TokenBinding.Support">
   <owner>nharper@chromium.org</owner>
   <summary>
@@ -82481,6 +82491,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Request (Token Binding) key missing"/>
   <int value="4" label="Keys present but don't match"/>
   <int value="5" label="Error looking up request key"/>
+</enum>
+
+<enum name="TokenBinding.StoreEphemerality" type="int">
+  <int value="0" label="CID_EPHEMERAL_COOKIE_EPHEMERAL"/>
+  <int value="1" label="CID_EPHEMERAL_COOKIE_PERSISTENT"/>
+  <int value="2" label="CID_PERSISTENT_COOKIE_EPHEMERAL"/>
+  <int value="3" label="CID_PERSISTENT_COOKIE_PERSISTENT"/>
+  <int value="4" label="NO_COOKIE_STORE"/>
+  <int value="5" label="NO_CHANNEL_ID_STORE"/>
+  <int value="6" label="KNOWN_MISMATCH"/>
 </enum>
 
 <enum name="TokenBinding.Support" type="int">

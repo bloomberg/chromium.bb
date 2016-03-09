@@ -162,6 +162,8 @@ class CookieStoreIOS : public net::CookieStore,
       const std::string& name,
       const CookieChangedCallback& callback) override;
 
+  bool IsEphemeral() override;
+
  private:
   // For tests.
   friend struct CookieStoreIOSTestTraits;

@@ -215,6 +215,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const std::string& name,
       const CookieChangedCallback& callback) override;
 
+  bool IsEphemeral() override;
+
  private:
   // For queueing the cookie monster calls.
   class CookieMonsterTask;

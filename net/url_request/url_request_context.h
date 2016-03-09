@@ -219,6 +219,21 @@ class NET_EXPORT URLRequestContext
     network_quality_estimator_ = network_quality_estimator;
   }
 
+  // This is a temporary flag to aid in debugging crbug.com/548423. A
+  // CookieStore that is persisted shouldn't be used with a ChannelIDStore that
+  // is ephemeral, but there are occasional cases where that is ok. This method
+  // returns whether this URLRequestContext is in a situation where the
+  // ephemerality of the stores don't match and it has been determined that it
+  // is ok to do that. This helps in logging to filter legitimate cases of this
+  // mismatch from other cases.
+  bool has_known_mismatched_cookie_store() const {
+    return has_known_mismatched_cookie_store_;
+  }
+
+  void set_has_known_mismatched_cookie_store() {
+    has_known_mismatched_cookie_store_ = true;
+  }
+
  private:
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to
@@ -253,6 +268,7 @@ class NET_EXPORT URLRequestContext
   // ---------------------------------------------------------------------------
 
   scoped_ptr<std::set<const URLRequest*> > url_requests_;
+  bool has_known_mismatched_cookie_store_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContext);
 };
