@@ -8,36 +8,28 @@
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
-#include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/url_data_source.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
-#include "grit/browser_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/gurl.h"
 
 #if defined(ENABLE_THEMES)
 #include "chrome/browser/ui/webui/theme_handler.h"
@@ -48,14 +40,9 @@
 #endif
 
 using content::BrowserThread;
-using content::RenderViewHost;
 using content::WebUIController;
 
 namespace {
-
-// The amount of time there must be no painting for us to consider painting
-// finished.  Observed times are in the ~1200ms range on Windows.
-const int kTimeoutMs = 2000;
 
 // Strings sent to the page via jstemplates used to set the direction of the
 // HTML document based on locale.
@@ -77,23 +64,15 @@ const char* GetHtmlTextDirection(const base::string16& text) {
 // NewTabUI
 
 NewTabUI::NewTabUI(content::WebUI* web_ui)
-    : WebUIController(web_ui),
-      WebContentsObserver(web_ui->GetWebContents()),
-      showing_sync_bubble_(false) {
+    : WebUIController(web_ui) {
   g_live_new_tabs.Pointer()->insert(this);
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
-
-  // We count all link clicks as AUTO_BOOKMARK, so that site can be ranked more
-  // highly. Note this means we're including clicks on not only most visited
-  // thumbnails, but also clicks on recently bookmarked.
-  web_ui->SetLinkTransitionType(ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 
   Profile* profile = GetProfile();
   if (!profile->IsOffTheRecord()) {
     web_ui->AddMessageHandler(new MetricsHandler());
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
     web_ui->AddMessageHandler(new CoreAppLauncherHandler());
-    web_ui->AddMessageHandler(new NewTabPageSyncHandler());
 
     ExtensionService* service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -104,9 +83,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   }
 
 #if defined(ENABLE_THEMES)
-  // The theme handler can require some CPU, so do it after hooking up the most
-  // visited handler. This allows the DB query for the new tab thumbs to happen
-  // earlier.
   if (!profile->IsGuestSession())
     web_ui->AddMessageHandler(new ThemeHandler());
 #endif
@@ -125,74 +101,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
 
 NewTabUI::~NewTabUI() {
   g_live_new_tabs.Pointer()->erase(this);
-}
-
-// The timer callback.  If enough time has elapsed since the last paint
-// message, we say we're done painting; otherwise, we keep waiting.
-void NewTabUI::PaintTimeout() {
-  // The amount of time there must be no painting for us to consider painting
-  // finished.  Observed times are in the ~1200ms range on Windows.
-  base::TimeTicks now = base::TimeTicks::Now();
-  if ((now - last_paint_) >= base::TimeDelta::FromMilliseconds(kTimeoutMs)) {
-    // Painting has quieted down.  Log this as the full time to run.
-    base::TimeDelta load_time = last_paint_ - start_;
-    UMA_HISTOGRAM_TIMES("NewTabUI load", load_time);
-  } else {
-    // Not enough quiet time has elapsed.
-    // Some more paints must've occurred since we set the timeout.
-    // Wait some more.
-    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
-                 &NewTabUI::PaintTimeout);
-  }
-}
-
-void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
-  start_ = base::TimeTicks::Now();
-  last_paint_ = start_;
-
-  content::NotificationSource source =
-      content::Source<content::RenderWidgetHost>(render_view_host->GetWidget());
-  if (!registrar_.IsRegistered(this,
-          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-          source)) {
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-        source);
-  }
-
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
-               &NewTabUI::PaintTimeout);
-}
-
-void NewTabUI::RenderViewCreated(RenderViewHost* render_view_host) {
-  StartTimingPaint(render_view_host);
-}
-
-void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
-  StartTimingPaint(render_view_host);
-}
-
-void NewTabUI::WasHidden() {
-  EmitNtpStatistics();
-}
-
-void NewTabUI::Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE: {
-      last_paint_ = base::TimeTicks::Now();
-      break;
-    }
-    default:
-      CHECK(false) << "Unexpected notification: " << type;
-  }
-}
-
-void NewTabUI::EmitNtpStatistics() {
-  NTPUserDataLogger::GetOrCreateFromWebContents(
-      web_contents())->EmitNtpStatistics();
 }
 
 void NewTabUI::OnShowBookmarkBarChanged() {

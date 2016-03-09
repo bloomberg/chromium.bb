@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview New tab page
- * This is the main code for the new tab page used by touch-enabled Chrome
- * browsers.  For now this is still a prototype.
+ * @fileoverview New tab page 4
+ * This is the main code for a previous version of the Chrome NTP ("NTP4").
+ * Some parts of this are still used for the chrome://apps page.
  */
 
 // Use an anonymous function to enable strict mode just for this file (which
@@ -47,16 +47,6 @@ cr.define('ntp', function() {
    * @const
    */
   var DEFAULT_TRANSITION_TIME = 500;
-
-  /**
-   * See description for these values in ntp_stats.h.
-   * @enum {number}
-   */
-  var NtpFollowAction = {
-    CLICKED_TILE: 11,
-    CLICKED_OTHER_NTP_PANE: 12,
-    OTHER: 13
-  };
 
   /**
    * Creates a NewTabView object. NewTabView extends PageListView with
@@ -451,7 +441,6 @@ cr.define('ntp', function() {
     getCardSlider: getCardSlider,
     onLoad: onLoad,
     leaveRearrangeMode: leaveRearrangeMode,
-    NtpFollowAction: NtpFollowAction,
     saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,

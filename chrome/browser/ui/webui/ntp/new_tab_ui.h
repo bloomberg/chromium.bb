@@ -5,17 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NTP_NEW_TAB_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_NTP_NEW_TAB_UI_H_
 
+#include <map>
 #include <string>
 
 #include "base/macros.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "base/strings/string16.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/url_data_source.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class GURL;
@@ -29,10 +25,8 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// The WebUIController used for the New Tab page.
-class NewTabUI : public content::WebUIController,
-                 public content::WebContentsObserver,
-                 public content::NotificationObserver {
+// The WebUIController used for the incognito and guest mode New Tab page.
+class NewTabUI : public content::WebUIController {
  public:
   explicit NewTabUI(content::WebUI* web_ui);
   ~NewTabUI() override;
@@ -58,19 +52,7 @@ class NewTabUI : public content::WebUIController,
   // page.
   static NewTabUI* FromWebUIController(content::WebUIController* ui);
 
-  // The current preference version.
-  static int current_pref_version() { return current_pref_version_; }
-
-  // WebUIController implementation:
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
-  void RenderViewReused(content::RenderViewHost* render_view_host) override;
-
-  // WebContentsObserver implementation:
-  void WasHidden() override;
-
-  bool showing_sync_bubble() { return showing_sync_bubble_; }
-  void set_showing_sync_bubble(bool showing) { showing_sync_bubble_ = showing; }
-
+ private:
   class NewTabHTMLSource : public content::URLDataSource {
    public:
     explicit NewTabHTMLSource(Profile* profile);
@@ -104,37 +86,9 @@ class NewTabUI : public content::WebUIController,
     DISALLOW_COPY_AND_ASSIGN(NewTabHTMLSource);
   };
 
- private:
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  // If |web_contents| has an NTP URL, emits a number of NTP statistics (like
-  // mouseovers counts) associated with |web_contents|, to be logged in UMA
-  // histograms.
-  void EmitNtpStatistics();
-
   void OnShowBookmarkBarChanged();
 
-  void StartTimingPaint(content::RenderViewHost* render_view_host);
-  void PaintTimeout();
-
   Profile* GetProfile() const;
-
-  content::NotificationRegistrar registrar_;
-
-  // The time when we started benchmarking.
-  base::TimeTicks start_;
-  // The last time we got a paint notification.
-  base::TimeTicks last_paint_;
-  // Scoping so we can be sure our timeouts don't outlive us.
-  base::OneShotTimer timer_;
-  // The preference version. This used for migrating prefs of the NTP.
-  static const int current_pref_version_ = 3;
-
-  // If the sync promo NTP bubble is being shown.
-  bool showing_sync_bubble_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

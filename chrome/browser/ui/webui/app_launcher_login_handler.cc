@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/profile_info_watcher.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -153,10 +152,6 @@ void AppLauncherLoginHandler::HandleLoginMessageSeen(
     const base::ListValue* args) {
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowNTPBubble, false);
-  NewTabUI* ntp_ui = NewTabUI::FromWebUIController(web_ui()->GetController());
-  // When instant extended is enabled, there may not be a NewTabUI object.
-  if (ntp_ui)
-    ntp_ui->set_showing_sync_bubble(true);
 }
 
 void AppLauncherLoginHandler::HandleShowAdvancedLoginUI(
