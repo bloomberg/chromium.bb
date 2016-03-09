@@ -13,12 +13,14 @@ svg {
   width: 800px;
 }
 </style>
-<svg viewBox="0 0 22 28">
-  <text font-family="Ahem" font-size="0.125" fill="blue" y="2.438"><a xlink:href="#">ABCDEFGH</a></text>
+<svg viewBox="0 0 22 28" font-family="Ahem" font-size="0.125" fill="blue">
+  <text y="2.438"><a xlink:href="#">ABCDEFGH</a></text>
+  <text y="4.698" x="7.571"><a xlink:href="#">ABCDEFGH</a></text>
 </svg>
 <script>
 test(function() {
-  var referenceElement = document.querySelector('a');
+  var links = document.querySelectorAll('a');
+
   [
     { x: 2, y: 85 },
     { x: 4, y: 87 },
@@ -32,7 +34,21 @@ test(function() {
     { x: 22, y: 87 },
     { x: 26, y: 87 },
   ].forEach(function(point) {
-    assert_equals(document.elementFromPoint(point.x, point.y), referenceElement, point.x + ',' + point.y);
+    assert_equals(document.elementFromPoint(point.x, point.y), links[0], point.x + ',' + point.y);
+  });
+
+  [
+    { x: 278, y: 169 },
+    { x: 276, y: 171 },
+    { x: 278, y: 169 },
+    { x: 280, y: 171 },
+    { x: 284, y: 169 },
+    { x: 288, y: 169 },
+    { x: 292, y: 169 },
+    { x: 296, y: 169 },
+    { x: 300, y: 169 },
+  ].forEach(function(point) {
+    assert_equals(document.elementFromPoint(point.x, point.y), links[1], point.x + ',' + point.y);
   });
 });
 </script>
