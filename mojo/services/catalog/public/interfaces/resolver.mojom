@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module package_manager.mojom;
+module catalog.mojom;
 
 import "network/public/interfaces/url_loader.mojom";
 

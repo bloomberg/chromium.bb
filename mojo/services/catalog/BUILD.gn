@@ -5,41 +5,32 @@
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/mojo_application_manifest.gni")
 
-mojo_native_application("package_manager") {
-  sources = [
-    "main.cc",
-  ]
-
+group("catalog") {
   deps = [
     ":lib",
-    ":manifest",
-    "//base",
-    "//mojo/message_pump",
-    "//mojo/public/c/system:for_shared_library",
-    "//mojo/public/cpp/bindings:bindings",
-    "//mojo/shell/public/cpp",
   ]
-}
-
-mojo_application_manifest("manifest") {
-  application_name = "package_manager"
-  source = "manifest.json"
 }
 
 source_set("lib") {
   sources = [
+    "catalog.cc",
+    "catalog.h",
     "loader.cc",
     "loader.h",
-    "package_manager.cc",
-    "package_manager.h",
   ]
 
   deps = [
+    ":manifest",
     "//base",
     "//mojo/common:url_type_converters",
-    "//mojo/services/package_manager/public/interfaces",
+    "//mojo/services/catalog/public/interfaces",
     "//mojo/shell/public/cpp",
     "//mojo/util:filename_util",
     "//net",
   ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "catalog"
+  source = "manifest.json"
 }

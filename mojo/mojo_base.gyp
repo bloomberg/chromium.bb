@@ -124,8 +124,8 @@
       'type': 'none',
       'variables': {
         'mojom_files': [
-          'services/package_manager/public/interfaces/catalog.mojom',
-          'services/package_manager/public/interfaces/resolver.mojom',
+          'services/catalog/public/interfaces/catalog.mojom',
+          'services/catalog/public/interfaces/resolver.mojom',
           'shell/public/interfaces/connector.mojom',
           'shell/public/interfaces/interface_provider.mojom',
           'shell/public/interfaces/shell.mojom',

@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/package_manager/loader.h"
+#include "mojo/services/catalog/loader.h"
 
-#include "mojo/services/package_manager/package_manager.h"
+#include "mojo/services/catalog/catalog.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 
-namespace package_manager {
+namespace catalog {
 
-Loader::Loader(base::TaskRunner* blocking_pool,
-               scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog)
+Loader::Loader(base::TaskRunner* blocking_pool, scoped_ptr<Store> store)
     : blocking_pool_(blocking_pool),
-      app_catalog_(std::move(app_catalog)) {}
+      store_(std::move(store)) {}
 Loader::~Loader() {}
 
 void Loader::Load(const std::string& name,
                   mojo::shell::mojom::ShellClientRequest request) {
-  client_.reset(new package_manager::PackageManager(
-      blocking_pool_, std::move(app_catalog_)));
+  client_.reset(new catalog::Catalog(blocking_pool_, std::move(store_)));
   connection_.reset(new mojo::ShellConnection(client_.get(),
                                               std::move(request)));
 }
 
-}  // namespace package_manager
+}  // namespace catalog

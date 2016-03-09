@@ -18,7 +18,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//mojo/message_pump",
-    "//mojo/services/package_manager:lib",
+    "//mojo/services/catalog:lib",
     "//mojo/shell",
     "//mojo/shell/public/cpp:sources",
     "//mojo/shell/runner:init",

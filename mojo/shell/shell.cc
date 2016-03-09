@@ -21,7 +21,7 @@
 #include "mojo/common/url_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/services/package_manager/loader.h"
+#include "mojo/services/catalog/loader.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/public/cpp/names.h"
@@ -34,7 +34,7 @@
 namespace mojo {
 namespace shell {
 namespace {
-const char kPackageManagerName[] = "mojo:package_manager";
+const char kCatalogName[] = "mojo:catalog";
 
 void EmptyResolverCallback(const String& resolved_name,
                            const String& resolved_instance,
@@ -325,7 +325,7 @@ bool Shell::TestAPI::HasRunningInstanceForName(const std::string& name) const {
 
 Shell::Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
              base::TaskRunner* file_task_runner,
-             scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog)
+             scoped_ptr<catalog::Store> catalog_store)
     : file_task_runner_(file_task_runner),
       native_runner_factory_(std::move(native_runner_factory)),
       weak_ptr_factory_(this) {
@@ -334,7 +334,7 @@ Shell::Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
                  &request);
   shell_connection_.reset(new ShellConnection(this, std::move(request)));
 
-  InitPackageManager(std::move(app_catalog));
+  InitCatalog(std::move(catalog_store));
 }
 
 Shell::~Shell() {
@@ -422,24 +422,23 @@ bool Shell::AcceptConnection(Connection* connection) {
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
-void Shell::InitPackageManager(
-    scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog) {
+void Shell::InitCatalog(scoped_ptr<catalog::Store> store) {
   scoped_ptr<Loader> loader(
-      new package_manager::Loader(file_task_runner_, std::move(app_catalog)));
+      new catalog::Loader(file_task_runner_, std::move(store)));
   Loader* loader_raw = loader.get();
-  std::string name = kPackageManagerName;
+  std::string name = kCatalogName;
   SetLoaderForName(std::move(loader), name);
 
   mojom::ShellClientRequest request;
-  // TODO(beng): Does the package manager actually have to be run with a
-  //             permissive filter?
+  // TODO(beng): Does the catalog actually have to be run with a permissive
+  //             filter?
   Identity identity(name, mojom::kRootUserID);
   CreateInstance(identity, GetPermissiveCapabilityFilter(), &request);
   loader_raw->Load(name, std::move(request));
 
   ConnectToInterface(this, CreateShellIdentity(), name, &shell_resolver_);
 
-  // Seed the catalog with manifest info for the shell & package manager.
+  // Seed the catalog with manifest info for the shell & catalog.
   if (file_task_runner_) {
     shell_resolver_->ResolveMojoName(name, base::Bind(&EmptyResolverCallback));
     shell_resolver_->ResolveMojoName("mojo:shell",

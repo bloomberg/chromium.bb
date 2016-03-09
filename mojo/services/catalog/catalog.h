@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_PACKAGE_MANAGER_PACKAGE_MANAGER_H_
-#define MOJO_SERVICES_PACKAGE_MANAGER_PACKAGE_MANAGER_H_
+#ifndef MOJO_SERVICES_CATALOG_CATALOG_H_
+#define MOJO_SERVICES_CATALOG_CATALOG_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/services/package_manager/public/interfaces/catalog.mojom.h"
-#include "mojo/services/package_manager/public/interfaces/resolver.mojom.h"
+#include "mojo/services/catalog/public/interfaces/catalog.mojom.h"
+#include "mojo/services/catalog/public/interfaces/resolver.mojom.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
 #include "url/gurl.h"
 
-namespace package_manager {
+namespace catalog {
 // A set of names of interfaces that may be exposed to an application.
 using AllowedInterfaces = std::set<std::string>;
 // A map of allowed applications to allowed interface sets. See shell.mojom for
 // more details.
 using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
 
-// Static information about an application package known to the PackageManager.
+// Static information about an application package known to the Catalog.
 struct ApplicationInfo {
   ApplicationInfo();
   ApplicationInfo(const ApplicationInfo& other);
@@ -37,9 +37,9 @@ struct ApplicationInfo {
 };
 
 // Implemented by an object that provides storage for the application catalog
-// (e.g. in Chrome, preferences). The PackageManagerImpl is the canonical owner
-// of the contents of the store, so no one else must modify its contents.
-class ApplicationCatalogStore {
+// (e.g. in Chrome, preferences). The Catalog is the canonical owner of the
+// contents of the store, so no one else must modify its contents.
+class Store {
  public:
   // Value is a string.
   static const char kNameKey[];
@@ -51,20 +51,20 @@ class ApplicationCatalogStore {
   // interfaces.
   static const char kCapabilitiesKey[];
 
-  virtual ~ApplicationCatalogStore() {}
+  virtual ~Store() {}
 
-  // Called during initialization to construct the PackageManagerImpl's catalog.
+  // Called during initialization to construct the Catalog's catalog.
   // Returns a serialized list of the apps. Each entry in the returned list
   // corresponds to an app (as a dictionary). Each dictionary has a name,
   // display name and capabilities. The return value is owned by the caller.
   virtual const base::ListValue* GetStore() = 0;
 
-  // Write the catalog to the store. Called when the PackageManagerImpl learns
-  // of a newly encountered application.
+  // Write the catalog to the store. Called when the Catalog learns of a newly
+  // encountered application.
   virtual void UpdateStore(scoped_ptr<base::ListValue> store) = 0;
 };
 
-class PackageManager
+class Catalog
     : public mojo::ShellClient,
       public mojo::InterfaceFactory<mojom::Resolver>,
       public mojo::InterfaceFactory<mojo::shell::mojom::ShellResolver>,
@@ -75,9 +75,8 @@ class PackageManager
  public:
   // If |register_schemes| is true, mojo: and exe: schemes are registered as
   // "standard".
-  PackageManager(base::TaskRunner* blocking_pool,
-                 scoped_ptr<ApplicationCatalogStore> catalog);
-  ~PackageManager() override;
+   Catalog(base::TaskRunner* blocking_pool, scoped_ptr<Store> store);
+   ~Catalog() override;
 
  private:
   using MojoNameAliasMap =
@@ -144,7 +143,7 @@ class PackageManager
 
   // Called once the manifest has been read. |pm| may be null at this point,
   // but |callback| must be run.
-  static void OnReadManifest(base::WeakPtr<PackageManager> pm,
+  static void OnReadManifest(base::WeakPtr<Catalog> catalog,
                              const std::string& name,
                              const ResolveMojoNameCallback& callback,
                              scoped_ptr<base::Value> manifest);
@@ -161,7 +160,7 @@ class PackageManager
   mojo::BindingSet<mojo::shell::mojom::ShellResolver> shell_resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
-  scoped_ptr<ApplicationCatalogStore> catalog_store_;
+  scoped_ptr<Store> store_;
   std::map<std::string, ApplicationInfo> catalog_;
 
   // Used when an app handles multiple names. Maps from app (as name) to name of
@@ -171,11 +170,11 @@ class PackageManager
 
   std::map<std::string, std::string> qualifiers_;
 
-  base::WeakPtrFactory<PackageManager> weak_factory_;
+  base::WeakPtrFactory<Catalog> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PackageManager);
+  DISALLOW_COPY_AND_ASSIGN(Catalog);
 };
 
-}  // namespace package_manager
+}  // namespace catalog
 
-#endif  // MOJO_SERVICES_PACKAGE_MANAGER_PACKAGE_MANAGER_H_
+#endif  // MOJO_SERVICES_CATALOG_CATALOG_H_

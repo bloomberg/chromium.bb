@@ -19,8 +19,8 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace package_manager {
-class ApplicationCatalogStore;
+namespace catalog {
+class Store;
 }
 
 namespace mojo {
@@ -35,7 +35,7 @@ class Context : public edk::ProcessDelegate {
     ~InitParams();
 
     NativeRunnerDelegate* native_runner_delegate = nullptr;
-    scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog;
+    scoped_ptr<catalog::Store> catalog_store;
   };
 
   Context();

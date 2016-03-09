@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/package_manager/package_manager.h"
+#include "mojo/services/catalog/catalog.h"
 
 #include "base/bind.h"
 #include "base/json/json_file_value_serializer.h"
@@ -14,7 +14,7 @@
 #include "net/base/filename_util.h"
 #include "url/url_util.h"
 
-namespace package_manager {
+namespace catalog {
 namespace {
 
 CapabilityFilter BuildCapabilityFilterFromDictionary(
@@ -40,20 +40,17 @@ ApplicationInfo BuildApplicationInfoFromDictionary(
     const base::DictionaryValue& value) {
   ApplicationInfo info;
   std::string name_string;
-  CHECK(value.GetString(ApplicationCatalogStore::kNameKey, &name_string));
+  CHECK(value.GetString(Store::kNameKey, &name_string));
   CHECK(mojo::IsValidName(name_string)) << "Invalid Name: " << name_string;
   info.name = name_string;
-  if (value.HasKey(ApplicationCatalogStore::kQualifierKey)) {
-    CHECK(value.GetString(ApplicationCatalogStore::kQualifierKey,
-                          &info.qualifier));
+  if (value.HasKey(Store::kQualifierKey)) {
+    CHECK(value.GetString(Store::kQualifierKey, &info.qualifier));
   } else {
     info.qualifier = mojo::GetNamePath(name_string);
   }
-  CHECK(value.GetString(ApplicationCatalogStore::kDisplayNameKey,
-                        &info.display_name));
+  CHECK(value.GetString(Store::kDisplayNameKey, &info.display_name));
   const base::DictionaryValue* capabilities = nullptr;
-  CHECK(value.GetDictionary(ApplicationCatalogStore::kCapabilitiesKey,
-                            &capabilities));
+  CHECK(value.GetDictionary(Store::kCapabilitiesKey, &capabilities));
   info.base_filter = BuildCapabilityFilterFromDictionary(*capabilities);
   return info;
 }
@@ -61,9 +58,8 @@ ApplicationInfo BuildApplicationInfoFromDictionary(
 void SerializeEntry(const ApplicationInfo& entry,
                     base::DictionaryValue** value) {
   *value = new base::DictionaryValue;
-  (*value)->SetString(ApplicationCatalogStore::kNameKey, entry.name);
-  (*value)->SetString(ApplicationCatalogStore::kDisplayNameKey,
-                      entry.display_name);
+  (*value)->SetString(Store::kNameKey, entry.name);
+  (*value)->SetString(Store::kDisplayNameKey, entry.display_name);
   base::DictionaryValue* capabilities = new base::DictionaryValue;
   for (const auto& pair : entry.base_filter) {
     scoped_ptr<base::ListValue> interfaces(new base::ListValue);
@@ -71,8 +67,7 @@ void SerializeEntry(const ApplicationInfo& entry,
       interfaces->AppendString(iface_name);
     capabilities->Set(pair.first, std::move(interfaces));
   }
-  (*value)->Set(ApplicationCatalogStore::kCapabilitiesKey,
-                make_scoped_ptr(capabilities));
+  (*value)->Set(Store::kCapabilitiesKey, make_scoped_ptr(capabilities));
 }
 
 scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
@@ -87,22 +82,22 @@ scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
 }  // namespace
 
 // static
-const char ApplicationCatalogStore::kNameKey[] = "name";
+const char Store::kNameKey[] = "name";
 // static
-const char ApplicationCatalogStore::kQualifierKey[] = "process-group";
+const char Store::kQualifierKey[] = "process-group";
 // static
-const char ApplicationCatalogStore::kDisplayNameKey[] = "display_name";
+const char Store::kDisplayNameKey[] = "display_name";
 // static
-const char ApplicationCatalogStore::kCapabilitiesKey[] = "capabilities";
+const char Store::kCapabilitiesKey[] = "capabilities";
 
 ApplicationInfo::ApplicationInfo() {}
 ApplicationInfo::ApplicationInfo(const ApplicationInfo& other) = default;
 ApplicationInfo::~ApplicationInfo() {}
 
-PackageManager::PackageManager(base::TaskRunner* blocking_pool,
-                               scoped_ptr<ApplicationCatalogStore> catalog)
+Catalog::Catalog(base::TaskRunner* blocking_pool,
+                 scoped_ptr<Store> catalog)
     : blocking_pool_(blocking_pool),
-      catalog_store_(std::move(catalog)),
+      store_(std::move(catalog)),
       weak_factory_(this) {
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
@@ -114,9 +109,9 @@ PackageManager::PackageManager(base::TaskRunner* blocking_pool,
 
   DeserializeCatalog();
 }
-PackageManager::~PackageManager() {}
+Catalog::~Catalog() {}
 
-bool PackageManager::AcceptConnection(mojo::Connection* connection) {
+bool Catalog::AcceptConnection(mojo::Connection* connection) {
   connection->AddInterface<mojom::Catalog>(this);
   connection->AddInterface<mojom::Resolver>(this);
   if (connection->GetRemoteIdentity().name() == "mojo:shell")
@@ -124,45 +119,44 @@ bool PackageManager::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
-void PackageManager::Create(mojo::Connection* connection,
-                            mojom::ResolverRequest request) {
+void Catalog::Create(mojo::Connection* connection,
+                     mojom::ResolverRequest request) {
   resolver_bindings_.AddBinding(this, std::move(request));
 }
 
-void PackageManager::Create(mojo::Connection* connection,
-                            mojo::shell::mojom::ShellResolverRequest request) {
+void Catalog::Create(mojo::Connection* connection,
+                     mojo::shell::mojom::ShellResolverRequest request) {
   shell_resolver_bindings_.AddBinding(this, std::move(request));
 }
 
-void PackageManager::Create(mojo::Connection* connection,
-                            mojom::CatalogRequest request) {
+void Catalog::Create(mojo::Connection* connection,
+                     mojom::CatalogRequest request) {
   catalog_bindings_.AddBinding(this, std::move(request));
 }
 
-void PackageManager::ResolveResponse(mojo::URLResponsePtr response,
-                                     const ResolveResponseCallback& callback) {
+void Catalog::ResolveResponse(mojo::URLResponsePtr response,
+                              const ResolveResponseCallback& callback) {
   // TODO(beng): implement.
 }
 
-void PackageManager::ResolveInterfaces(
-    mojo::Array<mojo::String> interfaces,
-    const ResolveInterfacesCallback& callback) {
+void Catalog::ResolveInterfaces(mojo::Array<mojo::String> interfaces,
+                                const ResolveInterfacesCallback& callback) {
   // TODO(beng): implement.
 }
 
-void PackageManager::ResolveMIMEType(const mojo::String& mime_type,
-                                     const ResolveMIMETypeCallback& callback) {
+void Catalog::ResolveMIMEType(const mojo::String& mime_type,
+                              const ResolveMIMETypeCallback& callback) {
   // TODO(beng): implement.
 }
 
-void PackageManager::ResolveProtocolScheme(
+void Catalog::ResolveProtocolScheme(
     const mojo::String& scheme,
     const ResolveProtocolSchemeCallback& callback) {
   // TODO(beng): implement.
 }
 
-void PackageManager::ResolveMojoName(const mojo::String& mojo_name,
-                                     const ResolveMojoNameCallback& callback) {
+void Catalog::ResolveMojoName(const mojo::String& mojo_name,
+                              const ResolveMojoNameCallback& callback) {
   std::string resolved_name = mojo_name;
   auto alias_iter = mojo_name_aliases_.find(resolved_name);
   if (alias_iter != mojo_name_aliases_.end())
@@ -179,9 +173,8 @@ void PackageManager::ResolveMojoName(const mojo::String& mojo_name,
     AddNameToCatalog(resolved_name, callback);
 }
 
-void PackageManager::GetEntries(
-    mojo::Array<mojo::String> names,
-    const GetEntriesCallback& callback) {
+void Catalog::GetEntries(mojo::Array<mojo::String> names,
+                         const GetEntriesCallback& callback) {
   mojo::Map<mojo::String, mojom::CatalogEntryPtr> entries;
   std::vector<mojo::String> names_vec = names.PassStorage();
   for (const std::string& name : names_vec) {
@@ -195,7 +188,7 @@ void PackageManager::GetEntries(
   callback.Run(std::move(entries));
 }
 
-void PackageManager::CompleteResolveMojoName(
+void Catalog::CompleteResolveMojoName(
     const std::string& resolved_name,
     const std::string& qualifier,
     const ResolveMojoNameCallback& callback) {
@@ -231,13 +224,12 @@ void PackageManager::CompleteResolveMojoName(
                file_url.spec());
 }
 
-bool PackageManager::IsNameInCatalog(const std::string& name) const {
+bool Catalog::IsNameInCatalog(const std::string& name) const {
   return catalog_.find(name) != catalog_.end();
 }
 
-void PackageManager::AddNameToCatalog(
-    const std::string& name,
-    const ResolveMojoNameCallback& callback) {
+void Catalog::AddNameToCatalog(const std::string& name,
+                               const ResolveMojoNameCallback& callback) {
   GURL manifest_url = GetManifestURL(name);
   if (manifest_url.is_empty()) {
     // The name is of some form that can't be resolved to a manifest (e.g. some
@@ -253,14 +245,14 @@ void PackageManager::AddNameToCatalog(
   CHECK(net::FileURLToFilePath(manifest_url, &manifest_path));
   base::PostTaskAndReplyWithResult(
       blocking_pool_, FROM_HERE, base::Bind(&ReadManifest, manifest_path),
-      base::Bind(&PackageManager::OnReadManifest, weak_factory_.GetWeakPtr(),
+      base::Bind(&Catalog::OnReadManifest, weak_factory_.GetWeakPtr(),
                  name, callback));
 }
 
-void PackageManager::DeserializeCatalog() {
-  if (!catalog_store_)
+void Catalog::DeserializeCatalog() {
+  if (!store_)
     return;
-  const base::ListValue* catalog = catalog_store_->GetStore();
+  const base::ListValue* catalog = store_->GetStore();
   CHECK(catalog);
   // TODO(sky): make this handle aliases.
   for (auto it = catalog->begin(); it != catalog->end(); ++it) {
@@ -273,18 +265,18 @@ void PackageManager::DeserializeCatalog() {
   }
 }
 
-void PackageManager::SerializeCatalog() {
+void Catalog::SerializeCatalog() {
   scoped_ptr<base::ListValue> catalog(new base::ListValue);
   for (const auto& info : catalog_) {
     base::DictionaryValue* dictionary = nullptr;
     SerializeEntry(info.second, &dictionary);
     catalog->Append(make_scoped_ptr(dictionary));
   }
-  if (catalog_store_)
-    catalog_store_->UpdateStore(std::move(catalog));
+  if (store_)
+    store_->UpdateStore(std::move(catalog));
 }
 
-const ApplicationInfo& PackageManager::DeserializeApplication(
+const ApplicationInfo& Catalog::DeserializeApplication(
     const base::DictionaryValue* dictionary) {
   ApplicationInfo info = BuildApplicationInfoFromDictionary(*dictionary);
   if (catalog_.find(info.name) == catalog_.end()) {
@@ -306,7 +298,7 @@ const ApplicationInfo& PackageManager::DeserializeApplication(
   return catalog_[info.name];
 }
 
-GURL PackageManager::GetManifestURL(const std::string& name) {
+GURL Catalog::GetManifestURL(const std::string& name) {
   // TODO(beng): think more about how this should be done for exe targets.
   std::string type = mojo::GetNameType(name);
   std::string path = mojo::GetNamePath(name);
@@ -318,22 +310,22 @@ GURL PackageManager::GetManifestURL(const std::string& name) {
 }
 
 // static
-void PackageManager::OnReadManifest(base::WeakPtr<PackageManager> pm,
-                                    const std::string& name,
-                                    const ResolveMojoNameCallback& callback,
-                                    scoped_ptr<base::Value> manifest) {
-  if (!pm) {
-    // The PackageManager was destroyed, we're likely in shutdown. Run the
+void Catalog::OnReadManifest(base::WeakPtr<Catalog> catalog,
+                             const std::string& name,
+                             const ResolveMojoNameCallback& callback,
+                             scoped_ptr<base::Value> manifest) {
+  if (!catalog) {
+    // The Catalog was destroyed, we're likely in shutdown. Run the
     // callback so we don't trigger a DCHECK.
     callback.Run(name, mojo::GetNamePath(name), nullptr, nullptr);
     return;
   }
-  pm->OnReadManifestImpl(name, callback, std::move(manifest));
+  catalog->OnReadManifestImpl(name, callback, std::move(manifest));
 }
 
-void PackageManager::OnReadManifestImpl(const std::string& name,
-                                        const ResolveMojoNameCallback& callback,
-                                        scoped_ptr<base::Value> manifest) {
+void Catalog::OnReadManifestImpl(const std::string& name,
+                                 const ResolveMojoNameCallback& callback,
+                                 scoped_ptr<base::Value> manifest) {
   if (manifest) {
     base::DictionaryValue* dictionary = nullptr;
     CHECK(manifest->GetAsDictionary(&dictionary));
@@ -353,4 +345,4 @@ void PackageManager::OnReadManifestImpl(const std::string& name,
   CompleteResolveMojoName(name, qualifier, callback);
 }
 
-}  // namespace package_manager
+}  // namespace catalog

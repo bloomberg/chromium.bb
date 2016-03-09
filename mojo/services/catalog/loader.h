@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_PACKAGE_MANAGER_LOADER_H_
-#define MOJO_SERVICES_PACKAGE_MANAGER_LOADER_H_
+#ifndef MOJO_SERVICES_CATALOG_LOADER_H_
+#define MOJO_SERVICES_CATALOG_LOADER_H_
 
 #include "mojo/shell/loader.h"
 
@@ -16,14 +16,13 @@ class ShellClient;
 class ShellConnection;
 }
 
-namespace package_manager {
+namespace catalog {
 
-class ApplicationCatalogStore;
+class Store;
 
 class Loader : public mojo::shell::Loader {
  public:
-  Loader(base::TaskRunner* blocking_pool,
-         scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
+  Loader(base::TaskRunner* blocking_pool, scoped_ptr<Store> store);
   ~Loader() override;
 
   // mojo::shell::Loader:
@@ -32,13 +31,13 @@ class Loader : public mojo::shell::Loader {
 
  private:
   base::TaskRunner* blocking_pool_;
-  scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog_;
+  scoped_ptr<Store> store_;
   scoped_ptr<mojo::ShellClient> client_;
   scoped_ptr<mojo::ShellConnection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(Loader);
 };
 
-}  // namespace package_manager
+}  // namespace catalog
 
-#endif  // MOJO_SERVICES_PACKAGE_MANAGER_LOADER_H_
+#endif  // MOJO_SERVICES_CATALOG_LOADER_H_

@@ -29,7 +29,7 @@
 #include "components/tracing/tracing_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/services/package_manager/package_manager.h"
+#include "mojo/services/catalog/catalog.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
 #include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
@@ -152,11 +152,11 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
     runner_factory.reset(new OutOfProcessNativeRunnerFactory(
         blocking_pool_.get(), native_runner_delegate));
   }
-  scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog;
+  scoped_ptr<catalog::Store> catalog_store;
   if (init_params)
-    app_catalog = std::move(init_params->app_catalog);
+    catalog_store = std::move(init_params->catalog_store);
   shell_.reset(new Shell(std::move(runner_factory), blocking_pool_.get(),
-                         std::move(app_catalog)));
+                         std::move(catalog_store)));
 
   shell::mojom::InterfaceProviderPtr tracing_remote_interfaces;
   shell::mojom::InterfaceProviderPtr tracing_local_interfaces;

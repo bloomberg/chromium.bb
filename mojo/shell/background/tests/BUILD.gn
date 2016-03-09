@@ -9,13 +9,13 @@ import("//testing/test.gni")
 
 source_set("test_support") {
   sources = [
-    "test_application_catalog_store.cc",
-    "test_application_catalog_store.h",
+    "test_catalog_store.cc",
+    "test_catalog_store.h",
   ]
 
   deps = [
     "//base",
-    "//mojo/services/package_manager:lib",
+    "//mojo/services/catalog:lib",
     "//url",
   ]
 }

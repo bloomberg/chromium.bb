@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "mojo/shell/background/background_shell.h"
-#include "mojo/shell/background/tests/test_application_catalog_store.h"
+#include "mojo/shell/background/tests/test_catalog_store.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
@@ -28,13 +28,11 @@ class DefaultShellClient : public mojo::ShellClient {
   DISALLOW_COPY_AND_ASSIGN(DefaultShellClient);
 };
 
-scoped_ptr<mojo::shell::TestApplicationCatalogStore>
-BuildTestApplicationCatalogStore() {
+scoped_ptr<mojo::shell::TestCatalogStore> BuildTestCatalogStore() {
   scoped_ptr<base::ListValue> apps(new base::ListValue);
   apps->Append(
       mojo::shell::BuildPermissiveSerializedAppInfo(kTestName, "test"));
-  return make_scoped_ptr(
-      new mojo::shell::TestApplicationCatalogStore(std::move(apps)));
+  return make_scoped_ptr(new mojo::shell::TestCatalogStore(std::move(apps)));
 }
 
 class PlatformTestHelperMus : public PlatformTestHelper {
@@ -43,7 +41,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     background_shell_.reset(new BackgroundShell);
     scoped_ptr<BackgroundShell::InitParams> init_params(
         new BackgroundShell::InitParams);
-    init_params->app_catalog = BuildTestApplicationCatalogStore();
+    init_params->catalog_store = BuildTestCatalogStore();
     background_shell_->Init(std::move(init_params));
     shell_client_.reset(new DefaultShellClient);
     shell_connection_.reset(new mojo::ShellConnection(

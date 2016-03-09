@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/services/package_manager/public/interfaces/catalog.mojom.h"
+#include "mojo/services/catalog/public/interfaces/catalog.mojom.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
@@ -39,7 +39,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
                            public mojo::shell::mojom::InstanceListener {
  public:
   TaskViewerContents(mojo::shell::mojom::InstanceListenerRequest request,
-                     package_manager::mojom::CatalogPtr catalog)
+                     catalog::mojom::CatalogPtr catalog)
       : binding_(this, std::move(request)),
         catalog_(std::move(catalog)),
         table_view_(nullptr),
@@ -195,8 +195,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
   }
 
   void OnGotCatalogEntries(
-      mojo::Map<mojo::String,
-                package_manager::mojom::CatalogEntryPtr> entries) {
+      mojo::Map<mojo::String, catalog::mojom::CatalogEntryPtr> entries) {
     for (auto it = instances_.begin(); it != instances_.end(); ++it) {
       auto entry_it = entries.find((*it)->url);
       if (entry_it != entries.end()) {
@@ -240,7 +239,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
   }
 
   mojo::Binding<mojo::shell::mojom::InstanceListener> binding_;
-  package_manager::mojom::CatalogPtr catalog_;
+  catalog::mojom::CatalogPtr catalog_;
 
   views::TableView* table_view_;
   views::View* table_view_parent_;
@@ -274,8 +273,8 @@ void TaskViewer::Initialize(mojo::Connector* connector,
   mojo::shell::mojom::InstanceListenerRequest request = GetProxy(&listener);
   shell->AddInstanceListener(std::move(listener));
 
-  package_manager::mojom::CatalogPtr catalog;
-  connector->ConnectToInterface("mojo:package_manager", &catalog);
+  catalog::mojom::CatalogPtr catalog;
+  connector->ConnectToInterface("mojo:catalog", &catalog);
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
       std::move(request), std::move(catalog));

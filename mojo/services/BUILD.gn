@@ -8,8 +8,8 @@ group("services") {
   # Meta-target, don't link into production code.
   testonly = true
   deps = [
+    "//mojo/services/catalog",
     "//mojo/services/network",
-    "//mojo/services/package_manager",
     "//mojo/services/tracing",
   ]
 }

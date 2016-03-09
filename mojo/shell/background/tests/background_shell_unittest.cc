@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "mojo/shell/background/tests/test.mojom.h"
-#include "mojo/shell/background/tests/test_application_catalog_store.h"
+#include "mojo/shell/background/tests/test_catalog_store.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
@@ -27,10 +27,10 @@ class ShellClientImpl : public ShellClient {
   DISALLOW_COPY_AND_ASSIGN(ShellClientImpl);
 };
 
-scoped_ptr<TestApplicationCatalogStore> BuildTestApplicationCatalogStore() {
+scoped_ptr<TestCatalogStore> BuildTestCatalogStore() {
   scoped_ptr<base::ListValue> apps(new base::ListValue);
   apps->Append(BuildPermissiveSerializedAppInfo(kTestName, "test"));
-  return make_scoped_ptr(new TestApplicationCatalogStore(std::move(apps)));
+  return make_scoped_ptr(new TestCatalogStore(std::move(apps)));
 }
 
 }  // namespace
@@ -50,10 +50,9 @@ TEST(BackgroundShellTest, MAYBE_Basic) {
   BackgroundShell background_shell;
   scoped_ptr<BackgroundShell::InitParams> init_params(
       new BackgroundShell::InitParams);
-  scoped_ptr<TestApplicationCatalogStore> store_ptr =
-      BuildTestApplicationCatalogStore();
-  TestApplicationCatalogStore* store = store_ptr.get();
-  init_params->app_catalog = std::move(store_ptr);
+  scoped_ptr<TestCatalogStore> store_ptr = BuildTestCatalogStore();
+  TestCatalogStore* store = store_ptr.get();
+  init_params->catalog_store = std::move(store_ptr);
   background_shell.Init(std::move(init_params));
   ShellClientImpl shell_client;
   ShellConnection shell_connection(

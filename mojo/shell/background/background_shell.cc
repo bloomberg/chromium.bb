@@ -12,7 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/services/package_manager/package_manager.h"
+#include "mojo/services/catalog/catalog.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -122,7 +122,8 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
     scoped_ptr<mojo::shell::Context::InitParams> context_init_params(
         new mojo::shell::Context::InitParams);
     if (init_params_) {
-      context_init_params->app_catalog = std::move(init_params_->app_catalog);
+      context_init_params->catalog_store =
+          std::move(init_params_->catalog_store);
       context_init_params->native_runner_delegate =
           init_params_->native_runner_delegate;
     }

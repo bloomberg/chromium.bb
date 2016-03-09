@@ -2,40 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/background/tests/test_application_catalog_store.h"
+#include "mojo/shell/background/tests/test_catalog_store.h"
 
-using package_manager::ApplicationCatalogStore;
+using catalog::Store;
 
 namespace mojo {
 namespace shell {
 
-TestApplicationCatalogStore::TestApplicationCatalogStore(
-    scoped_ptr<base::ListValue> store)
+TestCatalogStore::TestCatalogStore(scoped_ptr<base::ListValue> store)
     : store_(std::move(store)) {}
 
-TestApplicationCatalogStore::~TestApplicationCatalogStore() {}
+TestCatalogStore::~TestCatalogStore() {}
 
-const base::ListValue* TestApplicationCatalogStore::GetStore() {
+const base::ListValue* TestCatalogStore::GetStore() {
   get_store_called_ = true;
   return store_.get();
 }
 
-void TestApplicationCatalogStore::UpdateStore(
+void TestCatalogStore::UpdateStore(
     scoped_ptr<base::ListValue> store) {}
 
 scoped_ptr<base::DictionaryValue> BuildPermissiveSerializedAppInfo(
     const std::string& name,
     const std::string& display_name) {
   scoped_ptr<base::DictionaryValue> app(new base::DictionaryValue);
-  app->SetString(ApplicationCatalogStore::kNameKey, name);
-  app->SetString(ApplicationCatalogStore::kDisplayNameKey, display_name);
+  app->SetString(Store::kNameKey, name);
+  app->SetString(Store::kDisplayNameKey, display_name);
 
   scoped_ptr<base::DictionaryValue> capabilities(new base::DictionaryValue);
   scoped_ptr<base::ListValue> interfaces(new base::ListValue);
   interfaces->AppendString("*");
   capabilities->Set("*", std::move(interfaces));
 
-  app->Set(ApplicationCatalogStore::kCapabilitiesKey, std::move(capabilities));
+  app->Set(Store::kCapabilitiesKey, std::move(capabilities));
 
   return app;
 }

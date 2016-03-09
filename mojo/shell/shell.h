@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "mojo/services/package_manager/package_manager.h"
+#include "mojo/services/catalog/catalog.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/native_runner.h"
@@ -79,7 +79,7 @@ class Shell : public ShellClient {
   // applications are loaded via Loader implementations.
   Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
         base::TaskRunner* file_task_runner,
-        scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
+        scoped_ptr<catalog::Store> catalog_store);
   ~Shell() override;
 
   // Provide a callback to be notified whenever an instance is destroyed.
@@ -117,8 +117,7 @@ class Shell : public ShellClient {
   // ShellClient:
   bool AcceptConnection(Connection* connection) override;
 
-  void InitPackageManager(
-      scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog);
+  void InitCatalog(scoped_ptr<catalog::Store> store);
 
   // Destroys all Shell-ends of connections established with Applications.
   // Applications connected by this Shell will observe pipe errors and have a
@@ -167,7 +166,7 @@ class Shell : public ShellClient {
       const Identity& source_identity);
   void OnShellClientFactoryLost(const Identity& which);;
 
-  // Callback when remote PackageManager resolves mojo:foo to mojo:bar.
+  // Callback when remote Catalog resolves mojo:foo to mojo:bar.
   // |params| are the params passed to Connect().
   // |resolved_name| is the mojo: name identifying the physical package
   // application.

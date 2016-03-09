@@ -10,11 +10,11 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/services/package_manager/package_manager.h"
+#include "mojo/services/catalog/catalog.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 
-namespace package_manager {
-class ApplicationCatalogStore;
+namespace catalog {
+class Store;
 }
 
 namespace mojo {
@@ -33,7 +33,7 @@ class BackgroundShell {
     ~InitParams();
 
     NativeRunnerDelegate* native_runner_delegate = nullptr;
-    scoped_ptr<package_manager::ApplicationCatalogStore> app_catalog;
+    scoped_ptr<catalog::Store> catalog_store;
   };
 
   BackgroundShell();

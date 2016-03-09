@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/services/package_manager/package_manager.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/public/cpp/connector.h"

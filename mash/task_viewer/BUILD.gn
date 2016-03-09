@@ -19,7 +19,7 @@ mojo_native_application("task_viewer") {
     ":manifest",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//mojo/services/package_manager/public/interfaces",
+    "//mojo/services/catalog/public/interfaces",
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/cpp:sources",
