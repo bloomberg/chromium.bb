@@ -32,6 +32,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ui/gfx/chromeos/codec/jpeg_codec_robust_slow.h"
+#include "ui/gfx/codec/png_codec.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -166,6 +167,8 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RobustJPEGDecodeImage,
                         OnRobustJPEGDecodeImage)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RobustPNGDecodeImage,
+                        OnRobustPNGDecodeImage)
 #endif  // defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_PatchFileBsdiff,
                         OnPatchFileBsdiff)
@@ -321,6 +324,26 @@ void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
     } else {
       Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(*decoded_image,
                                                           request_id));
+    }
+  } else {
+    Send(new ChromeUtilityHostMsg_DecodeImage_Failed(request_id));
+  }
+  ReleaseProcessIfNeeded();
+}
+
+void ChromeContentUtilityClient::OnRobustPNGDecodeImage(
+    const std::vector<unsigned char>& encoded_data,
+    int request_id) {
+  // Our robust PNG decoding is using libpng.
+  if (!encoded_data.empty()) {
+    SkBitmap decoded_image;
+    if (gfx::PNGCodec::Decode(encoded_data.data(),
+                              encoded_data.size(),
+                              &decoded_image)) {
+      Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(decoded_image,
+                                                          request_id));
+    } else {
+      Send(new ChromeUtilityHostMsg_DecodeImage_Failed(request_id));
     }
   } else {
     Send(new ChromeUtilityHostMsg_DecodeImage_Failed(request_id));

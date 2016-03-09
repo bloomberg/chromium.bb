@@ -30,6 +30,35 @@ std::string GetValidPngString() {
   return std::string(kPngData, sizeof(kPngData) - 1);
 }
 
+#if defined(OS_CHROMEOS)
+
+std::string GetValidJpgString() {
+  // 1x1 JPG created from the 1x1 PNG above.
+  static const char kJpgData[] =
+      "\xFF\xD8\xFF\xE0\x00\x10\x4A\x46\x49\x46\x00\x01\x01\x01\x00\x48"
+      "\x00\x48\x00\x00\xFF\xDB\x00\x43\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+      "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+      "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+      "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+      "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xDB\x00\x43\x01\xFF\xFF"
+      "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+      "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+      "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+      "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xC0"
+      "\x00\x11\x08\x00\x01\x00\x01\x03\x01\x22\x00\x02\x11\x01\x03\x11"
+      "\x01\xFF\xC4\x00\x15\x00\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x03\xFF\xC4\x00\x14\x10\x01\x00\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xC4"
+      "\x00\x14\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+      "\x00\x00\x00\x00\xFF\xC4\x00\x14\x11\x01\x00\x00\x00\x00\x00\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xDA\x00\x0C\x03\x01"
+      "\x00\x02\x11\x03\x11\x00\x3F\x00\xA0\x00\xFF\xD9";
+  // Need to specify the buffer size because it contains NULs.
+  return std::string(kJpgData, sizeof(kJpgData) - 1);
+}
+
+#endif  // defined(OS_CHROMEOS)
+
 class TestImageRequest : public ImageDecoder::ImageRequest {
  public:
   explicit TestImageRequest(const base::Closure& quit_closure)
@@ -138,6 +167,56 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, Basic) {
   runner->Run();
   EXPECT_FALSE(test_request.decode_succeeded());
 }
+
+#if defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustJpegCodecWithJpegData) {
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  TestImageRequest test_request(runner->QuitClosure());
+  ImageDecoder::StartWithOptions(&test_request, GetValidJpgString(),
+                                 ImageDecoder::ROBUST_JPEG_CODEC,
+                                 false /* shrink_to_fit */);
+  runner->Run();
+  EXPECT_TRUE(test_request.decode_succeeded());
+}
+
+IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustJpegCodecWithPngData) {
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  TestImageRequest test_request(runner->QuitClosure());
+  ImageDecoder::StartWithOptions(&test_request, GetValidPngString(),
+                                 ImageDecoder::ROBUST_JPEG_CODEC,
+                                 false /* shrink_to_fit */);
+  runner->Run();
+  // Should fail with PNG data because only JPEG data is allowed.
+  EXPECT_FALSE(test_request.decode_succeeded());
+}
+
+IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustPngCodecWithPngData) {
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  TestImageRequest test_request(runner->QuitClosure());
+  ImageDecoder::StartWithOptions(&test_request, GetValidPngString(),
+                                 ImageDecoder::ROBUST_PNG_CODEC,
+                                 false /* shrink_to_fit */);
+  runner->Run();
+  EXPECT_TRUE(test_request.decode_succeeded());
+}
+
+IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, RobustPngCodecWithJpegData) {
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  TestImageRequest test_request(runner->QuitClosure());
+  ImageDecoder::StartWithOptions(&test_request, GetValidJpgString(),
+                                 ImageDecoder::ROBUST_PNG_CODEC,
+                                 false /* shrink_to_fit */);
+  runner->Run();
+  // Should fail with JPEG data because only PNG data is allowed.
+  EXPECT_FALSE(test_request.decode_succeeded());
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, BasicDecode) {
   scoped_refptr<content::MessageLoopRunner> runner =

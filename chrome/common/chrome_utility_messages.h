@@ -152,6 +152,11 @@ IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_DecodeImage,
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RobustJPEGDecodeImage,
                      std::vector<unsigned char> /* encoded image contents*/,
                      int /* delegate id */)
+// Tell the utility process to decode the given PNG image data with a robust
+// libpng codec.
+IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RobustPNGDecodeImage,
+                     std::vector<unsigned char> /* encoded image contents*/,
+                     int /* delegate id */)
 #endif  // defined(OS_CHROMEOS)
 
 // Tell the utility process to patch the given |input_file| using |patch_file|

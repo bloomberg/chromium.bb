@@ -138,6 +138,10 @@ void ImageDecoder::DecodeImageInSandbox(
       utility_process_host_->Send(new ChromeUtilityMsg_RobustJPEGDecodeImage(
           image_data, request_id));
       break;
+    case ROBUST_PNG_CODEC:
+      utility_process_host_->Send(new ChromeUtilityMsg_RobustPNGDecodeImage(
+          image_data, request_id));
+      break;
 #endif  // defined(OS_CHROMEOS)
     case DEFAULT_CODEC:
       utility_process_host_->Send(new ChromeUtilityMsg_DecodeImage(
