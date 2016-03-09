@@ -736,8 +736,8 @@ class Port(object):
         if not reftest_list:
             reftest_list = []
             for expectation, prefix in (('==', ''), ('!=', '-mismatch')):
-                for extention in Port._supported_file_extensions:
-                    path = self.expected_filename(test_name, prefix + extention)
+                for extension in Port._supported_file_extensions:
+                    path = self.expected_filename(test_name, prefix + extension)
                     if self._filesystem.exists(path):
                         reftest_list.append((expectation, path))
             return reftest_list

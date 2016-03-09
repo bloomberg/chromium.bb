@@ -794,6 +794,7 @@ http://crbug.com/165250 discusses making these pre-built binaries externally ava
 
 
 class ChromiumAndroidDriver(driver.Driver):
+
     def __init__(self, port, worker_number, pixel_tests, driver_details, android_devices, no_timeout=False):
         super(ChromiumAndroidDriver, self).__init__(port, worker_number, pixel_tests, no_timeout)
         self._in_fifo_path = driver_details.device_fifo_directory() + 'stdin.fifo'
@@ -869,7 +870,7 @@ class ChromiumAndroidDriver(driver.Driver):
         assert(fs.exists(built_library_path))
 
         # FIXME: Ideally we'd check the sha1's first and make a soft-link instead of copying (since we probably never care about windows).
-        _log.debug("Updating symfs libary (%s) from built copy (%s)" % (symfs_library_path, built_library_path))
+        _log.debug("Updating symfs library (%s) from built copy (%s)" % (symfs_library_path, built_library_path))
         fs.maybe_make_directory(fs.dirname(symfs_library_path))
         fs.copyfile(built_library_path, symfs_library_path)
 

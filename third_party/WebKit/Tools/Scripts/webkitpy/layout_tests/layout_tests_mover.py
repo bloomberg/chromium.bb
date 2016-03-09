@@ -225,7 +225,7 @@ class LayoutTestsMover(object):
         updates = {}
         for file_path in references.keys():
             root = self._filesystem.dirname(file_path)
-            # sript-tests/TEMPLATE.html files contain references which are written as if the file
+            # script-tests/TEMPLATE.html files contain references which are written as if the file
             # were in the parent directory. This special-casing is ugly, but there are plans to
             # remove script-tests.
             if root.endswith('script-tests') and file_path.endswith('TEMPLATE.html'):

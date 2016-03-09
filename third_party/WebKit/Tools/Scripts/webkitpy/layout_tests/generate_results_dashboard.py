@@ -121,7 +121,7 @@ class DashBoardGenerator(object):
         results_directories.sort(reverse=True, key=lambda x: self._filesystem.mtime(x))
         current_failing_results_json_file = self._filesystem.join(results_directories[0], 'failing_results.json')
         input_json_string = self._filesystem.read_text_file(current_failing_results_json_file)
-        input_json_string = input_json_string[12:-2]   # Remove preceeding string ADD_RESULTS( and ); at the end
+        input_json_string = input_json_string[12:-2]   # Remove preceding string ADD_RESULTS( and ); at the end
         self._current_result_json_dict['tests'] = json.loads(input_json_string)['tests']
         results_directories = results_directories[1:]
 
@@ -133,7 +133,7 @@ class DashBoardGenerator(object):
             failing_json_file_path = self._filesystem.join(json_file, 'failing_results.json')
             full_json_file_path = self._filesystem.join(json_file, 'full_results.json')
             json_string = self._filesystem.read_text_file(failing_json_file_path)
-            json_string = json_string[12:-2]   # Remove preceeding string ADD_RESULTS( and ); at the end
+            json_string = json_string[12:-2]   # Remove preceding string ADD_RESULTS( and ); at the end
             self._old_failing_results_list.append(json.loads(json_string))
             json_string_full_result = self._filesystem.read_text_file(full_json_file_path)
             self._old_full_results_list.append(json.loads(json_string_full_result))
@@ -142,7 +142,7 @@ class DashBoardGenerator(object):
     def generate(self):
         self._initialize()
 
-        # There must be atleast one archived result to be processed
+        # There must be at least one archived result to be processed
         if self._current_result_json_dict:
             process_json_data = ProcessJsonData(self._current_result_json_dict, self._old_failing_results_list, self._old_full_results_list)
             self._final_result = process_json_data.generate_archived_result()

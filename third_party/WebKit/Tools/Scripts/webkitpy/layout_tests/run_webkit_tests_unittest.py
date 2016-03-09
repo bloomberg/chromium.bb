@@ -460,10 +460,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['LayoutTests/passes/text.html'])
         self.assertEqual(['passes/text.html'], tests_run)
 
-    def test_single_skipped_file(self):
-        tests_run = get_tests_run(['failures/expected/keybaord.html'])
-        self.assertEqual([], tests_run)
-
     def test_stderr_is_saved(self):
         host = MockHost()
         self.assertTrue(passing_run(host=host))
@@ -594,7 +590,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         self.assertEqual(details.exit_code, test_run_results.EARLY_EXIT_STATUS)
 
-        # This checks that passes/text.html is considered SKIPped.
+        # This checks that passes/text.html is considered Skip-ped.
         self.assertTrue('"skipped":1' in host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
 
         # This checks that we told the user we bailed out.

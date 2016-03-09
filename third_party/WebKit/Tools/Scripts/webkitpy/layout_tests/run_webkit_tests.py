@@ -69,7 +69,7 @@ def main(argv, stdout, stderr):
     try:
         return run(port, options, args, stderr, stdout).exit_code
 
-    # We need to still handle KeyboardInterrupt, atleast for webkitpy unittest cases.
+    # We need to still handle KeyboardInterrupt, at least for webkitpy unittest cases.
     except KeyboardInterrupt:
         return test_run_results.INTERRUPTED_EXIT_STATUS
     except test_run_results.TestRunException as e:
@@ -111,7 +111,7 @@ def parse_args(args):
                  "Specify multiple times for multiple sets of overrides."),
         optparse.make_option("--additional-platform-directory", action="append",
             default=[], help="Additional directory where to look for test "
-                 "baselines (will take precendence over platform baselines). "
+                 "baselines (will take precedence over platform baselines). "
                  "Specify multiple times to add multiple search path entries."),
         optparse.make_option("--build-directory",
             help="Path to the directory under which build files are kept (should not include configuration)"),
@@ -182,8 +182,10 @@ def parse_args(args):
             action="store_false", help="Don't check to see if the build is up-to-date."),
         optparse.make_option("--child-processes",
             help="Number of drivers to run in parallel."),
-        optparse.make_option("--enable-wptserve", dest="enable_wptserve", action="store_true", default=False,
-            help="Enable running web-plaform-tests using WPTserve instead of Apache."),
+        optparse.make_option("--enable-wptserve", dest="enable_wptserve",
+                             action="store_true", default=False,
+                             help="Enable running web-platform-tests using "
+                                  "WPTserve instead of Apache."),
         optparse.make_option("--disable-breakpad", action="store_true",
             help="Don't use breakpad to symbolize unexpected crashes."),
         optparse.make_option("--driver-logging", action="store_true",
@@ -246,7 +248,8 @@ def parse_args(args):
                  "'only' == only run the SKIP tests, "
                  "'always' == always skip, even if listed on the command line.")),
         optparse.make_option('--fastest', action='store', type='float',
-            help='Run the N% fastest tests as well as any tests listed on the commandline'),
+                             help='Run the N% fastest tests as well as any '
+                                  'tests listed on the command line'),
         optparse.make_option("--test-list", action="append",
             help="read list of tests to run from file", metavar="FILE"),
         optparse.make_option("--time-out-ms",
@@ -329,7 +332,7 @@ def _set_up_derived_options(port, options, args):
 
     if options.pixel_test_directories:
         options.pixel_tests = True
-        varified_dirs = set()
+        verified_dirs = set()
         pixel_test_directories = options.pixel_test_directories
         for directory in pixel_test_directories:
             # FIXME: we should support specifying the directories all the ways we support it for additional
@@ -339,9 +342,9 @@ def _set_up_derived_options(port, options, args):
             if not filesystem.isdir(filesystem.join(port.layout_tests_dir(), directory)):
                 _log.warning("'%s' was passed to --pixel-test-directories, which doesn't seem to be a directory" % str(directory))
             else:
-                varified_dirs.add(directory)
+                verified_dirs.add(directory)
 
-        options.pixel_test_directories = list(varified_dirs)
+        options.pixel_test_directories = list(verified_dirs)
 
     if options.run_singly:
         options.batch_size = 1
