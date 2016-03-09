@@ -18,7 +18,6 @@
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#include "ios/web/public/test/web_test_util.h"
 #include "ios/web/public/web_state/web_state_policy_decider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -216,7 +215,6 @@ class AccountConsistencyServiceTest : public PlatformTest {
 // Tests whether the WKWebView is actually stopped when the browser state is
 // inactive.
 TEST_F(AccountConsistencyServiceTest, OnInactive) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   [[GetMockWKWebView() expect] stopLoading];
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());
@@ -225,8 +223,6 @@ TEST_F(AccountConsistencyServiceTest, OnInactive) {
 // Tests that cookies that are added during SignIn and subsequent navigations
 // are correctly removed during the SignOut.
 TEST_F(AccountConsistencyServiceTest, SignInSignOut) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   // Check that main Google domains are added.
   AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
   AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
@@ -257,8 +253,6 @@ TEST_F(AccountConsistencyServiceTest, SignInSignOut) {
 // Tests that pending cookie requests are correctly applied when the browser
 // state becomes active.
 TEST_F(AccountConsistencyServiceTest, ApplyOnActive) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   // No request is made until the browser state is active, then a WKWebView and
   // its navigation delegate are created, and the requests are processed.
   [[GetMockWKWebView() expect] setNavigationDelegate:[OCMArg isNotNil]];
@@ -274,8 +268,6 @@ TEST_F(AccountConsistencyServiceTest, ApplyOnActive) {
 // browser state becomes inactives and correctly re-started later when the
 // browser state becomes active.
 TEST_F(AccountConsistencyServiceTest, CancelOnInactiveReApplyOnActive) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   // The first request starts to get applied and get cancelled as the browser
   // state becomes inactive. It is resumed after the browser state becomes
   // active again.
@@ -358,8 +350,6 @@ TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsDefault) {
 // Tests that domains with cookie are added to the prefs only after the request
 // has been applied.
 TEST_F(AccountConsistencyServiceTest, DomainsWithCookiePrefsOnApplied) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   // Second request is not completely applied. Ensure prefs reflect that.
   AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
   AddPageLoadedExpectation(kYoutubeUrl, false /* continue_navigation */);
@@ -376,8 +366,6 @@ TEST_F(AccountConsistencyServiceTest, DomainsWithCookiePrefsOnApplied) {
 // Tests that domains with cookie are correctly loaded from the prefs on service
 // startup.
 TEST_F(AccountConsistencyServiceTest, DomainsWithCookieLoadedFromPrefs) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
   AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
   SignIn();
@@ -392,8 +380,6 @@ TEST_F(AccountConsistencyServiceTest, DomainsWithCookieLoadedFromPrefs) {
 
 // Tests that domains with cookie are cleared when browsing data is removed.
 TEST_F(AccountConsistencyServiceTest, DomainsClearedOnBrowsingDataRemoved) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   AddPageLoadedExpectation(kGoogleUrl, true /* continue_navigation */);
   AddPageLoadedExpectation(kYoutubeUrl, true /* continue_navigation */);
   SignIn();

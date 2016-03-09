@@ -11,7 +11,6 @@
 #import "base/test/ios/wait_util.h"
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
-#include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +24,6 @@ namespace {
 class CRWWKSimpleWebViewControllerTest : public web::WebTest {
  protected:
   void SetUp() override {
-    CR_TEST_REQUIRES_WK_WEB_VIEW();
     web::WebTest::SetUp();
     mock_web_view_.reset(
         [[OCMockObject niceMockForClass:[WKWebView class]] retain]);
@@ -34,11 +32,6 @@ class CRWWKSimpleWebViewControllerTest : public web::WebTest {
     mock_delegate_.reset([[OCMockObject
         mockForProtocol:@protocol(CRWSimpleWebViewControllerDelegate)] retain]);
     [web_view_controller_ setDelegate:mock_delegate_];
-  }
-
-  void TearDown() override {
-    CR_TEST_REQUIRES_WK_WEB_VIEW();
-    web::WebTest::TearDown();
   }
 
   // Tests that |shouldStartLoadWithRequest:| decision by the delegate is
@@ -76,14 +69,12 @@ class CRWWKSimpleWebViewControllerTest : public web::WebTest {
 // Tests to make sure a CRWWKSimpleWebViewController correctly sets the backing
 // WKWebView.
 TEST_F(CRWWKSimpleWebViewControllerTest, View) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   EXPECT_EQ(mock_web_view_.get(), [web_view_controller_ view]);
 }
 
 // Tests to make sure a CRWWKSimpleWebViewController correctly sets the backing
 // WKWebView's navigation delegate
 TEST_F(CRWWKSimpleWebViewControllerTest, Delegate) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   base::scoped_nsobject<WKWebView> web_view(
       web::CreateWKWebView(CGRectZero, GetBrowserState()));
   ASSERT_TRUE(web_view);
@@ -96,7 +87,6 @@ TEST_F(CRWWKSimpleWebViewControllerTest, Delegate) {
 // Tests that CRWWKSimpleWebViewController can correctly retrieve the title from
 // the underlying WKWebView.
 TEST_F(CRWWKSimpleWebViewControllerTest, Title) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   [[[mock_web_view_ stub] andReturn:@"The Rolling Stones"] title];
   EXPECT_NSEQ(@"The Rolling Stones", [web_view_controller_ title]);
 }
@@ -104,7 +94,6 @@ TEST_F(CRWWKSimpleWebViewControllerTest, Title) {
 // Tests that CRWWKSimpleWebViewController correctly reloads from the underlying
 // WKWebView.
 TEST_F(CRWWKSimpleWebViewControllerTest, Reload) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   [static_cast<WKWebView*>([mock_web_view_ expect]) reload];
   [web_view_controller_ reload];
   EXPECT_OCMOCK_VERIFY(mock_web_view_);
@@ -113,7 +102,6 @@ TEST_F(CRWWKSimpleWebViewControllerTest, Reload) {
 // Tests that CRWWKSimpleWebViewController correctly returns the web view's
 // scroll view.
 TEST_F(CRWWKSimpleWebViewControllerTest, ScrollView) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   base::scoped_nsobject<UIScrollView> scroll_view([[UIScrollView alloc] init]);
   [[[mock_web_view_ stub] andReturn:scroll_view] scrollView];
   EXPECT_EQ(scroll_view, [web_view_controller_ scrollView]);
@@ -122,7 +110,6 @@ TEST_F(CRWWKSimpleWebViewControllerTest, ScrollView) {
 // Tests that CRWWKSimpleWebViewControllerTest correctly loads a request from
 // the underlying WKWebView.
 TEST_F(CRWWKSimpleWebViewControllerTest, LoadRequest) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   NSURLRequest* request =
       [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://google.com"]];
   [static_cast<WKWebView*>([mock_web_view_ expect]) loadRequest:request];
@@ -133,7 +120,6 @@ TEST_F(CRWWKSimpleWebViewControllerTest, LoadRequest) {
 // Tests that CRWWKSimpleWebViewControllerTest correctly loads a html request
 // from the underlying WKWebView.
 TEST_F(CRWWKSimpleWebViewControllerTest, LoadHTMLString) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   NSURL* base_url = [NSURL URLWithString:@"http://google.com"];
   NSString* html_string = @"<html>Some html</html>";
   [static_cast<WKWebView*>([mock_web_view_ expect]) loadHTMLString:html_string
@@ -148,7 +134,6 @@ TEST_F(CRWWKSimpleWebViewControllerTest, LoadHTMLString) {
 // TODO(shreyasv): Revisit this test if mockHTTPServer is moved to
 // ios_web_unittests.
 TEST_F(CRWWKSimpleWebViewControllerTest, ShouldStartLoad) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   NSURLRequest* request = [NSURLRequest requestWithURL:
       [NSURL URLWithString:@"http://google.com"]];
   base::scoped_nsobject<WKNavigationAction> navigation_action(
@@ -167,20 +152,17 @@ TEST_F(CRWWKSimpleWebViewControllerTest, ShouldStartLoad) {
 // Tests that |shouldStartLoadWithRequest:| YES decision by the delegate is
 // respected by the CRWSWKimpleWebViewController
 TEST_F(CRWWKSimpleWebViewControllerTest, ShouldStartLoadRespectedYes) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   TestShouldStartLoadRespected(YES);
 }
 
 // Tests that |shouldStartLoadWithRequest:| NO decision by the delegate is
 // respected by the CRWSWKimpleWebViewController
 TEST_F(CRWWKSimpleWebViewControllerTest, ShouldStartLoadRespectedNo) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   TestShouldStartLoadRespected(NO);
 }
 
 // Tests that |titleMayHaveChanged:| is correctly called on the delegate.
 TEST_F(CRWWKSimpleWebViewControllerTest, TitleMayHaveChanged) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   base::scoped_nsobject<WKWebView> web_view(
       web::CreateWKWebView(CGRectZero, GetBrowserState()));
   base::scoped_nsobject<WKWebView> mock_web_view(
@@ -202,7 +184,6 @@ TEST_F(CRWWKSimpleWebViewControllerTest, TitleMayHaveChanged) {
 
 // Tests correct JavaScript evaluation.
 TEST_F(CRWWKSimpleWebViewControllerTest, JavaScriptEvaluation) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   NSString* const kTestResult = @"result";
   NSError* const test_error = [NSError errorWithDomain:@"" code:0 userInfo:nil];
   id run_completion_handler = ^(NSInvocation* invocation) {

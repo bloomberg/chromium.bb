@@ -14,7 +14,6 @@
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/test_web_thread.h"
-#include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/test/web_test.h"
 #import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
@@ -132,8 +131,6 @@ TEST_F(WebViewCreationUtilsTest, Creation) {
 // Tests web::CreateWKWebView function that it correctly returns a WKWebView
 // with the correct frame and WKProcessPool.
 TEST_F(WebViewCreationUtilsTest, WKWebViewCreationWithBrowserState) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   base::scoped_nsobject<WKWebView> web_view(
       CreateWKWebView(kTestFrame, GetBrowserState()));
 
@@ -152,8 +149,6 @@ TEST_F(WebViewCreationUtilsTest, WKWebViewCreationWithBrowserState) {
 // Tests that web::CreateWKWebView always returns a web view with the same
 // processPool.
 TEST_F(WebViewCreationUtilsTest, WKWebViewsShareProcessPool) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   base::scoped_nsobject<WKWebView> web_view(
       CreateWKWebView(kTestFrame, GetBrowserState()));
   ASSERT_TRUE(web_view);
@@ -173,7 +168,6 @@ TEST_F(WebViewCreationUtilsTest, WKWebViewsShareProcessPool) {
 // Tests that getting a WKWebView from the util methods correctly maintains
 // the global active wkwebview count (which is debug-only).
 TEST_F(WebViewCreationUtilsTest, GetActiveWKWebViewsCount) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   base::scoped_nsobject<WKWebView> web_view1(
       CreateWKWebView(CGRectZero, GetBrowserState()));
   EXPECT_EQ(1U, GetActiveWKWebViewsCount());

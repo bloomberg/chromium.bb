@@ -13,7 +13,6 @@
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
-#include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/test/web_test.h"
 #include "testing/gtest_mac.h"
@@ -36,7 +35,6 @@ TEST_F(PageScriptUtilTest, UIWebViewEarlyPageScript) {
 // Tests that WKWebView early page script is a valid script that injects global
 // __gCrWeb object.
 TEST_F(PageScriptUtilTest, WKWebViewEarlyPageScript) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   base::scoped_nsobject<WKWebView> web_view(
       CreateWKWebView(CGRectZero, GetBrowserState()));
   EvaluateJavaScript(web_view, GetEarlyPageScript(WK_WEB_VIEW_TYPE));
@@ -54,7 +52,6 @@ TEST_F(PageScriptUtilTest, UIEmbedderScript) {
 
 // Tests that embedder's WKWebView script is included into early script.
 TEST_F(PageScriptUtilTest, WKEmbedderScript) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   GetWebClient()->SetEarlyPageScript(@"__gCrEmbedder = {};", WK_WEB_VIEW_TYPE);
   base::scoped_nsobject<WKWebView> web_view(
       CreateWKWebView(CGRectZero, GetBrowserState()));

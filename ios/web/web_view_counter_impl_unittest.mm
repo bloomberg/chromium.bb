@@ -11,7 +11,6 @@
 #include "ios/web/public/test/test_browser_state.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#include "ios/web/public/test/web_test_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_view_counter.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -46,8 +45,6 @@ class WebViewCounterTest : public PlatformTest {
 
 // Tests that WebViewCounter correctly maintains the count of WKWebViews.
 TEST_F(WebViewCounterTest, WKWebViewCount) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   WebViewCounterImpl* web_view_counter =
       WebViewCounterImpl::FromBrowserState(browser_state_.get());
   ASSERT_TRUE(web_view_counter);

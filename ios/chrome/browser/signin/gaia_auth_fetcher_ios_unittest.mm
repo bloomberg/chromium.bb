@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_private.h"
 #include "ios/web/public/test/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#include "ios/web/public/test/web_test_util.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,7 +148,6 @@ TEST_F(GaiaAuthFetcherIOSTest, StartGetCheckConnectionInfo) {
 // Tests whether the WKWebView is actually stopped when the browser state is
 // inactive.
 TEST_F(GaiaAuthFetcherIOSTest, OnInactive) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
   [[GetMockWKWebView() expect] stopLoading];
   web::BrowserState::GetActiveStateManager(&browser_state_)->SetActive(false);
   EXPECT_OCMOCK_VERIFY(GetMockWKWebView());

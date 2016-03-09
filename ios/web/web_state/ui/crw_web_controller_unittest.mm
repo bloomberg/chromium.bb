@@ -23,7 +23,6 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/test_web_view_content_view.h"
-#include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"

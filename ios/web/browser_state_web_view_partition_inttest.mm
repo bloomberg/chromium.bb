@@ -11,7 +11,6 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/response_providers/string_response_provider.h"
-#include "ios/web/public/test/web_test_util.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/test/web_int_test.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
@@ -43,7 +42,6 @@
 class BrowserStateWebViewPartitionTest : public web::WebIntTest {
  protected:
   void SetUp() override {
-    CR_TEST_REQUIRES_WK_WEB_VIEW();
     web::WebIntTest::SetUp();
 
     otr_browser_state_.SetOffTheRecord(true);
@@ -56,8 +54,6 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
   }
 
   void TearDown() override {
-    CR_TEST_REQUIRES_WK_WEB_VIEW();
-
     web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
     server.RemoveResponseProvider(provider_.release());
 
@@ -145,8 +141,6 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
 // Tests that cookies are partitioned between web views created with a
 // non-OTR BrowserState and an OTR BrowserState.
 TEST_F(BrowserStateWebViewPartitionTest, Cookies) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   base::scoped_nsobject<WKWebView> web_view_1(
       web::CreateWKWebView(CGRectZero, GetBrowserState()));
   LoadTestWebPage(web_view_1);
@@ -171,8 +165,6 @@ TEST_F(BrowserStateWebViewPartitionTest, Cookies) {
 // Tests that localStorage is partitioned between web views created with a
 // non-OTR BrowserState and an OTR BrowserState.
 TEST_F(BrowserStateWebViewPartitionTest, LocalStorage) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   base::scoped_nsobject<WKWebView> web_view_1(
       web::CreateWKWebView(CGRectZero, GetBrowserState()));
   LoadTestWebPage(web_view_1);

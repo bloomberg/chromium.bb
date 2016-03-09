@@ -6,11 +6,9 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_browser_state.h"
-#include "ios/web/public/test/web_test_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
@@ -45,8 +43,6 @@ class WKWebViewConfigurationProviderTest : public PlatformTest {
 // configuration and configurations returned by the same provider will always
 // have the same process pool.
 TEST_F(WKWebViewConfigurationProviderTest, ConfigurationOwnerhip) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   // Configuration is not nil.
   WKWebViewConfigurationProvider& provider = GetProvider(&browser_state_);
   ASSERT_TRUE(provider.GetWebViewConfiguration());
@@ -66,10 +62,6 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationOwnerhip) {
 
 // Tests Non-OffTheRecord configuration.
 TEST_F(WKWebViewConfigurationProviderTest, NoneOffTheRecordConfiguration) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-  if (!base::ios::IsRunningOnIOS9OrLater())
-    return;
-
   browser_state_.SetOffTheRecord(false);
   WKWebViewConfigurationProvider& provider = GetProvider(&browser_state_);
   EXPECT_TRUE(provider.GetWebViewConfiguration().websiteDataStore.persistent);
@@ -77,10 +69,6 @@ TEST_F(WKWebViewConfigurationProviderTest, NoneOffTheRecordConfiguration) {
 
 // Tests OffTheRecord configuration.
 TEST_F(WKWebViewConfigurationProviderTest, OffTheRecordConfiguration) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-  if (!base::ios::IsRunningOnIOS9OrLater())
-    return;
-
   browser_state_.SetOffTheRecord(true);
   WKWebViewConfigurationProvider& provider = GetProvider(&browser_state_);
   WKWebViewConfiguration* config = provider.GetWebViewConfiguration();
@@ -90,8 +78,6 @@ TEST_F(WKWebViewConfigurationProviderTest, OffTheRecordConfiguration) {
 
 // Tests that internal configuration object can not be changed by clients.
 TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   WKWebViewConfigurationProvider& provider = GetProvider(&browser_state_);
   WKWebViewConfiguration* config = provider.GetWebViewConfiguration();
   base::scoped_nsobject<WKProcessPool> pool([[config processPool] retain]);
@@ -121,8 +107,6 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
 
 // Tests that script message router is bound to correct user content controller.
 TEST_F(WKWebViewConfigurationProviderTest, ScriptMessageRouter) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   ASSERT_TRUE(GetProvider().GetWebViewConfiguration().userContentController);
   EXPECT_EQ(GetProvider().GetWebViewConfiguration().userContentController,
             GetProvider().GetScriptMessageRouter().userContentController);
@@ -131,8 +115,6 @@ TEST_F(WKWebViewConfigurationProviderTest, ScriptMessageRouter) {
 // Tests that both configuration and script message router are deallocated after
 // |Purge| call.
 TEST_F(WKWebViewConfigurationProviderTest, Purge) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   base::WeakNSObject<id> config;
   base::WeakNSObject<id> router;
   @autoreleasepool {  // Make sure that resulting copy is deallocated.
@@ -151,8 +133,6 @@ TEST_F(WKWebViewConfigurationProviderTest, Purge) {
 // Tests that configuration's userContentController has only one script with the
 // same content as web::GetEarlyPageScript(WK_WEB_VIEW_TYPE) returns.
 TEST_F(WKWebViewConfigurationProviderTest, UserScript) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
   WKWebViewConfiguration* config = GetProvider().GetWebViewConfiguration();
   NSArray* scripts = config.userContentController.userScripts;
   EXPECT_EQ(1U, scripts.count);
