@@ -626,22 +626,20 @@ void VTVideoDecodeAccelerator::DecodeTask(
     config_changed_ = true;
   }
   if (config_changed_) {
-    if (last_sps_.empty()) {
-      config_changed_ = false;
-      DLOG(ERROR) << "Invalid configuration; no SPS";
-      NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
-      return;
-    }
-    if (last_pps_.empty()) {
-      config_changed_ = false;
-      DLOG(ERROR) << "Invalid configuration; no PPS";
-      NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
-      return;
-    }
-
     // Only reconfigure at IDRs to avoid corruption.
     if (frame->is_idr) {
       config_changed_ = false;
+
+      if (last_sps_.empty()) {
+        DLOG(ERROR) << "Invalid configuration; no SPS";
+        NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
+        return;
+      }
+      if (last_pps_.empty()) {
+        DLOG(ERROR) << "Invalid configuration; no PPS";
+        NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
+        return;
+      }
 
       // ConfigureDecoder() calls NotifyError() on failure.
       if (!ConfigureDecoder())
