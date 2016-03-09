@@ -64,7 +64,6 @@ public class MediaNotificationInfo {
             assert mTitle != null;
             assert mOrigin != null;
             assert mListener != null;
-            assert mContentIntent != null;
 
             return new MediaNotificationInfo(
                     mTitle,
