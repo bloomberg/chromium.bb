@@ -33,8 +33,7 @@ cr.define('media_router', function() {
                                onAcknowledgeFirstRunFlow);
     container.addEventListener('back-click', onNavigateToSinkList);
     container.addEventListener('cast-mode-selected', onCastModeSelected);
-    container.addEventListener('close-button-click', onCloseDialogEvent);
-    container.addEventListener('close-dialog', onCloseDialogEvent);
+    container.addEventListener('close-dialog', onCloseDialog);
     container.addEventListener('close-route-click', onCloseRouteClick);
     container.addEventListener('create-route', onCreateRoute);
     container.addEventListener('issue-action-click', onIssueActionClick);
@@ -61,6 +60,8 @@ cr.define('media_router', function() {
             media_router.MediaRouterUserAction.CLOSE);
       }
     });
+
+    window.addEventListener('blur', onWindowBlur);
   }
 
   /**
@@ -96,12 +97,20 @@ cr.define('media_router', function() {
 
   /**
    * Closes the dialog.
-   * Called when the user clicks the close button on the dialog.
+   * Called when the user clicks the close button on the dialog. Reports
+   * whether the user closed the dialog via the ESC key.
+   *
+   * @param {!Event} event
+   * Parameters in |event|.detail:
+   *   pressEscToClose - whether or not the user pressed ESC to close the
+   *                     dialog.
    */
-  function onCloseDialogEvent() {
+  function onCloseDialog(event) {
+    /** @type {{pressEscToClose: boolean}} */
+    var detail = event.detail;
     container.maybeReportUserFirstAction(
         media_router.MediaRouterUserAction.CLOSE);
-    media_router.browserApi.closeDialog();
+    media_router.browserApi.closeDialog(detail.pressEscToClose);
   }
 
   /**
@@ -293,6 +302,13 @@ cr.define('media_router', function() {
     /** @type {{sinkCount: number}} */
     var detail = event.detail;
     media_router.browserApi.reportSinkCount(detail.sinkCount);
+  }
+
+  /**
+   * Reports when the user clicks outside the dialog.
+   */
+  function onWindowBlur() {
+    media_router.browserApi.reportBlur();
   }
 
   return {

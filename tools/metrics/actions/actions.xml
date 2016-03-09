@@ -7850,6 +7850,21 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MediaRouter_Ui_Dialog_Blur">
+  <owner>apacible@chromium.org</owner>
+  <description>
+    User clicked outside the Media Router dialog, possibly in an effort to close
+    the dialog.
+  </description>
+</action>
+
+<action name="MediaRouter_Ui_Dialog_ESCToClose">
+  <owner>apacible@chromium.org</owner>
+  <description>
+    User closed the Media Router dialog by pressing the ESC key.
+  </description>
+</action>
+
 <action name="MediaRouter_Ui_Navigate_Help">
   <owner>apacible@chromium.org</owner>
   <description>

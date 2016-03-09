@@ -68,6 +68,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnCloseRoute(const base::ListValue* args);
   void OnJoinRoute(const base::ListValue* args);
   void OnCloseDialog(const base::ListValue* args);
+  void OnReportBlur(const base::ListValue* args);
   void OnReportClickedSinkIndex(const base::ListValue* args);
   void OnReportInitialAction(const base::ListValue* args);
   void OnReportInitialState(const base::ListValue* args);

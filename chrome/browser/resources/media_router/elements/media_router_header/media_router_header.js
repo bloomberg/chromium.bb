@@ -158,7 +158,9 @@ Polymer({
    * @private
    */
   onCloseButtonClick_: function() {
-    this.fire('close-button-click');
+    this.fire('close-dialog', {
+      pressEscToClose: false,
+    });
   },
 
   /**

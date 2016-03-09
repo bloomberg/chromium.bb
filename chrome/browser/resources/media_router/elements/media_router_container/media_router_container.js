@@ -557,7 +557,9 @@ Polymer({
         this.showSinkList_();
         e.preventDefault();
       } else {
-        this.fire('close-dialog');
+        this.fire('close-dialog', {
+          pressEscToClose: true,
+        });
       }
     }
   },
@@ -1535,7 +1537,9 @@ Polymer({
   startTapTimer_: function() {
     var id = setTimeout(function() {
       if (!this.mouseIsPositionedOverDialog_)
-        this.fire('close-dialog');
+        this.fire('close-dialog', {
+          pressEscToClose: false,
+        });
     }.bind(this), 3000 /* 3 seconds */);
   },
 

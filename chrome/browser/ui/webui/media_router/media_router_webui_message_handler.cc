@@ -47,6 +47,7 @@ const char kActOnIssue[] = "actOnIssue";
 const char kCloseRoute[] = "closeRoute";
 const char kJoinRoute[] = "joinRoute";
 const char kCloseDialog[] = "closeDialog";
+const char kReportBlur[] = "reportBlur";
 const char kReportClickedSinkIndex[] = "reportClickedSinkIndex";
 const char kReportInitialAction[] = "reportInitialAction";
 const char kReportInitialState[] = "reportInitialState";
@@ -325,6 +326,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
       base::Bind(&MediaRouterWebUIMessageHandler::OnCloseDialog,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      kReportBlur,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportBlur,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       kReportClickedSinkIndex,
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex,
                  base::Unretained(this)));
@@ -557,8 +562,25 @@ void MediaRouterWebUIMessageHandler::OnCloseDialog(
   if (dialog_closing_)
     return;
 
+  bool used_esc_to_close_dialog = false;
+  if (!args->GetBoolean(0, &used_esc_to_close_dialog)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+
+  if (used_esc_to_close_dialog) {
+    base::RecordAction(base::UserMetricsAction(
+        "MediaRouter_Ui_Dialog_ESCToClose"));
+  }
+
   dialog_closing_ = true;
   media_router_ui_->Close();
+}
+
+void MediaRouterWebUIMessageHandler::OnReportBlur(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnReportBlur";
+  base::RecordAction(base::UserMetricsAction("MediaRouter_Ui_Dialog_Blur"));
 }
 
 void MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex(

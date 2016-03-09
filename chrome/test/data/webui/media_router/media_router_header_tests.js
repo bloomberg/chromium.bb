@@ -72,10 +72,11 @@ cr.define('media_router_header', function() {
         setTimeout(done);
       });
 
-      // Tests for 'close-button-click' event firing when the close button
-      // is clicked.
+      // Tests for 'close-dialog' event firing when the close button is
+      // clicked.
       test('close button click', function(done) {
-        header.addEventListener('close-button-click', function() {
+        header.addEventListener('close-dialog', function(data) {
+          assertFalse(data.detail.pressEscToClose);
           done();
         });
         MockInteractions.tap(header.$['close-button']);

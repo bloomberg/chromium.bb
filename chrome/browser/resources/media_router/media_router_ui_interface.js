@@ -198,9 +198,12 @@ cr.define('media_router.browserApi', function() {
 
   /**
    * Closes the dialog.
+   *
+   * @param {boolean} pressEscToClose Whether the user pressed ESC to close the
+   *                  dialog.
    */
-  function closeDialog() {
-    chrome.send('closeDialog');
+  function closeDialog(pressEscToClose) {
+    chrome.send('closeDialog', [pressEscToClose]);
   }
 
   /**
@@ -226,6 +229,13 @@ cr.define('media_router.browserApi', function() {
    */
   function onInitialDataReceived() {
     chrome.send('onInitialDataReceived');
+  }
+
+  /**
+   * Reports when the user clicks outside the dialog.
+   */
+  function reportBlur() {
+    chrome.send('reportBlur');
   }
 
   /**
@@ -338,6 +348,7 @@ cr.define('media_router.browserApi', function() {
     closeRoute: closeRoute,
     joinRoute: joinRoute,
     onInitialDataReceived: onInitialDataReceived,
+    reportBlur: reportBlur,
     reportClickedSinkIndex: reportClickedSinkIndex,
     reportInitialAction: reportInitialAction,
     reportInitialState: reportInitialState,
