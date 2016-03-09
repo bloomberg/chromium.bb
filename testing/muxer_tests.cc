@@ -6,14 +6,19 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 #include <array>
-#include <cstddef>
-#include <initializer_list>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <iomanip>
 #include <memory>
+#include <ostream>
 #include <string>
 
 #include "gtest/gtest.h"
+#include "gtest/gtest-message.h"
 
 #include "mkvmuxer.hpp"
+#include "mkvmuxertypes.hpp"
 #include "mkvreader.hpp"
 #include "mkvwriter.hpp"
 
