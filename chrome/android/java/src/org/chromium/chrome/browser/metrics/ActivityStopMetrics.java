@@ -69,7 +69,8 @@ public class ActivityStopMetrics {
      */
     public void onStopWithNative(Activity parent) {
         if (mStopReason == STOP_REASON_COUNT) {
-            if (parent != ApplicationStatus.getLastTrackedFocusedActivity()) {
+            if (parent != ApplicationStatus.getLastTrackedFocusedActivity()
+                    && ApplicationStatus.hasVisibleActivities()) {
                 mStopReason = STOP_REASON_OTHER_CHROME_ACTIVITY_IN_FOREGROUND;
             } else {
                 mStopReason = STOP_REASON_UNKNOWN;
