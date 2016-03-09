@@ -15,7 +15,18 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace mojo {
+template <typename T, typename U>
+struct TypeConverter;
+template <typename T>
+class StructPtr;
+};
+
 namespace media {
+
+namespace interfaces {
+class VideoFrame;
+}
 
 // A derived class of media::VideoFrame holding a mojo::SharedBufferHandle
 // which is mapped on constructor and remains so for the lifetime of the
@@ -53,6 +64,11 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
   size_t PlaneOffset(size_t plane) const;
 
  private:
+  // mojo::TypeConverter added as a friend so that MojoSharedBufferVideoFrame
+  // can be transferred across a mojo connection.
+  friend struct mojo::TypeConverter<mojo::StructPtr<interfaces::VideoFrame>,
+                                    scoped_refptr<VideoFrame>>;
+
   MojoSharedBufferVideoFrame(VideoPixelFormat format,
                              const gfx::Size& coded_size,
                              const gfx::Rect& visible_rect,
@@ -70,6 +86,14 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
             size_t y_offset,
             size_t u_offset,
             size_t v_offset);
+
+  // Returns the mojo shared memory handle. This object continues to own the
+  // handle. Caller should call duplicate the handle if they want to keep a
+  // copy of the shared memory.
+  const mojo::SharedBufferHandle& Handle() const;
+
+  // Returns the size of the shared memory.
+  size_t MappedSize() const;
 
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
   size_t shared_buffer_size_;

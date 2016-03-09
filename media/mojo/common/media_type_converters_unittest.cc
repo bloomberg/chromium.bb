@@ -17,6 +17,7 @@
 #include "media/base/sample_format.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
+#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -90,9 +91,8 @@ void CompareVideoPlane(size_t plane,
 
 void CompareVideoFrames(const scoped_refptr<VideoFrame>& original,
                         const scoped_refptr<VideoFrame>& result) {
-  if (original->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM)) {
-    EXPECT_TRUE(
-        result->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM));
+  if (original->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM)) {
+    EXPECT_TRUE(result->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
     return;
   }
 
@@ -104,9 +104,69 @@ void CompareVideoFrames(const scoped_refptr<VideoFrame>& original,
   EXPECT_EQ(original->natural_size().height(), result->natural_size().height());
   EXPECT_EQ(original->natural_size().width(), result->natural_size().width());
 
-  CompareVideoPlane(media::VideoFrame::kYPlane, original, result);
-  CompareVideoPlane(media::VideoFrame::kUPlane, original, result);
-  CompareVideoPlane(media::VideoFrame::kVPlane, original, result);
+  CompareVideoPlane(VideoFrame::kYPlane, original, result);
+  CompareVideoPlane(VideoFrame::kUPlane, original, result);
+  CompareVideoPlane(VideoFrame::kVPlane, original, result);
+}
+
+// Returns a color VideoFrame that stores the data in a
+// mojo::SharedBufferHandle.
+scoped_refptr<VideoFrame> CreateMojoSharedBufferColorFrame() {
+  // Create a color VideoFrame to use as reference (data will need to be copied
+  // to a mojo::SharedBufferHandle).
+  const int kWidth = 16;
+  const int kHeight = 9;
+  const base::TimeDelta kTimestamp = base::TimeDelta::FromSeconds(26);
+  scoped_refptr<VideoFrame> color_frame(VideoFrame::CreateColorFrame(
+      gfx::Size(kWidth, kHeight), 255, 128, 24, kTimestamp));
+
+  // Allocate a mojo::SharedBufferHandle big enough to contain
+  // |color_frame|'s data.
+  const size_t allocation_size = VideoFrame::AllocationSize(
+      color_frame->format(), color_frame->coded_size());
+  mojo::ScopedSharedBufferHandle handle;
+  const MojoResult mojo_result =
+      mojo::CreateSharedBuffer(nullptr, allocation_size, &handle);
+  EXPECT_EQ(mojo_result, MOJO_RESULT_OK);
+
+  // Create a MojoSharedBufferVideoFrame whose dimensions match |color_frame|.
+  const size_t y_plane_size = color_frame->rows(VideoFrame::kYPlane) *
+                              color_frame->stride(VideoFrame::kYPlane);
+  const size_t u_plane_size = color_frame->rows(VideoFrame::kUPlane) *
+                              color_frame->stride(VideoFrame::kUPlane);
+  const size_t v_plane_size = color_frame->rows(VideoFrame::kVPlane) *
+                              color_frame->stride(VideoFrame::kVPlane);
+  scoped_refptr<VideoFrame> frame(MojoSharedBufferVideoFrame::Create(
+      color_frame->format(), color_frame->coded_size(),
+      color_frame->visible_rect(), color_frame->natural_size(),
+      std::move(handle), allocation_size, 0, y_plane_size,
+      y_plane_size + u_plane_size, color_frame->stride(VideoFrame::kYPlane),
+      color_frame->stride(VideoFrame::kUPlane),
+      color_frame->stride(VideoFrame::kVPlane), color_frame->timestamp()));
+  EXPECT_EQ(color_frame->coded_size(), frame->coded_size());
+  EXPECT_EQ(color_frame->visible_rect(), frame->visible_rect());
+  EXPECT_EQ(color_frame->natural_size(), frame->natural_size());
+  EXPECT_EQ(color_frame->rows(VideoFrame::kYPlane),
+            frame->rows(VideoFrame::kYPlane));
+  EXPECT_EQ(color_frame->rows(VideoFrame::kUPlane),
+            frame->rows(VideoFrame::kUPlane));
+  EXPECT_EQ(color_frame->rows(VideoFrame::kVPlane),
+            frame->rows(VideoFrame::kVPlane));
+  EXPECT_EQ(color_frame->stride(VideoFrame::kYPlane),
+            frame->stride(VideoFrame::kYPlane));
+  EXPECT_EQ(color_frame->stride(VideoFrame::kUPlane),
+            frame->stride(VideoFrame::kUPlane));
+  EXPECT_EQ(color_frame->stride(VideoFrame::kVPlane),
+            frame->stride(VideoFrame::kVPlane));
+
+  // Copy all the data from |color_frame| into |frame|.
+  memcpy(frame->data(VideoFrame::kYPlane),
+         color_frame->data(VideoFrame::kYPlane), y_plane_size);
+  memcpy(frame->data(VideoFrame::kUPlane),
+         color_frame->data(VideoFrame::kUPlane), u_plane_size);
+  memcpy(frame->data(VideoFrame::kVPlane),
+         color_frame->data(VideoFrame::kVPlane), v_plane_size);
+  return frame;
 }
 
 }  // namespace
@@ -372,30 +432,30 @@ TEST(MediaTypeConvertersTest, ConvertVideoFrame_EOS) {
   CompareVideoFrames(buffer, result);
 }
 
-TEST(MediaTypeConvertersTest, ConvertVideoFrame_BlackFrame) {
+TEST(MediaTypeConvertersTest, ConvertVideoFrame_EmptyFrame) {
   // Original.
-  scoped_refptr<VideoFrame> buffer(
-      VideoFrame::CreateBlackFrame(gfx::Size(100, 100)));
+  scoped_refptr<VideoFrame> frame(MojoSharedBufferVideoFrame::CreateDefaultI420(
+      gfx::Size(100, 100), base::TimeDelta::FromSeconds(100)));
 
   // Convert to and back.
-  interfaces::VideoFramePtr ptr(interfaces::VideoFrame::From(buffer));
+  interfaces::VideoFramePtr ptr(interfaces::VideoFrame::From(frame));
   scoped_refptr<VideoFrame> result(ptr.To<scoped_refptr<VideoFrame>>());
+  EXPECT_NE(result.get(), nullptr);
 
   // Compare.
-  CompareVideoFrames(buffer, result);
+  CompareVideoFrames(frame, result);
 }
 
 TEST(MediaTypeConvertersTest, ConvertVideoFrame_ColorFrame) {
-  // Original.
-  scoped_refptr<VideoFrame> buffer(VideoFrame::CreateColorFrame(
-      gfx::Size(50, 100), 255, 128, 128, base::TimeDelta::FromSeconds(26)));
+  scoped_refptr<VideoFrame> frame(CreateMojoSharedBufferColorFrame());
 
   // Convert to and back.
-  interfaces::VideoFramePtr ptr(interfaces::VideoFrame::From(buffer));
+  interfaces::VideoFramePtr ptr(interfaces::VideoFrame::From(frame));
   scoped_refptr<VideoFrame> result(ptr.To<scoped_refptr<VideoFrame>>());
+  EXPECT_NE(result.get(), nullptr);
 
   // Compare.
-  CompareVideoFrames(buffer, result);
+  CompareVideoFrames(frame, result);
 }
 
 }  // namespace media
