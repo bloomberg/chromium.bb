@@ -141,7 +141,11 @@ void BindAddStatement(const PasswordForm& form,
   s->BindInt64(COLUMN_DATE_SYNCED, form.date_synced.ToInternalValue());
   s->BindString16(COLUMN_DISPLAY_NAME, form.display_name);
   s->BindString(COLUMN_ICON_URL, form.icon_url.spec());
-  s->BindString(COLUMN_FEDERATION_URL, form.federation_origin.Serialize());
+  // An empty Origin serializes as "null" which would be strange to store here.
+  s->BindString(COLUMN_FEDERATION_URL,
+                form.federation_origin.unique()
+                    ? std::string()
+                    : form.federation_origin.Serialize());
   s->BindInt(COLUMN_SKIP_ZERO_CLICK, form.skip_zero_click);
   s->BindInt(COLUMN_GENERATION_UPLOAD_STATUS, form.generation_upload_status);
 }
@@ -941,8 +945,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindInt(11, form.type);
   s.BindString16(12, form.display_name);
   s.BindString(13, form.icon_url.spec());
-  // We serialize unique origins as "", in order to make other systems that
-  // read from the login database happy. https://crbug.com/591310
+  // An empty Origin serializes as "null" which would be strange to store here.
   s.BindString(14, form.federation_origin.unique()
                        ? std::string()
                        : form.federation_origin.Serialize());

@@ -61,8 +61,8 @@ bool AreLocalAndSyncPasswordsEqual(
           base::UTF16ToUTF8(password_form.display_name) ==
               password_specifics.display_name() &&
           password_form.icon_url.spec() == password_specifics.avatar_url() &&
-          password_form.federation_origin.Serialize() ==
-              password_specifics.federation_url());
+          url::Origin(GURL(password_specifics.federation_url())).Serialize() ==
+              password_form.federation_origin.Serialize());
 }
 
 syncer::SyncChange::SyncChangeType GetSyncChangeType(
@@ -464,7 +464,9 @@ syncer::SyncData SyncDataFromPassword(
   CopyStringField(display_name);
   password_specifics->set_avatar_url(password_form.icon_url.spec());
   password_specifics->set_federation_url(
-      password_form.federation_origin.Serialize());
+      password_form.federation_origin.unique()
+          ? std::string()
+          : password_form.federation_origin.Serialize());
 #undef CopyStringField
 #undef CopyField
 

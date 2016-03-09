@@ -586,6 +586,29 @@ TEST_F(PasswordSyncableServiceTest, MergeEmptyPasswords) {
                                       scoped_ptr<syncer::SyncErrorFactory>());
 }
 
+// Serialize and deserialize empty federation_origin and make sure it's an empty
+// string.
+TEST_F(PasswordSyncableServiceTest, SerializeEmptyFederation) {
+  autofill::PasswordForm form;
+  EXPECT_TRUE(form.federation_origin.unique());
+  syncer::SyncData data = SyncDataFromPassword(form);
+  const sync_pb::PasswordSpecificsData& specifics = GetPasswordSpecifics(data);
+  EXPECT_TRUE(specifics.has_federation_url());
+  EXPECT_EQ(std::string(), specifics.federation_url());
+
+  // Deserialize back.
+  form = PasswordFromSpecifics(specifics);
+  EXPECT_TRUE(form.federation_origin.unique());
+
+  // Make sure that the Origins uploaded incorrectly are still deserialized
+  // correctly.
+  // crbug.com/593380.
+  sync_pb::PasswordSpecificsData specifics1;
+  specifics1.set_federation_url("null");
+  form = PasswordFromSpecifics(specifics1);
+  EXPECT_TRUE(form.federation_origin.unique());
+}
+
 }  // namespace
 
 }  // namespace password_manager
