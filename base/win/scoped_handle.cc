@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/synchronization/lock_impl.h"
+#include "base/threading/thread_local.h"
 
 extern "C" {
 __declspec(dllexport) void* GetHandleVerifier();
@@ -73,7 +74,7 @@ class AutoNativeLock {
 class ActiveVerifier {
  public:
   explicit ActiveVerifier(bool enabled)
-      : enabled_(enabled), closing_(false), lock_(g_lock.Pointer()) {
+      : enabled_(enabled), lock_(g_lock.Pointer()) {
   }
 
   // Retrieves the current verifier.
@@ -97,7 +98,7 @@ class ActiveVerifier {
 
   base::debug::StackTrace creation_stack_;
   bool enabled_;
-  bool closing_;
+  base::ThreadLocalBoolean closing_;
   NativeLock* lock_;
   HandleMap map_;
   DISALLOW_COPY_AND_ASSIGN(ActiveVerifier);
@@ -145,10 +146,9 @@ bool ActiveVerifier::CloseHandle(HANDLE handle) {
   if (!enabled_)
     return CloseHandleWrapper(handle);
 
-  AutoNativeLock lock(*lock_);
-  closing_ = true;
+  closing_.Set(true);
   CloseHandleWrapper(handle);
-  closing_ = false;
+  closing_.Set(false);
 
   return true;
 }
@@ -204,10 +204,10 @@ void ActiveVerifier::OnHandleBeingClosed(HANDLE handle) {
   if (!enabled_)
     return;
 
-  AutoNativeLock lock(*lock_);
-  if (closing_)
+  if (closing_.Get())
     return;
 
+  AutoNativeLock lock(*lock_);
   HandleMap::iterator i = map_.find(handle);
   if (i == map_.end())
     return;
