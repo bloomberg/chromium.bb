@@ -7,30 +7,48 @@
 
 #include "base/macros.h"
 #import "base/mac/scoped_nsobject.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/gfx/animation/linear_animation.h"
 #import "ui/views/cocoa/views_scrollbar_bridge.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar.h"
 #include "ui/views/views_export.h"
 
 namespace views {
 
+class CocoaScrollBarThumb;
+
 // The transparent scrollbar for Mac which overlays its contents.
 class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
-                                    public ViewsScrollbarBridgeDelegate {
+                                    public ViewsScrollbarBridgeDelegate,
+                                    public ui::ImplicitAnimationObserver,
+                                    public gfx::AnimationDelegate {
  public:
   explicit CocoaScrollBar(bool horizontal);
   ~CocoaScrollBar() override;
 
-  // Called by CocoaScrollBarThumb when the mouse enters or exits the view.
-  void OnMouseEnteredScrollbarThumb(const ui::MouseEvent& event);
-
-  // ScrollDelegate:
-  bool OnScroll(float dx, float dy) override;
+  // BaseScrollBar:
+  void ScrollToPosition(int position) override;
 
   // ViewsScrollbarBridgeDelegate:
   void OnScrollerStyleChanged() override;
 
+  // View:
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+
   // Returns the scroller style.
   NSScrollerStyle GetScrollerStyle() const { return scroller_style_; }
+
+  // Returns true if the opacity is 0.0.
+  bool IsScrollbarFullyHidden() const;
 
  protected:
   // BaseScrollBar:
@@ -50,14 +68,44 @@ class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
   void ShowScrollbar();
   void HideScrollbar();
 
+  // Returns true if the scrollbar is in a hover or pressed state.
+  bool IsHoverOrPressedState() const;
+
+  // Updates the thickness of the scrollbar according to the current state of
+  // the expand animation.
+  void UpdateScrollbarThickness();
+
+  // Resets the scrolltrack and the thickness if the scrollbar is not hidden
+  // and is not in a hover/pressed state.
+  void ResetOverlayScrollbar();
+
+  // Returns the thickness of the scrollbar.
+  int ScrollbarThickness() const;
+
+  // Sets the scrolltrack's visibility and then repaints it.
+  void SetScrolltrackVisible(bool visible);
+
+  // Converts GetThumb() into a CocoaScrollBarThumb object and returns it.
+  CocoaScrollBarThumb* GetCocoaScrollBarThumb() const;
+
   // Scroller style the scrollbar is using.
   NSScrollerStyle scroller_style_;
 
   // Timer that will start the scrollbar's hiding animation when it reaches 0.
   base::Timer hide_scrollbar_timer_;
 
+  // Linear animation that expands an overlay scrollbar when hovered.
+  gfx::LinearAnimation expand_animation_;
+
+  // True when the scrollbar is expanded.
+  bool is_expanded_;
+
   // True when the scrolltrack should be drawn.
   bool has_scrolltrack_;
+
+  // True when the scrollbar has started dragging since it was last shown.
+  // This is set to false when we begin to hide the scrollbar.
+  bool did_start_dragging_;
 
   // The bridge for NSScroller.
   base::scoped_nsobject<ViewsScrollbarBridge> bridge_;
