@@ -8,14 +8,14 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 368996
-  "build_rev": "e08a4cf05939cedb15d77dd6c343d3272be9db4b", # from cr commit position 368977
-  "build_overrides_rev": "5db75083d9603ce27a061df45521ca5138990c16", # from cr commit position 365373
-  "binutils_rev": "1247f150644d3da6ab19f346adef0e2a150e9134", # from cr commit position 368648
-  "libcxx_static_rev": "17acece915b87b2d53da5e8cbc2028b1300783e2", # from cr commit position 356325
+  # chrome_rev: 379949
+  "build_rev": "39cabf7354a14006fc0743b921c4dc15d3ce3971", # from cr commit position 379942
+  "build_overrides_rev": "7ae8b951d779566018520c1849537102cebb84ab", # from cr commit position 377770
+  "binutils_rev": "3a125b5a41761bc85d71aa4a478f88d667712267", # from cr commit position 378721
+  "libcxx_static_rev": "fd8f9a82862aa40dab0c5bcdea6e498715284f5a", # from cr commit position 369150
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "afad7aa23b146a86be9bc335caaac5bcfa72f390", # from cr commit position 368900
+  "clang_rev": "7eac1d6d8b72c81f4e8390242bc36edb71d77756", # from cr commit position 379878
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -24,12 +24,12 @@ vars = {
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
   "gtest_rev": "6f8a66431cb592dad629028a50b3dd418a408c87",
-  "gyp_rev": "b85ad3e578da830377dbc1843aa4fbc5af17a192",
+  "gyp_rev": "61259d585ce99d9de8b35188cd0025bdbcb58411",
   "breakpad_rev": "a4eb2e302cefff9908ec955e761fef5d813d1b00", # from svn revision 1416
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': '0f8e6e4b126ee88137930a0ae4776c4741808740',
+  'buildtools_revision': '14288a03a92856fe1fc296d39e6a25c2d83cd6cf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
