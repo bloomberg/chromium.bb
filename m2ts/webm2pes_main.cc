@@ -8,6 +8,7 @@
 #include "m2ts/webm2pes.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <string>
 
 namespace {
