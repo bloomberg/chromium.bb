@@ -11,7 +11,12 @@
 #include <memory>
 
 #include "../mkvmuxer.hpp"
-#include "../mkvparser.hpp"
+
+namespace mkvparser {
+struct Colour;
+struct MasteringMetadata;
+struct PrimaryChromaticity;
+}  // namespace mkvparser
 
 namespace libwebm {
 

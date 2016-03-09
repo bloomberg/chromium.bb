@@ -7,6 +7,11 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "hdr_util.h"
 
+#include <cstddef>
+#include <new>
+
+#include "../mkvparser.hpp"
+
 namespace libwebm {
 bool CopyPrimaryChromaticity(const mkvparser::PrimaryChromaticity& parser_pc,
                              PrimaryChromaticityPtr* muxer_pc) {
