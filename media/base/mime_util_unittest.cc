@@ -253,9 +253,7 @@ TEST(IsCodecSupportedOnPlatformTest, EncryptedCodecBehavior) {
           case MimeUtil::INVALID_CODEC:
           case MimeUtil::AC3:
           case MimeUtil::EAC3:
-          case MimeUtil::MPEG2_AAC_LC:
-          case MimeUtil::MPEG2_AAC_MAIN:
-          case MimeUtil::MPEG2_AAC_SSR:
+          case MimeUtil::MPEG2_AAC:
           case MimeUtil::THEORA:
             EXPECT_FALSE(result);
             break;
@@ -263,9 +261,7 @@ TEST(IsCodecSupportedOnPlatformTest, EncryptedCodecBehavior) {
           // These codecs are always available with platform decoder support.
           case MimeUtil::PCM:
           case MimeUtil::MP3:
-          case MimeUtil::MPEG4_AAC_LC:
-          case MimeUtil::MPEG4_AAC_SBR_v1:
-          case MimeUtil::MPEG4_AAC_SBR_PS_v2:
+          case MimeUtil::MPEG4_AAC:
           case MimeUtil::VORBIS:
           case MimeUtil::H264:
             EXPECT_TRUE(result);
@@ -311,9 +307,7 @@ TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehaviorWithAndroidPipeline) {
           case MimeUtil::INVALID_CODEC:
           case MimeUtil::AC3:
           case MimeUtil::EAC3:
-          case MimeUtil::MPEG2_AAC_LC:
-          case MimeUtil::MPEG2_AAC_MAIN:
-          case MimeUtil::MPEG2_AAC_SSR:
+          case MimeUtil::MPEG2_AAC:
           case MimeUtil::THEORA:
             EXPECT_FALSE(result);
             break;
@@ -321,9 +315,7 @@ TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehaviorWithAndroidPipeline) {
           // These codecs are always available via MediaPlayer.
           case MimeUtil::PCM:
           case MimeUtil::MP3:
-          case MimeUtil::MPEG4_AAC_LC:
-          case MimeUtil::MPEG4_AAC_SBR_v1:
-          case MimeUtil::MPEG4_AAC_SBR_PS_v2:
+          case MimeUtil::MPEG4_AAC:
           case MimeUtil::VORBIS:
           case MimeUtil::H264:
           case MimeUtil::VP8:
@@ -371,13 +363,9 @@ TEST(IsCodecSupportedOnPlatformTest, ClearCodecBehaviorWithUnifiedPipeline) {
 
           // These codecs are always supported with the unified pipeline.
           case MimeUtil::PCM:
-          case MimeUtil::MPEG2_AAC_LC:
-          case MimeUtil::MPEG2_AAC_MAIN:
-          case MimeUtil::MPEG2_AAC_SSR:
+          case MimeUtil::MPEG2_AAC:
           case MimeUtil::MP3:
-          case MimeUtil::MPEG4_AAC_LC:
-          case MimeUtil::MPEG4_AAC_SBR_v1:
-          case MimeUtil::MPEG4_AAC_SBR_PS_v2:
+          case MimeUtil::MPEG4_AAC:
           case MimeUtil::OPUS:
           case MimeUtil::VORBIS:
           case MimeUtil::VP8:
