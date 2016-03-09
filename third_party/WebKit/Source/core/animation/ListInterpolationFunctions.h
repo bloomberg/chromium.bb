@@ -21,8 +21,8 @@ public:
     static InterpolationValue createList(size_t length, CreateItemCallback);
     static InterpolationValue createEmptyList() { return InterpolationValue(InterpolableList::create(0)); }
 
-    using MergeSingleItemConversionsCallback = PairwiseInterpolationValue (*)(InterpolationValue& start, InterpolationValue& end);
-    static PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end, MergeSingleItemConversionsCallback);
+    using MergeSingleItemConversionsCallback = PairwiseInterpolationValue (*)(InterpolationValue&& start, InterpolationValue&& end);
+    static PairwiseInterpolationValue mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end, MergeSingleItemConversionsCallback);
 
     using EqualNonInterpolableValuesCallback = bool (*)(const NonInterpolableValue*, const NonInterpolableValue*);
     static bool equalValues(const InterpolationValue&, const InterpolationValue&, EqualNonInterpolableValuesCallback);

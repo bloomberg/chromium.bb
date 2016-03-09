@@ -27,7 +27,7 @@ public:
     static InterpolationValue maybeConvertCSSValue(const CSSValue&);
     static InterpolationValue maybeConvertLength(const Length&, float zoom);
     static PassOwnPtr<InterpolableList> createNeutralInterpolableValue();
-    static PairwiseInterpolationValue staticMergeSingleConversions(InterpolationValue& start, InterpolationValue& end);
+    static PairwiseInterpolationValue staticMergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end);
     static bool nonInterpolableValuesAreCompatible(const NonInterpolableValue*, const NonInterpolableValue*);
     static void composite(OwnPtr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
     static void subtractFromOneHundredPercent(InterpolationValue& result);
@@ -40,9 +40,9 @@ private:
     InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
     InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
 
-    PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const final
+    PairwiseInterpolationValue mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const final
     {
-        return staticMergeSingleConversions(start, end);
+        return staticMergeSingleConversions(std::move(start), std::move(end));
     }
 
     const ValueRange m_valueRange;

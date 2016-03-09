@@ -81,7 +81,7 @@ InterpolationValue CSSImageInterpolationType::maybeConvertCSSValue(const CSSValu
     return nullptr;
 }
 
-PairwiseInterpolationValue CSSImageInterpolationType::staticMergeSingleConversions(InterpolationValue& start, InterpolationValue& end)
+PairwiseInterpolationValue CSSImageInterpolationType::staticMergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end)
 {
     if (!toCSSImageNonInterpolableValue(*start.nonInterpolableValue).isSingle()
         || !toCSSImageNonInterpolableValue(*end.nonInterpolableValue).isSingle()) {

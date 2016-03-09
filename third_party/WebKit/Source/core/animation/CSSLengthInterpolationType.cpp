@@ -88,7 +88,7 @@ PassOwnPtr<InterpolableList> CSSLengthInterpolationType::createNeutralInterpolab
     return values.release();
 }
 
-PairwiseInterpolationValue CSSLengthInterpolationType::staticMergeSingleConversions(InterpolationValue& start, InterpolationValue& end)
+PairwiseInterpolationValue CSSLengthInterpolationType::staticMergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end)
 {
     return PairwiseInterpolationValue(
         start.interpolableValue.release(),

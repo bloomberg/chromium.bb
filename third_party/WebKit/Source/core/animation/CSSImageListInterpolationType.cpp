@@ -120,9 +120,9 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertValue(const CSSVal
     return InterpolationValue(interpolableList.release(), NonInterpolableList::create(nonInterpolableValues));
 }
 
-PairwiseInterpolationValue CSSImageListInterpolationType::mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const
+PairwiseInterpolationValue CSSImageListInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
 {
-    return ListInterpolationFunctions::mergeSingleConversions(start, end, CSSImageInterpolationType::staticMergeSingleConversions);
+    return ListInterpolationFunctions::mergeSingleConversions(std::move(start), std::move(end), CSSImageInterpolationType::staticMergeSingleConversions);
 }
 
 InterpolationValue CSSImageListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const

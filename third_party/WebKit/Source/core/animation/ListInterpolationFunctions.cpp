@@ -40,7 +40,7 @@ bool ListInterpolationFunctions::equalValues(const InterpolationValue& a, const 
     return true;
 }
 
-PairwiseInterpolationValue ListInterpolationFunctions::mergeSingleConversions(InterpolationValue& start, InterpolationValue& end, MergeSingleItemConversionsCallback mergeSingleItemConversions)
+PairwiseInterpolationValue ListInterpolationFunctions::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end, MergeSingleItemConversionsCallback mergeSingleItemConversions)
 {
     size_t startLength = toInterpolableList(*start.interpolableValue).length();
     size_t endLength = toInterpolableList(*end.interpolableValue).length();
@@ -81,7 +81,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::mergeSingleConversions(In
     for (size_t i = 0; i < finalLength; i++) {
         InterpolationValue start(startInterpolableList.get(i % startLength)->clone(), startNonInterpolableList.get(i % startLength));
         InterpolationValue end(endInterpolableList.get(i % endLength)->clone(), endNonInterpolableList.get(i % endLength));
-        PairwiseInterpolationValue result = mergeSingleItemConversions(start, end);
+        PairwiseInterpolationValue result = mergeSingleItemConversions(std::move(start), std::move(end));
         if (!result)
             return nullptr;
         resultStartInterpolableList->set(i, result.startInterpolableValue.release());

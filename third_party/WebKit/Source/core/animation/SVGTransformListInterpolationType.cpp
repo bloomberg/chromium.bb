@@ -277,7 +277,7 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGTransformListInterpolationType::appli
     return result.release();
 }
 
-PairwiseInterpolationValue SVGTransformListInterpolationType::mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const
+PairwiseInterpolationValue SVGTransformListInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
 {
     if (!transformTypesMatch(start, end))
         return nullptr;

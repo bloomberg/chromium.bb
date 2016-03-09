@@ -24,7 +24,7 @@ public:
     static InterpolationValue maybeConvertCSSValue(const CSSValue&, bool acceptGradients);
     static InterpolationValue maybeConvertStyleImage(const StyleImage&, bool acceptGradients);
     static InterpolationValue maybeConvertStyleImage(const StyleImage* image, bool acceptGradients) { return image ? maybeConvertStyleImage(*image, acceptGradients) : nullptr; }
-    static PairwiseInterpolationValue staticMergeSingleConversions(InterpolationValue& start, InterpolationValue& end);
+    static PairwiseInterpolationValue staticMergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end);
     static PassRefPtrWillBeRawPtr<CSSValue> createCSSValue(const InterpolableValue&, const NonInterpolableValue*);
     static PassRefPtrWillBeRawPtr<StyleImage> resolveStyleImage(CSSPropertyID, const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&);
     static bool equalNonInterpolableValues(const NonInterpolableValue*, const NonInterpolableValue*);
@@ -35,9 +35,9 @@ private:
     InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
     InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
 
-    PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const final
+    PairwiseInterpolationValue mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const final
     {
-        return staticMergeSingleConversions(start, end);
+        return staticMergeSingleConversions(std::move(start), std::move(end));
     }
 };
 

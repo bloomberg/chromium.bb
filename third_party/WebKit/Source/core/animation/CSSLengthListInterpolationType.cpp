@@ -98,9 +98,9 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertValue(const CSSVa
     });
 }
 
-PairwiseInterpolationValue CSSLengthListInterpolationType::mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const
+PairwiseInterpolationValue CSSLengthListInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
 {
-    return ListInterpolationFunctions::mergeSingleConversions(start, end, CSSLengthInterpolationType::staticMergeSingleConversions);
+    return ListInterpolationFunctions::mergeSingleConversions(std::move(start), std::move(end), CSSLengthInterpolationType::staticMergeSingleConversions);
 }
 
 InterpolationValue CSSLengthListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
