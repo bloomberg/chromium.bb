@@ -14,15 +14,6 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/window.h"
 
-namespace {
-
-bool ControlsWindow(aura::Window* window) {
-  return chrome::GetHostDesktopTypeForNativeWindow(window) ==
-         chrome::HOST_DESKTOP_TYPE_ASH;
-}
-
-}  // namespace
-
 MultiProfileAppWindowLauncherController::
     MultiProfileAppWindowLauncherController(ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {}
@@ -77,9 +68,6 @@ void MultiProfileAppWindowLauncherController::AdditionalUserAddedToSession(
 
 void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
     extensions::AppWindow* app_window) {
-  if (!ControlsWindow(app_window->GetNativeWindow()))
-    return;
-
   app_window_list_.push_back(app_window);
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
   // If the window got created for a non active user but the user allowed to
@@ -94,9 +82,6 @@ void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
 void MultiProfileAppWindowLauncherController::OnAppWindowShown(
     extensions::AppWindow* app_window,
     bool was_hidden) {
-  if (!ControlsWindow(app_window->GetNativeWindow()))
-    return;
-
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
 
   if (multi_user_util::IsProfileFromActiveUser(profile) &&
@@ -117,9 +102,6 @@ void MultiProfileAppWindowLauncherController::OnAppWindowShown(
 
 void MultiProfileAppWindowLauncherController::OnAppWindowHidden(
     extensions::AppWindow* app_window) {
-  if (!ControlsWindow(app_window->GetNativeWindow()))
-    return;
-
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
   if (multi_user_util::IsProfileFromActiveUser(profile) &&
       IsRegisteredApp(app_window->GetNativeWindow())) {
@@ -129,9 +111,6 @@ void MultiProfileAppWindowLauncherController::OnAppWindowHidden(
 
 void MultiProfileAppWindowLauncherController::OnAppWindowRemoved(
     extensions::AppWindow* app_window) {
-  if (!ControlsWindow(app_window->GetNativeWindow()))
-    return;
-
   // If the application is registered with AppWindowLauncher (because the user
   // is currently active), the OnWindowDestroying observer has already (or will
   // soon) unregister it independently from the shelf. If it was not registered

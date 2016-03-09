@@ -29,11 +29,6 @@ std::string GetAppShelfId(AppWindow* app_window) {
   return app_window->extension_id();
 }
 
-bool ControlsWindow(aura::Window* window) {
-  return chrome::GetHostDesktopTypeForNativeWindow(window) ==
-         chrome::HOST_DESKTOP_TYPE_ASH;
-}
-
 }  // namespace
 
 AppWindowLauncherController::AppWindowLauncherController(
@@ -86,9 +81,6 @@ void AppWindowLauncherController::AdditionalUserAddedToSession(
 
 void AppWindowLauncherController::OnAppWindowIconChanged(
     AppWindow* app_window) {
-  if (!ControlsWindow(app_window->GetNativeWindow()))
-    return;
-
   const std::string app_shelf_id = GetAppShelfId(app_window);
   AppControllerMap::iterator iter = app_controller_map_.find(app_shelf_id);
   if (iter == app_controller_map_.end())
@@ -102,18 +94,12 @@ void AppWindowLauncherController::OnAppWindowIconChanged(
 void AppWindowLauncherController::OnAppWindowShown(AppWindow* app_window,
                                                    bool was_hidden) {
   aura::Window* window = app_window->GetNativeWindow();
-  if (!ControlsWindow(window))
-    return;
-
   if (!IsRegisteredApp(window))
     RegisterApp(app_window);
 }
 
 void AppWindowLauncherController::OnAppWindowHidden(AppWindow* app_window) {
   aura::Window* window = app_window->GetNativeWindow();
-  if (!ControlsWindow(window))
-    return;
-
   if (IsRegisteredApp(window))
     UnregisterApp(window);
 }
@@ -122,8 +108,6 @@ void AppWindowLauncherController::OnAppWindowHidden(AppWindow* app_window) {
 // which destroys AppWindow, so both |window| and the associated AppWindow
 // are valid here.
 void AppWindowLauncherController::OnWindowDestroying(aura::Window* window) {
-  if (!ControlsWindow(window))
-    return;
   UnregisterApp(window);
 }
 
