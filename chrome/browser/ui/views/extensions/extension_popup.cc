@@ -21,6 +21,12 @@
 
 namespace {
 
+// Override the default margin provided by views::kPanel*Margin so that the
+// hosted WebContents fill more of the bubble. However, it can't fill the entire
+// bubble since that would draw over the rounded corners and make the bubble
+// square. See http://crbug.com/593203.
+const int kBubbleMargin = 2;
+
 ExtensionViewViews* GetExtensionView(extensions::ExtensionViewHost* host) {
   return static_cast<ExtensionViewViews*>(host->view());
 }
@@ -57,9 +63,7 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
           &ExtensionPopup::OnDevToolsStateChanged, base::Unretained(this))),
       widget_initialized_(false) {
   inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
-  // Adjust the margin so that contents fit better.
-  const int margin = views::BubbleBorder::GetCornerRadius() / 2;
-  set_margins(gfx::Insets(margin, margin, margin, margin));
+  set_margins(gfx::Insets(kBubbleMargin));
   SetLayoutManager(new views::FillLayout());
   AddChildView(GetExtensionView(host));
   GetExtensionView(host)->set_container(this);

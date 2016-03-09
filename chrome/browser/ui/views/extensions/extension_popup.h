@@ -29,6 +29,7 @@ namespace extensions {
 class ExtensionViewHost;
 }
 
+// The bubble used for hosting a browser-action popup provided by an extension.
 class ExtensionPopup : public views::BubbleDelegateView,
                        public ExtensionViewViews::Container,
                        public content::NotificationObserver,

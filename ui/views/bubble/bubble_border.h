@@ -123,16 +123,6 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   BubbleBorder(Arrow arrow, Shadow shadow, SkColor color);
   ~BubbleBorder() override;
 
-  // Returns the radius of the corner of the border.
-  // TODO(xiyuan): Get rid of this since it's part of BorderImages now?
-  static int GetCornerRadius() {
-    // We can't safely calculate a border radius by comparing the sizes of the
-    // side and corner images, because either may have been extended in various
-    // directions in order to do more subtle dropshadow fading or other effects.
-    // So we hardcode the most accurate value.
-    return 4;
-  }
-
   static bool has_arrow(Arrow a) { return a < NONE; }
 
   static bool is_arrow_on_left(Arrow a) {
