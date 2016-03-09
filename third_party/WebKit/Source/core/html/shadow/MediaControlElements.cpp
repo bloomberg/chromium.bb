@@ -39,9 +39,9 @@
 #include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/input/EventHandler.h"
-#include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutVideo.h"
+#include "core/layout/api/LayoutSliderItem.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -74,8 +74,8 @@ bool isUserInteractionEventForSlider(Event* event, LayoutObject* layoutObject)
         return true;
 
     // Some events are only captured during a slider drag.
-    LayoutSlider* slider = toLayoutSlider(layoutObject);
-    if (slider && !slider->inDragMode())
+    LayoutSliderItem slider = LayoutSliderItem(toLayoutSlider(layoutObject));
+    if (!slider.isNull() && !slider.inDragMode())
         return false;
 
     const AtomicString& type = event->type();
@@ -412,8 +412,8 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
             mediaElement().setCurrentTime(time);
     }
 
-    LayoutSlider* slider = toLayoutSlider(layoutObject());
-    if (slider && slider->inDragMode())
+    LayoutSliderItem slider = LayoutSliderItem(toLayoutSlider(layoutObject()));
+    if (!slider.isNull() && slider.inDragMode())
         mediaControls().updateCurrentTimeDisplay();
 }
 

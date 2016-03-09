@@ -109,6 +109,11 @@ public:
         return m_layoutObject->isProgress();
     }
 
+    bool isSlider() const
+    {
+        return m_layoutObject->isSlider();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();
