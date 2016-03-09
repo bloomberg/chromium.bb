@@ -284,6 +284,9 @@ void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32_t output_surface_id,
 void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
     uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
+  TRACE_EVENT0("content",
+               "RenderWidgetHostViewChildFrame::OnSwapCompositorFrame");
+
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
 
   if (!frame_connector_)
