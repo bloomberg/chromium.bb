@@ -297,7 +297,7 @@
                 ],
               }],
             ],
-            'pak_output': '<(PRODUCT_DIR)/assets/cast_shell.pak',
+            'pak_output': '<(PRODUCT_DIR)/cast_shell.pak',
           },
           'includes': [ '../build/repack_action.gypi' ],
         },
@@ -563,6 +563,7 @@
           'target_name': 'cast_shell_icudata',
           'type': 'none',
           'dependencies': [
+            'cast_shell_pak',
             '../third_party/icu/icu.gyp:icudata',
             '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
           ],
@@ -570,6 +571,7 @@
             'dest_path': '<(cast_shell_assets_path)',
             'src_files': [
               '<(PRODUCT_DIR)/icudtl.dat',
+              '<(PRODUCT_DIR)/cast_shell.pak',
             ],
             'renaming_sources': [
               '<(PRODUCT_DIR)/natives_blob.bin',
