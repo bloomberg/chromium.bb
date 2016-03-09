@@ -27,80 +27,82 @@ namespace content {
 
 namespace {
 
+using SearchKeyToPredicateMap =
+    base::hash_map<base::string16, AccessibilityMatchPredicate>;
+base::LazyInstance<SearchKeyToPredicateMap> g_search_key_to_predicate_map =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::string16> g_all_search_keys =
+    LAZY_INSTANCE_INITIALIZER;
+
+bool SectionPredicate(
+    BrowserAccessibility* start, BrowserAccessibility* node) {
+  switch (node->GetRole()) {
+    case ui::AX_ROLE_ARTICLE:
+    case ui::AX_ROLE_APPLICATION:
+    case ui::AX_ROLE_BANNER:
+    case ui::AX_ROLE_COMPLEMENTARY:
+    case ui::AX_ROLE_CONTENT_INFO:
+    case ui::AX_ROLE_HEADING:
+    case ui::AX_ROLE_MAIN:
+    case ui::AX_ROLE_NAVIGATION:
+    case ui::AX_ROLE_SEARCH:
+    case ui::AX_ROLE_REGION:
+      return true;
+    default:
+      return false;
+  }
+}
+
+void AddToPredicateMap(const char* search_key_ascii,
+                       AccessibilityMatchPredicate predicate) {
+  base::string16 search_key_utf16 = base::ASCIIToUTF16(search_key_ascii);
+  g_search_key_to_predicate_map.Get()[search_key_utf16] = predicate;
+  if (!g_all_search_keys.Get().empty())
+    g_all_search_keys.Get() += base::ASCIIToUTF16(",");
+  g_all_search_keys.Get() += search_key_utf16;
+}
+
 // These are special unofficial strings sent from TalkBack/BrailleBack
 // to jump to certain categories of web elements.
-AccessibilityMatchPredicate PredicateForSearchKey(base::string16 element_type) {
-  if (element_type == base::ASCIIToUTF16("SECTION")) {
-    return [](BrowserAccessibility* start, BrowserAccessibility* node) {
-      switch (node->GetRole()) {
-        case ui::AX_ROLE_ARTICLE:
-        case ui::AX_ROLE_APPLICATION:
-        case ui::AX_ROLE_BANNER:
-        case ui::AX_ROLE_COMPLEMENTARY:
-        case ui::AX_ROLE_CONTENT_INFO:
-        case ui::AX_ROLE_HEADING:
-        case ui::AX_ROLE_MAIN:
-        case ui::AX_ROLE_NAVIGATION:
-        case ui::AX_ROLE_SEARCH:
-        case ui::AX_ROLE_REGION:
-          return true;
-        default:
-          return false;
-      }
-    };
-  } else if (element_type == base::ASCIIToUTF16("LIST")) {
-    return AccessibilityListPredicate;
-  } else if (element_type == base::ASCIIToUTF16("CONTROL")) {
-    return AccessibilityControlPredicate;
-  } else if (element_type == base::ASCIIToUTF16("ARTICLE")) {
-    return AccessibilityArticlePredicate;
-  } else if (element_type == base::ASCIIToUTF16("BUTTON")) {
-    return AccessibilityButtonPredicate;
-  } else if (element_type == base::ASCIIToUTF16("CHECKBOX")) {
-    return AccessibilityCheckboxPredicate;
-  } else if (element_type == base::ASCIIToUTF16("COMBOBOX")) {
-    return AccessibilityComboboxPredicate;
-  } else if (element_type == base::ASCIIToUTF16("TEXT_FIELD")) {
-    return AccessibilityTextfieldPredicate;
-  } else if (element_type == base::ASCIIToUTF16("FOCUSABLE")) {
-    return AccessibilityFocusablePredicate;
-  } else if (element_type == base::ASCIIToUTF16("GRAPHIC")) {
-    return AccessibilityGraphicPredicate;
-  } else if (element_type == base::ASCIIToUTF16("HEADING")) {
-    return AccessibilityHeadingPredicate;
-  } else if (element_type == base::ASCIIToUTF16("H1")) {
-    return AccessibilityH1Predicate;
-  } else if (element_type == base::ASCIIToUTF16("H2")) {
-    return AccessibilityH2Predicate;
-  } else if (element_type == base::ASCIIToUTF16("H3")) {
-    return AccessibilityH3Predicate;
-  } else if (element_type == base::ASCIIToUTF16("H4")) {
-    return AccessibilityH4Predicate;
-  } else if (element_type == base::ASCIIToUTF16("H5")) {
-    return AccessibilityH5Predicate;
-  } else if (element_type == base::ASCIIToUTF16("H6")) {
-    return AccessibilityH6Predicate;
-  } else if (element_type == base::ASCIIToUTF16("FRAME")) {
-    return AccessibilityFramePredicate;
-  } else if (element_type == base::ASCIIToUTF16("LANDMARK")) {
-    return AccessibilityLandmarkPredicate;
-  } else if (element_type == base::ASCIIToUTF16("LINK")) {
-    return AccessibilityLinkPredicate;
-  } else if (element_type == base::ASCIIToUTF16("LIST_ITEM")) {
-    return AccessibilityListItemPredicate;
-  } else if (element_type == base::ASCIIToUTF16("MAIN")) {
-    return AccessibilityMainPredicate;
-  } else if (element_type == base::ASCIIToUTF16("MEDIA")) {
-    return AccessibilityMediaPredicate;
-  } else if (element_type == base::ASCIIToUTF16("RADIO")) {
-    return AccessibilityRadioButtonPredicate;
-  } else if (element_type == base::ASCIIToUTF16("TABLE")) {
-    return AccessibilityTablePredicate;
-  } else if (element_type == base::ASCIIToUTF16("UNVISITED_LINK")) {
-    return AccessibilityUnvisitedLinkPredicate;
-  } else if (element_type == base::ASCIIToUTF16("VISITED_LINK")) {
-    return AccessibilityVisitedLinkPredicate;
-  }
+void InitSearchKeyToPredicateMapIfNeeded() {
+  if (!g_search_key_to_predicate_map.Get().empty())
+    return;
+
+  AddToPredicateMap("ARTICLE", AccessibilityArticlePredicate);
+  AddToPredicateMap("BUTTON", AccessibilityButtonPredicate);
+  AddToPredicateMap("CHECKBOX", AccessibilityCheckboxPredicate);
+  AddToPredicateMap("COMBOBOX", AccessibilityComboboxPredicate);
+  AddToPredicateMap("CONTROL", AccessibilityControlPredicate);
+  AddToPredicateMap("FOCUSABLE", AccessibilityFocusablePredicate);
+  AddToPredicateMap("FRAME", AccessibilityFramePredicate);
+  AddToPredicateMap("GRAPHIC", AccessibilityGraphicPredicate);
+  AddToPredicateMap("H1", AccessibilityH1Predicate);
+  AddToPredicateMap("H2", AccessibilityH2Predicate);
+  AddToPredicateMap("H3", AccessibilityH3Predicate);
+  AddToPredicateMap("H4", AccessibilityH4Predicate);
+  AddToPredicateMap("H5", AccessibilityH5Predicate);
+  AddToPredicateMap("H6", AccessibilityH6Predicate);
+  AddToPredicateMap("HEADING", AccessibilityHeadingPredicate);
+  AddToPredicateMap("LANDMARK", AccessibilityLandmarkPredicate);
+  AddToPredicateMap("LINK", AccessibilityLinkPredicate);
+  AddToPredicateMap("LIST", AccessibilityListPredicate);
+  AddToPredicateMap("LIST_ITEM", AccessibilityListItemPredicate);
+  AddToPredicateMap("MAIN", AccessibilityMainPredicate);
+  AddToPredicateMap("MEDIA", AccessibilityMediaPredicate);
+  AddToPredicateMap("RADIO", AccessibilityRadioButtonPredicate);
+  AddToPredicateMap("SECTION", SectionPredicate);
+  AddToPredicateMap("TABLE", AccessibilityTablePredicate);
+  AddToPredicateMap("TEXT_FIELD", AccessibilityTextfieldPredicate);
+  AddToPredicateMap("UNVISITED_LINK", AccessibilityUnvisitedLinkPredicate);
+  AddToPredicateMap("VISITED_LINK", AccessibilityVisitedLinkPredicate);
+}
+
+AccessibilityMatchPredicate PredicateForSearchKey(
+    const base::string16& element_type) {
+  InitSearchKeyToPredicateMapIfNeeded();
+  const auto& iter = g_search_key_to_predicate_map.Get().find(element_type);
+  if (iter != g_search_key_to_predicate_map.Get().end())
+    return iter->second;
 
   // If we don't recognize the selector, return any element that's clickable.
   // We mark all focusable nodes and leaf nodes as clickable because it's
@@ -287,6 +289,14 @@ void BrowserAccessibilityManagerAndroid::OnLocationChanges(
   BrowserAccessibilityManager::OnLocationChanges(params);
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+BrowserAccessibilityManagerAndroid::GetSupportedHtmlElementTypes(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  InitSearchKeyToPredicateMapIfNeeded();
+  return base::android::ConvertUTF16ToJavaString(env, g_all_search_keys.Get());
+}
+
 jint BrowserAccessibilityManagerAndroid::GetRootId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -423,6 +433,7 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
 
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoKitKatAttributes(
       env, obj, info,
+      is_root,
       base::android::ConvertUTF16ToJavaString(
           env, node->GetRoleDescription()).obj());
 

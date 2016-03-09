@@ -85,6 +85,10 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // Methods called from Java via JNI
   // --------------------------------------------------------------------------
 
+  // Global methods.
+  base::android::ScopedJavaLocalRef<jstring> GetSupportedHtmlElementTypes(
+      JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
   // Tree methods.
   jint GetRootId(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   jboolean IsNodeValid(JNIEnv* env,

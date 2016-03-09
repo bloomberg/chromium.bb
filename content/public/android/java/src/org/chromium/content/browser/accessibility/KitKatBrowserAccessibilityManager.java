@@ -18,15 +18,23 @@ import org.chromium.content.browser.ContentViewCore;
 @JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.KITKAT)
 public class KitKatBrowserAccessibilityManager extends BrowserAccessibilityManager {
+    private String mSupportedHtmlElementTypes;
+
     KitKatBrowserAccessibilityManager(long nativeBrowserAccessibilityManagerAndroid,
             ContentViewCore contentViewCore) {
         super(nativeBrowserAccessibilityManagerAndroid, contentViewCore);
+        mSupportedHtmlElementTypes = nativeGetSupportedHtmlElementTypes(
+                nativeBrowserAccessibilityManagerAndroid);
     }
 
     @Override
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
-            String roleDescription) {
+            boolean isRoot, String roleDescription) {
         Bundle bundle = node.getExtras();
         bundle.putCharSequence("AccessibilityNodeInfo.roleDescription", roleDescription);
+        if (isRoot) {
+            bundle.putCharSequence("ACTION_ARGUMENT_HTML_ELEMENT_STRING_VALUES",
+                    mSupportedHtmlElementTypes);
+        }
     }
 }

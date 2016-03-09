@@ -51,7 +51,7 @@ public class BrowserAccessibilityManager {
     private Rect mAccessibilityFocusRect;
     private boolean mIsHovering;
     private int mLastHoverId = View.NO_ID;
-    private int mCurrentRootId;
+    protected int mCurrentRootId;
     private final int[] mTempLocation = new int[2];
     private final ViewGroup mView;
     private boolean mUserHasTouchExplored;
@@ -905,7 +905,7 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
-            String roleDescription) {
+            boolean isRoot, String roleDescription) {
         // Requires KitKat or higher.
     }
 
@@ -1096,4 +1096,6 @@ public class BrowserAccessibilityManager {
             long nativeBrowserAccessibilityManagerAndroid, int id);
     private native boolean nativeScroll(
             long nativeBrowserAccessibilityManagerAndroid, int id, int direction);
+    protected native String nativeGetSupportedHtmlElementTypes(
+            long nativeBrowserAccessibilityManagerAndroid);
 }
