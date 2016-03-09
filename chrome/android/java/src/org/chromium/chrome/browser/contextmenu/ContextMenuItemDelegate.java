@@ -63,12 +63,6 @@ public interface ContextMenuItemDelegate {
     void onOpenImageUrl(String url, Referrer referrer);
 
     /**
-     * Called when the {@code url} is of an image and should be opened in a new tab.
-     * @param url The image URL to open.
-     */
-    void onOpenImageInNewTab(String url, Referrer referrer);
-
-    /**
      *  Reloads all the Lo-Fi images in a Tab.
      */
     void onReloadLoFiImages();

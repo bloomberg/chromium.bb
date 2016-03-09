@@ -1325,9 +1325,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_CONTEXTMENU_OPEN_IMAGE" desc="Context sensitive menu item for opening/viewing the selected image. [CHAR-LIMIT=30]">
         Open image
       </message>
-      <message name="IDS_CONTEXTMENU_OPEN_IMAGE_IN_NEW_TAB" desc="Context sensitive menu item for opening/viewing the selected image in a new tab. [CHAR-LIMIT=30]">
-        Open image in new tab
-      </message>
       <message name="IDS_CONTEXTMENU_LOAD_IMAGES" desc="Context sensitive menu item for Data Saver low fidelity placeholder images that reloads the page with the original images. [CHAR-LIMIT=30]">
         Load images
       </message>
