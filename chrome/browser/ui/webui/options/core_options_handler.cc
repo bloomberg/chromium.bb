@@ -258,19 +258,18 @@ base::Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
 }
 
 void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
-  if (g_browser_process->local_state()->FindPreference(pref_name.c_str())) {
+  if (g_browser_process->local_state()->FindPreference(pref_name)) {
     local_state_registrar_.Add(
-        pref_name.c_str(),
+        pref_name,
         base::Bind(&CoreOptionsHandler::OnPreferenceChanged,
                    base::Unretained(this),
                    local_state_registrar_.prefs()));
   }
   // TODO(pneubeck): change this to if/else once kProxy is only used as a user
   // pref. Currently, it is both a user and a local state pref.
-  if (Profile::FromWebUI(web_ui())->GetPrefs()->FindPreference(
-          pref_name.c_str())) {
+  if (Profile::FromWebUI(web_ui())->GetPrefs()->FindPreference(pref_name)) {
     registrar_.Add(
-        pref_name.c_str(),
+        pref_name,
         base::Bind(&CoreOptionsHandler::OnPreferenceChanged,
                    base::Unretained(this),
                    registrar_.prefs()));
@@ -278,10 +277,10 @@ void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
 }
 
 void CoreOptionsHandler::StopObservingPref(const std::string& pref_name) {
-  if (g_browser_process->local_state()->FindPreference(pref_name.c_str()))
-    local_state_registrar_.Remove(pref_name.c_str());
+  if (g_browser_process->local_state()->FindPreference(pref_name))
+    local_state_registrar_.Remove(pref_name);
   else
-    registrar_.Remove(pref_name.c_str());
+    registrar_.Remove(pref_name);
 }
 
 void CoreOptionsHandler::SetPref(const std::string& pref_name,
@@ -293,7 +292,7 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
     // Also check if the pref is user modifiable (don't even try to run the
     // filter function if the user is not allowed to change the pref).
     const PrefService::Preference* pref =
-        pref_service->FindPreference(pref_name.c_str());
+        pref_service->FindPreference(pref_name);
     if ((pref && !pref->IsUserModifiable()) || !iter->second.Run(value)) {
       // Reject the change; remind the page of the true value.
       NotifyPrefChanged(pref_name, std::string());
@@ -307,7 +306,7 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
     case base::Value::TYPE_DOUBLE:
     case base::Value::TYPE_STRING:
     case base::Value::TYPE_LIST:
-      pref_service->Set(pref_name.c_str(), *value);
+      pref_service->Set(pref_name, *value);
       break;
 
     default:
@@ -321,7 +320,7 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
 void CoreOptionsHandler::ClearPref(const std::string& pref_name,
                                    const std::string& metric) {
   PrefService* pref_service = FindServiceForPref(pref_name);
-  pref_service->ClearPref(pref_name.c_str());
+  pref_service->ClearPref(pref_name);
 
   if (!metric.empty())
     content::RecordComputedAction(metric);
@@ -357,7 +356,7 @@ void CoreOptionsHandler::DispatchPrefChangeNotification(
             PreferenceCallbackMap::const_iterator> range =
       pref_callback_map_.equal_range(name);
   base::ListValue result_value;
-  result_value.Append(new base::StringValue(name.c_str()));
+  result_value.Append(new base::StringValue(name));
   result_value.Append(value.release());
   for (PreferenceCallbackMap::const_iterator iter = range.first;
        iter != range.second; ++iter) {
@@ -369,15 +368,15 @@ void CoreOptionsHandler::DispatchPrefChangeNotification(
 base::Value* CoreOptionsHandler::CreateValueForPref(
     const std::string& pref_name,
     const std::string& controlling_pref_name) {
-  const PrefService* pref_service = FindServiceForPref(pref_name.c_str());
+  const PrefService* pref_service = FindServiceForPref(pref_name);
   const PrefService::Preference* pref =
-      pref_service->FindPreference(pref_name.c_str());
+      pref_service->FindPreference(pref_name);
   if (!pref) {
     NOTREACHED();
     return base::Value::CreateNullValue().release();
   }
   const PrefService::Preference* controlling_pref =
-      pref_service->FindPreference(controlling_pref_name.c_str());
+      pref_service->FindPreference(controlling_pref_name);
   if (!controlling_pref)
     controlling_pref = pref;
 
@@ -431,10 +430,10 @@ PrefService* CoreOptionsHandler::FindServiceForPref(
   // Find which PrefService contains the given pref. Pref names should not
   // be duplicated across services, however if they are, prefer the user's
   // prefs.
-  if (user_prefs->FindPreference(pref_name.c_str()))
+  if (user_prefs->FindPreference(pref_name))
     return user_prefs;
 
-  if (g_browser_process->local_state()->FindPreference(pref_name.c_str()))
+  if (g_browser_process->local_state()->FindPreference(pref_name))
     return g_browser_process->local_state();
 
   return user_prefs;
@@ -469,7 +468,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const base::ListValue* args) {
     if (!list_member->GetAsString(&pref_name))
       continue;
 
-    result_value.Set(pref_name.c_str(), FetchPref(pref_name));
+    result_value.Set(pref_name, FetchPref(pref_name));
   }
   web_ui()->CallJavascriptFunction(base::UTF16ToASCII(callback_function),
                                    result_value);
