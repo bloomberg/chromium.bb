@@ -87,10 +87,6 @@ public abstract class ContentSwitches {
     // Native switch kDownloadProcess
     public static final String SWITCH_DOWNLOAD_PROCESS = "download";
 
-    // Native switches to enable / disable IME's own thread instead of using main UI thread.
-    public static final String ENABLE_IME_THREAD = "enable-ime-thread";
-    public static final String DISABLE_IME_THREAD = "disable-ime-thread";
-
     // Prevent instantiation.
     private ContentSwitches() {}
 

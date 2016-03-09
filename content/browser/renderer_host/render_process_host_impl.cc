@@ -1568,8 +1568,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableUnifiedMediaPipeline,
     switches::kIPCSyncCompositing,
     switches::kRendererWaitForJavaDebugger,
-    switches::kEnableImeThread,
-    switches::kDisableImeThread,
 #endif
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.

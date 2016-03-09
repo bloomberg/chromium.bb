@@ -1806,8 +1806,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"ime-thread", IDS_FLAGS_IME_THREAD_NAME,
      IDS_FLAGS_IME_THREAD_DESCRIPTION, kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableImeThread,
-                               switches::kDisableImeThread)},
+     FEATURE_VALUE_TYPE(features::kImeThread)},
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
     {"offline-pages-ntp", IDS_FLAGS_NTP_OFFLINE_PAGES_NAME,

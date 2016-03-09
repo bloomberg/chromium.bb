@@ -30,6 +30,7 @@ CONTENT_EXPORT extern const base::Feature kUpdateRendererPriorityOnStartup;
 CONTENT_EXPORT extern const base::Feature kWebFontsIntervention;
 
 #if defined(OS_ANDROID)
+CONTENT_EXPORT extern const base::Feature kImeThread;
 CONTENT_EXPORT extern const base::Feature kSeccompSandboxAndroid;
 #endif  // defined(OS_ANDROID)
 

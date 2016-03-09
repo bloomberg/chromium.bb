@@ -18,14 +18,12 @@ import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink_public.web.WebInputEventModifier;
 import org.chromium.blink_public.web.WebInputEventType;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.ui.base.ime.TextInputType;
 import org.chromium.ui.picker.InputDialogContainer;
 
@@ -120,23 +118,18 @@ public class ImeAdapter {
                 mViewEmbedder.getAttachedView().getResources().getConfiguration());
     }
 
-    void resetInputConnectionFactory() {
-        if (shouldUseImeThread()) {
+    private boolean isImeThreadEnabled() {
+        if (mNativeImeAdapterAndroid == 0) return false;
+        return nativeIsImeThreadEnabled(mNativeImeAdapterAndroid);
+    }
+
+    private void resetInputConnectionFactory() {
+        if (isImeThreadEnabled()) {
             mInputConnectionFactory =
                     new ThreadedInputConnectionFactory(mInputMethodManagerWrapper);
         } else {
             mInputConnectionFactory = new ReplicaInputConnection.Factory();
         }
-    }
-
-    private boolean shouldUseImeThread() {
-        if (CommandLine.getInstance().hasSwitch(ContentSwitches.DISABLE_IME_THREAD)) {
-            return false;
-        }
-        if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_IME_THREAD)) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -625,4 +618,5 @@ public class ImeAdapter {
             int before, int after);
     private native void nativeResetImeAdapter(long nativeImeAdapterAndroid);
     private native boolean nativeRequestTextInputStateUpdate(long nativeImeAdapterAndroid);
+    private native boolean nativeIsImeThreadEnabled(long nativeImeAdapterAndroid);
 }

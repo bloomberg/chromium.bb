@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -38,6 +39,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/renderer/cursor_utils.h"
@@ -1759,10 +1761,7 @@ void RenderWidget::set_next_paint_is_repaint_ack() {
 
 bool RenderWidget::IsUsingImeThread() {
 #if defined(OS_ANDROID)
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableImeThread) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableImeThread);
+  return base::FeatureList::IsEnabled(features::kImeThread);
 #else
   return false;
 #endif

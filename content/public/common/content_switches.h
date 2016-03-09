@@ -274,8 +274,6 @@ CONTENT_EXPORT extern const char kHideScrollbars[];
 extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
 CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
-CONTENT_EXPORT extern const char kEnableImeThread[];
-CONTENT_EXPORT extern const char kDisableImeThread[];
 #endif
 
 #if defined(OS_CHROMEOS)

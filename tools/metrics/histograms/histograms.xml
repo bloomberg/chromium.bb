@@ -72282,7 +72282,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1925117279" label="disable-quic-https"/>
-  <int value="-1919308574" label="enable-ime-thread"/>
   <int value="-1915854488" label="enable-offline-pages"/>
   <int value="-1911153473" label="enable-easy-signin"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
@@ -72780,7 +72779,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1820451991" label="enable-offline-auto-reload"/>
   <int value="1821723343" label="disable-saml-signin"/>
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
-  <int value="1840930186" label="disable-ime-thread"/>
   <int value="1844110073" label="enable-app-view"/>
   <int value="1847024354" label="enable-hotword-hardware"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>

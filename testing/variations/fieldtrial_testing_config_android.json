@@ -123,6 +123,14 @@
             "group_name": "Enabled"
         }
     ],
+    "ImeThread": [
+        {
+            "enable_features": [
+                "ImeThread"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "InvalidationsGCMUpstream": [
         {
             "group_name": "Enabled"

@@ -950,12 +950,6 @@ const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
 // Block ChildProcessMain thread of the renderer's ChildProcessService until a
 // Java debugger is attached.
 const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
-
-// Use IME's own thread instead of using main UI thread. It also means that
-// we will not use replica editor and do a round trip to renderer to synchronize
-// with Blink data.
-const char kEnableImeThread[] = "enable-ime-thread";
-const char kDisableImeThread[] = "disable-ime-thread";
 #endif
 
 // Enable the aggressive flushing of DOM Storage to minimize data loss.
