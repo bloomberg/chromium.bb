@@ -631,7 +631,7 @@ class Settings(object):
 
   def GetGitMirror(self, remote='origin'):
     """If this checkout is from a local git mirror, return a Mirror object."""
-    local_url = RunGit(['remote', 'get-url', remote]).strip()
+    local_url = RunGit(['config', '--get', 'remote.%s.url' % remote]).strip()
     if not os.path.isdir(local_url):
       return None
     git_cache.Mirror.SetCachePath(os.path.dirname(local_url))
