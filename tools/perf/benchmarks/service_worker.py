@@ -95,6 +95,10 @@ class _ServiceWorkerMeasurement(page_test.PageTest):
     self._speed_index = speedindex.SpeedIndexMetric()
     self._page_open_times = collections.defaultdict(int)
 
+  def DidRunPage(self, platform):
+    if platform.tracing_controller.is_tracing_running:
+      platform.tracing_controller.StopTracing()
+
   def WillNavigateToPage(self, page, tab):
     self._timeline_controller.SetUp(page, tab)
     self._timeline_controller.Start(tab)
