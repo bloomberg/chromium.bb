@@ -20,6 +20,7 @@
 #include <ctime>
 #include <new>
 
+#include "mkvmuxer.hpp"
 #include "mkvwriter.hpp"
 #include "webmids.hpp"
 

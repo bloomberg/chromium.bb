@@ -9,11 +9,11 @@
 #ifndef MKVMUXERUTIL_HPP
 #define MKVMUXERUTIL_HPP
 
-#include "mkvmuxer.hpp"
 #include "mkvmuxertypes.hpp"
 
 namespace mkvmuxer {
-
+class Cluster;
+class Frame;
 class IMkvWriter;
 
 const uint64 kEbmlUnknownValue = 0x01FFFFFFFFFFFFFFULL;
