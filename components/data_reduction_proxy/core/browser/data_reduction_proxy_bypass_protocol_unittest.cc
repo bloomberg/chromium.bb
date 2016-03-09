@@ -536,9 +536,9 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       "Server: proxy\r\n\r\n",
       true,
       false,
-      1u,
+      0u,
       true,
-      1,
+      0,
       BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX
     },
     // Invalid data reduction proxy response. Missing Via header.

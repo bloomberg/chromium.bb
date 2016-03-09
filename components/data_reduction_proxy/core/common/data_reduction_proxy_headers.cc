@@ -258,10 +258,10 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
         headers->response_code() < net::HTTP_INTERNAL_SERVER_ERROR) {
       // At this point, any 4xx response that is missing the via header
       // indicates an issue that is scoped to only the current request, so only
-      // bypass the data reduction proxy for a second.
-      // TODO(sclittle): Change this to only bypass the current request once
-      // that is fully supported, see http://crbug.com/418342.
-      data_reduction_proxy_info->bypass_duration = TimeDelta::FromSeconds(1);
+      // bypass the data reduction proxy for the current request.
+      data_reduction_proxy_info->bypass_all = true;
+      data_reduction_proxy_info->mark_proxies_as_bad = false;
+      data_reduction_proxy_info->bypass_duration = TimeDelta();
       return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX;
     }
 

@@ -888,9 +888,6 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
     const char* initial_response_headers;
   };
   const TestCase test_cases[] = {
-    { "DataReductionProxy.BypassedBytes.MissingViaHeader4xx",
-      "HTTP/1.1 414 Request-URI Too Long\r\n\r\n",
-    },
     { "DataReductionProxy.BypassedBytes.MissingViaHeaderOther",
       "HTTP/1.1 200 OK\r\n\r\n",
     },
@@ -950,6 +947,44 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest, BypassedBytesNetErrorOther) {
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.BypassOnNetworkErrorPrimary",
       -net::ERR_PROXY_CONNECTION_FAILED, 1);
+}
+
+TEST_F(DataReductionProxyBypassStatsEndToEndTest,
+       BypassedBytesMissingViaHeader4xx) {
+  InitializeContext();
+  const char* test_case_response_headers[] = {
+      "HTTP/1.1 414 Request-URI Too Long\r\n\r\n",
+      "HTTP/1.1 404 Not Found\r\n\r\n",
+  };
+  for (const char* test_case : test_case_response_headers) {
+    ClearBadProxies();
+    // The first request should be bypassed for missing Via header.
+    {
+      base::HistogramTester histogram_tester;
+      CreateAndExecuteRequest(GURL("http://foo.com"), test_case,
+                              kErrorBody.c_str(), "HTTP/1.1 200 OK\r\n\r\n",
+                              kBody.c_str());
+
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.BypassedBytes.MissingViaHeader4xx", kBody.size(),
+          1);
+      ExpectOtherBypassedBytesHistogramsEmpty(
+          histogram_tester,
+          "DataReductionProxy.BypassedBytes.MissingViaHeader4xx");
+    }
+    // The second request should be sent via the proxy.
+    {
+      base::HistogramTester histogram_tester;
+      CreateAndExecuteRequest(GURL("http://bar.com"),
+                              "HTTP/1.1 200 OK\r\n"
+                              "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+                              kNextBody.c_str(), nullptr, nullptr);
+      histogram_tester.ExpectUniqueSample(
+          "DataReductionProxy.BypassedBytes.NotBypassed", kNextBody.size(), 1);
+      ExpectOtherBypassedBytesHistogramsEmpty(
+          histogram_tester, "DataReductionProxy.BypassedBytes.NotBypassed");
+    }
+  }
 }
 
 }  // namespace data_reduction_proxy

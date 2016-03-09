@@ -34,7 +34,10 @@ enum DataReductionProxyBypassType {
 };
 
 // Values for the bypass actions that can be specified by the Data Reduction
-// Proxy in response to a client request.
+// Proxy in response to a client request. These are explicit bypass actions
+// specified by the Data Reduction Proxy in the Chrome-Proxy header, block-once,
+// bypass=1, block=300, etc. These are not used for Chrome initiated bypasses
+// due to a server error, missing Via header, etc.
 enum DataReductionProxyBypassAction {
 #define BYPASS_ACTION_TYPE(label, value) BYPASS_ACTION_TYPE_##label = value,
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_action_list.h"
