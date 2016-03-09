@@ -516,6 +516,7 @@
             'layout/api/LayoutTextFragmentItem.h',
             'layout/api/LayoutTextItem.h',
             'layout/api/LineLayoutAPIShim.h',
+            'layout/api/LineLayoutBR.h',
             'layout/api/LineLayoutBlockFlow.h',
             'layout/api/LineLayoutBox.h',
             'layout/api/LineLayoutBoxModel.h',

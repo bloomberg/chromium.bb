@@ -23,8 +23,8 @@
 #include "core/layout/line/InlineTextBox.h"
 
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutBR.h"
 #include "core/layout/LayoutRubyText.h"
+#include "core/layout/api/LineLayoutBR.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/api/LineLayoutRubyRun.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
@@ -122,7 +122,7 @@ LayoutUnit InlineTextBox::lineHeight() const
     if (!isText() || !getLineLayoutItem().parent())
         return LayoutUnit();
     if (getLineLayoutItem().isBR())
-        return LayoutUnit(toLayoutBR(getLineLayoutItem())->lineHeight(isFirstLineStyle()));
+        return LayoutUnit(LineLayoutBR(getLineLayoutItem()).lineHeight(isFirstLineStyle()));
     if (parent()->getLineLayoutItem() == getLineLayoutItem().parent())
         return parent()->lineHeight();
     return LineLayoutBoxModel(getLineLayoutItem().parent()).lineHeight(isFirstLineStyle(), isHorizontal() ? HorizontalLine : VerticalLine, PositionOnContainingLine);
