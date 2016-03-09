@@ -34,7 +34,7 @@
 interface PerformanceResourceTiming : PerformanceEntry {
     readonly attribute DOMString initiatorType;
     // TODO(philipj): readonly attribute DOMString nextHopProtocol;
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] readonly attribute DOMHighResTimeStamp workerStart;
+    readonly attribute DOMHighResTimeStamp workerStart;
     readonly attribute DOMHighResTimeStamp redirectStart;
     readonly attribute DOMHighResTimeStamp redirectEnd;
     readonly attribute DOMHighResTimeStamp fetchStart;

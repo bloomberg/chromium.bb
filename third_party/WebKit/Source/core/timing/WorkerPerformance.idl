@@ -42,23 +42,23 @@
     // Performance Timeline
     // https://w3c.github.io/performance-timeline/#the-performance-interface
     // TODO(philipj): getEntries() should take an optional FilterOptions argument.
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] PerformanceEntryList getEntries();
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] PerformanceEntryList getEntriesByType(DOMString entryType);
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] PerformanceEntryList getEntriesByName(DOMString name, optional DOMString entryType = null);
+    PerformanceEntryList getEntries();
+    PerformanceEntryList getEntriesByType(DOMString entryType);
+    PerformanceEntryList getEntriesByName(DOMString name, optional DOMString entryType = null);
 
     // Resource Timing
     // https://w3c.github.io/resource-timing/#extensions-performance-interface
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] void clearResourceTimings();
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] void setResourceTimingBufferSize(unsigned long maxSize);
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] attribute EventHandler onresourcetimingbufferfull;
+    void clearResourceTimings();
+    void setResourceTimingBufferSize(unsigned long maxSize);
+    attribute EventHandler onresourcetimingbufferfull;
 
     // User Timing
     // https://w3c.github.io/user-timing/#extensions-performance-interface
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline, RaisesException] void mark(DOMString markName);
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] void clearMarks(optional DOMString markName = null);
+    [RaisesException] void mark(DOMString markName);
+    void clearMarks(optional DOMString markName = null);
 
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline, RaisesException] void measure(DOMString measureName, optional DOMString startMark = null, optional DOMString endMark = null);
-    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] void clearMeasures(optional DOMString measureName = null);
+    [RaisesException] void measure(DOMString measureName, optional DOMString startMark = null, optional DOMString endMark = null);
+    void clearMeasures(optional DOMString measureName = null);
 
     // TODO(philipj): There is no spec for the Memory Info API, see blink-dev:
     // https://groups.google.com/a/chromium.org/d/msg/blink-dev/g5YRCGpC9vs/b4OJz71NmPwJ
