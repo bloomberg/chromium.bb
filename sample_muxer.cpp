@@ -23,7 +23,7 @@
 
 // libwebm muxer includes
 #include "mkvmuxer.hpp"
-#include "mkvmuxerutil.hpp"
+#include "mkvmuxertypes.hpp"
 #include "mkvwriter.hpp"
 
 #include "sample_muxer_metadata.h"
