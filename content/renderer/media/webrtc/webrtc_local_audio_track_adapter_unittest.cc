@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "content/renderer/media/media_stream_audio_level_calculator.h"
+#include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
@@ -38,7 +38,11 @@ class WebRtcLocalAudioTrackAdapterTest : public ::testing::Test {
       : params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                 media::CHANNEL_LAYOUT_STEREO, 48000, 16, 480),
         adapter_(WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL)) {
-    track_.reset(new WebRtcLocalAudioTrack(adapter_.get()));
+    MockMediaConstraintFactory constraint_factory;
+    capturer_ = WebRtcAudioCapturer::CreateCapturer(
+        -1, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "", ""),
+        constraint_factory.CreateWebMediaConstraints(), NULL, NULL);
+    track_.reset(new WebRtcLocalAudioTrack(adapter_.get(), capturer_, NULL));
   }
 
  protected:
@@ -49,6 +53,7 @@ class WebRtcLocalAudioTrackAdapterTest : public ::testing::Test {
 
   media::AudioParameters params_;
   scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter_;
+  scoped_refptr<WebRtcAudioCapturer> capturer_;
   scoped_ptr<WebRtcLocalAudioTrack> track_;
 };
 
@@ -74,7 +79,7 @@ TEST_F(WebRtcLocalAudioTrackAdapterTest, AddAndRemoveSink) {
   EXPECT_CALL(*sink,
               OnData(_, 16, params_.sample_rate(), params_.channels(),
                      params_.frames_per_buffer()));
-  track_->Capture(*audio_bus, estimated_capture_time);
+  track_->Capture(*audio_bus, estimated_capture_time, false);
 
   // Remove the sink from the webrtc track.
   webrtc_track->RemoveSink(sink.get());
@@ -84,19 +89,14 @@ TEST_F(WebRtcLocalAudioTrackAdapterTest, AddAndRemoveSink) {
   estimated_capture_time +=
       params_.frames_per_buffer() * base::TimeDelta::FromSeconds(1) /
           params_.sample_rate();
-  track_->Capture(*audio_bus, estimated_capture_time);
+  track_->Capture(*audio_bus, estimated_capture_time, false);
 }
 
 TEST_F(WebRtcLocalAudioTrackAdapterTest, GetSignalLevel) {
   webrtc::AudioTrackInterface* webrtc_track =
       static_cast<webrtc::AudioTrackInterface*>(adapter_.get());
-  int signal_level = -1;
-  EXPECT_FALSE(webrtc_track->GetSignalLevel(&signal_level));
-  MediaStreamAudioLevelCalculator calculator;
-  adapter_->SetLevel(calculator.level());
-  signal_level = -1;
+  int signal_level = 0;
   EXPECT_TRUE(webrtc_track->GetSignalLevel(&signal_level));
-  EXPECT_EQ(0, signal_level);
 }
 
 }  // namespace content

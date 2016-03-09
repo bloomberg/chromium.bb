@@ -5,9 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_LEVEL_CALCULATOR_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_LEVEL_CALCULATOR_H_
 
-#include "base/memory/ref_counted.h"
-#include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
+#include "base/threading/thread_checker.h"
 
 namespace media {
 class AudioBus;
@@ -15,49 +13,30 @@ class AudioBus;
 
 namespace content {
 
-// This class is used by the WebRtcAudioCapturer to calculate the level of the
-// audio signal. And the audio level will be eventually used by the volume
+// This class is used by the WebRtcLocalAudioTrack to calculate the level of
+// the audio signal. And the audio level will be eventually used by the volume
 // animation UI.
-//
 // The algorithm used by this class is the same as how it is done in
 // third_party/webrtc/voice_engine/level_indicator.cc.
-class CONTENT_EXPORT MediaStreamAudioLevelCalculator {
+class MediaStreamAudioLevelCalculator {
  public:
-  // Provides thread-safe access to the current signal level.  This object is
-  // intended to be passed to modules running on other threads that poll for the
-  // current signal level.
-  class Level : public base::RefCountedThreadSafe<Level> {
-   public:
-    float GetCurrent() const;
-
-   private:
-    friend class MediaStreamAudioLevelCalculator;
-    friend class base::RefCountedThreadSafe<Level>;
-
-    Level();
-    ~Level();
-
-    void Set(float level);
-
-    mutable base::Lock lock_;
-    float level_;
-  };
-
   MediaStreamAudioLevelCalculator();
   ~MediaStreamAudioLevelCalculator();
 
-  const scoped_refptr<Level>& level() const { return level_; }
-
-  // Scans the audio signal in |audio_bus| and computes a new signal level
-  // exposed by Level.  If |assume_nonzero_energy| is true, then a completely
-  // zero'ed-out |audio_bus| will be accounted for as having a very faint,
-  // non-zero level.
-  void Calculate(const media::AudioBus& audio_bus, bool assume_nonzero_energy);
+  // Calculates the signal level of the audio data, returning the absolute value
+  // of the amplitude of the signal.
+  float Calculate(const media::AudioBus& audio_bus);
 
  private:
+  // Used to DCHECK that the constructor and Calculate() are always called on
+  // the same audio thread. Note that the destructor will be called on a
+  // different thread, which can be either the main render thread or a new
+  // audio thread where WebRtcLocalAudioTrack::OnSetFormat() is called.
+  base::ThreadChecker thread_checker_;
+
   int counter_;
   float max_amplitude_;
-  const scoped_refptr<Level> level_;
+  float level_;
 };
 
 }  // namespace content

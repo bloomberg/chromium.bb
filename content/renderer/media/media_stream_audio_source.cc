@@ -4,9 +4,7 @@
 
 #include "content/renderer/media/media_stream_audio_source.h"
 
-#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "content/renderer/render_frame_impl.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 
 namespace content {
 
@@ -15,33 +13,20 @@ MediaStreamAudioSource::MediaStreamAudioSource(
     const StreamDeviceInfo& device_info,
     const SourceStoppedCallback& stop_callback,
     PeerConnectionDependencyFactory* factory)
-    : render_frame_id_(render_frame_id), factory_(factory),
-      weak_factory_(this) {
+    : render_frame_id_(render_frame_id), factory_(factory) {
   SetDeviceInfo(device_info);
   SetStopCallback(stop_callback);
 }
 
 MediaStreamAudioSource::MediaStreamAudioSource()
-    : render_frame_id_(-1), factory_(NULL), weak_factory_(this) {
+    : render_frame_id_(-1), factory_(NULL) {
 }
 
 MediaStreamAudioSource::~MediaStreamAudioSource() {}
 
-// static
-MediaStreamAudioSource* MediaStreamAudioSource::From(
-    const blink::WebMediaStreamSource& source) {
-  if (source.isNull() ||
-      source.getType() != blink::WebMediaStreamSource::TypeAudio) {
-    return nullptr;
-  }
-  return static_cast<MediaStreamAudioSource*>(source.getExtraData());
-}
-
 void MediaStreamAudioSource::DoStopSource() {
-  if (audio_capturer_)
+  if (audio_capturer_.get())
     audio_capturer_->Stop();
-  if (webaudio_capturer_)
-    webaudio_capturer_->Stop();
 }
 
 void MediaStreamAudioSource::AddTrack(
@@ -65,22 +50,6 @@ void MediaStreamAudioSource::AddTrack(
 
   factory_->CreateLocalAudioTrack(track);
   callback.Run(this, MEDIA_DEVICE_OK, "");
-}
-
-void MediaStreamAudioSource::StopAudioDeliveryTo(MediaStreamAudioTrack* track) {
-  DCHECK(track);
-  if (audio_capturer_) {
-    // The cast here is safe because only WebRtcLocalAudioTracks are ever used
-    // with WebRtcAudioCapturer sources.
-    //
-    // TODO(miu): That said, this ugly cast won't be necessary after my
-    // soon-upcoming refactoring change.
-    audio_capturer_->RemoveTrack(static_cast<WebRtcLocalAudioTrack*>(track));
-  }
-  if (webaudio_capturer_) {
-    // A separate source is created for each track, so just stop the source.
-    webaudio_capturer_->Stop();
-  }
 }
 
 }  // namespace content

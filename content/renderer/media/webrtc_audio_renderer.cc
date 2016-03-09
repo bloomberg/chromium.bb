@@ -601,7 +601,7 @@ void WebRtcAudioRenderer::OnPlayStateChanged(
   media_stream.audioTracks(web_tracks);
 
   for (const blink::WebMediaStreamTrack& web_track : web_tracks) {
-    MediaStreamAudioTrack* track = MediaStreamAudioTrack::From(web_track);
+    MediaStreamAudioTrack* track = MediaStreamAudioTrack::GetTrack(web_track);
     // WebRtcAudioRenderer can only render audio tracks received from a remote
     // peer. Since the actual MediaStream is mutable from JavaScript, we need
     // to make sure |web_track| is actually a remote track.

@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
@@ -285,8 +284,8 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithSameSource) {
   EXPECT_EQ(desc1_audio_tracks[0].source().id(),
             desc2_audio_tracks[0].source().id());
 
-  EXPECT_EQ(MediaStreamAudioSource::From(desc1_audio_tracks[0].source()),
-            MediaStreamAudioSource::From(desc2_audio_tracks[0].source()));
+  EXPECT_EQ(desc1_audio_tracks[0].source().getExtraData(),
+            desc2_audio_tracks[0].source().getExtraData());
 }
 
 // Test that the same source object is not used if two MediaStreams are
@@ -315,8 +314,8 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
   EXPECT_NE(desc1_audio_tracks[0].source().id(),
             desc2_audio_tracks[0].source().id());
 
-  EXPECT_NE(MediaStreamAudioSource::From(desc1_audio_tracks[0].source()),
-            MediaStreamAudioSource::From(desc2_audio_tracks[0].source()));
+  EXPECT_NE(desc1_audio_tracks[0].source().getExtraData(),
+            desc2_audio_tracks[0].source().getExtraData());
 }
 
 TEST_F(UserMediaClientImplTest, StopLocalTracks) {

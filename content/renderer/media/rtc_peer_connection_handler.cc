@@ -1364,7 +1364,7 @@ blink::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createDTMFSender");
   DVLOG(1) << "createDTMFSender.";
 
-  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::From(track);
+  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::GetTrack(track);
   if (!native_track || !native_track->is_local_track() ||
       track.source().getType() != blink::WebMediaStreamSource::TypeAudio) {
     DLOG(ERROR) << "The DTMF sender requires a local audio track.";

@@ -152,9 +152,9 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // Creates a media::AudioCapturerSource with an implementation that is
   // specific for a WebAudio source. The created WebAudioCapturerSource
   // instance will function as audio source instead of the default
-  // WebRtcAudioCapturer. Ownership of the new WebAudioCapturerSource is
-  // transferred to |source|.
-  virtual void CreateWebAudioSource(blink::WebMediaStreamSource* source);
+  // WebRtcAudioCapturer.
+  virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
+      blink::WebMediaStreamSource* source);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object with
   // the video source using |capturer|.
@@ -169,11 +169,16 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // Returns a new capturer or existing capturer based on the |render_frame_id|
   // and |device_info|; if both are valid, it reuses existing capture if any --
   // otherwise it creates a new capturer.
-  virtual scoped_ptr<WebRtcAudioCapturer> CreateAudioCapturer(
+  virtual scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
       int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,
       MediaStreamAudioSource* audio_source);
+
+  // Adds the audio device as a sink to the audio track and starts the local
+  // audio track. This is virtual for test purposes since no real audio device
+  // exist in unit tests.
+  virtual void StartLocalAudioTrack(WebRtcLocalAudioTrack* audio_track);
 
  private:
   // Implement base::MessageLoop::DestructionObserver.

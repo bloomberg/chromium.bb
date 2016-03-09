@@ -120,8 +120,7 @@ MediaStreamRemoteAudioTrack::MediaStreamRemoteAudioTrack(
 
 MediaStreamRemoteAudioTrack::~MediaStreamRemoteAudioTrack() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  // Ensure the track is stopped.
-  MediaStreamAudioTrack::Stop();
+  source()->RemoveAll(this);
 }
 
 void MediaStreamRemoteAudioTrack::SetEnabled(bool enabled) {
@@ -140,12 +139,8 @@ void MediaStreamRemoteAudioTrack::SetEnabled(bool enabled) {
   source()->SetSinksEnabled(this, enabled);
 }
 
-void MediaStreamRemoteAudioTrack::OnStop() {
+void MediaStreamRemoteAudioTrack::Stop() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "MediaStreamRemoteAudioTrack::OnStop()";
-
-  source()->RemoveAll(this);
-
   // Stop means that a track should be stopped permanently. But
   // since there is no proper way of doing that on a remote track, we can
   // at least disable the track. Blink will not call down to the content layer

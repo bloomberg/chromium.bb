@@ -78,7 +78,7 @@ void WebRtcMediaStreamAdapter::CreateAudioTrack(
   DCHECK_EQ(track.source().getType(), blink::WebMediaStreamSource::TypeAudio);
   // A media stream is connected to a peer connection, enable the
   // peer connection mode for the sources.
-  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::From(track);
+  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::GetTrack(track);
   if (!native_track) {
     DLOG(ERROR) << "No native track for blink audio track.";
     return;
@@ -92,9 +92,10 @@ void WebRtcMediaStreamAdapter::CreateAudioTrack(
 
   if (native_track->is_local_track()) {
     const blink::WebMediaStreamSource& source = track.source();
-    MediaStreamAudioSource* audio_source = MediaStreamAudioSource::From(source);
-    if (audio_source && audio_source->audio_capturer())
-      audio_source->audio_capturer()->EnablePeerConnectionMode();
+    MediaStreamAudioSource* audio_source =
+        static_cast<MediaStreamAudioSource*>(source.getExtraData());
+    if (audio_source && audio_source->GetAudioCapturer().get())
+      audio_source->GetAudioCapturer()->EnablePeerConnectionMode();
   }
 
   webrtc_media_stream_->AddTrack(audio_track);

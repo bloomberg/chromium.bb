@@ -12,12 +12,10 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/media/media_stream_options.h"
-#include "content/renderer/media/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/tagged_list.h"
 #include "media/audio/audio_input_device.h"
 #include "media/base/audio_capturer_source.h"
@@ -43,7 +41,8 @@ class WebRtcLocalAudioTrack;
 // thread or on the main render thread but also other client threads
 // if an alternative AudioCapturerSource has been set.
 class CONTENT_EXPORT WebRtcAudioCapturer
-    : NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureCallback) {
+    : public base::RefCountedThreadSafe<WebRtcAudioCapturer>,
+      NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureCallback) {
  public:
   // Used to construct the audio capturer. |render_frame_id| specifies the
   // RenderFrame consuming audio for capture; -1 is used for tests.
@@ -51,14 +50,12 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // created for. |constraints| contains the settings for audio processing.
   // TODO(xians): Implement the interface for the audio source and move the
   // |constraints| to ApplyConstraints(). Called on the main render thread.
-  static scoped_ptr<WebRtcAudioCapturer> CreateCapturer(
+  static scoped_refptr<WebRtcAudioCapturer> CreateCapturer(
       int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,
       WebRtcAudioDeviceImpl* audio_device,
       MediaStreamAudioSource* audio_source);
-
-  ~WebRtcAudioCapturer() override;
 
   // Add a audio track to the sinks of the capturer.
   // WebRtcAudioDeviceImpl calls this method on the main render thread but
@@ -87,9 +84,16 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Audio parameters utilized by the source of the audio capturer.
   // TODO(phoglund): Think over the implications of this accessor and if we can
   // remove it.
-  media::AudioParameters GetInputFormat() const;
+  media::AudioParameters source_audio_parameters() const;
 
-  const StreamDeviceInfo& device_info() const { return device_info_; }
+  // Gets information about the paired output device. Returns true if such a
+  // device exists.
+  bool GetPairedOutputParameters(int* session_id,
+                                 int* output_sample_rate,
+                                 int* output_frames_per_buffer) const;
+
+  const std::string& device_id() const { return device_info_.device.id; }
+  int session_id() const { return device_info_.session_id; }
 
   // Stops recording audio. This method will empty its track lists since
   // stopping the capturer will implicitly invalidate all its tracks.
@@ -105,6 +109,10 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   void SetCapturerSource(
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::AudioParameters params);
+
+ protected:
+  friend class base::RefCountedThreadSafe<WebRtcAudioCapturer>;
+  ~WebRtcAudioCapturer() override;
 
  private:
   class TrackOwner;
@@ -136,7 +144,8 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   void SetCapturerSourceInternal(
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::ChannelLayout channel_layout,
-      int sample_rate);
+      int sample_rate,
+      int buffer_size);
 
   // Starts recording audio.
   // Triggered by AddSink() on the main render thread or a Libjingle working
@@ -167,7 +176,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // Audio processor doing processing like FIFO, AGC, AEC and NS. Its output
   // data is in a unit of 10 ms data chunk.
-  const scoped_refptr<MediaStreamAudioProcessor> audio_processor_;
+  scoped_refptr<MediaStreamAudioProcessor> audio_processor_;
 
   bool running_;
 
@@ -195,9 +204,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // guaranteed to exist as long as a WebRtcLocalAudioTrack is connected to this
   // WebRtcAudioCapturer.
   MediaStreamAudioSource* const audio_source_;
-
-  // Used to calculate the signal level that shows in the UI.
-  MediaStreamAudioLevelCalculator level_calculator_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioCapturer);
 };

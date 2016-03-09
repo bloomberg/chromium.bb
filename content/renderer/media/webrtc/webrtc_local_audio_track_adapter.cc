@@ -23,31 +23,34 @@ WebRtcLocalAudioTrackAdapter::Create(
     webrtc::AudioSourceInterface* track_source) {
   // TODO(tommi): Change this so that the signaling thread is one of the
   // parameters to this method.
-  scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner;
+  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread;
   RenderThreadImpl* current = RenderThreadImpl::current();
   if (current) {
     PeerConnectionDependencyFactory* pc_factory =
         current->GetPeerConnectionDependencyFactory();
-    signaling_task_runner = pc_factory->GetWebRtcSignalingThread();
-    CHECK(signaling_task_runner);
-  } else {
-    LOG(WARNING) << "Assuming single-threaded operation for unit test.";
+    signaling_thread = pc_factory->GetWebRtcSignalingThread();
   }
+
+  LOG_IF(ERROR, !signaling_thread.get()) << "No signaling thread!";
 
   rtc::RefCountedObject<WebRtcLocalAudioTrackAdapter>* adapter =
       new rtc::RefCountedObject<WebRtcLocalAudioTrackAdapter>(
-          label, track_source, std::move(signaling_task_runner));
+          label, track_source, signaling_thread);
   return adapter;
 }
 
 WebRtcLocalAudioTrackAdapter::WebRtcLocalAudioTrackAdapter(
     const std::string& label,
     webrtc::AudioSourceInterface* track_source,
-    scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread)
     : webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>(label),
       owner_(NULL),
       track_source_(track_source),
-      signaling_task_runner_(std::move(signaling_task_runner)) {}
+      signaling_thread_(signaling_thread),
+      signal_level_(0) {
+  signaling_thread_checker_.DetachFromThread();
+  capture_thread_.DetachFromThread();
+}
 
 WebRtcLocalAudioTrackAdapter::~WebRtcLocalAudioTrackAdapter() {
 }
@@ -59,17 +62,14 @@ void WebRtcLocalAudioTrackAdapter::Initialize(WebRtcLocalAudioTrack* owner) {
 }
 
 void WebRtcLocalAudioTrackAdapter::SetAudioProcessor(
-    scoped_refptr<MediaStreamAudioProcessor> processor) {
-  DCHECK(processor.get());
-  DCHECK(!audio_processor_);
-  audio_processor_ = std::move(processor);
-}
-
-void WebRtcLocalAudioTrackAdapter::SetLevel(
-    scoped_refptr<MediaStreamAudioLevelCalculator::Level> level) {
-  DCHECK(level.get());
-  DCHECK(!level_);
-  level_ = std::move(level);
+    const scoped_refptr<MediaStreamAudioProcessor>& processor) {
+  // SetAudioProcessor will be called when a new capture thread has been
+  // initialized, so we need to detach from any current capture thread we're
+  // checking and attach to the current one.
+  capture_thread_.DetachFromThread();
+  DCHECK(capture_thread_.CalledOnValidThread());
+  base::AutoLock auto_lock(lock_);
+  audio_processor_ = processor;
 }
 
 std::string WebRtcLocalAudioTrackAdapter::kind() const {
@@ -79,9 +79,8 @@ std::string WebRtcLocalAudioTrackAdapter::kind() const {
 bool WebRtcLocalAudioTrackAdapter::set_enabled(bool enable) {
   // If we're not called on the signaling thread, we need to post a task to
   // change the state on the correct thread.
-  if (signaling_task_runner_ &&
-      !signaling_task_runner_->BelongsToCurrentThread()) {
-    signaling_task_runner_->PostTask(FROM_HERE,
+  if (signaling_thread_.get() && !signaling_thread_->BelongsToCurrentThread()) {
+    signaling_thread_->PostTask(FROM_HERE,
         base::Bind(
             base::IgnoreResult(&WebRtcLocalAudioTrackAdapter::set_enabled),
             this, enable));
@@ -94,8 +93,7 @@ bool WebRtcLocalAudioTrackAdapter::set_enabled(bool enable) {
 
 void WebRtcLocalAudioTrackAdapter::AddSink(
     webrtc::AudioTrackSinkInterface* sink) {
-  DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(signaling_thread_checker_.CalledOnValidThread());
   DCHECK(sink);
 #ifndef NDEBUG
   // Verify that |sink| has not been added.
@@ -114,8 +112,7 @@ void WebRtcLocalAudioTrackAdapter::AddSink(
 
 void WebRtcLocalAudioTrackAdapter::RemoveSink(
     webrtc::AudioTrackSinkInterface* sink) {
-  DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(signaling_thread_checker_.CalledOnValidThread());
   DCHECK(sink);
   for (ScopedVector<WebRtcAudioSinkAdapter>::iterator it =
            sink_adapters_.begin();
@@ -129,32 +126,28 @@ void WebRtcLocalAudioTrackAdapter::RemoveSink(
 }
 
 bool WebRtcLocalAudioTrackAdapter::GetSignalLevel(int* level) {
-  DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(signaling_thread_checker_.CalledOnValidThread());
 
-  // |level_| is only set once, so it's safe to read without first acquiring a
-  // mutex.
-  if (!level_)
-    return false;
-  const float signal_level = level_->GetCurrent();
-  DCHECK_GE(signal_level, 0.0f);
-  DCHECK_LE(signal_level, 1.0f);
-  // Convert from float in range [0.0,1.0] to an int in range [0,32767].
-  *level = static_cast<int>(signal_level * std::numeric_limits<int16_t>::max() +
-                            0.5f /* rounding to nearest int */);
+  base::AutoLock auto_lock(lock_);
+  *level = signal_level_;
   return true;
 }
 
 rtc::scoped_refptr<webrtc::AudioProcessorInterface>
 WebRtcLocalAudioTrackAdapter::GetAudioProcessor() {
-  DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(signaling_thread_checker_.CalledOnValidThread());
+  base::AutoLock auto_lock(lock_);
   return audio_processor_.get();
 }
 
+void WebRtcLocalAudioTrackAdapter::SetSignalLevel(int signal_level) {
+  DCHECK(capture_thread_.CalledOnValidThread());
+  base::AutoLock auto_lock(lock_);
+  signal_level_ = signal_level;
+}
+
 webrtc::AudioSourceInterface* WebRtcLocalAudioTrackAdapter::GetSource() const {
-  DCHECK(!signaling_task_runner_ ||
-         signaling_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(signaling_thread_checker_.CalledOnValidThread());
   return track_source_;
 }
 

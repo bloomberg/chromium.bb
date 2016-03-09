@@ -109,8 +109,8 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   // and mixes audio from all the tracks that belong to the media stream.
   // For now, we have separate renderers depending on if the first audio track
   // in the stream is local or remote.
-  MediaStreamAudioTrack* audio_track =
-      MediaStreamAudioTrack::From(audio_tracks[0]);
+  MediaStreamAudioTrack* audio_track = MediaStreamAudioTrack::GetTrack(
+      audio_tracks[0]);
   if (!audio_track) {
     // This can happen if the track was cloned.
     // TODO(tommi, perkj): Fix cloning of tracks to handle extra data too.

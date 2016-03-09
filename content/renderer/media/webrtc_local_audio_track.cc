@@ -13,49 +13,78 @@
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_sink_owner.h"
 #include "content/renderer/media/media_stream_audio_track_sink.h"
+#include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
+#include "content/renderer/media/webrtc_audio_capturer.h"
 
 namespace content {
 
 WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
-    scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter)
-    : MediaStreamAudioTrack(true), adapter_(std::move(adapter)) {
+    WebRtcLocalAudioTrackAdapter* adapter,
+    const scoped_refptr<WebRtcAudioCapturer>& capturer,
+    WebAudioCapturerSource* webaudio_source)
+    : MediaStreamAudioTrack(true),
+      adapter_(adapter),
+      capturer_(capturer),
+      webaudio_source_(webaudio_source) {
+  DCHECK(capturer.get() || webaudio_source);
   signal_thread_checker_.DetachFromThread();
-  DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
 
   adapter_->Initialize(this);
+
+  DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
 }
 
 WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack()";
-  // Ensure the track is stopped.
-  MediaStreamAudioTrack::Stop();
+  // Users might not call Stop() on the track.
+  Stop();
 }
 
 media::AudioParameters WebRtcLocalAudioTrack::GetOutputFormat() const {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  base::AutoLock auto_lock(lock_);
-  return audio_parameters_;
+  if (webaudio_source_.get()) {
+    return media::AudioParameters();
+  } else {
+    return capturer_->GetOutputFormat();
+  }
 }
 
 void WebRtcLocalAudioTrack::Capture(const media::AudioBus& audio_bus,
-                                    base::TimeTicks estimated_capture_time) {
+                                    base::TimeTicks estimated_capture_time,
+                                    bool force_report_nonzero_energy) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   DCHECK(!estimated_capture_time.is_null());
 
+  // Calculate the signal level regardless of whether the track is disabled or
+  // enabled.  If |force_report_nonzero_energy| is true, |audio_bus| contains
+  // post-processed data that may be all zeros even though the signal contained
+  // energy before the processing.  In this case, report nonzero energy even if
+  // the energy of the data in |audio_bus| is zero.
+  const float minimum_signal_level =
+      force_report_nonzero_energy ? 1.0f / std::numeric_limits<int16_t>::max()
+                                  : 0.0f;
+  const float signal_level = std::max(
+      minimum_signal_level,
+      std::min(1.0f, level_calculator_->Calculate(audio_bus)));
+  const int signal_level_as_pcm16 =
+      static_cast<int>(signal_level * std::numeric_limits<int16_t>::max() +
+                       0.5f /* rounding to nearest int */);
+  adapter_->SetSignalLevel(signal_level_as_pcm16);
+
+  scoped_refptr<WebRtcAudioCapturer> capturer;
   SinkList::ItemList sinks;
   SinkList::ItemList sinks_to_notify_format;
   {
     base::AutoLock auto_lock(lock_);
+    capturer = capturer_;
     sinks = sinks_.Items();
     sinks_.RetrieveAndClearTags(&sinks_to_notify_format);
   }
 
   // Notify the tracks on when the format changes. This will do nothing if
-  // |sinks_to_notify_format| is empty. Note that accessing |audio_parameters_|
-  // without holding the |lock_| is valid since |audio_parameters_| is only
-  // changed on the current thread.
+  // |sinks_to_notify_format| is empty.
   for (const auto& sink : sinks_to_notify_format)
     sink->OnSetFormat(audio_parameters_);
 
@@ -76,20 +105,22 @@ void WebRtcLocalAudioTrack::OnSetFormat(
   capture_thread_checker_.DetachFromThread();
   DCHECK(capture_thread_checker_.CalledOnValidThread());
 
-  base::AutoLock auto_lock(lock_);
   audio_parameters_ = params;
+  level_calculator_.reset(new MediaStreamAudioLevelCalculator());
+
+  base::AutoLock auto_lock(lock_);
   // Remember to notify all sinks of the new format.
   sinks_.TagAll();
 }
 
-void WebRtcLocalAudioTrack::SetLevel(
-    scoped_refptr<MediaStreamAudioLevelCalculator::Level> level) {
-  adapter_->SetLevel(std::move(level));
-}
-
 void WebRtcLocalAudioTrack::SetAudioProcessor(
-    scoped_refptr<MediaStreamAudioProcessor> processor) {
-  adapter_->SetAudioProcessor(std::move(processor));
+    const scoped_refptr<MediaStreamAudioProcessor>& processor) {
+  // if the |processor| does not have audio processing, which can happen if
+  // kDisableAudioTrackProcessing is set set or all the constraints in
+  // the |processor| are turned off. In such case, we pass NULL to the
+  // adapter to indicate that no stats can be gotten from the processor.
+  adapter_->SetAudioProcessor(processor->has_audio_processing() ?
+      processor : NULL);
 }
 
 void WebRtcLocalAudioTrack::AddSink(MediaStreamAudioSink* sink) {
@@ -135,22 +166,63 @@ void WebRtcLocalAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
     removed_item->Reset();
 }
 
+void WebRtcLocalAudioTrack::Start() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "WebRtcLocalAudioTrack::Start()";
+  if (webaudio_source_.get()) {
+    // If the track is hooking up with WebAudio, do NOT add the track to the
+    // capturer as its sink otherwise two streams in different clock will be
+    // pushed through the same track.
+    webaudio_source_->Start(this);
+  } else if (capturer_.get()) {
+    capturer_->AddTrack(this);
+  }
+
+  SinkList::ItemList sinks;
+  {
+    base::AutoLock auto_lock(lock_);
+    sinks = sinks_.Items();
+  }
+  for (SinkList::ItemList::const_iterator it = sinks.begin();
+       it != sinks.end();
+       ++it) {
+    (*it)->OnReadyStateChanged(blink::WebMediaStreamSource::ReadyStateLive);
+  }
+}
+
 void WebRtcLocalAudioTrack::SetEnabled(bool enabled) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (adapter_.get())
     adapter_->set_enabled(enabled);
 }
 
-void WebRtcLocalAudioTrack::OnStop() {
+void WebRtcLocalAudioTrack::Stop() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "WebRtcLocalAudioTrack::OnStop()";
+  DVLOG(1) << "WebRtcLocalAudioTrack::Stop()";
+  if (!capturer_.get() && !webaudio_source_.get())
+    return;
 
-  // Protect the pointers using the lock when accessing |sinks_|.
+  if (webaudio_source_.get()) {
+    // Called Stop() on the |webaudio_source_| explicitly so that
+    // |webaudio_source_| won't push more data to the track anymore.
+    // Also note that the track is not registered as a sink to the |capturer_|
+    // in such case and no need to call RemoveTrack().
+    webaudio_source_->Stop();
+  } else {
+    // It is necessary to call RemoveTrack on the |capturer_| to avoid getting
+    // audio callback after Stop().
+    capturer_->RemoveTrack(this);
+  }
+
+  // Protect the pointers using the lock when accessing |sinks_| and
+  // setting the |capturer_| to NULL.
   SinkList::ItemList sinks;
   {
     base::AutoLock auto_lock(lock_);
     sinks = sinks_.Items();
     sinks_.Clear();
+    webaudio_source_ = NULL;
+    capturer_ = NULL;
   }
 
   for (SinkList::ItemList::const_iterator it = sinks.begin();
