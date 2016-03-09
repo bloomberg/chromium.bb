@@ -2038,6 +2038,8 @@
       'browser/ui/webui/settings/settings_startup_pages_handler.h',
       'browser/ui/webui/settings/site_settings_handler.cc',
       'browser/ui/webui/settings/site_settings_handler.h',
+      'browser/ui/webui/settings/system_handler.cc',
+      'browser/ui/webui/settings/system_handler.h',
       'browser/ui/webui/signin/get_auth_frame.cc',
       'browser/ui/webui/signin/get_auth_frame.h',
       'browser/ui/webui/signin/login_ui_service.cc',

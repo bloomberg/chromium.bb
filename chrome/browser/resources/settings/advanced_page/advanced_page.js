@@ -39,5 +39,19 @@ Polymer({
     },
   },
 
+<if expr="not chromeos">
+  listeners: {
+    'dom-change': 'onDomChange_',
+  },
+
+  /** @private */
+  onDomChange_: function() {
+    var systemPage = /** @type {?SystemPageElement} */(
+        this.$$('settings-system-page'));
+    if (systemPage && !systemPage.delegate)
+      systemPage.delegate = new settings.SystemPageDelegateImpl;
+  },
+</if>
+
   behaviors: [I18nBehavior, SettingsPageVisibility],
 });

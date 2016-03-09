@@ -59,4 +59,11 @@
       Display Chromium in this language
     </message>
   </if>
+
+  <!-- System Page -->
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL" desc="Label for the checkbox to allow apps to run in the background, when Chrome is closed.">
+      Continue running background apps when Chromium is closed
+    </message>
+  </if>
 </grit-part>

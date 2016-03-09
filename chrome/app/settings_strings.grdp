@@ -995,4 +995,17 @@
       Hold the Search key to switch the behavior of the top-row keys.
     </message>
   </if>
+
+  <!-- System Page -->
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_SYSTEM" desc="Title of the system settings.">
+      System
+    </message>
+    <message name="IDS_SETTINGS_SYSTEM_HARDWARE_ACCELERATION_LABEL" desc="Label for the checkbox that forces Chrome to render via hardware acceleration (GPU) when available.">
+      Use hardware acceleration when available
+    </message>
+    <message name="IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_BUTTON" desc="Text for the button that changes a user's network proxy settings.">
+      Change proxy settings
+    </message>
+  </if>
 </grit-part>

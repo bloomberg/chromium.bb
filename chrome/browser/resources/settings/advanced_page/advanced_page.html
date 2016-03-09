@@ -16,6 +16,11 @@
 <link rel="import" href="chrome://md-settings/date_time_page/date_time_page.html">
 </if>
 
+<if expr="not chromeos">
+<link rel="import" href="chrome://md-settings/system_page/system_page.html">
+<link rel="import" href="chrome://md-settings/system_page/system_page_delegate.html">
+</if>
+
 <dom-module id="settings-advanced-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_page.css">
   <template>
@@ -84,6 +89,14 @@
       <settings-section page-title="[[i18n('a11yPageTitle')]]"
           current-route="[[currentRoute]]" section="a11y">
         <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
+      </settings-section>
+    </template>
+</if>
+<if expr="not chromeos">
+    <template is="dom-if" if="[[showPage(pageVisibility.system)]]" restamp>
+      <settings-section page-title="[[i18n('systemPageTitle')]]"
+          current-route="[[currentRoute]]" section="system">
+        <settings-system-page prefs="{{prefs}}"></settings-system-page>
       </settings-section>
     </template>
 </if>

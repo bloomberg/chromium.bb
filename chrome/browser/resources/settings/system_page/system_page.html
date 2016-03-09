@@ -1,0 +1,28 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
+
+<dom-module id="settings-system-page">
+  <template>
+    <style include="settings-shared"></style>
+    <div class="settings-box block first">
+<if expr="not is_macosx">
+      <settings-checkbox i18n-values="label:backgroundAppsLabel"
+          pref="{{prefs.background_mode.enabled}}">
+      </settings-checkbox>
+</if>
+      <settings-checkbox i18n-values="label:hardwareAccelerationLabel"
+          pref="{{prefs.hardware_acceleration_mode.enabled}}">
+        <!-- TODO(dbeam): restart button. -->
+      </settings-checkbox>
+    </div>
+    <div class="settings-box">
+      <div class="button-strip">
+        <paper-button i18n-content="changeProxySettings"
+            on-tap="onChangeProxySettingsTap_"></paper-button>
+      </div>
+    </div>
+  </template>
+  <script src="chrome://md-settings/system_page/system_page.js"></script>
+</dom-module>

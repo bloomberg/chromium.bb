@@ -701,6 +701,22 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 }
 
+#if !defined(OS_CHROMEOS)
+void AddSystemStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"systemPageTitle", IDS_SETTINGS_SYSTEM},
+#if !defined(OS_MACOSX)
+      {"backgroundAppsLabel", IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL},
+#endif
+      {"hardwareAccelerationLabel",
+          IDS_SETTINGS_SYSTEM_HARDWARE_ACCELERATION_LABEL},
+      {"changeProxySettings", IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_BUTTON},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+}
+#endif
+
 void AddWebContentStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"webContent", IDS_SETTINGS_WEB_CONTENT},
@@ -776,6 +792,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddSearchEnginesStrings(html_source);
   AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source);
+#if !defined(OS_CHROMEOS)
+  AddSystemStrings(html_source);
+#endif
   AddUsersStrings(html_source);
   AddWebContentStrings(html_source);
 

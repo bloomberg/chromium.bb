@@ -59,6 +59,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   static PrefsUtil::TypedPrefMap* s_whitelist = nullptr;
   if (s_whitelist)
     return *s_whitelist;
+  // TODO(dbeam): why aren't we using kPrefName from pref_names.h?
   s_whitelist = new PrefsUtil::TypedPrefMap();
   (*s_whitelist)["alternate_error_pages.enabled"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
@@ -243,6 +244,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
 #else
   (*s_whitelist)["intl.accept_languages"] =
       settings_private::PrefType::PREF_TYPE_STRING;
+
+  // System settings.
+  (*s_whitelist)["background_mode.enabled"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["hardware_acceleration_mode.enabled"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -553,10 +560,17 @@ bool PrefsUtil::IsPrefSupervisorControlled(const std::string& pref_name) {
 }
 
 bool PrefsUtil::IsPrefUserModifiable(const std::string& pref_name) {
-  PrefService* pref_service = profile_->GetPrefs();
-  const PrefService::Preference* pref =
-      pref_service->FindPreference(pref_name.c_str());
-  return pref && pref->IsUserModifiable();
+  const PrefService::Preference* profile_pref =
+      profile_->GetPrefs()->FindPreference(pref_name);
+  if (profile_pref)
+    return profile_pref->IsUserModifiable();
+
+  const PrefService::Preference* local_state_pref =
+      g_browser_process->local_state()->FindPreference(pref_name);
+  if (local_state_pref)
+    return local_state_pref->IsUserModifiable();
+
+  return false;
 }
 
 PrefService* PrefsUtil::FindServiceForPref(const std::string& pref_name) {

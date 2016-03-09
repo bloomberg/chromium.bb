@@ -30,6 +30,7 @@ class PrefsUtil {
     PREF_TYPE_UNSUPPORTED
   };
 
+  // TODO(dbeam): why is the key a std::string rather than const char*?
   using TypedPrefMap = std::map<std::string, api::settings_private::PrefType>;
 
   explicit PrefsUtil(Profile* profile);

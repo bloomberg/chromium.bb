@@ -23,6 +23,7 @@
         'settings_page/compiled_resources2.gyp:*',
         'site_settings/compiled_resources2.gyp:*',
         'site_settings_page/compiled_resources2.gyp:*',
+        'system_page/compiled_resources2.gyp:*',
       ],
     },
     {
