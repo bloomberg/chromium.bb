@@ -145,8 +145,7 @@ void InputMethodEngine::UpdateComposition(
   // If the IME extension is handling key event, hold the composition text
   // until the key event is handled.
   if (input_context && !handling_key_event_) {
-    input_context->UpdateCompositionText(composition_text, cursor_pos,
-                                         is_visible);
+    input_context->UpdateCompositionText(composition_, cursor_pos, is_visible);
     composition_.Clear();
   }
 }
