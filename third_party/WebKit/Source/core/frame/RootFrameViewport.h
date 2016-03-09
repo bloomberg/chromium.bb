@@ -70,6 +70,7 @@ public:
     void cancelProgrammaticScrollAnimation() override;
     ScrollBehavior scrollBehaviorStyle() const override;
     Widget* widget() override;
+    void clearScrollAnimators() override;
 
 private:
     RootFrameViewport(ScrollableArea& visualViewport, ScrollableArea& layoutViewport);

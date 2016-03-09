@@ -282,6 +282,8 @@ public:
     EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
+    virtual void clearScrollAnimators();
+
 protected:
     ScrollableArea();
 
@@ -295,8 +297,6 @@ protected:
     friend class ScrollAnimatorBase;
     friend class ProgrammaticScrollAnimator;
     void scrollPositionChanged(const DoublePoint&, ScrollType);
-
-    void clearScrollAnimators();
 
     bool horizontalScrollbarNeedsPaintInvalidation() const { return m_horizontalScrollbarNeedsPaintInvalidation; }
     bool verticalScrollbarNeedsPaintInvalidation() const { return m_verticalScrollbarNeedsPaintInvalidation; }

@@ -373,10 +373,12 @@ void ScrollableArea::didAddScrollbar(Scrollbar& scrollbar, ScrollbarOrientation 
 
 void ScrollableArea::willRemoveScrollbar(Scrollbar& scrollbar, ScrollbarOrientation orientation)
 {
-    if (orientation == VerticalScrollbar)
-        scrollAnimator().willRemoveVerticalScrollbar(scrollbar);
-    else
-        scrollAnimator().willRemoveHorizontalScrollbar(scrollbar);
+    if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator()) {
+        if (orientation == VerticalScrollbar)
+            scrollAnimator->willRemoveVerticalScrollbar(scrollbar);
+        else
+            scrollAnimator->willRemoveHorizontalScrollbar(scrollbar);
+    }
 }
 
 void ScrollableArea::contentsResized()
