@@ -27,6 +27,7 @@ group("nacl") {
     ":pnacl_mime_type_test($newlib)",
     ":pnacl_mime_type_test($pnacl)",
     ":pnacl_options_test($pnacl)",
+    ":pnacl_url_loader_test($pnacl)",
     ":ppapi_bad_get_ppp_instance_crash($newlib)",
     ":ppapi_bad_no_ppp_instance($newlib)",
     ":ppapi_bad_ppp_initialize($newlib)",
@@ -432,6 +433,19 @@ if (is_nacl && !is_nacl_nonsfi) {
       "pnacl_nmf_options/pnacl_o_2.nmf",
       "pnacl_nmf_options/pnacl_o_large.nmf",
     ]
+  }
+
+  nacl_test_data("pnacl_url_loader_test") {
+    output_name = "pnacl_url_loader"
+    sources = [
+      "pnacl_url_loader/pnacl_url_loader.cc",
+    ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
+    generate_nmf = true
+    destination_dir = "nacl_test_data"
+    test_files = [ "pnacl_url_loader/pnacl_url_loader.html" ]
   }
 
   nacl_test_data("pnacl_dyncode_syscall_disabled_test") {

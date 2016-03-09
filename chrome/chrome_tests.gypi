@@ -2289,6 +2289,9 @@
             'browser/extensions/extension_nacl_browsertest.cc',
             'browser/nacl_host/test/gdb_debug_stub_browsertest.cc',
           ],
+          'dependencies': [
+            'test/data/nacl/nacl_test_data.gyp:pnacl_url_loader_test',
+          ],
           'conditions': [
             ['disable_nacl_untrusted==0', {
               'sources': [
