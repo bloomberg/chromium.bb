@@ -3751,11 +3751,8 @@ LayoutRect FrameView::scrollIntoView(const LayoutRect& rectInContent, const Scro
 {
     LayoutRect viewRect(visibleContentRect());
     LayoutRect exposeRect = ScrollAlignment::getRectToExpose(viewRect, rectInContent, alignX, alignY);
-
-    double xOffset = exposeRect.x();
-    double yOffset = exposeRect.y();
-
-    setScrollPosition(DoublePoint(xOffset, yOffset), scrollType);
+    if (exposeRect != viewRect)
+        setScrollPosition(DoublePoint(exposeRect.x(), exposeRect.y()), scrollType);
 
     // Scrolling the FrameView cannot change the input rect's location relative to the document.
     return rectInContent;

@@ -109,9 +109,8 @@ LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, co
     LayoutRect viewRectInContent = intersection(visualRectInContent, frameRectInContent);
     LayoutRect targetViewport =
         ScrollAlignment::getRectToExpose(viewRectInContent, rectInContent, alignX, alignY);
-    DoublePoint targetOffset(targetViewport.x(), targetViewport.y());
-
-    setScrollPosition(targetOffset, scrollType, ScrollBehaviorInstant);
+    if (targetViewport != viewRectInContent)
+        setScrollPosition(DoublePoint(targetViewport.x(), targetViewport.y()), scrollType);
 
     // RootFrameViewport only changes the viewport relative to the document so we can't change the input
     // rect's location relative to the document origin.
