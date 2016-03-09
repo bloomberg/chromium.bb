@@ -2,21 +2,43 @@
 
 ## I just need to fix the compile!
 
-To locally run closure compiler like the bots, do this:
+### Pre-requisites
 
+You'll need Java 7 (preferably the OpenJDK version).  To install on Ubuntu:
 ```shell
-cd $CHROMIUM_SRC
-# sudo apt-get install openjdk-7-jre # may be required
-GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources.gyp
-ninja -C out/Default
+sudo apt-get install openjdk-7-jre
 ```
 
-To run the v2 gyp format, change the last 2 lines to:
+On Mac or Windows, visit:
+[http://www.oracle.com/technetwork/java/javase/downloads/index.html](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 
+### Using ninja to compile the code
+
+We use GYP and ninja as our build system. To generate the ninja files from GYP:
 ```shell
-# notice the 2 in compiled_resources2.gyp
+# notice the 2 in compiled_resources.gyp
 GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources2.gyp
-ninja -C out/Default
+```
+
+To compile the JavaScript:
+```shell
+ninja -C out/Default -j4
+```
+
+The output should look something like this:
+```shell
+ninja: Entering directory `out/Default/'
+[30/106] ACTION Compiling chrome/browser/resources/md_history/constants.js
+```
+
+To generate and run the **deprecated** v1 gyp format, remove the "2" from "compiled_resources2.gyp":
+```shell
+$ GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources.gyp
+```
+
+Compiling works the same way for both v1 and v2 systems:
+```shell
+ninja -C out/Default -j4
 ```
 
 ## Background
