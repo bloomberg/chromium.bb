@@ -287,6 +287,10 @@ def AddEnvSetup(files):
   GenerateSetEnvCmd(tempdir)
   files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.cmd'),
                 'win_sdk\\bin\\SetEnv.cmd'))
+  files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.x86.json'),
+                'win_sdk\\bin\\SetEnv.x86.json'))
+  files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.x64.json'),
+                'win_sdk\\bin\\SetEnv.x64.json'))
   vs_version_file = os.path.join(tempdir, 'VS_VERSION')
   with open(vs_version_file, 'wb') as version:
     print >>version, VS_VERSION
