@@ -22,6 +22,7 @@
       },
       'dependencies': [
         'allocator/allocator.gyp:allocator',
+        'allocator/allocator.gyp:allocator_features',
         'base_debugging_flags#target',
         'base_static',
         'base_build_date#target',
@@ -234,6 +235,9 @@
             'sync_socket.h',
             'sync_socket_posix.cc',
           ]
+        }],
+        ['use_experimental_allocator_shim==1', {
+          'dependencies': [ 'allocator/allocator.gyp:unified_allocator_shim']
         }],
       ],
       'sources': [
@@ -718,6 +722,9 @@
           'dependencies': [
             'third_party/libevent/libevent.gyp:libevent'
           ],
+        }],
+        ['use_experimental_allocator_shim==1', {
+          'sources': [ 'allocator/allocator_shim_unittest.cc']
         }],
       ],  # conditions
       'target_conditions': [

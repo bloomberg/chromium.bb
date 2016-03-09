@@ -20,7 +20,6 @@
     # e.g. for profiling (it's more rare to profile Debug builds,
     # but people sometimes need to do that).
     'disable_debugallocation%': 0,
-    'use_experimental_allocator_shim%': 0,
   },
   'targets': [
     # The only targets that should depend on allocator are 'base' and
@@ -379,6 +378,18 @@
         }],
       ],  # conditions of 'allocator' target.
     },  # 'allocator' target.
+    {
+      # GN: //base/allocator:features
+      'target_name': 'allocator_features',
+      'includes': [ '../../build/buildflag_header.gypi' ],
+      'toolsets': ['host', 'target'],
+      'variables': {
+        'buildflag_header_path': 'base/allocator/features.h',
+        'buildflag_flags': [
+          'USE_EXPERIMENTAL_ALLOCATOR_SHIM=<(use_experimental_allocator_shim)',
+        ],
+      },
+    },  # 'allocator_features' target.
   ],  # targets.
   'conditions': [
     ['OS=="win" and win_use_allocator_shim==1', {
@@ -408,5 +419,39 @@
         },
       ],
     }],
+    ['use_experimental_allocator_shim==1', {
+      'targets': [
+        {
+          # GN: //base/allocator:unified_allocator_shim
+          'target_name': 'unified_allocator_shim',
+          'toolsets': ['host', 'target'],
+          'type': 'static_library',
+          'defines': [ 'BASE_IMPLEMENTATION' ],
+          'sources': [
+            'allocator_shim.cc',
+            'allocator_shim.h',
+            'allocator_shim_internals.h',
+            'allocator_shim_override_cpp_symbols.h',
+            'allocator_shim_override_libc_symbols.h',
+          ],
+          'include_dirs': [
+            '../..',
+          ],
+          'conditions': [
+            ['OS=="linux" and use_allocator=="tcmalloc"', {
+              'sources': [
+                'allocator_shim_default_dispatch_to_tcmalloc.cc',
+                'allocator_shim_override_glibc_weak_symbols.h',
+              ],
+            }],
+            ['OS=="linux" and use_allocator=="none"', {
+              'sources': [
+                'allocator_shim_default_dispatch_to_glibc.cc',
+              ],
+            }],
+          ]
+        },  # 'unified_allocator_shim' target.
+      ],
+    }]
   ],
 }

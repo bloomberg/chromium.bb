@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/allocator.gni")
 import("//build/config/compiler/compiler.gni")
 
@@ -294,3 +295,35 @@ if (use_allocator == "tcmalloc") {
     deps += [ "//base/third_party/dynamic_annotations" ]
   }
 }  # use_allocator == "tcmalloc"
+
+buildflag_header("features") {
+  header = "features.h"
+  flags = [ "USE_EXPERIMENTAL_ALLOCATOR_SHIM=$use_experimental_allocator_shim" ]
+}
+
+if (use_experimental_allocator_shim) {
+  source_set("unified_allocator_shim") {
+    # TODO(primiano): support other platforms, currently this works only on
+    # Linux/CrOS. http://crbug.com/550886 .
+    configs += [ "//base:base_implementation" ]  # for BASE_EXPORT
+    visibility = [ "//base:base" ]
+    sources = [
+      "allocator_shim.cc",
+      "allocator_shim.h",
+      "allocator_shim_internals.h",
+      "allocator_shim_override_cpp_symbols.h",
+      "allocator_shim_override_libc_symbols.h",
+    ]
+    if (is_linux && use_allocator == "tcmalloc") {
+      sources += [
+        "allocator_shim_default_dispatch_to_tcmalloc.cc",
+        "allocator_shim_override_glibc_weak_symbols.h",
+      ]
+      deps = [
+        ":tcmalloc",
+      ]
+    } else if (is_linux && use_allocator == "none") {
+      sources += [ "allocator_shim_default_dispatch_to_glibc.cc" ]
+    }
+  }
+}

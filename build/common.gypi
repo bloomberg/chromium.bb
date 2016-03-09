@@ -1339,6 +1339,11 @@
     # to ~/.gyp/include.gypi, gclient runhooks --force, and do a release build.
     'win_use_allocator_shim%': 1, # 1 = shim allocator via libcmt; 0 = msvcrt
 
+    # Enables the unified allocator shim (experimental) which routes all the
+    # alloc calls to base/. Right now is supported on Linux Desktop only.
+    # http://crbug.com/550886 .
+    'use_experimental_allocator_shim%': 0,
+
     # TODO(bradnelson): eliminate this when possible.
     # To allow local gyp files to prevent release.vsprops from being included.
     # Yes(1) means include release.vsprops.

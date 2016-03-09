@@ -18,6 +18,7 @@
 # huge sequence of random-looking conditionals.
 
 import("//build/buildflag_header.gni")
+import("//build/config/allocator.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/sysroot.gni")
@@ -974,6 +975,7 @@ component("base") {
 
   deps = [
     "//base/allocator",
+    "//base/allocator:features",
     "//base/third_party/dynamic_annotations",
     "//third_party/modp_b64",
   ]
@@ -988,6 +990,12 @@ component("base") {
   # Needed for <atomic> if using newer C++ library than sysroot
   if (!use_sysroot && (is_android || is_linux)) {
     libs = [ "atomic" ]
+  }
+
+  if (use_experimental_allocator_shim) {
+    # The allocator shim is part of the base API. This is to allow clients of
+    # base should to install hooks into the allocator path.
+    public_deps += [ "//base/allocator:unified_allocator_shim" ]
   }
 
   # Allow more direct string conversions on platforms with native utf8
@@ -1896,6 +1904,10 @@ test("base_unittests") {
   if (is_win && target_cpu == "x64") {
     sources += [ "profiler/win32_stack_frame_unwinder_unittest.cc" ]
     deps += [ ":base_profiler_test_support_library" ]
+  }
+
+  if (use_experimental_allocator_shim) {
+    sources += [ "allocator/allocator_shim_unittest.cc" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
