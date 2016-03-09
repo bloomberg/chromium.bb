@@ -77,4 +77,8 @@ source_set("gpu_sources") {
   if (use_x11) {
     deps += [ "//ui/events/platform/x11" ]
   }
+
+  if (enable_vulkan) {
+    deps += [ "//gpu/vulkan" ]
+  }
 }

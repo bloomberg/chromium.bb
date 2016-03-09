@@ -53,6 +53,9 @@ declare_args() {
 
   # Indicates if Wayland display server support is enabled.
   enable_wayland_server = is_chromeos
+
+  # Enable experimental vulkan backend.
+  enable_vulkan = false
 }
 
 # Additional dependent variables -----------------------------------------------

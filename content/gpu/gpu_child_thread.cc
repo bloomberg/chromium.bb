@@ -40,6 +40,10 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
+#if defined(ENABLE_VULKAN)
+#include "gpu/vulkan/vulkan_surface.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -199,6 +203,11 @@ GpuChildThread::GpuChildThread(
   // not called for single process or in process gpu).
   gpu_info_.video_decode_accelerator_capabilities =
       content::GpuVideoDecodeAccelerator::GetCapabilities();
+
+#if defined(ENABLE_VULKAN)
+  // Temporary Vulkan initialization injection.
+  gpu::VulkanSurface::InitializeOneOff();
+#endif
 
   if (!gfx::GLSurface::InitializeOneOff())
     VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";

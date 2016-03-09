@@ -80,6 +80,10 @@
 #include "content/common/gpu/media/vaapi_wrapper.h"
 #endif
 
+#if defined(ENABLE_VULKAN)
+#include "gpu/vulkan/vulkan_surface.h"
+#endif
+
 #if defined(SANITIZER_COVERAGE)
 #include <sanitizer/common_interface_defs.h>
 #include <sanitizer/coverage_interface.h>
@@ -287,6 +291,11 @@ int GpuMain(const MainFunctionParams& parameters) {
       // GpuChildThread before getting here.
       gl_already_initialized = true;
     }
+
+#if defined(ENABLE_VULKAN)
+    // Temporary Vulkan initialization injection.
+    gpu::VulkanSurface::InitializeOneOff();
+#endif
 
     // Load and initialize the GL implementation and locate the GL entry points.
     bool gl_initialized =
