@@ -370,7 +370,8 @@ UploadProgress URLRequest::GetUploadProgress() const {
   return job_->GetUploadProgress();
 }
 
-void URLRequest::GetResponseHeaderByName(const string& name, string* value) {
+void URLRequest::GetResponseHeaderByName(const string& name,
+                                         string* value) const {
   DCHECK(value);
   if (response_info_.headers.get()) {
     response_info_.headers->GetNormalizedHeader(name, value);

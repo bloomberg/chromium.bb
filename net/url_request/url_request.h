@@ -435,7 +435,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // that appear more than once in the response are coalesced, with values
   // separated by commas (per RFC 2616). This will not work with cookies since
   // comma can be used in cookie values.
-  void GetResponseHeaderByName(const std::string& name, std::string* value);
+  void GetResponseHeaderByName(const std::string& name,
+                               std::string* value) const;
 
   // The time when |this| was constructed.
   base::TimeTicks creation_time() const { return creation_time_; }

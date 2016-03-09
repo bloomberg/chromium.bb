@@ -40,6 +40,10 @@ class ServiceWorkerUtils {
                                           const GURL& script_url,
                                           std::string* error_message);
 
+  static bool CanRegisterServiceWorker(const GURL& context_url,
+                                       const GURL& pattern,
+                                       const GURL& script_url);
+
   // PlzNavigate
   // Returns true if the |provider_id| was assigned by the browser process.
   static bool IsBrowserAssignedProviderId(int provider_id) {

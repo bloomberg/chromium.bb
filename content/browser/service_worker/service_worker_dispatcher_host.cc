@@ -51,23 +51,6 @@ const uint32_t kFilteredMessageClasses[] = {
     ServiceWorkerMsgStart, EmbeddedWorkerMsgStart,
 };
 
-bool AllOriginsMatch(const GURL& url_a, const GURL& url_b, const GURL& url_c) {
-  return url_a.GetOrigin() == url_b.GetOrigin() &&
-         url_a.GetOrigin() == url_c.GetOrigin();
-}
-
-bool CanRegisterServiceWorker(const GURL& document_url,
-                              const GURL& pattern,
-                              const GURL& script_url) {
-  DCHECK(document_url.is_valid());
-  DCHECK(pattern.is_valid());
-  DCHECK(script_url.is_valid());
-  return AllOriginsMatch(document_url, pattern, script_url) &&
-         OriginCanAccessServiceWorkers(document_url) &&
-         OriginCanAccessServiceWorkers(pattern) &&
-         OriginCanAccessServiceWorkers(script_url);
-}
-
 bool CanUnregisterServiceWorker(const GURL& document_url,
                                 const GURL& pattern) {
   DCHECK(document_url.is_valid());
@@ -330,8 +313,8 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     return;
   }
 
-  if (!CanRegisterServiceWorker(
-      provider_host->document_url(), pattern, script_url)) {
+  if (!ServiceWorkerUtils::CanRegisterServiceWorker(
+          provider_host->document_url(), pattern, script_url)) {
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_REGISTER_CANNOT);
     return;
   }

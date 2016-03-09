@@ -63,6 +63,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/foreign_fetch_request_handler.h"
+#include "content/browser/service_worker/link_header_support.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
@@ -995,6 +996,8 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
     async_revalidation_manager_->BeginAsyncRevalidation(*request,
                                                         scheduler_.get());
   }
+
+  ProcessRequestForLinkHeaders(request);
 
   int render_process_id, render_frame_host;
   if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_host))
