@@ -46,7 +46,7 @@ class CHROMEOS_EXPORT WritableTransactionData : public TransactionData {
   Status GetStatus() const override;
   const void* GetData() const override;
   size_t GetDataSize() const override;
-  const uintptr_t* GetObjectOffsets() const override;
+  const binder_uintptr_t* GetObjectOffsets() const override;
   size_t GetNumObjectOffsets() const override;
 
   // Expands the capacity of the internal buffer.
@@ -106,7 +106,7 @@ class CHROMEOS_EXPORT WritableTransactionData : public TransactionData {
   uint32_t code_ = 0;
   bool is_one_way_ = false;
   std::vector<char> data_;
-  std::vector<uintptr_t> object_offsets_;
+  std::vector<binder_uintptr_t> object_offsets_;
   std::vector<scoped_refptr<Object>> objects_;
   std::vector<base::ScopedFD> files_;
 

@@ -52,7 +52,7 @@ size_t WritableTransactionData::GetDataSize() const {
   return data_.size();
 }
 
-const uintptr_t* WritableTransactionData::GetObjectOffsets() const {
+const binder_uintptr_t* WritableTransactionData::GetObjectOffsets() const {
   return object_offsets_.data();
 }
 

@@ -33,7 +33,7 @@ binder_transaction_data ConvertTransactionDataToStruct(
   }
   result.data_size = data.GetDataSize();
   result.data.ptr.buffer = reinterpret_cast<binder_uintptr_t>(data.GetData());
-  result.offsets_size = data.GetNumObjectOffsets() * sizeof(size_t);
+  result.offsets_size = data.GetNumObjectOffsets() * sizeof(binder_size_t);
   result.data.ptr.offsets =
       reinterpret_cast<binder_uintptr_t>(data.GetObjectOffsets());
   return result;

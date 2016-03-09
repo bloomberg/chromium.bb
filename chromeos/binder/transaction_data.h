@@ -7,6 +7,7 @@
 
 #include <sys/types.h>
 
+#include "chromeos/binder/binder_driver_api.h"
 #include "chromeos/binder/status.h"
 
 namespace binder {
@@ -45,7 +46,7 @@ class TransactionData {
   virtual size_t GetDataSize() const = 0;
 
   // Returns the offsets of objects stored in the payload.
-  virtual const uintptr_t* GetObjectOffsets() const = 0;
+  virtual const binder_uintptr_t* GetObjectOffsets() const = 0;
 
   // Returns the number of objects.
   virtual size_t GetNumObjectOffsets() const = 0;

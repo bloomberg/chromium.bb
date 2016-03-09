@@ -46,7 +46,7 @@ size_t TransactionStatus::GetDataSize() const {
   return sizeof(status_);
 }
 
-const uintptr_t* TransactionStatus::GetObjectOffsets() const {
+const binder_uintptr_t* TransactionStatus::GetObjectOffsets() const {
   return nullptr;
 }
 

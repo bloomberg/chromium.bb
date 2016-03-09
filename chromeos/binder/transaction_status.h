@@ -33,7 +33,7 @@ class CHROMEOS_EXPORT TransactionStatus : public TransactionData {
   Status GetStatus() const override;
   const void* GetData() const override;
   size_t GetDataSize() const override;
-  const uintptr_t* GetObjectOffsets() const override;
+  const binder_uintptr_t* GetObjectOffsets() const override;
   size_t GetNumObjectOffsets() const override;
 
  private:

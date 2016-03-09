@@ -80,13 +80,13 @@ size_t TransactionDataFromDriver::GetDataSize() const {
   return data_.data_size;
 }
 
-const uintptr_t* TransactionDataFromDriver::GetObjectOffsets() const {
-  return reinterpret_cast<const uintptr_t*>(data_.data.ptr.offsets);
+const binder_uintptr_t* TransactionDataFromDriver::GetObjectOffsets() const {
+  return reinterpret_cast<const binder_uintptr_t*>(data_.data.ptr.offsets);
 }
 
 size_t TransactionDataFromDriver::GetNumObjectOffsets() const {
-  DCHECK_EQ(0u, data_.offsets_size % sizeof(size_t));
-  return data_.offsets_size / sizeof(size_t);
+  DCHECK_EQ(0u, data_.offsets_size % sizeof(binder_size_t));
+  return data_.offsets_size / sizeof(binder_size_t);
 }
 
 }  // namespace binder

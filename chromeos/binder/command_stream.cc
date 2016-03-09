@@ -213,7 +213,8 @@ bool CommandStream::OnIncomingCommand(uint32_t command, BufferReader* reader) {
 
 void CommandStream::FreeTransactionBuffer(const void* ptr) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  AppendOutgoingCommand(BC_FREE_BUFFER, &ptr, sizeof(ptr));
+  binder_uintptr_t p = reinterpret_cast<binder_uintptr_t>(ptr);
+  AppendOutgoingCommand(BC_FREE_BUFFER, &p, sizeof(p));
 }
 
 }  // namespace binder
