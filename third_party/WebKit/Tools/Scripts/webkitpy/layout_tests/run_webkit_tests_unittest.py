@@ -51,8 +51,8 @@ from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests import port
 from webkitpy.layout_tests import run_webkit_tests
 from webkitpy.layout_tests.models import test_run_results
-from webkitpy.layout_tests.port import Port
 from webkitpy.layout_tests.port import test
+from webkitpy.layout_tests.port.base import Port
 from webkitpy.tool import grammar
 from webkitpy.tool.mocktool import MockOptions
 

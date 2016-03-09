@@ -30,7 +30,7 @@ import json
 import optparse
 
 from webkitpy.layout_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
-from webkitpy.layout_tests.port import Port
+from webkitpy.layout_tests.port.base import Port
 
 
 def main(host, argv):

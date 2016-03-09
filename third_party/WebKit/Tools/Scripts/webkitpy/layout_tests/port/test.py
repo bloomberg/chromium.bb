@@ -31,8 +31,8 @@ import copy
 import sys
 import time
 
-from webkitpy.layout_tests.port import DeviceFailure, Driver, DriverOutput, Port
-from webkitpy.layout_tests.port.base import VirtualTestSuite
+from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
+from webkitpy.layout_tests.port.driver import DeviceFailure, Driver, DriverOutput
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.common.system.filesystem_mock import MockFileSystem

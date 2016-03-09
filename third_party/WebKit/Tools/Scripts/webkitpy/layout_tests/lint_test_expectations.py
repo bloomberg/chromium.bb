@@ -34,7 +34,7 @@ import traceback
 
 from webkitpy.common.host import Host
 from webkitpy.layout_tests.models import test_expectations
-from webkitpy.layout_tests.port import platform_options
+from webkitpy.layout_tests.port.factory import platform_options
 
 
 # This mirrors what the shell normally does.

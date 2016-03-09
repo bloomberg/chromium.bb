@@ -42,8 +42,8 @@ from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
-from webkitpy.layout_tests.port import Port, Driver, DriverOutput
-from webkitpy.layout_tests.port.base import VirtualTestSuite
+from webkitpy.layout_tests.port.driver import Driver, DriverOutput
+from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, TestPort
 
 

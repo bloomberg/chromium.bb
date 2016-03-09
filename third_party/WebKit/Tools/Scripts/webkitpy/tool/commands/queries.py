@@ -37,7 +37,7 @@ from optparse import make_option
 from webkitpy.common.system.crashlogs import CrashLogs
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
-from webkitpy.layout_tests.port import platform_options
+from webkitpy.layout_tests.port.factory import platform_options
 
 _log = logging.getLogger(__name__)
 
