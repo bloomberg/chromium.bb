@@ -132,8 +132,6 @@ TEST_F(ChildProcessSecurityPolicyTest, IsWebSafeSchemeTest) {
   EXPECT_TRUE(p->IsWebSafeScheme("registered-web-safe-scheme"));
 
   EXPECT_FALSE(p->IsWebSafeScheme(kChromeUIScheme));
-  EXPECT_FALSE(p->IsWebSafeScheme(kExeScheme));
-  EXPECT_FALSE(p->IsWebSafeScheme(kMojoScheme));
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, IsPseudoSchemeTest) {
