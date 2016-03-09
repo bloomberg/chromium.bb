@@ -109,14 +109,17 @@ PartitionAllocMemoryDumpProvider* PartitionAllocMemoryDumpProvider::instance()
 
 bool PartitionAllocMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcessMemoryDump* memoryDump)
 {
-    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed && m_isHeapProfilingEnabled) {
+    if (m_isHeapProfilingEnabled) {
+        // Overhead should always be reported, regardless of light vs. heavy.
         base::trace_event::TraceEventMemoryOverhead overhead;
         base::hash_map<base::trace_event::AllocationContext, size_t> bytesByContext;
         {
             MutexLocker locker(m_allocationRegisterMutex);
-            for (const auto& allocSize : *m_allocationRegister)
-                bytesByContext[allocSize.context] += allocSize.size;
-
+            // Dump only the overhead estimation in non-detailed dumps.
+            if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed) {
+                for (const auto& allocSize : *m_allocationRegister)
+                    bytesByContext[allocSize.context] += allocSize.size;
+            }
             m_allocationRegister->EstimateTraceMemoryOverhead(&overhead);
         }
         memoryDump->dumpHeapUsage(bytesByContext, overhead, "partition_alloc");

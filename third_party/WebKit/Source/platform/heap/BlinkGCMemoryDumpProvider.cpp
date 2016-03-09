@@ -55,29 +55,30 @@ BlinkGCMemoryDumpProvider::~BlinkGCMemoryDumpProvider()
 
 bool BlinkGCMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, blink::WebProcessMemoryDump* memoryDump)
 {
-    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Light) {
-        dumpMemoryTotals(memoryDump);
-        return true;
-    }
-
-    Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
+    // In the case of a detailed dump perform a mark-only GC pass to collect
+    // more detailed stats.
+    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed)
+        Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
     dumpMemoryTotals(memoryDump);
 
     if (m_isHeapProfilingEnabled) {
+        // Overhead should always be reported, regardless of light vs. heavy.
         base::trace_event::TraceEventMemoryOverhead overhead;
         base::hash_map<base::trace_event::AllocationContext, size_t> bytesByContext;
         {
             MutexLocker locker(m_allocationRegisterMutex);
-            for (const auto& allocSize : *m_allocationRegister)
-                bytesByContext[allocSize.context] += allocSize.size;
-
+            if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed) {
+                for (const auto& allocSize : *m_allocationRegister)
+                    bytesByContext[allocSize.context] += allocSize.size;
+            }
             m_allocationRegister->EstimateTraceMemoryOverhead(&overhead);
         }
         memoryDump->dumpHeapUsage(bytesByContext, overhead, "blink_gc");
     }
 
     // Merge all dumps collected by Heap::collectGarbage.
-    memoryDump->takeAllDumpsFrom(m_currentProcessMemoryDump.get());
+    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed)
+        memoryDump->takeAllDumpsFrom(m_currentProcessMemoryDump.get());
     return true;
 }
 
