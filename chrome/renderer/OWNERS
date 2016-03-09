@@ -1,2 +1,4 @@
+# Page Load Histogram files.
+per-file page_load_histograms*=file://components/page_load_metrics/OWNERS
 # Instant/Search files.
 per-file instant_restricted_id_cache*=file://chrome/browser/search/OWNERS
