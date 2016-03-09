@@ -279,7 +279,7 @@ def _GetDesiredVsToolchainHashes():
   to build with."""
   if GetVisualStudioVersion() == '2015':
     # Update 1 with hot fixes.
-    return ['b349b3cc596d5f7e13d649532ddd7e8db39db0cb']
+    return ['391bbf1220d3edcd3cc3fccdb56224181e3b13a7']
   else:
     # Default to VS2013.
     return ['4087e065abebdca6dbd0caca2910c6718d2ec67f']
