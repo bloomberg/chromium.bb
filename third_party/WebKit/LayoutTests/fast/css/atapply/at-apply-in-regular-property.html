@@ -9,6 +9,7 @@
 
     --red: { red };
     background-color: @apply --red;
+    background-color: var(--invalid, @apply --red);
 
     --border: 5px solid;
     border: var(--border) @apply --red;

@@ -24,21 +24,21 @@ bool CSSVariableParser::isValidVariableName(const String& string)
     return string.length() >= 2 && string[0] == '-' && string[1] == '-';
 }
 
-bool isValidVariableReference(CSSParserTokenRange);
+bool isValidVariableReference(CSSParserTokenRange, bool& hasAtApplyRule);
 
-bool classifyBlock(CSSParserTokenRange range, bool& hasReferences, bool isTopLevelBlock = true)
+bool classifyBlock(CSSParserTokenRange range, bool& hasReferences, bool& hasAtApplyRule, bool isTopLevelBlock = true)
 {
     while (!range.atEnd()) {
         if (range.peek().getBlockType() == CSSParserToken::BlockStart) {
             const CSSParserToken& token = range.peek();
             CSSParserTokenRange block = range.consumeBlock();
             if (token.functionId() == CSSValueVar) {
-                if (!isValidVariableReference(block))
+                if (!isValidVariableReference(block, hasAtApplyRule))
                     return false; // Bail if any references are invalid
                 hasReferences = true;
                 continue;
             }
-            if (!classifyBlock(block, hasReferences, false))
+            if (!classifyBlock(block, hasReferences, hasAtApplyRule, false))
                 return false;
             continue;
         }
@@ -54,7 +54,7 @@ bool classifyBlock(CSSParserTokenRange range, bool& hasReferences, bool isTopLev
                 if (!CSSVariableParser::isValidVariableName(variableName)
                     || !(range.atEnd() || range.peek().type() == SemicolonToken || range.peek().type() == RightBraceToken))
                     return false;
-                hasReferences = true;
+                hasAtApplyRule = true;
             }
             break;
         }
@@ -80,7 +80,7 @@ bool classifyBlock(CSSParserTokenRange range, bool& hasReferences, bool isTopLev
     return true;
 }
 
-bool isValidVariableReference(CSSParserTokenRange range)
+bool isValidVariableReference(CSSParserTokenRange range, bool& hasAtApplyRule)
 {
     range.consumeWhitespace();
     if (!CSSVariableParser::isValidVariableName(range.consumeIncludingWhitespace()))
@@ -94,12 +94,13 @@ bool isValidVariableReference(CSSParserTokenRange range)
         return false;
 
     bool hasReferences = false;
-    return classifyBlock(range, hasReferences);
+    return classifyBlock(range, hasReferences, hasAtApplyRule);
 }
 
-static CSSValueID classifyVariableRange(CSSParserTokenRange range, bool& hasReferences)
+static CSSValueID classifyVariableRange(CSSParserTokenRange range, bool& hasReferences, bool& hasAtApplyRule)
 {
     hasReferences = false;
+    hasAtApplyRule = false;
 
     range.consumeWhitespace();
     if (range.peek().type() == IdentToken) {
@@ -108,7 +109,7 @@ static CSSValueID classifyVariableRange(CSSParserTokenRange range, bool& hasRefe
             return id;
     }
 
-    if (classifyBlock(range, hasReferences))
+    if (classifyBlock(range, hasReferences, hasAtApplyRule))
         return CSSValueInternalVariableValue;
     return CSSValueInvalid;
 }
@@ -116,8 +117,9 @@ static CSSValueID classifyVariableRange(CSSParserTokenRange range, bool& hasRefe
 bool CSSVariableParser::containsValidVariableReferences(CSSParserTokenRange range)
 {
     bool hasReferences;
-    CSSValueID type = classifyVariableRange(range, hasReferences);
-    return type == CSSValueInternalVariableValue && hasReferences;
+    bool hasAtApplyRule;
+    CSSValueID type = classifyVariableRange(range, hasReferences, hasAtApplyRule);
+    return type == CSSValueInternalVariableValue && hasReferences && !hasAtApplyRule;
 }
 
 PassRefPtrWillBeRawPtr<CSSCustomPropertyDeclaration> CSSVariableParser::parseDeclarationValue(const AtomicString& variableName, CSSParserTokenRange range)
@@ -126,12 +128,13 @@ PassRefPtrWillBeRawPtr<CSSCustomPropertyDeclaration> CSSVariableParser::parseDec
         return nullptr;
 
     bool hasReferences;
-    CSSValueID type = classifyVariableRange(range, hasReferences);
+    bool hasAtApplyRule;
+    CSSValueID type = classifyVariableRange(range, hasReferences, hasAtApplyRule);
 
     if (type == CSSValueInvalid)
         return nullptr;
     if (type == CSSValueInternalVariableValue)
-        return CSSCustomPropertyDeclaration::create(variableName, CSSVariableData::create(range, hasReferences));
+        return CSSCustomPropertyDeclaration::create(variableName, CSSVariableData::create(range, hasReferences || hasAtApplyRule));
     return CSSCustomPropertyDeclaration::create(variableName, type);
 }
 
