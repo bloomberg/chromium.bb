@@ -100,7 +100,7 @@ TEST_F(BubbleWindowTargeterTest, HitTest) {
     EXPECT_EQ(bubble_window, targeter->FindTargetForEvent(root, &move1));
   }
   {
-    bubble_delegate()->set_margins(gfx::Insets(20, 20, 20, 20));
+    bubble_delegate()->set_margins(gfx::Insets(20));
     ui::MouseEvent move1(ui::ET_MOUSE_MOVED, bubble_bounds.origin(),
                          bubble_bounds.origin(), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);
@@ -110,7 +110,7 @@ TEST_F(BubbleWindowTargeterTest, HitTest) {
   bubble_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new BubbleWindowTargeter(bubble_delegate())));
   {
-    bubble_delegate()->set_margins(gfx::Insets(20, 20, 20, 20));
+    bubble_delegate()->set_margins(gfx::Insets(20));
     ui::MouseEvent move1(ui::ET_MOUSE_MOVED, bubble_bounds.origin(),
                          bubble_bounds.origin(), ui::EventTimeForNow(),
                          ui::EF_NONE, ui::EF_NONE);

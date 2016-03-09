@@ -191,7 +191,7 @@ void LocationBarView::Init() {
         views::Painter::CreateImageGridPainter(kOmniboxPopupBorderImages));
   } else {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::Insets omnibox_border_insets(14, 9, 14, 9);
+    const gfx::Insets omnibox_border_insets(14, 9);
     border_painter_.reset(views::Painter::CreateImagePainter(
         *rb.GetImageSkiaNamed(IDR_OMNIBOX_BORDER), omnibox_border_insets));
   }

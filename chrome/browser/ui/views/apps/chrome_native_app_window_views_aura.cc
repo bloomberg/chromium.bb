@@ -83,13 +83,12 @@ ChromeNativeAppWindowViewsAura::CreateNonStandardAppFrame() {
   // Install an easy resize window targeter, which ensures that the root window
   // (not the app) receives mouse events on the edges.
   aura::Window* window = widget()->GetNativeWindow();
-  int resize_inside = frame->resize_inside_bounds_size();
-  gfx::Insets inset(resize_inside, resize_inside, resize_inside, resize_inside);
   // Add the AppWindowEasyResizeWindowTargeter on the window, not its root
   // window. The root window does not have a delegate, which is needed to
   // handle the event in Linux.
-  window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
-      new AppWindowEasyResizeWindowTargeter(window, inset, this)));
+  window->SetEventTargeter(
+      scoped_ptr<ui::EventTargeter>(new AppWindowEasyResizeWindowTargeter(
+          window, gfx::Insets(frame->resize_inside_bounds_size()), this)));
 
   return frame;
 }

@@ -129,7 +129,7 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
   // Install a window-targeter on the root window that allows a window to
   // receive events outside of its bounds. Verify that this window-targeter is
   // active unless the window has a custom shape.
-  gfx::Insets inset(-30, -30, -30, -30);
+  gfx::Insets inset(-30);
   root_window()->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new wm::EasyResizeWindowTargeter(root_window(), inset, inset)));
 

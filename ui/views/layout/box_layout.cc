@@ -15,8 +15,6 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
                      int between_child_spacing)
     : orientation_(orientation),
       inside_border_insets_(inside_border_vertical_spacing,
-                            inside_border_horizontal_spacing,
-                            inside_border_vertical_spacing,
                             inside_border_horizontal_spacing),
       between_child_spacing_(between_child_spacing),
       main_axis_alignment_(MAIN_AXIS_ALIGNMENT_START),

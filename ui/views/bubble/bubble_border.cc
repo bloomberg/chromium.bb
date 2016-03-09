@@ -254,7 +254,7 @@ gfx::Insets BubbleBorder::GetInsets() const {
   // The insets contain the stroke and shadow pixels outside the bubble fill.
   const int inset = GetBorderThickness();
   if ((arrow_paint_type_ == PAINT_NONE) || !has_arrow(arrow_))
-    return gfx::Insets(inset, inset, inset, inset);
+    return gfx::Insets(inset);
 
   int first_inset = inset;
   int second_inset = std::max(inset, images_->arrow_thickness);

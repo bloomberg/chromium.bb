@@ -121,18 +121,12 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     case AVATAR_ICON:
       return gfx::Insets(0, kAvatarLeftPadding[mode],
                          kAvatarBottomPadding[mode], kAvatarRightPadding[mode]);
-    case OMNIBOX_DROPDOWN: {
-      const int padding = kOmniboxDropdownPadding[mode];
-      return gfx::Insets(padding, 0, padding, 0);
-    }
-    case OMNIBOX_DROPDOWN_ICON: {
-      const int padding = kOmniboxDropdownIconPadding[mode];
-      return gfx::Insets(padding, 0, padding, 0);
-    }
-    case OMNIBOX_DROPDOWN_TEXT: {
-      const int padding = kOmniboxDropdownTextPadding[mode];
-      return gfx::Insets(padding, 0, padding, 0);
-    }
+    case OMNIBOX_DROPDOWN:
+      return gfx::Insets(kOmniboxDropdownPadding[mode], 0);
+    case OMNIBOX_DROPDOWN_ICON:
+      return gfx::Insets(kOmniboxDropdownIconPadding[mode], 0);
+    case OMNIBOX_DROPDOWN_TEXT:
+      return gfx::Insets(kOmniboxDropdownTextPadding[mode], 0);
     case TAB:
       return gfx::Insets(kTabTopPadding[mode], kTabLeftPadding[mode],
                          kTabBottomPadding[mode], kTabRightPadding[mode]);
@@ -140,10 +134,8 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
       return gfx::Insets(kToolbarTopPadding[mode], kToolbarLeftPadding[mode],
                          kToolbarBottomPadding[mode],
                          kToolbarRightPadding[mode]);
-    case TOOLBAR_BUTTON: {
-      const int inset = kToolbarButtonPadding[mode];
-      return gfx::Insets(inset, inset, inset, inset);
-    }
+    case TOOLBAR_BUTTON:
+      return gfx::Insets(kToolbarButtonPadding[mode]);
   }
   NOTREACHED();
   return gfx::Insets();

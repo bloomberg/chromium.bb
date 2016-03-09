@@ -322,8 +322,7 @@ void PanelFrameView::Init() {
       PanelView::kResizeInsideBoundsSize - BorderThickness();
   aura::Window* window = panel_view_->GetNativePanelWindow();
   window->set_hit_test_bounds_override_inner(
-      gfx::Insets(thickness_for_mouse_resizing, thickness_for_mouse_resizing,
-                  thickness_for_mouse_resizing, thickness_for_mouse_resizing));
+      gfx::Insets(thickness_for_mouse_resizing));
 #endif
 }
 

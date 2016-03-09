@@ -99,7 +99,7 @@ void RoundedRectBorder::Paint(const View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Insets RoundedRectBorder::GetInsets() const {
-  return gfx::Insets(thickness_, thickness_, thickness_, thickness_);
+  return gfx::Insets(thickness_);
 }
 
 gfx::Size RoundedRectBorder::GetMinimumSize() const {
@@ -184,8 +184,7 @@ scoped_ptr<Border> Border::NullBorder() {
 
 // static
 scoped_ptr<Border> Border::CreateSolidBorder(int thickness, SkColor color) {
-  return make_scoped_ptr(new SolidSidedBorder(
-      gfx::Insets(thickness, thickness, thickness, thickness), color));
+  return make_scoped_ptr(new SolidSidedBorder(gfx::Insets(thickness), color));
 }
 
 // static

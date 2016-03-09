@@ -117,8 +117,8 @@ OneClickSigninBubbleView::OneClickSigninBubbleView(
     set_anchor_view_insets(gfx::Insets(0, 0, anchor_view->height() / 2, 0));
     set_close_on_deactivate(false);
   }
-  int margin = is_sync_dialog_ ? kDialogMargin : views::kButtonVEdgeMarginNew;
-  set_margins(gfx::Insets(margin, margin, margin, margin));
+  set_margins(gfx::Insets(is_sync_dialog_ ? kDialogMargin
+                                          : views::kButtonVEdgeMarginNew));
 }
 
 OneClickSigninBubbleView::~OneClickSigninBubbleView() {

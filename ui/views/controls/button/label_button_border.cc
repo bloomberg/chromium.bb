@@ -69,13 +69,10 @@ gfx::Size LabelButtonBorder::GetMinimumSize() const {
 }
 
 LabelButtonAssetBorder::LabelButtonAssetBorder(Button::ButtonStyle style) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::Insets insets(kButtonInsets,
-                           kButtonInsets,
-                           kButtonInsets,
-                           kButtonInsets);
-
   set_insets(GetDefaultInsetsForStyle(style));
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::Insets insets(kButtonInsets);
   if (style == Button::STYLE_BUTTON) {
     SetPainter(false, Button::STATE_NORMAL,
                Painter::CreateImagePainter(
@@ -116,9 +113,9 @@ gfx::Insets LabelButtonAssetBorder::GetDefaultInsetsForStyle(
     Button::ButtonStyle style) {
   gfx::Insets insets;
   if (style == Button::STYLE_BUTTON) {
-    insets = gfx::Insets(8, 13, 8, 13);
+    insets = gfx::Insets(8, 13);
   } else if (style == Button::STYLE_TEXTBUTTON) {
-    insets = gfx::Insets(5, 6, 5, 6);
+    insets = gfx::Insets(5, 6);
   } else {
     NOTREACHED();
   }
