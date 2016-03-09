@@ -257,8 +257,6 @@ cvox.TtsBackground.prototype.speak = function(
   // any speech very well. Handle empty and whitespace only strings (including
   // non-breaking space) here to mitigate the issue somewhat.
   if (/^[\s\u00a0]*$/.test(textString)) {
-    queueMode = cvox.QueueMode.FLUSH;
-
     // We still want to callback for listeners in our content script.
     if (properties['startCallback']) {
       try {
@@ -271,6 +269,9 @@ cvox.TtsBackground.prototype.speak = function(
         properties['endCallback']();
       } catch (e) {
       }
+    }
+    if (queueMode === cvox.QueueMode.FLUSH) {
+      this.stop();
     }
     return this;
   }
