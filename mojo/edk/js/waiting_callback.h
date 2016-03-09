@@ -11,25 +11,28 @@
 #include "gin/runner.h"
 #include "gin/wrappable.h"
 #include "mojo/edk/js/handle.h"
-#include "mojo/edk/js/handle_close_observer.h"
-#include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/watcher.h"
 
 namespace mojo {
 namespace edk {
 namespace js {
 
-class WaitingCallback : public gin::Wrappable<WaitingCallback>,
-                        public HandleCloseObserver {
+class WaitingCallback : public gin::Wrappable<WaitingCallback> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
   // Creates a new WaitingCallback.
+  //
+  // If |one_shot| is true, the callback will only ever be called at most once.
+  // If false, the callback may be called any number of times until the
+  // WaitingCallback is explicitly cancelled.
   static gin::Handle<WaitingCallback> Create(
       v8::Isolate* isolate,
       v8::Handle<v8::Function> callback,
       gin::Handle<HandleWrapper> handle_wrapper,
-      MojoHandleSignals signals);
+      MojoHandleSignals signals,
+      bool one_shot);
 
   // Cancels the callback. Does nothing if a callback is not pending. This is
   // implicitly invoked from the destructor but can be explicitly invoked as
@@ -39,24 +42,19 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback>,
  private:
   WaitingCallback(v8::Isolate* isolate,
                   v8::Handle<v8::Function> callback,
-                  gin::Handle<HandleWrapper> handle_wrapper);
+                  bool one_shot);
   ~WaitingCallback() override;
 
-  // Callback from common::HandleWatcher.
+  // Callback from the Watcher.
   void OnHandleReady(MojoResult result);
 
-  // Invoked by the HandleWrapper if the handle is closed while this wait is
-  // still in progress.
-  void OnWillCloseHandle() override;
-
-  void RemoveHandleCloseObserver();
-  void CallCallback(MojoResult result);
+  // Indicates whether this is a one-shot callback or not. If so, it uses the
+  // deprecated HandleWatcher to wait for signals; otherwise it uses the new
+  // system Watcher API.
+  const bool one_shot_;
 
   base::WeakPtr<gin::Runner> runner_;
-
-  common::HandleWatcher handle_watcher_;
-
-  HandleWrapper* handle_wrapper_;
+  Watcher watcher_;
   base::WeakPtrFactory<WaitingCallback> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitingCallback);

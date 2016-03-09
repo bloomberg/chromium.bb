@@ -26,11 +26,23 @@ WaitingCallback* AsyncWait(const gin::Arguments& args,
                            gin::Handle<HandleWrapper> handle,
                            MojoHandleSignals signals,
                            v8::Handle<v8::Function> callback) {
-  return WaitingCallback::Create(args.isolate(), callback, handle, signals)
-             .get();
+  return WaitingCallback::Create(
+      args.isolate(), callback, handle, signals, true /* one_shot */).get();
 }
 
 void CancelWait(WaitingCallback* waiting_callback) {
+  waiting_callback->Cancel();
+}
+
+WaitingCallback* Watch(const gin::Arguments& args,
+                       gin::Handle<HandleWrapper> handle,
+                       MojoHandleSignals signals,
+                       v8::Handle<v8::Function> callback) {
+  return WaitingCallback::Create(
+      args.isolate(), callback, handle, signals, false /* one_shot */).get();
+}
+
+void CancelWatch(WaitingCallback* waiting_callback) {
   waiting_callback->Cancel();
 }
 
@@ -47,8 +59,11 @@ v8::Local<v8::Value> Support::GetModule(v8::Isolate* isolate) {
 
   if (templ.IsEmpty()) {
     templ = gin::ObjectTemplateBuilder(isolate)
+                // TODO(rockot): Remove asyncWait and cancelWait.
                 .SetMethod("asyncWait", AsyncWait)
                 .SetMethod("cancelWait", CancelWait)
+                .SetMethod("watch", Watch)
+                .SetMethod("cancelWatch", CancelWatch)
                 .Build();
 
     data->SetObjectTemplate(&g_wrapper_info, templ);
