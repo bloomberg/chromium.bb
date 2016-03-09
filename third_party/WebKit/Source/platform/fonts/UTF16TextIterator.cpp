@@ -22,8 +22,6 @@
 
 #include "platform/fonts/UTF16TextIterator.h"
 
-#include <unicode/unorm.h>
-
 using namespace WTF;
 using namespace Unicode;
 

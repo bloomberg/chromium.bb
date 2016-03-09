@@ -47,7 +47,6 @@
 
 #include <algorithm>
 #include <hb.h>
-#include <unicode/normlzr.h>
 #include <unicode/uchar.h>
 #include <unicode/uscript.h>
 

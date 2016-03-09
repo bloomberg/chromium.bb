@@ -41,7 +41,7 @@
 #include "wtf/Partitions.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"
-#include <unicode/normlzr.h>
+#include <unicode/unorm.h>
 #include <unicode/utf16.h>
 
 namespace blink {

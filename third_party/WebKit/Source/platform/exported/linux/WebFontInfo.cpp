@@ -41,7 +41,6 @@
 #include "wtf/text/AtomicStringHash.h"
 #include <fontconfig/fontconfig.h>
 #include <string.h>
-#include <unicode/utf16.h>
 
 namespace blink {
 
