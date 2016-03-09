@@ -1226,6 +1226,8 @@ crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
+crbug.com/589525 svg/text/lengthAdjust-text-metrics.html [ NeedsRebaseline ]
+
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 
 # This test has different results in Debug and Release.

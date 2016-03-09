@@ -256,6 +256,32 @@ float SVGTextQuery::textLength() const
     return data.textLength;
 }
 
+const SVGTextMetrics& findMetricsForCharacter(const Vector<SVGTextMetrics>& textMetricsValues, const SVGTextFragment& fragment, unsigned startInFragment)
+{
+    // Find the text metrics cell that starts at or contains the character at |startInFragment|.
+    unsigned textMetricsOffset = fragment.metricsListOffset;
+    unsigned fragmentOffset = 0;
+    while (fragmentOffset < fragment.length) {
+        const SVGTextMetrics& metrics = textMetricsValues[textMetricsOffset++];
+        unsigned glyphEnd = fragmentOffset + metrics.length();
+        if (startInFragment < glyphEnd)
+            break;
+        fragmentOffset = glyphEnd;
+    }
+    return textMetricsValues[textMetricsOffset - 1];
+}
+
+static float calculateGlyphRange(const QueryData* queryData, const SVGTextFragment& fragment, unsigned start, unsigned end)
+{
+    float glyphRange = 0;
+    const Vector<SVGTextMetrics>& textMetricsValues = queryData->textLineLayout.layoutAttributes()->textMetricsValues();
+    for (unsigned character = start; character < end; character++) {
+        const SVGTextMetrics& metrics = findMetricsForCharacter(textMetricsValues, fragment, character);
+        glyphRange += queryData->isVerticalText ? metrics.height() : metrics.width();
+    }
+    return glyphRange;
+}
+
 // subStringLength() implementation
 struct SubStringLengthData : QueryData {
     SubStringLengthData(unsigned queryStartPosition, unsigned queryLength)
@@ -280,8 +306,7 @@ static bool subStringLengthCallback(QueryData* queryData, const SVGTextFragment&
     if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment, startPosition, endPosition))
         return false;
 
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLineLayout, fragment.characterOffset + startPosition, endPosition - startPosition, queryData->textBox->direction());
-    data->subStringLength += queryData->isVerticalText ? metrics.height() : metrics.width();
+    data->subStringLength += calculateGlyphRange(queryData, fragment, startPosition, endPosition);
     return false;
 }
 
@@ -305,14 +330,7 @@ struct StartPositionOfCharacterData : QueryData {
 
 static FloatPoint calculateGlyphPositionWithoutTransform(const QueryData* queryData, const SVGTextFragment& fragment, int offsetInFragment)
 {
-    float glyphOffsetInDirection = 0;
-    if (offsetInFragment) {
-        SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLineLayout, fragment.characterOffset, offsetInFragment, queryData->textBox->direction());
-        if (queryData->isVerticalText)
-            glyphOffsetInDirection = metrics.height();
-        else
-            glyphOffsetInDirection = metrics.width();
-    }
+    float glyphOffsetInDirection = calculateGlyphRange(queryData, fragment, 0, offsetInFragment);
 
     if (!queryData->textBox->isLeftToRightDirection()) {
         float fragmentExtent = queryData->isVerticalText ? fragment.height : fragment.width;
@@ -440,21 +458,6 @@ struct ExtentOfCharacterData : QueryData {
     unsigned position;
     FloatRect extent;
 };
-
-const SVGTextMetrics& findMetricsForCharacter(const Vector<SVGTextMetrics>& textMetricsValues, const SVGTextFragment& fragment, unsigned startInFragment)
-{
-    // Find the text metrics cell that start at or contain the character at |startInFragment|.
-    unsigned textMetricsOffset = fragment.metricsListOffset;
-    unsigned fragmentOffset = 0;
-    while (fragmentOffset < fragment.length) {
-        const SVGTextMetrics& metrics = textMetricsValues[textMetricsOffset++];
-        unsigned glyphEnd = fragmentOffset + metrics.length();
-        if (startInFragment < glyphEnd)
-            break;
-        fragmentOffset = glyphEnd;
-    }
-    return textMetricsValues[textMetricsOffset - 1];
-}
 
 static inline void calculateGlyphBoundaries(const QueryData* queryData, const SVGTextFragment& fragment, int startPosition, FloatRect& extent)
 {
