@@ -145,10 +145,8 @@ void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {
       base::UserMetricsAction("PPAPI.BrokerInfobarClickedDeny"));
   callback_.Run(result);
   callback_ = base::Callback<void(bool)>();
-  content_settings_->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url_),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
-      std::string(), result ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+  content_settings_->SetContentSettingDefaultScope(
+      url_, GURL(), CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string(),
+      result ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
   tab_content_settings_->SetPepperBrokerAllowed(result);
 }
