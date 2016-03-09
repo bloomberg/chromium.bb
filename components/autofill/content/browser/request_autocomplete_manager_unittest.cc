@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/request_autocomplete_manager.h"
@@ -125,10 +127,10 @@ class RequestAutocompleteManagerTest :
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    base::Tuple<blink::WebFormElement::AutocompleteResult, base::string16,
-                FormData> autofill_param;
+    std::tuple<blink::WebFormElement::AutocompleteResult, base::string16,
+               FormData> autofill_param;
     AutofillMsg_RequestAutocompleteResult::Read(message, &autofill_param);
-    *result = base::get<0>(autofill_param);
+    *result = std::get<0>(autofill_param);
     process()->sink().ClearMessages();
     return true;
   }

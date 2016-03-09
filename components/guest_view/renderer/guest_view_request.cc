@@ -4,6 +4,7 @@
 
 #include "components/guest_view/renderer/guest_view_request.h"
 
+#include <tuple>
 #include <utility>
 
 #include "components/guest_view/common/guest_view_messages.h"
@@ -83,7 +84,7 @@ void GuestViewAttachRequest::HandleResponse(const IPC::Message& message) {
     return;
 
   content::RenderView* guest_proxy_render_view =
-      content::RenderView::FromRoutingID(base::get<1>(param));
+      content::RenderView::FromRoutingID(std::get<1>(param));
   // TODO(fsamuel): Should we be reporting an error to JavaScript or DCHECKing?
   if (!guest_proxy_render_view)
     return;

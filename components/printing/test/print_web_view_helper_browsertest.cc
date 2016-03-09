@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <tuple>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -180,7 +182,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
     PrintHostMsg_DidGetPrintedPagesCount::Param post_page_count_param;
     PrintHostMsg_DidGetPrintedPagesCount::Read(page_cnt_msg,
                                                &post_page_count_param);
-    EXPECT_EQ(count, base::get<1>(post_page_count_param));
+    EXPECT_EQ(count, std::get<1>(post_page_count_param));
 #endif  // defined(OS_CHROMEOS)
   }
 
@@ -196,7 +198,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
     PrintHostMsg_DidGetPreviewPageCount::Param post_page_count_param;
     PrintHostMsg_DidGetPreviewPageCount::Read(page_cnt_msg,
                                               &post_page_count_param);
-    EXPECT_EQ(count, base::get<0>(post_page_count_param).page_count);
+    EXPECT_EQ(count, std::get<0>(post_page_count_param).page_count);
   }
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 
@@ -210,7 +212,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
     if (printed) {
       PrintHostMsg_DidPrintPage::Param post_did_print_page_param;
       PrintHostMsg_DidPrintPage::Read(print_msg, &post_did_print_page_param);
-      EXPECT_EQ(0, base::get<0>(post_did_print_page_param).page_number);
+      EXPECT_EQ(0, std::get<0>(post_did_print_page_param).page_number);
     }
   }
 
@@ -546,9 +548,9 @@ class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
     if (did_get_preview_msg) {
       PrintHostMsg_MetafileReadyForPrinting::Param preview_param;
       PrintHostMsg_MetafileReadyForPrinting::Read(preview_msg, &preview_param);
-      EXPECT_NE(0, base::get<0>(preview_param).document_cookie);
-      EXPECT_NE(0, base::get<0>(preview_param).expected_pages_count);
-      EXPECT_NE(0U, base::get<0>(preview_param).data_size);
+      EXPECT_NE(0, std::get<0>(preview_param).document_cookie);
+      EXPECT_NE(0, std::get<0>(preview_param).expected_pages_count);
+      EXPECT_NE(0U, std::get<0>(preview_param).data_size);
     }
   }
 
@@ -574,12 +576,12 @@ class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
       if (msg->type() == PrintHostMsg_DidPreviewPage::ID) {
         PrintHostMsg_DidPreviewPage::Param page_param;
         PrintHostMsg_DidPreviewPage::Read(msg, &page_param);
-        if (base::get<0>(page_param).page_number == page_number) {
+        if (std::get<0>(page_param).page_number == page_number) {
           msg_found = true;
           if (generate_draft_pages)
-            EXPECT_NE(0U, base::get<0>(page_param).data_size);
+            EXPECT_NE(0U, std::get<0>(page_param).data_size);
           else
-            EXPECT_EQ(0U, base::get<0>(page_param).data_size);
+            EXPECT_EQ(0U, std::get<0>(page_param).data_size);
           break;
         }
       }
@@ -602,13 +604,13 @@ class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
       PrintHostMsg_DidGetDefaultPageLayout::Param param;
       PrintHostMsg_DidGetDefaultPageLayout::Read(default_page_layout_msg,
                                                  &param);
-      EXPECT_EQ(content_width, base::get<0>(param).content_width);
-      EXPECT_EQ(content_height, base::get<0>(param).content_height);
-      EXPECT_EQ(margin_top, base::get<0>(param).margin_top);
-      EXPECT_EQ(margin_right, base::get<0>(param).margin_right);
-      EXPECT_EQ(margin_left, base::get<0>(param).margin_left);
-      EXPECT_EQ(margin_bottom, base::get<0>(param).margin_bottom);
-      EXPECT_EQ(page_has_print_css, base::get<2>(param));
+      EXPECT_EQ(content_width, std::get<0>(param).content_width);
+      EXPECT_EQ(content_height, std::get<0>(param).content_height);
+      EXPECT_EQ(margin_top, std::get<0>(param).margin_top);
+      EXPECT_EQ(margin_right, std::get<0>(param).margin_right);
+      EXPECT_EQ(margin_left, std::get<0>(param).margin_left);
+      EXPECT_EQ(margin_bottom, std::get<0>(param).margin_bottom);
+      EXPECT_EQ(page_has_print_css, std::get<2>(param));
     }
   }
 

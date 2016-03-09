@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -56,9 +58,9 @@ class ContentPasswordManagerDriverTest
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    base::Tuple<bool> param;
+    std::tuple<bool> param;
     AutofillMsg_SetLoggingState::Read(message, &param);
-    *activation_flag = base::get<0>(param);
+    *activation_flag = std::get<0>(param);
     process()->sink().ClearMessages();
     return true;
   }

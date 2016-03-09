@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "components/autofill/content/common/autofill_messages.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,9 +34,9 @@ class TestLogger : public RendererSavePasswordProgressLogger {
     const IPC::Message* message = sink_.GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    base::Tuple<std::string> param;
+    std::tuple<std::string> param;
     AutofillHostMsg_RecordSavePasswordProgress::Read(message, &param);
-    *log = base::get<0>(param);
+    *log = std::get<0>(param);
     sink_.ClearMessages();
     return true;
   }

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/bind.h"
@@ -269,7 +270,7 @@ class CredentialManagerDispatcherTest
     CredentialManagerMsg_SendCredential::Read(message, &send_param);
 
     EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY,
-              base::get<1>(send_param).type);
+              std::get<1>(send_param).type);
   }
 
   void ExpectZeroClickSignInSuccess(CredentialType type) {
@@ -287,7 +288,7 @@ class CredentialManagerDispatcherTest
     CredentialManagerMsg_SendCredential::Param send_param;
     CredentialManagerMsg_SendCredential::Read(message, &send_param);
 
-    EXPECT_EQ(type, base::get<1>(send_param).type);
+    EXPECT_EQ(type, std::get<1>(send_param).type);
   }
 
   CredentialManagerDispatcher* dispatcher() { return dispatcher_.get(); }
@@ -547,7 +548,7 @@ TEST_F(CredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param param;
   CredentialManagerMsg_SendCredential::Read(message, &param);
-  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, base::get<1>(param).type);
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, std::get<1>(param).type);
   process()->sink().ClearMessages();
 }
 
@@ -573,7 +574,7 @@ TEST_F(CredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param param;
   CredentialManagerMsg_SendCredential::Read(message, &param);
-  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, base::get<1>(param).type);
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, std::get<1>(param).type);
   process()->sink().ClearMessages();
 }
 
@@ -616,7 +617,7 @@ TEST_F(
   CredentialManagerMsg_SendCredential::Param send_param;
   CredentialManagerMsg_SendCredential::Read(message, &send_param);
   EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY,
-            base::get<1>(send_param).type);
+            std::get<1>(send_param).type);
 }
 
 TEST_F(CredentialManagerDispatcherTest,
@@ -828,7 +829,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   // With two items in the password store, we shouldn't get credentials back.
   EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY,
-            base::get<1>(send_param).type);
+            std::get<1>(send_param).type);
 }
 
 TEST_F(CredentialManagerDispatcherTest,
@@ -856,7 +857,7 @@ TEST_F(CredentialManagerDispatcherTest,
   // With two items in the password store, we shouldn't get credentials back,
   // even though only one item has |skip_zero_click| set |false|.
   EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY,
-            base::get<1>(send_param).type);
+            std::get<1>(send_param).type);
 }
 
 TEST_F(CredentialManagerDispatcherTest,
@@ -885,7 +886,7 @@ TEST_F(CredentialManagerDispatcherTest,
   // We only have cross-origin zero-click credentials; they should not be
   // returned.
   EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY,
-            base::get<1>(send_param).type);
+            std::get<1>(send_param).type);
 }
 
 TEST_F(CredentialManagerDispatcherTest,
@@ -910,7 +911,7 @@ TEST_F(CredentialManagerDispatcherTest,
   CredentialManagerMsg_RejectCredentialRequest::Param reject_param;
   CredentialManagerMsg_RejectCredentialRequest::Read(message, &reject_param);
   EXPECT_EQ(blink::WebCredentialManagerPendingRequestError,
-            base::get<1>(reject_param));
+            std::get<1>(reject_param));
   EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
       .Times(testing::Exactly(1));
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
@@ -927,7 +928,7 @@ TEST_F(CredentialManagerDispatcherTest,
   CredentialManagerMsg_SendCredential::Param send_param;
   CredentialManagerMsg_SendCredential::Read(message, &send_param);
   EXPECT_NE(CredentialType::CREDENTIAL_TYPE_EMPTY,
-            base::get<1>(send_param).type);
+            std::get<1>(send_param).type);
   process()->sink().ClearMessages();
 }
 
@@ -1026,7 +1027,7 @@ TEST_F(CredentialManagerDispatcherTest, IncognitoZeroClickRequestCredential) {
   ASSERT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param param;
   CredentialManagerMsg_SendCredential::Read(message, &param);
-  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, base::get<1>(param).type);
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_EMPTY, std::get<1>(param).type);
 }
 
 TEST_F(CredentialManagerDispatcherTest,

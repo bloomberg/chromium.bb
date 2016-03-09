@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -138,8 +140,8 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
     // Check that the |dump_guid| and the |success| fields are properly set.
     TracingHostMsg_ProcessMemoryDumpResponse::Param params;
     TracingHostMsg_ProcessMemoryDumpResponse::Read(msg, &params);
-    const uint64_t resp_guid = base::get<0>(params);
-    const bool resp_success = base::get<1>(params);
+    const uint64_t resp_guid = std::get<0>(params);
+    const bool resp_success = std::get<1>(params);
     EXPECT_EQ(dump_guid, resp_guid);
     EXPECT_TRUE(resp_success);
   }
@@ -153,7 +155,7 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
     EXPECT_NE(nullptr, msg);
     TracingHostMsg_GlobalMemoryDumpRequest::Param params;
     TracingHostMsg_GlobalMemoryDumpRequest::Read(msg, &params);
-    MemoryDumpRequestArgs args = base::get<0>(params);
+    MemoryDumpRequestArgs args = std::get<0>(params);
     EXPECT_NE(0U, args.dump_guid);
     return args;
   }

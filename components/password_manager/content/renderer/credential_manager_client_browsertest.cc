@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "content/public/test/render_view_test.h"
@@ -56,23 +58,23 @@ class CredentialManagerClientTest : public content::RenderViewTest {
 
     switch (message_id) {
       case CredentialManagerHostMsg_Store::ID: {
-        base::Tuple<int, CredentialInfo> param;
+        std::tuple<int, CredentialInfo> param;
         CredentialManagerHostMsg_Store::Read(message, &param);
-        request_id = base::get<0>(param);
+        request_id = std::get<0>(param);
         break;
       }
 
       case CredentialManagerHostMsg_RequireUserMediation::ID: {
-        base::Tuple<int> param;
+        std::tuple<int> param;
         CredentialManagerHostMsg_RequireUserMediation::Read(message, &param);
-        request_id = base::get<0>(param);
+        request_id = std::get<0>(param);
         break;
       }
 
       case CredentialManagerHostMsg_RequestCredential::ID: {
-        base::Tuple<int, bool, bool, std::vector<GURL>> param;
+        std::tuple<int, bool, bool, std::vector<GURL>> param;
         CredentialManagerHostMsg_RequestCredential::Read(message, &param);
-        request_id = base::get<0>(param);
+        request_id = std::get<0>(param);
         break;
       }
 
