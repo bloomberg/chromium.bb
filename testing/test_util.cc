@@ -7,10 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "testing/test_util.h"
 
-#include <sys/stat.h>
-#ifndef _MSC_VER
-#include <unistd.h>  // close()
-#else
+#ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
 #pragma warning(disable:4996)
 #endif
@@ -19,12 +16,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <fstream>
 #include <ios>
-#include <memory>
 #include <string>
 
-#include "common/file_util.h"
 #include "common/libwebm_util.h"
 
 namespace libwebm {
