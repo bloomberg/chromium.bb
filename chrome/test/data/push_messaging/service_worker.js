@@ -10,6 +10,11 @@
 // "shownotification-without-waituntil"
 //     - Display a Web Notification without using event.waitUntil().
 this.onpush = function(event) {
+  if (event.data === null) {
+    sendMessageToClients('push', '[NULL]');
+    return;
+  }
+
   var data = event.data.text();
   if (!data.startsWith('shownotification')) {
     sendMessageToClients('push', data);

@@ -36,9 +36,6 @@ const AtomicString& PushEvent::interfaceName() const
 
 PushMessageData* PushEvent::data()
 {
-    if (!m_data)
-        m_data = PushMessageData::create();
-
     return m_data.get();
 }
 

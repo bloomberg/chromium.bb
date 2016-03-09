@@ -42,11 +42,7 @@ PushMessageData* PushMessageData::create(const ArrayBufferOrArrayBufferViewOrUSV
     }
 
     ASSERT(messageData.isNull());
-    return new PushMessageData();
-}
-
-PushMessageData::PushMessageData()
-{
+    return nullptr;
 }
 
 PushMessageData::PushMessageData(const char* data, unsigned bytesSize)

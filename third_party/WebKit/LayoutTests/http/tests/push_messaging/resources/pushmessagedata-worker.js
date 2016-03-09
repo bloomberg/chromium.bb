@@ -27,32 +27,9 @@ test(function() {
 }, 'PushEvent can be initialized from ArrayBuffer, ArrayBufferView and USVStrings.');
 
 test(function() {
-    var pushMessageData = createPushMessageData();
+    assert_equals(createPushMessageData(undefined), null);
 
-    assert_equals(pushMessageData.arrayBuffer().byteLength, 0);
-
-    assert_equals(pushMessageData.blob().size, 0);
-    assert_equals(pushMessageData.blob().type, '');
-
-    // PushMessageData.json() is specified to be identical to JSON.parse() with
-    // the message's data as the argument. JSON.parse('') throws an exception,
-    // so verify that calling json() without a body throws the same exception.
-    try {
-        pushMessageData.json();
-        assert_unreached('Expected an exception to be thrown.');
-    } catch (eventDataException) {
-        try {
-            JSON.parse('');
-            assert_unreached('Expected an exception to be thrown.');
-        } catch (jsonParseException) {
-            assert_equals(eventDataException.name, jsonParseException.name);
-            assert_equals(eventDataException.message, jsonParseException.message);
-        }
-    }
-
-    assert_equals(pushMessageData.text().length, 0);
-
-}, 'PushMessageData is empty by default.');
+}, 'PushMessageData is null by default.');
 
 test(function() {
     const binaryContents = [1, 2, 3];

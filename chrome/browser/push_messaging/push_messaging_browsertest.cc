@@ -484,6 +484,33 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   EXPECT_EQ("testdata", script_result);
 }
 
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPayload) {
+  std::string script_result;
+
+  TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
+
+  PushMessagingAppIdentifier app_identifier =
+      GetAppIdentifierForServiceWorkerRegistration(0LL);
+  EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
+  EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("false - is not controlled", script_result);
+
+  LoadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  gcm::IncomingMessage message;
+  message.sender_id = "1234567890";
+  message.decrypted = false;
+
+  push_service()->OnMessage(app_identifier.app_id(), message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
+  EXPECT_EQ("[NULL]", script_result);
+}
+
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
   std::string script_result;
 

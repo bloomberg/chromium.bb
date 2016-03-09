@@ -24,10 +24,6 @@ class MODULES_EXPORT PushMessageData final : public GarbageCollectedFinalized<Pu
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static PushMessageData* create()
-    {
-        return new PushMessageData();
-    }
     static PushMessageData* create(const String& data);
     static PushMessageData* create(const ArrayBufferOrArrayBufferViewOrUSVString& data);
 
@@ -41,7 +37,6 @@ public:
     DECLARE_TRACE();
 
 private:
-    PushMessageData();
     PushMessageData(const char* data, unsigned bytesSize);
 
     Vector<char> m_data;
