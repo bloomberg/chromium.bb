@@ -7,9 +7,11 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "m2ts/webm2pes.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <limits>
+#include <string>
 #include <vector>
 
 #include "gtest/gtest.h"
