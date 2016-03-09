@@ -200,14 +200,6 @@ function onSysInfoReadyForSend(sysInfo) {
  * @param {Object} feedbackInfo Object containing any initial feedback info.
  */
 function startFeedbackUI(feedbackInfo) {
-  initialFeedbackInfo = feedbackInfo;
-  finalFeedbackInfo = null;
-  systemInfo = null;
-  isSystemInfoReady = false;
-  onSystemInfoReadyCallback = null;
-
-  chrome.feedbackPrivate.getSystemInformation(getSystemInformationCallback);
-
   var win = chrome.app.window.get(FEEDBACK_DEFAULT_WINDOW_ID);
   if (win) {
     win.show();
@@ -221,13 +213,27 @@ function startFeedbackUI(feedbackInfo) {
       hidden: true,
       resizable: false },
       function(appWindow) {
+        // Initialize the state of the app only once upon the creation of the
+        // feedback UI window.
+        initialFeedbackInfo = feedbackInfo;
+        finalFeedbackInfo = null;
+        systemInfo = null;
+        isSystemInfoReady = false;
+        onSystemInfoReadyCallback = null;
+
         // Define some functions for the new window so that it can call back
         // into here.
 
         // Define a function for the new window to get the system information.
-        // Returns null if the system information is not ready yet.
-        appWindow.contentWindow.getSystemInformation = function() {
-          return systemInfo;
+        appWindow.contentWindow.getSystemInformation = function(callback) {
+          if (!isSystemInfoReady) {
+            onSystemInfoReadyCallback = callback;
+            chrome.feedbackPrivate.getSystemInformation(
+                getSystemInformationCallback);
+            return;
+          }
+
+          callback(systemInfo);
         };
 
         // Define a function to be called by the new window when the report is
@@ -247,13 +253,6 @@ function startFeedbackUI(feedbackInfo) {
         appWindow.contentWindow.isSystemInfoReady = function() {
           return isSystemInfoReady;
         };
-
-        // Registers a callback that will be invoked when the system information
-        // is received.
-        appWindow.contentWindow.setOnSystemInfoReadyCallback =
-            function(callback) {
-              onSystemInfoReadyCallback = callback;
-            };
       });
 }
 

@@ -284,8 +284,6 @@ function onSystemInformation(sysInfo) {
     sysInfoPageOnSysInfoReadyCallback(feedbackInfo.systemInformation);
     sysInfoPageOnSysInfoReadyCallback = null;
   }
-
-  setOnSystemInfoReadyCallback(null);
 }
 
 /**
@@ -331,12 +329,9 @@ function initialize() {
         $('user-email-text').value = email;
       });
 
-      // Prepare the full system information if available or do this later once
-      // it becomes available.
-      if (isSystemInfoReady())
-        onSystemInformation(getSystemInformation());
-      else
-        setOnSystemInfoReadyCallback(onSystemInformation);
+      // Initiate getting the system info and use it to prepare the full
+      // feedback info.
+      getSystemInformation(onSystemInformation);
 
       // An extension called us with an attached file.
       if (feedbackInfo.attachedFile) {

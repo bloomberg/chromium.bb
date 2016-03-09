@@ -435,8 +435,8 @@ const AcceleratorAction kNonrepeatableActions[] = {
     // TODO(mazda): Add other actions which should not be repeated.
     CYCLE_BACKWARD_MRU,
     CYCLE_FORWARD_MRU,
-    TOGGLE_OVERVIEW,
     EXIT,
+    OPEN_FEEDBACK_PAGE,
     PRINT_UI_HIERARCHIES,  // Don't fill the logs if the key is held down.
     ROTATE_SCREEN,
     ROTATE_WINDOW,
@@ -447,6 +447,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
     TAKE_SCREENSHOT,
     TOGGLE_FULLSCREEN,
     TOGGLE_MAXIMIZED,
+    TOGGLE_OVERVIEW,
     WINDOW_MINIMIZE,
 #if defined(OS_CHROMEOS)
     DEBUG_TOGGLE_TOUCH_PAD,
