@@ -20,6 +20,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "window_server_shelltest_base.cc",
+    "window_server_shelltest_base.h",
     "window_server_test_base.cc",
     "window_server_test_base.h",
   ]
@@ -27,10 +29,13 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_config",
+    "//components/mus/common:mus_common",
     "//components/mus/public/cpp",
+    "//mojo/shell/public/cpp:shell_test_support",
     "//mojo/shell/public/cpp:sources",
     "//mojo/shell/public/cpp:test_support",
     "//testing/gtest",
+    "//ui/gl",
   ]
 }
 

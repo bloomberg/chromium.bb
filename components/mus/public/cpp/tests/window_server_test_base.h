@@ -7,22 +7,21 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/cpp/tests/window_server_shelltest_base.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mus {
 
-// WindowServerTestBase is a base class for use with app tests that use
+// WindowServerTestBase is a base class for use with shell tests that use
 // WindowServer. SetUp() connects to the WindowServer and blocks until OnEmbed()
 // has been invoked. window_manager() can be used to access the WindowServer
 // established as part of SetUp().
 class WindowServerTestBase
-    : public mojo::test::ApplicationTestBase,
-      public mojo::ShellClient,
+    : public WindowServerShellTestBase,
       public WindowTreeDelegate,
       public WindowManagerDelegate,
       public mojo::InterfaceFactory<mojom::WindowTreeClient> {
@@ -62,10 +61,7 @@ class WindowServerTestBase
   // testing::Test:
   void SetUp() override;
 
-  // test::ApplicationTestBase:
-  mojo::ShellClient* GetShellClient() override;
-
-  // mojo::ShellClient:
+  // WindowServerShellTestBase:
   bool AcceptConnection(mojo::Connection* connection) override;
 
   // WindowTreeDelegate:

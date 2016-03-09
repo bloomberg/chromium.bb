@@ -1752,13 +1752,13 @@
         "test": "mash_unittests"
       },
       {
+        "test": "mus_ws_unittests"
+      },
+      {
         "test": "resource_provider_unittests"
       },
       {
         "test": "ui_touch_selection_unittests"
-      },
-      {
-        "test": "window_manager_unittests"
       }
     ]
   },

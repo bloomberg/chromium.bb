@@ -842,6 +842,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "mus_ws_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "nacl_loader_unittests"
       },
       {
@@ -930,9 +936,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "views_unittests"
-      },
-      {
-        "test": "window_manager_unittests"
       },
       {
         "swarming": {
@@ -1236,6 +1239,12 @@
       },
       {
         "test": "mojo_system_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mus_ws_unittests"
       },
       {
         "swarming": {

@@ -21,13 +21,6 @@
 #
 # TODO(vtl|msw): Add a way of specifying data dependencies.
 
-mus_apptests = { 'test': 'mojo:mus_apptests' }
-# osmesa is not used on android, so no flags are needed for
-# mus_apptests.
-if config.target_os != config.OS_ANDROID:
-  mus_apptests['args'] = [ '--use-x11-test-config',
-                           '--override-use-gl-with-osmesa-for-tests' ]
-
 # WARNING: If you add a test make sure the gn target mojo_apptests depends upon
 # it.
 tests = [
@@ -70,16 +63,6 @@ if config.target_os != config.OS_ANDROID:
 #    {
 #      'test': 'mojo:media_pipeline_integration_apptests',
 #      'type': 'gtest_isolated',
-#    },
-    # TODO(crbug.com/560626): Fix and enable mus_apptests on Android.
-    mus_apptests,
-    # TODO(sky): enable when works (http://crbug.com/577274 and likely
-    # http://crbug.com/569367).
-#    {
-#      'test': 'mojo:views_apptests',
-#      'type': 'gtest_isolated',
-#      'args': ['--use-x11-test-config',
-#               '--override-use-gl-with-osmesa-for-tests', '--enable-logging']
 #    },
     {
       'test': 'mojo:leveldb_apptests',

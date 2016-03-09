@@ -16,7 +16,6 @@
 #include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/geometry/geometry_util.h"
 
@@ -845,8 +844,7 @@ TEST_F(WindowServerTest, Activation) {
             ValidIndexOf(parent->children(), child1));
 }
 
-// Very flaky: http://crbug.com/592313.
-TEST_F(WindowServerTest, DISABLED_ActivationNext) {
+TEST_F(WindowServerTest, ActivationNext) {
   Window* parent = GetFirstWMRoot();
   Window* child1 = NewVisibleWindow(parent, window_manager());
   Window* child2 = NewVisibleWindow(parent, window_manager());

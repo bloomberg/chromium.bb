@@ -590,7 +590,6 @@ group("mojo_apptests") {
     deps += [
       "//components/filesystem:apptests",
       "//components/leveldb:apptests",
-      "//components/mus/ws:tests",
       "//components/resource_provider:apptests",
       "//components/resource_provider:resource_provider_unittests",
       "//mash/wm:tests",
@@ -617,6 +616,7 @@ group("gn_only") {
   if (is_win || is_linux) {
     deps += [
       ":mojo_apptests",
+      "//components/mus/ws:tests",
       "//mash:all",
       "//mojo",
     ]

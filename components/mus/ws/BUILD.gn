@@ -132,8 +132,7 @@ source_set("test_support") {
 group("tests") {
   testonly = true
   deps = [
-    ":apptests",
-    ":window_manager_unittests",
+    ":mus_ws_unittests",
   ]
   if (!is_android) {
     deps +=
@@ -141,7 +140,7 @@ group("tests") {
   }
 }
 
-test("window_manager_unittests") {
+test("mus_ws_unittests") {
   sources = [
     "display_unittest.cc",
     "event_dispatcher_unittest.cc",
@@ -157,6 +156,7 @@ test("window_manager_unittests") {
     "user_display_manager_unittest.cc",
     "window_coordinate_conversions_unittest.cc",
     "window_finder_unittest.cc",
+    "window_manager_client_unittest.cc",
     "window_tree_unittest.cc",
   ]
 
@@ -168,66 +168,44 @@ test("window_manager_unittests") {
     "//cc:cc",
     "//components/mus/common:mus_common",
     "//components/mus/public/cpp",
+    "//components/mus/public/cpp/tests:test_support",
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/converters/transform",
-    "//mojo/edk/test:run_all_unittests",
     "//mojo/gles2",
-    "//mojo/platform_handle:for_shared_library",
+    "//mojo/platform_handle:for_component",
     "//mojo/public/cpp/bindings:bindings",
+    "//mojo/shell/public/cpp:shell_test_support",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/cpp:test_support",
+    "//mojo/shell/public/cpp/test:run_all_shelltests",
     "//mojo/shell/public/interfaces",
     "//testing/gtest",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+    "//ui/gl",
     "//ui/mojo/geometry:interfaces",
+    "//ui/mojo/geometry:util",
   ]
 
   if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
     deps += [ "//third_party/mesa:osmesa" ]
   }
-}
-
-mojo_native_application("apptests") {
-  output_name = "mus_apptests"
-  testonly = true
-
-  sources = [
-    "window_manager_client_apptest.cc",
-    "window_tree_apptest.cc",
-  ]
-
-  deps = [
-    ":manifest",
-    ":test_support",
-    "//base",
-    "//base/test:test_config",
-    "//components/mus/common:mus_common",
-    "//components/mus/public/cpp",
-    "//components/mus/public/cpp/tests:test_support",
-    "//components/mus/public/interfaces",
-    "//mojo/converters/geometry",
-    "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/cpp:test_support",
-    "//ui/gfx:test_support",
-    "//ui/gfx/geometry",
-    "//ui/mojo/geometry:interfaces",
-    "//ui/mojo/geometry:util",
-  ]
-
-  data_deps = [
-    ":lib",
-  ]
 
   if (use_x11) {
     deps += [ "//tools/xdisplaycheck" ]
   }
+
+  data_deps = [
+    ":mus_ws_unittests_app_manifest",
+  ]
 }
 
-mojo_application_manifest("manifest") {
-  application_name = "mus_apptests"
-  source = "apptest_manifest.json"
+mojo_application_manifest("mus_ws_unittests_app_manifest") {
+  application_name = "mus_ws_unittests_app"
+  source = "mus_ws_unittests_app_manifest.json"
 }

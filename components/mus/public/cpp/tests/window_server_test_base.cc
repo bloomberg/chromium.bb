@@ -63,16 +63,12 @@ bool WindowServerTestBase::QuitRunLoop() {
 }
 
 void WindowServerTestBase::SetUp() {
-  ApplicationTestBase::SetUp();
+  WindowServerShellTestBase::SetUp();
 
   CreateWindowTreeHost(connector(), this, &host_, this);
 
   ASSERT_TRUE(DoRunLoopWithTimeout());  // RunLoop should be quit by OnEmbed().
   std::swap(window_manager_, most_recent_connection_);
-}
-
-mojo::ShellClient* WindowServerTestBase::GetShellClient() {
-  return this;
 }
 
 bool WindowServerTestBase::AcceptConnection(mojo::Connection* connection) {

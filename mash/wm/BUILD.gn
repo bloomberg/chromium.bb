@@ -154,7 +154,6 @@ mojo_native_application("apptests") {
     "//base",
     "//base/test:test_config",
     "//components/mus/public/cpp",
-    "//components/mus/public/cpp/tests:test_support",
     "//components/mus/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",

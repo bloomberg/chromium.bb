@@ -16,6 +16,9 @@
     ],
     "gtest_tests": [
       {
+        "test": "mus_ws_unittests"
+      },
+      {
         "test": "views_mus_unittests"
       }
     ],
@@ -31,6 +34,9 @@
       "mash:all"
     ],
     "gtest_tests": [
+      {
+        "test": "mus_ws_unittests"
+      },
       {
         "test": "views_mus_unittests"
       }
