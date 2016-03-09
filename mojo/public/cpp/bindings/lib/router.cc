@@ -93,11 +93,13 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
       next_request_id_(0),
       testing_mode_(false),
       pending_task_for_messages_(false),
+      encountered_error_(false),
       weak_factory_(this) {
   filters_.SetSink(&thunk_);
   if (expects_sync_requests)
     connector_.RegisterSyncHandleWatch();
   connector_.set_incoming_receiver(filters_.GetHead());
+  connector_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
 Router::~Router() {}
@@ -205,6 +207,12 @@ void Router::HandleQueuedMessages() {
   }
 
   pending_task_for_messages_ = false;
+
+  // We may have already seen a connection error from the connector, but
+  // haven't notified the user because we want to process all the queued
+  // messages first. We should do it now.
+  if (connector_.encountered_error() && !encountered_error_)
+    OnConnectionError();
 }
 
 bool Router::HandleMessageInternal(Message* message) {
@@ -248,6 +256,21 @@ bool Router::HandleMessageInternal(Message* message) {
 
     return incoming_receiver_->Accept(message);
   }
+}
+
+void Router::OnConnectionError() {
+  DCHECK(!encountered_error_);
+
+  if (!pending_messages_.empty()) {
+    // After all the pending messages are processed, we will check whether an
+    // error has been encountered and run the user's connection error handler
+    // if necessary.
+    DCHECK(pending_task_for_messages_);
+    return;
+  }
+
+  encountered_error_ = true;
+  error_handler_.Run();
 }
 
 // ----------------------------------------------------------------------------

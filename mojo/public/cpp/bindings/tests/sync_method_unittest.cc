@@ -345,6 +345,120 @@ TEST_F(SyncMethodTest, AsyncRequestQueuedDuringSyncCall) {
   EXPECT_TRUE(async_echo_response_dispatched);
 }
 
+TEST_F(SyncMethodTest, QueuedMessagesProcessedBeforeErrorNotification) {
+  // Test that while an interface pointer is waiting for the response to a sync
+  // call, async responses are queued. If the message pipe is disconnected
+  // before the queued messages are processed, the connection error
+  // notification is delayed until all the queued messages are processed.
+
+  TestSyncPtr ptr;
+  TestSyncImpl impl(GetProxy(&ptr));
+
+  int32_t async_echo_request_value = -1;
+  TestSync::AsyncEchoCallback async_echo_request_callback;
+  base::RunLoop run_loop1;
+  impl.set_async_echo_handler(
+      [&async_echo_request_value, &async_echo_request_callback, &run_loop1](
+          int32_t value, const TestSync::AsyncEchoCallback& callback) {
+        async_echo_request_value = value;
+        async_echo_request_callback = callback;
+        run_loop1.Quit();
+      });
+
+  bool async_echo_response_dispatched = false;
+  base::RunLoop run_loop2;
+  ptr->AsyncEcho(123,
+                 [&async_echo_response_dispatched, &run_loop2](int32_t result) {
+                   async_echo_response_dispatched = true;
+                   EXPECT_EQ(123, result);
+                   run_loop2.Quit();
+                 });
+  // Run until the AsyncEcho request reaches the service side.
+  run_loop1.Run();
+
+  impl.set_echo_handler(
+      [&impl, &async_echo_request_value, &async_echo_request_callback](
+          int32_t value, const TestSync::EchoCallback& callback) {
+        // Send back the async response first.
+        EXPECT_FALSE(async_echo_request_callback.is_null());
+        async_echo_request_callback.Run(async_echo_request_value);
+
+        impl.binding()->Close();
+      });
+
+  bool connection_error_dispatched = false;
+  base::RunLoop run_loop3;
+  ptr.set_connection_error_handler(
+      [&connection_error_dispatched, &run_loop3]() {
+        connection_error_dispatched = true;
+        run_loop3.Quit();
+      });
+
+  int32_t result_value = -1;
+  ASSERT_FALSE(ptr->Echo(456, &result_value));
+  EXPECT_EQ(-1, result_value);
+  ASSERT_FALSE(connection_error_dispatched);
+  EXPECT_FALSE(ptr.encountered_error());
+
+  // Although the AsyncEcho response arrives before the Echo response, it should
+  // be queued and not yet dispatched.
+  EXPECT_FALSE(async_echo_response_dispatched);
+
+  // Run until the AsyncEcho response is dispatched.
+  run_loop2.Run();
+
+  EXPECT_TRUE(async_echo_response_dispatched);
+  ASSERT_FALSE(connection_error_dispatched);
+  EXPECT_FALSE(ptr.encountered_error());
+
+  // Run until the error notification is dispatched.
+  run_loop3.Run();
+
+  ASSERT_TRUE(connection_error_dispatched);
+  EXPECT_TRUE(ptr.encountered_error());
+}
+
+TEST_F(SyncMethodTest, InvalidMessageDuringSyncCall) {
+  // Test that while an interface pointer is waiting for the response to a sync
+  // call, an invalid incoming message will disconnect the message pipe, cause
+  // the sync call to return false, and run the connection error handler
+  // asynchronously.
+
+  MessagePipe pipe;
+
+  TestSyncPtr ptr;
+  ptr.Bind(TestSyncPtrInfo(std::move(pipe.handle0), 0u));
+
+  MessagePipeHandle raw_binding_handle = pipe.handle1.get();
+  TestSyncImpl impl(MakeRequest<TestSync>(std::move(pipe.handle1)));
+
+  impl.set_echo_handler([&raw_binding_handle](
+      int32_t value, const TestSync::EchoCallback& callback) {
+    // Write a 1-byte message, which is considered invalid.
+    char invalid_message = 0;
+    MojoResult result =
+        WriteMessageRaw(raw_binding_handle, &invalid_message, 1u, nullptr, 0u,
+                        MOJO_WRITE_MESSAGE_FLAG_NONE);
+    ASSERT_EQ(MOJO_RESULT_OK, result);
+    callback.Run(value);
+  });
+
+  bool connection_error_dispatched = false;
+  base::RunLoop run_loop;
+  ptr.set_connection_error_handler([&connection_error_dispatched, &run_loop]() {
+    connection_error_dispatched = true;
+    run_loop.Quit();
+  });
+
+  int32_t result_value = -1;
+  ASSERT_FALSE(ptr->Echo(456, &result_value));
+  EXPECT_EQ(-1, result_value);
+  ASSERT_FALSE(connection_error_dispatched);
+
+  run_loop.Run();
+  ASSERT_TRUE(connection_error_dispatched);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo

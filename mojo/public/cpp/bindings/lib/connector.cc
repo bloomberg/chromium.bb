@@ -368,15 +368,17 @@ void Connector::HandleError(bool force_pipe_reset, bool force_async_handler) {
   if (error_ || !message_pipe_.is_valid())
     return;
 
-  if (!force_pipe_reset && force_async_handler)
-    force_pipe_reset = true;
-
-  if (paused_) {
-    // If the user has paused receiving messages, we shouldn't call the error
-    // handler right away. We need to wait until the user starts receiving
-    // messages again.
+  if (during_sync_handle_watcher_callback() || paused_) {
+    // Enforce calling the error handler asynchronously if:
+    // - currently we are in a sync handle watcher callback. We don't want the
+    // error handler to reenter an ongoing sync call.
+    // - the user has paused receiving messages. We need to wait until the user
+    // starts receiving messages again.
     force_async_handler = true;
   }
+
+  if (!force_pipe_reset && force_async_handler)
+    force_pipe_reset = true;
 
   if (force_pipe_reset) {
     CancelWait();
