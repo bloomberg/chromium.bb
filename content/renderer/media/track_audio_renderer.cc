@@ -131,7 +131,7 @@ TrackAudioRenderer::TrackAudioRenderer(
       security_origin_(security_origin),
       volume_(0.0),
       sink_started_(false) {
-  DCHECK(MediaStreamAudioTrack::GetTrack(audio_track_));
+  DCHECK(MediaStreamAudioTrack::From(audio_track_));
   DVLOG(1) << "TrackAudioRenderer::TrackAudioRenderer()";
 }
 
@@ -237,7 +237,7 @@ base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() const {
 
 bool TrackAudioRenderer::IsLocalRenderer() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return MediaStreamAudioTrack::GetTrack(audio_track_)->is_local_track();
+  return MediaStreamAudioTrack::From(audio_track_)->is_local_track();
 }
 
 void TrackAudioRenderer::SwitchOutputDevice(

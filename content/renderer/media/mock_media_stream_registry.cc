@@ -10,7 +10,6 @@
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
@@ -63,21 +62,11 @@ void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {
   audio_source.setExtraData(new MediaStreamAudioSource());
   blink::WebMediaStreamTrack blink_track;
   blink_track.initialize(audio_source);
-  const StreamDeviceInfo device_info(
-      MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device", "mock_audio_device_id");
-  const MockMediaConstraintFactory constraint_factory;
-  const blink::WebMediaConstraints constraints =
-      constraint_factory.CreateWebMediaConstraints();
-  const scoped_refptr<WebRtcAudioCapturer> capturer(
-      WebRtcAudioCapturer::CreateCapturer(-1, /* render frame id */
-                                          device_info, constraints,
-                                          nullptr, /* audio device */
-                                          nullptr /* audio source */));
   const scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
       WebRtcLocalAudioTrackAdapter::Create(track_id,
                                            nullptr /* track source */));
-  scoped_ptr<WebRtcLocalAudioTrack> native_track(new WebRtcLocalAudioTrack(
-      adapter.get(), capturer, nullptr /* webaudio source */));
+  scoped_ptr<WebRtcLocalAudioTrack> native_track(
+      new WebRtcLocalAudioTrack(adapter.get()));
   blink_track.setExtraData(native_track.release());
   test_stream_.addTrack(blink_track);
 }

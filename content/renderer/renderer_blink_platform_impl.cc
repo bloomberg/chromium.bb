@@ -929,7 +929,9 @@ void RendererBlinkPlatformImpl::createHTMLVideoElementCapturer(
       HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
           web_media_player,
           content::RenderThread::Get()->GetIOMessageLoopProxy()),
-      false /* is_remote */, false /* is_readonly */, web_media_stream);
+      false,  // is_remote
+      false,  // is_readonly
+      web_media_stream);
 #endif
 }
 

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_converter.h"
@@ -294,7 +295,7 @@ AudioTrackRecorder::AudioTrackRecorder(
       encoder_thread_("AudioEncoderThread") {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.isNull());
-  DCHECK(track_.extraData());
+  DCHECK(MediaStreamAudioTrack::From(track_));
 
   // Start the |encoder_thread_|. From this point on, |encoder_| should work
   // only on |encoder_thread_|, as enforced by DCHECKs.

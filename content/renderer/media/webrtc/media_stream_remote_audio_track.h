@@ -25,9 +25,10 @@ class MediaStreamRemoteAudioTrack : public MediaStreamAudioTrack {
       const blink::WebMediaStreamSource& source, bool enabled);
   ~MediaStreamRemoteAudioTrack() override;
 
+  // MediaStreamTrack override.
   void SetEnabled(bool enabled) override;
-  void Stop() override;
 
+  // MediaStreamAudioTrack overrides.
   void AddSink(MediaStreamAudioSink* sink) override;
   void RemoveSink(MediaStreamAudioSink* sink) override;
   media::AudioParameters GetOutputFormat() const override;
@@ -35,6 +36,9 @@ class MediaStreamRemoteAudioTrack : public MediaStreamAudioTrack {
   webrtc::AudioTrackInterface* GetAudioAdapter() override;
 
  private:
+  // MediaStreamAudioTrack override.
+  void OnStop() final;
+
   MediaStreamRemoteAudioSource* source() const;
 
   blink::WebMediaStreamSource source_;
@@ -44,6 +48,7 @@ class MediaStreamRemoteAudioTrack : public MediaStreamAudioTrack {
 // Inheriting from ExtraData directly since MediaStreamAudioSource has
 // too much unrelated bloat.
 // TODO(tommi): MediaStreamAudioSource needs refactoring.
+// TODO(miu): On it!  ;-)
 class MediaStreamRemoteAudioSource
     : public blink::WebMediaStreamSource::ExtraData {
  public:

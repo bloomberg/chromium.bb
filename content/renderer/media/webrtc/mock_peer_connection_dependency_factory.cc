@@ -370,11 +370,8 @@ MockPeerConnectionDependencyFactory::CreateVideoSource(
   return nullptr;
 }
 
-scoped_refptr<WebAudioCapturerSource>
-MockPeerConnectionDependencyFactory::CreateWebAudioSource(
-    blink::WebMediaStreamSource* source) {
-  return NULL;
-}
+void MockPeerConnectionDependencyFactory::CreateWebAudioSource(
+    blink::WebMediaStreamSource* source) {}
 
 scoped_refptr<webrtc::MediaStreamInterface>
 MockPeerConnectionDependencyFactory::CreateLocalMediaStream(
@@ -415,7 +412,7 @@ MockPeerConnectionDependencyFactory::CreateIceCandidate(
   return new MockIceCandidate(sdp_mid, sdp_mline_index, sdp);
 }
 
-scoped_refptr<WebRtcAudioCapturer>
+scoped_ptr<WebRtcAudioCapturer>
 MockPeerConnectionDependencyFactory::CreateAudioCapturer(
     int render_frame_id,
     const StreamDeviceInfo& device_info,
@@ -428,11 +425,6 @@ MockPeerConnectionDependencyFactory::CreateAudioCapturer(
   DCHECK(audio_source);
   return WebRtcAudioCapturer::CreateCapturer(-1, device_info, constraints, NULL,
                                              audio_source);
-}
-
-void MockPeerConnectionDependencyFactory::StartLocalAudioTrack(
-      WebRtcLocalAudioTrack* audio_track) {
-  audio_track->Start();
 }
 
 }  // namespace content

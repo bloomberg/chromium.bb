@@ -18,16 +18,22 @@ using media::CHANNEL_LAYOUT_STEREO;
 namespace content {
 
 WebAudioCapturerSource::WebAudioCapturerSource(
-    const blink::WebMediaStreamSource& blink_source)
+    blink::WebMediaStreamSource* blink_source)
     : track_(NULL),
       audio_format_changed_(false),
       fifo_(base::Bind(&WebAudioCapturerSource::DeliverRebufferedAudio,
                        base::Unretained(this))),
-      blink_source_(blink_source) {}
+      blink_source_(*blink_source) {
+  DCHECK(blink_source);
+  DCHECK(!blink_source_.isNull());
+  DVLOG(1) << "WebAudioCapturerSource::WebAudioCapturerSource()";
+  blink_source_.addAudioConsumer(this);
+}
 
 WebAudioCapturerSource::~WebAudioCapturerSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  removeFromBlinkSource();
+  DVLOG(1) << "WebAudioCapturerSource::~WebAudioCapturerSource()";
+  DeregisterFromBlinkSource();
 }
 
 void WebAudioCapturerSource::setFormat(
@@ -75,9 +81,9 @@ void WebAudioCapturerSource::Stop() {
     base::AutoLock auto_lock(lock_);
     track_ = NULL;
   }
-  // removeFromBlinkSource() should not be called while |lock_| is acquired,
+  // DeregisterFromBlinkSource() should not be called while |lock_| is acquired,
   // as it could result in a deadlock.
-  removeFromBlinkSource();
+  DeregisterFromBlinkSource();
 }
 
 void WebAudioCapturerSource::consumeAudio(
@@ -117,15 +123,10 @@ void WebAudioCapturerSource::DeliverRebufferedAudio(
       base::TimeDelta::FromMicroseconds(frame_delay *
                                         base::Time::kMicrosecondsPerSecond /
                                         params_.sample_rate());
-  track_->Capture(audio_bus, reference_time, false);
+  track_->Capture(audio_bus, reference_time);
 }
 
-// If registered as audio consumer in |blink_source_|, deregister from
-// |blink_source_| and stop keeping a reference to |blink_source_|.
-// Failure to call this method when stopping the track might leave an invalid
-// WebAudioCapturerSource reference still registered as an audio consumer on
-// the blink side.
-void WebAudioCapturerSource::removeFromBlinkSource() {
+void WebAudioCapturerSource::DeregisterFromBlinkSource() {
   if (!blink_source_.isNull()) {
     blink_source_.removeAudioConsumer(this);
     blink_source_.reset();

@@ -6,8 +6,9 @@
 
 #include <utility>
 
-#include "base/base64.h"
 #include "base/callback.h"
+#include "base/guid.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_audio_source.h"
@@ -22,112 +23,92 @@
 
 namespace content {
 
-namespace {
-
-blink::WebString MakeTrackId() {
-  std::string track_id;
-  base::Base64Encode(base::RandBytesAsString(64), &track_id);
-  return base::UTF8ToUTF16(track_id);
-}
-
-}  // namespace
-
-bool AddVideoTrackToMediaStream(scoped_ptr<media::VideoCapturerSource> source,
-                                bool is_remote,
-                                bool is_readonly,
-                                const std::string& media_stream_url) {
-  blink::WebMediaStream web_stream =
-      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(
-          GURL(media_stream_url));
-  return AddVideoTrackToMediaStream(std::move(source), is_remote, is_readonly,
-                                    &web_stream);
-}
-
-bool AddVideoTrackToMediaStream(scoped_ptr<media::VideoCapturerSource> source,
-                                bool is_remote,
-                                bool is_readonly,
-                                blink::WebMediaStream* web_stream) {
-  if (web_stream->isNull()) {
-    DLOG(ERROR) << "Stream not found";
+bool AddVideoTrackToMediaStream(
+    scoped_ptr<media::VideoCapturerSource> video_source,
+    bool is_remote,
+    bool is_readonly,
+    blink::WebMediaStream* web_media_stream) {
+  DCHECK(video_source.get());
+  if (!web_media_stream || web_media_stream->isNull()) {
+    DLOG(ERROR) << "WebMediaStream is null";
     return false;
   }
-  const blink::WebString track_id = MakeTrackId();
-  blink::WebMediaStreamSource webkit_source;
-  scoped_ptr<MediaStreamVideoSource> media_stream_source(
+
+  blink::WebMediaStreamSource web_media_stream_source;
+  MediaStreamVideoSource* const media_stream_source =
       new MediaStreamVideoCapturerSource(
-          MediaStreamSource::SourceStoppedCallback(), std::move(source)));
-  webkit_source.initialize(track_id, blink::WebMediaStreamSource::TypeVideo,
-                           track_id, is_remote, is_readonly);
-  webkit_source.setExtraData(media_stream_source.get());
+          MediaStreamSource::SourceStoppedCallback(), std::move(video_source));
+  const blink::WebString track_id =
+      blink::WebString::fromUTF8(base::GenerateGUID());
+  web_media_stream_source.initialize(track_id,
+                                     blink::WebMediaStreamSource::TypeVideo,
+                                     track_id, is_remote, is_readonly);
+  // Takes ownership of |media_stream_source|.
+  web_media_stream_source.setExtraData(media_stream_source);
 
   blink::WebMediaConstraints constraints;
   constraints.initialize();
-  web_stream->addTrack(MediaStreamVideoTrack::CreateVideoTrack(
-      media_stream_source.release(), constraints,
+  web_media_stream->addTrack(MediaStreamVideoTrack::CreateVideoTrack(
+      media_stream_source, constraints,
       MediaStreamVideoSource::ConstraintsCallback(), true));
   return true;
 }
 
 bool AddAudioTrackToMediaStream(
-    const scoped_refptr<media::AudioCapturerSource>& source,
-    const media::AudioParameters& params,
+    scoped_refptr<media::AudioCapturerSource> audio_source,
+    int sample_rate,
+    media::ChannelLayout channel_layout,
+    int frames_per_buffer,
     bool is_remote,
     bool is_readonly,
-    const std::string& media_stream_url) {
-  DCHECK(params.IsValid()) << params.AsHumanReadableString();
-  blink::WebMediaStream web_stream =
-      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(
-          GURL(media_stream_url));
-  return AddAudioTrackToMediaStream(source,
-                                    is_remote, is_readonly, &web_stream);
-}
-
-bool AddAudioTrackToMediaStream(
-    const scoped_refptr<media::AudioCapturerSource>& source,
-    bool is_remote,
-    bool is_readonly,
-    blink::WebMediaStream* web_stream) {
-  if (web_stream->isNull()) {
-    DLOG(ERROR) << "Stream not found";
+    blink::WebMediaStream* web_media_stream) {
+  DCHECK(audio_source.get());
+  if (!web_media_stream || web_media_stream->isNull()) {
+    DLOG(ERROR) << "WebMediaStream is null";
     return false;
   }
 
-  media::AudioParameters params(
-      media::AudioParameters::AUDIO_PCM_LINEAR, media::CHANNEL_LAYOUT_STEREO,
-      48000, /* sample rate */
-      16,    /* bits per sample */
-      480);  /* frames per buffer */
+  const media::AudioParameters params(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
+      sample_rate, sizeof(int16_t) * 8, frames_per_buffer);
+  if (!params.IsValid()) {
+    DLOG(ERROR) << "Invalid audio parameters.";
+    return false;
+  }
 
-  blink::WebMediaStreamSource webkit_source;
-  const blink::WebString track_id = MakeTrackId();
-  webkit_source.initialize(track_id,
-                           blink::WebMediaStreamSource::TypeAudio,
-                           track_id,
-                           is_remote,
-                           is_readonly);
+  blink::WebMediaStreamSource web_media_stream_source;
+  const blink::WebString track_id =
+      blink::WebString::fromUTF8(base::GenerateGUID());
+  web_media_stream_source.initialize(track_id,
+                                     blink::WebMediaStreamSource::TypeAudio,
+                                     track_id, is_remote, is_readonly);
 
-  MediaStreamAudioSource* audio_source(
-      new MediaStreamAudioSource(
-          -1,
-          StreamDeviceInfo(),
-          MediaStreamSource::SourceStoppedCallback(),
-          RenderThreadImpl::current()->GetPeerConnectionDependencyFactory()));
+  MediaStreamAudioSource* media_stream_source(new MediaStreamAudioSource(
+      -1, StreamDeviceInfo(), MediaStreamSource::SourceStoppedCallback(),
+      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory()));
 
   blink::WebMediaConstraints constraints;
   constraints.initialize();
-  scoped_refptr<WebRtcAudioCapturer> capturer(
-      WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(), constraints,
-                                          nullptr, audio_source));
-  capturer->SetCapturerSource(source, params);
-  audio_source->SetAudioCapturer(capturer);
-  webkit_source.setExtraData(audio_source);
+  {
+    // TODO(miu): In an upcoming change, a source purposed for passing audio
+    // directly (i.e., without modification) will replace this "hacky" use of
+    // WebRtcAudioCapturer.  http://crbug.com/577881
+    scoped_ptr<WebRtcAudioCapturer> capturer(
+        WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(), constraints,
+                                            nullptr, media_stream_source));
+    capturer->SetCapturerSource(std::move(audio_source), params);
+    media_stream_source->SetAudioCapturer(std::move(capturer));
+  }
+  web_media_stream_source.setExtraData(
+      media_stream_source);  // Takes ownership.
 
-  blink::WebMediaStreamTrack web_media_audio_track;
-  web_media_audio_track.initialize(webkit_source);
-  RenderThreadImpl::current()->GetPeerConnectionDependencyFactory()->
-      CreateLocalAudioTrack(web_media_audio_track);
+  blink::WebMediaStreamTrack web_media_stream_track;
+  web_media_stream_track.initialize(web_media_stream_source);
+  RenderThreadImpl::current()
+      ->GetPeerConnectionDependencyFactory()
+      ->CreateLocalAudioTrack(web_media_stream_track);
 
-  web_stream->addTrack(web_media_audio_track);
+  web_media_stream->addTrack(web_media_stream_track);
   return true;
 }
 

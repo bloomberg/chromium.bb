@@ -135,8 +135,7 @@ bool MediaRecorderHandler::start(int timeslice) {
   }
 
   const bool use_audio_tracks =
-      !audio_tracks.isEmpty() &&
-      MediaStreamAudioTrack::GetTrack(audio_tracks[0]);
+      !audio_tracks.isEmpty() && MediaStreamAudioTrack::From(audio_tracks[0]);
 
   webm_muxer_.reset(new media::WebmMuxer(
       use_vp9_ ? media::kCodecVP9 : media::kCodecVP8,

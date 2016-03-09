@@ -147,8 +147,7 @@ class MockPeerConnectionDependencyFactory
   scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(
       cricket::VideoCapturer* capturer,
       const blink::WebMediaConstraints& constraints) override;
-  scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
-      blink::WebMediaStreamSource* source) override;
+  void CreateWebAudioSource(blink::WebMediaStreamSource* source) override;
   scoped_refptr<webrtc::MediaStreamInterface> CreateLocalMediaStream(
       const std::string& label) override;
   scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
@@ -166,7 +165,7 @@ class MockPeerConnectionDependencyFactory
       int sdp_mline_index,
       const std::string& sdp) override;
 
-  scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
+  scoped_ptr<WebRtcAudioCapturer> CreateAudioCapturer(
       int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,
@@ -174,8 +173,6 @@ class MockPeerConnectionDependencyFactory
   void FailToCreateNextAudioCapturer() {
     fail_to_create_next_audio_capturer_ = true;
   }
-
-  void StartLocalAudioTrack(WebRtcLocalAudioTrack* audio_track) override;
 
   MockAudioSource* last_audio_source() { return last_audio_source_.get(); }
 

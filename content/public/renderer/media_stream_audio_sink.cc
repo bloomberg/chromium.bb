@@ -15,20 +15,23 @@ void MediaStreamAudioSink::AddToAudioTrack(
     MediaStreamAudioSink* sink,
     const blink::WebMediaStreamTrack& track) {
   DCHECK(track.source().getType() == blink::WebMediaStreamSource::TypeAudio);
-  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::GetTrack(track);
+  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::From(track);
+  DCHECK(native_track);
   native_track->AddSink(sink);
 }
 
 void MediaStreamAudioSink::RemoveFromAudioTrack(
     MediaStreamAudioSink* sink,
     const blink::WebMediaStreamTrack& track) {
-  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::GetTrack(track);
+  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::From(track);
+  DCHECK(native_track);
   native_track->RemoveSink(sink);
 }
 
 media::AudioParameters MediaStreamAudioSink::GetFormatFromAudioTrack(
     const blink::WebMediaStreamTrack& track) {
-  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::GetTrack(track);
+  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::From(track);
+  DCHECK(native_track);
   return native_track->GetOutputFormat();
 }
 

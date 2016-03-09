@@ -20,7 +20,6 @@
 #include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_data_channel_impl.h"
-#include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
@@ -268,18 +267,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
         static_cast<size_t>(1));
     audio_tracks[0].initialize(audio_source.id(), audio_source);
-    StreamDeviceInfo device_info(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock device",
-                                 "mock_device_id");
-    MockMediaConstraintFactory constraint_factory;
-    const blink::WebMediaConstraints constraints =
-        constraint_factory.CreateWebMediaConstraints();
-    scoped_refptr<WebRtcAudioCapturer> capturer(
-        WebRtcAudioCapturer::CreateCapturer(-1, device_info, constraints,
-                                            nullptr, nullptr));
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(audio_track_label, nullptr));
     scoped_ptr<WebRtcLocalAudioTrack> native_track(
-        new WebRtcLocalAudioTrack(adapter.get(), capturer, nullptr));
+        new WebRtcLocalAudioTrack(adapter.get()));
     audio_tracks[0].setExtraData(native_track.release());
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks(
         static_cast<size_t>(1));
@@ -521,8 +512,7 @@ TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   local_stream.audioTracks(audio_tracks);
   MediaStreamAudioSource* native_audio_source =
-      static_cast<MediaStreamAudioSource*>(
-          audio_tracks[0].source().getExtraData());
+      MediaStreamAudioSource::From(audio_tracks[0].source());
   native_audio_source->StopSource();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
