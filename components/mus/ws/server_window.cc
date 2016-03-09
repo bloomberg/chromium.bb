@@ -18,6 +18,28 @@ namespace mus {
 
 namespace ws {
 
+namespace {
+
+const ServerWindow* GetModalChildForWindowAncestor(const ServerWindow* window) {
+  for (const ServerWindow* ancestor = window; ancestor;
+       ancestor = ancestor->parent()) {
+    for (const auto& transient_child : ancestor->transient_children()) {
+      if (transient_child->is_modal() && transient_child->IsDrawn())
+        return transient_child;
+    }
+  }
+  return nullptr;
+}
+
+const ServerWindow* GetModalTargetForWindow(const ServerWindow* window) {
+  const ServerWindow* modal_window = GetModalChildForWindowAncestor(window);
+  if (!modal_window)
+    return window;
+  return GetModalTargetForWindow(modal_window);
+}
+
+}  // namespace
+
 ServerWindow::ServerWindow(ServerWindowDelegate* delegate, const WindowId& id)
     : ServerWindow(delegate, id, Properties()) {}
 
@@ -29,6 +51,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),
+      is_modal_(false),
       visible_(false),
       cursor_id_(mojom::Cursor::CURSOR_NULL),
       opacity_(1),
@@ -239,6 +262,18 @@ void ServerWindow::RemoveTransientWindow(ServerWindow* child) {
 
   FOR_EACH_OBSERVER(ServerWindowObserver, observers_,
                     OnTransientWindowRemoved(this, child));
+}
+
+void ServerWindow::SetModal() {
+  is_modal_ = true;
+}
+
+bool ServerWindow::IsBlockedByModalWindow() const {
+  return !!GetModalChildForWindowAncestor(this);
+}
+
+const ServerWindow* ServerWindow::GetModalTarget() const {
+  return GetModalTargetForWindow(this);
 }
 
 bool ServerWindow::Contains(const ServerWindow* window) const {

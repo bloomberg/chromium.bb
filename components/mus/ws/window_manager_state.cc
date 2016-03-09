@@ -106,15 +106,36 @@ void WindowManagerState::SetFrameDecorationValues(
       ->OnFrameDecorationValuesChanged(this);
 }
 
-void WindowManagerState::SetCapture(ServerWindow* window,
+bool WindowManagerState::SetCapture(ServerWindow* window,
                                     bool in_nonclient_area) {
   // TODO(sky): capture should be a singleton. Need to route to
   // ConnectionManager so that all other EventDispatchers are updated.
   DCHECK(IsActive());
   if (capture_window() == window)
-    return;
+    return true;
   DCHECK(!window || root_->Contains(window));
-  event_dispatcher_.SetCaptureWindow(window, in_nonclient_area);
+  return event_dispatcher_.SetCaptureWindow(window, in_nonclient_area);
+}
+
+void WindowManagerState::ReleaseCaptureBlockedByModalWindow(
+    const ServerWindow* modal_window) {
+  if (!capture_window() || !modal_window->is_modal() ||
+      !modal_window->IsDrawn())
+    return;
+
+  if (modal_window->transient_parent() &&
+      !modal_window->transient_parent()->Contains(capture_window())) {
+    return;
+  }
+
+  SetCapture(nullptr, false);
+}
+
+void WindowManagerState::ReleaseCaptureBlockedByAnyModalWindow() {
+  if (!capture_window() || !capture_window()->IsBlockedByModalWindow())
+    return;
+
+  SetCapture(nullptr, false);
 }
 
 mojom::DisplayPtr WindowManagerState::ToMojomDisplay() const {

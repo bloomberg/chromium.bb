@@ -665,6 +665,224 @@ TEST_F(WindowTreeTest, ExplicitSetCapture) {
   EXPECT_EQ(nullptr, GetCaptureWindow(display));
 }
 
+// Tests that showing a modal window releases the capture if the capture is on a
+// descendant of the modal parent.
+TEST_F(WindowTreeTest, ShowModalWindowWithDescendantCapture) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* w1 = nullptr;
+  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &tree, &w1));
+
+  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
+  const ServerWindow* root_window = *tree->roots().begin();
+  ClientWindowId root_window_id = ClientWindowIdForWindow(tree, root_window);
+  ClientWindowId w1_id = ClientWindowIdForWindow(tree, w1);
+  Display* display = tree->GetDisplay(w1);
+
+  // Create |w11| as a child of |w1| and make it visible.
+  ClientWindowId w11_id = BuildClientWindowId(tree, 11);
+  ASSERT_TRUE(tree->NewWindow(w11_id, ServerWindow::Properties()));
+  ServerWindow* w11 = tree->GetWindowByClientId(w11_id);
+  w11->SetBounds(gfx::Rect(10, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(w1_id, w11_id));
+  ASSERT_TRUE(tree->SetWindowVisibility(w11_id, true));
+
+  // Create |w2| as a child of |root_window| and modal to |w1| and leave it
+  // hidden.
+  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
+  ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
+  w2->SetBounds(gfx::Rect(50, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(root_window_id, w2_id));
+  ASSERT_TRUE(tree->AddTransientWindow(w1_id, w2_id));
+  ASSERT_TRUE(tree->SetModal(w2_id));
+
+  // Set capture to |w11|.
+  DispatchEventWithoutAck(CreatePointerDownEvent(25, 25));
+  ASSERT_TRUE(tree->SetCapture(w11_id));
+  EXPECT_EQ(w11, GetCaptureWindow(display));
+  AckPreviousEvent();
+
+  // Make |w2| visible. This should release capture as capture is set to a
+  // descendant of the modal parent.
+  ASSERT_TRUE(tree->SetWindowVisibility(w2_id, true));
+  EXPECT_EQ(nullptr, GetCaptureWindow(display));
+}
+
+// Tests that setting a visible window as modal releases the capture if the
+// capture is on a descendant of the modal parent.
+TEST_F(WindowTreeTest, VisibleWindowToModalWithDescendantCapture) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* w1 = nullptr;
+  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &tree, &w1));
+
+  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
+  const ServerWindow* root_window = *tree->roots().begin();
+  ClientWindowId root_window_id = ClientWindowIdForWindow(tree, root_window);
+  ClientWindowId w1_id = ClientWindowIdForWindow(tree, w1);
+  Display* display = tree->GetDisplay(w1);
+
+  // Create |w11| as a child of |w1| and make it visible.
+  ClientWindowId w11_id = BuildClientWindowId(tree, 11);
+  ASSERT_TRUE(tree->NewWindow(w11_id, ServerWindow::Properties()));
+  ServerWindow* w11 = tree->GetWindowByClientId(w11_id);
+  w11->SetBounds(gfx::Rect(10, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(w1_id, w11_id));
+  ASSERT_TRUE(tree->SetWindowVisibility(w11_id, true));
+
+  // Create |w2| as a child of |root_window| and make it visible.
+  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
+  ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
+  w2->SetBounds(gfx::Rect(50, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(root_window_id, w2_id));
+  ASSERT_TRUE(tree->SetWindowVisibility(w2_id, true));
+
+  // Set capture to |w11|.
+  DispatchEventWithoutAck(CreatePointerDownEvent(25, 25));
+  ASSERT_TRUE(tree->SetCapture(w11_id));
+  EXPECT_EQ(w11, GetCaptureWindow(display));
+  AckPreviousEvent();
+
+  // Set |w2| modal to |w1|. This should release the capture as the capture is
+  // set to a descendant of the modal parent.
+  ASSERT_TRUE(tree->AddTransientWindow(w1_id, w2_id));
+  ASSERT_TRUE(tree->SetModal(w2_id));
+  EXPECT_EQ(nullptr, GetCaptureWindow(display));
+}
+
+// Tests that showing a modal window does not change capture if the capture is
+// not on a descendant of the modal parent.
+TEST_F(WindowTreeTest, ShowModalWindowWithNonDescendantCapture) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* w1 = nullptr;
+  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &tree, &w1));
+
+  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
+  const ServerWindow* root_window = *tree->roots().begin();
+  ClientWindowId root_window_id = ClientWindowIdForWindow(tree, root_window);
+  ClientWindowId w1_id = ClientWindowIdForWindow(tree, w1);
+  Display* display = tree->GetDisplay(w1);
+
+  // Create |w2| as a child of |root_window| and modal to |w1| and leave it
+  // hidden..
+  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
+  ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
+  w2->SetBounds(gfx::Rect(50, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(root_window_id, w2_id));
+  ASSERT_TRUE(tree->AddTransientWindow(w1_id, w2_id));
+  ASSERT_TRUE(tree->SetModal(w2_id));
+
+  // Create |w3| as a child of |root_window| and make it visible.
+  ClientWindowId w3_id = BuildClientWindowId(tree, 3);
+  ASSERT_TRUE(tree->NewWindow(w3_id, ServerWindow::Properties()));
+  ServerWindow* w3 = tree->GetWindowByClientId(w3_id);
+  w3->SetBounds(gfx::Rect(70, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(root_window_id, w3_id));
+  ASSERT_TRUE(tree->SetWindowVisibility(w3_id, true));
+
+  // Set capture to |w3|.
+  DispatchEventWithoutAck(CreatePointerDownEvent(25, 25));
+  ASSERT_TRUE(tree->SetCapture(w3_id));
+  EXPECT_EQ(w3, GetCaptureWindow(display));
+  AckPreviousEvent();
+
+  // Make |w2| visible. This should not change the capture as the capture is not
+  // set to a descendant of the modal parent.
+  ASSERT_TRUE(tree->SetWindowVisibility(w2_id, true));
+  EXPECT_EQ(w3, GetCaptureWindow(display));
+}
+
+// Tests that setting a visible window as modal does not change the capture if
+// the capture is not set to a descendant of the modal parent.
+TEST_F(WindowTreeTest, VisibleWindowToModalWithNonDescendantCapture) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* w1 = nullptr;
+  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &tree, &w1));
+
+  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
+  const ServerWindow* root_window = *tree->roots().begin();
+  ClientWindowId root_window_id = ClientWindowIdForWindow(tree, root_window);
+  ClientWindowId w1_id = ClientWindowIdForWindow(tree, w1);
+  Display* display = tree->GetDisplay(w1);
+
+  // Create |w2| and |w3| as children of |root_window| and make them visible.
+  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
+  ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
+  w2->SetBounds(gfx::Rect(50, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(root_window_id, w2_id));
+  ASSERT_TRUE(tree->SetWindowVisibility(w2_id, true));
+
+  ClientWindowId w3_id = BuildClientWindowId(tree, 3);
+  ASSERT_TRUE(tree->NewWindow(w3_id, ServerWindow::Properties()));
+  ServerWindow* w3 = tree->GetWindowByClientId(w3_id);
+  w3->SetBounds(gfx::Rect(70, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(root_window_id, w3_id));
+  ASSERT_TRUE(tree->SetWindowVisibility(w3_id, true));
+
+  // Set capture to |w3|.
+  DispatchEventWithoutAck(CreatePointerDownEvent(25, 25));
+  ASSERT_TRUE(tree->SetCapture(w3_id));
+  EXPECT_EQ(w3, GetCaptureWindow(display));
+  AckPreviousEvent();
+
+  // Set |w2| modal to |w1|. This should not release the capture as the capture
+  // is not set to a descendant of the modal parent.
+  ASSERT_TRUE(tree->AddTransientWindow(w1_id, w2_id));
+  ASSERT_TRUE(tree->SetModal(w2_id));
+  EXPECT_EQ(w3, GetCaptureWindow(display));
+}
+
+// Tests that moving the capture window to a modal parent releases the capture
+// as capture cannot be blocked by a modal window.
+TEST_F(WindowTreeTest, MoveCaptureWindowToModalParent) {
+  TestWindowTreeClient* embed_connection = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* w1 = nullptr;
+  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_connection, &tree, &w1));
+
+  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
+  const ServerWindow* root_window = *tree->roots().begin();
+  ClientWindowId root_window_id = ClientWindowIdForWindow(tree, root_window);
+  ClientWindowId w1_id = ClientWindowIdForWindow(tree, w1);
+  Display* display = tree->GetDisplay(w1);
+
+  // Create |w2| and |w3| as children of |root_window| and make them visible.
+  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
+  ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
+  w2->SetBounds(gfx::Rect(50, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(root_window_id, w2_id));
+  ASSERT_TRUE(tree->SetWindowVisibility(w2_id, true));
+
+  ClientWindowId w3_id = BuildClientWindowId(tree, 3);
+  ASSERT_TRUE(tree->NewWindow(w3_id, ServerWindow::Properties()));
+  ServerWindow* w3 = tree->GetWindowByClientId(w3_id);
+  w3->SetBounds(gfx::Rect(70, 10, 10, 10));
+  ASSERT_TRUE(tree->AddWindow(root_window_id, w3_id));
+  ASSERT_TRUE(tree->SetWindowVisibility(w3_id, true));
+
+  // Set |w2| modal to |w1|.
+  ASSERT_TRUE(tree->AddTransientWindow(w1_id, w2_id));
+  ASSERT_TRUE(tree->SetModal(w2_id));
+
+  // Set capture to |w3|.
+  DispatchEventWithoutAck(CreatePointerDownEvent(25, 25));
+  ASSERT_TRUE(tree->SetCapture(w3_id));
+  EXPECT_EQ(w3, GetCaptureWindow(display));
+  AckPreviousEvent();
+
+  // Make |w3| child of |w1|. This should release capture as |w3| is now blocked
+  // by a modal window.
+  ASSERT_TRUE(tree->AddWindow(w1_id, w3_id));
+  EXPECT_EQ(nullptr, GetCaptureWindow(display));
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace mus

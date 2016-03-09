@@ -196,8 +196,7 @@ bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
       (!current_capture_window ||
        access_policy_->CanSetCapture(current_capture_window)) &&
       event_ack_id_) {
-    wms->SetCapture(window, !HasRoot(window));
-    return true;
+    return wms->SetCapture(window, !HasRoot(window));
   }
   return false;
 }
@@ -239,6 +238,18 @@ bool WindowTree::AddTransientWindow(const ClientWindowId& window_id,
     Operation op(this, connection_manager_,
                  OperationType::ADD_TRANSIENT_WINDOW);
     window->AddTransientWindow(transient_window);
+    return true;
+  }
+  return false;
+}
+
+bool WindowTree::SetModal(const ClientWindowId& window_id) {
+  ServerWindow* window = GetWindowByClientId(window_id);
+  if (window && access_policy_->CanSetModal(window)) {
+    window->SetModal();
+    WindowManagerState* wms = GetWindowManagerState(window);
+    if (wms)
+      wms->ReleaseCaptureBlockedByModalWindow(window);
     return true;
   }
   return false;
@@ -1008,6 +1019,10 @@ void WindowTree::RemoveTransientWindowFromParent(uint32_t change_id,
   client()->OnChangeCompleted(change_id, success);
 }
 
+void WindowTree::SetModal(uint32_t change_id, Id window_id) {
+  client()->OnChangeCompleted(change_id, SetModal(ClientWindowId(window_id)));
+}
+
 void WindowTree::ReorderWindow(uint32_t change_id,
                                Id window_id,
                                Id relative_window_id,
@@ -1048,7 +1063,7 @@ void WindowTree::ReleaseCapture(uint32_t change_id, Id window_id) {
                  window == current_capture_window;
   if (success) {
     Operation op(this, connection_manager_, OperationType::RELEASE_CAPTURE);
-    wms->SetCapture(nullptr, false);
+    success = wms->SetCapture(nullptr, false);
   }
   client()->OnChangeCompleted(change_id, success);
 }

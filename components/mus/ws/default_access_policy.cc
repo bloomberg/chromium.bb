@@ -51,6 +51,11 @@ bool DefaultAccessPolicy::CanRemoveTransientWindowFromParent(
           WasCreatedByThisConnection(window->transient_parent()));
 }
 
+bool DefaultAccessPolicy::CanSetModal(const ServerWindow* window) const {
+  return delegate_->HasRootForAccessPolicy(window) ||
+         WasCreatedByThisConnection(window);
+}
+
 bool DefaultAccessPolicy::CanReorderWindow(
     const ServerWindow* window,
     const ServerWindow* relative_window,

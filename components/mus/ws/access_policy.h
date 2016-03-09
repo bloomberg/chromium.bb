@@ -32,6 +32,7 @@ class AccessPolicy {
                                      const ServerWindow* child) const = 0;
   virtual bool CanRemoveTransientWindowFromParent(
       const ServerWindow* window) const = 0;
+  virtual bool CanSetModal(const ServerWindow* window) const = 0;
   virtual bool CanReorderWindow(const ServerWindow* window,
                                 const ServerWindow* relative_window,
                                 mojom::OrderDirection direction) const = 0;

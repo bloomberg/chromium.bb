@@ -461,6 +461,11 @@ void ConnectionManager::OnWindowHierarchyChanged(ServerWindow* window,
   if (in_destructor_)
     return;
 
+  WindowManagerState* wms =
+      display_manager_->GetWindowManagerAndDisplay(window).window_manager_state;
+  if (wms)
+    wms->ReleaseCaptureBlockedByAnyModalWindow();
+
   ProcessWindowHierarchyChanged(window, new_parent, old_parent);
 
   // TODO(beng): optimize.
@@ -524,6 +529,16 @@ void ConnectionManager::OnWillChangeWindowVisibility(ServerWindow* window) {
     pair.second->ProcessWillChangeWindowVisibility(
         window, IsOperationSource(pair.first));
   }
+}
+
+void ConnectionManager::OnWindowVisibilityChanged(ServerWindow* window) {
+  if (in_destructor_)
+    return;
+
+  WindowManagerState* wms =
+      display_manager_->GetWindowManagerAndDisplay(window).window_manager_state;
+  if (wms)
+    wms->ReleaseCaptureBlockedByModalWindow(window);
 }
 
 void ConnectionManager::OnWindowPredefinedCursorChanged(ServerWindow* window,

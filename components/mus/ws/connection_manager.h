@@ -240,6 +240,7 @@ class ConnectionManager : public ServerWindowDelegate,
                          ServerWindow* relative,
                          mojom::OrderDirection direction) override;
   void OnWillChangeWindowVisibility(ServerWindow* window) override;
+  void OnWindowVisibilityChanged(ServerWindow* window) override;
   void OnWindowSharedPropertyChanged(
       ServerWindow* window,
       const std::string& name,

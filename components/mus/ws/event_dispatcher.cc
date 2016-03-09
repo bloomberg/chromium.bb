@@ -235,14 +235,18 @@ void EventDispatcher::SetMousePointerScreenLocation(
   UpdateCursorProviderByLastKnownLocation();
 }
 
-void EventDispatcher::SetCaptureWindow(ServerWindow* window,
+bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
                                        bool in_nonclient_area) {
   if (window == capture_window_)
-    return;
+    return true;
+
+  // A window that is blocked by a modal window cannot gain capture.
+  if (window && window->IsBlockedByModalWindow())
+    return false;
 
   if (capture_window_) {
     // Stop observing old capture window. |pointer_targets_| are cleared on
-    // intial setting of a capture window.
+    // initial setting of a capture window.
     delegate_->OnServerWindowCaptureLost(capture_window_);
     capture_window_->RemoveObserver(this);
   } else {
@@ -264,7 +268,7 @@ void EventDispatcher::SetCaptureWindow(ServerWindow* window,
           pair.second.is_mouse_event ? ui::EventPointerType::POINTER_TYPE_MOUSE
                                      : ui::EventPointerType::POINTER_TYPE_TOUCH;
       // TODO(jonross): Track previous location in PointerTarget for sending
-      // cancels
+      // cancels.
       ui::PointerEvent event(event_type, pointer_type, gfx::Point(),
                              gfx::Point(), ui::EF_NONE, pair.first,
                              ui::EventTimeForNow());
@@ -286,6 +290,7 @@ void EventDispatcher::SetCaptureWindow(ServerWindow* window,
 
   capture_window_ = window;
   capture_window_in_nonclient_area_ = in_nonclient_area;
+  return true;
 }
 
 void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
@@ -470,10 +475,12 @@ EventDispatcher::PointerTarget EventDispatcher::PointerTargetForEvent(
     const ui::PointerEvent& event) const {
   PointerTarget pointer_target;
   gfx::Point location(event.location());
-  pointer_target.window =
+  ServerWindow* target_window =
       FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+  pointer_target.window = target_window->GetModalTarget();
   pointer_target.is_mouse_event = event.IsMousePointerEvent();
   pointer_target.in_nonclient_area =
+      target_window != pointer_target.window ||
       IsLocationInNonclientArea(pointer_target.window, location);
   pointer_target.is_pointer_down = event.type() == ui::ET_POINTER_DOWN;
   return pointer_target;

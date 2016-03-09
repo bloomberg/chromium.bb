@@ -57,7 +57,9 @@ class EventDispatcher : public ServerWindowObserver {
   // details.
   ServerWindow* capture_window() { return capture_window_; }
   const ServerWindow* capture_window() const { return capture_window_; }
-  void SetCaptureWindow(ServerWindow* capture_window, bool in_nonclient_area);
+  // Setting capture can fail if the window is blocked by a modal window
+  // (indicated by returning |false|).
+  bool SetCaptureWindow(ServerWindow* capture_window, bool in_nonclient_area);
 
   // Retrieves the ServerWindow of the last mouse move.
   ServerWindow* mouse_cursor_source_window() const {

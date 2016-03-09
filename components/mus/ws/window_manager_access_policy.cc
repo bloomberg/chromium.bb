@@ -42,6 +42,11 @@ bool WindowManagerAccessPolicy::CanRemoveTransientWindowFromParent(
   return true;
 }
 
+bool WindowManagerAccessPolicy::CanSetModal(
+    const ServerWindow* window) const {
+  return true;
+}
+
 bool WindowManagerAccessPolicy::CanReorderWindow(
     const ServerWindow* window,
     const ServerWindow* relative_window,

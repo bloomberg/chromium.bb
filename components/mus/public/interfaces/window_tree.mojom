@@ -179,6 +179,13 @@ interface WindowTree {
   // This does not change transient window's position in the window hierarchy.
   RemoveTransientWindowFromParent(uint32 change_id, uint32 transient_window_id);
 
+  // Sets |window_id| to be modal to its transient parent.
+  // This fails if |window_id| does not identify a valid window.
+  // TODO(mohsen): If |window_id| does not have a transient parent, this will
+  // have no effect. Plan is to make a window modal to system if it does not
+  // have a transient parent.
+  SetModal(uint32 change_id, uint32 window_id);
+
   // Reorders a window in its parent, relative to |relative_window_id| according
   // to |direction|. Only the connection that created the window's parent can
   // reorder its children.
