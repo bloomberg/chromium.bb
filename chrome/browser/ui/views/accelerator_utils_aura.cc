@@ -44,9 +44,7 @@ ui::Accelerator GetPrimaryChromeAcceleratorForCommandId(int command_id) {
   // find Ash accelerators if Ash is supported on this platform, even if it's
   // not currently in use.
   if (GetStandardAcceleratorForCommandId(command_id, &accelerator) ||
-      GetAshAcceleratorForCommandId(command_id,
-                                    HOST_DESKTOP_TYPE_ASH,
-                                    &accelerator)) {
+      GetAshAcceleratorForCommandId(command_id, &accelerator)) {
     return accelerator;
   }
 

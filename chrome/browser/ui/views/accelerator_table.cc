@@ -232,12 +232,9 @@ std::vector<AcceleratorMapping> GetAcceleratorList() {
 }
 
 bool GetAshAcceleratorForCommandId(int command_id,
-                                   HostDesktopType host_desktop_type,
                                    ui::Accelerator* accelerator) {
 #if defined(USE_ASH)
-  if (host_desktop_type != chrome::HOST_DESKTOP_TYPE_ASH)
-    return false;
-  for (size_t i = 0; i <  kChromeCmdId2AshActionIdLength; ++i) {
+  for (size_t i = 0; i < kChromeCmdId2AshActionIdLength; ++i) {
     if (command_id == kChromeCmdId2AshActionId[i].chrome_cmd_id) {
       for (size_t j = 0; j < ash::kAcceleratorDataLength; ++j) {
         if (kChromeCmdId2AshActionId[i].ash_action_id ==

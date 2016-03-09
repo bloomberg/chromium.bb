@@ -658,8 +658,7 @@ bool BrowserView::GetAccelerator(int cmd_id,
     }
   }
   // Else, we retrieve the accelerator information from Ash (if applicable).
-  return chrome::GetAshAcceleratorForCommandId(
-      cmd_id, browser_->host_desktop_type(), accelerator);
+  return chrome::GetAshAcceleratorForCommandId(cmd_id, accelerator);
 }
 
 bool BrowserView::IsAcceleratorRegistered(const ui::Accelerator& accelerator) {

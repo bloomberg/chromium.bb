@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -28,13 +27,11 @@ struct AcceleratorMapping {
 // handled by Chrome but excluding accelerators handled by Ash.
 CHROME_VIEWS_EXPORT std::vector<AcceleratorMapping> GetAcceleratorList();
 
-// Returns true if the desktop host type indicates Ash and if the
-// command id has an associated accelerator which is handled by
-// Ash. If the return is true the accelerator is returned via the
+// Returns true on Ash and if the command id has an associated accelerator which
+// is handled by Ash. If the return is true the accelerator is returned via the
 // second argument.
 CHROME_VIEWS_EXPORT bool GetAshAcceleratorForCommandId(
     int command_id,
-    HostDesktopType host_desktop_type,
     ui::Accelerator* accelerator);
 
 // Returns true if the command id has an associated standard
