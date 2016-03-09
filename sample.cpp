@@ -8,8 +8,10 @@
 //
 // This sample application demonstrates how to use the Matroska parser
 // library, which allows clients to handle a Matroska format file.
-
+#include <cstdio>
+#include <cstdlib>
 #include <memory>
+#include <new>
 
 #include "mkvparser.hpp"
 #include "mkvreader.hpp"
