@@ -20,7 +20,7 @@
 
 
 int compute_level_from_index(int global_level, int gi) {
-  static const int dering_gains[4] = {0, 11, 16, 22};
+  static const int dering_gains[DERING_REFINEMENT_LEVELS] = {0, 11, 16, 22};
   int level;
   if (global_level == 0) return 0;
   level = (global_level*dering_gains[gi] + 8) >> 4;

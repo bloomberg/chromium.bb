@@ -155,7 +155,7 @@ int vp10_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int best_gi;
       int best_mse = mse[nhsb*sbr+sbc][0];
       best_gi = 0;
-      for (gi = 1; gi < 4; gi++) {
+      for (gi = 1; gi < DERING_REFINEMENT_LEVELS; gi++) {
         level = compute_level_from_index(best_level, gi);
         if (mse[nhsb*sbr+sbc][level] < best_mse) {
           best_gi = gi;

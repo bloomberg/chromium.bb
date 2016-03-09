@@ -611,7 +611,7 @@ static void write_modes_sb(VP10_COMP *cpi, const TileInfo *const tile,
       !sb_all_skip(cm, mi_row, mi_col)) {
     vpx_write_literal(
         w, cm->mi_grid_visible[mi_row*cm->mi_stride + mi_col]->mbmi.dering_gain,
-        2);
+        DERING_REFINEMENT_BITS);
   }
 #endif
 }

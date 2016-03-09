@@ -15,6 +15,8 @@ extern "C" {
 #define MAX_DERING_LEVEL (1 << DERING_LEVEL_BITS)
 
 #define DERING_REFINEMENT 1
+#define DERING_REFINEMENT_BITS 2
+#define DERING_REFINEMENT_LEVELS 4
 
 int compute_level_from_index(int global_level, int gi);
 int sb_all_skip(const VP10_COMMON *const cm, int mi_row, int mi_col);
