@@ -8,12 +8,10 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
-import android.graphics.BitmapFactory.Options;
+import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Binder;
+import android.support.annotation.BinderThread;
+import android.support.annotation.UiThread;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -26,23 +24,45 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
+import org.chromium.chrome.browser.bookmarks.BookmarkModel;
+import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.provider.BookmarkColumns;
-import org.chromium.chrome.browser.provider.ChromeBrowserProvider.BookmarkNode;
-import org.chromium.chrome.browser.provider.ChromeBrowserProviderClient;
+import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkType;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import javax.annotation.Nullable;
 
 /**
- * Service to support bookmarks on the Android home screen
+ * Service to support the bookmarks widget.
+ *
+ * This provides the list of bookmarks to show in the widget via a RemoteViewsFactory (the
+ * RemoteViews equivalent of an Adapter), and updates the widget when the bookmark model changes.
+ *
+ * Threading note: Be careful! Android calls some methods in this class on the UI thread and others
+ * on (multiple) binder threads. Additionally, all interaction with the BookmarkModel must happen on
+ * the UI thread. To keep the situation clear, every non-static method is annotated with either
+ * {@link UiThread} or {@link BinderThread}.
  */
 public class BookmarkThumbnailWidgetService extends RemoteViewsService {
 
-    static final String TAG = "BookmarkThumbnailWidgetService";
-    static final String ACTION_CHANGE_FOLDER_SUFFIX = ".CHANGE_FOLDER";
-    static final String STATE_CURRENT_FOLDER = "current_folder";
+    private static final String TAG = "BookmarkThumbnailWidgetService";
+    private static final String ACTION_CHANGE_FOLDER_SUFFIX = ".CHANGE_FOLDER";
+    private static final String PREF_CURRENT_FOLDER = "current_folder";
+    private static final String EXTRA_FOLDER_ID = "folderId";
 
+    @UiThread
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         int widgetId = IntentUtils.safeGetIntExtra(intent, AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
@@ -50,58 +70,209 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
             Log.w(TAG, "Missing EXTRA_APPWIDGET_ID!");
             return null;
         }
-        return new BookmarkFactory(this, widgetId);
+        return new BookmarkAdapter(this, widgetId);
     }
 
     static String getChangeFolderAction(Context context) {
         return context.getPackageName() + ACTION_CHANGE_FOLDER_SUFFIX;
     }
 
-    private static SharedPreferences getWidgetState(Context context, int widgetId) {
+    static SharedPreferences getWidgetState(Context context, int widgetId) {
         return context.getSharedPreferences(
                 String.format("widgetState-%d", widgetId),
                 Context.MODE_PRIVATE);
     }
 
     static void deleteWidgetState(Context context, int widgetId) {
-        // Android Browser's widget used private API methods to access the shared prefs
-        // files and deleted them. This is the best we can do with the public API.
         SharedPreferences preferences = getWidgetState(context, widgetId);
         if (preferences != null) preferences.edit().clear().apply();
     }
 
     static void changeFolder(Context context, Intent intent) {
         int widgetId = IntentUtils.safeGetIntExtra(intent, AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
-        long folderId = IntentUtils.safeGetLongExtra(intent, BookmarkColumns.ID,
-                ChromeBrowserProviderClient.INVALID_BOOKMARK_ID);
+        long folderId = IntentUtils.safeGetLongExtra(intent, EXTRA_FOLDER_ID, -1);
         if (widgetId >= 0 && folderId >= 0) {
             SharedPreferences prefs = getWidgetState(context, widgetId);
-            prefs.edit().putLong(STATE_CURRENT_FOLDER, folderId).apply();
+            prefs.edit().putLong(PREF_CURRENT_FOLDER, folderId).apply();
             AppWidgetManager.getInstance(context)
                     .notifyAppWidgetViewDataChanged(widgetId, R.id.bookmarks_list);
         }
     }
 
-    static class BookmarkFactory implements RemoteViewsService.RemoteViewsFactory,
-            BookmarkWidgetUpdateListener.UpdateListener {
+    /**
+     * Holds data describing a bookmark or bookmark folder.
+     */
+    private static class Bookmark {
+        public String title;
+        public String url;
+        public BookmarkId id;
+        public BookmarkId parentId;
+        public boolean isFolder;
+        public Bitmap favicon;
 
-        private final ChromeApplication mContext;
+        public static Bookmark fromBookmarkItem(BookmarkItem item) {
+            if (item == null) return null;
+
+            // The bookmarks widget doesn't support showing partner bookmarks. The main hurdle is
+            // that the current folder ID is stored in shared prefs as a long, not a BookmarkId.
+            // This support could be added if there's a strong desire.
+            if (item.getId().getType() == BookmarkType.PARTNER) return null;
+
+            Bookmark bookmark = new Bookmark();
+            bookmark.title = item.getTitle();
+            bookmark.url = item.getUrl();
+            bookmark.id = item.getId();
+            bookmark.parentId = item.getParentId();
+            bookmark.isFolder = item.isFolder();
+            return bookmark;
+        }
+    }
+
+    /**
+     * Holds the list of bookmarks in a folder, as well as information about the folder itself and
+     * its parent folder, if any.
+     */
+    private static class BookmarkFolder {
+        public Bookmark folder;
+        @Nullable public Bookmark parent;
+        public final List<Bookmark> children = new ArrayList<>();
+    }
+
+    /**
+     * Loads a BookmarkFolder synchronously on a binder thread.
+     */
+    private static class BookmarkLoader {
+        /** Used to transfer the result from the UI thread to the binder thread. */
+        private final LinkedBlockingQueue<BookmarkFolder> mResultQueue;
+
+        private BookmarkFolder mFolder;
+        private BookmarkModel mBookmarkModel;
+        private Profile mProfile;
+        private FaviconHelper mFaviconHelper;
+        private int mFaviconSizePx;
+        private int mRemainingTaskCount;
+
+        /**
+         * Loads the list of bookmarks is the given folder synchronously. This must not be called
+         * from the UI thread.
+         */
+        @BinderThread
+        public static BookmarkFolder loadBookmarksOnBinderThread(final Context context,
+                final BookmarkId folderId) {
+            BookmarkLoader loader = ThreadUtils.runOnUiThreadBlockingNoException(
+                    new Callable<BookmarkLoader>() {
+                        @Override
+                        public BookmarkLoader call() {
+                            return new BookmarkLoader(context, folderId);
+                        }
+                    });
+            try {
+                return loader.mResultQueue.take();
+            } catch (InterruptedException e) {
+                return null;
+            }
+        }
+
+        @UiThread
+        private BookmarkLoader(Context context, final BookmarkId folderId) {
+            mResultQueue = new LinkedBlockingQueue<>(1);
+            mProfile = Profile.getLastUsedProfile();
+            mFaviconHelper = new FaviconHelper();
+            mFaviconSizePx = context.getResources().getDimensionPixelSize(
+                    R.dimen.default_favicon_size);
+            mRemainingTaskCount = 1;
+            mBookmarkModel = new BookmarkModel();
+            mBookmarkModel.runAfterBookmarkModelLoaded(new Runnable() {
+                @Override
+                public void run() {
+                    loadBookmarks(folderId);
+                }
+            });
+        }
+
+        @UiThread
+        private void loadBookmarks(BookmarkId folderId) {
+            mFolder = new BookmarkFolder();
+
+            // Load the requested folder if it exists. Otherwise, fall back to the default folder.
+            if (folderId != null) {
+                mFolder.folder = Bookmark.fromBookmarkItem(mBookmarkModel.getBookmarkById(
+                        folderId));
+            }
+            if (mFolder.folder == null) {
+                folderId = mBookmarkModel.getDefaultFolder();
+                mFolder.folder = Bookmark.fromBookmarkItem(mBookmarkModel.getBookmarkById(
+                        folderId));
+            }
+
+            mFolder.parent = Bookmark.fromBookmarkItem(mBookmarkModel.getBookmarkById(
+                    mFolder.folder.parentId));
+
+            List<BookmarkItem> items = mBookmarkModel.getBookmarksForFolder(folderId);
+            for (BookmarkItem item : items) {
+                Bookmark bookmark = Bookmark.fromBookmarkItem(item);
+                loadFavicon(bookmark);
+                mFolder.children.add(bookmark);
+            }
+
+            taskFinished();
+        }
+
+        @UiThread
+        private void loadFavicon(final Bookmark bookmark) {
+            if (!bookmark.isFolder) {
+                mRemainingTaskCount++;
+                mFaviconHelper.getLocalFaviconImageForURL(mProfile, bookmark.url, mFaviconSizePx,
+                        new FaviconImageCallback() {
+                            @Override
+                            public void onFaviconAvailable(Bitmap image, String iconUrl) {
+                                bookmark.favicon = image;
+                                taskFinished();
+                            }
+                        });
+            }
+        }
+
+        @UiThread
+        private void taskFinished() {
+            mRemainingTaskCount--;
+            if (mRemainingTaskCount == 0) {
+                mResultQueue.add(mFolder);
+                destroy();
+            }
+        }
+
+        @UiThread
+        private void destroy() {
+            mBookmarkModel.destroy();
+            mFaviconHelper.destroy();
+        }
+    }
+
+    /**
+     * Provides the RemoteViews, one per bookmark, to be shown in the widget.
+     */
+    private static class BookmarkAdapter implements RemoteViewsService.RemoteViewsFactory {
+
+        // Can be accessed on any thread
+        private final Context mContext;
         private final int mWidgetId;
         private final SharedPreferences mPreferences;
-        private BookmarkWidgetUpdateListener mUpdateListener;
-        private BookmarkNode mCurrentFolder;
-        private final Object mLock = new Object();
 
-        public BookmarkFactory(Context context, int widgetId) {
-            mContext = (ChromeApplication) context.getApplicationContext();
+        // Accessed only on the UI thread
+        private BookmarkModel mBookmarkModel;
+
+        // Accessed only on binder threads.
+        private BookmarkFolder mCurrentFolder;
+
+        @UiThread
+        public BookmarkAdapter(Context context, int widgetId) {
+            mContext = context;
             mWidgetId = widgetId;
             mPreferences = getWidgetState(mContext, mWidgetId);
         }
 
-        private static long getFolderId(BookmarkNode folder) {
-            return folder != null ? folder.id() : ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
-        }
-
+        @UiThread
         @SuppressFBWarnings("DM_EXIT")
         @Override
         public void onCreate() {
@@ -118,207 +289,129 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
             if (isWidgetNewlyCreated()) {
                 RecordUserAction.record("BookmarkNavigatorWidgetAdded");
             }
-            mUpdateListener = new BookmarkWidgetUpdateListener(mContext, this);
-        }
 
-        @Override
-        public void onDestroy() {
-            if (mUpdateListener != null) mUpdateListener.destroy();
-            deleteWidgetState(mContext, mWidgetId);
-        }
+            // Partner bookmarks need to be loaded explicitly.
+            PartnerBookmarksShim.kickOffReading(mContext);
 
-        @Override
-        public void onBookmarkModelUpdated() {
-            refreshWidget();
-        }
-
-        @Override
-        public void onSyncEnabledStatusUpdated(boolean enabled) {
-            synchronized (mLock) {
-                // Need to operate in a separate thread as it involves queries to our provider.
-                new SyncEnabledStatusUpdatedTask(enabled, getFolderId(mCurrentFolder)).execute();
-            }
-        }
-
-        @Override
-        public void onThumbnailUpdated(String url) {
-            synchronized (mLock) {
-                if (mCurrentFolder == null) return;
-
-                for (BookmarkNode child : mCurrentFolder.children()) {
-                    if (child.isUrl() && url.equals(child.url())) {
-                        refreshWidget();
-                        break;
-                    }
+            mBookmarkModel = new BookmarkModel();
+            mBookmarkModel.addObserver(new BookmarkModelObserver() {
+                @Override
+                public void bookmarkModelLoaded() {
+                    // Do nothing. No need to refresh.
                 }
-            }
+
+                @Override
+                public void bookmarkModelChanged() {
+                    refreshWidget();
+                }
+            });
         }
 
-        void refreshWidget() {
+        @UiThread
+        private boolean isWidgetNewlyCreated() {
+            // This method relies on the fact that PREF_CURRENT_FOLDER is not yet
+            // set when onCreate is called for a newly created widget.
+            long currentFolder = mPreferences.getLong(PREF_CURRENT_FOLDER, Tab.INVALID_BOOKMARK_ID);
+            return currentFolder == Tab.INVALID_BOOKMARK_ID;
+        }
+
+        @UiThread
+        private void refreshWidget() {
             mContext.sendBroadcast(new Intent(
                     BookmarkThumbnailWidgetProviderBase.getBookmarkAppWidgetUpdateAction(mContext),
                     null, mContext, BookmarkThumbnailWidgetProvider.class)
                     .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mWidgetId));
         }
 
-        void requestFolderChange(long folderId) {
-            mContext.sendBroadcast(new Intent(getChangeFolderAction(mContext))
-                        .setClass(mContext, BookmarkWidgetProxy.class)
-                        .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mWidgetId)
-                        .putExtra(BookmarkColumns.ID, folderId));
-        }
-
-        /**
-         * This method relies on the fact that STATE_CURRENT_FOLDER pref is not yet
-         * set when onCreate is called for a newly created widget.
-         */
-        private boolean isWidgetNewlyCreated() {
-            long currentFolder = mPreferences.getLong(STATE_CURRENT_FOLDER,
-                    ChromeBrowserProviderClient.INVALID_BOOKMARK_ID);
-            return currentFolder == ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
-        }
-
-        // Performs the required checks to trigger an update of the widget after changing the sync
-        // enable settings. The required provider methods cannot be accessed in the UI thread.
-        private class SyncEnabledStatusUpdatedTask extends AsyncTask<Void, Void, Void> {
-            private final boolean mEnabled;
-            private final long mCurrentFolderId;
-
-            public SyncEnabledStatusUpdatedTask(boolean enabled, long currentFolderId) {
-                mEnabled = enabled;
-                mCurrentFolderId = currentFolderId;
-            }
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                // If we're in the Mobile Bookmarks folder the icon to go up the hierarchy
-                // will either appear or disappear. Need to refresh.
-                long mobileBookmarksFolderId =
-                        ChromeBrowserProviderClient.getMobileBookmarksFolderId(mContext);
-                if (mCurrentFolderId == mobileBookmarksFolderId) {
-                    refreshWidget();
-                    return null;
-                }
-
-                // If disabling sync, we need to move to the Mobile Bookmarks folder if we're
-                // not inside that branch of the bookmark hierarchy (will become not accessible).
-                if (!mEnabled && !ChromeBrowserProviderClient.isBookmarkInMobileBookmarksBranch(
-                        mContext, mCurrentFolderId)) {
-                    requestFolderChange(mobileBookmarksFolderId);
-                }
-
-                return null;
-            }
-        }
-
         // ---------------------------------------------------------------- //
-        // ------- Methods below this line run in different thread -------- //
+        // Methods below this line are called on binder threads.            //
+        // ---------------------------------------------------------------- //
+        // Different methods may be called on *different* binder threads,   //
+        // but the system ensures that the effects of each method call will //
+        // be visible before the next method is called. Thus, additional    //
+        // synchronization is not needed when accessing mCurrentFolder.     //
         // ---------------------------------------------------------------- //
 
-        private void syncState() {
-            long currentFolderId = mPreferences.getLong(STATE_CURRENT_FOLDER,
-                    ChromeBrowserProviderClient.INVALID_BOOKMARK_ID);
+        @BinderThread
+        @Override
+        public void onDestroy() {
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mBookmarkModel != null) mBookmarkModel.destroy();
+                }
+            });
+            deleteWidgetState(mContext, mWidgetId);
+        }
 
-            // Keep outside the synchronized block to avoid deadlocks in case loading the folder
-            // triggers an update that locks when trying to read mCurrentFolder.
-            BookmarkNode newFolder = loadBookmarkFolder(currentFolderId);
+        @BinderThread
+        @Override
+        public void onDataSetChanged() {
+            updateBookmarkList();
+        }
 
-            synchronized (mLock) {
-                mCurrentFolder =
-                        getFolderId(newFolder) != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID
-                        ? newFolder : null;
-            }
+        @BinderThread
+        private void updateBookmarkList() {
+            long folderIdLong = mPreferences.getLong(PREF_CURRENT_FOLDER, Tab.INVALID_BOOKMARK_ID);
+            BookmarkId folderId = folderIdLong != Tab.INVALID_BOOKMARK_ID
+                    ? new BookmarkId(folderIdLong, BookmarkType.NORMAL)
+                    : null;
+
+            mCurrentFolder = BookmarkLoader.loadBookmarksOnBinderThread(mContext, folderId);
 
             mPreferences.edit()
-                .putLong(STATE_CURRENT_FOLDER, getFolderId(mCurrentFolder))
+                .putLong(PREF_CURRENT_FOLDER, mCurrentFolder != null
+                        ? mCurrentFolder.folder.id.getId()
+                        : Tab.INVALID_BOOKMARK_ID)
                 .apply();
         }
 
-        private BookmarkNode loadBookmarkFolder(long folderId) {
-            if (ThreadUtils.runningOnUiThread()) {
-                Log.e(TAG, "Trying to load bookmark folder from the UI thread.");
-                return null;
-            }
-
-            // If the current folder id doesn't exist (it was deleted) try the current parent.
-            // If this fails too then fallback to Mobile Bookmarks.
-            if (!ChromeBrowserProviderClient.bookmarkNodeExists(mContext, folderId)) {
-                folderId = mCurrentFolder != null ? getFolderId(mCurrentFolder.parent())
-                        : ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
-                if (!ChromeBrowserProviderClient.bookmarkNodeExists(mContext, folderId)) {
-                    folderId = ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
-                }
-            }
-
-            // Need to verify this always because the package data might be cleared while the
-            // widget is in the Mobile Bookmarks folder with sync enabled. In that case the
-            // hierarchy up folder would still work (we can't update the widget) but the parent
-            // folders should not be accessible because sync has been reset when clearing data.
-            if (folderId != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID
-                    && !AndroidSyncSettings.isSyncEnabled(mContext)
-                    && !ChromeBrowserProviderClient.isBookmarkInMobileBookmarksBranch(
-                            mContext, folderId)) {
-                folderId = ChromeBrowserProviderClient.INVALID_BOOKMARK_ID;
-            }
-
-            // Use the Mobile Bookmarks folder by default.
-            if (folderId < 0) {
-                folderId = ChromeBrowserProviderClient.getMobileBookmarksFolderId(mContext);
-                if (folderId == ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) return null;
-            }
-
-            return ChromeBrowserProviderClient.getBookmarkNode(mContext, folderId,
-                    ChromeBrowserProviderClient.GET_PARENT
-                    | ChromeBrowserProviderClient.GET_CHILDREN
-                    | ChromeBrowserProviderClient.GET_FAVICONS
-                    | ChromeBrowserProviderClient.GET_THUMBNAILS);
-        }
-
-        private BookmarkNode getBookmarkForPosition(int position) {
+        @BinderThread
+        private Bookmark getBookmarkForPosition(int position) {
             if (mCurrentFolder == null) return null;
 
             // The position 0 is saved for an entry of the current folder used to go up.
             // This is not the case when the current node has no parent (it's the root node).
-            return (mCurrentFolder.parent() == null)
-                    ? mCurrentFolder.children().get(position)
-                    : (position == 0
-                            ? mCurrentFolder : mCurrentFolder.children().get(position - 1));
+            if (mCurrentFolder.parent != null) {
+                if (position == 0) return mCurrentFolder.folder;
+                position--;
+            }
+            return mCurrentFolder.children.get(position);
         }
 
-        @Override
-        public void onDataSetChanged() {
-            long token = Binder.clearCallingIdentity();
-            syncState();
-            Binder.restoreCallingIdentity(token);
-        }
-
+        @BinderThread
         @Override
         public int getViewTypeCount() {
             return 2;
         }
 
+        @BinderThread
         @Override
         public boolean hasStableIds() {
             return false;
         }
 
+        @BinderThread
         @Override
         public int getCount() {
             if (mCurrentFolder == null) return 0;
-            return mCurrentFolder.children().size() + (mCurrentFolder.parent() != null ? 1 : 0);
+            return mCurrentFolder.children.size() + (mCurrentFolder.parent != null ? 1 : 0);
         }
 
+        @BinderThread
         @Override
         public long getItemId(int position) {
-            return getFolderId(getBookmarkForPosition(position));
+            return getBookmarkForPosition(position).id.getId();
         }
 
+        @BinderThread
         @Override
         public RemoteViews getLoadingView() {
             return new RemoteViews(mContext.getPackageName(),
                     R.layout.bookmark_thumbnail_widget_item);
         }
 
+        @BinderThread
         @Override
         public RemoteViews getViewAt(int position) {
             if (mCurrentFolder == null) {
@@ -326,24 +419,21 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
                 return null;
             }
 
-            BookmarkNode bookmark = getBookmarkForPosition(position);
+            Bookmark bookmark = getBookmarkForPosition(position);
             if (bookmark == null) {
                 Log.w(TAG, "Couldn't get bookmark for position " + position);
                 return null;
             }
 
-            if (bookmark == mCurrentFolder && bookmark.parent() == null) {
-                Log.w(TAG, "Invalid bookmark data: loop detected.");
-                return null;
-            }
-
-            String title = bookmark.name();
-            String url = bookmark.url();
-            long id = (bookmark == mCurrentFolder) ? bookmark.parent().id() : bookmark.id();
+            String title = bookmark.title;
+            String url = bookmark.url;
+            long id = (bookmark == mCurrentFolder.folder)
+                    ? mCurrentFolder.parent.id.getId()
+                    : bookmark.id.getId();
 
             // Two layouts are needed because RemoteView does not supporting changing the scale type
             // of an ImageView: boomarks crop their thumbnails, while folders stretch their icon.
-            RemoteViews views = !bookmark.isUrl()
+            RemoteViews views = bookmark.isFolder
                     ? new RemoteViews(mContext.getPackageName(),
                             R.layout.bookmark_thumbnail_widget_item_folder)
                     : new RemoteViews(mContext.getPackageName(),
@@ -352,41 +442,29 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
             // Set the title of the bookmark. Use the url as a backup.
             views.setTextViewText(R.id.label, TextUtils.isEmpty(title) ? url : title);
 
-            if (!bookmark.isUrl()) {
-                int thumbId = (bookmark == mCurrentFolder)
+            if (bookmark.isFolder) {
+                int thumbId = (bookmark == mCurrentFolder.folder)
                         ? R.drawable.thumb_bookmark_widget_folder_back_holo
                         : R.drawable.thumb_bookmark_widget_folder_holo;
                 views.setImageViewResource(R.id.thumb, thumbId);
                 views.setImageViewResource(R.id.favicon,
                         R.drawable.ic_bookmark_widget_bookmark_holo_dark);
             } else {
-                // RemoteViews require a valid bitmap config.
-                Options options = new Options();
-                options.inPreferredConfig = Config.ARGB_8888;
-
-                byte[] favicon = bookmark.favicon();
-                if (favicon != null && favicon.length > 0) {
-                    views.setImageViewBitmap(R.id.favicon,
-                            BitmapFactory.decodeByteArray(favicon, 0, favicon.length, options));
+                if (bookmark.favicon != null) {
+                    views.setImageViewBitmap(R.id.favicon, bookmark.favicon);
                 } else {
-                    views.setImageViewResource(R.id.favicon,
-                            org.chromium.chrome.R.drawable.globe_favicon);
+                    views.setImageViewResource(R.id.favicon, R.drawable.globe_favicon);
                 }
 
-                byte[] thumbnail = bookmark.thumbnail();
-                if (thumbnail != null && thumbnail.length > 0) {
-                    views.setImageViewBitmap(R.id.thumb,
-                            BitmapFactory.decodeByteArray(thumbnail, 0, thumbnail.length, options));
-                } else {
-                    views.setImageViewResource(R.id.thumb, R.drawable.browser_thumbnail);
-                }
+                // TODO(newt): update the view and get rid of the thumbnail, which is always empty.
+                views.setImageViewResource(R.id.thumb, R.drawable.browser_thumbnail);
             }
 
             Intent fillIn;
-            if (!bookmark.isUrl()) {
+            if (bookmark.isFolder) {
                 fillIn = new Intent(getChangeFolderAction(mContext))
                         .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mWidgetId)
-                        .putExtra(BookmarkColumns.ID, id);
+                        .putExtra(EXTRA_FOLDER_ID, id);
             } else {
                 fillIn = new Intent(Intent.ACTION_VIEW);
                 if (!TextUtils.isEmpty(url)) {

@@ -79,7 +79,7 @@ public class BookmarkId {
     }
 
     /**
-     * @return The bookmark type.
+     * Returns the bookmark type: {@link BookmarkType#NORMAL} or {@link BookmarkType#PARTNER}.
      */
     @CalledByNative
     public int getType() {
