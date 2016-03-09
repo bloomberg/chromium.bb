@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+// Colorant matrix for the official sRGB IEC61966-2.1 color (D50) primaries.
 static s15Fixed16Number sRGB_reference[3][3] = {
 		{0x06fa2 /*0.436066*/,  /*0.385147*/ 0x06299, /*0.143066*/ 0x024a0},
 		{0x038f5 /*0.222488*/,  /*0.716873*/ 0x0b785, /*0.060608*/ 0x00f84},
