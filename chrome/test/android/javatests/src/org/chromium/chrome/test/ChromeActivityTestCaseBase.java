@@ -376,7 +376,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     public Tab loadUrlInNewTab(final String url, final boolean incognito)
             throws InterruptedException {
         Tab tab = null;
-        if (FeatureUtilities.isDocumentMode(getInstrumentation().getContext())) {
+        if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
             Runnable activityTrigger = new Runnable() {
                 @Override
                 public void run() {
@@ -471,7 +471,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         prepareUrlIntent(intent, url);
 
         final boolean isDocumentMode =
-                FeatureUtilities.isDocumentMode(getInstrumentation().getContext());
+                FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext());
 
         startActivityCompletely(intent);
 
@@ -535,7 +535,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     protected void newIncognitoTabFromMenu() throws InterruptedException {
         Tab tab = null;
 
-        if (FeatureUtilities.isDocumentMode(getInstrumentation().getContext())) {
+        if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
             final IncognitoDocumentActivity activity = ActivityUtils.waitForActivity(
                     getInstrumentation(), IncognitoDocumentActivity.class,
                     new Runnable() {
@@ -617,7 +617,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
             @Override
             public Integer call() {
                 TabModelSelector tabModelSelector;
-                if (FeatureUtilities.isDocumentMode(getInstrumentation().getContext())) {
+                if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
                     tabModelSelector = ChromeApplication.getDocumentTabModelSelector();
                 } else {
                     tabModelSelector = getActivity().getTabModelSelector();

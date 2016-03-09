@@ -5,7 +5,9 @@
 package org.chromium.ui.base;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.DisplayMetrics;
+import android.view.WindowManager;
 
 import org.chromium.base.annotations.CalledByNative;
 
@@ -24,42 +26,55 @@ public class DeviceFormFactor {
     private static Boolean sIsLargeTablet = null;
 
     /**
-     * @param context Android's context.
-     * @return        Whether the app should treat the device as a tablet for layout. This method
-     *                does not depend on the current window size and is not affected by
-     *                multi-window. It is dependent only on the device's size.
+     * @param context {@link Context} used to get the Application Context.
+     * @return Whether the app should treat the device as a tablet for layout. This method is not
+     *                 affected by Android N multi-window.
      */
     @CalledByNative
     public static boolean isTablet(Context context) {
         if (sIsTablet == null) {
-            sIsTablet = getSmallestDeviceWidthDp(context.getResources().getDisplayMetrics())
-                    >= MINIMUM_TABLET_WIDTH_DP;
+            sIsTablet = getSmallestDeviceWidthDp(context) >= MINIMUM_TABLET_WIDTH_DP;
         }
         return sIsTablet;
     }
 
     /**
-     * @param context Android's context.
-     * @return True if the current device's minimum dimension is larger than 720dp. This method
-     *                does not depend on the current window size and is not affected by
-     *                multi-window.
+     * @param context {@link Context} used to get the Application Context.
+     * @return True if the app should treat the device as a large (> 720dp) tablet for layout. This
+     *         method is not affected by Android N multi-window.
      */
     public static boolean isLargeTablet(Context context) {
         if (sIsLargeTablet == null) {
-            sIsLargeTablet = getSmallestDeviceWidthDp(context.getResources().getDisplayMetrics())
-                    >= MINIMUM_LARGE_TABLET_WIDTH_DP;
+            sIsLargeTablet = getSmallestDeviceWidthDp(context) >= MINIMUM_LARGE_TABLET_WIDTH_DP;
         }
         return sIsLargeTablet;
     }
 
     /**
-     * Calculates the minimum device width in dp.
-     * @param metrics The {@link DisplayMetrics} to use for calculating device size.
+     * Calculates the minimum device width in dp. This method is not affected by Android N
+     * multi-window.
+     *
+     * @param context {@link Context} used to get the Application Context.
      * @return The smaller of device width and height in dp.
      */
-    public static int getSmallestDeviceWidthDp(DisplayMetrics metrics) {
-        int smallestDeviceWidthDp = Math.round(Math.min(metrics.heightPixels / metrics.density,
-                metrics.widthPixels / metrics.density));
-        return smallestDeviceWidthDp;
+    public static int getSmallestDeviceWidthDp(Context context) {
+        assert context.getApplicationContext() != null;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            DisplayMetrics metrics = new DisplayMetrics();
+            // The Application Context must be used instead of the regular Context, because
+            // in Android N multi-window calling Display.getRealMetrics() using the regular Context
+            // returns the size of the current screen rather than the device.
+            ((WindowManager) context.getApplicationContext().getSystemService(
+                    Context.WINDOW_SERVICE)).getDefaultDisplay().getRealMetrics(metrics);
+            return Math.round(Math.min(metrics.heightPixels / metrics.density,
+                    metrics.widthPixels / metrics.density));
+        } else {
+            // Display.getRealMetrics() is only available in API level 17+, so
+            // Configuration.smallestScreenWidthDp is used instead. Proir to the introduction of
+            // multi-window in Android N, smallestScreenWidthDp was the same as the minimum size
+            // in getRealMetrics().
+            return context.getResources().getConfiguration().smallestScreenWidthDp;
+        }
     }
 }

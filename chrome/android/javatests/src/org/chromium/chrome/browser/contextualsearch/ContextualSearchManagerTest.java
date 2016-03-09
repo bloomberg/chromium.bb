@@ -1440,7 +1440,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         };
         getActivity().getTabModelSelector().addObserver(observer);
         // This tab tracking requires document mode be disabled.
-        assertFalse(FeatureUtilities.isDocumentMode(getInstrumentation().getContext()));
+        assertFalse(FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext()));
 
         // -------- TEST ---------
         // Start a slow-resolve search and maximize the Panel.

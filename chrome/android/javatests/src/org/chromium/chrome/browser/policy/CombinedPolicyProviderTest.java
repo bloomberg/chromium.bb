@@ -64,7 +64,7 @@ public class CombinedPolicyProviderTest extends ChromeActivityTestCaseBase<Chrom
      * or Tabbed mode.
      */
     private TabModel getTabModel(boolean incognito) {
-        if (FeatureUtilities.isDocumentMode(getInstrumentation().getContext())) {
+        if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
             return ChromeApplication.getDocumentTabModelSelector().getModel(incognito);
         }
         return getActivity().getTabModelSelector().getModel(incognito);

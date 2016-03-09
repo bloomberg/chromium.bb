@@ -88,7 +88,7 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
         public boolean shouldSkip(TestCase testCase) {
             Class<?> testClass = testCase.getClass();
             try {
-                if (!FeatureUtilities.isDocumentMode(getContext())) {
+                if (!FeatureUtilities.isDocumentMode(getTargetContext())) {
                     Method testMethod = testClass.getMethod(testCase.getName());
                     if (testMethod.isAnnotationPresent(DisableInTabbedMode.class)
                             || testClass.isAnnotationPresent(DisableInTabbedMode.class)) {

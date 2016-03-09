@@ -15,7 +15,6 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
 import android.view.View;
@@ -70,7 +69,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         super.onDestroy();
     }
 
-    @SuppressWarnings("cast")
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(newBase);
@@ -80,10 +78,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         // switcher resources. Overriding the smallestScreenWidthDp in the Configuration ensures
         // Android will load the tab strip resources. See crbug.com/588838.
         if (Build.VERSION.CODENAME.equals("N")) {
-            DisplayMetrics metrics = new DisplayMetrics();
-            ((WindowManager) getApplicationContext().getSystemService(
-                    Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(metrics);
-            int smallestDeviceWidthDp = DeviceFormFactor.getSmallestDeviceWidthDp(metrics);
+            int smallestDeviceWidthDp = DeviceFormFactor.getSmallestDeviceWidthDp(this);
 
             if (smallestDeviceWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP) {
                 Configuration overrideConfiguration = new Configuration();

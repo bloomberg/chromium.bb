@@ -91,7 +91,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mDelegate.setContext(getInstrumentation().getContext());
+        mDelegate.setContext(getInstrumentation().getTargetContext());
         CommandLine.init(new String[0]);
         RecordHistogram.disableForTests();
         mDelegate.mQueryIntentOverride = null;
