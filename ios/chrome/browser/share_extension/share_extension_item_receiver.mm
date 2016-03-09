@@ -13,6 +13,8 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/reading_list/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_observer.h"
@@ -28,6 +30,7 @@ enum ShareExtensionItemReceived {
   INVALID_ENTRY = 0,
   CANCELLED_ENTRY,
   READINGLIST_ENTRY,
+  BOOKMARK_ENTRY,
   SHARE_EXTENSION_ITEM_RECEIVED_COUNT
 };
 
@@ -42,6 +45,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   BOOL _isObservingFolder;
   BOOL _folderCreated;
   ReadingListModel* _readingListModel;  // Not owned.
+  bookmarks::BookmarkModel* _bookmarkModel;  // Not owned.
 }
 
 // Checks if the reading list folder is already created and if not, create it.
@@ -84,10 +88,13 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   return instance;
 }
 
-- (void)setReadingListModel:(ReadingListModel*)model {
+- (void)setBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+        readingListModel:(ReadingListModel*)readingListModel {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(!_readingListModel);
-  _readingListModel = model;
+  DCHECK(!_bookmarkModel);
+  _readingListModel = readingListModel;
+  _bookmarkModel = bookmarkModel;
 
   web::WebThread::PostTask(web::WebThread::FILE, FROM_HERE,
                            base::BindBlock(^() {
@@ -171,27 +178,41 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
       base::SysNSStringToUTF8([entry objectForKey:app_group::kShareItemTitle]);
   NSDate* entryDate = base::mac::ObjCCast<NSDate>(
       [entry objectForKey:app_group::kShareItemDate]);
-  if (!entryURL.is_valid() || !entryDate) {
+  NSNumber* entryType = base::mac::ObjCCast<NSNumber>(
+      [entry objectForKey:app_group::kShareItemType]);
+
+  if (!entryURL.is_valid() || !entryDate || !entryType) {
     if (completion) {
       completion();
     }
     return NO;
   }
 
-  LogHistogramReceivedItem(READINGLIST_ENTRY);
   UMA_HISTOGRAM_TIMES("IOS.ShareExtension.ReceivedEntryDelay",
                       base::TimeDelta::FromSecondsD(
                           [[NSDate date] timeIntervalSinceDate:entryDate]));
 
   // Entry is valid. Add it to the reading list model.
   web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindBlock(^() {
-                             if (!_readingListModel) {
-                               // Reading list model may have been deleted after
-                               // the file processing
-                               // started.
+                             if (!_readingListModel || !_bookmarkModel) {
+                               // Models may have been deleted after the file
+                               // processing started.
                                return;
                              }
-                             _readingListModel->AddEntry(entryURL, entryTitle);
+                             app_group::ShareExtensionItemType type =
+                                 static_cast<app_group::ShareExtensionItemType>(
+                                     [entryType integerValue]);
+                             if (type == app_group::READING_LIST_ITEM) {
+                               LogHistogramReceivedItem(READINGLIST_ENTRY);
+                               _readingListModel->AddEntry(entryURL,
+                                                           entryTitle);
+                             }
+                             if (type == app_group::BOOKMARK_ITEM) {
+                               LogHistogramReceivedItem(BOOKMARK_ENTRY);
+                               _bookmarkModel->AddURL(
+                                   _bookmarkModel->mobile_node(), 0,
+                                   base::ASCIIToUTF16(entryTitle), entryURL);
+                             }
                              if (completion) {
                                web::WebThread::PostTask(web::WebThread::FILE,
                                                         FROM_HERE,

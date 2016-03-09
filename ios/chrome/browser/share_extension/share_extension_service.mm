@@ -3,28 +3,57 @@
 // found in the LICENSE file.
 
 #include "base/mac/scoped_nsobject.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_model.h"
 #include "ios/chrome/browser/share_extension/share_extension_item_receiver.h"
 #include "ios/chrome/browser/share_extension/share_extension_service.h"
 
-ShareExtensionService::ShareExtensionService(ReadingListModel* model)
-    : reading_list_model_(model) {
-  DCHECK(model);
+ShareExtensionService::ShareExtensionService(
+    bookmarks::BookmarkModel* bookmark_model,
+    ReadingListModel* reading_list_model)
+    : reading_list_model_(reading_list_model),
+      reading_list_model_loaded_(false),
+      bookmark_model_(bookmark_model),
+      bookmark_model_loaded_(false) {
+  DCHECK(bookmark_model);
+  DCHECK(reading_list_model);
 }
 
 ShareExtensionService::~ShareExtensionService() {}
 
 void ShareExtensionService::Initialize() {
+  bookmark_model_->AddObserver(this);
+  if (bookmark_model_->loaded()) {
+    bookmark_model_loaded_ = true;
+    this->AnyModelLoaded();
+  }
   reading_list_model_->AddObserver(this);
 }
 
 void ShareExtensionService::Shutdown() {
   [[ShareExtensionItemReceiver sharedInstance] shutdown];
   reading_list_model_->RemoveObserver(this);
+  reading_list_model_loaded_ = false;
+  bookmark_model_->RemoveObserver(this);
+  bookmark_model_loaded_ = false;
 }
 
 void ShareExtensionService::ReadingListModelLoaded(
     const ReadingListModel* model) {
-  [[ShareExtensionItemReceiver sharedInstance]
-      setReadingListModel:reading_list_model_];
+  reading_list_model_loaded_ = true;
+  this->AnyModelLoaded();
+}
+
+void ShareExtensionService::BookmarkModelLoaded(bookmarks::BookmarkModel* model,
+                                                bool ids_reassigned) {
+  bookmark_model_loaded_ = true;
+  this->AnyModelLoaded();
+}
+
+void ShareExtensionService::AnyModelLoaded() {
+  if (reading_list_model_loaded_ && bookmark_model_loaded_) {
+    [[ShareExtensionItemReceiver sharedInstance]
+        setBookmarkModel:bookmark_model_
+        readingListModel:reading_list_model_];
+  }
 }

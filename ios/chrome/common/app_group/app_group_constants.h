@@ -14,9 +14,15 @@ namespace app_group {
 // An enum of the different application member of the Chrome app group.
 // To ensure continuity in metrics log, applications can only be added at the
 // end.
+// Applications directly sending metrics must be added to this enum.
 enum AppGroupApplications {
-  APP_GROUP_CHROME,
+  APP_GROUP_CHROME = 0,
   APP_GROUP_TODAY_EXTENSION,
+};
+
+enum ShareExtensionItemType {
+  READING_LIST_ITEM = 0,
+  BOOKMARK_ITEM,
 };
 
 // The x-callback-url indicating that an application in the group requires a
@@ -61,12 +67,13 @@ extern const char kChromeAppClientID[];
 // metrics reporting.
 extern const char kUserMetricsEnabledDate[];
 
-// The four keys of the items sent by the share extension to Chrome (URL,
-// title, date, cancel).
+// The five keys of the items sent by the share extension to Chrome (URL,
+// title, date, cancel, type).
 extern NSString* const kShareItemURL;
 extern NSString* const kShareItemTitle;
 extern NSString* const kShareItemDate;
 extern NSString* const kShareItemCancel;
+extern NSString* const kShareItemType;
 
 // The current epoch time, on the first run of chrome on this machine. It is set
 // once and must be attached to metrics reports forever thereafter.

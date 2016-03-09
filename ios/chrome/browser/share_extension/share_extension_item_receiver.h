@@ -7,6 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+namespace bookmarks {
+class BookmarkModel;
+}
+
 class ReadingListModel;
 
 // This class observes the Application group folder
@@ -16,11 +20,12 @@ class ReadingListModel;
 
 + (instancetype)sharedInstance;
 
-// Sets the reading list model to use. |shutdown| must be called before another
-// |model| is set.
+// Sets the bookmark and reading list models to use. |shutdown| must be called
+// before other models are set.
 // The receiver will start observe the share extension folder and send items to
-// |model|.
-- (void)setReadingListModel:(ReadingListModel*)model;
+// these models.
+- (void)setBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+        readingListModel:(ReadingListModel*)readingListModel;
 
 // Stops observers and pending operations.
 - (void)shutdown;

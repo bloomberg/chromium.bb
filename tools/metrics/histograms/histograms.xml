@@ -71157,6 +71157,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Invalid item"/>
   <int value="1" label="Cancelled item"/>
   <int value="2" label="Reading list item"/>
+  <int value="3" label="Bookmark item"/>
 </enum>
 
 <enum name="IPCAttachmentBrokerPrivilegedBrokerAttachmentError" type="int">

@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -34,6 +35,7 @@ ShareExtensionServiceFactory::ShareExtensionServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "ShareExtensionService",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(ios::BookmarkModelFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
 }
 
@@ -45,6 +47,7 @@ scoped_ptr<KeyedService> ShareExtensionServiceFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   scoped_ptr<ShareExtensionService> share_extension_service(
       new ShareExtensionService(
+          ios::BookmarkModelFactory::GetForBrowserState(chrome_browser_state),
           ReadingListModelFactory::GetForBrowserState(chrome_browser_state)));
   return std::move(share_extension_service);
 }
