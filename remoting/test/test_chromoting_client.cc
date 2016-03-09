@@ -150,7 +150,7 @@ void TestChromotingClient::StartConnection(
       new protocol::NegotiatingClientAuthenticator(
           connection_setup_info.pairing_id, connection_setup_info.shared_secret,
           connection_setup_info.host_id, fetch_secret_callback,
-          std::move(token_fetcher), connection_setup_info.auth_methods));
+          std::move(token_fetcher)));
 
   chromoting_client_->Start(
       signal_strategy_.get(), std::move(authenticator), transport_context,

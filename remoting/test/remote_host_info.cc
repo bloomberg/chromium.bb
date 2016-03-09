@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/authentication_method.h"
 #include "remoting/test/remote_host_info.h"
 
 #include "base/logging.h"
@@ -17,11 +16,9 @@ namespace remoting {
 namespace test {
 
 RemoteHostInfo::RemoteHostInfo()
-    : remote_host_status(kRemoteHostStatusUnknown) {
-}
+    : remote_host_status(kRemoteHostStatusUnknown) {}
 
-RemoteHostInfo::~RemoteHostInfo() {
-}
+RemoteHostInfo::~RemoteHostInfo() {}
 
 bool RemoteHostInfo::IsReadyForConnection() const {
   return remote_host_status == kRemoteHostStatusReady;
@@ -51,9 +48,6 @@ ConnectionSetupInfo RemoteHostInfo::GenerateConnectionSetupInfo(
   connection_setup_info.public_key = kFakeHostPublicKey;
   connection_setup_info.shared_secret = shared_secret;
   connection_setup_info.user_name = user_name;
-
-  connection_setup_info.auth_methods.push_back(
-      protocol::AuthenticationMethod::THIRD_PARTY);
 
   return connection_setup_info;
 }

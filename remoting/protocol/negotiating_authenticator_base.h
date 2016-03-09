@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
@@ -60,6 +60,15 @@ namespace protocol {
 //      mix of webapp, client plugin and host, for both Me2Me and IT2Me.
 class NegotiatingAuthenticatorBase : public Authenticator {
  public:
+  // Method represents an authentication algorithm.
+  enum class Method {
+    INVALID,
+    SPAKE2_SHARED_SECRET_PLAIN,
+    SPAKE2_SHARED_SECRET_HMAC,
+    SPAKE2_PAIR,
+    THIRD_PARTY,
+  };
+
   ~NegotiatingAuthenticatorBase() override;
 
   // Authenticator interface.
@@ -74,18 +83,24 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   void ProcessMessageInternal(const buzz::XmlElement* message,
                               const base::Closure& resume_callback);
 
-  const AuthenticationMethod& current_method_for_testing() const {
-    return current_method_;
-  }
-
  protected:
+  friend class NegotiatingAuthenticatorTest;
+  FRIEND_TEST_ALL_PREFIXES(NegotiatingAuthenticatorTest, IncompatibleMethods);
+
   static const buzz::StaticQName kMethodAttributeQName;
   static const buzz::StaticQName kSupportedMethodsAttributeQName;
   static const char kSupportedMethodsSeparator;
 
+  // Parses a string that defines an authentication method. Returns
+  // Method::INVALID if the string is invalid.
+  static Method ParseMethodString(const std::string& value);
+
+  // Returns string representation of |method|.
+  static std::string MethodToString(Method method);
+
   explicit NegotiatingAuthenticatorBase(Authenticator::State initial_state);
 
-  void AddMethod(AuthenticationMethod method);
+  void AddMethod(Method method);
 
   // Updates |state_| to reflect the current underlying authenticator state.
   // |resume_callback| is called after the state is updated.
@@ -95,8 +110,8 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   // the 'method' tag with |current_method_|.
   virtual scoped_ptr<buzz::XmlElement> GetNextMessageInternal();
 
-  std::vector<AuthenticationMethod> methods_;
-  AuthenticationMethod current_method_ = AuthenticationMethod::INVALID;
+  std::vector<Method> methods_;
+  Method current_method_ = Method::INVALID;
   scoped_ptr<Authenticator> current_authenticator_;
   State state_;
   RejectionReason rejection_reason_ = INVALID_CREDENTIALS;

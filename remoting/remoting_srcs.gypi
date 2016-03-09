@@ -77,8 +77,6 @@
       'protocol/audio_writer.h',
       'protocol/auth_util.cc',
       'protocol/auth_util.h',
-      'protocol/authentication_method.cc',
-      'protocol/authentication_method.h',
       'protocol/authenticator.cc',
       'protocol/authenticator.h',
       'protocol/capability_names.h',

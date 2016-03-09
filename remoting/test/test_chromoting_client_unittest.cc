@@ -72,8 +72,6 @@ void TestChromotingClientTest::SetUp() {
       make_scoped_ptr(fake_connection_to_host_));
 
   connection_setup_info_.host_jid = "test_host@faux_address.com/321";
-  connection_setup_info_.auth_methods.push_back(
-      protocol::AuthenticationMethod::THIRD_PARTY);
 }
 
 void TestChromotingClientTest::TearDown() {

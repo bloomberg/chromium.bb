@@ -22,20 +22,19 @@ const char kHostAuthSslExporterLabel[] =
 
 const char kSslFakeHostName[] = "chromoting";
 
-std::string GenerateSupportAuthToken(const std::string& jid,
-                                     const std::string& access_code) {
-  std::string sha256 = crypto::SHA256HashString(jid + " " + access_code);
-  std::string sha256_base64;
-  base::Base64Encode(sha256, &sha256_base64);
-  return sha256_base64;
-}
+std::string GetSharedSecretHash(const std::string& tag,
+                                const std::string& shared_secret) {
+  crypto::HMAC response(crypto::HMAC::SHA256);
+  if (!response.Init(tag)) {
+    LOG(FATAL) << "HMAC::Init failed";
+  }
 
-bool VerifySupportAuthToken(const std::string& jid,
-                            const std::string& access_code,
-                            const std::string& auth_token) {
-  std::string expected_token =
-      GenerateSupportAuthToken(jid, access_code);
-  return expected_token == auth_token;
+  unsigned char out_bytes[kSharedSecretHashLength];
+  if (!response.Sign(shared_secret, out_bytes, sizeof(out_bytes))) {
+    LOG(FATAL) << "HMAC::Sign failed";
+  }
+
+  return std::string(out_bytes, out_bytes + sizeof(out_bytes));
 }
 
 // static

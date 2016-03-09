@@ -13,10 +13,25 @@
 #include "base/strings/string_split.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
+#include "remoting/protocol/name_value_map.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
 namespace protocol {
+
+namespace {
+
+const NameMapElement<NegotiatingAuthenticatorBase::Method>
+    kAuthenticationMethodStrings[] = {
+        {NegotiatingAuthenticatorBase::Method::SPAKE2_SHARED_SECRET_PLAIN,
+         "spake2_plain"},
+        {NegotiatingAuthenticatorBase::Method::SPAKE2_SHARED_SECRET_HMAC,
+         "spake2_hmac"},
+        {NegotiatingAuthenticatorBase::Method::SPAKE2_PAIR, "spake2_pair"},
+        {NegotiatingAuthenticatorBase::Method::THIRD_PARTY, "third_party"},
+};
+
+}  // namespace
 
 const buzz::StaticQName NegotiatingAuthenticatorBase::kMethodAttributeQName =
     { "", "method" };
@@ -45,6 +60,20 @@ bool NegotiatingAuthenticatorBase::started() const {
 Authenticator::RejectionReason
 NegotiatingAuthenticatorBase::rejection_reason() const {
   return rejection_reason_;
+}
+
+// static
+NegotiatingAuthenticatorBase::Method
+NegotiatingAuthenticatorBase::ParseMethodString(const std::string& value) {
+  Method result;
+  if (!NameToValue(kAuthenticationMethodStrings, value, &result))
+    return Method::INVALID;
+  return result;
+}
+
+// static
+std::string NegotiatingAuthenticatorBase::MethodToString(Method method) {
+  return ValueToName(kAuthenticationMethodStrings, method);
 }
 
 void NegotiatingAuthenticatorBase::ProcessMessageInternal(
@@ -78,7 +107,7 @@ void NegotiatingAuthenticatorBase::UpdateState(
 scoped_ptr<buzz::XmlElement>
 NegotiatingAuthenticatorBase::GetNextMessageInternal() {
   DCHECK_EQ(state(), MESSAGE_READY);
-  DCHECK(current_method_ != AuthenticationMethod::INVALID);
+  DCHECK(current_method_ != Method::INVALID);
 
   scoped_ptr<buzz::XmlElement> result;
   if (current_authenticator_->state() == MESSAGE_READY) {
@@ -88,13 +117,12 @@ NegotiatingAuthenticatorBase::GetNextMessageInternal() {
   }
   state_ = current_authenticator_->state();
   DCHECK(state_ == ACCEPTED || state_ == WAITING_MESSAGE);
-  result->AddAttr(kMethodAttributeQName,
-                  AuthenticationMethodToString(current_method_));
+  result->AddAttr(kMethodAttributeQName, MethodToString(current_method_));
   return result;
 }
 
-void NegotiatingAuthenticatorBase::AddMethod(AuthenticationMethod method) {
-  DCHECK(method != AuthenticationMethod::INVALID);
+void NegotiatingAuthenticatorBase::AddMethod(Method method) {
+  DCHECK(method != Method::INVALID);
   methods_.push_back(method);
 }
 

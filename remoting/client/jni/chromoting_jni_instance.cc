@@ -80,18 +80,10 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
                      weak_factory_.GetWeakPtr()),
           host_pubkey));
 
-  std::vector<protocol::AuthenticationMethod> auth_methods;
-  auth_methods.push_back(protocol::AuthenticationMethod::THIRD_PARTY);
-  auth_methods.push_back(protocol::AuthenticationMethod::SPAKE2_PAIR);
-  auth_methods.push_back(
-      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC);
-  auth_methods.push_back(
-      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN);
-
   authenticator_.reset(new protocol::NegotiatingClientAuthenticator(
       pairing_id, pairing_secret, host_id_,
       base::Bind(&ChromotingJniInstance::FetchSecret, this),
-      std::move(token_fetcher), auth_methods));
+      std::move(token_fetcher)));
 
   // Post a task to start connection
   jni_runtime_->network_task_runner()->PostTask(

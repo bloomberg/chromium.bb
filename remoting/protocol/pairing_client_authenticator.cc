@@ -7,8 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "remoting/base/constants.h"
-#include "remoting/base/rsa_key_pair.h"
-#include "remoting/protocol/authentication_method.h"
+#include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
@@ -20,12 +19,12 @@ PairingClientAuthenticator::PairingClientAuthenticator(
     const std::string& paired_secret,
     const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
     const FetchSecretCallback& fetch_pin_callback,
-    const std::string& authentication_tag)
+    const std::string& host_id)
     : client_id_(client_id),
       paired_secret_(paired_secret),
       create_base_authenticator_callback_(create_base_authenticator_callback),
       fetch_pin_callback_(fetch_pin_callback),
-      authentication_tag_(authentication_tag),
+      host_id_(host_id),
       weak_factory_(this) {
   spake2_authenticator_ =
       create_base_authenticator_callback_.Run(paired_secret_, MESSAGE_READY);
@@ -72,9 +71,7 @@ void PairingClientAuthenticator::OnPinFetched(
   DCHECK(!spake2_authenticator_);
   waiting_for_pin_ = false;
   spake2_authenticator_ = create_base_authenticator_callback_.Run(
-      ApplySharedSecretHashFunction(HashFunction::HMAC_SHA256,
-                                    authentication_tag_, pin),
-      initial_state);
+      GetSharedSecretHash(host_id_, pin), initial_state);
   resume_callback.Run();
 }
 

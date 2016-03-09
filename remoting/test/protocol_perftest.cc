@@ -28,6 +28,7 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/fake_desktop_environment.h"
+#include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/frame_consumer.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
@@ -349,8 +350,8 @@ class ProtocolPerfTest
     scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::FromString(key_base64);
     ASSERT_TRUE(key_pair.get());
 
-    std::string host_pin_hash = protocol::ApplySharedSecretHashFunction(
-        protocol::HashFunction::HMAC_SHA256, kHostId, kHostPin);
+    std::string host_pin_hash =
+        protocol::GetSharedSecretHash(kHostId, kHostPin);
     scoped_ptr<protocol::AuthenticatorFactory> auth_factory =
         protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
             true, kHostOwner, host_cert, key_pair, "", host_pin_hash, nullptr);
@@ -387,16 +388,13 @@ class ProtocolPerfTest
             host_signaling_.get(), std::move(port_allocator_factory), nullptr,
             network_settings, protocol::TransportRole::CLIENT));
 
-    std::vector<protocol::AuthenticationMethod> auth_methods;
-    auth_methods.push_back(
-        protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC);
     scoped_ptr<protocol::Authenticator> client_authenticator(
         new protocol::NegotiatingClientAuthenticator(
             std::string(),  // client_pairing_id
             std::string(),  // client_pairing_secret
             kHostId,
             base::Bind(&ProtocolPerfTest::FetchPin, base::Unretained(this)),
-            nullptr, auth_methods));
+            nullptr));
     client_.reset(
         new ChromotingClient(client_context_.get(), this, this, nullptr));
     client_->set_protocol_config(protocol_config_->Clone());

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/authentication_method.h"
 #include "remoting/test/host_info.h"
 
 #include "base/logging.h"
@@ -10,13 +9,10 @@
 namespace remoting {
 namespace test {
 
-HostInfo::HostInfo() {
-}
-
+HostInfo::HostInfo() {}
 HostInfo::HostInfo(const HostInfo& other) = default;
 
-HostInfo::~HostInfo() {
-}
+HostInfo::~HostInfo() {}
 
 bool HostInfo::ParseHostInfo(const base::DictionaryValue& host_info) {
   const base::ListValue* list_value = nullptr;
@@ -89,16 +85,6 @@ ConnectionSetupInfo HostInfo::GenerateConnectionSetupInfo(
   connection_setup_info.pin = pin;
   connection_setup_info.public_key = public_key;
   connection_setup_info.user_name = user_name;
-
-  connection_setup_info.auth_methods.push_back(
-      protocol::AuthenticationMethod::SPAKE2_PAIR);
-  connection_setup_info.auth_methods.push_back(
-      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN);
-  connection_setup_info.auth_methods.push_back(
-      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC);
-  connection_setup_info.auth_methods.push_back(
-      protocol::AuthenticationMethod::THIRD_PARTY);
-
   return connection_setup_info;
 }
 

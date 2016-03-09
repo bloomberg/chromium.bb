@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "remoting/protocol/authentication_method.h"
+#include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
 namespace remoting {
@@ -23,8 +23,7 @@ bool ParsePinHashFromConfig(const std::string& value,
 
   std::string function_name = value.substr(0, separator);
   if (function_name == "plain") {
-    *pin_hash_out = protocol::ApplySharedSecretHashFunction(
-        protocol::HashFunction::HMAC_SHA256, host_id, *pin_hash_out);
+    *pin_hash_out = protocol::GetSharedSecretHash(host_id, *pin_hash_out);
     return true;
   } else if (function_name == "hmac") {
     return true;
@@ -36,8 +35,7 @@ bool ParsePinHashFromConfig(const std::string& value,
 
 std::string MakeHostPinHash(const std::string& host_id,
                             const std::string& pin) {
-  std::string hash = protocol::ApplySharedSecretHashFunction(
-      protocol::HashFunction::HMAC_SHA256, host_id, pin);
+  std::string hash = protocol::GetSharedSecretHash(host_id, pin);
   std::string hash_base64;
   base::Base64Encode(hash, &hash_base64);
   return "hmac:" + hash_base64;
@@ -51,8 +49,7 @@ bool VerifyHostPinHash(const std::string& hash,
     LOG(FATAL) << "Failed to parse PIN hash.";
     return false;
   }
-  std::string hash_calculated = protocol::ApplySharedSecretHashFunction(
-      protocol::HashFunction::HMAC_SHA256, host_id, pin);
+  std::string hash_calculated = protocol::GetSharedSecretHash(host_id, pin);
   return hash_calculated == hash_parsed;
 }
 

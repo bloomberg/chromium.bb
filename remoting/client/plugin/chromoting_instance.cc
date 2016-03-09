@@ -703,18 +703,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
                      weak_factory_.GetWeakPtr()),
           host_public_key));
 
-  std::vector<protocol::AuthenticationMethod> auth_methods;
-  auth_methods.push_back(protocol::AuthenticationMethod::THIRD_PARTY);
-  auth_methods.push_back(protocol::AuthenticationMethod::SPAKE2_PAIR);
-  auth_methods.push_back(
-      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_HMAC);
-  auth_methods.push_back(
-      protocol::AuthenticationMethod::SPAKE2_SHARED_SECRET_PLAIN);
-
   scoped_ptr<protocol::Authenticator> authenticator(
       new protocol::NegotiatingClientAuthenticator(
           client_pairing_id, client_paired_secret, authentication_tag,
-          fetch_secret_callback, std::move(token_fetcher), auth_methods));
+          fetch_secret_callback, std::move(token_fetcher)));
 
   scoped_ptr<protocol::CandidateSessionConfig> config =
       protocol::CandidateSessionConfig::CreateDefault();

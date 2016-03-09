@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/negotiating_authenticator_base.h"
 #include "remoting/protocol/pairing_registry.h"
@@ -35,9 +34,9 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& access_code);
 
-  // Creates a host authenticator, using a fixed PIN.
-  // If |pairing_registry| is non-nullptr then the spake2_pair method will
-  // be offered, supporting PIN-less authentication.
+  // Creates a host authenticator, using a fixed PIN. If |pairing_registry| is
+  // non-nullptr then the paired methods will be offered, supporting
+  // PIN-less authentication.
   static scoped_ptr<Authenticator> CreateWithPin(
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
@@ -56,9 +55,8 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   scoped_ptr<buzz::XmlElement> GetNextMessage() override;
 
  private:
-  NegotiatingHostAuthenticator(
-      const std::string& local_cert,
-      scoped_refptr<RsaKeyPair> key_pair);
+  NegotiatingHostAuthenticator(const std::string& local_cert,
+                               scoped_refptr<RsaKeyPair> key_pair);
 
   // (Asynchronously) creates an authenticator, and stores it in
   // |current_authenticator_|. Authenticators that can be started in either

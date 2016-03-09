@@ -31,18 +31,9 @@ const size_t kSharedSecretHashLength = 32;
 // Size of the HMAC-SHA-256 digest used for channel authentication.
 const size_t kAuthDigestLength = 32;
 
-// TODO(sergeyu): The following two methods are used for V1
-// authentication. Remove them when we finally switch to V2
-// authentication method. crbug.com/110483 .
-
-// Generates auth token for the specified |jid| and |access_code|.
-std::string GenerateSupportAuthToken(const std::string& jid,
-                                     const std::string& access_code);
-
-// Verifies validity of an |access_token|.
-bool VerifySupportAuthToken(const std::string& jid,
-                            const std::string& access_code,
-                            const std::string& auth_token);
+// Returns HMAC-SHA-256 hash for |shared_secret| with the specified |tag|.
+std::string GetSharedSecretHash(const std::string& tag,
+                                const std::string& shared_secret);
 
 // Returns authentication bytes that must be used for the given
 // |socket|. Empty string is returned in case of failure.

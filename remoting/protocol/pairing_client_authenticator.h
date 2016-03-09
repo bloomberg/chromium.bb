@@ -19,7 +19,7 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
       const std::string& paired_secret,
       const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
       const FetchSecretCallback& fetch_pin_callback,
-      const std::string& authentication_tag);
+      const std::string& host_id);
   ~PairingClientAuthenticator() override;
 
   // Authenticator interface.
@@ -42,7 +42,7 @@ class PairingClientAuthenticator : public PairingAuthenticatorBase {
   std::string paired_secret_;
   CreateBaseAuthenticatorCallback create_base_authenticator_callback_;
   FetchSecretCallback fetch_pin_callback_;
-  std::string authentication_tag_;
+  std::string host_id_;
 
   // Set to true if a PIN-based authenticator has been requested but has not
   // yet been set.
