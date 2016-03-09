@@ -50,6 +50,7 @@ namespace feedback_private = api::feedback_private;
 
 using feedback_private::SystemInformation;
 using feedback_private::FeedbackInfo;
+using feedback_private::FeedbackFlow;
 
 char kFeedbackExtensionId[] = "gfdkimpbcpahaombhbimeihdjnejgicl";
 
@@ -79,6 +80,15 @@ void FeedbackPrivateAPI::RequestFeedback(
     const std::string& description_template,
     const std::string& category_tag,
     const GURL& page_url) {
+  RequestFeedbackForFlow(description_template, category_tag, page_url,
+                         FeedbackFlow::FEEDBACK_FLOW_REGULAR);
+}
+
+void FeedbackPrivateAPI::RequestFeedbackForFlow(
+    const std::string& description_template,
+    const std::string& category_tag,
+    const GURL& page_url,
+    api::feedback_private::FeedbackFlow flow) {
   if (browser_context_ && EventRouter::Get(browser_context_)) {
     FeedbackInfo info;
     info.description = description_template;
@@ -89,9 +99,10 @@ void FeedbackPrivateAPI::RequestFeedback(
     if (TracingManager* manager = TracingManager::Get()) {
       info.trace_id.reset(new int(manager->RequestTrace()));
     }
+    info.flow = flow;
 
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(info.ToValue().release());
+    scoped_ptr<base::ListValue> args =
+        feedback_private::OnFeedbackRequested::Create(info);
 
     scoped_ptr<Event> event(new Event(
         events::FEEDBACK_PRIVATE_ON_FEEDBACK_REQUESTED,

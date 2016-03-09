@@ -16,6 +16,16 @@ namespace feedbackPrivate {
     DOMString value;
   };
 
+  // Supported feedback flows.
+  enum FeedbackFlow {
+    // Flow for regular user. This is the default.
+    regular,
+
+    // Flow on the ChromeOS login screen. URL entry, file attaching and landing
+    // page is disabled for this flow.
+    login
+  };
+
   dictionary FeedbackInfo {
     // File to attach to the feedback report.
     AttachedFile? attachedFile;
@@ -49,6 +59,9 @@ namespace feedbackPrivate {
 
     // True if we have permission to add histograms to this feedback report.
     boolean sendHistograms;
+
+    // Optional feedback UI flow. Default is the regular user flow.
+    FeedbackFlow? flow;
 
     // TODO(rkc): Remove these once we have bindings to send blobs to Chrome.
     // Used internally to store the blob uuid after parameter customization.

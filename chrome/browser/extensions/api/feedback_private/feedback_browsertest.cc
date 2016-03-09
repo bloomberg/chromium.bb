@@ -13,11 +13,14 @@
 #include "chrome/common/extensions/api/feedback_private.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+
+using extensions::api::feedback_private::FeedbackFlow;
 
 namespace {
 
@@ -49,10 +52,10 @@ class FeedbackTest : public ExtensionBrowserTest {
             extensions::api::feedback_private::OnFeedbackRequested::kEventName);
   }
 
-  void StartFeedbackUI() {
+  void StartFeedbackUI(FeedbackFlow flow) {
     base::Closure callback = base::Bind(&StopMessageLoopCallback);
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(&callback);
-    InvokeFeedbackUI();
+    InvokeFeedbackUI(flow);
     content::RunMessageLoop();
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(NULL);
   }
@@ -67,23 +70,43 @@ class FeedbackTest : public ExtensionBrowserTest {
   }
 
  private:
-  void InvokeFeedbackUI() {
+  void InvokeFeedbackUI(FeedbackFlow flow) {
     extensions::FeedbackPrivateAPI* api =
         extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(
             browser()->profile());
-    api->RequestFeedback("Test description",
-                         "Test tag",
-                         GURL("http://www.test.com"));
+    api->RequestFeedbackForFlow("Test description", "Test tag",
+                                GURL("http://www.test.com"), flow);
   }
 };
 
-// See http://crbug.com/369886.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, DISABLED_ShowFeedback) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
-  StartFeedbackUI();
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_REGULAR);
   VerifyFeedbackAppLaunch();
+}
+
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
+  WaitForExtensionViewsToLoad();
+
+  ASSERT_TRUE(IsFeedbackAppAvailable());
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_LOGIN);
+  VerifyFeedbackAppLaunch();
+
+  AppWindow* const window =
+      PlatformAppBrowserTest::GetFirstAppWindowForBrowser(browser());
+  ASSERT_TRUE(window);
+  content::WebContents* const content = window->web_contents();
+
+  bool bool_result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      content,
+      "domAutomationController.send("
+        "$('page-url').hidden && $('attach-file-container').hidden && "
+        "$('attach-file-note').hidden);",
+      &bool_result));
+  EXPECT_TRUE(bool_result);
 }
 
 }  // namespace extensions

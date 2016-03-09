@@ -7,6 +7,7 @@
  */
 var FEEDBACK_LANDING_PAGE =
     'https://support.google.com/chrome/go/feedback_confirmation';
+
 /** @type {number}
  * @const
  */
@@ -17,11 +18,18 @@ var MAX_ATTACH_FILE_SIZE = 3 * 1024 * 1024;
  * @const
  */
 var FEEDBACK_MIN_WIDTH = 500;
+
 /**
  * @type {number}
  * @const
  */
 var FEEDBACK_MIN_HEIGHT = 585;
+
+/**
+ * @type {number}
+ * @const
+ */
+var FEEDBACK_MIN_HEIGHT_LOGIN = 482;
 
 /** @type {number}
  * @const
@@ -42,6 +50,15 @@ var SYSINFO_WINDOW_ID = 'sysinfo_window';
  * @const
  */
 var STATS_WINDOW_ID = 'stats_window';
+
+/**
+ * Feedback flow defined in feedback_private.idl.
+ * @enum {string}
+ */
+var FeedbackFlow = {
+  REGULAR: 'regular',  // Flow in a regular user session.
+  LOGIN: 'login'       // Flow on the login screen.
+};
 
 var attachedFileBlob = null;
 var lastReader = null;
@@ -166,14 +183,19 @@ function sendReport() {
       // The report will be sent later by the feedback extension's background
       // page (see event_handler.js).
       sendReportLater(feedbackInfo);
-      window.open(FEEDBACK_LANDING_PAGE, '_blank');
+
+      // No landing page for login screen feedback.
+      if (feedbackInfo.flow != FeedbackFlow.LOGIN)
+        window.open(FEEDBACK_LANDING_PAGE, '_blank');
       window.close();
       return true;
     }
   }
 
   chrome.feedbackPrivate.sendFeedback(feedbackInfo, function(result) {
-    window.open(FEEDBACK_LANDING_PAGE, '_blank');
+    // No landing page for login screen feedback.
+    if (feedbackInfo.flow != FeedbackFlow.LOGIN)
+      window.open(FEEDBACK_LANDING_PAGE, '_blank');
     window.close();
   });
 
@@ -233,8 +255,11 @@ function resizeAppWindow() {
   // style.margin - the variable seems to not exist.
   var height = $('title-bar').scrollHeight +
       $('content-pane').scrollHeight + CONTENT_MARGIN_HEIGHT;
-  if (height < FEEDBACK_MIN_HEIGHT)
-    height = FEEDBACK_MIN_HEIGHT;
+
+  var minHeight = FEEDBACK_MIN_HEIGHT;
+  if (feedbackInfo.flow == FeedbackFlow.LOGIN)
+    minHeight = FEEDBACK_MIN_HEIGHT_LOGIN;
+  height = Math.max(height, minHeight);
 
   chrome.app.window.current().resizeTo(width, height);
 }
@@ -279,6 +304,10 @@ function initialize() {
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.sentFromEventPage) {
       feedbackInfo = request.data;
+
+      if (!feedbackInfo.flow)
+        feedbackInfo.flow = FeedbackFlow.REGULAR;
+
       $('description-text').textContent = feedbackInfo.description;
       if (feedbackInfo.pageUrl)
         $('page-url-text').value = feedbackInfo.pageUrl;
@@ -316,6 +345,13 @@ function initialize() {
         attachedFileBlob = feedbackInfo.attachedFile.data;
         $('custom-file-container').hidden = false;
         $('attach-file').hidden = true;
+      }
+
+      // No URL and file attachment for login screen feedback.
+      if (feedbackInfo.flow == FeedbackFlow.LOGIN) {
+        $('page-url').hidden = true;
+        $('attach-file-container').hidden = true;
+        $('attach-file-note').hidden = true;
       }
 
 <if expr="chromeos">

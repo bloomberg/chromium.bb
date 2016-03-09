@@ -16,6 +16,10 @@ body {
   width: 100%;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .title-bar {
   -webkit-align-items: center;
   -webkit-app-region: drag;
