@@ -118,3 +118,22 @@ class V8InfiniteScroll(perf_benchmark.PerfBenchmark):
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
     return True
+
+
+class V8TodoMVC(perf_benchmark.PerfBenchmark):
+  """Measures V8 Execution metrics on the TodoMVC examples."""
+  page_set = page_sets.TodoMVCPageSet
+
+  def CreateTimelineBasedMeasurementOptions(self):
+    category_filter = tracing_category_filter.TracingCategoryFilter('v8')
+    options = timeline_based_measurement.Options(category_filter)
+    options.SetLegacyTimelineBasedMetrics([v8_execution.V8ExecutionMetric()])
+    return options
+
+  @classmethod
+  def Name(cls):
+    return 'v8.todomvc'
+
+  @classmethod
+  def ShouldTearDownStateAfterEachStoryRun(cls):
+    return True
