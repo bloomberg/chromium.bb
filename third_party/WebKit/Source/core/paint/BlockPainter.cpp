@@ -18,6 +18,7 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/LineBoxListPainter.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ScopeRecorder.h"
@@ -155,9 +156,19 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         ObjectPainter(m_layoutBlock).addPDFURLRectIfNeeded(paintInfo, paintOffset);
 
     if (paintPhase != PaintPhaseSelfOutlineOnly) {
+        Optional<ScopedPaintChunkProperties> m_scopedScrollProperty;
         Optional<ScrollRecorder> scrollRecorder;
         Optional<PaintInfo> scrolledPaintInfo;
-        if (m_layoutBlock.hasOverflowClip()) {
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            const auto* objectProperties = m_layoutBlock.objectPaintProperties();
+            if (auto* scrollTranslation = objectProperties ? objectProperties->scrollTranslation() : nullptr) {
+                PaintChunkProperties properties(paintInfo.context.paintController().currentPaintChunkProperties());
+                properties.transform = scrollTranslation;
+                m_scopedScrollProperty.emplace(paintInfo.context.paintController(), properties);
+                scrolledPaintInfo.emplace(paintInfo);
+                scrolledPaintInfo->updateCullRect(scrollTranslation->matrix().toAffineTransform());
+            }
+        } else if (m_layoutBlock.hasOverflowClip()) {
             IntSize scrollOffset = m_layoutBlock.scrolledContentOffset();
             if (m_layoutBlock.layer()->scrollsOverflow() || !scrollOffset.isZero()) {
                 scrollRecorder.emplace(paintInfo.context, m_layoutBlock, paintPhase, scrollOffset);

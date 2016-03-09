@@ -7,7 +7,9 @@
 
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "wtf/Allocator.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -25,6 +27,8 @@ private:
     const LayoutBox& m_box;
     const PaintInfo& m_paintInfo;
     DisplayItem::Type m_clipType;
+
+    Optional<ScopedPaintChunkProperties> m_scopedClipProperty;
 };
 
 } // namespace blink

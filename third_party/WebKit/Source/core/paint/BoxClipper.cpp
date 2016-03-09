@@ -5,6 +5,7 @@
 #include "core/paint/BoxClipper.h"
 
 #include "core/layout/LayoutBox.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -23,6 +24,16 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
 
     if (m_paintInfo.phase == PaintPhaseMask)
         return;
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        const auto* objectProperties = m_box.objectPaintProperties();
+        if (objectProperties && objectProperties->overflowClip()) {
+            PaintChunkProperties properties(paintInfo.context.paintController().currentPaintChunkProperties());
+            properties.clip = objectProperties->overflowClip();
+            m_scopedClipProperty.emplace(paintInfo.context.paintController(), properties);
+        }
+        return;
+    }
 
     bool isControlClip = m_box.hasControlClip();
     bool isOverflowOrContainmentClip = (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer())
