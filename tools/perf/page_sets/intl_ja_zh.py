@@ -12,7 +12,6 @@ class IntlJaZhPage(page_module.Page):
     super(IntlJaZhPage, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
-    self.archive_data_file = 'data/intl_ja_zh.json'
 
 
 class IntlJaZhPageSet(story.StorySet):

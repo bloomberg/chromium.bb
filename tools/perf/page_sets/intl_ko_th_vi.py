@@ -12,7 +12,6 @@ class IntlKoThViPage(page_module.Page):
     super(IntlKoThViPage, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
-    self.archive_data_file = 'data/intl_ko_th_vi.json'
 
 
 class IntlKoThViPageSet(story.StorySet):

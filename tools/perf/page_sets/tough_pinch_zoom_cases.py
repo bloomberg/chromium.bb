@@ -13,7 +13,6 @@ class ToughPinchZoomCasesPage(page_module.Page):
         url=url, page_set=page_set, name=name,
         shared_page_state_class=shared_page_state.SharedDesktopPageState,
         credentials_path = 'data/credentials.json')
-    self.archive_data_file = 'data/tough_pinch_zoom_cases.json'
     self.target_scale_factor = page_set.target_scale_factor
 
   def RunPinchGesture(self, action_runner, left_anchor_ratio=0.5,

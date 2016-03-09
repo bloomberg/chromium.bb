@@ -11,14 +11,11 @@ from page_sets import top_pages
 
 class TopRepaintPage(page_module.Page):
 
-  def __init__(self, url, page_set, mode, width, height, name='',
-               credentials=None):
+  def __init__(self, url, page_set, mode, width, height, name=''):
     super(TopRepaintPage, self).__init__(
         url=url, page_set=page_set, name=name,
         credentials_path='data/credentials.json',
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
-    self.archive_data_file = 'data/top_25_repaint.json'
-    self.credentials = credentials
     self._mode = mode
     self._width = width
     self._height = height

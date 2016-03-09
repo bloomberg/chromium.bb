@@ -6,9 +6,6 @@ from telemetry.page import page as page
 from telemetry import story
 
 
-archive_data_file_path = 'data/service_worker_micro_benchmark.json'
-
-
 class ServiceWorkerBenchmarkPage(page.Page):
   """Page for workload to measure some specific functions in JS"""
 
@@ -22,7 +19,7 @@ class ServiceWorkerMicroBenchmarkPageSet(story.StorySet):
 
   def __init__(self):
     super(ServiceWorkerMicroBenchmarkPageSet, self).__init__(
-        archive_data_file=archive_data_file_path,
+        archive_data_file='data/service_worker_micro_benchmark.json',
         cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     # pylint: disable=line-too-long

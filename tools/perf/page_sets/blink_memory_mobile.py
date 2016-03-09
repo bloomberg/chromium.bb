@@ -117,7 +117,7 @@ class BlinkMemoryMobilePageSet(story.StorySet):
     self.AddStory(BlinkMemoryMobilePage(
         'https://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
         page_set=self,
-       name='Wordpress'))
+        name='Wordpress'))
 
     # Why: Renderer memory usage is high.
     self.AddStory(BlinkMemoryMobilePage(

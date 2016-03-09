@@ -14,7 +14,6 @@ class SimplePage(page_module.Page):
         page_set=page_set,
         shared_page_state_class=shared_page_state.Shared10InchTabletPageState,
         credentials_path='data/credentials.json')
-    self.archive_data_file = 'data/simple_mobile_sites.json'
 
   def RunNavigateSteps(self, action_runner):
     super(SimplePage, self).RunNavigateSteps(action_runner)

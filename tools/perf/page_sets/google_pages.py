@@ -21,7 +21,6 @@ class GooglePages(page_module.Page):
         url=url, page_set=page_set, name=name,
         credentials_path='data/credentials.json',
         shared_page_state_class=shared_page_state_class)
-    self.archive_data_file = 'data/google_pages.json'
     self.credentials = credentials
     self.script_to_evaluate_on_commit = _DeterministicPerformanceCounters()
 

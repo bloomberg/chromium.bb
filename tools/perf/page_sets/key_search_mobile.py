@@ -12,7 +12,6 @@ class KeySearchMobilePage(page_module.Page):
     super(KeySearchMobilePage, self).__init__(
         url=url, page_set=page_set, credentials_path = 'data/credentials.json',
         shared_page_state_class=shared_page_state.SharedMobilePageState)
-    self.archive_data_file = 'data/key_search_mobile.json'
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateGestureInteraction('ScrollAction'):

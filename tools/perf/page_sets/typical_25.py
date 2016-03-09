@@ -43,7 +43,6 @@ class Typical25Page(page_module.Page):
     super(Typical25Page, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state_class)
-    self.archive_data_file = 'data/typical_25.json'
     self._run_no_page_interactions = run_no_page_interactions
 
   def RunPageInteractions(self, action_runner):

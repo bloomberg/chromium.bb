@@ -36,7 +36,6 @@ class ForegroundPage(page_module.Page):
     super(ForegroundPage, self).__init__(
         url=url, page_set=story_set, name=name,
         shared_page_state_class=shared_page_state.SharedMobilePageState)
-    self.archive_data_file = story_set.archive_data_file
 
   def _TakeMemoryMeasurement(self, action_runner, phase):
     action_runner.Wait(1)  # See crbug.com/540022#c17.
