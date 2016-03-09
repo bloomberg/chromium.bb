@@ -76,12 +76,26 @@ struct IPC_EXPORT LogData {
 struct NoParams {
 };
 
+// Specializations are checked by 'IPC checker' part of find-bad-constructs
+// Clang plugin (see WriteParam() below for the details).
+template <typename... Ts>
+struct CheckedTuple {
+  typedef std::tuple<Ts...> Tuple;
+};
+
 template <class P>
 static inline void GetParamSize(base::PickleSizer* sizer, const P& p) {
   typedef typename SimilarTypeTraits<P>::Type Type;
   ParamTraits<Type>::GetSize(sizer, static_cast<const Type&>(p));
 }
 
+// This function is checked by 'IPC checker' part of find-bad-constructs
+// Clang plugin to make it's not called on the following types:
+// 1. long / unsigned long (but not typedefs to)
+// 2. intmax_t, uintmax_t, intptr_t, uintptr_t, wint_t,
+//    size_t, rsize_t, ssize_t, ptrdiff_t, dev_t, off_t, clock_t,
+//    time_t, suseconds_t (including typedefs to)
+// 3. Any template referencing types above (e.g. std::vector<size_t>)
 template <class P>
 static inline void WriteParam(base::Pickle* m, const P& p) {
   typedef typename SimilarTypeTraits<P>::Type Type;
