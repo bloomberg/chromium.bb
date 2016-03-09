@@ -129,7 +129,7 @@ using scoped_ptr = std::unique_ptr<T, D>;
 
 // Versions of libstdc++ 4.8 lack overloads for <, <=, >, and >= when comparing
 // a std::unique_ptr and nullptr_t.
-#if defined(__GLIBCXX__) && __GLIBCXX__ < 20150426
+#if defined(__GLIBCXX__) && __GLIBCXX__ < 20150123
 template <class T, class D>
 bool operator<(const scoped_ptr<T, D>& p, std::nullptr_t) {
   return p.get() < nullptr;
