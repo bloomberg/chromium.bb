@@ -34,8 +34,8 @@ class BluetoothRemoteGattDescriptorBlueZ;
 class BluetoothRemoteGattServiceBlueZ;
 
 // The BluetoothRemoteGattCharacteristicBlueZ class implements
-// BluetoothGattCharacteristic for remote GATT characteristics on the Chrome OS
-// platform.
+// BluetoothGattCharacteristic for remote GATT characteristics for platforms
+// that use BlueZ.
 class BluetoothRemoteGattCharacteristicBlueZ
     : public device::BluetoothGattCharacteristic,
       public bluez::BluetoothGattDescriptorClient::Observer {
@@ -134,7 +134,7 @@ class BluetoothRemoteGattCharacteristicBlueZ
   bool notify_call_pending_;
 
   // Mapping from GATT descriptor object paths to descriptor objects owned by
-  // this characteristic. Since the Chrome OS implementation uses object paths
+  // this characteristic. Since the BlueZ implementation uses object paths
   // as unique identifiers, we also use this mapping to return descriptors by
   // identifier.
   typedef std::map<dbus::ObjectPath, BluetoothRemoteGattDescriptorBlueZ*>

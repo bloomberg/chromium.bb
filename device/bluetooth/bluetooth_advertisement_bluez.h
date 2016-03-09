@@ -20,7 +20,7 @@ namespace bluez {
 class BluetoothAdapterBlueZ;
 
 // The BluetoothAdvertisementBlueZ class implements BluetoothAdvertisement
-// for the Chrome OS platform.
+// for platforms that use BlueZ.
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementBlueZ
     : public device::BluetoothAdvertisement,
       public bluez::BluetoothLEAdvertisementServiceProvider::Delegate {

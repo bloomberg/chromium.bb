@@ -23,7 +23,7 @@ namespace bluez {
 class BluetoothRemoteGattCharacteristicBlueZ;
 
 // BluetoothGattNotifySessionBlueZ implements
-// BluetoothGattNotifySession for the Chrome OS platform.
+// BluetoothGattNotifySession for platforms that use BlueZ.
 class BluetoothGattNotifySessionBlueZ
     : public device::BluetoothGattNotifySession,
       public bluez::BluetoothGattCharacteristicClient::Observer {

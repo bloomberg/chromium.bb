@@ -22,8 +22,8 @@ class BluetoothAdapter;
 
 namespace bluez {
 
-// BluetoothGattConnectionBlueZ implements BluetoothGattConnection for the
-// Chrome OS platform.
+// BluetoothGattConnectionBlueZ implements BluetoothGattConnection for
+// platforms that use BlueZ.
 class BluetoothGattConnectionBlueZ
     : public device::BluetoothGattConnection,
       public bluez::BluetoothDeviceClient::Observer {

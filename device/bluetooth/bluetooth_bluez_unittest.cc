@@ -4164,10 +4164,9 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(1, error_callback_count_--) << "RegisterAudioSink error";
 
-  BluetoothAdapterBlueZ* adapter_chrome_os =
+  BluetoothAdapterBlueZ* adapter_bluez =
       static_cast<BluetoothAdapterBlueZ*>(adapter_.get());
-  EXPECT_EQ(nullptr,
-            adapter_chrome_os->GetDeviceWithPath(dbus::ObjectPath("")));
+  EXPECT_EQ(nullptr, adapter_bluez->GetDeviceWithPath(dbus::ObjectPath("")));
 
   // Notify methods presume objects exist that are owned by the adapter and
   // destroyed in Shutdown(). Mocks are not attempted here that won't exist,
@@ -4184,12 +4183,12 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   // NotifyGattCharacteristicValueChanged
   // NotifyGattDescriptorValueChanged
 
-  EXPECT_EQ(dbus::ObjectPath(""), adapter_chrome_os->object_path());
+  EXPECT_EQ(dbus::ObjectPath(""), adapter_bluez->object_path());
 
   adapter_profile_ = nullptr;
 
   FakeBluetoothProfileServiceProviderDelegate profile_delegate;
-  adapter_chrome_os->UseProfile(
+  adapter_bluez->UseProfile(
       BluetoothUUID(), dbus::ObjectPath(""),
       bluez::BluetoothProfileManagerClient::Options(), &profile_delegate,
       base::Bind(&BluetoothBlueZTest::ProfileRegisteredCallback,
@@ -4203,25 +4202,25 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
 
   // Protected and private methods:
 
-  adapter_chrome_os->RemovePairingDelegateInternal(&pairing_delegate);
+  adapter_bluez->RemovePairingDelegateInternal(&pairing_delegate);
   // AdapterAdded() invalid post Shutdown because it calls SetAdapter.
-  adapter_chrome_os->AdapterRemoved(dbus::ObjectPath("x"));
-  adapter_chrome_os->AdapterPropertyChanged(dbus::ObjectPath("x"), "");
-  adapter_chrome_os->DeviceAdded(dbus::ObjectPath(""));
-  adapter_chrome_os->DeviceRemoved(dbus::ObjectPath(""));
-  adapter_chrome_os->DevicePropertyChanged(dbus::ObjectPath(""), "");
-  adapter_chrome_os->InputPropertyChanged(dbus::ObjectPath(""), "");
+  adapter_bluez->AdapterRemoved(dbus::ObjectPath("x"));
+  adapter_bluez->AdapterPropertyChanged(dbus::ObjectPath("x"), "");
+  adapter_bluez->DeviceAdded(dbus::ObjectPath(""));
+  adapter_bluez->DeviceRemoved(dbus::ObjectPath(""));
+  adapter_bluez->DevicePropertyChanged(dbus::ObjectPath(""), "");
+  adapter_bluez->InputPropertyChanged(dbus::ObjectPath(""), "");
   // bluez::BluetoothAgentServiceProvider::Delegate omitted, dbus will be
   // shutdown,
   //   with the exception of Released.
-  adapter_chrome_os->Released();
+  adapter_bluez->Released();
 
-  adapter_chrome_os->OnRegisterAgent();
-  adapter_chrome_os->OnRegisterAgentError("", "");
-  adapter_chrome_os->OnRequestDefaultAgent();
-  adapter_chrome_os->OnRequestDefaultAgentError("", "");
+  adapter_bluez->OnRegisterAgent();
+  adapter_bluez->OnRegisterAgentError("", "");
+  adapter_bluez->OnRequestDefaultAgent();
+  adapter_bluez->OnRequestDefaultAgentError("", "");
 
-  adapter_chrome_os->OnRegisterAudioSink(
+  adapter_bluez->OnRegisterAudioSink(
       base::Bind(&BluetoothBlueZTest::AudioSinkAcquiredCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothBlueZTest::AudioSinkErrorCallback,
@@ -4234,27 +4233,27 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   // SetAdapter will DCHECK after Shutdown().
   // SetDefaultAdapterName will DCHECK after Shutdown().
   // RemoveAdapter will DCHECK after Shutdown().
-  adapter_chrome_os->PoweredChanged(false);
-  adapter_chrome_os->DiscoverableChanged(false);
-  adapter_chrome_os->DiscoveringChanged(false);
-  adapter_chrome_os->PresentChanged(false);
+  adapter_bluez->PoweredChanged(false);
+  adapter_bluez->DiscoverableChanged(false);
+  adapter_bluez->DiscoveringChanged(false);
+  adapter_bluez->PresentChanged(false);
 
-  adapter_chrome_os->OnSetDiscoverable(GetCallback(), GetErrorCallback(), true);
+  adapter_bluez->OnSetDiscoverable(GetCallback(), GetErrorCallback(), true);
   EXPECT_EQ(0, callback_count_) << "OnSetDiscoverable error";
   EXPECT_EQ(1, error_callback_count_--) << "OnSetDiscoverable error";
 
-  adapter_chrome_os->OnPropertyChangeCompleted(GetCallback(),
-                                               GetErrorCallback(), true);
+  adapter_bluez->OnPropertyChangeCompleted(GetCallback(), GetErrorCallback(),
+                                           true);
   EXPECT_EQ(0, callback_count_) << "OnPropertyChangeCompleted error";
   EXPECT_EQ(1, error_callback_count_--) << "OnPropertyChangeCompleted error";
 
-  adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
-                                         GetDiscoveryErrorCallback());
+  adapter_bluez->AddDiscoverySession(nullptr, GetCallback(),
+                                     GetDiscoveryErrorCallback());
   EXPECT_EQ(0, callback_count_) << "AddDiscoverySession error";
   EXPECT_EQ(1, error_callback_count_--) << "AddDiscoverySession error";
 
-  adapter_chrome_os->RemoveDiscoverySession(nullptr, GetCallback(),
-                                            GetDiscoveryErrorCallback());
+  adapter_bluez->RemoveDiscoverySession(nullptr, GetCallback(),
+                                        GetDiscoveryErrorCallback());
   EXPECT_EQ(0, callback_count_) << "RemoveDiscoverySession error";
   EXPECT_EQ(1, error_callback_count_--) << "RemoveDiscoverySession error";
 
@@ -4267,7 +4266,7 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
 
   // OnRegisterProfile SetProfileDelegate, OnRegisterProfileError, require
   // UseProfile to be set first, do so again here just before calling them.
-  adapter_chrome_os->UseProfile(
+  adapter_bluez->UseProfile(
       BluetoothUUID(), dbus::ObjectPath(""),
       bluez::BluetoothProfileManagerClient::Options(), &profile_delegate,
       base::Bind(&BluetoothBlueZTest::ProfileRegisteredCallback,
@@ -4279,7 +4278,7 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   EXPECT_EQ(0, callback_count_) << "UseProfile error";
   EXPECT_EQ(1, error_callback_count_--) << "UseProfile error";
 
-  adapter_chrome_os->SetProfileDelegate(
+  adapter_bluez->SetProfileDelegate(
       BluetoothUUID(), dbus::ObjectPath(""), &profile_delegate,
       base::Bind(&BluetoothBlueZTest::ProfileRegisteredCallback,
                  base::Unretained(this)),
@@ -4288,11 +4287,11 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   EXPECT_EQ(0, callback_count_) << "SetProfileDelegate error";
   EXPECT_EQ(1, error_callback_count_--) << "SetProfileDelegate error";
 
-  adapter_chrome_os->OnRegisterProfileError(BluetoothUUID(), "", "");
+  adapter_bluez->OnRegisterProfileError(BluetoothUUID(), "", "");
   EXPECT_EQ(0, callback_count_) << "OnRegisterProfileError error";
   EXPECT_EQ(0, error_callback_count_) << "OnRegisterProfileError error";
 
-  adapter_chrome_os->ProcessQueuedDiscoveryRequests();
+  adapter_bluez->ProcessQueuedDiscoveryRequests();
 
   // From BluetoothAdapater:
 
@@ -4317,16 +4316,15 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
 TEST_F(BluetoothBlueZTest, Shutdown_OnStartDiscovery) {
   const int kNumberOfDiscoverySessions = 10;
   GetAdapter();
-  BluetoothAdapterBlueZ* adapter_chrome_os =
+  BluetoothAdapterBlueZ* adapter_bluez =
       static_cast<BluetoothAdapterBlueZ*>(adapter_.get());
 
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
-    adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
-                                           GetDiscoveryErrorCallback());
+    adapter_bluez->AddDiscoverySession(nullptr, GetCallback(),
+                                       GetDiscoveryErrorCallback());
   }
   adapter_->Shutdown();
-  adapter_chrome_os->OnStartDiscovery(GetCallback(),
-                                      GetDiscoveryErrorCallback());
+  adapter_bluez->OnStartDiscovery(GetCallback(), GetDiscoveryErrorCallback());
 
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(kNumberOfDiscoverySessions, error_callback_count_);
@@ -4336,16 +4334,16 @@ TEST_F(BluetoothBlueZTest, Shutdown_OnStartDiscovery) {
 TEST_F(BluetoothBlueZTest, Shutdown_OnStartDiscoveryError) {
   const int kNumberOfDiscoverySessions = 10;
   GetAdapter();
-  BluetoothAdapterBlueZ* adapter_chrome_os =
+  BluetoothAdapterBlueZ* adapter_bluez =
       static_cast<BluetoothAdapterBlueZ*>(adapter_.get());
 
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
-    adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
-                                           GetDiscoveryErrorCallback());
+    adapter_bluez->AddDiscoverySession(nullptr, GetCallback(),
+                                       GetDiscoveryErrorCallback());
   }
   adapter_->Shutdown();
-  adapter_chrome_os->OnStartDiscoveryError(GetCallback(),
-                                           GetDiscoveryErrorCallback(), "", "");
+  adapter_bluez->OnStartDiscoveryError(GetCallback(),
+                                       GetDiscoveryErrorCallback(), "", "");
 
   EXPECT_EQ(0, callback_count_);
   EXPECT_EQ(kNumberOfDiscoverySessions, error_callback_count_);
@@ -4355,26 +4353,25 @@ TEST_F(BluetoothBlueZTest, Shutdown_OnStartDiscoveryError) {
 TEST_F(BluetoothBlueZTest, Shutdown_OnStopDiscovery) {
   const int kNumberOfDiscoverySessions = 10;
   GetAdapter();
-  BluetoothAdapterBlueZ* adapter_chrome_os =
+  BluetoothAdapterBlueZ* adapter_bluez =
       static_cast<BluetoothAdapterBlueZ*>(adapter_.get());
 
   // In order to queue up discovery sessions before an OnStopDiscovery call
   // RemoveDiscoverySession must be called, so Add, Start, and Remove:
-  adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
-                                         GetDiscoveryErrorCallback());
-  adapter_chrome_os->OnStartDiscovery(GetCallback(),
-                                      GetDiscoveryErrorCallback());
-  adapter_chrome_os->RemoveDiscoverySession(nullptr, GetCallback(),
-                                            GetDiscoveryErrorCallback());
+  adapter_bluez->AddDiscoverySession(nullptr, GetCallback(),
+                                     GetDiscoveryErrorCallback());
+  adapter_bluez->OnStartDiscovery(GetCallback(), GetDiscoveryErrorCallback());
+  adapter_bluez->RemoveDiscoverySession(nullptr, GetCallback(),
+                                        GetDiscoveryErrorCallback());
   callback_count_ = 0;
   error_callback_count_ = 0;
   // Can now queue discovery sessions while waiting for OnStopDiscovery.
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
-    adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
-                                           GetDiscoveryErrorCallback());
+    adapter_bluez->AddDiscoverySession(nullptr, GetCallback(),
+                                       GetDiscoveryErrorCallback());
   }
   adapter_->Shutdown();
-  adapter_chrome_os->OnStopDiscovery(GetCallback());
+  adapter_bluez->OnStopDiscovery(GetCallback());
 
   // 1 successful stopped discovery from RemoveDiscoverySession, and
   // kNumberOfDiscoverySessions errors from AddDiscoverySession/OnStopDiscovery.
@@ -4386,26 +4383,25 @@ TEST_F(BluetoothBlueZTest, Shutdown_OnStopDiscovery) {
 TEST_F(BluetoothBlueZTest, Shutdown_OnStopDiscoveryError) {
   const int kNumberOfDiscoverySessions = 10;
   GetAdapter();
-  BluetoothAdapterBlueZ* adapter_chrome_os =
+  BluetoothAdapterBlueZ* adapter_bluez =
       static_cast<BluetoothAdapterBlueZ*>(adapter_.get());
 
   // In order to queue up discovery sessions before an OnStopDiscoveryError call
   // RemoveDiscoverySession must be called, so Add, Start, and Remove:
-  adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
-                                         GetDiscoveryErrorCallback());
-  adapter_chrome_os->OnStartDiscovery(GetCallback(),
-                                      GetDiscoveryErrorCallback());
-  adapter_chrome_os->RemoveDiscoverySession(nullptr, GetCallback(),
-                                            GetDiscoveryErrorCallback());
+  adapter_bluez->AddDiscoverySession(nullptr, GetCallback(),
+                                     GetDiscoveryErrorCallback());
+  adapter_bluez->OnStartDiscovery(GetCallback(), GetDiscoveryErrorCallback());
+  adapter_bluez->RemoveDiscoverySession(nullptr, GetCallback(),
+                                        GetDiscoveryErrorCallback());
   callback_count_ = 0;
   error_callback_count_ = 0;
   // Can now queue discovery sessions while waiting for OnStopDiscoveryError.
   for (int i = 0; i < kNumberOfDiscoverySessions; i++) {
-    adapter_chrome_os->AddDiscoverySession(nullptr, GetCallback(),
-                                           GetDiscoveryErrorCallback());
+    adapter_bluez->AddDiscoverySession(nullptr, GetCallback(),
+                                       GetDiscoveryErrorCallback());
   }
   adapter_->Shutdown();
-  adapter_chrome_os->OnStopDiscoveryError(GetDiscoveryErrorCallback(), "", "");
+  adapter_bluez->OnStopDiscoveryError(GetDiscoveryErrorCallback(), "", "");
 
   // 1 error reported to RemoveDiscoverySession because of OnStopDiscoveryError,
   // and kNumberOfDiscoverySessions errors queued with AddDiscoverySession.

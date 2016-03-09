@@ -30,8 +30,8 @@ class BluetoothDeviceBlueZ;
 class BluetoothAdapterBlueZ;
 class BluetoothAdapterProfileBlueZ;
 
-// The BluetoothSocketBlueZ class implements BluetoothSocket for the
-// Chrome OS platform.
+// The BluetoothSocketBlueZ class implements BluetoothSocket for platforms that
+// use BlueZ.
 //
 // This class is not thread-safe, but is only called from the UI thread.
 class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ

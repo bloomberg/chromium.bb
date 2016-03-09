@@ -27,8 +27,8 @@ namespace bluez {
 class BluetoothRemoteGattCharacteristicBlueZ;
 
 // The BluetoothRemoteGattDescriptorBlueZ class implements
-// BluetoothGattDescriptor for remote GATT characteristic descriptors on the
-// Chrome OS platform.
+// BluetoothGattDescriptor for remote GATT characteristic descriptors for
+// platforms that use BlueZ.
 class BluetoothRemoteGattDescriptorBlueZ
     : public device::BluetoothGattDescriptor {
  public:

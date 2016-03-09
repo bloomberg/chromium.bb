@@ -46,8 +46,8 @@ class BluetoothRemoteGattCharacteristicBlueZ;
 class BluetoothRemoteGattDescriptorBlueZ;
 class BluetoothRemoteGattServiceBlueZ;
 
-// The BluetoothAdapterBlueZ class implements BluetoothAdapter for the
-// Chrome OS platform.
+// The BluetoothAdapterBlueZ class implements BluetoothAdapter for platforms
+// that use BlueZ.
 //
 // All methods are called from the dbus origin / UI thread and are generally
 // not assumed to be thread-safe.
