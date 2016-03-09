@@ -761,14 +761,14 @@ ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(ResourceLoa
     // though the cumulative result will depend on the interaction between them.
     // Background doc: https://docs.google.com/document/d/1bCDuq9H1ih9iNjgzyAL0gpwNFiEP4TZS-YLRp_RuMlc/edit?usp=sharing
 
-    // Increases the priorities for CSS, Scripts, Fonts and Images all by one level
+    // Increases the priorities for CSS, Scripts, XHR, Fonts and Images all by one level
     // and parser-blocking scripts and visible images by 2.
     // This is used in conjunction with logic on the Chrome side to raise the threshold
     // of "layout-blocking" resources and provide a boost to resources that are needed
     // as soon as possible for something currently on the screen.
     int modifiedPriority = static_cast<int>(priority);
     if (frame()->settings()->fetchIncreasePriorities()) {
-        if (type == Resource::CSSStyleSheet || type == Resource::Script || type == Resource::Font || type == Resource::Image)
+        if (type == Resource::CSSStyleSheet || type == Resource::Script || type == Resource::Font || type == Resource::Image || type == Resource::Raw)
             modifiedPriority++;
     }
 

@@ -477,6 +477,9 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForExperiments)
     // Base case, no priority change. Note that this triggers m_imageFetched, which will matter for setFetchDeferLateScripts() case below.
     EXPECT_EQ(ResourceLoadPriorityVeryLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Image, request, ResourcePriority::NotVisible));
 
+    // RAW (XHR/Fetch) should default to Medium with no experiments running
+    EXPECT_EQ(ResourceLoadPriorityMedium, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Raw, request, ResourcePriority::NotVisible));
+
     // Image visibility should increase priority
     EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Image, request, ResourcePriority::Visible));
 
@@ -504,6 +507,9 @@ TEST_F(FrameFetchContextTest, ModifyPriorityForExperiments)
     // Re-test image priority based on visibility with increased priorities
     EXPECT_EQ(ResourceLoadPriorityLow, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Image, request, ResourcePriority::NotVisible));
     EXPECT_EQ(ResourceLoadPriorityHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityVeryLow, Resource::Image, request, ResourcePriority::Visible));
+
+    // Re-test RAW (XHR/Fetch) with increased priorities
+    EXPECT_EQ(ResourceLoadPriorityHigh, fetchContext->modifyPriorityForExperiments(ResourceLoadPriorityMedium, Resource::Raw, request, ResourcePriority::NotVisible));
 
     // Re-test font priority with increased prioriries
     settings->setFEtchIncreaseFontPriority(false);
