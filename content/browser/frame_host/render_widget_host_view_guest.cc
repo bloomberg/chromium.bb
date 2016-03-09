@@ -207,12 +207,6 @@ void RenderWidgetHostViewGuest::SetTooltipText(
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     uint32_t output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
-  if (!guest_ || !guest_->attached()) {
-    // We shouldn't hang on to a surface while we are detached.
-    ClearCompositorSurfaceIfNecessary();
-    return;
-  }
-
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
 
   cc::RenderPass* root_pass =
@@ -266,6 +260,12 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
                                           ack_callback);
 
   ProcessFrameSwappedCallbacks();
+
+  // If after detaching we are sent a frame, we should finish processing it, and
+  // then we should clear the surface so that we are not holding resources we
+  // no longer need.
+  if (!guest_ || !guest_->attached())
+    ClearCompositorSurfaceIfNecessary();
 }
 
 bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
