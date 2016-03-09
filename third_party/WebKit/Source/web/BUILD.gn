@@ -80,10 +80,6 @@ group("webkit_unit_tests_data") {
   data = [
     "tests/data/",
     "../core/paint/test_data/",
-
-    # Required by some image decoder tests.
-    "../platform/image-decoders/testing/",
-    "../../LayoutTests/fast/images/resources/",
   ]
 }
 

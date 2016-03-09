@@ -1165,6 +1165,7 @@
       'geometry/LayoutRectTest.cpp',
       'geometry/LayoutRectOutsetsTest.cpp',
       'geometry/RegionTest.cpp',
+      'graphics/BitmapImageTest.cpp',
       'graphics/CompositorMutableStateTest.cpp',
       'graphics/ContiguousContainerTest.cpp',
       'graphics/GraphicsContextTest.cpp',
@@ -1181,6 +1182,12 @@
       'graphics/paint/PaintControllerTest.cpp',
       'image-decoders/FastSharedBufferReaderTest.cpp',
       'image-decoders/ImageDecoderTest.cpp',
+      'image-decoders/ImageDecoderTestHelpers.cpp',
+      'image-decoders/ImageDecoderTestHelpers.h',
+      'image-decoders/bmp/BMPImageDecoderTest.cpp',
+      'image-decoders/gif/GIFImageDecoderTest.cpp',
+      'image-decoders/jpeg/JPEGImageDecoderTest.cpp',
+      'image-decoders/webp/WEBPImageDecoderTest.cpp',
       'inspector_protocol/ParserTest.cpp',
       'mac/VersionUtilMacTest.mm',
       'network/EncodedFormDataTest.cpp',
@@ -1212,7 +1219,6 @@
     # object. Do not add more unless the test requires a Platform object.
     # These tests are a part of the web:webkit_unit_tests binary.
     'platform_web_unittest_files': [
-      'graphics/BitmapImageTest.cpp',
       'graphics/Canvas2DLayerBridgeTest.cpp',
       'graphics/DeferredImageDecoderTest.cpp',
       'graphics/GraphicsLayerTest.cpp',
@@ -1221,11 +1227,6 @@
       'graphics/ImageLayerChromiumTest.cpp',
       'graphics/test/MockImageDecoder.h',
       'graphics/test/MockWebGraphicsContext3D.h',
-      'image-decoders/ImageDecoderTestHelpers.cpp',
-      'image-decoders/bmp/BMPImageDecoderTest.cpp',
-      'image-decoders/gif/GIFImageDecoderTest.cpp',
-      'image-decoders/jpeg/JPEGImageDecoderTest.cpp',
-      'image-decoders/webp/WEBPImageDecoderTest.cpp',
       'threading/BackgroundTaskRunnerTest.cpp',
     ],
     'platform_test_support_files': [

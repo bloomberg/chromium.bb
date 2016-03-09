@@ -6,6 +6,9 @@
     'files': [
       # Required by some font tests.
       'testing/data/',
+      # Required by some image decoder tests.
+      'image-decoders/testing/',
+      '../../LayoutTests/fast/images/resources/',
     ],
   },
   'conditions': [

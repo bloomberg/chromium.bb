@@ -564,6 +564,10 @@ test("blink_platform_unittests") {
 group("blink_platform_unittests_data") {
   data = [
     "testing/data/",
+
+    # Required by some image decoder tests.
+    "image-decoders/testing/",
+    "../../LayoutTests/fast/images/resources/",
   ]
 }
 

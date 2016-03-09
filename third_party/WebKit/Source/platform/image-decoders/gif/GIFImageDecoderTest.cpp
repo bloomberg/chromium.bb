@@ -45,7 +45,6 @@ namespace {
 
 const char decodersTestingDir[] = "Source/platform/image-decoders/testing";
 const char layoutTestResourcesDir[] = "LayoutTests/fast/images/resources";
-const char webTestsDataDir[] = "Source/web/tests/data";
 
 PassOwnPtr<ImageDecoder> createDecoder()
 {
@@ -218,7 +217,7 @@ TEST(GIFImageDecoderTest, brokenSecondFrame)
 {
     OwnPtr<ImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile(webTestsDataDir, "broken.gif");
+    RefPtr<SharedBuffer> data = readFile(decodersTestingDir, "broken.gif");
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
@@ -230,7 +229,7 @@ TEST(GIFImageDecoderTest, brokenSecondFrame)
 
 TEST(GIFImageDecoderTest, progressiveDecode)
 {
-    RefPtr<SharedBuffer> fullData = readFile(webTestsDataDir, "radient.gif");
+    RefPtr<SharedBuffer> fullData = readFile(decodersTestingDir, "radient.gif");
     ASSERT_TRUE(fullData.get());
     const size_t fullLength = fullData->size();
 
@@ -338,8 +337,8 @@ TEST(GIFImageDecoderTest, frameIsCompleteLoading)
 
 TEST(GIFImageDecoderTest, badTerminator)
 {
-    RefPtr<SharedBuffer> referenceData = readFile(webTestsDataDir, "radient.gif");
-    RefPtr<SharedBuffer> testData = readFile(webTestsDataDir, "radient-bad-terminator.gif");
+    RefPtr<SharedBuffer> referenceData = readFile(decodersTestingDir, "radient.gif");
+    RefPtr<SharedBuffer> testData = readFile(decodersTestingDir, "radient-bad-terminator.gif");
     ASSERT_TRUE(referenceData.get());
     ASSERT_TRUE(testData.get());
 
@@ -387,7 +386,7 @@ TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode)
 TEST(GIFImageDecoderTest, randomFrameDecode)
 {
     // Single frame image.
-    testRandomFrameDecode(webTestsDataDir, "radient.gif");
+    testRandomFrameDecode(decodersTestingDir, "radient.gif");
     // Multiple frame images.
     testRandomFrameDecode(layoutTestResourcesDir, "animated-gif-with-offsets.gif");
     testRandomFrameDecode(layoutTestResourcesDir, "animated-10color.gif");
@@ -396,7 +395,7 @@ TEST(GIFImageDecoderTest, randomFrameDecode)
 TEST(GIFImageDecoderTest, randomDecodeAfterClearFrameBufferCache)
 {
     // Single frame image.
-    testRandomDecodeAfterClearFrameBufferCache(webTestsDataDir, "radient.gif");
+    testRandomDecodeAfterClearFrameBufferCache(decodersTestingDir, "radient.gif");
     // Multiple frame images.
     testRandomDecodeAfterClearFrameBufferCache(layoutTestResourcesDir, "animated-gif-with-offsets.gif");
     testRandomDecodeAfterClearFrameBufferCache(layoutTestResourcesDir, "animated-10color.gif");
@@ -465,7 +464,7 @@ TEST(GIFImageDecoderTest, invalidDisposalMethod)
     OwnPtr<ImageDecoder> decoder = createDecoder();
 
     // The image has 2 frames, with disposal method 4 and 5, respectively.
-    RefPtr<SharedBuffer> data = readFile(webTestsDataDir, "invalid-disposal-method.gif");
+    RefPtr<SharedBuffer> data = readFile(decodersTestingDir, "invalid-disposal-method.gif");
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
