@@ -281,7 +281,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_ResolvesScriptPromise)
     property()->resolve(value);
     EXPECT_EQ(Property::Resolved, property()->getState());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ(1u, nResolveCalls);
     EXPECT_EQ(1u, nOtherResolveCalls);
     EXPECT_EQ(wrap(mainWorld(), value), actual);
@@ -307,7 +307,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, ResolveAndGetPromiseOnOtherWor
     property()->resolve(value);
     EXPECT_EQ(Property::Resolved, property()->getState());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ(1u, nResolveCalls);
     EXPECT_EQ(0u, nOtherResolveCalls);
 
@@ -316,7 +316,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, ResolveAndGetPromiseOnOtherWor
         otherPromise.then(stub(currentScriptState(), otherActual, nOtherResolveCalls), notReached(currentScriptState()));
     }
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ(1u, nResolveCalls);
     EXPECT_EQ(1u, nOtherResolveCalls);
     EXPECT_EQ(wrap(mainWorld(), value), actual);
@@ -343,7 +343,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reject_RejectsScriptPromise)
         property()->promise(otherWorld()).then(notReached(currentScriptState()), stub(currentScriptState(), otherActual, nOtherRejectCalls));
     }
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ(1u, nRejectCalls);
     EXPECT_EQ(wrap(mainWorld(), reason), actual);
     EXPECT_EQ(1u, nOtherRejectCalls);
@@ -374,7 +374,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Resolve_DeadContext)
     property()->resolve(new GarbageCollectedScriptWrappable("value"));
     EXPECT_EQ(Property::Pending, property()->getState());
 
-    v8::Isolate::GetCurrent()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(v8::Isolate::GetCurrent());
 }
 
 TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reset)
@@ -405,7 +405,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, Reset)
     EXPECT_EQ(0u, nOldResolveCalls);
     EXPECT_EQ(0u, nNewRejectCalls);
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ(1u, nOldResolveCalls);
     EXPECT_EQ(1u, nNewRejectCalls);
     EXPECT_NE(oldPromise, newPromise);
@@ -445,7 +445,7 @@ TEST_F(ScriptPromisePropertyRefCountedTest, Resolve)
     property()->resolve(value.get());
     EXPECT_EQ(Property::Resolved, property()->getState());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ(1u, nResolveCalls);
     EXPECT_EQ(wrap(mainWorld(), value), actual);
 }
@@ -464,7 +464,7 @@ TEST_F(ScriptPromisePropertyRefCountedTest, Reject)
     property()->reject(reason);
     EXPECT_EQ(Property::Rejected, property()->getState());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     EXPECT_EQ(1u, nRejectCalls);
     EXPECT_EQ(wrap(mainWorld(), reason), actual);
 }
@@ -514,7 +514,7 @@ public:
             property->promise(DOMWrapperWorld::mainWorld()).then(stub(currentScriptState(), actualValue, nResolveCalls), notReached(currentScriptState()));
         }
         property->resolve(value);
-        isolate()->RunMicrotasks();
+        v8::MicrotasksScope::PerformCheckpoint(isolate());
         {
             ScriptState::Scope scope(mainScriptState());
             actual = toCoreString(actualValue.v8Value()->ToString(mainScriptState()->context()).ToLocalChecked());

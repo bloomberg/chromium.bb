@@ -40,13 +40,9 @@ namespace blink {
 
 void Microtask::performCheckpoint(v8::Isolate* isolate)
 {
-    V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
-    ASSERT(isolateData);
-    if (isolateData->recursionLevel() || isolateData->performingMicrotaskCheckpoint() || isolateData->destructionPending() || ScriptForbiddenScope::isScriptForbidden())
+    if (ScriptForbiddenScope::isScriptForbidden())
         return;
-    isolateData->setPerformingMicrotaskCheckpoint(true);
-    isolate->RunMicrotasks();
-    isolateData->setPerformingMicrotaskCheckpoint(false);
+    v8::MicrotasksScope::PerformCheckpoint(isolate);
 }
 
 static void microtaskFunctionCallback(void* data)

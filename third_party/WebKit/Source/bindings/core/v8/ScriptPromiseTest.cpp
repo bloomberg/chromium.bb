@@ -83,7 +83,7 @@ public:
         createClosure(callback, v8::Undefined(m_scope.isolate()), m_scope.isolate());
 
         // Execute all pending microtasks
-        isolate()->RunMicrotasks();
+        v8::MicrotasksScope::PerformCheckpoint(isolate());
     }
 
     String toString(const ScriptValue& value)
@@ -124,13 +124,13 @@ TEST_F(ScriptPromiseTest, thenResolve)
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     resolver.resolve(v8String(isolate(), "hello"));
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_EQ("hello", toString(onFulfilled));
     EXPECT_TRUE(onRejected.isEmpty());
@@ -148,7 +148,7 @@ TEST_F(ScriptPromiseTest, resolveThen)
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_EQ("hello", toString(onFulfilled));
     EXPECT_TRUE(onRejected.isEmpty());
@@ -165,13 +165,13 @@ TEST_F(ScriptPromiseTest, thenReject)
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
     resolver.reject(v8String(isolate(), "hello"));
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_EQ("hello", toString(onRejected));
@@ -189,7 +189,7 @@ TEST_F(ScriptPromiseTest, rejectThen)
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_EQ("hello", toString(onRejected));
@@ -226,7 +226,7 @@ TEST_F(ScriptPromiseTest, castNonPromise)
     EXPECT_TRUE(onRejected1.isEmpty());
     EXPECT_TRUE(onRejected2.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_EQ("hello", toString(onFulfilled1));
     EXPECT_EQ("hello", toString(onFulfilled2));
@@ -248,7 +248,7 @@ TEST_F(ScriptPromiseTest, reject)
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_EQ("hello", toString(onRejected));
@@ -264,7 +264,7 @@ TEST_F(ScriptPromiseTest, rejectWithExceptionState)
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_EQ("SyntaxError: some syntax error", toString(onRejected));
@@ -282,7 +282,7 @@ TEST_F(ScriptPromiseTest, allWithEmptyPromises)
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_FALSE(onFulfilled.isEmpty());
     EXPECT_TRUE(toStringArray(onFulfilled).isEmpty());
@@ -304,7 +304,7 @@ TEST_F(ScriptPromiseTest, allWithResolvedPromises)
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_FALSE(onFulfilled.isEmpty());
     Vector<String> values = toStringArray(onFulfilled);
@@ -329,7 +329,7 @@ TEST_F(ScriptPromiseTest, allWithRejectedPromise)
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
 
-    isolate()->RunMicrotasks();
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_FALSE(onRejected.isEmpty());

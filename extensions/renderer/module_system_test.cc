@@ -253,7 +253,7 @@ void ModuleSystemTest::ExpectNoAssertionsMade() {
 }
 
 void ModuleSystemTest::RunResolvedPromises() {
-  isolate_->RunMicrotasks();
+  v8::MicrotasksScope::PerformCheckpoint(isolate_);
 }
 
 }  // namespace extensions

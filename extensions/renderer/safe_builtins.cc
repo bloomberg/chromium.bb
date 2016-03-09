@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 
 namespace extensions {
 
@@ -200,6 +201,7 @@ class ExtensionImpl : public v8::Extension {
         return;
     }
 
+    blink::WebScopedMicrotaskSuppression microtasks_scope;
     v8::Local<v8::Value> return_value;
     if (function->Call(context, recv, argc, argv.get()).ToLocal(&return_value))
       info.GetReturnValue().Set(return_value);
