@@ -104,6 +104,11 @@ public:
         return m_layoutObject->isMenuList();
     }
 
+    bool isProgress() const
+    {
+        return m_layoutObject->isProgress();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();

@@ -30,6 +30,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ProgressShadowElement.h"
 #include "core/layout/LayoutProgress.h"
+#include "core/layout/api/LayoutProgressItem.h"
 
 namespace blink {
 
@@ -86,8 +87,8 @@ void HTMLProgressElement::parseAttribute(const QualifiedName& name, const Atomic
 void HTMLProgressElement::attach(const AttachContext& context)
 {
     LabelableElement::attach(context);
-    if (LayoutProgress* layoutObject = layoutProgress())
-        layoutObject->updateFromElement();
+    if (LayoutProgressItem layoutItem = LayoutProgressItem(layoutProgress()))
+        layoutItem.updateFromElement();
 }
 
 double HTMLProgressElement::value() const
@@ -136,9 +137,9 @@ bool HTMLProgressElement::isDeterminate() const
 void HTMLProgressElement::didElementStateChange()
 {
     m_value->setWidthPercentage(position() * 100);
-    if (LayoutProgress* layoutObject = layoutProgress()) {
-        bool wasDeterminate = layoutObject->isDeterminate();
-        layoutObject->updateFromElement();
+    if (LayoutProgressItem layoutItem = LayoutProgressItem(layoutProgress())) {
+        bool wasDeterminate = layoutItem.isDeterminate();
+        layoutItem.updateFromElement();
         if (wasDeterminate != isDeterminate())
             pseudoStateChanged(CSSSelector::PseudoIndeterminate);
     }

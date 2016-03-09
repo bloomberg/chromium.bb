@@ -511,6 +511,7 @@
             'layout/api/LayoutMediaItem.h',
             'layout/api/LayoutMenuListItem.h',
             'layout/api/LayoutPartItem.h',
+            'layout/api/LayoutProgressItem.h',
             'layout/api/LayoutTextControlItem.h',
             'layout/api/LayoutTextFragmentItem.h',
             'layout/api/LayoutTextItem.h',
