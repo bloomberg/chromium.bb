@@ -122,10 +122,10 @@ std::string GetVertexShaderSource() {
       uniform vec2 u_vertex_dest_add;\n\
       uniform vec2 u_vertex_source_mult;\n\
       uniform vec2 u_vertex_source_add;\n\
-      ATTRIBUTE vec4 a_position;\n\
+      ATTRIBUTE vec2 a_position;\n\
       VARYING TexCoordPrecision vec2 v_uv;\n\
       void main(void) {\n\
-        gl_Position = a_position;\n\
+        gl_Position = vec4(0, 0, 0, 1);\n\
         gl_Position.xy = a_position.xy * u_vertex_dest_mult + \
                          u_vertex_dest_add;\n\
         v_uv = a_position.xy * u_vertex_source_mult + u_vertex_source_add;\n\
