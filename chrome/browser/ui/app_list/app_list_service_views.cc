@@ -117,7 +117,8 @@ void AppListServiceViews::ShowForProfileInternal(
     app_list::AppListModel::State state) {
   DCHECK(profile);
 
-  ScopedKeepAlive keep_alive(KeepAliveOrigin::APP_LIST_SERVICE_VIEWS);
+  ScopedKeepAlive keep_alive(KeepAliveOrigin::APP_LIST_SERVICE_VIEWS,
+                             KeepAliveRestartOption::DISABLED);
 
   CreateForProfile(profile);
 

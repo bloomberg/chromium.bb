@@ -5,6 +5,7 @@
 #include "chrome/browser/lifetime/keep_alive_registry.h"
 
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -15,29 +16,62 @@ KeepAliveRegistry* KeepAliveRegistry::GetInstance() {
   return base::Singleton<KeepAliveRegistry>::get();
 }
 
-bool KeepAliveRegistry::WillKeepAlive() const {
+bool KeepAliveRegistry::IsKeepingAlive() const {
   return registered_count_ > 0;
+}
+
+bool KeepAliveRegistry::IsRestartAllowed() const {
+  return registered_count_ == restart_allowed_count_;
+}
+
+void KeepAliveRegistry::AddObserver(KeepAliveStateObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void KeepAliveRegistry::RemoveObserver(KeepAliveStateObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
-KeepAliveRegistry::KeepAliveRegistry() : registered_count_(0) {}
+KeepAliveRegistry::KeepAliveRegistry()
+    : registered_count_(0), restart_allowed_count_(0) {}
 
 KeepAliveRegistry::~KeepAliveRegistry() {
   DCHECK_EQ(0, registered_count_);
   DCHECK_EQ(0u, registered_keep_alives_.size());
+  DCHECK_EQ(0, restart_allowed_count_);
 }
 
-void KeepAliveRegistry::Register(KeepAliveOrigin origin) {
-  if (!WillKeepAlive())
-    chrome::IncrementKeepAliveCount();
+void KeepAliveRegistry::Register(KeepAliveOrigin origin,
+                                 KeepAliveRestartOption restart) {
+  bool old_keeping_alive = IsKeepingAlive();
+  bool old_restart_allowed = IsRestartAllowed();
 
   ++registered_keep_alives_[origin];
   ++registered_count_;
+
+  if (restart == KeepAliveRestartOption::ENABLED)
+    ++restart_allowed_count_;
+
+  bool new_keeping_alive = IsKeepingAlive();
+  bool new_restart_allowed = IsRestartAllowed();
+
+  if (new_keeping_alive != old_keeping_alive)
+    OnKeepingAliveChanged(new_keeping_alive);
+
+  if (new_restart_allowed != old_restart_allowed)
+    OnRestartAllowedChanged(new_restart_allowed);
+
+  DVLOG(1) << "New state of the KeepAliveRegistry: " << *this;
 }
 
-void KeepAliveRegistry::Unregister(KeepAliveOrigin origin) {
+void KeepAliveRegistry::Unregister(KeepAliveOrigin origin,
+                                   KeepAliveRestartOption restart) {
+  bool old_keeping_alive = IsKeepingAlive();
+  bool old_restart_allowed = IsRestartAllowed();
+
   --registered_count_;
   DCHECK_GE(registered_count_, 0);
 
@@ -46,6 +80,49 @@ void KeepAliveRegistry::Unregister(KeepAliveOrigin origin) {
   if (new_count == 0)
     registered_keep_alives_.erase(origin);
 
-  if (!WillKeepAlive())
-    chrome::DecrementKeepAliveCount();
+  if (restart == KeepAliveRestartOption::ENABLED)
+    --restart_allowed_count_;
+
+  bool new_keeping_alive = IsKeepingAlive();
+  bool new_restart_allowed = IsRestartAllowed();
+
+  if (new_restart_allowed != old_restart_allowed)
+    OnRestartAllowedChanged(new_restart_allowed);
+
+  if (new_keeping_alive != old_keeping_alive)
+    OnKeepingAliveChanged(new_keeping_alive);
+
+  DVLOG(1) << "New state of the KeepAliveRegistry: " << *this;
 }
+
+void KeepAliveRegistry::OnKeepingAliveChanged(bool new_keeping_alive) {
+  if (new_keeping_alive) {
+    DVLOG(1) << "KeepAliveRegistry is now keeping the browser alive.";
+    chrome::IncrementKeepAliveCount();
+  } else {
+    DVLOG(1) << "KeepAliveRegistry stopped keeping the browser alive.";
+    chrome::DecrementKeepAliveCount();
+  }
+}
+
+void KeepAliveRegistry::OnRestartAllowedChanged(bool new_restart_allowed) {
+  DVLOG(1) << "Notifying KeepAliveStateObservers: Restart changed to: "
+           << new_restart_allowed;
+  FOR_EACH_OBSERVER(KeepAliveStateObserver, observers_,
+                    OnKeepAliveRestartStateChanged(new_restart_allowed));
+}
+
+#ifndef NDEBUG
+std::ostream& operator<<(std::ostream& out, const KeepAliveRegistry& registry) {
+  out << "{KeepingAlive=" << registry.IsKeepingAlive()
+      << ", RestartAllowed=" << registry.IsRestartAllowed() << ", KeepAlives=[";
+  for (auto counts_per_origin_it : registry.registered_keep_alives_) {
+    if (counts_per_origin_it != *registry.registered_keep_alives_.begin())
+      out << ", ";
+    out << counts_per_origin_it.first << " (" << counts_per_origin_it.second
+        << ")";
+  }
+  out << "]}";
+  return out;
+}
+#endif  // ndef NDEBUG

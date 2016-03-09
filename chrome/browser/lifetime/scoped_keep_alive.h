@@ -8,16 +8,18 @@
 #include "base/macros.h"
 
 enum class KeepAliveOrigin;
+enum class KeepAliveRestartOption;
 
 // Registers with KeepAliveRegistry on creation and unregisters them
 // on destruction. Use these objects with a scoped_ptr for easy management.
 class ScopedKeepAlive {
  public:
-  explicit ScopedKeepAlive(KeepAliveOrigin origin);
+  ScopedKeepAlive(KeepAliveOrigin origin, KeepAliveRestartOption restart);
   ~ScopedKeepAlive();
 
  private:
   const KeepAliveOrigin origin_;
+  const KeepAliveRestartOption restart_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedKeepAlive);
 };

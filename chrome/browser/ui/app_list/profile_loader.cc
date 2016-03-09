@@ -67,7 +67,8 @@ void ProfileLoader::OnProfileLoaded(int profile_load_sequence_id,
 void ProfileLoader::IncrementPendingProfileLoads() {
   pending_profile_loads_++;
   if (pending_profile_loads_ == 1)
-    keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::PROFILE_LOADER));
+    keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::PROFILE_LOADER,
+                                          KeepAliveRestartOption::DISABLED));
 }
 
 void ProfileLoader::DecrementPendingProfileLoads() {

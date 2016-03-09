@@ -30,7 +30,8 @@ AppListShower::~AppListShower() {
 
 void AppListShower::ShowForCurrentProfile() {
   DCHECK(HasView());
-  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::APP_LIST_SHOWER));
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::APP_LIST_SHOWER,
+                                        KeepAliveRestartOption::DISABLED));
 
   // If the app list is already displaying |profile| just activate it (in case
   // we have lost focus).

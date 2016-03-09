@@ -304,7 +304,8 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
 #if !defined(USE_ASH)
   // Prevent the browser process from shutting down while this window is open.
   // Chrome OS already has a mechanism to always stay alive and skips this.
-  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::PANEL_VIEW));
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::PANEL_VIEW,
+                                        KeepAliveRestartOption::DISABLED));
 #endif  // !defined(USE_ASH)
 
   web_view_ = new views::WebView(NULL);

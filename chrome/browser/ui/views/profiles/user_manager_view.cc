@@ -236,7 +236,8 @@ UserManagerView::UserManagerView()
     : web_view_(NULL),
       user_manager_started_showing_(base::Time()) {
 #if !defined(USE_ASH)
-  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::USER_MANAGER_VIEW));
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::USER_MANAGER_VIEW,
+                                        KeepAliveRestartOption::DISABLED));
 #endif  // !defined(USE_ASH)
 }
 

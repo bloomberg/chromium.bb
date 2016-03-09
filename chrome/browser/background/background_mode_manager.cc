@@ -311,7 +311,8 @@ BackgroundModeManager::BackgroundModeManager(
   // there are background apps) or exit if there are none.
   if (command_line.HasSwitch(switches::kNoStartupWindow)) {
     keep_alive_for_startup_.reset(
-        new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_MODE_MANAGER));
+        new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP,
+                            KeepAliveRestartOption::DISABLED));
   } else {
     // Otherwise, start with background mode suspended in case we're launching
     // in a mode that doesn't open a browser window. It will be resumed when the
@@ -767,7 +768,8 @@ void BackgroundModeManager::UpdateKeepAliveAndTrayIcon() {
   if (in_background_mode_ && !background_mode_suspended_) {
     if (!keep_alive_) {
       keep_alive_.reset(
-          new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_MODE_MANAGER));
+          new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_MODE_MANAGER,
+                              KeepAliveRestartOption::ENABLED));
     }
     CreateStatusTrayIcon();
     return;

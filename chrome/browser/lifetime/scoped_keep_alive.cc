@@ -7,10 +7,12 @@
 #include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 
-ScopedKeepAlive::ScopedKeepAlive(KeepAliveOrigin origin) : origin_(origin) {
-  KeepAliveRegistry::GetInstance()->Register(origin_);
+ScopedKeepAlive::ScopedKeepAlive(KeepAliveOrigin origin,
+                                 KeepAliveRestartOption restart)
+    : origin_(origin), restart_(restart) {
+  KeepAliveRegistry::GetInstance()->Register(origin_, restart_);
 }
 
 ScopedKeepAlive::~ScopedKeepAlive() {
-  KeepAliveRegistry::GetInstance()->Unregister(origin_);
+  KeepAliveRegistry::GetInstance()->Unregister(origin_, restart_);
 }

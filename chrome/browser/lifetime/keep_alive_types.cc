@@ -10,6 +10,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
   switch (origin) {
     case KeepAliveOrigin::BACKGROUND_MODE_MANAGER:
       return out << "BACKGROUND_MODE_MANAGER";
+    case KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP:
+      return out << "BACKGROUND_MODE_MANAGER_STARTUP";
     case KeepAliveOrigin::APP_LIST_SERVICE_VIEWS:
       return out << "APP_LIST_SERVICE_VIEWS";
     case KeepAliveOrigin::APP_LIST_SHOWER:
@@ -27,4 +29,18 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
   NOTREACHED();
   return out << static_cast<int>(origin);
 }
-#endif  // ndef DEBUG
+
+std::ostream& operator<<(std::ostream& out,
+                         const KeepAliveRestartOption& restart) {
+  switch (restart) {
+    case KeepAliveRestartOption::DISABLED:
+      return out << "DISABLED";
+    case KeepAliveRestartOption::ENABLED:
+      return out << "ENABLED";
+  }
+
+  NOTREACHED();
+  return out << static_cast<int>(restart);
+}
+
+#endif  // ndef NDEBUG

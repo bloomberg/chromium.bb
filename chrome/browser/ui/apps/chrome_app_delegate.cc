@@ -153,8 +153,8 @@ ChromeAppDelegate::ChromeAppDelegate(bool keep_alive)
       new_window_contents_delegate_(new NewWindowContentsDelegate()),
       weak_factory_(this) {
   if (keep_alive) {
-    keep_alive_.reset(
-        new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE));
+    keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
+                                          KeepAliveRestartOption::DISABLED));
   }
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_TERMINATING,
@@ -328,7 +328,8 @@ void ChromeAppDelegate::OnHide() {
 void ChromeAppDelegate::OnShow() {
   has_been_shown_ = true;
   is_hidden_ = false;
-  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE));
+  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::CHROME_APP_DELEGATE,
+                                        KeepAliveRestartOption::DISABLED));
 }
 
 void ChromeAppDelegate::Observe(int type,

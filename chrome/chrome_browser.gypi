@@ -1210,6 +1210,7 @@
       'browser/lifetime/keep_alive_types.h',
       'browser/lifetime/keep_alive_registry.cc',
       'browser/lifetime/keep_alive_registry.h',
+      'browser/lifetime/keep_alive_state_observer.h',
       'browser/lifetime/scoped_keep_alive.cc',
       'browser/lifetime/scoped_keep_alive.h',
       'browser/media/tab_desktop_media_list.cc',
