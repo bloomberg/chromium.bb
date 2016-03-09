@@ -43,6 +43,11 @@ Note that there are four different views:
         "Android Nexus5 Perf (2)"
       * **start_time** is seconds since the epoch.
 
+In addition to watching the waterfall directly,
+[Sheriff-O-Matic](https://sheriff-o-matic.appspot.com/chromium.perf) may
+optionally be used to easily track the different issues and associate
+them with specific bugs.
+
 You can see a list of all previously filed bugs using the
 **[Performance-BotHealth](https://code.google.com/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth)**
 label in crbug.
