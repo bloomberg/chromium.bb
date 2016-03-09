@@ -12,8 +12,8 @@
 
 using std::string;
 
-void Test(const string &buffer, const string &pattern,
-          const RE2::Options &options) {
+void Test(const string& buffer, const string& pattern,
+          const RE2::Options& options) {
   RE2 re(pattern, options);
   if (!re.ok())
     return;
@@ -44,7 +44,7 @@ void Test(const string &buffer, const string &pattern,
 }
 
 // Entry point for LibFuzzer.
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 1)
     return 0;
 
