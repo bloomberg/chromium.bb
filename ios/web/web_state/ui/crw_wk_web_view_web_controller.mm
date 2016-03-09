@@ -1850,9 +1850,11 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     return;
   }
 
-  // Directly cancelled navigations are simply discarded without handling
-  // their potential errors.
-  if (![_pendingNavigationInfo cancelled]) {
+  // Handle load cancellation for directly cancelled navigations without
+  // handling their potential errors. Otherwise, handle the error.
+  if ([_pendingNavigationInfo cancelled]) {
+    [self loadCancelled];
+  } else {
     error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
 
     if (web::IsWKWebViewSSLCertError(error))
