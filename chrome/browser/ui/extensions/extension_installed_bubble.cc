@@ -250,9 +250,12 @@ void ExtensionInstalledBubble::Initialize() {
   bool extension_action_redesign_on =
       extensions::FeatureSwitch::extension_action_redesign()->IsEnabled();
 
-  if (extensions::ActionInfo::GetBrowserActionInfo(extension_)) {
+  const extensions::ActionInfo* action_info = nullptr;
+  if ((action_info = extensions::ActionInfo::GetBrowserActionInfo(
+           extension_)) != nullptr) {
     type_ = BROWSER_ACTION;
-  } else if (extensions::ActionInfo::GetPageActionInfo(extension_) &&
+  } else if ((action_info = extensions::ActionInfo::GetPageActionInfo(
+                  extension_)) != nullptr &&
              (extensions::ActionInfo::IsVerboseInstallMessage(extension_) ||
               extension_action_redesign_on)) {
     type_ = PAGE_ACTION;
@@ -271,7 +274,10 @@ void ExtensionInstalledBubble::Initialize() {
   switch (type_) {
     case BROWSER_ACTION:
     case PAGE_ACTION:
-      options_ |= HOW_TO_USE;
+      DCHECK(action_info);
+      if (!action_info->synthesized)
+        options_ |= HOW_TO_USE;
+
       if (has_command_keybinding()) {
         options_ |= SHOW_KEYBINDING;
       } else {

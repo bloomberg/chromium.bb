@@ -74,7 +74,9 @@ bool ExtensionActionHandler::Parse(Extension* extension,
 
     // Set an empty page action. We use a page action (instead of a browser
     // action) because the action should not be seen as enabled on every page.
-    ActionInfo::SetPageActionInfo(extension, new ActionInfo());
+    scoped_ptr<ActionInfo> action_info(new ActionInfo());
+    action_info->synthesized = true;
+    ActionInfo::SetPageActionInfo(extension, action_info.release());
   }
 
   return true;

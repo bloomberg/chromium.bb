@@ -45,8 +45,7 @@ static const ActionInfo* GetActionInfo(const Extension* extension,
 
 }  // namespace
 
-ActionInfo::ActionInfo() {
-}
+ActionInfo::ActionInfo() : synthesized(false) {}
 
 ActionInfo::ActionInfo(const ActionInfo& other) = default;
 

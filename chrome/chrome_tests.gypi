@@ -468,6 +468,7 @@
       'browser/ui/content_settings/content_setting_bubble_model_browsertest.cc',
       'browser/ui/content_settings/content_setting_image_model_browsertest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_browsertest.cc',
+      'browser/ui/extensions/extension_installed_bubble_browsertest.cc',
       'browser/ui/extensions/extension_message_bubble_browsertest.cc',
       'browser/ui/extensions/extension_message_bubble_browsertest.h',
       'browser/ui/extensions/hosted_app_browsertest.cc',

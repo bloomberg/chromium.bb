@@ -66,6 +66,8 @@ struct ActionInfo {
   GURL default_popup_url;
   // action id -- only used with legacy page actions API.
   std::string id;
+  // Whether or not this action was synthesized to force visibility.
+  bool synthesized;
 };
 
 }  // namespace extensions
