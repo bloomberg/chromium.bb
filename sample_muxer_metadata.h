@@ -11,9 +11,17 @@
 
 #include <list>
 #include <set>
+#include <string>
 
-#include "mkvmuxer.hpp"
+#include "mkvmuxertypes.hpp"
 #include "webvttparser.h"
+
+namespace mkvmuxer {
+class Chapter;
+class Frame;
+class Segment;
+class Track;
+}  // namespace mkvmuxer
 
 class SampleMuxerMetadata {
  public:

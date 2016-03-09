@@ -10,7 +10,11 @@
 // library, which allows clients to handle a matroska format file.
 
 #include "sample_muxer_metadata.h"
+
+#include <cstdio>
 #include <string>
+
+#include "mkvmuxer.hpp"
 #include "vttreader.h"
 
 SampleMuxerMetadata::SampleMuxerMetadata() : segment_(NULL) {}
