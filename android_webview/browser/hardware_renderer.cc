@@ -253,7 +253,7 @@ void HardwareRenderer::ReturnResourcesInChildFrame() {
 
 void HardwareRenderer::ReturnResourcesToCompositor(
     const cc::ReturnedResourceArray& resources,
-    unsigned int compositor_id) {
+    uint32_t compositor_id) {
   shared_renderer_state_->InsertReturnedResourcesOnRT(resources, compositor_id);
 }
 

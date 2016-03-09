@@ -306,11 +306,11 @@ void BrowserViewRenderer::ReturnUnusedResource(
 }
 
 void BrowserViewRenderer::ReturnResourceFromParent() {
-  std::map<unsigned int, cc::ReturnedResourceArray> returned_resource_map;
+  std::map<uint32_t, cc::ReturnedResourceArray> returned_resource_map;
   shared_renderer_state_.SwapReturnedResourcesOnUI(&returned_resource_map);
   for (auto iterator = returned_resource_map.begin();
        iterator != returned_resource_map.end(); iterator++) {
-    unsigned int compositor_id = iterator->first;
+    uint32_t compositor_id = iterator->first;
     content::SynchronousCompositor* compositor = compositor_map_[compositor_id];
     cc::CompositorFrameAck frame_ack;
     frame_ack.resources.swap(iterator->second);
@@ -473,7 +473,7 @@ gfx::Rect BrowserViewRenderer::GetScreenRect() const {
   return gfx::Rect(client_->GetLocationOnScreen(), size_);
 }
 
-unsigned int BrowserViewRenderer::GetCompositorID(
+uint32_t BrowserViewRenderer::GetCompositorID(
     content::SynchronousCompositor* compositor) {
   for (auto iterator = compositor_map_.begin();
        iterator != compositor_map_.end(); iterator++) {

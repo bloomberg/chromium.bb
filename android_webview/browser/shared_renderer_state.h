@@ -49,7 +49,7 @@ class SharedRendererState {
   void ReleaseHardwareDrawIfNeededOnUI();
   ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const;
   void SwapReturnedResourcesOnUI(
-      std::map<unsigned int, cc::ReturnedResourceArray>* returned_resource_map);
+      std::map<uint32_t, cc::ReturnedResourceArray>* returned_resource_map);
   bool ReturnedResourcesEmptyOnUI() const;
   scoped_ptr<ChildFrame> PassUncommittedFrameOnUI();
   void DeleteHardwareRendererOnUI();
@@ -62,7 +62,7 @@ class SharedRendererState {
   void PostExternalDrawConstraintsToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
   void InsertReturnedResourcesOnRT(const cc::ReturnedResourceArray& resources,
-                                   unsigned int compositor_id);
+                                   uint32_t compositor_id);
 
  private:
   friend class internal::RequestDrawGLTracker;
@@ -107,7 +107,7 @@ class SharedRendererState {
   bool inside_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
   // A map from compositor's ID to the resources that belong to the compositor.
-  std::map<unsigned int, cc::ReturnedResourceArray> returned_resources_map_;
+  std::map<uint32_t, cc::ReturnedResourceArray> returned_resources_map_;
   base::Closure request_draw_gl_closure_;
 
   base::WeakPtrFactory<SharedRendererState> weak_factory_on_ui_thread_;

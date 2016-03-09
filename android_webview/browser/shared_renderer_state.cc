@@ -215,7 +215,7 @@ bool SharedRendererState::IsInsideHardwareRelease() const {
 
 void SharedRendererState::InsertReturnedResourcesOnRT(
     const cc::ReturnedResourceArray& resources,
-    unsigned int compositor_id) {
+    uint32_t compositor_id) {
   base::AutoLock lock(lock_);
   cc::ReturnedResourceArray& returned_resources =
       returned_resources_map_[compositor_id];
@@ -224,7 +224,7 @@ void SharedRendererState::InsertReturnedResourcesOnRT(
 }
 
 void SharedRendererState::SwapReturnedResourcesOnUI(
-    std::map<unsigned int, cc::ReturnedResourceArray>* returned_resource_map) {
+    std::map<uint32_t, cc::ReturnedResourceArray>* returned_resource_map) {
   DCHECK(returned_resource_map->empty());
   base::AutoLock lock(lock_);
   returned_resource_map->swap(returned_resources_map_);

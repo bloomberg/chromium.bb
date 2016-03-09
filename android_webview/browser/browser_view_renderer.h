@@ -157,7 +157,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   void UpdateMemoryPolicy();
 
-  unsigned int GetCompositorID(content::SynchronousCompositor* compositor);
+  uint32_t GetCompositorID(content::SynchronousCompositor* compositor);
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state.
   std::string ToString() const;
@@ -213,7 +213,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   // TODO(miletus): Make overscroll_rounding_error_ a gfx::ScrollOffset.
   gfx::Vector2dF overscroll_rounding_error_;
 
-  unsigned int next_compositor_id_;
+  uint32_t next_compositor_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };

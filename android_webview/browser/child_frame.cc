@@ -11,7 +11,7 @@
 namespace android_webview {
 
 ChildFrame::ChildFrame(scoped_ptr<cc::CompositorFrame> frame,
-                       unsigned int compositor_id,
+                       uint32_t compositor_id,
                        bool viewport_rect_for_tile_priority_empty,
                        const gfx::Transform& transform_for_tile_priority,
                        bool offscreen_pre_raster,
