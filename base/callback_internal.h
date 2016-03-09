@@ -15,6 +15,7 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/base_export.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -22,6 +23,7 @@
 
 namespace base {
 namespace internal {
+template <CopyMode copy_mode>
 class CallbackBase;
 
 // BindStateBase is used to provide an opaque handle that the Callback
@@ -43,6 +45,7 @@ class BindStateBase {
 
  private:
   friend class scoped_refptr<BindStateBase>;
+  template <CopyMode copy_mode>
   friend class CallbackBase;
 
   void AddRef();
@@ -58,10 +61,13 @@ class BindStateBase {
 
 // Holds the Callback methods that don't require specialization to reduce
 // template bloat.
-class BASE_EXPORT CallbackBase {
+// CallbackBase<MoveOnly> is a direct base class of MoveOnly callbacks, and
+// CallbackBase<Copyable> uses CallbackBase<MoveOnly> for its implementation.
+template <>
+class BASE_EXPORT CallbackBase<CopyMode::MoveOnly> {
  public:
-  CallbackBase(const CallbackBase& c);
-  CallbackBase& operator=(const CallbackBase& c);
+  CallbackBase(CallbackBase&& c);
+  CallbackBase& operator=(CallbackBase&& c);
 
   // Returns true if Callback is null (doesn't refer to anything).
   bool is_null() const { return bind_state_.get() == NULL; }
@@ -77,7 +83,7 @@ class BASE_EXPORT CallbackBase {
   using InvokeFuncStorage = void(*)();
 
   // Returns true if this callback equals |other|. |other| may be null.
-  bool Equals(const CallbackBase& other) const;
+  bool EqualsInternal(const CallbackBase& other) const;
 
   // Allow initializing of |bind_state_| via the constructor to avoid default
   // initialization of the scoped_refptr.  We do not also initialize
@@ -91,8 +97,26 @@ class BASE_EXPORT CallbackBase {
   ~CallbackBase();
 
   scoped_refptr<BindStateBase> bind_state_;
-  InvokeFuncStorage polymorphic_invoke_;
+  InvokeFuncStorage polymorphic_invoke_ = nullptr;
 };
+
+// CallbackBase<Copyable> is a direct base class of Copyable Callbacks.
+template <>
+class BASE_EXPORT CallbackBase<CopyMode::Copyable>
+    : public CallbackBase<CopyMode::MoveOnly> {
+ public:
+  CallbackBase(const CallbackBase& c);
+  CallbackBase(CallbackBase&& c);
+  CallbackBase& operator=(const CallbackBase& c);
+  CallbackBase& operator=(CallbackBase&& c);
+ protected:
+  explicit CallbackBase(BindStateBase* bind_state)
+      : CallbackBase<CopyMode::MoveOnly>(bind_state) {}
+  ~CallbackBase() {}
+};
+
+extern template class CallbackBase<CopyMode::MoveOnly>;
+extern template class CallbackBase<CopyMode::Copyable>;
 
 // A helper template to determine if given type is non-const move-only-type,
 // i.e. if a value of the given type should be passed via std::move() in a

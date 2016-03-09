@@ -341,49 +341,44 @@
 //      void Bar(char* ptr);
 //      Bind(&Foo, "test");
 //      Bind(&Bar, "test");  // This fails because ptr is not const.
-
-namespace base {
-
-// First, we forward declare the Callback class template. This informs the
-// compiler that the template only has 1 type parameter which is the function
-// signature that the Callback is representing.
-//
-// After this, create template specializations for 0-7 parameters. Note that
-// even though the template typelist grows, the specialization still
-// only has one type: the function signature.
 //
 // If you are thinking of forward declaring Callback in your own header file,
 // please include "base/callback_forward.h" instead.
 
+namespace base {
 namespace internal {
 template <typename Runnable, typename RunType, typename... BoundArgsType>
 struct BindState;
 }  // namespace internal
 
-template <typename R, typename... Args>
-class Callback<R(Args...)> : public internal::CallbackBase {
+template <typename R, typename... Args, internal::CopyMode copy_mode>
+class Callback<R(Args...), copy_mode>
+    : public internal::CallbackBase<copy_mode> {
  public:
   // MSVC 2013 doesn't support Type Alias of function types.
   // Revisit this after we update it to newer version.
   typedef R RunType(Args...);
 
-  Callback() : CallbackBase(nullptr) { }
+  Callback() : internal::CallbackBase<copy_mode>(nullptr) {}
 
-  template <typename Runnable, typename BindRunType, typename... BoundArgsType>
+  template <typename Runnable, typename BindRunType, typename... BoundArgs>
   explicit Callback(
-      internal::BindState<Runnable, BindRunType, BoundArgsType...>* bind_state)
-      : CallbackBase(bind_state) {
+      internal::BindState<Runnable, BindRunType, BoundArgs...>* bind_state)
+      : internal::CallbackBase<copy_mode>(bind_state) {
     // Force the assignment to a local variable of PolymorphicInvoke
     // so the compiler will typecheck that the passed in Run() method has
     // the correct type.
     PolymorphicInvoke invoke_func =
-        &internal::BindState<Runnable, BindRunType, BoundArgsType...>
+        &internal::BindState<Runnable, BindRunType, BoundArgs...>
             ::InvokerType::Run;
-    polymorphic_invoke_ = reinterpret_cast<InvokeFuncStorage>(invoke_func);
+    using InvokeFuncStorage =
+        typename internal::CallbackBase<copy_mode>::InvokeFuncStorage;
+    this->polymorphic_invoke_ =
+        reinterpret_cast<InvokeFuncStorage>(invoke_func);
   }
 
   bool Equals(const Callback& other) const {
-    return CallbackBase::Equals(other);
+    return this->EqualsInternal(other);
   }
 
   // Run() makes an extra copy compared to directly calling the bound function
@@ -399,8 +394,8 @@ class Callback<R(Args...)> : public internal::CallbackBase {
   // cannot template its arguments based on how it's called.
   R Run(Args... args) const {
     PolymorphicInvoke f =
-        reinterpret_cast<PolymorphicInvoke>(polymorphic_invoke_);
-    return f(bind_state_.get(), std::forward<Args>(args)...);
+        reinterpret_cast<PolymorphicInvoke>(this->polymorphic_invoke_);
+    return f(this->bind_state_.get(), std::forward<Args>(args)...);
   }
 
  private:
