@@ -107,10 +107,6 @@ void initialize(Platform* platform)
 
     V8Initializer::initializeMainThread();
 
-    OwnPtr<V8IsolateInterruptor> interruptor = adoptPtr(new V8IsolateInterruptor(V8PerIsolateData::mainThreadIsolate()));
-    ThreadState::current()->addInterruptor(interruptor.release());
-    ThreadState::current()->registerTraceDOMWrappers(V8PerIsolateData::mainThreadIsolate(), V8GCController::traceDOMWrappers);
-
     // currentThread is null if we are running on a thread without a message loop.
     if (WebThread* currentThread = platform->currentThread()) {
         ASSERT(!s_endOfTaskRunner);
@@ -203,8 +199,6 @@ void shutdown()
     // Shutdown V8-related background threads before V8 is ramped down. Note
     // that this will wait the thread to stop its operations.
     ScriptStreamerThread::shutdown();
-
-    ThreadState::current()->unregisterTraceDOMWrappers();
 
     V8Initializer::shutdownMainThread();
 
