@@ -669,12 +669,8 @@ void MemoryCache::prune(Resource* justReleasedResource)
         // objects O(N^2) if we pruned immediately. This immediate eviction is a
         // safeguard against runaway memory consumption by dead resources
         // while a prune is pending.
-        // Main Resources in the cache are only substitue data that was
-        // precached and should not be evicted.
-        if (justReleasedResource->getType() != Resource::MainResource) {
-            if (MemoryCacheEntry* entry = getEntryForResource(justReleasedResource))
-                evict(entry);
-        }
+        if (MemoryCacheEntry* entry = getEntryForResource(justReleasedResource))
+            evict(entry);
 
         // As a last resort, prune immediately
         if (m_deadSize > m_maxDeferredPruneDeadCapacity)

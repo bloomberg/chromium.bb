@@ -369,7 +369,10 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::resourceForStaticData(const Fe
     resource->setIdentifier(createUniqueIdentifier());
     resource->setCacheIdentifier(cacheIdentifier);
     resource->finish();
-    memoryCache()->add(resource.get());
+
+    if (!substituteData.isValid())
+        memoryCache()->add(resource.get());
+
     return resource.release();
 }
 
