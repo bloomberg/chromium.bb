@@ -69,6 +69,22 @@ unsigned GetEventModifiers(int modifiers)
     return platformModifiers;
 }
 
+// Convert given protocol timestamp which is in seconds since unix epoch to a
+// platform event timestamp which is ticks since platform start. This conversion
+// is an estimate because these two clocks respond differently to user setting
+// time and NTP adjustments. If timestamp is empty then returns current
+// monotonic timestamp.
+double GetEventTimeStamp(const blink::protocol::Maybe<double>& timestamp)
+{
+    // Take a snapshot of difference between two clocks on first run and use it
+    // for the duration of the application.
+    static double epochToMonotonicTimeDelta = currentTime() - monotonicallyIncreasingTime();
+    if (timestamp.isJust())
+        return timestamp.fromJust() - epochToMonotonicTimeDelta;
+
+    return monotonicallyIncreasingTime();
+}
+
 class SyntheticInspectorTouchPoint : public blink::PlatformTouchPoint {
 public:
     SyntheticInspectorTouchPoint(int id, TouchState state, const blink::IntPoint& screenPos, const blink::IntPoint& pos, int radiusX, int radiusY, double rotationAngle, double force)
@@ -134,7 +150,7 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
 
     unsigned convertedModifiers = GetEventModifiers(modifiers.fromMaybe(0));
 
-    SyntheticInspectorTouchEvent event(convertedType, convertedModifiers, timestamp.fromMaybe(currentTime()));
+    SyntheticInspectorTouchEvent event(convertedType, convertedModifiers, GetEventTimeStamp(timestamp));
 
     int autoId = 0;
     for (size_t i = 0; i < touchPoints->length(); ++i) {
