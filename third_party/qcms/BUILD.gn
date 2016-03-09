@@ -49,9 +49,11 @@ source_set("qcms") {
   }
 }
 
-if (!disable_qcms && (current_cpu == "x86" || current_cpu == "x64")) {
+if (!disable_qcms) {
   executable("qcms_tests") {
-    defines = [ "SSE2_ENABLE" ]
+    if (current_cpu == "x86" || current_cpu == "x64") {
+      defines = [ "SSE2_ENABLE" ]
+    }
     sources = [
       "src/tests/qcms_test_internal_srgb.c",
       "src/tests/qcms_test_main.c",

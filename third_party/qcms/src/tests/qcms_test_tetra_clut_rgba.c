@@ -19,11 +19,26 @@ extern void qcms_transform_data_tetra_clut_rgba(qcms_transform *transform,
                                                 size_t length,
                                                 qcms_format_type output_format);
 
+#ifdef SSE2_ENABLE
 extern void qcms_transform_data_tetra_clut_rgba_sse2(qcms_transform *transform,
                                                      unsigned char *src,
                                                      unsigned char *dest,
                                                      size_t length,
                                                      qcms_format_type output_format);
+#else
+void qcms_transform_data_tetra_clut_rgba_dummy(qcms_transform *transform,
+                                               unsigned char *src,
+                                               unsigned char *dest,
+                                               size_t length,
+                                               qcms_format_type output_format)
+{
+    (void)(transform);
+    (void)(src);
+    (void)(dest);
+    (void)(length);
+    (void)(output_format);
+}
+#endif
 
 static float *create_lut(size_t lutSize)
 {
@@ -123,7 +138,11 @@ static int qcms_test_tetra_clut_rgba(size_t width,
         memcpy(src1, src0, length * pixel_size);
 
 #define TRANSFORM_TEST0 qcms_transform_data_tetra_clut_rgba
+#ifdef SSE2_ENABLE
 #define TRANSFORM_TEST1 qcms_transform_data_tetra_clut_rgba_sse2
+#else
+#define TRANSFORM_TEST1 qcms_transform_data_tetra_clut_rgba_dummy
+#endif
 
         TIME(TRANSFORM_TEST0(&transform0, src0, dst0, length, format), &time0);
         TIME(TRANSFORM_TEST1(&transform1, src1, dst1, length, format), &time1);

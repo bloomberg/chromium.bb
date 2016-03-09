@@ -141,6 +141,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=495196
  - Add qcms_profile_ntsc_relative_gamut_size api
    - https://code.google.com/p/chromium/issues/detail?id=582870
+ - Fix build issue of qcms_tests for MIPS Linux
+   - https://code.google.com/p/chromium/issues/detail?id=590227
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
