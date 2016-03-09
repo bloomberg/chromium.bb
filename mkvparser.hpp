@@ -10,8 +10,6 @@
 #define MKVPARSER_HPP
 
 #include <cstddef>
-#include <cstdio>
-#include <cstdlib>
 
 namespace mkvparser {
 
