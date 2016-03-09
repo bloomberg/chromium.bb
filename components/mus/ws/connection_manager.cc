@@ -482,7 +482,6 @@ void ConnectionManager::OnWindowBoundsChanged(ServerWindow* window,
   if (!window->parent())
     return;
 
-  // TODO(sky): optimize this.
   SchedulePaint(window->parent(), old_bounds);
   SchedulePaint(window->parent(), new_bounds);
 
@@ -570,11 +569,6 @@ void ConnectionManager::OnTransientWindowRemoved(
     pair.second->ProcessTransientWindowRemoved(window, transient_child,
                                                IsOperationSource(pair.first));
   }
-}
-
-void ConnectionManager::OnWillDestroyDisplay(Display* display) {
-  for (auto& pair : tree_map_)
-    pair.second->OnWillDestroyDisplay(display);
 }
 
 void ConnectionManager::OnFirstDisplayReady() {

@@ -19,72 +19,10 @@
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mus {
 namespace ws {
-namespace {
-
-base::TimeDelta GetDefaultAckTimerDelay() {
-#if defined(NDEBUG)
-  return base::TimeDelta::FromMilliseconds(100);
-#else
-  return base::TimeDelta::FromMilliseconds(1000);
-#endif
-}
-
-bool EventsCanBeCoalesced(const ui::Event& one, const ui::Event& two) {
-  if (one.type() != two.type() || one.flags() != two.flags())
-    return false;
-
-  // TODO(sad): wheel events can also be merged.
-  if (one.type() != ui::ET_POINTER_MOVED)
-    return false;
-
-  return one.AsPointerEvent()->pointer_id() ==
-         two.AsPointerEvent()->pointer_id();
-}
-
-scoped_ptr<ui::Event> CoalesceEvents(scoped_ptr<ui::Event> first,
-                                     scoped_ptr<ui::Event> second) {
-  DCHECK(first->type() == ui::ET_POINTER_MOVED)
-      << " Non-move events cannot be merged yet.";
-  // For mouse moves, the new event just replaces the old event.
-  return second;
-}
-
-}  // namespace
-
-class Display::ProcessedEventTarget {
- public:
-  ProcessedEventTarget(ServerWindow* window, bool in_nonclient_area)
-      : in_nonclient_area_(in_nonclient_area) {
-    tracker_.Add(window);
-  }
-
-  ~ProcessedEventTarget() {}
-
-  // Return true if the event is still valid. The event becomes invalid if
-  // the window is destroyed while waiting to dispatch.
-  bool IsValid() const { return !tracker_.windows().empty(); }
-
-  ServerWindow* window() {
-    DCHECK(IsValid());
-    return tracker_.windows().front();
-  }
-
-  bool in_nonclient_area() const { return in_nonclient_area_; }
-
- private:
-  ServerWindowTracker tracker_;
-  const bool in_nonclient_area_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessedEventTarget);
-};
-
-Display::QueuedEvent::QueuedEvent() {}
-Display::QueuedEvent::~QueuedEvent() {}
 
 Display::Display(ConnectionManager* connection_manager,
                  mojo::Connector* connector,
@@ -92,17 +30,18 @@ Display::Display(ConnectionManager* connection_manager,
                  const scoped_refptr<SurfacesState>& surfaces_state)
     : id_(connection_manager->display_manager()->GetAndAdvanceNextDisplayId()),
       connection_manager_(connection_manager),
-      event_dispatcher_(this),
       platform_display_(
           PlatformDisplay::Create(connector, gpu_state, surfaces_state)),
-      tree_awaiting_input_ack_(nullptr),
       last_cursor_(0) {
   platform_display_->Init(this);
 
   connection_manager_->window_manager_factory_registry()->AddObserver(this);
+  connection_manager_->user_id_tracker()->AddObserver(this);
 }
 
 Display::~Display() {
+  connection_manager_->user_id_tracker()->RemoveObserver(this);
+
   connection_manager_->window_manager_factory_registry()->RemoveObserver(this);
 
   DestroyFocusController();
@@ -213,18 +152,17 @@ const WindowManagerState* Display::GetWindowManagerStateForUser(
   return iter == window_manager_state_map_.end() ? nullptr : iter->second.get();
 }
 
-void Display::SetCapture(ServerWindow* window, bool in_nonclient_area) {
-  ServerWindow* capture_window = event_dispatcher_.capture_window();
-  if (capture_window == window)
-    return;
-  event_dispatcher_.SetCaptureWindow(window, in_nonclient_area);
-}
-
 mojom::Rotation Display::GetRotation() const {
   return platform_display_->GetRotation();
 }
 
+const WindowManagerState* Display::GetActiveWindowManagerState() const {
+  return GetWindowManagerStateForUser(
+      connection_manager_->user_id_tracker()->active_id());
+}
+
 void Display::SetFocusedWindow(ServerWindow* new_focused_window) {
+  // TODO(sky): this is wrong. Focus is global, not per Display.
   ServerWindow* old_focused_window = focus_controller_->GetFocusedWindow();
   if (old_focused_window == new_focused_window)
     return;
@@ -276,21 +214,30 @@ void Display::OnWillDestroyTree(WindowTree* tree) {
     }
   }
 
-  if (tree_awaiting_input_ack_ != tree)
-    return;
-  // The WindowTree is dying. So it's not going to ack the event.
-  OnEventAck(tree_awaiting_input_ack_);
+  for (const auto& pair : window_manager_state_map_)
+    pair.second->OnWillDestroyTree(tree);
+}
+
+void Display::UpdateNativeCursor(int32_t cursor_id) {
+  if (cursor_id != last_cursor_) {
+    platform_display_->SetCursorById(cursor_id);
+    last_cursor_ = cursor_id;
+  }
 }
 
 void Display::OnCursorUpdated(ServerWindow* window) {
-  if (window == event_dispatcher_.mouse_cursor_source_window())
+  WindowManagerState* wms = GetActiveWindowManagerState();
+  if (wms && window == wms->event_dispatcher()->mouse_cursor_source_window())
     UpdateNativeCursor(window->cursor());
 }
 
 void Display::MaybeChangeCursorOnWindowTreeChange() {
-  event_dispatcher_.UpdateCursorProviderByLastKnownLocation();
+  WindowManagerState* wms = GetActiveWindowManagerState();
+  if (!wms)
+    return;
+  wms->event_dispatcher()->UpdateCursorProviderByLastKnownLocation();
   ServerWindow* cursor_source_window =
-      event_dispatcher_.mouse_cursor_source_window();
+      wms->event_dispatcher()->mouse_cursor_source_window();
   if (cursor_source_window)
     UpdateNativeCursor(cursor_source_window->cursor());
 }
@@ -303,24 +250,14 @@ void Display::SetTitle(const mojo::String& title) {
   platform_display_->SetTitle(title.To<base::string16>());
 }
 
-void Display::OnEventAck(mojom::WindowTree* tree) {
-  if (tree_awaiting_input_ack_ != tree) {
-    // TODO(sad): The ack must have arrived after the timeout. We should do
-    // something here, and in OnEventAckTimeout().
-    return;
-  }
-  tree_awaiting_input_ack_ = nullptr;
-  event_ack_timer_.Stop();
-  ProcessNextEventFromQueue();
-}
-
 void Display::InitWindowManagersIfNecessary() {
   if (!init_called_ || !root_)
     return;
 
   display_manager()->OnDisplayAcceleratedWidgetAvailable(this);
   if (binding_) {
-    scoped_ptr<WindowManagerState> wms_ptr(new WindowManagerState(this));
+    scoped_ptr<WindowManagerState> wms_ptr(new WindowManagerState(
+        this, platform_display_.get(), top_level_surface_id_));
     WindowManagerState* wms = wms_ptr.get();
     // For this case we never create additional WindowManagerStates, so any
     // id works.
@@ -330,77 +267,6 @@ void Display::InitWindowManagersIfNecessary() {
   } else {
     CreateWindowManagerStatesFromRegistry();
   }
-}
-
-void Display::OnEventAckTimeout() {
-  // TODO(sad): Figure out what we should do.
-  NOTIMPLEMENTED() << "Event ACK timed out.";
-  OnEventAck(tree_awaiting_input_ack_);
-}
-
-void Display::QueueEvent(
-    const ui::Event& event,
-    scoped_ptr<ProcessedEventTarget> processed_event_target) {
-  scoped_ptr<QueuedEvent> queued_event(new QueuedEvent);
-  queued_event->event = ui::Event::Clone(event);
-  queued_event->processed_target = std::move(processed_event_target);
-  event_queue_.push(std::move(queued_event));
-}
-
-void Display::ProcessNextEventFromQueue() {
-  // Loop through |event_queue_| stopping after dispatching the first valid
-  // event.
-  while (!event_queue_.empty()) {
-    scoped_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
-    event_queue_.pop();
-    if (!queued_event->processed_target) {
-      event_dispatcher_.ProcessEvent(*queued_event->event);
-      return;
-    }
-    if (queued_event->processed_target->IsValid()) {
-      DispatchInputEventToWindowImpl(
-          queued_event->processed_target->window(),
-          queued_event->processed_target->in_nonclient_area(),
-          *queued_event->event);
-      return;
-    }
-  }
-}
-
-void Display::DispatchInputEventToWindowImpl(ServerWindow* target,
-                                             bool in_nonclient_area,
-                                             const ui::Event& event) {
-  if (target == root_.get()) {
-    // TODO(sky): use active windowmanager here.
-    target = GetFirstWindowManagerState()->root();
-  }
-  if (event.IsMousePointerEvent()) {
-    DCHECK(event_dispatcher_.mouse_cursor_source_window());
-    UpdateNativeCursor(
-        event_dispatcher_.mouse_cursor_source_window()->cursor());
-  }
-
-  // If the event is in the non-client area the event goes to the owner of
-  // the window. Otherwise if the window is an embed root, forward to the
-  // embedded window.
-  WindowTree* tree =
-      in_nonclient_area
-          ? connection_manager_->GetTreeWithId(target->id().connection_id)
-          : connection_manager_->GetTreeWithRoot(target);
-  if (!tree) {
-    DCHECK(!in_nonclient_area);
-    tree = connection_manager_->GetTreeWithId(target->id().connection_id);
-  }
-
-  // TOOD(sad): Adjust this delay, possibly make this dynamic.
-  const base::TimeDelta max_delay = base::debug::BeingDebugged()
-                                        ? base::TimeDelta::FromDays(1)
-                                        : GetDefaultAckTimerDelay();
-  event_ack_timer_.Start(FROM_HERE, max_delay, this,
-                         &Display::OnEventAckTimeout);
-
-  tree_awaiting_input_ack_ = tree;
-  tree->DispatchInputEvent(target, mojom::Event::From(event));
 }
 
 void Display::CreateWindowManagerStatesFromRegistry() {
@@ -415,18 +281,12 @@ void Display::CreateWindowManagerStatesFromRegistry() {
 void Display::CreateWindowManagerStateFromService(
     WindowManagerFactoryService* service) {
   scoped_ptr<WindowManagerState> wms_ptr(
-      new WindowManagerState(this, service->user_id()));
+      new WindowManagerState(this, platform_display_.get(),
+                             top_level_surface_id_, service->user_id()));
   WindowManagerState* wms = wms_ptr.get();
   window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
   wms->tree_ = connection_manager_->CreateTreeForWindowManager(
       this, service->window_manager_factory(), wms->root());
-}
-
-void Display::UpdateNativeCursor(int32_t cursor_id) {
-  if (cursor_id != last_cursor_) {
-    platform_display_->SetCursorById(cursor_id);
-    last_cursor_ = cursor_id;
-  }
 }
 
 ServerWindow* Display::GetRootWindow() {
@@ -434,24 +294,15 @@ ServerWindow* Display::GetRootWindow() {
 }
 
 void Display::OnEvent(const ui::Event& event) {
-  mojom::EventPtr mojo_event(mojom::Event::From(event));
-  // If this is still waiting for an ack from a previously sent event, then
-  // queue up the event to be dispatched once the ack is received.
-  if (event_ack_timer_.IsRunning()) {
-    if (!event_queue_.empty() && !event_queue_.back()->processed_target &&
-        EventsCanBeCoalesced(*event_queue_.back()->event, event)) {
-      event_queue_.back()->event = CoalesceEvents(
-          std::move(event_queue_.back()->event), ui::Event::Clone(event));
-      return;
-    }
-    QueueEvent(event, nullptr);
-    return;
-  }
-  event_dispatcher_.ProcessEvent(event);
+  WindowManagerState* wms = GetActiveWindowManagerState();
+  if (wms)
+    wms->ProcessEvent(event);
 }
 
 void Display::OnNativeCaptureLost() {
-  SetCapture(nullptr, false);
+  WindowManagerState* state = GetActiveWindowManagerState();
+  if (state)
+    state->SetCapture(nullptr, false);
 }
 
 void Display::OnDisplayClosed() {
@@ -470,7 +321,6 @@ void Display::OnViewportMetricsChanged(
     focus_controller_.reset(new FocusController(this, root_.get()));
     focus_controller_->AddObserver(this);
     InitWindowManagersIfNecessary();
-    event_dispatcher_.set_root(root_.get());
   } else {
     root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
     const gfx::Rect wm_bounds(root_->bounds().size());
@@ -484,7 +334,9 @@ void Display::OnViewportMetricsChanged(
 }
 
 void Display::OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) {
-  event_dispatcher_.set_surface_id(surface_id);
+  DCHECK(!root_);
+  // This should only be called once, and before we've created root_.
+  top_level_surface_id_ = surface_id;
 }
 
 void Display::OnCompositorFrameDrawn() {
@@ -594,55 +446,28 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
                        new_focused_window->text_input_state());
 }
 
-void Display::OnAccelerator(uint32_t accelerator_id, const ui::Event& event) {
-  // TODO(sky): accelerators need to be maintained per windowmanager and pushed
-  // to the eventdispatcher when the active userid changes.
-  GetFirstWindowManagerState()->tree()->OnAccelerator(
-      accelerator_id, mojom::Event::From(event));
-}
-
-void Display::SetFocusedWindowFromEventDispatcher(
-    ServerWindow* new_focused_window) {
-  SetFocusedWindow(new_focused_window);
-}
-
-ServerWindow* Display::GetFocusedWindowForEventDispatcher() {
-  return GetFocusedWindow();
-}
-
-void Display::SetNativeCapture() {
-  platform_display_->SetCapture();
-}
-
-void Display::ReleaseNativeCapture() {
-  platform_display_->ReleaseCapture();
-}
-
-void Display::OnServerWindowCaptureLost(ServerWindow* window) {
-  DCHECK(window);
-  connection_manager_->ProcessLostCapture(window);
-}
-
-void Display::DispatchInputEventToWindow(ServerWindow* target,
-                                         bool in_nonclient_area,
-                                         const ui::Event& event) {
-  if (event_ack_timer_.IsRunning()) {
-    scoped_ptr<ProcessedEventTarget> processed_event_target(
-        new ProcessedEventTarget(target, in_nonclient_area));
-    QueueEvent(event, std::move(processed_event_target));
-    return;
-  }
-
-  DispatchInputEventToWindowImpl(target, in_nonclient_area, event);
-}
-
 void Display::OnWindowDestroyed(ServerWindow* window) {
   windows_needing_frame_destruction_.erase(window);
   window->RemoveObserver(this);
 }
 
-void Display::OnActiveUserIdChanged(const UserId& id) {
-  // TODO(sky): this likely needs to cancel any pending events and all that.
+void Display::OnActiveUserIdChanged(const UserId& previously_active_id,
+                                    const UserId& active_id) {
+  WindowManagerState* previous_wms =
+      GetWindowManagerStateForUser(previously_active_id);
+  const gfx::Point mouse_location_on_screen =
+      previous_wms
+          ? previous_wms->event_dispatcher()->mouse_pointer_last_location()
+          : gfx::Point();
+  if (previous_wms)
+    previous_wms->event_dispatcher()->Reset();
+
+  WindowManagerState* active_wms = GetWindowManagerStateForUser(active_id);
+  if (active_wms) {
+    active_wms->event_dispatcher()->Reset();
+    active_wms->event_dispatcher()->SetMousePointerScreenLocation(
+        mouse_location_on_screen);
+  }
 }
 
 void Display::OnUserIdAdded(const UserId& id) {}

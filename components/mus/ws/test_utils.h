@@ -11,11 +11,13 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/connection_manager_delegate.h"
 #include "components/mus/ws/display.h"
+#include "components/mus/ws/event_dispatcher.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_factory.h"
 #include "components/mus/ws/test_change_tracker.h"
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
+#include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 
@@ -68,6 +70,8 @@ class WindowTreeTestApi {
     tree_->window_manager_internal_ = wm_internal;
   }
 
+  void EnableCapture() { tree_->event_ack_id_ = 1u; }
+
  private:
   WindowTree* tree_;
 
@@ -83,14 +87,47 @@ class DisplayTestApi {
 
   void OnEvent(const ui::Event& event) { display_->OnEvent(event); }
 
-  mojom::WindowTree* tree_awaiting_input_ack() {
-    return display_->tree_awaiting_input_ack_;
-  }
-
  private:
   Display* display_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayTestApi);
+};
+
+// -----------------------------------------------------------------------------
+
+class EventDispatcherTestApi {
+ public:
+  explicit EventDispatcherTestApi(EventDispatcher* ed) : ed_(ed) {}
+  ~EventDispatcherTestApi() {}
+
+  bool AreAnyPointersDown() const { return ed_->AreAnyPointersDown(); }
+  bool is_mouse_button_down() const { return ed_->mouse_button_down_; }
+  bool IsObservingWindow(ServerWindow* window) {
+    return ed_->IsObservingWindow(window);
+  }
+  int NumberPointerTargetsForWindow(ServerWindow* window);
+
+ private:
+  EventDispatcher* ed_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventDispatcherTestApi);
+};
+
+// -----------------------------------------------------------------------------
+
+class WindowManagerStateTestApi {
+ public:
+  explicit WindowManagerStateTestApi(WindowManagerState* wms) : wms_(wms) {}
+  ~WindowManagerStateTestApi() {}
+
+  mojom::WindowTree* tree_awaiting_input_ack() {
+    return wms_->tree_awaiting_input_ack_;
+  }
+
+ private:
+  WindowManagerState* wms_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowManagerStateTestApi);
 };
 
 // -----------------------------------------------------------------------------

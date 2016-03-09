@@ -72,7 +72,6 @@ WindowTree::WindowTree(ConnectionManager* connection_manager,
       id_(connection_manager_->GetAndAdvanceNextConnectionId()),
       next_window_id_(1),
       event_ack_id_(0),
-      event_source_display_(nullptr),
       is_embed_root_(false),
       window_manager_internal_(nullptr) {
   if (root)
@@ -158,7 +157,19 @@ const Display* WindowTree::GetDisplay(const ServerWindow* window) const {
   return window ? display_manager()->GetDisplayContaining(window) : nullptr;
 }
 
+const WindowManagerState* WindowTree::GetWindowManagerState(
+    const ServerWindow* window) const {
+  return window
+             ? display_manager()
+                   ->GetWindowManagerAndDisplay(window)
+                   .window_manager_state
+             : nullptr;
+}
+
 void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
+  if (event_source_wms_ && event_source_wms_->tree() == tree)
+    event_source_wms_ = nullptr;
+
   // Notify our client if |tree| was embedded in any of our views.
   for (const auto* tree_root : tree->roots_) {
     const bool owns_tree_root = tree_root->id().connection_id == id_;
@@ -169,16 +180,26 @@ void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
   }
 }
 
-void WindowTree::OnWillDestroyDisplay(Display* display) {
-  if (event_source_display_ == display)
-    event_source_display_ = nullptr;
-}
-
 void WindowTree::NotifyChangeCompleted(
     uint32_t change_id,
     mojom::WindowManagerErrorCode error_code) {
   client()->OnChangeCompleted(
       change_id, error_code == mojom::WindowManagerErrorCode::SUCCESS);
+}
+
+bool WindowTree::SetCapture(const ClientWindowId& client_window_id) {
+  ServerWindow* window = GetWindowByClientId(client_window_id);
+  WindowManagerState* wms = GetWindowManagerState(window);
+  ServerWindow* current_capture_window = wms ? wms->capture_window() : nullptr;
+  if (window && wms && wms->IsActive() &&
+      access_policy_->CanSetCapture(window) &&
+      (!current_capture_window ||
+       access_policy_->CanSetCapture(current_capture_window)) &&
+      event_ack_id_) {
+    wms->SetCapture(window, !HasRoot(window));
+    return true;
+  }
+  return false;
 }
 
 bool WindowTree::NewWindow(
@@ -877,9 +898,9 @@ void WindowTree::DispatchInputEventImpl(ServerWindow* target,
   // the event pointer.
   event_ack_id_ =
       0x1000000 | (reinterpret_cast<uintptr_t>(event.get()) & 0xffffff);
-  event_source_display_ = GetDisplay(target);
+  event_source_wms_ = GetWindowManagerState(target);
   // Should only get events from windows attached to a host.
-  DCHECK(event_source_display_);
+  DCHECK(event_source_wms_);
   client()->OnWindowInputEvent(
       event_ack_id_, ClientWindowIdForWindow(target).id, std::move(event));
 }
@@ -903,8 +924,11 @@ void WindowTree::NewTopLevelWindow(
     mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
   DCHECK(!waiting_for_top_level_window_info_);
   const ClientWindowId client_window_id(transport_window_id);
-  Display* display = display_manager()->GetActiveDisplay();
-  // TODO(sky): need a way for client to provide context.
+  // TODO(sky): need a way for client to provide context to figure out display.
+  // TODO(sky): get WMS for user_id for this connection.
+  Display* display = display_manager()->displays().empty()
+                         ? nullptr
+                         : *(display_manager()->displays().begin());
   WindowManagerState* wms =
       display ? display->GetFirstWindowManagerState() : nullptr;
   if (!wms || wms->tree() == this || !IsValidIdForNewWindow(client_window_id)) {
@@ -1011,33 +1035,20 @@ void WindowTree::GetWindowTree(
 }
 
 void WindowTree::SetCapture(uint32_t change_id, Id window_id) {
-  ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
-  Display* display = GetDisplay(window);
-  ServerWindow* current_capture_window =
-      display ? display->GetCaptureWindow() : nullptr;
-  bool success = window && access_policy_->CanSetCapture(window) && display &&
-                 (!current_capture_window ||
-                  access_policy_->CanSetCapture(current_capture_window)) &&
-                 event_ack_id_;
-  if (success) {
-    Operation op(this, connection_manager_, OperationType::SET_CAPTURE);
-    display->SetCapture(window, !HasRoot(window));
-  }
-  client()->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id, SetCapture(ClientWindowId(window_id)));
 }
 
 void WindowTree::ReleaseCapture(uint32_t change_id, Id window_id) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
-  Display* display = GetDisplay(window);
-  ServerWindow* current_capture_window =
-      display ? display->GetCaptureWindow() : nullptr;
-  bool success = window && display &&
+  WindowManagerState* wms = GetWindowManagerState(window);
+  ServerWindow* current_capture_window = wms ? wms->capture_window() : nullptr;
+  bool success = window && wms && wms->IsActive() &&
                  (!current_capture_window ||
                   access_policy_->CanSetCapture(current_capture_window)) &&
                  window == current_capture_window;
   if (success) {
     Operation op(this, connection_manager_, OperationType::RELEASE_CAPTURE);
-    display->SetCapture(nullptr, false);
+    wms->SetCapture(nullptr, false);
   }
   client()->OnChangeCompleted(change_id, success);
 }
@@ -1152,10 +1163,10 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id) {
   }
   event_ack_id_ = 0;
 
-  Display* event_source_display = event_source_display_;
-  event_source_display_ = nullptr;
-  if (event_source_display)
-    event_source_display->OnEventAck(this);
+  WindowManagerState* event_source_wms = event_source_wms_;
+  event_source_wms_ = nullptr;
+  if (event_source_wms)
+    event_source_wms->OnEventAck(this);
 
   if (!event_queue_.empty()) {
     DCHECK(!event_ack_id_);
@@ -1253,18 +1264,15 @@ void WindowTree::GetWindowManagerClient(
 void WindowTree::AddAccelerator(uint32_t id,
                                 mojom::EventMatcherPtr event_matcher,
                                 const AddAcceleratorCallback& callback) {
-  Display* host = GetDisplayForWindowManager();
+  WindowManagerState* wms = GetWindowManagerStateForWindowManager();
   const bool success =
-      host &&
-      host->event_dispatcher()->AddAccelerator(id, std::move(event_matcher));
+      wms->event_dispatcher()->AddAccelerator(id, std::move(event_matcher));
   callback.Run(success);
 }
 
 void WindowTree::RemoveAccelerator(uint32_t id) {
-  Display* host = GetDisplayForWindowManager();
-  if (!host)
-    return;
-  host->event_dispatcher()->RemoveAccelerator(id);
+  WindowManagerState* wms = GetWindowManagerStateForWindowManager();
+  wms->event_dispatcher()->RemoveAccelerator(id);
 }
 
 void WindowTree::AddActivationParent(Id transport_window_id) {

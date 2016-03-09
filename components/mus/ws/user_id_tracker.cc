@@ -24,9 +24,10 @@ void UserIdTracker::SetActiveUserId(const UserId& id) {
   if (id == active_id_)
     return;
 
+  const UserId previously_active_id = active_id_;
   active_id_ = id;
   FOR_EACH_OBSERVER(UserIdTrackerObserver, observers_,
-                    OnActiveUserIdChanged(id));
+                    OnActiveUserIdChanged(previously_active_id, id));
 }
 
 void UserIdTracker::AddUserId(const UserId& id) {

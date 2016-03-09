@@ -26,6 +26,8 @@ class UserIdTracker {
 
   bool IsValidUserId(const UserId& id) const;
 
+  const UserId& active_id() const { return active_id_; }
+
   void SetActiveUserId(const UserId& id);
   void AddUserId(const UserId& id);
   void RemoveUserId(const UserId& id);

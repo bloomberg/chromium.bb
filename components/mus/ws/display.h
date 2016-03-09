@@ -16,8 +16,6 @@
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
-#include "components/mus/ws/event_dispatcher.h"
-#include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/focus_controller_delegate.h"
 #include "components/mus/ws/focus_controller_observer.h"
 #include "components/mus/ws/platform_display.h"
@@ -54,7 +52,6 @@ class Display : public PlatformDisplayDelegate,
                 public mojom::WindowTreeHost,
                 public FocusControllerObserver,
                 public FocusControllerDelegate,
-                public EventDispatcherDelegate,
                 public ServerWindowObserver,
                 public UserIdTrackerObserver,
                 public WindowManagerFactoryRegistryObserver {
@@ -97,8 +94,6 @@ class Display : public PlatformDisplayDelegate,
 
   ConnectionManager* connection_manager() { return connection_manager_; }
 
-  EventDispatcher* event_dispatcher() { return &event_dispatcher_; }
-
   // Returns the root of the Display. The root's children are the roots
   // of the corresponding WindowManagers.
   ServerWindow* root_window() { return root_.get(); }
@@ -116,11 +111,14 @@ class Display : public PlatformDisplayDelegate,
   }
   const WindowManagerState* GetWindowManagerStateForUser(
       const UserId& user_id) const;
+  WindowManagerState* GetActiveWindowManagerState() {
+    return const_cast<WindowManagerState*>(
+        const_cast<const Display*>(this)->GetActiveWindowManagerState());
+  }
+  const WindowManagerState* GetActiveWindowManagerState() const;
   size_t num_window_manger_states() const {
     return window_manager_state_map_.size();
   }
-
-  void SetCapture(ServerWindow* window, bool in_nonclient_area);
 
   void SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
@@ -134,16 +132,10 @@ class Display : public PlatformDisplayDelegate,
                             const ui::TextInputState& state);
   void SetImeVisibility(ServerWindow* window, bool visible);
 
-  // Returns the window that has captured input.
-  ServerWindow* GetCaptureWindow() {
-    return event_dispatcher_.capture_window();
-  }
-  const ServerWindow* GetCaptureWindow() const {
-    return event_dispatcher_.capture_window();
-  }
-
   // Called just before |tree| is destroyed.
   void OnWillDestroyTree(WindowTree* tree);
+
+  void UpdateNativeCursor(int32_t cursor_id);
 
   // Called when a client updates a cursor. This will update the cursor on the
   // native display if the cursor is currently under |window|.
@@ -158,49 +150,14 @@ class Display : public PlatformDisplayDelegate,
   void SetSize(mojo::SizePtr size) override;
   void SetTitle(const mojo::String& title) override;
 
-  void OnEventAck(mojom::WindowTree* tree);
-
  private:
-  class ProcessedEventTarget;
   friend class test::DisplayTestApi;
 
   using WindowManagerStateMap =
       std::map<UserId, scoped_ptr<WindowManagerState>>;
 
-  // There are two types of events that may be queued, both occur only when
-  // waiting for an ack from a client.
-  // . We get an event from the PlatformDisplay. This results in |event| being
-  //   set, but |processed_target| is null.
-  // . We get an event from the EventDispatcher. In this case both |event| and
-  //   |processed_target| are valid.
-  // The second case happens if EventDispatcher generates more than one event
-  // at a time.
-  struct QueuedEvent {
-    QueuedEvent();
-    ~QueuedEvent();
-
-    scoped_ptr<ui::Event> event;
-    scoped_ptr<ProcessedEventTarget> processed_target;
-  };
-
   // Inits the necessary state once the display is ready.
   void InitWindowManagersIfNecessary();
-
-  void OnEventAckTimeout();
-
-  // Schedules an event to be processed later.
-  void QueueEvent(const ui::Event& event,
-                  scoped_ptr<ProcessedEventTarget> processed_event_target);
-
-  // Processes the next valid event in |event_queue_|. If the event has already
-  // been processed it is dispatched, otherwise the event is passed to the
-  // EventDispatcher for processing.
-  void ProcessNextEventFromQueue();
-
-  // Dispatches the event to the appropriate client and starts the ack timer.
-  void DispatchInputEventToWindowImpl(ServerWindow* target,
-                                      bool in_nonclient_area,
-                                      const ui::Event& event);
 
   // Creates the set of WindowManagerStates from the
   // WindowManagerFactoryRegistry.
@@ -208,8 +165,6 @@ class Display : public PlatformDisplayDelegate,
 
   void CreateWindowManagerStateFromService(
       WindowManagerFactoryService* service);
-
-  void UpdateNativeCursor(int32_t cursor_id);
 
   // PlatformDisplayDelegate:
   ServerWindow* GetRootWindow() override;
@@ -232,22 +187,12 @@ class Display : public PlatformDisplayDelegate,
                       ServerWindow* old_focused_window,
                       ServerWindow* new_focused_window) override;
 
-  // EventDispatcherDelegate:
-  void OnAccelerator(uint32_t accelerator_id, const ui::Event& event) override;
-  void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override;
-  ServerWindow* GetFocusedWindowForEventDispatcher() override;
-  void SetNativeCapture() override;
-  void ReleaseNativeCapture() override;
-  void OnServerWindowCaptureLost(ServerWindow* window) override;
-  void DispatchInputEventToWindow(ServerWindow* target,
-                                  bool in_nonclient_area,
-                                  const ui::Event& event) override;
-
   // ServerWindowObserver:
   void OnWindowDestroyed(ServerWindow* window) override;
 
   // UserIdTrackerObserver:
-  void OnActiveUserIdChanged(const UserId& id) override;
+  void OnActiveUserIdChanged(const UserId& previously_active_id,
+                             const UserId& active_id) override;
   void OnUserIdAdded(const UserId& id) override;
   void OnUserIdRemoved(const UserId& id) override;
 
@@ -259,11 +204,9 @@ class Display : public PlatformDisplayDelegate,
   // Set once Init() has been called.
   bool init_called_ = false;
   ConnectionManager* const connection_manager_;
-  EventDispatcher event_dispatcher_;
   scoped_ptr<ServerWindow> root_;
   scoped_ptr<PlatformDisplay> platform_display_;
   scoped_ptr<FocusController> focus_controller_;
-  mojom::WindowTree* tree_awaiting_input_ack_;
 
   // The last cursor set. Used to track whether we need to change the cursor.
   int32_t last_cursor_;
@@ -274,10 +217,9 @@ class Display : public PlatformDisplayDelegate,
   // draws.
   std::set<ServerWindow*> windows_needing_frame_destruction_;
 
-  std::queue<scoped_ptr<QueuedEvent>> event_queue_;
-  base::OneShotTimer event_ack_timer_;
-
   WindowManagerStateMap window_manager_state_map_;
+
+  cc::SurfaceId top_level_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

@@ -154,6 +154,10 @@ ClientWindowId FirstRootId(WindowTree* tree) {
              : ClientWindowId();
 }
 
+ServerWindow* GetCaptureWindow(Display* display) {
+  return display->GetActiveWindowManagerState()->capture_window();
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -197,7 +201,7 @@ class WindowTreeTest : public testing::Test {
   }
 
   void AckPreviousEvent() {
-    DisplayTestApi test_api(display_);
+    WindowManagerStateTestApi test_api(display_->GetActiveWindowManagerState());
     while (test_api.tree_awaiting_input_ack())
       test_api.tree_awaiting_input_ack()->OnWindowInputEventAck(0);
   }
@@ -637,28 +641,28 @@ TEST_F(WindowTreeTest, ExplicitSetCapture) {
   uint32_t change_id = 42;
   mojom_window_tree->SetCapture(change_id, WindowIdToTransportId(window->id()));
   Display* display = tree->GetDisplay(window);
-  EXPECT_NE(window, display->GetCaptureWindow());
+  EXPECT_NE(window, GetCaptureWindow(display));
 
   // Setting capture after the event is acknowledged should fail
   DispatchEventAndAckImmediately(CreatePointerDownEvent(10, 10));
   mojom_window_tree->SetCapture(++change_id,
                                 WindowIdToTransportId(window->id()));
-  EXPECT_NE(window, display->GetCaptureWindow());
+  EXPECT_NE(window, GetCaptureWindow(display));
 
   // Settings while the event is being process should pass
   DispatchEventWithoutAck(CreatePointerDownEvent(10, 10));
   mojom_window_tree->SetCapture(++change_id,
                                 WindowIdToTransportId(window->id()));
-  EXPECT_EQ(window, display->GetCaptureWindow());
+  EXPECT_EQ(window, GetCaptureWindow(display));
   AckPreviousEvent();
 
   // Only the capture window should be able to release capture
   mojom_window_tree->ReleaseCapture(++change_id,
                                     WindowIdToTransportId(root_window->id()));
-  EXPECT_EQ(window, display->GetCaptureWindow());
+  EXPECT_EQ(window, GetCaptureWindow(display));
   mojom_window_tree->ReleaseCapture(++change_id,
                                     WindowIdToTransportId(window->id()));
-  EXPECT_EQ(nullptr, display->GetCaptureWindow());
+  EXPECT_EQ(nullptr, GetCaptureWindow(display));
 }
 
 }  // namespace test

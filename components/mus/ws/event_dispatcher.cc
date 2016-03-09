@@ -216,6 +216,25 @@ EventDispatcher::~EventDispatcher() {
   pointer_targets_.clear();
 }
 
+void EventDispatcher::Reset() {
+  if (capture_window_) {
+    CancelPointerEventsToTarget(capture_window_);
+    DCHECK(capture_window_ == nullptr);
+  }
+
+  while (!pointer_targets_.empty())
+    StopTrackingPointer(pointer_targets_.begin()->first);
+
+  mouse_button_down_ = false;
+}
+
+void EventDispatcher::SetMousePointerScreenLocation(
+    const gfx::Point& screen_location) {
+  DCHECK(pointer_targets_.empty());
+  mouse_pointer_last_location_ = screen_location;
+  UpdateCursorProviderByLastKnownLocation();
+}
+
 void EventDispatcher::SetCaptureWindow(ServerWindow* window,
                                        bool in_nonclient_area) {
   if (window == capture_window_)

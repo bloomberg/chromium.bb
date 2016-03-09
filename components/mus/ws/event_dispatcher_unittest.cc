@@ -15,11 +15,13 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_server_window_delegate.h"
+#include "components/mus/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 
 namespace mus {
 namespace ws {
+namespace test {
 namespace {
 
 // Identifies a generated event.
@@ -202,7 +204,7 @@ class EventDispatcherTest : public testing::Test {
 };
 
 bool EventDispatcherTest::AreAnyPointersDown() const {
-  return event_dispatcher_->AreAnyPointersDown();
+  return EventDispatcherTestApi(event_dispatcher_.get()).AreAnyPointersDown();
 }
 
 void EventDispatcherTest::ClearSetup() {
@@ -221,20 +223,18 @@ ServerWindow* EventDispatcherTest::CreateChildWindow(const WindowId& id) {
 }
 
 bool EventDispatcherTest::IsMouseButtonDown() const {
-  return event_dispatcher_->mouse_button_down_;
+  return EventDispatcherTestApi(event_dispatcher_.get()).is_mouse_button_down();
 }
 
 bool EventDispatcherTest::IsWindowPointerTarget(ServerWindow* window) const {
-  return event_dispatcher_->IsObservingWindow(window);
+  return EventDispatcherTestApi(event_dispatcher_.get())
+      .IsObservingWindow(window);
 }
 
 int EventDispatcherTest::NumberPointerTargetsForWindow(
     ServerWindow* window) const {
-  int count = 0;
-  for (const auto& pair : event_dispatcher_->pointer_targets_)
-    if (pair.second.window == window)
-      count++;
-  return count;
+  return EventDispatcherTestApi(event_dispatcher_.get())
+      .NumberPointerTargetsForWindow(window);
 }
 
 void EventDispatcherTest::SetUp() {
@@ -1088,5 +1088,43 @@ TEST_F(EventDispatcherTest, ProcessPointerEvents) {
   }
 }
 
+TEST_F(EventDispatcherTest, ResetClearsPointerDown) {
+  scoped_ptr<ServerWindow> child(CreateChildWindow(WindowId(1, 3)));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
+
+  // Send event that is over child.
+  const ui::PointerEvent ui_event(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  event_dispatcher()->ProcessEvent(ui_event);
+
+  scoped_ptr<DispatchedEventDetails> details =
+      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+  ASSERT_TRUE(details);
+  ASSERT_EQ(child.get(), details->window);
+
+  EXPECT_TRUE(AreAnyPointersDown());
+
+  event_dispatcher()->Reset();
+  EXPECT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
+  EXPECT_FALSE(AreAnyPointersDown());
+}
+
+TEST_F(EventDispatcherTest, ResetClearsCapture) {
+  ServerWindow* root = root_window();
+  root->SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  root->SetClientArea(gfx::Insets(5, 5, 5, 5), std::vector<gfx::Rect>());
+  EventDispatcher* dispatcher = event_dispatcher();
+  dispatcher->SetCaptureWindow(root, true);
+
+  event_dispatcher()->Reset();
+  EXPECT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
+  EXPECT_EQ(nullptr, event_dispatcher()->capture_window());
+}
+
+}  // namespace test
 }  // namespace ws
 }  // namespace mus

@@ -12,7 +12,6 @@ class Display;
 
 class DisplayManagerDelegate {
  public:
-  virtual void OnWillDestroyDisplay(Display* display) = 0;
   virtual void OnFirstDisplayReady() = 0;
   virtual void OnNoMoreDisplays() = 0;
 

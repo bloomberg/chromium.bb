@@ -24,6 +24,7 @@
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mus {
@@ -151,6 +152,93 @@ TEST_F(DisplayTest, Destruction) {
   connection_manager_->display_manager()->DestroyDisplay(display);
   EXPECT_EQ(0u, connection_manager_->num_trees());
   EXPECT_TRUE(connection_manager_delegate_.got_on_no_more_displays());
+}
+
+TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
+  connection_manager_delegate_.set_num_displays_to_create(1);
+
+  const UserId kTestId1 = "20";
+  const UserId kTestId2 = "201";
+  WindowManagerFactoryRegistryTestApi(
+      connection_manager_->window_manager_factory_registry())
+      .AddService(kTestId1, &test_window_manager_factory_);
+  WindowManagerFactoryRegistryTestApi(
+      connection_manager_->window_manager_factory_registry())
+      .AddService(kTestId2, &test_window_manager_factory_);
+
+  connection_manager_->user_id_tracker()->SetActiveUserId(kTestId1);
+
+  DisplayManager* display_manager = connection_manager_->display_manager();
+  ASSERT_EQ(1u, display_manager->displays().size());
+  Display* display = *display_manager->displays().begin();
+  WindowManagerState* active_wms = display->GetActiveWindowManagerState();
+  ASSERT_TRUE(active_wms);
+  EXPECT_EQ(kTestId1, active_wms->user_id());
+
+  static_cast<PlatformDisplayDelegate*>(display)->OnEvent(ui::PointerEvent(
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(20, 25),
+                     gfx::Point(20, 25), base::TimeDelta(),
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON)));
+
+  EXPECT_TRUE(EventDispatcherTestApi(active_wms->event_dispatcher())
+                  .AreAnyPointersDown());
+  EXPECT_EQ(gfx::Point(20, 25),
+            active_wms->event_dispatcher()->mouse_pointer_last_location());
+
+  // Switch the user. Should trigger resetting state in old event dispatcher
+  // and update state in new event dispatcher.
+  connection_manager_->user_id_tracker()->SetActiveUserId(kTestId2);
+  EXPECT_NE(active_wms, display->GetActiveWindowManagerState());
+  EXPECT_FALSE(EventDispatcherTestApi(active_wms->event_dispatcher())
+                   .AreAnyPointersDown());
+  active_wms = display->GetActiveWindowManagerState();
+  EXPECT_EQ(kTestId2, active_wms->user_id());
+  EXPECT_EQ(gfx::Point(20, 25),
+            active_wms->event_dispatcher()->mouse_pointer_last_location());
+  EXPECT_FALSE(EventDispatcherTestApi(active_wms->event_dispatcher())
+                   .AreAnyPointersDown());
+}
+
+// Verifies capture fails when wm is inactive and succeeds when wm is active.
+TEST_F(DisplayTest, SetCaptureFromWindowManager) {
+  connection_manager_delegate_.set_num_displays_to_create(1);
+  const UserId kTestId1 = "20";
+  const UserId kTestId2 = "201";
+  WindowManagerFactoryRegistryTestApi(
+      connection_manager_->window_manager_factory_registry())
+      .AddService(kTestId1, &test_window_manager_factory_);
+  WindowManagerFactoryRegistryTestApi(
+      connection_manager_->window_manager_factory_registry())
+      .AddService(kTestId2, &test_window_manager_factory_);
+  connection_manager_->user_id_tracker()->SetActiveUserId(kTestId1);
+  DisplayManager* display_manager = connection_manager_->display_manager();
+  ASSERT_EQ(1u, display_manager->displays().size());
+  Display* display = *display_manager->displays().begin();
+  WindowManagerState* wms_for_id2 =
+      display->GetWindowManagerStateForUser(kTestId2);
+  ASSERT_TRUE(wms_for_id2);
+  EXPECT_FALSE(wms_for_id2->IsActive());
+  ClientWindowId root_client_id;
+
+  // Create a child of the root that we can set capture on.
+  WindowTree* tree = wms_for_id2->tree();
+  const ServerWindow* root = *tree->roots().begin();
+  ASSERT_TRUE(tree->IsWindowKnown(root, &root_client_id));
+  ClientWindowId child_window_id(
+      WindowIdToTransportId(WindowId(tree->id(), 101)));
+  ASSERT_TRUE(tree->NewWindow(child_window_id, ServerWindow::Properties()));
+  ASSERT_TRUE(tree->SetWindowVisibility(child_window_id, true));
+  ASSERT_TRUE(tree->AddWindow(root_client_id, child_window_id));
+
+  WindowTreeTestApi(tree).EnableCapture();
+
+  // SetCapture() should fail for user id2 as it is inactive.
+  EXPECT_FALSE(tree->SetCapture(child_window_id));
+
+  // Make the second user active and verify capture works.
+  connection_manager_->user_id_tracker()->SetActiveUserId(kTestId2);
+  EXPECT_TRUE(wms_for_id2->IsActive());
+  EXPECT_TRUE(tree->SetCapture(child_window_id));
 }
 
 }  // namespace test

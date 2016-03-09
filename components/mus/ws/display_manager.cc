@@ -39,8 +39,6 @@ void DisplayManager::AddDisplay(Display* display) {
 }
 
 void DisplayManager::DestroyDisplay(Display* display) {
-  delegate_->OnWillDestroyDisplay(display);
-
   if (pending_displays_.count(display)) {
     pending_displays_.erase(display);
   } else {
@@ -87,11 +85,6 @@ const Display* DisplayManager::GetDisplayContaining(
       return display;
   }
   return nullptr;
-}
-
-Display* DisplayManager::GetActiveDisplay() {
-  // TODO(sky): this isn't active, but first. Make it active.
-  return displays_.size() ? *displays_.begin() : nullptr;
 }
 
 WindowManagerAndDisplayConst DisplayManager::GetWindowManagerAndDisplay(

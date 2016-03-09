@@ -30,6 +30,10 @@ class EventDispatcherDelegate;
 class EventMatcher;
 class ServerWindow;
 
+namespace test {
+class EventDispatcherTestApi;
+}
+
 // Handles dispatching events to the right location as well as updating focus.
 class EventDispatcher : public ServerWindowObserver {
  public:
@@ -39,6 +43,15 @@ class EventDispatcher : public ServerWindowObserver {
   void set_root(ServerWindow* root) { root_ = root; }
 
   void set_surface_id(cc::SurfaceId surface_id) { surface_id_ = surface_id; }
+
+  // Cancels capture and stops tracking any pointer events. This does not send
+  // any events to the delegate.
+  void Reset();
+
+  void SetMousePointerScreenLocation(const gfx::Point& screen_location);
+  const gfx::Point& mouse_pointer_last_location() const {
+    return mouse_pointer_last_location_;
+  }
 
   // |capture_window_| will receive all input. See window_tree.mojom for
   // details.
@@ -67,7 +80,7 @@ class EventDispatcher : public ServerWindowObserver {
   void ProcessEvent(const ui::Event& event);
 
  private:
-  friend class EventDispatcherTest;
+  friend class test::EventDispatcherTestApi;
 
   // Keeps track of state associated with an active pointer.
   struct PointerTarget {

@@ -104,6 +104,17 @@ WindowTreeTestApi::~WindowTreeTestApi() {}
 DisplayTestApi::DisplayTestApi(Display* display) : display_(display) {}
 DisplayTestApi::~DisplayTestApi() {}
 
+// EventDispatcherTestApi  ----------------------------------------------------
+
+int EventDispatcherTestApi::NumberPointerTargetsForWindow(
+    ServerWindow* window) {
+  int count = 0;
+  for (const auto& pair : ed_->pointer_targets_)
+    if (pair.second.window == window)
+      count++;
+  return count;
+}
+
 // TestWindowTreeClient -------------------------------------------------------
 
 TestWindowTreeClient::TestWindowTreeClient()

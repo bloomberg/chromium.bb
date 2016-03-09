@@ -56,7 +56,8 @@ class WindowManagerFactoryRegistry : public UserIdTrackerObserver {
   void OnWindowManagerFactorySet(WindowManagerFactoryService* service);
 
   // UserIdTrackerObserver:
-  void OnActiveUserIdChanged(const UserId& id) override;
+  void OnActiveUserIdChanged(const UserId& previously_active_id,
+                             const UserId& active_id) override;
   void OnUserIdAdded(const UserId& id) override;
   void OnUserIdRemoved(const UserId& id) override;
 

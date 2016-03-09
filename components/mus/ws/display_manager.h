@@ -58,8 +58,6 @@ class DisplayManager {
   Display* GetDisplayContaining(ServerWindow* window);
   const Display* GetDisplayContaining(const ServerWindow* window) const;
 
-  Display* GetActiveDisplay();
-
   WindowManagerAndDisplayConst GetWindowManagerAndDisplay(
       const ServerWindow* window) const;
   WindowManagerAndDisplay GetWindowManagerAndDisplay(

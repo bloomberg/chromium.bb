@@ -6,27 +6,142 @@
 
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/display_manager.h"
+#include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/user_display_manager.h"
+#include "components/mus/ws/user_id_tracker.h"
+#include "components/mus/ws/window_tree.h"
+#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
+#include "ui/events/event.h"
 
 namespace mus {
 namespace ws {
+namespace {
 
-WindowManagerState::WindowManagerState(Display* display)
-    : WindowManagerState(display, false, mojo::shell::mojom::kRootUserID) {}
+base::TimeDelta GetDefaultAckTimerDelay() {
+#if defined(NDEBUG)
+  return base::TimeDelta::FromMilliseconds(100);
+#else
+  return base::TimeDelta::FromMilliseconds(1000);
+#endif
+}
 
-WindowManagerState::WindowManagerState(Display* display, const UserId& user_id)
-    : WindowManagerState(display, true, user_id) {}
+bool EventsCanBeCoalesced(const ui::Event& one, const ui::Event& two) {
+  if (one.type() != two.type() || one.flags() != two.flags())
+    return false;
+
+  // TODO(sad): wheel events can also be merged.
+  if (one.type() != ui::ET_POINTER_MOVED)
+    return false;
+
+  return one.AsPointerEvent()->pointer_id() ==
+         two.AsPointerEvent()->pointer_id();
+}
+
+scoped_ptr<ui::Event> CoalesceEvents(scoped_ptr<ui::Event> first,
+                                     scoped_ptr<ui::Event> second) {
+  DCHECK(first->type() == ui::ET_POINTER_MOVED)
+      << " Non-move events cannot be merged yet.";
+  // For mouse moves, the new event just replaces the old event.
+  return second;
+}
+
+}  // namespace
+
+class WindowManagerState::ProcessedEventTarget {
+ public:
+  ProcessedEventTarget(ServerWindow* window, bool in_nonclient_area)
+      : in_nonclient_area_(in_nonclient_area) {
+    tracker_.Add(window);
+  }
+
+  ~ProcessedEventTarget() {}
+
+  // Return true if the event is still valid. The event becomes invalid if
+  // the window is destroyed while waiting to dispatch.
+  bool IsValid() const { return !tracker_.windows().empty(); }
+
+  ServerWindow* window() {
+    DCHECK(IsValid());
+    return tracker_.windows().front();
+  }
+
+  bool in_nonclient_area() const { return in_nonclient_area_; }
+
+ private:
+  ServerWindowTracker tracker_;
+  const bool in_nonclient_area_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessedEventTarget);
+};
+
+WindowManagerState::QueuedEvent::QueuedEvent() {}
+WindowManagerState::QueuedEvent::~QueuedEvent() {}
+
+WindowManagerState::WindowManagerState(Display* display,
+                                       PlatformDisplay* platform_display,
+                                       cc::SurfaceId surface_id)
+    : WindowManagerState(display,
+                         platform_display,
+                         surface_id,
+                         false,
+                         mojo::shell::mojom::kRootUserID) {}
+
+WindowManagerState::WindowManagerState(Display* display,
+                                       PlatformDisplay* platform_display,
+                                       cc::SurfaceId surface_id,
+                                       const UserId& user_id)
+    : WindowManagerState(display, platform_display, surface_id, true, user_id) {
+}
 
 WindowManagerState::~WindowManagerState() {}
 
+void WindowManagerState::SetFrameDecorationValues(
+    mojom::FrameDecorationValuesPtr values) {
+  got_frame_decoration_values_ = true;
+  frame_decoration_values_ = values.Clone();
+  display_->display_manager()
+      ->GetUserDisplayManager(user_id_)
+      ->OnFrameDecorationValuesChanged(this);
+}
+
+void WindowManagerState::SetCapture(ServerWindow* window,
+                                    bool in_nonclient_area) {
+  // TODO(sky): capture should be a singleton. Need to route to
+  // ConnectionManager so that all other EventDispatchers are updated.
+  DCHECK(IsActive());
+  if (capture_window() == window)
+    return;
+  DCHECK(!window || root_->Contains(window));
+  event_dispatcher_.SetCaptureWindow(window, in_nonclient_area);
+}
+
+mojom::DisplayPtr WindowManagerState::ToMojomDisplay() const {
+  mojom::DisplayPtr display_ptr = display_->ToMojomDisplay();
+  // TODO(sky): set work area.
+  display_ptr->work_area = display_ptr->bounds.Clone();
+  display_ptr->frame_decoration_values = frame_decoration_values_.Clone();
+  return display_ptr;
+}
+
+void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
+  if (tree_awaiting_input_ack_ != tree)
+    return;
+  // The WindowTree is dying. So it's not going to ack the event.
+  OnEventAck(tree_awaiting_input_ack_);
+}
+
 WindowManagerState::WindowManagerState(Display* display,
+                                       PlatformDisplay* platform_display,
+                                       cc::SurfaceId surface_id,
                                        bool is_user_id_valid,
                                        const UserId& user_id)
     : display_(display),
+      platform_display_(platform_display),
       is_user_id_valid_(is_user_id_valid),
-      user_id_(user_id) {
+      user_id_(user_id),
+      event_dispatcher_(this) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();
   frame_decoration_values_->normal_client_area_insets = mojo::Insets::New();
   frame_decoration_values_->maximized_client_area_insets = mojo::Insets::New();
@@ -42,23 +157,162 @@ WindowManagerState::WindowManagerState(Display* display,
   root_->SetBounds(gfx::Rect(display->root_window()->bounds().size()));
   root_->SetVisible(true);
   display->root_window()->Add(root_.get());
+
+  event_dispatcher_.set_root(root_.get());
+  event_dispatcher_.set_surface_id(surface_id);
 }
 
-void WindowManagerState::SetFrameDecorationValues(
-    mojom::FrameDecorationValuesPtr values) {
-  got_frame_decoration_values_ = true;
-  frame_decoration_values_ = values.Clone();
-  display_->display_manager()
-      ->GetUserDisplayManager(user_id_)
-      ->OnFrameDecorationValuesChanged(this);
+bool WindowManagerState::IsActive() const {
+  return display()->GetActiveWindowManagerState() == this;
 }
 
-mojom::DisplayPtr WindowManagerState::ToMojomDisplay() const {
-  mojom::DisplayPtr display_ptr = display_->ToMojomDisplay();
-  // TODO(sky): set work area.
-  display_ptr->work_area = display_ptr->bounds.Clone();
-  display_ptr->frame_decoration_values = frame_decoration_values_.Clone();
-  return display_ptr;
+void WindowManagerState::ProcessEvent(const ui::Event& event) {
+  mojom::EventPtr mojo_event(mojom::Event::From(event));
+  // If this is still waiting for an ack from a previously sent event, then
+  // queue up the event to be dispatched once the ack is received.
+  if (event_ack_timer_.IsRunning()) {
+    if (!event_queue_.empty() && !event_queue_.back()->processed_target &&
+        EventsCanBeCoalesced(*event_queue_.back()->event, event)) {
+      event_queue_.back()->event = CoalesceEvents(
+          std::move(event_queue_.back()->event), ui::Event::Clone(event));
+      return;
+    }
+    QueueEvent(event, nullptr);
+    return;
+  }
+  event_dispatcher_.ProcessEvent(event);
+}
+
+void WindowManagerState::OnEventAck(mojom::WindowTree* tree) {
+  if (tree_awaiting_input_ack_ != tree) {
+    // TODO(sad): The ack must have arrived after the timeout. We should do
+    // something here, and in OnEventAckTimeout().
+    return;
+  }
+  tree_awaiting_input_ack_ = nullptr;
+  event_ack_timer_.Stop();
+  ProcessNextEventFromQueue();
+}
+
+ConnectionManager* WindowManagerState::connection_manager() {
+  return display_->connection_manager();
+}
+
+void WindowManagerState::OnEventAckTimeout() {
+  // TODO(sad): Figure out what we should do.
+  NOTIMPLEMENTED() << "Event ACK timed out.";
+  OnEventAck(tree_awaiting_input_ack_);
+}
+
+void WindowManagerState::QueueEvent(
+    const ui::Event& event,
+    scoped_ptr<ProcessedEventTarget> processed_event_target) {
+  scoped_ptr<QueuedEvent> queued_event(new QueuedEvent);
+  queued_event->event = ui::Event::Clone(event);
+  queued_event->processed_target = std::move(processed_event_target);
+  event_queue_.push(std::move(queued_event));
+}
+
+void WindowManagerState::ProcessNextEventFromQueue() {
+  // Loop through |event_queue_| stopping after dispatching the first valid
+  // event.
+  while (!event_queue_.empty()) {
+    scoped_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
+    event_queue_.pop();
+    if (!queued_event->processed_target) {
+      event_dispatcher_.ProcessEvent(*queued_event->event);
+      return;
+    }
+    if (queued_event->processed_target->IsValid()) {
+      DispatchInputEventToWindowImpl(
+          queued_event->processed_target->window(),
+          queued_event->processed_target->in_nonclient_area(),
+          *queued_event->event);
+      return;
+    }
+  }
+}
+
+void WindowManagerState::DispatchInputEventToWindowImpl(
+    ServerWindow* target,
+    bool in_nonclient_area,
+    const ui::Event& event) {
+  if (target == root_->parent())
+    target = root_.get();
+
+  if (event.IsMousePointerEvent()) {
+    DCHECK(event_dispatcher_.mouse_cursor_source_window());
+    display_->UpdateNativeCursor(
+        event_dispatcher_.mouse_cursor_source_window()->cursor());
+  }
+
+  // If the event is in the non-client area the event goes to the owner of
+  // the window. Otherwise if the window is an embed root, forward to the
+  // embedded window.
+  WindowTree* tree =
+      in_nonclient_area
+          ? connection_manager()->GetTreeWithId(target->id().connection_id)
+          : connection_manager()->GetTreeWithRoot(target);
+  if (!tree) {
+    DCHECK(!in_nonclient_area);
+    tree = connection_manager()->GetTreeWithId(target->id().connection_id);
+  }
+
+  // TOOD(sad): Adjust this delay, possibly make this dynamic.
+  const base::TimeDelta max_delay = base::debug::BeingDebugged()
+                                        ? base::TimeDelta::FromDays(1)
+                                        : GetDefaultAckTimerDelay();
+  event_ack_timer_.Start(FROM_HERE, max_delay, this,
+                         &WindowManagerState::OnEventAckTimeout);
+
+  tree_awaiting_input_ack_ = tree;
+  tree->DispatchInputEvent(target, mojom::Event::From(event));
+}
+
+void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
+                                       const ui::Event& event) {
+  DCHECK(IsActive());
+  tree_->OnAccelerator(accelerator_id, mojom::Event::From(event));
+}
+
+void WindowManagerState::SetFocusedWindowFromEventDispatcher(
+    ServerWindow* new_focused_window) {
+  DCHECK(IsActive());
+  display_->SetFocusedWindow(new_focused_window);
+}
+
+ServerWindow* WindowManagerState::GetFocusedWindowForEventDispatcher() {
+  return display()->GetFocusedWindow();
+}
+
+void WindowManagerState::SetNativeCapture() {
+  DCHECK(IsActive());
+  platform_display_->SetCapture();
+}
+
+void WindowManagerState::ReleaseNativeCapture() {
+  platform_display_->ReleaseCapture();
+}
+
+void WindowManagerState::OnServerWindowCaptureLost(ServerWindow* window) {
+  DCHECK(window);
+  display_->connection_manager()->ProcessLostCapture(window);
+}
+
+void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
+                                                    bool in_nonclient_area,
+                                                    const ui::Event& event) {
+  DCHECK(IsActive());
+  // TODO(sky): this needs to see if another wms has capture and if so forward
+  // to it.
+  if (event_ack_timer_.IsRunning()) {
+    scoped_ptr<ProcessedEventTarget> processed_event_target(
+        new ProcessedEventTarget(target, in_nonclient_area));
+    QueueEvent(event, std::move(processed_event_target));
+    return;
+  }
+
+  DispatchInputEventToWindowImpl(target, in_nonclient_area, event);
 }
 
 }  // namespace ws

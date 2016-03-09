@@ -93,7 +93,9 @@ void WindowManagerFactoryRegistry::OnWindowManagerFactorySet(
     connection_manager_->OnFirstWindowManagerFactorySet();
 }
 
-void WindowManagerFactoryRegistry::OnActiveUserIdChanged(const UserId& id) {}
+void WindowManagerFactoryRegistry::OnActiveUserIdChanged(
+    const UserId& previously_active_id,
+    const UserId& active_id) {}
 
 void WindowManagerFactoryRegistry::OnUserIdAdded(const UserId& id) {}
 

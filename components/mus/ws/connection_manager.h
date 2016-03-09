@@ -40,9 +40,6 @@ class WindowTreeBinding;
 
 // ConnectionManager manages the set of connections to the window server (all
 // the WindowTrees) as well as providing the root of the hierarchy.
-//
-// TODO(sky): this class is doing too much. Refactor to make responsibilities
-// clearer.
 class ConnectionManager : public ServerWindowDelegate,
                           public ServerWindowObserver,
                           public DisplayManagerDelegate {
@@ -54,6 +51,7 @@ class ConnectionManager : public ServerWindowDelegate,
   ConnectionManagerDelegate* delegate() { return delegate_; }
 
   UserIdTracker* user_id_tracker() { return &user_id_tracker_; }
+  const UserIdTracker* user_id_tracker() const { return &user_id_tracker_; }
 
   DisplayManager* display_manager() { return display_manager_.get(); }
   const DisplayManager* display_manager() const {
@@ -256,7 +254,6 @@ class ConnectionManager : public ServerWindowDelegate,
                                 ServerWindow* transient_child) override;
 
   // DisplayManagerDelegate:
-  void OnWillDestroyDisplay(Display* display) override;
   void OnFirstDisplayReady() override;
   void OnNoMoreDisplays() override;
 

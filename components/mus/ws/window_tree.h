@@ -109,13 +109,19 @@ class WindowTree : public mojom::WindowTree,
         const_cast<const WindowTree*>(this)->GetDisplay(window));
   }
 
+  const WindowManagerState* GetWindowManagerState(
+      const ServerWindow* window) const;
+  WindowManagerState* GetWindowManagerState(const ServerWindow* window) {
+    return const_cast<WindowManagerState*>(
+        const_cast<const WindowTree*>(this)->GetWindowManagerState(window));
+  }
+
   // Invoked when a tree is about to be destroyed.
   void OnWindowDestroyingTreeImpl(WindowTree* tree);
 
-  void OnWillDestroyDisplay(Display* display);
-
   // These functions are synchronous variants of those defined in the mojom. The
   // WindowTree implementations all call into these. See the mojom for details.
+  bool SetCapture(const ClientWindowId& client_window_id);
   bool NewWindow(const ClientWindowId& client_window_id,
                  const std::map<std::string, std::vector<uint8_t>>& properties);
   bool AddWindow(const ClientWindowId& parent_id,
@@ -406,8 +412,8 @@ class WindowTree : public mojom::WindowTree,
 
   uint32_t event_ack_id_;
 
-  // Display the current event came from.
-  Display* event_source_display_;
+  // WindowManager the current event came from.
+  WindowManagerState* event_source_wms_ = nullptr;
 
   bool is_embed_root_;
 
