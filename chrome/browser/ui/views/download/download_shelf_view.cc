@@ -36,7 +36,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/mouse_watcher_view_host.h"
@@ -163,10 +163,9 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     close_button_->SetImage(views::CustomButton::STATE_PRESSED,
                             rb.GetImageSkiaNamed(IDR_CLOSE_1_P));
   } else {
-    views::LabelButton* show_all_view = new views::LabelButton(
-        this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS_MD));
-    show_all_view->SetFocusable(true);
-    show_all_view->SetStyle(views::Button::STYLE_BUTTON);
+    views::LabelButton* show_all_view =
+        views::MdTextButton::CreateStandardButton(
+            this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS_MD));
     show_all_view_ = show_all_view;
 
     BarControlButton* close_button = new BarControlButton(this);

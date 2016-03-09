@@ -93,7 +93,7 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
       image_label_spacing_(kSpacing),
       horizontal_alignment_(gfx::ALIGN_LEFT) {
   SetAnimationDuration(kHoverAnimationDurationMs);
-  SetText(text);
+  SetTextInternal(text);
 
   AddChildView(ink_drop_container_);
   ink_drop_container_->SetPaintToLayer(true);
@@ -131,8 +131,7 @@ const base::string16& LabelButton::GetText() const {
 }
 
 void LabelButton::SetText(const base::string16& text) {
-  SetAccessibleName(text);
-  label_->SetText(text);
+  SetTextInternal(text);
 }
 
 void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
@@ -166,10 +165,7 @@ void LabelButton::SetFontList(const gfx::FontList& font_list) {
   cached_normal_font_list_ = font_list;
   cached_bold_font_list_ = font_list.DeriveWithStyle(
       font_list.GetFontStyle() | gfx::Font::BOLD);
-
-  // STYLE_BUTTON uses bold text to indicate default buttons.
-  label_->SetFontList(
-      style_ == STYLE_BUTTON && is_default_ ?
+  label_->SetFontList(is_default_ ?
       cached_bold_font_list_ : cached_normal_font_list_);
 }
 
@@ -194,18 +190,17 @@ void LabelButton::SetMaxSize(const gfx::Size& max_size) {
 }
 
 void LabelButton::SetIsDefault(bool is_default) {
+  DCHECK_EQ(STYLE_BUTTON, style_);
   if (is_default == is_default_)
     return;
+
   is_default_ = is_default;
   ui::Accelerator accel(ui::VKEY_RETURN, ui::EF_NONE);
   is_default_ ? AddAccelerator(accel) : RemoveAccelerator(accel);
 
-  // STYLE_BUTTON uses bold text to indicate default buttons.
-  if (style_ == STYLE_BUTTON) {
-    label_->SetFontList(
-        is_default ? cached_bold_font_list_ : cached_normal_font_list_);
-    InvalidateLayout();
-  }
+  label_->SetFontList(
+      is_default ? cached_bold_font_list_ : cached_normal_font_list_);
+  InvalidateLayout();
 }
 
 void LabelButton::SetStyle(ButtonStyle style) {
@@ -524,6 +519,11 @@ void LabelButton::UpdateThemedBorder() {
 
   SetBorder(PlatformStyle::CreateThemedLabelButtonBorder(this));
   border_is_themed_border_ = true;
+}
+
+void LabelButton::SetTextInternal(const base::string16& text) {
+  SetAccessibleName(text);
+  label_->SetText(text);
 }
 
 void LabelButton::ChildPreferredSizeChanged(View* child) {

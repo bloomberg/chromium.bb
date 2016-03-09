@@ -5,8 +5,11 @@
 #include "ui/views/controls/button/md_text_button.h"
 
 #include "base/i18n/case_conversion.h"
-#include "ui/gfx/render_text.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/border.h"
+#include "ui/views/painter.h"
 
 namespace views {
 
@@ -19,47 +22,47 @@ const int kVerticalPadding = 6;
 // Minimum size to reserve for the button contents.
 const int kMinWidth = 48;
 
-const gfx::FontList& GetFontList() {
-  static base::LazyInstance<gfx::FontList>::Leaky font_list =
-      LAZY_INSTANCE_INITIALIZER;
-  return font_list.Get();
-}
-
 }  // namespace
 
-MdTextButton::MdTextButton(ButtonListener* listener, const base::string16& text)
-    : CustomButton(listener),
-      render_text_(gfx::RenderText::CreateInstance()) {
-  render_text_->SetFontList(GetFontList());
-  render_text_->SetCursorEnabled(false);
-  render_text_->SetText(base::i18n::ToUpper(text));
+// static
+LabelButton* MdTextButton::CreateStandardButton(ButtonListener* listener,
+                                                const base::string16& text) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    MdTextButton* button = new MdTextButton(listener);
+    button->SetText(text);
+    // TODO(estade): can we get rid of the platform style border hoopla if
+    // we apply the MD treatment to all buttons, even GTK buttons?
+    button->SetBorder(
+        Border::CreateEmptyBorder(kVerticalPadding, kHorizontalPadding,
+                                  kVerticalPadding, kHorizontalPadding));
+    return button;
+  }
 
+  LabelButton* button = new LabelButton(listener, text);
+  button->SetStyle(STYLE_BUTTON);
+  return button;
+}
+
+SkColor MdTextButton::GetInkDropBaseColor() const {
+  return color_utils::DeriveDefaultIconColor(label()->enabled_color());
+}
+
+void MdTextButton::SetText(const base::string16& text) {
+  LabelButton::SetText(base::i18n::ToUpper(text));
+}
+
+MdTextButton::MdTextButton(ButtonListener* listener)
+    : LabelButton(listener, base::string16()),
+      ink_drop_delegate_(this, this) {
+  set_ink_drop_delegate(&ink_drop_delegate_);
+  set_has_ink_drop_action_on_click(true);
+  SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusable(true);
+  // TODO(estade): create a focus painter.
+  SetFocusPainter(nullptr);
+  SetMinSize(gfx::Size(kMinWidth, 0));
 }
 
 MdTextButton::~MdTextButton() {}
-
-void MdTextButton::OnPaint(gfx::Canvas* canvas) {
-  UpdateColor();
-  gfx::Rect rect = GetLocalBounds();
-  rect.Inset(kHorizontalPadding, kVerticalPadding);
-  render_text_->SetDisplayRect(rect);
-  render_text_->Draw(canvas);
-}
-
-gfx::Size MdTextButton::GetPreferredSize() const {
-  gfx::Size size = render_text_->GetStringSize();
-  size.SetToMax(gfx::Size(kMinWidth, 0));
-  size.Enlarge(kHorizontalPadding * 2, kVerticalPadding * 2);
-  return size;
-}
-
-void MdTextButton::UpdateColor() {
-  // TODO(estade): handle call to action theming and other things that can
-  // affect the text color.
-  render_text_->SetColor(GetNativeTheme()->GetSystemColor(
-      enabled() ? ui::NativeTheme::kColorId_MdTextButtonEnabledColor
-                : ui::NativeTheme::kColorId_MdTextButtonDisabledColor));
-}
 
 }  // namespace views

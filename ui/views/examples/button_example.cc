@@ -65,8 +65,8 @@ void ButtonExample::CreateExampleView(View* container) {
 
   container->AddChildView(new BlueButton(this, ASCIIToUTF16("Blue Button")));
 
-  container->AddChildView(
-      new MdTextButton(nullptr, base::ASCIIToUTF16("Material design")));
+  container->AddChildView(MdTextButton::CreateStandardButton(
+      nullptr, base::ASCIIToUTF16("Material design")));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);

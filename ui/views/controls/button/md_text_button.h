@@ -6,28 +6,28 @@
 #define UI_VIEWS_CONTROLS_BUTTON_MD_TEXT_BUTTON_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/views/controls/button/custom_button.h"
-
-namespace gfx {
-class RenderText;
-}
+#include "ui/views/animation/button_ink_drop_delegate.h"
+#include "ui/views/controls/button/label_button.h"
 
 namespace views {
 
 // A button class that implements the Material Design text button spec.
-class VIEWS_EXPORT MdTextButton : public CustomButton {
+class VIEWS_EXPORT MdTextButton : public LabelButton {
  public:
-  MdTextButton(ButtonListener* listener, const base::string16& text);
-  ~MdTextButton() override;
+  // Creates a normal STYLE_BUTTON LabelButton in pre-MD, or an MdTextButton
+  // in MD mode.
+  static LabelButton* CreateStandardButton(ButtonListener* listener,
+                                           const base::string16& text);
 
-  // View:
-  void OnPaint(gfx::Canvas* canvas) override;
-  gfx::Size GetPreferredSize() const override;
+  // LabelButton:
+  SkColor GetInkDropBaseColor() const override;
+  void SetText(const base::string16& text) override;
 
  private:
-  void UpdateColor();
+  MdTextButton(ButtonListener* listener);
+  ~MdTextButton() override;
 
-  scoped_ptr<gfx::RenderText> render_text_;
+  ButtonInkDropDelegate ink_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MdTextButton);
 };
