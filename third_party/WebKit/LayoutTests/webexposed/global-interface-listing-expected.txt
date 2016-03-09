@@ -3597,8 +3597,8 @@ interface Node : EventTarget
     getter parentElement
     getter parentNode
     getter previousSibling
+    getter rootNode
     getter textContent
-    getter treeRoot
     method appendChild
     method cloneNode
     method compareDocumentPosition

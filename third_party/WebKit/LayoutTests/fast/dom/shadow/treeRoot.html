@@ -29,33 +29,33 @@ child.appendChild(grandchild);
 grandchild.appendChild(slot);
 
 test(function() {
-  assert_equals(document.treeRoot, document);
-  assert_equals(hostParent.treeRoot, document);
-  assert_equals(host.treeRoot, document);
-  assert_equals(root.treeRoot, root);
-  assert_equals(child.treeRoot, root);
-  assert_equals(grandchild.treeRoot, root);
-  assert_equals(slot.treeRoot, root);
-  assert_equals(slotted.treeRoot, document);
-}, 'Node.treeRoot returns a root of the tree that the node belongs to, or the shadow root if the tree is a shadow tree.');
+  assert_equals(document.rootNode, document);
+  assert_equals(hostParent.rootNode, document);
+  assert_equals(host.rootNode, document);
+  assert_equals(root.rootNode, root);
+  assert_equals(child.rootNode, root);
+  assert_equals(grandchild.rootNode, root);
+  assert_equals(slot.rootNode, root);
+  assert_equals(slotted.rootNode, document);
+}, 'Node.rootNode returns a root of the tree that the node belongs to, or the shadow root if the tree is a shadow tree.');
 
 test(function() {
   var nestedChild = document.createElement('div');
   var nestedRoot = grandchild.attachShadow({mode: 'open'});
   nestedRoot.appendChild(nestedChild);
 
-  assert_equals(nestedRoot.treeRoot, nestedRoot);
-  assert_equals(nestedChild.treeRoot, nestedRoot);
-}, 'Node.treeRoot works with a nested shadow tree.');
+  assert_equals(nestedRoot.rootNode, nestedRoot);
+  assert_equals(nestedChild.rootNode, nestedRoot);
+}, 'Node.rootNode works with a nested shadow tree.');
 
 test(function() {
   var detached = document.createElement('div');
   var detachedChild = document.createElement('div');
   detached.appendChild(detachedChild);
 
-  assert_equals(detached.treeRoot, detached);
-  assert_equals(detachedChild.treeRoot, detached);
-}, 'Node.treeRoot works with a detached tree as well.');
+  assert_equals(detached.rootNode, detached);
+  assert_equals(detachedChild.rootNode, detached);
+}, 'Node.rootNode works with a detached tree as well.');
 
 test(function() {
   var hostParent2 = document.getElementById('host-parent2');
@@ -72,13 +72,13 @@ test(function() {
   child2.appendChild(grandchild2);
   grandchild2.appendChild(content);
 
-  assert_equals(hostParent2.treeRoot, document);
-  assert_equals(host2.treeRoot, document);
-  assert_equals(root2.treeRoot, root2);
-  assert_equals(child2.treeRoot, root2);
-  assert_equals(grandchild2.treeRoot, root2);
-  assert_equals(content.treeRoot, root2);
-  assert_equals(distributed.treeRoot, document);
-}, 'Node.treeRoot works with a v0 shadow tree as well.');
+  assert_equals(hostParent2.rootNode, document);
+  assert_equals(host2.rootNode, document);
+  assert_equals(root2.rootNode, root2);
+  assert_equals(child2.rootNode, root2);
+  assert_equals(grandchild2.rootNode, root2);
+  assert_equals(content.rootNode, root2);
+  assert_equals(distributed.rootNode, document);
+}, 'Node.rootNode works with a v0 shadow tree as well.');
 
 </script>
