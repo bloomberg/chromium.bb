@@ -57,6 +57,10 @@ SigninCreateProfileHandler::~SigninCreateProfileHandler() {
 void SigninCreateProfileHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
+      "manageProfilesSupervisedSignedInLabel",
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_CREATE_SUPERVISED_MULTI_SIGNED_IN_LABEL));
+  localized_strings->SetString(
       "manageProfilesSupervisedNotSignedIn",
       l10n_util::GetStringUTF16(
           IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_HTML));
@@ -119,7 +123,8 @@ void SigninCreateProfileHandler::RequestDefaultProfileIcons(
     image_url_list.AppendString(url);
   }
 
-  web_ui()->CallJavascriptFunction("signin.ProfileApi.updateAvailableIcons",
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
+                                   base::StringValue("profile-icons-received"),
                                    image_url_list);
 }
 
@@ -141,7 +146,8 @@ void SigninCreateProfileHandler::RequestSignedInProfiles(
 
     user_info_list.Append(user_info.release());
   }
-  web_ui()->CallJavascriptFunction("signin.ProfileApi.updateSignedInUsers",
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
+                                   base::StringValue("signedin-users-received"),
                                    user_info_list);
 }
 
@@ -292,7 +298,9 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
   dict.SetBoolean("isSupervised", is_supervised);
 #endif
   web_ui()->CallJavascriptFunction(
-      GetJavascriptMethodName(PROFILE_CREATION_SUCCESS), dict);
+      "cr.webUIListenerCallback",
+      GetWebUIListenerName(PROFILE_CREATION_SUCCESS),
+      dict);
 
   // If the new profile is a supervised user, instead of opening a new window
   // right away, a confirmation overlay will be shown by JS from the creation
@@ -320,9 +328,9 @@ void SigninCreateProfileHandler::ShowProfileCreationError(
   DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
   profile_path_being_created_.clear();
-  web_ui()->CallJavascriptFunction(
-      GetJavascriptMethodName(PROFILE_CREATION_ERROR),
-      base::StringValue(error));
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
+                                   GetWebUIListenerName(PROFILE_CREATION_ERROR),
+                                   base::StringValue(error));
   // The ProfileManager calls us back with a NULL profile in some cases.
   if (profile)
     webui::DeleteProfileAtPath(profile->GetPath(), web_ui());
@@ -366,31 +374,31 @@ base::string16 SigninCreateProfileHandler::GetProfileCreateErrorMessageSignin()
 }
 #endif
 
-std::string SigninCreateProfileHandler::GetJavascriptMethodName(
+base::StringValue SigninCreateProfileHandler::GetWebUIListenerName(
     ProfileCreationStatus status) const {
   switch (profile_creation_type_) {
 #if defined(ENABLE_SUPERVISED_USERS)
     case SUPERVISED_PROFILE_IMPORT:
       switch (status) {
         case PROFILE_CREATION_SUCCESS:
-          return "BrowserOptions.showSupervisedUserImportSuccess";
+          return base::StringValue("create-profile-success");
         case PROFILE_CREATION_ERROR:
-          return "BrowserOptions.showSupervisedUserImportError";
+          return base::StringValue("create-profile-error");
       }
       break;
 #endif
     default:
       switch (status) {
         case PROFILE_CREATION_SUCCESS:
-          return "signin.ProfileApi.onCreateProfileSuccess";
+          return base::StringValue("create-profile-success");
         case PROFILE_CREATION_ERROR:
-          return "signin.ProfileApi.onCreateProfileError";
+          return base::StringValue("create-profile-error");
       }
       break;
   }
 
   NOTREACHED();
-  return std::string();
+  return base::StringValue(std::string());
 }
 
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -597,7 +605,8 @@ void SigninCreateProfileHandler::OnSupervisedUserRegistered(
 void SigninCreateProfileHandler::ShowProfileCreationWarning(
     const base::string16& warning) {
   DCHECK_EQ(SUPERVISED_PROFILE_CREATION, profile_creation_type_);
-  web_ui()->CallJavascriptFunction("signin.ProfileApi.onCreateProfileWarning",
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
+                                   base::StringValue("create-profile-warning"),
                                    base::StringValue(warning));
 }
 

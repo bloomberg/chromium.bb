@@ -12683,6 +12683,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_PROFILES_CREATE_SUPERVISED_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in.">
           Control and view the websites this person visits from <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex></ph>.
         </message>
+        <message name="IDS_PROFILES_CREATE_SUPERVISED_MULTI_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when user can choose from a list of signed in users.">
+          Control and view the websites this person visits from
+        </message>
         <message name="IDS_PROFILES_CREATE_SUPERVISED_ACCOUNT_DETAILS_OUT_OF_DATE_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in, but their sign-in information is invalid. This will be followed by a 'Sign in again' link.">
           Control and view the websites this person visits from <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex></ph>.
     Your account sign-in details are out of date.

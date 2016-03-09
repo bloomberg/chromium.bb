@@ -52,7 +52,27 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath("strings.js");
 
-  // TODO(mahmadi): Add resource paths.
+  source->AddResourcePath("control_bar.css", IDR_MD_CONTROL_BAR_CSS);
+  source->AddResourcePath("control_bar.html", IDR_MD_CONTROL_BAR_HTML);
+  source->AddResourcePath("control_bar.js", IDR_MD_CONTROL_BAR_JS);
+  source->AddResourcePath("create_profile.css", IDR_MD_CREATE_PROFILE_CSS);
+  source->AddResourcePath("create_profile.html", IDR_MD_CREATE_PROFILE_HTML);
+  source->AddResourcePath("create_profile.js", IDR_MD_CREATE_PROFILE_JS);
+  source->AddResourcePath("profile_browser_proxy.html",
+                          IDR_MD_PROFILE_BROWSER_PROXY_HTML);
+  source->AddResourcePath("profile_browser_proxy.js",
+                          IDR_MD_PROFILE_BROWSER_PROXY_JS);
+  source->AddResourcePath("strings.html", IDR_MD_USER_MANAGER_STRINGS_HTML);
+  source->AddResourcePath("user_manager.css", IDR_MD_USER_MANAGER_CSS);
+  source->AddResourcePath("user_manager.js", IDR_MD_USER_MANAGER_JS);
+  source->AddResourcePath("user_manager_pages.css",
+                          IDR_MD_USER_MANAGER_PAGES_CSS);
+  source->AddResourcePath("user_manager_pages.html",
+                          IDR_MD_USER_MANAGER_PAGES_HTML);
+  source->AddResourcePath("user_manager_pages.js",
+                          IDR_MD_USER_MANAGER_PAGES_JS);
+
+  source->SetDefaultResource(IDR_MD_USER_MANAGER_HTML);
 
   return source;
 }

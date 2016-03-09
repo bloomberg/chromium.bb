@@ -112,7 +112,7 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
   base::string16 GetProfileCreateErrorMessageSignin() const;
 #endif
 
-  std::string GetJavascriptMethodName(ProfileCreationStatus status) const;
+  base::StringValue GetWebUIListenerName(ProfileCreationStatus status) const;
 
   // Used to allow cancelling a profile creation (particularly a supervised-user
   // registration) in progress. Set when profile creation is begun, and

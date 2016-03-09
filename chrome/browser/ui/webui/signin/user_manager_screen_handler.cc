@@ -371,7 +371,7 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   args->GetString(0, &url_hash_);
 
   SendUserList();
-  web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserManagerScreen",
+  web_ui()->CallJavascriptFunction("cr.ui.UserManager.showUserManagerScreen",
       base::FundamentalValue(IsGuestModeEnabled()),
       base::FundamentalValue(IsAddPersonEnabled()));
 
@@ -915,7 +915,7 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
         ProfileMetrics::SWITCH_PROFILE_UNLOCK);
   } else {
     web_ui()->CallJavascriptFunction(
-        "cr.ui.Oobe.showSignInError",
+        "cr.ui.UserManager.showSignInError",
         base::FundamentalValue(0),
         base::StringValue(l10n_util::GetStringUTF8(
             auth == ProfileMetrics::AUTH_FAILED_OFFLINE ?

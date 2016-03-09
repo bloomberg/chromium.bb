@@ -1,0 +1,23 @@
+<link rel="import" href="chrome://md-user-manager/profile_browser_proxy.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+
+<dom-module id="control-bar">
+  <!-- TODO(mahmadi): this format is deprecated. Change to the new
+       "shared styles" format. -->
+  <link rel="import" type="css" href="chrome://md-user-manager/control_bar.css">
+  <template>
+    <div id="login-header-bar"
+        class="login-header-bar layout horizontal end-justified">
+      <div id="logo"></div>
+      <paper-button id="lauchGuest" on-tap="onLauchGuestTap_"
+          i18n-content="browseAsGuest" hidden="[[!showGuest]]"></paper-button>
+      <div id="add-user-header-bar-item">
+        <paper-button id="addUser" on-tap="onAddUserTap_"
+            i18n-content="addUser" hidden="[[!showAddPerson]]"></paper-button>
+      </div>
+    </div>
+  </template>
+  <script src="chrome://md-user-manager/control_bar.js"></script>
+</dom-module>

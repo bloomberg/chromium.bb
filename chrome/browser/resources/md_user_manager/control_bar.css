@@ -1,0 +1,39 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#login-header-bar {
+  bottom: 0;
+  left: 0;
+  min-height: 32px;
+  padding-bottom: 12px;
+  padding-top: 12px;
+  position: absolute;
+  right: 0;
+}
+
+paper-button {
+  border-radius: 2px;
+  line-height: 32px;
+  min-width: 52px;
+  padding: 0 16px;
+}
+
+#addUser {
+  -webkit-margin-end: 16px;
+}
+
+#logo {
+  content: -webkit-image-set(
+      url(../../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo_name_48.png) 1x,
+      url(../../../app/theme/default_200_percent/%DISTRIBUTION%/product_logo_name_48.png) 2x);
+  height: 18px;
+  left: 24px;
+  position: absolute;
+  top: 19px;
+}
+
+:host-context([dir='rtl']) #logo {
+  left: auto;
+  right: 24px;
+}
