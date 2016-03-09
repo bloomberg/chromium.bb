@@ -11,7 +11,7 @@ namespace switches {
 
 extern const char kEnableRendererMojoChannel[];
 extern const char kDisableMojoChannel[];
-extern const char kMojoChannelToken[];
+CONTENT_EXPORT extern const char kMojoChannelToken[];
 
 }  // namespace switches
 

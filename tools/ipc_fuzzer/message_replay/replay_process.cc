@@ -6,6 +6,7 @@
 
 #include <limits.h>
 #include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -19,14 +20,31 @@
 #include "ipc/ipc_switches.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+
+#if defined(OS_POSIX)
+#include "content/public/common/content_descriptors.h"
+#endif
 
 namespace ipc_fuzzer {
 
-// TODO(morrita): content::InitializeMojo() should be used once it becomes
-// a public API. See src/content/app/mojo/mojo_init.cc
 void InitializeMojo() {
   mojo::edk::SetMaxMessageSize(64 * 1024 * 1024);
   mojo::edk::Init();
+}
+
+void InitializeMojoIPCChannel() {
+  mojo::edk::ScopedPlatformHandle platform_channel;
+#if defined(OS_WIN)
+  platform_channel =
+      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
+          *base::CommandLine::ForCurrentProcess());
+#elif defined(OS_POSIX)
+  platform_channel.reset(mojo::edk::PlatformHandle(
+      base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
+#endif
+  CHECK(platform_channel.is_valid());
+  mojo::edk::SetParentPipeHandle(std::move(platform_channel));
 }
 
 ReplayProcess::ReplayProcess()
@@ -50,7 +68,7 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIpcFuzzerTestcase)) {
     LOG(ERROR) << "This binary shouldn't be executed directly, "
-               << "please use tools/ipc_fuzzer/play_testcase.py";
+               << "please use tools/ipc_fuzzer/scripts/play_testcase.py";
     return false;
   }
 
@@ -71,7 +89,12 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
   base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
   g_fds->Set(kPrimaryIPCChannel,
              kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
+  g_fds->Set(kMojoIPCChannel,
+             kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 #endif
+
+  mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(io_thread_.task_runner()));
+  InitializeMojoIPCChannel();
 
   return true;
 }
@@ -85,9 +108,12 @@ void ReplayProcess::OpenChannel() {
   bool should_use_mojo = process_type == switches::kRendererProcess &&
                          content::ShouldUseMojoChannel();
   if (should_use_mojo) {
+    std::string token =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kMojoChannelToken);
     channel_ = IPC::ChannelProxy::Create(
-        IPC::ChannelMojo::CreateClientFactory(
-            mojo::edk::GenerateRandomToken()), this, io_thread_.task_runner());
+        IPC::ChannelMojo::CreateClientFactory(token), this,
+        io_thread_.task_runner());
   } else {
     std::string channel_name =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

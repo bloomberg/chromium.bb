@@ -16,6 +16,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "ipc/mojo/scoped_ipc_support.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
 
 namespace ipc_fuzzer {
@@ -46,6 +47,7 @@ class ReplayProcess : public IPC::Listener {
  private:
   void SendNextMessage();
 
+  scoped_ptr<IPC::ScopedIPCSupport> mojo_ipc_support_;
   scoped_ptr<IPC::ChannelProxy> channel_;
   base::MessageLoop main_loop_;
   base::Thread io_thread_;
