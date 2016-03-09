@@ -258,7 +258,7 @@ public class ImageCarousel extends FrameLayout implements GestureDetector.OnGest
     public void onFinishInflate() {
         super.onFinishInflate();
 
-        mImageWidth = getResources().getDimensionPixelSize(R.dimen.fre_image_carousel_height);
+        mImageWidth = getResources().getDimensionPixelSize(R.dimen.fre_image_height);
         for (int i = 0; i < VIEW_COUNT; ++i) {
             ImageView view = new ImageView(getContext());
             FrameLayout.LayoutParams params =
@@ -269,7 +269,7 @@ public class ImageCarousel extends FrameLayout implements GestureDetector.OnGest
             addView(view);
         }
 
-        mCarouselWidth = getResources().getDimensionPixelSize(R.dimen.fre_image_carousel_width);
+        mCarouselWidth = getResources().getDimensionPixelSize(R.dimen.signin_image_carousel_width);
         mScrollScalingFactor = SCROLL_FACTOR * mCarouselWidth;
         mFlingScalingFactor = FLING_FACTOR * mCarouselWidth;
         mTranslationFactor = TRANSLATION_FACTOR * mImageWidth;
@@ -426,7 +426,7 @@ public class ImageCarousel extends FrameLayout implements GestureDetector.OnGest
     }
 
     private void setLayoutParamsForCheckmark(View view) {
-        int size = getResources().getDimensionPixelSize(R.dimen.fre_checkmark_size);
+        int size = getResources().getDimensionPixelSize(R.dimen.signin_checkmark_size);
         FrameLayout.LayoutParams params =
                 new FrameLayout.LayoutParams(size, size);
         params.gravity = Gravity.CENTER;

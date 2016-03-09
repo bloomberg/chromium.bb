@@ -94,6 +94,14 @@ public class AccountTrackerService {
         }
     }
 
+    /**
+    * Remove an |observer| from the list of observers.
+    */
+    public void removeSystemAccountsSeededListener(OnSystemAccountsSeededListener observer) {
+        ThreadUtils.assertOnUiThread();
+        mSystemAccountsSeedingObservers.removeObserver(observer);
+    }
+
     private void seedSystemAccounts() {
         ThreadUtils.assertOnUiThread();
         mSystemAccountsChanged = false;

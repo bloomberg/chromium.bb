@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncAccountSwitcher;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.PassphraseType;
@@ -116,12 +117,13 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private Preference mSyncEncryption;
     private Preference mManageSyncData;
     private CheckBoxPreference[] mAllTypes;
+    private SyncedAccountPreference mSyncedAccountPreference;
 
     private ProfileSyncService mProfileSyncService;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mProfileSyncService = ProfileSyncService.get();
         assert mProfileSyncService != null;
         mIsBackendInitialized = mProfileSyncService.isBackendInitialized();
@@ -177,6 +179,11 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 return true;
             }
         });
+
+        mSyncedAccountPreference =
+                (SyncedAccountPreference) findPreference(PREFERENCE_SYNC_ACCOUNT_LIST);
+        mSyncedAccountPreference.setOnPreferenceChangeListener(
+                new SyncAccountSwitcher(getActivity(), mSyncedAccountPreference));
 
         return view;
     }

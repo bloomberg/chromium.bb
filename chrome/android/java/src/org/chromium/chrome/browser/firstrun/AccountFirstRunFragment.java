@@ -12,23 +12,24 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.signin.AccountSigninView;
 
 /**
  * A {@link Fragment} meant to handle sync setup for the first run experience.
  */
-public class AccountFirstRunFragment extends FirstRunPage {
+public class AccountFirstRunFragment extends FirstRunPage implements AccountSigninView.Delegate {
     // Per-page parameters:
     public static final String FORCE_SIGNIN_ACCOUNT_TO = "ForceSigninAccountTo";
     public static final String PRESELECT_BUT_ALLOW_TO_CHANGE = "PreselectButAllowToChange";
     public static final String IS_CHILD_ACCOUNT = "IsChildAccount";
 
-    private AccountFirstRunView mView;
+    private AccountSigninView mView;
 
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = (AccountFirstRunView) inflater.inflate(
-                R.layout.fre_choose_account, container, false);
+        mView = (AccountSigninView) inflater.inflate(
+                R.layout.account_signin_view, container, false);
         return mView;
     }
 
@@ -36,7 +37,7 @@ public class AccountFirstRunFragment extends FirstRunPage {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mView.setListener(new AccountFirstRunView.Listener() {
+        mView.setListener(new AccountSigninView.Listener() {
             @Override
             public void onAccountSelectionCanceled() {
                 getPageDelegate().refuseSignIn();
@@ -49,18 +50,11 @@ public class AccountFirstRunFragment extends FirstRunPage {
             }
 
             @Override
-            public void onAccountSelected(String accountName) {
+            public void onAccountSelected(String accountName, boolean settingsClicked) {
                 getPageDelegate().acceptSignIn(accountName);
-            }
-
-            @Override
-            public void onDoneClicked() {
-                advanceToNextPage();
-            }
-
-            @Override
-            public void onSettingsClicked() {
-                getPageDelegate().askToOpenSyncSettings();
+                if (settingsClicked) {
+                    getPageDelegate().askToOpenSyncSettings();
+                }
                 advanceToNextPage();
             }
 
@@ -70,8 +64,8 @@ public class AccountFirstRunFragment extends FirstRunPage {
                 // The user would have to go through the FRE again.
                 getPageDelegate().abortFirstRunExperience();
             }
-
         });
+        mView.setDelegate(this);
 
         mView.init(getPageDelegate().getProfileDataCache());
 

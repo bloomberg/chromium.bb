@@ -170,6 +170,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NEXT" desc="Generic label for a button to advance to the next item. [CHAR-LIMIT=20]">
         Next
       </message>
+      <message name="IDS_CONTINUE_BUTTON" desc="Generic label for a button to continue to the next screen. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Continue
+      </message>
       <message name="IDS_SUBMIT" desc="Generic label for a button to submit data. Used in multiple contexts. [CHAR-LIMIT=20]">
         Submit
       </message>
@@ -1063,14 +1066,26 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SYNC_LOADING" desc="Preference title to let the user change their encryption password. [CHAR-LIMIT=20]">
         Loading…
       </message>
+      <message name="IDS_SYNC_IMPORT_DATA_TITLE" desc="Preference title of screen to let user choose to switch sync accounts. [CHAR-LIMIT=24]">
+        Import data?
+      </message>
+      <message name="IDS_SYNC_IMPORT_DATA_PROMPT_SWITCHING_ACCOUNTS" desc="Prompt for the user to choose how they want to handle their existing sync data">
+        You’re switching sync accounts from <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph> to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>. What do you want to do with your existing bookmarks, history, passwords and other settings?
+      </message>
+      <message name="IDS_SYNC_IMPORT_DATA_PROMPT_EXISTING_DATA" desc="Prompt for the user to choose how they want to handle their existing sync data">
+        You’re signing in to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>. Some of your existing bookmarks, history, passwords, and other settings were previously synced to <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph>. What do you want to do with your existing data?
+      </message>
+      <message name="IDS_SYNC_IMPORT_EXISTING_DATA" desc="Option to import existing data to the newly selected sync account">
+        Import existing data
+      </message>
+      <message name="IDS_SYNC_IMPORT_EXISTING_DATA_SUBTEXT" desc="Subtext describing what happens if the user elects to import existing data to the newly selected sync account">
+        Keep existing data on your device and permanently import the data to <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>.
+      </message>
       <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE" desc="Option to keep the existing data separate from the newly selected sync account">
         Keep existing data separate
       </message>
       <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_SUBTEXT" desc="Subtext describing what happens if the user elects to keep the existing data separate">
-        Replace this device’s data with <ph name="ACCOUNT">%1$s<ex>john@doe.com</ex></ph>’s data. You can retrieve your existing data by switching back to <ph name="ACCOUNT">%1$s<ex>johndoe@gmail.com</ex></ph>
-      </message>
-      <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_VALUE" desc="Internal value for keep existing data preference" translateable="false">
-        keep_existing_data
+        Replace this device’s data with <ph name="TO_ACCOUNT">%1$s<ex>johndoe@new.com</ex></ph>’s data. You can retrieve your existing data by switching back to <ph name="FROM_ACCOUNT">%2$s<ex>johndoe@old.com</ex></ph>, but data created since you signed out will be lost.
       </message>
 
       <!-- Bluetooth Picker UI strings -->
@@ -1620,50 +1635,14 @@ You are signing in with a managed account and giving its administrator control o
       </message>
 
       <!-- First Run strings -->
-      <message name="IDS_FRE_SET_UP_CHROME" desc="Header text shown when the user is first setting up Chrome">
-        Set up Chrome
-      </message>
-      <message name="IDS_FRE_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page">
-        Sign in to get your bookmarks, history, passwords, and other settings on all your devices.
-      </message>
-      <message name="IDS_FRE_ACCEPT" desc="Text for button to accept being signed in">
-        OK, got it
-      </message>
       <message name="IDS_FRE_SKIP_TEXT" desc="Text for second page skip button">
         No thanks
-      </message>
-      <message name="IDS_CHOOSE_ACCOUNT_SIGN_IN" desc="Sign in button for choose google account dialog [CHAR-LIMIT=20]">
-        Sign in
       </message>
       <message name="IDS_FRE_DONE" desc="Button to dismiss the sign-in screen once the user is done">
         Done
       </message>
       <message name="IDS_FRE_SETTINGS" desc="Button that opens Chrome settings">
         Settings
-      </message>
-      <message name="IDS_FRE_ADD_ACCOUNT" desc="Text for adding another Google Account">
-        Add account
-      </message>
-      <message name="IDS_MAKE_CHROME_YOURS" desc="Title for the signin promo that prompts the user to sign in to Chrome to have a personalized experirence. [CHAR-LIMIT=24]">
-        Make Chrome yours
-      </message>
-      <message name="IDS_FRE_NO_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page when there are no accounts on the device.">
-        Add an account to get your bookmarks, history, passwords, and other settings on all your devices.
-      </message>
-      <message name="IDS_SIGN_IN_TO_CHROME_SUMMARY_VARIANT" desc="A variant of summary for the signin promo; lists reasons to sign in to Chrome.">
-        Sign in to access all your web stuff from any device
-      </message>
-      <message name="IDS_FRE_NO_ACCOUNTS" desc="Text for spinner when there is no google accounts [CHAR-LIMIT=40]">
-        Add an account
-      </message>
-      <message name="IDS_FRE_HI_NAME" desc="Title welcoming the user by their name after they have signed in.">
-        Hi, <ph name="FULL_NAME">%1$s<ex>John Smith</ex></ph>
-      </message>
-      <message name="IDS_FRE_SIGNED_IN_DESCRIPTION" desc="Explanation of what gets synced after the user signed in">
-        Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices. You can choose what to sync in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>.
-      </message>
-      <message name="IDS_FRE_SIGNED_IN_DESCRIPTION_UCA_ADDENDUM" desc="Additional explanation for child accounts that synced settings are managed by parents.">
-        Your parents help manage these settings.
       </message>
       <message name="IDS_FRE_TOS_AND_PRIVACY" desc="Message explaining that use of Chrome is governed by Chrome's terms of service and privacy notice.">
         By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Terms of Service<ph name="END_LINK1">&lt;/LINK1&gt;</ph> and <ph name="BEGIN_LINK2">&lt;LINK2&gt;</ph>Privacy Notice<ph name="END_LINK2">&lt;/LINK2&gt;</ph>.
@@ -1677,7 +1656,42 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_FRE_WELCOME" desc="Text for greeting the user on Chrome First Run">
         Welcome to Chrome
       </message>
-      <message name="IDS_ACCESSIBILITY_FRE_ACCOUNT_SPINNER" desc="Content description for the first run account drop down spinner.">
+
+      <!-- Account Signin Strings -->
+      <message name="IDS_SIGNIN_SET_UP_CHROME" desc="Header text shown when the user is first setting up Chrome">
+        Set up Chrome
+      </message>
+      <message name="IDS_CHOOSE_ACCOUNT_SIGN_IN" desc="Sign in button for choose google account dialog [CHAR-LIMIT=20]">
+        Sign in
+      </message>
+      <message name="IDS_SIGNIN_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page">
+        Sign in to get your bookmarks, history, passwords, and other settings on all your devices.
+      </message>
+      <message name="IDS_SIGNIN_ACCEPT" desc="Text for button to accept being signed in">
+        OK, got it
+      </message>
+      <message name="IDS_SIGNIN_ADD_ACCOUNT" desc="Text for adding another Google Account">
+        Add account
+      </message>
+      <message name="IDS_MAKE_CHROME_YOURS" desc="Title for the signin promo that prompts the user to sign in to Chrome to have a personalized experirence. [CHAR-LIMIT=24]">
+        Make Chrome yours
+      </message>
+      <message name="IDS_SIGNIN_NO_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page when there are no accounts on the device.">
+        Add an account to get your bookmarks, history, passwords, and other settings on all your devices.
+      </message>
+      <message name="IDS_SIGNIN_SIGN_IN_TO_CHROME_SUMMARY_VARIANT" desc="A variant of summary for the signin promo; lists reasons to sign in to Chrome.">
+        Sign in to access all your web stuff from any device
+      </message>
+      <message name="IDS_SIGNIN_HI_NAME" desc="Title welcoming the user by their name after they have signed in.">
+        Hi, <ph name="FULL_NAME">%1$s<ex>John Smith</ex></ph>
+      </message>
+      <message name="IDS_SIGNIN_SIGNED_IN_DESCRIPTION" desc="Explanation of what gets synced after the user signed in">
+        Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices. You can choose what to sync in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph name="END_LINK1">&lt;/LINK1&gt;</ph>.
+      </message>
+      <message name="IDS_SIGNIN_SIGNED_IN_DESCRIPTION_UCA_ADDENDUM" desc="Additional explanation for child accounts that synced settings are managed by parents.">
+        Your parents help manage these settings.
+      </message>
+      <message name="IDS_ACCESSIBILITY_SIGNIN_ACCOUNT_SPINNER" desc="Content description for the first run account drop down spinner.">
         Choose account
       </message>
 

@@ -8,6 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.graphics.Color;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -16,9 +17,9 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.AccountFirstRunView;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.signin.AccountAdder;
+import org.chromium.chrome.browser.signin.AccountSigninView;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 
@@ -176,7 +177,7 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
         }
 
         if (animate && mPromoType == PROMO_TYPE_SIGN_IN) {
-            ((AccountFirstRunView) mPromo).switchToSignedMode();
+            ((AccountSigninView) mPromo).switchToSignedMode();
         }
 
         final View oldPromo = mPromo;
@@ -249,15 +250,13 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
     }
 
     private View createSignInPromoView() {
-        AccountFirstRunView signInPromoView = (AccountFirstRunView)
-                LayoutInflater.from(getContext()).inflate(R.layout.fre_choose_account, this, false);
+        AccountSigninView signInPromoView = (AccountSigninView) LayoutInflater.from(getContext())
+                .inflate(R.layout.account_signin_view, this, false);
         signInPromoView.init(mModel.getProfileDataCache());
         signInPromoView.getLayoutParams().height = LayoutParams.WRAP_CONTENT;
         ((FrameLayout.LayoutParams) signInPromoView.getLayoutParams()).gravity = Gravity.CENTER;
         signInPromoView.configureForRecentTabsOrBookmarksPage();
-        signInPromoView.setListener(new AccountFirstRunView.Listener() {
-            private String mAccountName;
-
+        signInPromoView.setListener(new AccountSigninView.Listener() {
             @Override
             public void onAccountSelectionCanceled() {
                 assert mUserActionListener != null;
@@ -272,25 +271,23 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
             }
 
             @Override
-            public void onAccountSelected(String accountName) {
-                mAccountName = accountName;
-            }
+            public void onAccountSelected(String accountName, boolean settingsClicked) {
+                assert !settingsClicked : "Settings should be hidden in RecentTabsPromoView.";
 
-            @Override
-            public void onDoneClicked() {
                 if (mUserActionListener != null) mUserActionListener.onAccountSelectionConfirmed();
-                SigninManager.get(mActivity).signIn(mAccountName, mActivity, null);
-            }
-
-            @Override
-            public void onSettingsClicked() {
-                assert false : "Button should be hidden";
+                SigninManager.get(mActivity).signIn(accountName, mActivity, null);
             }
 
             @Override
             public void onFailedToSetForcedAccount(String forcedAccountName) {
                 // TODO(bauerb): make sure we shouldn't see SignInPromoView.
                 assert false : "No forced accounts in SignInPromoView";
+            }
+        });
+        signInPromoView.setDelegate(new AccountSigninView.Delegate() {
+            @Override
+            public FragmentManager getFragmentManager() {
+                return mActivity.getFragmentManager();
             }
         });
         SigninManager.logSigninStartAccessPoint(mModel.getAccessPoint());

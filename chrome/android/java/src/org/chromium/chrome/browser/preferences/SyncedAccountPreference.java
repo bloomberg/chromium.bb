@@ -17,9 +17,10 @@ import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * A preference that displays the account currently being synced and allows the user to choose a new
- * account to use for syncing
+ * account to use for syncing. The values used are the account names.
  */
 public class SyncedAccountPreference extends ListPreference {
+    private static final String TAG = "SyncedAccountPreference";
 
     /**
      * Constructor for inflating from XML
@@ -27,6 +28,14 @@ public class SyncedAccountPreference extends ListPreference {
     public SyncedAccountPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setTitle(context.getResources().getString(R.string.sync_to_account_header));
+        updateAccountsList();
+    }
+
+    /**
+     * Updates the list of accounts to those currently signed in and sets the display to the
+     * current sync account.
+     */
+    public void update() {
         updateAccountsList();
     }
 
@@ -58,13 +67,12 @@ public class SyncedAccountPreference extends ListPreference {
 
         setEntries(accountNames);
         setEntryValues(accountValues);
-        setDefaultValue(signedInSettingsKey);
+        setValue(signedInSettingsKey);
         setSummary(signedInAccountName);
     }
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
         super.onDialogClosed(positiveResult);
-        // TODO(crbug/557786): Add switching sync accounts
     }
 }
