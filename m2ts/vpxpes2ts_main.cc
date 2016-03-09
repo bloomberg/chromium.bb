@@ -8,6 +8,7 @@
 #include "m2ts/vpxpes2ts.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <string>
 
 namespace {
