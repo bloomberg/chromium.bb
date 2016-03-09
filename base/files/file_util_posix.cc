@@ -351,7 +351,7 @@ bool CopyDirectory(const FilePath& from_path,
 #endif  // !defined(OS_NACL_NONSFI)
 
 bool SetNonBlocking(int fd) {
-  int flags = fcntl(fd, F_GETFL, 0);
+  const int flags = fcntl(fd, F_GETFL);
   if (flags == -1)
     return false;
   if (flags & O_NONBLOCK)
