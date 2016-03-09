@@ -1393,7 +1393,6 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param tabContentManager {@link TabContentManager} to attach to.
      */
     public void attachTabContentManager(TabContentManager tabContentManager) {
-        if (tabContentManager == null) return;
         nativeAttachToTabContentManager(mNativeTabAndroid, tabContentManager);
     }
 
