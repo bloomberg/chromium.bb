@@ -57,6 +57,31 @@ struct Identity {
   string instance;
 };
 
+// Implemented by an object in the shell associated with a specific instance.
+// Tells it the PID for a process launched by the client. See
+// ClientProcessConnection.
+interface PIDReceiver {
+  SetPID(uint32 pid);
+};
+
+// Typically, the shell will start a process for a service the first time it
+// receives a connection request for it. This struct allows a client to start
+// the process itself and provide the shell the pipes it needs to communicate
+// with it. When an instance of this struct is supplied to Connect(), the client
+// owns the lifetime of the child process, not the shell. The shell binds the
+// |shell_client_factory| pipe, and when it closes destroys the associated
+// instance but the process stays alive.
+struct ClientProcessConnection {
+  // Provides the shell the ability to bind a ShellClientRequest from the client
+  // process to the instance it creates.
+  handle<message_pipe> shell_client_factory;
+
+  // Allows the client process launcher to tell the shell the PID of the process
+  // it created (the pid isn't supplied directly here as the process may not
+  // have been launched by the time Connect() is called.)
+  handle<message_pipe> pid_receiver_request;
+};
+
 // Encapsulates establishing connections with other Mojo applications.
 interface Connector {
   // Requests a connection with another application. The application originating
@@ -89,6 +114,12 @@ interface Connector {
   //    InterfaceProvider are filtered by the security policy described by the
   //    source and target application manifests.
   //
+  //  client_process_connection
+  //    When non-null, supplies control pipes the shell can use to bind a
+  //    process created by the client, instead of creating one itself.
+  //    TODO(beng): access to this parameter should be restricted by a
+  //                capability.
+  //
   // Response parameters:
   //
   //  result
@@ -104,9 +135,9 @@ interface Connector {
   //
   Connect(Identity target,
           InterfaceProvider&? remote_interfaces,
-          InterfaceProvider? local_interfaces) => (ConnectResult result,
-                                                   string user_id,
-                                                   uint32 application_id);
+          InterfaceProvider? local_interfaces,
+          ClientProcessConnection? client_process_connection) =>
+      (ConnectResult result, string user_id, uint32 application_id);
 
   // Clones this Connector so it can be passed to another thread.
   Clone(Connector& request);

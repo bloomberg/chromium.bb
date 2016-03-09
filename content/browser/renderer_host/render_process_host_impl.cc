@@ -80,7 +80,7 @@
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/mojo/mojo_application_host.h"
-#include "content/browser/mojo/mojo_shell_client_host.h"
+#include "content/browser/mojo/mojo_child_connection.h"
 #include "content/browser/navigator_connect/service_port_service_impl.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -701,7 +701,7 @@ bool RenderProcessHostImpl::Init() {
   if (channel_)
     return true;
 
-  shell_pipe_token_ = RegisterChildWithExternalShell(id_, instance_id_++, this);
+  shell_pipe_token_ = MojoConnectToChild(id_, instance_id_++, this);
 
   base::CommandLine::StringType renderer_prefix;
   // A command prefix is something prepended to the command line of the spawned

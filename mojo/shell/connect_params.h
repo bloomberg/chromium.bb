@@ -44,6 +44,14 @@ class ConnectParams {
     return std::move(local_interfaces_);
   }
 
+  void set_client_process_connection(
+      shell::mojom::ClientProcessConnectionPtr client_process_connection) {
+    client_process_connection_ = std::move(client_process_connection);
+  }
+  shell::mojom::ClientProcessConnectionPtr TakeClientProcessConnection() {
+    return std::move(client_process_connection_);
+  }
+
   void set_connect_callback(
       const shell::mojom::Connector::ConnectCallback& value) {
     connect_callback_ = value;
@@ -61,6 +69,7 @@ class ConnectParams {
 
   shell::mojom::InterfaceProviderRequest remote_interfaces_;
   shell::mojom::InterfaceProviderPtr local_interfaces_;
+  shell::mojom::ClientProcessConnectionPtr client_process_connection_;
   shell::mojom::Connector::ConnectCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectParams);

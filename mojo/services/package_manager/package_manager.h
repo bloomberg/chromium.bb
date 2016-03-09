@@ -12,9 +12,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/package_manager/public/interfaces/catalog.mojom.h"
 #include "mojo/services/package_manager/public/interfaces/resolver.mojom.h"
-#include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
+#include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
 #include "url/gurl.h"
 
 namespace package_manager {
@@ -64,13 +64,14 @@ class ApplicationCatalogStore {
   virtual void UpdateStore(scoped_ptr<base::ListValue> store) = 0;
 };
 
-class PackageManager : public mojo::ShellClient,
-                       public mojo::InterfaceFactory<mojom::Resolver>,
-                       public mojo::InterfaceFactory<mojom::ShellResolver>,
-                       public mojo::InterfaceFactory<mojom::Catalog>,
-                       public mojom::Resolver,
-                       public mojom::ShellResolver,
-                       public mojom::Catalog {
+class PackageManager
+    : public mojo::ShellClient,
+      public mojo::InterfaceFactory<mojom::Resolver>,
+      public mojo::InterfaceFactory<mojo::shell::mojom::ShellResolver>,
+      public mojo::InterfaceFactory<mojom::Catalog>,
+      public mojom::Resolver,
+      public mojo::shell::mojom::ShellResolver,
+      public mojom::Catalog {
  public:
   // If |register_schemes| is true, mojo: and exe: schemes are registered as
   // "standard".
@@ -89,9 +90,9 @@ class PackageManager : public mojo::ShellClient,
   void Create(mojo::Connection* connection,
               mojom::ResolverRequest request) override;
 
-  // mojo::InterfaceFactory<mojom::ShellResolver>:
+  // mojo::InterfaceFactory<mojo::shell::mojom::ShellResolver>:
   void Create(mojo::Connection* connection,
-              mojom::ShellResolverRequest request) override;
+              mojo::shell::mojom::ShellResolverRequest request) override;
 
   // mojo::InterfaceFactory<mojom::Catalog>:
   void Create(mojo::Connection* connection,
@@ -109,7 +110,7 @@ class PackageManager : public mojo::ShellClient,
       const mojo::String& scheme,
       const ResolveProtocolSchemeCallback& callback) override;
 
-  // mojom::ShellResolver:
+  // mojo::shell::mojom::ShellResolver:
   void ResolveMojoName(const mojo::String& mojo_name,
                        const ResolveMojoNameCallback& callback) override;
 
@@ -157,7 +158,7 @@ class PackageManager : public mojo::ShellClient,
   GURL system_package_dir_;
 
   mojo::BindingSet<mojom::Resolver> resolver_bindings_;
-  mojo::BindingSet<mojom::ShellResolver> shell_resolver_bindings_;
+  mojo::BindingSet<mojo::shell::mojom::ShellResolver> shell_resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
   scoped_ptr<ApplicationCatalogStore> catalog_store_;

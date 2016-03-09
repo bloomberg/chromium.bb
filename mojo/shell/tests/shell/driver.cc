@@ -64,10 +64,6 @@ class Driver : public mojo::ShellClient,
       child_command_line.AppendSwitch(switches::kWaitForDebugger);
     }
 
-    mojo::shell::mojom::PIDReceiverPtr receiver;
-    mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =
-        GetProxy(&receiver);
-
     // Create the channel to be shared with the target process. Pass one end
     // on the command line.
     mojo::edk::PlatformChannelPair platform_channel_pair;
@@ -88,17 +84,16 @@ class Driver : public mojo::ShellClient,
     mojo::shell::mojom::ShellClientFactoryPtr factory;
     factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
         std::move(pipe), 0u));
+    mojo::shell::mojom::PIDReceiverPtr receiver;
 
-    mojo::shell::mojom::ShellPtr shell;
-    connector->ConnectToInterface("mojo:shell", &shell);
-    mojo::shell::mojom::IdentityPtr target(mojo::shell::mojom::Identity::New());
-    target->name = "exe:shell_unittest_target";
-    target->user_id = mojo::shell::mojom::kInheritUserID;
-    target->instance = "";
-    shell->CreateInstance(std::move(factory), std::move(target),
-                          std::move(request),
-                          base::Bind(&Driver::OnConnectionCompleted,
-                                     base::Unretained(this)));
+    mojo::Identity target("exe:shell_unittest_target",
+                          mojo::shell::mojom::kInheritUserID);
+    mojo::Connector::ConnectParams params(target);
+    params.set_client_process_connection(std::move(factory),
+                                         GetProxy(&receiver));
+    scoped_ptr<mojo::Connection> connection = connector->Connect(&params);
+    connection->AddConnectionCompletedClosure(
+        base::Bind(&Driver::OnConnectionCompleted, base::Unretained(this)));
 
     base::LaunchOptions options;
   #if defined(OS_WIN)
@@ -130,7 +125,7 @@ class Driver : public mojo::ShellClient,
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
-  void OnConnectionCompleted(mojo::shell::mojom::ConnectResult result) {}
+  void OnConnectionCompleted() {}
 
   base::Process target_;
   mojo::BindingSet<mojo::shell::test::mojom::Driver> bindings_;

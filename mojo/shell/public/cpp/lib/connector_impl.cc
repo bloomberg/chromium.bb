@@ -61,10 +61,28 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
       params->target().name(), params->target(),
       shell::mojom::kInvalidInstanceID, std::move(remote_interfaces),
       std::move(local_request), allowed, Connection::State::PENDING));
+
+  shell::mojom::ShellClientFactoryPtr shell_client_factory;
+  shell::mojom::PIDReceiverRequest pid_receiver_request;
+  params->TakeClientProcessConnection(&shell_client_factory,
+                                      &pid_receiver_request);
+  shell::mojom::ClientProcessConnectionPtr client_process_connection;
+  if (shell_client_factory.is_bound() && pid_receiver_request.is_pending()) {
+    client_process_connection = shell::mojom::ClientProcessConnection::New();
+    client_process_connection->shell_client_factory =
+        shell_client_factory.PassInterface().PassHandle();
+    client_process_connection->pid_receiver_request =
+        pid_receiver_request.PassMessagePipe();
+  } else if (shell_client_factory.is_bound() ||
+             pid_receiver_request.is_pending()) {
+    NOTREACHED() << "If one of shell_client_factory or pid_receiver_request is"
+                 << "valid, both must be valid.";
+    return std::move(registry);
+  }
   connector_->Connect(
       shell::mojom::Identity::From(params->target()),
       std::move(remote_request), std::move(local_interfaces),
-      registry->GetConnectCallback());
+      std::move(client_process_connection), registry->GetConnectCallback());
   return std::move(registry);
 }
 

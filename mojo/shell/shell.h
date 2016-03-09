@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/services/package_manager/package_manager.h"
-#include "mojo/services/package_manager/public/interfaces/shell_resolver.mojom.h"
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/native_runner.h"
@@ -26,6 +25,7 @@
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "mojo/shell/public/interfaces/shell_client_factory.mojom.h"
+#include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
 
 namespace base {
 class FilePath;
@@ -128,7 +128,11 @@ class Shell : public ShellClient {
   // Removes a Instance when it encounters an error.
   void OnInstanceError(Instance* instance);
 
+  // Returns a running instance matching |identity|.
   Instance* GetExistingInstance(const Identity& identity) const;
+  // Like GetExistingInstance, but if no instance for |identity.user_id()| is
+  // found, looks for kRootUserID too.
+  Instance* GetExistingOrRootInstance(const Identity& identity) const;
 
   void NotifyPIDAvailable(uint32_t id, base::ProcessId pid);
 
@@ -187,7 +191,7 @@ class Shell : public ShellClient {
 
   void CleanupRunner(NativeRunner* runner);
 
-  package_manager::mojom::ShellResolverPtr shell_resolver_;
+  mojom::ShellResolverPtr shell_resolver_;
 
   // Loader management.
   // Loaders are chosen in the order they are listed here.

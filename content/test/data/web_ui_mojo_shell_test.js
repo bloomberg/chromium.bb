@@ -47,6 +47,7 @@ define('main', [
                 response.name == 'chrome://mojo-web-ui/');
           });
         },
-        function (exposedServices) {});
+        function (exposedServices) {},
+        null);
   };
 });

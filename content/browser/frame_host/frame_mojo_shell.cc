@@ -51,6 +51,7 @@ void FrameMojoShell::Connect(
     mojo::shell::mojom::IdentityPtr target,
     mojo::shell::mojom::InterfaceProviderRequest services,
     mojo::shell::mojom::InterfaceProviderPtr /* exposed_services */,
+    mojo::shell::mojom::ClientProcessConnectionPtr client_process_connection,
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {
   // TODO(beng): user_id is dropped on the floor right now. Figure out what to
   //             do with it.

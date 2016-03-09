@@ -8,7 +8,6 @@ mojom("interfaces") {
   sources = [
     "catalog.mojom",
     "resolver.mojom",
-    "shell_resolver.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]

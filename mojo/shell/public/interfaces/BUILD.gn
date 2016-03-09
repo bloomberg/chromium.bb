@@ -12,6 +12,7 @@ mojom("interfaces") {
     "shell.mojom",
     "shell_client.mojom",
     "shell_client_factory.mojom",
+    "shell_resolver.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]

@@ -182,10 +182,6 @@ class LifecycleTest : public mojo::test::ShellTest {
       child_command_line.AppendSwitch(switches::kWaitForDebugger);
     }
 
-    mojo::shell::mojom::PIDReceiverPtr receiver;
-    mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request =
-        GetProxy(&receiver);
-
     // Create the channel to be shared with the target process. Pass one end
     // on the command line.
     mojo::edk::PlatformChannelPair platform_channel_pair;
@@ -209,13 +205,15 @@ class LifecycleTest : public mojo::test::ShellTest {
     mojo::shell::mojom::ShellClientFactoryPtr factory;
     factory.Bind(mojo::InterfacePtrInfo<mojo::shell::mojom::ShellClientFactory>(
         std::move(pipe), 0u));
+    mojo::shell::mojom::PIDReceiverPtr receiver;
+
+    mojo::Identity target(kTestExeName, mojo::shell::mojom::kInheritUserID);
+    mojo::Connector::ConnectParams params(target);
+    params.set_client_process_connection(std::move(factory),
+                                         GetProxy(&receiver));
+    scoped_ptr<mojo::Connection> connection = connector()->Connect(&params);
     base::RunLoop loop;
-    mojo::Identity target(kTestExeName, mojom::kInheritUserID);
-    shell->CreateInstance(std::move(factory),
-                          mojo::shell::mojom::Identity::From(target),
-                          std::move(request),
-                          base::Bind(&LifecycleTest::OnConnectionCompleted,
-                                     base::Unretained(this), &loop));
+    connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
     loop.Run();
 
     base::LaunchOptions options;
@@ -256,11 +254,6 @@ class LifecycleTest : public mojo::test::ShellTest {
     shell->AddInstanceListener(std::move(listener));
     loop.Run();
     return make_scoped_ptr(state);
-  }
-
-  void OnConnectionCompleted(base::RunLoop* loop,
-                             mojom::ConnectResult result) {
-    loop->Quit();
   }
 
   scoped_ptr<InstanceState> instances_;

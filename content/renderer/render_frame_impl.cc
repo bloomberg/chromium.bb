@@ -6093,7 +6093,7 @@ mojo::shell::mojom::InterfaceProviderPtr RenderFrameImpl::ConnectToApplication(
   target->user_id = mojo::shell::mojom::kInheritUserID;
   target->instance = "";
   connector_->Connect(std::move(target), GetProxy(&interface_provider), nullptr,
-                      base::Bind(&OnGotInstanceID));
+                      nullptr, base::Bind(&OnGotInstanceID));
   return interface_provider;
 }
 

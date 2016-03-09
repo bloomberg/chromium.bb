@@ -120,7 +120,7 @@ bool PackageManager::AcceptConnection(mojo::Connection* connection) {
   connection->AddInterface<mojom::Catalog>(this);
   connection->AddInterface<mojom::Resolver>(this);
   if (connection->GetRemoteIdentity().name() == "mojo:shell")
-    connection->AddInterface<mojom::ShellResolver>(this);
+    connection->AddInterface<mojo::shell::mojom::ShellResolver>(this);
   return true;
 }
 
@@ -130,7 +130,7 @@ void PackageManager::Create(mojo::Connection* connection,
 }
 
 void PackageManager::Create(mojo::Connection* connection,
-                            mojom::ShellResolverRequest request) {
+                            mojo::shell::mojom::ShellResolverRequest request) {
   shell_resolver_bindings_.AddBinding(this, std::move(request));
 }
 
