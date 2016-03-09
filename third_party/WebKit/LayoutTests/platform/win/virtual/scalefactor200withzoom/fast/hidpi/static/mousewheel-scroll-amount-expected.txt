@@ -1,4 +1,4 @@
-This test ensures that mouse wheel ticks scrolls the right amount pixels in high dpi mode.
+This test ensures that mouse wheel ticks scrolls the right number of pixels in high dpi mode.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
