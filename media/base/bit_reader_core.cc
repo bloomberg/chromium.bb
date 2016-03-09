@@ -86,8 +86,11 @@ bool BitReaderCore::SkipBits(int num_bits) {
         byte_stream_provider_->GetBytes(nbytes, &byte_stream_window);
     DCHECK_GE(window_size, 0);
     DCHECK_LE(window_size, nbytes);
-    if (window_size < nbytes)
+    if (window_size < nbytes) {
+      // Note that some bytes were consumed.
+      bits_read_ += 8 * window_size;
       return false;
+    }
     num_bits -= 8 * nbytes;
     bits_read_ += 8 * nbytes;
   }

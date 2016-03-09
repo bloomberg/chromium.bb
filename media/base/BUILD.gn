@@ -559,6 +559,16 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   }
 }
 
+fuzzer_test("media_bit_reader_fuzzer") {
+  sources = [
+    "bit_reader_fuzzertest.cc",
+  ]
+  deps = [
+    "//base",
+    "//media",
+  ]
+}
+
 fuzzer_test("media_container_names_fuzzer") {
   sources = [
     "container_names_fuzzertest.cc",
