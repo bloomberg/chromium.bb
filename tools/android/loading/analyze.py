@@ -120,8 +120,8 @@ def _LogRequests(url, clear_cache_override=None):
   if OPTIONS.emulate_device:
     chrome_ctl.SetDeviceEmulation(OPTIONS.emulate_device)
   if OPTIONS.emulate_network:
-    chrome_ctl.SetNetworkEmulation(OPTIONS.emulate_device)
-  trace = loading_trace.LoadingTrace.FromUrlController(url, chrome_ctl)
+    chrome_ctl.SetNetworkEmulation(OPTIONS.emulate_network)
+  trace = loading_trace.LoadingTrace.FromUrlAndController(url, chrome_ctl)
   return trace.ToJsonDict()
 
 

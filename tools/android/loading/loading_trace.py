@@ -71,7 +71,7 @@ class LoadingTrace(object):
       return cls.FromJsonDict(json.load(input_file))
 
   @classmethod
-  def FromUrlController(
+  def FromUrlAndController(
       cls, url, controller, categories=None,
       timeout_seconds=devtools_monitor.DEFAULT_TIMEOUT_SECONDS):
     """Create a loading trace by using controller to fetch url.

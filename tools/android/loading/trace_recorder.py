@@ -35,7 +35,7 @@ def MonitorUrl(connection, url, clear_cache=False,
                timeout=devtools_monitor.DEFAULT_TIMEOUT_SECONDS):
   """Monitor a URL via a trace recorder.
 
-  DEPRECATED! Use LoadingTrace.FromUrlController instead.
+  DEPRECATED! Use LoadingTrace.FromUrlAndController instead.
 
   Args:
     connection: A devtools_monitor.DevToolsConnection instance.
