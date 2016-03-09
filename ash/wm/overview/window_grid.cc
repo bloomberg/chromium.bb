@@ -68,8 +68,7 @@ void CleanupWidgetAfterAnimationObserver::OnImplicitAnimationsCompleted() {
 }
 
 // A comparator for locating a given target window.
-struct WindowSelectorItemComparator
-    : public std::unary_function<WindowSelectorItem*, bool> {
+struct WindowSelectorItemComparator {
   explicit WindowSelectorItemComparator(const aura::Window* target_window)
       : target(target_window) {
   }

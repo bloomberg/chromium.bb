@@ -47,10 +47,7 @@ BookmarkPermanentNode* AsMutable(const BookmarkPermanentNode* node) {
 
 // Comparator used when sorting permanent nodes. Nodes that are initially
 // visible are sorted before nodes that are initially hidden.
-class VisibilityComparator
-    : public std::binary_function<const BookmarkPermanentNode*,
-                                  const BookmarkPermanentNode*,
-                                  bool> {
+class VisibilityComparator {
  public:
   explicit VisibilityComparator(BookmarkClient* client) : client_(client) {}
 
@@ -68,9 +65,7 @@ class VisibilityComparator
 
 // Comparator used when sorting bookmarks. Folders are sorted first, then
 // bookmarks.
-class SortComparator : public std::binary_function<const BookmarkNode*,
-                                                   const BookmarkNode*,
-                                                   bool> {
+class SortComparator {
  public:
   explicit SortComparator(icu::Collator* collator) : collator_(collator) {}
 

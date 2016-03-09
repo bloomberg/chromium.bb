@@ -198,7 +198,7 @@ class URLIndexPrivateData
 
   // A helper class which performs the final filter on each candidate
   // history URL match, inserting accepted matches into |scored_matches_|.
-  class AddHistoryMatch : public std::unary_function<HistoryID, void> {
+  class AddHistoryMatch {
    public:
     AddHistoryMatch(bookmarks::BookmarkModel* bookmark_model,
                     TemplateURLService* template_url_service,
@@ -230,8 +230,7 @@ class URLIndexPrivateData
 
   // A helper predicate class used to filter excess history items when the
   // candidate results set is too large.
-  class HistoryItemFactorGreater
-      : public std::binary_function<HistoryID, HistoryID, void> {
+  class HistoryItemFactorGreater {
    public:
     explicit HistoryItemFactorGreater(const HistoryInfoMap& history_info_map);
     ~HistoryItemFactorGreater();

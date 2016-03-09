@@ -237,8 +237,7 @@ class HistoryQuickProviderTest : public testing::Test {
   HistoryQuickProviderTest() {}
 
  protected:
-  class SetShouldContain : public std::unary_function<const std::string&,
-                                                      std::set<std::string> > {
+  class SetShouldContain {
    public:
     explicit SetShouldContain(const ACMatches& matched_urls);
 

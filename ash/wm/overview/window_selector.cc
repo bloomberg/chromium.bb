@@ -73,8 +73,7 @@ const unsigned char kTextFilterOpacity = 180;
 const int kTextFilterCornerRadius = 1;
 
 // A comparator for locating a grid with a given root window.
-struct RootWindowGridComparator
-    : public std::unary_function<WindowGrid*, bool> {
+struct RootWindowGridComparator {
   explicit RootWindowGridComparator(const aura::Window* root_window)
       : root_window_(root_window) {
   }
@@ -87,8 +86,7 @@ struct RootWindowGridComparator
 };
 
 // A comparator for locating a selectable window given a targeted window.
-struct WindowSelectorItemTargetComparator
-    : public std::unary_function<WindowSelectorItem*, bool> {
+struct WindowSelectorItemTargetComparator {
   explicit WindowSelectorItemTargetComparator(const aura::Window* target_window)
       : target(target_window) {
   }
@@ -101,8 +99,7 @@ struct WindowSelectorItemTargetComparator
 };
 
 // A comparator for locating a selector item for a given root.
-struct WindowSelectorItemForRoot
-    : public std::unary_function<WindowSelectorItem*, bool> {
+struct WindowSelectorItemForRoot {
   explicit WindowSelectorItemForRoot(const aura::Window* root)
       : root_window(root) {
   }

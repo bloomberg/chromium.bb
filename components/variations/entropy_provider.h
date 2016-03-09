@@ -24,7 +24,7 @@ namespace internal {
 
 // A functor that generates random numbers based on a seed, using the Mersenne
 // Twister algorithm. Suitable for use with std::random_shuffle().
-struct SeededRandGenerator : std::unary_function<uint32_t, uint32_t> {
+struct SeededRandGenerator {
   explicit SeededRandGenerator(uint32_t seed);
   ~SeededRandGenerator();
 

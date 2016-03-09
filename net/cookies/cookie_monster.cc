@@ -251,8 +251,7 @@ void SplitCookieVectorIntoSecureAndNonSecure(
 }
 
 // Predicate to support PartitionCookieByPriority().
-struct CookiePriorityEqualsTo
-    : std::unary_function<const CookieMonster::CookieMap::iterator, bool> {
+struct CookiePriorityEqualsTo {
   explicit CookiePriorityEqualsTo(CookiePriority priority)
       : priority_(priority) {}
 

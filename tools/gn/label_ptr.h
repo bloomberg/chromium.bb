@@ -56,7 +56,7 @@ typedef std::vector<LabelTargetPair> LabelTargetVector;
 // To do a brute-force search by label:
 // std::find_if(vect.begin(), vect.end(), LabelPtrLabelEquals<Config>(label));
 template<typename T>
-struct LabelPtrLabelEquals : public std::unary_function<Label, bool> {
+struct LabelPtrLabelEquals {
   explicit LabelPtrLabelEquals(const Label& l) : label(l) {}
 
   bool operator()(const LabelPtrPair<T>& arg) const {
@@ -69,7 +69,7 @@ struct LabelPtrLabelEquals : public std::unary_function<Label, bool> {
 // To do a brute-force search by object pointer:
 // std::find_if(vect.begin(), vect.end(), LabelPtrPtrEquals<Config>(config));
 template<typename T>
-struct LabelPtrPtrEquals : public std::unary_function<T, bool> {
+struct LabelPtrPtrEquals {
   explicit LabelPtrPtrEquals(const T* p) : ptr(p) {}
 
   bool operator()(const LabelPtrPair<T>& arg) const {
@@ -82,9 +82,7 @@ struct LabelPtrPtrEquals : public std::unary_function<T, bool> {
 // To sort by label:
 // std::sort(vect.begin(), vect.end(), LabelPtrLabelLess<Config>());
 template<typename T>
-struct LabelPtrLabelLess : public std::binary_function<LabelPtrPair<T>,
-                                                       LabelPtrPair<T>,
-                                                       bool> {
+struct LabelPtrLabelLess {
   bool operator()(const LabelPtrPair<T>& a, const LabelPtrPair<T>& b) const {
     return a.label < b.label;
   }

@@ -837,11 +837,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::CancelCompletion() {
 
 // Helpers for FindMainResponseTask::Run()
 namespace {
-class SortByCachePreference
-    : public std::binary_function<
-        AppCacheDatabase::EntryRecord,
-        AppCacheDatabase::EntryRecord,
-        bool> {
+class SortByCachePreference {
  public:
   SortByCachePreference(int64_t preferred_id,
                         const std::set<int64_t>& in_use_ids)

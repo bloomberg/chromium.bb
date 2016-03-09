@@ -22,10 +22,7 @@ namespace l10n_util {
 // Used by SortStringsUsingMethod. Invokes a method on the objects passed to
 // operator (), comparing the string results using a collator.
 template <class T, class Method>
-class StringMethodComparatorWithCollator
-    : public std::binary_function<const base::string16&,
-                                  const base::string16&,
-                                  bool> {
+class StringMethodComparatorWithCollator {
  public:
   StringMethodComparatorWithCollator(icu::Collator* collator, Method method)
       : collator_(collator),
@@ -46,10 +43,7 @@ class StringMethodComparatorWithCollator
 // Used by SortStringsUsingMethod. Invokes a method on the objects passed to
 // operator (), comparing the string results using <.
 template <class T, class Method>
-class StringMethodComparator
-    : public std::binary_function<const base::string16&,
-                                  const base::string16&,
-                                  bool> {
+class StringMethodComparator {
  public:
   explicit StringMethodComparator(Method method) : method_(method) { }
 
@@ -88,9 +82,7 @@ void SortStringsUsingMethod(const std::string& locale,
 // const base::string16& GetStringKey() const;
 // This uses the locale specified in the constructor.
 template <class Element>
-class StringComparator : public std::binary_function<const Element&,
-                                                     const Element&,
-                                                     bool> {
+class StringComparator {
  public:
   explicit StringComparator(icu::Collator* collator)
       : collator_(collator) { }

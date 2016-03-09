@@ -56,8 +56,7 @@ base::string16 Normalize(const base::string16& text) {
 
 // Sort functor for NodeTypedCountPairs. We sort in decreasing order of typed
 // count so that the best matches will always be added to the results.
-struct NodeTypedCountPairSortFunctor
-    : std::binary_function<NodeTypedCountPair, NodeTypedCountPair, bool> {
+struct NodeTypedCountPairSortFunctor {
   bool operator()(const NodeTypedCountPair& a,
                   const NodeTypedCountPair& b) const {
     return a.second > b.second;
@@ -65,8 +64,7 @@ struct NodeTypedCountPairSortFunctor
 };
 
 // Extract the const Node* stored in a BookmarkClient::NodeTypedCountPair.
-struct NodeTypedCountPairExtractNodeFunctor
-    : std::unary_function<NodeTypedCountPair, const BookmarkNode*> {
+struct NodeTypedCountPairExtractNodeFunctor {
   const BookmarkNode* operator()(const NodeTypedCountPair& pair) const {
     return pair.first;
   }
