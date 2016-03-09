@@ -18,6 +18,7 @@ using blink::WebKeyboardEvent;
 using blink::WebGestureEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
+using blink::WebPointerProperties;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 
@@ -70,17 +71,21 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(WebInputEvent::Type type,
   return result;
 }
 
-WebMouseEvent WebMouseEventBuilder::Build(blink::WebInputEvent::Type type,
-                                          WebMouseEvent::Button button,
-                                          double time_sec,
-                                          int window_x,
-                                          int window_y,
-                                          int modifiers,
-                                          int click_count) {
+WebMouseEvent WebMouseEventBuilder::Build(
+    WebInputEvent::Type type,
+    WebMouseEvent::Button button,
+    double time_sec,
+    int window_x,
+    int window_y,
+    int modifiers,
+    int click_count,
+    WebPointerProperties::PointerType pointer_type) {
+
   DCHECK(WebInputEvent::isMouseEventType(type));
   WebMouseEvent result;
 
   result.type = type;
+  result.pointerType = pointer_type;
   result.x = window_x;
   result.y = window_y;
   result.windowX = window_x;

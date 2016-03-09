@@ -1677,7 +1677,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
             if (mNativeContentViewCore != 0) {
                 nativeSendMouseMoveEvent(mNativeContentViewCore, offset.getEventTime(),
-                        offset.getX(), offset.getY());
+                        offset.getX(), offset.getY(), event.getToolType(0));
             }
             return true;
         } finally {
@@ -3248,7 +3248,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             boolean isTouchHandleEvent);
 
     private native int nativeSendMouseMoveEvent(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y);
+            long nativeContentViewCoreImpl, long timeMs, float x, float y, int toolType);
 
     private native int nativeSendMouseWheelEvent(long nativeContentViewCoreImpl, long timeMs,
             float x, float y, float ticksX, float ticksY, float pixelsPerTick);

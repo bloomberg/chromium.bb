@@ -141,7 +141,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                               const base::android::JavaParamRef<jobject>& obj,
                               jlong time_ms,
                               jfloat x,
-                              jfloat y);
+                              jfloat y,
+                              jint tool_type);
   jboolean SendMouseWheelEvent(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj,
                                jlong time_ms,

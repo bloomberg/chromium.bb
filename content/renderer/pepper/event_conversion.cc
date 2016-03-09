@@ -270,10 +270,11 @@ void AppendTouchEvent(const WebInputEvent& event,
 WebTouchPoint CreateWebTouchPoint(const PP_TouchPoint& pp_pt,
                                   WebTouchPoint::State state) {
   WebTouchPoint pt;
+  pt.pointerType = blink::WebPointerProperties::PointerType::Touch;
   pt.id = pp_pt.id;
   pt.position.x = pp_pt.position.x;
   pt.position.y = pp_pt.position.y;
-  // TODO bug:http://code.google.com/p/chromium/issues/detail?id=93902
+  // TODO(crbug.com/93902): Add screen coordinate calculation.
   pt.screenPosition.x = 0;
   pt.screenPosition.y = 0;
   pt.force = pp_pt.pressure;
@@ -402,6 +403,8 @@ WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
 
 WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
   WebMouseEvent* mouse_event = new WebMouseEvent();
+  mouse_event->pointerType = blink::WebPointerProperties::PointerType::Mouse;
+
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
       mouse_event->type = WebInputEvent::MouseDown;

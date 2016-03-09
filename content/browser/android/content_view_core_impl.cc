@@ -55,6 +55,7 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/events/android/motion_event_android.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -981,7 +982,8 @@ jboolean ContentViewCoreImpl::SendMouseMoveEvent(
     const JavaParamRef<jobject>& obj,
     jlong time_ms,
     jfloat x,
-    jfloat y) {
+    jfloat y,
+    jint tool_type) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (!rwhv)
     return false;
@@ -989,7 +991,8 @@ jboolean ContentViewCoreImpl::SendMouseMoveEvent(
   blink::WebMouseEvent event = WebMouseEventBuilder::Build(
       WebInputEvent::MouseMove,
       blink::WebMouseEvent::ButtonNone,
-      time_ms / 1000.0, x / dpi_scale(), y / dpi_scale(), 0, 1);
+      time_ms / 1000.0, x / dpi_scale(), y / dpi_scale(), 0, 1,
+      ui::ToWebPointerType(static_cast<ui::MotionEvent::ToolType>(tool_type)));
 
   rwhv->SendMouseEvent(event);
   return true;

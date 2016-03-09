@@ -20,6 +20,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/WebKit/public/platform/WebPointerProperties.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
@@ -45,6 +46,7 @@ using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebPagePopup;
 using blink::WebPoint;
+using blink::WebPointerProperties;
 using blink::WebString;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
@@ -1897,6 +1899,7 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
 
 void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
   WebTouchPoint touch_point;
+  touch_point.pointerType = WebPointerProperties::PointerType::Touch;
   touch_point.state = WebTouchPoint::StatePressed;
   touch_point.position = WebFloatPoint(x, y);
   touch_point.screenPosition = touch_point.position;

@@ -509,6 +509,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutObj
     movementX = event.movementX();
     movementY = event.movementY();
     clickCount = event.detail();
+
+    pointerType = WebPointerProperties::PointerType::Mouse;
 }
 
 // Generate a synthetic WebMouseEvent given a TouchEvent (eg. for emulating a mouse
@@ -557,6 +559,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutObj
     IntPoint localPoint = convertAbsoluteLocationForLayoutObject(touch->absoluteLocation(), *layoutObject);
     x = localPoint.x();
     y = localPoint.y();
+
+    pointerType = WebPointerProperties::PointerType::Touch;
 }
 
 WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const LayoutObject* layoutObject, const WheelEvent& event)
@@ -626,6 +630,7 @@ WebInputEvent::Type toWebKeyboardEventType(PlatformEvent::EventType type)
 static WebTouchPoint toWebTouchPoint(const Touch* touch, const LayoutObject* layoutObject, WebTouchPoint::State state)
 {
     WebTouchPoint point;
+    point.pointerType = WebPointerProperties::PointerType::Touch;
     point.id = touch->identifier();
     point.screenPosition = touch->screenLocation();
     point.position = convertAbsoluteLocationForLayoutObjectFloat(touch->absoluteLocation(), *layoutObject);

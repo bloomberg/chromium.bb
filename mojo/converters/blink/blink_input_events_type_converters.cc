@@ -74,6 +74,7 @@ void SetWebMouseEventLocation(const mus::mojom::LocationData& location_data,
 scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
     const mus::mojom::EventPtr& event) {
   scoped_ptr<blink::WebMouseEvent> web_event(new blink::WebMouseEvent);
+  // TODO(crbug.com/593375): Set pointerType from event->pointer_data->kind
 
   if (event->pointer_data && event->pointer_data->location)
     SetWebMouseEventLocation(*(event->pointer_data->location), web_event.get());

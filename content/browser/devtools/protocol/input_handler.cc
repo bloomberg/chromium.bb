@@ -253,6 +253,7 @@ Response InputHandler::DispatchMouseEvent(
   event.globalX = x * page_scale_factor_;
   event.globalY = y * page_scale_factor_;
   event.clickCount = click_count ? *click_count : 0;
+  event.pointerType = blink::WebPointerProperties::PointerType::Mouse;
 
   if (!host_)
     return Response::ServerError("Could not connect to view");
@@ -301,6 +302,7 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
   event->globalX = x;
   event->globalY = y;
   event->clickCount = click_count ? *click_count : 0;
+  event->pointerType = blink::WebPointerProperties::PointerType::Touch;
 
   if (!host_)
     return Response::ServerError("Could not connect to view");

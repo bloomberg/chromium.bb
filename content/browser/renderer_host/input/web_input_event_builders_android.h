@@ -17,13 +17,15 @@ namespace content {
 
 class WebMouseEventBuilder {
  public:
-  static blink::WebMouseEvent Build(blink::WebInputEvent::Type type,
-                                    blink::WebMouseEvent::Button button,
-                                    double time_sec,
-                                    int window_x,
-                                    int window_y,
-                                    int modifiers,
-                                    int click_count);
+  static blink::WebMouseEvent Build(
+      blink::WebInputEvent::Type type,
+      blink::WebMouseEvent::Button button,
+      double time_sec,
+      int window_x,
+      int window_y,
+      int modifiers,
+      int click_count,
+      blink::WebPointerProperties::PointerType pointer_type);
 };
 
 class WebMouseWheelEventBuilder {

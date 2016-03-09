@@ -69,8 +69,7 @@ function init() {
           }
 
           shouldBeEqualToNumber("lastPointerEvent.pointerId", 1);
-          // TODO(crbug.com/557817): linux_chromium_rel_ng fails here, sets to empty string.
-          // shouldBeEqualToString("lastPointerEvent.pointerType", "mouse");
+          shouldBeEqualToString("lastPointerEvent.pointerType", "mouse");
           shouldBeTrue("lastPointerEvent.isPrimary");
 
           numericAttributes.forEach(function(attribute) {
