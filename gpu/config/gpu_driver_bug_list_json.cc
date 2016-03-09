@@ -1765,6 +1765,21 @@ LONG_STRING_CONST(
       "features": [
         "max_texture_size_limit_4096"
       ]
+    },
+    {
+      "id": 148,
+      "description": "Mali-4xx GPU on JB doesn't support DetachGLContext",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "4.4.4"
+        }
+      },
+      "gl_renderer": ".*Mali-4.*",
+      "features": [
+        "surface_texture_cant_detach"
+      ]
     }
   ]
 }

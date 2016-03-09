@@ -76,6 +76,10 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
   void CopySurfaceTextureToPictures(
       const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers);
 
+  // Return true if and only if the surface_texture_cant_detach workaround is
+  // not set.
+  bool DoesSurfaceTextureDetachWork() const;
+
   scoped_refptr<AVDASharedState> shared_state_;
 
   AVDAStateProvider* state_provider_;
