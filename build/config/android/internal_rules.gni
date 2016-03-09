@@ -813,6 +813,9 @@ template("finalize_apk") {
       depfile,
       invoker.output_apk_path,
     ]
+    data = [
+      invoker.output_apk_path,
+    ]
 
     args = [
       "--depfile",
