@@ -189,9 +189,7 @@ Vector<String> DataTransfer::types() const
     if (!canReadTypes())
         return types;
 
-    ListHashSet<String> typesSet = m_dataObject->types();
-    types.appendRange(typesSet.begin(), typesSet.end());
-    return types;
+    return m_dataObject->types();
 }
 
 FileList* DataTransfer::files() const

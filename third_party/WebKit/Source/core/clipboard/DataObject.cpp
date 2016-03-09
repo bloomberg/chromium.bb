@@ -37,23 +37,25 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebDragData.h"
+#include "wtf/HashSet.h"
 
 namespace blink {
 
 DataObject* DataObject::createFromPasteboard(PasteMode pasteMode)
 {
     DataObject* dataObject = create();
+#if ENABLE(ASSERT)
+    HashSet<String> typesSeen;
+#endif
     WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
     uint64_t sequenceNumber = Platform::current()->clipboard()->sequenceNumber(buffer);
     bool ignored;
     WebVector<WebString> webTypes = Platform::current()->clipboard()->readAvailableTypes(buffer, &ignored);
-    ListHashSet<String> types;
-    for (size_t i = 0; i < webTypes.size(); ++i)
-        types.add(webTypes[i]);
-    for (const String& type : types) {
+    for (const WebString& type : webTypes) {
         if (pasteMode == PlainTextOnly && type != mimeTypeTextPlain)
             continue;
         dataObject->m_itemList.append(DataObjectItem::createFromPasteboard(type, sequenceNumber));
+        ASSERT(typesSeen.add(type).isNewEntry);
     }
     return dataObject;
 }
@@ -120,22 +122,29 @@ void DataObject::clearData(const String& type)
     }
 }
 
-ListHashSet<String> DataObject::types() const
+Vector<String> DataObject::types() const
 {
-    ListHashSet<String> results;
+    Vector<String> results;
+#if ENABLE(ASSERT)
+    HashSet<String> typesSeen;
+#endif
     bool containsFiles = false;
-    for (size_t i = 0; i < m_itemList.size(); ++i) {
-        switch (m_itemList[i]->kind()) {
+    for (const auto& item : m_itemList) {
+        switch (item->kind()) {
         case DataObjectItem::StringKind:
-            results.add(m_itemList[i]->type());
+            // Per the spec, type must be unique among all items of kind 'string'.
+            results.append(item->type());
+            ASSERT(typesSeen.add(item->type()).isNewEntry);
             break;
         case DataObjectItem::FileKind:
             containsFiles = true;
             break;
         }
     }
-    if (containsFiles)
-        results.add(mimeTypeFiles);
+    if (containsFiles) {
+        results.append(mimeTypeFiles);
+        ASSERT(typesSeen.add(mimeTypeFiles).isNewEntry);
+    }
     return results;
 }
 

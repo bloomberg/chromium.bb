@@ -36,7 +36,6 @@
 #include "platform/PasteMode.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/ListHashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
@@ -73,7 +72,7 @@ public:
     // WebCore helpers.
     void clearData(const String& type);
 
-    ListHashSet<String> types() const;
+    Vector<String> types() const;
     String getData(const String& type) const;
     void setData(const String& type, const String& data);
 
