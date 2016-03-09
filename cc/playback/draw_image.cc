@@ -5,32 +5,48 @@
 #include "cc/playback/draw_image.h"
 
 namespace cc {
+namespace {
+
+// Helper funciton to extract a scale from the matrix. Returns true on success
+// and false on failure.
+bool ExtractScale(const SkMatrix& matrix, SkSize* scale) {
+  *scale = SkSize::Make(matrix.getScaleX(), matrix.getScaleY());
+  if (matrix.getType() & SkMatrix::kAffine_Mask) {
+    if (!matrix.decomposeScale(scale)) {
+      scale->set(1, 1);
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
 
 DrawImage::DrawImage()
     : image_(nullptr),
       src_rect_(SkIRect::MakeXYWH(0, 0, 0, 0)),
+      filter_quality_(kNone_SkFilterQuality),
+      matrix_(SkMatrix::I()),
       scale_(SkSize::Make(1.f, 1.f)),
-      filter_quality_(kNone_SkFilterQuality) {}
+      matrix_is_decomposable_(true) {}
 
 DrawImage::DrawImage(const SkImage* image,
                      const SkIRect& src_rect,
-                     const SkSize& scale,
                      SkFilterQuality filter_quality,
-                     bool matrix_has_perspective,
-                     bool matrix_is_decomposable)
+                     const SkMatrix& matrix)
     : image_(image),
       src_rect_(src_rect),
-      scale_(scale),
       filter_quality_(filter_quality),
-      matrix_has_perspective_(matrix_has_perspective),
-      matrix_is_decomposable_(matrix_is_decomposable) {}
+      matrix_(matrix) {
+  matrix_is_decomposable_ = ExtractScale(matrix_, &scale_);
+}
 
 DrawImage::DrawImage(const DrawImage& other)
     : image_(other.image_),
       src_rect_(other.src_rect_),
-      scale_(other.scale_),
       filter_quality_(other.filter_quality_),
-      matrix_has_perspective_(other.matrix_has_perspective_),
+      matrix_(other.matrix_),
+      scale_(other.scale_),
       matrix_is_decomposable_(other.matrix_is_decomposable_) {}
 
 }  // namespace cc

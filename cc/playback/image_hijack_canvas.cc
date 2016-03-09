@@ -22,17 +22,13 @@ class ScopedDecodedImageLock {
   ScopedDecodedImageLock(ImageDecodeController* image_decode_controller,
                          const SkImage* image,
                          const SkRect& src_rect,
-                         const SkSize& scale,
-                         bool is_decomposable,
-                         bool has_perspective,
+                         const SkMatrix& matrix,
                          const SkPaint* paint)
       : image_decode_controller_(image_decode_controller),
         draw_image_(image,
                     RoundOutRect(src_rect),
-                    scale,
                     paint ? paint->getFilterQuality() : kNone_SkFilterQuality,
-                    has_perspective,
-                    is_decomposable),
+                    matrix),
         decoded_draw_image_(
             image_decode_controller_->GetDecodedImageForDraw(draw_image_)) {
     DCHECK(image->isLazyGenerated());
@@ -85,12 +81,9 @@ void ImageHijackCanvas::onDrawImage(const SkImage* image,
 
   SkMatrix ctm = getTotalMatrix();
 
-  SkSize scale;
-  bool is_decomposable = ExtractScale(ctm, &scale);
   ScopedDecodedImageLock scoped_lock(
       image_decode_controller_, image,
-      SkRect::MakeIWH(image->width(), image->height()), scale, is_decomposable,
-      ctm.hasPerspective(), paint);
+      SkRect::MakeIWH(image->width(), image->height()), ctm, paint);
   const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
   if (!decoded_image.image())
     return;
@@ -129,11 +122,8 @@ void ImageHijackCanvas::onDrawImageRect(const SkImage* image,
   matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
   matrix.postConcat(getTotalMatrix());
 
-  SkSize scale;
-  bool is_decomposable = ExtractScale(matrix, &scale);
   ScopedDecodedImageLock scoped_lock(image_decode_controller_, image, *src,
-                                     scale, is_decomposable,
-                                     matrix.hasPerspective(), paint);
+                                     matrix, paint);
   const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
   if (!decoded_image.image())
     return;

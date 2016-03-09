@@ -24,17 +24,6 @@ SkRect MapRect(const SkMatrix& matrix, const SkRect& src) {
   return dst;
 }
 
-bool ExtractScale(const SkMatrix& matrix, SkSize* scale) {
-  *scale = SkSize::Make(matrix.getScaleX(), matrix.getScaleY());
-  if (matrix.getType() & SkMatrix::kAffine_Mask) {
-    if (!matrix.decomposeScale(scale)) {
-      scale->set(1, 1);
-      return false;
-    }
-  }
-  return true;
-}
-
 namespace {
 
 // We're using an NWay canvas with no added canvases, so in effect
@@ -155,11 +144,8 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
 
     SkIRect src_irect;
     src_rect.roundOut(&src_irect);
-    SkSize scale;
-    bool is_decomposable = ExtractScale(matrix, &scale);
     image_set_->push_back(
-        std::make_pair(DrawImage(image, src_irect, scale, filter_quality,
-                                 matrix.hasPerspective(), is_decomposable),
+        std::make_pair(DrawImage(image, src_irect, filter_quality, matrix),
                        gfx::ToEnclosingRect(gfx::SkRectToRectF(paint_rect))));
   }
 

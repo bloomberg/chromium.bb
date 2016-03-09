@@ -24,10 +24,6 @@ namespace cc {
 // Helper function to apply the matrix to the rect and return the result.
 SkRect MapRect(const SkMatrix& matrix, const SkRect& src);
 
-// Helper funciton to extract a scale from the matrix. Returns true on success
-// and false on failure.
-bool ExtractScale(const SkMatrix& matrix, SkSize* scale);
-
 // This class is used for generating discardable images data (see DrawImage
 // for the type of data it stores). It allows the client to query a particular
 // rect and get back a list of DrawImages in that rect.

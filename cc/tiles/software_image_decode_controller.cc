@@ -366,13 +366,9 @@ SoftwareImageDecodeController::DecodeImageInternal(
   // GetDecodedImageForDrawInternal() would decode the image, and unreffing it
   // later ensures that we will store the discardable memory unlocked in the
   // cache to be used by future requests.
-  SkSize identity_scale = SkSize::Make(1.f, 1.f);
-  bool matrix_has_perspective = false;
-  bool matrix_is_decomposable = true;
   gfx::Rect full_image_rect(image->width(), image->height());
-  DrawImage original_size_draw_image(
-      image, gfx::RectToSkIRect(full_image_rect), identity_scale,
-      kNone_SkFilterQuality, matrix_has_perspective, matrix_is_decomposable);
+  DrawImage original_size_draw_image(image, gfx::RectToSkIRect(full_image_rect),
+                                     kNone_SkFilterQuality, SkMatrix::I());
   ImageKey original_size_key =
       ImageKey::FromDrawImage(original_size_draw_image);
   // Sanity checks.
@@ -698,10 +694,10 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
     quality = std::min(quality, kLow_SkFilterQuality);
   }
 
-  // Drop from high to medium if the image has perspective applied, the matrix
-  // we applied wasn't decomposable, or if the scaled image will be too large.
+  // Drop from high to medium if the the matrix we applied wasn't decomposable,
+  // or if the scaled image will be too large.
   if (quality == kHigh_SkFilterQuality) {
-    if (image.matrix_has_perspective() || !image.matrix_is_decomposable()) {
+    if (!image.matrix_is_decomposable()) {
       quality = kMedium_SkFilterQuality;
     } else {
       base::CheckedNumeric<size_t> size = 4u;
