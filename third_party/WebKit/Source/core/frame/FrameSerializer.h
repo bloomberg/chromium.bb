@@ -35,10 +35,9 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/Forward.h"
+#include "wtf/HashSet.h"
 #include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -126,7 +125,7 @@ private:
     void retrieveResourcesForCSSValue(CSSValue*, Document&);
 
     Vector<SerializedResource>* m_resources;
-    ListHashSet<KURL> m_resourceURLs;
+    HashSet<KURL> m_resourceURLs;
 
     Delegate& m_delegate;
 };
