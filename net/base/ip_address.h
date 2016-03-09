@@ -139,6 +139,12 @@ NET_EXPORT bool IPAddressMatchesPrefix(const IPAddress& ip_address,
                                        const IPAddress& ip_prefix,
                                        size_t prefix_length_in_bits);
 
+// Returns number of matching initial bits between the addresses |a1| and |a2|.
+unsigned CommonPrefixLength(const IPAddress& a1, const IPAddress& a2);
+
+// Computes the number of leading 1-bits in |mask|.
+unsigned MaskPrefixLength(const IPAddress& mask);
+
 // Checks whether |address| starts with |prefix|. This provides similar
 // functionality as IPAddressMatchesPrefix() but doesn't perform automatic IPv4
 // to IPv4MappedIPv6 conversions and only checks against full bytes.

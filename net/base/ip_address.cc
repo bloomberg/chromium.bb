@@ -127,4 +127,12 @@ bool IPAddressMatchesPrefix(const IPAddress& ip_address,
                                prefix_length_in_bits);
 }
 
+unsigned CommonPrefixLength(const IPAddress& a1, const IPAddress& a2) {
+  return CommonPrefixLength(a1.bytes(), a2.bytes());
+}
+
+unsigned MaskPrefixLength(const IPAddress& mask) {
+  return MaskPrefixLength(mask.bytes());
+}
+
 }  // namespace net

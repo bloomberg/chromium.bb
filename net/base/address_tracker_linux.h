@@ -22,7 +22,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 
 namespace net {
@@ -33,7 +33,7 @@ namespace internal {
 class NET_EXPORT_PRIVATE AddressTrackerLinux :
     public base::MessageLoopForIO::Watcher {
  public:
-  typedef std::map<IPAddressNumber, struct ifaddrmsg> AddressMap;
+  typedef std::map<IPAddress, struct ifaddrmsg> AddressMap;
 
   // Non-tracking version constructor: it takes a snapshot of the
   // current system configuration. Once Init() returns, the

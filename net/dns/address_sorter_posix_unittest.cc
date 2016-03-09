@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/client_socket_factory.h"
@@ -19,11 +20,11 @@ namespace net {
 namespace {
 
 // Used to map destination address to source address.
-typedef std::map<IPAddressNumber, IPAddressNumber> AddressMapping;
+typedef std::map<IPAddress, IPAddress> AddressMapping;
 
-IPAddressNumber ParseIP(const std::string& str) {
-  IPAddressNumber addr;
-  CHECK(ParseIPLiteralToNumber(str, &addr));
+IPAddress ParseIP(const std::string& str) {
+  IPAddress addr;
+  CHECK(addr.AssignFromIPLiteral(str));
   return addr;
 }
 
@@ -72,8 +73,7 @@ class TestUDPClientSocket : public DatagramClientSocket {
   int Connect(const IPEndPoint& remote) override {
     if (connected_)
       return ERR_UNEXPECTED;
-    AddressMapping::const_iterator it =
-        mapping_->find(remote.address().bytes());
+    AddressMapping::const_iterator it = mapping_->find(remote.address());
     if (it == mapping_->end())
       return ERR_FAILED;
     connected_ = true;
@@ -122,7 +122,7 @@ class TestSocketFactory : public ClientSocketFactory {
   }
   void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
 
-  void AddMapping(const IPAddressNumber& dst, const IPAddressNumber& src) {
+  void AddMapping(const IPAddress& dst, const IPAddress& src) {
     mapping_[dst] = src;
   }
 
@@ -154,7 +154,7 @@ class AddressSorterPosixTest : public testing::Test {
 
   AddressSorterPosix::SourceAddressInfo* GetSourceInfo(
       const std::string& addr) {
-    IPAddressNumber address = ParseIP(addr);
+    IPAddress address = ParseIP(addr);
     AddressSorterPosix::SourceAddressInfo* info = &sorter_.source_map_[address];
     if (info->scope == AddressSorterPosix::SCOPE_UNDEFINED)
       sorter_.FillPolicy(address, info);

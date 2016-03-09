@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/address_list.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/address_sorter.h"
@@ -58,7 +58,7 @@ class NET_EXPORT_PRIVATE AddressSorterPosix
     bool native;
   };
 
-  typedef std::map<IPAddressNumber, SourceAddressInfo> SourceAddressMap;
+  typedef std::map<IPAddress, SourceAddressInfo> SourceAddressMap;
 
   explicit AddressSorterPosix(ClientSocketFactory* socket_factory);
   ~AddressSorterPosix() override;
@@ -74,8 +74,7 @@ class NET_EXPORT_PRIVATE AddressSorterPosix
   void OnIPAddressChanged() override;
 
   // Fills |info| with values for |address| from policy tables.
-  void FillPolicy(const IPAddressNumber& address,
-                  SourceAddressInfo* info) const;
+  void FillPolicy(const IPAddress& address, SourceAddressInfo* info) const;
 
   // Mutable to allow using default values for source addresses which were not
   // found in most recent OnIPAddressChanged.

@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <linux/if.h>
+#include <stdint.h>
 #include <sys/ioctl.h>
 
 #include "base/files/scoped_file.h"
@@ -13,7 +14,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/network_interfaces_linux.h"
-#include "net/base/ip_address_number.h"
 
 namespace net {
 namespace internal {
@@ -37,7 +37,7 @@ bool IgnoreWirelessChange(const struct nlmsghdr* header,
 // Retrieves address from NETLINK address message.
 // Sets |really_deprecated| for IPv6 addresses with preferred lifetimes of 0.
 bool GetAddress(const struct nlmsghdr* header,
-                IPAddressNumber* out,
+                IPAddress* out,
                 bool* really_deprecated) {
   if (really_deprecated)
     *really_deprecated = false;
@@ -46,10 +46,10 @@ bool GetAddress(const struct nlmsghdr* header,
   size_t address_length = 0;
   switch (msg->ifa_family) {
     case AF_INET:
-      address_length = kIPv4AddressSize;
+      address_length = IPAddress::kIPv4AddressSize;
       break;
     case AF_INET6:
-      address_length = kIPv6AddressSize;
+      address_length = IPAddress::kIPv6AddressSize;
       break;
     default:
       // Unknown family.
@@ -59,8 +59,8 @@ bool GetAddress(const struct nlmsghdr* header,
   // getaddrinfo in glibc (check_pf.c). Judging from kernel implementation of
   // NETLINK, IPv4 addresses have only the IFA_ADDRESS attribute, while IPv6
   // have the IFA_LOCAL attribute.
-  unsigned char* address = NULL;
-  unsigned char* local = NULL;
+  uint8_t* address = NULL;
+  uint8_t* local = NULL;
   size_t length = IFA_PAYLOAD(header);
   for (const struct rtattr* attr =
            reinterpret_cast<const struct rtattr*>(IFA_RTA(msg));
@@ -69,11 +69,11 @@ bool GetAddress(const struct nlmsghdr* header,
     switch (attr->rta_type) {
       case IFA_ADDRESS:
         DCHECK_GE(RTA_PAYLOAD(attr), address_length);
-        address = reinterpret_cast<unsigned char*>(RTA_DATA(attr));
+        address = reinterpret_cast<uint8_t*>(RTA_DATA(attr));
         break;
       case IFA_LOCAL:
         DCHECK_GE(RTA_PAYLOAD(attr), address_length);
-        local = reinterpret_cast<unsigned char*>(RTA_DATA(attr));
+        local = reinterpret_cast<uint8_t*>(RTA_DATA(attr));
         break;
       case IFA_CACHEINFO: {
         const struct ifa_cacheinfo *cache_info =
@@ -89,7 +89,7 @@ bool GetAddress(const struct nlmsghdr* header,
     address = local;
   if (!address)
     return false;
-  out->assign(address, address + address_length);
+  *out = IPAddress(address, address_length);
   return true;
 }
 
@@ -327,7 +327,7 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
         LOG(ERROR) << "Unexpected netlink error " << msg->error << ".";
       } return;
       case RTM_NEWADDR: {
-        IPAddressNumber address;
+        IPAddress address;
         bool really_deprecated;
         struct ifaddrmsg* msg =
             reinterpret_cast<struct ifaddrmsg*>(NLMSG_DATA(header));
@@ -357,7 +357,7 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
         }
       } break;
       case RTM_DELADDR: {
-        IPAddressNumber address;
+        IPAddress address;
         const struct ifaddrmsg* msg =
             reinterpret_cast<struct ifaddrmsg*>(NLMSG_DATA(header));
         if (IsInterfaceIgnored(msg->ifa_index))
