@@ -594,10 +594,6 @@ void OmniboxViewMac::ApplyTextAttributes(
     [attributedString addAttribute:NSForegroundColorAttributeName
                              value:color
                              range:ComponentToNSRange(scheme)];
-  } else if (as_length) {
-    [attributedString addAttribute:NSForegroundColorAttributeName
-                             value:BaseTextColor(inDarkMode)
-                             range:as_entire_string];
   }
 }
 
