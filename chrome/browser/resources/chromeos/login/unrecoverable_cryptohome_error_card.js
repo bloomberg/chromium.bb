@@ -5,14 +5,7 @@
 Polymer({
   is: 'unrecoverable-cryptohome-error-card',
 
-  properties: {
-    shouldSendFeedback: {
-      type: Boolean,
-      value: true
-    }
-  },
-
   onContinueClicked_: function() {
-    this.fire('done', {shouldSendFeedback: this.shouldSendFeedback});
+    this.fire('done');
   },
 });

@@ -1582,14 +1582,21 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_PREVIOUS_PASSWORD" desc="Password field text on the password changed dialog">
     Previous password
   </message>
-  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_MESSAGE" desc="Message text for the fatal cryptohome error dialog box">
-    We're very sorry, but a serious error has occurred and your profile will need to be recreated to continue. Don't worry, your account is safe, but unfortunately, your local data and files on this device may have been lost.
+  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_TITLE" desc="Title for the fatal cryptohome error dialog box">
+    Could not sign in
+  </message>
+  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_MESSAGE" desc="Message for the fatal cryptohome error dialog box">
+    We're very sorry, but a serious error has occurred and your profile on this device will need to be re-created to continue.<ph name="BR">&lt;br&gt;</ph>
+    <ph name="BR">&lt;br&gt;</ph>
+    Don't worry, your account is safe, but unfortunately, your local data and files on this device may have been lost.<ph name="BR">&lt;br&gt;</ph>
+    <ph name="BR">&lt;br&gt;</ph>
+    Please send feedback to help us prevent this issue in the future.
   </message>
   <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_CONTINUE" desc="Label of the button to continue with re-creating cryptohome for the fatal cryptohome error dialog box">
     Continue
   </message>
-  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_SEND_FEEDBACK" desc="Label of the checkbox to send feedback for the fatal cryptohome error dialog box">
-    Send anonymized system information to help us fix this issue
+  <message name="IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_WAIT_MESSAGE" desc="Message to show when the fatal cryptohome error dialog box is waiting for user profile re-creation to be closed.">
+    Re-creating profile, please wait...
   </message>
   <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
     This sign-in service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>

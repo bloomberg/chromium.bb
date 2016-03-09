@@ -29,7 +29,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/feedback_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
@@ -40,6 +39,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_feedback.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -451,12 +451,14 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("insecureURLEnrollmentError",
                IDS_ENTERPRISE_ENROLLMENT_AUTH_INSECURE_URL_ERROR);
 
+  builder->Add("unrecoverableCryptohomeErrorMessageTitle",
+               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_TITLE);
   builder->Add("unrecoverableCryptohomeErrorMessage",
                IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_MESSAGE);
   builder->Add("unrecoverableCryptohomeErrorContinue",
                IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_CONTINUE);
-  builder->Add("unrecoverableCryptohomeErrorSendFeedback",
-               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_SEND_FEEDBACK);
+  builder->Add("unrecoverableCryptohomeErrorRecreatingProfile",
+               IDS_LOGIN_UNRECOVERABLE_CRYPTOHOME_ERROR_WAIT_MESSAGE);
 }
 
 void SigninScreenHandler::RegisterMessages() {
@@ -1314,10 +1316,11 @@ void SigninScreenHandler::HandleSendFeedbackAndResyncUserData() {
       "Auto generated feedback for http://crbug.com/547857.\n"
       "(uniquifier:%s)",
       base::Int64ToString(base::Time::Now().ToInternalValue()).c_str());
-  feedback_util::SendSysLogFeedback(
-      Profile::FromWebUI(web_ui()), description,
-      base::Bind(&SigninScreenHandler::OnSysLogFeedbackSent,
-                 weak_factory_.GetWeakPtr()));
+
+  login_feedback_.reset(new LoginFeedback(Profile::FromWebUI(web_ui())));
+  login_feedback_->Request(description,
+                           base::Bind(&SigninScreenHandler::OnFeedbackFinished,
+                                      weak_factory_.GetWeakPtr()));
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {
@@ -1407,8 +1410,9 @@ void SigninScreenHandler::OnCapsLockChanged(bool enabled) {
     CallJS("login.AccountPickerScreen.setCapsLockState", caps_lock_enabled_);
 }
 
-void SigninScreenHandler::OnSysLogFeedbackSent(bool sent) {
-  LOG_IF(ERROR, !sent) << "Failed to send syslog feedback.";
+void SigninScreenHandler::OnFeedbackFinished() {
+  CallJS("login.UnrecoverableCryptohomeErrorScreen.resumeAfterFeedbackUI");
+
   // Recreate user's cryptohome after the feedkback is attempted.
   HandleResyncUserData();
 }

@@ -10,7 +10,7 @@ namespace chromeos {
 
 AppWindowWaiter::AppWindowWaiter(extensions::AppWindowRegistry* registry,
                                  const std::string& app_id)
-    : registry_(registry), app_id_(app_id), window_(NULL) {
+    : registry_(registry), app_id_(app_id) {
   registry_->AddObserver(this);
 }
 
@@ -23,18 +23,43 @@ extensions::AppWindow* AppWindowWaiter::Wait() {
   if (window_)
     return window_;
 
-  run_loop_.Run();
+  wait_type_ = WAIT_FOR_ADDED;
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
+
+  return window_;
+}
+
+extensions::AppWindow* AppWindowWaiter::WaitForShown() {
+  window_ = registry_->GetCurrentAppWindowForApp(app_id_);
+  if (window_ && !window_->is_hidden())
+    return window_;
+
+  wait_type_ = WAIT_FOR_SHOWN;
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
 
   return window_;
 }
 
 void AppWindowWaiter::OnAppWindowAdded(extensions::AppWindow* app_window) {
-  if (!run_loop_.running())
+  if (wait_type_ != WAIT_FOR_ADDED || !run_loop_ || !run_loop_->running())
     return;
 
   if (app_window->extension_id() == app_id_) {
     window_ = app_window;
-    run_loop_.Quit();
+    run_loop_->Quit();
+  }
+}
+
+void AppWindowWaiter::OnAppWindowShown(extensions::AppWindow* app_window,
+                                       bool was_hidden) {
+  if (wait_type_ != WAIT_FOR_SHOWN || !run_loop_ || !run_loop_->running())
+    return;
+
+  if (app_window->extension_id() == app_id_) {
+    window_ = app_window;
+    run_loop_->Quit();
   }
 }
 

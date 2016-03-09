@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -51,8 +52,6 @@ namespace feedback_private = api::feedback_private;
 using feedback_private::SystemInformation;
 using feedback_private::FeedbackInfo;
 using feedback_private::FeedbackFlow;
-
-char kFeedbackExtensionId[] = "gfdkimpbcpahaombhbimeihdjnejgicl";
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<FeedbackPrivateAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
@@ -110,7 +109,8 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     event->restrict_to_browser_context = browser_context_;
 
     EventRouter::Get(browser_context_)
-        ->DispatchEventToExtension(kFeedbackExtensionId, std::move(event));
+        ->DispatchEventToExtension(extension_misc::kFeedbackExtensionId,
+                                   std::move(event));
   }
 }
 

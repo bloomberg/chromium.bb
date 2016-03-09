@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/feedback_private.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -48,7 +49,7 @@ class FeedbackTest : public ExtensionBrowserTest {
   bool IsFeedbackAppAvailable() {
     return extensions::EventRouter::Get(browser()->profile())
         ->ExtensionHasEventListener(
-            kFeedbackExtensionId,
+            extension_misc::kFeedbackExtensionId,
             extensions::api::feedback_private::OnFeedbackRequested::kEventName);
   }
 
@@ -66,7 +67,8 @@ class FeedbackTest : public ExtensionBrowserTest {
     ASSERT_TRUE(window);
     const Extension* feedback_app = window->GetExtension();
     ASSERT_TRUE(feedback_app);
-    EXPECT_EQ(feedback_app->id(), std::string(kFeedbackExtensionId));
+    EXPECT_EQ(feedback_app->id(),
+              std::string(extension_misc::kFeedbackExtensionId));
   }
 
  private:

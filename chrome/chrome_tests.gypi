@@ -783,6 +783,7 @@
       'browser/chromeos/login/test/wizard_in_process_browser_test.cc',
       'browser/chromeos/login/test/wizard_in_process_browser_test.h',
       'browser/chromeos/login/ui/captive_portal_window_browsertest.cc',
+      'browser/chromeos/login/ui/login_feedback_browsertest.cc',
       'browser/chromeos/login/ui/login_web_dialog_browsertest.cc',
       'browser/chromeos/login/ui/simple_web_view_dialog_browsertest.cc',
       'browser/chromeos/login/ui/user_adding_screen_browsertest.cc',

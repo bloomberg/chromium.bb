@@ -6,7 +6,8 @@ login.createScreen('UnrecoverableCryptohomeErrorScreen',
                    'unrecoverable-cryptohome-error', function() {
   return {
     EXTERNAL_API: [
-      'show'
+      'show',
+      'resumeAfterFeedbackUI'
     ],
 
     /** @override */
@@ -16,11 +17,8 @@ login.createScreen('UnrecoverableCryptohomeErrorScreen',
 
       this.card_.addEventListener('done', function(e) {
         this.setLoading_(true);
-        if (e.detail.shouldSendFeedback) {
-          chrome.send('sendFeedbackAndResyncUserData');
-        } else {
-          chrome.send('resyncUserData');
-        }
+        $('oobe').hidden = true;  // Hide while showing the feedback UI.
+        chrome.send('sendFeedbackAndResyncUserData');
       }.bind(this));
     },
 
@@ -34,13 +32,21 @@ login.createScreen('UnrecoverableCryptohomeErrorScreen',
     },
 
     /**
-     * Show password changed screen.
+     * Show the unrecoverable cryptohome error screen to ask user permission
+     * to collect a feedback report.
      */
     show: function() {
       this.setLoading_(false);
 
       Oobe.getInstance().headerHidden = true;
       Oobe.showScreen({id: SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR});
+    },
+
+    /**
+     * Shows the loading UI after the feedback UI is dismissed.
+     */
+    resumeAfterFeedbackUI: function() {
+      $('oobe').hidden = false;
     }
   };
 });

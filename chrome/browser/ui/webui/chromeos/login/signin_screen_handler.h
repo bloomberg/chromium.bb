@@ -49,6 +49,7 @@ class CaptivePortalWindowProxy;
 class CoreOobeActor;
 class ErrorScreensHistogramHelper;
 class GaiaScreenHandler;
+class LoginFeedback;
 class NativeWindowDelegate;
 class SupervisedUserCreationScreenHandler;
 class User;
@@ -412,8 +413,8 @@ class SigninScreenHandler
   // Returns OobeUI object of NULL.
   OobeUI* GetOobeUI() const;
 
-  // Callback invoked after the syslog feedback is sent.
-  void OnSysLogFeedbackSent(bool sent);
+  // Callback invoked after the feedback is finished.
+  void OnFeedbackFinished();
 
   // Current UI state of the signin screen.
   UIState ui_state_ = UI_STATE_UNKNOWN;
@@ -481,6 +482,8 @@ class SigninScreenHandler
   bool zero_offline_timeout_for_test_ = false;
 
   scoped_ptr<ErrorScreensHistogramHelper> histogram_helper_;
+
+  scoped_ptr<LoginFeedback> login_feedback_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 

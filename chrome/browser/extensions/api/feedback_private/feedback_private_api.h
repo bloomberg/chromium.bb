@@ -12,8 +12,6 @@
 
 namespace extensions {
 
-extern char kFeedbackExtensionId[];
-
 class FeedbackService;
 
 using extensions::api::feedback_private::SystemInformation;

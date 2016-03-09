@@ -4,5 +4,16 @@
  */
 
 :host .content {
-  padding: 1em;
+  padding: 24px 24px 16px;
+}
+
+:host .title {
+  font-weight: bold;
+  white-space: nowrap;
+  word-wrap: normal;
+}
+
+:host .message {
+  margin-bottom: 25px;
+  margin-top: 20px;
 }

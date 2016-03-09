@@ -3,7 +3,6 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <!--
@@ -11,9 +10,6 @@
   cryptohome error happens. It asks user to help us debugging the issue by
   sending us a feedback and allows user to re-create the cryptohome so that
   the device could still be used.
-
-  Attributes:
-    'shouldSendFeedback' - Whether to send feedback
 
   Events:
     'done' - fired when user clicks on continue button.
@@ -23,15 +19,11 @@
 
   <template>
     <div class="content">
-      <div class="gaia-body-text horizontal layout center">
-        <p i18n-content="unrecoverableCryptohomeErrorMessage" class="flex">
-        </p>
+      <div i18n-content="unrecoverableCryptohomeErrorMessageTitle" class="title">
       </div>
-      <p>
-        <paper-checkbox id="sendFeedback" checked="{{shouldSendFeedback}}">
-          <span i18n-content="unrecoverableCryptohomeErrorSendFeedback"></span>
-        </paper-checkbox>
-      </p>
+      <div class="message"
+          i18n-values=".innerHTML:unrecoverableCryptohomeErrorMessage">
+      </div>
       <div class="horizontal-reverse layout justified center">
         <gaia-button on-tap="onContinueClicked_"
             i18n-content="unrecoverableCryptohomeErrorContinue">
