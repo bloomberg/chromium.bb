@@ -49,8 +49,7 @@ struct NET_EXPORT SignedTreeHead {
   std::string log_id;
 };
 
-NET_EXPORT std::ostream& operator<<(std::ostream& stream,
-                                    const SignedTreeHead& sth);
+NET_EXPORT void PrintTo(const SignedTreeHead& sth, std::ostream* os);
 
 }  // namespace ct
 
