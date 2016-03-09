@@ -580,4 +580,9 @@ InspectorTest.selectThread = function(target)
     threadsPane._onListItemClick(listItem);
 }
 
+InspectorTest.evaluateOnCurrentCallFrame = function(code)
+{
+    return new Promise(succ => InspectorTest.debuggerModel.evaluateOnSelectedCallFrame(code, "console", false, true, false, false, InspectorTest.safeWrap(succ)));
+}
+
 };
