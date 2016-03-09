@@ -31,6 +31,7 @@
 #ifndef Referrer_h
 #define Referrer_h
 
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
@@ -39,8 +40,12 @@ namespace blink {
 
 struct Referrer {
     DISALLOW_NEW();
-    Referrer(const String& referrer, ReferrerPolicy referrerPolicy) : referrer(referrer), referrerPolicy(referrerPolicy) { }
+    Referrer(const String& referrer, ReferrerPolicy referrerPolicy) : referrer(referrer), referrerPolicy(referrerPolicy)
+    {
+        ASSERT(referrer == noReferrer() || KURL(KURL(), referrer).isValid());
+    }
     Referrer() : referrerPolicy(ReferrerPolicyDefault) { }
+    static String noReferrer() { return String(); }
 
     AtomicString referrer;
     ReferrerPolicy referrerPolicy;

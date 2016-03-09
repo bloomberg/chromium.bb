@@ -180,8 +180,12 @@ void WebURLRequest::setHTTPHeaderField(const WebString& name, const WebString& v
     m_private->m_resourceRequest->setHTTPHeaderField(name, value);
 }
 
-void WebURLRequest::setHTTPReferrer(const WebString& referrer, WebReferrerPolicy referrerPolicy)
+void WebURLRequest::setHTTPReferrer(const WebString& webReferrer, WebReferrerPolicy referrerPolicy)
 {
+    // WebString doesn't have the distinction between empty and null. We use
+    // the null WTFString for referrer.
+    ASSERT(Referrer::noReferrer() == String());
+    String referrer = webReferrer.isEmpty() ? Referrer::noReferrer() : String(webReferrer);
     m_private->m_resourceRequest->setHTTPReferrer(Referrer(referrer, static_cast<ReferrerPolicy>(referrerPolicy)));
 }
 

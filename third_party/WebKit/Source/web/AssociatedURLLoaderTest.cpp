@@ -636,7 +636,7 @@ TEST_F(AssociatedURLLoaderTest, MAYBE_UntrustedCheckHeaders)
     CheckHeaderFails("host");
     CheckHeaderFails("keep-alive");
     CheckHeaderFails("origin");
-    CheckHeaderFails("referer");
+    CheckHeaderFails("referer", "http://example.com/");
     CheckHeaderFails("te");
     CheckHeaderFails("trailer");
     CheckHeaderFails("transfer-encoding");
