@@ -69,17 +69,21 @@ source_set("lib") {
   deps = [
     ":child_process_base",
     ":native_application_support",
-    "//base",
     "//base:base_static",
     "//base:i18n",
-    "//mojo/edk/system",
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
-    "//mojo/shell",
     "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/interfaces",
     "//mojo/shell/runner:init",
     "//mojo/shell/runner/common",
+  ]
+
+  public_deps = [
+    "//base",
+    "//mojo/edk/system",
+    "//mojo/public/cpp/system",
+    "//mojo/shell",
+    "//mojo/shell/public/interfaces",
   ]
 
   if (is_linux && !is_android) {
