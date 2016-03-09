@@ -191,17 +191,6 @@ PassRefPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCrea
         break;
     }
 
-    case CSSPropertyWebkitFilter:
-    case CSSPropertyBackdropFilter: {
-        RefPtr<Interpolation> interpolation = FilterStyleInterpolation::maybeCreateList(*fromCSSValue, *toCSSValue, property);
-        if (interpolation)
-            return interpolation.release();
-
-        // FIXME: Support drop shadow interpolation.
-        return createLegacyStyleInterpolation(property, end, element, baseStyle);
-        break;
-    }
-
     default:
         // Fall back to LegacyStyleInterpolation.
         return createLegacyStyleInterpolation(property, end, element, baseStyle);
