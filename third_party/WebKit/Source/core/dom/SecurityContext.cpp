@@ -34,7 +34,7 @@ namespace blink {
 
 SecurityContext::SecurityContext()
     : m_sandboxFlags(SandboxNone)
-    , m_addressSpace(WebURLRequest::AddressSpacePublic)
+    , m_addressSpace(WebAddressSpacePublic)
     , m_insecureRequestsPolicy(InsecureRequestsDoNotUpgrade)
     , m_enforceStrictMixedContentChecking(false)
 {
@@ -72,13 +72,13 @@ void SecurityContext::enforceSandboxFlags(SandboxFlags mask)
 String SecurityContext::addressSpaceForBindings() const
 {
     switch (m_addressSpace) {
-    case WebURLRequest::AddressSpacePublic:
+    case WebAddressSpacePublic:
         return "public";
 
-    case WebURLRequest::AddressSpacePrivate:
+    case WebAddressSpacePrivate:
         return "private";
 
-    case WebURLRequest::AddressSpaceLocal:
+    case WebAddressSpaceLocal:
         return "local";
     }
     ASSERT_NOT_REACHED();

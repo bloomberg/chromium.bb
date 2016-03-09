@@ -89,6 +89,7 @@ void SharedWorkerHost::Start(bool pause_on_start) {
   params.name = instance_->name();
   params.content_security_policy = instance_->content_security_policy();
   params.security_policy_type = instance_->security_policy_type();
+  params.creation_address_space = instance_->creation_address_space();
   params.pause_on_start = pause_on_start;
   params.route_id = worker_route_id_;
   Send(new WorkerProcessMsg_CreateWorker(params));

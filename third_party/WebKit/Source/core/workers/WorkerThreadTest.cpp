@@ -13,6 +13,7 @@
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
+#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebScheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -185,7 +186,7 @@ public:
             headers.release(),
             m_securityOrigin.get(),
             clients.release(),
-            WebURLRequest::AddressSpaceLocal,
+            WebAddressSpaceLocal,
             V8CacheOptionsDefault));
     }
 

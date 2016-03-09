@@ -37,6 +37,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "public/platform/WebAddressSpace.h"
 #include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebFrameClient.h"
@@ -97,7 +98,7 @@ public:
     void resumeStartup() override;
 
     // WebSharedWorker methods:
-    void startWorkerContext(const WebURL&, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType) override;
+    void startWorkerContext(const WebURL&, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType, WebAddressSpace) override;
     void connect(WebMessagePortChannel*) override;
     void terminateWorkerContext() override;
 
@@ -158,6 +159,7 @@ private:
 
     WebURL m_url;
     WebString m_name;
+    WebAddressSpace m_creationAddressSpace;
 };
 
 } // namespace blink

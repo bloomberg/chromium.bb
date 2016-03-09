@@ -36,6 +36,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -50,7 +51,7 @@ WorkerScriptLoader::WorkerScriptLoader()
     , m_identifier(0)
     , m_appCacheID(0)
     , m_requestContext(WebURLRequest::RequestContextWorker)
-    , m_responseAddressSpace(WebURLRequest::AddressSpacePublic)
+    , m_responseAddressSpace(WebAddressSpacePublic)
 {
 }
 
@@ -64,11 +65,11 @@ WorkerScriptLoader::~WorkerScriptLoader()
         cancel();
 }
 
-void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy)
+void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WebAddressSpace creationAddressSpace)
 {
     m_url = url;
 
-    ResourceRequest request(createResourceRequest(executionContext));
+    ResourceRequest request(createResourceRequest(creationAddressSpace));
     ASSERT_WITH_SECURITY_IMPLICATION(executionContext.isWorkerGlobalScope());
 
     ThreadableLoaderOptions options;
@@ -82,14 +83,14 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
     WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(executionContext), request, *this, options, resourceLoaderOptions);
 }
 
-void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, PassOwnPtr<SameThreadClosure> responseCallback, PassOwnPtr<SameThreadClosure> finishedCallback)
+void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WebAddressSpace creationAddressSpace, PassOwnPtr<SameThreadClosure> responseCallback, PassOwnPtr<SameThreadClosure> finishedCallback)
 {
     ASSERT(responseCallback || finishedCallback);
     m_responseCallback = responseCallback;
     m_finishedCallback = finishedCallback;
     m_url = url;
 
-    ResourceRequest request(createResourceRequest(executionContext));
+    ResourceRequest request(createResourceRequest(creationAddressSpace));
     ThreadableLoaderOptions options;
     options.crossOriginRequestPolicy = crossOriginRequestPolicy;
 
@@ -114,12 +115,12 @@ const KURL& WorkerScriptLoader::responseURL() const
     return m_responseURL;
 }
 
-ResourceRequest WorkerScriptLoader::createResourceRequest(ExecutionContext& executionContext)
+ResourceRequest WorkerScriptLoader::createResourceRequest(WebAddressSpace creationAddressSpace)
 {
     ResourceRequest request(m_url);
     request.setHTTPMethod(HTTPNames::GET);
     request.setRequestContext(m_requestContext);
-    request.setExternalRequestStateFromRequestorAddressSpace(executionContext.securityContext().addressSpace());
+    request.setExternalRequestStateFromRequestorAddressSpace(creationAddressSpace);
     return request;
 }
 
@@ -138,8 +139,8 @@ void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const Reso
 
     if (Platform::current()->isReservedIPAddress(response.remoteIPAddress())) {
         m_responseAddressSpace = SecurityOrigin::create(m_responseURL)->isLocalhost()
-            ? WebURLRequest::AddressSpaceLocal
-            : WebURLRequest::AddressSpacePrivate;
+            ? WebAddressSpaceLocal
+            : WebAddressSpacePrivate;
     }
 
     if (m_responseCallback)

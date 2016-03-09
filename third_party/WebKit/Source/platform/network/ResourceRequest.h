@@ -36,6 +36,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/OwnPtr.h"
 
@@ -240,7 +241,7 @@ public:
 
     // https://mikewest.github.io/cors-rfc1918/#external-request
     bool isExternalRequest() const { return m_isExternalRequest; }
-    void setExternalRequestStateFromRequestorAddressSpace(WebURLRequest::AddressSpace);
+    void setExternalRequestStateFromRequestorAddressSpace(WebAddressSpace);
 
     InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy() const { return m_inputPerfMetricReportPolicy; }
     void setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy) { m_inputPerfMetricReportPolicy = inputPerfMetricReportPolicy; }

@@ -38,7 +38,7 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/WebURLRequest.h"
+#include "public/platform/WebAddressSpace.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -50,7 +50,7 @@ class CORE_EXPORT WorkerThreadStartupData final {
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
     USING_FAST_MALLOC(WorkerThreadStartupData);
 public:
-    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, WebURLRequest::AddressSpace addressSpace, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
+    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, WebAddressSpace addressSpace, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
     {
         return adoptPtr(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, cachedMetaData, startMode, contentSecurityPolicyHeaders, starterOrigin, workerClients, addressSpace, v8CacheOptions));
     }
@@ -86,12 +86,12 @@ public:
     // supplies no extra 'clients', m_workerClients can be left as empty/null.
     OwnPtrWillBeCrossThreadPersistent<WorkerClients> m_workerClients;
 
-    WebURLRequest::AddressSpace m_addressSpace;
+    WebAddressSpace m_addressSpace;
 
     V8CacheOptions m_v8CacheOptions;
 
 private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>, WebURLRequest::AddressSpace, V8CacheOptions);
+    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>, WebAddressSpace, V8CacheOptions);
 };
 
 } // namespace blink

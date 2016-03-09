@@ -42,6 +42,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebAddressSpace.h"
 #include "testing/gmock/include/gmock/gmock-generated-function-mockers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -582,7 +583,7 @@ TEST_F(FrameFetchContextDisplayedCertificateErrorsTest, MemoryCacheCertificateEr
 
 TEST_F(FrameFetchContextTest, SetIsExternalRequestForPublicDocument)
 {
-    EXPECT_EQ(WebURLRequest::AddressSpacePublic, document->addressSpace());
+    EXPECT_EQ(WebAddressSpacePublic, document->addressSpace());
 
     struct TestCase {
         const char* url;
@@ -629,8 +630,8 @@ TEST_F(FrameFetchContextTest, SetIsExternalRequestForPublicDocument)
 
 TEST_F(FrameFetchContextTest, SetIsExternalRequestForPrivateDocument)
 {
-    document->setAddressSpace(WebURLRequest::AddressSpacePrivate);
-    EXPECT_EQ(WebURLRequest::AddressSpacePrivate, document->addressSpace());
+    document->setAddressSpace(WebAddressSpacePrivate);
+    EXPECT_EQ(WebAddressSpacePrivate, document->addressSpace());
 
     struct TestCase {
         const char* url;
@@ -677,8 +678,8 @@ TEST_F(FrameFetchContextTest, SetIsExternalRequestForPrivateDocument)
 
 TEST_F(FrameFetchContextTest, SetIsExternalRequestForLocalDocument)
 {
-    document->setAddressSpace(WebURLRequest::AddressSpaceLocal);
-    EXPECT_EQ(WebURLRequest::AddressSpaceLocal, document->addressSpace());
+    document->setAddressSpace(WebAddressSpaceLocal);
+    EXPECT_EQ(WebAddressSpaceLocal, document->addressSpace());
 
     struct TestCase {
         const char* url;

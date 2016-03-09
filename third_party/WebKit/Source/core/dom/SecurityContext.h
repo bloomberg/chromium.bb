@@ -30,7 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebURLRequest.h"
+#include "public/platform/WebAddressSpace.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -70,8 +70,8 @@ public:
     bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
     void enforceSandboxFlags(SandboxFlags mask);
 
-    void setAddressSpace(WebURLRequest::AddressSpace space) { m_addressSpace = space; }
-    WebURLRequest::AddressSpace addressSpace() const { return m_addressSpace; }
+    void setAddressSpace(WebAddressSpace space) { m_addressSpace = space; }
+    WebAddressSpace addressSpace() const { return m_addressSpace; }
     String addressSpaceForBindings() const;
 
     void setInsecureRequestsPolicy(InsecureRequestsPolicy policy) { m_insecureRequestsPolicy = policy; }
@@ -99,7 +99,7 @@ private:
 
     SandboxFlags m_sandboxFlags;
 
-    WebURLRequest::AddressSpace m_addressSpace;
+    WebAddressSpace m_addressSpace;
     InsecureRequestsPolicy m_insecureRequestsPolicy;
     InsecureNavigationsSet m_insecureNavigationsToUpgrade;
     bool m_enforceStrictMixedContentChecking;

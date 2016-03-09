@@ -388,6 +388,9 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // RenderFrame routing id used to send messages back to the parent.
   IPC_STRUCT_MEMBER(int, render_frame_route_id)
 
+  // Address space of the context that created the worker.
+  IPC_STRUCT_MEMBER(blink::WebAddressSpace, creation_address_space)
+
   // The type (secure or nonsecure) of the context that created the worker.
   IPC_STRUCT_MEMBER(blink::WebSharedWorkerCreationContextType,
                     creation_context_type)

@@ -49,7 +49,7 @@ class SharedWorkerInstanceTest : public testing::Test {
 TEST_F(SharedWorkerInstanceTest, MatchesTest) {
   SharedWorkerInstance instance1(
       GURL("http://example.com/w.js"), base::string16(), base::string16(),
-      blink::WebContentSecurityPolicyTypeReport,
+      blink::WebContentSecurityPolicyTypeReport, blink::WebAddressSpacePublic,
       browser_context_->GetResourceContext(), partition_id_,
       blink::WebSharedWorkerCreationContextTypeNonsecure);
   EXPECT_TRUE(Matches(instance1, "http://example.com/w.js", ""));
@@ -64,8 +64,8 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest) {
   SharedWorkerInstance instance2(
       GURL("http://example.com/w.js"), base::ASCIIToUTF16("name"),
       base::string16(), blink::WebContentSecurityPolicyTypeReport,
-      browser_context_->GetResourceContext(), partition_id_,
-      blink::WebSharedWorkerCreationContextTypeNonsecure);
+      blink::WebAddressSpacePublic, browser_context_->GetResourceContext(),
+      partition_id_, blink::WebSharedWorkerCreationContextTypeNonsecure);
   EXPECT_FALSE(Matches(instance2, "http://example.com/w.js", ""));
   EXPECT_FALSE(Matches(instance2, "http://example.com/w2.js", ""));
   EXPECT_FALSE(Matches(instance2, "http://example.net/w.js", ""));
@@ -78,6 +78,19 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest) {
   EXPECT_FALSE(Matches(instance2, "http://example.com/w2.js", "name2"));
   EXPECT_FALSE(Matches(instance2, "http://example.net/w.js", "name2"));
   EXPECT_FALSE(Matches(instance2, "http://example.net/w2.js", "name2"));
+}
+
+TEST_F(SharedWorkerInstanceTest, AddressSpace) {
+  for (int i = 0; i < static_cast<int>(blink::WebAddressSpaceLast); i++) {
+    SharedWorkerInstance instance(
+        GURL("http://example.com/w.js"), base::ASCIIToUTF16("name"),
+        base::string16(), blink::WebContentSecurityPolicyTypeReport,
+        static_cast<blink::WebAddressSpace>(i),
+        browser_context_->GetResourceContext(), partition_id_,
+        blink::WebSharedWorkerCreationContextTypeNonsecure);
+    EXPECT_EQ(static_cast<blink::WebAddressSpace>(i),
+              instance.creation_address_space());
+  }
 }
 
 }  // namespace content

@@ -18,6 +18,7 @@
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebAddressSpace.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -147,7 +148,7 @@ public:
             adoptPtr(new Vector<CSPHeaderAndType>()),
             m_securityOrigin.get(),
             clients.release(),
-            WebURLRequest::AddressSpaceLocal,
+            WebAddressSpaceLocal,
             V8CacheOptionsDefault));
         return adoptPtr(workerThread);
     }

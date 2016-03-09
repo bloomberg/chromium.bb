@@ -23,7 +23,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebSharedWorker.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
@@ -125,11 +124,10 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     const base::string16& name,
     const base::string16& content_security_policy,
     blink::WebContentSecurityPolicyType security_policy_type,
+    blink::WebAddressSpace creation_address_space,
     bool pause_on_start,
     int route_id)
-    : route_id_(route_id),
-      name_(name),
-      url_(url) {
+    : route_id_(route_id), name_(name), url_(url) {
   RenderThreadImpl::current()->AddEmbeddedWorkerRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::create(this);
   if (pause_on_start) {
@@ -139,8 +137,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   }
   worker_devtools_agent_.reset(
       new SharedWorkerDevToolsAgent(route_id, impl_));
-  impl_->startWorkerContext(url, name_,
-                            content_security_policy, security_policy_type);
+  impl_->startWorkerContext(url, name_, content_security_policy,
+                            security_policy_type, creation_address_space);
 }
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {

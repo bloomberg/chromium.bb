@@ -87,6 +87,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
     , m_client(client)
     , m_pauseWorkerContextOnStart(false)
     , m_isPausedOnStart(false)
+    , m_creationAddressSpace(WebAddressSpacePublic)
 {
 }
 
@@ -178,6 +179,7 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame, bool)
         *m_loadingDocument.get(),
         m_url,
         DenyCrossOriginRequests,
+        m_creationAddressSpace,
         bind(&WebSharedWorkerImpl::didReceiveScriptLoaderResponse, this),
         bind(&WebSharedWorkerImpl::onScriptLoaderFinished, this));
     // Do nothing here since onScriptLoaderFinished() might have been already
@@ -292,10 +294,11 @@ void WebSharedWorkerImpl::connectTask(PassOwnPtr<WebMessagePortChannel> channel,
     workerGlobalScope->dispatchEvent(createConnectEvent(port));
 }
 
-void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType policyType)
+void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType policyType, WebAddressSpace creationAddressSpace)
 {
     m_url = url;
     m_name = name;
+    m_creationAddressSpace = creationAddressSpace;
     initializeLoader();
 }
 

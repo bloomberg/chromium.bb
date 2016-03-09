@@ -292,8 +292,8 @@ void SharedWorkerServiceImpl::CreateWorker(
   *creation_error = blink::WebWorkerCreationErrorNone;
   scoped_ptr<SharedWorkerInstance> instance(new SharedWorkerInstance(
       params.url, params.name, params.content_security_policy,
-      params.security_policy_type, resource_context, partition_id,
-      params.creation_context_type));
+      params.security_policy_type, params.creation_address_space,
+      resource_context, partition_id, params.creation_context_type));
   scoped_ptr<SharedWorkerPendingInstance::SharedWorkerPendingRequest> request(
       new SharedWorkerPendingInstance::SharedWorkerPendingRequest(
           filter,

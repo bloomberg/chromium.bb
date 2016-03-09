@@ -56,6 +56,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/StringBuilder.h"
@@ -177,7 +178,7 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         if (m_enforceStrictMixedContentChecking)
             document->enforceStrictMixedContentChecking();
         if (m_treatAsPublicAddress)
-            document->setAddressSpace(WebURLRequest::AddressSpacePublic);
+            document->setAddressSpace(WebAddressSpacePublic);
         if (m_insecureRequestsPolicy == SecurityContext::InsecureRequestsUpgrade) {
             UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
             document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);

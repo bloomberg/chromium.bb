@@ -292,6 +292,7 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame, bool)
         *m_mainFrame->frame()->document(),
         m_workerStartData.scriptURL,
         DenyCrossOriginRequests,
+        m_mainFrame->frame()->document()->addressSpace(),
         nullptr,
         bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
     // Do nothing here since onScriptLoaderFinished() might have been already

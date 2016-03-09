@@ -31,6 +31,7 @@
 #ifndef WebURLRequest_h
 #define WebURLRequest_h
 
+#include "WebAddressSpace.h"
 #include "WebCommon.h"
 #include "WebHTTPBody.h"
 #include "WebReferrerPolicy.h"
@@ -62,14 +63,6 @@ public:
         PriorityMedium,
         PriorityHigh,
         PriorityVeryHigh,
-    };
-
-    // The ordering is important, as it's used to determine whether preflights are required,
-    // as per https://mikewest.github.io/cors-rfc1918/#framework
-    enum AddressSpace {
-        AddressSpaceLocal = 0, // loopback, link local
-        AddressSpacePrivate, // Reserved by RFC1918
-        AddressSpacePublic // Everything else
     };
 
     // Corresponds to Fetch's "context": http://fetch.spec.whatwg.org/#concept-request-context

@@ -9,6 +9,7 @@
 
 #include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebAddressSpace.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
 #include "url/gurl.h"
@@ -25,6 +26,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
       const base::string16& name,
       const base::string16& content_security_policy,
       blink::WebContentSecurityPolicyType security_policy_type,
+      blink::WebAddressSpace creation_address_space,
       ResourceContext* resource_context,
       const WorkerStoragePartitionId& partition_id,
       blink::WebSharedWorkerCreationContextType creation_context_type);
@@ -52,6 +54,9 @@ class CONTENT_EXPORT SharedWorkerInstance {
   blink::WebContentSecurityPolicyType security_policy_type() const {
     return security_policy_type_;
   }
+  blink::WebAddressSpace creation_address_space() const {
+    return creation_address_space_;
+  }
   ResourceContext* resource_context() const {
     return resource_context_;
   }
@@ -65,6 +70,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
   const base::string16 name_;
   const base::string16 content_security_policy_;
   const blink::WebContentSecurityPolicyType security_policy_type_;
+  const blink::WebAddressSpace creation_address_space_;
   ResourceContext* const resource_context_;
   const WorkerStoragePartitionId partition_id_;
   const blink::WebSharedWorkerCreationContextType creation_context_type_;

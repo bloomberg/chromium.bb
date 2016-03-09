@@ -50,6 +50,7 @@ ScriptPromise Worklet::import(ScriptState* scriptState, const String& url)
     // (resolving the promise) before we return it.
     m_scriptLoaders.append(WorkerScriptLoader::create());
     m_scriptLoaders.last()->loadAsynchronously(*executionContext(), scriptURL, DenyCrossOriginRequests,
+        executionContext()->securityContext().addressSpace(),
         bind(&Worklet::onResponse, this),
         bind(&Worklet::onFinished, this, m_scriptLoaders.last().get(), resolver));
 

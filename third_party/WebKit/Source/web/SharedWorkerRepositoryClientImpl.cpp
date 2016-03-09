@@ -132,7 +132,7 @@ void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<
     WebWorkerCreationError creationError;
     String unusedSecureContextError;
     bool isSecureContext = worker->executionContext()->isSecureContext(unusedSecureContextError);
-    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), header, headerType, isSecureContext ? WebSharedWorkerCreationContextTypeSecure : WebSharedWorkerCreationContextTypeNonsecure, &creationError));
+    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), header, headerType, worker->executionContext()->securityContext().addressSpace(), isSecureContext ? WebSharedWorkerCreationContextTypeSecure : WebSharedWorkerCreationContextTypeNonsecure, &creationError));
     if (creationError != WebWorkerCreationErrorNone) {
         if (creationError == WebWorkerCreationErrorURLMismatch) {
             // Existing worker does not match this url, so return an error back to the caller.

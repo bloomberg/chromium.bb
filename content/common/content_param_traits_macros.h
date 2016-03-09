@@ -14,6 +14,7 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/WebAddressSpace.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
@@ -33,6 +34,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextFrameType,
                           content::REQUEST_CONTEXT_FRAME_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicyType,
                           blink::WebContentSecurityPolicyTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebAddressSpace, blink::WebAddressSpaceLast);
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebSharedWorkerCreationContextType,
                           blink::WebSharedWorkerCreationContextTypeLast)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,

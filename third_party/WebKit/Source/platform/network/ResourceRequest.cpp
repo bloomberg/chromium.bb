@@ -30,6 +30,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -373,11 +374,11 @@ bool ResourceRequest::compare(const ResourceRequest& a, const ResourceRequest& b
     return true;
 }
 
-void ResourceRequest::setExternalRequestStateFromRequestorAddressSpace(WebURLRequest::AddressSpace requestorSpace)
+void ResourceRequest::setExternalRequestStateFromRequestorAddressSpace(WebAddressSpace requestorSpace)
 {
-    static_assert(WebURLRequest::AddressSpaceLocal < WebURLRequest::AddressSpacePrivate, "Local is inside Private");
-    static_assert(WebURLRequest::AddressSpaceLocal < WebURLRequest::AddressSpacePublic, "Local is inside Public");
-    static_assert(WebURLRequest::AddressSpacePrivate < WebURLRequest::AddressSpacePublic, "Private is inside Public");
+    static_assert(WebAddressSpaceLocal < WebAddressSpacePrivate, "Local is inside Private");
+    static_assert(WebAddressSpaceLocal < WebAddressSpacePublic, "Local is inside Public");
+    static_assert(WebAddressSpacePrivate < WebAddressSpacePublic, "Private is inside Public");
 
     // TODO(mkwst): This only checks explicit IP addresses. We'll have to move all this up to //net and //content in
     // order to have any real impact on gateway attacks. That turns out to be a TON of work. https://crbug.com/378566
@@ -386,11 +387,11 @@ void ResourceRequest::setExternalRequestStateFromRequestorAddressSpace(WebURLReq
         return;
     }
 
-    WebURLRequest::AddressSpace targetSpace = WebURLRequest::AddressSpacePublic;
+    WebAddressSpace targetSpace = WebAddressSpacePublic;
     if (Platform::current()->isReservedIPAddress(m_url.host()))
-        targetSpace = WebURLRequest::AddressSpacePrivate;
+        targetSpace = WebAddressSpacePrivate;
     if (SecurityOrigin::create(m_url)->isLocalhost())
-        targetSpace = WebURLRequest::AddressSpaceLocal;
+        targetSpace = WebAddressSpaceLocal;
 
     m_isExternalRequest = requestorSpace > targetSpace;
 }

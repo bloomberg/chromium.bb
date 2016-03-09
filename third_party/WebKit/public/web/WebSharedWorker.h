@@ -31,6 +31,7 @@
 #ifndef WebSharedWorker_h
 #define WebSharedWorker_h
 
+#include "../platform/WebAddressSpace.h"
 #include "../platform/WebCommon.h"
 #include "WebContentSecurityPolicy.h"
 
@@ -53,7 +54,8 @@ public:
         const WebURL& scriptURL,
         const WebString& name,
         const WebString& contentSecurityPolicy,
-        WebContentSecurityPolicyType) = 0;
+        WebContentSecurityPolicyType,
+        WebAddressSpace) = 0;
 
     // Sends a connect event to the SharedWorker context.
     virtual void connect(WebMessagePortChannel*) = 0;

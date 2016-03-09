@@ -219,6 +219,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/CurrentTime.h"
@@ -4961,9 +4962,9 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     // the former via the 'treat-as-public-address' directive (see
     // https://mikewest.github.io/cors-rfc1918/#csp).
     if (initializer.isHostedInReservedIPRange()) {
-        setAddressSpace(securityOrigin()->isLocalhost() ? WebURLRequest::AddressSpaceLocal : WebURLRequest::AddressSpacePrivate);
+        setAddressSpace(securityOrigin()->isLocalhost() ? WebAddressSpaceLocal : WebAddressSpacePrivate);
     } else {
-        setAddressSpace(WebURLRequest::AddressSpacePublic);
+        setAddressSpace(WebAddressSpacePublic);
     }
 
     if (importsController()) {

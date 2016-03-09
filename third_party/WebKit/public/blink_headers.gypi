@@ -9,6 +9,7 @@
       "platform/FilePathConversion.h",
       "platform/URLConversion.h",
       "platform/UserMetricsAction.h",
+      "platform/WebAddressSpace.h",
       "platform/WebApiKeyValidator.h",
       "platform/WebApplicationCacheHost.h",
       "platform/WebApplicationCacheHostClient.h",
