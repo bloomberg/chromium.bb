@@ -106,7 +106,8 @@ class MockDemuxer : public Demuxer {
   virtual std::string GetDisplayName() const;
   MOCK_METHOD3(Initialize,
                void(DemuxerHost* host, const PipelineStatusCB& cb, bool));
-  MOCK_METHOD1(SetPlaybackRate, void(double playback_rate));
+  MOCK_METHOD1(StartWaitingForSeek, void(base::TimeDelta));
+  MOCK_METHOD1(CancelPendingSeek, void(base::TimeDelta));
   MOCK_METHOD2(Seek, void(base::TimeDelta time, const PipelineStatusCB& cb));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(OnAudioRendererDisabled, void());

@@ -200,6 +200,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
                   const PipelineStatusCB& status_cb,
                   bool enable_text_tracks) override;
   void Stop() override;
+  void StartWaitingForSeek(base::TimeDelta seek_time) override;
+  void CancelPendingSeek(base::TimeDelta seek_time) override;
   void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
   base::Time GetTimelineOffset() const override;
   DemuxerStream* GetStream(DemuxerStream::Type type) override;

@@ -16,7 +16,6 @@
 
 namespace media {
 
-class ChunkDemuxer;
 class Demuxer;
 
 // PipelineController wraps a Pipeline to expose the one-at-a-time operations
@@ -61,18 +60,20 @@ class MEDIA_EXPORT PipelineController {
                      const PipelineStatusCB& error_cb);
   ~PipelineController();
 
-  // Start |pipeline_|. If provided, |chunk_demuxer| will be stored and
-  // StartWaitingForSeek()/CancelPendingSeek() will be issued to it as
-  // necessary.
+  // Start |pipeline_|. |demuxer| will be retained and StartWaitingForSeek()/
+  // CancelPendingSeek() will be issued to it as necessary.
   //
   // When |is_streaming| is true, Resume() will always start at the
   // beginning of the stream, rather than attempting to seek to the current
   // time.
   //
-  // The other parameters are just passed directly to pipeline_.Start().
-  void Start(ChunkDemuxer* chunk_demuxer,
-             Demuxer* demuxer,
+  // When |is_static| is true, seeks to the current time may be elided.
+  // Otherwise it is assumed that the media data may have changed.
+  //
+  // The remaining parameters are just passed directly to pipeline_.Start().
+  void Start(Demuxer* demuxer,
              bool is_streaming,
+             bool is_static,
              const base::Closure& ended_cb,
              const PipelineMetadataCB& metadata_cb,
              const BufferingStateCB& buffering_state_cb,
@@ -134,12 +135,15 @@ class MEDIA_EXPORT PipelineController {
   PipelineStatusCB error_cb_;
 
   // State for handling StartWaitingForSeek()/CancelPendingSeek().
-  ChunkDemuxer* chunk_demuxer_ = nullptr;
+  Demuxer* demuxer_ = nullptr;
   bool waiting_for_seek_ = false;
 
   // When true, Resume() will start at time zero instead of seeking to the
   // current time.
   bool is_streaming_ = false;
+
+  // When true, seeking to the current time may be elided.
+  bool is_static_ = true;
 
   // Tracks the current state of |pipeline_|.
   State state_ = State::CREATED;

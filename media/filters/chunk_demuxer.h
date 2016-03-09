@@ -186,30 +186,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::TimeDelta GetStartTime() const override;
   int64_t GetMemoryUsage() const override;
 
-  // Methods used by an external object to control this demuxer.
-  //
-  // Indicates that a new Seek() call is on its way. Any pending Reads on the
-  // DemuxerStream objects should be aborted immediately inside this call and
-  // future Read calls should return kAborted until the Seek() call occurs.
-  // This method MUST ALWAYS be called before Seek() is called to signal that
-  // the next Seek() call represents the seek point we actually want to return
-  // data for.
-  // |seek_time| - The presentation timestamp for the seek that triggered this
-  // call. It represents the most recent position the caller is trying to seek
-  // to.
-  void StartWaitingForSeek(base::TimeDelta seek_time);
-
-  // Indicates that a Seek() call is on its way, but another seek has been
-  // requested that will override the impending Seek() call. Any pending Reads
-  // on the DemuxerStream objects should be aborted immediately inside this call
-  // and future Read calls should return kAborted until the next
-  // StartWaitingForSeek() call. This method also arranges for the next Seek()
-  // call received before a StartWaitingForSeek() call to immediately call its
-  // callback without waiting for any data.
-  // |seek_time| - The presentation timestamp for the seek request that
-  // triggered this call. It represents the most recent position the caller is
-  // trying to seek to.
-  void CancelPendingSeek(base::TimeDelta seek_time);
+  // ChunkDemuxer reads are abortable. StartWaitingForSeek() and
+  // CancelPendingSeek() always abort pending and future reads until the
+  // expected seek occurs, so that ChunkDemuxer can stay synchronized with the
+  // associated JS method calls.
+  void StartWaitingForSeek(base::TimeDelta seek_time) override;
+  void CancelPendingSeek(base::TimeDelta seek_time) override;
 
   // Registers a new |id| to use for AppendData() calls. |type| indicates
   // the MIME type for the data that we intend to append for this ID.

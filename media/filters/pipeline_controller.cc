@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/filters/chunk_demuxer.h"
+#include "media/base/demuxer.h"
 
 namespace media {
 
@@ -37,14 +37,12 @@ PipelineController::~PipelineController() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-// TODO(sandersd): Move ChunkDemuxer API to Demuxer so that Pipeline can
-// implement all of this.
 // TODO(sandersd): If there is a pending suspend, don't call pipeline_.Start()
 // until Resume().
 void PipelineController::Start(
-    ChunkDemuxer* chunk_demuxer,
     Demuxer* demuxer,
     bool is_streaming,
+    bool is_static,
     const base::Closure& ended_cb,
     const PipelineMetadataCB& metadata_cb,
     const BufferingStateCB& buffering_state_cb,
@@ -53,17 +51,16 @@ void PipelineController::Start(
     const base::Closure& waiting_for_decryption_key_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_ == State::CREATED);
-
-  if (chunk_demuxer)
-    DCHECK_EQ(demuxer, chunk_demuxer);
+  DCHECK(demuxer);
 
   // Once the pipeline is started, we want to call the seeked callback but
   // without a time update.
   pending_seeked_cb_ = true;
   state_ = State::STARTING;
 
-  chunk_demuxer_ = chunk_demuxer;
+  demuxer_ = demuxer;
   is_streaming_ = is_streaming;
+  is_static_ = is_static;
   pipeline_->Start(
       demuxer, renderer_factory_cb_.Run(), ended_cb,
       BindToCurrentLoop(error_cb_),
@@ -82,13 +79,10 @@ void PipelineController::Seek(base::TimeDelta time, bool time_updated) {
     pending_time_updated_ = true;
   pending_seeked_cb_ = true;
 
-  // If we are already seeking to |time|, just clear any pending seek. This does
-  // not apply to MSE because the underlying buffer could have been changed
-  // between the seek calls.
-  // TODO(sandersd): The underlying buffer could also have changed for
-  // File objects, but WMPI is also broken in that case (because it caches).
+  // If we are already seeking to |time|, and the media is static, elide the
+  // seek.
   if ((state_ == State::SEEKING || state_ == State::RESUMING) &&
-      seek_time_ == time && !chunk_demuxer_) {
+      seek_time_ == time && is_static_) {
     pending_seek_ = false;
     return;
   }
@@ -141,7 +135,7 @@ void PipelineController::OnPipelineStatus(State state,
 
   if (state == State::PLAYING) {
     // Start(), Seek(), or Resume() completed; we can be sure that
-    // |chunk_demuxer_| got the seek it was waiting for.
+    // |demuxer_| got the seek it was waiting for.
     waiting_for_seek_ = false;
     if (pending_resumed_cb_) {
       pending_resumed_cb_ = false;
@@ -196,12 +190,10 @@ void PipelineController::Dispatch() {
       pending_time_updated_ = true;
     }
 
-    // Tell |chunk_demuxer_| to expect our resume.
-    if (chunk_demuxer_) {
-      DCHECK(!waiting_for_seek_);
-      chunk_demuxer_->StartWaitingForSeek(seek_time_);
-      waiting_for_seek_ = true;
-    }
+    // Tell |demuxer_| to expect our resume.
+    DCHECK(!waiting_for_seek_);
+    demuxer_->StartWaitingForSeek(seek_time_);
+    waiting_for_seek_ = true;
 
     pending_resume_ = false;
     state_ = State::RESUMING;
@@ -212,11 +204,8 @@ void PipelineController::Dispatch() {
     return;
   }
 
-  // |chunk_demuxer_| supports aborting seeks. Make use of that when we have
-  // other pending operations.
+  // When we have pending operations, abort the current seek.
   if ((pending_seek_ || pending_suspend_) && waiting_for_seek_) {
-    CHECK(chunk_demuxer_);
-
     // If there is no pending seek, return the current seek to pending status.
     if (!pending_seek_) {
       pending_seek_time_ = seek_time_;
@@ -226,7 +215,7 @@ void PipelineController::Dispatch() {
     // CancelPendingSeek() may be reentrant, so update state first and return
     // immediately.
     waiting_for_seek_ = false;
-    chunk_demuxer_->CancelPendingSeek(pending_seek_time_);
+    demuxer_->CancelPendingSeek(pending_seek_time_);
     return;
   }
 
@@ -234,12 +223,10 @@ void PipelineController::Dispatch() {
   if (pending_seek_ && state_ == State::PLAYING) {
     seek_time_ = pending_seek_time_;
 
-    // Tell |chunk_demuxer_| to expect our seek.
-    if (chunk_demuxer_) {
-      DCHECK(!waiting_for_seek_);
-      waiting_for_seek_ = true;
-      chunk_demuxer_->StartWaitingForSeek(seek_time_);
-    }
+    // Tell |demuxer_| to expect our seek.
+    DCHECK(!waiting_for_seek_);
+    waiting_for_seek_ = true;
+    demuxer_->StartWaitingForSeek(seek_time_);
 
     pending_seek_ = false;
     state_ = State::SEEKING;

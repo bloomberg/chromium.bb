@@ -1229,13 +1229,17 @@ void WebMediaPlayerImpl::StartPipeline() {
     demuxer_.reset(chunk_demuxer_);
   }
 
+  // TODO(sandersd): FileSystem objects may also be non-static, but due to our
+  // caching layer such situations are broken already. http://crbug.com/593159
+  bool is_static = !chunk_demuxer_;
+
   // ... and we're ready to go!
   seeking_ = true;
 
   // TODO(sandersd): On Android, defer Start() if the tab is not visible.
   bool is_streaming = (data_source_ && data_source_->IsStreaming());
   pipeline_controller_.Start(
-      chunk_demuxer_, demuxer_.get(), is_streaming,
+      demuxer_.get(), is_streaming, is_static,
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineMetadata),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged),

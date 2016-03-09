@@ -85,6 +85,32 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
                           const PipelineStatusCB& status_cb,
                           bool enable_text_tracks) = 0;
 
+  // Indicates that a new Seek() call is on its way. Implementations may abort
+  // pending reads and future Read() calls may return kAborted until Seek() is
+  // executed. |seek_time| is the presentation timestamp of the new Seek() call.
+  //
+  // In actual use, this call occurs on the main thread while Seek() is called
+  // on the media thread. StartWaitingForSeek() can be used to synchronize the
+  // two.
+  //
+  // StartWaitingForSeek() MUST be called before Seek().
+  virtual void StartWaitingForSeek(base::TimeDelta seek_time) = 0;
+
+  // Indicates that the current Seek() operation is obsoleted by a new one.
+  // Implementations can expect that StartWaitingForSeek() will be called
+  // when the current seek operation completes.
+  //
+  // Like StartWaitingForSeek(), CancelPendingSeek() is called on the main
+  // thread. Ordering with respect to the to-be-canceled Seek() is not
+  // guaranteed. Regardless of ordering, implementations may abort pending reads
+  // and may return kAborted from future Read() calls, until after
+  // StartWaitingForSeek() and the following Seek() call occurs.
+  //
+  // |seek_time| should match that passed to the next StartWaitingForSeek(), but
+  // may not if the seek target changes again before the current seek operation
+  // completes or is aborted.
+  virtual void CancelPendingSeek(base::TimeDelta seek_time) = 0;
+
   // Carry out any actions required to seek to the given time, executing the
   // callback upon completion.
   virtual void Seek(base::TimeDelta time,

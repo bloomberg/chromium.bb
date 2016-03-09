@@ -765,6 +765,44 @@ FFmpegDemuxer::FFmpegDemuxer(
 
 FFmpegDemuxer::~FFmpegDemuxer() {}
 
+std::string FFmpegDemuxer::GetDisplayName() const {
+  return "FFmpegDemuxer";
+}
+
+void FFmpegDemuxer::Initialize(DemuxerHost* host,
+                               const PipelineStatusCB& status_cb,
+                               bool enable_text_tracks) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  host_ = host;
+  text_enabled_ = enable_text_tracks;
+
+  url_protocol_.reset(new BlockingUrlProtocol(
+      data_source_,
+      BindToCurrentLoop(base::Bind(&FFmpegDemuxer::OnDataSourceError,
+                                   base::Unretained(this)))));
+  glue_.reset(new FFmpegGlue(url_protocol_.get()));
+  AVFormatContext* format_context = glue_->format_context();
+
+  // Disable ID3v1 tag reading to avoid costly seeks to end of file for data we
+  // don't use.  FFmpeg will only read ID3v1 tags if no other metadata is
+  // available, so add a metadata entry to ensure some is always present.
+  av_dict_set(&format_context->metadata, "skip_id3v1_tags", "", 0);
+
+  // Ensure ffmpeg doesn't give up too early while looking for stream params;
+  // this does not increase the amount of data downloaded.  The default value
+  // is 5 AV_TIME_BASE units (1 second each), which prevents some oddly muxed
+  // streams from being detected properly; this value was chosen arbitrarily.
+  format_context->max_analyze_duration = 60 * AV_TIME_BASE;
+
+  // Open the AVFormatContext using our glue layer.
+  CHECK(blocking_thread_.Start());
+  base::PostTaskAndReplyWithResult(
+      blocking_thread_.task_runner().get(), FROM_HERE,
+      base::Bind(&FFmpegGlue::OpenContext, base::Unretained(glue_.get())),
+      base::Bind(&FFmpegDemuxer::OnOpenContextDone, weak_factory_.GetWeakPtr(),
+                 status_cb));
+}
+
 void FFmpegDemuxer::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -788,6 +826,10 @@ void FFmpegDemuxer::Stop() {
 
   data_source_ = NULL;
 }
+
+void FFmpegDemuxer::StartWaitingForSeek(base::TimeDelta seek_time) {}
+
+void FFmpegDemuxer::CancelPendingSeek(base::TimeDelta seek_time) {}
 
 void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -852,44 +894,6 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
           &FFmpegDemuxer::OnSeekFrameDone, weak_factory_.GetWeakPtr(), cb));
 }
 
-std::string FFmpegDemuxer::GetDisplayName() const {
-  return "FFmpegDemuxer";
-}
-
-void FFmpegDemuxer::Initialize(DemuxerHost* host,
-                               const PipelineStatusCB& status_cb,
-                               bool enable_text_tracks) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  host_ = host;
-  text_enabled_ = enable_text_tracks;
-
-  url_protocol_.reset(new BlockingUrlProtocol(data_source_, BindToCurrentLoop(
-      base::Bind(&FFmpegDemuxer::OnDataSourceError, base::Unretained(this)))));
-  glue_.reset(new FFmpegGlue(url_protocol_.get()));
-  AVFormatContext* format_context = glue_->format_context();
-
-  // Disable ID3v1 tag reading to avoid costly seeks to end of file for data we
-  // don't use.  FFmpeg will only read ID3v1 tags if no other metadata is
-  // available, so add a metadata entry to ensure some is always present.
-  av_dict_set(&format_context->metadata, "skip_id3v1_tags", "", 0);
-
-  // Ensure ffmpeg doesn't give up too early while looking for stream params;
-  // this does not increase the amount of data downloaded.  The default value
-  // is 5 AV_TIME_BASE units (1 second each), which prevents some oddly muxed
-  // streams from being detected properly; this value was chosen arbitrarily.
-  format_context->max_analyze_duration = 60 * AV_TIME_BASE;
-
-  // Open the AVFormatContext using our glue layer.
-  CHECK(blocking_thread_.Start());
-  base::PostTaskAndReplyWithResult(
-      blocking_thread_.task_runner().get(),
-      FROM_HERE,
-      base::Bind(&FFmpegGlue::OpenContext, base::Unretained(glue_.get())),
-      base::Bind(&FFmpegDemuxer::OnOpenContextDone,
-                 weak_factory_.GetWeakPtr(),
-                 status_cb));
-}
-
 base::Time FFmpegDemuxer::GetTimelineOffset() const {
   return timeline_offset_;
 }
@@ -940,6 +944,35 @@ int64_t FFmpegDemuxer::GetMemoryUsage() const {
       allocation_size += stream->MemoryUsage();
   }
   return allocation_size;
+}
+
+void FFmpegDemuxer::OnEncryptedMediaInitData(
+    EmeInitDataType init_data_type,
+    const std::string& encryption_key_id) {
+  std::vector<uint8_t> key_id_local(encryption_key_id.begin(),
+                                    encryption_key_id.end());
+  encrypted_media_init_data_cb_.Run(init_data_type, key_id_local);
+}
+
+void FFmpegDemuxer::NotifyCapacityAvailable() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  ReadFrameIfNeeded();
+}
+
+void FFmpegDemuxer::NotifyBufferingChanged() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  Ranges<base::TimeDelta> buffered;
+  FFmpegDemuxerStream* audio = GetFFmpegStream(DemuxerStream::AUDIO);
+  FFmpegDemuxerStream* video = GetFFmpegStream(DemuxerStream::VIDEO);
+  if (audio && video) {
+    buffered =
+        audio->GetBufferedRanges().IntersectionWith(video->GetBufferedRanges());
+  } else if (audio) {
+    buffered = audio->GetBufferedRanges();
+  } else if (video) {
+    buffered = video->GetBufferedRanges();
+  }
+  host_->OnBufferedTimeRangesChanged(buffered);
 }
 
 // Helper for calculating the bitrate of the media based on information stored
@@ -1473,35 +1506,6 @@ void FFmpegDemuxer::StreamHasEnded() {
       continue;
     (*iter)->SetEndOfStream();
   }
-}
-
-void FFmpegDemuxer::OnEncryptedMediaInitData(
-    EmeInitDataType init_data_type,
-    const std::string& encryption_key_id) {
-  std::vector<uint8_t> key_id_local(encryption_key_id.begin(),
-                                    encryption_key_id.end());
-  encrypted_media_init_data_cb_.Run(init_data_type, key_id_local);
-}
-
-void FFmpegDemuxer::NotifyCapacityAvailable() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  ReadFrameIfNeeded();
-}
-
-void FFmpegDemuxer::NotifyBufferingChanged() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  Ranges<base::TimeDelta> buffered;
-  FFmpegDemuxerStream* audio = GetFFmpegStream(DemuxerStream::AUDIO);
-  FFmpegDemuxerStream* video = GetFFmpegStream(DemuxerStream::VIDEO);
-  if (audio && video) {
-    buffered = audio->GetBufferedRanges().IntersectionWith(
-        video->GetBufferedRanges());
-  } else if (audio) {
-    buffered = audio->GetBufferedRanges();
-  } else if (video) {
-    buffered = video->GetBufferedRanges();
-  }
-  host_->OnBufferedTimeRangesChanged(buffered);
 }
 
 void FFmpegDemuxer::OnDataSourceError() {
