@@ -285,9 +285,9 @@ class Builder(CommandRunner):
     """Helper which returns objcopy path."""
     return self.GetBinName('objcopy')
 
-  def GetLe32ObjDump(self):
+  def GetObjDump(self):
     """Helper which returns objdump path."""
-    return os.path.join(self.toolbin, 'le32-nacl-objdump')
+    return self.GetBinName('objdump')
 
   def GetReadElf(self):
     """Helper which returns readelf path."""
@@ -610,7 +610,7 @@ class Builder(CommandRunner):
         irt_link_cmd += ['--commands-are-scripts']
       if self.arch == 'x86-64':
         irt_link_cmd += ['--sandbox-base-hiding-check',
-                         '--objdump-cmd=' + self.GetLe32ObjDump()]
+                         '--objdump-cmd=' + self.GetObjDump()]
       irt_link_cmd += srcs_flags
       err = self.Run(irt_link_cmd, normalize_slashes=False)
       if err:
