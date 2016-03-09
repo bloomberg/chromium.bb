@@ -256,9 +256,13 @@ void StreamMixerAlsa::DefineAlsaParameters() {
   }
   alsa_avail_min_ = avail_min;
 
+  // --accept-resource-provider should imply a check close timeout of 0.
+  int default_close_timeout = chromecast::GetSwitchValueBoolean(
+                                  switches::kAcceptResourceProvider, false)
+                                  ? 0
+                                  : kDefaultCheckCloseTimeoutMs;
   GetSwitchValueAsNonNegativeInt(switches::kAlsaCheckCloseTimeout,
-                                 kDefaultCheckCloseTimeoutMs,
-                                 &check_close_timeout_);
+                                 default_close_timeout, &check_close_timeout_);
 }
 
 int StreamMixerAlsa::SetAlsaPlaybackParams() {

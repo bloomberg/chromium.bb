@@ -21,6 +21,7 @@
       ],
       'sources': [
         'base/bind_to_task_runner_unittest.cc',
+        'base/chromecast_switches_unittest.cc',
         'base/component/component_unittest.cc',
         'base/device_capabilities_impl_unittest.cc',
         'base/error_codes_unittest.cc',
