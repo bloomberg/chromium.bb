@@ -35,6 +35,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -75,11 +76,11 @@ Polymer({
      */
     profileImageUrl_: {
       type: String,
-      value: settings.ChangePicturePrivateApi.ButtonImages.PROFILE_PICTURE,
+      value: 'chrome://theme/IDR_PROFILE_PICTURE_LOADING',
     },
 
     /**
-     * The default user images. Populated by ChangePicturePrivateApi.
+     * The default user images.
      * @private {!Array<!settings.DefaultImage>}
      */
     defaultImages_: {
@@ -90,7 +91,7 @@ Polymer({
     /**
      * The fallback image to be selected when the user discards the 'old' image.
      * This may be null if the user started with the 'old' image.
-     * @private {settings.ChangePictureImageElement}
+     * @private {?settings.ChangePictureImageElement}
      */
     fallbackImage_: {
       type: settings.ChangePictureImageElement,
@@ -106,86 +107,100 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /** @private {!settings.ChangePictureBrowserProxyImpl} */
+    browserProxy_: {
+      type: Object,
+      value: function() {
+        return settings.ChangePictureBrowserProxyImpl.getInstance();
+      },
+    },
   },
 
   /** @override */
   attached: function() {
-    // This is the interface called by the C++ handler.
-    var nativeInterface = {
-      /**
-       * Called from C++ to provide the default set of images.
-       * @param {!Array<!settings.DefaultImage>} images
-       */
-      receiveDefaultImages: function(images) {
-        this.defaultImages_ = images;
-      }.bind(this),
+    this.addWebUIListener('default-images-changed',
+                          this.receiveDefaultImages_.bind(this));
+    this.addWebUIListener('selected-image-changed',
+                          this.receiveSelectedImage_.bind(this));
+    this.addWebUIListener('old-image-changed',
+                          this.receiveOldImage_.bind(this));
+    this.addWebUIListener('profile-image-changed',
+                          this.receiveProfileImage_.bind(this));
+    this.addWebUIListener('camera-presence-changed',
+                          this.receiveCameraPresence_.bind(this));
 
-      /**
-       * Called from C++ to provide the URL of the selected image. Is only
-       * called with default images.
-       * @param {string} imageUrl
-       */
-      receiveSelectedImage: function(imageUrl) {
-        var index = this.$.selector.items.findIndex(function(image) {
-          return image.dataset.type == 'default' && image.src == imageUrl;
-        });
-        assert(index != -1, 'Default image not found: ' + imageUrl);
+    this.browserProxy_.initialize();
+  },
 
-        this.fallbackImage_ = this.$.selector.items[index];
+  /**
+   * Handler for the 'default-images-changed' event.
+   * @param {!Array<!settings.DefaultImage>} images
+   * @private
+   */
+  receiveDefaultImages_: function(images) {
+    this.defaultImages_ = images;
+  },
 
-        // If user is currently taking a photo, do not steal the focus.
-        if (!this.selectedItem_ || this.selectedItem_.dataset.type != 'camera')
-          this.$.selector.select(index);
-      }.bind(this),
-
-      /**
-       * Called from C++ to provide the URL of the 'old' image. The 'old'
-       * image is any selected non-profile and non-default image. It can be
-       * from the camera, a file, or a deprecated default image. When this
-       * method is called, the old image becomes the selected image.
-       * @param {string} imageUrl
-       */
-      receiveOldImage: function(imageUrl) {
-        this.oldImageUrl_ = imageUrl;
-        this.$.selector.select(this.$.selector.indexOf(this.$.oldImage));
-      }.bind(this),
-
-      /**
-       * Called from C++ to provide the URL of the profile image.
-       * @param {string} imageUrl
-       * @param {boolean} selected
-       */
-      receiveProfileImage: function(imageUrl, selected) {
-        this.profileImageUrl_ = imageUrl;
-        this.$.profileImage.alt = this.i18n('profilePhoto');
-
-        if (!selected)
-          return;
-
-        this.fallbackImage_ = this.$.profileImage;
-
-        // If user is currently taking a photo, do not steal the focus.
-        if (!this.selectedItem_ || this.selectedItem_.dataset.type != 'camera')
-          this.$.selector.select(this.$.selector.indexOf(this.$.profileImage));
-      }.bind(this),
-
-      /**
-       * Called from the C++ to notify page about camera presence.
-       * @param {boolean} cameraPresent
-       */
-      receiveCameraPresence: function(cameraPresent) {
-        this.cameraPresent_ = cameraPresent;
-      }.bind(this),
-    };
-
-    cr.define('settings', function() {
-      var ChangePicturePage = nativeInterface;
-      return {
-        ChangePicturePage: ChangePicturePage,
-      };
+  /**
+   * Handler for the 'selected-image-changed' event. Is only called with
+   * default images.
+   * @param {string} imageUrl
+   * @private
+   */
+  receiveSelectedImage_: function(imageUrl) {
+    var index = this.$.selector.items.findIndex(function(image) {
+      return image.dataset.type == 'default' && image.src == imageUrl;
     });
+    assert(index != -1, 'Default image not found: ' + imageUrl);
 
-    settings.ChangePicturePrivateApi.initialize();
+    this.fallbackImage_ = this.$.selector.items[index];
+
+    // If user is currently taking a photo, do not steal the focus.
+    if (!this.selectedItem_ || this.selectedItem_.dataset.type != 'camera')
+      this.$.selector.select(index);
+  },
+
+  /**
+   * Handler for the 'old-image-changed' event. The 'old' image is any selected
+   * non-profile and non-default image. It can be from the camera, a file, or a
+   * deprecated default image. When this method is called, the old image
+   * becomes the selected image.
+   * @param {string} imageUrl
+   * @private
+   */
+  receiveOldImage_: function(imageUrl) {
+    this.oldImageUrl_ = imageUrl;
+    this.$.selector.select(this.$.selector.indexOf(this.$.oldImage));
+  },
+
+  /**
+   * Handler for the 'profile-image-changed' event.
+   * @param {string} imageUrl
+   * @param {boolean} selected
+   * @private
+   */
+  receiveProfileImage_: function(imageUrl, selected) {
+    this.profileImageUrl_ = imageUrl;
+    this.$.profileImage.alt = this.i18n('profilePhoto');
+
+    if (!selected)
+      return;
+
+    this.fallbackImage_ = this.$.profileImage;
+
+    // If user is currently taking a photo, do not steal the focus.
+    if (!this.selectedItem_ || this.selectedItem_.dataset.type != 'camera')
+      this.$.selector.select(this.$.selector.indexOf(this.$.profileImage));
+  },
+
+  /**
+   * Handler for the 'camera-presence-changed' event.
+   * @param {boolean} cameraPresent
+   * @private
+   */
+  receiveCameraPresence_: function(cameraPresent) {
+    this.cameraPresent_ = cameraPresent;
   },
 
   /**
@@ -199,16 +214,16 @@ Polymer({
         // Nothing needs to be done.
         break;
       case 'file':
-        settings.ChangePicturePrivateApi.chooseFile();
+        this.browserProxy_.chooseFile();
         break;
       case 'profile':
-        settings.ChangePicturePrivateApi.selectProfileImage();
+        this.browserProxy_.selectProfileImage();
         break;
       case 'old':
-        settings.ChangePicturePrivateApi.selectOldImage();
+        this.browserProxy_.selectOldImage();
         break;
       case 'default':
-        settings.ChangePicturePrivateApi.selectDefaultImage(image.src);
+        this.browserProxy_.selectDefaultImage(image.src);
         break;
       default:
         assertNotReached('Selected unknown image type');
@@ -264,7 +279,7 @@ Polymer({
           var /** SettingsCameraElement */ camera = this.$.camera;
           camera.takePhoto();
         } else if (this.selectedItem_.dataset.type == 'file') {
-          settings.ChangePicturePrivateApi.chooseFile();
+          this.browserProxy_.chooseFile();
         } else if (this.selectedItem_.dataset.type == 'old') {
           this.onTapDiscardOldImage_();
         }
@@ -289,7 +304,7 @@ Polymer({
    * containing a data URL.
    */
   onPhotoTaken_: function(event) {
-    settings.ChangePicturePrivateApi.photoTaken(event.detail.photoDataUrl);
+    this.browserProxy_.photoTaken(event.detail.photoDataUrl);
   },
 
   /**
@@ -311,8 +326,7 @@ Polymer({
     // If the user has not chosen an image since opening the subpage and
     // discards the current photo, select the first default image.
     assert(this.defaultImages_.length > 0);
-    settings.ChangePicturePrivateApi.selectDefaultImage(
-        this.defaultImages_[0].url);
+    this.browserProxy_.selectDefaultImage(this.defaultImages_[0].url);
 
     announceAccessibleMessage(
         loadTimeData.getString('photoDiscardAccessibleText'));

@@ -796,13 +796,13 @@
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_CHANGE_PICTURE_JS"
                    file="people_page/change_picture.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_PEOPLE_CHANGE_PICTURE_PRIVATE_API_JS"
-                   file="people_page/change_picture_private_api.js"
+        <structure name="IDR_SETTINGS_PEOPLE_CHANGE_PICTURE_BROWSER_PROXY_JS"
+                   file="people_page/change_picture_browser_proxy.js"
                    type="chrome_html"
                    flattenhtml="true"
                    allowexternalscript="true" />
-        <structure name="IDR_SETTINGS_PEOPLE_CHANGE_PICTURE_PRIVATE_API_HTML"
-                   file="people_page/change_picture_private_api.html"
+        <structure name="IDR_SETTINGS_PEOPLE_CHANGE_PICTURE_BROWSER_PROXY_HTML"
+                   file="people_page/change_picture_browser_proxy.html"
                    type="chrome_html"
                    flattenhtml="true"
                    allowexternalscript="true" />
