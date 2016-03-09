@@ -173,11 +173,7 @@ void ScopedFocusNavigation::moveToLast()
             WillBeHeapVector<RefPtrWillBeMember<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
             for (auto assignedNode = assignedNodes.rbegin(); assignedNode != assignedNodes.rend(); ++assignedNode) {
                 if ((*assignedNode)->isElementNode()) {
-                    Element* lastWithin = ElementTraversal::lastWithin(*toElement(*assignedNode));
-                    if (lastWithin)
-                        m_current = lastWithin;
-                    else
-                        m_current = toElement(*assignedNode);
+                    m_current = ElementTraversal::lastWithinOrSelf(*toElement(*assignedNode));
                     break;
                 }
             }
