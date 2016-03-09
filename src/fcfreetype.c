@@ -1252,15 +1252,17 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	  for (i = 0; i < master->num_axis; i++)
 	  {
 	    double value = instance->coords[i] / (double) (1 << 16);
+	    double default_value = master->axis[i].def / (double) (1 << 16);
+	    double mult = value / default_value;
 	    //printf ("named-instance, axis %d tag %lx value %g\n", i, master->axis[i].tag, value);
 	    switch (master->axis[i].tag)
 	    {
 	      case FT_MAKE_TAG ('w','g','h','t'):
-	        weight_mult = value;
+	        weight_mult = mult;
 		break;
 
 	      case FT_MAKE_TAG ('w','d','t','h'):
-		width_mult = value;
+		width_mult = mult;
 		break;
 
 	      /* TODO optical size! */
@@ -1637,7 +1639,14 @@ FcFreeTypeQueryFace (const FT_Face  face,
 
     if (os2 && os2->version != 0xffff)
     {
-	weight = FcWeightFromOpenType ((int) (os2->usWeightClass * weight_mult + .5));
+	weight = os2->usWeightClass;
+	if (weight < 10 && weight_mult != 1.0)
+	{
+		/* Work around bad values by cleaning them up before
+		 * multiplying by weight_mult. */
+		weight = FcWeightToOpenType (FcWeightFromOpenType (weight));
+	}
+	weight = FcWeightFromOpenType ((int) (weight * weight_mult + .5));
 	if ((FcDebug() & FC_DBG_SCANV) && weight != -1)
 	    printf ("\tos2 weight class %d multiplier %g maps to weight %d\n",
 		    os2->usWeightClass, weight_mult, weight);
