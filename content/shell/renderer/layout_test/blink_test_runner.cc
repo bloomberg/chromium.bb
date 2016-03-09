@@ -799,8 +799,6 @@ void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
 bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BlinkTestRunner, message)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_SetTestConfiguration,
-                        OnSetTestConfiguration)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SessionHistory, OnSessionHistory)
     IPC_MESSAGE_HANDLER(ShellViewMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(ShellViewMsg_NotifyDone, OnNotifyDone)
@@ -971,21 +969,26 @@ void BlinkTestRunner::CaptureDumpComplete() {
                             new ShellViewHostMsg_TestFinished(routing_id())));
 }
 
-void BlinkTestRunner::OnSetTestConfiguration(
+void BlinkTestRunner::OnReplicateTestConfiguration(
     const ShellTestConfiguration& params) {
   test_config_ = params;
   is_main_window_ = true;
-
-  ForceResizeRenderView(
-      render_view(),
-      WebSize(params.initial_size.width(), params.initial_size.height()));
-  SetFocus(proxy_, true);
 
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   interfaces->SetTestIsRunning(true);
   interfaces->ConfigureForTestWithURL(params.test_url,
                                       params.enable_pixel_dumping);
+}
+
+void BlinkTestRunner::OnSetTestConfiguration(
+    const ShellTestConfiguration& params) {
+  OnReplicateTestConfiguration(params);
+
+  ForceResizeRenderView(
+      render_view(),
+      WebSize(params.initial_size.width(), params.initial_size.height()));
+  SetFocus(proxy_, true);
 }
 
 void BlinkTestRunner::OnSessionHistory(

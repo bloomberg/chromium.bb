@@ -18,6 +18,7 @@ class Message;
 
 namespace content {
 class RenderFrame;
+struct ShellTestConfiguration;
 
 class LayoutTestRenderFrameObserver : public RenderFrameObserver {
  public:
@@ -29,6 +30,8 @@ class LayoutTestRenderFrameObserver : public RenderFrameObserver {
  private:
   void OnLayoutDumpRequest(
       const test_runner::LayoutDumpFlags& layout_dump_flags);
+  void OnSetTestConfiguration(const ShellTestConfiguration& test_config);
+  void OnReplicateTestConfiguration(const ShellTestConfiguration& test_config);
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestRenderFrameObserver);
 };

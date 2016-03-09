@@ -187,7 +187,8 @@ class BlinkTestController : public base::NonThreadSafe,
   static BlinkTestController* instance_;
 
   void DiscardMainWindow();
-  void SendTestConfiguration();
+  void HandleNewRenderFrameHost(
+      RenderFrameHost* frame_representing_target_process);
 
   // Message handlers.
   void OnAudioDump(const std::vector<unsigned char>& audio_dump);
@@ -225,9 +226,11 @@ class BlinkTestController : public base::NonThreadSafe,
   // The PID of the render process of the render view host of main_window_.
   int current_pid_;
 
-  // True if we should set the test configuration to the next RenderViewHost
-  // created.
-  bool send_configuration_to_next_host_;
+  // Tracks if (during the current test) we have already sent *initial* test
+  // configuration to a renderer process (*initial* test configuration is
+  // associated with some steps that should only be executed *once* per test -
+  // for example resizing the window and setting the focus).
+  bool did_send_initial_test_configuration_;
 
   // What phase of running an individual test we are currently in.
   TestPhase test_phase_;

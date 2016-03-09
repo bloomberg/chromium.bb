@@ -44,8 +44,12 @@ IPC_MESSAGE_ROUTED0(ShellViewMsg_Reset)
 IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
                      base::FilePath /* webkit source dir */)
 
-// Sets the initial configuration to use for layout tests.
+// Sets the test config for a layout test that is being started.
 IPC_MESSAGE_ROUTED1(ShellViewMsg_SetTestConfiguration,
+                    content::ShellTestConfiguration)
+
+// Replicates test config (for an already started test) to a new renderer.
+IPC_MESSAGE_ROUTED1(ShellViewMsg_ReplicateTestConfiguration,
                     content::ShellTestConfiguration)
 
 // Tells the main window that a secondary renderer in a different process thinks

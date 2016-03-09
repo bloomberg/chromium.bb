@@ -265,8 +265,10 @@ bool BlinkTestController::PrepareForLayoutTest(
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
   test_url_ = test_url;
+  did_send_initial_test_configuration_ = false;
   printer_->reset();
   frame_to_layout_dump_map_.clear();
+  render_process_host_observer_.RemoveAll();
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   if (test_url.spec().find("compositing/") != std::string::npos)
@@ -282,7 +284,6 @@ bool BlinkTestController::PrepareForLayoutTest(
         NULL,
         initial_size_);
     WebContentsObserver::Observe(main_window_->web_contents());
-    send_configuration_to_next_host_ = true;
     current_pid_ = base::kNullProcessId;
     main_window_->LoadURL(test_url);
   } else {
@@ -304,7 +305,7 @@ bool BlinkTestController::PrepareForLayoutTest(
     WebPreferences prefs = render_view_host->GetWebkitPreferences();
     OverrideWebkitPrefs(&prefs);
     render_view_host->UpdateWebkitPreferences(prefs);
-    SendTestConfiguration();
+    HandleNewRenderFrameHost(render_view_host->GetMainFrame());
 
     NavigationController::LoadURLParams params(test_url);
     params.transition_type = ui::PageTransitionFromInt(
@@ -324,7 +325,7 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
   printer_->CloseStderr();
-  send_configuration_to_next_host_ = false;
+  did_send_initial_test_configuration_ = false;
   test_phase_ = BETWEEN_TESTS;
   is_compositing_test_ = false;
   enable_pixel_dumping_ = false;
@@ -460,46 +461,13 @@ void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,
 void BlinkTestController::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
   DCHECK(CalledOnValidThread());
-
-  // Monitor the new renderer process for crashes.
-  RenderProcessHost* render_process_host = render_frame_host->GetProcess();
-  if (!render_process_host_observer_.IsObserving(render_process_host))
-    render_process_host_observer_.Add(render_process_host);
-
-  // Ignore hosts created for frames other than the main / top-level frame.
-  if (render_frame_host->GetParent() != nullptr)
-    return;
-
-  // Might be kNullProcessHandle, in which case we will receive a notification
-  // later when the RenderProcessHost was created.
-  base::ProcessHandle handle = render_process_host->GetHandle();
-  if (handle != base::kNullProcessHandle)
-    current_pid_ = base::GetProcId(handle);
-
-  if (!send_configuration_to_next_host_)
-    return;
-  send_configuration_to_next_host_ = false;
-  SendTestConfiguration();
+  HandleNewRenderFrameHost(render_frame_host);
 }
 
 void BlinkTestController::RenderFrameHostChanged(RenderFrameHost* old_host,
                                                  RenderFrameHost* new_host) {
   DCHECK(CalledOnValidThread());
-
-  // Monitor the new renderer process for crashes.
-  RenderProcessHost* render_process_host = new_host->GetProcess();
-  if (!render_process_host_observer_.IsObserving(render_process_host))
-    render_process_host_observer_.Add(render_process_host);
-
-  // Ignore host changes for frames other than the main / top-level frame.
-  if (new_host->GetParent() != nullptr)
-    return;
-
-  base::ProcessHandle process_handle = render_process_host->GetHandle();
-  DCHECK(process_handle != base::kNullProcessHandle);
-  current_pid_ = base::GetProcId(process_handle);
-
-  SendTestConfiguration();
+  HandleNewRenderFrameHost(new_host);
 }
 
 void BlinkTestController::DevToolsProcessCrashed() {
@@ -599,9 +567,23 @@ void BlinkTestController::DiscardMainWindow() {
   current_pid_ = base::kNullProcessId;
 }
 
-void BlinkTestController::SendTestConfiguration() {
-  RenderViewHost* render_view_host =
-      main_window_->web_contents()->GetRenderViewHost();
+void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
+  RenderProcessHost* process = frame->GetProcess();
+
+  // Track pid of the renderer handling the main frame.
+  if (frame->GetParent() == nullptr) {
+    base::ProcessHandle process_handle = process->GetHandle();
+    if (process_handle != base::kNullProcessHandle)
+      current_pid_ = base::GetProcId(process_handle);
+  }
+
+  // Does RenderFrameHost map to a RenderFrame in a previously unknown process?
+  if (render_process_host_observer_.IsObserving(process))
+    return;  // No need to do anything more for an already known process.
+  render_process_host_observer_.Add(process);
+
+  // Make sure the new renderer process has a test configuration shared with
+  // other renderers.
   ShellTestConfiguration params;
   params.current_working_directory = current_working_directory_;
   params.temp_path = temp_path_;
@@ -612,8 +594,15 @@ void BlinkTestController::SendTestConfiguration() {
           switches::kAllowExternalPages);
   params.expected_pixel_hash = expected_pixel_hash_;
   params.initial_size = initial_size_;
-  render_view_host->Send(new ShellViewMsg_SetTestConfiguration(
-      render_view_host->GetRoutingID(), params));
+
+  if (did_send_initial_test_configuration_) {
+    frame->Send(new ShellViewMsg_ReplicateTestConfiguration(
+        frame->GetRoutingID(), params));
+  } else {
+    did_send_initial_test_configuration_ = true;
+    frame->Send(
+        new ShellViewMsg_SetTestConfiguration(frame->GetRoutingID(), params));
+  }
 }
 
 void BlinkTestController::OnTestFinished() {

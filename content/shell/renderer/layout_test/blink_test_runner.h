@@ -169,9 +169,12 @@ class BlinkTestRunner : public RenderViewObserver,
 
   void ReportLeakDetectionResult(const LeakDetectionResult& result);
 
+  // Message handlers forwarded by LayoutTestRenderFrameObserver.
+  void OnSetTestConfiguration(const ShellTestConfiguration& params);
+  void OnReplicateTestConfiguration(const ShellTestConfiguration& params);
+
  private:
   // Message handlers.
-  void OnSetTestConfiguration(const ShellTestConfiguration& params);
   void OnSessionHistory(
       const std::vector<int>& routing_ids,
       const std::vector<std::vector<PageState> >& session_histories,
