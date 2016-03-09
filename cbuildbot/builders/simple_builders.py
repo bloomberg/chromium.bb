@@ -226,6 +226,7 @@ class SimpleBuilder(generic_builders.Builder):
     # we want the logic that gets triggered when SyncChrome stage is skipped.
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(android_stages.UprevAndroidStage)
+    self._RunStage(android_stages.AndroidMetadataStage)
     if self._run.config.build_type == constants.PALADIN_TYPE:
       self._RunStage(build_stages.RegenPortageCacheStage)
     self._RunStage(test_stages.BinhostTestStage)
@@ -240,6 +241,7 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(chrome_stages.PatchChromeStage)
     self._RunStage(android_stages.UprevAndroidStage)
+    self._RunStage(android_stages.AndroidMetadataStage)
 
   def RunBuildTestStages(self):
     """Runs through the stages to test before building."""

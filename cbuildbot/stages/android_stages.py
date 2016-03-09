@@ -23,28 +23,14 @@ ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
                                     'profiles', 'default', 'linux',
                                     'package.mask', 'androidpin')
 
-
 class UprevAndroidStage(generic_stages.BuilderStage,
                         generic_stages.ArchivingStageMixin):
   """Stage that uprevs Android container if needed."""
-  # TODO: Consider merging this with SyncChromeStage.
 
   def __init__(self, builder_run, **kwargs):
     super(UprevAndroidStage, self).__init__(builder_run, **kwargs)
     # PerformStage() will fill this out for us.
     self.android_version = None
-
-  def HandleSkip(self):
-    """Set run.attrs.android_version to Android version in buildroot now."""
-    try:
-      self._run.attrs.android_version = self._run.DetermineAndroidVersion(
-          boards=self._boards)
-      logging.debug('Existing Android version is %s.',
-                    self._run.attrs.android_version)
-      self._WriteAndroidVersionToMetadata()
-    except cbuildbot_run.NoAndroidVersionError as ex:
-      logging.warn('Unable to determine Android version (%s)', ex)
-    super(UprevAndroidStage, self).HandleSkip()
 
   def _GetAndroidVersionFromMetadata(self):
     """Return the Android version from metadata; None if is does not exist."""
@@ -84,30 +70,63 @@ class UprevAndroidStage(generic_stages.BuilderStage,
         else:
           raise
 
-    kwargs = {}
-    if self.android_version is None:
-      try:
-        self.android_version = self._run.DetermineAndroidVersion(
-            boards=self._boards)
-      except cbuildbot_run.NoAndroidVersionError as ex:
-        if android_atom_to_build is not None:
-          logging.error('Unable to determine Android version, uprevved %s',
-                        android_atom_to_build)
-          raise
-        else:
-          logging.info('Build does not contain Android (%s)', ex)
-
-
-    if self.android_version is not None:
-      kwargs['tag'] = self.android_version
-      logging.PrintBuildbotStepText('tag %s' % kwargs['tag'])
-
     if (self._android_rev and
         not android_atom_to_build and
         self._run.options.buildbot and
         self._run.config.build_type == constants.ANDROID_PFQ_TYPE):
       logging.info('Android already uprevved. Nothing else to do.')
       sys.exit(0)
+
+
+class AndroidMetadataStage(generic_stages.BuilderStage,
+                           generic_stages.ArchivingStageMixin):
+  """Stage that records Android container version in metadata.
+
+  This should attempt to generate two types of metadata:
+  - a unique Android version if it exists.
+  - a per-board Android version for each board.
+  """
+
+  def __init__(self, builder_run, **kwargs):
+    super(AndroidMetadataStage, self).__init__(builder_run, **kwargs)
+    # PerformStage() will fill this out for us.
+    self.android_version = None
+
+  def _GetAndroidVersionFromMetadata(self):
+    """Return the Android version from metadata; None if is does not exist."""
+    version_dict = self._run.attrs.metadata.GetDict().get('version', {})
+    return version_dict.get('android')
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    # Initially get version from metadata in case the initial sync
+    # stage set it.
+    self.android_version = self._GetAndroidVersionFromMetadata()
+
+    # Need to always iterate through and generate the board-specific
+    # Android version metadata.  Each board must be handled separately
+    # since there might be differing builds in the same release group.
+    versions = set([])
+    for builder_run in self._run.GetUngroupedBuilderRuns():
+      for board in builder_run.config.boards:
+        try:
+          # Determine the version for each board and record metadata.
+          version = self._run.DetermineAndroidVersion(boards=[board])
+          builder_run.attrs.metadata.UpdateBoardDictWithDict(
+              board, {'android-container-version': version})
+          versions.add(version)
+          logging.info('Board %s has Android version %s', board, version)
+        except cbuildbot_run.NoAndroidVersionError as ex:
+          logging.info('Board %s does not contain Android (%s)', board, ex)
+
+    # If there wasn't a version specified in the manifest but there is
+    # a unique one across all the boards, treat it as the version for the
+    # entire step.
+    if self.android_version is None and len(versions) == 1:
+      self.android_version = versions.pop()
+
+    if self.android_version:
+      logging.PrintBuildbotStepText('tag %s' % self.android_version)
 
   def _WriteAndroidVersionToMetadata(self):
     """Write Android version to metadata and upload partial json file."""
@@ -122,4 +141,4 @@ class UprevAndroidStage(generic_stages.BuilderStage,
     # means something.  In other words, this stage tried to run.
     self._run.attrs.android_version = self.android_version
     self._WriteAndroidVersionToMetadata()
-    super(UprevAndroidStage, self)._Finish()
+    super(AndroidMetadataStage, self)._Finish()
