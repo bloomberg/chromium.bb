@@ -93,25 +93,6 @@ enum SriResourceIntegrityMismatchEvent {
         DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet)  \
     }
 
-// TODO(yhirano): This function is for an experiment and should be removed
-// shortly. See https://crbug.com/579496.
-bool shouldBeAddedToMemoryCache(const FetchRequest& request, Resource* resource, const FetchContext& context)
-{
-    if (request.forPreload())
-        return true;
-    if (context.isInspectorAttached())
-        return true;
-    switch (resource->getType()) {
-    case Resource::Image:
-    case Resource::Script:
-    case Resource::CSSStyleSheet:
-    case Resource::Font:
-        return true;
-    default:
-        return false;
-    }
-}
-
 } // namespace
 
 static void RecordSriResourceIntegrityMismatchEvent(SriResourceIntegrityMismatchEvent event)
@@ -616,8 +597,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::createResourceForLoading(Fetch
     resource->setLinkPreload(request.isLinkPreload());
     resource->setCacheIdentifier(cacheIdentifier);
 
-    if (shouldBeAddedToMemoryCache(request, resource.get(), context()))
-        memoryCache()->add(resource.get());
+    memoryCache()->add(resource.get());
     return resource;
 }
 

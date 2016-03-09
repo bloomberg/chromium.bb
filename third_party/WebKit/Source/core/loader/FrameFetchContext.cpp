@@ -801,11 +801,6 @@ WebTaskRunner* FrameFetchContext::loadingTaskRunner() const
     return frame()->frameScheduler()->loadingTaskRunner();
 }
 
-bool FrameFetchContext::isInspectorAttached() const
-{
-    return InspectorInstrumentation::instrumentingAgentsFor(frame()->document());
-}
-
 DEFINE_TRACE(FrameFetchContext)
 {
     visitor->trace(m_document);
