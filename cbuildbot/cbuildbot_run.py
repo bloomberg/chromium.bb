@@ -167,14 +167,16 @@ class RunAttributes(object):
   # attribute:  1) a log-friendly pretty name, 2) a rough upper bound timeout
   # value for consumers of the attribute to use when waiting for it.
   BOARD_ATTRS = frozenset((
-      'breakpad_symbols_generated', # Set by DebugSymbolsStage.
-      'debug_tarball_generated',    # Set by DebugSymbolsStage.
-      'images_generated',           # Set by BuildImageStage.
-      'payloads_generated',         # Set by UploadHWTestArtifacts.
-      'delta_payloads_generated',   # Set by UploadHWTestArtifacts.
+      'breakpad_symbols_generated',   # Set by DebugSymbolsStage.
+      'debug_tarball_generated',      # Set by DebugSymbolsStage.
+      'images_generated',             # Set by BuildImageStage.
+      'payloads_generated',           # Set by UploadHWTestArtifacts.
+      'delta_payloads_generated',     # Set by UploadHWTestArtifacts.
       'instruction_urls_per_channel', # Set by ArchiveStage
-      'success',                    # Set by cbuildbot.py:Builder
-      'packages_under_test',        # Set by BuildPackagesStage.
+      'success',                      # Set by cbuildbot.py:Builder
+      'packages_under_test',          # Set by BuildPackagesStage.
+      'signed_images_ready',          # Set by SigningStage
+      'paygen_test_payloads_ready',   # Set by PaygenStage
   ))
 
   # Attributes that need to be set by stages that can run in parallel
