@@ -181,6 +181,9 @@ const char kScriptCommandPrefix[] = "webui";
   // Retrieve favicon resource and set favicon background image via JavaScript.
   base::WeakNSObject<CRWWebUIManager> weakSelf(self);
   void (^faviconHandler)(NSData*) = ^void(NSData* data) {
+    base::scoped_nsobject<CRWWebUIManager> strongSelf([weakSelf retain]);
+    if (!strongSelf)
+      return;
     NSString* base64EncodedResource = [data base64EncodedStringWithOptions:0];
     NSString* dataURLString = [NSString
         stringWithFormat:@"data:image/png;base64,%@", base64EncodedResource];
@@ -188,7 +191,7 @@ const char kScriptCommandPrefix[] = "webui";
     NSString* script =
         [NSString stringWithFormat:@"chrome.setFaviconBackground('%@', '%@');",
                                    faviconURLString, dataURLString];
-    [weakSelf webState]->ExecuteJavaScriptAsync(
+    [strongSelf webState]->ExecuteJavaScriptAsync(
         base::SysNSStringToUTF16(script));
   };
   [self fetchResourceWithURL:faviconURL completionHandler:faviconHandler];
