@@ -1452,43 +1452,6 @@ gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {
   return synced_scroll_offset()->Current(IsActive());
 }
 
-gfx::Vector2dF LayerImpl::ScrollDelta() const {
-  if (IsActive())
-    return gfx::Vector2dF(synced_scroll_offset()->Delta().x(),
-                          synced_scroll_offset()->Delta().y());
-  else
-    return gfx::Vector2dF(synced_scroll_offset()->PendingDelta().get().x(),
-                          synced_scroll_offset()->PendingDelta().get().y());
-}
-
-void LayerImpl::SetScrollDelta(const gfx::Vector2dF& delta) {
-  DCHECK(IsActive());
-  DCHECK(scrollable() || delta.IsZero());
-  SetCurrentScrollOffset(synced_scroll_offset()->ActiveBase() +
-                         gfx::ScrollOffset(delta));
-}
-
-gfx::ScrollOffset LayerImpl::BaseScrollOffset() const {
-  if (IsActive())
-    return synced_scroll_offset()->ActiveBase();
-  else
-    return synced_scroll_offset()->PendingBase();
-}
-
-void LayerImpl::PushScrollOffsetFromMainThread(
-    const gfx::ScrollOffset& scroll_offset) {
-  bool changed = false;
-  DCHECK(!IsActive() || !layer_tree_impl_->FindPendingTreeLayerById(id()));
-  changed |= synced_scroll_offset()->PushFromMainThread(scroll_offset);
-
-  if (IsActive()) {
-    changed |= synced_scroll_offset()->PushPendingToActive();
-  }
-
-  if (changed)
-    DidUpdateScrollOffset();
-}
-
 void LayerImpl::UpdatePropertyTreeScrollOffset() {
   // TODO(enne): in the future, scrolling should update the scroll tree
   // directly instead of going through layers.

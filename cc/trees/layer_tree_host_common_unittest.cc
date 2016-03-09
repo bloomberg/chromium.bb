@@ -345,12 +345,15 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
       gfx::Size(scroll_layer->bounds().width() + kMaxScrollOffset.x(),
                 scroll_layer->bounds().height() + kMaxScrollOffset.y()));
   scroll_layer->SetScrollClipLayer(clip_layer->id());
-  scroll_layer->SetScrollDelta(kScrollDelta);
+  SetScrollOffsetDelta(scroll_layer, kScrollDelta);
   gfx::Transform impl_transform;
   scroll_layer->AddChild(std::move(sublayer_scoped_ptr));
   LayerImpl* scroll_layer_raw_ptr = scroll_layer_scoped_ptr.get();
   clip_layer->AddChild(std::move(scroll_layer_scoped_ptr));
-  scroll_layer_raw_ptr->PushScrollOffsetFromMainThread(kScrollOffset);
+  scroll_layer_raw_ptr->layer_tree_impl()
+      ->property_trees()
+      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer_raw_ptr->id(),
+                                                     kScrollOffset);
 
   scoped_ptr<LayerImpl> root(LayerImpl::Create(host_impl.active_tree(), 3));
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
@@ -7113,7 +7116,9 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.CreatePendingTree();
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> root_ptr =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  LayerImpl* root = root_ptr.get();
   scoped_ptr<LayerImpl> container =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* container_layer = container.get();
@@ -7136,7 +7141,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   container_transform.Translate3d(10.0, 20.0, 0.0);
   gfx::Vector2dF container_offset = container_transform.To2dTranslation();
 
-  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
   SetLayerPropertiesForTesting(container.get(), container_transform,
@@ -7159,14 +7164,20 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
   // Rounded to integers already.
   {
+    root->layer_tree_impl()->SetRootLayer(std::move(root_ptr));
+    root->layer_tree_impl()->BuildPropertyTreesForTesting();
+
     gfx::Vector2dF scroll_delta(3.0, 5.0);
-    scroll_layer->SetScrollDelta(scroll_delta);
+    SetScrollOffsetDelta(scroll_layer, scroll_delta);
 
     LayerImplList render_surface_layer_list;
     root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list,
+        root, root->bounds(), &render_surface_layer_list,
         root->layer_tree_impl()->current_render_surface_list_id());
+    root->layer_tree_impl()
+        ->property_trees()
+        ->transform_tree.set_source_to_parent_updates_allowed(false);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -7182,15 +7193,17 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
   // Scroll delta requiring rounding.
   {
+    root->layer_tree_impl()->BuildPropertyTreesForTesting();
+
     gfx::Vector2dF scroll_delta(4.1f, 8.1f);
-    scroll_layer->SetScrollDelta(scroll_delta);
+    SetScrollOffsetDelta(scroll_layer, scroll_delta);
 
     gfx::Vector2dF rounded_scroll_delta(4.f, 8.f);
 
     LayerImplList render_surface_layer_list;
     root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list,
+        root, root->bounds(), &render_surface_layer_list,
         root->layer_tree_impl()->current_render_surface_list_id());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -7207,21 +7220,20 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
 
   // Scale is applied earlier in the tree.
   {
+    SetScrollOffsetDelta(scroll_layer, gfx::Vector2dF());
     gfx::Transform scaled_container_transform = container_transform;
     scaled_container_transform.Scale3d(2.0, 2.0, 1.0);
     container_layer->SetTransform(scaled_container_transform);
     root->layer_tree_impl()->property_trees()->needs_rebuild = true;
-    root->layer_tree_impl()
-        ->property_trees()
-        ->transform_tree.set_source_to_parent_updates_allowed(true);
+    root->layer_tree_impl()->BuildPropertyTreesForTesting();
 
     gfx::Vector2dF scroll_delta(4.5f, 8.5f);
-    scroll_layer->SetScrollDelta(scroll_delta);
+    SetScrollOffsetDelta(scroll_layer, scroll_delta);
 
     LayerImplList render_surface_layer_list;
     root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list,
+        root, root->bounds(), &render_surface_layer_list,
         root->layer_tree_impl()->current_render_surface_list_id());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -7252,7 +7264,9 @@ TEST_F(LayerTreeHostCommonTest,
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
   host_impl.CreatePendingTree();
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> root_ptr =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  LayerImpl* root = root_ptr.get();
   scoped_ptr<LayerImpl> container =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* container_layer = container.get();
@@ -7278,7 +7292,7 @@ TEST_F(LayerTreeHostCommonTest,
   container_transform.Translate3d(10.0, 20.0, 0.0);
   gfx::Vector2dF container_offset = container_transform.To2dTranslation();
 
-  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
   SetLayerPropertiesForTesting(container.get(), container_transform,
@@ -7296,18 +7310,26 @@ TEST_F(LayerTreeHostCommonTest,
   SetLayerPropertiesForTesting(fixed.get(), identity_transform, gfx::Point3F(),
                                gfx::PointF(3.0f, 4.0f), gfx::Size(50, 50), true,
                                false, false);
-  scroll_layer->PushScrollOffsetFromMainThread(scroll_offset);
-  scroll_layer->SetScrollDelta(scroll_delta);
+  scroll_layer->layer_tree_impl()
+      ->property_trees()
+      ->scroll_tree.UpdateScrollOffsetBaseForTesting(scroll_layer->id(),
+                                                     scroll_offset);
+
   scroll_layer->SetScrollCompensationAdjustment(main_scroll_fractional_part);
 
   scroller->AddChild(std::move(fixed));
   container->AddChild(std::move(scroller));
   root->AddChild(std::move(container));
 
+  root->layer_tree_impl()->SetRootLayer(std::move(root_ptr));
+  root->layer_tree_impl()->BuildPropertyTreesForTesting();
+
+  SetScrollOffsetDelta(scroll_layer, scroll_delta);
+
   LayerImplList render_surface_layer_list;
   root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list,
+      root, root->bounds(), &render_surface_layer_list,
       root->layer_tree_impl()->current_render_surface_list_id());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -7380,7 +7402,7 @@ TEST_F(LayerTreeHostCommonTest,
                                 end_operations);
   }
   gfx::Vector2dF scroll_delta(5.f, 9.f);
-  scroller->SetScrollDelta(scroll_delta);
+  SetScrollOffsetDelta(scroller, scroll_delta);
 
   ExecuteCalculateDrawProperties(root);
 

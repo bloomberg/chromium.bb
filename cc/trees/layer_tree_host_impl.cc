@@ -255,6 +255,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   active_tree_ =
       LayerTreeImpl::create(this, new SyncedProperty<ScaleGroup>(),
                             new SyncedTopControls, new SyncedElasticOverscroll);
+  active_tree_->property_trees()->is_active = true;
 
   viewport_ = Viewport::Create(this);
 
@@ -1209,6 +1210,7 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
       LayerTreeImpl::create(this, active_tree()->page_scale_factor(),
                             active_tree()->top_controls_shown_ratio(),
                             active_tree()->elastic_overscroll());
+  active_tree_->property_trees()->is_active = true;
   if (pending_tree_)
     pending_tree_->DetachLayerTree();
   pending_tree_ = nullptr;

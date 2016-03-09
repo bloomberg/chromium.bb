@@ -449,16 +449,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
 
   void SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset);
-  // must only be called by tests when updating scroll offset of a single layer,
-  // the standard process to update scroll offsets is to call
-  // ScrollTree::UpdateScrollOffsetMap() which updates scroll offsets of all
-  // layers.
-  void PushScrollOffsetFromMainThread(const gfx::ScrollOffset& scroll_offset);
-
   gfx::ScrollOffset CurrentScrollOffset() const;
-  gfx::ScrollOffset BaseScrollOffset() const;
-  gfx::Vector2dF ScrollDelta() const;
-  void SetScrollDelta(const gfx::Vector2dF& delta);
 
   gfx::ScrollOffset MaxScrollOffset() const;
   gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset) const;

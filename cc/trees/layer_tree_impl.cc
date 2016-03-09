@@ -81,7 +81,9 @@ LayerTreeImpl::LayerTreeImpl(
       event_listener_properties_(),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0),
-      top_controls_shown_ratio_(top_controls_shown_ratio) {}
+      top_controls_shown_ratio_(top_controls_shown_ratio) {
+  property_trees()->is_main_thread = false;
+}
 
 LayerTreeImpl::~LayerTreeImpl() {
   BreakSwapPromises(IsActiveTree() ? SwapPromise::SWAP_FAILS
@@ -909,6 +911,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 
 void LayerTreeImpl::BuildPropertyTreesForTesting() {
   LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer_.get());
+  property_trees_.transform_tree.set_source_to_parent_updates_allowed(true);
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer_.get(), PageScaleLayer(), InnerViewportScrollLayer(),
       OuterViewportScrollLayer(), OverscrollElasticityLayer(),
@@ -916,6 +919,7 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
       current_page_scale_factor(), device_scale_factor(),
       gfx::Rect(DrawViewportSize()), layer_tree_host_impl_->DrawTransform(),
       &property_trees_);
+  property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
 }
 
 void LayerTreeImpl::IncrementRenderSurfaceListIdForTesting() {

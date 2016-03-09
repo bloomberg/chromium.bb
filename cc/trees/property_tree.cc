@@ -1487,6 +1487,14 @@ SyncedScrollOffset* ScrollTree::synced_scroll_offset(int layer_id) {
   return layer_id_to_scroll_offset_map_[layer_id].get();
 }
 
+const SyncedScrollOffset* ScrollTree::synced_scroll_offset(int layer_id) const {
+  if (layer_id_to_scroll_offset_map_.find(layer_id) ==
+      layer_id_to_scroll_offset_map_.end()) {
+    return nullptr;
+  }
+  return layer_id_to_scroll_offset_map_.at(layer_id).get();
+}
+
 gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
     SyncedScrollOffset* scroll_offset) {
   // TODO(miletus): Remove all this temporary flooring machinery when
@@ -1591,6 +1599,27 @@ bool ScrollTree::SetScrollOffset(int layer_id,
   else if (property_trees()->is_active)
     return synced_scroll_offset(layer_id)->SetCurrent(scroll_offset);
   return false;
+}
+
+bool ScrollTree::UpdateScrollOffsetBaseForTesting(
+    int layer_id,
+    const gfx::ScrollOffset& offset) {
+  DCHECK(!property_trees()->is_main_thread);
+  bool changed = synced_scroll_offset(layer_id)->PushFromMainThread(offset);
+  if (property_trees()->is_active)
+    changed |= synced_scroll_offset(layer_id)->PushPendingToActive();
+  return changed;
+}
+
+const gfx::ScrollOffset ScrollTree::GetScrollOffsetBaseForTesting(
+    int layer_id) const {
+  DCHECK(!property_trees()->is_main_thread);
+  if (synced_scroll_offset(layer_id))
+    return property_trees()->is_active
+               ? synced_scroll_offset(layer_id)->ActiveBase()
+               : synced_scroll_offset(layer_id)->PendingBase();
+  else
+    return gfx::ScrollOffset();
 }
 
 PropertyTrees::PropertyTrees()

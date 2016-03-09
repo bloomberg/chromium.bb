@@ -576,8 +576,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void set_currently_scrolling_node(int scroll_node_id);
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
-  // synced_scroll_offset is supposed to be called by Layer/LayerImpl only
   SyncedScrollOffset* synced_scroll_offset(int layer_id);
+  const SyncedScrollOffset* synced_scroll_offset(int layer_id) const;
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
   void UpdateScrollOffsetMap(ScrollOffsetMap* new_scroll_offset_map,
                              LayerTreeImpl* layer_tree_impl);
@@ -585,6 +585,9 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   const ScrollOffsetMap& scroll_offset_map() const;
   void ApplySentScrollDeltasFromAbortedCommit();
   bool SetScrollOffset(int layer_id, const gfx::ScrollOffset& scroll_offset);
+  bool UpdateScrollOffsetBaseForTesting(int layer_id,
+                                        const gfx::ScrollOffset& offset);
+  const gfx::ScrollOffset GetScrollOffsetBaseForTesting(int layer_id) const;
 
  private:
   int currently_scrolling_node_id_;

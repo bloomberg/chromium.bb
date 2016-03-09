@@ -677,7 +677,7 @@ class LayerTreeHostTimelinesTestScrollOffsetAnimationRemoval
 
     // Block activation until the running animation has a chance to produce a
     // scroll delta.
-    gfx::Vector2dF scroll_delta = scroll_layer_impl->ScrollDelta();
+    gfx::Vector2dF scroll_delta = ScrollDelta(scroll_layer_impl);
     if (scroll_delta.x() < 1.f || scroll_delta.y() < 1.f)
       return;
 
