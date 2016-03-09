@@ -223,11 +223,23 @@ if (use_system_sqlite) {
 
   source_set("sqlite") {
     public_configs = [ ":sqlite_config" ]
+    deps = [
+      ":sqlite_recover",
+    ]
     if (is_ios) {
       deps = [
         ":sqlite_regexp",
       ]
     }
+  }
+
+  source_set("sqlite_recover") {
+    sources = [
+      # TODO(shess): Move out of the SQLite source tree, perhaps to ext/.
+      "src/src/recover.c",
+      "src/src/recover.h",
+      "src/src/recover_varint.c",
+    ]
   }
 
   if (is_ios) {

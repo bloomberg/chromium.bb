@@ -701,8 +701,6 @@ static int getRootPage(sqlite3 *db, const char *zDb, const char *zTable,
  * interiorCursorDestroy - release all resources associated with the
  *                         cursor and any parent cursors.
  * interiorCursorCreate - create a cursor with the given parent and page.
- * interiorCursorEOF - returns true if neither the cursor nor the
- *                     parent cursors can return any more data.
  * interiorCursorNextPage - fetch the next child page from the cursor.
  *
  * Logically, interiorCursorNextPage() returns the next child page
@@ -719,11 +717,6 @@ static int getRootPage(sqlite3 *db, const char *zDb, const char *zTable,
  * Note that while interiorCursorNextPage() will refuse to follow
  * loops, it does not keep track of pages returned for purposes of
  * preventing duplication.
- *
- * Note that interiorCursorEOF() could return false (not at EOF), and
- * interiorCursorNextPage() could still return SQLITE_DONE.  This
- * could happen if there are more cells to iterate in an interior
- * page, but those cells refer to invalid pages.
  */
 typedef struct RecoverInteriorCursor RecoverInteriorCursor;
 struct RecoverInteriorCursor {
@@ -837,14 +830,6 @@ static unsigned interiorCursorChildPage(RecoverInteriorCursor *pCursor){
 
   /* If the offset is broken, return an invalid page number. */
   return 0;
-}
-
-static int interiorCursorEOF(RecoverInteriorCursor *pCursor){
-  /* Find a parent with remaining children.  EOF if none found. */
-  while( pCursor && pCursor->iChild>=pCursor->nChildren ){
-    pCursor = pCursor->pParent;
-  }
-  return pCursor==NULL;
 }
 
 /* Internal helper.  Used to detect if iPage would cause a loop. */
