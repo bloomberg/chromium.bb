@@ -10,10 +10,10 @@ import android.content.Context;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
@@ -22,19 +22,19 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.download.DownloadTestBase;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.IOException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Context menu related tests
@@ -111,57 +111,60 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     public void testLongPressOnImage() throws InterruptedException, TimeoutException {
-        final Tab tab = getActivity().getActivityTab();
-
-        TestCallbackHelperContainer helper =
-                new TestCallbackHelperContainer(tab.getContentViewCore());
-
-        OnPageFinishedHelper callback = helper.getOnPageFinishedHelper();
-        int callbackCount = callback.getCallCount();
-
-        ContextMenuUtils.selectContextMenuItem(this, tab, "testImage",
-                R.id.contextmenu_open_image);
-
-        callback.waitForCallback(callbackCount);
-
-        String expectedUrl = mTestServer.getURL(
-                "/chrome/test/data/android/contextmenu/test_image.png");
-
-        String actualUrl = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return tab.getUrl();
-            }
-        });
-
-        assertEquals("Failed to navigate to the image", expectedUrl, actualUrl);
+        checkOpenImageInNewTab(
+                "testImage", "/chrome/test/data/android/contextmenu/test_image.png");
     }
 
     @MediumTest
     @Feature({"Browser"})
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     public void testLongPressOnImageLink() throws InterruptedException, TimeoutException {
-        final Tab tab = getActivity().getActivityTab();
+        checkOpenImageInNewTab(
+                "testImageLink", "/chrome/test/data/android/contextmenu/test_image.png");
+    }
 
-        TestCallbackHelperContainer helper =
-                new TestCallbackHelperContainer(tab.getContentViewCore());
+    private void checkOpenImageInNewTab(String domId, final String expectedPath)
+            throws InterruptedException, TimeoutException {
+        final Tab activityTab = getActivity().getActivityTab();
 
-        OnPageFinishedHelper callback = helper.getOnPageFinishedHelper();
-        int callbackCount = callback.getCallCount();
-
-        ContextMenuUtils.selectContextMenuItem(this, tab, "testImage",
-                R.id.contextmenu_open_image);
-
-        callback.waitForCallback(callbackCount);
-
-        String actualTitle = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+        final CallbackHelper newTabCallback = new CallbackHelper();
+        final AtomicReference<Tab> newTab = new AtomicReference<>();
+        getActivity().getTabModelSelector().addObserver(new EmptyTabModelSelectorObserver() {
             @Override
-            public String call() throws Exception {
-                return tab.getTitle();
+            public void onNewTabCreated(Tab tab) {
+                super.onNewTabCreated(tab);
+
+                if (tab.getParentId() != activityTab.getId()) return;
+                newTab.set(tab);
+                newTabCallback.notifyCalled();
+
+                getActivity().getTabModelSelector().removeObserver(this);
             }
         });
 
-        assertTrue("Navigated to the wrong page.", actualTitle.startsWith("test_image.png"));
+        int callbackCount = newTabCallback.getCallCount();
+
+        ContextMenuUtils.selectContextMenuItem(this, activityTab, domId,
+                R.id.contextmenu_open_image_in_new_tab);
+
+        try {
+            newTabCallback.waitForCallback(callbackCount);
+        } catch (TimeoutException ex) {
+            fail("New tab never created from context menu press");
+        }
+
+        // Only check for the URL matching as the tab will not be fully created in svelte mode.
+        final String expectedUrl = mTestServer.getURL(expectedPath);
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                String actualUrl = newTab.get().getUrl();
+                updateFailureReason("Expected URL: " + expectedUrl + ", actual: " + actualUrl);
+                return TextUtils.equals(actualUrl, expectedUrl);
+            }
+        });
     }
 
     @MediumTest
