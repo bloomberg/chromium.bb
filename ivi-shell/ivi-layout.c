@@ -241,6 +241,8 @@ ivi_layout_surface_destroy(struct ivi_layout_surface *ivisurf)
 
 	wl_signal_emit(&layout->surface_notification.removed, ivisurf);
 
+	ivi_layout_remove_all_surface_transitions(ivisurf);
+
 	remove_configured_listener(ivisurf);
 
 	ivi_layout_surface_remove_notification(ivisurf);

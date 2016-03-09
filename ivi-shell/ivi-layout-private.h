@@ -158,6 +158,9 @@ ivi_layout_transition_fade_layer(struct ivi_layout_layer *layer,
 int32_t
 is_surface_transition(struct ivi_layout_surface *surface);
 
+void
+ivi_layout_remove_all_surface_transitions(struct ivi_layout_surface *surface);
+
 /**
  * methods of interaction between ivi-shell with ivi-layout
  */

@@ -99,6 +99,22 @@ is_surface_transition(struct ivi_layout_surface *surface)
 	return 0;
 }
 
+void
+ivi_layout_remove_all_surface_transitions(struct ivi_layout_surface *surface)
+{
+	struct ivi_layout *layout = get_instance();
+	struct transition_node *node;
+	struct transition_node *tmp;
+	struct ivi_layout_transition *tran;
+
+	wl_list_for_each_safe(node, tmp, &layout->transitions->transition_list, link) {
+		tran = node->transition;
+		if (tran->is_transition_func(tran->private_data, surface)) {
+			layout_transition_destroy(tran);
+		}
+	};
+}
+
 static void
 tick_transition(struct ivi_layout_transition *transition, uint32_t timestamp)
 {
