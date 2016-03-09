@@ -30,23 +30,21 @@
 #define WebIDBFactory_h
 
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "public/platform/modules/indexeddb/WebIDBMetadata.h"
 
 namespace blink {
 
-class WebIDBDatabase;
+class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
+class WebSecurityOrigin;
+class WebString;
 
 class WebIDBFactory {
 public:
     virtual ~WebIDBFactory() { }
 
-    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebString& databaseIdentifier) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebSecurityOrigin&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebSecurityOrigin&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebSecurityOrigin&) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

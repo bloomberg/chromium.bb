@@ -312,13 +312,10 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  GURL origin_url =
-      storage::GetOriginFromIdentifier(params.database_identifier);
-
   context()->GetIDBFactory()->GetDatabaseNames(
       new IndexedDBCallbacks(this, params.ipc_thread_id,
                              params.ipc_callbacks_id),
-      origin_url, indexed_db_path, request_context_);
+      params.origin, indexed_db_path, request_context_);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
@@ -327,20 +324,13 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   base::TimeTicks begin_time = base::TimeTicks::Now();
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  GURL origin_url =
-      storage::GetOriginFromIdentifier(params.database_identifier);
-
   int64_t host_transaction_id = HostTransactionId(params.transaction_id);
 
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
-  scoped_refptr<IndexedDBCallbacks> callbacks =
-      new IndexedDBCallbacks(this,
-                             params.ipc_thread_id,
-                             params.ipc_callbacks_id,
-                             params.ipc_database_callbacks_id,
-                             host_transaction_id,
-                             origin_url);
+  scoped_refptr<IndexedDBCallbacks> callbacks = new IndexedDBCallbacks(
+      this, params.ipc_thread_id, params.ipc_callbacks_id,
+      params.ipc_database_callbacks_id, host_transaction_id, params.origin);
   callbacks->SetConnectionOpenStartTime(begin_time);
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks =
       new IndexedDBDatabaseCallbacks(
@@ -352,21 +342,19 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
                                         params.version);
   DCHECK(request_context_);
   context()->GetIDBFactory()->Open(params.name, connection, request_context_,
-                                   origin_url, indexed_db_path);
+                                   params.origin, indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
     const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  GURL origin_url =
-      storage::GetOriginFromIdentifier(params.database_identifier);
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   DCHECK(request_context_);
   context()->GetIDBFactory()->DeleteDatabase(
       params.name, request_context_,
       new IndexedDBCallbacks(this, params.ipc_thread_id,
                              params.ipc_callbacks_id),
-      origin_url, indexed_db_path);
+      params.origin, indexed_db_path);
 }
 
 // OnPutHelper exists only to allow us to hop threads while holding a reference

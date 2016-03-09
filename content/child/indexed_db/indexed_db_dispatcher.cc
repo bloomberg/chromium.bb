@@ -222,7 +222,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
     int64_t transaction_id,
     WebIDBCallbacks* callbacks_ptr,
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
-    const std::string& database_identifier) {
+    const GURL& origin) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   scoped_ptr<WebIDBDatabaseCallbacks> database_callbacks(
       database_callbacks_ptr);
@@ -232,7 +232,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
   params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   params.ipc_database_callbacks_id =
       pending_database_callbacks_.Add(database_callbacks.release());
-  params.database_identifier = database_identifier;
+  params.origin = origin;
   params.name = name;
   params.transaction_id = transaction_id;
   params.version = version;
@@ -241,26 +241,26 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
 
 void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
     WebIDBCallbacks* callbacks_ptr,
-    const std::string& database_identifier) {
+    const GURL& origin) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryGetDatabaseNames_Params params;
   params.ipc_thread_id = CurrentWorkerId();
   params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
-  params.database_identifier = database_identifier;
+  params.origin = origin;
   Send(new IndexedDBHostMsg_FactoryGetDatabaseNames(params));
 }
 
 void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
     const base::string16& name,
     WebIDBCallbacks* callbacks_ptr,
-    const std::string& database_identifier) {
+    const GURL& origin) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryDeleteDatabase_Params params;
   params.ipc_thread_id = CurrentWorkerId();
   params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
-  params.database_identifier = database_identifier;
+  params.origin = origin;
   params.name = name;
   Send(new IndexedDBHostMsg_FactoryDeleteDatabase(params));
 }

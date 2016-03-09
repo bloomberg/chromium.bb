@@ -12,6 +12,7 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBFactory.h"
 
 namespace blink {
+class WebSecurityOrigin;
 class WebString;
 }
 
@@ -25,16 +26,16 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
 
   // See WebIDBFactory.h for documentation on these functions.
   void getDatabaseNames(blink::WebIDBCallbacks* callbacks,
-                        const blink::WebString& database_identifier) override;
+                        const blink::WebSecurityOrigin& origin) override;
   void open(const blink::WebString& name,
             long long version,
             long long transaction_id,
             blink::WebIDBCallbacks* callbacks,
             blink::WebIDBDatabaseCallbacks* databaseCallbacks,
-            const blink::WebString& database_identifier) override;
+            const blink::WebSecurityOrigin& origin) override;
   void deleteDatabase(const blink::WebString& name,
                       blink::WebIDBCallbacks* callbacks,
-                      const blink::WebString& database_identifier) override;
+                      const blink::WebSecurityOrigin& origin) override;
 
  private:
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
