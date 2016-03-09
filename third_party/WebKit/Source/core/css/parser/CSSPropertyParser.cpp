@@ -16,6 +16,7 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSGradientValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
@@ -2355,6 +2356,13 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBaselineShift(CSSParserT
     return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> createCSSImageValueWithReferrer(const AtomicString& rawValue, const CSSParserContext& context)
+{
+    RefPtrWillBeRawPtr<CSSValue> imageValue = CSSImageValue::create(rawValue, context.completeURL(rawValue));
+    toCSSImageValue(imageValue.get())->setReferrer(context.referrer());
+    return imageValue;
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumeImageSet(CSSParserTokenRange& range, const CSSParserContext& context)
 {
     CSSParserTokenRange rangeCopy = range;
@@ -2365,7 +2373,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeImageSet(CSSParserTokenRange& ran
         if (urlValue.isNull())
             return nullptr;
 
-        RefPtrWillBeRawPtr<CSSValue> image = CSSPropertyParser::createCSSImageValueWithReferrer(urlValue, context);
+        RefPtrWillBeRawPtr<CSSValue> image = createCSSImageValueWithReferrer(urlValue, context);
         imageSet->append(image);
 
         const CSSParserToken& token = args.consumeIncludingWhitespace();
@@ -2392,7 +2400,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCursor(CSSParserTokenRange& range
         RefPtrWillBeRawPtr<CSSValue> image = nullptr;
         AtomicString uri(consumeUrl(range));
         if (!uri.isNull()) {
-            image = CSSPropertyParser::createCSSImageValueWithReferrer(uri, context);
+            image = createCSSImageValueWithReferrer(uri, context);
         } else if (range.peek().type() == FunctionToken && range.peek().functionId() == CSSValueWebkitImageSet) {
             image = consumeImageSet(range, context);
             if (!image)
@@ -2814,6 +2822,15 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeGeneratedImage(CSSParserTokenRang
     return result;
 }
 
+static bool isGeneratedImage(CSSValueID id)
+{
+    return id == CSSValueLinearGradient || id == CSSValueRadialGradient
+        || id == CSSValueRepeatingLinearGradient || id == CSSValueRepeatingRadialGradient
+        || id == CSSValueWebkitLinearGradient || id == CSSValueWebkitRadialGradient
+        || id == CSSValueWebkitRepeatingLinearGradient || id == CSSValueWebkitRepeatingRadialGradient
+        || id == CSSValueWebkitGradient || id == CSSValueWebkitCrossFade;
+}
+
 static PassRefPtrWillBeRawPtr<CSSValue> consumeImage(CSSParserTokenRange& range, CSSParserContext context)
 {
     if (range.peek().id() == CSSValueNone)
@@ -2821,12 +2838,12 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeImage(CSSParserTokenRange& range,
 
     AtomicString uri(consumeUrl(range));
     if (!uri.isNull())
-        return CSSPropertyParser::createCSSImageValueWithReferrer(uri, context);
+        return createCSSImageValueWithReferrer(uri, context);
     if (range.peek().type() == FunctionToken) {
         CSSValueID id = range.peek().functionId();
         if (id == CSSValueWebkitImageSet)
             return consumeImageSet(range, context);
-        if (CSSPropertyParser::isGeneratedImage(id))
+        if (isGeneratedImage(id))
             return consumeGeneratedImage(range, context);
     }
     return nullptr;

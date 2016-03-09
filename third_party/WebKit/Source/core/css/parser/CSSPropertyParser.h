@@ -24,10 +24,8 @@
 #define CSSPropertyParser_h
 
 #include "core/css/CSSColorValue.h"
-#include "core/css/CSSGradientValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
-#include "core/css/CSSImageValue.h"
-#include "core/css/CSSPropertySourceData.h"
+#include "core/css/StyleRule.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/Length.h"
 
@@ -85,24 +83,6 @@ public:
     static bool isColorKeyword(CSSValueID);
     static bool isValidNumericValue(double);
 
-    // TODO(rwlbuis): move to CSSPropertyParser.cpp once CSSParserToken conversion is done.
-    static PassRefPtrWillBeRawPtr<CSSValue> createCSSImageValueWithReferrer(const AtomicString& rawValue, const CSSParserContext& context)
-    {
-        RefPtrWillBeRawPtr<CSSValue> imageValue = CSSImageValue::create(rawValue, context.completeURL(rawValue));
-        toCSSImageValue(imageValue.get())->setReferrer(context.referrer());
-        return imageValue;
-    }
-
-    // TODO(rwlbuis): move to CSSPropertyParser.cpp once CSSParserToken conversion is done.
-    static bool isGeneratedImage(CSSValueID id)
-    {
-        return id == CSSValueLinearGradient || id == CSSValueRadialGradient
-            || id == CSSValueRepeatingLinearGradient || id == CSSValueRepeatingRadialGradient
-            || id == CSSValueWebkitLinearGradient || id == CSSValueWebkitRadialGradient
-            || id == CSSValueWebkitRepeatingLinearGradient || id == CSSValueWebkitRepeatingRadialGradient
-            || id == CSSValueWebkitGradient || id == CSSValueWebkitCrossFade;
-    }
-
 private:
     CSSPropertyParser(const CSSParserTokenRange&, const CSSParserContext&,
         WillBeHeapVector<CSSProperty, 256>*);
@@ -130,27 +110,6 @@ private:
     bool parseShorthand(CSSPropertyID, bool important);
     bool consumeShorthandGreedily(const StylePropertyShorthand&, bool important);
     bool consume4Values(const StylePropertyShorthand&, bool important);
-
-    bool parseFillImage(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
-
-    enum FillPositionFlag { InvalidFillPosition = 0, AmbiguousFillPosition = 1, XFillPosition = 2, YFillPosition = 4 };
-    enum FillPositionParsingMode { ResolveValuesAsPercent = 0, ResolveValuesAsKeyword = 1 };
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseFillPositionComponent(CSSParserValueList*, unsigned& cumulativeFlags, FillPositionFlag& individualFlag, FillPositionParsingMode = ResolveValuesAsPercent, Units = FUnknown);
-    PassRefPtrWillBeRawPtr<CSSValue> parseFillPositionX(CSSParserValueList*);
-    PassRefPtrWillBeRawPtr<CSSValue> parseFillPositionY(CSSParserValueList*);
-    void parse2ValuesFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, Units = FUnknown);
-    bool isPotentialPositionValue(CSSParserValue*);
-    void parseFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, Units = FUnknown);
-    void parse3ValuesFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>);
-    void parse4ValuesFillPosition(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, PassRefPtrWillBeRawPtr<CSSPrimitiveValue>);
-
-    void parseFillRepeat(RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
-    PassRefPtrWillBeRawPtr<CSSValue> parseFillSize(CSSPropertyID);
-
-    bool parseFillProperty(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
-    bool parseFillShorthand(CSSPropertyID, const CSSPropertyID* properties, int numProperties, bool important);
-
-    void addFillValue(RefPtrWillBeRawPtr<CSSValue>& lval, PassRefPtrWillBeRawPtr<CSSValue> rval);
 
     // Legacy parsing allows <string>s for animation-name
     bool consumeAnimationShorthand(const StylePropertyShorthand&, bool useLegacyParsing, bool important);
@@ -186,11 +145,6 @@ private:
 
     bool consumeBorderSpacing(bool important);
 
-    bool parseColorParameters(const CSSParserValue*, int* colorValues, bool parseAlpha);
-    bool parseHSLParameters(const CSSParserValue*, double* colorValues, bool parseAlpha);
-    PassRefPtrWillBeRawPtr<CSSValue> parseColor(const CSSParserValue*, bool acceptQuirkyColors = false);
-    bool parseColorFromValue(const CSSParserValue*, RGBA32&, bool acceptQuirkyColors = false);
-
     // CSS3 Parsing Routines (for properties specific to CSS3)
     bool consumeBorderImage(CSSPropertyID, bool important);
 
@@ -198,21 +152,7 @@ private:
 
     bool consumeLegacyBreakProperty(CSSPropertyID, bool important);
 
-    // Image generators
-    bool parseDeprecatedGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
-    bool parseDeprecatedLinearGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, CSSGradientRepeat repeating);
-    bool parseDeprecatedRadialGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, CSSGradientRepeat repeating);
-    bool parseLinearGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, CSSGradientRepeat repeating);
-    bool parseRadialGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, CSSGradientRepeat repeating);
-    bool parseGradientColorStops(CSSParserValueList*, CSSGradientValue*, bool expectComma);
-
-    bool parseCrossfade(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
-
-    PassRefPtrWillBeRawPtr<CSSValue> parseImageSet(CSSParserValueList*);
-
     bool parseCalculation(CSSParserValue*, ValueRange);
-
-    bool parseGeneratedImage(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
     PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createPrimitiveCustomIdentValue(CSSParserValue*);
@@ -270,11 +210,6 @@ private:
 
     inline bool validUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue) { return validUnit(value, unitflags, m_context.mode(), releaseCalc); }
     bool validUnit(CSSParserValue*, Units, CSSParserMode, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
-
-    int colorIntFromValue(CSSParserValue*);
-
-    bool parseDeprecatedGradientColorStop(CSSParserValue*, CSSGradientColorStop&);
-    PassRefPtrWillBeRawPtr<CSSValue> parseDeprecatedGradientStopColor(const CSSParserValue*);
 
 private:
     // Inputs:
