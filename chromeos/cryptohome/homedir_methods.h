@@ -89,6 +89,12 @@ class CHROMEOS_EXPORT HomedirMethods {
                            const std::string& label,
                            const Callback& callback) = 0;
 
+  // Asks cryptohomed to change cryptohome identification |id_from| to |id_to|,
+  // which results in cryptohome directory renaming.
+  virtual void RenameCryptohome(const Identification& id_from,
+                                const Identification& id_to,
+                                const Callback& callback) = 0;
+
   // Creates the global HomedirMethods instance.
   static void Initialize();
 

@@ -6337,6 +6337,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Cryptohome errors.</summary>
 </histogram>
 
+<histogram name="Cryptohome.MigrationToGaiaId"
+    enum="CryptohomeMigrationToGaiaId">
+  <owner>alemate@chromium.org</owner>
+  <summary>
+    This is the status of cryptohome migration to GaiaId. Every time user logs
+    in current migration status is recorded.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.TimeToInitPkcs11" units="ms">
   <owner>dkrahn@chromium.org</owner>
   <summary>
@@ -62095,6 +62104,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="15" label="Failed to encrypt with cryptohome TPM key"/>
   <int value="16" label="TSS communication error"/>
   <int value="17" label="TSS invalid handle"/>
+</enum>
+
+<enum name="CryptohomeMigrationToGaiaId" type="int">
+  <int value="0" label="Not started"/>
+  <int value="1" label="Already migrated"/>
+  <int value="2" label="Success"/>
+  <int value="3" label="Failure"/>
 </enum>
 
 <enum name="CTRequirementCompliance" type="int">

@@ -278,6 +278,14 @@ class HomedirMethodsImpl : public HomedirMethods {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void RenameCryptohome(const Identification& id_from,
+                        const Identification& id_to,
+                        const Callback& callback) override {
+    DBusThreadManager::Get()->GetCryptohomeClient()->RenameCryptohome(
+        id_from, id_to, base::Bind(&HomedirMethodsImpl::OnBaseReplyCallback,
+                                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  private:
   void OnGetKeyDataExCallback(const GetKeyDataCallback& callback,
                               chromeos::DBusMethodCallStatus call_status,

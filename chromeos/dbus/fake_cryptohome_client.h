@@ -38,6 +38,9 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
                        const AsyncMethodCallback& callback) override;
   void AsyncRemove(const cryptohome::Identification& cryptohome_id,
                    const AsyncMethodCallback& callback) override;
+  void RenameCryptohome(const cryptohome::Identification& cryptohome_id_from,
+                        const cryptohome::Identification& cryptohome_id_to,
+                        const ProtobufMethodCallback& callback) override;
   void GetSystemSalt(const GetSystemSaltCallback& callback) override;
   void GetSanitizedUsername(const cryptohome::Identification& cryptohome_id,
                             const StringDBusMethodCallback& callback) override;

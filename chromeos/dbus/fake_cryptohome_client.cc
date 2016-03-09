@@ -93,6 +93,14 @@ void FakeCryptohomeClient::AsyncRemove(
   ReturnAsyncMethodResult(callback, false);
 }
 
+void FakeCryptohomeClient::RenameCryptohome(
+    const cryptohome::Identification& cryptohome_id_from,
+    const cryptohome::Identification& cryptohome_id_to,
+    const ProtobufMethodCallback& callback) {
+  cryptohome::BaseReply reply;
+  ReturnProtobufMethodCallback(reply, callback);
+}
+
 void FakeCryptohomeClient::GetSystemSalt(
     const GetSystemSaltCallback& callback) {
   base::MessageLoop::current()->PostTask(

@@ -51,6 +51,10 @@ class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
                     const KeyDefinition& key,
                     const std::string& signature,
                     const Callback& callback));
+  MOCK_METHOD3(RenameCryptohome,
+               void(const Identification& id_from,
+                    const Identification& id_to,
+                    const Callback& callback));
 
  private:
   bool success_;

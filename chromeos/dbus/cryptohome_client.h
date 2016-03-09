@@ -139,6 +139,13 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void AsyncRemove(const cryptohome::Identification& cryptohome_id,
                            const AsyncMethodCallback& callback) = 0;
 
+  // Calls RenameCryptohome method. |callback| is called after the method
+  // call succeeds.
+  virtual void RenameCryptohome(
+      const cryptohome::Identification& cryptohome_id_from,
+      const cryptohome::Identification& cryptohome_id_to,
+      const ProtobufMethodCallback& callback) = 0;
+
   // Calls GetSystemSalt method.  |callback| is called after the method call
   // succeeds.
   virtual void GetSystemSalt(const GetSystemSaltCallback& callback) = 0;

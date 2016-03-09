@@ -128,6 +128,26 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
+  void RenameCryptohome(const cryptohome::Identification& cryptohome_id_from,
+                        const cryptohome::Identification& cryptohome_id_to,
+                        const ProtobufMethodCallback& callback) override {
+    const char* method_name = cryptohome::kCryptohomeRenameCryptohome;
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
+
+    cryptohome::AccountIdentifier id_from_proto;
+    cryptohome::AccountIdentifier id_to_proto;
+    FillIdentificationProtobuf(cryptohome_id_from, &id_from_proto);
+    FillIdentificationProtobuf(cryptohome_id_to, &id_to_proto);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(id_from_proto);
+    writer.AppendProtoAsArrayOfBytes(id_to_proto);
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
+                       base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  // CryptohomeClient override.
   void GetSystemSalt(const GetSystemSaltCallback& callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetSystemSalt);
