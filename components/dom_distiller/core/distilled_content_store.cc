@@ -9,8 +9,7 @@
 namespace dom_distiller {
 
 InMemoryContentStore::InMemoryContentStore(const int max_num_entries)
-    : cache_(max_num_entries, CacheDeletor(this)) {
-}
+    : cache_(max_num_entries) {}
 
 InMemoryContentStore::~InMemoryContentStore() {
   // Clear the cache before destruction to ensure the CacheDeletor is not called
@@ -52,7 +51,7 @@ void InMemoryContentStore::LoadContent(
   }
   scoped_ptr<DistilledArticleProto> distilled_article;
   if (success) {
-    distilled_article.reset(new DistilledArticleProto(it->second));
+    distilled_article.reset(new DistilledArticleProto(*it->second));
   } else {
     distilled_article.reset(new DistilledArticleProto());
   }
@@ -63,7 +62,9 @@ void InMemoryContentStore::LoadContent(
 
 void InMemoryContentStore::InjectContent(const ArticleEntry& entry,
                                          const DistilledArticleProto& proto) {
-  cache_.Put(entry.entry_id(), proto);
+  cache_.Put(entry.entry_id(),
+             scoped_ptr<DistilledArticleProto, CacheDeletor>(
+                 new DistilledArticleProto(proto), CacheDeletor(this)));
   AddUrlToIdMapping(entry, proto);
 }
 
@@ -96,11 +97,12 @@ InMemoryContentStore::CacheDeletor::~CacheDeletor() {
 }
 
 void InMemoryContentStore::CacheDeletor::operator()(
-    const DistilledArticleProto& proto) {
+    DistilledArticleProto* proto) {
   // When InMemoryContentStore is deleted, the |store_| pointer becomes invalid,
   // but since the ContentMap is cleared in the InMemoryContentStore destructor,
   // this should never be called after the destructor.
-  store_->EraseUrlToIdMapping(proto);
+  store_->EraseUrlToIdMapping(*proto);
+  delete proto;
 }
 
 }  // namespace dom_distiller

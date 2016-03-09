@@ -66,11 +66,7 @@ class DrmOverlayValidator {
   ScanoutBufferGenerator* buffer_generator_;  // Not owned.
 
   // List of all configurations which have been validated.
-  base::MRUCacheBase<OverlayPlaneList,
-                     OverlayHintsList,
-                     std::less<OverlayPlaneList>,
-                     base::MRUCacheNullDeletor<OverlayHintsList>>
-      overlay_hints_cache_;
+  base::MRUCache<OverlayPlaneList, OverlayHintsList> overlay_hints_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayValidator);
 };

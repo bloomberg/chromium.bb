@@ -40,7 +40,7 @@ ScopedSSL_SESSION SSLClientSessionCacheOpenSSL::Lookup(
   CacheEntryMap::iterator iter = cache_.Get(cache_key);
   if (iter == cache_.end())
     return nullptr;
-  if (IsExpired(iter->second, clock_->Now())) {
+  if (IsExpired(iter->second.get(), clock_->Now())) {
     cache_.Erase(iter);
     return nullptr;
   }
@@ -52,12 +52,12 @@ void SSLClientSessionCacheOpenSSL::Insert(const std::string& cache_key,
   base::AutoLock lock(lock_);
 
   // Make a new entry.
-  CacheEntry* entry = new CacheEntry;
+  scoped_ptr<CacheEntry> entry(new CacheEntry);
   entry->session.reset(SSL_SESSION_up_ref(session));
   entry->creation_time = clock_->Now();
 
   // Takes ownership.
-  cache_.Put(cache_key, entry);
+  cache_.Put(cache_key, std::move(entry));
 }
 
 void SSLClientSessionCacheOpenSSL::Flush() {
@@ -88,7 +88,7 @@ void SSLClientSessionCacheOpenSSL::FlushExpiredSessions() {
   base::Time now = clock_->Now();
   CacheEntryMap::iterator iter = cache_.begin();
   while (iter != cache_.end()) {
-    if (IsExpired(iter->second, now)) {
+    if (IsExpired(iter->second.get(), now)) {
       iter = cache_.Erase(iter);
     } else {
       ++iter;

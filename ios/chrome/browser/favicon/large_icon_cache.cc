@@ -28,9 +28,9 @@ LargeIconCache::~LargeIconCache() {}
 void LargeIconCache::SetCachedResult(
     const GURL& url,
     const favicon_base::LargeIconResult& result) {
-  LargeIconCacheEntry* entry = new LargeIconCacheEntry;
+  scoped_ptr<LargeIconCacheEntry> entry(new LargeIconCacheEntry);
   entry->result = CloneLargeIconResult(result);
-  cache_.Put(url, entry);
+  cache_.Put(url, std::move(entry));
 }
 
 scoped_ptr<favicon_base::LargeIconResult> LargeIconCache::GetCachedResult(

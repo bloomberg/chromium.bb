@@ -14,21 +14,6 @@
 
 namespace {
 
-class MRUCacheNSObjectDelegate {
- public:
-  MRUCacheNSObjectDelegate(id<LRUCacheDelegate> delegate)
-      : delegate_(delegate) {}
-
-  MRUCacheNSObjectDelegate(const MRUCacheNSObjectDelegate& other) = default;
-
-  void operator()(const base::scoped_nsprotocol<id<NSObject>>& payload) const {
-    [delegate_ lruCacheWillEvictObject:payload.get()];
-  }
-
- private:
-  id<LRUCacheDelegate> delegate_;  // Weak.
-};
-
 struct NSObjectEqualTo {
   bool operator()(const base::scoped_nsprotocol<id<NSObject>>& obj1,
                   const base::scoped_nsprotocol<id<NSObject>>& obj2) const {
@@ -52,20 +37,17 @@ class NSObjectMRUCache
     : public base::MRUCacheBase<base::scoped_nsprotocol<id<NSObject>>,
                                 base::scoped_nsprotocol<id<NSObject>>,
                                 NSObjectHash,
-                                MRUCacheNSObjectDelegate,
                                 MRUCacheNSObjectHashMap> {
  private:
   typedef base::MRUCacheBase<base::scoped_nsprotocol<id<NSObject>>,
                              base::scoped_nsprotocol<id<NSObject>>,
                              NSObjectHash,
-                             MRUCacheNSObjectDelegate,
                              MRUCacheNSObjectHashMap>
       ParentType;
 
  public:
-  NSObjectMRUCache(typename ParentType::size_type max_size,
-                   const MRUCacheNSObjectDelegate& deletor)
-      : ParentType(max_size, deletor) {}
+  explicit NSObjectMRUCache(typename ParentType::size_type max_size)
+      : ParentType(max_size) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NSObjectMRUCache);
@@ -73,14 +55,10 @@ class NSObjectMRUCache
 
 }  // namespace
 
-@interface LRUCache ()<LRUCacheDelegate>
-@end
-
 @implementation LRUCache {
   scoped_ptr<NSObjectMRUCache> _cache;
 }
 
-@synthesize delegate = _delegate;
 @synthesize maxCacheSize = _maxCacheSize;
 
 - (instancetype)init {
@@ -92,8 +70,7 @@ class NSObjectMRUCache
   self = [super init];
   if (self) {
     _maxCacheSize = maxCacheSize;
-    MRUCacheNSObjectDelegate cacheDelegateDeletor(self);
-    _cache.reset(new NSObjectMRUCache(self.maxCacheSize, cacheDelegateDeletor));
+    _cache.reset(new NSObjectMRUCache(self.maxCacheSize));
   }
   return self;
 }
@@ -129,12 +106,6 @@ class NSObjectMRUCache
 
 - (BOOL)isEmpty {
   return _cache->empty();
-}
-
-#pragma mark - Private
-
-- (void)lruCacheWillEvictObject:(id<NSObject>)obj {
-  [self.delegate lruCacheWillEvictObject:obj];
 }
 
 @end

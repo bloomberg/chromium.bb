@@ -64,22 +64,17 @@ class WebserviceCache : public KeyedService,
 
  private:
   struct Payload {
-    Payload(const base::Time& time,
-            const base::DictionaryValue* result)
-        : time(time), result(result) {}
-    Payload() {}
+    Payload(const base::Time& time, scoped_ptr<base::DictionaryValue> result);
+    Payload();
+    ~Payload();
+
+    Payload& operator=(Payload&& other);
 
     base::Time time;
-    const base::DictionaryValue* result;
+    scoped_ptr<base::DictionaryValue> result;
   };
 
-  class CacheDeletor {
-   public:
-    void operator()(const Payload& payload);
-  };
-  typedef base::
-      MRUCacheBase<std::string, Payload, std::less<std::string>, CacheDeletor>
-          Cache;
+  using Cache = base::MRUCache<std::string, scoped_ptr<Payload>>;
 
   // Callback for when the cache is loaded from the dictionary data store.
   void OnCacheLoaded(scoped_ptr<base::DictionaryValue>);
@@ -87,8 +82,7 @@ class WebserviceCache : public KeyedService,
   // Populates the payload parameter with the corresponding payload stored
   // in the given dictionary. If the dictionary is invalid for any reason,
   // this method will return false.
-  bool PayloadFromDict(const base::DictionaryValue* dict,
-                       Payload* payload);
+  bool PayloadFromDict(const base::DictionaryValue* dict, Payload* payload);
 
   // Returns a dictionary value for a given payload. The returned dictionary
   // will be owned by the data_store_ cached_dict, and freed on the destruction

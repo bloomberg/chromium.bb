@@ -47,7 +47,7 @@ class LargeIconCache : public KeyedService {
   scoped_ptr<favicon_base::LargeIconResult> CloneLargeIconResult(
       const favicon_base::LargeIconResult& large_icon_result);
 
-  base::OwningMRUCache<GURL, LargeIconCacheEntry*> cache_;
+  base::MRUCache<GURL, scoped_ptr<LargeIconCacheEntry>> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconCache);
 };

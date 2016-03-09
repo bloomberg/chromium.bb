@@ -96,9 +96,9 @@ BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
     return REQUEST_ID_INVALID;
 
   // Check for existing images first.
-  base::OwningMRUCache<GURL, CacheEntry*>::iterator iter = cache_.Get(url);
+  auto iter = cache_.Get(url);
   if (iter != cache_.end()) {
-    BitmapFetcherService::CacheEntry* entry = iter->second;
+    BitmapFetcherService::CacheEntry* entry = iter->second.get();
     request->NotifyImageChanged(entry->bitmap.get());
 
     // There is no request ID associated with this - data is already delivered.
@@ -184,9 +184,9 @@ void BitmapFetcherService::OnFetchComplete(const GURL& url,
   }
 
   if (bitmap && !bitmap->isNull()) {
-    CacheEntry* entry = new CacheEntry;
+    scoped_ptr<CacheEntry> entry(new CacheEntry);
     entry->bitmap.reset(new SkBitmap(*bitmap));
-    cache_.Put(fetcher->url(), entry);
+    cache_.Put(fetcher->url(), std::move(entry));
   }
 
   RemoveFetcher(fetcher);

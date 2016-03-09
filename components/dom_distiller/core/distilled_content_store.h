@@ -64,7 +64,7 @@ class InMemoryContentStore : public DistilledContentStore {
    public:
     explicit CacheDeletor(InMemoryContentStore* store);
     ~CacheDeletor();
-    void operator()(const DistilledArticleProto& proto);
+    void operator()(DistilledArticleProto* proto);
 
    private:
     InMemoryContentStore* store_;
@@ -75,10 +75,9 @@ class InMemoryContentStore : public DistilledContentStore {
 
   void EraseUrlToIdMapping(const DistilledArticleProto& proto);
 
-  typedef base::MRUCacheBase<std::string,
-                             DistilledArticleProto,
-                             std::less<std::string>,
-                             InMemoryContentStore::CacheDeletor>
+  typedef base::MRUCache<std::string,
+                         scoped_ptr<DistilledArticleProto, CacheDeletor>>
+
       ContentMap;
   typedef base::hash_map<std::string, std::string> UrlMap;
 

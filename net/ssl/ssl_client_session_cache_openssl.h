@@ -66,11 +66,7 @@ class NET_EXPORT SSLClientSessionCacheOpenSSL {
   };
 
   using CacheEntryMap =
-      base::MRUCacheBase<std::string,
-                         CacheEntry*,
-                         std::hash<std::string>,
-                         base::MRUCachePointerDeletor<CacheEntry*>,
-                         base::MRUCacheHashMap>;
+      base::HashingMRUCache<std::string, scoped_ptr<CacheEntry>>;
 
   // Returns true if |entry| is expired as of |now|.
   bool IsExpired(CacheEntry* entry, const base::Time& now);

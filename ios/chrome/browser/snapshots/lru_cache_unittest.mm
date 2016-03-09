@@ -6,32 +6,10 @@
 #import "ios/chrome/browser/snapshots/lru_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-@interface LRUCacheTestDelegate : NSObject<LRUCacheDelegate>
-
-@property(nonatomic, retain) id<NSObject> lastEvictedObject;
-@property(nonatomic, assign) NSInteger evictedObjectsCount;
-
-@end
-
-@implementation LRUCacheTestDelegate
-
-@synthesize lastEvictedObject = _lastEvictedObject;
-@synthesize evictedObjectsCount = _evictedObjectsCount;
-
-- (void)lruCacheWillEvictObject:(id<NSObject>)obj {
-  self.lastEvictedObject = obj;
-  ++_evictedObjectsCount;
-}
-
-@end
-
 namespace {
 
 TEST(LRUCacheTest, Basic) {
   base::scoped_nsobject<LRUCache> cache([[LRUCache alloc] initWithCacheSize:3]);
-  base::scoped_nsobject<LRUCacheTestDelegate> delegate(
-      [[LRUCacheTestDelegate alloc] init]);
-  [cache setDelegate:delegate];
 
   base::scoped_nsobject<NSString> value1(
       [[NSString alloc] initWithString:@"Value 1"]);
@@ -51,8 +29,6 @@ TEST(LRUCacheTest, Basic) {
   [cache setObject:value4 forKey:@"VALUE 4"];
 
   EXPECT_TRUE([cache count] == 3);
-  EXPECT_TRUE([delegate evictedObjectsCount] == 1);
-  EXPECT_TRUE([delegate lastEvictedObject] == value1.get());
 
   // Check LRU behaviour, the value least recently added value should have been
   // evicted.

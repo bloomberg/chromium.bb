@@ -7,20 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-// The LRUCache delegate is called before an item is evicted from the cache.
-@protocol LRUCacheDelegate
-
-- (void)lruCacheWillEvictObject:(id<NSObject>)object;
-
-@end
-
 // This class implements a cache with a limited size. Once the cache reach its
 // size limit, it will start to evict items in a Least Recently Used order
 // (where the term "used" is determined in terms of query to the cache).
 @interface LRUCache : NSObject
-
-// The delegate of the LRUCache called when objects are evicted from the cache.
-@property(nonatomic, assign) id<LRUCacheDelegate> delegate;
 
 // The maximum amount of items that the cache can hold before starting to
 // evict. The value 0 is used to signify that the cache can hold an unlimited
@@ -43,18 +33,13 @@
 // Adds the pair |key|, |obj| to the cache. If the value of the maxCacheSize
 // property is non zero, the cache may evict an elements if the maximum cache
 // size is reached. If the |key| is already present in the cache, the value for
-// that key is replaced by |object|. For any evicted object and if the delegate
-// is
-// non nil, it will receive a call to the lruCacheWillEvictObject: selector.
+// that key is replaced by |object|.
 - (void)setObject:(id<NSObject>)object forKey:(NSObject*)key;
 
-// Remove the key, value pair corresponding to the given |key|. If the delegate
-// is non nil, it will receive a call to the lruCacheWillEvictObject: selector.
+// Remove the key, value pair corresponding to the given |key|.
 - (void)removeObjectForKey:(id<NSObject>)key;
 
-// Remove all objects from the cache. For all evicted objects and if the
-// delegate is non nil, it will receive a call to the lruCacheWillEvictObject:
-// selector.
+// Remove all objects from the cache.
 - (void)removeAllObjects;
 
 // Returns the amount of items that the cache currently hold.

@@ -96,7 +96,7 @@ class BitmapFetcherService : public KeyedService,
 
     scoped_ptr<const SkBitmap> bitmap;
   };
-  base::OwningMRUCache<GURL, CacheEntry*> cache_;
+  base::MRUCache<GURL, scoped_ptr<CacheEntry>> cache_;
 
   // Current request ID to be used.
   int current_request_id_;
