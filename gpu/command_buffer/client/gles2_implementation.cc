@@ -958,6 +958,12 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_NUM_PROGRAM_BINARY_FORMATS:
       *params = capabilities_.num_program_binary_formats;
       return true;
+    case GL_PACK_SKIP_PIXELS:
+      *params = pack_skip_pixels_;
+      return true;
+    case GL_PACK_SKIP_ROWS:
+      *params = pack_skip_rows_;
+      return true;
     case GL_PIXEL_PACK_BUFFER_BINDING:
       *params = bound_pixel_pack_buffer_;
       return true;
@@ -972,6 +978,15 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       return true;
     case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:
       *params = capabilities_.uniform_buffer_offset_alignment;
+      return true;
+    case GL_UNPACK_SKIP_IMAGES:
+      *params = unpack_skip_images_;
+      return true;
+    case GL_UNPACK_SKIP_PIXELS:
+      *params = unpack_skip_pixels_;
+      return true;
+    case GL_UNPACK_SKIP_ROWS:
+      *params = unpack_skip_rows_;
       return true;
 
     // Non-cached ES3 parameters.
@@ -994,8 +1009,6 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_DRAW_FRAMEBUFFER_BINDING:
     case GL_FRAGMENT_SHADER_DERIVATIVE_HINT:
     case GL_PACK_ROW_LENGTH:
-    case GL_PACK_SKIP_PIXELS:
-    case GL_PACK_SKIP_ROWS:
     case GL_PRIMITIVE_RESTART_FIXED_INDEX:
     case GL_PROGRAM_BINARY_FORMATS:
     case GL_RASTERIZER_DISCARD:
@@ -1013,9 +1026,6 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_UNIFORM_BUFFER_START:
     case GL_UNPACK_IMAGE_HEIGHT:
     case GL_UNPACK_ROW_LENGTH:
-    case GL_UNPACK_SKIP_IMAGES:
-    case GL_UNPACK_SKIP_PIXELS:
-    case GL_UNPACK_SKIP_ROWS:
     case GL_VERTEX_ARRAY_BINDING:
       return false;
     default:
@@ -1764,6 +1774,45 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glPixelStorei("
       << GLES2Util::GetStringPixelStore(pname) << ", "
       << param << ")");
+  // We have to validate before caching these parameters because we use them
+  // to compute image sizes on the client side.
+  switch (pname) {
+    case GL_PACK_ALIGNMENT:
+    case GL_UNPACK_ALIGNMENT:
+      if (param != 1 && param != 2 && param != 4 && param != 8) {
+        SetGLError(GL_INVALID_VALUE, "glPixelStorei", "invalid param");
+        return;
+      }
+      break;
+    case GL_PACK_ROW_LENGTH:
+    case GL_PACK_SKIP_PIXELS:
+    case GL_PACK_SKIP_ROWS:
+    case GL_UNPACK_IMAGE_HEIGHT:
+    case GL_UNPACK_SKIP_IMAGES:
+      if (capabilities_.major_version < 3) {
+        SetGLError(GL_INVALID_ENUM, "glPixelStorei", "invalid pname");
+        return;
+      }
+      if (param < 0) {
+        SetGLError(GL_INVALID_VALUE, "glPixelStorei", "invalid param");
+        return;
+      }
+      break;
+    case GL_UNPACK_ROW_LENGTH:
+    case GL_UNPACK_SKIP_ROWS:
+    case GL_UNPACK_SKIP_PIXELS:
+      // These parameters are always enabled in ES2 by EXT_unpack_subimage.
+      if (param < 0) {
+        SetGLError(GL_INVALID_VALUE, "glPixelStorei", "invalid param");
+        return;
+      }
+      break;
+    default:
+      SetGLError(GL_INVALID_ENUM, "glPixelStorei", "invalid pname");
+      return;
+  }
+  // Do not send SKIP parameters to the service side.
+  // Handle them on the client side.
   switch (pname) {
     case GL_PACK_ALIGNMENT:
       pack_alignment_ = param;
@@ -1773,29 +1822,35 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
       break;
     case GL_PACK_SKIP_PIXELS:
       pack_skip_pixels_ = param;
-      break;
+      return;
     case GL_PACK_SKIP_ROWS:
       pack_skip_rows_ = param;
-      break;
+      return;
     case GL_UNPACK_ALIGNMENT:
       unpack_alignment_ = param;
       break;
-    case GL_UNPACK_ROW_LENGTH_EXT:
+    case GL_UNPACK_ROW_LENGTH:
       unpack_row_length_ = param;
+      if (capabilities_.major_version < 3) {
+        // In ES2 with EXT_unpack_subimage, it's handled on the client side
+        // and there is no need to send it to the service side.
+        return;
+      }
       break;
     case GL_UNPACK_IMAGE_HEIGHT:
       unpack_image_height_ = param;
       break;
-    case GL_UNPACK_SKIP_ROWS_EXT:
+    case GL_UNPACK_SKIP_ROWS:
       unpack_skip_rows_ = param;
-      break;
-    case GL_UNPACK_SKIP_PIXELS_EXT:
+      return;
+    case GL_UNPACK_SKIP_PIXELS:
       unpack_skip_pixels_ = param;
-      break;
+      return;
     case GL_UNPACK_SKIP_IMAGES:
       unpack_skip_images_ = param;
-      break;
+      return;
     default:
+      NOTREACHED();
       break;
   }
   helper_->PixelStorei(pname, param);
@@ -3547,14 +3602,6 @@ void GLES2Implementation::ReadPixels(
   TRACE_EVENT0("gpu", "GLES2::ReadPixels");
   typedef cmds::ReadPixels::Result Result;
 
-  if (bound_pixel_pack_buffer_) {
-    GLuint offset = ToGLuint(pixels);
-    helper_->ReadPixels(
-        xoffset, yoffset, width, height, format, type, 0, offset, 0, 0, false);
-    CheckGLError();
-    return;
-  }
-
   uint32_t size;
   uint32_t unpadded_row_size;
   uint32_t padded_row_size;
@@ -3575,6 +3622,20 @@ void GLES2Implementation::ReadPixels(
     SetGLError(GL_INVALID_VALUE, "glReadPixels", "size too large.");
     return;
   }
+
+  if (bound_pixel_pack_buffer_) {
+    base::CheckedNumeric<GLuint> offset = ToGLuint(pixels);
+    offset += skip_size;
+    if (!offset.IsValid()) {
+      SetGLError(GL_INVALID_VALUE, "glReadPixels", "skip size too large.");
+      return;
+    }
+    helper_->ReadPixels(xoffset, yoffset, width, height, format, type, 0,
+                        offset.ValueOrDefault(0), 0, 0, false);
+    CheckGLError();
+    return;
+  }
+
   uint32_t service_padded_row_size = 0;
   if (pack_row_length_ > 0 && pack_row_length_ != width) {
     if (!GLES2Util::ComputeImagePaddedRowSize(width,
@@ -3600,7 +3661,7 @@ void GLES2Implementation::ReadPixels(
         bound_pixel_pack_transfer_buffer_id_, "glReadPixels", offset, size);
     if (buffer && buffer->shm_id() != -1) {
       helper_->ReadPixels(xoffset, yoffset, width, height, format, type,
-                          buffer->shm_id(), buffer->shm_offset(),
+                          buffer->shm_id(), buffer->shm_offset() + offset,
                           0, 0, true);
       CheckGLError();
     }

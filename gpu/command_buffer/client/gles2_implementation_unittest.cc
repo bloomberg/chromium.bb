@@ -2502,7 +2502,7 @@ TEST_F(GLES2ImplementationTest, TexImage2DViaTexSubImage2D) {
       pixels.get() + kHeight / 2 * padded_row_size, mem2.ptr));
 }
 
-TEST_F(GLES2ImplementationTest, SubImageUnpack) {
+TEST_F(GLES2ImplementationTest, SubImage2DUnpack) {
   static const GLint unpack_alignments[] = { 1, 2, 4, 8 };
 
   static const GLenum kFormat = GL_RGB;
@@ -2527,58 +2527,84 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
   static const GLint kTexSubYOffset = 103;
 
   struct {
-    cmds::PixelStorei pixel_store_i[4];
+    cmds::PixelStorei pixel_store_i;
     cmds::TexImage2D tex_image_2d;
   } texImageExpected;
 
   struct  {
-    cmds::PixelStorei pixel_store_i[4];
+    cmds::PixelStorei pixel_store_i;
     cmds::TexImage2D tex_image_2d;
     cmds::TexSubImage2D tex_sub_image_2d;
   } texSubImageExpected;
 
-  uint32_t src_size;
-  ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
-      kSrcWidth, kSrcSubImageY1, 1, kFormat, kType, 8, &src_size, NULL, NULL));
+  uint32_t pixel_size;
+  PixelStoreParams pixel_params;
+  // Makes sure the pixels size is large enough for all tests.
+  pixel_params.alignment = 8;
+  ASSERT_TRUE(GLES2Util::ComputeImageDataSizesES3(
+      kSrcWidth, kSrcSubImageY1, 1, kFormat, kType,
+      pixel_params, &pixel_size, nullptr, nullptr, nullptr, nullptr));
   scoped_ptr<uint8_t[]> src_pixels;
-  src_pixels.reset(new uint8_t[src_size]);
-  for (size_t i = 0; i < src_size; ++i) {
-    src_pixels[i] = static_cast<int8_t>(i);
+  src_pixels.reset(new uint8_t[pixel_size]);
+  for (size_t i = 0; i < pixel_size; ++i) {
+    src_pixels[i] = static_cast<uint8_t>(i % 255);
   }
 
   for (int sub = 0; sub < 2; ++sub) {
     for (size_t a = 0; a < arraysize(unpack_alignments); ++a) {
-      GLint alignment = unpack_alignments[a];
-      uint32_t size;
-      uint32_t unpadded_row_size;
-      uint32_t padded_row_size;
-      ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
-          kSrcSubImageWidth, kSrcSubImageHeight, 1, kFormat, kType, alignment,
-          &size, &unpadded_row_size, &padded_row_size));
-      ASSERT_TRUE(size <= MaxTransferBufferSize());
-      ExpectedMemoryInfo mem = GetExpectedMemory(size);
-
       const void* commands = GetPut();
+
+      GLint alignment = unpack_alignments[a];
       gl_->PixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-      gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, kSrcWidth);
-      gl_->PixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, kSrcSubImageX0);
-      gl_->PixelStorei(GL_UNPACK_SKIP_ROWS_EXT, kSrcSubImageY0);
+      gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, kSrcWidth);
+      gl_->PixelStorei(GL_UNPACK_SKIP_PIXELS, kSrcSubImageX0);
+      gl_->PixelStorei(GL_UNPACK_SKIP_ROWS, kSrcSubImageY0);
+
+      uint32_t client_size;
+      uint32_t client_unpadded_row_size;
+      uint32_t client_padded_row_size;
+      uint32_t client_skip_size;
+      {
+        PixelStoreParams params;
+        params.alignment = alignment;
+        params.row_length = kSrcWidth;
+        params.skip_pixels = kSrcSubImageX0;
+        params.skip_rows = kSrcSubImageY0;
+        ASSERT_TRUE(GLES2Util::ComputeImageDataSizesES3(
+            kSrcSubImageWidth, kSrcSubImageHeight, 1, kFormat, kType, params,
+            &client_size, &client_unpadded_row_size, &client_padded_row_size,
+            &client_skip_size, nullptr));
+        ASSERT_TRUE(client_size + client_skip_size <= pixel_size);
+      }
+
+      uint32_t service_size;
+      uint32_t service_unpadded_row_size;
+      uint32_t service_padded_row_size;
+      uint32_t service_skip_size;
+      {
+        PixelStoreParams params;
+        // For pixels we send to service side, we already applied all unpack
+        // parameters except for UNPACK_ALIGNMENT.
+        params.alignment = alignment;
+        ASSERT_TRUE(GLES2Util::ComputeImageDataSizesES3(
+            kSrcSubImageWidth, kSrcSubImageHeight, 1, kFormat, kType, params,
+            &service_size, &service_unpadded_row_size, &service_padded_row_size,
+            &service_skip_size, nullptr));
+        ASSERT_TRUE(service_size <= MaxTransferBufferSize());
+        ASSERT_TRUE(service_skip_size == 0);
+        ASSERT_TRUE(client_unpadded_row_size == service_unpadded_row_size);
+      }
+
+      ExpectedMemoryInfo mem = GetExpectedMemory(service_size);
       if (sub) {
         gl_->TexImage2D(
             GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight, kBorder,
-            kFormat, kType, NULL);
+            kFormat, kType, nullptr);
         gl_->TexSubImage2D(
             GL_TEXTURE_2D, kLevel, kTexSubXOffset, kTexSubYOffset,
             kSrcSubImageWidth, kSrcSubImageHeight, kFormat, kType,
             src_pixels.get());
-        texSubImageExpected.pixel_store_i[0].Init(
-            GL_UNPACK_ALIGNMENT, alignment);
-        texSubImageExpected.pixel_store_i[1].Init(
-            GL_UNPACK_ROW_LENGTH_EXT, kSrcWidth);
-        texSubImageExpected.pixel_store_i[2].Init(
-            GL_UNPACK_SKIP_PIXELS_EXT, kSrcSubImageX0);
-        texSubImageExpected.pixel_store_i[3].Init(
-            GL_UNPACK_SKIP_ROWS_EXT, kSrcSubImageY0);
+        texSubImageExpected.pixel_store_i.Init(GL_UNPACK_ALIGNMENT, alignment);
         texSubImageExpected.tex_image_2d.Init(
             GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight,
             kFormat, kType, 0, 0);
@@ -2586,37 +2612,25 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
             GL_TEXTURE_2D, kLevel, kTexSubXOffset, kTexSubYOffset,
             kSrcSubImageWidth, kSrcSubImageHeight, kFormat, kType, mem.id,
             mem.offset, GL_FALSE);
-        EXPECT_EQ(0, memcmp(
-            &texSubImageExpected, commands, sizeof(texSubImageExpected)));
+        EXPECT_EQ(0, memcmp(&texSubImageExpected, commands,
+                            sizeof(texSubImageExpected)));
       } else {
         gl_->TexImage2D(
             GL_TEXTURE_2D, kLevel, kFormat,
             kSrcSubImageWidth, kSrcSubImageHeight, kBorder, kFormat, kType,
             src_pixels.get());
-        texImageExpected.pixel_store_i[0].Init(GL_UNPACK_ALIGNMENT, alignment);
-        texImageExpected.pixel_store_i[1].Init(
-            GL_UNPACK_ROW_LENGTH_EXT, kSrcWidth);
-        texImageExpected.pixel_store_i[2].Init(
-            GL_UNPACK_SKIP_PIXELS_EXT, kSrcSubImageX0);
-        texImageExpected.pixel_store_i[3].Init(
-            GL_UNPACK_SKIP_ROWS_EXT, kSrcSubImageY0);
+        texImageExpected.pixel_store_i.Init(GL_UNPACK_ALIGNMENT, alignment);
         texImageExpected.tex_image_2d.Init(
             GL_TEXTURE_2D, kLevel, kFormat, kSrcSubImageWidth,
             kSrcSubImageHeight, kFormat, kType, mem.id, mem.offset);
-        EXPECT_EQ(0, memcmp(
-            &texImageExpected, commands, sizeof(texImageExpected)));
+        EXPECT_EQ(0, memcmp(&texImageExpected, commands,
+                            sizeof(texImageExpected)));
       }
-      uint32_t src_padded_row_size;
-      ASSERT_TRUE(GLES2Util::ComputeImagePaddedRowSize(
-          kSrcWidth, kFormat, kType, alignment, &src_padded_row_size));
-      uint32_t bytes_per_group =
-          GLES2Util::ComputeImageGroupSize(kFormat, kType);
       for (int y = 0; y < kSrcSubImageHeight; ++y) {
-        const uint8_t* src_row = src_pixels.get() +
-                                 (kSrcSubImageY0 + y) * src_padded_row_size +
-                                 bytes_per_group * kSrcSubImageX0;
-        const uint8_t* dst_row = mem.ptr + y * padded_row_size;
-        EXPECT_EQ(0, memcmp(src_row, dst_row, unpadded_row_size));
+        const uint8_t* src_row =
+            src_pixels.get() + client_skip_size + y * client_padded_row_size;
+        const uint8_t* dst_row = mem.ptr + y * service_padded_row_size;
+        EXPECT_EQ(0, memcmp(src_row, dst_row, service_unpadded_row_size));
       }
       ClearCommands();
     }

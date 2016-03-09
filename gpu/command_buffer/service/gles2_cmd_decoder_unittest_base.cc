@@ -1976,15 +1976,6 @@ void GLES2DecoderTestBase::SetupInitStateManualExpectations(bool es3_capable) {
     EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_SKIP_PIXELS, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_SKIP_ROWS, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_SKIP_IMAGES, 0))
-        .Times(1)
-        .RetiresOnSaturation();
   }
 }
 

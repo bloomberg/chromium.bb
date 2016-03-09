@@ -55,23 +55,11 @@ namespace {
 void SetupUpdateES3UnpackParametersExpectations(
     ::gfx::MockGLInterface* gl,
     GLint row_length,
-    GLint image_height,
-    GLint skip_pixels,
-    GLint skip_rows,
-    GLint skip_images) {
+    GLint image_height) {
   EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_ROW_LENGTH, row_length))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, image_height))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_SKIP_ROWS, skip_rows))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_SKIP_PIXELS, skip_pixels))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_SKIP_IMAGES, skip_images))
       .Times(1)
       .RetiresOnSaturation();
 }
@@ -431,12 +419,12 @@ TEST_P(GLES3DecoderTest, ES3PixelStoreiWithPixelUnpackBuffer) {
   // is cached and not passed down to GL.
   EXPECT_CALL(*gl_, PixelStorei(_, _)).Times(0);
   cmds::PixelStorei cmd;
-  cmd.Init(GL_UNPACK_SKIP_ROWS, 2);
+  cmd.Init(GL_UNPACK_ROW_LENGTH, 8);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
   // When a PIXEL_UNPACK_BUFFER is bound, all cached unpack parameters are
   // applied to GL.
-  SetupUpdateES3UnpackParametersExpectations(gl_.get(), 0, 0, 0, 2, 0);
+  SetupUpdateES3UnpackParametersExpectations(gl_.get(), 8, 0);
   DoBindBuffer(GL_PIXEL_UNPACK_BUFFER, client_buffer_id_, kServiceBufferId);
 
   // Now with a bound PIXEL_UNPACK_BUFFER, all PixelStorei calls with unpack
@@ -449,16 +437,16 @@ TEST_P(GLES3DecoderTest, ES3PixelStoreiWithPixelUnpackBuffer) {
 
   // Now unbind PIXEL_UNPACK_BUFFER, all ES3 unpack parameters are set back to
   // 0.
-  SetupUpdateES3UnpackParametersExpectations(gl_.get(), 0, 0, 0, 0, 0);
+  SetupUpdateES3UnpackParametersExpectations(gl_.get(), 0, 0);
   DoBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0, 0);
 
   // Again, PixelStorei calls with unpack parameters are cached.
   EXPECT_CALL(*gl_, PixelStorei(_, _)).Times(0);
-  cmd.Init(GL_UNPACK_SKIP_ROWS, 3);
+  cmd.Init(GL_UNPACK_ROW_LENGTH, 32);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
   // Bind a PIXEL_UNPACK_BUFFER again.
-  SetupUpdateES3UnpackParametersExpectations(gl_.get(), 16, 0, 0, 3, 0);
+  SetupUpdateES3UnpackParametersExpectations(gl_.get(), 32, 0);
   DoBindBuffer(GL_PIXEL_UNPACK_BUFFER, client_buffer_id_, kServiceBufferId);
 }
 

@@ -9547,23 +9547,25 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(uint32_t immediate_data_size,
       }
       break;
     case GL_PACK_ROW_LENGTH:
-    case GL_PACK_SKIP_PIXELS:
-    case GL_PACK_SKIP_ROWS:
     case GL_UNPACK_ROW_LENGTH:
     case GL_UNPACK_IMAGE_HEIGHT:
-    case GL_UNPACK_SKIP_PIXELS:
-    case GL_UNPACK_SKIP_ROWS:
-    case GL_UNPACK_SKIP_IMAGES:
       if (param < 0) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_VALUE, "glPixelStorei", "invalid param");
         return error::kNoError;
       }
+      break;
+    case GL_PACK_SKIP_PIXELS:
+    case GL_PACK_SKIP_ROWS:
+    case GL_UNPACK_SKIP_PIXELS:
+    case GL_UNPACK_SKIP_ROWS:
+    case GL_UNPACK_SKIP_IMAGES:
+      // All SKIP parameters are handled on the client side and should never
+      // be passed to the service side.
+      return error::kInvalidArguments;
     default:
       break;
   }
-  // For pack skip parameters, we don't apply them and handle them in command
-  // buffer.
   // For alignment parameters, we always apply them.
   // For other parameters, we don't apply them if no buffer is bound at
   // PIXEL_PACK or PIXEL_UNPACK. We will handle pack and unpack according to
@@ -9573,14 +9575,8 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(uint32_t immediate_data_size,
       if (state_.bound_pixel_pack_buffer.get())
         glPixelStorei(pname, param);
       break;
-    case GL_PACK_SKIP_PIXELS:
-    case GL_PACK_SKIP_ROWS:
-      break;
     case GL_UNPACK_ROW_LENGTH:
     case GL_UNPACK_IMAGE_HEIGHT:
-    case GL_UNPACK_SKIP_PIXELS:
-    case GL_UNPACK_SKIP_ROWS:
-    case GL_UNPACK_SKIP_IMAGES:
       if (state_.bound_pixel_unpack_buffer.get())
         glPixelStorei(pname, param);
       break;
@@ -9595,12 +9591,6 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(uint32_t immediate_data_size,
     case GL_PACK_ROW_LENGTH:
       state_.pack_row_length = param;
       break;
-    case GL_PACK_SKIP_PIXELS:
-      state_.pack_skip_pixels = param;
-      break;
-    case GL_PACK_SKIP_ROWS:
-      state_.pack_skip_rows = param;
-      break;
     case GL_UNPACK_ALIGNMENT:
       state_.unpack_alignment = param;
       break;
@@ -9609,15 +9599,6 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(uint32_t immediate_data_size,
       break;
     case GL_UNPACK_IMAGE_HEIGHT:
       state_.unpack_image_height = param;
-      break;
-    case GL_UNPACK_SKIP_PIXELS:
-      state_.unpack_skip_pixels = param;
-      break;
-    case GL_UNPACK_SKIP_ROWS:
-      state_.unpack_skip_rows = param;
-      break;
-    case GL_UNPACK_SKIP_IMAGES:
-      state_.unpack_skip_images = param;
       break;
     default:
       // Validation should have prevented us from getting here.
