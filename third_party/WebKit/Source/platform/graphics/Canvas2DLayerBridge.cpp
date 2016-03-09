@@ -501,7 +501,7 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
         return;
 
     m_isHidden = newHiddenValue;
-    if (m_surface && isHidden() && !m_destructionInProgress && !m_hibernationScheduled) {
+    if (CANVAS2D_HIBERNATION_ENABLED && m_surface && isHidden() && !m_destructionInProgress && !m_hibernationScheduled) {
         if (m_layer)
             m_layer->clearTexture();
         m_logger->reportHibernationEvent(HibernationScheduled);

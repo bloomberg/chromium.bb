@@ -53,6 +53,14 @@ class WebGraphicsContext3D;
 class WebGraphicsContext3DProvider;
 class SharedContextRateLimiter;
 
+#if OS(MACOSX)
+// Canvas hibernation is currently disabled on MacOS X due to a bug that causes content loss
+// TODO: Find a better fix for crbug.com/588434
+#define CANVAS2D_HIBERNATION_ENABLED 0
+#else
+#define CANVAS2D_HIBERNATION_ENABLED 1
+#endif
+
 class PLATFORM_EXPORT Canvas2DLayerBridge : public WebExternalTextureLayerClient, public WebThread::TaskObserver, public RefCounted<Canvas2DLayerBridge> {
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:
