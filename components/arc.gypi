@@ -76,6 +76,24 @@
       ],
     },
     {
+      # GN version: //components/arc:arc_standalone
+      'target_name': 'arc_standalone',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'arc',
+        '../base/base.gyp:base',
+        '../ipc/ipc.gyp:ipc',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+      ],
+      'sources': [
+        'arc/standalone/arc_standalone_bridge_runner.cc',
+        'arc/standalone/arc_standalone_bridge_runner.h',
+      ]
+    },
+    {
       # GN version: //components/arc:mojo_bindings
       'target_name': 'arc_mojo_bindings',
       'type': 'static_library',
@@ -97,5 +115,22 @@
         'arc/common/video.mojom',
       ],
     },
+    {
+      # GN version: //components/arc:arc_standalone_bridge
+      'target_name': 'arc_standalone_bridge',
+      'type': 'executable',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'arc_standalone',
+        '../base/base.gyp:base',
+        '../ipc/ipc.gyp:ipc',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+      ],
+      'sources': [
+        'arc/standalone/arc_standalone_bridge_main.cc',
+      ]
+    }
   ],
 }

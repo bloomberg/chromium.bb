@@ -96,6 +96,21 @@ static_library("arc_test_support") {
   ]
 }
 
+static_library("arc_standalone") {
+  sources = [
+    "standalone/arc_standalone_bridge_runner.cc",
+    "standalone/arc_standalone_bridge_runner.h",
+  ]
+
+  deps = [
+    ":arc",
+    "//base",
+    "//ipc:ipc",
+    "//ipc/mojo:mojo",
+    "//mojo/edk/system",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -117,5 +132,19 @@ source_set("unit_tests") {
     "//ui/base/ime",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
+  ]
+}
+
+executable("arc_standalone_bridge") {
+  sources = [
+    "standalone/arc_standalone_bridge_main.cc",
+  ]
+
+  deps = [
+    ":arc_standalone",
+    "//base",
+    "//ipc:ipc",
+    "//ipc/mojo:mojo",
+    "//mojo/edk/system",
   ]
 }
