@@ -203,24 +203,6 @@ class ManagementPolicyMock : public extensions::ManagementPolicy::Provider {
   }
 };
 
-// Appends "enable-experimental-extension-apis" to the command line for the
-// lifetime of this class.
-class ScopedExperimentalCommandLine {
- public:
-  ScopedExperimentalCommandLine()
-      : saved_(*base::CommandLine::ForCurrentProcess()) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalExtensionApis);
-  }
-
-  ~ScopedExperimentalCommandLine() {
-    *base::CommandLine::ForCurrentProcess() = saved_;
-  }
-
- private:
-  base::CommandLine saved_;
-};
-
 }  // namespace
 
 class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
@@ -279,8 +261,6 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   // |record_oauth2_grant| is true.
   void CheckHasEmptyScopesAfterInstall(const std::string& ext_relpath,
                                        bool record_oauth2_grant) {
-    ScopedExperimentalCommandLine scope;
-
     scoped_ptr<MockPromptProxy> mock_prompt =
         CreateMockPromptProxyForBrowser(browser());
 
@@ -290,18 +270,6 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
         ExtensionPrefs::Get(browser()->profile())
             ->GetGrantedPermissions(mock_prompt->extension_id());
     ASSERT_TRUE(permissions.get());
-  }
-
-  // Returns a FilePath to an unpacked "experimental" extension (a test
-  // Extension which requests the "experimental" permission).
-  base::FilePath PackExperimentalExtension() {
-    // We must modify the command line temporarily in order to pack an
-    // extension that requests the experimental permission.
-    ScopedExperimentalCommandLine scope;
-    base::FilePath test_path = test_data_dir_.AppendASCII("experimental");
-    base::FilePath crx_path = PackExtension(test_path);
-    CHECK(!crx_path.empty()) << "Extension not found at " << test_path.value();
-    return crx_path;
   }
 
   void InstallWebAppAndVerifyNoErrors() {
@@ -328,6 +296,15 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   }
 };
 
+class ExtensionCrxInstallerTestWithExperimentalApis
+    : public ExtensionCrxInstallerTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionCrxInstallerTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+};
+
 // This test is skipped on ChromeOS because it requires the NPAPI,
 // which is not available on that platform.
 #if !defined(OS_CHROMEOS)
@@ -349,8 +326,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
                        ExperimentalExtensionFromGallery) {
   // Gallery-installed extensions should have their experimental permission
   // preserved, since we allow the Webstore to make that decision.
-  base::FilePath crx_path = PackExperimentalExtension();
-  const Extension* extension = InstallExtensionFromWebstore(crx_path, 1);
+  const Extension* extension = InstallExtensionFromWebstore(
+      test_data_dir_.AppendASCII("experimental.crx"), 1);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       APIPermission::kExperimental));
@@ -360,27 +337,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
                        ExperimentalExtensionFromOutsideGallery) {
   // Non-gallery-installed extensions should lose their experimental
   // permission if the flag isn't enabled.
-  base::FilePath crx_path = PackExperimentalExtension();
-  const Extension* extension = InstallExtension(crx_path, 1);
+  const Extension* extension = InstallExtension(
+      test_data_dir_.AppendASCII("experimental.crx"), 1);
   ASSERT_TRUE(extension);
   EXPECT_FALSE(extension->permissions_data()->HasAPIPermission(
       APIPermission::kExperimental));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
                        ExperimentalExtensionFromOutsideGalleryWithFlag) {
   // Non-gallery-installed extensions should maintain their experimental
   // permission if the flag is enabled.
-  base::FilePath crx_path = PackExperimentalExtension();
-  ScopedExperimentalCommandLine scope;
-  const Extension* extension = InstallExtension(crx_path, 1);
+  const Extension* extension = InstallExtension(
+      test_data_dir_.AppendASCII("experimental.crx"), 1);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       APIPermission::kExperimental));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
-  ScopedExperimentalCommandLine scope;
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
+                       PlatformAppCrx) {
   EXPECT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("minimal_platform_app.crx"), 1));
 }
@@ -429,12 +405,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
 #else
 #define MAYBE_GrantScopes GrantScopes
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_GrantScopes) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
+                       MAYBE_GrantScopes) {
   EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall("browsertest/scopes",
                                                           true));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DoNotGrantScopes) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
+                       DoNotGrantScopes) {
   EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall("browsertest/scopes",
                                                           false));
 }
