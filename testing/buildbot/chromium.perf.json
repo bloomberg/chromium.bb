@@ -95,20 +95,6 @@
       {
         "name": "host_info",
         "script": "host_info.py"
-      },
-      {
-        "args": [
-          "gpu_perftests"
-        ],
-        "name": "gpu_perftests",
-        "script": "gtest_perf_test.py"
-      },
-      {
-        "args": [
-          "cc_perftests"
-        ],
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py"
       }
     ]
   },
