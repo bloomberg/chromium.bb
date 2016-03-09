@@ -383,10 +383,11 @@ TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
 }
 
 // Tests the matching rule fetch behavior when the external control app is
-// installed and not installed. If control app is installed and no valid rules
-// are found, matching rules are fetched on every navigation. Rules are not
-// fetched if control app is not installed  or if more than zero valid rules
-// have been fetched.
+// installed and not installed. Matching rules should be fetched when control
+// app gets installed. If control app is installed and no valid rules are found,
+// matching rules are fetched on every navigation. Rules are not fetched if
+// control app is not installed  or if more than zero valid rules have been
+// fetched.
 TEST_F(ExternalDataUseObserverTest, MatchingRuleFetchOnControlAppInstall) {
   // Matching rules not fetched on navigation if control app is not installed.
   external_data_use_observer()->last_matching_rules_fetch_time_ =
@@ -399,10 +400,17 @@ TEST_F(ExternalDataUseObserverTest, MatchingRuleFetchOnControlAppInstall) {
   EXPECT_TRUE(
       external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
 
-  // Matching rules fetched on every navigation if control app is installed and
-  // zero rules are available.
+  // Matching rules are fetched when control app is installed.
   external_data_use_observer()
       ->data_use_tab_model_->OnControlAppInstallStateChange(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+
+  // Matching rules fetched on every navigation if control app is installed and
+  // zero rules are available.
+  external_data_use_observer()->last_matching_rules_fetch_time_ =
+      base::TimeTicks();
   external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
       kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
       std::string());
@@ -587,15 +595,16 @@ TEST_F(ExternalDataUseObserverTest, DataUseReportTimedOut) {
   // Create another ExternalDataUseObserver object.
   ReplaceExternalDataUseObserver(variation_params);
 
-  // Trigger the control app install.
+  // Trigger the control app install, and matching rules will be fetched.
   external_data_use_observer()
       ->GetDataUseTabModel()
       ->OnControlAppInstallStateChange(true);
+  base::RunLoop().RunUntilIdle();
   histogram_tester.ExpectTotalCount(kUMAMatchingRuleFirstFetchDurationHistogram,
-                                    0);
+                                    1);
 
-  // Verify that matching rules are fetched on the first navigation after the
-  // control app is installed.
+  // Verify that matching rules are fetched on every navigation after the
+  // control app is installed, since there are no valid rules yet.
   external_data_use_observer()->GetDataUseTabModel()->OnNavigationEvent(
       kDefaultTabId, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
       GURL(kDefaultURL), std::string());

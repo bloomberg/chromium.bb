@@ -265,12 +265,16 @@ void DataUseTabModel::OnControlAppInstallStateChange(
     bool is_control_app_installed) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(is_control_app_installed_, is_control_app_installed);
-  // If external control app is installed now, rules will be fetched on the next
-  // navigation event.
+
   is_control_app_installed_ = is_control_app_installed;
   std::vector<std::string> empty;
-  if (!is_control_app_installed_)  // Clear rules.
+  if (!is_control_app_installed_) {
+    // Clear rules.
     data_use_matcher_->RegisterURLRegexes(empty, empty, empty);
+  } else {
+    // Fetch the matching rules when the app is installed.
+    data_use_matcher_->FetchMatchingRules();
+  }
 }
 
 base::TimeTicks DataUseTabModel::NowTicks() const {
