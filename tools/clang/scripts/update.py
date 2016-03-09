@@ -722,11 +722,6 @@ def main():
 
   if args.if_needed:
     is_clang_required = False
-    # We don't need to download the toolchain on upload bots during runhooks.
-    if 'LLVM_FORCE_LOCAL_BUILD' in os.environ:
-      print ('Skipping downloading Clang toolchain binaries as '
-             'LLVM_FORCE_LOCAL_BUILD is found in the environment')
-      return 0
     # clang is always used on Mac and Linux.
     if sys.platform == 'darwin' or sys.platform.startswith('linux'):
       is_clang_required = True
