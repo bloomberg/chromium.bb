@@ -4,8 +4,7 @@
 
 #include "chromeos/binder/writable_transaction_data.h"
 
-#include <linux/android/binder.h>
-
+#include "chromeos/binder/binder_driver_api.h"
 #include "chromeos/binder/constants.h"
 #include "chromeos/binder/local_object.h"
 #include "chromeos/binder/object.h"

@@ -4,12 +4,12 @@
 
 #include "chromeos/binder/command_broker.h"
 
-#include <linux/android/binder.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chromeos/binder/binder_driver_api.h"
 #include "chromeos/binder/driver.h"
 #include "chromeos/binder/local_object.h"
 #include "chromeos/binder/transaction_data.h"

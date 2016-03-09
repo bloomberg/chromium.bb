@@ -7,9 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <linux/android/binder.h>
-
 #include "base/logging.h"
+#include "chromeos/binder/binder_driver_api.h"
 #include "chromeos/binder/local_object.h"
 #include "chromeos/binder/object.h"
 #include "chromeos/binder/remote_object.h"

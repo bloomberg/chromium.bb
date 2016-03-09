@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <unistd.h>
-#include <linux/android/binder.h>
-
 #include "base/message_loop/message_loop.h"
+#include "chromeos/binder/binder_driver_api.h"
 #include "chromeos/binder/command_stream.h"
 #include "chromeos/binder/constants.h"
 #include "chromeos/binder/driver.h"

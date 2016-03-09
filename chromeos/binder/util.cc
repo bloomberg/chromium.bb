@@ -4,11 +4,8 @@
 
 #include "chromeos/binder/util.h"
 
-#include <sys/types.h>
-
-#include <linux/android/binder.h>
-
 #include "base/logging.h"
+#include "chromeos/binder/binder_driver_api.h"
 
 namespace binder {
 

@@ -6,7 +6,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/android/binder.h>
 #include <poll.h>
 #include <stddef.h>
 #include <sys/ioctl.h>
@@ -15,6 +14,7 @@
 
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
+#include "chromeos/binder/binder_driver_api.h"
 
 namespace binder {
 

@@ -7,13 +7,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/types.h>
-
-#include <linux/android/binder.h>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chromeos/binder/binder_driver_api.h"
 #include "chromeos/binder/transaction_data.h"
 #include "chromeos/chromeos_export.h"
 

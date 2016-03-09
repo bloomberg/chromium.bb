@@ -4,9 +4,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/types.h>
-
-#include <linux/android/binder.h>
 
 #include <vector>
 
@@ -17,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/binder/binder_driver_api.h"
 #include "chromeos/binder/command_broker.h"
 #include "chromeos/binder/driver.h"
 #include "chromeos/binder/local_object.h"
