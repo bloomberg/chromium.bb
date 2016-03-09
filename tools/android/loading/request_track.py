@@ -495,7 +495,7 @@ class RequestTrack(devtools_monitor.Track):
     # data URLs don't have a timing dict, and timings for cached requests are
     # stale.
     # TODO(droger): the timestamp is inacurate, get the real timings instead.
-    if r.protocol == 'data' or r.served_from_cache:
+    if r.protocol in ('data', 'about') or r.served_from_cache:
       timing_dict = {'requestTime': r.timestamp}
     else:
       timing_dict = response['timing']
