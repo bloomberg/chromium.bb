@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+<script src='../fast/dom/shadow/resources/shadow-dom.js'></script>
+<div id='host'>
+  <template data-mode='open'>
+    <div id='host2'>
+      <template data-mode='open'>
+        <slot name='slot-a'>
+          <slot name='slot-b'>
+          </slot>
+          <div id='fallback-a'></div>
+        </slot>
+      </template>
+      <slot name='slot1' slot='slot-b'>
+        <div id='fallback1'></div>
+        <slot name='slot2'>
+          <div id='fallback2'></div>
+        </slot>
+      </slot>
+      <slot name='slot3'>
+        <slot name='slot4'>
+          <div id='fallback3'></div>
+        </slot>
+      </slot>
+    </div>
+  </template>
+  <div id='child1' slot='slot2'></div>
+</div>
+<script>
+'use strict';
+convertTemplatesToShadowRootsWithin(host);
+removeWhiteSpaceOnlyTextNodes(host);
+document.body.offsetLeft;
+
+const slot1 = host.shadowRoot.querySelector('[name=slot1]');
+const slot2 = host.shadowRoot.querySelector('[name=slot2]');
+const slot3 = host.shadowRoot.querySelector('[name=slot3]');
+const slot4 = host.shadowRoot.querySelector('[name=slot4]');
+const fallback1 = host.shadowRoot.querySelector('#fallback1');
+const fallback2 = host.shadowRoot.querySelector('#fallback2');
+const fallback3 = host.shadowRoot.querySelector('#fallback3');
+
+const host2 = host.shadowRoot.querySelector('#host2');
+
+const slot_a = host2.shadowRoot.querySelector('[name=slot-a]');
+const slot_b = host2.shadowRoot.querySelector('[name=slot-b]');
+const fallback_a = host2.shadowRoot.querySelector('#fallback-a');
+
+test(() => {
+  assert_equals(child1.assignedSlot, slot2);
+  assert_equals(fallback1.assignedSlot, null);
+  assert_equals(fallback2.assignedSlot, null);
+  assert_equals(fallback3.assignedSlot, null);
+
+  assert_equals(slot1.assignedSlot, slot_b);
+  assert_equals(slot2.assignedSlot, null);
+  assert_equals(slot3.assignedSlot, null);
+  assert_equals(slot4.assignedSlot, null);
+
+  assert_equals(slot_a.assignedSlot, null);
+  assert_equals(slot_b.assignedSlot, null);
+  assert_equals(fallback_a.assignedSlot, null);
+}, "assignedSlot");
+
+test(() => {
+  assert_array_equals(slot1.getAssignedNodes(), []);
+  assert_array_equals(slot2.getAssignedNodes(), [child1]);
+  assert_array_equals(slot3.getAssignedNodes(), []);
+  assert_array_equals(slot4.getAssignedNodes(), []);
+
+  assert_array_equals(slot_a.getAssignedNodes(), []);
+  assert_array_equals(slot_b.getAssignedNodes(), [slot1]);
+}, "getAssignedNodes");
+
+test(() => {
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [fallback1, child1]);
+  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [child1]);
+  assert_array_equals(slot3.getAssignedNodes({flatten: true}), [fallback3]);
+  assert_array_equals(slot4.getAssignedNodes({flatten: true}), [fallback3]);
+
+  assert_array_equals(slot_a.getAssignedNodes({flatten: true}), [fallback1, child1, fallback_a]);
+  assert_array_equals(slot_b.getAssignedNodes({flatten: true}), [fallback1, child1]);
+}, "getDistributedNodes");
+</script>

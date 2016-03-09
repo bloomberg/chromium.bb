@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+<script src='../fast/dom/shadow/resources/shadow-dom.js'></script>
+<div id='host1'>
+  <input id='input1' slot='slot1'>
+  <template data-mode='open'>
+    <slot name='slot1'></slot>
+  </template>
+</div>
+
+<div id='host2'>
+  <input id='input2' slot='slot2'>
+  <template data-mode='open'>
+    <div id='host3'>
+      <div id='slot2-parent'>
+        <slot name='slot2'></slot>
+      </div>
+      <template data-mode='v0'>
+        <content select='#slot2-parent'></content>
+      </template>
+    </div>
+  </template>
+</div>
+
+<div id='host4'>
+  <template data-mode='open'>
+    <slot name='slot3'></slot>
+  </template>
+  <div id='input-parent' slot='slot3'>
+    <input id='input3'>
+  </div>
+</div>
+<script>
+
+test(function() {
+  var host1 = document.getElementById('host1');
+  convertTemplatesToShadowRootsWithin(host1);
+  removeWhiteSpaceOnlyTextNodes(host1);
+  document.body.offsetLeft;
+  var input1 = document.getElementById('input1');
+  var slot1 = host1.shadowRoot.querySelector('slot');
+  var shadowRoot = host1.shadowRoot;
+  input1.onfocus = function(e) {  
+    var expected_array1 = [input1, slot1, shadowRoot, host1, document.body, document.documentElement, document, window];
+    assert_array_equals(e.path, expected_array1);
+  };
+  input1.focus();
+}, 'Triggered in a slotted element, eventPath should go through shadow tree.');
+
+test(function() {
+  var input2 = document.getElementById('input2');
+  var host2 = document.getElementById('host2');
+  convertTemplatesToShadowRootsWithin(host2);
+  var shadowRootV1 = host2.shadowRoot;
+  var host3 = shadowRootV1.querySelector('#host3');
+  convertTemplatesToShadowRootsWithin(host3);
+  var slotParent = host3.querySelector('div');
+  var slot2 = host3.querySelector('slot');
+  var shadowRootV0 = host3.shadowRoot;
+  var content = shadowRootV0.querySelector('content');
+
+  input2.onfocus = function(e) {
+    var expected_array2 = [input2, slot2, slotParent, content, shadowRootV0, host3, shadowRootV1, host2, document.body, document.documentElement, document, window];
+    assert_array_equals(e.path, expected_array2);
+  };
+  input2.focus();
+}, 'EventPath works fine with v0 insertion points & v1 slots.');
+
+test(function() {
+  var host4 = document.getElementById('host4');
+  convertTemplatesToShadowRootsWithin(host4);
+  var shadowRoot2 = host4.shadowRoot;
+  var slot3 = shadowRoot2.querySelector('slot');
+  var input3 = document.getElementById('input3')
+  var inputParent = document.getElementById('input-parent');
+  input3.onfocus = function(e) {
+    var expected_array3 = [input3, inputParent, slot3, shadowRoot2, host4, document.body, document.documentElement, document, window];
+    assert_array_equals(e.path, expected_array3);
+  };
+  input3.focus();
+}, 'EventPath works fine when event happens to a descendant of a slotted element.');
+
+</script>

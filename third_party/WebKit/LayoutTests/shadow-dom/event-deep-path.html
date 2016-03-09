@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../fast/dom/shadow/resources/shadow-dom.js"></script>
+<img id="img" src="../fast/images/resources/test-load.jpg">
+<script>
+
+img.onload = function(e) {
+    test(function() {
+        assert_array_equals(e.deepPath(), e.path);
+    }, "Event.deepPath() should be the same as Event.path.");
+};
+
+</script>

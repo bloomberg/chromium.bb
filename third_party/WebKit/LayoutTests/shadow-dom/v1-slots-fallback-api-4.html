@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+<script src='../fast/dom/shadow/resources/shadow-dom.js'></script>
+<div id='d1'>
+  <template data-mode='open' data-expose-as='d1_shadow'>
+    <div id='d1-d1'>
+      <template data-mode='open' data-expose-as='d1_d1_shadow'>
+        <slot name='d1-d1-s1'></slot>
+      </template>
+      <slot name='d1-s1' slot='d1-d1-s1'></slot>
+    </div>
+  </template>
+</div>
+<script>
+'use strict';
+convertTemplatesToShadowRootsWithin(d1);
+removeWhiteSpaceOnlyTextNodes(d1);
+
+test(() => {
+  const d1_s1 = d1_shadow.querySelector('slot');
+  const d1_d1_s1 = d1_d1_shadow.querySelector('slot');
+
+  assert_array_equals(d1_s1.getAssignedNodes(), []);
+  assert_array_equals(d1_s1.getAssignedNodes({'flatten': true}), []);
+  assert_array_equals(d1_d1_s1.getAssignedNodes(), [d1_s1]);
+  assert_array_equals(d1_d1_s1.getAssignedNodes({'flatten': true}), []);
+
+  const d1_d2 = document.createElement('div');
+  d1_d2.setAttribute('id', 'd1-d2');
+  d1_s1.appendChild(d1_d2);
+
+  assert_array_equals(d1_s1.getAssignedNodes({'flatten': true}), [d1_d2]);
+  assert_array_equals(d1_d1_s1.getAssignedNodes({'flatten': true}), [d1_d2]);
+}, "Distribution should be updated after mutating fallback contents");
+</script>

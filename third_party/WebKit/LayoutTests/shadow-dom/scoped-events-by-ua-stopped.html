@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../fast/dom/shadow/resources/shadow-dom.js"></script>
+
+<input id="input"></input>
+<div id="sandbox">
+    <div id = "host">
+        <template>
+            <input id="target" value="test"></div>
+        </template>
+    </div>
+</div>
+
+<script>
+var e;
+test(function() {
+    e = new Event('test');
+    assert_equals(e.scoped, false);
+}, 'A new events scoped value should be set to false by default.');
+
+test(function() {
+    e = new Event('test', { scoped: true });
+    assert_equals(e.scoped, true);
+}, 'Users should be able to set a scoped value.');
+
+var input = document.getElementById('input');
+async_test(function(t) {
+    input.onselect = function(e) {
+        t.step(function() { assert_true(e.scoped); t.done(); });
+    };
+}, 'UA select events scoped should be set to true.');
+input.select();
+
+var sandbox = document.getElementById('sandbox');
+convertTemplatesToShadowRootsWithin(sandbox);
+var target = getNodeInComposedTree('host/target');
+var host = getNodeInComposedTree('host');
+
+async_test(function(t) {
+    target.onselect = function(e) {
+        t.step(function() {
+            assert_true(e.deepPath().includes(target));
+            assert_false(e.deepPath().includes(host));
+            t.done();
+        });
+    }
+}, 'Select events should stop if created by UA.');
+
+async_test(function(t) {
+    target.onerror = function(e) {
+        t.step(function() {
+            assert_true(e.deepPath().includes(target));
+            assert_true(e.deepPath().includes(host));
+            t.done();
+        });
+    }
+}, 'Only certain trusted events should stop in bubbling.');
+
+target.select();
+var userError = new Event('error');
+target.dispatchEvent(userError);
+</script>
