@@ -36,9 +36,7 @@ namespace blink {
 #if ENABLE(ASSERT)
 static bool canBeAnchorNode(Node* node)
 {
-    if (!node || node->isFirstLetterPseudoElement())
-        return true;
-    return !node->isPseudoElement();
+    return !node || !node->isPseudoElement();
 }
 #endif
 
