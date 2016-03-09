@@ -26,6 +26,7 @@
 #include "core/SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/LayoutTreeBuilder.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -34,6 +35,7 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextCombine.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/api/LayoutTextItem.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/svg/SVGForeignObjectElement.h"
@@ -401,12 +403,29 @@ bool Text::needsWhitespaceLayoutObject()
     return false;
 }
 
+// Passing both |textNode| and its layout object because repeated calls to
+// |Node::layoutObject()| are discouraged.
+static bool shouldUpdateLayoutByReattaching(Text* textNode, LayoutText* textLayoutObject)
+{
+    ASSERT(textNode->layoutObject() == textLayoutObject);
+    if (!textLayoutObject)
+        return true;
+    if (!textNode->textLayoutObjectIsNeeded(*textLayoutObject->style(), *textLayoutObject->parent()))
+        return true;
+    if (textLayoutObject->isTextFragment()) {
+        FirstLetterPseudoElement* pseudo = toLayoutTextFragment(textLayoutObject)->firstLetterPseudoElement();
+        if (pseudo && !FirstLetterPseudoElement::firstLetterTextLayoutObject(*pseudo))
+            return true;
+    }
+    return false;
+}
+
 void Text::updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior recalcStyleBehavior)
 {
     if (!inActiveDocument())
         return;
     LayoutText* textLayoutObject = layoutObject();
-    if (!textLayoutObject || !textLayoutObjectIsNeeded(*textLayoutObject->style(), *textLayoutObject->parent())) {
+    if (shouldUpdateLayoutByReattaching(this, textLayoutObject)) {
         lazyReattachIfAttached();
         // FIXME: Editing should be updated so this is not neccesary.
         if (recalcStyleBehavior == DeprecatedRecalcStyleImmediatlelyForEditing)

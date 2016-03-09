@@ -3922,6 +3922,7 @@
             'dom/StyleElementTest.cpp',
             'dom/StyleEngineTest.cpp',
             'dom/SuboriginTest.cpp',
+            'dom/TextTest.cpp',
             'dom/TreeScopeStyleSheetCollectionTest.cpp',
             'dom/TreeScopeTest.cpp',
             'dom/URLSearchParamsTest.cpp',
