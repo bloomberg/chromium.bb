@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "media/audio/audio_parameters.h"
@@ -275,26 +274,19 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
   static void PrepareBlinkTrackOfType(
       const MediaStreamType device_type,
       blink::WebMediaStreamTrack* blink_track) {
-    StreamDeviceInfo device_info(device_type, "Mock device",
-                                 "mock_device_id");
-    MockMediaConstraintFactory constraint_factory;
-    const blink::WebMediaConstraints constraints =
-        constraint_factory.CreateWebMediaConstraints();
-    scoped_refptr<WebRtcAudioCapturer> capturer(
-        WebRtcAudioCapturer::CreateCapturer(-1, device_info, constraints, NULL,
-                                            NULL));
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
     scoped_ptr<WebRtcLocalAudioTrack> native_track(
-        new WebRtcLocalAudioTrack(adapter.get(), capturer, NULL));
+        new WebRtcLocalAudioTrack(adapter.get()));
     blink::WebMediaStreamSource blink_audio_source;
     blink_audio_source.initialize(base::UTF8ToUTF16("dummy_source_id"),
                                   blink::WebMediaStreamSource::TypeAudio,
                                   base::UTF8ToUTF16("dummy_source_name"),
                                   false /* remote */, true /* readonly */);
     MediaStreamSource::SourceStoppedCallback cb;
-    blink_audio_source.setExtraData(
-        new MediaStreamAudioSource(-1, device_info, cb, NULL));
+    blink_audio_source.setExtraData(new MediaStreamAudioSource(
+        -1, StreamDeviceInfo(device_type, "Mock device", "mock_device_id"), cb,
+        nullptr));
     blink_track->initialize(blink::WebString::fromUTF8("dummy_track"),
                             blink_audio_source);
     blink_track->setExtraData(native_track.release());
@@ -306,7 +298,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
       const base::TimeTicks estimated_capture_time = first_frame_capture_time_ +
           (sample_frames_captured_ * base::TimeDelta::FromSeconds(1) /
                source_params_.sample_rate());
-      native_track()->Capture(*source_bus_, estimated_capture_time, false);
+      native_track()->Capture(*source_bus_, estimated_capture_time);
       sample_frames_captured_ += source_bus_->frames();
     }
   }

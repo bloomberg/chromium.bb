@@ -61,11 +61,8 @@ SpeechRecognitionAudioSink::~SpeechRecognitionAudioSink() {
 // static
 bool SpeechRecognitionAudioSink::IsSupportedTrack(
     const blink::WebMediaStreamTrack& track) {
-  if (track.source().getType() != blink::WebMediaStreamSource::TypeAudio)
-    return false;
-
   MediaStreamAudioSource* native_source =
-      static_cast<MediaStreamAudioSource*>(track.source().getExtraData());
+      MediaStreamAudioSource::From(track.source());
   if (!native_source)
     return false;
 

@@ -770,7 +770,9 @@ bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
 #if defined(ENABLE_WEBRTC)
   return AddVideoTrackToMediaStream(
       make_scoped_ptr(new MockVideoCapturerSource()),
-      false /* is_remote */, false /* is_readonly */, stream);
+      false,  // is_remote
+      false,  // is_readonly
+      stream);
 #else
   return false;
 #endif
@@ -782,7 +784,12 @@ bool BlinkTestRunner::AddMediaStreamAudioSourceAndTrack(
 #if defined(ENABLE_WEBRTC)
   return AddAudioTrackToMediaStream(
       make_scoped_refptr(new MockAudioCapturerSource()),
-      false /* is_remote */, false /* is_readonly */, stream);
+      48000,  // sample rate
+      media::CHANNEL_LAYOUT_STEREO,
+      480,  // sample frames per buffer
+      false,  // is_remote
+      false,  // is_readonly
+      stream);
 #else
   return false;
 #endif

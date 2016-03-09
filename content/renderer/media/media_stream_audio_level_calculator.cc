@@ -5,6 +5,7 @@
 #include "content/renderer/media/media_stream_audio_level_calculator.h"
 
 #include <cmath>
+#include <limits>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -28,23 +29,36 @@ float MaxAmplitude(const float* audio_data, int length) {
 
 }  // namespace
 
-MediaStreamAudioLevelCalculator::MediaStreamAudioLevelCalculator()
-    : counter_(0),
-      max_amplitude_(0.0f),
-      level_(0.0f) {
+MediaStreamAudioLevelCalculator::Level::Level() : level_(0.0f) {}
+
+MediaStreamAudioLevelCalculator::Level::~Level() {}
+
+float MediaStreamAudioLevelCalculator::Level::GetCurrent() const {
+  base::AutoLock auto_lock(lock_);
+  return level_;
 }
+
+void MediaStreamAudioLevelCalculator::Level::Set(float level) {
+  base::AutoLock auto_lock(lock_);
+  level_ = level;
+}
+
+MediaStreamAudioLevelCalculator::MediaStreamAudioLevelCalculator()
+    : counter_(0), max_amplitude_(0.0f), level_(new Level()) {}
 
 MediaStreamAudioLevelCalculator::~MediaStreamAudioLevelCalculator() {
+  level_->Set(0.0f);
 }
 
-float MediaStreamAudioLevelCalculator::Calculate(
-    const media::AudioBus& audio_bus) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void MediaStreamAudioLevelCalculator::Calculate(
+    const media::AudioBus& audio_bus,
+    bool assume_nonzero_energy) {
   // |level_| is updated every 10 callbacks. For the case where callback comes
   // every 10ms, |level_| will be updated approximately every 100ms.
   static const int kUpdateFrequency = 10;
 
-  float max = 0.0f;
+  float max =
+      assume_nonzero_energy ? 1.0f / std::numeric_limits<int16_t>::max() : 0.0f;
   for (int i = 0; i < audio_bus.channels(); ++i) {
     const float max_this_channel =
         MaxAmplitude(audio_bus.channel(i), audio_bus.frames());
@@ -54,7 +68,8 @@ float MediaStreamAudioLevelCalculator::Calculate(
   max_amplitude_ = std::max(max_amplitude_, max);
 
   if (counter_++ == kUpdateFrequency) {
-    level_ = max_amplitude_;
+    // Clip the exposed signal level to make sure it is in the range [0.0,1.0].
+    level_->Set(std::min(1.0f, max_amplitude_));
 
     // Decay the absolute maximum amplitude by 1/4.
     max_amplitude_ /= 4.0f;
@@ -62,8 +77,6 @@ float MediaStreamAudioLevelCalculator::Calculate(
     // Reset the counter.
     counter_ = 0;
   }
-
-  return level_;
 }
 
 }  // namespace content

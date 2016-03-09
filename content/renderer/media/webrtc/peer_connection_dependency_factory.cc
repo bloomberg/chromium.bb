@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -188,8 +190,8 @@ bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
   HarmonizeConstraintsAndEffects(&constraints,
                                  &device_info.device.input.effects);
 
-  scoped_refptr<WebRtcAudioCapturer> capturer(CreateAudioCapturer(
-      render_frame_id, device_info, audio_constraints, source_data));
+  scoped_ptr<WebRtcAudioCapturer> capturer = CreateAudioCapturer(
+      render_frame_id, device_info, audio_constraints, source_data);
   if (!capturer.get()) {
     const std::string log_string =
         "PCDF::InitializeMediaStreamAudioSource: fails to create capturer";
@@ -201,7 +203,7 @@ bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
     // be called multiple times which is likely also a bug.
     return false;
   }
-  source_data->SetAudioCapturer(capturer.get());
+  source_data->SetAudioCapturer(std::move(capturer));
 
   // Creates a LocalAudioSource object which holds audio options.
   // TODO(xians): The option should apply to the track instead of the source.
@@ -534,19 +536,17 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
     const blink::WebMediaStreamTrack& track) {
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
-  DCHECK(!source.remote());
-  MediaStreamAudioSource* source_data =
-      static_cast<MediaStreamAudioSource*>(source.getExtraData());
+  MediaStreamAudioSource* source_data = MediaStreamAudioSource::From(source);
 
-  scoped_refptr<WebAudioCapturerSource> webaudio_source;
   if (!source_data) {
     if (source.requiresAudioConsumer()) {
       // We're adding a WebAudio MediaStream.
       // Create a specific capturer for each WebAudio consumer.
-      webaudio_source = CreateWebAudioSource(&source);
-      source_data = static_cast<MediaStreamAudioSource*>(source.getExtraData());
+      CreateWebAudioSource(&source);
+      source_data = MediaStreamAudioSource::From(source);
+      DCHECK(source_data->webaudio_capturer());
     } else {
-      NOTREACHED() << "Local track missing source extra data.";
+      NOTREACHED() << "Local track missing MediaStreamAudioSource instance.";
       return;
     }
   }
@@ -561,10 +561,22 @@ void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
   // TODO(xians): Merge |source| to the capturer(). We can't do this today
   // because only one capturer() is supported while one |source| is created
   // for each audio track.
-  scoped_ptr<WebRtcLocalAudioTrack> audio_track(new WebRtcLocalAudioTrack(
-      adapter.get(), source_data->GetAudioCapturer(), webaudio_source.get()));
+  scoped_ptr<WebRtcLocalAudioTrack> audio_track(
+      new WebRtcLocalAudioTrack(adapter.get()));
 
-  StartLocalAudioTrack(audio_track.get());
+  // Start the source and connect the audio data flow to the track.
+  //
+  // TODO(miu): This logic will me moved to MediaStreamAudioSource (or a
+  // subclass of it) in soon-upcoming changes.
+  audio_track->Start(base::Bind(&MediaStreamAudioSource::StopAudioDeliveryTo,
+                                source_data->GetWeakPtr(),
+                                audio_track.get()));
+  if (source_data->webaudio_capturer())
+    source_data->webaudio_capturer()->Start(audio_track.get());
+  else if (source_data->audio_capturer())
+    source_data->audio_capturer()->AddTrack(audio_track.get());
+  else
+    NOTREACHED();
 
   // Pass the ownership of the native local audio track to the blink track.
   blink::WebMediaStreamTrack writable_track = track;
@@ -576,48 +588,25 @@ void PeerConnectionDependencyFactory::CreateRemoteAudioTrack(
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
   DCHECK(source.remote());
-  DCHECK(source.getExtraData());
+  DCHECK(MediaStreamAudioSource::From(source));
 
   blink::WebMediaStreamTrack writable_track = track;
   writable_track.setExtraData(
       new MediaStreamRemoteAudioTrack(source, track.isEnabled()));
 }
 
-void PeerConnectionDependencyFactory::StartLocalAudioTrack(
-    WebRtcLocalAudioTrack* audio_track) {
-  // Start the audio track. This will hook the |audio_track| to the capturer
-  // as the sink of the audio, and only start the source of the capturer if
-  // it is the first audio track connecting to the capturer.
-  audio_track->Start();
-}
-
-scoped_refptr<WebAudioCapturerSource>
-PeerConnectionDependencyFactory::CreateWebAudioSource(
+void PeerConnectionDependencyFactory::CreateWebAudioSource(
     blink::WebMediaStreamSource* source) {
   DVLOG(1) << "PeerConnectionDependencyFactory::CreateWebAudioSource()";
 
-  scoped_refptr<WebAudioCapturerSource>
-      webaudio_capturer_source(new WebAudioCapturerSource(*source));
   MediaStreamAudioSource* source_data = new MediaStreamAudioSource();
-
-  // Use the current default capturer for the WebAudio track so that the
-  // WebAudio track can pass a valid delay value and |need_audio_processing|
-  // flag to PeerConnection.
-  // TODO(xians): Remove this after moving APM to Chrome.
-  if (GetWebRtcAudioDevice()) {
-    source_data->SetAudioCapturer(
-        GetWebRtcAudioDevice()->GetDefaultCapturer());
-  }
+  source_data->SetWebAudioCapturer(
+      make_scoped_ptr(new WebAudioCapturerSource(source)));
 
   // Create a LocalAudioSource object which holds audio options.
   // SetLocalAudioSource() affects core audio parts in third_party/Libjingle.
   source_data->SetLocalAudioSource(CreateLocalAudioSource(NULL).get());
   source->setExtraData(source_data);
-
-  // Replace the default source with WebAudio as source instead.
-  source->addAudioConsumer(webaudio_capturer_source.get());
-
-  return webaudio_capturer_source;
 }
 
 scoped_refptr<webrtc::VideoTrackInterface>
@@ -758,7 +747,7 @@ void PeerConnectionDependencyFactory::CleanupPeerConnectionFactory() {
   }
 }
 
-scoped_refptr<WebRtcAudioCapturer>
+scoped_ptr<WebRtcAudioCapturer>
 PeerConnectionDependencyFactory::CreateAudioCapturer(
     int render_frame_id,
     const StreamDeviceInfo& device_info,

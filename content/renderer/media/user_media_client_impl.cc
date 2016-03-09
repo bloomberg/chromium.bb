@@ -1063,7 +1063,7 @@ void UserMediaClientImpl::UserMediaRequestInfo::StartAudioTrack(
     const blink::WebMediaConstraints& constraints) {
   DCHECK(track.source().getType() == blink::WebMediaStreamSource::TypeAudio);
   MediaStreamAudioSource* native_source =
-      static_cast<MediaStreamAudioSource*>(track.source().getExtraData());
+      MediaStreamAudioSource::From(track.source());
   DCHECK(native_source);
 
   sources_.push_back(track.source());

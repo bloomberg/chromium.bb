@@ -802,10 +802,9 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
 
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LINEAR,
-      media::CHANNEL_LAYOUT_STEREO,
+      media::GuessChannelLayout(audio_config.channels),
       audio_config.rtp_timebase,  // sampling rate
-      16,
-      audio_config.rtp_timebase / audio_config.target_frame_rate);
+      16, audio_config.rtp_timebase / audio_config.target_frame_rate);
 
   if (!params.IsValid()) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(
@@ -863,8 +862,24 @@ void CastStreamingNativeHandler::AddTracksToMediaStream(
     const media::AudioParameters& params,
     scoped_refptr<media::AudioCapturerSource> audio,
     scoped_ptr<media::VideoCapturerSource> video) {
-  content::AddAudioTrackToMediaStream(audio, params, true, true, url);
-  content::AddVideoTrackToMediaStream(std::move(video), true, true, url);
+  blink::WebMediaStream web_stream =
+      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(GURL(url));
+  if (web_stream.isNull()) {
+    LOG(DFATAL) << "Stream not found.";
+    return;
+  }
+  if (!content::AddAudioTrackToMediaStream(
+          audio, params.sample_rate(), params.channel_layout(),
+          params.frames_per_buffer(), true,  // is_remote
+          true,                              // is_readonly
+          &web_stream)) {
+    LOG(ERROR) << "Failed to add Cast audio track to media stream.";
+  }
+  if (!content::AddVideoTrackToMediaStream(std::move(video), true,  // is_remote
+                                           true,  // is_readonly
+                                           &web_stream)) {
+    LOG(ERROR) << "Failed to add Cast video track to media stream.";
+  }
 }
 
 }  // namespace extensions

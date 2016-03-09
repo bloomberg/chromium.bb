@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <list>
 #include <string>
 #include <vector>
 
@@ -306,15 +307,12 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Called on the main renderer thread.
   bool SetAudioRenderer(WebRtcAudioRenderer* renderer);
 
-  // Adds/Removes the capturer to the ADM.
+  // Adds/Removes the |capturer| to the ADM.  Does NOT take ownership.
+  // Capturers must remain valid until RemoveAudioCapturer() is called.
   // TODO(xians): Remove these two methods once the ADM does not need to pass
   // hardware information up to WebRtc.
-  void AddAudioCapturer(const scoped_refptr<WebRtcAudioCapturer>& capturer);
-  void RemoveAudioCapturer(const scoped_refptr<WebRtcAudioCapturer>& capturer);
-
-  // Gets the default capturer, which is the last capturer in |capturers_|.
-  // The method can be called by both Libjingle thread and main render thread.
-  scoped_refptr<WebRtcAudioCapturer> GetDefaultCapturer() const;
+  void AddAudioCapturer(WebRtcAudioCapturer* capturer);
+  void RemoveAudioCapturer(WebRtcAudioCapturer* capturer);
 
   // Gets paired device information of the capture device for the audio
   // renderer. This is used to pass on a session id, sample rate and buffer
@@ -331,7 +329,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   }
 
  private:
-  typedef std::list<scoped_refptr<WebRtcAudioCapturer> > CapturerList;
+  typedef std::list<WebRtcAudioCapturer*> CapturerList;
   typedef std::list<WebRtcPlayoutDataSource::Sink*> PlayoutDataSinkList;
   class RenderBuffer;
 
@@ -364,7 +362,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   mutable int ref_count_;
 
   // List of captures which provides access to the native audio input layer
-  // in the browser process.
+  // in the browser process.  The last capturer in this list is considered the
+  // "default capturer" by the methods implementing the
+  // webrtc::AudioDeviceModule interface.
   CapturerList capturers_;
 
   // Provides access to the audio renderer in the browser process.

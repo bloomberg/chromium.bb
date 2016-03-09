@@ -11,8 +11,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/media_stream_audio_level_calculator.h"
+#include "content/renderer/media/media_stream_audio_processor.h"
 #include "third_party/webrtc/api/mediastreamtrack.h"
 #include "third_party/webrtc/media/base/audiorenderer.h"
 
@@ -31,6 +32,10 @@ class MediaStreamAudioProcessor;
 class WebRtcAudioSinkAdapter;
 class WebRtcLocalAudioTrack;
 
+// Provides an implementation of the webrtc::AudioTrackInterface that can be
+// bound/unbound to/from a MediaStreamAudioTrack.  In other words, this is an
+// adapter that sits between the media stream object graph and WebRtc's object
+// graph and proxies between the two.
 class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
     : NON_EXPORTED_BASE(
           public webrtc::MediaStreamTrack<webrtc::AudioTrackInterface>) {
@@ -42,22 +47,24 @@ class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
   WebRtcLocalAudioTrackAdapter(
       const std::string& label,
       webrtc::AudioSourceInterface* track_source,
-      const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread);
+      scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner);
 
   ~WebRtcLocalAudioTrackAdapter() override;
 
   void Initialize(WebRtcLocalAudioTrack* owner);
 
-  // Called on the audio thread by the WebRtcLocalAudioTrack to set the signal
-  // level of the audio data.
-  void SetSignalLevel(int signal_level);
+  // Set the object that provides shared access to the current audio signal
+  // level.  This method may only be called once, before the audio data flow
+  // starts, and before any calls to GetSignalLevel() might be made.
+  void SetLevel(scoped_refptr<MediaStreamAudioLevelCalculator::Level> level);
 
   // Method called by the WebRtcLocalAudioTrack to set the processor that
   // applies signal processing on the data of the track.
   // This class will keep a reference of the |processor|.
   // Called on the main render thread.
-  void SetAudioProcessor(
-      const scoped_refptr<MediaStreamAudioProcessor>& processor);
+  // This method may only be called once, before the audio data flow starts, and
+  // before any calls to GetAudioProcessor() might be made.
+  void SetAudioProcessor(scoped_refptr<MediaStreamAudioProcessor> processor);
 
   // webrtc::MediaStreamTrack implementation.
   std::string kind() const override;
@@ -80,28 +87,19 @@ class CONTENT_EXPORT WebRtcLocalAudioTrackAdapter
   rtc::scoped_refptr<webrtc::AudioSourceInterface> track_source_;
 
   // Libjingle's signaling thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;
 
   // The audio processsor that applies audio processing on the data of audio
-  // track.
+  // track.  This must be set before calls to GetAudioProcessor() are made.
   scoped_refptr<MediaStreamAudioProcessor> audio_processor_;
-
-  // A vector of WebRtc VoE channels that the capturer sends data to.
-  std::vector<int> voe_channels_;
 
   // A vector of the peer connection sink adapters which receive the audio data
   // from the audio track.
   ScopedVector<WebRtcAudioSinkAdapter> sink_adapters_;
 
-  // The amplitude of the signal.
-  int signal_level_;
-
-  // Thread checker for libjingle's signaling thread.
-  base::ThreadChecker signaling_thread_checker_;
-  base::ThreadChecker capture_thread_;
-
-  // Protects |voe_channels_|, |audio_processor_| and |signal_level_|.
-  mutable base::Lock lock_;
+  // Thread-safe accessor to current audio signal level.  This must be set
+  // before calls to GetSignalLevel() are made.
+  scoped_refptr<MediaStreamAudioLevelCalculator::Level> level_;
 };
 
 }  // namespace content

@@ -15,6 +15,7 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/media_stream.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
@@ -40,7 +41,7 @@ namespace {
 void CreateNativeAudioMediaStreamTrack(
     const blink::WebMediaStreamTrack& track,
     PeerConnectionDependencyFactory* factory) {
-  DCHECK(!track.extraData());
+  DCHECK(!MediaStreamAudioTrack::From(track));
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
   if (source.remote()) {
