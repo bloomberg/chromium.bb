@@ -2014,10 +2014,13 @@ void RenderThreadImpl::OnMemoryPressure(
       // Trigger full v8 garbage collection on memory pressure notifications.
       // This will potentially hang the renderer for a long time, however, when
       // we receive a memory pressure notification, we might be about to be
-      // killed.
-      blink::mainThreadIsolate()->LowMemoryNotification();
-      RenderThread::Get()->PostTaskToAllWebWorkers(
-          base::Bind(&LowMemoryNotificationOnThisThread));
+      // killed. Because of the janky hang don't do this to foreground
+      // renderers.
+      if (RendererIsHidden()) {
+        blink::mainThreadIsolate()->LowMemoryNotification();
+        RenderThread::Get()->PostTaskToAllWebWorkers(
+            base::Bind(&LowMemoryNotificationOnThisThread));
+      }
     }
 
     if (memory_pressure_level ==
