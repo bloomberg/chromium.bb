@@ -558,6 +558,27 @@ hooks = [
     ],
   },
   {
+    # Ensure that while generating dependencies lists in .gyp files we don't
+    # accidentally reference any .pyc files whose corresponding .py files have
+    # already been deleted.
+    # We should actually try to avoid generating .pyc files, crbug.com/500078.
+    'name': 'remove_stale_pyc_files',
+    'pattern': '.',
+    'action': [
+        'python',
+        'src/tools/remove_stale_pyc_files.py',
+        'src/android_webview/tools',
+        'src/build/android',
+        'src/gpu/gles2_conform_support',
+        'src/infra',
+        'src/ppapi',
+        'src/printing',
+        'src/third_party/catapult',
+        'src/third_party/closure_compiler/build',
+        'src/tools',
+    ],
+  },
+  {
     # This downloads binaries for Native Client's newlib toolchain.
     # Done in lieu of building the toolchain from scratch as it can take
     # anywhere from 30 minutes to 4 hours depending on platform to build.
@@ -832,26 +853,6 @@ hooks = [
     'name': 'instrumented_libraries',
     'pattern': '\\.sha1',
     'action': ['python', 'src/third_party/instrumented_libraries/scripts/download_binaries.py'],
-  },
-  {
-    # Ensure that while generating dependencies lists in .gyp files we don't
-    # accidentally reference any .pyc files whose corresponding .py files have
-    # already been deleted.
-    # We should actually try to avoid generating .pyc files, crbug.com/500078.
-    'name': 'remove_stale_pyc_files',
-    'pattern': '.',
-    'action': [
-        'python',
-        'src/tools/remove_stale_pyc_files.py',
-        'src/android_webview/tools',
-        'src/gpu/gles2_conform_support',
-        'src/infra',
-        'src/ppapi',
-        'src/printing',
-        'src/third_party/catapult',
-        'src/third_party/closure_compiler/build',
-        'src/tools',
-    ],
   },
   {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
