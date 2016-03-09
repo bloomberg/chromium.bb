@@ -92,6 +92,7 @@ class BufferingController {
 
   // Start time of a re-buffering phase.
   base::Time begin_buffering_time_;
+  base::Time last_buffer_end_time_;
   bool initial_buffering_;
 
   // Buffering level for each individual stream.

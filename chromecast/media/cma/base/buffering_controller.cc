@@ -22,6 +22,7 @@ BufferingController::BufferingController(
       buffering_notification_cb_(buffering_notification_cb),
       is_buffering_(false),
       begin_buffering_time_(base::Time()),
+      last_buffer_end_time_(base::Time()),
       initial_buffering_(true),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -151,9 +152,10 @@ void BufferingController::OnBufferingStateChanged(
 
   // End buffering.
   if (is_buffering_prv && !is_buffering_) {
-    // TODO(damienv): |buffering_user_time| could be a UMA histogram.
     base::Time current_time = base::Time::Now();
     base::TimeDelta buffering_user_time = current_time - begin_buffering_time_;
+    chromecast::metrics::CastMetricsHelper* metrics_helper =
+        chromecast::metrics::CastMetricsHelper::GetInstance();
     CMALOG(kLogControl)
         << "Buffering took: "
         << buffering_user_time.InMilliseconds() << "ms";
@@ -161,10 +163,22 @@ void BufferingController::OnBufferingStateChanged(
         initial_buffering_ ?
             chromecast::metrics::CastMetricsHelper::kInitialBuffering :
             chromecast::metrics::CastMetricsHelper::kBufferingAfterUnderrun;
-    chromecast::metrics::CastMetricsHelper::GetInstance()->LogTimeToBufferAv(
-        buffering_type, buffering_user_time);
+    metrics_helper->LogTimeToBufferAv(buffering_type, buffering_user_time);
 
+    if (!initial_buffering_) {
+      base::TimeDelta time_between_buffering =
+          begin_buffering_time_ - last_buffer_end_time_;
+      CMALOG(kLogControl)
+          << "Time since last buffering event: "
+          << time_between_buffering.InMilliseconds() << "ms";
+      metrics_helper->RecordSimpleActionWithValue(
+          "Cast.Platform.PlayTimeBeforeAutoPause",
+          time_between_buffering.InMilliseconds());
+      metrics_helper->RecordSimpleActionWithValue(
+          "Cast.Platform.AutoPauseTime", buffering_user_time.InMilliseconds());
+    }
     // Only the first buffering report is considered "initial buffering".
+    last_buffer_end_time_ = current_time;
     initial_buffering_ = false;
   }
 
