@@ -26,8 +26,6 @@ class CaptivePortalView : public SimpleWebViewDialog {
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;
-  views::NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) override;
 
   // Overridden from content::WebContentsDelegate:
   void NavigationStateChanged(content::WebContents* source,

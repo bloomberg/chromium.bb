@@ -13,7 +13,6 @@
 #include "components/captive_portal/captive_portal_detector.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/window/dialog_delegate.h"
 #include "url/gurl.h"
 
 namespace {
@@ -67,11 +66,6 @@ base::string16 CaptivePortalView::GetWindowTitle() const {
 
 bool CaptivePortalView::ShouldShowWindowTitle() const {
   return true;
-}
-
-views::NonClientFrameView* CaptivePortalView::CreateNonClientFrameView(
-    views::Widget* widget) {
-  return views::DialogDelegate::CreateDialogFrameView(widget);
 }
 
 void CaptivePortalView::NavigationStateChanged(
