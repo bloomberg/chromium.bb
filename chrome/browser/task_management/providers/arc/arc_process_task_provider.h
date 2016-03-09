@@ -13,14 +13,10 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
+#include "base/process/process.h"
+#include "chrome/browser/chromeos/arc/arc_process.h"
 #include "chrome/browser/task_management/providers/arc/arc_process_task.h"
 #include "chrome/browser/task_management/providers/task_provider.h"
-#include "components/arc/arc_bridge_service.h"
-
-namespace base {
-class Timer;
-}  // namespace base
 
 namespace task_management {
 
@@ -30,8 +26,8 @@ namespace task_management {
 // it can never avoid race conditions. For example, in an extreme case such as
 // fork(2) is called millions of times in a second, this provider can return
 // wrong results. However, its chance is very low, and even if we hit the case,
-// the worst outcome is just that an Android app (non-system) process which
-// the user did not intend to choose is killed. Since Android apps are designed
+// the worst outcome is just that an app (non-system) process which
+// the user did not intend to choose is killed. Since apps are designed
 // to be killed at any time, it sounds acceptable.
 class ArcProcessTaskProvider : public TaskProvider {
  public:
@@ -44,20 +40,21 @@ class ArcProcessTaskProvider : public TaskProvider {
                             int route_id) override;
 
  private:
+  // Auto-retry if ARC bridge service is not ready.
   void RequestProcessList();
-  void OnUpdateProcessList(
-      mojo::Array<arc::RunningAppProcessInfoPtr> processes);
 
-  void RemoveTasks(const std::set<base::ProcessId>& removed_nspids);
-  void AddTasks(const std::vector<arc::RunningAppProcessInfo>& added_processes,
-                const std::map<base::ProcessId, base::ProcessId>& nspid_to_pid);
+  void OnUpdateProcessList(const std::vector<arc::ArcProcess>& processes);
 
   // task_management::TaskProvider:
   void StartUpdating() override;
   void StopUpdating() override;
 
-  std::map<base::ProcessId, scoped_ptr<ArcProcessTask> > nspid_to_task_;
-  base::RepeatingTimer timer_;
+  void ScheduleNextRequest();
+
+  std::map<base::ProcessId, scoped_ptr<ArcProcessTask>> nspid_to_task_;
+
+  // Whether to continue the periodical polling.
+  bool is_updating_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/task_management/sampling/task_manager_impl.h"
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -15,6 +18,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/task_management/providers/arc/arc_process_task_provider.h"
+#include "components/arc/arc_bridge_service.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace task_management {
