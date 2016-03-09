@@ -166,8 +166,7 @@ tc-test-bot() {
                      --packages-file ${TEMP_PACKAGES}
 
   # Extract the built packages using the packages script.
-  python ${PACKAGES_SCRIPT} extract --overlay-packages --skip-missing \
-                            --packages ${TEMP_PACKAGES}
+  python ${PACKAGES_SCRIPT} extract --skip-missing --packages ${TEMP_PACKAGES}
 
   # Linking the tests require additional sdk libraries like libnacl.
   # Do this once and for all early instead of attempting to do it within
