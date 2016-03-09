@@ -34,8 +34,11 @@ class EasyUnlockSettingsHandler : public content::WebUIMessageHandler,
   // EasyUnlockServiceObserver
   void OnTurnOffOperationStatusChanged() override;
 
- private:
+ protected:
   explicit EasyUnlockSettingsHandler(Profile* profile);
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(EasyUnlockSettingsHandlerTest, TurnOffStatus);
 
   void SendTurnOffOperationStatus();
 

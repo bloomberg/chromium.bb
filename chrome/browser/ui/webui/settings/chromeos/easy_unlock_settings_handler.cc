@@ -92,7 +92,7 @@ void EasyUnlockSettingsHandler::SendTurnOffOperationStatus() {
 
   web_ui()->CallJavascriptFunction(
       "cr.webUIListenerCallback",
-      base::StringValue("easy-unlock-turn-off-dialog-update"),
+      base::StringValue("easy-unlock-turn-off-flow-status"),
       base::StringValue(status_string));
 }
 

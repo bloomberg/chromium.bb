@@ -154,8 +154,8 @@ class EasyUnlockService : public KeyedService {
 
   // Whether easy unlock is allowed to be used. If the controlling preference
   // is set (from policy), this returns the preference value. Otherwise, it is
-  // permitted if the flag is enabled.
-  bool IsAllowed() const;
+  // permitted if the flag is enabled. Virtual to allow override for testing.
+  virtual bool IsAllowed() const;
 
   // Whether Easy Unlock is currently enabled for this user.
   bool IsEnabled() const;
