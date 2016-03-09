@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 
+#include <tuple>
 #include <vector>
 
 #include "base/macros.h"
@@ -74,7 +75,7 @@ class AppShimHostTest : public testing::Test,
     EXPECT_EQ(AppShimMsg_LaunchApp_Done::ID, message->type());
     AppShimMsg_LaunchApp_Done::Param param;
     AppShimMsg_LaunchApp_Done::Read(message, &param);
-    return base::get<0>(param);
+    return std::get<0>(param);
   }
 
   void SimulateDisconnect() {

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <tuple>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -130,9 +131,9 @@ bool ChromePasswordManagerClientTest::WasLoggingActivationMessageSent(
       process()->sink().GetFirstMessageMatching(kMsgID);
   if (!message)
     return false;
-  base::Tuple<bool> param;
+  std::tuple<bool> param;
   AutofillMsg_SetLoggingState::Read(message, &param);
-  *activation_flag = base::get<0>(param);
+  *activation_flag = std::get<0>(param);
   process()->sink().ClearMessages();
   return true;
 }

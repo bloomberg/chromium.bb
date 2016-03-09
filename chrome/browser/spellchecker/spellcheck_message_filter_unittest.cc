@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -108,10 +110,10 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
   SpellCheckMsg_RespondSpellingService::Param params;
   bool ok = SpellCheckMsg_RespondSpellingService::Read(
       filter->sent_messages[0], &params);
-  int sent_identifier = base::get<0>(params);
-  bool sent_success = base::get<1>(params);
-  base::string16 sent_text = base::get<2>(params);
-  std::vector<SpellCheckResult> sent_results = base::get<3>(params);
+  int sent_identifier = std::get<0>(params);
+  bool sent_success = std::get<1>(params);
+  base::string16 sent_text = std::get<2>(params);
+  std::vector<SpellCheckResult> sent_results = std::get<3>(params);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kCallbackId, sent_identifier);
   EXPECT_EQ(kSuccess, sent_success);
@@ -139,8 +141,8 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTest) {
   SpellCheckMsg_RespondSpellingService::Param params;
   bool ok = SpellCheckMsg_RespondSpellingService::Read(
       filter->sent_messages[0], & params);
-  base::string16 sent_text = base::get<2>(params);
-  std::vector<SpellCheckResult> sent_results = base::get<3>(params);
+  base::string16 sent_text = std::get<2>(params);
+  std::vector<SpellCheckResult> sent_results = std::get<3>(params);
   EXPECT_TRUE(ok);
   EXPECT_EQ(static_cast<size_t>(2), sent_results.size());
 }

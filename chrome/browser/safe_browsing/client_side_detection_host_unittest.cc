@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -329,9 +330,9 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
         SafeBrowsingMsg_StartPhishingDetection::ID);
     if (url) {
       ASSERT_TRUE(msg);
-      base::Tuple<GURL> actual_url;
+      std::tuple<GURL> actual_url;
       SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
-      EXPECT_EQ(*url, base::get<0>(actual_url));
+      EXPECT_EQ(*url, std::get<0>(actual_url));
       EXPECT_EQ(main_rfh()->GetRoutingID(), msg->routing_id());
       process()->sink().ClearMessages();
     } else {

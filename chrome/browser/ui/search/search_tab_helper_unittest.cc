@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <tuple>
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -193,8 +194,8 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
 
   ChromeViewMsg_ChromeIdentityCheckResult::Param params;
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, base::get<0>(params));
-  ASSERT_TRUE(base::get<1>(params));
+  EXPECT_EQ(test_identity, std::get<0>(params));
+  ASSERT_TRUE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail) {
@@ -216,8 +217,8 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail) {
 
   ChromeViewMsg_ChromeIdentityCheckResult::Param params;
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, base::get<0>(params));
-  ASSERT_TRUE(base::get<1>(params));
+  EXPECT_EQ(test_identity, std::get<0>(params));
+  ASSERT_TRUE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail2) {
@@ -240,8 +241,8 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatchSlightlyDifferentGmail2) {
 
   ChromeViewMsg_ChromeIdentityCheckResult::Param params;
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, base::get<0>(params));
-  ASSERT_TRUE(base::get<1>(params));
+  EXPECT_EQ(test_identity, std::get<0>(params));
+  ASSERT_TRUE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
@@ -260,8 +261,8 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
 
   ChromeViewMsg_ChromeIdentityCheckResult::Param params;
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, base::get<0>(params));
-  ASSERT_FALSE(base::get<1>(params));
+  EXPECT_EQ(test_identity, std::get<0>(params));
+  ASSERT_FALSE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
@@ -280,8 +281,8 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
 
   ChromeViewMsg_ChromeIdentityCheckResult::Param params;
   ChromeViewMsg_ChromeIdentityCheckResult::Read(message, &params);
-  EXPECT_EQ(test_identity, base::get<0>(params));
-  ASSERT_FALSE(base::get<1>(params));
+  EXPECT_EQ(test_identity, std::get<0>(params));
+  ASSERT_FALSE(std::get<1>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncing) {
@@ -299,7 +300,7 @@ TEST_F(SearchTabHelperTest, OnHistorySyncCheckSyncing) {
 
   ChromeViewMsg_HistorySyncCheckResult::Param params;
   ChromeViewMsg_HistorySyncCheckResult::Read(message, &params);
-  ASSERT_TRUE(base::get<0>(params));
+  ASSERT_TRUE(std::get<0>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnHistorySyncCheckNotSyncing) {
@@ -317,7 +318,7 @@ TEST_F(SearchTabHelperTest, OnHistorySyncCheckNotSyncing) {
 
   ChromeViewMsg_HistorySyncCheckResult::Param params;
   ChromeViewMsg_HistorySyncCheckResult::Read(message, &params);
-  ASSERT_FALSE(base::get<0>(params));
+  ASSERT_FALSE(std::get<0>(params));
 }
 
 TEST_F(SearchTabHelperTest, OnMostVisitedItemsChangedFromServer) {

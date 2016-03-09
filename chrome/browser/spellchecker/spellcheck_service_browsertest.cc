@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/command_line.h"
@@ -16,7 +17,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/tuple.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -155,7 +155,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
     if (!ok)
       return false;
 
-    return base::get<0>(param);
+    return std::get<0>(param);
   }
 
  private:

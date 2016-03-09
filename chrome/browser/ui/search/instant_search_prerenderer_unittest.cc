@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 
 #include <stdint.h>
+#include <tuple>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -533,13 +534,13 @@ TEST_F(TestUsePrerenderPage, SetEmbeddedSearchRequestParams) {
   ASSERT_TRUE(message);
 
   // Verify the IPC message params.
-  base::Tuple<base::string16, EmbeddedSearchRequestParams> params;
+  std::tuple<base::string16, EmbeddedSearchRequestParams> params;
   ChromeViewMsg_SearchBoxSubmit::Read(message, &params);
-  EXPECT_EQ("foo", base::UTF16ToASCII(base::get<0>(params)));
-  EXPECT_EQ("f", base::UTF16ToASCII(base::get<1>(params).original_query));
-  EXPECT_EQ("utf-8", base::UTF16ToASCII(base::get<1>(params).input_encoding));
-  EXPECT_EQ("", base::UTF16ToASCII(base::get<1>(params).rlz_parameter_value));
+  EXPECT_EQ("foo", base::UTF16ToASCII(std::get<0>(params)));
+  EXPECT_EQ("f", base::UTF16ToASCII(std::get<1>(params).original_query));
+  EXPECT_EQ("utf-8", base::UTF16ToASCII(std::get<1>(params).input_encoding));
+  EXPECT_EQ("", base::UTF16ToASCII(std::get<1>(params).rlz_parameter_value));
   EXPECT_EQ("chrome...0",
-            base::UTF16ToASCII(base::get<1>(params).assisted_query_stats));
+            base::UTF16ToASCII(std::get<1>(params).assisted_query_stats));
 }
 #endif

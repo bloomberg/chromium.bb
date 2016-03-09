@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -23,7 +24,7 @@ void FakeMessageArrival(
   bool handled = provider->OnMessageReceived(
       SpellCheckMsg_RespondTextCheck(
           0,
-          base::get<1>(parameters),
+          std::get<1>(parameters),
           base::ASCIIToUTF16("test"),
           fake_result));
   EXPECT_TRUE(handled);
@@ -43,7 +44,7 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   bool ok = SpellCheckHostMsg_RequestTextCheck::Read(
       provider_.messages_[0], &read_parameters1);
   EXPECT_TRUE(ok);
-  EXPECT_EQ(base::get<2>(read_parameters1), base::UTF8ToUTF16("hello "));
+  EXPECT_EQ(std::get<2>(read_parameters1), base::UTF8ToUTF16("hello "));
 
   FakeMessageArrival(&provider_, read_parameters1);
   EXPECT_EQ(completion.completion_count_, 1U);
@@ -69,13 +70,13 @@ TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
   bool ok = SpellCheckHostMsg_RequestTextCheck::Read(
       provider_.messages_[0], &read_parameters1);
   EXPECT_TRUE(ok);
-  EXPECT_EQ(base::get<2>(read_parameters1), base::UTF8ToUTF16("hello "));
+  EXPECT_EQ(std::get<2>(read_parameters1), base::UTF8ToUTF16("hello "));
 
   SpellCheckHostMsg_RequestTextCheck::Param read_parameters2;
   ok = SpellCheckHostMsg_RequestTextCheck::Read(
       provider_.messages_[1], &read_parameters2);
   EXPECT_TRUE(ok);
-  EXPECT_EQ(base::get<2>(read_parameters2), base::UTF8ToUTF16("bye "));
+  EXPECT_EQ(std::get<2>(read_parameters2), base::UTF8ToUTF16("bye "));
 
   FakeMessageArrival(&provider_, read_parameters1);
   EXPECT_EQ(completion1.completion_count_, 1U);

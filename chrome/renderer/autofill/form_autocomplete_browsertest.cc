@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -45,27 +47,27 @@ void VerifyReceivedRendererMessages(content::MockRenderThread* render_thread,
   ASSERT_EQ(expect_submitted_message, submitted_message != NULL);
 
   // The tuple also includes a timestamp, which is ignored.
-  base::Tuple<FormData, base::TimeTicks> will_submit_forms;
+  std::tuple<FormData, base::TimeTicks> will_submit_forms;
   AutofillHostMsg_WillSubmitForm::Read(will_submit_message, &will_submit_forms);
-  ASSERT_EQ(2U, base::get<0>(will_submit_forms).fields.size());
+  ASSERT_EQ(2U, std::get<0>(will_submit_forms).fields.size());
 
   FormFieldData& will_submit_form_field =
-      base::get<0>(will_submit_forms).fields[0];
+      std::get<0>(will_submit_forms).fields[0];
   EXPECT_EQ(WebString("fname"), will_submit_form_field.name);
   EXPECT_EQ(WebString(base::UTF8ToUTF16(fname)), will_submit_form_field.value);
-  will_submit_form_field = base::get<0>(will_submit_forms).fields[1];
+  will_submit_form_field = std::get<0>(will_submit_forms).fields[1];
   EXPECT_EQ(WebString("lname"), will_submit_form_field.name);
   EXPECT_EQ(WebString(base::UTF8ToUTF16(lname)), will_submit_form_field.value);
 
   if (expect_submitted_message) {
-    base::Tuple<FormData> submitted_forms;
+    std::tuple<FormData> submitted_forms;
     AutofillHostMsg_FormSubmitted::Read(submitted_message, &submitted_forms);
-    ASSERT_EQ(2U, base::get<0>(submitted_forms).fields.size());
+    ASSERT_EQ(2U, std::get<0>(submitted_forms).fields.size());
 
-    FormFieldData& submitted_field = base::get<0>(submitted_forms).fields[0];
+    FormFieldData& submitted_field = std::get<0>(submitted_forms).fields[0];
     EXPECT_EQ(WebString("fname"), submitted_field.name);
     EXPECT_EQ(WebString(base::UTF8ToUTF16(fname)), submitted_field.value);
-    submitted_field = base::get<0>(submitted_forms).fields[1];
+    submitted_field = std::get<0>(submitted_forms).fields[1];
     EXPECT_EQ(WebString("lname"), submitted_field.name);
     EXPECT_EQ(WebString(base::UTF8ToUTF16(lname)), submitted_field.value);
   }

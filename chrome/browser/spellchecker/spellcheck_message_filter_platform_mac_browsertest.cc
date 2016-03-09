@@ -4,6 +4,8 @@
 
 #include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
 
+#include <tuple>
+
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -53,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterPlatformMacBrowserTest,
   SpellCheckMsg_RespondTextCheck::Param params;
   bool ok = SpellCheckMsg_RespondTextCheck::Read(
       target->sent_messages_[0], &params);
-  std::vector<SpellCheckResult> sent_results = base::get<2>(params);
+  std::vector<SpellCheckResult> sent_results = std::get<2>(params);
 
   EXPECT_TRUE(ok);
   EXPECT_EQ(1U, sent_results.size());

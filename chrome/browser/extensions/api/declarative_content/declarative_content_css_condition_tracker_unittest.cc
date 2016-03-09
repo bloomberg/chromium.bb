@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.h"
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/values_test_util.h"
@@ -72,7 +74,7 @@ class DeclarativeContentCssConditionTrackerTest
     ASSERT_TRUE(message);
     ExtensionMsg_WatchPages::Param params;
     ExtensionMsg_WatchPages::Read(message, &params);
-    EXPECT_THAT(base::get<0>(params), UnorderedElementsAreArray(selectors));
+    EXPECT_THAT(std::get<0>(params), UnorderedElementsAreArray(selectors));
   }
 
   // Expects no ExtensionMsg_WatchPages message in |sink| after invoking |func|.
