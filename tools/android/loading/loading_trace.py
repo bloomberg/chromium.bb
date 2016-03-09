@@ -6,6 +6,7 @@
 
 import json
 
+import devtools_monitor
 import page_track
 import request_track
 import tracing
@@ -68,3 +69,28 @@ class LoadingTrace(object):
     """Returns an instance from a json file saved by ToJsonFile()."""
     with open(json_path) as input_file:
       return cls.FromJsonDict(json.load(input_file))
+
+  @classmethod
+  def FromUrlController(
+      cls, url, controller, categories=None,
+      timeout_seconds=devtools_monitor.DEFAULT_TIMEOUT_SECONDS):
+    """Create a loading trace by using controller to fetch url.
+
+    Args:
+      url: (str) url to fetch.
+      controller: (ChromeControllerBase) controller to manage the connection.
+      categories: TracingTrack categories to capture.
+      timeout_seconds: monitoring connection timeout in seconds.
+
+    Returns:
+      LoadingTrace instance.
+    """
+    with controller.Open() as connection:
+      page = page_track.PageTrack(connection)
+      request = request_track.RequestTrack(connection)
+      trace = tracing.TracingTrack(
+          connection,
+          categories=(tracing.DEFAULT_CATEGORIES if categories is None
+                      else categories))
+      connection.MonitorUrl(url, timeout_seconds=timeout_seconds)
+      return cls(url, controller.ChromeMetadata(), page, request, trace)

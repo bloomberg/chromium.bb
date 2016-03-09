@@ -25,15 +25,14 @@ import devil_chromium
 from pylib import constants
 
 import activity_lens
-import chrome_setup
 import content_classification_lens
+import controller
 import device_setup
 import frame_load_lens
 import loading_model
 import loading_trace
 import model_graph
 import options
-import trace_recorder
 
 
 # TODO(mattcary): logging.info isn't that useful, as the whole (tools) world
@@ -109,18 +108,21 @@ def _LogRequests(url, clear_cache_override=None):
   Returns:
     JSON dict of logged information (ie, a dict that describes JSON).
   """
-  device = device_setup.GetFirstDevice() if not OPTIONS.local else None
+  if OPTIONS.local:
+    chrome_ctl = controller.LocalChromeController()
+  else:
+    chrome_ctl = controller.RemoteChromeController(
+        device_setup.GetFirstDevice())
+
   clear_cache = (clear_cache_override if clear_cache_override is not None
                  else OPTIONS.clear_cache)
-
-  with device_setup.DeviceConnection(device) as connection:
-    additional_metadata = {}
-    if OPTIONS.local:
-      additional_metadata = chrome_setup.SetUpEmulationAndReturnMetadata(
-          connection, OPTIONS.emulate_device, OPTIONS.emulate_network)
-    trace = trace_recorder.MonitorUrl(connection, url, clear_cache=clear_cache)
-    trace.metadata.update(additional_metadata)
-    return trace.ToJsonDict()
+  chrome_ctl.SetClearCache(clear_cache)
+  if OPTIONS.emulate_device:
+    chrome_ctl.SetDeviceEmulation(OPTIONS.emulate_device)
+  if OPTIONS.emulate_network:
+    chrome_ctl.SetNetworkEmulation(OPTIONS.emulate_device)
+  trace = loading_trace.LoadingTrace.FromUrlController(url, chrome_ctl)
+  return trace.ToJsonDict()
 
 
 def _FullFetch(url, json_output, prefetch):

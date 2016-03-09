@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Loading trace recorder."""
+"""Loading trace recorder. DEPRECATED!"""
 
 import argparse
 import datetime
@@ -32,8 +32,10 @@ import tracing
 
 def MonitorUrl(connection, url, clear_cache=False,
                categories=tracing.DEFAULT_CATEGORIES,
-               timeout=devtools_monitor.DEFAULT_TIMEOUT):
+               timeout=devtools_monitor.DEFAULT_TIMEOUT_SECONDS):
   """Monitor a URL via a trace recorder.
+
+  DEPRECATED! Use LoadingTrace.FromUrlController instead.
 
   Args:
     connection: A devtools_monitor.DevToolsConnection instance.

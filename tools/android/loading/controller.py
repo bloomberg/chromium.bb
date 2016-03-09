@@ -10,6 +10,8 @@ desktop-specific versions.
 """
 
 import contextlib
+import datetime
+import logging
 import os
 import shutil
 import subprocess
@@ -50,14 +52,23 @@ class ChromeControllerBase(object):
     self._metadata = {}
     self._emulated_device = None
     self._emulated_network = None
+    self._clear_cache = False
 
   def AddChromeArgument(self, arg):
     """Add command-line argument to the chrome execution."""
     self._chrome_args.append(arg)
 
+  def SetClearCache(self, clear_cache=True):
+    self._clear_cache = clear_cache
+
   @contextlib.contextmanager
   def Open(self):
-    """Context that returns a connection/chrome instance."""
+    """Context that returns a connection/chrome instance.
+
+    Returns:
+      DevToolsConnection instance for which monitoring has been set up but not
+      started.
+    """
     raise NotImplementedError
 
   def ChromeMetadata(self):
@@ -98,6 +109,11 @@ class ChromeControllerBase(object):
       emulation.SetUpNetworkEmulation(connection, **self._emulated_network)
       self._metadata.update(self._emulated_network)
 
+    self._metadata.update(date=datetime.datetime.utcnow().isoformat(),
+                          seconds_since_epoch=time.time())
+    if self._clear_cache:
+      connection.AddHook(connection.ClearCache)
+
 
 class RemoteChromeController(ChromeControllerBase):
   """A controller for an android device, aka remote chrome instance."""
@@ -125,7 +141,7 @@ class RemoteChromeController(ChromeControllerBase):
     self._device.KillAll(package_info.package, quiet=True)
 
     with device_setup.FlagReplacer(
-        self._device, command_line_path, self._chrome_flags):
+        self._device, command_line_path, self._chrome_args):
       start_intent = intent.Intent(
           package=package_info.package, activity=package_info.activity,
           data='about:blank')
@@ -190,19 +206,23 @@ class LocalChromeController(ChromeControllerBase):
     binary_filename = OPTIONS.local_binary
     profile_dir = OPTIONS.local_profile_dir
     using_temp_profile_dir = profile_dir is None
-    flags = self._chrome_flags
+    flags = self._chrome_args
     if using_temp_profile_dir:
       profile_dir = tempfile.mkdtemp()
-      flags = '--user-data-dir=%s' + flags
+    flags = ['--user-data-dir=%s' % profile_dir] + flags
     chrome_out = None if OPTIONS.local_noisy else file('/dev/null', 'w')
     process = subprocess.Popen(
         [binary_filename] + flags, shell=False, stderr=chrome_out)
     try:
       time.sleep(10)
-      connection =  devtools_monitor.DevToolsConnection(
-          OPTIONS.devtools_hostname, OPTIONS.devtools_port)
-      self._StartConnection(connection)
-      yield connection
+      process_result = process.poll()
+      if process_result is not None:
+        logging.error('Unexpected process exit: %s', process_result)
+      else:
+        connection = devtools_monitor.DevToolsConnection(
+            OPTIONS.devtools_hostname, OPTIONS.devtools_port)
+        self._StartConnection(connection)
+        yield connection
     finally:
       process.kill()
       if using_temp_profile_dir:

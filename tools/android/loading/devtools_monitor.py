@@ -20,7 +20,7 @@ from telemetry.internal.backends.chrome_inspector import inspector_websocket
 from telemetry.internal.backends.chrome_inspector import websocket
 
 
-DEFAULT_TIMEOUT = 10 # seconds
+DEFAULT_TIMEOUT_SECONDS = 10 # seconds
 
 
 class DevToolsConnectionException(Exception):
@@ -98,7 +98,6 @@ class DevToolsConnection(object):
     self._scoped_states = {}
     self._domains_to_enable = set()
     self._tearing_down_tracing = False
-    self._set_up = False
     self._please_stop = False
     self._hooks = []
 
@@ -209,14 +208,23 @@ class DevToolsConnection(object):
     self.SyncRequest('Network.clearBrowserCache')
 
   def AddHook(self, hook):
-    """Add hook to be run on monitoring setup.
+    """Add hook to be run on monitoring start.
 
     Args:
       hook: a function.
     """
     self._hooks.append(hook)
 
-  def SetUpMonitoring(self):
+  def MonitorUrl(self, url, timeout_seconds=DEFAULT_TIMEOUT_SECONDS):
+    """Navigate to url and dispatch monitoring loop.
+
+    Unless you have registered a listener that will call StopMonitoring, this
+    will run until timeout from chrome.
+
+    Args:
+      url: (str) a URL to navigate to before starting monitoring loop.\
+      timeout_seconds: timeout in seconds for monitoring loop.
+    """
     for domain in self._domains_to_enable:
       self._ws.RegisterDomain(domain, self._OnDataReceived)
       if domain != self.TRACING_DOMAIN:
@@ -226,28 +234,20 @@ class DevToolsConnection(object):
     for scoped_state in self._scoped_states:
       self.SyncRequestNoResponse(scoped_state,
                                  self._scoped_states[scoped_state][0])
-
     for hook in self._hooks:
       hook()
-
     self._tearing_down_tracing = False
-    self._set_up = True
 
-  def StartMonitoring(self, timeout=DEFAULT_TIMEOUT):
-    """Starts monitoring.
+    self.SendAndIgnoreResponse('Page.navigate', {'url': url})
 
-    DevToolsConnection.SetUpMonitoring() has to be called first.
-    """
-    assert self._set_up, 'DevToolsConnection.SetUpMonitoring not called.'
-    self._Dispatch(timeout=timeout)
+    self._Dispatch(timeout=timeout_seconds)
     self._TearDownMonitoring()
 
   def StopMonitoring(self):
     """Stops the monitoring."""
     self._please_stop = True
 
-  def _Dispatch(self, kind='Monitoring',
-                timeout=DEFAULT_TIMEOUT):
+  def _Dispatch(self, timeout, kind='Monitoring'):
     self._please_stop = False
     while not self._please_stop:
       try:
@@ -262,7 +262,7 @@ class DevToolsConnection(object):
       logging.info('Fetching tracing')
       self.SyncRequestNoResponse(self.TRACING_END_METHOD)
       self._tearing_down_tracing = True
-      self._Dispatch(kind='Tracing', timeout=self.TRACING_TIMEOUT)
+      self._Dispatch(timeout=self.TRACING_TIMEOUT, kind='Tracing')
     for scoped_state in self._scoped_states:
       self.SyncRequestNoResponse(scoped_state,
                                  self._scoped_states[scoped_state][1])
