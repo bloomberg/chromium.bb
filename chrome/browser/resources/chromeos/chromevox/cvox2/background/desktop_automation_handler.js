@@ -56,6 +56,12 @@ DesktopAutomationHandler = function(node) {
   }).bind(this));
 };
 
+/**
+ * Time to wait until processing more value changed events.
+ * @const {number}
+ */
+DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS = 500;
+
 DesktopAutomationHandler.prototype = {
   __proto__: BaseAutomationHandler.prototype,
 
@@ -242,16 +248,20 @@ DesktopAutomationHandler.prototype = {
         ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC)
       return;
 
-    if (!evt.target.state.focused && evt.target.root.role != RoleType.desktop)
-      return;
+    var t = evt.target;
+    if (t.state.focused ||
+        t.root.role == RoleType.desktop ||
+        AutomationUtil.isDescendantOf(
+            global.backgroundObj.currentRange.start.node, t)) {
+      if (new Date() - this.lastValueChanged_ <=
+          DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS)
+        return;
 
-    if (new Date() - this.lastValueChanged_ <= 500)
-      return;
+      this.lastValueChanged_ = new Date();
 
-    this.lastValueChanged_ = new Date();
-
-    new Output().format('$value', evt.target)
-        .go();
+      new Output().format('$value', evt.target)
+          .go();
+    }
   },
 
   /**

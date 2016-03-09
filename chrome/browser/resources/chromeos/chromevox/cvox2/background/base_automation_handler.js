@@ -30,6 +30,8 @@ BaseAutomationHandler = function(node) {
    */
   this.listenerMap_ = {
     alert: this.onAlert,
+    ariaAttributeChanged: this.onEventIfInRange,
+    checkedStateChanged: this.onEventIfInRange,
     focus: this.onFocus,
     hover: this.onEventDefault,
     loadComplete: this.onLoadComplete,
@@ -122,6 +124,17 @@ BaseAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onEventDefault: function(evt) {},
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onEventIfInRange: function(evt) {
+    // TODO(dtseng): Consider the end of the current range as well.
+    if (AutomationUtil.isDescendantOf(
+        global.backgroundObj.currentRange.start.node, evt.target) ||
+            evt.target.state.focused)
+      this.onEventDefault(evt);
+  },
 
   /**
    * @param {!AutomationEvent} evt

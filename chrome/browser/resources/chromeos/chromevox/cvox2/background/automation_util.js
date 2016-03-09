@@ -268,4 +268,17 @@ AutomationUtil.isInSameWebpage = function(a, b) {
   return a == b;
 };
 
+/**
+ * Determines whether or not a node is or is the descendant of another node.
+ * @param {!AutomationNode} node
+ * @param {!AutomationNode} ancestor
+ * @return {boolean}
+ */
+AutomationUtil.isDescendantOf = function(node, ancestor) {
+  var testNode = node;
+  while (testNode && testNode !== ancestor)
+    testNode = testNode.parent;
+  return testNode === ancestor;
+};
+
 });  // goog.scope

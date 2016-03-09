@@ -556,3 +556,33 @@ TEST_F('BackgroundTest', 'NoisySlider', function() {
         .replay();
   }.bind(this));
 });
+
+TEST_F('BackgroundTest', 'Checkbox', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div id="go" role="checkbox">go</div>
+    <script>
+      var go = document.getElementById('go');
+      var isChecked = true;
+      go.addEventListener('click', function(e) {
+        if (isChecked)
+          go.setAttribute('aria-checked', true);
+        else
+          go.removeAttribute('aria-checked');
+        isChecked = !isChecked;
+      });
+    </script>
+  */}, function(root) {
+    var cbx = root.find({role: 'checkBox'});
+    var click = cbx.doDefault.bind(cbx);
+    mockFeedback.call(click)
+        .expectSpeech('go')
+        .expectSpeech('Check box')
+        .expectSpeech('checked')
+        .call(click)
+        .expectSpeech('go')
+        .expectSpeech('Check box')
+        .expectSpeech('not checked')
+        .replay();
+  });
+});
