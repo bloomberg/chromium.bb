@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -25,7 +27,9 @@
 #include "components/bookmarks/browser/bookmark_undo_delegate.h"
 #include "components/bookmarks/browser/bookmark_undo_provider.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_switches.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "components/offline_pages/offline_page_test_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -987,6 +991,22 @@ TEST_F(OfflinePageModelTest, SaveRetrieveMultipleClientIds) {
 
   EXPECT_TRUE(id_set.find(offline1) != id_set.end());
   EXPECT_TRUE(id_set.find(offline2) != id_set.end());
+}
+
+TEST(CommandLineFlagsTest, OffliningRecentPages) {
+  // TODO(dimich): once offline pages are enabled by default, remove this.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableOfflinePages);
+  // Disabled by default.
+  EXPECT_FALSE(offline_pages::IsOffliningRecentPagesEnabled());
+
+  // Check if feature is correctly enabled by command-line flag.
+  base::FeatureList::ClearInstanceForTesting();
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      offline_pages::kOffliningRecentPagesFeature.name, "");
+  base::FeatureList::SetInstance(std::move(feature_list));
+  EXPECT_TRUE(offline_pages::IsOffliningRecentPagesEnabled());
 }
 
 }  // namespace offline_pages

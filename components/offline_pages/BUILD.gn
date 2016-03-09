@@ -74,6 +74,7 @@ source_set("unit_tests") {
 
   deps = [
     ":offline_pages",
+    ":switches",
     ":test_support",
     "//base",
     "//base/test:test_support",

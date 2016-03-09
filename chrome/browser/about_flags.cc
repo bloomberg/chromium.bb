@@ -43,6 +43,7 @@
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_switches.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -1812,6 +1813,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"offline-pages-ntp", IDS_FLAGS_NTP_OFFLINE_PAGES_NAME,
      IDS_FLAGS_NTP_OFFLINE_PAGES_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPOfflinePagesFeature)},
+    {"offlining-recent-pages", IDS_FLAGS_OFFLINING_RECENT_PAGES_NAME,
+     IDS_FLAGS_OFFLINING_RECENT_PAGES_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(offline_pages::kOffliningRecentPagesFeature)},
 #endif  // defined(OS_ANDROID)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
