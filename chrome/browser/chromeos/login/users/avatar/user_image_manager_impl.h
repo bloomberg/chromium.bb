@@ -67,6 +67,14 @@ class UserImageManagerImpl
 
   static void IgnoreProfileDataDownloadDelayForTesting();
 
+  // Key for a dictionary that maps user IDs to user image data with images
+  // stored in JPEG format.
+  static const char kUserImageProperties[];
+  // Names of user image properties.
+  static const char kImagePathNodeName[];
+  static const char kImageIndexNodeName[];
+  static const char kImageURLNodeName[];
+
  private:
   friend class UserImageManagerTest;
 
@@ -130,14 +138,8 @@ class UserImageManagerImpl
   // send a NOTIFICATION_LOGIN_USER_IMAGE_CHANGED notification.
   void OnJobChangedUserImage();
 
-  // Called when a Job for the user finishes. If a migration was
-  // required for the user, the migration is now complete and the old
-  // image file for that user, if any, is deleted.
+  // Called when a Job for the user finishes.
   void OnJobDone();
-
-  // Completes migration by removing the user from the old prefs
-  // dictionary.
-  void UpdateLocalStateAfterMigration();
 
   // Create a sync observer if a user is logged in, the user's user image is
   // allowed to be synced and no sync observer exists yet.
@@ -209,7 +211,6 @@ class UserImageManagerImpl
   scoped_ptr<Job> job_;
 
   bool has_managed_image_;
-  bool user_needs_migration_;
 
   base::WeakPtrFactory<UserImageManagerImpl> weak_factory_;
 

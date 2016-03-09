@@ -49,20 +49,6 @@ namespace chromeos {
 
 namespace {
 
-// A dictionary that maps user_ids to old user image data with images stored in
-// PNG format. Deprecated.
-// TODO(ivankr): remove this const char after migration is gone.
-const char kUserImages[] = "UserImages";
-
-// A dictionary that maps user_ids to user image data with images stored in
-// JPEG format.
-const char kUserImageProperties[] = "user_image_info";
-
-// Names of user image properties.
-const char kImagePathNodeName[] = "path";
-const char kImageIndexNodeName[] = "index";
-const char kImageURLNodeName[] = "url";
-
 // Delay betweeen user login and attempt to update user's profile data.
 const int kProfileDataDownloadDelaySec = 10;
 
@@ -190,10 +176,14 @@ bool SaveImage(const user_manager::UserImage& user_image,
 
 }  // namespace
 
+const char UserImageManagerImpl::kUserImageProperties[] = "user_image_info";
+const char UserImageManagerImpl::kImagePathNodeName[] = "path";
+const char UserImageManagerImpl::kImageIndexNodeName[] = "index";
+const char UserImageManagerImpl::kImageURLNodeName[] = "url";
+
 // static
 void UserImageManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kUserImages);
-  registry->RegisterDictionaryPref(kUserImageProperties);
+  registry->RegisterDictionaryPref(UserImageManagerImpl::kUserImageProperties);
 }
 
 // Every image load or update is encapsulated by a Job. The Job is allowed to
@@ -482,7 +472,6 @@ UserImageManagerImpl::UserImageManagerImpl(
       downloading_profile_image_(false),
       profile_image_requested_(false),
       has_managed_image_(false),
-      user_needs_migration_(false),
       weak_factory_(this) {
   base::SequencedWorkerPool* blocking_pool =
       content::BrowserThread::GetBlockingPool();
@@ -496,29 +485,14 @@ UserImageManagerImpl::~UserImageManagerImpl() {}
 
 void UserImageManagerImpl::LoadUserImage() {
   PrefService* local_state = g_browser_process->local_state();
-  const base::DictionaryValue* prefs_images_unsafe =
-      local_state->GetDictionary(kUserImages);
   const base::DictionaryValue* prefs_images =
       local_state->GetDictionary(kUserImageProperties);
-  if (!prefs_images && !prefs_images_unsafe)
+  if (!prefs_images)
     return;
   user_manager::User* user = GetUserAndModify();
-  bool needs_migration = false;
 
-  // If entries are found in both |prefs_images_unsafe| and |prefs_images|,
-  // |prefs_images| is honored for now but |prefs_images_unsafe| will be
-  // migrated, overwriting the |prefs_images| entry, when the user logs in.
   const base::DictionaryValue* image_properties = NULL;
-  if (prefs_images_unsafe) {
-    needs_migration = prefs_images_unsafe->GetDictionaryWithoutPathExpansion(
-        user_id(), &image_properties);
-    if (needs_migration)
-      user_needs_migration_ = true;
-  }
-  if (prefs_images) {
-    prefs_images->GetDictionaryWithoutPathExpansion(user_id(),
-                                                    &image_properties);
-  }
+  prefs_images->GetDictionaryWithoutPathExpansion(user_id(), &image_properties);
 
   // If the user image for |user_id| is managed by policy and the policy-set
   // image is being loaded and persisted right now, let that job continue. It
@@ -561,11 +535,9 @@ void UserImageManagerImpl::LoadUserImage() {
                      true);
   DCHECK(!image_path.empty() ||
          image_index == user_manager::User::USER_IMAGE_PROFILE);
-  if (image_path.empty() || needs_migration) {
-    // Return if either of the following is true:
-    // * The profile image is to be used but has not been downloaded yet. The
-    //   profile image will be downloaded after login.
-    // * The image needs migration. Migration will be performed after login.
+  if (image_path.empty()) {
+    // Return if the profile image is to be used but has not been downloaded
+    // yet. The profile image will be downloaded after login.
     return;
   }
 
@@ -583,27 +555,6 @@ void UserImageManagerImpl::UserLoggedIn(bool user_is_new,
     UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
                               ImageIndexToHistogramIndex(user->image_index()),
                               default_user_image::kHistogramImagesCount);
-
-    if (!IsUserImageManaged() && user_needs_migration_) {
-      const base::DictionaryValue* prefs_images_unsafe =
-          g_browser_process->local_state()->GetDictionary(kUserImages);
-      const base::DictionaryValue* image_properties = NULL;
-      if (prefs_images_unsafe->GetDictionaryWithoutPathExpansion(
-              user_id(), &image_properties)) {
-        std::string image_path;
-        image_properties->GetString(kImagePathNodeName, &image_path);
-        job_.reset(new Job(this));
-        if (!image_path.empty()) {
-          VLOG(0) << "Loading old user image, then migrating it.";
-          job_->SetToPath(base::FilePath(image_path),
-                          user->image_index(),
-                          user->image_url(),
-                          false);
-        } else {
-          job_->SetToDefaultImage(user->image_index());
-        }
-      }
-    }
   }
 
   // Reset the downloaded profile image as a new user logged in.
@@ -683,7 +634,6 @@ void UserImageManagerImpl::SaveUserImageFromProfileImage() {
 
 void UserImageManagerImpl::DeleteUserImage() {
   job_.reset();
-  DeleteUserImageAndLocalStateEntry(kUserImages);
   DeleteUserImageAndLocalStateEntry(kUserImageProperties);
 }
 
@@ -957,52 +907,6 @@ void UserImageManagerImpl::OnJobDone() {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, job_.release());
   else
     NOTREACHED();
-
-  if (!user_needs_migration_)
-    return;
-  // Migration completed for |user_id|.
-  user_needs_migration_ = false;
-
-  const base::DictionaryValue* prefs_images_unsafe =
-      g_browser_process->local_state()->GetDictionary(kUserImages);
-  const base::DictionaryValue* image_properties = NULL;
-  if (!prefs_images_unsafe->GetDictionaryWithoutPathExpansion(
-          user_id(), &image_properties)) {
-    NOTREACHED();
-    return;
-  }
-
-  int image_index = user_manager::User::USER_IMAGE_INVALID;
-  image_properties->GetInteger(kImageIndexNodeName, &image_index);
-  UMA_HISTOGRAM_ENUMERATION("UserImage.Migration",
-                            ImageIndexToHistogramIndex(image_index),
-                            default_user_image::kHistogramImagesCount);
-
-  std::string image_path;
-  image_properties->GetString(kImagePathNodeName, &image_path);
-  if (!image_path.empty()) {
-    // If an old image exists, delete it and remove |user_id| from the old prefs
-    // dictionary only after the deletion has completed. This ensures that no
-    // orphaned image is left behind if the browser crashes before the deletion
-    // has been performed: In that case, local state will be unchanged and the
-    // migration will be run again on the user's next login.
-    background_task_runner_->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(base::IgnoreResult(&base::DeleteFile),
-                   base::FilePath(image_path),
-                   false),
-        base::Bind(&UserImageManagerImpl::UpdateLocalStateAfterMigration,
-                   weak_factory_.GetWeakPtr()));
-  } else {
-    // If no old image exists, remove |user_id| from the old prefs dictionary.
-    UpdateLocalStateAfterMigration();
-  }
-}
-
-void UserImageManagerImpl::UpdateLocalStateAfterMigration() {
-  DictionaryPrefUpdate update(g_browser_process->local_state(),
-                              kUserImages);
-  update->RemoveWithoutPathExpansion(user_id(), NULL);
 }
 
 void UserImageManagerImpl::TryToCreateImageSyncObserver() {
