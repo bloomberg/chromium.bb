@@ -198,6 +198,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
                       const std::string& gpu_driver_bug_list_json,
                       const gpu::GPUInfo& gpu_info);
 
+  void RunPostInitTasks();
+
   void UpdateGpuInfoHelper();
 
   void UpdateBlacklistedFeatures(const std::set<int>& features);

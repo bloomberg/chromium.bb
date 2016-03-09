@@ -513,8 +513,10 @@ void GpuDataManagerImplPrivate::Initialize() {
   }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kSkipGpuDataLoading))
+  if (command_line->HasSwitch(switches::kSkipGpuDataLoading)) {
+    RunPostInitTasks();
     return;
+  }
 
   gpu::GPUInfo gpu_info;
   if (command_line->GetSwitchValueASCII(
@@ -1068,6 +1070,10 @@ void GpuDataManagerImplPrivate::InitializeImpl(
   UpdateGpuSwitchingManager(gpu_info);
   UpdatePreliminaryBlacklistedFeatures();
 
+  RunPostInitTasks();
+}
+
+void GpuDataManagerImplPrivate::RunPostInitTasks() {
   // Set initialized before running callbacks.
   is_initialized_ = true;
 
