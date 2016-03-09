@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
@@ -24,6 +25,18 @@ void TransformEventTouchPositions(blink::WebTouchEvent* event,
 }  // anonymous namespace
 
 namespace content {
+
+// Code to assist debugging https://crbug.com/592319.
+RenderWidgetHostInputEventRouter::GestureQueueDebugData::GestureQueueDebugData()
+    : number_of_gesture_targets_enqueued(0),
+      number_of_gesture_targets_dequeued(0),
+      next_gesture_event_index(0),
+      next_touch_event_index(0) {
+  for (unsigned i = 0; i < kNumLastEventTypes; ++i) {
+    last_gesture_event_types[i] = blink::WebInputEvent::Undefined;
+    last_touch_event_types[i] = blink::WebInputEvent::Undefined;
+  }
+}
 
 void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     RenderWidgetHostViewBase* view) {
@@ -170,12 +183,28 @@ void RenderWidgetHostInputEventRouter::RouteGestureEvent(
   // GestureTapDown is sent to the previous target, in case it is still in a
   // fling.
   if (event->type == blink::WebInputEvent::GestureTapDown) {
-    DCHECK(!gesture_target_queue_.empty());
+    if (gesture_target_queue_.empty()) {
+      // Collect data to assist debugging https://crbug.com/592319.
+      // We'll assume for now if there's no target that we should just ignore
+      // the event.
+      LOG(ERROR) << "Gesture sequence start detected with no target available.";
+      base::debug::DumpWithoutCrashing();
+      return;
+    }
+
     const GestureTargetData& data = gesture_target_queue_.front();
     gesture_target_ = data.target;
     gesture_delta_ = data.delta;
     gesture_target_queue_.pop_front();
+    // Code to assist debugging https://crbug.com/592319.
+    debug_data_.number_of_gesture_targets_dequeued++;
   }
+
+  // Code to assist debugging https://crbug.com/592319.
+  debug_data_.last_gesture_event_types[debug_data_.next_gesture_event_index] =
+      event->type;
+  debug_data_.next_gesture_event_index =
+      (debug_data_.next_gesture_event_index + 1) % kNumLastEventTypes;
 
   if (!gesture_target_)
     return;
@@ -189,6 +218,12 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebTouchEvent* event,
     const ui::LatencyInfo& latency) {
+  // Code to assist debugging https://crbug.com/592319.
+  debug_data_.last_touch_event_types[debug_data_.next_touch_event_index] =
+      event->type;
+  debug_data_.next_touch_event_index =
+      (debug_data_.next_touch_event_index + 1) % kNumLastEventTypes;
+
   switch (event->type) {
     case blink::WebInputEvent::TouchStart: {
       if (!active_touches_) {
@@ -208,6 +243,8 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         // for the duration of the sequence.
         touch_delta_ = transformed_point - original_point;
         gesture_target_queue_.emplace_back(touch_target_, touch_delta_);
+        // Code to assist debugging https://crbug.com/592319.
+        debug_data_.number_of_gesture_targets_enqueued++;
 
         if (!touch_target_)
           return;
