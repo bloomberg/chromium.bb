@@ -21,9 +21,9 @@ namespace {
 static_assert(sizeof(Channel::Message::Header) % kChannelMessageAlignment == 0,
     "Invalid Header size.");
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 static_assert(sizeof(Channel::Message::Header) == 8,
-              "Header must be 8 bytes on ChromeOS");
+              "Header must be 8 bytes on ChromeOS and Android");
 #endif
 
 }  // namespace
@@ -50,7 +50,7 @@ Channel::Message::Message(size_t payload_size,
                          (extra_header_size % kChannelMessageAlignment);
   }
   DCHECK_EQ(0u, extra_header_size % kChannelMessageAlignment);
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   DCHECK_EQ(0u, extra_header_size);
 #endif
 
@@ -71,7 +71,7 @@ Channel::Message::Message(size_t payload_size,
   DCHECK_LE(sizeof(Header) + extra_header_size,
             std::numeric_limits<uint16_t>::max());
   header_->message_type = message_type;
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   header_->num_handles = static_cast<uint16_t>(max_handles);
 #else
   header_->num_header_bytes =
@@ -152,7 +152,7 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
 }
 
 size_t Channel::Message::payload_size() const {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   return header_->num_bytes - sizeof(Header);
 #else
   return size_ - header_->num_header_bytes;
@@ -160,8 +160,8 @@ size_t Channel::Message::payload_size() const {
 }
 
 PlatformHandle* Channel::Message::handles() {
-#if defined(OS_CHROMEOS)
-  // Old semantics for ChromeOS.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  // Old semantics for ChromeOS and Android.
   if (header_->num_handles == 0)
     return nullptr;
   CHECK(handle_vector_);
@@ -175,7 +175,7 @@ PlatformHandle* Channel::Message::handles() {
   CHECK(handle_vector_);
   return handle_vector_->data();
 #endif  // defined(OS_WIN)
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -192,8 +192,8 @@ bool Channel::Message::has_mach_ports() const {
 #endif
 
 void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
-#if defined(OS_CHROMEOS)
-  // Old semantics for ChromeOS.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  // Old semantics for ChromeOS and Android
   if (header_->num_handles == 0) {
     CHECK(!new_handles || new_handles->size() == 0);
     return;
@@ -216,7 +216,7 @@ void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
 #else
   std::swap(handle_vector_, new_handles);
 #endif  // defined(OS_WIN)
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 }
 
 ScopedPlatformHandleVectorPtr Channel::Message::TakeHandles() {
@@ -402,7 +402,7 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
       return true;
     }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
     size_t extra_header_size = 0;
     const void* extra_header = nullptr;
     size_t payload_size = header->num_bytes - sizeof(Message::Header);
@@ -418,7 +418,7 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
                            const_cast<char*>(read_buffer_->occupied_bytes()) +
                            header->num_header_bytes)
                      : nullptr;
-#endif
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
     ScopedPlatformHandleVectorPtr handles;
     if (header->num_handles > 0) {
