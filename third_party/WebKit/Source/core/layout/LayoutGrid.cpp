@@ -1884,13 +1884,13 @@ GridAxisPosition LayoutGrid::rowAxisPositionForChild(const LayoutBox& child) con
     return GridAxisStart;
 }
 
-static inline LayoutUnit offsetBetweenTracks(ContentDistributionType distribution, const Vector<LayoutUnit>& trackPositions, const LayoutUnit& childBreadth)
+static inline LayoutUnit offsetBetweenTracks(ContentDistributionType distribution, const Vector<GridTrack>& trackSizes, const Vector<LayoutUnit>& trackPositions, LayoutUnit trackGap)
 {
-    return (distribution == ContentDistributionStretch || ContentDistributionStretch == ContentDistributionDefault) ? LayoutUnit() : trackPositions[1] - trackPositions[0] - childBreadth;
-
+    // FIXME: Perhaps a good idea to cache the result of this operation, since the ContentDistribution offset between tracks is always the same,
+    return (distribution == ContentDistributionStretch || distribution == ContentDistributionDefault) ? LayoutUnit() : trackPositions[1] - trackPositions[0] - trackSizes[0].baseSize() - trackGap;
 }
 
-LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
+LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child, GridSizingData& sizingData) const
 {
     const GridSpan& rowsSpan = cachedGridSpan(child, ForRows);
     size_t childStartLine = rowsSpan.resolvedInitialPosition();
@@ -1908,11 +1908,15 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
         LayoutUnit endOfRow = m_rowPositions[childEndLine];
         // m_rowPositions include gutters so we need to subtract them to get the actual end position for a given
         // row (this does not have to be done for the last track as there are no more m_rowPositions after it)
+        LayoutUnit trackGap = guttersSize(ForRows, 2);
         if (childEndLine < m_rowPositions.size() - 1)
-            endOfRow -= guttersSize(ForRows, 2);
+            endOfRow -= trackGap;
         LayoutUnit childBreadth = child.logicalHeight() + child.marginLogicalHeight();
+        // The track's start and end lines may be not adjacent because of content alignment, so we assume the stored
+        // lines are all start plus a content-alignment distribution offset.
+        // We must subtract last line's offset because is not part of the track the items belongs to.
         if (childEndLine - childStartLine > 1 && childEndLine < m_rowPositions.size() - 1)
-            endOfRow -= offsetBetweenTracks(styleRef().resolvedAlignContentDistribution(normalValueBehavior()), m_rowPositions, childBreadth);
+            endOfRow -= offsetBetweenTracks(styleRef().resolvedAlignContentDistribution(normalValueBehavior()), sizingData.rowTracks, m_rowPositions, trackGap);
         OverflowAlignment overflow = child.styleRef().resolvedAlignment(styleRef(), ItemPositionStretch).overflow();
         LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(overflow, endOfRow - startOfRow, childBreadth);
         return startPosition + (axisPosition == GridAxisEnd ? offsetFromStartPosition : offsetFromStartPosition / 2);
@@ -1923,7 +1927,7 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
     return LayoutUnit();
 }
 
-LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
+LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child, GridSizingData& sizingData) const
 {
     const GridSpan& columnsSpan = cachedGridSpan(child, ForColumns);
     size_t childStartLine = columnsSpan.resolvedInitialPosition();
@@ -1941,11 +1945,15 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
         LayoutUnit endOfColumn = m_columnPositions[childEndLine];
         // m_columnPositions include gutters so we need to subtract them to get the actual end position for a given
         // column (this does not have to be done for the last track as there are no more m_columnPositions after it)
+        LayoutUnit trackGap = guttersSize(ForColumns, 2);
         if (childEndLine < m_columnPositions.size() - 1)
-            endOfColumn -= guttersSize(ForRows, 2);
+            endOfColumn -= trackGap;
         LayoutUnit childBreadth = child.logicalWidth() + child.marginLogicalWidth();
+        // The track's start and end lines may be not adjacent because of content alignment, so we assume the stored
+        // lines are all start plus a content-alignment distribution offset.
+        // We must subtract last line's offset because is not part of the track the items belongs to.
         if (childEndLine - childStartLine > 1 && childEndLine < m_columnPositions.size() - 1)
-            endOfColumn -= offsetBetweenTracks(styleRef().resolvedJustifyContentDistribution(normalValueBehavior()), m_columnPositions, childBreadth);
+            endOfColumn -= offsetBetweenTracks(styleRef().resolvedJustifyContentDistribution(normalValueBehavior()), sizingData.columnTracks, m_columnPositions, trackGap);
         LayoutUnit offsetFromStartPosition = computeOverflowAlignmentOffset(child.styleRef().justifySelfOverflowAlignment(), endOfColumn - startOfColumn, childBreadth);
         return startPosition + (axisPosition == GridAxisEnd ? offsetFromStartPosition : offsetFromStartPosition / 2);
     }
@@ -2058,7 +2066,7 @@ ContentAlignmentData LayoutGrid::computeContentPositionAndDistributionOffset(Gri
 
 LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSizingData& sizingData) const
 {
-    LayoutUnit rowAxisOffset = rowAxisOffsetForChild(child);
+    LayoutUnit rowAxisOffset = rowAxisOffsetForChild(child, sizingData);
     // We stored m_columnPosition s's data ignoring the direction, hence we might need now
     // to translate positions from RTL to LTR, as it's more convenient for painting.
     if (!style()->isLeftToRightDirection()) {
@@ -2067,7 +2075,7 @@ LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSiz
         rowAxisOffset = rightGridEdgePosition - (rowAxisOffset + child.logicalWidth());
     }
 
-    return LayoutPoint(rowAxisOffset, columnAxisOffsetForChild(child));
+    return LayoutPoint(rowAxisOffset, columnAxisOffsetForChild(child, sizingData));
 }
 
 void LayoutGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const

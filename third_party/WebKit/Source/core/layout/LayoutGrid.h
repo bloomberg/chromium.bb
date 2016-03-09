@@ -154,8 +154,8 @@ private:
     LayoutUnit maxContentForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     GridAxisPosition columnAxisPositionForChild(const LayoutBox&) const;
     GridAxisPosition rowAxisPositionForChild(const LayoutBox&) const;
-    LayoutUnit rowAxisOffsetForChild(const LayoutBox&) const;
-    LayoutUnit columnAxisOffsetForChild(const LayoutBox&) const;
+    LayoutUnit rowAxisOffsetForChild(const LayoutBox&, GridSizingData&) const;
+    LayoutUnit columnAxisOffsetForChild(const LayoutBox&, GridSizingData&) const;
     ContentAlignmentData computeContentPositionAndDistributionOffset(GridTrackSizingDirection, const LayoutUnit& availableFreeSpace, unsigned numberOfGridTracks) const;
     LayoutPoint findChildLogicalPosition(const LayoutBox&, GridSizingData&) const;
     GridArea cachedGridArea(const LayoutBox&) const;
