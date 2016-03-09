@@ -157,11 +157,8 @@ FullscreenControllerInteractiveTest::TestFullscreenMouseLockContentSettings() {
   // Add content setting to ALLOW fullscreen.
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromURL(url);
-  settings_map->SetContentSetting(
-      pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string(),
+  settings_map->SetContentSettingDefaultScope(
+      url, url, CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string(),
       CONTENT_SETTING_ALLOW);
 
   // Now, fullscreen should not prompt for permission.
@@ -178,9 +175,8 @@ FullscreenControllerInteractiveTest::TestFullscreenMouseLockContentSettings() {
   LostMouseLock();
 
   // Add content setting to ALLOW mouse lock.
-  settings_map->SetContentSetting(
-      pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string(),
+  settings_map->SetContentSettingDefaultScope(
+      url, GURL(), CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string(),
       CONTENT_SETTING_ALLOW);
 
   // Now, mouse lock should not prompt for permission.
@@ -192,9 +188,8 @@ FullscreenControllerInteractiveTest::TestFullscreenMouseLockContentSettings() {
   // Leaving tab in fullscreen, now test mouse lock BLOCK:
 
   // Add content setting to BLOCK mouse lock.
-  settings_map->SetContentSetting(
-      pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string(),
+  settings_map->SetContentSettingDefaultScope(
+      url, GURL(), CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string(),
       CONTENT_SETTING_BLOCK);
 
   // Now, mouse lock should not be pending.

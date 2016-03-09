@@ -316,25 +316,17 @@ bool FullscreenController::OnAcceptExclusiveAccessPermission() {
     // embeds youtube.com in an iframe, which is then ALLOWED to go fullscreen.
     GURL requester = GetRequestingOrigin();
     GURL embedder = GetEmbeddingOrigin();
-    ContentSettingsPattern primary_pattern =
-        ContentSettingsPattern::FromURLNoWildcard(requester);
-    ContentSettingsPattern secondary_pattern =
-        ContentSettingsPattern::FromURLNoWildcard(embedder);
 
-    // ContentSettings requires valid patterns and the patterns might be invalid
-    // in some edge cases like if the current frame is about:blank.
-    //
     // Do not store preference on file:// URLs, they don't have a clean
     // origin policy.
     // TODO(estark): Revisit this when crbug.com/455882 is fixed.
-    if (!requester.SchemeIsFile() && !embedder.SchemeIsFile() &&
-        primary_pattern.IsValid() && secondary_pattern.IsValid()) {
+    if (!requester.SchemeIsFile() && !embedder.SchemeIsFile()) {
       HostContentSettingsMap* settings_map =
           HostContentSettingsMapFactory::GetForProfile(
               exclusive_access_manager()->context()->GetProfile());
-      settings_map->SetContentSetting(
-          primary_pattern, secondary_pattern, CONTENT_SETTINGS_TYPE_FULLSCREEN,
-          std::string(), CONTENT_SETTING_ALLOW);
+      settings_map->SetContentSettingDefaultScope(
+          requester, embedder, CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string(),
+          CONTENT_SETTING_ALLOW);
     }
     tab_fullscreen_accepted_ = true;
     return true;

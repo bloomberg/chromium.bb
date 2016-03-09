@@ -158,18 +158,16 @@ bool MouseLockController::OnAcceptExclusiveAccessPermission() {
             exclusive_access_manager()->context()->GetProfile());
 
     GURL url = GetExclusiveAccessBubbleURL();
-    ContentSettingsPattern pattern = ContentSettingsPattern::FromURL(url);
 
     // TODO(markusheintz): We should allow patterns for all possible URLs here.
     //
     // Do not store preference on file:// URLs, they don't have a clean
     // origin policy.
     // TODO(estark): Revisit this when crbug.com/455882 is fixed.
-    if (!url.SchemeIsFile() && pattern.IsValid()) {
-      settings_map->SetContentSetting(pattern,
-                                      ContentSettingsPattern::Wildcard(),
-                                      CONTENT_SETTINGS_TYPE_MOUSELOCK,
-                                      std::string(), CONTENT_SETTING_ALLOW);
+    if (!url.SchemeIsFile()) {
+      settings_map->SetContentSettingDefaultScope(
+          url, GURL(), CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string(),
+          CONTENT_SETTING_ALLOW);
     }
 
     WebContents* tab = exclusive_access_tab();
