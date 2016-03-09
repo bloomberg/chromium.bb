@@ -192,6 +192,17 @@ Polymer({
     },
 
     /**
+     * Whether the search input is currently focused. This is used to prevent
+     * window focus/blur events from interfering with input-focus-dependent
+     * operations.
+     * @private {boolean}
+     */
+    isSearchFocused_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the user is currently searching for a sink.
      * @private {boolean}
      */
@@ -456,9 +467,7 @@ Polymer({
   ready: function() {
     this.elementReadyTimeMs_ = performance.now();
     document.addEventListener('keydown', this.checkForEscapePress_.bind(this));
-    this.$$('#sink-search-input').addEventListener('focus', function() {
-      this.isUserSearching_ = true;
-    }.bind(this));
+    this.setSearchFocusHandlers_();
     this.showSinkList_();
   },
 
@@ -1393,6 +1402,43 @@ Polymer({
     // handler from ready() will not run.
     this.isUserSearching_ = true;
     this.$$('#sink-search-input').focus();
+  },
+
+  /**
+   * Sets various focus and blur event handlers to handle |isSearchFocused_| and
+   * showing search results when the input is focused.
+   * @private
+   */
+  setSearchFocusHandlers_: function() {
+    var search = this.$['sink-search-input'];
+
+    // If the search input is focused and the whole window is losing focus, the
+    // search input will see a blur event first and then the window. The search
+    // event listener sets |isSearchFocused_| to false on the next event loop
+    // but then the event continues bubbling up. When it reaches the window
+    // event listener, it is still |true|. The window event listener queues its
+    // own action for the next event loop which keeps |isSearchFocused_| at the
+    // same value.
+    //
+    // So if only the search input is losing focus, |isSearchFocused_| will
+    // successfully be set to |false| during the next event loop. If the whole
+    // window is losing focus, which is the cause for the search input's blur
+    // event, it will be set to |false| and then immediately restored to |true|.
+    window.addEventListener('blur', function() {
+      var saveSearchFocusState = this.isSearchFocused_;
+      setTimeout(function() {
+        this.isSearchFocused_ = saveSearchFocusState;
+      }.bind(this));
+    }.bind(this));
+    search.addEventListener('blur', function() {
+      setTimeout(function() { this.isSearchFocused_ = false; }.bind(this));
+    }.bind(this));
+    search.addEventListener('focus', function() {
+      if (!this.isSearchFocused_) {
+        this.isSearchFocused_ = true;
+        this.isUserSearching_ = true;
+      }
+    }.bind(this));
   },
 
   /**
