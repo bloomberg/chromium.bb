@@ -100,6 +100,7 @@ class DevToolsConnection(object):
     self._tearing_down_tracing = False
     self._set_up = False
     self._please_stop = False
+    self._hooks = []
 
   def RegisterListener(self, name, listener):
     """Registers a listener for an event.
@@ -207,6 +208,14 @@ class DevToolsConnection(object):
     assert res['result'], 'Cache clearing is not supported by this browser.'
     self.SyncRequest('Network.clearBrowserCache')
 
+  def AddHook(self, hook):
+    """Add hook to be run on monitoring setup.
+
+    Args:
+      hook: a function.
+    """
+    self._hooks.append(hook)
+
   def SetUpMonitoring(self):
     for domain in self._domains_to_enable:
       self._ws.RegisterDomain(domain, self._OnDataReceived)
@@ -217,6 +226,10 @@ class DevToolsConnection(object):
     for scoped_state in self._scoped_states:
       self.SyncRequestNoResponse(scoped_state,
                                  self._scoped_states[scoped_state][0])
+
+    for hook in self._hooks:
+      hook()
+
     self._tearing_down_tracing = False
     self._set_up = True
 
