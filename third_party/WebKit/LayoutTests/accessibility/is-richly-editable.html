@@ -30,8 +30,9 @@ Some text.</textarea>
 <div contentEditable="plaintext-only">
     <p id="non_richly_editable5">Some text.</p>
 </div>
-<p id="non_richly_editable6" tabindex="0">Some text.</p>
-<button id="non_richly_editable7">Button</button>
+<div id="non_richly_editable6" contentEditable role="textbox">Some text.</div>
+<p id="non_richly_editable7" tabindex="0">Some text.</p>
+<button id="non_richly_editable8">Button</button>
 
 <script>
     description("This tests that only elements that allow the user to edit rich text in them are recognized as being richly editable.");
@@ -60,7 +61,7 @@ Some text.</textarea>
             shouldBeTrue("axElement.isRichlyEditable");
 
 
-            for (var i = 1; i <= 7; ++i) {
+            for (var i = 1; i <= 8; ++i) {
                 var elementId = "non_richly_editable" + i;
                 var element = document.getElementById(elementId);
                 element.focus();

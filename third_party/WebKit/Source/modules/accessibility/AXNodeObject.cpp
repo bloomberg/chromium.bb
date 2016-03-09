@@ -917,6 +917,11 @@ bool AXNodeObject::isProgressIndicator() const
     return roleValue() == ProgressIndicatorRole;
 }
 
+bool AXNodeObject::isRichlyEditable() const
+{
+    return hasContentEditableAttributeSet() && !isARIATextControl();
+}
+
 bool AXNodeObject::isSlider() const
 {
     return roleValue() == SliderRole;

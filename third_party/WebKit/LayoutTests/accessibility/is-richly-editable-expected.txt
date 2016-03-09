@@ -21,6 +21,7 @@ PASS axElement.isRichlyEditable is false
 PASS axElement.isRichlyEditable is false
 PASS axElement.isRichlyEditable is false
 PASS axElement.isRichlyEditable is false
+PASS axElement.isRichlyEditable is false
 Some text.
 
 Some text.
@@ -28,6 +29,7 @@ Some text.
     
 Some text.
 
+Some text.
 Some text.
 
 Button

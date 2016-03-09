@@ -114,7 +114,7 @@ protected:
     bool isNonNativeTextControl() const final;
     bool isPasswordField() const final;
     bool isProgressIndicator() const override;
-    bool isRichlyEditable() const override { return hasContentEditableAttributeSet(); }
+    bool isRichlyEditable() const override;
     bool isSlider() const override;
     bool isNativeSlider() const override;
 

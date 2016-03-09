@@ -363,14 +363,14 @@ static bool isLinkable(const AXObject& object)
 // user-modify. Don't move this logic to AXNodeObject.
 bool AXLayoutObject::isEditable() const
 {
-    if (m_layoutObject && m_layoutObject->isTextControl())
+    if (layoutObject() && layoutObject()->isTextControl())
         return true;
 
     if (node() && node()->isContentEditable())
         return true;
 
     if (isWebArea()) {
-        Document& document = m_layoutObject->document();
+        Document& document = layoutObject()->document();
         HTMLElement* body = document.body();
         if (body && body->isContentEditable())
             return true;
@@ -385,6 +385,9 @@ bool AXLayoutObject::isEditable() const
 // user-modify. Don't move this logic to AXNodeObject.
 bool AXLayoutObject::isRichlyEditable() const
 {
+    if (isARIATextControl())
+        return false;
+
     if (node() && node()->isContentRichlyEditable())
         return true;
 
