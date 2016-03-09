@@ -467,7 +467,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralR
     string.replace("\r\n", "\n");
     string.replace('\r', '\n');
 
-    if (shouldPreserveNewline(context)) {
+    if (!isRichlyEditablePosition(context.startPosition()) || shouldPreserveNewline(context)) {
         fragment->appendChild(document.createTextNode(string));
         if (string.endsWith('\n')) {
             RefPtrWillBeRawPtr<HTMLBRElement> element = HTMLBRElement::create(document);
@@ -489,7 +489,6 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralR
         && !isHTMLBodyElement(*block)
         && !isHTMLHtmlElement(*block)
         && block != rootEditableElementOf(context.startPosition());
-    bool useLineBreak = enclosingTextFormControl(context.startPosition());
 
     Vector<String> list;
     string.split('\n', true, list); // true gets us empty strings in the list
@@ -502,9 +501,6 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralR
             // For last line, use the "magic BR" rather than a P.
             element = HTMLBRElement::create(document);
             element->setAttribute(classAttr, AppleInterchangeNewline);
-        } else if (useLineBreak) {
-            element = HTMLBRElement::create(document);
-            fillContainerFromString(fragment.get(), s);
         } else {
             if (useClonesOfEnclosingBlock)
                 element = block->cloneElementWithoutChildren();
