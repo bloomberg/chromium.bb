@@ -47,6 +47,7 @@ import commit_queue
 import dart_format
 import fix_encoding
 import gclient_utils
+import git_cache
 import git_common
 import git_footers
 import owners
@@ -627,6 +628,19 @@ class Settings(object):
     if self.root is None:
       self.root = os.path.abspath(self.GetRelativeRoot())
     return self.root
+
+  def GetGitMirror(self, remote='origin'):
+    """If this checkout is from a local git mirror, return a Mirror object."""
+    local_url = RunGit(['remote', 'get-url', remote]).strip()
+    if not os.path.isdir(local_url):
+      return None
+    git_cache.Mirror.SetCachePath(os.path.dirname(local_url))
+    remote_url = git_cache.Mirror.CacheDirToUrl(local_url)
+    # Use the /dev/null print_func to avoid terminal spew in WaitForRealCommit.
+    mirror = git_cache.Mirror(remote_url, print_func = lambda *args: None)
+    if mirror.exists():
+      return mirror
+    return None
 
   def GetIsGitSvn(self):
     """Return true if this repo looks like it's using git-svn."""
@@ -2865,19 +2879,21 @@ def SendUpstream(parser, args, cmd):
       RunGit(['cherry-pick', cherry_pick_commit])
     if cmd == 'land':
       remote, branch = cl.FetchUpstreamTuple(cl.GetBranch())
+      mirror = settings.GetGitMirror(remote)
+      pushurl = mirror.url if mirror else remote
       pending_prefix = settings.GetPendingRefPrefix()
       if not pending_prefix or branch.startswith(pending_prefix):
         # If not using refs/pending/heads/* at all, or target ref is already set
         # to pending, then push to the target ref directly.
         retcode, output = RunGitWithCode(
-            ['push', '--porcelain', remote, 'HEAD:%s' % branch])
+            ['push', '--porcelain', pushurl, 'HEAD:%s' % branch])
         pushed_to_pending = pending_prefix and branch.startswith(pending_prefix)
       else:
         # Cherry-pick the change on top of pending ref and then push it.
         assert branch.startswith('refs/'), branch
         assert pending_prefix[-1] == '/', pending_prefix
         pending_ref = pending_prefix + branch[len('refs/'):]
-        retcode, output = PushToGitPending(remote, pending_ref, branch)
+        retcode, output = PushToGitPending(pushurl, pending_ref, branch)
         pushed_to_pending = (retcode == 0)
       if retcode == 0:
         revision = RunGit(['rev-parse', 'HEAD']).strip()
@@ -2965,6 +2981,7 @@ def WaitForRealCommit(remote, pushed_commit, local_base_ref, real_ref):
   print '(If you are impatient, you may Ctrl-C once without harm)'
   target_tree = RunGit(['rev-parse', '%s:' % pushed_commit]).strip()
   current_rev = RunGit(['rev-parse', local_base_ref]).strip()
+  mirror = settings.GetGitMirror(remote)
 
   loop = 0
   while True:
@@ -2972,6 +2989,8 @@ def WaitForRealCommit(remote, pushed_commit, local_base_ref, real_ref):
     sys.stdout.flush()
     loop += 1
 
+    if mirror:
+      mirror.populate()
     RunGit(['retry', 'fetch', remote, real_ref], stderr=subprocess2.VOID)
     to_rev = RunGit(['rev-parse', 'FETCH_HEAD']).strip()
     commits = RunGit(['rev-list', '%s..%s' % (current_rev, to_rev)])
