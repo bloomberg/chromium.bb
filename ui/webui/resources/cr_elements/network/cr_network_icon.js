@@ -46,7 +46,6 @@ function getIconTypeFromNetworkType(networkType) {
 
 /**
  * Polymer class definition for 'cr-network-icon'.
- * @element cr-network-icon
  */
 Polymer({
   is: 'cr-network-icon',

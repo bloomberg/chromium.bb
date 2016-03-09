@@ -13,9 +13,6 @@
  *      </settings-on-startup-page>
  *      ... other pages ...
  *    </neon-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-on-startup-page
  */
 Polymer({
   is: 'settings-on-startup-page',

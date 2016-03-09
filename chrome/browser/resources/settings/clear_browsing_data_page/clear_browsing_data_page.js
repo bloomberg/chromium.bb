@@ -14,9 +14,6 @@
  *      </settings-clear-browsing-data-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-privacy-page
  */
 Polymer({
   is: 'settings-clear-browsing-data-page',

@@ -19,9 +19,6 @@
  *       </settings-languages>
  *       <div>[[languages.someProperty]]</div>
  *     </template>
- *
- * @group Chrome Settings Elements
- * @element settings-languages
  */
 
 var SettingsLanguagesSingletonElement;

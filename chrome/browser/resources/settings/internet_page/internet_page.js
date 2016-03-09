@@ -14,9 +14,6 @@
  *      </settings-internet-page>
  *      ... other pages ...
  *    </core-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-internet-page
  */
 Polymer({
   is: 'settings-internet-page',

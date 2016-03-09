@@ -14,9 +14,6 @@
  *      </settings-date-time-page>
  *      ... other pages ...
  *    </core-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-date-time-page
  */
 Polymer({
   is: 'settings-date-time-page',

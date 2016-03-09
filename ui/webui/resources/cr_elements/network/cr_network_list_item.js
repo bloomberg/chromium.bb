@@ -66,7 +66,6 @@ function getNetworkName(network) {
 
 /**
  * Polymer class definition for 'cr-network-list-item'.
- * @element cr-network-list-item
  */
 Polymer({
   is: 'cr-network-list-item',

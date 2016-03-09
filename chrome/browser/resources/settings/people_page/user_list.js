@@ -11,9 +11,6 @@
  *
  *    <settings-user-list prefs="{{prefs}}">
  *    </settings-user-list>
- *
- * @group Chrome Settings Elements
- * @element settings-user-list
  */
 Polymer({
   is: 'settings-user-list',

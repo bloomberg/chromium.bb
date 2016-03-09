@@ -10,9 +10,6 @@
  *
  *     <settings-menu selected-page-id="{{selectedPageId}}">
  *     </settings-menu>
- *
- * @group Chrome Settings Elements
- * @element settings-menu
  */
 Polymer({
   is: 'settings-menu',

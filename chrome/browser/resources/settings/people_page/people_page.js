@@ -12,9 +12,6 @@
  *      <settings-people-page prefs="{{prefs}}"></settings-people-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-people-page
  */
 Polymer({
   is: 'settings-people-page',

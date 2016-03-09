@@ -8,8 +8,6 @@
  *
  * Example:
  *   behaviors: [SettingsPageVisibility],
- *
- * @group Chrome UI Behavior
  */
 
 /**

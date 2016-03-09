@@ -13,9 +13,6 @@
  *      </settings-bluetooth-page>
  *      ... other pages ...
  *    </core-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-bluetooth-page
  */
 
 var bluetoothPage = bluetoothPage || {

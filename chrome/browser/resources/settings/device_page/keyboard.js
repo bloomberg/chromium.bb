@@ -5,8 +5,6 @@
 /**
  * @fileoverview
  * 'settings-keyboard' is the settings subpage with keyboard settings.
- *
- * @group Chrome Settings Elements
  */
 
 // TODO(michaelpg): The docs below are duplicates of settings_dropdown_menu,

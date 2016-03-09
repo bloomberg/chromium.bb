@@ -6,9 +6,6 @@
  * @fileoverview
  * 'settings-reset-profile-dialog' is the dialog shown for clearing profile
  * settings.
- *
- * @group Chrome Settings Elements
- * @element settings-reset-profile-dialog
  */
 Polymer({
   is: 'settings-reset-profile-dialog',

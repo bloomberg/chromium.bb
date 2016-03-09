@@ -6,9 +6,6 @@
  * @fileoverview
  * 'settings-bluetooth-pair-device-dialog' is the settings dialog for pairing
  * a bluetooth device.
- *
- * @group Chrome Settings Elements
- * @element settings-bluetooth-pair-device-dialog
  */
 
 (function() {

@@ -29,9 +29,6 @@ settings.ChangePictureImageElement;
  * @fileoverview
  * 'settings-change-picture' is the settings subpage containing controls to
  * edit a ChromeOS user's picture.
- *
- * @group Chrome Settings Elements
- * @element settings-change-picture
  */
 Polymer({
   is: 'settings-change-picture',

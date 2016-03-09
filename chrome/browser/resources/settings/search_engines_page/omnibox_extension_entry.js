@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-omnibox-extension-entry' is a component for showing
  * an omnibox extension with its name and keyword.
- *
- * @group Chrome Settings Elements
- * @element settings-omnibox-extension-entry
  */
 Polymer({
   is: 'settings-omnibox-extension-entry',

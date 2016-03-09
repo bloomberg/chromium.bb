@@ -13,9 +13,6 @@
  *
  *    <settings-router current-route="{{currentRoute}}">
  *    </settings-router>
- *
- * @group Chrome Settings Elements
- * @element settings-router
  */
 Polymer({
   is: 'settings-router',

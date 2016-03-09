@@ -14,9 +14,6 @@
  *      </settings-downloads-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-downloads-page
  */
 Polymer({
   is: 'settings-downloads-page',

@@ -14,9 +14,6 @@
  *      </settings-privacy-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-privacy-page
  */
 Polymer({
   is: 'settings-privacy-page',

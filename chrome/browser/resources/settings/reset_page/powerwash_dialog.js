@@ -6,9 +6,6 @@
  * @fileoverview
  * 'settings-reset-page' is the settings page containing reset
  * settings.
- *
- * @group Chrome Settings Elements
- * @element settings-reset-page
  */
 Polymer({
   is: 'settings-powerwash-dialog',

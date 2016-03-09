@@ -14,9 +14,6 @@
  *      </settings-certificate-manager-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-certificate-manager-page
  */
 Polymer({
   is: 'settings-certificate-manager-page',

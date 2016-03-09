@@ -31,9 +31,6 @@
    *
    *   <settings-appearance-fonts-page prefs="{{prefs}}">
    *   </settings-appearance-fonts-page>
-   *
-   * @group Chrome Settings Elements
-   * @element settings-appearance-fonts-page
    */
   Polymer({
     is: 'settings-appearance-fonts-page',

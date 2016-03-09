@@ -6,9 +6,6 @@
  * @fileoverview
  * 'settings-reset-profile-banner' is the banner shown for clearing profile
  * settings.
- *
- * @group Chrome Settings Elements
- * @element settings-reset-profile-banner
  */
 Polymer({
   is: 'settings-reset-profile-banner',

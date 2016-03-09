@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-manage-languages-page' is a sub-page for enabling
  * and disabling languages.
- *
- * @group Chrome Settings Elements
- * @element settings-manage-languages-page
  */
 Polymer({
   is: 'settings-manage-languages-page',

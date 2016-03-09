@@ -5,9 +5,6 @@
 /**
  * @fileoverview
  * 'settings-search-page' is the settings page containing search settings.
- *
- * @group Chrome Settings Elements
- * @element settings-search-page
  */
 Polymer({
   is: 'settings-search-page',

@@ -24,9 +24,6 @@ var RadioButtonNames = {
  *      <settings-sync-page></settings-sync-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-sync-page
  */
 Polymer({
   is: 'settings-sync-page',

@@ -12,9 +12,6 @@
  *      <site-details-permission prefs="{{prefs}}">
  *      </site-details-permission>
  *      ... other pages ...
- *
- * @group Chrome Settings Elements
- * @element site-details-permission
  */
 Polymer({
   is: 'site-details-permission',

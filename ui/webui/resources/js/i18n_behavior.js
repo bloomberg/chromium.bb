@@ -11,8 +11,6 @@
  *   behaviors: [
  *     I18nBehavior,
  *   ],
- *
- * @group Chrome UI Behavior
  */
 
 /** @polymerBehavior */

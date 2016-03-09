@@ -9,9 +9,6 @@
  * Example:
  *
  *    <settings-ui prefs="{{prefs}}"></settings-ui>
- *
- * @group Chrome Settings Elements
- * @element settings-ui
  */
 Polymer({
   is: 'settings-ui',

@@ -12,9 +12,6 @@
  *     </settings-main>
  *
  * See settings-drawer for example of use in 'paper-drawer-panel'.
- *
- * @group Chrome Settings Elements
- * @element settings-main
  */
 Polymer({
   is: 'settings-main',

@@ -13,9 +13,6 @@
  *      <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-a11y-page
  */
 Polymer({
   is: 'settings-a11y-page',

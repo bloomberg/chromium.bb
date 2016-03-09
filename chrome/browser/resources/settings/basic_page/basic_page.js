@@ -12,9 +12,6 @@
  *      <settings-basic-page prefs="{{prefs}}"></settings-basic-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-basic-page
  */
 Polymer({
   is: 'settings-basic-page',

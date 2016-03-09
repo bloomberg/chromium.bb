@@ -14,9 +14,6 @@
  *      </settings-users-page>
  *      ... other pages ...
  *    </neon-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-users-page
  */
 Polymer({
   is: 'settings-users-page',

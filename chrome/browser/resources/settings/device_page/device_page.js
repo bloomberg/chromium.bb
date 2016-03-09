@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-device-page' is the settings page for device and
  * peripheral settings.
- *
- * @group Chrome Settings Elements
- * @element settings-device-page
  */
 Polymer({
   is: 'settings-device-page',

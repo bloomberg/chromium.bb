@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-search-engine-dialog' is a component for adding
  * or editing a search engine entry.
- *
- * @group Chrome Settings Elements
- * @element settings-search-engine-dialog
  */
 Polymer({
   is: 'settings-search-engine-dialog',

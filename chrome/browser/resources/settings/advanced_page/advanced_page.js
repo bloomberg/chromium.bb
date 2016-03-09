@@ -14,9 +14,6 @@
  *      </settings-advanced-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-advanced-page
  */
 Polymer({
   is: 'settings-advanced-page',

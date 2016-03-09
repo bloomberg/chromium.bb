@@ -11,9 +11,6 @@
  *    <settings-site-list prefs="{{prefs}}"
  *        category="[[category]]">
  *    </settings-site-list>
- *
- * @group Chrome Settings Elements
- * @element settings-site-list
  */
 Polymer({
   is: 'settings-site-list',

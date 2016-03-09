@@ -10,9 +10,6 @@
  *
  *     <settings-breadcrumb current-route="{{currentRoute}}">
  *     </settings-breadcrumb>
- *
- * @group Chrome Settings Elements
- * @element settings-breadcrumb
  */
 Polymer({
   is: 'settings-breadcrumb',

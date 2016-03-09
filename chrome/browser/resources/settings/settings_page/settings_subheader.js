@@ -12,9 +12,6 @@
  *
  *    <settings-subheader i18n-values="page-title:internetPageTitle">
  *    </settings-subheader>
- *
- * @group Chrome Settings Elements
- * @element settings-subheader
  */
 Polymer({
   is: 'settings-subheader',

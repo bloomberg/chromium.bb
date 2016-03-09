@@ -14,9 +14,6 @@
  *      </settings-site-settings-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-site-settings-page
  */
 Polymer({
   is: 'settings-site-settings-page',

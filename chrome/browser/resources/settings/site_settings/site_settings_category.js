@@ -25,9 +25,6 @@ cr.define('settings_test', function() {
  *   <site-settings-category prefs="{{prefs}}">
  *   </site-settings-category>
  *   ... other pages ...
- *
- * @group Chrome Settings Elements
- * @element site-settings-category
  */
 Polymer({
   is: 'site-settings-category',

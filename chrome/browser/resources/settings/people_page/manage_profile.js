@@ -6,9 +6,6 @@
  * @fileoverview
  * 'settings-manage-profile' is the settings subpage containing controls to
  * edit a profile's name, icon, and desktop shortcut.
- *
- * @group Chrome Settings Elements
- * @element settings-manage-profile
  */
 Polymer({
   is: 'settings-manage-profile',

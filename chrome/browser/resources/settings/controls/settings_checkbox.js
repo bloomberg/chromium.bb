@@ -10,8 +10,6 @@
  *      <settings-checkbox pref="{{prefs.settings.enableFoo}}"
  *          label="Enable foo setting." subLabel="(bar also)">
  *      </settings-checkbox>
- *
- * @element settings-checkbox
  */
 Polymer({
   is: 'settings-checkbox',

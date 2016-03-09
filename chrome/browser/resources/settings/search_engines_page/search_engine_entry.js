@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-search-engine-entry' is a component for showing a
  * search engine with its name, domain and query URL.
- *
- * @group Chrome Settings Elements
- * @element settings-search-engine-entry
  */
 Polymer({
   is: 'settings-search-engine-entry',

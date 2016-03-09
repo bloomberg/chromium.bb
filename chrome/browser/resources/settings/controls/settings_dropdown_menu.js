@@ -25,9 +25,6 @@ var DropdownMenuOptionList;
  *
  *   <settings-dropdown-menu pref="{{prefs.foo}}">
  *   </settings-dropdown-menu>
- *
- * @group Chrome Settings Elements
- * @element settings-dropdown-menu
  */
 Polymer({
   is: 'settings-dropdown-menu',

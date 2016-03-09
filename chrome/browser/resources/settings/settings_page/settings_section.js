@@ -12,9 +12,6 @@
  *    <settings-section page-title="[[pageTitle]]" section="privacy">
  *      <!-- Insert your section controls here -->
  *    </settings-section>
- *
- * @group Chrome Settings Elements
- * @element settings-section
  */
 Polymer({
   is: 'settings-section',

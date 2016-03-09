@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-languages-page' is the settings page
  * for language and input method settings.
- *
- * @group Chrome Settings Elements
- * @element settings-languages-page
  */
 (function() {
 'use strict';

@@ -5,8 +5,6 @@
 /**
  * @fileoverview Polymer element for indicating policies that apply to an
  * element controlling a settings preference.
- *
- * @element cr-policy-pref-indicator
  */
 Polymer({
   is: 'cr-policy-pref-indicator',

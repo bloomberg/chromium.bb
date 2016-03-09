@@ -11,8 +11,6 @@
  *      <settings-radio-group pref="{{prefs.settings.foo}}"
  *          label="Foo Options." buttons="{{fooOptionsList}}">
  *      </settings-radio-group>
- *
- * @element settings-radio-group
  */
 Polymer({
   is: 'settings-radio-group',

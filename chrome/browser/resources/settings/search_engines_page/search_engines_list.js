@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-search-engines-list' is a component for showing a
  * list of search engines.
- *
- * @group Chrome Settings Elements
- * @element settings-search-engines-list
  */
 Polymer({
   is: 'settings-search-engines-list',

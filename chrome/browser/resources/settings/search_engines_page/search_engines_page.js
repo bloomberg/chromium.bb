@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-search-engines-page' is the settings page
  * containing search engines settings.
- *
- * @group Chrome Settings Elements
- * @element settings-search-engines-page
  */
 Polymer({
   is: 'settings-search-engines-page',

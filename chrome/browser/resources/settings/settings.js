@@ -9,9 +9,6 @@
  * Example:
  *
  *    <cr-settings></cr-settings>
- *
- * @group Chrome Settings Elements
- * @element cr-settings
  */
 Polymer({
   is: 'cr-settings',

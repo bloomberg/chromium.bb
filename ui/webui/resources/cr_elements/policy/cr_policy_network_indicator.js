@@ -7,7 +7,6 @@
  * properties.
  */
 
-/** @element cr-policy-network-indicator */
 Polymer({
   is: 'cr-policy-network-indicator',
 

@@ -6,9 +6,6 @@
  * @fileoverview
  * 'settings-camera' is the Polymer control used to take a picture from the
  * user webcam to use as a ChromeOS profile picture.
- *
- * @group Chrome Settings Elements
- * @element settings-camera
  */
 (function() {
 

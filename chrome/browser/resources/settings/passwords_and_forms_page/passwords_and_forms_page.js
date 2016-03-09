@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-passwords-and-forms-page' is the settings page
  * for passwords and auto fill.
- *
- * @group Chrome Settings Elements
- * @element settings-passwords-and-forms-page
  */
 
 /**

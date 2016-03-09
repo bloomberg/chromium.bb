@@ -4,9 +4,6 @@
 
 /**
  * @fileoverview 'settings-dialog' is a component for showing a modal dialog.
- *
- * @group Chrome Settings Elements
- * @element settings-dialog
  */
 Polymer({
   is: 'settings-dialog',

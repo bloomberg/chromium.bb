@@ -13,8 +13,6 @@
  * Usage:
  *
  *    this.$.events.forward(this.$.element, ['change']);
- *
- * @element cr-events
  */
 Polymer({
   is: 'cr-events',

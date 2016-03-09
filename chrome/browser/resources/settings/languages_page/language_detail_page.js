@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-language-detail-page' is a sub-page for editing
  * an individual language's settings.
- *
- * @group Chrome Settings Elements
- * @element settings-language-detail-page
  */
 Polymer({
   is: 'settings-language-detail-page',

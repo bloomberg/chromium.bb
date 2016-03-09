@@ -6,8 +6,6 @@
  * @fileoverview
  * `settings-input` is a single-line text field for user input associated
  * with a pref value.
- *
- * @element settings-input
  */
 Polymer({
   is: 'settings-input',

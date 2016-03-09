@@ -14,9 +14,6 @@
  *     </settings-default-browser-page>
  *     ... other pages ...
  *   </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-default-browser-page
  */
 Polymer({
   is: 'settings-default-browser-page',

@@ -5,9 +5,6 @@
 /**
  * @fileoverview 'settings-edit-dictionary-page' is a sub-page for editing
  * the "dictionary" of custom words used for spell check.
- *
- * @group Chrome Settings Elements
- * @element settings-edit-dictionary-page
  */
 Polymer({
   is: 'settings-edit-dictionary-page',

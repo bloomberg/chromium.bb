@@ -16,9 +16,6 @@
  *    <settings-prefs prefs="{{prefs}}"></settings-prefs>
  *    <settings-checkbox pref="{{prefs.homepage_is_newtabpage}}">
  *    </settings-checkbox>
- *
- * @group Chrome Settings Elements
- * @element settings-prefs
  */
 
 (function() {

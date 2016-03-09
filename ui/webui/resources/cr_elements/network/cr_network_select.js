@@ -7,9 +7,6 @@
  * networkingPrivate calls to populate it.
  */
 
-/**
- * @element cr-network-select
- */
 Polymer({
   is: 'cr-network-select',
 

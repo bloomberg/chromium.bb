@@ -6,9 +6,6 @@
  * @fileoverview 'passwords-section' is the collapsible section containing
  * the list of saved passwords as well as the list of sites that will never
  * save any passwords.
- *
- * @group Chrome Settings Elements
- * @element passwords-section
  */
 (function() {
 'use strict';

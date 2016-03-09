@@ -14,9 +14,6 @@
  *      </settings-reset-page>
  *      ... other pages ...
  *    </iron-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-reset-page
  */
 Polymer({
   is: 'settings-reset-page',

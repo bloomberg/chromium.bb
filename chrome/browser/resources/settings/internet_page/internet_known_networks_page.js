@@ -6,9 +6,6 @@
  * @fileoverview
  * 'settings-internet-known-networks' is the settings subpage listing the
  * known networks for a type (currently always WiFi).
- *
- * @group Chrome Settings Elements
- * @element settings-internet-known-networks
  */
 Polymer({
   is: 'settings-internet-known-networks-page',

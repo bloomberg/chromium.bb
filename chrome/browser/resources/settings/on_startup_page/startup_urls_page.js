@@ -22,9 +22,6 @@ var StartupPageInfo;
  *      </settings-startup-urls-page>
  *      ... other pages ...
  *    </neon-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-startup-urls-page
  */
 Polymer({
   is: 'settings-startup-urls-page',

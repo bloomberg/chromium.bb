@@ -12,9 +12,6 @@
  *      <site-details prefs="{{prefs}}" origin="{{origin}}">
  *      </site-details>
  *      ... other pages ...
- *
- * @group Chrome Settings Elements
- * @element site-details
  */
 Polymer({
   is: 'site-details',

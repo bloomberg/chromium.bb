@@ -6,9 +6,6 @@
  * @fileoverview
  * 'settings-bluetooth-add-device-dialog' is the settings subpage for adding
  * bluetooth devices.
- *
- * @group Chrome Settings Elements
- * @element settings-bluetooth-add-device-dialog
  */
 Polymer({
   is: 'settings-bluetooth-add-device-dialog',

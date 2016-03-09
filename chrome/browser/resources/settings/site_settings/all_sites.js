@@ -6,9 +6,6 @@
  * @fileoverview
  * 'all-sites' is the polymer element for showing the list of all sites under
  * Site Settings.
- *
- * @group Chrome Settings Elements
- * @element all-sites
  */
 Polymer({
   is: 'all-sites',

@@ -13,9 +13,6 @@
  *        section="privacy">
  *      <!-- Insert your section controls here -->
  *    </settings-animated-pages>
- *
- * @group Chrome Settings Elements
- * @element settings-animated-pages
  */
 Polymer({
   is: 'settings-animated-pages',
