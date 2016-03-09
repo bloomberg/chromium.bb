@@ -113,8 +113,6 @@ test("sql_unittests") {
   #    '../testing/android/native_test.gyp:native_test_native_code',
   #  ],
   #}],
-
-  # TODO(GYP): dep on copy_test_data_ios action.
 }
 
 if (is_android) {
