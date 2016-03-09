@@ -5,6 +5,8 @@
 #ifndef MOJO_SERVICES_CATALOG_LOADER_H_
 #define MOJO_SERVICES_CATALOG_LOADER_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "mojo/services/catalog/store.h"
 #include "mojo/shell/loader.h"
 
 namespace base {

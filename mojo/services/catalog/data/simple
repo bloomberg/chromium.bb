@@ -1,0 +1,5 @@
+{
+  "name": "mojo:foo",
+  "display_name": "Foo",
+  "capabilities": {}
+}

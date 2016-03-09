@@ -26,6 +26,7 @@ test("mojo_shell_unittests") {
     "//base/test:test_support",
     "//mojo/edk/system",
     "//mojo/public/cpp/system",
+    "//mojo/services/catalog:unittests",
     "//mojo/shell",
     "//mojo/shell/background:lib",
     "//mojo/shell/background:main",

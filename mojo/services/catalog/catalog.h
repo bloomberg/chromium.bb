@@ -10,59 +10,18 @@
 #include "base/path_service.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/services/catalog/entry.h"
 #include "mojo/services/catalog/public/interfaces/catalog.mojom.h"
 #include "mojo/services/catalog/public/interfaces/resolver.mojom.h"
+#include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
 #include "url/gurl.h"
 
 namespace catalog {
-// A set of names of interfaces that may be exposed to an application.
-using AllowedInterfaces = std::set<std::string>;
-// A map of allowed applications to allowed interface sets. See shell.mojom for
-// more details.
-using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
 
-// Static information about an application package known to the Catalog.
-struct ApplicationInfo {
-  ApplicationInfo();
-  ApplicationInfo(const ApplicationInfo& other);
-  ~ApplicationInfo();
-
-  std::string name;
-  std::string qualifier;
-  std::string display_name;
-  CapabilityFilter base_filter;
-};
-
-// Implemented by an object that provides storage for the application catalog
-// (e.g. in Chrome, preferences). The Catalog is the canonical owner of the
-// contents of the store, so no one else must modify its contents.
-class Store {
- public:
-  // Value is a string.
-  static const char kNameKey[];
-  // Value is a string.
-  static const char kQualifierKey[];
-  // Value is a string.
-  static const char kDisplayNameKey[];
-  // Value is a dictionary that maps from the filter to a list of string
-  // interfaces.
-  static const char kCapabilitiesKey[];
-
-  virtual ~Store() {}
-
-  // Called during initialization to construct the Catalog's catalog.
-  // Returns a serialized list of the apps. Each entry in the returned list
-  // corresponds to an app (as a dictionary). Each dictionary has a name,
-  // display name and capabilities. The return value is owned by the caller.
-  virtual const base::ListValue* GetStore() = 0;
-
-  // Write the catalog to the store. Called when the Catalog learns of a newly
-  // encountered application.
-  virtual void UpdateStore(scoped_ptr<base::ListValue> store) = 0;
-};
+class Store;
 
 class Catalog
     : public mojo::ShellClient,
@@ -75,8 +34,8 @@ class Catalog
  public:
   // If |register_schemes| is true, mojo: and exe: schemes are registered as
   // "standard".
-   Catalog(base::TaskRunner* blocking_pool, scoped_ptr<Store> store);
-   ~Catalog() override;
+  Catalog(base::TaskRunner* blocking_pool, scoped_ptr<Store> store);
+  ~Catalog() override;
 
  private:
   using MojoNameAliasMap =
@@ -136,8 +95,7 @@ class Catalog
   void SerializeCatalog();
 
   // Construct a catalog entry from |dictionary|.
-  const ApplicationInfo& DeserializeApplication(
-      const base::DictionaryValue* dictionary);
+  const Entry& DeserializeApplication(const base::DictionaryValue* dictionary);
 
   GURL GetManifestURL(const std::string& name);
 
@@ -161,7 +119,7 @@ class Catalog
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
   scoped_ptr<Store> store_;
-  std::map<std::string, ApplicationInfo> catalog_;
+  std::map<std::string, Entry> catalog_;
 
   // Used when an app handles multiple names. Maps from app (as name) to name of
   // app that is responsible for handling it. The value is a pair of the name of

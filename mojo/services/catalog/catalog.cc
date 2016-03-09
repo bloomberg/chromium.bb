@@ -9,6 +9,9 @@
 #include "base/strings/string_split.h"
 #include "base/task_runner_util.h"
 #include "mojo/common/url_type_converters.h"
+#include "mojo/services/catalog/builder.h"
+#include "mojo/services/catalog/entry.h"
+#include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/names.h"
 #include "mojo/util/filename_util.h"
 #include "net/base/filename_util.h"
@@ -16,59 +19,6 @@
 
 namespace catalog {
 namespace {
-
-CapabilityFilter BuildCapabilityFilterFromDictionary(
-    const base::DictionaryValue& value) {
-  CapabilityFilter filter;
-  base::DictionaryValue::Iterator it(value);
-  for (; !it.IsAtEnd(); it.Advance()) {
-    const base::ListValue* values = nullptr;
-    CHECK(it.value().GetAsList(&values));
-    AllowedInterfaces interfaces;
-    for (auto i = values->begin(); i != values->end(); ++i) {
-      std::string iface_name;
-      const base::Value* v = *i;
-      CHECK(v->GetAsString(&iface_name));
-      interfaces.insert(iface_name);
-    }
-    filter[it.key()] = interfaces;
-  }
-  return filter;
-}
-
-ApplicationInfo BuildApplicationInfoFromDictionary(
-    const base::DictionaryValue& value) {
-  ApplicationInfo info;
-  std::string name_string;
-  CHECK(value.GetString(Store::kNameKey, &name_string));
-  CHECK(mojo::IsValidName(name_string)) << "Invalid Name: " << name_string;
-  info.name = name_string;
-  if (value.HasKey(Store::kQualifierKey)) {
-    CHECK(value.GetString(Store::kQualifierKey, &info.qualifier));
-  } else {
-    info.qualifier = mojo::GetNamePath(name_string);
-  }
-  CHECK(value.GetString(Store::kDisplayNameKey, &info.display_name));
-  const base::DictionaryValue* capabilities = nullptr;
-  CHECK(value.GetDictionary(Store::kCapabilitiesKey, &capabilities));
-  info.base_filter = BuildCapabilityFilterFromDictionary(*capabilities);
-  return info;
-}
-
-void SerializeEntry(const ApplicationInfo& entry,
-                    base::DictionaryValue** value) {
-  *value = new base::DictionaryValue;
-  (*value)->SetString(Store::kNameKey, entry.name);
-  (*value)->SetString(Store::kDisplayNameKey, entry.display_name);
-  base::DictionaryValue* capabilities = new base::DictionaryValue;
-  for (const auto& pair : entry.base_filter) {
-    scoped_ptr<base::ListValue> interfaces(new base::ListValue);
-    for (const auto& iface_name : pair.second)
-      interfaces->AppendString(iface_name);
-    capabilities->Set(pair.first, std::move(interfaces));
-  }
-  (*value)->Set(Store::kCapabilitiesKey, make_scoped_ptr(capabilities));
-}
 
 scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
   JSONFileValueDeserializer deserializer(manifest_path);
@@ -80,19 +30,6 @@ scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
 }
 
 }  // namespace
-
-// static
-const char Store::kNameKey[] = "name";
-// static
-const char Store::kQualifierKey[] = "process-group";
-// static
-const char Store::kDisplayNameKey[] = "display_name";
-// static
-const char Store::kCapabilitiesKey[] = "capabilities";
-
-ApplicationInfo::ApplicationInfo() {}
-ApplicationInfo::ApplicationInfo(const ApplicationInfo& other) = default;
-ApplicationInfo::~ApplicationInfo() {}
 
 Catalog::Catalog(base::TaskRunner* blocking_pool,
                  scoped_ptr<Store> catalog)
@@ -180,10 +117,10 @@ void Catalog::GetEntries(mojo::Array<mojo::String> names,
   for (const std::string& name : names_vec) {
     if (catalog_.find(name) == catalog_.end())
       continue;
-    const ApplicationInfo& info = catalog_[name];
-    mojom::CatalogEntryPtr entry(mojom::CatalogEntry::New());
-    entry->display_name = info.display_name;
-    entries[info.name] = std::move(entry);
+    const Entry& entry = catalog_[name];
+    mojom::CatalogEntryPtr entry_ptr(mojom::CatalogEntry::New());
+    entry_ptr->display_name = entry.display_name;
+    entries[entry.name] = std::move(entry_ptr);
   }
   callback.Run(std::move(entries));
 }
@@ -192,8 +129,8 @@ void Catalog::CompleteResolveMojoName(
     const std::string& resolved_name,
     const std::string& qualifier,
     const ResolveMojoNameCallback& callback) {
-  auto info_iter = catalog_.find(resolved_name);
-  CHECK(info_iter != catalog_.end());
+  auto entry_iter = catalog_.find(resolved_name);
+  CHECK(entry_iter != catalog_.end());
 
   GURL file_url;
   std::string type = mojo::GetNameType(resolved_name);
@@ -214,7 +151,7 @@ void Catalog::CompleteResolveMojoName(
   mojo::shell::mojom::CapabilityFilterPtr filter(
       mojo::shell::mojom::CapabilityFilter::New());
   filter->filter = mojo::Map<mojo::String, mojo::Array<mojo::String>>();
-  for (const auto& entry : info_iter->second.base_filter) {
+  for (const auto& entry : entry_iter->second.capabilities) {
     mojo::Array<mojo::String> interfaces;
     for (auto interface_name : entry.second)
       interfaces.push_back(interface_name);
@@ -259,43 +196,42 @@ void Catalog::DeserializeCatalog() {
     const base::DictionaryValue* dictionary = nullptr;
     const base::Value* v = *it;
     CHECK(v->GetAsDictionary(&dictionary));
-    const ApplicationInfo app_info =
-        BuildApplicationInfoFromDictionary(*dictionary);
-    catalog_[app_info.name] = app_info;
+    const Entry entry = BuildEntry(*dictionary);
+    catalog_[entry.name] = entry;
   }
 }
 
 void Catalog::SerializeCatalog() {
   scoped_ptr<base::ListValue> catalog(new base::ListValue);
-  for (const auto& info : catalog_) {
+  for (const auto& entry : catalog_) {
     base::DictionaryValue* dictionary = nullptr;
-    SerializeEntry(info.second, &dictionary);
+    SerializeEntry(entry.second, &dictionary);
     catalog->Append(make_scoped_ptr(dictionary));
   }
   if (store_)
     store_->UpdateStore(std::move(catalog));
 }
 
-const ApplicationInfo& Catalog::DeserializeApplication(
+const Entry& Catalog::DeserializeApplication(
     const base::DictionaryValue* dictionary) {
-  ApplicationInfo info = BuildApplicationInfoFromDictionary(*dictionary);
-  if (catalog_.find(info.name) == catalog_.end()) {
-    catalog_[info.name] = info;
+  Entry entry = BuildEntry(*dictionary);
+  if (catalog_.find(entry.name) == catalog_.end()) {
+    catalog_[entry.name] = entry;
 
     if (dictionary->HasKey("applications")) {
       const base::ListValue* applications = nullptr;
       dictionary->GetList("applications", &applications);
       for (size_t i = 0; i < applications->GetSize(); ++i) {
-        const base::DictionaryValue* child = nullptr;
-        applications->GetDictionary(i, &child);
-        const ApplicationInfo& child_info = DeserializeApplication(child);
-        mojo_name_aliases_[child_info.name] =
-            std::make_pair(info.name, child_info.qualifier);
+        const base::DictionaryValue* child_value = nullptr;
+        applications->GetDictionary(i, &child_value);
+        const Entry& child = DeserializeApplication(child_value);
+        mojo_name_aliases_[child.name] =
+            std::make_pair(entry.name, child.qualifier);
       }
     }
-    qualifiers_[info.name] = info.qualifier;
+    qualifiers_[entry.name] = entry.qualifier;
   }
-  return catalog_[info.name];
+  return catalog_[entry.name];
 }
 
 GURL Catalog::GetManifestURL(const std::string& name) {
@@ -331,11 +267,11 @@ void Catalog::OnReadManifestImpl(const std::string& name,
     CHECK(manifest->GetAsDictionary(&dictionary));
     DeserializeApplication(dictionary);
   } else {
-    ApplicationInfo info;
-    info.name = name;
-    info.display_name = name;
-    catalog_[info.name] = info;
-    qualifiers_[info.name] = mojo::GetNamePath(name);
+    Entry entry;
+    entry.name = name;
+    entry.display_name = name;
+    catalog_[entry.name] = entry;
+    qualifiers_[entry.name] = mojo::GetNamePath(name);
   }
   SerializeCatalog();
 

@@ -4,8 +4,10 @@
 
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/mojo_application_manifest.gni")
+import("//testing/test.gni")
 
 group("catalog") {
+  testonly = true
   deps = [
     ":lib",
   ]
@@ -13,10 +15,16 @@ group("catalog") {
 
 source_set("lib") {
   sources = [
+    "builder.cc",
+    "builder.h",
     "catalog.cc",
     "catalog.h",
+    "entry.cc",
+    "entry.h",
     "loader.cc",
     "loader.h",
+    "store.cc",
+    "store.h",
   ]
 
   deps = [
@@ -33,4 +41,17 @@ source_set("lib") {
 mojo_application_manifest("manifest") {
   application_name = "catalog"
   source = "manifest.json"
+}
+
+source_set("unittests") {
+  testonly = true
+  sources = [
+    "builder_unittest.cc",
+  ]
+  deps = [
+    ":lib",
+    "//base",
+    "//mojo/shell/public/cpp",
+    "//testing/gtest",
+  ]
 }
