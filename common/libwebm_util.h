@@ -8,6 +8,7 @@
 #ifndef LIBWEBM_COMMON_LIBWEBM_UTIL_H_
 #define LIBWEBM_COMMON_LIBWEBM_UTIL_H_
 
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
