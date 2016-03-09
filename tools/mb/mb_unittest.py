@@ -113,6 +113,7 @@ TEST_CONFIG = """\
     'unsupported': ['gn', 'fake_feature2'],
   },
   'masters': {
+    'chromium': {},
     'fake_master': {
       'fake_builder': 'gyp_rel_bot',
       'fake_gn_builder': 'gn_rel_bot',
@@ -148,6 +149,46 @@ TEST_CONFIG = """\
 """
 
 
+TEST_BAD_CONFIG = """\
+{
+  'common_dev_configs': ['gn_rel_bot_1'],
+  'configs': {
+    'gn_rel_bot_1': ['gn', 'rel', 'chrome_with_codecs'],
+    'gn_rel_bot_2': ['gn', 'rel', 'bad_nested_config'],
+  },
+  'masters': {
+    'chromium': {
+      'a': 'gn_rel_bot_1',
+      'b': 'gn_rel_bot_2',
+    },
+  },
+  'mixins': {
+    'gn': {'type': 'gn'},
+    'chrome_with_codecs': {
+      'gn_args': 'proprietary_codecs=true',
+    },
+    'bad_nested_config': {
+      'mixins': ['chrome_with_codecs'],
+    },
+    'rel': {
+      'gn_args': 'is_debug=false',
+    },
+  },
+  'private_configs': ['private'],
+  'unsupported_configs': ['unsupported'],
+}
+"""
+
+
+TEST_BAD_CONFIG_ERR = """\
+mb config file /fake_src/tools/mb/mb_config.pyl has problems:
+  Config "gn_rel_bot_1" used by a bot is also listed in "common_dev_configs".
+  Unknown config "unsupported" referenced from "unsupported_configs".
+  Unknown config "private" referenced from "private_configs".
+  Public artifact builder "a" can not contain the "chrome_with_codecs" mixin.
+  Public artifact builder "b" can not contain the "chrome_with_codecs" mixin."""
+
+
 class UnitTest(unittest.TestCase):
   def fake_mbw(self, files=None, win32=False):
     mbw = FakeMBW(win32=win32)
@@ -157,13 +198,19 @@ class UnitTest(unittest.TestCase):
         mbw.files[path] = contents
     return mbw
 
-  def check(self, args, mbw=None, files=None, out=None, err=None, ret=None):
+  def check(self, args, mbw=None, files=None, out=None, err=None, ret=None,
+            exception=None):
     if not mbw:
       mbw = self.fake_mbw(files)
     mbw.ParseArgs(args)
-    actual_ret = mbw.args.func()
-    if ret is not None:
-      self.assertEqual(actual_ret, ret)
+
+    actual_ret = None
+    if exception is not None:
+      self.assertRaisesRegexp(Exception, exception, mbw.args.func)
+    else:
+      actual_ret = mbw.args.func()
+
+    self.assertEqual(actual_ret, ret)
     if out is not None:
       self.assertEqual(mbw.out, out)
     if err is not None:
@@ -363,7 +410,7 @@ class UnitTest(unittest.TestCase):
 
   def test_gyp_crosscompile(self):
     mbw = self.fake_mbw()
-    self.check(['gen', '-c', 'private', '//out/Release'], mbw=mbw)
+    self.check(['gen', '-c', 'private', '//out/Release'], mbw=mbw, ret=0)
     self.assertTrue(mbw.cross_compile)
 
   def test_gyp_gen(self):
@@ -398,9 +445,13 @@ class UnitTest(unittest.TestCase):
     finally:
       sys.stdout = orig_stdout
 
-
   def test_validate(self):
     self.check(['validate'], ret=0)
+
+  def test_bad_validate(self):
+    mbw = self.fake_mbw()
+    mbw.files[mbw.default_config] = TEST_BAD_CONFIG
+    self.check(['validate'], mbw=mbw, exception=TEST_BAD_CONFIG_ERR)
 
 
 if __name__ == '__main__':

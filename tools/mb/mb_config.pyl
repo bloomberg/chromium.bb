@@ -12,24 +12,24 @@
     'android_cast_gyp_debug_static_bot': ['android', 'cast', 'gyp', 'debug_static_bot'],
     'android_clang_asan_gyp_debug_bot': ['android', 'clang', 'asan', 'gyp', 'debug_bot'],
     'android_clang_asan_gyp_debug_trybot': ['android', 'clang', 'asan', 'gyp', 'debug_trybot'],
-    'android_gn_debug_bot': ['android', 'chrome_with_codecs', 'gn', 'debug_bot'],
-    'android_gn_debug_static_bot': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot'],
-    'android_gn_debug_static_bot_arm64': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot', 'arm64'],
-    'android_gn_debug_static_bot_mipsel': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot', 'mipsel'],
-    'android_gn_debug_static_bot_x64': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot', 'x64'],
-    'android_gn_debug_static_bot_x86': ['android', 'chrome_with_codecs', 'gn', 'debug_static_bot', 'x86'],
-    'android_gn_debug_trybot': ['android', 'chrome_with_codecs', 'gn', 'debug_trybot'],
-    'android_gn_debug_trybot_mipsel': ['android', 'chrome_with_codecs', 'gn', 'debug_trybot', 'mipsel'],
-    'android_gn_debug_trybot_x64': ['android', 'chrome_with_codecs', 'gn', 'debug_trybot', 'x64'],
-    'android_gn_debug_trybot_x86': ['android', 'chrome_with_codecs', 'gn', 'debug_trybot', 'x86'],
+    'android_gn_debug_bot': ['android', 'gn', 'debug_bot'],
+    'android_gn_debug_static_bot': ['android', 'gn', 'debug_static_bot'],
+    'android_gn_debug_static_bot_arm64': ['android', 'gn', 'debug_static_bot', 'arm64'],
+    'android_gn_debug_static_bot_mipsel': ['android', 'gn', 'debug_static_bot', 'mipsel'],
+    'android_gn_debug_static_bot_x64': ['android', 'gn', 'debug_static_bot', 'x64'],
+    'android_gn_debug_static_bot_x86': ['android', 'gn', 'debug_static_bot', 'x86'],
+    'android_gn_debug_trybot': ['android', 'gn', 'debug_trybot'],
+    'android_gn_debug_trybot_mipsel': ['android', 'gn', 'debug_trybot', 'mipsel'],
+    'android_gn_debug_trybot_x64': ['android', 'gn', 'debug_trybot', 'x64'],
+    'android_gn_debug_trybot_x86': ['android', 'gn', 'debug_trybot', 'x86'],
     'android_gn_release_bot': ['android', 'gn', 'release_bot'],
     'android_gn_release_trybot': ['android', 'gn', 'release_trybot'],
     'android_gyp_debug_static_bot': ['android', 'gyp', 'debug_static_bot'],
     'android_gyp_debug_static_bot_arm64': ['android', 'gyp', 'debug_static_bot', 'arm64'],
-    'android_gyp_debug_trybot': ['android', 'chrome_with_codecs', 'gyp', 'debug_trybot'],
-    'android_gyp_debug_trybot_arm64': ['android', 'chrome_with_codecs', 'gyp', 'debug_trybot', 'arm64'],
+    'android_gyp_debug_trybot': ['android', 'gyp', 'debug_trybot'],
+    'android_gyp_debug_trybot_arm64': ['android', 'gyp', 'debug_trybot', 'arm64'],
     'android_gyp_release_bot': ['android', 'gyp', 'release_bot'],
-    'android_gyp_release_bot_minimal_symbols': ['android', 'gyp', 'release_bot_minimal_symbols'],
+    'android_without_codecs_gyp_release_bot_minimal_symbols': ['android_without_codecs', 'gyp', 'release_bot_minimal_symbols'],
     'android_gyp_release_trybot': ['android', 'gyp', 'release_trybot'],
     'cast_gn_release_bot': ['cast', 'gn', 'release_bot'],
     'cast_gn_release_trybot': ['cast', 'gn', 'release_trybot'],
@@ -96,7 +96,7 @@
     'noswarming_gyp_release_bot_mac_strip': ['noswarming', 'gyp', 'release_bot', 'mac_strip'],
     'noswarming_gyp_release_bot_x86': ['noswarming', 'gyp', 'release_bot', 'x86'],
 
-    'swarming_android_gn_release_bot_minimal_symbols': ['swarming', 'android', 'chrome_with_codecs', 'gn', 'release_bot_minimal_symbols'],
+    'swarming_android_gn_release_bot_minimal_symbols': ['swarming', 'android', 'gn', 'release_bot_minimal_symbols'],
     'swarming_asan_lsan_gyp_release_trybot': ['swarming', 'asan', 'lsan', 'release_trybot'],
     'swarming_msan_gyp_release_trybot': ['swarming', 'chromeos', 'msan', 'gyp', 'release_trybot'],
     'swarming_deterministic_gyp_release_bot': ['swarming', 'deterministic', 'gyp', 'release_bot'],
@@ -145,7 +145,6 @@
     'swarming_tsan_gyp_release_trybot': ['swarming', 'disable_nacl', 'tsan', 'gyp', 'release_trybot'],
 
     # Configurations that build with proprietary codecs enabled.
-    'android_gn_release_bot_chrome_with_codecs': ['android', 'gn', 'release_bot', 'chrome_with_codecs'],
     'gn_debug_bot_minimal_symbols_chrome_with_codecs': ['gn', 'debug_bot_minimal_symbols', 'chrome_with_codecs'],
     'gn_debug_static_bot_chrome_with_codecs': ['gn', 'debug_static_bot', 'chrome_with_codecs'],
     'gn_release_bot_chrome_with_codecs': ['gn', 'release_bot', 'chrome_with_codecs'],
@@ -186,7 +185,15 @@
   # This is a dict mapping a given 'mixin' name to a dict of settings that
   # mb should use. See //tools/mb/docs/user_guide.md for more information.
   'mixins': {
+    # We build Android with codecs on most bots to ensure maximum test coverage,
+    # but use 'android_without_codecs' on bots responsible for building publicly
+    # advertised non-Official Android builds -- which are not allowed to have
+    # proprietary codecs enabled.
     'android': {
+      'mixins': ['android_without_codecs', 'chrome_with_codecs'],
+    },
+
+    'android_without_codecs': {
       'gn_args': 'target_os="android"',
       'gyp_defines': 'OS=android',
     },
@@ -490,12 +497,16 @@
     'chrome.continuous': {
       'precise64 trunk': 'gn_official',
     },
+    # Take care when changing any of these builders to ensure that you do not
+    # include a configuration with 'chrome_with_codecs' since these builders
+    # generated publicly advertised non-Official builds which are not allowed to
+    # have proprietary codecs enabled.
     'chromium': {
       'Win': 'noswarming_gyp_release_bot',
       'Mac': 'noswarming_gyp_release_bot_mac_strip',
       'Linux x64': 'noswarming_gn_release_bot',
       'Linux': 'noswarming_gyp_release_bot_x86',
-      'Android': 'android_gyp_release_bot_minimal_symbols',
+      'Android': 'android_without_codecs_gyp_release_bot_minimal_symbols',
     },
     'chromium.android': {
       'Android GN Builder (dbg)': 'android_gn_debug_bot',
@@ -680,7 +691,7 @@
       'Linux Release dEQP (NVIDIA)': 'none',
     },
     'chromium.webrtc.fyi': {
-      'Android GN': 'android_gn_release_bot_chrome_with_codecs',
+      'Android GN': 'android_gn_release_bot',
       'Android GN (dbg)': 'android_gn_debug_bot',
       'Linux Builder': 'gn_release_bot_chrome_with_codecs',
       'Mac GN': 'gn_release_bot_chrome_with_codecs',

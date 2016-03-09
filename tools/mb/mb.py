@@ -305,6 +305,28 @@ class MetaBuildWrapper(object):
       if not mixin in referenced_mixins:
         errs.append('Unreferenced mixin "%s".' % mixin)
 
+    # Check that 'chromium' bots which build public artifacts do not include
+    # the chrome_with_codecs 'mixin'.
+    if not 'chromium' in self.masters:
+      errs.append('Missing "chromium" master. Please update this proprietary '
+                  'codecs check with the name of the master responsible for '
+                  'public build artifacts.')
+    else:
+      for builder in self.masters['chromium']:
+        config = self.masters['chromium'][builder]
+        def RecurseMixins(current_mixin):
+          if current_mixin == 'chrome_with_codecs':
+            errs.append('Public artifact builder "%s" can not contain the '
+                        '"chrome_with_codecs" mixin.' % builder)
+            return
+          if not 'mixins' in self.mixins[current_mixin]:
+            return
+          for mixin in self.mixins[current_mixin]['mixins']:
+            RecurseMixins(mixin)
+
+        for mixin in self.configs[config]:
+          RecurseMixins(mixin)
+
     if errs:
       raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
                     '\n  ' + '\n  '.join(errs))
