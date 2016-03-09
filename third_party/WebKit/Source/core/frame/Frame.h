@@ -131,7 +131,7 @@ public:
     void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
     bool isLoading() const { return m_isLoading; }
 
-    virtual WindowProxyManager* windowProxyManager() const = 0;
+    virtual WindowProxyManager* getWindowProxyManager() const = 0;
 
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);

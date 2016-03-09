@@ -65,7 +65,7 @@ private:
     RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
     // Internal Frame helper overrides:
-    WindowProxyManager* windowProxyManager() const override { return m_windowProxyManager.get(); }
+    WindowProxyManager* getWindowProxyManager() const override { return m_windowProxyManager.get(); }
 
     RemoteFrameClient* remoteFrameClient() const;
 

@@ -383,9 +383,9 @@ void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame, const cha
     localDOMWindow()->printErrorMessage(message);
 }
 
-WindowProxyManager* LocalFrame::windowProxyManager() const
+WindowProxyManager* LocalFrame::getWindowProxyManager() const
 {
-    return m_script->windowProxyManager();
+    return m_script->getWindowProxyManager();
 }
 
 void LocalFrame::disconnectOwnerElement()

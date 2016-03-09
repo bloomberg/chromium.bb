@@ -44,7 +44,7 @@ public:
     {
         return adoptRef(new AnimatableShapeValue(shape));
     }
-    ShapeValue* shapeValue() const { return m_shape.get(); }
+    ShapeValue* getShapeValue() const { return m_shape.get(); }
 
 protected:
     PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;

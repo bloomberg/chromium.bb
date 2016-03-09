@@ -28,7 +28,7 @@ void SampledEffect::removeReplacedInterpolations(const HashSet<PropertyHandle>& 
 {
     size_t newSize = 0;
     for (auto& interpolation : m_interpolations) {
-        if (!replacedProperties.contains(interpolation->property()))
+        if (!replacedProperties.contains(interpolation->getProperty()))
             m_interpolations[newSize++].swap(interpolation);
     }
     m_interpolations.shrink(newSize);
@@ -38,7 +38,7 @@ void SampledEffect::updateReplacedProperties(HashSet<PropertyHandle>& replacedPr
 {
     for (const auto& interpolation : m_interpolations) {
         if (!interpolation->dependsOnUnderlyingValue())
-            replacedProperties.add(interpolation->property());
+            replacedProperties.add(interpolation->getProperty());
     }
 }
 

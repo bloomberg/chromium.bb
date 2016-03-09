@@ -170,7 +170,7 @@ inline void v8SetReturnValueString(const CallbackInfo& info, const String& strin
         v8SetReturnValueEmptyString(info);
         return;
     }
-    V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
+    V8PerIsolateData::from(isolate)->getStringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
 }
 
 template<typename CallbackInfo>
@@ -180,7 +180,7 @@ inline void v8SetReturnValueStringOrNull(const CallbackInfo& info, const String&
         v8SetReturnValueNull(info);
         return;
     }
-    V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
+    V8PerIsolateData::from(isolate)->getStringCache()->setReturnValueFromString(info.GetReturnValue(), string.impl());
 }
 
 template<typename CallbackInfo>
@@ -420,14 +420,14 @@ inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const String& string
 {
     if (string.isNull())
         return v8::String::Empty(isolate);
-    return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(isolate, string.impl());
+    return V8PerIsolateData::from(isolate)->getStringCache()->v8ExternalString(isolate, string.impl());
 }
 
 inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const CompressibleString& string)
 {
     if (string.isNull())
         return v8::String::Empty(isolate);
-    return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(isolate, string);
+    return V8PerIsolateData::from(isolate)->getStringCache()->v8ExternalString(isolate, string);
 }
 
 inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, int length = -1)

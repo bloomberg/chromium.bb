@@ -45,7 +45,7 @@ namespace {
 void copyToActiveInterpolationsMap(const Vector<RefPtr<Interpolation>>& source, AnimationStack::PropertyHandleFilter propertyHandleFilter, ActiveInterpolationsMap& target)
 {
     for (const auto& interpolation : source) {
-        PropertyHandle property = interpolation->property();
+        PropertyHandle property = interpolation->getProperty();
         if (propertyHandleFilter && !propertyHandleFilter(property))
             continue;
         ActiveInterpolationsMap::AddResult entry = target.add(property, ActiveInterpolations(1));

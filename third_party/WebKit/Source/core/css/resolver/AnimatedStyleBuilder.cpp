@@ -369,7 +369,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setBottom(animatableValueToLength(value, state));
         return;
     case CSSPropertyBoxShadow:
-        style->setBoxShadow(toAnimatableShadow(value)->shadowList());
+        style->setBoxShadow(toAnimatableShadow(value)->getShadowList());
         return;
     case CSSPropertyClip:
         style->setClip(animatableValueToLengthBox(value, state));
@@ -531,7 +531,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setTextIndent(animatableValueToLength(value, state));
         return;
     case CSSPropertyTextShadow:
-        style->setTextShadow(toAnimatableShadow(value)->shadowList());
+        style->setTextShadow(toAnimatableShadow(value)->getShadowList());
         return;
     case CSSPropertyTop:
         style->setTop(animatableValueToLength(value, state));
@@ -543,7 +543,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setVerticalBorderSpacing(animatableValueClampTo<unsigned short>(value));
         return;
     case CSSPropertyWebkitClipPath:
-        style->setClipPath(toAnimatableClipPathOperation(value)->clipPathOperation());
+        style->setClipPath(toAnimatableClipPathOperation(value)->getClipPathOperation());
         return;
     case CSSPropertyColumnCount:
         style->setColumnCount(clampTo<unsigned short>(round(toAnimatableDouble(value)->toDouble()), 1));
@@ -599,7 +599,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setPerspectiveOrigin(animatableValueToLengthPoint(value, state));
         return;
     case CSSPropertyShapeOutside:
-        style->setShapeOutside(toAnimatableShapeValue(value)->shapeValue());
+        style->setShapeOutside(toAnimatableShapeValue(value)->getShapeValue());
         return;
     case CSSPropertyShapeMargin:
         style->setShapeMargin(animatableValueToLength(value, state, ValueRangeNonNegative));

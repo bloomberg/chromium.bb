@@ -28,7 +28,7 @@ class InterpolationType {
 public:
     virtual ~InterpolationType() { ASSERT_NOT_REACHED(); }
 
-    PropertyHandle property() const { return m_property; }
+    PropertyHandle getProperty() const { return m_property; }
 
     // ConversionCheckers are returned from calls to maybeConvertPairwise() and maybeConvertSingle() to enable the caller to check
     // whether the result is still valid given changes in the InterpolationEnvironment and underlying InterpolationValue.

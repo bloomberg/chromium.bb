@@ -17,7 +17,7 @@ protected:
         : InterpolationType(PropertyHandle(attribute))
     { }
 
-    const QualifiedName& attribute() const { return property().svgAttribute(); }
+    const QualifiedName& attribute() const { return getProperty().svgAttribute(); }
 
     virtual InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const;
     virtual InterpolationValue maybeConvertSVGValue(const SVGPropertyBase&) const = 0;

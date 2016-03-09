@@ -54,7 +54,7 @@ DragEvent::DragEvent(const AtomicString& eventType, bool canBubble, bool cancela
 
 DragEvent::DragEvent(const AtomicString& type, const DragEventInit& initializer)
     : MouseEvent(type, initializer)
-    , m_dataTransfer(initializer.dataTransfer())
+    , m_dataTransfer(initializer.getDataTransfer())
 {
 }
 

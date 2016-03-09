@@ -40,7 +40,7 @@ public:
         return adoptRefWillBeNoop(new DragEvent(type, initializer));
     }
 
-    DataTransfer* dataTransfer() const override { return isDragEvent() ? m_dataTransfer.get() : nullptr; }
+    DataTransfer* getDataTransfer() const override { return isDragEvent() ? m_dataTransfer.get() : nullptr; }
 
     bool isDragEvent() const override;
     bool isMouseEvent() const override;

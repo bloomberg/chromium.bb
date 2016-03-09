@@ -43,7 +43,7 @@ public:
     {
         return adoptRef(new AnimatableShadow(shadowList, currentColor));
     }
-    ShadowList* shadowList() const { return m_shadowList.get(); }
+    ShadowList* getShadowList() const { return m_shadowList.get(); }
 
 protected:
     PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;

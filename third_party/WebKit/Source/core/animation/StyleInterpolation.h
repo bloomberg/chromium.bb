@@ -39,7 +39,7 @@ public:
 
     CSSPropertyID id() const { return m_id; }
 
-    PropertyHandle property() const final
+    PropertyHandle getProperty() const final
     {
         return PropertyHandle(id());
     }

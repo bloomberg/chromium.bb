@@ -5,5 +5,5 @@
 // https://html.spec.whatwg.org/multipage/interaction.html#drageventinit
 
 dictionary DragEventInit : MouseEventInit {
-    DataTransfer? dataTransfer;
+    [ImplementedAs=getDataTransfer] DataTransfer? dataTransfer;
 };

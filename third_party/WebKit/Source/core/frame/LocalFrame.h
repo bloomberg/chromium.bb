@@ -196,7 +196,7 @@ private:
     bool shouldScrollTopControls(const FloatSize& delta) const;
 
     // Internal Frame helper overrides:
-    WindowProxyManager* windowProxyManager() const override;
+    WindowProxyManager* getWindowProxyManager() const override;
 
     String localLayerTreeAsText(unsigned flags) const;
 

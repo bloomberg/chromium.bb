@@ -26,7 +26,7 @@ public:
         return adoptRef(new InvalidatableInterpolation(property, interpolationTypes, startKeyframe, endKeyframe));
     }
 
-    PropertyHandle property() const final { return m_property; }
+    PropertyHandle getProperty() const final { return m_property; }
     virtual void interpolate(int iteration, double fraction);
     bool dependsOnUnderlyingValue() const final;
     virtual void apply(InterpolationEnvironment&) const { ASSERT_NOT_REACHED(); }

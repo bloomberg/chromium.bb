@@ -79,7 +79,7 @@ public:
     Node* toElement() const;
     Node* fromElement() const;
 
-    virtual DataTransfer* dataTransfer() const { return nullptr; }
+    virtual DataTransfer* getDataTransfer() const { return nullptr; }
 
     bool fromTouch() const { return m_syntheticEventType == PlatformMouseEvent::FromTouch; }
 

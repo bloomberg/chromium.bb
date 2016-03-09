@@ -44,7 +44,7 @@ public:
     {
         return adoptRef(new AnimatableClipPathOperation(operation));
     }
-    ClipPathOperation* clipPathOperation() const { return m_operation.get(); }
+    ClipPathOperation* getClipPathOperation() const { return m_operation.get(); }
 
 protected:
     PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;

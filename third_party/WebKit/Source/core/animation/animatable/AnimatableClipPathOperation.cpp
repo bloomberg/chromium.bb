@@ -39,8 +39,8 @@ bool AnimatableClipPathOperation::usesDefaultInterpolationWith(const AnimatableV
     if (m_operation->type() != ClipPathOperation::SHAPE || toOperation->m_operation->type() != ClipPathOperation::SHAPE)
         return true;
 
-    const BasicShape* fromShape = toShapeClipPathOperation(clipPathOperation())->basicShape();
-    const BasicShape* toShape = toShapeClipPathOperation(toOperation->clipPathOperation())->basicShape();
+    const BasicShape* fromShape = toShapeClipPathOperation(getClipPathOperation())->basicShape();
+    const BasicShape* toShape = toShapeClipPathOperation(toOperation->getClipPathOperation())->basicShape();
 
     return !fromShape->canBlend(toShape);
 }
@@ -51,8 +51,8 @@ PassRefPtr<AnimatableValue> AnimatableClipPathOperation::interpolateTo(const Ani
         return defaultInterpolateTo(this, value, fraction);
 
     const AnimatableClipPathOperation* toOperation = toAnimatableClipPathOperation(value);
-    const BasicShape* fromShape = toShapeClipPathOperation(clipPathOperation())->basicShape();
-    const BasicShape* toShape = toShapeClipPathOperation(toOperation->clipPathOperation())->basicShape();
+    const BasicShape* fromShape = toShapeClipPathOperation(getClipPathOperation())->basicShape();
+    const BasicShape* toShape = toShapeClipPathOperation(toOperation->getClipPathOperation())->basicShape();
 
     return AnimatableClipPathOperation::create(ShapeClipPathOperation::create(toShape->blend(fromShape, fraction)).get());
 }

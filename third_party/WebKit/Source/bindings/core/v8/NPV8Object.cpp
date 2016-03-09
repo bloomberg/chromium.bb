@@ -140,7 +140,7 @@ NPObject* npCreateV8ScriptObject(v8::Isolate* isolate, NPP npp, v8::Local<v8::Ob
     if (V8PerContextData* perContextData = V8PerContextData::from(object->CreationContext())) {
         int v8ObjectHash = object->GetIdentityHash();
         ASSERT(v8ObjectHash);
-        V8NPObjectMap* v8NPObjectMap = perContextData->v8NPObjectMap();
+        V8NPObjectMap* v8NPObjectMap = perContextData->getV8NPObjectMap();
         V8NPObjectMap::iterator iter = v8NPObjectMap->find(v8ObjectHash);
         if (iter != v8NPObjectMap->end()) {
             V8NPObjectVector& objects = iter->value;
@@ -195,7 +195,7 @@ void disposeUnderlyingV8Object(v8::Isolate* isolate, NPObject* npObject)
     v8::Local<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NpObject->v8Object);
     ASSERT(!v8Object->CreationContext().IsEmpty());
     if (V8PerContextData* perContextData = V8PerContextData::from(v8Object->CreationContext())) {
-        V8NPObjectMap* v8NPObjectMap = perContextData->v8NPObjectMap();
+        V8NPObjectMap* v8NPObjectMap = perContextData->getV8NPObjectMap();
         int v8ObjectHash = v8Object->GetIdentityHash();
         ASSERT(v8ObjectHash);
         V8NPObjectMap::iterator iter = v8NPObjectMap->find(v8ObjectHash);

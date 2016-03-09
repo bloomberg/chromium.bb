@@ -72,7 +72,7 @@ public:
         Microtask::performCheckpoint(m_workerThread->isolate());
         if (WorkerGlobalScope* globalScope = m_workerThread->workerGlobalScope()) {
             if (WorkerOrWorkletScriptController* scriptController = globalScope->scriptController())
-                scriptController->rejectedPromises()->processQueue();
+                scriptController->getRejectedPromises()->processQueue();
             if (globalScope->isClosing()) {
                 m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
                 m_workerThread->shutdown();

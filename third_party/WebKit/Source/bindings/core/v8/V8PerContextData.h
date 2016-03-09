@@ -88,7 +88,7 @@ public:
 
     v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
 
-    V8NPObjectMap* v8NPObjectMap() { return &m_v8NPObjectMap; }
+    V8NPObjectMap* getV8NPObjectMap() { return &m_v8NPObjectMap; }
 
     void addCustomElementBinding(CustomElementDefinition*, PassOwnPtr<CustomElementBinding>);
 

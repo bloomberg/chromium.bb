@@ -17,7 +17,7 @@ protected:
         : InterpolationType(PropertyHandle(property))
     { }
 
-    CSSPropertyID cssProperty() const { return property().cssProperty(); }
+    CSSPropertyID cssProperty() const { return getProperty().cssProperty(); }
 
     virtual InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const;
     virtual InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const { ASSERT_NOT_REACHED(); return nullptr; }

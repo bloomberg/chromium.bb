@@ -49,7 +49,7 @@ namespace blink {
 // static
 Entry* DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionContext, DataTransferItem& item)
 {
-    if (!item.dataObjectItem()->isFilename())
+    if (!item.getDataObjectItem()->isFilename())
         return 0;
 
     // For dragged files getAsFile must be pretty lightweight.
@@ -59,7 +59,7 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionC
         return 0;
     ASSERT(file->isFile());
 
-    DOMFileSystem* domFileSystem = DraggedIsolatedFileSystemImpl::getDOMFileSystem(item.dataTransfer()->dataObject(), executionContext);
+    DOMFileSystem* domFileSystem = DraggedIsolatedFileSystemImpl::getDOMFileSystem(item.getDataTransfer()->dataObject(), executionContext);
     if (!domFileSystem) {
         // IsolatedFileSystem may not be enabled.
         return 0;

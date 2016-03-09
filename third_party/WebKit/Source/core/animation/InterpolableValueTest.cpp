@@ -19,7 +19,7 @@ public:
         return adoptRef(new SampleInterpolation(std::move(start), std::move(end)));
     }
 
-    PropertyHandle property() const override
+    PropertyHandle getProperty() const override
     {
         return PropertyHandle(CSSPropertyBackgroundColor);
     }

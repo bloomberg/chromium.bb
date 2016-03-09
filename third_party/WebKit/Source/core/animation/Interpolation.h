@@ -25,7 +25,7 @@ public:
     virtual bool isInvalidatableInterpolation() const { return false; }
     virtual bool isLegacyStyleInterpolation() const { return false; }
 
-    virtual PropertyHandle property() const = 0;
+    virtual PropertyHandle getProperty() const = 0;
     virtual bool dependsOnUnderlyingValue() const { return false; }
 
 protected:

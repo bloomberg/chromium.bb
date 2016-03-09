@@ -288,7 +288,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
     WorkerOrWorkletScriptController* scriptController = toWorkerGlobalScope(executionContext)->scriptController();
     ASSERT(scriptController);
 
-    promiseRejectHandler(data, *scriptController->rejectedPromises(), String());
+    promiseRejectHandler(data, *scriptController->getRejectedPromises(), String());
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)

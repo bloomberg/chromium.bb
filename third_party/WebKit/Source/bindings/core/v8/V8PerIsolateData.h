@@ -76,7 +76,7 @@ public:
 
     v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
 
-    StringCache* stringCache() { return m_stringCache.get(); }
+    StringCache* getStringCache() { return m_stringCache.get(); }
 
     v8::Persistent<v8::Value>& ensureLiveRoot();
 

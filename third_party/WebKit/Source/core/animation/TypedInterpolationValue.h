@@ -27,7 +27,7 @@ public:
 
     const InterpolationType& type() const { return m_type; }
     const InterpolableValue& interpolableValue() const { return *m_value.interpolableValue; }
-    const NonInterpolableValue* nonInterpolableValue() const { return m_value.nonInterpolableValue.get(); }
+    const NonInterpolableValue* getNonInterpolableValue() const { return m_value.nonInterpolableValue.get(); }
     const InterpolationValue& value() const { return m_value; }
 
     InterpolationValue& mutableValue() { return m_value; }

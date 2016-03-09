@@ -118,7 +118,7 @@ public:
         return m_atomicString;
     }
 
-    const CompressibleString& compressibleString() { return m_compressibleString; }
+    const CompressibleString& getCompressibleString() { return m_compressibleString; }
 
 protected:
     // A shallow copy of the string. Keeps the string buffer alive until the V8 engine garbage collects it.

@@ -179,7 +179,7 @@ void InvalidatableInterpolation::applyStack(const ActiveInterpolations& interpol
         if (interpolations.size() == 1) {
             if (firstValue) {
                 firstInterpolation.setFlagIfInheritUsed(environment);
-                firstValue->type().apply(firstValue->interpolableValue(), firstValue->nonInterpolableValue(), environment);
+                firstValue->type().apply(firstValue->interpolableValue(), firstValue->getNonInterpolableValue(), environment);
             }
             return;
         }

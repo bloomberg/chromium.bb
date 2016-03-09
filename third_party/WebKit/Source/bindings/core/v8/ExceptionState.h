@@ -116,7 +116,7 @@ public:
     }
 
 #if ENABLE(ASSERT)
-    OnStackObjectChecker& onStackObjectChecker() { return m_onStackObjectChecker; }
+    OnStackObjectChecker& getOnStackObjectChecker() { return m_onStackObjectChecker; }
 #endif
 
 protected:

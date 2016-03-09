@@ -34,32 +34,32 @@ namespace blink {
 StringCacheMapTraits::MapType* StringCacheMapTraits::MapFromWeakCallbackInfo(
     const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
 {
-    return &(V8PerIsolateData::from(data.GetIsolate())->stringCache()->m_stringCache);
+    return &(V8PerIsolateData::from(data.GetIsolate())->getStringCache()->m_stringCache);
 }
 
 void StringCacheMapTraits::Dispose(
     v8::Isolate* isolate, v8::Global<v8::String> value, StringImpl* key)
 {
-    V8PerIsolateData::from(isolate)->stringCache()->InvalidateLastString();
+    V8PerIsolateData::from(isolate)->getStringCache()->InvalidateLastString();
     key->deref();
 }
 
 void StringCacheMapTraits::DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
 {
-    V8PerIsolateData::from(data.GetIsolate())->stringCache()->InvalidateLastString();
+    V8PerIsolateData::from(data.GetIsolate())->getStringCache()->InvalidateLastString();
     data.GetParameter()->deref();
 }
 
 void StringCacheMapTraits::OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
 {
-    V8PerIsolateData::from(data.GetIsolate())->stringCache()->InvalidateLastString();
+    V8PerIsolateData::from(data.GetIsolate())->getStringCache()->InvalidateLastString();
 }
 
 
 CompressibleStringCacheMapTraits::MapType* CompressibleStringCacheMapTraits::MapFromWeakCallbackInfo(
     const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
 {
-    return &(V8PerIsolateData::from(data.GetIsolate())->stringCache()->m_compressibleStringCache);
+    return &(V8PerIsolateData::from(data.GetIsolate())->getStringCache()->m_compressibleStringCache);
 }
 
 void CompressibleStringCacheMapTraits::Dispose(

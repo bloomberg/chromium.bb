@@ -88,7 +88,7 @@ public:
     // Used by V8 bindings:
     v8::Local<v8::Context> context() { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
 
-    RejectedPromises* rejectedPromises() const { return m_rejectedPromises.get(); }
+    RejectedPromises* getRejectedPromises() const { return m_rejectedPromises.get(); }
 
     DECLARE_TRACE();
 

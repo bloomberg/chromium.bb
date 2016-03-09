@@ -155,7 +155,7 @@ public:
 
     v8::Isolate* isolate() const { return m_windowProxyManager->isolate(); }
 
-    WindowProxyManager* windowProxyManager() const { return m_windowProxyManager.get(); }
+    WindowProxyManager* getWindowProxyManager() const { return m_windowProxyManager.get(); }
 
 private:
     explicit ScriptController(LocalFrame*);

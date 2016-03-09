@@ -63,7 +63,7 @@ private:
     {
         ASSERT(result);
         ASSERT(&result->type() == &m_type);
-        ASSERT(result->nonInterpolableValue() == m_nonInterpolableValue.get());
+        ASSERT(result->getNonInterpolableValue() == m_nonInterpolableValue.get());
         m_start->interpolate(*m_end, fraction, *result->mutableValue().interpolableValue);
     }
 

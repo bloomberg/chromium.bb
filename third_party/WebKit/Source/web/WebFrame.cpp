@@ -76,8 +76,8 @@ bool WebFrame::swap(WebFrame* frame)
 
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     HashMap<DOMWrapperWorld*, v8::Local<v8::Object>> globals;
-    oldFrame->windowProxyManager()->clearForNavigation();
-    oldFrame->windowProxyManager()->releaseGlobals(globals);
+    oldFrame->getWindowProxyManager()->clearForNavigation();
+    oldFrame->getWindowProxyManager()->releaseGlobals(globals);
 
     // Although the Document in this frame is now unloaded, many resources
     // associated with the frame itself have not yet been freed yet.
@@ -105,7 +105,7 @@ bool WebFrame::swap(WebFrame* frame)
         toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name, uniqueName);
     }
 
-    frame->toImplBase()->frame()->windowProxyManager()->setGlobals(globals);
+    frame->toImplBase()->frame()->getWindowProxyManager()->setGlobals(globals);
 
     m_parent = nullptr;
 

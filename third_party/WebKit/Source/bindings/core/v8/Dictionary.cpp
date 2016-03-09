@@ -63,7 +63,7 @@ Dictionary::Dictionary(const v8::Local<v8::Value>& options, v8::Isolate* isolate
     ASSERT(m_isolate);
     ASSERT(m_exceptionState);
 #if ENABLE(ASSERT)
-    m_exceptionState->onStackObjectChecker().add(this);
+    m_exceptionState->getOnStackObjectChecker().add(this);
 #endif
 }
 
@@ -71,7 +71,7 @@ Dictionary::~Dictionary()
 {
 #if ENABLE(ASSERT)
     if (m_exceptionState)
-        m_exceptionState->onStackObjectChecker().remove(this);
+        m_exceptionState->getOnStackObjectChecker().remove(this);
 #endif
 }
 
@@ -81,12 +81,12 @@ Dictionary& Dictionary::operator=(const Dictionary& optionsObject)
     m_isolate = optionsObject.m_isolate;
 #if ENABLE(ASSERT)
     if (m_exceptionState)
-        m_exceptionState->onStackObjectChecker().remove(this);
+        m_exceptionState->getOnStackObjectChecker().remove(this);
 #endif
     m_exceptionState = optionsObject.m_exceptionState;
 #if ENABLE(ASSERT)
     if (m_exceptionState)
-        m_exceptionState->onStackObjectChecker().add(this);
+        m_exceptionState->getOnStackObjectChecker().add(this);
 #endif
     return *this;
 }
