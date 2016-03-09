@@ -640,8 +640,7 @@ int main(int argc, const char* argv[]) {
   // matches |g|.
   auto method_decl_matcher =
       id("decl",
-         cxxMethodDecl(isBlinkOrWTFMethod(),
-                       unless(anyOf(is_generated,
+         cxxMethodDecl(unless(anyOf(is_generated,
                                     // Overloaded operators have special names
                                     // and should never be renamed.
                                     isOverloadedOperator(),
@@ -649,7 +648,11 @@ int main(int argc, const char* argv[]) {
                                     // conversion functions should not be
                                     // considered for renaming.
                                     cxxConstructorDecl(), cxxDestructorDecl(),
-                                    cxxConversionDecl()))));
+                                    cxxConversionDecl())),
+                       // Check this last after excluding things, to avoid
+                       // asserts about overriding non-blink and blink for the
+                       // same method.
+                       isBlinkOrWTFMethod()));
   MethodDeclRewriter method_decl_rewriter(&replacements);
   match_finder.addMatcher(method_decl_matcher, &method_decl_rewriter);
 
