@@ -579,6 +579,7 @@ DEFINE_TRACE(TreeScope)
     visitor->trace(m_imageMapsByName);
     visitor->trace(m_labelsByForAttribute);
     visitor->trace(m_scopedStyleResolver);
+    visitor->trace(m_radioButtonGroupScope);
 }
 
 } // namespace blink

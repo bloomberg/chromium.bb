@@ -29,6 +29,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/DocumentOrderedMap.h"
+#include "core/html/forms/RadioButtonGroupScope.h"
 #include "core/layout/HitTestRequest.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
@@ -102,6 +103,8 @@ public:
     ContainerNode& rootNode() const { return *m_rootNode; }
 
     IdTargetObserverRegistry& idTargetObserverRegistry() const { return *m_idTargetObserverRegistry.get(); }
+
+    RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
 
 #if !ENABLE(OILPAN)
     // Nodes belonging to this scope hold guard references -
@@ -195,6 +198,8 @@ private:
     OwnPtrWillBeMember<ScopedStyleResolver> m_scopedStyleResolver;
 
     mutable RefPtrWillBeMember<DOMSelection> m_selection;
+
+    RadioButtonGroupScope m_radioButtonGroupScope;
 };
 
 inline bool TreeScope::hasElementWithId(const AtomicString& id) const

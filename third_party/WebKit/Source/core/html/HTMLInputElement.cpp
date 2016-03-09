@@ -173,10 +173,10 @@ HTMLInputElement::~HTMLInputElement()
     // Need to remove form association while this is still an HTMLInputElement
     // so that virtual functions are called correctly.
     setForm(0);
-    // setForm(0) may register this to a document-level radio button group.
+    // setForm(0) may register this to a TreeScope-level radio button group.
     // We should unregister it to avoid accessing a deleted object.
     if (type() == InputTypeNames::radio)
-        document().formController().radioButtonGroupScope().removeButton(this);
+        treeScope().radioButtonGroupScope().removeButton(this);
 
     // TODO(dtapuska): Make this passive touch listener see crbug.com/584438
     if (m_hasTouchEventHandler && document().frameHost())
@@ -1546,7 +1546,7 @@ void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
 
     // FIXME: Remove type check.
     if (type() == InputTypeNames::radio)
-        oldDocument.formController().radioButtonGroupScope().removeButton(this);
+        treeScope().radioButtonGroupScope().removeButton(this);
 
     updateTouchEventHandlerRegistry();
 
@@ -1761,7 +1761,7 @@ RadioButtonGroupScope* HTMLInputElement::radioButtonGroupScope() const
     if (HTMLFormElement* formElement = form())
         return &formElement->radioButtonGroupScope();
     if (inDocument())
-        return &document().formController().radioButtonGroupScope();
+        return &treeScope().radioButtonGroupScope();
     return nullptr;
 }
 

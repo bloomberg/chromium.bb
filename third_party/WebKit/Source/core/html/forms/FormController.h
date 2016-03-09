@@ -22,7 +22,6 @@
 #ifndef FormController_h
 #define FormController_h
 
-#include "core/html/forms/RadioButtonGroupScope.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
@@ -100,8 +99,6 @@ public:
     ~FormController();
     DECLARE_TRACE();
 
-    RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
-
     void registerStatefulFormControl(HTMLFormControlElementWithState&);
     void unregisterStatefulFormControl(HTMLFormControlElementWithState&);
     // This should be callled only by Document::formElementsState().
@@ -119,7 +116,6 @@ private:
     FormControlState takeStateForFormElement(const HTMLFormControlElementWithState&);
     static void formStatesFromStateVector(const Vector<String>&, SavedFormStateMap&);
 
-    RadioButtonGroupScope m_radioButtonGroupScope;
     RefPtrWillBeMember<DocumentState> m_documentState;
     SavedFormStateMap m_savedFormStateMap;
     OwnPtrWillBeMember<FormKeyGenerator> m_formKeyGenerator;
