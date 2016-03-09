@@ -29,6 +29,7 @@ class CastMetricsHelperStub : public CastMetricsHelper {
   std::string GetMetricsNameWithAppName(
       const std::string& prefix, const std::string& suffix) const override;
   void SetMetricsSink(MetricsSink* delegate) override;
+  void RecordSimpleAction(const std::string& action) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastMetricsHelperStub);
@@ -78,6 +79,9 @@ void CastMetricsHelperStub::SetMetricsSink(MetricsSink* delegate) {
 }
 
 }  // namespace
+
+void CastMetricsHelperStub::RecordSimpleAction(const std::string& action) {
+}
 
 void InitializeMetricsHelperForTesting() {
   if (!stub_instance_exists) {

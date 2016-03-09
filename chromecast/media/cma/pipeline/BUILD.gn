@@ -32,6 +32,7 @@ source_set("pipeline") {
 
   deps = [
     "//base",
+    "//chromecast/base/metrics:metrics",
     "//chromecast/media/base",
     "//chromecast/media/cdm",
     "//chromecast/media/cma/backend",

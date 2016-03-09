@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "chromecast/media/cma/base/buffering_controller.h"
 #include "chromecast/media/cma/base/buffering_state.h"
@@ -78,6 +79,11 @@ MediaPipelineImpl::~MediaPipelineImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   weak_factory_.InvalidateWeakPtrs();
+
+  if (backend_state_ != BACKEND_STATE_UNINITIALIZED &&
+      backend_state_ != BACKEND_STATE_INITIALIZED)
+    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+        "Cast.Platform.Ended");
 
   // Since av pipeline still need to access device components in their
   // destructor, it's important to delete them first.
@@ -198,6 +204,8 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
     return;
   }
   backend_state_ = BACKEND_STATE_PLAYING;
+  metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+      "Cast.Platform.Playing");
 
   // Enable time updates.
   statistics_rolling_counter_ = 0;
@@ -249,6 +257,8 @@ void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
   // which may be invalidated later, to hardware. (b/25342604)
   CHECK(media_pipeline_backend_->Stop());
   backend_state_ = BACKEND_STATE_INITIALIZED;
+  metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+      "Cast.Platform.Ended");
 
   // 3. Flush both the audio and video pipeline. This will flush the frame
   // provider and invalidate all the unreleased buffers.
@@ -270,6 +280,9 @@ void MediaPipelineImpl::Stop() {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(audio_pipeline_ || video_pipeline_);
+  if (backend_state_ != BACKEND_STATE_UNINITIALIZED)
+    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+        "Cast.Platform.Ended");
 
   // Cancel pending flush callbacks since we are about to stop/shutdown
   // audio/video pipelines. This will ensure A/V Flush won't happen in
@@ -305,10 +318,14 @@ void MediaPipelineImpl::SetPlaybackRate(double rate) {
     if (backend_state_ == BACKEND_STATE_PAUSED) {
       media_pipeline_backend_->Resume();
       backend_state_ = BACKEND_STATE_PLAYING;
+      metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+          "Cast.Platform.Playing");
     }
   } else if (backend_state_ == BACKEND_STATE_PLAYING) {
     media_pipeline_backend_->Pause();
     backend_state_ = BACKEND_STATE_PAUSED;
+    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+        "Cast.Platform.Pause");
   }
 }
 
@@ -377,6 +394,8 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
   if (is_buffering && (backend_state_ == BACKEND_STATE_PLAYING)) {
     media_pipeline_backend_->Pause();
     backend_state_ = BACKEND_STATE_PAUSED;
+    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+        "Cast.Platform.Pause");
   } else if (!is_buffering && (backend_state_ == BACKEND_STATE_PAUSED)) {
     // Once we finish buffering, we need to honour the desired playback rate
     // (rather than just resuming). This way, if playback was paused while
@@ -441,6 +460,10 @@ void MediaPipelineImpl::UpdateMediaTime() {
 void MediaPipelineImpl::OnError(::media::PipelineStatus error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(error, ::media::PIPELINE_OK) << "PIPELINE_OK is not an error!";
+
+  metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+      "Cast.Platform.Error");
+
   if (!client_.error_cb.is_null())
     client_.error_cb.Run(error);
 }
