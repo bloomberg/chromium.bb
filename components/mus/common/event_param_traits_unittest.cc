@@ -87,8 +87,8 @@ class EventParamTraitsTest : public testing::Test {
         break;
       case EventType::ET_SCROLL_FLING_START:
       case EventType::ET_SCROLL_FLING_CANCEL:
-        ASSERT_EQ(!!a->flags() & MouseEventFlags::EF_FROM_TOUCH,
-                  !!b->flags() & MouseEventFlags::EF_FROM_TOUCH);
+        ASSERT_EQ(a->flags() & MouseEventFlags::EF_FROM_TOUCH,
+                  b->flags() & MouseEventFlags::EF_FROM_TOUCH);
         if (a->flags() & MouseEventFlags::EF_FROM_TOUCH) {
           Compare(CAST_EVENT(GestureEvent, a), CAST_EVENT(GestureEvent, b));
         } else {
