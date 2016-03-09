@@ -155,7 +155,7 @@ unsigned WiFiDisplaySession::CreateTimer(int seconds) {
       std::pair<int, scoped_ptr<base::Timer>>(
           ++timer_id_, std::move(timer)));
   DCHECK(insert_ret.second);
-  timer->Start(FROM_HERE,
+  insert_ret.first->second->Start(FROM_HERE,
                base::TimeDelta::FromSeconds(seconds),
                base::Bind(&wds::Source::OnTimerEvent,
                           base::Unretained(wfd_source_.get()),
