@@ -258,7 +258,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportSuccess(Cast.ApplicationConnectionResult result) {
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
-        CastSession session = new CastSession(
+        CastSession session = new CastSessionImpl(
                 mApiClient,
                 result.getSessionId(),
                 result.getApplicationMetadata(),

@@ -11,6 +11,7 @@ import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
 import org.chromium.chrome.browser.media.router.MediaRoute;
@@ -41,6 +42,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     private final Context mApplicationContext;
     private final MediaRouter mAndroidMediaRouter;
     private final MediaRouteManager mManager;
+    private final CastMessageHandler mMessageHandler;
     private final Map<String, DiscoveryCallback> mDiscoveryCallbacks =
             new HashMap<String, DiscoveryCallback>();
     private final Map<String, MediaRoute> mRoutes = new HashMap<String, MediaRoute>();
@@ -101,12 +103,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
 
     public void onSessionCreated(CastSession session) {
         mSession = session;
-
-        for (ClientRecord client : mClientRecords.values()) {
-            if (!client.isConnected) continue;
-
-            mSession.onClientConnected(client.clientId);
-        }
+        mMessageHandler.onSessionCreated(mSession);
     }
 
     public void onSessionClosed() {
@@ -152,8 +149,16 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         mManager.onMessage(clientRecord.routeId, message);
     }
 
+    public CastMessageHandler getMessageHandler() {
+        return mMessageHandler;
+    }
+
     public Set<String> getClients() {
         return mClientRecords.keySet();
+    }
+
+    public Map<String, ClientRecord> getClientRecords() {
+        return mClientRecords;
     }
 
     @Override
@@ -340,14 +345,17 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
             JSONObject jsonMessage = new JSONObject(message);
 
             String messageType = jsonMessage.getString("type");
+            // TODO(zqzhang): Move the handling of "client_connect", "client_disconnect" and
+            // "leave_session" from CastMRP to CastMessageHandler. Also, need to have a
+            // ClientManager for client managing.
             if ("client_connect".equals(messageType)) {
                 success = handleClientConnectMessage(jsonMessage);
             } else if ("client_disconnect".equals(messageType)) {
                 success = handleClientDisconnectMessage(jsonMessage);
             } else if ("leave_session".equals(messageType)) {
                 success = handleLeaveSessionMessage(jsonMessage);
-            } else  if (mSession != null) {
-                success = mSession.handleSessionMessage(jsonMessage, messageType);
+            } else if (mSession != null) {
+                success = mMessageHandler.handleSessionMessage(jsonMessage);
             }
         } catch (JSONException e) {
             Log.e(TAG, "JSONException while handling internal message: " + e);
@@ -441,11 +449,18 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         return jsonMessage.toString();
     }
 
+    @VisibleForTesting
+    static CastMediaRouteProvider createCastMediaRouteProviderForTest(
+            Context applicationContext, MediaRouter androidMediaRouter, MediaRouteManager manager) {
+        return new CastMediaRouteProvider(applicationContext, androidMediaRouter, manager);
+    }
+
     private CastMediaRouteProvider(
             Context applicationContext, MediaRouter androidMediaRouter, MediaRouteManager manager) {
         mApplicationContext = applicationContext;
         mAndroidMediaRouter = androidMediaRouter;
         mManager = manager;
+        mMessageHandler = new CastMessageHandler(this);
     }
 
     @Nullable
@@ -516,13 +531,14 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
                         tabId));
     }
 
+    // TODO(zqzhang): Move this method to CastMessageHandler.
     private void sendReceiverAction(
             String routeId, MediaSink sink, String clientId, String action) {
         try {
             JSONObject jsonReceiver = new JSONObject();
             jsonReceiver.put("label", sink.getId());
             jsonReceiver.put("friendlyName", sink.getName());
-            jsonReceiver.put("capabilities", CastSession.getCapabilities(sink.getDevice()));
+            jsonReceiver.put("capabilities", CastSessionImpl.getCapabilities(sink.getDevice()));
             jsonReceiver.put("volume", null);
             jsonReceiver.put("isActiveInput", null);
             jsonReceiver.put("displayStatus", null);
