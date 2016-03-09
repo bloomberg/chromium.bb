@@ -38,4 +38,9 @@ public interface DownloadNotifier {
      * @param downloadId the downloadId of the cancelled download.
      */
     void cancelNotification(int downloadId);
+
+    /**
+     * Called to clear all the pending download entries in SharedPreferences.
+     */
+    void clearPendingDownloads();
 }

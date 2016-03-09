@@ -30,7 +30,6 @@ import org.chromium.ui.base.LocalizationUtils;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -57,8 +56,6 @@ public class DownloadNotificationService extends Service {
     private NotificationManager mNotificationManager;
     private SharedPreferences mSharedPrefs;
     private Context mContext;
-    // In progress download IDs.
-    private Set<Integer> mPendingDownloadIds = new HashSet<Integer>();
 
     /**
      * Class representing a pending notification entry.
@@ -191,11 +188,7 @@ public class DownloadNotificationService extends Service {
                     buildPendingIntent(ACTION_DOWNLOAD_PAUSE, downloadId, fileName));
         }
         updateNotification(downloadId, builder.build());
-        if (!mPendingDownloadIds.contains(downloadId)) {
-            mPendingDownloadIds.add(downloadId);
-            addPendingDownloadToSharedPrefs(
-                    new PendingNotification(downloadId, fileName, isResumable));
-        }
+        addPendingDownloadToSharedPrefs(new PendingNotification(downloadId, fileName, isResumable));
     }
 
     /**
@@ -204,7 +197,7 @@ public class DownloadNotificationService extends Service {
      */
     public void cancelNotification(int downloadId) {
         mNotificationManager.cancel(NOTIFICATION_NAMESPACE, downloadId);
-        removePendingDownload(downloadId);
+        removePendingDownloadFromSharedPrefs(downloadId);
     }
 
     /**
@@ -212,8 +205,10 @@ public class DownloadNotificationService extends Service {
      * @param downloadId ID of the download.
      * @param fileName File name of the download.
      * @param isResumable whether download is resumable.
+     * @param hasUserGesture whether download is paused by user gesture.
      */
-    public void notifyDownloadPaused(int downloadId, String fileName, boolean isResumable) {
+    public void notifyDownloadPaused(
+            int downloadId, String fileName, boolean isResumable, boolean hasUserGesture) {
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.ic_media_pause,
                 fileName,
@@ -230,7 +225,11 @@ public class DownloadNotificationService extends Service {
                     buildPendingIntent(ACTION_DOWNLOAD_RESUME, downloadId, fileName));
         }
         updateNotification(downloadId, builder.build());
-        removePendingDownload(downloadId);
+        // If download is paused by user gesture, it should not be auto resumed and there is no
+        // need to keep it in SharedPreferences.
+        if (!isResumable || hasUserGesture) {
+            removePendingDownloadFromSharedPrefs(downloadId);
+        }
     }
 
     /**
@@ -249,7 +248,7 @@ public class DownloadNotificationService extends Service {
                     mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
         updateNotification(downloadId, builder.build());
-        removePendingDownload(downloadId);
+        removePendingDownloadFromSharedPrefs(downloadId);
     }
 
     /**
@@ -264,15 +263,7 @@ public class DownloadNotificationService extends Service {
                 fileName,
                 mContext.getResources().getString(R.string.download_notification_failed));
         updateNotification(downloadId, builder.build());
-        removePendingDownload(downloadId);
-    }
-
-    private void removePendingDownload(int downloadId) {
-        mPendingDownloadIds.remove(downloadId);
         removePendingDownloadFromSharedPrefs(downloadId);
-        if (mPendingDownloadIds.isEmpty()) {
-            mSharedPrefs.edit().remove(PENDING_DOWNLOAD_NOTIFICATIONS).apply();
-        }
     }
 
     /**
@@ -280,12 +271,13 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     void pauseAllDownloads() {
-        List<PendingNotification> notifications = parseDownloadNotificationsFromSharedPrefs();
+        List<PendingNotification> notifications =
+                parseDownloadNotificationsFromSharedPrefs(mSharedPrefs);
         for (int i = 0; i < notifications.size(); ++i) {
             PendingNotification notification = notifications.get(i);
             if (notification.downloadId > 0) {
-                notifyDownloadPaused(
-                        notification.downloadId, notification.fileName, notification.isResumable);
+                notifyDownloadPaused(notification.downloadId, notification.fileName,
+                        notification.isResumable, false);
             }
         }
     }
@@ -408,12 +400,16 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Add a pending download to SharedPrefs, the string consists of the download ID, file name and
-     * whether it is resumable.
+     * whether it is resumable. If the download ID already exists in SharedPrefs, do nothing.
      * @param pendingNotification Pending download entry.
      */
     private void addPendingDownloadToSharedPrefs(PendingNotification pendingNotification) {
         Set<String> pendingDownloads = DownloadManagerService.getStoredDownloadInfo(
                 mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
+        for (String download : pendingDownloads) {
+            PendingNotification notification = PendingNotification.parseFromString(download);
+            if (notification.downloadId == pendingNotification.downloadId) return;
+        }
         pendingDownloads.add(pendingNotification.getNotificationString());
         DownloadManagerService.storeDownloadInfo(
                 mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS, pendingDownloads);
@@ -430,22 +426,34 @@ public class DownloadNotificationService extends Service {
             PendingNotification notification = PendingNotification.parseFromString(download);
             if (notification.downloadId == downloadId) {
                 pendingDownloads.remove(download);
-                DownloadManagerService.storeDownloadInfo(
-                        mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS, pendingDownloads);
+                if (pendingDownloads.isEmpty()) {
+                    mSharedPrefs.edit().remove(PENDING_DOWNLOAD_NOTIFICATIONS).apply();
+                } else {
+                    DownloadManagerService.storeDownloadInfo(
+                            mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS, pendingDownloads);
+                }
                 break;
             }
         }
     }
 
     /**
+     * Clears all pending downloads from SharedPrefs.
+     */
+    public void clearPendingDownloads() {
+        mSharedPrefs.edit().remove(PENDING_DOWNLOAD_NOTIFICATIONS).apply();
+    }
+
+    /**
      * Parse the download notifications from the shared preference and return a list of them.
      * @return a list of parsed notifications.
      */
-    private List<PendingNotification> parseDownloadNotificationsFromSharedPrefs() {
+    static List<PendingNotification> parseDownloadNotificationsFromSharedPrefs(
+            SharedPreferences prefs) {
         List<PendingNotification> result = new ArrayList<PendingNotification>();
-        if (mSharedPrefs.contains(PENDING_DOWNLOAD_NOTIFICATIONS)) {
+        if (prefs.contains(PENDING_DOWNLOAD_NOTIFICATIONS)) {
             Set<String> pendingDownloads = DownloadManagerService.getStoredDownloadInfo(
-                    mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
+                    prefs, PENDING_DOWNLOAD_NOTIFICATIONS);
             for (String download : pendingDownloads) {
                 result.add(PendingNotification.parseFromString(download));
             }

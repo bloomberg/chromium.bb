@@ -88,7 +88,7 @@ public class DownloadNotificationServiceTest extends
         assertEquals(2, getService().getNotificationIds().size());
         assertTrue(getService().getNotificationIds().contains(1));
         assertTrue(getService().getNotificationIds().contains(2));
-        assertFalse(
+        assertTrue(
                 sharedPrefs.contains(DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS));
     }
 

@@ -57,11 +57,16 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
             DOWNLOAD_SUCCESSFUL,
             DOWNLOAD_FAILED,
             DOWNLOAD_PROGRESS,
-            CANCEL_DOWNLOAD_ID
+            CANCEL_DOWNLOAD_ID,
+            CLEAR_PENDING_DOWNLOADS
         }
 
         private final Queue<Pair<MethodID, Object>> mExpectedCalls =
                 new ConcurrentLinkedQueue<Pair<MethodID, Object>>();
+
+        public MockDownloadNotifier() {
+            expect(MethodID.CLEAR_PENDING_DOWNLOADS, null);
+        }
 
         public MockDownloadNotifier expect(MethodID method, Object param) {
             mExpectedCalls.clear();
@@ -121,6 +126,11 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         @Override
         public void cancelNotification(int downloadId) {
             assertCorrectExpectedCall(MethodID.CANCEL_DOWNLOAD_ID, downloadId);
+        }
+
+        @Override
+        public void clearPendingDownloads() {
+            assertCorrectExpectedCall(MethodID.CLEAR_PENDING_DOWNLOADS, null);
         }
     }
 

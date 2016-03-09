@@ -30,6 +30,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     private static final int DOWNLOAD_NOTIFICATION_TYPE_SUCCESS = 1;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_FAILURE = 2;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_CANCEL = 3;
+    private static final int DOWNLOAD_NOTIFICATION_TYPE_CLEAR = 4;
     private final Context mApplicationContext;
     private final Object mLock = new Object();
     @Nullable private DownloadNotificationService mBoundService;
@@ -120,6 +121,9 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                     case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
                         cancelNotification(info.downloadInfo.getDownloadId());
                         break;
+                    case DOWNLOAD_NOTIFICATION_TYPE_CLEAR:
+                        clearPendingDownloads();
+                        break;
                     default:
                         assert false;
                 }
@@ -193,6 +197,12 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                 DOWNLOAD_NOTIFICATION_TYPE_PROGRESS, downloadInfo, null, startTime);
     }
 
+    @Override
+    public void clearPendingDownloads() {
+        updateDownloadNotification(
+                DOWNLOAD_NOTIFICATION_TYPE_CLEAR, null, null, -1);
+    }
+
     /**
      * Updates the download notification if the notification service is started. Otherwise,
      * wait for the notification service to become ready.
@@ -207,7 +217,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
             startAndBindToServiceIfNeeded();
             if (type == DOWNLOAD_NOTIFICATION_TYPE_PROGRESS) {
                 mActiveDownloadIds.add(info.getDownloadId());
-            } else {
+            } else if (type != DOWNLOAD_NOTIFICATION_TYPE_CLEAR) {
                 mActiveDownloadIds.remove(info.getDownloadId());
             }
             if (mBoundService == null) {
@@ -221,8 +231,8 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                     case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
                         if (info.isPaused()) {
                             assert info.isResumable();
-                            mBoundService.notifyDownloadPaused(
-                                    info.getDownloadId(), info.getFileName(), info.isResumable());
+                            mBoundService.notifyDownloadPaused(info.getDownloadId(),
+                                    info.getFileName(), info.isResumable(), true);
                         } else {
                             mBoundService.notifyDownloadProgress(
                                     info.getDownloadId(), info.getFileName(),
@@ -242,6 +252,10 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
                         mBoundService.cancelNotification(info.getDownloadId());
+                        stopServiceIfNeeded();
+                        break;
+                    case DOWNLOAD_NOTIFICATION_TYPE_CLEAR:
+                        mBoundService.clearPendingDownloads();
                         stopServiceIfNeeded();
                         break;
                     default:
