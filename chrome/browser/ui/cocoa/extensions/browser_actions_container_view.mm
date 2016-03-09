@@ -196,7 +196,10 @@ const CGFloat kMinimumContainerWidth = 3.0;
 }
 
 - (BOOL)acceptsFirstResponder {
-  return YES;
+  // The overflow container needs to receive key events to handle in-item
+  // navigation. The top-level container should not become first responder,
+  // allowing focus travel to proceed to the first action.
+  return isOverflow_;
 }
 
 - (void)mouseEntered:(NSEvent*)theEvent {
