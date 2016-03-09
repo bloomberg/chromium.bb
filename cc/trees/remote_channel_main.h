@@ -30,7 +30,6 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
   ~RemoteChannelMain() override;
 
   // ChannelMain implementation
-  void SetThrottleFrameProductionOnImpl(bool throttle) override;
   void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                     TopControlsState current,
                                     bool animate) override;

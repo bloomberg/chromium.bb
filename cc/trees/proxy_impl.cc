@@ -106,13 +106,6 @@ ProxyImpl::~ProxyImpl() {
   smoothness_priority_expiration_notifier_.Shutdown();
 }
 
-void ProxyImpl::SetThrottleFrameProductionOnImpl(bool throttle) {
-  TRACE_EVENT1("cc", "ProxyImpl::SetThrottleFrameProductionOnImplThread",
-               "throttle", throttle);
-  DCHECK(IsImplThread());
-  scheduler_->SetThrottleFrameProduction(throttle);
-}
-
 void ProxyImpl::UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                              TopControlsState current,
                                              bool animate) {

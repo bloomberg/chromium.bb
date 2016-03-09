@@ -118,14 +118,6 @@ void SingleThreadProxy::SetVisible(bool visible) {
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
 }
 
-void SingleThreadProxy::SetThrottleFrameProduction(bool throttle) {
-  TRACE_EVENT1("cc", "SingleThreadProxy::SetThrottleFrameProduction",
-               "throttle", throttle);
-  DebugScopedSetImplThread impl(task_runner_provider_);
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetThrottleFrameProduction(throttle);
-}
-
 void SingleThreadProxy::RequestNewOutputSurface() {
   DCHECK(task_runner_provider_->IsMainThread());
   DCHECK(layer_tree_host_->output_surface_lost());

@@ -64,7 +64,6 @@ Scheduler::Scheduler(
       unthrottled_frame_source_(std::move(unthrottled_frame_source)),
       frame_source_(BeginFrameSourceMultiplexer::Create()),
       observing_frame_source_(false),
-      throttle_frame_production_(false),
       compositor_timing_history_(std::move(compositor_timing_history)),
       begin_impl_frame_deadline_mode_(
           SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE),
@@ -91,7 +90,12 @@ Scheduler::Scheduler(
   frame_source_->AddSource(unthrottled_frame_source_.get());
   unthrottled_frame_source_->SetClientReady();
 
-  SetThrottleFrameProduction(settings_.throttle_frame_production);
+  if (settings_.throttle_frame_production) {
+    frame_source_->SetActiveSource(primary_frame_source());
+  } else {
+    frame_source_->SetActiveSource(unthrottled_frame_source_.get());
+  }
+  ProcessScheduledActions();
 }
 
 Scheduler::~Scheduler() {
@@ -149,16 +153,6 @@ void Scheduler::NotifyReadyToActivate() {
 void Scheduler::NotifyReadyToDraw() {
   // Future work might still needed for crbug.com/352894.
   state_machine_.NotifyReadyToDraw();
-  ProcessScheduledActions();
-}
-
-void Scheduler::SetThrottleFrameProduction(bool throttle) {
-  throttle_frame_production_ = throttle;
-  if (throttle) {
-    frame_source_->SetActiveSource(primary_frame_source());
-  } else {
-    frame_source_->SetActiveSource(unthrottled_frame_source_.get());
-  }
   ProcessScheduledActions();
 }
 
@@ -808,7 +802,8 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->BeginDictionary("scheduler_state");
   state->SetBoolean("external_frame_source_", !!external_frame_source_);
-  state->SetBoolean("throttle_frame_production_", throttle_frame_production_);
+  state->SetBoolean("throttle_frame_production_",
+                    settings_.throttle_frame_production);
   state->SetDouble("authoritative_vsync_interval_ms",
                    authoritative_vsync_interval_.InMillisecondsF());
   state->SetDouble(
@@ -870,7 +865,7 @@ bool Scheduler::ShouldRecoverImplLatency(
   // Disable impl thread latency recovery when using the unthrottled
   // begin frame source since we will always get a BeginFrame before
   // the swap ack and our heuristics below will not work.
-  if (!throttle_frame_production_)
+  if (!settings_.throttle_frame_production)
     return false;
 
   // If we are swap throttled at the BeginFrame, that means the impl thread is

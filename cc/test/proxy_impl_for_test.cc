@@ -79,11 +79,6 @@ void ProxyImplForTest::DidActivateSyncTree() {
   test_hooks_->DidActivateSyncTree();
 }
 
-void ProxyImplForTest::SetThrottleFrameProductionOnImpl(bool throttle) {
-  test_hooks_->SetThrottleFrameProductionOnImpl(throttle);
-  ProxyImpl::SetThrottleFrameProductionOnImpl(throttle);
-}
-
 void ProxyImplForTest::InitializeOutputSurfaceOnImpl(
     OutputSurface* output_surface) {
   test_hooks_->InitializeOutputSurfaceOnImpl(output_surface);

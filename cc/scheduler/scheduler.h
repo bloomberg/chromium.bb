@@ -82,7 +82,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void SetCanDraw(bool can_draw);
   void NotifyReadyToActivate();
   void NotifyReadyToDraw();
-  void SetThrottleFrameProduction(bool throttle);
 
   void SetNeedsBeginMainFrame();
   // Requests a single impl frame (after the current frame if there is one
@@ -168,7 +167,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   scoped_ptr<BeginFrameSourceMultiplexer> frame_source_;
   bool observing_frame_source_;
-  bool throttle_frame_production_;
 
   base::TimeDelta authoritative_vsync_interval_;
   base::TimeTicks last_vsync_timebase_;

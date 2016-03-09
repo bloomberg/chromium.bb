@@ -92,7 +92,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   bool CommitToActiveTree() const override;
   void SetOutputSurface(OutputSurface* output_surface) override;
   void SetVisible(bool visible) override;
-  void SetThrottleFrameProduction(bool throttle) override;
   const RendererCapabilities& GetRendererCapabilities() const override;
   void SetNeedsAnimate() override;
   void SetNeedsUpdateLayers() override;

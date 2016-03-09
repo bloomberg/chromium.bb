@@ -143,7 +143,6 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void SetOutputSurface(OutputSurface* output_surface) override;
   void ReleaseOutputSurface() override;
   void SetVisible(bool visible) override;
-  void SetThrottleFrameProduction(bool throttle) override;
   const RendererCapabilities& GetRendererCapabilities() const override;
   void SetNeedsAnimate() override;
   void SetNeedsUpdateLayers() override;

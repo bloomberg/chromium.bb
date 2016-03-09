@@ -289,12 +289,6 @@ void ProxyMain::SetVisible(bool visible) {
   channel_main_->SetVisibleOnImpl(visible);
 }
 
-void ProxyMain::SetThrottleFrameProduction(bool throttle) {
-  TRACE_EVENT1("cc", "ProxyMain::SetThrottleFrameProduction", "throttle",
-               throttle);
-  channel_main_->SetThrottleFrameProductionOnImpl(throttle);
-}
-
 const RendererCapabilities& ProxyMain::GetRendererCapabilities() const {
   DCHECK(IsMainThread());
   DCHECK(!layer_tree_host_->output_surface_lost());

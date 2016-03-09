@@ -53,8 +53,6 @@ void RemoteChannelMain::OnProtoReceived(
   HandleProto(proto->to_main());
 }
 
-void RemoteChannelMain::SetThrottleFrameProductionOnImpl(bool throttle) {}
-
 void RemoteChannelMain::UpdateTopControlsStateOnImpl(
     TopControlsState constraints,
     TopControlsState current,

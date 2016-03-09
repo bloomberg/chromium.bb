@@ -191,10 +191,6 @@ void RemoteChannelImpl::SetVisible(bool visible) {
       base::Bind(&ProxyImpl::SetVisibleOnImpl, proxy_impl_weak_ptr_, visible));
 }
 
-void RemoteChannelImpl::SetThrottleFrameProduction(bool throttle) {
-  NOTREACHED() << "Should not be called on the remote client LayerTreeHost";
-}
-
 const RendererCapabilities& RemoteChannelImpl::GetRendererCapabilities() const {
   NOTREACHED() << "Should not be called on the remote client LayerTreeHost";
   return main().renderer_capabilities;

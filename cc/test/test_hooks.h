@@ -94,7 +94,6 @@ class TestHooks : public AnimationDelegate {
   virtual void SendBeginMainFrameNotExpectedSoon() {}
 
   // Hooks for ProxyImpl
-  virtual void SetThrottleFrameProductionOnImpl(bool throttle) {}
   virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                             TopControlsState current,
                                             bool animate) {}

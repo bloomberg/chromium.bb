@@ -31,7 +31,6 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   ~ProxyImpl() override;
 
   // Virtual for testing.
-  virtual void SetThrottleFrameProductionOnImpl(bool throttle);
   virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                             TopControlsState current,
                                             bool animate);

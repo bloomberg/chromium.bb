@@ -34,13 +34,6 @@ ThreadedChannel::~ThreadedChannel() {
   DCHECK(!IsInitialized());
 }
 
-void ThreadedChannel::SetThrottleFrameProductionOnImpl(bool throttle) {
-  DCHECK(IsMainThread());
-  ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ProxyImpl::SetThrottleFrameProductionOnImpl,
-                            proxy_impl_weak_ptr_, throttle));
-}
-
 void ThreadedChannel::UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                                    TopControlsState current,
                                                    bool animate) {

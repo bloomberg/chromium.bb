@@ -272,8 +272,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetVisible(bool visible);
   bool visible() const { return visible_; }
 
-  void SetThrottleFrameProduction(bool throttle);
-
   void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                bool use_anchor,
                                float scale,

@@ -30,7 +30,6 @@ class CC_EXPORT ChannelMain {
   virtual ~ChannelMain() {}
 
   // Interface for commands sent to ProxyImpl
-  virtual void SetThrottleFrameProductionOnImpl(bool throttle) = 0;
   virtual void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                             TopControlsState current,
                                             bool animate) = 0;

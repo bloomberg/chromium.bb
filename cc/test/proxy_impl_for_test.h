@@ -49,7 +49,6 @@ class ProxyImplForTest : public ProxyImpl {
   void ScheduledActionInvalidateOutputSurface() override;
   void SendBeginMainFrameNotExpectedSoon() override;
   void DidActivateSyncTree() override;
-  void SetThrottleFrameProductionOnImpl(bool throttle) override;
   void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) override;
   void MainThreadHasStoppedFlingingOnImpl() override;
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled) override;

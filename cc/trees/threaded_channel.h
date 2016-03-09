@@ -83,7 +83,6 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   ~ThreadedChannel() override;
 
   // ChannelMain Implementation
-  void SetThrottleFrameProductionOnImpl(bool throttle) override;
   void UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                     TopControlsState current,
                                     bool animate) override;
