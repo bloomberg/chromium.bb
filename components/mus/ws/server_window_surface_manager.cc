@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/server_window_surface_manager.h"
 
+#include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_surface.h"
@@ -16,9 +17,15 @@ ServerWindowSurfaceManager::ServerWindowSurfaceManager(ServerWindow* window)
       surface_id_allocator_(WindowIdToTransportId(window->id())),
       waiting_for_initial_frames_(
           window_->properties().count(mus::mojom::kWaitForUnderlay_Property) >
-          0) {}
+          0) {
+  surface_id_allocator_.RegisterSurfaceIdNamespace(GetSurfaceManager());
+}
 
-ServerWindowSurfaceManager::~ServerWindowSurfaceManager() {}
+ServerWindowSurfaceManager::~ServerWindowSurfaceManager() {
+  // Explicitly clear the type to surface manager so that this manager
+  // is still valid prior during ~ServerWindowSurface.
+  type_to_surface_map_.clear();
+}
 
 bool ServerWindowSurfaceManager::ShouldDraw() {
   if (!waiting_for_initial_frames_)
@@ -34,8 +41,16 @@ void ServerWindowSurfaceManager::CreateSurface(
     mojom::SurfaceType surface_type,
     mojo::InterfaceRequest<mojom::Surface> request,
     mojom::SurfaceClientPtr client) {
-  type_to_surface_map_[surface_type] = make_scoped_ptr(new ServerWindowSurface(
+  scoped_ptr<ServerWindowSurface> surface(new ServerWindowSurface(
       this, surface_type, std::move(request), std::move(client)));
+  if (!HasAnySurface()) {
+    // Only one SurfaceFactoryClient can be registered per surface id namespace,
+    // so register the first one.  Since all surfaces created by this manager
+    // represent the same window, the begin frame source can be shared by
+    // all surfaces created here.
+    surface->RegisterForBeginFrames();
+  }
+  type_to_surface_map_[surface_type] = std::move(surface);
 }
 
 ServerWindowSurface* ServerWindowSurfaceManager::GetDefaultSurface() {
@@ -52,8 +67,17 @@ ServerWindowSurface* ServerWindowSurfaceManager::GetSurfaceByType(
   return iter == type_to_surface_map_.end() ? nullptr : iter->second.get();
 }
 
-bool ServerWindowSurfaceManager::HasSurfaceOfType(mojom::SurfaceType type) {
+bool ServerWindowSurfaceManager::HasSurfaceOfType(
+    mojom::SurfaceType type) const {
   return type_to_surface_map_.count(type) > 0;
+}
+
+bool ServerWindowSurfaceManager::HasAnySurface() {
+  return GetDefaultSurface() || GetUnderlaySurface();
+}
+
+cc::SurfaceManager* ServerWindowSurfaceManager::GetSurfaceManager() {
+  return window()->delegate()->GetSurfacesState()->manager();
 }
 
 bool ServerWindowSurfaceManager::IsSurfaceReadyAndNonEmpty(

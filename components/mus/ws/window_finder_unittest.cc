@@ -27,7 +27,7 @@ TEST(WindowFinderTest, FindDeepestVisibleWindow) {
   child1.SetVisible(true);
   child1.SetBounds(gfx::Rect(10, 10, 20, 20));
 
-  ServerWindow child2(&window_delegate, WindowId(1, 3));
+  ServerWindow child2(&window_delegate, WindowId(1, 4));
   root.Add(&child2);
   EnableHitTest(&child2);
   child2.SetVisible(true);

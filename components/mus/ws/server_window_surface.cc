@@ -32,13 +32,10 @@ ServerWindowSurface::ServerWindowSurface(
     : manager_(manager),
       surface_type_(surface_type),
       surface_id_(manager->GenerateId()),
-      surface_factory_(manager_->window()
-                           ->delegate()
-                           ->GetSurfacesState()
-                           ->manager(),
-                       this),
+      surface_factory_(manager_->GetSurfaceManager(), this),
       client_(std::move(client)),
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      registered_surface_factory_client_(false) {
   surface_factory_.Create(surface_id_);
 }
 
@@ -47,6 +44,11 @@ ServerWindowSurface::~ServerWindowSurface() {
   // call back into here and access |client_| so we should destroy
   // |surface_factory_|'s resources early on.
   surface_factory_.DestroyAll();
+
+  if (registered_surface_factory_client_) {
+    cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
+    surface_manager->UnregisterSurfaceFactoryClient(manager_->id_namespace());
+  }
 }
 
 void ServerWindowSurface::SubmitCompositorFrame(
@@ -82,6 +84,13 @@ void ServerWindowSurface::DestroySurfacesScheduledForDestruction() {
   surfaces.swap(surfaces_scheduled_for_destruction_);
   for (auto& id : surfaces)
     surface_factory_.Destroy(id);
+}
+
+void ServerWindowSurface::RegisterForBeginFrames() {
+  DCHECK(!registered_surface_factory_client_);
+  registered_surface_factory_client_ = true;
+  cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
+  surface_manager->RegisterSurfaceFactoryClient(manager_->id_namespace(), this);
 }
 
 ServerWindow* ServerWindowSurface::window() {
@@ -153,7 +162,6 @@ void ServerWindowSurface::ReturnResources(
 }
 
 void ServerWindowSurface::SetBeginFrameSource(
-    cc::SurfaceId surface_id,
     cc::BeginFrameSource* begin_frame_source) {
   // TODO(tansell): Implement this.
 }

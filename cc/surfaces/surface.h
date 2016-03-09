@@ -84,12 +84,8 @@ class CC_SURFACES_EXPORT Surface {
   bool destroyed() const { return destroyed_; }
   void set_destroyed(bool destroyed) { destroyed_ = destroyed; }
 
-  void AddBeginFrameSource(BeginFrameSource* begin_frame_source);
-  void RemoveBeginFrameSource(BeginFrameSource* begin_frame_source);
-
  private:
   void ClearCopyRequests();
-  void UpdatePrimaryBeginFrameSource();
 
   SurfaceId surface_id_;
   base::WeakPtr<SurfaceFactory> factory_;

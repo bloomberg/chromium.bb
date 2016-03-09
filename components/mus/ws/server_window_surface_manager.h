@@ -43,13 +43,17 @@ class ServerWindowSurfaceManager {
   ServerWindowSurface* GetDefaultSurface();
   ServerWindowSurface* GetUnderlaySurface();
   ServerWindowSurface* GetSurfaceByType(mojom::SurfaceType type);
-  bool HasSurfaceOfType(mojom::SurfaceType type);
+  bool HasSurfaceOfType(mojom::SurfaceType type) const;
+  bool HasAnySurface();
+
+  uint32_t id_namespace() const { return surface_id_allocator_.id_namespace(); }
+  cc::SurfaceManager* GetSurfaceManager();
 
  private:
   friend class ServerWindowSurfaceManagerTestApi;
   friend class ServerWindowSurface;
 
-  // Returns true if a surface of |type| has been set and it's size is greater
+  // Returns true if a surface of |type| has been set and its size is greater
   // than the size of the window.
   bool IsSurfaceReadyAndNonEmpty(mojom::SurfaceType type) const;
 

@@ -53,6 +53,9 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
 
   surface_manager_.reset(new cc::SurfaceManager);
   surface_id_allocator_.reset(new cc::SurfaceIdAllocator(1));
+  surface_id_allocator_->RegisterSurfaceIdNamespace(surface_manager_.get());
+  surface_manager_->RegisterSurfaceFactoryClient(
+      surface_id_allocator_->id_namespace(), this);
   display_.reset(new cc::Display(this, surface_manager_.get(), nullptr, nullptr,
                                  settings));
 }
@@ -66,6 +69,8 @@ HardwareRenderer::~HardwareRenderer() {
     surface_factory_->Destroy(child_id_);
   display_.reset();
   surface_factory_.reset();
+  surface_manager_->UnregisterSurfaceFactoryClient(
+      surface_id_allocator_->id_namespace());
 
   // Reset draw constraints.
   shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
@@ -222,7 +227,6 @@ void HardwareRenderer::ReturnResources(
 }
 
 void HardwareRenderer::SetBeginFrameSource(
-    cc::SurfaceId surface_id,
     cc::BeginFrameSource* begin_frame_source) {
   // TODO(tansell): Hook this up.
 }

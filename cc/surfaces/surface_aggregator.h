@@ -27,20 +27,11 @@ class Surface;
 class SurfaceDrawQuad;
 class SurfaceManager;
 
-class CC_SURFACES_EXPORT SurfaceAggregatorClient {
- public:
-  virtual ~SurfaceAggregatorClient() {}
-
-  virtual void AddSurface(Surface* surface) = 0;
-  virtual void RemoveSurface(Surface* surface) = 0;
-};
-
 class CC_SURFACES_EXPORT SurfaceAggregator {
  public:
   using SurfaceIndexMap = std::unordered_map<SurfaceId, int, SurfaceIdHash>;
 
-  SurfaceAggregator(SurfaceAggregatorClient* client,
-                    SurfaceManager* manager,
+  SurfaceAggregator(SurfaceManager* manager,
                     ResourceProvider* provider,
                     bool aggregate_only_damaged);
   ~SurfaceAggregator();
@@ -109,7 +100,6 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                                  const RenderPass& source,
                                  const gfx::Rect& full_rect) const;
 
-  SurfaceAggregatorClient* client_;  // Outlives this class.
   SurfaceManager* manager_;
   ResourceProvider* provider_;
 

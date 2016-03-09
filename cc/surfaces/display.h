@@ -49,7 +49,6 @@ class TextureMailboxDeleter;
 class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
                                    public OutputSurfaceClient,
                                    public RendererClient,
-                                   public SurfaceAggregatorClient,
                                    public SurfaceDamageObserver {
  public:
   Display(DisplayClient* client,
@@ -69,10 +68,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void SetExternalClip(const gfx::Rect& clip);
 
   SurfaceId CurrentSurfaceId();
-
-  // SurfaceAggregatorClient implementation
-  void AddSurface(Surface* surface) override;
-  void RemoveSurface(Surface* surface) override;
 
   // DisplaySchedulerClient implementation.
   bool DrawAndSwap() override;

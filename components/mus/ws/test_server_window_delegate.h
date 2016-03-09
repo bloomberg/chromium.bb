@@ -33,6 +33,7 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
       const ClientWindowId& client_window_id) override;
 
   const ServerWindow* root_window_;
+  scoped_refptr<mus::SurfacesState> surfaces_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate);
 };

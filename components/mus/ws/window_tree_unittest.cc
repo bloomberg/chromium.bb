@@ -163,7 +163,8 @@ class WindowTreeTest : public testing::Test {
   WindowTreeTest()
       : wm_client_(nullptr),
         cursor_id_(0),
-        platform_display_factory_(&cursor_id_) {}
+        platform_display_factory_(&cursor_id_),
+        surfaces_state_(new SurfacesState()) {}
   ~WindowTreeTest() override {}
 
   // WindowTree for the window manager.
@@ -217,10 +218,10 @@ class WindowTreeTest : public testing::Test {
   void SetUp() override {
     PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
     connection_manager_.reset(
-        new ConnectionManager(&delegate_, scoped_refptr<SurfacesState>()));
+        new ConnectionManager(&delegate_, surfaces_state_));
     display_ = new Display(connection_manager_.get(), nullptr,
                            scoped_refptr<GpuState>(),
-                           scoped_refptr<mus::SurfacesState>());
+                           surfaces_state_);
     display_binding_ =
         new TestDisplayBinding(display_, connection_manager_.get());
     display_->Init(make_scoped_ptr(display_binding_));
@@ -236,6 +237,7 @@ class WindowTreeTest : public testing::Test {
   // Owned by ConnectionManager.
   TestDisplayBinding* display_binding_;
   Display* display_ = nullptr;
+  scoped_refptr<SurfacesState> surfaces_state_;
   scoped_ptr<ConnectionManager> connection_manager_;
   base::MessageLoop message_loop_;
 

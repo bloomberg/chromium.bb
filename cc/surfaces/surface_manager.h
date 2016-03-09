@@ -21,8 +21,10 @@
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
+class BeginFrameSource;
 class CompositorFrame;
 class Surface;
+class SurfaceFactoryClient;
 
 class CC_SURFACES_EXPORT SurfaceManager {
  public:
@@ -58,7 +60,47 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // possibly because a renderer process has crashed.
   void InvalidateSurfaceIdNamespace(uint32_t id_namespace);
 
+  // SurfaceFactoryClient, hierarchy, and BeginFrameSource can be registered
+  // and unregistered in any order with respect to each other.
+  //
+  // This happens in practice, e.g. the relationship to between ui::Compositor /
+  // DelegatedFrameHost is known before ui::Compositor has a surface/client).
+  // However, DelegatedFrameHost can register itself as a client before its
+  // relationship with the ui::Compositor is known.
+
+  // Associates a SurfaceFactoryClient with the surface id namespace it uses.
+  // SurfaceFactoryClient and surface namespaces/allocators have a 1:1 mapping.
+  // Caller guarantees the client is alive between register/unregister.
+  // Reregistering the same namespace when a previous client is active is not
+  // valid.
+  void RegisterSurfaceFactoryClient(uint32_t id_namespace,
+                                    SurfaceFactoryClient* client);
+  void UnregisterSurfaceFactoryClient(uint32_t id_namespace);
+
+  // Associates a |source| with a particular namespace.  That namespace and
+  // any children of that namespace with valid clients can potentially use
+  // that |source|.
+  void RegisterBeginFrameSource(BeginFrameSource* source,
+                                uint32_t id_namespace);
+  void UnregisterBeginFrameSource(BeginFrameSource* source);
+
+  // Register a relationship between two namespaces.  This relationship means
+  // that surfaces from the child namespace will be displayed in the parent.
+  // Children are allowed to use any begin frame source that their parent can
+  // use.
+  void RegisterSurfaceNamespaceHierarchy(uint32_t parent_namespace,
+                                         uint32_t child_namespace);
+  void UnregisterSurfaceNamespaceHierarchy(uint32_t parent_namespace,
+                                           uint32_t child_namespace);
+
  private:
+  void RecursivelyAttachBeginFrameSource(uint32_t id_namespace,
+                                         BeginFrameSource* source);
+  void RecursivelyDetachBeginFrameSource(uint32_t id_namespace,
+                                         BeginFrameSource* source);
+  // Returns true if |child namespace| is or has |search_namespace| as a child.
+  bool ChildContains(uint32_t child_namespace, uint32_t search_namespace) const;
+
   void GarbageCollectSurfaces();
 
   using SurfaceMap = std::unordered_map<SurfaceId, Surface*, SurfaceIdHash>;
@@ -79,6 +121,25 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // this set, any remaining sequences with that namespace are considered
   // satisfied.
   std::unordered_set<uint32_t> valid_surface_id_namespaces_;
+
+  // Begin frame source routing. Both BeginFrameSource and SurfaceFactoryClient
+  // pointers guaranteed alive by callers until unregistered.
+  struct ClientSourceMapping {
+    ClientSourceMapping();
+    ~ClientSourceMapping();
+    bool is_empty() const { return !client && !children.size(); }
+    // The client that's responsible for creating this namespace.  Never null.
+    SurfaceFactoryClient* client;
+    // The currently assigned begin frame source for this client.
+    BeginFrameSource* source;
+    // This represents a dag of parent -> children mapping.
+    std::vector<uint32_t> children;
+  };
+  std::unordered_map<uint32_t, ClientSourceMapping> namespace_client_map_;
+  // Set of which sources are registered to which namespace.  Any child
+  // that is implicitly using this namespace must be reachable by the
+  // parent in the dag.
+  std::unordered_map<BeginFrameSource*, uint32_t> registered_sources_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceManager);
 };

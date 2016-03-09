@@ -116,8 +116,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void WillDrawSurface(cc::SurfaceId id, const gfx::Rect& damage_rect) override;
-  void SetBeginFrameSource(cc::SurfaceId surface_id,
-                           cc::BeginFrameSource* begin_frame_source) override;
+  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
   bool CanCopyToBitmap() const;
 
@@ -307,6 +306,8 @@ class CONTENT_EXPORT DelegatedFrameHost
       yuv_readback_pipeline_;
 
   scoped_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
+
+  cc::BeginFrameSource* begin_frame_source_;
 };
 
 }  // namespace content

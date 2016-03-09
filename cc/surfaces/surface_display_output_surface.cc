@@ -33,7 +33,8 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
 }
 
 SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {
-  client_ = NULL;
+  if (HasClient())
+    DetachFromClient();
   if (!surface_id_.is_null()) {
     factory_.Destroy(surface_id_);
   }
@@ -72,6 +73,9 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame* frame) {
 bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(display_client_);
+  factory_.manager()->RegisterSurfaceFactoryClient(allocator_->id_namespace(),
+                                                   this);
+
   client_ = client;
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
@@ -84,6 +88,16 @@ void SurfaceDisplayOutputSurface::ForceReclaimResources() {
                                    SurfaceFactory::DrawCallback());
 }
 
+void SurfaceDisplayOutputSurface::DetachFromClient() {
+  DCHECK(HasClient());
+  // Unregister the SurfaceFactoryClient here instead of the dtor so that only
+  // one client is alive for this namespace at any given time.
+  factory_.manager()->UnregisterSurfaceFactoryClient(
+      allocator_->id_namespace());
+  OutputSurface::DetachFromClient();
+  DCHECK(!HasClient());
+}
+
 void SurfaceDisplayOutputSurface::ReturnResources(
     const ReturnedResourceArray& resources) {
   CompositorFrameAck ack;
@@ -93,7 +107,6 @@ void SurfaceDisplayOutputSurface::ReturnResources(
 }
 
 void SurfaceDisplayOutputSurface::SetBeginFrameSource(
-    SurfaceId surface_id,
     BeginFrameSource* begin_frame_source) {
   // TODO(tansell): Hook this up.
 }

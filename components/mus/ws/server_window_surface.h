@@ -59,6 +59,9 @@ class ServerWindowSurface : public mojom::Surface,
   // Destroys old surfaces that have been outdated by a new surface.
   void DestroySurfacesScheduledForDestruction();
 
+  // Registers this with the SurfaceManager
+  void RegisterForBeginFrames();
+
  private:
   ServerWindow* window();
 
@@ -78,8 +81,7 @@ class ServerWindowSurface : public mojom::Surface,
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::SurfaceId surface_id,
-                           cc::BeginFrameSource* begin_frame_source) override;
+  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
   ServerWindowSurfaceManager* manager_;  // Owns this.
 
@@ -97,6 +99,8 @@ class ServerWindowSurface : public mojom::Surface,
 
   // Set of surface ids that need to be destroyed.
   std::set<cc::SurfaceId> surfaces_scheduled_for_destruction_;
+
+  bool registered_surface_factory_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindowSurface);
 };

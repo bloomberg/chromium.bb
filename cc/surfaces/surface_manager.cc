@@ -9,9 +9,18 @@
 
 #include "base/logging.h"
 #include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
 
 namespace cc {
+
+SurfaceManager::ClientSourceMapping::ClientSourceMapping()
+    : client(nullptr), source(nullptr) {}
+
+SurfaceManager::ClientSourceMapping::~ClientSourceMapping() {
+  DCHECK(is_empty()) << "client: " << client
+                     << ", children: " << children.size();
+}
 
 SurfaceManager::SurfaceManager() {
   thread_checker_.DetachFromThread();
@@ -25,6 +34,10 @@ SurfaceManager::~SurfaceManager() {
     DeregisterSurface((*it)->surface_id());
     delete *it;
   }
+  // All hierarchies, sources, and surface factory clients should be
+  // unregistered prior to SurfaceManager destruction.
+  DCHECK_EQ(namespace_client_map_.size(), 0u);
+  DCHECK_EQ(registered_sources_.size(), 0u);
 }
 
 void SurfaceManager::RegisterSurface(Surface* surface) {
@@ -120,6 +133,192 @@ void SurfaceManager::GarbageCollectSurfaces() {
   }
 }
 
+void SurfaceManager::RegisterSurfaceFactoryClient(
+    uint32_t id_namespace,
+    SurfaceFactoryClient* client) {
+  DCHECK(client);
+  DCHECK(!namespace_client_map_[id_namespace].client);
+  DCHECK_EQ(valid_surface_id_namespaces_.count(id_namespace), 1u);
+
+  auto iter = namespace_client_map_.find(id_namespace);
+  if (iter == namespace_client_map_.end()) {
+    auto insert_result = namespace_client_map_.insert(
+        std::make_pair(id_namespace, ClientSourceMapping()));
+    DCHECK(insert_result.second);
+    iter = insert_result.first;
+  }
+  iter->second.client = client;
+
+  // Propagate any previously set sources to the new client.
+  if (iter->second.source)
+    client->SetBeginFrameSource(iter->second.source);
+}
+
+void SurfaceManager::UnregisterSurfaceFactoryClient(uint32_t id_namespace) {
+  DCHECK_EQ(valid_surface_id_namespaces_.count(id_namespace), 1u);
+  DCHECK_EQ(namespace_client_map_.count(id_namespace), 1u);
+
+  auto iter = namespace_client_map_.find(id_namespace);
+  if (iter->second.source)
+    iter->second.client->SetBeginFrameSource(nullptr);
+  iter->second.client = nullptr;
+
+  // The SurfaceFactoryClient and hierarchy can be registered/unregistered
+  // in either order, so empty namespace_client_map entries need to be
+  // checked when removing either clients or relationships.
+  if (iter->second.is_empty())
+    namespace_client_map_.erase(iter);
+}
+
+void SurfaceManager::RegisterBeginFrameSource(BeginFrameSource* source,
+                                              uint32_t id_namespace) {
+  DCHECK(source);
+  DCHECK_EQ(registered_sources_.count(source), 0u);
+  DCHECK_EQ(valid_surface_id_namespaces_.count(id_namespace), 1u);
+
+  registered_sources_[source] = id_namespace;
+  RecursivelyAttachBeginFrameSource(id_namespace, source);
+}
+
+void SurfaceManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
+  DCHECK(source);
+  DCHECK_EQ(registered_sources_.count(source), 1u);
+
+  uint32_t id_namespace = registered_sources_[source];
+  registered_sources_.erase(source);
+
+  if (namespace_client_map_.count(id_namespace) == 0u)
+    return;
+
+  // TODO(enne): these walks could be done in one step.
+  // Remove this begin frame source from its subtree.
+  RecursivelyDetachBeginFrameSource(id_namespace, source);
+  // Then flush every remaining registered source to fix any sources that
+  // became null because of the previous step but that have an alternative.
+  for (auto source_iter : registered_sources_)
+    RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
+}
+
+void SurfaceManager::RecursivelyAttachBeginFrameSource(
+    uint32_t id_namespace,
+    BeginFrameSource* source) {
+  ClientSourceMapping& mapping = namespace_client_map_[id_namespace];
+  if (!mapping.source) {
+    mapping.source = source;
+    if (mapping.client)
+      mapping.client->SetBeginFrameSource(source);
+  }
+  for (size_t i = 0; i < mapping.children.size(); ++i)
+    RecursivelyAttachBeginFrameSource(mapping.children[i], source);
+}
+
+void SurfaceManager::RecursivelyDetachBeginFrameSource(
+    uint32_t id_namespace,
+    BeginFrameSource* source) {
+  auto iter = namespace_client_map_.find(id_namespace);
+  if (iter == namespace_client_map_.end())
+    return;
+  if (iter->second.source == source) {
+    iter->second.source = nullptr;
+    if (iter->second.client)
+      iter->second.client->SetBeginFrameSource(nullptr);
+  }
+
+  if (iter->second.is_empty()) {
+    namespace_client_map_.erase(iter);
+    return;
+  }
+
+  std::vector<uint32_t>& children = iter->second.children;
+  for (size_t i = 0; i < children.size(); ++i) {
+    RecursivelyDetachBeginFrameSource(children[i], source);
+  }
+}
+
+bool SurfaceManager::ChildContains(uint32_t child_namespace,
+                                   uint32_t search_namespace) const {
+  auto iter = namespace_client_map_.find(child_namespace);
+  if (iter == namespace_client_map_.end())
+    return false;
+
+  const std::vector<uint32_t>& children = iter->second.children;
+  for (size_t i = 0; i < children.size(); ++i) {
+    if (children[i] == search_namespace)
+      return true;
+    if (ChildContains(children[i], search_namespace))
+      return true;
+  }
+  return false;
+}
+
+void SurfaceManager::RegisterSurfaceNamespaceHierarchy(
+    uint32_t parent_namespace,
+    uint32_t child_namespace) {
+  DCHECK_EQ(valid_surface_id_namespaces_.count(parent_namespace), 1u);
+  DCHECK_EQ(valid_surface_id_namespaces_.count(child_namespace), 1u);
+
+  // If it's possible to reach the parent through the child's descendant chain,
+  // then this will create an infinite loop.  Might as well just crash here.
+  CHECK(!ChildContains(child_namespace, parent_namespace));
+
+  std::vector<uint32_t>& children =
+      namespace_client_map_[parent_namespace].children;
+  for (size_t i = 0; i < children.size(); ++i)
+    DCHECK_NE(children[i], child_namespace);
+  children.push_back(child_namespace);
+
+  // If the parent has no source, then attaching it to this child will
+  // not change any downstream sources.
+  BeginFrameSource* parent_source =
+      namespace_client_map_[parent_namespace].source;
+  if (!parent_source)
+    return;
+
+  DCHECK_EQ(registered_sources_.count(parent_source), 1u);
+  RecursivelyAttachBeginFrameSource(child_namespace, parent_source);
+}
+
+void SurfaceManager::UnregisterSurfaceNamespaceHierarchy(
+    uint32_t parent_namespace,
+    uint32_t child_namespace) {
+  DCHECK_EQ(valid_surface_id_namespaces_.count(parent_namespace), 1u);
+  DCHECK_EQ(valid_surface_id_namespaces_.count(child_namespace), 1u);
+  DCHECK_EQ(namespace_client_map_.count(parent_namespace), 1u);
+
+  auto iter = namespace_client_map_.find(parent_namespace);
+
+  std::vector<uint32_t>& children = iter->second.children;
+  bool found_child = false;
+  for (size_t i = 0; i < children.size(); ++i) {
+    if (children[i] == child_namespace) {
+      found_child = true;
+      children[i] = children[children.size() - 1];
+      children.resize(children.size() - 1);
+      break;
+    }
+  }
+  DCHECK(found_child);
+
+  // The SurfaceFactoryClient and hierarchy can be registered/unregistered
+  // in either order, so empty namespace_client_map entries need to be
+  // checked when removing either clients or relationships.
+  if (iter->second.is_empty()) {
+    namespace_client_map_.erase(iter);
+    return;
+  }
+
+  // If the parent does not have a begin frame source, then disconnecting it
+  // will not change any of its children.
+  BeginFrameSource* parent_source = iter->second.source;
+  if (!parent_source)
+    return;
+
+  // TODO(enne): these walks could be done in one step.
+  RecursivelyDetachBeginFrameSource(child_namespace, parent_source);
+  for (auto source_iter : registered_sources_)
+    RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
+}
+
 Surface* SurfaceManager::GetSurfaceForId(SurfaceId surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SurfaceMap::iterator it = surface_map_.find(surface_id);
@@ -129,7 +328,7 @@ Surface* SurfaceManager::GetSurfaceForId(SurfaceId surface_id) {
 }
 
 bool SurfaceManager::SurfaceModified(SurfaceId surface_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(thread_checker_.CalledOnValidThread());
   bool changed = false;
   FOR_EACH_OBSERVER(SurfaceDamageObserver, observer_list_,
                     OnSurfaceDamaged(surface_id, &changed));

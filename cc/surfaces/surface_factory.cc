@@ -29,7 +29,6 @@ SurfaceFactory::~SurfaceFactory() {
                << " entries in map on destruction.";
   }
   DestroyAll();
-  client_->SetBeginFrameSource(SurfaceId(), nullptr);
 }
 
 void SurfaceFactory::DestroyAll() {
@@ -52,11 +51,6 @@ void SurfaceFactory::Destroy(SurfaceId surface_id) {
   scoped_ptr<Surface> surface(std::move(it->second));
   surface_map_.erase(it);
   manager_->Destroy(std::move(surface));
-}
-
-void SurfaceFactory::SetBeginFrameSource(SurfaceId surface_id,
-                                         BeginFrameSource* begin_frame_source) {
-  client_->SetBeginFrameSource(surface_id, begin_frame_source);
 }
 
 void SurfaceFactory::SubmitCompositorFrame(SurfaceId surface_id,

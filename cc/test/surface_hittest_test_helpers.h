@@ -29,8 +29,7 @@ namespace test {
 class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   void ReturnResources(const ReturnedResourceArray& resources) override {}
-  void SetBeginFrameSource(SurfaceId surface_id,
-                           BeginFrameSource* begin_frame_source) override {}
+  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {}
 };
 
 void CreateSharedQuadState(RenderPass* pass,

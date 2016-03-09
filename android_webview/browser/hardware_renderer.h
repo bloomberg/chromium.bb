@@ -48,8 +48,7 @@ class HardwareRenderer : public cc::DisplayClient,
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::SurfaceId surface_id,
-                           cc::BeginFrameSource* begin_frame_source) override;
+  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
   void ReturnResourcesInChildFrame();
   void ReturnResourcesToCompositor(const cc::ReturnedResourceArray& resources,

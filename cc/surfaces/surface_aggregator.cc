@@ -42,12 +42,10 @@ void MoveMatchingRequests(
 
 }  // namespace
 
-SurfaceAggregator::SurfaceAggregator(SurfaceAggregatorClient* client,
-                                     SurfaceManager* manager,
+SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
                                      ResourceProvider* provider,
                                      bool aggregate_only_damaged)
-    : client_(client),
-      manager_(manager),
+    : manager_(manager),
       provider_(provider),
       next_render_pass_id_(1),
       aggregate_only_damaged_(aggregate_only_damaged),
@@ -479,17 +477,7 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
       Surface* surface_ptr = manager_->GetSurfaceForId(surface.first);
       if (surface_ptr) {
         surface_ptr->RunDrawCallbacks(SurfaceDrawStatus::DRAW_SKIPPED);
-        client_->RemoveSurface(surface_ptr);
       }
-    }
-  }
-
-  for (const auto& surface : contained_surfaces_) {
-    if (!previous_contained_surfaces_.count(surface.first)) {
-      // Notify client of added surface.
-      Surface* surface_ptr = manager_->GetSurfaceForId(surface.first);
-      if (surface_ptr)
-        client_->AddSurface(surface_ptr);
     }
   }
 }

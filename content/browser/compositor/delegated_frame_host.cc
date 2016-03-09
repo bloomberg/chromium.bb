@@ -71,10 +71,13 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
       skipped_frames_(false),
       current_scale_factor_(1.f),
       can_lock_compositor_(YES_CAN_LOCK),
-      delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
+      delegated_frame_evictor_(new DelegatedFrameEvictor(this)),
+      begin_frame_source_(nullptr) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->AddObserver(this);
   id_allocator_ = factory->GetContextFactory()->CreateSurfaceIdAllocator();
+  factory->GetSurfaceManager()->RegisterSurfaceFactoryClient(
+      id_allocator_->id_namespace(), this);
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
@@ -512,9 +515,9 @@ void DelegatedFrameHost::WillDrawSurface(cc::SurfaceId id,
 }
 
 void DelegatedFrameHost::SetBeginFrameSource(
-    cc::SurfaceId surface_id,
     cc::BeginFrameSource* begin_frame_source) {
-  // TODO(tansell): Hook this up.
+  // TODO(enne): forward this to DelegatedFrameHostClient to observe and then to
+  // the renderer as an external begin frame source.
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
@@ -762,10 +765,13 @@ void DelegatedFrameHost::OnLostResources() {
 
 DelegatedFrameHost::~DelegatedFrameHost() {
   DCHECK(!compositor_);
-  ImageTransportFactory::GetInstance()->RemoveObserver(this);
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  factory->RemoveObserver(this);
 
   if (!surface_id_.is_null())
     surface_factory_->Destroy(surface_id_);
+  factory->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
+      id_allocator_->id_namespace());
 
   DCHECK(!vsync_manager_.get());
 }
@@ -779,6 +785,11 @@ void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
   DCHECK(!vsync_manager_.get());
   vsync_manager_ = compositor_->vsync_manager();
   vsync_manager_->AddObserver(this);
+
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  uint32_t parent = compositor->surface_id_allocator()->id_namespace();
+  factory->GetSurfaceManager()->RegisterSurfaceNamespaceHierarchy(
+      parent, id_allocator_->id_namespace());
 }
 
 void DelegatedFrameHost::ResetCompositor() {
@@ -794,6 +805,12 @@ void DelegatedFrameHost::ResetCompositor() {
     vsync_manager_->RemoveObserver(this);
     vsync_manager_ = NULL;
   }
+
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  uint32_t parent = compositor_->surface_id_allocator()->id_namespace();
+  factory->GetSurfaceManager()->UnregisterSurfaceNamespaceHierarchy(
+      parent, id_allocator_->id_namespace());
+
   compositor_ = nullptr;
 }
 

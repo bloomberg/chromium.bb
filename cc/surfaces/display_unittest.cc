@@ -35,8 +35,7 @@ class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
 
   void ReturnResources(const ReturnedResourceArray& resources) override {}
 
-  void SetBeginFrameSource(SurfaceId surface_id,
-                           BeginFrameSource* begin_frame_source) override {
+  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {
     begin_frame_source_ = begin_frame_source;
   }
 
@@ -152,29 +151,6 @@ class TestDisplayScheduler : public DisplayScheduler {
 
 void CopyCallback(bool* called, scoped_ptr<CopyOutputResult> result) {
   *called = true;
-}
-
-// Verify Display responds to SurfaceAggregatorClient methods properly.
-TEST_F(DisplayTest, DisplayAsSurfaceAggregatorClient) {
-  SetUpContext(nullptr);
-  TestDisplayClient client;
-  RendererSettings settings;
-  Display display(&client, &manager_, shared_bitmap_manager_.get(), nullptr,
-                  settings);
-
-  TestDisplayScheduler scheduler(&display, &fake_begin_frame_source_,
-                                 task_runner_.get());
-  display.Initialize(std::move(output_surface_), &scheduler);
-
-  SurfaceId surface_id(6);
-  factory_.Create(surface_id);
-  Surface* surface = manager_.GetSurfaceForId(surface_id);
-
-  EXPECT_EQ(nullptr, surface_factory_client_.begin_frame_source());
-  display.AddSurface(surface);
-  EXPECT_NE(nullptr, surface_factory_client_.begin_frame_source());
-  display.RemoveSurface(surface);
-  EXPECT_EQ(nullptr, surface_factory_client_.begin_frame_source());
 }
 
 // Check that frame is damaged and swapped only under correct conditions.

@@ -49,9 +49,6 @@ class CC_SURFACES_EXPORT SurfaceFactory
   void Destroy(SurfaceId surface_id);
   void DestroyAll();
 
-  void SetBeginFrameSource(SurfaceId surface_id,
-                           BeginFrameSource* begin_frame_source);
-
   // A frame can only be submitted to a surface created by this factory,
   // although the frame may reference surfaces created by other factories.
   // The callback is called the first time this frame is used to draw, or if

@@ -36,8 +36,7 @@ class TestSurfaceFactoryClient : public SurfaceFactoryClient {
         returned_resources_.end(), resources.begin(), resources.end());
   }
 
-  void SetBeginFrameSource(SurfaceId surface_id,
-                           BeginFrameSource* begin_frame_source) override {
+  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {
     begin_frame_source_ = begin_frame_source;
   }
 
@@ -592,37 +591,6 @@ TEST_F(SurfaceFactoryTest, DuplicateCopyRequest) {
   EXPECT_TRUE(called1);
   EXPECT_TRUE(called2);
   EXPECT_TRUE(called3);
-}
-
-// Verifies BFS is forwarded to the client.
-TEST_F(SurfaceFactoryTest, SetBeginFrameSource) {
-  FakeBeginFrameSource bfs1;
-  FakeBeginFrameSource bfs2;
-  EXPECT_EQ(nullptr, client_.begin_frame_source());
-  factory_->SetBeginFrameSource(surface_id_, &bfs1);
-  EXPECT_EQ(&bfs1, client_.begin_frame_source());
-  factory_->SetBeginFrameSource(surface_id_, &bfs2);
-  EXPECT_EQ(&bfs2, client_.begin_frame_source());
-  factory_->SetBeginFrameSource(surface_id_, nullptr);
-  EXPECT_EQ(nullptr, client_.begin_frame_source());
-}
-
-TEST_F(SurfaceFactoryTest, BeginFrameSourceRemovedOnFactoryDestruction) {
-  FakeBeginFrameSource bfs;
-  factory_->SetBeginFrameSource(surface_id_, &bfs);
-  EXPECT_EQ(&bfs, client_.begin_frame_source());
-
-  // Prevent the Surface from being destroyed when we destroy the factory.
-  manager_.RegisterSurfaceIdNamespace(0);
-  manager_.GetSurfaceForId(surface_id_)
-      ->AddDestructionDependency(SurfaceSequence(0, 4));
-
-  surface_id_ = SurfaceId();
-  factory_->DestroyAll();
-
-  EXPECT_EQ(&bfs, client_.begin_frame_source());
-  factory_.reset();
-  EXPECT_EQ(nullptr, client_.begin_frame_source());
 }
 
 }  // namespace

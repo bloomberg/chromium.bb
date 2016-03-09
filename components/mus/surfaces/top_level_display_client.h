@@ -64,8 +64,7 @@ class TopLevelDisplayClient : public cc::DisplayClient,
 
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void SetBeginFrameSource(cc::SurfaceId surface_id,
-                           cc::BeginFrameSource* begin_frame_source) override;
+  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<SurfacesState> surfaces_state_;
