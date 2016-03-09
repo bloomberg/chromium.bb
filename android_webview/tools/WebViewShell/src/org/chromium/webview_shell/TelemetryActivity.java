@@ -31,7 +31,7 @@ public class TelemetryActivity extends Activity {
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(true);
         settings.setDomStorageEnabled(true);
-
+        settings.setMediaPlaybackRequiresUserGesture(false);
         Intent intent = getIntent();
         String userAgentString = intent.getStringExtra("userAgent");
         if (userAgentString != null) {
