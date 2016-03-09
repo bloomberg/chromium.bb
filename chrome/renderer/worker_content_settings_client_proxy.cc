@@ -19,14 +19,14 @@ WorkerContentSettingsClientProxy::WorkerContentSettingsClientProxy(
     blink::WebFrame* frame)
     : routing_id_(render_frame->GetRoutingID()),
       is_unique_origin_(false) {
-  if (frame->document().securityOrigin().isUnique() ||
-      frame->top()->securityOrigin().isUnique())
+  if (frame->document().getSecurityOrigin().isUnique() ||
+      frame->top()->getSecurityOrigin().isUnique())
     is_unique_origin_ = true;
   sync_message_filter_ = content::RenderThread::Get()->GetSyncMessageFilter();
   document_origin_url_ =
-      blink::WebStringToGURL(frame->document().securityOrigin().toString());
+      blink::WebStringToGURL(frame->document().getSecurityOrigin().toString());
   top_frame_origin_url_ =
-      blink::WebStringToGURL(frame->top()->securityOrigin().toString());
+      blink::WebStringToGURL(frame->top()->getSecurityOrigin().toString());
 }
 
 WorkerContentSettingsClientProxy::~WorkerContentSettingsClientProxy() {}

@@ -529,13 +529,13 @@ bool FillFormOnPasswordReceived(
   // identical origin.
   blink::WebFrame* cur_frame = password_element.document().frame();
   blink::WebString bottom_frame_origin =
-          cur_frame->securityOrigin().toString();
+      cur_frame->getSecurityOrigin().toString();
 
   DCHECK(cur_frame);
 
   while (cur_frame->parent()) {
     cur_frame = cur_frame->parent();
-    if (!bottom_frame_origin.equals(cur_frame->securityOrigin().toString()))
+    if (!bottom_frame_origin.equals(cur_frame->getSecurityOrigin().toString()))
       return false;
   }
 
@@ -977,7 +977,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   // Make sure that this security origin is allowed to use password manager.
-  blink::WebSecurityOrigin origin = frame->document().securityOrigin();
+  blink::WebSecurityOrigin origin = frame->document().getSecurityOrigin();
   if (logger) {
     logger->LogURL(Logger::STRING_SECURITY_ORIGIN,
                    GURL(origin.toString().utf8()));

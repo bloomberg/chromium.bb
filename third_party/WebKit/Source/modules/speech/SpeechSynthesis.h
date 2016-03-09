@@ -62,7 +62,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged);
 
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

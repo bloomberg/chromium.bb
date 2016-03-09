@@ -61,7 +61,7 @@ ScriptPromise NotificationPermissionClientImpl::requestPermission(ScriptState* s
 {
     ASSERT(scriptState);
 
-    ExecutionContext* context = scriptState->executionContext();
+    ExecutionContext* context = scriptState->getExecutionContext();
     ASSERT(context && context->isDocument());
 
     Document* document = toDocument(context);
@@ -70,7 +70,7 @@ ScriptPromise NotificationPermissionClientImpl::requestPermission(ScriptState* s
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    webFrame->client()->requestNotificationPermission(WebSecurityOrigin(context->securityOrigin()), new WebNotificationPermissionCallbackImpl(resolver, deprecatedCallback));
+    webFrame->client()->requestNotificationPermission(WebSecurityOrigin(context->getSecurityOrigin()), new WebNotificationPermissionCallbackImpl(resolver, deprecatedCallback));
 
     return promise;
 }

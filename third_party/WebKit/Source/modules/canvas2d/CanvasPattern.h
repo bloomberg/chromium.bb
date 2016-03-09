@@ -48,7 +48,7 @@ public:
         return new CanvasPattern(image, repeat, originClean);
     }
 
-    Pattern* pattern() const { return m_pattern.get(); }
+    Pattern* getPattern() const { return m_pattern.get(); }
 
     bool originClean() const { return m_originClean; }
 

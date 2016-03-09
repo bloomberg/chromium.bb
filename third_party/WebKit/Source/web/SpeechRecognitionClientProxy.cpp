@@ -64,7 +64,7 @@ void SpeechRecognitionClientProxy::start(SpeechRecognition* recognition, const S
     WebMediaStreamTrack track;
     if (RuntimeEnabledFeatures::mediaStreamSpeechEnabled() && audioTrack)
         track.assign(audioTrack->component());
-    WebSpeechRecognitionParams params(webSpeechGrammars, lang, continuous, interimResults, maxAlternatives, track, WebSecurityOrigin(recognition->executionContext()->securityOrigin()));
+    WebSpeechRecognitionParams params(webSpeechGrammars, lang, continuous, interimResults, maxAlternatives, track, WebSecurityOrigin(recognition->getExecutionContext()->getSecurityOrigin()));
     m_recognizer->start(recognition, params, this);
 }
 

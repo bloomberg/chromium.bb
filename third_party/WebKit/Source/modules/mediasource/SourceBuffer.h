@@ -98,7 +98,7 @@ public:
     void stop() override;
 
     // EventTarget interface
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
     const AtomicString& interfaceName() const override;
 
     // WebSourceBufferClient interface

@@ -58,7 +58,7 @@ CanvasPattern::CanvasPattern(PassRefPtr<Image> image, Pattern::RepeatMode repeat
 
 void CanvasPattern::setTransform(SVGMatrixTearOff* transform)
 {
-    pattern()->setPatternSpaceTransform(transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0));
+    getPattern()->setPatternSpaceTransform(transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0));
 }
 
 } // namespace blink

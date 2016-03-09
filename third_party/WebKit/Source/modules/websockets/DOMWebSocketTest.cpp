@@ -102,7 +102,7 @@ public:
         : m_pageHolder(DummyPageHolder::create())
         , m_websocket(DOMWebSocketWithMockChannel::create(&m_pageHolder->document()))
         , m_executionScope(v8::Isolate::GetCurrent())
-        , m_exceptionState(ExceptionState::ConstructionContext, "property", "interface", m_executionScope.scriptState()->context()->Global(), m_executionScope.isolate())
+        , m_exceptionState(ExceptionState::ConstructionContext, "property", "interface", m_executionScope.getScriptState()->context()->Global(), m_executionScope.isolate())
     {
     }
 

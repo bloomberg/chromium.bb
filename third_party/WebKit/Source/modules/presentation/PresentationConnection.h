@@ -41,7 +41,7 @@ public:
 
     // EventTarget implementation.
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -82,12 +82,12 @@ GlobalFetch::ScopedFetcher::~ScopedFetcher()
 
 WeakPtrWillBeRawPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(DOMWindow& window)
 {
-    return GlobalFetchImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.executionContext());
+    return GlobalFetchImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.getExecutionContext());
 }
 
 WeakPtrWillBeRawPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(WorkerGlobalScope& worker)
 {
-    return GlobalFetchImpl<WorkerGlobalScope>::from(worker, worker.executionContext());
+    return GlobalFetchImpl<WorkerGlobalScope>::from(worker, worker.getExecutionContext());
 }
 
 DEFINE_TRACE(GlobalFetch::ScopedFetcher)
@@ -96,14 +96,14 @@ DEFINE_TRACE(GlobalFetch::ScopedFetcher)
 
 ScriptPromise GlobalFetch::fetch(ScriptState* scriptState, DOMWindow& window, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
 {
-    UseCounter::count(window.executionContext(), UseCounter::Fetch);
+    UseCounter::count(window.getExecutionContext(), UseCounter::Fetch);
     return ScopedFetcher::from(window)->fetch(scriptState, input, init, exceptionState);
 }
 
 ScriptPromise GlobalFetch::fetch(ScriptState* scriptState, WorkerGlobalScope& worker, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
 {
     // Note that UseCounter doesn't work with SharedWorker or ServiceWorker.
-    UseCounter::count(worker.executionContext(), UseCounter::Fetch);
+    UseCounter::count(worker.getExecutionContext(), UseCounter::Fetch);
     return ScopedFetcher::from(worker)->fetch(scriptState, input, init, exceptionState);
 }
 

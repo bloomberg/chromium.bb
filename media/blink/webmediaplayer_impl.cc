@@ -282,7 +282,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   GURL gurl(url);
-  ReportMetrics(load_type, gurl, frame_->document().securityOrigin());
+  ReportMetrics(load_type, gurl, frame_->document().getSecurityOrigin());
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", gurl.spec());
@@ -1270,7 +1270,7 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
   client_->readyStateChanged();
 }
 
-blink::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
+blink::WebAudioSourceProvider* WebMediaPlayerImpl::getAudioSourceProvider() {
   return audio_source_provider_.get();
 }
 

@@ -14,7 +14,7 @@ RemoteSecurityContext::RemoteSecurityContext()
 {
     // RemoteSecurityContext's origin is expected to stay uninitialized until
     // we set it using replicated origin data from the browser process.
-    ASSERT(!securityOrigin());
+    ASSERT(!getSecurityOrigin());
 
     // CSP will not be replicated for RemoteSecurityContexts, as it is moving
     // to the browser process.  For now, initialize CSP to a default

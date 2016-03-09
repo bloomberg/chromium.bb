@@ -23,7 +23,7 @@ ScriptStateForTesting::ScriptStateForTesting(v8::Local<v8::Context> context, Pas
 {
 }
 
-ExecutionContext* ScriptStateForTesting::executionContext() const
+ExecutionContext* ScriptStateForTesting::getExecutionContext() const
 {
     return m_executionContext;
 }
@@ -46,7 +46,7 @@ V8TestingScope::~V8TestingScope()
     m_scriptState->disposePerContextData();
 }
 
-ScriptState* V8TestingScope::scriptState() const
+ScriptState* V8TestingScope::getScriptState() const
 {
     return m_scriptState.get();
 }

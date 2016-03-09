@@ -10,7 +10,7 @@
     RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface OffscreenCanvasRenderingContext2D {
     // back-reference to the canvas
-    readonly attribute OffscreenCanvas offscreenCanvas;
+    [ImplementedAs=getOffscreenCanvas] readonly attribute OffscreenCanvas offscreenCanvas;
 };
 
 OffscreenCanvasRenderingContext2D implements CanvasPathMethods;

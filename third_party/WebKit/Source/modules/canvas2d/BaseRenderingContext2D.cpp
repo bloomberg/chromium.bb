@@ -94,11 +94,11 @@ void BaseRenderingContext2D::restore()
 
 static inline void convertCanvasStyleToUnionType(CanvasStyle* style, StringOrCanvasGradientOrCanvasPattern& returnValue)
 {
-    if (CanvasGradient* gradient = style->canvasGradient()) {
+    if (CanvasGradient* gradient = style->getCanvasGradient()) {
         returnValue.setCanvasGradient(gradient);
         return;
     }
-    if (CanvasPattern* pattern = style->canvasPattern()) {
+    if (CanvasPattern* pattern = style->getCanvasPattern()) {
         returnValue.setCanvasPattern(pattern);
         return;
     }
@@ -176,7 +176,7 @@ void BaseRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvasPa
 
         if (originClean() && !canvasPattern->originClean())
             setOriginTainted();
-        if (canvasPattern->pattern()->isTextureBacked())
+        if (canvasPattern->getPattern()->isTextureBacked())
             disableDeferral(DisableDeferralReasonUsingTextureBackedPattern);
         canvasStyle = CanvasStyle::createFromPattern(canvasPattern);
     }

@@ -711,10 +711,10 @@ ExecutionContext* toExecutionContext(v8::Local<v8::Context> context)
     v8::Local<v8::Object> global = context->Global();
     v8::Local<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(global, context->GetIsolate());
     if (!windowWrapper.IsEmpty())
-        return V8Window::toImpl(windowWrapper)->executionContext();
+        return V8Window::toImpl(windowWrapper)->getExecutionContext();
     v8::Local<v8::Object> workerWrapper = V8WorkerGlobalScope::findInstanceInPrototypeChain(global, context->GetIsolate());
     if (!workerWrapper.IsEmpty())
-        return V8WorkerGlobalScope::toImpl(workerWrapper)->executionContext();
+        return V8WorkerGlobalScope::toImpl(workerWrapper)->getExecutionContext();
     ASSERT(s_toExecutionContextForModules);
     return (*s_toExecutionContextForModules)(context);
 }
@@ -787,8 +787,8 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
             return toV8Context(frame, world);
     } else if (context->isWorkerGlobalScope()) {
         if (WorkerOrWorkletScriptController* script = toWorkerOrWorkletGlobalScope(context)->scriptController()) {
-            if (script->scriptState()->contextIsValid())
-                return script->scriptState()->context();
+            if (script->getScriptState()->contextIsValid())
+                return script->getScriptState()->context();
         }
     }
     return v8::Local<v8::Context>();

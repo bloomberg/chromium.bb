@@ -453,7 +453,7 @@ bool HTMLPlugInElement::allowedToLoadFrameURL(const String& url)
 {
     KURL completeURL = document().completeURL(url);
     if (contentFrame() && protocolIsJavaScript(completeURL)
-        && !document().securityOrigin()->canAccess(contentFrame()->securityContext()->securityOrigin()))
+        && !document().getSecurityOrigin()->canAccess(contentFrame()->securityContext()->getSecurityOrigin()))
         return false;
     return document().frame()->isURLAllowed(completeURL);
 }
@@ -583,7 +583,7 @@ bool HTMLPlugInElement::allowedToLoadObject(const KURL& url, const String& mimeT
     if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType))
         return false;
 
-    if (!document().securityOrigin()->canDisplay(url)) {
+    if (!document().getSecurityOrigin()->canDisplay(url)) {
         FrameLoader::reportLocalLoadFailed(frame, url.getString());
         return false;
     }

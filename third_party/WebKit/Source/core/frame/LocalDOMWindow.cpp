@@ -123,7 +123,7 @@ public:
         , m_userGestureToken(userGestureToken)
         , m_disposalAllowed(true)
     {
-        m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(executionContext(), "postMessage");
+        m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(getExecutionContext(), "postMessage");
     }
 
     PassRefPtrWillBeRawPtr<MessageEvent> event() const { return m_event.get(); }
@@ -153,7 +153,7 @@ public:
 private:
     void fired() override
     {
-        InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(executionContext(), m_asyncOperationId);
+        InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(getExecutionContext(), m_asyncOperationId);
         m_disposalAllowed = false;
         m_window->postMessageTimerFired(this);
         dispose();
@@ -374,7 +374,7 @@ PassRefPtrWillBeRawPtr<Document> LocalDOMWindow::installNewDocument(const String
     return m_document;
 }
 
-EventQueue* LocalDOMWindow::eventQueue() const
+EventQueue* LocalDOMWindow::getEventQueue() const
 {
     return m_eventQueue.get();
 }
@@ -478,7 +478,7 @@ void LocalDOMWindow::dispose()
     removeAllEventListeners();
 }
 
-ExecutionContext* LocalDOMWindow::executionContext() const
+ExecutionContext* LocalDOMWindow::getExecutionContext() const
 {
     return m_document.get();
 }
@@ -714,8 +714,8 @@ void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intende
 {
     if (intendedTargetOrigin) {
         // Check target origin now since the target document may have changed since the timer was scheduled.
-        if (!intendedTargetOrigin->isSameSchemeHostPortAndSuborigin(document()->securityOrigin())) {
-            String message = ExceptionMessages::failedToExecute("postMessage", "DOMWindow", "The target origin provided ('" + intendedTargetOrigin->toString() + "') does not match the recipient window's origin ('" + document()->securityOrigin()->toString() + "').");
+        if (!intendedTargetOrigin->isSameSchemeHostPortAndSuborigin(document()->getSecurityOrigin())) {
+            String message = ExceptionMessages::failedToExecute("postMessage", "DOMWindow", "The target origin provided ('" + intendedTargetOrigin->toString() + "') does not match the recipient window's origin ('" + document()->getSecurityOrigin()->toString() + "').");
             RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
             consoleMessage->setCallStack(stackTrace);
             frameConsole()->addMessage(consoleMessage.release());

@@ -21,7 +21,7 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* scriptState, Navigator& 
 ScriptPromise NavigatorBattery::getBattery(ScriptState* scriptState)
 {
     if (!m_batteryManager)
-        m_batteryManager = BatteryManager::create(scriptState->executionContext());
+        m_batteryManager = BatteryManager::create(scriptState->getExecutionContext());
 
     return m_batteryManager->startRequest(scriptState);
 }

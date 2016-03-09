@@ -627,7 +627,7 @@ public:
     Node* toNode() final;
 
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const final;
+    ExecutionContext* getExecutionContext() const final;
 
     void removeAllEventListeners() override;
     void removeAllEventListenersRecursively();

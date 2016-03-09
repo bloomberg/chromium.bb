@@ -32,7 +32,7 @@ bool InspectedFrames::contains(LocalFrame* frame) const
 LocalFrame* InspectedFrames::frameWithSecurityOrigin(const String& originRawString)
 {
     for (LocalFrame* frame : *this) {
-        if (frame->document()->securityOrigin()->toRawString() == originRawString)
+        if (frame->document()->getSecurityOrigin()->toRawString() == originRawString)
             return frame;
     }
     return nullptr;

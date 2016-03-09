@@ -54,18 +54,18 @@ public:
     void SetUp() override
     {
         m_executionContext = Document::create();
-        m_scope.scriptState()->setExecutionContext(m_executionContext.get());
+        m_scope.getScriptState()->setExecutionContext(m_executionContext.get());
     }
 
     void TearDown() override
     {
         m_executionContext->notifyContextDestroyed();
-        m_scope.scriptState()->setExecutionContext(nullptr);
+        m_scope.getScriptState()->setExecutionContext(nullptr);
     }
 
     v8::Isolate* isolate() const { return m_scope.isolate(); }
-    ScriptState* scriptState() const { return m_scope.scriptState(); }
-    ExecutionContext* executionContext() { return m_scope.scriptState()->executionContext(); }
+    ScriptState* getScriptState() const { return m_scope.getScriptState(); }
+    ExecutionContext* getExecutionContext() { return m_scope.getScriptState()->getExecutionContext(); }
 
     void deactivateNewTransactions()
     {
@@ -93,18 +93,18 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
     OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
     EXPECT_CALL(*backend, close())
         .Times(1);
-    Persistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
+    Persistent<IDBDatabase> db = IDBDatabase::create(getExecutionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
 
     const int64_t transactionId = 1234;
     const HashSet<String> transactionScope = HashSet<String>();
-    Persistent<IDBTransaction> transaction = IDBTransaction::create(scriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
+    Persistent<IDBTransaction> transaction = IDBTransaction::create(getScriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
     PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
     set.add(transaction);
 
     Heap::collectAllGarbage();
     EXPECT_EQ(1u, set.size());
 
-    Persistent<IDBRequest> request = IDBRequest::create(scriptState(), IDBAny::createUndefined(), transaction.get());
+    Persistent<IDBRequest> request = IDBRequest::create(getScriptState(), IDBAny::createUndefined(), transaction.get());
     deactivateNewTransactions();
 
     Heap::collectAllGarbage();
@@ -112,7 +112,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
 
     // This will generate an abort() call to the back end which is dropped by the fake proxy,
     // so an explicit onAbort call is made.
-    executionContext()->stopActiveDOMObjects();
+    getExecutionContext()->stopActiveDOMObjects();
     transaction->onAbort(DOMException::create(AbortError, "Aborted"));
     transaction.clear();
 
@@ -129,10 +129,10 @@ TEST_F(IDBTransactionTest, TransactionFinish)
         .Times(1);
     EXPECT_CALL(*backend, close())
         .Times(1);
-    Persistent<IDBDatabase> db = IDBDatabase::create(executionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
+    Persistent<IDBDatabase> db = IDBDatabase::create(getExecutionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
 
     const HashSet<String> transactionScope = HashSet<String>();
-    Persistent<IDBTransaction> transaction = IDBTransaction::create(scriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
+    Persistent<IDBTransaction> transaction = IDBTransaction::create(getScriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
     PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
     set.add(transaction);
 
@@ -150,7 +150,7 @@ TEST_F(IDBTransactionTest, TransactionFinish)
     EXPECT_EQ(1u, set.size());
 
     // Stop the context, so events don't get queued (which would keep the transaction alive).
-    executionContext()->stopActiveDOMObjects();
+    getExecutionContext()->stopActiveDOMObjects();
 
     // Fire an abort to make sure this doesn't free the transaction during use. The test
     // will not fail if it is, but ASAN would notice the error.

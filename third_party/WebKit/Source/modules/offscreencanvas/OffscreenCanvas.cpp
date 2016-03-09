@@ -45,7 +45,7 @@ OffscreenCanvasRenderingContext2D* OffscreenCanvas::getContext(const String& id,
         return nullptr;
 
     if (m_context) {
-        if (m_context->contextType() != contextType) {
+        if (m_context->getContextType() != contextType) {
             factory->onError(this, "OffscreenCanvas has an existing context of a different type");
             return nullptr;
         }
@@ -81,7 +81,7 @@ OffscreenCanvasRenderingContextFactory* OffscreenCanvas::getRenderingContextFact
 
 void OffscreenCanvas::registerRenderingContextFactory(PassOwnPtr<OffscreenCanvasRenderingContextFactory> renderingContextFactory)
 {
-    OffscreenCanvasRenderingContext::ContextType type = renderingContextFactory->contextType();
+    OffscreenCanvasRenderingContext::ContextType type = renderingContextFactory->getContextType();
     ASSERT(type < OffscreenCanvasRenderingContext::ContextTypeCount);
     ASSERT(!renderingContextFactories()[type]);
     renderingContextFactories()[type] = renderingContextFactory;

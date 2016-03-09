@@ -178,7 +178,7 @@ FrameReplicationState ReconstructReplicationStateForTesting(
   result.sandbox_flags = frame->effectiveSandboxFlags();
   // result.should_enforce_strict_mixed_content_checking is calculated in the
   // browser...
-  result.origin = frame->securityOrigin();
+  result.origin = frame->getSecurityOrigin();
 
   return result;
 }
@@ -932,7 +932,8 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   EXPECT_TRUE(web_frame->firstChild()->isWebRemoteFrame());
 
   // Expect the origin to be updated properly.
-  blink::WebSecurityOrigin origin = web_frame->firstChild()->securityOrigin();
+  blink::WebSecurityOrigin origin =
+      web_frame->firstChild()->getSecurityOrigin();
   EXPECT_EQ(origin.toString(),
             WebString::fromUTF8(replication_state.origin.Serialize()));
 
@@ -943,7 +944,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
       RenderFrame::FromWebFrame(web_frame->lastChild()));
   child_frame2->SwapOut(kProxyRoutingId + 1, true, replication_state);
   EXPECT_TRUE(web_frame->lastChild()->isWebRemoteFrame());
-  EXPECT_TRUE(web_frame->lastChild()->securityOrigin().isUnique());
+  EXPECT_TRUE(web_frame->lastChild()->getSecurityOrigin().isUnique());
 }
 
 // Test for https://crbug.com/568676, where a parent detaches a remote child

@@ -52,7 +52,7 @@ static void databaseClosed(Database* database)
 {
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->databaseClosed(
-            createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
+            createDatabaseIdentifierFromSecurityOrigin(database->getSecurityOrigin()),
             database->stringIdentifier());
     }
 }
@@ -70,7 +70,7 @@ DatabaseTracker::DatabaseTracker()
 
 bool DatabaseTracker::canEstablishDatabase(DatabaseContext* databaseContext, const String& name, const String& displayName, unsigned long estimatedSize, DatabaseError& error)
 {
-    ExecutionContext* executionContext = databaseContext->executionContext();
+    ExecutionContext* executionContext = databaseContext->getExecutionContext();
     bool success = DatabaseClient::from(executionContext)->allowDatabase(executionContext, name, displayName, estimatedSize);
     if (!success)
         error = DatabaseError::GenericSecurityError;
@@ -88,7 +88,7 @@ void DatabaseTracker::addOpenDatabase(Database* database)
     if (!m_openDatabaseMap)
         m_openDatabaseMap = adoptPtr(new DatabaseOriginMap);
 
-    String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin());
+    String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->getSecurityOrigin());
     DatabaseNameMap* nameMap = m_openDatabaseMap->get(originIdentifier);
     if (!nameMap) {
         nameMap = new DatabaseNameMap();
@@ -109,7 +109,7 @@ void DatabaseTracker::removeOpenDatabase(Database* database)
 {
     {
         MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
-        String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin());
+        String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->getSecurityOrigin());
         ASSERT(m_openDatabaseMap);
         DatabaseNameMap* nameMap = m_openDatabaseMap->get(originIdentifier);
         if (!nameMap)
@@ -139,10 +139,10 @@ void DatabaseTracker::removeOpenDatabase(Database* database)
 
 void DatabaseTracker::prepareToOpenDatabase(Database* database)
 {
-    ASSERT(database->databaseContext()->executionContext()->isContextThread());
+    ASSERT(database->getDatabaseContext()->getExecutionContext()->isContextThread());
     if (Platform::current()->databaseObserver()) {
         Platform::current()->databaseObserver()->databaseOpened(
-            createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
+            createDatabaseIdentifierFromSecurityOrigin(database->getSecurityOrigin()),
             database->stringIdentifier(),
             database->displayName(),
             database->estimatedSize());
@@ -159,7 +159,7 @@ unsigned long long DatabaseTracker::getMaxSizeForDatabase(const Database* databa
     unsigned long long spaceAvailable = 0;
     unsigned long long databaseSize = 0;
     QuotaTracker::instance().getDatabaseSizeAndSpaceAvailableToOrigin(
-        createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
+        createDatabaseIdentifierFromSecurityOrigin(database->getSecurityOrigin()),
         database->stringIdentifier(), &databaseSize, &spaceAvailable);
     return databaseSize + spaceAvailable;
 }
@@ -205,7 +205,7 @@ void DatabaseTracker::closeDatabasesImmediately(const String& originIdentifier, 
 
     // We have to call closeImmediately() on the context thread.
     for (DatabaseSet::iterator it = databaseSet->begin(); it != databaseSet->end(); ++it)
-        (*it)->databaseContext()->executionContext()->postTask(BLINK_FROM_HERE, CloseOneDatabaseImmediatelyTask::create(originIdentifier, name, *it));
+        (*it)->getDatabaseContext()->getExecutionContext()->postTask(BLINK_FROM_HERE, CloseOneDatabaseImmediatelyTask::create(originIdentifier, name, *it));
 }
 
 void DatabaseTracker::closeOneDatabaseImmediately(const String& originIdentifier, const String& name, Database* database)

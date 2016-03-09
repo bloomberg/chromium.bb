@@ -79,7 +79,7 @@ public:
 
     ~TestOriginTrialContext() override = default;
 
-    ExecutionContext* executionContext() override { return m_parent.get(); }
+    ExecutionContext* getExecutionContext() override { return m_parent.get(); }
 
     void addToken(const String& token)
     {

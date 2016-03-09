@@ -47,7 +47,7 @@ Database* DOMWindowWebDatabase::openDatabase(DOMWindow& windowArg, const String&
     Database* database = nullptr;
     DatabaseManager& dbManager = DatabaseManager::manager();
     DatabaseError error = DatabaseError::None;
-    if (RuntimeEnabledFeatures::databaseEnabled() && window.document()->securityOrigin()->canAccessDatabase()) {
+    if (RuntimeEnabledFeatures::databaseEnabled() && window.document()->getSecurityOrigin()->canAccessDatabase()) {
         String errorMessage;
         database = dbManager.openDatabase(window.document(), name, version, displayName, estimatedSize, creationCallback, error, errorMessage);
         ASSERT(database || error != DatabaseError::None);

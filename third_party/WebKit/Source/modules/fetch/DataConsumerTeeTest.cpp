@@ -61,12 +61,12 @@ public:
         m_waitableEvent->wait();
     }
 
-    Thread* thread() { return m_thread.get(); }
+    Thread* getThread() { return m_thread.get(); }
 
 private:
     void runInternal(PassOwnPtr<Handle> src, OwnPtr<Handle>* dest1, OwnPtr<Handle>* dest2)
     {
-        DataConsumerTee::create(m_thread->executionContext(), src, dest1, dest2);
+        DataConsumerTee::create(m_thread->getExecutionContext(), src, dest1, dest2);
         m_waitableEvent->signal();
     }
 
@@ -190,7 +190,7 @@ TEST(DataConsumerTeeTest, Error)
 
 void postStop(Thread* thread)
 {
-    thread->executionContext()->stopActiveDOMObjects();
+    thread->getExecutionContext()->stopActiveDOMObjects();
 }
 
 TEST(DataConsumerTeeTest, StopSource)
@@ -212,7 +212,7 @@ TEST(DataConsumerTeeTest, StopSource)
 
     // We can pass a raw pointer because the subsequent |wait| calls ensure
     // t->thread() is alive.
-    t->thread()->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(postStop, AllowCrossThreadAccess(t->thread())));
+    t->getThread()->thread()->postTask(BLINK_FROM_HERE, threadSafeBind(postStop, AllowCrossThreadAccess(t->getThread())));
 
     OwnPtr<HandleReadResult> res1 = r1.wait();
     OwnPtr<HandleReadResult> res2 = r2.wait();
@@ -304,7 +304,7 @@ TEST(DataConsumerTeeTest, DetachOneDestination)
 TEST(DataConsumerTeeTest, DetachBothDestinationsShouldStopSourceReader)
 {
     OwnPtr<Handle> src(Handle::create());
-    RefPtr<Handle::Context> context(src->context());
+    RefPtr<Handle::Context> context(src->getContext());
     OwnPtr<WebDataConsumerHandle> dest1, dest2;
 
     src->add(Command(Command::Data, "hello, "));

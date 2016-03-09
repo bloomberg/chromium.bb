@@ -62,12 +62,12 @@ public:
     void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) override { }
 
     void resolvePermission(bool allowed);
-    SecurityOrigin* securityOrigin() const;
+    SecurityOrigin* getSecurityOrigin() const;
 
 private:
     MIDIAccessInitializer(ScriptState*, const MIDIOptions&);
 
-    ExecutionContext* executionContext() const;
+    ExecutionContext* getExecutionContext() const;
     ScriptPromise start();
     void dispose();
 

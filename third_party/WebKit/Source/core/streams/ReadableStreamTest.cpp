@@ -51,7 +51,7 @@ private:
     ScriptValue call(ScriptValue value) override
     {
         ASSERT(!value.isEmpty());
-        *m_value = toCoreString(value.v8Value()->ToString(scriptState()->context()).ToLocalChecked());
+        *m_value = toCoreString(value.v8Value()->ToString(getScriptState()->context()).ToLocalChecked());
         return value;
     }
 
@@ -114,12 +114,12 @@ public:
     {
     }
 
-    ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    v8::Isolate* isolate() { return scriptState()->isolate(); }
+    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
+    v8::Isolate* isolate() { return getScriptState()->isolate(); }
 
     v8::Local<v8::Function> createCaptor(String* value)
     {
-        return StringCapturingFunction::createFunction(scriptState(), value);
+        return StringCapturingFunction::createFunction(getScriptState(), value);
     }
 
     StringStream* construct(MockStrategy* strategy)
@@ -159,8 +159,8 @@ public:
 
 TEST_F(ReadableStreamTest, Start)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     Checkpoint checkpoint;
     {
         InSequence s;
@@ -193,8 +193,8 @@ TEST_F(ReadableStreamTest, Start)
 
 TEST_F(ReadableStreamTest, StartFail)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = new StringStream(m_underlyingSource);
     EXPECT_FALSE(exceptionState.hadException());
     EXPECT_FALSE(stream->isStarted());
@@ -212,8 +212,8 @@ TEST_F(ReadableStreamTest, StartFail)
 
 TEST_F(ReadableStreamTest, ErrorAndEnqueue)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
 
     stream->error(DOMException::create(NotFoundError, "error"));
@@ -226,8 +226,8 @@ TEST_F(ReadableStreamTest, ErrorAndEnqueue)
 
 TEST_F(ReadableStreamTest, CloseAndEnqueue)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
 
     stream->close();
@@ -240,8 +240,8 @@ TEST_F(ReadableStreamTest, CloseAndEnqueue)
 
 TEST_F(ReadableStreamTest, CloseWhenErrored)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
     EXPECT_EQ(ReadableStream::Readable, stream->stateInternal());
 
@@ -253,8 +253,8 @@ TEST_F(ReadableStreamTest, CloseWhenErrored)
 
 TEST_F(ReadableStreamTest, ReadQueue)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
     Checkpoint checkpoint;
 
@@ -289,8 +289,8 @@ TEST_F(ReadableStreamTest, ReadQueue)
 
 TEST_F(ReadableStreamTest, CloseWhenReadable)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
 
     EXPECT_TRUE(stream->enqueue("hello"));
@@ -302,7 +302,7 @@ TEST_F(ReadableStreamTest, CloseWhenReadable)
     EXPECT_FALSE(stream->isPulling());
     EXPECT_TRUE(stream->isDraining());
 
-    stream->read(scriptState());
+    stream->read(getScriptState());
 
     v8::MicrotasksScope::PerformCheckpoint(isolate());
 
@@ -310,7 +310,7 @@ TEST_F(ReadableStreamTest, CloseWhenReadable)
     EXPECT_FALSE(stream->isPulling());
     EXPECT_TRUE(stream->isDraining());
 
-    stream->read(scriptState());
+    stream->read(getScriptState());
 
     EXPECT_EQ(ReadableStream::Closed, stream->stateInternal());
     EXPECT_FALSE(stream->isPulling());
@@ -319,15 +319,15 @@ TEST_F(ReadableStreamTest, CloseWhenReadable)
 
 TEST_F(ReadableStreamTest, CancelWhenClosed)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
     String onFulfilled, onRejected;
     stream->close();
     EXPECT_EQ(ReadableStream::Closed, stream->stateInternal());
 
     EXPECT_FALSE(stream->isDisturbed());
-    ScriptPromise promise = stream->cancel(scriptState(), ScriptValue());
+    ScriptPromise promise = stream->cancel(getScriptState(), ScriptValue());
     EXPECT_TRUE(stream->isDisturbed());
     EXPECT_EQ(ReadableStream::Closed, stream->stateInternal());
 
@@ -342,15 +342,15 @@ TEST_F(ReadableStreamTest, CancelWhenClosed)
 
 TEST_F(ReadableStreamTest, CancelWhenErrored)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
     String onFulfilled, onRejected;
     stream->error(DOMException::create(NotFoundError, "error"));
     EXPECT_EQ(ReadableStream::Errored, stream->stateInternal());
 
     EXPECT_FALSE(stream->isDisturbed());
-    ScriptPromise promise = stream->cancel(scriptState(), ScriptValue());
+    ScriptPromise promise = stream->cancel(getScriptState(), ScriptValue());
     EXPECT_TRUE(stream->isDisturbed());
     EXPECT_EQ(ReadableStream::Errored, stream->stateInternal());
 
@@ -365,24 +365,24 @@ TEST_F(ReadableStreamTest, CancelWhenErrored)
 
 TEST_F(ReadableStreamTest, CancelWhenReadable)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
     String onFulfilled, onRejected;
     String onCancelFulfilled, onCancelRejected;
-    ScriptValue reason(scriptState(), v8String(scriptState()->isolate(), "reason"));
-    ScriptPromise promise = ScriptPromise::cast(scriptState(), v8String(scriptState()->isolate(), "hello"));
+    ScriptValue reason(getScriptState(), v8String(getScriptState()->isolate(), "reason"));
+    ScriptPromise promise = ScriptPromise::cast(getScriptState(), v8String(getScriptState()->isolate(), "hello"));
 
     {
         InSequence s;
-        EXPECT_CALL(*m_underlyingSource, cancelSource(scriptState(), reason)).WillOnce(ReturnPointee(&promise));
+        EXPECT_CALL(*m_underlyingSource, cancelSource(getScriptState(), reason)).WillOnce(ReturnPointee(&promise));
     }
 
     stream->enqueue("hello");
     EXPECT_EQ(ReadableStream::Readable, stream->stateInternal());
 
     EXPECT_FALSE(stream->isDisturbed());
-    ScriptPromise cancelResult = stream->cancel(scriptState(), reason);
+    ScriptPromise cancelResult = stream->cancel(getScriptState(), reason);
     EXPECT_TRUE(stream->isDisturbed());
     cancelResult.then(createCaptor(&onCancelFulfilled), createCaptor(&onCancelRejected));
 
@@ -399,18 +399,18 @@ TEST_F(ReadableStreamTest, CancelWhenReadable)
 
 TEST_F(ReadableStreamTest, CancelWhenLocked)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     String onFulfilled, onRejected;
     StringStream* stream = construct();
-    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), exceptionState);
+    ReadableStreamReader* reader = stream->getReader(getScriptState()->getExecutionContext(), exceptionState);
 
     EXPECT_TRUE(reader->isActive());
     EXPECT_FALSE(exceptionState.hadException());
     EXPECT_EQ(ReadableStream::Readable, stream->stateInternal());
 
     EXPECT_FALSE(stream->isDisturbed());
-    stream->cancel(scriptState(), ScriptValue(scriptState(), v8::Undefined(isolate()))).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
+    stream->cancel(getScriptState(), ScriptValue(getScriptState(), v8::Undefined(isolate()))).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
     EXPECT_FALSE(stream->isDisturbed());
 
     EXPECT_TRUE(onFulfilled.isNull());
@@ -426,8 +426,8 @@ TEST_F(ReadableStreamTest, CancelWhenLocked)
 
 TEST_F(ReadableStreamTest, ReadableArrayBufferStreamCompileTest)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     // This test tests if ReadableStreamImpl<DOMArrayBuffer> can be
     // instantiated.
     new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(m_underlyingSource);
@@ -435,8 +435,8 @@ TEST_F(ReadableStreamTest, ReadableArrayBufferStreamCompileTest)
 
 TEST_F(ReadableStreamTest, ReadableArrayBufferViewStreamCompileTest)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     // This test tests if ReadableStreamImpl<DOMArrayBufferVIew> can be
     // instantiated.
     new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(m_underlyingSource);
@@ -444,8 +444,8 @@ TEST_F(ReadableStreamTest, ReadableArrayBufferViewStreamCompileTest)
 
 TEST_F(ReadableStreamTest, BackpressureOnEnqueueing)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     auto strategy = MockStrategy::create();
     Checkpoint checkpoint;
 
@@ -478,8 +478,8 @@ TEST_F(ReadableStreamTest, BackpressureOnEnqueueing)
 
 TEST_F(ReadableStreamTest, BackpressureOnReading)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     auto strategy = MockStrategy::create();
     Checkpoint checkpoint;
 
@@ -512,14 +512,14 @@ TEST_F(ReadableStreamTest, BackpressureOnReading)
     stream->enqueue("world");
 
     checkpoint.Call(0);
-    stream->read(scriptState());
+    stream->read(getScriptState());
     checkpoint.Call(1);
-    stream->read(scriptState());
+    stream->read(getScriptState());
     checkpoint.Call(2);
     stream->enqueue("foo");
     stream->enqueue("bar");
     checkpoint.Call(3);
-    stream->read(scriptState());
+    stream->read(getScriptState());
     checkpoint.Call(4);
 
     stream->error(DOMException::create(AbortError, "done"));
@@ -528,17 +528,17 @@ TEST_F(ReadableStreamTest, BackpressureOnReading)
 // Note: Detailed tests are on ReadableStreamReaderTest.
 TEST_F(ReadableStreamTest, ReadableStreamReader)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
-    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), exceptionState);
+    ReadableStreamReader* reader = stream->getReader(getScriptState()->getExecutionContext(), exceptionState);
 
     ASSERT_TRUE(reader);
     EXPECT_FALSE(exceptionState.hadException());
     EXPECT_TRUE(reader->isActive());
     EXPECT_TRUE(stream->isLockedTo(reader));
 
-    ReadableStreamReader* another = stream->getReader(scriptState()->executionContext(), exceptionState);
+    ReadableStreamReader* another = stream->getReader(getScriptState()->getExecutionContext(), exceptionState);
     ASSERT_EQ(nullptr, another);
     EXPECT_TRUE(exceptionState.hadException());
     EXPECT_TRUE(reader->isActive());
@@ -547,17 +547,17 @@ TEST_F(ReadableStreamTest, ReadableStreamReader)
 
 TEST_F(ReadableStreamTest, GetClosedReader)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
     stream->close();
-    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), exceptionState);
+    ReadableStreamReader* reader = stream->getReader(getScriptState()->getExecutionContext(), exceptionState);
 
     ASSERT_TRUE(reader);
     EXPECT_FALSE(exceptionState.hadException());
 
     String onFulfilled, onRejected;
-    reader->closed(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
+    reader->closed(getScriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
 
     EXPECT_TRUE(reader->isActive());
     EXPECT_TRUE(onFulfilled.isNull());
@@ -570,17 +570,17 @@ TEST_F(ReadableStreamTest, GetClosedReader)
 
 TEST_F(ReadableStreamTest, GetErroredReader)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     StringStream* stream = construct();
     stream->error(DOMException::create(SyntaxError, "some error"));
-    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), exceptionState);
+    ReadableStreamReader* reader = stream->getReader(getScriptState()->getExecutionContext(), exceptionState);
 
     ASSERT_TRUE(reader);
     EXPECT_FALSE(exceptionState.hadException());
 
     String onFulfilled, onRejected;
-    reader->closed(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
+    reader->closed(getScriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
 
     EXPECT_TRUE(reader->isActive());
     EXPECT_TRUE(onFulfilled.isNull());
@@ -593,8 +593,8 @@ TEST_F(ReadableStreamTest, GetErroredReader)
 
 TEST_F(ReadableStreamTest, StrictStrategy)
 {
-    ScriptState::Scope scope(scriptState());
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
+    ScriptState::Scope scope(getScriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", getScriptState()->context()->Global(), isolate());
     Checkpoint checkpoint;
     {
         InSequence s;
@@ -613,23 +613,23 @@ TEST_F(ReadableStreamTest, StrictStrategy)
         EXPECT_CALL(*m_underlyingSource, pullSource());
     }
     StringStream* stream = new StringStream(m_underlyingSource, new StringStream::StrictStrategy);
-    ReadableStreamReader* reader = stream->getReader(scriptState()->executionContext(), exceptionState);
+    ReadableStreamReader* reader = stream->getReader(getScriptState()->getExecutionContext(), exceptionState);
 
     checkpoint.Call(0);
     stream->didSourceStart();
 
     checkpoint.Call(1);
     EXPECT_FALSE(stream->isPulling());
-    reader->read(scriptState());
+    reader->read(getScriptState());
     EXPECT_TRUE(stream->isPulling());
     checkpoint.Call(2);
     stream->enqueue("hello");
     EXPECT_FALSE(stream->isPulling());
     checkpoint.Call(3);
-    reader->read(scriptState());
+    reader->read(getScriptState());
     EXPECT_TRUE(stream->isPulling());
     checkpoint.Call(4);
-    reader->read(scriptState());
+    reader->read(getScriptState());
     EXPECT_TRUE(stream->isPulling());
     checkpoint.Call(5);
     stream->enqueue("hello");
@@ -641,10 +641,10 @@ TEST_F(ReadableStreamTest, StrictStrategy)
     stream->enqueue("hello");
     EXPECT_FALSE(stream->isPulling());
     checkpoint.Call(8);
-    reader->read(scriptState());
+    reader->read(getScriptState());
     EXPECT_FALSE(stream->isPulling());
     checkpoint.Call(9);
-    reader->read(scriptState());
+    reader->read(getScriptState());
     EXPECT_TRUE(stream->isPulling());
 
     stream->error(DOMException::create(AbortError, "done"));

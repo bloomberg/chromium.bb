@@ -79,7 +79,7 @@ void PerformanceObserver::enqueuePerformanceEntry(PerformanceEntry& entry)
 
 bool PerformanceObserver::shouldBeSuspended() const
 {
-    return m_callback->executionContext() && m_callback->executionContext()->activeDOMObjectsAreSuspended();
+    return m_callback->getExecutionContext() && m_callback->getExecutionContext()->activeDOMObjectsAreSuspended();
 }
 
 void PerformanceObserver::deliver()

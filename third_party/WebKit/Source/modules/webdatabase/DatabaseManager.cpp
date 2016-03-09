@@ -120,7 +120,7 @@ DatabaseContext* DatabaseManager::databaseContextFor(ExecutionContext* context)
 
 void DatabaseManager::registerDatabaseContext(DatabaseContext* databaseContext)
 {
-    ExecutionContext* context = databaseContext->executionContext();
+    ExecutionContext* context = databaseContext->getExecutionContext();
     m_contextMap.set(context, databaseContext);
 #if ENABLE(ASSERT)
     m_databaseContextRegisteredCount++;
@@ -129,7 +129,7 @@ void DatabaseManager::registerDatabaseContext(DatabaseContext* databaseContext)
 
 void DatabaseManager::unregisterDatabaseContext(DatabaseContext* databaseContext)
 {
-    ExecutionContext* context = databaseContext->executionContext();
+    ExecutionContext* context = databaseContext->getExecutionContext();
     ASSERT(m_contextMap.get(context));
 #if ENABLE(ASSERT)
     m_databaseContextRegisteredCount--;
@@ -169,7 +169,7 @@ void DatabaseManager::throwExceptionForDatabaseError(DatabaseError error, const 
 static void logOpenDatabaseError(ExecutionContext* context, const String& name)
 {
     WTF_LOG(StorageAPI, "Database %s for origin %s not allowed to be established", name.ascii().data(),
-        context->securityOrigin()->toString().ascii().data());
+        context->getSecurityOrigin()->toString().ascii().data());
 }
 
 Database* DatabaseManager::openDatabaseInternal(ExecutionContext* context,
@@ -215,11 +215,11 @@ Database* DatabaseManager::openDatabase(ExecutionContext* context,
         return nullptr;
 
     databaseContextFor(context)->setHasOpenDatabases();
-    DatabaseClient::from(context)->didOpenDatabase(database, context->securityOrigin()->host(), name, expectedVersion);
+    DatabaseClient::from(context)->didOpenDatabase(database, context->getSecurityOrigin()->host(), name, expectedVersion);
 
     if (database->isNew() && creationCallback) {
         WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database);
-        database->executionContext()->postTask(BLINK_FROM_HERE, DatabaseCreationCallbackTask::create(database, creationCallback));
+        database->getExecutionContext()->postTask(BLINK_FROM_HERE, DatabaseCreationCallbackTask::create(database, creationCallback));
     }
 
     ASSERT(database);

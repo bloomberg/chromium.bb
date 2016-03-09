@@ -90,7 +90,7 @@ PassOwnPtr<AXValue> createBooleanValue(bool value, const String& type)
 
 PassOwnPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, String* name = nullptr)
 {
-    Node* node = axObject->node();
+    Node* node = axObject->getNode();
     if (!node)
         return PassOwnPtr<AXRelatedNode>();
     int backendNodeId = DOMNodeIds::idForNode(node);

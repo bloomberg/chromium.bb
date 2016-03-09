@@ -162,7 +162,7 @@ void LocalFileSystem::fileSystemAllowedInternal(
         return;
     }
 
-    KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
+    KURL storagePartition = KURL(KURL(), context->getSecurityOrigin()->toString());
     fileSystem()->openFileSystem(storagePartition, static_cast<WebFileSystemType>(type), callbacks->release());
 }
 
@@ -187,7 +187,7 @@ void LocalFileSystem::deleteFileSystemInternal(
         fileSystemNotAvailable(context, callbacks);
         return;
     }
-    KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
+    KURL storagePartition = KURL(KURL(), context->getSecurityOrigin()->toString());
     fileSystem()->deleteFileSystem(storagePartition, static_cast<WebFileSystemType>(type), callbacks->release());
 }
 

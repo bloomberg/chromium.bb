@@ -74,7 +74,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete);
 
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     static const AtomicString& toEventType(ApplicationCacheHost::EventID);
 

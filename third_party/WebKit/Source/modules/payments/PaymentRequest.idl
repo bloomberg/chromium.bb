@@ -15,7 +15,7 @@
     [CallWith=ScriptState] Promise<PaymentResponse> show();
     void abort();
 
-    readonly attribute ShippingAddress? shippingAddress;
+    [ImplementedAs=getShippingAddress] readonly attribute ShippingAddress? shippingAddress;
     readonly attribute DOMString? shippingOption;
 
     attribute EventHandler onshippingaddresschange;

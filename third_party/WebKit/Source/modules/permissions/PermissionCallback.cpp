@@ -22,7 +22,7 @@ PermissionCallback::~PermissionCallback()
 
 void PermissionCallback::onSuccess(WebPermissionStatus permissionStatus)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
     m_resolver->resolve(PermissionStatus::take(m_resolver.get(), permissionStatus, m_permissionType));
@@ -30,7 +30,7 @@ void PermissionCallback::onSuccess(WebPermissionStatus permissionStatus)
 
 void PermissionCallback::onError()
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
     m_resolver->reject();

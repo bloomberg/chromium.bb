@@ -96,7 +96,7 @@ ScriptValue ScriptState::getFromExtrasExports(const char* name)
     return ScriptValue(this, v8Value);
 }
 
-ExecutionContext* ScriptState::executionContext() const
+ExecutionContext* ScriptState::getExecutionContext() const
 {
     v8::HandleScope scope(m_isolate);
     return toExecutionContext(context());

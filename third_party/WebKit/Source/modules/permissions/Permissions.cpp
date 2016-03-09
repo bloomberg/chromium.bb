@@ -102,7 +102,7 @@ WebPermissionClient* Permissions::getClient(ExecutionContext* executionContext)
 
 ScriptPromise Permissions::query(ScriptState* scriptState, const Dictionary& rawPermission)
 {
-    WebPermissionClient* client = getClient(scriptState->executionContext());
+    WebPermissionClient* client = getClient(scriptState->getExecutionContext());
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
 
@@ -118,13 +118,13 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const Dictionary& raw
     // meaningful value because most APIs are broken on file scheme and no
     // permission prompt will be shown even if the returned permission will most
     // likely be "prompt".
-    client->queryPermission(type.get(), KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
+    client->queryPermission(type.get(), KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
     return promise;
 }
 
 ScriptPromise Permissions::request(ScriptState* scriptState, const Dictionary& rawPermission)
 {
-    WebPermissionClient* client = getClient(scriptState->executionContext());
+    WebPermissionClient* client = getClient(scriptState->getExecutionContext());
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
@@ -136,13 +136,13 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const Dictionary& r
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    client->requestPermission(type.get(), KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
+    client->requestPermission(type.get(), KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
     return promise;
 }
 
 ScriptPromise Permissions::revoke(ScriptState* scriptState, const Dictionary& rawPermission)
 {
-    WebPermissionClient* client = getClient(scriptState->executionContext());
+    WebPermissionClient* client = getClient(scriptState->getExecutionContext());
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't revoke permissions."));
 
@@ -154,13 +154,13 @@ ScriptPromise Permissions::revoke(ScriptState* scriptState, const Dictionary& ra
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    client->revokePermission(type.get(), KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
+    client->revokePermission(type.get(), KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
     return promise;
 }
 
 ScriptPromise Permissions::requestAll(ScriptState* scriptState, const Vector<Dictionary>& rawPermissions)
 {
-    WebPermissionClient* client = getClient(scriptState->executionContext());
+    WebPermissionClient* client = getClient(scriptState->getExecutionContext());
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
@@ -191,7 +191,7 @@ ScriptPromise Permissions::requestAll(ScriptState* scriptState, const Vector<Dic
     ScriptPromise promise = resolver->promise();
 
     WebVector<WebPermissionType> internalWebPermissions = *internalPermissions;
-    client->requestPermissions(internalWebPermissions, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()),
+    client->requestPermissions(internalWebPermissions, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()),
         new PermissionsCallback(resolver, internalPermissions.release(), callerIndexToInternalIndex.release()));
     return promise;
 }

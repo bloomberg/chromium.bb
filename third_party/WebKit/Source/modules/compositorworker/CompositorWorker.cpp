@@ -45,7 +45,7 @@ const AtomicString& CompositorWorker::interfaceName() const
 
 WorkerGlobalScopeProxy* CompositorWorker::createWorkerGlobalScopeProxy(ExecutionContext* worker)
 {
-    ASSERT(executionContext()->isDocument());
+    ASSERT(getExecutionContext()->isDocument());
     return new CompositorWorkerMessagingProxy(this);
 }
 

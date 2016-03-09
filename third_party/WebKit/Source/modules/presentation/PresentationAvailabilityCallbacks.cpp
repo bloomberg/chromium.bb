@@ -25,14 +25,14 @@ PresentationAvailabilityCallbacks::~PresentationAvailabilityCallbacks()
 
 void PresentationAvailabilityCallbacks::onSuccess(bool value)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
     m_resolver->resolve(PresentationAvailability::take(m_resolver.get(), m_url, value));
 }
 
 void PresentationAvailabilityCallbacks::onError(const WebPresentationError& error)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
     m_resolver->reject(PresentationError::take(m_resolver.get(), error));
 }

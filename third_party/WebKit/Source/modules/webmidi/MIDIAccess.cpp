@@ -81,7 +81,7 @@ void MIDIAccess::setOnstatechange(PassRefPtrWillBeRawPtr<EventListener> listener
 
 bool MIDIAccess::hasPendingActivity() const
 {
-    return m_hasPendingActivity && !executionContext()->activeDOMObjectsAreStopped();
+    return m_hasPendingActivity && !getExecutionContext()->activeDOMObjectsAreStopped();
 }
 
 MIDIInputMap* MIDIAccess::inputs() const
@@ -164,7 +164,7 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* dat
     // Convert from time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime()
     // into time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now().
     // This is how timestamps are defined in the Web MIDI spec.
-    Document* document = toDocument(executionContext());
+    Document* document = toDocument(getExecutionContext());
     ASSERT(document);
 
     double timeStampInMilliseconds = 1000 * document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(timeStamp);
@@ -185,7 +185,7 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
         // We need to translate it exactly to 0 seconds.
         timeStamp = 0;
     } else {
-        Document* document = toDocument(executionContext());
+        Document* document = toDocument(getExecutionContext());
         ASSERT(document);
         double documentStartTime = document->loader()->timing().referenceMonotonicTime();
         timeStamp = documentStartTime + 0.001 * timeStampInMilliseconds;

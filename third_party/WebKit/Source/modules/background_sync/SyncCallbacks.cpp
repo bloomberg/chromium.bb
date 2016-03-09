@@ -26,13 +26,13 @@ SyncRegistrationCallbacks::~SyncRegistrationCallbacks()
 
 void SyncRegistrationCallbacks::onSuccess(WebPassOwnPtr<WebSyncRegistration> webSyncRegistration)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
 
     OwnPtr<WebSyncRegistration> registration = webSyncRegistration.release();
     if (!registration) {
-        m_resolver->resolve(v8::Null(m_resolver->scriptState()->isolate()));
+        m_resolver->resolve(v8::Null(m_resolver->getScriptState()->isolate()));
         return;
     }
     m_resolver->resolve();
@@ -40,7 +40,7 @@ void SyncRegistrationCallbacks::onSuccess(WebPassOwnPtr<WebSyncRegistration> web
 
 void SyncRegistrationCallbacks::onError(const WebSyncError& error)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
     m_resolver->reject(SyncError::take(m_resolver.get(), error));
@@ -60,7 +60,7 @@ SyncGetRegistrationsCallbacks::~SyncGetRegistrationsCallbacks()
 
 void SyncGetRegistrationsCallbacks::onSuccess(const WebVector<WebSyncRegistration*>& webSyncRegistrations)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
     Vector<String> tags;
@@ -72,7 +72,7 @@ void SyncGetRegistrationsCallbacks::onSuccess(const WebVector<WebSyncRegistratio
 
 void SyncGetRegistrationsCallbacks::onError(const WebSyncError& error)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
         return;
     }
     m_resolver->reject(SyncError::take(m_resolver.get(), error));

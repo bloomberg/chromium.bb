@@ -209,8 +209,8 @@ void AudioScheduledSourceHandler::finish()
 {
     finishWithoutOnEnded();
 
-    if (context()->executionContext()) {
-        context()->executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&AudioScheduledSourceHandler::notifyEnded, PassRefPtr<AudioScheduledSourceHandler>(this)));
+    if (context()->getExecutionContext()) {
+        context()->getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&AudioScheduledSourceHandler::notifyEnded, PassRefPtr<AudioScheduledSourceHandler>(this)));
     }
 }
 

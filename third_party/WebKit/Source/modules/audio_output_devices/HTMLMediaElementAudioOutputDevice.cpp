@@ -56,13 +56,13 @@ void SetSinkIdResolver::startAsync()
 
 void SetSinkIdResolver::timerFired(Timer<SetSinkIdResolver>* timer)
 {
-    ExecutionContext* context = executionContext();
+    ExecutionContext* context = getExecutionContext();
     ASSERT(context && context->isDocument());
     OwnPtr<SetSinkIdCallbacks> callbacks = adoptPtr(new SetSinkIdCallbacks(this, *m_element, m_sinkId));
     WebMediaPlayer* webMediaPlayer = m_element->webMediaPlayer();
     if (webMediaPlayer) {
         // Using leakPtr() to transfer ownership because |webMediaPlayer| is a platform object that takes raw pointers
-        webMediaPlayer->setSinkId(m_sinkId, WebSecurityOrigin(context->securityOrigin()), callbacks.leakPtr());
+        webMediaPlayer->setSinkId(m_sinkId, WebSecurityOrigin(context->getSecurityOrigin()), callbacks.leakPtr());
     } else {
         if (AudioOutputDeviceClient* client = AudioOutputDeviceClient::from(context)) {
             client->checkIfAudioSinkExistsAndIsAuthorized(context, m_sinkId, callbacks.release());

@@ -277,7 +277,7 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
 
     linkRequest.setPriority(document.fetcher()->loadPriority(resourceType, linkRequest));
     if (crossOrigin != CrossOriginAttributeNotSet)
-        linkRequest.setCrossOriginAccessControl(document.securityOrigin(), crossOrigin);
+        linkRequest.setCrossOriginAccessControl(document.getSecurityOrigin(), crossOrigin);
     Settings* settings = document.settings();
     if (settings && settings->logPreload())
         document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
@@ -341,7 +341,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, CrossOriginAttri
 
         FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
         if (crossOrigin != CrossOriginAttributeNotSet)
-            linkRequest.setCrossOriginAccessControl(document.securityOrigin(), crossOrigin);
+            linkRequest.setCrossOriginAccessControl(document.getSecurityOrigin(), crossOrigin);
         setResource(LinkFetchResource::fetch(Resource::LinkPrefetch, linkRequest, document.fetcher()));
     }
 

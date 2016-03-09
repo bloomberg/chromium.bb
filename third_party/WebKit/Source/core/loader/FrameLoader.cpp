@@ -421,7 +421,7 @@ void FrameLoader::receivedFirstData()
     HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType);
     if (historyCommitType == StandardCommit && (m_documentLoader->urlForHistory().isEmpty() || (opener() && !m_currentItem && m_documentLoader->originalRequest().url().isEmpty())))
         historyCommitType = HistoryInertCommit;
-    else if (historyCommitType == InitialCommitInChildFrame && MixedContentChecker::isMixedContent(m_frame->tree().top()->securityContext()->securityOrigin(), m_documentLoader->url()))
+    else if (historyCommitType == InitialCommitInChildFrame && MixedContentChecker::isMixedContent(m_frame->tree().top()->securityContext()->getSecurityOrigin(), m_documentLoader->url()))
         historyCommitType = HistoryInertCommit;
     setHistoryItemStateForCommit(historyCommitType, HistoryNavigationType::DifferentDocument);
 
@@ -797,7 +797,7 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
     if (m_frame->script().executeScriptIfJavaScriptURL(url))
         return false;
 
-    if (!request.originDocument()->securityOrigin()->canDisplay(url)) {
+    if (!request.originDocument()->getSecurityOrigin()->canDisplay(url)) {
         reportLocalLoadFailed(m_frame, url.elidedString());
         return false;
     }
@@ -1449,10 +1449,10 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
         UseCounter::count(m_frame->domWindow()->document(), UseCounter::XFrameOptionsSameOrigin);
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
         // Out-of-process ancestors are always a different origin.
-        if (!topFrame->isLocalFrame() || !origin->isSameSchemeHostPort(toLocalFrame(topFrame)->document()->securityOrigin()))
+        if (!topFrame->isLocalFrame() || !origin->isSameSchemeHostPort(toLocalFrame(topFrame)->document()->getSecurityOrigin()))
             return true;
         for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent()) {
-            if (!frame->isLocalFrame() || !origin->isSameSchemeHostPort(toLocalFrame(frame)->document()->securityOrigin())) {
+            if (!frame->isLocalFrame() || !origin->isSameSchemeHostPort(toLocalFrame(frame)->document()->getSecurityOrigin())) {
                 UseCounter::count(m_frame->domWindow()->document(), UseCounter::XFrameOptionsSameOriginWithBadAncestorChain);
                 break;
             }

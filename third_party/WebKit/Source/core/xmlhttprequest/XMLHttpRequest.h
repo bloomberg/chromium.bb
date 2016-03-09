@@ -95,7 +95,7 @@ public:
 
     // ActiveDOMObject
     void contextDestroyed() override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
     bool hasPendingActivity() const override;
     void suspend() override;
     void resume() override;
@@ -153,7 +153,7 @@ private:
     XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
 
     Document* document() const;
-    SecurityOrigin* securityOrigin() const;
+    SecurityOrigin* getSecurityOrigin() const;
 
     void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
     void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;

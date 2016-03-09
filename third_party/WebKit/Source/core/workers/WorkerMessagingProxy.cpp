@@ -73,7 +73,7 @@ void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message
 } // namespace
 
 WorkerMessagingProxy::WorkerMessagingProxy(InProcessWorkerBase* workerObject, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
-    : m_executionContext(workerObject->executionContext())
+    : m_executionContext(workerObject->getExecutionContext())
     , m_workerObjectProxy(WorkerObjectProxy::create(this))
     , m_workerObject(workerObject)
     , m_mayBeDestroyed(false)
@@ -108,7 +108,7 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
         return;
     }
     Document* document = toDocument(m_executionContext.get());
-    SecurityOrigin* starterOrigin = document->securityOrigin();
+    SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
     ContentSecurityPolicy* csp = m_workerObject->contentSecurityPolicy() ? m_workerObject->contentSecurityPolicy() : document->contentSecurityPolicy();
     ASSERT(csp);

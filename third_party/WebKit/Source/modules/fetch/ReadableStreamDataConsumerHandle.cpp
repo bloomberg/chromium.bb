@@ -50,7 +50,7 @@ public:
             bool done;
             v8::Local<v8::Value> item = v.v8Value();
             ASSERT(item->IsObject());
-            v8::Local<v8::Value> value = v8CallOrCrash(v8UnpackIteratorResult(v.scriptState(), item.As<v8::Object>(), &done));
+            v8::Local<v8::Value> value = v8CallOrCrash(v8UnpackIteratorResult(v.getScriptState(), item.As<v8::Object>(), &done));
             if (done) {
                 readingContext->onReadDone();
                 return v;

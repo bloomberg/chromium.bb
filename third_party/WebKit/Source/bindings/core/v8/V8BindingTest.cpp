@@ -20,7 +20,7 @@ public:
 
     template<typename T> v8::Local<v8::Value> toV8(T value)
     {
-        return blink::toV8(value, m_scope.scriptState()->context()->Global(), m_scope.isolate());
+        return blink::toV8(value, m_scope.getScriptState()->context()->Global(), m_scope.isolate());
     }
 
     V8TestingScope m_scope;

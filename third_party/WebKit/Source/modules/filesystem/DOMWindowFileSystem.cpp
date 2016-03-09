@@ -51,10 +51,10 @@ void DOMWindowFileSystem::webkitRequestFileSystem(DOMWindow& windowArg, int type
     if (!document)
         return;
 
-    if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(document->securityOrigin()->protocol()))
+    if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(document->getSecurityOrigin()->protocol()))
         UseCounter::count(document, UseCounter::RequestFileSystemNonWebbyOrigin);
 
-    if (!document->securityOrigin()->canAccessFileSystem()) {
+    if (!document->getSecurityOrigin()->canAccessFileSystem()) {
         DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
     }
@@ -78,7 +78,7 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow& windowArg, 
     if (!document)
         return;
 
-    SecurityOrigin* securityOrigin = document->securityOrigin();
+    SecurityOrigin* securityOrigin = document->getSecurityOrigin();
     KURL completedURL = document->completeURL(url);
     if (!securityOrigin->canAccessFileSystem() || !securityOrigin->canRequest(completedURL)) {
         DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::SECURITY_ERR));

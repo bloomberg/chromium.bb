@@ -143,7 +143,7 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(bool is_new_navigation,
   content::DocumentState* document_state =
       content::DocumentState::FromDataSource(frame->dataSource());
   if (document_state->can_load_local_resources()) {
-    blink::WebSecurityOrigin origin = frame->document().securityOrigin();
+    blink::WebSecurityOrigin origin = frame->document().getSecurityOrigin();
     origin.grantLoadLocalResources();
   }
 }

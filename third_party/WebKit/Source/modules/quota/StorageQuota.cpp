@@ -86,7 +86,7 @@ ScriptPromise StorageQuota::queryInfo(ScriptState* scriptState, String type)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    SecurityOrigin* securityOrigin = scriptState->executionContext()->securityOrigin();
+    SecurityOrigin* securityOrigin = scriptState->getExecutionContext()->getSecurityOrigin();
     if (securityOrigin->isUnique()) {
         resolver->reject(DOMError::create(NotSupportedError));
         return promise;
@@ -100,7 +100,7 @@ ScriptPromise StorageQuota::queryInfo(ScriptState* scriptState, String type)
 
 ScriptPromise StorageQuota::requestPersistentQuota(ScriptState* scriptState, unsigned long long newQuota)
 {
-    StorageQuotaClient* client = StorageQuotaClient::from(scriptState->executionContext());
+    StorageQuotaClient* client = StorageQuotaClient::from(scriptState->getExecutionContext());
     if (!client) {
         ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();

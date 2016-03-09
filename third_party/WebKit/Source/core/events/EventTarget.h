@@ -102,7 +102,7 @@ public:
 //   very strange compiler errors.
 // - If you added an onfoo attribute, use DEFINE_ATTRIBUTE_EVENT_LISTENER(foo)
 //   in your class declaration.
-// - Override EventTarget::interfaceName() and executionContext(). The former
+// - Override EventTarget::interfaceName() and getExecutionContext(). The former
 //   will typically return EventTargetNames::YourClassName. The latter will
 //   return ActiveDOMObject::executionContext (if you are an ActiveDOMObject)
 //   or the document you're in.
@@ -123,7 +123,7 @@ public:
 #endif
 
     virtual const AtomicString& interfaceName() const = 0;
-    virtual ExecutionContext* executionContext() const = 0;
+    virtual ExecutionContext* getExecutionContext() const = 0;
 
     virtual Node* toNode();
     virtual const LocalDOMWindow* toDOMWindow() const;

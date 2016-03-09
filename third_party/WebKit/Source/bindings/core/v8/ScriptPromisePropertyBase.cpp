@@ -32,11 +32,11 @@ static void clearHandle(const v8::WeakCallbackInfo<ScopedPersistent<v8::Object>>
 
 ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return ScriptPromise();
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Local<v8::Context> context = toV8Context(executionContext(), world);
+    v8::Local<v8::Context> context = toV8Context(getExecutionContext(), world);
     if (context.IsEmpty())
         return ScriptPromise();
     ScriptState* scriptState = ScriptState::from(context);
@@ -72,7 +72,7 @@ ScriptPromise ScriptPromisePropertyBase::promise(DOMWrapperWorld& world)
 
 void ScriptPromisePropertyBase::resolveOrReject(State targetState)
 {
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     ASSERT(m_state == Pending);
     ASSERT(targetState == Resolved || targetState == Rejected);
 

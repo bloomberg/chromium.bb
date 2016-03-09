@@ -95,9 +95,9 @@ public:
     static DeviceMotionData* create(const WebDeviceMotionData&);
     DECLARE_TRACE();
 
-    Acceleration* acceleration() const { return m_acceleration.get(); }
-    Acceleration* accelerationIncludingGravity() const { return m_accelerationIncludingGravity.get(); }
-    RotationRate* rotationRate() const { return m_rotationRate.get(); }
+    Acceleration* getAcceleration() const { return m_acceleration.get(); }
+    Acceleration* getAccelerationIncludingGravity() const { return m_accelerationIncludingGravity.get(); }
+    RotationRate* getRotationRate() const { return m_rotationRate.get(); }
 
     bool canProvideInterval() const { return m_canProvideInterval; }
     double interval() const { return m_interval; }

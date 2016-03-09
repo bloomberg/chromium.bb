@@ -74,11 +74,11 @@ WebURL WebDocument::url() const
     return constUnwrap<Document>()->url();
 }
 
-WebSecurityOrigin WebDocument::securityOrigin() const
+WebSecurityOrigin WebDocument::getSecurityOrigin() const
 {
     if (!constUnwrap<Document>())
         return WebSecurityOrigin();
-    return WebSecurityOrigin(constUnwrap<Document>()->securityOrigin());
+    return WebSecurityOrigin(constUnwrap<Document>()->getSecurityOrigin());
 }
 
 bool WebDocument::isSecureContext(WebString& errorMessage) const

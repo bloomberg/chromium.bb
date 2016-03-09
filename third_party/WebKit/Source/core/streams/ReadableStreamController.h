@@ -21,7 +21,7 @@ public:
     DEFINE_INLINE_TRACE() {}
 
     explicit ReadableStreamController(ScriptValue stream)
-        : m_scriptState(stream.scriptState())
+        : m_scriptState(stream.getScriptState())
         , m_stream(stream.isolate(), stream.v8Value())
     {
         m_stream.setWeak(&m_stream, ReadableStreamController::streamWeakCallback);

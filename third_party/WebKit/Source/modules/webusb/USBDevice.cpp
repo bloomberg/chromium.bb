@@ -80,14 +80,14 @@ public:
 
     void onSuccess(uint8_t value) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->resolve(USBConfiguration::createFromValue(m_device, value));
     }
 
     void onError(const WebUSBError& e) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(USBError::take(m_resolver, e));
     }
@@ -205,7 +205,7 @@ ScriptPromise USBDevice::open(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     m_device->open(new CallbackPromiseAdapter<void, USBError>(resolver));
-    setContext(scriptState->executionContext());
+    setContext(scriptState->getExecutionContext());
     return promise;
 }
 

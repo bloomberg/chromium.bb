@@ -117,9 +117,9 @@ void WebFrame::detach()
     toImplBase()->frame()->detach(FrameDetachType::Remove);
 }
 
-WebSecurityOrigin WebFrame::securityOrigin() const
+WebSecurityOrigin WebFrame::getSecurityOrigin() const
 {
-    return WebSecurityOrigin(toImplBase()->frame()->securityContext()->securityOrigin());
+    return WebSecurityOrigin(toImplBase()->frame()->securityContext()->getSecurityOrigin());
 }
 
 

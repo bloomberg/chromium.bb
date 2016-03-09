@@ -203,8 +203,8 @@ void UserMediaClientImpl::requestUserMedia(
     }
     CopyBlinkRequestToStreamControls(user_media_request, &controls);
 
-    security_origin =
-        blink::WebStringToGURL(user_media_request.securityOrigin().toString());
+    security_origin = blink::WebStringToGURL(
+        user_media_request.getSecurityOrigin().toString());
     DCHECK(render_frame()->GetWebFrame() ==
                static_cast<blink::WebFrame*>(
                    user_media_request.ownerDocument().frame()));
@@ -285,7 +285,7 @@ void UserMediaClientImpl::requestMediaDevices(
   GURL security_origin;
   if (!media_devices_request.isNull()) {
     security_origin = blink::WebStringToGURL(
-        media_devices_request.securityOrigin().toString());
+        media_devices_request.getSecurityOrigin().toString());
   }
 
   DVLOG(1) << "UserMediaClientImpl::requestMediaDevices("

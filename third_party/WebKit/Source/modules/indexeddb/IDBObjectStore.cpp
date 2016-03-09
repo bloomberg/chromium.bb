@@ -99,7 +99,7 @@ IDBRequest* IDBObjectStore::get(ScriptState* scriptState, const ScriptValue& key
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return nullptr;
     }
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), key, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), key, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!keyRange) {
@@ -139,7 +139,7 @@ IDBRequest* IDBObjectStore::getAll(ScriptState* scriptState, const ScriptValue& 
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return nullptr;
     }
-    IDBKeyRange* range = IDBKeyRange::fromScriptValue(scriptState->executionContext(), keyRange, exceptionState);
+    IDBKeyRange* range = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), keyRange, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!backendDB()) {
@@ -175,7 +175,7 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* scriptState, const ScriptVal
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return nullptr;
     }
-    IDBKeyRange* range = IDBKeyRange::fromScriptValue(scriptState->executionContext(), keyRange, exceptionState);
+    IDBKeyRange* range = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), keyRange, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!backendDB()) {
@@ -361,7 +361,7 @@ IDBRequest* IDBObjectStore::deleteFunction(ScriptState* scriptState, const Scrip
         return nullptr;
     }
 
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), key, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), key, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!keyRange) {
@@ -444,7 +444,7 @@ private:
 
     void handleEvent(ExecutionContext* executionContext, Event* event) override
     {
-        ASSERT(m_scriptState->executionContext() == executionContext);
+        ASSERT(m_scriptState->getExecutionContext() == executionContext);
         ASSERT(event->type() == EventTypeNames::success);
         EventTarget* target = event->target();
         IDBRequest* request = static_cast<IDBRequest*>(target);
@@ -644,7 +644,7 @@ IDBRequest* IDBObjectStore::openCursor(ScriptState* scriptState, const ScriptVal
     }
 
     WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString);
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -682,7 +682,7 @@ IDBRequest* IDBObjectStore::openKeyCursor(ScriptState* scriptState, const Script
     }
 
     WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString);
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -714,7 +714,7 @@ IDBRequest* IDBObjectStore::count(ScriptState* scriptState, const ScriptValue& r
         return nullptr;
     }
 
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 

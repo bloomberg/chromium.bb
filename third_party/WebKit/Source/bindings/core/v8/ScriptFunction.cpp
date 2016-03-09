@@ -20,7 +20,7 @@ void ScriptFunction::callCallback(const v8::FunctionCallbackInfo<v8::Value>& arg
 {
     ASSERT(args.Data()->IsExternal());
     ScriptFunction* scriptFunction = static_cast<ScriptFunction*>(v8::Local<v8::External>::Cast(args.Data())->Value());
-    ScriptValue result = scriptFunction->call(ScriptValue(scriptFunction->scriptState(), args[0]));
+    ScriptValue result = scriptFunction->call(ScriptValue(scriptFunction->getScriptState(), args[0]));
     v8SetReturnValue(args, result.v8Value());
 }
 

@@ -122,7 +122,7 @@ private:
         ASSERT(m_resolveType == Fulfilled || m_resolveType == Rejected);
         if (m_resolveType == Rejected) {
             m_observer->responseWasRejected(WebServiceWorkerResponseErrorPromiseRejected);
-            value = ScriptPromise::reject(value.scriptState(), value).getScriptValue();
+            value = ScriptPromise::reject(value.getScriptState(), value).getScriptValue();
         } else {
             m_observer->responseWasFulfilled(value);
         }
@@ -147,7 +147,7 @@ void RespondWithObserver::contextDestroyed()
 
 void RespondWithObserver::didDispatchEvent(DispatchEventResult dispatchResult)
 {
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     if (m_state != Initial)
         return;
 
@@ -156,7 +156,7 @@ void RespondWithObserver::didDispatchEvent(DispatchEventResult dispatchResult)
         return;
     }
 
-    ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID);
+    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->didHandleFetchEvent(m_eventID);
     m_state = Done;
 }
 
@@ -175,25 +175,25 @@ void RespondWithObserver::respondWith(ScriptState* scriptState, ScriptPromise sc
 
 void RespondWithObserver::responseWasRejected(WebServiceWorkerResponseError error)
 {
-    ASSERT(executionContext());
-    executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, getMessageForResponseError(error, m_requestURL)));
+    ASSERT(getExecutionContext());
+    getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, getMessageForResponseError(error, m_requestURL)));
 
     // The default value of WebServiceWorkerResponse's status is 0, which maps
     // to a network error.
     WebServiceWorkerResponse webResponse;
     webResponse.setError(error);
-    ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
+    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->didHandleFetchEvent(m_eventID, webResponse);
     m_state = Done;
 }
 
 void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
 {
-    ASSERT(executionContext());
-    if (!V8Response::hasInstance(value.v8Value(), toIsolate(executionContext()))) {
+    ASSERT(getExecutionContext());
+    if (!V8Response::hasInstance(value.v8Value(), toIsolate(getExecutionContext()))) {
         responseWasRejected(WebServiceWorkerResponseErrorNoV8Instance);
         return;
     }
-    Response* response = V8Response::toImplWithTypeCheck(toIsolate(executionContext()), value.v8Value());
+    Response* response = V8Response::toImplWithTypeCheck(toIsolate(getExecutionContext()), value.v8Value());
     // "If one of the following conditions is true, return a network error:
     //   - |response|'s type is |error|.
     //   - |request|'s mode is not |no-cors| and response's type is |opaque|.
@@ -241,12 +241,12 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         if (blobDataHandle) {
             webResponse.setBlobDataHandle(blobDataHandle);
         } else {
-            Stream* outStream = Stream::create(executionContext(), "");
+            Stream* outStream = Stream::create(getExecutionContext(), "");
             webResponse.setStreamURL(outStream->url());
-            buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsStream(outStream), new NoopLoaderClient);
+            buffer->startLoading(getExecutionContext(), FetchDataLoader::createLoaderAsStream(outStream), new NoopLoaderClient);
         }
     }
-    ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
+    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->didHandleFetchEvent(m_eventID, webResponse);
     m_state = Done;
 }
 

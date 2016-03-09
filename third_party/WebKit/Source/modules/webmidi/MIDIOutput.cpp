@@ -198,7 +198,7 @@ void MIDIOutput::send(DOMUint8Array* array, double timestamp, ExceptionState& ex
     ASSERT(array);
 
     if (timestamp == 0.0)
-        timestamp = now(executionContext());
+        timestamp = now(getExecutionContext());
 
     // Implicit open. It does nothing if the port is already opened.
     // This should be performed even if |array| is invalid.
@@ -211,7 +211,7 @@ void MIDIOutput::send(DOMUint8Array* array, double timestamp, ExceptionState& ex
 void MIDIOutput::send(Vector<unsigned> unsignedData, double timestamp, ExceptionState& exceptionState)
 {
     if (timestamp == 0.0)
-        timestamp = now(executionContext());
+        timestamp = now(getExecutionContext());
 
     RefPtr<DOMUint8Array> array = DOMUint8Array::create(unsignedData.size());
     DOMUint8Array::ValueType* const arrayData = array->data();

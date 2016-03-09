@@ -237,7 +237,7 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const final;
-    ExecutionContext* executionContext() const final;
+    ExecutionContext* getExecutionContext() const final;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
@@ -250,7 +250,7 @@ public:
     virtual bool isContextClosed() const { return m_isCleared; }
 
     // Get the security origin for this audio context.
-    SecurityOrigin* securityOrigin() const;
+    SecurityOrigin* getSecurityOrigin() const;
 
     // Get the PeriodicWave for the specified oscillator type.  The table is initialized internally
     // if necessary.

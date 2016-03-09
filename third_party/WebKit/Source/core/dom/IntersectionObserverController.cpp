@@ -48,7 +48,7 @@ void IntersectionObserverController::resume()
 
 void IntersectionObserverController::deliverIntersectionObservations(Timer<IntersectionObserverController>*)
 {
-    if (executionContext()->activeDOMObjectsAreSuspended()) {
+    if (getExecutionContext()->activeDOMObjectsAreSuspended()) {
         m_timerFiredWhileSuspended = true;
         return;
     }

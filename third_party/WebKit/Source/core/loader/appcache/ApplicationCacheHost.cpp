@@ -242,7 +242,7 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int p
         return;
 
     const AtomicString& eventType = ApplicationCache::toEventType(id);
-    if (eventType.isEmpty() || !m_domApplicationCache->executionContext())
+    if (eventType.isEmpty() || !m_domApplicationCache->getExecutionContext())
         return;
     RefPtrWillBeRawPtr<Event> event = nullptr;
     if (id == PROGRESS_EVENT)

@@ -71,7 +71,7 @@ public:
             }
 
             v8::Local<v8::Value> result;
-            if (!V8ScriptRunner::callFunction(v8Callback, scriptState->executionContext(), v8ThisArg, 3, args, isolate).ToLocal(&result)) {
+            if (!V8ScriptRunner::callFunction(v8Callback, scriptState->getExecutionContext(), v8ThisArg, 3, args, isolate).ToLocal(&result)) {
                 exceptionState.rethrowV8Exception(tryCatch.Exception());
                 return;
             }

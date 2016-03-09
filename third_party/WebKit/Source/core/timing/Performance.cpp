@@ -64,7 +64,7 @@ Performance::~Performance()
 {
 }
 
-ExecutionContext* Performance::executionContext() const
+ExecutionContext* Performance::getExecutionContext() const
 {
     if (!frame())
         return nullptr;

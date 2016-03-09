@@ -112,7 +112,7 @@ DEFINE_TRACE(Geolocation)
 
 Document* Geolocation::document() const
 {
-    return toDocument(executionContext());
+    return toDocument(getExecutionContext());
 }
 
 LocalFrame* Geolocation::frame() const
@@ -187,7 +187,7 @@ int Geolocation::watchPosition(PositionCallback* successCallback, PositionErrorC
     int watchID;
     // Keep asking for the next id until we're given one that we don't already have.
     do {
-        watchID = executionContext()->circularSequentialID();
+        watchID = getExecutionContext()->circularSequentialID();
     } while (!m_watchers.add(watchID, notifier));
     return watchID;
 }
@@ -196,7 +196,7 @@ void Geolocation::startRequest(GeoNotifier *notifier)
 {
     recordOriginTypeAccess();
     String errorMessage;
-    if (!frame()->settings()->allowGeolocationOnInsecureOrigins() && !executionContext()->isSecureContext(errorMessage)) {
+    if (!frame()->settings()->allowGeolocationOnInsecureOrigins() && !getExecutionContext()->isSecureContext(errorMessage)) {
         notifier->setFatalError(PositionError::create(PositionError::PERMISSION_DENIED, errorMessage));
         return;
     }

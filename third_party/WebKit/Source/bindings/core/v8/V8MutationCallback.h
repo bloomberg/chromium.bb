@@ -49,7 +49,7 @@ public:
     ~V8MutationCallback() override;
 
     void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord>>&, MutationObserver*) override;
-    ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
 
     DECLARE_VIRTUAL_TRACE();
 

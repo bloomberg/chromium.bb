@@ -51,7 +51,7 @@ public:
         return new CanvasGradient(p0, r0, p1, r1);
     }
 
-    Gradient* gradient() const { return m_gradient.get(); }
+    Gradient* getGradient() const { return m_gradient.get(); }
 
     void addColorStop(float value, const String& color, ExceptionState&);
 

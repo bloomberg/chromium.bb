@@ -88,7 +88,7 @@ PassRefPtrWillBeRawPtr<Document> XSLTProcessor::createDocumentFromSource(const S
 
         if (oldDocument) {
             DocumentXSLT::from(*result).setTransformSourceDocument(oldDocument.get());
-            result->updateSecurityOrigin(oldDocument->securityOrigin());
+            result->updateSecurityOrigin(oldDocument->getSecurityOrigin());
             result->setCookieURL(oldDocument->cookieURL());
 
             RefPtrWillBeRawPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();

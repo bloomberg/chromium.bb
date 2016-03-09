@@ -54,7 +54,7 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ScriptState* scriptState, Eve
     // See issue 889829.
     RefPtrWillBeRawPtr<V8AbstractEventListener> protect(this);
 
-    WorkerOrWorkletScriptController* script = toWorkerGlobalScope(scriptState->executionContext())->scriptController();
+    WorkerOrWorkletScriptController* script = toWorkerGlobalScope(scriptState->getExecutionContext())->scriptController();
     if (!script)
         return;
 
@@ -77,7 +77,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Scri
         return v8::Local<v8::Value>();
 
     v8::Local<v8::Value> parameters[1] = { jsEvent };
-    v8::MaybeLocal<v8::Value> maybeResult = V8ScriptRunner::callFunction(handlerFunction, scriptState->executionContext(), receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+    v8::MaybeLocal<v8::Value> maybeResult = V8ScriptRunner::callFunction(handlerFunction, scriptState->getExecutionContext(), receiver, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 
@@ -91,7 +91,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Scri
 // This is almost identical to V8AbstractEventListener::getReceiverObject().
 v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::getReceiverObject(ScriptState* scriptState, Event* event)
 {
-    v8::Local<v8::Object> listener = getListenerObject(scriptState->executionContext());
+    v8::Local<v8::Object> listener = getListenerObject(scriptState->getExecutionContext());
 
     if (!listener.IsEmpty() && !listener->IsFunction())
         return listener;

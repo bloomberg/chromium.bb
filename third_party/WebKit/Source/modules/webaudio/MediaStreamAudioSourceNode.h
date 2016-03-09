@@ -42,7 +42,7 @@ public:
     static PassRefPtr<MediaStreamAudioSourceHandler> create(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     ~MediaStreamAudioSourceHandler() override;
 
-    MediaStream* mediaStream() { return m_mediaStream.get(); }
+    MediaStream* getMediaStream() { return m_mediaStream.get(); }
 
     // AudioHandler
     void process(size_t framesToProcess) override;
@@ -51,7 +51,7 @@ public:
     // MediaStreamAudioSourceNode.
     void setFormat(size_t numberOfChannels, float sampleRate);
 
-    AudioSourceProvider* audioSourceProvider() const { return m_audioSourceProvider.get(); }
+    AudioSourceProvider* getAudioSourceProvider() const { return m_audioSourceProvider.get(); }
 
 private:
     MediaStreamAudioSourceHandler(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
@@ -77,7 +77,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
     MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
 
-    MediaStream* mediaStream() const;
+    MediaStream* getMediaStream() const;
 
     // AudioSourceProviderClient functions:
     void setFormat(size_t numberOfChannels, float sampleRate) override;

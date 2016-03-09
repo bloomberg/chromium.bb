@@ -37,8 +37,8 @@ private:
 
         void dispose()
         {
-            if (executionContext())
-                executionContext()->consumeWindowInteraction();
+            if (getExecutionContext())
+                getExecutionContext()->consumeWindowInteraction();
         }
 
         DEFINE_INLINE_TRACE()
@@ -50,7 +50,7 @@ private:
     // In Oilpan, destructors are not allowed to touch other on-heap objects.
     // The Observer indirection is needed to keep
     // ScopedWindowFocusAllowedIndicator off-heap and thus allows its destructor
-    // to call executionContext()->consumeWindowInteraction().
+    // to call getExecutionContext()->consumeWindowInteraction().
     OwnPtrWillBePersistent<Observer> m_observer;
 };
 

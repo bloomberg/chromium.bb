@@ -87,7 +87,7 @@ DocumentWebSocketChannel::BlobLoader::BlobLoader(PassRefPtr<BlobDataHandle> blob
     : m_channel(channel)
     , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
 {
-    m_loader.start(channel->executionContext(), blobDataHandle);
+    m_loader.start(channel->getExecutionContext(), blobDataHandle);
 }
 
 void DocumentWebSocketChannel::BlobLoader::cancel()
@@ -137,7 +137,7 @@ bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
         if (MixedContentChecker::shouldBlockWebSocket(document()->frame(), url))
             return false;
     }
-    if (MixedContentChecker::isMixedContent(document()->securityOrigin(), url)) {
+    if (MixedContentChecker::isMixedContent(document()->getSecurityOrigin(), url)) {
         String message = "Connecting to a non-secure WebSocket server from a secure origin is deprecated.";
         document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
     }
@@ -158,7 +158,7 @@ bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
 
     if (document()->frame())
         document()->frame()->loader().client()->dispatchWillOpenWebSocket(m_handle.get());
-    m_handle->connect(url, webProtocols, WebSecurityOrigin(executionContext()->securityOrigin()), this);
+    m_handle->connect(url, webProtocols, WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()), this);
 
     flowControlIfNecessary();
     TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketCreate", TRACE_EVENT_SCOPE_THREAD, "data", InspectorWebSocketCreateEvent::data(document(), m_identifier, url, protocol));
@@ -238,7 +238,7 @@ void DocumentWebSocketChannel::fail(const String& reason, MessageLevel level, co
 
     InspectorInstrumentation::didReceiveWebSocketFrameError(document(), m_identifier, reason);
     const String message = "WebSocket connection to '" + m_url.elidedString() + "' failed: " + reason;
-    executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, level, message, sourceURL, lineNumber));
+    getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, level, message, sourceURL, lineNumber));
 
     if (m_client)
         m_client->didError();
@@ -382,7 +382,7 @@ void DocumentWebSocketChannel::handleDidClose(bool wasClean, unsigned short code
 Document* DocumentWebSocketChannel::document()
 {
     // This context is always a Document. See the constructor.
-    ExecutionContext* context = executionContext();
+    ExecutionContext* context = getExecutionContext();
     ASSERT(context->isDocument());
     return toDocument(context);
 }

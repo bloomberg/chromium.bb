@@ -27,7 +27,7 @@ public:
     void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override;
 
     EventTarget* errorEventTarget() override { return nullptr; }
-    EventQueue* eventQueue() const override { return m_queue.get(); }
+    EventQueue* getEventQueue() const override { return m_queue.get(); }
 
     bool tasksNeedSuspension() override { return m_tasksNeedSuspension; }
     void setTasksNeedSuspension(bool flag) { m_tasksNeedSuspension = flag; }

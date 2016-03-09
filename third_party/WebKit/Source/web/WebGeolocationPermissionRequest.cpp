@@ -43,9 +43,9 @@ void WebGeolocationPermissionRequest::reset()
     m_private.reset();
 }
 
-WebSecurityOrigin WebGeolocationPermissionRequest::securityOrigin() const
+WebSecurityOrigin WebGeolocationPermissionRequest::getSecurityOrigin() const
 {
-    return WebSecurityOrigin(m_private->executionContext()->securityOrigin());
+    return WebSecurityOrigin(m_private->getExecutionContext()->getSecurityOrigin());
 }
 
 void WebGeolocationPermissionRequest::setIsAllowed(bool allowed)

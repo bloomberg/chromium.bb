@@ -156,9 +156,9 @@ const AtomicString& SpeechRecognition::interfaceName() const
     return EventTargetNames::SpeechRecognition;
 }
 
-ExecutionContext* SpeechRecognition::executionContext() const
+ExecutionContext* SpeechRecognition::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 void SpeechRecognition::stop()

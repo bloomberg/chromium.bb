@@ -377,7 +377,7 @@ void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame, const cha
 {
     // URLs aren't available for RemoteFrames, so the error message uses their
     // origin instead.
-    String targetFrameDescription = targetFrame.isLocalFrame() ? "with URL '" + toLocalFrame(targetFrame).document()->url().getString() + "'" : "with origin '" + targetFrame.securityContext()->securityOrigin()->toString() + "'";
+    String targetFrameDescription = targetFrame.isLocalFrame() ? "with URL '" + toLocalFrame(targetFrame).document()->url().getString() + "'" : "with origin '" + targetFrame.securityContext()->getSecurityOrigin()->toString() + "'";
     String message = "Unsafe JavaScript attempt to initiate navigation for frame " + targetFrameDescription + " from frame with URL '" + document()->url().getString() + "'. " + reason + "\n";
 
     localDOMWindow()->printErrorMessage(message);

@@ -67,7 +67,7 @@ static bool isAllowed(ScriptState* scriptState, ExecutionContext* executionConte
 
 int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const ScriptValue& handler, int timeout, const Vector<ScriptValue>& arguments)
 {
-    ExecutionContext* executionContext = eventTarget.executionContext();
+    ExecutionContext* executionContext = eventTarget.getExecutionContext();
     if (!isAllowed(scriptState, executionContext, false))
         return 0;
     if (timeout >= 0 && executionContext->isDocument()) {
@@ -81,7 +81,7 @@ int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const ScriptV
 
 int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const String& handler, int timeout, const Vector<ScriptValue>&)
 {
-    ExecutionContext* executionContext = eventTarget.executionContext();
+    ExecutionContext* executionContext = eventTarget.getExecutionContext();
     if (!isAllowed(scriptState, executionContext, true))
         return 0;
     // Don't allow setting timeouts to run empty functions.  Was historically a
@@ -99,7 +99,7 @@ int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const String&
 
 int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const ScriptValue& handler, int timeout, const Vector<ScriptValue>& arguments)
 {
-    ExecutionContext* executionContext = eventTarget.executionContext();
+    ExecutionContext* executionContext = eventTarget.getExecutionContext();
     if (!isAllowed(scriptState, executionContext, false))
         return 0;
     OwnPtrWillBeRawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler, arguments);
@@ -108,7 +108,7 @@ int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const Script
 
 int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const String& handler, int timeout, const Vector<ScriptValue>&)
 {
-    ExecutionContext* executionContext = eventTarget.executionContext();
+    ExecutionContext* executionContext = eventTarget.getExecutionContext();
     if (!isAllowed(scriptState, executionContext, true))
         return 0;
     // Don't allow setting timeouts to run empty functions.  Was historically a
@@ -121,13 +121,13 @@ int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const String
 
 void clearTimeout(EventTarget& eventTarget, int timeoutID)
 {
-    if (ExecutionContext* context = eventTarget.executionContext())
+    if (ExecutionContext* context = eventTarget.getExecutionContext())
         DOMTimer::removeByID(context, timeoutID);
 }
 
 void clearInterval(EventTarget& eventTarget, int timeoutID)
 {
-    if (ExecutionContext* context = eventTarget.executionContext())
+    if (ExecutionContext* context = eventTarget.getExecutionContext())
         DOMTimer::removeByID(context, timeoutID);
 }
 

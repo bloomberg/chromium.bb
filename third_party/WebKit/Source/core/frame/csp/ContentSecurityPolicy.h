@@ -277,7 +277,7 @@ private:
 
     void applyPolicySideEffectsToExecutionContext();
 
-    SecurityOrigin* securityOrigin() const;
+    SecurityOrigin* getSecurityOrigin() const;
     KURL completeURL(const String&) const;
 
     void logToConsole(const String& message, MessageLevel = ErrorMessageLevel);

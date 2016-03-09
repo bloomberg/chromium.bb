@@ -160,10 +160,10 @@ void ContentSecurityPolicy::bindToExecutionContext(ExecutionContext* executionCo
 void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
 {
     ASSERT(m_executionContext);
-    ASSERT(securityOrigin());
+    ASSERT(getSecurityOrigin());
     // Ensure that 'self' processes correctly.
-    m_selfProtocol = securityOrigin()->protocol();
-    m_selfSource = adoptPtr(new CSPSource(this, m_selfProtocol, securityOrigin()->host(), securityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
+    m_selfProtocol = getSecurityOrigin()->protocol();
+    m_selfSource = adoptPtr(new CSPSource(this, m_selfProtocol, getSecurityOrigin()->host(), getSecurityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
 
     if (didSetReferrerPolicy())
         m_executionContext->setReferrerPolicy(m_referrerPolicy);
@@ -182,8 +182,8 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         if (m_insecureRequestsPolicy == SecurityContext::InsecureRequestsUpgrade) {
             UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
             document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);
-            if (!securityOrigin()->host().isNull())
-                document->addInsecureNavigationUpgrade(securityOrigin()->host().impl()->hash());
+            if (!getSecurityOrigin()->host().isNull())
+                document->addInsecureNavigationUpgrade(getSecurityOrigin()->host().impl()->hash());
         }
 
         for (const auto& consoleMessage : m_consoleMessages)
@@ -703,9 +703,9 @@ bool ContentSecurityPolicy::didSetReferrerPolicy() const
     return false;
 }
 
-SecurityOrigin* ContentSecurityPolicy::securityOrigin() const
+SecurityOrigin* ContentSecurityPolicy::getSecurityOrigin() const
 {
-    return m_executionContext->securityContext().securityOrigin();
+    return m_executionContext->securityContext().getSecurityOrigin();
 }
 
 const KURL ContentSecurityPolicy::url() const
@@ -747,7 +747,7 @@ static String stripURLForUseInReport(Document* document, const KURL& url)
         return String();
     if (!url.isHierarchical() || url.protocolIs("file"))
         return url.protocol();
-    return document->securityOrigin()->canRequest(url) ? url.strippedForUseAsReferrer() : SecurityOrigin::create(url)->toString();
+    return document->getSecurityOrigin()->canRequest(url) ? url.strippedForUseAsReferrer() : SecurityOrigin::create(url)->toString();
 }
 
 static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventInit& init, Document* document, const String& directiveText, const String& effectiveDirective, const KURL& blockedURL, const String& header)
@@ -1037,7 +1037,7 @@ bool ContentSecurityPolicy::selfMatchesInnerURL() const
     // if we're in a context that bypasses Content Security Policy in the main world.
     //
     // TODO(mkwst): Revisit this once embedders have an opportunity to update their extension models.
-    return m_executionContext && SchemeRegistry::schemeShouldBypassContentSecurityPolicy(m_executionContext->securityOrigin()->protocol());
+    return m_executionContext && SchemeRegistry::schemeShouldBypassContentSecurityPolicy(m_executionContext->getSecurityOrigin()->protocol());
 }
 
 bool ContentSecurityPolicy::shouldBypassMainWorld(const ExecutionContext* context)

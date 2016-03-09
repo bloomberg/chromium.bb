@@ -468,7 +468,7 @@ bool ScriptController::canExecuteScripts(ReasonForCallingCanExecuteScripts reaso
     }
 
     if (frame()->document() && frame()->document()->isViewSource()) {
-        ASSERT(frame()->document()->securityOrigin()->isUnique());
+        ASSERT(frame()->document()->getSecurityOrigin()->isUnique());
         return true;
     }
 
@@ -585,7 +585,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const WillBeHea
     if (!isolatedWorldWindowProxy->isContextInitialized())
         return;
 
-    ScriptState* scriptState = isolatedWorldWindowProxy->scriptState();
+    ScriptState* scriptState = isolatedWorldWindowProxy->getScriptState();
     v8::Context::Scope scope(scriptState->context());
     v8::Local<v8::Array> resultArray = v8::Array::New(isolate(), sources.size());
 

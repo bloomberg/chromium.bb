@@ -78,10 +78,10 @@ WebMediaConstraints WebUserMediaRequest::videoConstraints() const
     return m_private->videoConstraints();
 }
 
-WebSecurityOrigin WebUserMediaRequest::securityOrigin() const
+WebSecurityOrigin WebUserMediaRequest::getSecurityOrigin() const
 {
-    ASSERT(!isNull() && m_private->executionContext());
-    return WebSecurityOrigin(m_private->executionContext()->securityOrigin());
+    ASSERT(!isNull() && m_private->getExecutionContext());
+    return WebSecurityOrigin(m_private->getExecutionContext()->getSecurityOrigin());
 }
 
 WebDocument WebUserMediaRequest::ownerDocument() const

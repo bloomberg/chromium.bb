@@ -21,7 +21,7 @@ class MODULES_EXPORT StorageNamespaceController final : public NoBaseWillBeGarba
     USING_FAST_MALLOC_WILL_BE_REMOVED(StorageNamespaceController);
 public:
     StorageNamespace* sessionStorage(bool optionalCreate = true);
-    StorageClient* storageClient() { return m_client; }
+    StorageClient* getStorageClient() { return m_client; }
     ~StorageNamespaceController();
 
     static void provideStorageNamespaceTo(Page&, StorageClient*);

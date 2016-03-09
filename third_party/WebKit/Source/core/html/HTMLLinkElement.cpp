@@ -570,7 +570,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     m_sheet->setTitle(m_owner->title());
     setCrossOriginStylesheetStatus(m_sheet.get());
 
-    styleSheet->parseAuthorStyleSheet(cachedStyleSheet, m_owner->document().securityOrigin());
+    styleSheet->parseAuthorStyleSheet(cachedStyleSheet, m_owner->document().getSecurityOrigin());
 
     m_loading = false;
     styleSheet->notifyLoadedSheet(cachedStyleSheet);
@@ -692,7 +692,7 @@ void LinkStyle::setCrossOriginStylesheetStatus(CSSStyleSheet* sheet)
     if (m_fetchFollowingCORS && resource() && !resource()->errorOccurred()) {
         // Record the security origin the CORS access check succeeded at, if cross origin.
         // Only origins that are script accessible to it may access the stylesheet's rules.
-        sheet->setAllowRuleAccessFromOrigin(m_owner->document().securityOrigin());
+        sheet->setAllowRuleAccessFromOrigin(m_owner->document().getSecurityOrigin());
     }
     m_fetchFollowingCORS = false;
 }
@@ -707,7 +707,7 @@ void LinkStyle::process()
     if (m_owner->relAttribute().getIconType() != InvalidIcon && builder.url().isValid() && !builder.url().isEmpty()) {
         if (!m_owner->shouldLoadLink())
             return;
-        if (!document().securityOrigin()->canDisplay(builder.url()))
+        if (!document().getSecurityOrigin()->canDisplay(builder.url()))
             return;
         if (!document().contentSecurityPolicy()->allowImageFromSource(builder.url()))
             return;
@@ -750,7 +750,7 @@ void LinkStyle::process()
         FetchRequest request = builder.build(lowPriority);
         CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(m_owner->fastGetAttribute(HTMLNames::crossoriginAttr));
         if (crossOrigin != CrossOriginAttributeNotSet) {
-            request.setCrossOriginAccessControl(document().securityOrigin(), crossOrigin);
+            request.setCrossOriginAccessControl(document().getSecurityOrigin(), crossOrigin);
             setFetchFollowingCORS();
         }
         setResource(CSSStyleSheetResource::fetch(request, document().fetcher()));

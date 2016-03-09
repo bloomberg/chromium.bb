@@ -60,8 +60,8 @@ ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscri
     // The document context is the only reasonable context from which to ask the user for permission
     // to use the Push API. The embedder should persist the permission so that later calls in
     // different contexts can succeed.
-    if (scriptState->executionContext()->isDocument()) {
-        Document* document = toDocument(scriptState->executionContext());
+    if (scriptState->getExecutionContext()->isDocument()) {
+        Document* document = toDocument(scriptState->getExecutionContext());
         if (!document->domWindow() || !document->frame())
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
         PushController::clientFrom(document->frame()).subscribe(m_registration->webRegistration(), toWebPushSubscriptionOptions(options), new PushSubscriptionCallbacks(resolver, m_registration));
@@ -83,8 +83,8 @@ ScriptPromise PushManager::getSubscription(ScriptState* scriptState)
 
 ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushSubscriptionOptions& options)
 {
-    if (scriptState->executionContext()->isDocument()) {
-        Document* document = toDocument(scriptState->executionContext());
+    if (scriptState->getExecutionContext()->isDocument()) {
+        Document* document = toDocument(scriptState->getExecutionContext());
         if (!document->domWindow() || !document->frame())
             return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
     }

@@ -53,7 +53,7 @@ public:
             // The bridge has already disappeared.
             return;
         }
-        m_bridge->executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::runTask, m_bridge.get(), task));
+        m_bridge->getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::runTask, m_bridge.get(), task));
     }
 
     ~CrossThreadHolder()
@@ -121,16 +121,16 @@ private:
 
         void runTask(PassOwnPtr<WTF::Function<void(T*, ExecutionContext*), WTF::CrossThreadAffinity>> task)
         {
-            ASSERT(executionContext()->isContextThread());
+            ASSERT(getExecutionContext()->isContextThread());
             if (m_obj)
-                (*task)(m_obj.get(), executionContext());
+                (*task)(m_obj.get(), getExecutionContext());
         }
 
     private:
         // ActiveDOMObject
         void stop() override
         {
-            ASSERT(executionContext()->isContextThread());
+            ASSERT(getExecutionContext()->isContextThread());
             {
                 MutexLocker locker(m_mutex->mutex());
                 if (m_holder)

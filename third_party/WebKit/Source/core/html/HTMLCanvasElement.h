@@ -125,7 +125,7 @@ public:
     PassRefPtr<Image> copiedImage(SourceDrawingBuffer, AccelerationHint) const;
     void clearCopiedImage();
 
-    SecurityOrigin* securityOrigin() const;
+    SecurityOrigin* getSecurityOrigin() const;
     bool originClean() const;
     void setOriginTainted() { m_originClean = false; }
 

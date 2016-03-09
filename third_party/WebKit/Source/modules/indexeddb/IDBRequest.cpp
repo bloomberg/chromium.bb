@@ -60,7 +60,7 @@ IDBRequest* IDBRequest::create(ScriptState* scriptState, IDBAny* source, IDBTran
 }
 
 IDBRequest::IDBRequest(ScriptState* scriptState, IDBAny* source, IDBTransaction* transaction)
-    : ActiveDOMObject(scriptState->executionContext())
+    : ActiveDOMObject(scriptState->getExecutionContext())
     , m_transaction(transaction)
     , m_scriptState(scriptState)
     , m_source(source)
@@ -69,7 +69,7 @@ IDBRequest::IDBRequest(ScriptState* scriptState, IDBAny* source, IDBTransaction*
 
 IDBRequest::~IDBRequest()
 {
-    ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !executionContext());
+    ASSERT(m_readyState == DONE || m_readyState == EarlyDeath || !getExecutionContext());
 }
 
 DEFINE_TRACE(IDBRequest)
@@ -92,7 +92,7 @@ ScriptValue IDBRequest::result(ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
         return ScriptValue();
     }
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return ScriptValue();
     m_resultDirty = false;
     ScriptValue value = ScriptValue::from(m_scriptState.get(), m_result);
@@ -110,7 +110,7 @@ DOMException* IDBRequest::error(ExceptionState& exceptionState) const
 
 ScriptValue IDBRequest::source() const
 {
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return ScriptValue();
 
     return ScriptValue::from(m_scriptState.get(), m_source);
@@ -129,13 +129,13 @@ const String& IDBRequest::readyState() const
 void IDBRequest::abort()
 {
     ASSERT(!m_requestAborted);
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return;
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
     if (m_readyState == DONE)
         return;
 
-    EventQueue* eventQueue = executionContext()->eventQueue();
+    EventQueue* eventQueue = getExecutionContext()->getEventQueue();
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
         bool removed = eventQueue->cancelEvent(m_enqueuedEvents[i].get());
         ASSERT_UNUSED(removed, removed);
@@ -159,7 +159,7 @@ void IDBRequest::setCursorDetails(IndexedDB::CursorType cursorType, WebIDBCursor
 void IDBRequest::setPendingCursor(IDBCursor* cursor)
 {
     ASSERT(m_readyState == DONE);
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     ASSERT(m_transaction);
     ASSERT(!m_pendingCursor);
     ASSERT(cursor == getResultCursor());
@@ -211,7 +211,7 @@ void IDBRequest::ackReceivedBlobs(const Vector<RefPtr<IDBValue>>& values)
 
 bool IDBRequest::shouldEnqueueEvent() const
 {
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return false;
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
     if (m_requestAborted)
@@ -405,15 +405,15 @@ const AtomicString& IDBRequest::interfaceName() const
     return EventTargetNames::IDBRequest;
 }
 
-ExecutionContext* IDBRequest::executionContext() const
+ExecutionContext* IDBRequest::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 DispatchEventResult IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     IDB_TRACE("IDBRequest::dispatchEvent");
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return DispatchEventResult::CanceledBeforeDispatch;
     ASSERT(m_readyState == PENDING);
     ASSERT(m_hasPendingActivity);
@@ -500,7 +500,7 @@ void IDBRequest::transactionDidFinishAndDispatch()
     ASSERT(m_transaction->isVersionChange());
     ASSERT(m_didFireUpgradeNeededEvent);
     ASSERT(m_readyState == DONE);
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     m_transaction.clear();
 
     if (m_contextStopped)
@@ -513,12 +513,12 @@ void IDBRequest::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
 
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return;
 
     ASSERT_WITH_MESSAGE(m_readyState == PENDING || m_didFireUpgradeNeededEvent, "When queueing event %s, m_readyState was %d", event->type().utf8().data(), m_readyState);
 
-    EventQueue* eventQueue = executionContext()->eventQueue();
+    EventQueue* eventQueue = getExecutionContext()->getEventQueue();
     event->setTarget(this);
 
     // Keep track of enqueued events in case we need to abort prior to dispatch,

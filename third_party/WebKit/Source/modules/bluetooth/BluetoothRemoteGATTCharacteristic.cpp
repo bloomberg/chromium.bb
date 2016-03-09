@@ -46,7 +46,7 @@ BluetoothRemoteGATTCharacteristic* BluetoothRemoteGATTCharacteristic::take(Scrip
     if (!webCharacteristic) {
         return nullptr;
     }
-    BluetoothRemoteGATTCharacteristic* characteristic = new BluetoothRemoteGATTCharacteristic(resolver->executionContext(), webCharacteristic);
+    BluetoothRemoteGATTCharacteristic* characteristic = new BluetoothRemoteGATTCharacteristic(resolver->getExecutionContext(), webCharacteristic);
     // See note in ActiveDOMObject about suspendIfNeeded.
     characteristic->suspendIfNeeded();
     return characteristic;
@@ -80,7 +80,7 @@ void BluetoothRemoteGATTCharacteristic::notifyCharacteristicObjectRemoved()
 {
     if (!m_stopped) {
         m_stopped = true;
-        WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(ActiveDOMObject::executionContext());
+        WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(ActiveDOMObject::getExecutionContext());
         webbluetooth->characteristicObjectRemoved(m_webCharacteristic->characteristicInstanceID, this);
     }
 }
@@ -90,9 +90,9 @@ const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::interfaceName() cons
     return EventTargetNames::BluetoothRemoteGATTCharacteristic;
 }
 
-ExecutionContext* BluetoothRemoteGATTCharacteristic::executionContext() const
+ExecutionContext* BluetoothRemoteGATTCharacteristic::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 bool BluetoothRemoteGATTCharacteristic::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
@@ -100,7 +100,7 @@ bool BluetoothRemoteGATTCharacteristic::addEventListenerInternal(const AtomicStr
     // We will also need to unregister a characteristic once all the event
     // listeners have been removed. See http://crbug.com/541390
     if (eventType == EventTypeNames::characteristicvaluechanged) {
-        WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(executionContext());
+        WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(getExecutionContext());
         webbluetooth->registerCharacteristicObject(m_webCharacteristic->characteristicInstanceID, this);
     }
     return EventTarget::addEventListenerInternal(eventType, listener, options);
@@ -112,7 +112,7 @@ public:
 
     void onSuccess(const WebVector<uint8_t>& value) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
 
         RefPtr<DOMDataView> domDataView = ConvertWebVectorToDataView(value);
@@ -124,7 +124,7 @@ public:
 
     void onError(const WebBluetoothError& e) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(BluetoothError::take(m_resolver, e));
     }
@@ -151,7 +151,7 @@ public:
 
     void onSuccess(const WebVector<uint8_t>& value) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
 
         if (m_webCharacteristic) {
@@ -162,7 +162,7 @@ public:
 
     void onError(const WebBluetoothError& e) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(BluetoothError::take(m_resolver, e));
     }

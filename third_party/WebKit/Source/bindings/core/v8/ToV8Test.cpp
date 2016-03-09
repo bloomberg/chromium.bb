@@ -26,7 +26,7 @@ public:
     template<typename T>
     void testToV8(const char* expected, T value, const char* path, int lineNumber)
     {
-        v8::Local<v8::Value> actual = toV8(value, m_scope.scriptState()->context()->Global(), m_scope.isolate());
+        v8::Local<v8::Value> actual = toV8(value, m_scope.getScriptState()->context()->Global(), m_scope.isolate());
         if (actual.IsEmpty()) {
             ADD_FAILURE_AT(path, lineNumber) << "toV8 returns an empty value.";
             return;
@@ -161,7 +161,7 @@ TEST_F(ToV8Test, undefinedType)
 
 TEST_F(ToV8Test, scriptValue)
 {
-    ScriptValue value(m_scope.scriptState(), v8::Number::New(m_scope.isolate(), 1234));
+    ScriptValue value(m_scope.getScriptState(), v8::Number::New(m_scope.isolate(), 1234));
 
     TEST_TOV8("1234", value);
 }
@@ -233,7 +233,7 @@ TEST_F(ToV8Test, dictionaryVector)
     dictionary.append(std::make_pair("one", 1));
     dictionary.append(std::make_pair("two", 2));
     TEST_TOV8("[object Object]", dictionary);
-    v8::Local<v8::Context> context = m_scope.scriptState()->context();
+    v8::Local<v8::Context> context = m_scope.getScriptState()->context();
     v8::Local<v8::Object> result = toV8(dictionary, context->Global(), m_scope.isolate())->ToObject(context).ToLocalChecked();
     v8::Local<v8::Value> one = result->Get(context, v8String(m_scope.isolate(), "one")).ToLocalChecked();
     EXPECT_EQ(1, one->NumberValue(context).FromJust());
@@ -305,9 +305,9 @@ TEST_F(ToV8Test, basicTypeHeapVectors)
 
 TEST_F(ToV8Test, withScriptState)
 {
-    ScriptValue value(m_scope.scriptState(), v8::Number::New(m_scope.isolate(), 1234.0));
+    ScriptValue value(m_scope.getScriptState(), v8::Number::New(m_scope.isolate(), 1234.0));
 
-    v8::Local<v8::Value> actual = toV8(value, m_scope.scriptState());
+    v8::Local<v8::Value> actual = toV8(value, m_scope.getScriptState());
     EXPECT_FALSE(actual.IsEmpty());
 
     double actualAsNumber = actual.As<v8::Number>()->Value();

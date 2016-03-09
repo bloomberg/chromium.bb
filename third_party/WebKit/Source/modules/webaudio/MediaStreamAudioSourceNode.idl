@@ -23,5 +23,5 @@
  */
 
 interface MediaStreamAudioSourceNode : AudioSourceNode {
-    readonly attribute MediaStream mediaStream;
+    [ImplementedAs=getMediaStream] readonly attribute MediaStream mediaStream;
 };

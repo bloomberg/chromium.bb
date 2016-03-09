@@ -343,7 +343,7 @@ void HTMLAnchorElement::handleClick(Event* event)
 
     if (hasAttribute(downloadAttr)) {
         request.setRequestContext(WebURLRequest::RequestContextDownload);
-        bool isSameOrigin = completedURL.protocolIsData() || document().securityOrigin()->canRequest(completedURL);
+        bool isSameOrigin = completedURL.protocolIsData() || document().getSecurityOrigin()->canRequest(completedURL);
         const AtomicString& suggestedName = (isSameOrigin ? fastGetAttribute(downloadAttr) : nullAtom);
 
         frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, suggestedName, false);

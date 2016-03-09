@@ -86,7 +86,7 @@ public:
     bool started() const { return m_started; }
 
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
     MessagePort* toMessagePort() override { return this; }
 
     bool hasPendingActivity() const override;

@@ -59,7 +59,7 @@ protected:
     void processCurve2x(const float* source, float* dest, size_t framesToProcess);
     void processCurve4x(const float* source, float* dest, size_t framesToProcess);
 
-    WaveShaperProcessor* waveShaperProcessor() { return static_cast<WaveShaperProcessor*>(processor()); }
+    WaveShaperProcessor* getWaveShaperProcessor() { return static_cast<WaveShaperProcessor*>(processor()); }
 
     // Oversampling.
     OwnPtr<AudioFloatArray> m_tempBuffer;

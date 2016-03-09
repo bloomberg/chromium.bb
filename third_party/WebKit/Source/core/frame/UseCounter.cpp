@@ -741,9 +741,9 @@ void UseCounter::countCrossOriginIframe(const Document& document, Feature featur
     if (!frame)
         return;
     // Check to see if the frame can script into the top level document.
-    SecurityOrigin* securityOrigin = frame->securityContext()->securityOrigin();
+    SecurityOrigin* securityOrigin = frame->securityContext()->getSecurityOrigin();
     Frame* top = frame->tree().top();
-    if (top && !securityOrigin->canAccess(top->securityContext()->securityOrigin()))
+    if (top && !securityOrigin->canAccess(top->securityContext()->getSecurityOrigin()))
         count(frame, feature);
 }
 

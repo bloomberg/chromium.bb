@@ -83,7 +83,7 @@ void ScopedStyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet, const Med
     unsigned index = m_authorStyleSheets.size();
     m_authorStyleSheets.append(&cssSheet);
     StyleSheetContents* sheet = cssSheet.contents();
-    AddRuleFlags addRuleFlags = treeScope().document().securityOrigin()->canRequest(sheet->baseURL()) ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
+    AddRuleFlags addRuleFlags = treeScope().document().getSecurityOrigin()->canRequest(sheet->baseURL()) ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
     const RuleSet& ruleSet = sheet->ensureRuleSet(medium, addRuleFlags);
 
     addKeyframeRules(ruleSet);

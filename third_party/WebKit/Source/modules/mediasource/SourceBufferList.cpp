@@ -92,7 +92,7 @@ const AtomicString& SourceBufferList::interfaceName() const
     return EventTargetNames::SourceBufferList;
 }
 
-ExecutionContext* SourceBufferList::executionContext() const
+ExecutionContext* SourceBufferList::getExecutionContext() const
 {
     return m_executionContext;
 }

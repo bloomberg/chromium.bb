@@ -1127,10 +1127,10 @@ void VTTCue::applyUserOverrideCSSProperties()
         CSSPropertyFontSize, settings->textTrackTextSize());
 }
 
-ExecutionContext* VTTCue::executionContext() const
+ExecutionContext* VTTCue::getExecutionContext() const
 {
     ASSERT(m_cueBackgroundBox);
-    return m_cueBackgroundBox->executionContext();
+    return m_cueBackgroundBox->getExecutionContext();
 }
 
 Document& VTTCue::document() const

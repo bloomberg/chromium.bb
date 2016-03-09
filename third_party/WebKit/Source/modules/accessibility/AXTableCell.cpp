@@ -52,7 +52,7 @@ AXTableCell* AXTableCell::create(LayoutObject* layoutObject, AXObjectCacheImpl& 
 
 bool AXTableCell::isTableHeaderCell() const
 {
-    return node() && node()->hasTagName(thTag);
+    return getNode() && getNode()->hasTagName(thTag);
 }
 
 bool AXTableCell::isRowHeaderCell() const

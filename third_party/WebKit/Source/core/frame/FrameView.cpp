@@ -4086,9 +4086,9 @@ void FrameView::notifyRenderThrottlingObservers()
     //
     // Check if we can access our parent's security origin.
     m_crossOriginForThrottling = false;
-    const SecurityOrigin* origin = frame().securityContext()->securityOrigin();
+    const SecurityOrigin* origin = frame().securityContext()->getSecurityOrigin();
     for (Frame* parentFrame = m_frame->tree().parent(); parentFrame; parentFrame = parentFrame->tree().parent()) {
-        const SecurityOrigin* parentOrigin = parentFrame->securityContext()->securityOrigin();
+        const SecurityOrigin* parentOrigin = parentFrame->securityContext()->getSecurityOrigin();
         if (!origin->canAccess(parentOrigin)) {
             m_crossOriginForThrottling = true;
             break;

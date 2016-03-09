@@ -46,14 +46,14 @@ DEFINE_TRACE(BiquadFilterNode)
     AudioNode::trace(visitor);
 }
 
-BiquadProcessor* BiquadFilterNode::biquadProcessor() const
+BiquadProcessor* BiquadFilterNode::getBiquadProcessor() const
 {
     return static_cast<BiquadProcessor*>(static_cast<AudioBasicProcessorHandler&>(handler()).processor());
 }
 
 String BiquadFilterNode::type() const
 {
-    switch (const_cast<BiquadFilterNode*>(this)->biquadProcessor()->type()) {
+    switch (const_cast<BiquadFilterNode*>(this)->getBiquadProcessor()->type()) {
     case BiquadProcessor::LowPass:
         return "lowpass";
     case BiquadProcessor::HighPass:
@@ -101,7 +101,7 @@ bool BiquadFilterNode::setType(unsigned type)
     if (type > BiquadProcessor::Allpass)
         return false;
 
-    biquadProcessor()->setType(static_cast<BiquadProcessor::FilterType>(type));
+    getBiquadProcessor()->setType(static_cast<BiquadProcessor::FilterType>(type));
     return true;
 }
 
@@ -111,7 +111,7 @@ void BiquadFilterNode::getFrequencyResponse(const DOMFloat32Array* frequencyHz, 
 
     int n = std::min(frequencyHz->length(), std::min(magResponse->length(), phaseResponse->length()));
     if (n)
-        biquadProcessor()->getFrequencyResponse(n, frequencyHz->data(), magResponse->data(), phaseResponse->data());
+        getBiquadProcessor()->getFrequencyResponse(n, frequencyHz->data(), magResponse->data(), phaseResponse->data());
 }
 
 } // namespace blink

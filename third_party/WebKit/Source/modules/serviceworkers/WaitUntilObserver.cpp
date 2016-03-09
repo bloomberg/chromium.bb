@@ -69,7 +69,7 @@ private:
         ASSERT(m_resolveType == Fulfilled || m_resolveType == Rejected);
         if (m_resolveType == Rejected) {
             m_observer->reportError(value);
-            value = ScriptPromise::reject(value.scriptState(), value).getScriptValue();
+            value = ScriptPromise::reject(value.getScriptState(), value).getScriptValue();
         }
         m_observer->decrementPendingActivity();
         m_observer = nullptr;
@@ -93,7 +93,7 @@ void WaitUntilObserver::willDispatchEvent()
     // waitUntil() isn't called, that means between willDispatchEvent() and
     // didDispatchEvent().
     if (m_type == NotificationClick)
-        executionContext()->allowWindowInteraction();
+        getExecutionContext()->allowWindowInteraction();
 
     incrementPendingActivity();
 }
@@ -113,7 +113,7 @@ void WaitUntilObserver::waitUntil(ScriptState* scriptState, ScriptPromise script
         return;
     }
 
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
 
     // When handling a notificationclick event, we want to allow one window to
@@ -157,10 +157,10 @@ void WaitUntilObserver::incrementPendingActivity()
 void WaitUntilObserver::decrementPendingActivity()
 {
     ASSERT(m_pendingActivity > 0);
-    if (!executionContext() || (!m_hasError && --m_pendingActivity))
+    if (!getExecutionContext() || (!m_hasError && --m_pendingActivity))
         return;
 
-    ServiceWorkerGlobalScopeClient* client = ServiceWorkerGlobalScopeClient::from(executionContext());
+    ServiceWorkerGlobalScopeClient* client = ServiceWorkerGlobalScopeClient::from(getExecutionContext());
     WebServiceWorkerEventResult result = m_hasError ? WebServiceWorkerEventResultRejected : WebServiceWorkerEventResultCompleted;
     switch (m_type) {
     case Activate:
@@ -192,9 +192,9 @@ void WaitUntilObserver::decrementPendingActivity()
 
 void WaitUntilObserver::consumeWindowInteraction(Timer<WaitUntilObserver>*)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
-    executionContext()->consumeWindowInteraction();
+    getExecutionContext()->consumeWindowInteraction();
 }
 
 DEFINE_TRACE(WaitUntilObserver)

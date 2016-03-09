@@ -119,7 +119,7 @@ public:
     {
         ASSERT(algorithm.paramsType() == WebCryptoAlgorithmParamsTypeNone);
 
-        V8ObjectBuilder algorithmValue(m_builder.scriptState());
+        V8ObjectBuilder algorithmValue(m_builder.getScriptState());
         algorithmValue.addString("name", WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id())->name);
         m_builder.add(propertyName, algorithmValue);
     }

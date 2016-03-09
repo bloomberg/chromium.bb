@@ -53,8 +53,8 @@ public:
     {
     }
 
-    ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    v8::Isolate* isolate() { return scriptState()->isolate(); }
+    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
+    v8::Isolate* isolate() { return getScriptState()->isolate(); }
 
     v8::MaybeLocal<v8::Value> eval(const char* s)
     {
@@ -65,11 +65,11 @@ public:
             ADD_FAILURE();
             return v8::MaybeLocal<v8::Value>();
         }
-        if (!v8Call(v8::Script::Compile(scriptState()->context(), source), script)) {
+        if (!v8Call(v8::Script::Compile(getScriptState()->context(), source), script)) {
             ADD_FAILURE() << "Compilation fails";
             return v8::MaybeLocal<v8::Value>();
         }
-        return script->Run(scriptState()->context());
+        return script->Run(getScriptState()->context());
     }
     v8::MaybeLocal<v8::Value> evalWithPrintingError(const char* s)
     {
@@ -85,10 +85,10 @@ public:
     PassOwnPtr<ReadableStreamDataConsumerHandle> createHandle(ScriptValue stream)
     {
         NonThrowableExceptionState es;
-        ScriptValue reader = ReadableStreamOperations::getReader(scriptState(), stream, es);
+        ScriptValue reader = ReadableStreamOperations::getReader(getScriptState(), stream, es);
         ASSERT(!reader.isEmpty());
         ASSERT(reader.v8Value()->IsObject());
-        return ReadableStreamDataConsumerHandle::create(scriptState(), reader);
+        return ReadableStreamDataConsumerHandle::create(getScriptState(), reader);
     }
 
     void gc() { V8GCController::collectAllGarbageForTesting(isolate()); }
@@ -99,8 +99,8 @@ private:
 
 TEST_F(ReadableStreamDataConsumerHandleTest, Create)
 {
-    ScriptState::Scope scope(scriptState());
-    ScriptValue stream(scriptState(), evalWithPrintingError("new ReadableStream"));
+    ScriptState::Scope scope(getScriptState());
+    ScriptValue stream(getScriptState(), evalWithPrintingError("new ReadableStream"));
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
     ASSERT_TRUE(handle);
@@ -121,8 +121,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Create)
 
 TEST_F(ReadableStreamDataConsumerHandleTest, EmptyStream)
 {
-    ScriptState::Scope scope(scriptState());
-    ScriptValue stream(scriptState(), evalWithPrintingError(
+    ScriptState::Scope scope(getScriptState());
+    ScriptValue stream(getScriptState(), evalWithPrintingError(
         "new ReadableStream({start: c => c.close()})"));
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
@@ -152,8 +152,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EmptyStream)
 
 TEST_F(ReadableStreamDataConsumerHandleTest, ErroredStream)
 {
-    ScriptState::Scope scope(scriptState());
-    ScriptValue stream(scriptState(), evalWithPrintingError(
+    ScriptState::Scope scope(getScriptState());
+    ScriptValue stream(getScriptState(), evalWithPrintingError(
         "new ReadableStream({start: c => c.error()})"));
     ASSERT_FALSE(stream.isEmpty());
     OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
@@ -183,8 +183,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, ErroredStream)
 
 TEST_F(ReadableStreamDataConsumerHandleTest, Read)
 {
-    ScriptState::Scope scope(scriptState());
-    ScriptValue stream(scriptState(), evalWithPrintingError(
+    ScriptState::Scope scope(getScriptState());
+    ScriptValue stream(getScriptState(), evalWithPrintingError(
         "var controller;"
         "var stream = new ReadableStream({start: c => controller = c});"
         "controller.enqueue(new Uint8Array());"
@@ -251,8 +251,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
 
 TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
 {
-    ScriptState::Scope scope(scriptState());
-    ScriptValue stream(scriptState(), evalWithPrintingError(
+    ScriptState::Scope scope(getScriptState());
+    ScriptValue stream(getScriptState(), evalWithPrintingError(
         "var controller;"
         "var stream = new ReadableStream({start: c => controller = c});"
         "controller.enqueue(new Uint8Array());"
@@ -330,8 +330,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
 
 TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueUndefined)
 {
-    ScriptState::Scope scope(scriptState());
-    ScriptValue stream(scriptState(), evalWithPrintingError(
+    ScriptState::Scope scope(getScriptState());
+    ScriptValue stream(getScriptState(), evalWithPrintingError(
         "var controller;"
         "var stream = new ReadableStream({start: c => controller = c});"
         "controller.enqueue(undefined);"
@@ -365,8 +365,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueUndefined)
 
 TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueNull)
 {
-    ScriptState::Scope scope(scriptState());
-    ScriptValue stream(scriptState(), evalWithPrintingError(
+    ScriptState::Scope scope(getScriptState());
+    ScriptValue stream(getScriptState(), evalWithPrintingError(
         "var controller;"
         "var stream = new ReadableStream({start: c => controller = c});"
         "controller.enqueue(null);"
@@ -400,8 +400,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueNull)
 
 TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueString)
 {
-    ScriptState::Scope scope(scriptState());
-    ScriptValue stream(scriptState(), evalWithPrintingError(
+    ScriptState::Scope scope(getScriptState());
+    ScriptValue stream(getScriptState(), evalWithPrintingError(
         "var controller;"
         "var stream = new ReadableStream({start: c => controller = c});"
         "controller.enqueue('hello');"
@@ -450,8 +450,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeak)
 
     {
         // We need this scope to collect local handles.
-        ScriptState::Scope scope(scriptState());
-        stream = ScriptValue(scriptState(), evalWithPrintingError("new ReadableStream()"));
+        ScriptState::Scope scope(getScriptState());
+        stream = ScriptValue(getScriptState(), evalWithPrintingError("new ReadableStream()"));
         ASSERT_FALSE(stream.isEmpty());
         OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
         ASSERT_TRUE(handle);
@@ -492,8 +492,8 @@ TEST_F(ReadableStreamDataConsumerHandleTest, StreamReaderShouldBeWeakWhenReading
 
     {
         // We need this scope to collect local handles.
-        ScriptState::Scope scope(scriptState());
-        stream = ScriptValue(scriptState(), evalWithPrintingError("new ReadableStream()"));
+        ScriptState::Scope scope(getScriptState());
+        stream = ScriptValue(getScriptState(), evalWithPrintingError("new ReadableStream()"));
         ASSERT_FALSE(stream.isEmpty());
         OwnPtr<ReadableStreamDataConsumerHandle> handle = createHandle(stream);
         ASSERT_TRUE(handle);

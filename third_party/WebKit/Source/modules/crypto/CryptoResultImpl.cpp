@@ -53,11 +53,11 @@ namespace blink {
 static void rejectWithTypeError(const String& errorDetails, ScriptPromiseResolver* resolver)
 {
     // Duplicate some of the checks done by ScriptPromiseResolver.
-    if (!resolver->executionContext() || resolver->executionContext()->activeDOMObjectsAreStopped())
+    if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
-    ScriptState::Scope scope(resolver->scriptState());
-    v8::Isolate* isolate = resolver->scriptState()->isolate();
+    ScriptState::Scope scope(resolver->getScriptState());
+    v8::Isolate* isolate = resolver->getScriptState()->isolate();
     resolver->reject(v8::Exception::TypeError(v8String(isolate, errorDetails)));
 }
 
@@ -134,7 +134,7 @@ CryptoResultImpl::CryptoResultImpl(ScriptState* scriptState)
     , m_cancel(ResultCancel::create())
 {
     // Sync cancellation state.
-    if (scriptState->executionContext()->activeDOMObjectsAreStopped())
+    if (scriptState->getExecutionContext()->activeDOMObjectsAreStopped())
         m_cancel->cancel();
 }
 
@@ -189,7 +189,7 @@ void CryptoResultImpl::completeWithJson(const char* utf8Data, unsigned length)
     if (!m_resolver)
         return;
 
-    ScriptState* scriptState = m_resolver->scriptState();
+    ScriptState* scriptState = m_resolver->getScriptState();
     ScriptState::Scope scope(scriptState);
 
     v8::Local<v8::String> jsonString = v8AtomicString(scriptState->isolate(), utf8Data, length);
@@ -226,7 +226,7 @@ void CryptoResultImpl::completeWithKeyPair(const WebCryptoKey& publicKey, const 
     if (!m_resolver)
         return;
 
-    ScriptState* scriptState = m_resolver->scriptState();
+    ScriptState* scriptState = m_resolver->getScriptState();
     ScriptState::Scope scope(scriptState);
 
     V8ObjectBuilder keyPair(scriptState);

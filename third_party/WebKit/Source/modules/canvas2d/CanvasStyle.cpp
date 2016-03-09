@@ -116,10 +116,10 @@ void CanvasStyle::applyToPaint(SkPaint& paint) const
         paint.setShader(nullptr);
         break;
     case Gradient:
-        canvasGradient()->gradient()->applyToPaint(paint);
+        getCanvasGradient()->getGradient()->applyToPaint(paint);
         break;
     case ImagePattern:
-        canvasPattern()->pattern()->applyToPaint(paint);
+        getCanvasPattern()->getPattern()->applyToPaint(paint);
         break;
     default:
         ASSERT_NOT_REACHED();

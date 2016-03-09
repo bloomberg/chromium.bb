@@ -50,7 +50,7 @@ class CORE_EXPORT AbstractWorker : public RefCountedGarbageCollectedEventTargetW
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
 public:
     // EventTarget APIs
-    ExecutionContext* executionContext() const final { return ActiveDOMObject::executionContext(); }
+    ExecutionContext* getExecutionContext() const final { return ActiveDOMObject::getExecutionContext(); }
 
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error);
 

@@ -19,7 +19,7 @@ PermissionsCallback::PermissionsCallback(ScriptPromiseResolver* resolver, PassOw
 
 void PermissionsCallback::onSuccess(WebPassOwnPtr<WebVector<WebPermissionStatus>> permissionStatus)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
     OwnPtr<WebVector<WebPermissionStatus>> statusPtr = permissionStatus.release();
@@ -30,14 +30,14 @@ void PermissionsCallback::onSuccess(WebPassOwnPtr<WebVector<WebPermissionStatus>
     // using the internal index obtained.
     for (size_t i = 0; i < m_callerIndexToInternalIndex->size(); ++i) {
         int internalIndex = m_callerIndexToInternalIndex->operator[](i);
-        result[i] = PermissionStatus::createAndListen(m_resolver->executionContext(), statusPtr->operator[](internalIndex), m_internalPermissions->operator[](internalIndex));
+        result[i] = PermissionStatus::createAndListen(m_resolver->getExecutionContext(), statusPtr->operator[](internalIndex), m_internalPermissions->operator[](internalIndex));
     }
     m_resolver->resolve(result);
 }
 
 void PermissionsCallback::onError()
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
     m_resolver->reject();
 }

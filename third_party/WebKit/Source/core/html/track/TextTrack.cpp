@@ -448,10 +448,10 @@ const AtomicString& TextTrack::interfaceName() const
     return EventTargetNames::TextTrack;
 }
 
-ExecutionContext* TextTrack::executionContext() const
+ExecutionContext* TextTrack::getExecutionContext() const
 {
     HTMLMediaElement* owner = mediaElement();
-    return owner ? owner->executionContext() : 0;
+    return owner ? owner->getExecutionContext() : 0;
 }
 
 HTMLMediaElement* TextTrack::mediaElement() const

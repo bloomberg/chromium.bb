@@ -136,7 +136,7 @@ String AXMenuListOption::textAlternative(bool recursive, bool inAriaLabelledByTr
     if (nameSources)
         ASSERT(relatedObjects);
 
-    if (!node())
+    if (!getNode())
         return String();
 
     bool foundTextAlternative = false;

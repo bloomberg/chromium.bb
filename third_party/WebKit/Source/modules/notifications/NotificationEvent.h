@@ -33,7 +33,7 @@ public:
 
     ~NotificationEvent() override;
 
-    Notification* notification() const { return m_notification.get(); }
+    Notification* getNotification() const { return m_notification.get(); }
     String action() const { return m_action; }
 
     const AtomicString& interfaceName() const override;

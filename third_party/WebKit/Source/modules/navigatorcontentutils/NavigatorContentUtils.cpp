@@ -92,7 +92,7 @@ static bool verifyCustomHandlerURL(const Document& document, const String& url, 
 
     // The specification says that the API throws SecurityError exception if the
     // URL's origin differs from the document's origin.
-    if (!document.securityOrigin()->canRequest(kurl)) {
+    if (!document.getSecurityOrigin()->canRequest(kurl)) {
         exceptionState.throwSecurityError("Can only register custom handler in the document's origin.");
         return false;
     }

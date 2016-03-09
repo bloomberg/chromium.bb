@@ -65,7 +65,7 @@ public:
     BLINK_EXPORT WebMediaConstraints audioConstraints() const;
     BLINK_EXPORT WebMediaConstraints videoConstraints() const;
 
-    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_EXPORT WebSecurityOrigin getSecurityOrigin() const;
     BLINK_EXPORT WebDocument ownerDocument() const;
 
     BLINK_EXPORT void requestSucceeded(const WebMediaStream&);

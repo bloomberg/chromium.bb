@@ -326,11 +326,11 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
 
     Document* document = m_mainFrame->frame()->document();
     // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
-    SecurityOrigin* starterOrigin = document->securityOrigin();
+    SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
     OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
     provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
-    WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
+    WebSecurityOrigin webSecurityOrigin(m_loadingDocument->getSecurityOrigin());
     provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
     RefPtrWillBeRawPtr<ContentSecurityPolicy> contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);

@@ -61,8 +61,8 @@ public:
         ~Thread();
 
         WebThreadSupportingGC* thread() { return m_thread.get(); }
-        ExecutionContext* executionContext() { return m_executionContext.get(); }
-        ScriptState* scriptState() { return m_scriptState.get(); }
+        ExecutionContext* getExecutionContext() { return m_executionContext.get(); }
+        ScriptState* getScriptState() { return m_scriptState.get(); }
         v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
 
     private:
@@ -428,7 +428,7 @@ public:
             OwnPtr<WaitableEvent> m_detached;
         };
 
-        Context* context() { return m_context.get(); }
+        Context* getContext() { return m_context.get(); }
 
     private:
         class ReaderImpl;

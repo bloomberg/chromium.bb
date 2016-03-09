@@ -49,7 +49,7 @@ public:
 
     void onSuccess() override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_device->gatt()->setConnected(true);
         if (!m_device->page()->isPageVisible()) {
@@ -66,7 +66,7 @@ public:
 
     void onError(const WebBluetoothError& e) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(BluetoothError::take(m_resolver, e));
     }
@@ -81,7 +81,7 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState)
     // This is a short term solution instead of implementing a tab indicator
     // for bluetooth connections.
     // https://crbug.com/579746
-    if (!toDocument(scriptState->executionContext())->page()->isPageVisible()) {
+    if (!toDocument(scriptState->getExecutionContext())->page()->isPageVisible()) {
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, kPageHiddenError));
     }
 

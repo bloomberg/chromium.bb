@@ -70,7 +70,7 @@ public:
 private:
     BiquadFilterNode(AbstractAudioContext&, float sampleRate);
 
-    BiquadProcessor* biquadProcessor() const;
+    BiquadProcessor* getBiquadProcessor() const;
     bool setType(unsigned); // Returns true on success.
 
     Member<AudioParam> m_frequency;

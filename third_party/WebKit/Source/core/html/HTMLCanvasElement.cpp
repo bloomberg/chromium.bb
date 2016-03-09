@@ -635,9 +635,9 @@ void HTMLCanvasElement::removeListener(CanvasDrawListener* listener)
     m_listeners.remove(listener);
 }
 
-SecurityOrigin* HTMLCanvasElement::securityOrigin() const
+SecurityOrigin* HTMLCanvasElement::getSecurityOrigin() const
 {
-    return document().securityOrigin();
+    return document().getSecurityOrigin();
 }
 
 bool HTMLCanvasElement::originClean() const

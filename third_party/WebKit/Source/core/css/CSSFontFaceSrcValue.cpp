@@ -90,7 +90,7 @@ FontResource* CSSFontFaceSrcValue::fetch(Document* document)
     if (!m_fetched) {
         FetchRequest request(ResourceRequest(m_absoluteResource), FetchInitiatorTypeNames::css);
         request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
-        SecurityOrigin* securityOrigin = document->securityOrigin();
+        SecurityOrigin* securityOrigin = document->getSecurityOrigin();
         setCrossOriginAccessControl(request, securityOrigin);
         request.mutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrer.referrerPolicy, request.url(), m_referrer.referrer));
         RefPtrWillBeRawPtr<FontResource> resource = FontResource::fetch(request, document->fetcher());

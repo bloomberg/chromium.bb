@@ -42,7 +42,7 @@ class WebSecurityOrigin;
 class WebGeolocationPermissionRequest {
 public:
     ~WebGeolocationPermissionRequest() { reset(); }
-    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_EXPORT WebSecurityOrigin getSecurityOrigin() const;
     BLINK_EXPORT void setIsAllowed(bool);
 
 #if BLINK_IMPLEMENTATION

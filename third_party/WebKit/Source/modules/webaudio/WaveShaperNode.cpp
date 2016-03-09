@@ -40,7 +40,7 @@ WaveShaperNode::WaveShaperNode(AbstractAudioContext& context)
     handler().initialize();
 }
 
-WaveShaperProcessor* WaveShaperNode::waveShaperProcessor() const
+WaveShaperProcessor* WaveShaperNode::getWaveShaperProcessor() const
 {
     return static_cast<WaveShaperProcessor*>(static_cast<AudioBasicProcessorHandler&>(handler()).processor());
 }
@@ -59,12 +59,12 @@ void WaveShaperNode::setCurve(DOMFloat32Array* curve, ExceptionState& exceptionS
         return;
     }
 
-    waveShaperProcessor()->setCurve(curve);
+    getWaveShaperProcessor()->setCurve(curve);
 }
 
 DOMFloat32Array* WaveShaperNode::curve()
 {
-    return waveShaperProcessor()->curve();
+    return getWaveShaperProcessor()->curve();
 }
 
 void WaveShaperNode::setOversample(const String& type)
@@ -77,11 +77,11 @@ void WaveShaperNode::setOversample(const String& type)
     AbstractAudioContext::AutoLocker contextLocker(context());
 
     if (type == "none") {
-        waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSampleNone);
+        getWaveShaperProcessor()->setOversample(WaveShaperProcessor::OverSampleNone);
     } else if (type == "2x") {
-        waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample2x);
+        getWaveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample2x);
     } else if (type == "4x") {
-        waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
+        getWaveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
     } else {
         ASSERT_NOT_REACHED();
     }
@@ -89,7 +89,7 @@ void WaveShaperNode::setOversample(const String& type)
 
 String WaveShaperNode::oversample() const
 {
-    switch (const_cast<WaveShaperNode*>(this)->waveShaperProcessor()->oversample()) {
+    switch (const_cast<WaveShaperNode*>(this)->getWaveShaperProcessor()->oversample()) {
     case WaveShaperProcessor::OverSampleNone:
         return "none";
     case WaveShaperProcessor::OverSample2x:

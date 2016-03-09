@@ -37,7 +37,7 @@ class ContextLifecycleNotifier;
 
 class CORE_EXPORT ContextLifecycleObserver : public LifecycleObserver<ExecutionContext, ContextLifecycleObserver, ContextLifecycleNotifier> {
 public:
-    ExecutionContext* executionContext() const { return lifecycleContext(); }
+    ExecutionContext* getExecutionContext() const { return lifecycleContext(); }
 
     enum Type {
         GenericType,

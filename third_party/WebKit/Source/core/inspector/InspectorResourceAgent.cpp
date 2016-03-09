@@ -649,7 +649,7 @@ void InspectorResourceAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderCl
     ASSERT(!m_pendingRequest);
     m_pendingRequest = client;
     m_pendingRequestType = InspectorPageAgent::XHRResource;
-    m_pendingXHRReplayData = XHRReplayData::create(xhr->executionContext(), method, urlWithoutFragment(url), async, formData.get(), includeCredentials);
+    m_pendingXHRReplayData = XHRReplayData::create(xhr->getExecutionContext(), method, urlWithoutFragment(url), async, formData.get(), includeCredentials);
     for (const auto& header : headers)
         m_pendingXHRReplayData->addHeader(header.key, header.value);
 }
@@ -999,7 +999,7 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
     if (!xhrReplayData)
         return;
 
-    ExecutionContext* executionContext = xhrReplayData->executionContext();
+    ExecutionContext* executionContext = xhrReplayData->getExecutionContext();
     if (!executionContext) {
         m_resourcesData->setXHRReplayData(requestId, 0);
         return;

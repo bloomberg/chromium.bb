@@ -141,7 +141,7 @@ bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow, const Stri
 
         // FIXME: The name canAccess seems to be a roundabout way to ask "can execute script".
         // Can we name the SecurityOrigin function better to make this more clear?
-        if (callingWindow.document()->securityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->securityOrigin()))
+        if (callingWindow.document()->getSecurityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->getSecurityOrigin()))
             return false;
     }
 
@@ -180,7 +180,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     if (targetOrigin == "/") {
         if (!sourceDocument)
             return;
-        target = sourceDocument->securityOrigin();
+        target = sourceDocument->getSecurityOrigin();
     } else if (targetOrigin != "*") {
         target = SecurityOrigin::createFromString(targetOrigin);
         // It doesn't make sense target a postMessage at a unique origin
@@ -191,7 +191,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
         }
     }
 
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(executionContext(), ports, exceptionState);
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(getExecutionContext(), ports, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -199,13 +199,13 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     // in order to capture the source of the message correctly.
     if (!sourceDocument)
         return;
-    String sourceOrigin = sourceDocument->securityOrigin()->toString();
-    String sourceSuborigin = sourceDocument->securityOrigin()->suboriginName();
+    String sourceOrigin = sourceDocument->getSecurityOrigin()->toString();
+    String sourceSuborigin = sourceDocument->getSecurityOrigin()->suboriginName();
 
-    KURL targetUrl = isLocalDOMWindow() ? document()->url() : KURL(KURL(), frame()->securityContext()->securityOrigin()->toString());
-    if (MixedContentChecker::isMixedContent(sourceDocument->securityOrigin(), targetUrl))
+    KURL targetUrl = isLocalDOMWindow() ? document()->url() : KURL(KURL(), frame()->securityContext()->getSecurityOrigin()->toString());
+    if (MixedContentChecker::isMixedContent(sourceDocument->getSecurityOrigin(), targetUrl))
         UseCounter::count(frame(), UseCounter::PostMessageFromSecureToInsecure);
-    else if (MixedContentChecker::isMixedContent(frame()->securityContext()->securityOrigin(), sourceDocument->url()))
+    else if (MixedContentChecker::isMixedContent(frame()->securityContext()->getSecurityOrigin(), sourceDocument->url()))
         UseCounter::count(frame(), UseCounter::PostMessageFromInsecureToSecure);
 
     RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(channels.release(), message, sourceOrigin, String(), source, sourceSuborigin);
@@ -237,9 +237,9 @@ String DOMWindow::sanitizedCrossDomainAccessErrorMessage(const LocalDOMWindow* c
     if (callingWindowURL.isNull())
         return String();
 
-    ASSERT(!callingWindow->document()->securityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->securityOrigin()));
+    ASSERT(!callingWindow->document()->getSecurityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->getSecurityOrigin()));
 
-    const SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
+    const SecurityOrigin* activeOrigin = callingWindow->document()->getSecurityOrigin();
     String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a cross-origin frame.";
 
     // FIXME: Evaluate which details from 'crossDomainAccessErrorMessage' may safely be reported to JavaScript.
@@ -257,8 +257,8 @@ String DOMWindow::crossDomainAccessErrorMessage(const LocalDOMWindow* callingWin
         return String();
 
     // FIXME: This message, and other console messages, have extra newlines. Should remove them.
-    const SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
-    const SecurityOrigin* targetOrigin = frame()->securityContext()->securityOrigin();
+    const SecurityOrigin* activeOrigin = callingWindow->document()->getSecurityOrigin();
+    const SecurityOrigin* targetOrigin = frame()->securityContext()->getSecurityOrigin();
     ASSERT(!activeOrigin->canAccessCheckSuborigins(targetOrigin));
 
     String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a frame with origin \"" + targetOrigin->toString() + "\". ";

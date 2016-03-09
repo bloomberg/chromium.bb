@@ -23,8 +23,8 @@ public:
     ServiceWorkerRequestTest()
         : m_page(DummyPageHolder::create(IntSize(1, 1))) { }
 
-    ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    ExecutionContext* executionContext() { return scriptState()->executionContext(); }
+    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
+    ExecutionContext* getExecutionContext() { return getScriptState()->getExecutionContext(); }
 
 private:
     OwnPtr<DummyPageHolder> m_page;
@@ -35,7 +35,7 @@ TEST_F(ServiceWorkerRequestTest, FromString)
     TrackExceptionState exceptionState;
 
     KURL url(ParsedURLString, "http://www.example.com/");
-    Request* request = Request::create(scriptState(), url, exceptionState);
+    Request* request = Request::create(getScriptState(), url, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
     ASSERT(request);
     EXPECT_EQ(url, request->url());
@@ -46,10 +46,10 @@ TEST_F(ServiceWorkerRequestTest, FromRequest)
     TrackExceptionState exceptionState;
 
     KURL url(ParsedURLString, "http://www.example.com/");
-    Request* request1 = Request::create(scriptState(), url, exceptionState);
+    Request* request1 = Request::create(getScriptState(), url, exceptionState);
     ASSERT(request1);
 
-    Request* request2 = Request::create(scriptState(), request1, exceptionState);
+    Request* request2 = Request::create(getScriptState(), request1, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
     ASSERT(request2);
     EXPECT_EQ(url, request2->url());
@@ -78,7 +78,7 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
         webRequest.setHeader(WebString::fromUTF8(headers[i].key), WebString::fromUTF8(headers[i].value));
     webRequest.setReferrer(referrer, referrerPolicy);
 
-    Request* request = Request::create(executionContext(), webRequest);
+    Request* request = Request::create(getExecutionContext(), webRequest);
     ASSERT(request);
     EXPECT_EQ(url, request->url());
     EXPECT_EQ(method, request->method());
@@ -86,7 +86,7 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
     EXPECT_EQ(referrer, request->referrer());
     EXPECT_EQ("navigate", request->mode());
 
-    Headers* requestHeaders = request->headers();
+    Headers* requestHeaders = request->getHeaders();
 
     WTF::HashMap<String, String> headersMap;
     for (int i = 0; headers[i].key; ++i)
@@ -114,7 +114,7 @@ TEST_F(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment)
     TrackExceptionState exceptionState;
     String urlWithoutFragment = "http://www.example.com/";
     String url = urlWithoutFragment + "#fragment";
-    Request* request = Request::create(scriptState(), url, exceptionState);
+    Request* request = Request::create(getScriptState(), url, exceptionState);
     ASSERT(request);
 
     WebServiceWorkerRequest webRequest;

@@ -89,9 +89,9 @@ void ContentDecryptionModuleResultPromise::reject(ExceptionCode code, const Stri
     m_resolver.clear();
 }
 
-ExecutionContext* ContentDecryptionModuleResultPromise::executionContext() const
+ExecutionContext* ContentDecryptionModuleResultPromise::getExecutionContext() const
 {
-    return m_resolver->executionContext();
+    return m_resolver->getExecutionContext();
 }
 
 DEFINE_TRACE(ContentDecryptionModuleResultPromise)

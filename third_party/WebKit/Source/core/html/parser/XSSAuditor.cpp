@@ -344,7 +344,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
         m_didSendValidXSSProtectionHeader = xssProtectionHeader != ReflectedXSSUnset && xssProtectionHeader != ReflectedXSSInvalid;
         if ((xssProtectionHeader == FilterReflectedXSS || xssProtectionHeader == BlockReflectedXSS) && !reportURL.isEmpty()) {
             xssProtectionReportURL = document->completeURL(reportURL);
-            if (MixedContentChecker::isMixedContent(document->securityOrigin(), xssProtectionReportURL)) {
+            if (MixedContentChecker::isMixedContent(document->getSecurityOrigin(), xssProtectionReportURL)) {
                 errorDetails = "insecure reporting URL for secure page";
                 xssProtectionHeader = ReflectedXSSInvalid;
                 xssProtectionReportURL = KURL();

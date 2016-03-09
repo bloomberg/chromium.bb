@@ -154,7 +154,7 @@ InstrumentingAgents* instrumentingAgentsFor(EventTarget* eventTarget)
 {
     if (!eventTarget)
         return 0;
-    return instrumentingAgentsFor(eventTarget->executionContext());
+    return instrumentingAgentsFor(eventTarget->getExecutionContext());
 }
 
 InstrumentingAgents* instrumentingAgentsFor(LayoutObject* layoutObject)

@@ -44,7 +44,7 @@ bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
 
   // This logic matches ExtensionWebContentsObserver::GetExtensionFromFrame.
   blink::WebSecurityOrigin origin =
-      frame_helper->render_frame()->GetWebFrame()->securityOrigin();
+      frame_helper->render_frame()->GetWebFrame()->getSecurityOrigin();
   if (origin.isUnique() ||
       !base::EqualsASCII(base::StringPiece16(origin.protocol()),
                          kExtensionScheme) ||

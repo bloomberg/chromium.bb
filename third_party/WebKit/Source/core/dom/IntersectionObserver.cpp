@@ -86,7 +86,7 @@ IntersectionObserver* IntersectionObserver::create(const IntersectionObserverIni
     RefPtrWillBeRawPtr<Node> root = observerInit.root();
     if (!root) {
         // TODO(szager): Use Document instead of document element for implicit root. (crbug.com/570538)
-        ExecutionContext* context = callback.executionContext();
+        ExecutionContext* context = callback.getExecutionContext();
         ASSERT(context->isDocument());
         Frame* mainFrame = toDocument(context)->frame()->tree().top();
         if (mainFrame && mainFrame->isLocalFrame())
@@ -180,7 +180,7 @@ void IntersectionObserver::observe(Element* target)
     if (target->ensureIntersectionObserverData().getObservationFor(*this))
         return;
 
-    bool shouldReportRootBounds = target->document().frame()->securityContext()->securityOrigin()->canAccess(rootNode()->document().frame()->securityContext()->securityOrigin());
+    bool shouldReportRootBounds = target->document().frame()->securityContext()->getSecurityOrigin()->canAccess(rootNode()->document().frame()->securityContext()->getSecurityOrigin());
     IntersectionObservation* observation = new IntersectionObservation(*this, *target, shouldReportRootBounds);
     target->ensureIntersectionObserverData().addObservation(*observation);
     m_observations.add(observation);
@@ -199,7 +199,7 @@ void IntersectionObserver::computeIntersectionObservations()
 {
     if (!m_root || !m_root->inDocument())
         return;
-    Document* callbackDocument = toDocument(m_callback->executionContext());
+    Document* callbackDocument = toDocument(m_callback->getExecutionContext());
     if (!callbackDocument)
         return;
     LocalDOMWindow* callbackDOMWindow = callbackDocument->domWindow();
@@ -262,7 +262,7 @@ String IntersectionObserver::rootMargin() const
 void IntersectionObserver::enqueueIntersectionObserverEntry(IntersectionObserverEntry& entry)
 {
     m_entries.append(&entry);
-    toDocument(m_callback->executionContext())->ensureIntersectionObserverController().scheduleIntersectionObserverForDelivery(*this);
+    toDocument(m_callback->getExecutionContext())->ensureIntersectionObserverController().scheduleIntersectionObserverForDelivery(*this);
 }
 
 static LayoutUnit computeMargin(const Length& length, LayoutUnit referenceLength)

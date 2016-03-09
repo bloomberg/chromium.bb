@@ -73,8 +73,8 @@ public:
 
     bool isWorkerGlobalScope() const final { return true; }
 
-    ExecutionContext* executionContext() const final;
-    ScriptWrappable* scriptWrappable() const final
+    ExecutionContext* getExecutionContext() const final;
+    ScriptWrappable* getScriptWrappable() const final
     {
         return const_cast<WorkerGlobalScope*>(this);
     }
@@ -119,7 +119,7 @@ public:
     v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) final;
 
     // ExecutionContext
-    WorkerEventQueue* eventQueue() const final;
+    WorkerEventQueue* getEventQueue() const final;
     SecurityContext& securityContext() final { return *this; }
 
     bool isContextThread() const final;
@@ -135,7 +135,7 @@ public:
 
     WorkerClients* clients() { return m_workerClients.get(); }
 
-    using SecurityContext::securityOrigin;
+    using SecurityContext::getSecurityOrigin;
     using SecurityContext::contentSecurityPolicy;
 
     void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) final;

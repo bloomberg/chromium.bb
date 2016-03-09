@@ -49,7 +49,7 @@ NetworkInformation* NavigatorNetworkInformation::connection()
 {
     if (!m_connection && frame()) {
         ASSERT(frame()->domWindow());
-        m_connection = NetworkInformation::create(frame()->domWindow()->executionContext());
+        m_connection = NetworkInformation::create(frame()->domWindow()->getExecutionContext());
     }
     return m_connection.get();
 }

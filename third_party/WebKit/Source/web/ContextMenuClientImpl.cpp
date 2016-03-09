@@ -268,7 +268,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         // It mostly works to convert the security origin to a URL, but
         // extensions accessing that property will not get the correct value
         // in that case. See https://crbug.com/534561
-        WebSecurityOrigin origin = m_webView->mainFrame()->securityOrigin();
+        WebSecurityOrigin origin = m_webView->mainFrame()->getSecurityOrigin();
         if (!origin.isNull())
             data.pageURL = KURL(ParsedURLString, origin.toString());
     } else {

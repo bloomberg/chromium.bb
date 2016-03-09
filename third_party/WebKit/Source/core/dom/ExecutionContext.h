@@ -83,7 +83,7 @@ public:
 
     virtual bool isContextThread() const { return true; }
 
-    SecurityOrigin* securityOrigin();
+    SecurityOrigin* getSecurityOrigin();
     ContentSecurityPolicy* contentSecurityPolicy();
     const KURL& url() const;
     KURL completeURL(const String& url) const;
@@ -140,7 +140,7 @@ public:
     int circularSequentialID();
 
     virtual EventTarget* errorEventTarget() = 0;
-    virtual EventQueue* eventQueue() const = 0;
+    virtual EventQueue* getEventQueue() const = 0;
 
     // Methods related to window interaction. It should be used to manage window
     // focusing and window creation permission for an ExecutionContext.

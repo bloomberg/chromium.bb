@@ -139,7 +139,7 @@ private:
     void resolveAllPendingReadsAsDone() override
     {
         for (auto& resolver : m_pendingReads) {
-            ScriptState* scriptState = resolver->scriptState();
+            ScriptState* scriptState = resolver->getScriptState();
             if (!scriptState->contextIsValid())
                 continue;
             ScriptState::Scope scope(scriptState);
@@ -181,7 +181,7 @@ bool ReadableStreamImpl<ChunkTypeTraits>::enqueue(typename ChunkTypeTraits::Pass
     }
 
     ScriptPromiseResolver* resolver = m_pendingReads.takeFirst();
-    ScriptState* scriptState = resolver->scriptState();
+    ScriptState* scriptState = resolver->getScriptState();
     if (!scriptState->contextIsValid())
         return false;
     ScriptState::Scope scope(scriptState);

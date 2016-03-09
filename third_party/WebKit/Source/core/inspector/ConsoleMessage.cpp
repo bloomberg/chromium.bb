@@ -104,7 +104,7 @@ void ConsoleMessage::setCallStack(PassRefPtr<ScriptCallStack> callStack)
     }
 }
 
-ScriptState* ConsoleMessage::scriptState() const
+ScriptState* ConsoleMessage::getScriptState() const
 {
     if (m_scriptState)
         return m_scriptState->get();
@@ -181,12 +181,12 @@ unsigned ConsoleMessage::columnNumber() const
 
 void ConsoleMessage::frameWindowDiscarded(LocalDOMWindow* window)
 {
-    if (scriptState() && scriptState()->domWindow() == window)
+    if (getScriptState() && getScriptState()->domWindow() == window)
         setScriptState(nullptr);
 
     if (!m_scriptArguments)
         return;
-    if (m_scriptArguments->scriptState()->domWindow() != window)
+    if (m_scriptArguments->getScriptState()->domWindow() != window)
         return;
     if (!m_message)
         m_message = "<message collected>";

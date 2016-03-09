@@ -280,7 +280,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
     if (!scriptState->contextIsValid())
         return;
 
-    ExecutionContext* executionContext = scriptState->executionContext();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
     if (!executionContext)
         return;
 
@@ -410,7 +410,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
 
     ScriptState* scriptState = ScriptState::current(isolate);
     // During the frame teardown, there may not be a valid context.
-    if (ExecutionContext* context = scriptState->executionContext()) {
+    if (ExecutionContext* context = scriptState->getExecutionContext()) {
         String errorMessage = toCoreStringWithNullCheck(message->Get());
         TOSTRING_VOID(V8StringResource<>, sourceURL, message->GetScriptOrigin().ResourceName());
         int scriptId = 0;

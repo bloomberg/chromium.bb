@@ -113,14 +113,14 @@ void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<
     ASSERT(m_client);
 
     // No nested workers (for now) - connect() should only be called from document context.
-    ASSERT(worker->executionContext()->isDocument());
-    Document* document = toDocument(worker->executionContext());
+    ASSERT(worker->getExecutionContext()->isDocument());
+    Document* document = toDocument(worker->getExecutionContext());
 
     // TODO(estark): this is broken, as it only uses the first header
     // when multiple might have been sent. Fix by making the
     // SharedWorkerConnector interface take a map that can contain
     // multiple headers.
-    OwnPtr<Vector<CSPHeaderAndType>> headers = worker->executionContext()->contentSecurityPolicy()->headers();
+    OwnPtr<Vector<CSPHeaderAndType>> headers = worker->getExecutionContext()->contentSecurityPolicy()->headers();
     WebString header;
     WebContentSecurityPolicyType headerType = WebContentSecurityPolicyTypeReport;
 
@@ -131,8 +131,8 @@ void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<
 
     WebWorkerCreationError creationError;
     String unusedSecureContextError;
-    bool isSecureContext = worker->executionContext()->isSecureContext(unusedSecureContextError);
-    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), header, headerType, worker->executionContext()->securityContext().addressSpace(), isSecureContext ? WebSharedWorkerCreationContextTypeSecure : WebSharedWorkerCreationContextTypeNonsecure, &creationError));
+    bool isSecureContext = worker->getExecutionContext()->isSecureContext(unusedSecureContextError);
+    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), header, headerType, worker->getExecutionContext()->securityContext().addressSpace(), isSecureContext ? WebSharedWorkerCreationContextTypeSecure : WebSharedWorkerCreationContextTypeNonsecure, &creationError));
     if (creationError != WebWorkerCreationErrorNone) {
         if (creationError == WebWorkerCreationErrorURLMismatch) {
             // Existing worker does not match this url, so return an error back to the caller.

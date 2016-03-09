@@ -82,8 +82,8 @@ public:
         return m_result;
     }
 
-    SuccessCallback* successCallback() { return SuccessCallbackImpl::create(this); }
-    ErrorCallback* errorCallback() { return ErrorCallbackImpl::create(this); }
+    SuccessCallback* getSuccessCallback() { return SuccessCallbackImpl::create(this); }
+    ErrorCallback* getErrorCallback() { return ErrorCallbackImpl::create(this); }
 
     DEFINE_INLINE_TRACE()
     {

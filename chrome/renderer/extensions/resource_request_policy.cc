@@ -76,7 +76,7 @@ bool ResourceRequestPolicy::CanRequestResource(
     // but this is ok for the checks below.  We only care if it matches the
     // current extension or has a devtools scheme.
     GURL page_origin =
-        blink::WebStringToGURL(frame->top()->securityOrigin().toString());
+        blink::WebStringToGURL(frame->top()->getSecurityOrigin().toString());
 
     // Exceptions are:
     // - empty origin (needed for some edge cases when we have empty origins)

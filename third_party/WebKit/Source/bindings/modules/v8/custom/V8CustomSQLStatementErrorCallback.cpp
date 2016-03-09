@@ -74,7 +74,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     // statement, if any, or onto the next overall step otherwise. Otherwise,
     // the error callback did not return false, or there was no error callback.
     // Jump to the last step in the overall steps.
-    if (!ScriptController::callFunction(executionContext(), m_callback.newLocal(isolate), m_scriptState->context()->Global(), WTF_ARRAY_LENGTH(argv), argv, isolate).ToLocal(&result))
+    if (!ScriptController::callFunction(getExecutionContext(), m_callback.newLocal(isolate), m_scriptState->context()->Global(), WTF_ARRAY_LENGTH(argv), argv, isolate).ToLocal(&result))
         return true;
 
     bool value;

@@ -84,12 +84,12 @@ void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
 {
     AudioBus* outputBus = output(0).bus();
 
-    if (!audioSourceProvider()) {
+    if (!getAudioSourceProvider()) {
         outputBus->zero();
         return;
     }
 
-    if (!mediaStream() || m_sourceNumberOfChannels != outputBus->numberOfChannels()) {
+    if (!getMediaStream() || m_sourceNumberOfChannels != outputBus->numberOfChannels()) {
         outputBus->zero();
         return;
     }
@@ -99,7 +99,7 @@ void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
     // a format change, so we output silence in this case.
     MutexTryLocker tryLocker(m_processLock);
     if (tryLocker.locked()) {
-        audioSourceProvider()->provideInput(outputBus, numberOfFrames);
+        getAudioSourceProvider()->provideInput(outputBus, numberOfFrames);
     } else {
         // We failed to acquire the lock.
         outputBus->zero();
@@ -130,9 +130,9 @@ MediaStreamAudioSourceHandler& MediaStreamAudioSourceNode::mediaStreamAudioSourc
     return static_cast<MediaStreamAudioSourceHandler&>(handler());
 }
 
-MediaStream* MediaStreamAudioSourceNode::mediaStream() const
+MediaStream* MediaStreamAudioSourceNode::getMediaStream() const
 {
-    return mediaStreamAudioSourceHandler().mediaStream();
+    return mediaStreamAudioSourceHandler().getMediaStream();
 }
 
 void MediaStreamAudioSourceNode::setFormat(size_t numberOfChannels, float sourceSampleRate)

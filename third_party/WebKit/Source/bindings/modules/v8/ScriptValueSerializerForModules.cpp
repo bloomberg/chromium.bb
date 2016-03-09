@@ -342,8 +342,8 @@ bool SerializedScriptValueReaderForModules::readDOMFileSystem(v8::Local<v8::Valu
         return false;
     if (!readWebCoreString(&url))
         return false;
-    DOMFileSystem* fs = DOMFileSystem::create(scriptState()->executionContext(), name, static_cast<FileSystemType>(type), KURL(ParsedURLString, url));
-    *value = toV8(fs, scriptState()->context()->Global(), isolate());
+    DOMFileSystem* fs = DOMFileSystem::create(getScriptState()->getExecutionContext(), name, static_cast<FileSystemType>(type), KURL(ParsedURLString, url));
+    *value = toV8(fs, getScriptState()->context()->Global(), isolate());
     return !value->IsEmpty();
 }
 
@@ -400,7 +400,7 @@ bool SerializedScriptValueReaderForModules::readCryptoKey(v8::Local<v8::Value>* 
         return false;
     }
 
-    *value = toV8(CryptoKey::create(key), scriptState()->context()->Global(), isolate());
+    *value = toV8(CryptoKey::create(key), getScriptState()->context()->Global(), isolate());
     return !value->IsEmpty();
 }
 

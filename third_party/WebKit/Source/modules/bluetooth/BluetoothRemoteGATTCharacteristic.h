@@ -67,7 +67,7 @@ public:
 
     // EventTarget methods:
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const;
+    ExecutionContext* getExecutionContext() const;
 
     // Interface required by garbage collection.
     DECLARE_VIRTUAL_TRACE();

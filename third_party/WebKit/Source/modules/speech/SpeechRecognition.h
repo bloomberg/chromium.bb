@@ -88,7 +88,7 @@ public:
 
     // EventTarget.
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     // ActiveDOMObject.
     bool hasPendingActivity() const override;

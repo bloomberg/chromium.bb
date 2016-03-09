@@ -722,10 +722,10 @@ void ChromeClientImpl::setCursorOverridden(bool overridden)
 void ChromeClientImpl::postAccessibilityNotification(AXObject* obj, AXObjectCache::AXNotification notification)
 {
     // Alert assistive technology about the accessibility object notification.
-    if (!obj || !obj->document())
+    if (!obj || !obj->getDocument())
         return;
 
-    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(obj->document()->axObjectCacheOwner().frame());
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(obj->getDocument()->axObjectCacheOwner().frame());
     if (webframe && webframe->client())
         webframe->client()->postAccessibilityEvent(WebAXObject(obj), toWebAXEvent(notification));
 }

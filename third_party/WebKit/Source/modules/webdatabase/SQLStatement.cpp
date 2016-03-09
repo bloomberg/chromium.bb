@@ -56,7 +56,7 @@ SQLStatement::SQLStatement(Database* database, SQLStatementCallback* callback,
     , m_asyncOperationId(0)
 {
     if (hasCallback() || hasErrorCallback())
-        m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(database->executionContext(), "SQLStatement");
+        m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(database->getExecutionContext(), "SQLStatement");
 }
 
 SQLStatement::~SQLStatement()
@@ -96,7 +96,7 @@ bool SQLStatement::performCallback(SQLTransaction* transaction)
     SQLStatementErrorCallback* errorCallback = m_statementErrorCallback.release();
     SQLErrorData* error = m_backend->sqlError();
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(transaction->database()->executionContext(), m_asyncOperationId);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(transaction->database()->getExecutionContext(), m_asyncOperationId);
 
     // Call the appropriate statement callback and track if it resulted in an error,
     // because then we need to jump to the transaction error callback.

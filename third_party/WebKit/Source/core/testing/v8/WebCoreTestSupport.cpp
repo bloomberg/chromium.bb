@@ -40,7 +40,7 @@ v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context)
 {
     ScriptState* scriptState = ScriptState::from(context);
     v8::Local<v8::Object> global = scriptState->context()->Global();
-    ExecutionContext* executionContext = scriptState->executionContext();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
     if (executionContext->isDocument())
         return toV8(Internals::create(scriptState), global, scriptState->isolate());
     return v8::Local<v8::Value>();
@@ -65,7 +65,7 @@ void resetInternalsObject(v8::Local<v8::Context> context)
 
     ScriptState* scriptState = ScriptState::from(context);
     ScriptState::Scope scope(scriptState);
-    Document* document = toDocument(scriptState->executionContext());
+    Document* document = toDocument(scriptState->getExecutionContext());
     ASSERT(document);
     LocalFrame* frame = document->frame();
     // Should the document have been detached, the page is assumed being destroyed (=> no reset required.)

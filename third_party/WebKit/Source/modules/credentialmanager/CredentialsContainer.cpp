@@ -102,14 +102,14 @@ CredentialsContainer::CredentialsContainer()
 
 static bool checkBoilerplate(ScriptPromiseResolver* resolver)
 {
-    CredentialManagerClient* client = CredentialManagerClient::from(resolver->scriptState()->executionContext());
+    CredentialManagerClient* client = CredentialManagerClient::from(resolver->getScriptState()->getExecutionContext());
     if (!client) {
         resolver->reject(DOMException::create(InvalidStateError, "Could not establish connection to the credential manager."));
         return false;
     }
 
     String errorMessage;
-    if (!resolver->scriptState()->executionContext()->isSecureContext(errorMessage)) {
+    if (!resolver->getScriptState()->getExecutionContext()->isSecureContext(errorMessage)) {
         resolver->reject(DOMException::create(SecurityError, errorMessage));
         return false;
     }
@@ -139,9 +139,9 @@ ScriptPromise CredentialsContainer::get(ScriptState* scriptState, const Credenti
         }
     }
 
-    UseCounter::count(scriptState->executionContext(), options.unmediated() ? UseCounter::CredentialManagerGetWithoutUI : UseCounter::CredentialManagerGetWithUI);
+    UseCounter::count(scriptState->getExecutionContext(), options.unmediated() ? UseCounter::CredentialManagerGetWithoutUI : UseCounter::CredentialManagerGetWithUI);
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchGet(options.unmediated(), options.password(), providers, new RequestCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->getExecutionContext())->dispatchGet(options.unmediated(), options.password(), providers, new RequestCallbacks(resolver));
     return promise;
 }
 
@@ -152,7 +152,7 @@ ScriptPromise CredentialsContainer::store(ScriptState* scriptState, Credential* 
     if (!checkBoilerplate(resolver))
         return promise;
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchStore(WebCredential::create(credential->platformCredential()), new NotificationCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->getExecutionContext())->dispatchStore(WebCredential::create(credential->getPlatformCredential()), new NotificationCallbacks(resolver));
     return promise;
 }
 
@@ -163,7 +163,7 @@ ScriptPromise CredentialsContainer::requireUserMediation(ScriptState* scriptStat
     if (!checkBoilerplate(resolver))
         return promise;
 
-    CredentialManagerClient::from(scriptState->executionContext())->dispatchRequireUserMediation(new NotificationCallbacks(resolver));
+    CredentialManagerClient::from(scriptState->getExecutionContext())->dispatchRequireUserMediation(new NotificationCallbacks(resolver));
     return promise;
 }
 

@@ -53,7 +53,7 @@ MediaStreamTrackSourcesRequestImpl::~MediaStreamTrackSourcesRequestImpl()
 
 String MediaStreamTrackSourcesRequestImpl::origin()
 {
-    return m_executionContext->securityOrigin()->toString();
+    return m_executionContext->getSecurityOrigin()->toString();
 }
 
 void MediaStreamTrackSourcesRequestImpl::requestSucceeded(const WebVector<WebSourceInfo>& webSourceInfos)

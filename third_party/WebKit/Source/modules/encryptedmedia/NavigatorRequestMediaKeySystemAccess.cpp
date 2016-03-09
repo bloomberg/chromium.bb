@@ -91,7 +91,7 @@ public:
     // EncryptedMediaRequest implementation.
     WebString keySystem() const override { return m_keySystem; }
     const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const override { return m_supportedConfigurations; }
-    SecurityOrigin* securityOrigin() const override { return m_resolver->executionContext()->securityOrigin(); }
+    SecurityOrigin* getSecurityOrigin() const override { return m_resolver->getExecutionContext()->getSecurityOrigin(); }
     void requestSucceeded(WebContentDecryptionModuleAccess*) override;
     void requestNotSupported(const WebString& errorMessage) override;
 
@@ -196,7 +196,7 @@ void MediaKeySystemAccessInitializer::checkVideoCapabilityRobustness() const
     }
 
     if (hasEmptyRobustness) {
-        m_resolver->executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
+        m_resolver->getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
             "It is recommended that a robustness level be specified. Not specifying the robustness level could "
             "result in unexpected behavior in the future, potentially including failure to play."));
     }
@@ -230,7 +230,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     }
 
     // 3-4. 'May Document use powerful features?' check.
-    ExecutionContext* executionContext = scriptState->executionContext();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
     String errorMessage;
     if (executionContext->isSecureContext(errorMessage)) {
         UseCounter::count(executionContext, UseCounter::EncryptedMediaSecureOrigin);

@@ -49,7 +49,7 @@ DEFINE_TRACE(CanvasCaptureMediaStreamTrack)
 }
 
 CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(const CanvasCaptureMediaStreamTrack& track, MediaStreamComponent* component)
-    :MediaStreamTrack(track.m_canvasElement->executionContext(), component)
+    :MediaStreamTrack(track.m_canvasElement->getExecutionContext(), component)
     , m_canvasElement(track.m_canvasElement)
     , m_drawListener(track.m_drawListener)
 {
@@ -58,7 +58,7 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(const CanvasCapture
 }
 
 CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler)
-    : MediaStreamTrack(element->executionContext(), component)
+    : MediaStreamTrack(element->getExecutionContext(), component)
     , m_canvasElement(element)
 {
     suspendIfNeeded();
@@ -67,7 +67,7 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponen
 }
 
 CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
-    : MediaStreamTrack(element->executionContext(), component)
+    : MediaStreamTrack(element->getExecutionContext(), component)
     , m_canvasElement(element)
 {
     suspendIfNeeded();

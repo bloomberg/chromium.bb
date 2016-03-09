@@ -54,9 +54,9 @@ public:
     ~AXLayoutObject() override;
 
     // Public, overridden from AXObject.
-    LayoutObject* layoutObject() const final { return m_layoutObject; }
+    LayoutObject* getLayoutObject() const final { return m_layoutObject; }
     LayoutRect elementRect() const override;
-    LayoutBoxModelObject* layoutBoxModelObject() const;
+    LayoutBoxModelObject* getLayoutBoxModelObject() const;
     bool shouldNotifyActiveDescendant() const;
     ScrollableArea* getScrollableAreaIfScrollable() const final;
     AccessibilityRole determineAccessibilityRole() override;
@@ -176,8 +176,8 @@ protected:
     double estimatedLoadingProgress() const override;
 
     // DOM and layout tree access.
-    Node* node() const override;
-    Document* document() const override;
+    Node* getNode() const override;
+    Document* getDocument() const override;
     FrameView* documentFrameView() const override;
     Element* anchorElement() const override;
 

@@ -68,7 +68,7 @@ public:
     void setEnabled(bool enabled) { m_enabled = enabled; }
     bool muted() const { return m_muted; }
     void setMuted(bool muted) { m_muted = muted; }
-    AudioSourceProvider* audioSourceProvider() { return &m_sourceProvider; }
+    AudioSourceProvider* getAudioSourceProvider() { return &m_sourceProvider; }
     void setSourceProvider(WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
 
     ExtraData* extraData() const { return m_extraData.get(); }

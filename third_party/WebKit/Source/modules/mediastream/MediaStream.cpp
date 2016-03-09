@@ -312,9 +312,9 @@ const AtomicString& MediaStream::interfaceName() const
     return EventTargetNames::MediaStream;
 }
 
-ExecutionContext* MediaStream::executionContext() const
+ExecutionContext* MediaStream::getExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 void MediaStream::addRemoteTrack(MediaStreamComponent* component)
@@ -323,7 +323,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component)
     if (m_stopped)
         return;
 
-    MediaStreamTrack* track = MediaStreamTrack::create(executionContext(), component);
+    MediaStreamTrack* track = MediaStreamTrack::create(getExecutionContext(), component);
     switch (component->source()->type()) {
     case MediaStreamSource::TypeAudio:
         m_audioTracks.append(track);

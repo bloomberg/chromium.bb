@@ -28,7 +28,7 @@ private:
     explicit ConstUndefined(ScriptState* scriptState) : ScriptFunction(scriptState) { }
     ScriptValue call(ScriptValue value) override
     {
-        return ScriptValue(scriptState(), v8::Undefined(scriptState()->isolate()));
+        return ScriptValue(getScriptState(), v8::Undefined(getScriptState()->isolate()));
     }
 };
 

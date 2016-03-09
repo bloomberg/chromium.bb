@@ -48,12 +48,12 @@ bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(CanvasImageSource* sour
 
 int OffscreenCanvasRenderingContext2D::width() const
 {
-    return offscreenCanvas()->height();
+    return getOffscreenCanvas()->height();
 }
 
 int OffscreenCanvasRenderingContext2D::height() const
 {
-    return offscreenCanvas()->width();
+    return getOffscreenCanvas()->width();
 }
 
 bool OffscreenCanvasRenderingContext2D::hasImageBuffer() const

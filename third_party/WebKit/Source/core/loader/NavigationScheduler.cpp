@@ -328,7 +328,7 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
     // fragment part, we don't need to schedule the location change. We'll skip this
     // optimization for cross-origin navigations to minimize the navigator's ability to
     // execute timing attacks.
-    if (originDocument->securityOrigin()->canAccess(m_frame->document()->securityOrigin())) {
+    if (originDocument->getSecurityOrigin()->canAccess(m_frame->document()->getSecurityOrigin())) {
         KURL parsedURL(ParsedURLString, url);
         if (parsedURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(m_frame->document()->url(), parsedURL)) {
             FrameLoadRequest request(originDocument, m_frame->document()->completeURL(url), "_self");

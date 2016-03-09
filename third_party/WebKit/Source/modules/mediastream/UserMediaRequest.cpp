@@ -140,7 +140,7 @@ bool UserMediaRequest::isSecureContextUse(String& errorMessage)
 
 Document* UserMediaRequest::ownerDocument()
 {
-    if (ExecutionContext* context = executionContext()) {
+    if (ExecutionContext* context = getExecutionContext()) {
         return toDocument(context);
     }
 
@@ -155,10 +155,10 @@ void UserMediaRequest::start()
 
 void UserMediaRequest::succeed(MediaStreamDescriptor* streamDescriptor)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
 
-    RefPtrWillBeRawPtr<MediaStream> stream = MediaStream::create(executionContext(), streamDescriptor);
+    RefPtrWillBeRawPtr<MediaStream> stream = MediaStream::create(getExecutionContext(), streamDescriptor);
 
     MediaStreamTrackVector audioTracks = stream->getAudioTracks();
     for (MediaStreamTrackVector::iterator iter = audioTracks.begin(); iter != audioTracks.end(); ++iter) {
@@ -175,7 +175,7 @@ void UserMediaRequest::succeed(MediaStreamDescriptor* streamDescriptor)
 
 void UserMediaRequest::failPermissionDenied(const String& message)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
     m_errorCallback->handleEvent(NavigatorUserMediaError::create(NavigatorUserMediaError::NamePermissionDenied, message, String()));
 }
@@ -183,7 +183,7 @@ void UserMediaRequest::failPermissionDenied(const String& message)
 void UserMediaRequest::failConstraint(const String& constraintName, const String& message)
 {
     ASSERT(!constraintName.isEmpty());
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
     m_errorCallback->handleEvent(NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, message, constraintName));
 }
@@ -191,7 +191,7 @@ void UserMediaRequest::failConstraint(const String& constraintName, const String
 void UserMediaRequest::failUASpecific(const String& name, const String& message, const String& constraintName)
 {
     ASSERT(!name.isEmpty());
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
     m_errorCallback->handleEvent(NavigatorUserMediaError::create(name, message, constraintName));
 }

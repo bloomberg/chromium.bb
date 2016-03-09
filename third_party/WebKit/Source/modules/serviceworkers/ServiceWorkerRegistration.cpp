@@ -30,23 +30,23 @@ void ServiceWorkerRegistration::dispatchUpdateFoundEvent()
 
 void ServiceWorkerRegistration::setInstalling(WebPassOwnPtr<WebServiceWorker::Handle> handle)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
-    m_installing = ServiceWorker::from(executionContext(), handle.release());
+    m_installing = ServiceWorker::from(getExecutionContext(), handle.release());
 }
 
 void ServiceWorkerRegistration::setWaiting(WebPassOwnPtr<WebServiceWorker::Handle> handle)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
-    m_waiting = ServiceWorker::from(executionContext(), handle.release());
+    m_waiting = ServiceWorker::from(getExecutionContext(), handle.release());
 }
 
 void ServiceWorkerRegistration::setActive(WebPassOwnPtr<WebServiceWorker::Handle> handle)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
-    m_active = ServiceWorker::from(executionContext(), handle.release());
+    m_active = ServiceWorker::from(getExecutionContext(), handle.release());
 }
 
 ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
@@ -55,7 +55,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::getOrCreate(ExecutionConte
 
     ServiceWorkerRegistration* existingRegistration = static_cast<ServiceWorkerRegistration*>(handle->registration()->proxy());
     if (existingRegistration) {
-        ASSERT(existingRegistration->executionContext() == executionContext);
+        ASSERT(existingRegistration->getExecutionContext() == executionContext);
         return existingRegistration;
     }
 

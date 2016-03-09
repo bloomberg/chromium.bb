@@ -22,7 +22,7 @@ const AtomicString& PresentationReceiver::interfaceName() const
     return EventTargetNames::PresentationReceiver;
 }
 
-ExecutionContext* PresentationReceiver::executionContext() const
+ExecutionContext* PresentationReceiver::getExecutionContext() const
 {
     return frame() ? frame()->document() : nullptr;
 }

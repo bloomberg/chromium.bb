@@ -656,7 +656,7 @@ void PeerConnectionTracker::TrackGetUserMedia(
   DCHECK(main_thread_.CalledOnValidThread());
 
   SendTarget()->Send(new PeerConnectionTrackerHost_GetUserMedia(
-      user_media_request.securityOrigin().toString().utf8(),
+      user_media_request.getSecurityOrigin().toString().utf8(),
       user_media_request.audio(), user_media_request.video(),
       SerializeMediaConstraints(user_media_request.audioConstraints()),
       SerializeMediaConstraints(user_media_request.videoConstraints())));

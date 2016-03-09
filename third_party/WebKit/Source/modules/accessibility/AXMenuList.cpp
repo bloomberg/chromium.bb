@@ -123,10 +123,10 @@ AccessibilityExpanded AXMenuList::isExpanded() const
 
 bool AXMenuList::canSetFocusAttribute() const
 {
-    if (!node())
+    if (!getNode())
         return false;
 
-    return !toElement(node())->isDisabledFormControl();
+    return !toElement(getNode())->isDisabledFormControl();
 }
 
 void AXMenuList::didUpdateActiveOption(int optionIndex)
@@ -162,7 +162,7 @@ void AXMenuList::didHidePopup()
     AXMenuListPopup* popup = toAXMenuListPopup(children()[0].get());
     popup->didHide();
 
-    if (node() && node()->focused())
+    if (getNode() && getNode()->focused())
         axObjectCache().postNotification(this, AXObjectCacheImpl::AXFocusedUIElementChanged);
 }
 

@@ -75,11 +75,11 @@ String DOMURL::createObjectURL(ExecutionContext* executionContext, Blob* blob, E
 
 String DOMURL::createPublicURL(ExecutionContext* executionContext, URLRegistrable* registrable, const String& uuid)
 {
-    KURL publicURL = BlobURL::createPublicURL(executionContext->securityOrigin());
+    KURL publicURL = BlobURL::createPublicURL(executionContext->getSecurityOrigin());
     if (publicURL.isEmpty())
         return String();
 
-    executionContext->publicURLManager().registerURL(executionContext->securityOrigin(), publicURL, registrable, uuid);
+    executionContext->publicURLManager().registerURL(executionContext->getSecurityOrigin(), publicURL, registrable, uuid);
 
     return publicURL.getString();
 }

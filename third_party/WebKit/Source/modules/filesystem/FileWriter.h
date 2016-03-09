@@ -86,7 +86,7 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);

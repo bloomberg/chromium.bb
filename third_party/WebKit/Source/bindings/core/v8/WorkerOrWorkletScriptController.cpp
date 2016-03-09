@@ -152,7 +152,7 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
     WorkerThreadDebugger::setContextDebugData(context);
 
     // Create a new JS object and use it as the prototype for the shadow global object.
-    const WrapperTypeInfo* wrapperTypeInfo = m_globalScope->scriptWrappable()->wrapperTypeInfo();
+    const WrapperTypeInfo* wrapperTypeInfo = m_globalScope->getScriptWrappable()->wrapperTypeInfo();
 
     v8::Local<v8::Function> globalScopeConstructor = m_scriptState->perContextData()->constructorForType(wrapperTypeInfo);
     if (globalScopeConstructor.IsEmpty())
@@ -164,7 +164,7 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
         return false;
     }
 
-    jsGlobalScope = V8DOMWrapper::associateObjectWithWrapper(m_isolate, m_globalScope->scriptWrappable(), wrapperTypeInfo, jsGlobalScope);
+    jsGlobalScope = V8DOMWrapper::associateObjectWithWrapper(m_isolate, m_globalScope->getScriptWrappable(), wrapperTypeInfo, jsGlobalScope);
 
     // Insert the object instance as the prototype of the shadow object.
     v8::Local<v8::Object> globalObject = v8::Local<v8::Object>::Cast(m_scriptState->context()->Global()->GetPrototype());

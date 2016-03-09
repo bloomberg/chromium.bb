@@ -107,7 +107,7 @@ public:
     static size_t maxActions();
 
     // EventTarget interface.
-    ExecutionContext* executionContext() const final { return ActiveDOMObject::executionContext(); }
+    ExecutionContext* getExecutionContext() const final { return ActiveDOMObject::getExecutionContext(); }
     const AtomicString& interfaceName() const override;
 
     // ActiveDOMObject interface.

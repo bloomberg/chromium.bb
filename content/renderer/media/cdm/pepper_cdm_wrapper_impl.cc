@@ -38,7 +38,7 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
   // though the CDM is no longer necessary.
   // TODO: Consider avoiding this possibility entirely. http://crbug.com/575236
   GURL frame_security_origin(
-      blink::WebStringToGURL(frame->securityOrigin().toString()));
+      blink::WebStringToGURL(frame->getSecurityOrigin().toString()));
   if (frame_security_origin != security_origin) {
     LOG(ERROR) << "Frame has a different origin than the EME call.";
     return scoped_ptr<PepperCdmWrapper>();

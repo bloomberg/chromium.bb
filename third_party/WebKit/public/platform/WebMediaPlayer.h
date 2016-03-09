@@ -173,7 +173,7 @@ public:
         unsigned texture, int level, int xoffset, int yoffset, bool premultiplyAlpha,
         bool flipY) { return false; }
 
-    virtual WebAudioSourceProvider* audioSourceProvider() { return nullptr; }
+    virtual WebAudioSourceProvider* getAudioSourceProvider() { return nullptr; }
 
     virtual void setContentDecryptionModule(WebContentDecryptionModule* cdm, WebContentDecryptionModuleResult result) { result.completeWithError(WebContentDecryptionModuleExceptionNotSupportedError, 0, "ERROR"); }
 

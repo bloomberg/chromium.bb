@@ -260,7 +260,8 @@ void ChromePluginPlaceholder::PluginListChanged() {
 
   ChromeViewHostMsg_GetPluginInfo_Output output;
   std::string mime_type(GetPluginParams().mimeType.utf8());
-  blink::WebString top_origin = GetFrame()->top()->securityOrigin().toString();
+  blink::WebString top_origin =
+      GetFrame()->top()->getSecurityOrigin().toString();
   render_frame()->Send(
       new ChromeViewHostMsg_GetPluginInfo(routing_id(),
                                           GURL(GetPluginParams().url),

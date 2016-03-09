@@ -101,7 +101,7 @@ unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exception
     }
 
     v8::Local<v8::Value> result;
-    if (!ScriptController::callFunction(m_scriptState->executionContext(), callback, receiver, 1, info.get(), isolate).ToLocal(&result)) {
+    if (!ScriptController::callFunction(m_scriptState->getExecutionContext(), callback, receiver, 1, info.get(), isolate).ToLocal(&result)) {
         exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
         return NodeFilter::FILTER_REJECT;
     }

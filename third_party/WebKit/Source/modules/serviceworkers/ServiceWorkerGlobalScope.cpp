@@ -130,7 +130,7 @@ void ServiceWorkerGlobalScope::close(ExceptionState& exceptionState)
 
 ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
 {
-    ExecutionContext* executionContext = scriptState->executionContext();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
     // FIXME: short-term fix, see details at: https://codereview.chromium.org/535193002/.
     if (!executionContext)
         return ScriptPromise();
@@ -144,9 +144,9 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
 
 void ServiceWorkerGlobalScope::setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
-    m_registration = ServiceWorkerRegistration::getOrCreate(executionContext(), handle.release());
+    m_registration = ServiceWorkerRegistration::getOrCreate(getExecutionContext(), handle.release());
 }
 
 bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
@@ -203,7 +203,7 @@ void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls, Excepti
     // and get added to and retrieved from the ServiceWorker's script cache.
     // FIXME: Revisit in light of the solution to crbug/388375.
     for (Vector<String>::const_iterator it = urls.begin(); it != urls.end(); ++it)
-        executionContext()->removeURLFromMemoryCache(completeURL(*it));
+        getExecutionContext()->removeURLFromMemoryCache(completeURL(*it));
     WorkerGlobalScope::importScripts(urls, exceptionState);
 }
 

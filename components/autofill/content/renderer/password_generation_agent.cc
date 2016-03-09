@@ -239,7 +239,7 @@ bool PasswordGenerationAgent::ShouldAnalyzeDocument() const {
   // Make sure that this security origin is allowed to use password manager.
   // Generating a password that can't be saved is a bad idea.
   blink::WebSecurityOrigin origin =
-      render_frame()->GetWebFrame()->document().securityOrigin();
+      render_frame()->GetWebFrame()->document().getSecurityOrigin();
   if (!origin.canAccessPasswordManager()) {
     VLOG(1) << "No PasswordManager access";
     return false;

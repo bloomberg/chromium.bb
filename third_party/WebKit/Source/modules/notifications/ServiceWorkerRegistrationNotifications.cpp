@@ -32,7 +32,7 @@ public:
     {
         HeapVector<Member<Notification>> notifications;
         for (const WebPersistentNotificationInfo& notificationInfo : notificationInfos)
-            notifications.append(Notification::create(resolver->executionContext(), notificationInfo.persistentId, notificationInfo.data, true /* showing */));
+            notifications.append(Notification::create(resolver->getExecutionContext(), notificationInfo.persistentId, notificationInfo.data, true /* showing */));
 
         return notifications;
     }
@@ -45,7 +45,7 @@ private:
 
 ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptState* scriptState, ServiceWorkerRegistration& serviceWorkerRegistration, const String& title, const NotificationOptions& options, ExceptionState& exceptionState)
 {
-    ExecutionContext* executionContext = scriptState->executionContext();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
 
     // If context object's active worker is null, reject promise with a TypeError exception.
     if (!serviceWorkerRegistration.active())
@@ -69,7 +69,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
 
     WebNotificationShowCallbacks* callbacks = new CallbackPromiseAdapter<void, void>(resolver);
 
-    SecurityOrigin* origin = executionContext->securityOrigin();
+    SecurityOrigin* origin = executionContext->getSecurityOrigin();
     WebNotificationManager* notificationManager = Platform::current()->notificationManager();
     ASSERT(notificationManager);
 

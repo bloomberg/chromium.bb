@@ -1782,7 +1782,7 @@ const AtomicString& Node::interfaceName() const
     return EventTargetNames::Node;
 }
 
-ExecutionContext* Node::executionContext() const
+ExecutionContext* Node::getExecutionContext() const
 {
     return document().contextDocument().get();
 }

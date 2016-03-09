@@ -86,7 +86,7 @@ public:
     void workerThreadTerminated() override {}
     void willDestroyWorkerGlobalScope() override {}
 
-    ExecutionContext* executionContext() override { return m_executionContext.get(); }
+    ExecutionContext* getExecutionContext() override { return m_executionContext.get(); }
 
 private:
     TestCompositorWorkerObjectProxy(ExecutionContext* context)

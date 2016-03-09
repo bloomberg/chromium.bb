@@ -78,7 +78,7 @@ void WindowProxyManager::collectIsolatedContexts(Vector<std::pair<ScriptState*, 
         SecurityOrigin* origin = isolatedWorldWindowProxy->world().isolatedWorldSecurityOrigin();
         if (!isolatedWorldWindowProxy->isContextInitialized())
             continue;
-        result.append(std::make_pair(isolatedWorldWindowProxy->scriptState(), origin));
+        result.append(std::make_pair(isolatedWorldWindowProxy->getScriptState(), origin));
     }
 }
 

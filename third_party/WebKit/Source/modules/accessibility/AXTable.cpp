@@ -100,7 +100,7 @@ static bool elementHasAriaRole(const Element* element)
 
 bool AXTable::isDataTable() const
 {
-    if (!m_layoutObject || !node())
+    if (!m_layoutObject || !getNode())
         return false;
 
     // Do not consider it a data table if it has an ARIA role.
@@ -110,7 +110,7 @@ bool AXTable::isDataTable() const
     // When a section of the document is contentEditable, all tables should be
     // treated as data tables, otherwise users may not be able to work with rich
     // text editors that allow creating and editing tables.
-    if (node() && node()->hasEditableStyle())
+    if (getNode() && getNode()->hasEditableStyle())
         return true;
 
     // This employs a heuristic to determine if this table should appear.

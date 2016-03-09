@@ -53,10 +53,10 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
     // EventTarget interface
-    ExecutionContext* executionContext() const override
+    ExecutionContext* getExecutionContext() const override
     {
         if (m_mediaElement)
-            return m_mediaElement->executionContext();
+            return m_mediaElement->getExecutionContext();
         return nullptr;
     }
 

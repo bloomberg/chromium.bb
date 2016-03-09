@@ -161,10 +161,10 @@ void ScriptProcessorHandler::process(size_t framesToProcess)
             // We're late in handling the previous request. The main thread must be very busy.
             // The best we can do is clear out the buffer ourself here.
             outputBuffer->zero();
-        } else if (context()->executionContext()) {
+        } else if (context()->getExecutionContext()) {
             // Fire the event on the main thread with the appropriate buffer
             // index.
-            context()->executionContext()->postTask(BLINK_FROM_HERE,
+            context()->getExecutionContext()->postTask(BLINK_FROM_HERE,
                 createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent, this, m_doubleBufferIndex));
         }
 
@@ -187,7 +187,7 @@ void ScriptProcessorHandler::fireProcessEvent(unsigned doubleBufferIndex)
         return;
 
     // Avoid firing the event if the document has already gone away.
-    if (node() && context() && context()->executionContext()) {
+    if (node() && context() && context()->getExecutionContext()) {
         // This synchronizes with process().
         MutexLocker processLocker(m_processEventLock);
 

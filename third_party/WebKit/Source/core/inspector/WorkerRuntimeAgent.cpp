@@ -57,13 +57,13 @@ void WorkerRuntimeAgent::enable(ErrorString* errorString)
         return;
 
     InspectorRuntimeAgent::enable(errorString);
-    ScriptState* scriptState = m_workerGlobalScope->scriptController()->scriptState();
+    ScriptState* scriptState = m_workerGlobalScope->scriptController()->getScriptState();
     reportExecutionContextCreated(scriptState, "", m_workerGlobalScope->url().getString(), "", "");
 }
 
 ScriptState* WorkerRuntimeAgent::defaultScriptState()
 {
-    return m_workerGlobalScope->scriptController()->scriptState();
+    return m_workerGlobalScope->scriptController()->getScriptState();
 }
 
 void WorkerRuntimeAgent::muteConsole()

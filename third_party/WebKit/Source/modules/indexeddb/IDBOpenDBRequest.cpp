@@ -81,7 +81,7 @@ void IDBOpenDBRequest::onBlocked(int64_t oldVersion)
 void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBDatabase> backend, const IDBDatabaseMetadata& metadata, WebIDBDataLoss dataLoss, String dataLossMessage)
 {
     IDB_TRACE("IDBOpenDBRequest::onUpgradeNeeded()");
-    if (m_contextStopped || !executionContext()) {
+    if (m_contextStopped || !getExecutionContext()) {
         OwnPtr<WebIDBDatabase> db = backend;
         db->abort(m_transactionId);
         db->close();
@@ -92,7 +92,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
 
     ASSERT(m_databaseCallbacks);
 
-    IDBDatabase* idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
+    IDBDatabase* idbDatabase = IDBDatabase::create(getExecutionContext(), backend, m_databaseCallbacks.release());
     idbDatabase->setMetadata(metadata);
 
     if (oldVersion == IDBDatabaseMetadata::NoVersion) {
@@ -102,7 +102,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
     IDBDatabaseMetadata oldMetadata(metadata);
     oldMetadata.version = oldVersion;
 
-    m_transaction = IDBTransaction::create(scriptState(), m_transactionId, idbDatabase, this, oldMetadata);
+    m_transaction = IDBTransaction::create(getScriptState(), m_transactionId, idbDatabase, this, oldMetadata);
     setResult(IDBAny::create(idbDatabase));
 
     if (m_version == IDBDatabaseMetadata::NoVersion)
@@ -113,7 +113,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
 void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDatabaseMetadata& metadata)
 {
     IDB_TRACE("IDBOpenDBRequest::onSuccess()");
-    if (m_contextStopped || !executionContext()) {
+    if (m_contextStopped || !getExecutionContext()) {
         OwnPtr<WebIDBDatabase> db = backend;
         if (db)
             db->close();
@@ -132,7 +132,7 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
     } else {
         ASSERT(backend.get());
         ASSERT(m_databaseCallbacks);
-        idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks.release());
+        idbDatabase = IDBDatabase::create(getExecutionContext(), backend, m_databaseCallbacks.release());
         setResult(IDBAny::create(idbDatabase));
     }
     idbDatabase->setMetadata(metadata);
@@ -154,7 +154,7 @@ void IDBOpenDBRequest::onSuccess(int64_t oldVersion)
 
 bool IDBOpenDBRequest::shouldEnqueueEvent() const
 {
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return false;
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
     if (m_requestAborted)

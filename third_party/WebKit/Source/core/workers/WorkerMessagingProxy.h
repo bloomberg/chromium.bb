@@ -74,7 +74,7 @@ public:
     void workerThreadTerminated();
     void workerThreadCreated();
 
-    ExecutionContext* executionContext() const { return m_executionContext.get(); }
+    ExecutionContext* getExecutionContext() const { return m_executionContext.get(); }
 
 protected:
     WorkerMessagingProxy(InProcessWorkerBase*, PassOwnPtrWillBeRawPtr<WorkerClients>);

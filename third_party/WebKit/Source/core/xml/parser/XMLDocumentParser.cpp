@@ -646,7 +646,7 @@ static bool shouldAllowExternalLoad(const KURL& url)
     // content. If we had more context, we could potentially allow the parser to
     // load a DTD. As things stand, we take the conservative route and allow
     // same-origin requests only.
-    if (!XMLDocumentParserScope::currentDocument->securityOrigin()->canRequest(url)) {
+    if (!XMLDocumentParserScope::currentDocument->getSecurityOrigin()->canRequest(url)) {
         // FIXME: This is copy/pasted. We should probably build console logging into canRequest().
         if (!url.isNull()) {
             String message = "Unsafe attempt to load URL " + url.elidedString() +

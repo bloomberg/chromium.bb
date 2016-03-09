@@ -57,7 +57,7 @@ public:
         InsecureRequestsUpgrade
     };
 
-    SecurityOrigin* securityOrigin() const { return m_securityOrigin.get(); }
+    SecurityOrigin* getSecurityOrigin() const { return m_securityOrigin.get(); }
     ContentSecurityPolicy* contentSecurityPolicy() const { return m_contentSecurityPolicy.get(); }
 
     // Explicitly override the security origin for this security context.

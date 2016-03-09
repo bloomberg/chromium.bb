@@ -44,9 +44,9 @@ const AtomicString& XMLHttpRequestUpload::interfaceName() const
     return EventTargetNames::XMLHttpRequestUpload;
 }
 
-ExecutionContext* XMLHttpRequestUpload::executionContext() const
+ExecutionContext* XMLHttpRequestUpload::getExecutionContext() const
 {
-    return m_xmlHttpRequest->executionContext();
+    return m_xmlHttpRequest->getExecutionContext();
 }
 
 void XMLHttpRequestUpload::dispatchProgressEvent(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)

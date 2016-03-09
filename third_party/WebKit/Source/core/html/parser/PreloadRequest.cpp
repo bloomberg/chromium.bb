@@ -38,11 +38,11 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     FetchRequest request(resourceRequest, initiatorInfo);
 
     if (m_resourceType == Resource::ImportResource) {
-        SecurityOrigin* securityOrigin = document->contextDocument()->securityOrigin();
+        SecurityOrigin* securityOrigin = document->contextDocument()->getSecurityOrigin();
         request.setCrossOriginAccessControl(securityOrigin, CrossOriginAttributeAnonymous);
     }
     if (m_crossOrigin != CrossOriginAttributeNotSet)
-        request.setCrossOriginAccessControl(document->securityOrigin(), m_crossOrigin);
+        request.setCrossOriginAccessControl(document->getSecurityOrigin(), m_crossOrigin);
     request.setDefer(m_defer);
     request.setResourceWidth(m_resourceWidth);
     request.clientHintsPreferences().updateFrom(m_clientHintsPreferences);

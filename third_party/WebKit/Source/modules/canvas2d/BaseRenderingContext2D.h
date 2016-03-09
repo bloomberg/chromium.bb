@@ -215,8 +215,8 @@ bool BaseRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc& 
     // If gradient size is zero, then paint nothing.
     CanvasStyle* style = state().style(paintType);
     if (style) {
-        CanvasGradient* gradient = style->canvasGradient();
-        if (gradient && gradient->gradient()->isZeroSize())
+        CanvasGradient* gradient = style->getCanvasGradient();
+        if (gradient && gradient->getGradient()->isZeroSize())
             return false;
     }
 

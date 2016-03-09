@@ -73,7 +73,7 @@ bool AXListBoxOption::isParentPresentationalRole() const
     if (!parent)
         return false;
 
-    LayoutObject* layoutObject = parent->layoutObject();
+    LayoutObject* layoutObject = parent->getLayoutObject();
     if (!layoutObject)
         return false;
 
@@ -85,13 +85,13 @@ bool AXListBoxOption::isParentPresentationalRole() const
 
 bool AXListBoxOption::isEnabled() const
 {
-    if (!node())
+    if (!getNode())
         return false;
 
     if (equalIgnoringCase(getAttribute(aria_disabledAttr), "true"))
         return false;
 
-    if (toElement(node())->hasAttribute(disabledAttr))
+    if (toElement(getNode())->hasAttribute(disabledAttr))
         return false;
 
     return true;
@@ -99,7 +99,7 @@ bool AXListBoxOption::isEnabled() const
 
 bool AXListBoxOption::isSelected() const
 {
-    return isHTMLOptionElement(node()) && toHTMLOptionElement(node())->selected();
+    return isHTMLOptionElement(getNode()) && toHTMLOptionElement(getNode())->selected();
 }
 
 bool AXListBoxOption::isSelectedOptionActive() const
@@ -113,7 +113,7 @@ bool AXListBoxOption::isSelectedOptionActive() const
 
 bool AXListBoxOption::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
 {
-    if (!node())
+    if (!getNode())
         return true;
 
     if (accessibilityIsIgnoredByDefault(ignoredReasons))
@@ -124,10 +124,10 @@ bool AXListBoxOption::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReaso
 
 bool AXListBoxOption::canSetSelectedAttribute() const
 {
-    if (!isHTMLOptionElement(node()))
+    if (!isHTMLOptionElement(getNode()))
         return false;
 
-    if (toHTMLOptionElement(node())->isDisabledFormControl())
+    if (toHTMLOptionElement(getNode())->isDisabledFormControl())
         return false;
 
     HTMLSelectElement* selectElement = listBoxOptionParentNode();
@@ -143,7 +143,7 @@ String AXListBoxOption::textAlternative(bool recursive, bool inAriaLabelledByTra
     if (nameSources)
         ASSERT(relatedObjects);
 
-    if (!node())
+    if (!getNode())
         return String();
 
     bool foundTextAlternative = false;
@@ -152,7 +152,7 @@ String AXListBoxOption::textAlternative(bool recursive, bool inAriaLabelledByTra
         return textAlternative;
 
     nameFrom = AXNameFromContents;
-    textAlternative = toHTMLOptionElement(node())->displayLabel();
+    textAlternative = toHTMLOptionElement(getNode())->displayLabel();
     if (nameSources) {
         nameSources->append(NameSource(foundTextAlternative));
         nameSources->last().type = nameFrom;
@@ -183,11 +183,11 @@ void AXListBoxOption::setSelected(bool selected)
 
 HTMLSelectElement* AXListBoxOption::listBoxOptionParentNode() const
 {
-    if (!node())
+    if (!getNode())
         return 0;
 
-    if (isHTMLOptionElement(node()))
-        return toHTMLOptionElement(node())->ownerSelectElement();
+    if (isHTMLOptionElement(getNode()))
+        return toHTMLOptionElement(getNode())->ownerSelectElement();
 
     return 0;
 }
@@ -201,7 +201,7 @@ int AXListBoxOption::listBoxOptionIndex() const
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement->listItems();
     unsigned length = listItems.size();
     for (unsigned i = 0; i < length; i++) {
-        if (listItems[i] == node())
+        if (listItems[i] == getNode())
             return i;
     }
 

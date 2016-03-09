@@ -230,7 +230,7 @@ public:
     using ContainerNode::ref;
     using ContainerNode::deref;
 #endif
-    using SecurityContext::securityOrigin;
+    using SecurityContext::getSecurityOrigin;
     using SecurityContext::contentSecurityPolicy;
     using TreeScope::getElementById;
 
@@ -326,8 +326,8 @@ public:
     void setXMLStandalone(bool, ExceptionState&);
     void setHasXMLDeclaration(bool hasXMLDeclaration) { m_hasXMLDeclaration = hasXMLDeclaration ? 1 : 0; }
 
-    String origin() const { return securityOrigin()->toString(); }
-    String suborigin() const { return securityOrigin()->suboriginName(); }
+    String origin() const { return getSecurityOrigin()->toString(); }
+    String suborigin() const { return getSecurityOrigin()->suboriginName(); }
 
     String visibilityState() const;
     PageVisibilityState pageVisibilityState() const;
@@ -1092,7 +1092,7 @@ private:
     ScriptedIdleTaskController& ensureScriptedIdleTaskController();
     void initSecurityContext(const DocumentInit&);
     SecurityContext& securityContext() final { return *this; }
-    EventQueue* eventQueue() const final;
+    EventQueue* getEventQueue() const final;
 
     // FIXME: Rename the StyleRecalc state to LayoutTreeUpdate.
     bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending; }

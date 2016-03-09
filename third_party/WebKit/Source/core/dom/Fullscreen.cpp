@@ -242,7 +242,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
         if (!UserGestureIndicator::processingUserGesture()) {
             String message = ExceptionMessages::failedToExecute("requestFullScreen",
                 "Element", "API can only be initiated by a user gesture.");
-            document()->executionContext()->addConsoleMessage(
+            document()->getExecutionContext()->addConsoleMessage(
                 ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
             break;
         }

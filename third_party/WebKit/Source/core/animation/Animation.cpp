@@ -613,7 +613,7 @@ void Animation::finish(ExceptionState& exceptionState)
 ScriptPromise Animation::finished(ScriptState* scriptState)
 {
     if (!m_finishedPromise) {
-        m_finishedPromise = new AnimationPromise(scriptState->executionContext(), this, AnimationPromise::Finished);
+        m_finishedPromise = new AnimationPromise(scriptState->getExecutionContext(), this, AnimationPromise::Finished);
         if (playStateInternal() == Finished)
             m_finishedPromise->resolve(this);
     }
@@ -623,7 +623,7 @@ ScriptPromise Animation::finished(ScriptState* scriptState)
 ScriptPromise Animation::ready(ScriptState* scriptState)
 {
     if (!m_readyPromise) {
-        m_readyPromise = new AnimationPromise(scriptState->executionContext(), this, AnimationPromise::Ready);
+        m_readyPromise = new AnimationPromise(scriptState->getExecutionContext(), this, AnimationPromise::Ready);
         if (playStateInternal() != Pending)
             m_readyPromise->resolve(this);
     }
@@ -635,9 +635,9 @@ const AtomicString& Animation::interfaceName() const
     return EventTargetNames::AnimationPlayer;
 }
 
-ExecutionContext* Animation::executionContext() const
+ExecutionContext* Animation::getExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 bool Animation::hasPendingActivity() const
@@ -831,7 +831,7 @@ bool Animation::update(TimingUpdateReason reason)
         if (reason == TimingUpdateForAnimationFrame && (idle || hasStartTime())) {
             if (idle) {
                 const AtomicString& eventType = EventTypeNames::cancel;
-                if (executionContext() && hasEventListeners(eventType)) {
+                if (getExecutionContext() && hasEventListeners(eventType)) {
                     double eventCurrentTime = nullValue();
                     m_pendingCancelledEvent = AnimationPlayerEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
                     m_pendingCancelledEvent->setTarget(this);
@@ -840,7 +840,7 @@ bool Animation::update(TimingUpdateReason reason)
                 }
             } else {
                 const AtomicString& eventType = EventTypeNames::finish;
-                if (executionContext() && hasEventListeners(eventType)) {
+                if (getExecutionContext() && hasEventListeners(eventType)) {
                     double eventCurrentTime = currentTimeInternal() * 1000;
                     m_pendingFinishedEvent = AnimationPlayerEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
                     m_pendingFinishedEvent->setTarget(this);
@@ -1052,7 +1052,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
 bool Animation::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::finish)
-        UseCounter::count(executionContext(), UseCounter::AnimationFinishEvent);
+        UseCounter::count(getExecutionContext(), UseCounter::AnimationFinishEvent);
     return EventTargetWithInlineData::addEventListenerInternal(eventType, listener, options);
 }
 

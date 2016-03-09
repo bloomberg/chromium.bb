@@ -130,7 +130,7 @@ ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, Pa
 
     ServiceWorker* existingWorker = static_cast<ServiceWorker*>(handle->serviceWorker()->proxy());
     if (existingWorker) {
-        ASSERT(existingWorker->executionContext() == executionContext);
+        ASSERT(existingWorker->getExecutionContext() == executionContext);
         return existingWorker;
     }
 

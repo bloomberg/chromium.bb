@@ -141,7 +141,7 @@ public:
     };
     CueAlignment getCueAlignment() const { return m_cueAlignment; }
 
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
 #ifndef NDEBUG
     String toString() const override;

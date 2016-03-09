@@ -227,8 +227,8 @@ void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info)
     if (isResourceTimingBufferFull() && !hasObserverFor(PerformanceEntry::Resource))
         return;
     SecurityOrigin* securityOrigin = nullptr;
-    if (ExecutionContext* context = executionContext())
-        securityOrigin = context->securityOrigin();
+    if (ExecutionContext* context = getExecutionContext())
+        securityOrigin = context->getSecurityOrigin();
     if (!securityOrigin)
         return;
 

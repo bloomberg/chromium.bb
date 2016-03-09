@@ -21,7 +21,7 @@ class CORE_EXPORT V8ObjectBuilder final {
 public:
     explicit V8ObjectBuilder(ScriptState*);
 
-    ScriptState* scriptState() const { return m_scriptState.get(); }
+    ScriptState* getScriptState() const { return m_scriptState.get(); }
 
     V8ObjectBuilder& add(const String& name, const V8ObjectBuilder&);
 

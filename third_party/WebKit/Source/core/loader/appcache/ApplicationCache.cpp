@@ -103,7 +103,7 @@ const AtomicString& ApplicationCache::interfaceName() const
     return EventTargetNames::ApplicationCache;
 }
 
-ExecutionContext* ApplicationCache::executionContext() const
+ExecutionContext* ApplicationCache::getExecutionContext() const
 {
     if (m_frame)
         return m_frame->document();

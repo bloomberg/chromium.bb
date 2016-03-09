@@ -361,7 +361,7 @@ void FontFace::setError(DOMException* error)
 ScriptPromise FontFace::fontStatusPromise(ScriptState* scriptState)
 {
     if (!m_loadedProperty) {
-        m_loadedProperty = new LoadedProperty(scriptState->executionContext(), this, LoadedProperty::Loaded);
+        m_loadedProperty = new LoadedProperty(scriptState->getExecutionContext(), this, LoadedProperty::Loaded);
         if (m_status == Loaded)
             m_loadedProperty->resolve(this);
         else if (m_status == Error)
@@ -372,7 +372,7 @@ ScriptPromise FontFace::fontStatusPromise(ScriptState* scriptState)
 
 ScriptPromise FontFace::load(ScriptState* scriptState)
 {
-    loadInternal(scriptState->executionContext());
+    loadInternal(scriptState->getExecutionContext());
     return fontStatusPromise(scriptState);
 }
 
@@ -646,7 +646,7 @@ bool FontFace::hadBlankText() const
 
 bool FontFace::hasPendingActivity() const
 {
-    return m_status == Loading && executionContext() && !executionContext()->activeDOMObjectsAreStopped();
+    return m_status == Loading && getExecutionContext() && !getExecutionContext()->activeDOMObjectsAreStopped();
 }
 
 } // namespace blink

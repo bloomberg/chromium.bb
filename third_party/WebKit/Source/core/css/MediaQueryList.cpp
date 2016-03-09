@@ -144,9 +144,9 @@ const AtomicString& MediaQueryList::interfaceName() const
     return EventTargetNames::MediaQueryList;
 }
 
-ExecutionContext* MediaQueryList::executionContext() const
+ExecutionContext* MediaQueryList::getExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 } // namespace blink

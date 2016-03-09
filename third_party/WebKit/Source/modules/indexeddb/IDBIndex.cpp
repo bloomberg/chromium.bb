@@ -85,7 +85,7 @@ IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, const ScriptValue& ra
         return nullptr;
     }
     WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString);
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -121,7 +121,7 @@ IDBRequest* IDBIndex::count(ScriptState* scriptState, const ScriptValue& range, 
         return nullptr;
     }
 
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
 
@@ -151,7 +151,7 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* scriptState, const ScriptValue&
         return nullptr;
     }
     WebIDBCursorDirection direction = IDBCursor::stringToDirection(directionString);
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!backendDB()) {
@@ -214,7 +214,7 @@ IDBRequest* IDBIndex::getInternal(ScriptState* scriptState, const ScriptValue& k
         return nullptr;
     }
 
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), key, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), key, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!keyRange) {
@@ -249,7 +249,7 @@ IDBRequest* IDBIndex::getAllInternal(ScriptState* scriptState, const ScriptValue
         return nullptr;
     }
 
-    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->executionContext(), range, exceptionState);
+    IDBKeyRange* keyRange = IDBKeyRange::fromScriptValue(scriptState->getExecutionContext(), range, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     if (!backendDB()) {

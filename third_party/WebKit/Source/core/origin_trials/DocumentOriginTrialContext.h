@@ -24,7 +24,7 @@ public:
     explicit DocumentOriginTrialContext(Document*);
     ~DocumentOriginTrialContext() override = default;
 
-    ExecutionContext* executionContext() override { return m_parent; }
+    ExecutionContext* getExecutionContext() override { return m_parent; }
     Vector<String> getTokens() override;
 
     DECLARE_VIRTUAL_TRACE();

@@ -130,7 +130,7 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
 
 BeaconLoader::BeaconLoader(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
     : PingLoader(frame, request, initiatorInfo, credentialsAllowed)
-    , m_beaconOrigin(frame->document()->securityOrigin())
+    , m_beaconOrigin(frame->document()->getSecurityOrigin())
 {
 }
 

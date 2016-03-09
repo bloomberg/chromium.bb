@@ -76,7 +76,7 @@ v8::Local<v8::Object> toObjectWrapper(T* domObject, ScriptState* scriptState)
 v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ScriptState* scriptState, v8::Local<v8::Value> jsEvent, Event* event)
 {
     ASSERT(!jsEvent.IsEmpty());
-    v8::Local<v8::Object> listenerObject = getListenerObject(scriptState->executionContext());
+    v8::Local<v8::Object> listenerObject = getListenerObject(scriptState->getExecutionContext());
     if (listenerObject.IsEmpty())
         return v8::Local<v8::Value>();
 
@@ -85,10 +85,10 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ScriptState* scri
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())
         return v8::Local<v8::Value>();
 
-    if (!scriptState->executionContext()->isDocument())
+    if (!scriptState->getExecutionContext()->isDocument())
         return v8::Local<v8::Value>();
 
-    LocalFrame* frame = toDocument(scriptState->executionContext())->frame();
+    LocalFrame* frame = toDocument(scriptState->getExecutionContext())->frame();
     if (!frame)
         return v8::Local<v8::Value>();
 

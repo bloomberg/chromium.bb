@@ -22,8 +22,8 @@ public:
     };
     static ContextType contextTypeFromId(const String& id);
 
-    OffscreenCanvas* offscreenCanvas() const { return m_offscreenCanvas; }
-    virtual ContextType contextType() const = 0;
+    OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
+    virtual ContextType getContextType() const = 0;
 
     virtual bool is2d() const { return false; }
 

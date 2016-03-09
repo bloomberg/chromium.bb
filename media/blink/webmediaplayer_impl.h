@@ -158,7 +158,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       bool premultiply_alpha,
       bool flip_y) override;
 
-  blink::WebAudioSourceProvider* audioSourceProvider() override;
+  blink::WebAudioSourceProvider* getAudioSourceProvider() override;
 
   void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,

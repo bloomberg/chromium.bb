@@ -71,7 +71,7 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const override { return EventTargetNames::MIDIAccess; }
-    ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
 
     // ActiveDOMObject
     bool hasPendingActivity() const override;

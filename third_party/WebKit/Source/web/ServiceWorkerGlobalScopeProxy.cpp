@@ -230,7 +230,7 @@ void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)
 
 void ServiceWorkerGlobalScopeProxy::didInitializeWorkerContext()
 {
-    ScriptState::Scope scope(workerGlobalScope()->scriptController()->scriptState());
+    ScriptState::Scope scope(workerGlobalScope()->scriptController()->getScriptState());
     client().didInitializeWorkerContext(workerGlobalScope()->scriptController()->context());
 }
 
@@ -297,7 +297,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEventImpl(int eventID, const We
 {
     RespondWithObserver* observer = RespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
     Request* request = Request::create(workerGlobalScope(), webRequest);
-    request->headers()->setGuard(Headers::ImmutableGuard);
+    request->getHeaders()->setGuard(Headers::ImmutableGuard);
     FetchEventInit eventInit;
     eventInit.setCancelable(true);
     eventInit.setRequest(request);

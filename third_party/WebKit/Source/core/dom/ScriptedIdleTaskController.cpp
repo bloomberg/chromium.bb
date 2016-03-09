@@ -87,13 +87,13 @@ ScriptedIdleTaskController::CallbackId ScriptedIdleTaskController::registerCallb
     m_scheduler->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&internal::IdleRequestCallbackWrapper::idleTaskFired, callbackWrapper));
     if (timeoutMillis > 0)
         m_scheduler->timerTaskRunner()->postDelayedTask(BLINK_FROM_HERE, WTF::bind(&internal::IdleRequestCallbackWrapper::timeoutFired, callbackWrapper), timeoutMillis);
-    TRACE_EVENT_INSTANT1("devtools.timeline", "RequestIdleCallback", TRACE_EVENT_SCOPE_THREAD, "data", InspectorIdleCallbackRequestEvent::data(executionContext(), id, timeoutMillis));
+    TRACE_EVENT_INSTANT1("devtools.timeline", "RequestIdleCallback", TRACE_EVENT_SCOPE_THREAD, "data", InspectorIdleCallbackRequestEvent::data(getExecutionContext(), id, timeoutMillis));
     return id;
 }
 
 void ScriptedIdleTaskController::cancelCallback(CallbackId id)
 {
-    TRACE_EVENT_INSTANT1("devtools.timeline", "CancelIdleCallback", TRACE_EVENT_SCOPE_THREAD, "data", InspectorIdleCallbackCancelEvent::data(executionContext(), id));
+    TRACE_EVENT_INSTANT1("devtools.timeline", "CancelIdleCallback", TRACE_EVENT_SCOPE_THREAD, "data", InspectorIdleCallbackCancelEvent::data(getExecutionContext(), id));
     m_callbacks.remove(id);
 }
 
@@ -127,7 +127,7 @@ void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineSecon
     idleCallbackDeadlineHistogram.count(allottedTimeMillis);
 
     TRACE_EVENT1("devtools.timeline", "FireIdleCallback",
-        "data", InspectorIdleCallbackFireEvent::data(executionContext(), id, allottedTimeMillis, callbackType == IdleDeadline::CallbackType::CalledByTimeout));
+        "data", InspectorIdleCallbackFireEvent::data(getExecutionContext(), id, allottedTimeMillis, callbackType == IdleDeadline::CallbackType::CalledByTimeout));
     callback->handleEvent(IdleDeadline::create(deadlineSeconds, callbackType));
 
     double overrunMillis = std::max((monotonicallyIncreasingTime() - deadlineSeconds) * 1000, 0.0);

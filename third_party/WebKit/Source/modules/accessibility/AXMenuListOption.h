@@ -44,7 +44,7 @@ private:
 
     bool isMenuListOption() const override { return true; }
 
-    Node* node() const override { return m_element; }
+    Node* getNode() const override { return m_element; }
     void detach() override;
     bool isDetached() const override { return !m_element; }
     AccessibilityRole roleValue() const override;

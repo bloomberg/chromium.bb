@@ -289,7 +289,7 @@ const AtomicString& RTCDataChannel::interfaceName() const
     return EventTargetNames::RTCDataChannel;
 }
 
-ExecutionContext* RTCDataChannel::executionContext() const
+ExecutionContext* RTCDataChannel::getExecutionContext() const
 {
     return m_executionContext;
 }

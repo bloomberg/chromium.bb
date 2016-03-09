@@ -29,7 +29,7 @@ public:
 
     // EventTarget implementation.
     const WTF::AtomicString& interfaceName() const override { return EventTargetNames::BatteryManager; }
-    ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
 
     bool charging();
     double chargingTime();

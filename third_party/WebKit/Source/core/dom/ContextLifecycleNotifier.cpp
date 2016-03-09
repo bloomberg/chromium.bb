@@ -48,7 +48,7 @@ void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
             if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
                 continue;
             ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
-            ASSERT(activeDOMObject->executionContext() == context());
+            ASSERT(activeDOMObject->getExecutionContext() == context());
             ASSERT(activeDOMObject->suspendIfNeededCalled());
             activeDOMObject->resume();
         }
@@ -67,7 +67,7 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
             if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
                 continue;
             ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
-            ASSERT(activeDOMObject->executionContext() == context());
+            ASSERT(activeDOMObject->getExecutionContext() == context());
             ASSERT(activeDOMObject->suspendIfNeededCalled());
             activeDOMObject->suspend();
         }
@@ -86,7 +86,7 @@ void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
             if (observer->observerType() != ContextLifecycleObserver::ActiveDOMObjectType)
                 continue;
             ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
-            ASSERT(activeDOMObject->executionContext() == context());
+            ASSERT(activeDOMObject->getExecutionContext() == context());
             ASSERT(activeDOMObject->suspendIfNeededCalled());
             activeDOMObject->stop();
         }

@@ -53,7 +53,7 @@ public:
 
     // EventTarget overrides.
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     // WebServicePortProviderClient overrides.
     void postMessage(WebServicePortID, const WebString&, const WebMessagePortChannelArray&) override;

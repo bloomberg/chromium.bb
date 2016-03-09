@@ -178,7 +178,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         RefPtrWillBePersistent<RawResource> m_resource;
         // End of ResourceOwner re-implementation, see above.
 
-        SecurityOrigin* securityOrigin() const;
+        SecurityOrigin* getSecurityOrigin() const;
         Document& document() const;
 
         ThreadableLoaderClient* m_client;
@@ -195,7 +195,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
 
         // True while the initial URL and all the URLs of the redirects
         // this object has followed, if any, are same-origin to
-        // securityOrigin().
+        // getSecurityOrigin().
         bool m_sameOriginRequest;
         // Set to true if the current request is cross-origin and not simple.
         bool m_crossOriginNonSimpleRequest;

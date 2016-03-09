@@ -117,7 +117,7 @@ FontFaceSet::FontFaceSet(Document& document)
     : ActiveDOMObject(&document)
     , m_shouldFireLoadingEvent(false)
     , m_isLoading(false)
-    , m_ready(new ReadyProperty(executionContext(), this, ReadyProperty::Ready))
+    , m_ready(new ReadyProperty(getExecutionContext(), this, ReadyProperty::Ready))
     , m_asyncRunner(AsyncMethodRunner<FontFaceSet>::create(this, &FontFaceSet::handlePendingEventsAndPromises))
 {
     suspendIfNeeded();
@@ -132,12 +132,12 @@ FontFaceSet::~FontFaceSet()
 
 Document* FontFaceSet::document() const
 {
-    return toDocument(executionContext());
+    return toDocument(getExecutionContext());
 }
 
 bool FontFaceSet::inActiveDocumentContext() const
 {
-    ExecutionContext* context = executionContext();
+    ExecutionContext* context = getExecutionContext();
     return context && toDocument(context)->isActive();
 }
 
@@ -152,9 +152,9 @@ const AtomicString& FontFaceSet::interfaceName() const
     return EventTargetNames::FontFaceSet;
 }
 
-ExecutionContext* FontFaceSet::executionContext() const
+ExecutionContext* FontFaceSet::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 AtomicString FontFaceSet::status() const
@@ -393,7 +393,7 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontStri
 
     RefPtrWillBeRawPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(faces, scriptState);
     ScriptPromise promise = resolver->promise();
-    resolver->loadFonts(executionContext()); // After this, resolver->promise() may return null.
+    resolver->loadFonts(getExecutionContext()); // After this, resolver->promise() may return null.
     return promise;
 }
 

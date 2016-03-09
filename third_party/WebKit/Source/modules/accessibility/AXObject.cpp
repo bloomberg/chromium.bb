@@ -465,7 +465,7 @@ bool AXObject::isMenuRelated() const
 
 bool AXObject::isPasswordFieldAndShouldHideValue() const
 {
-    Settings* settings = document()->settings();
+    Settings* settings = getDocument()->settings();
     if (!settings || settings->accessibilityPasswordValuesEnabled())
         return false;
 
@@ -563,10 +563,10 @@ bool AXObject::isInertOrAriaHidden() const
 
 bool AXObject::computeIsInertOrAriaHidden(IgnoredReasons* ignoredReasons) const
 {
-    if (node()) {
-        if (node()->isInert()) {
+    if (getNode()) {
+        if (getNode()->isInert()) {
             if (ignoredReasons) {
-                HTMLDialogElement* dialog = getActiveDialogElement(node());
+                HTMLDialogElement* dialog = getActiveDialogElement(getNode());
                 if (dialog) {
                     AXObject* dialogObject = axObjectCache().getOrCreate(dialog);
                     if (dialogObject)
@@ -703,7 +703,7 @@ String AXObject::name(AXNameFrom& nameFrom, AXObject::AXObjectVector* nameObject
     String text = textAlternative(false, false, visited, nameFrom, &relatedObjects, nullptr);
 
     AccessibilityRole role = roleValue();
-    if (!node() || (!isHTMLBRElement(node()) && role != StaticTextRole && role != InlineTextBoxRole))
+    if (!getNode() || (!isHTMLBRElement(getNode()) && role != StaticTextRole && role != InlineTextBoxRole))
         text = collapseWhitespace(text);
 
     if (nameObjects) {
@@ -736,17 +736,17 @@ bool AXObject::isHiddenForTextAlternativeCalculation() const
     if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "false"))
         return false;
 
-    if (layoutObject())
-        return layoutObject()->style()->visibility() != VISIBLE;
+    if (getLayoutObject())
+        return getLayoutObject()->style()->visibility() != VISIBLE;
 
     // This is an obscure corner case: if a node has no LayoutObject, that means it's not rendered,
     // but we still may be exploring it as part of a text alternative calculation, for example if it
     // was explicitly referenced by aria-labelledby. So we need to explicitly call the style resolver
     // to check whether it's invisible or display:none, rather than relying on the style cached in the
     // LayoutObject.
-    Document* doc = document();
-    if (doc && doc->frame() && node() && node()->isElementNode()) {
-        RefPtr<ComputedStyle> style = doc->ensureStyleResolver().styleForElement(toElement(node()));
+    Document* doc = getDocument();
+    if (doc && doc->frame() && getNode() && getNode()->isElementNode()) {
+        RefPtr<ComputedStyle> style = doc->ensureStyleResolver().styleForElement(toElement(getNode()));
         return style->display() == NONE || style->visibility() != VISIBLE;
     }
 
@@ -854,7 +854,7 @@ String AXObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSet& v
 
 void AXObject::tokenVectorFromAttribute(Vector<String>& tokens, const QualifiedName& attribute) const
 {
-    Node* node = this->node();
+    Node* node = this->getNode();
     if (!node || !node->isElementNode())
         return;
 
@@ -873,7 +873,7 @@ void AXObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element
     if (ids.isEmpty())
         return;
 
-    TreeScope& scope = node()->treeScope();
+    TreeScope& scope = getNode()->treeScope();
     for (const auto& id : ids) {
         if (Element* idElement = scope.getElementById(AtomicString(id)))
             elements.append(idElement);
@@ -961,7 +961,7 @@ AccessibilityButtonState AXObject::checkboxOrRadioValue() const
 
 bool AXObject::isMultiline() const
 {
-    Node* node = this->node();
+    Node* node = this->getNode();
     if (!node)
         return false;
 
@@ -1182,7 +1182,7 @@ void AXObject::clearChildren()
     m_haveChildren = false;
 }
 
-Document* AXObject::document() const
+Document* AXObject::getDocument() const
 {
     FrameView* frameView = documentFrameView();
     if (!frameView)
@@ -1213,7 +1213,7 @@ String AXObject::language() const
 
     // as a last resort, fall back to the content language specified in the meta tag
     if (!parent) {
-        Document* doc = document();
+        Document* doc = getDocument();
         if (doc)
             return doc->contentLanguage();
         return nullAtom;
@@ -1224,7 +1224,7 @@ String AXObject::language() const
 
 bool AXObject::hasAttribute(const QualifiedName& attribute) const
 {
-    Node* elementNode = node();
+    Node* elementNode = getNode();
     if (!elementNode)
         return false;
 
@@ -1237,7 +1237,7 @@ bool AXObject::hasAttribute(const QualifiedName& attribute) const
 
 const AtomicString& AXObject::getAttribute(const QualifiedName& attribute) const
 {
-    Node* elementNode = node();
+    Node* elementNode = getNode();
     if (!elementNode)
         return nullAtom;
 
@@ -1531,12 +1531,12 @@ void AXObject::selectionChanged()
 
 int AXObject::lineForPosition(const VisiblePosition& position) const
 {
-    if (position.isNull() || !node())
+    if (position.isNull() || !getNode())
         return -1;
 
     // If the position is not in the same editable region as this AX object, return -1.
     Node* containerNode = position.deepEquivalent().computeContainerNode();
-    if (!containerNode->containsIncludingShadowDOM(node()) && !node()->containsIncludingShadowDOM(containerNode))
+    if (!containerNode->containsIncludingShadowDOM(getNode()) && !getNode()->containsIncludingShadowDOM(containerNode))
         return -1;
 
     int lineCount = -1;

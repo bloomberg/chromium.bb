@@ -9,6 +9,6 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=Notifications,
 ] interface NotificationEvent : ExtendableEvent {
-    readonly attribute Notification notification;
+    [ImplementedAs=getNotification] readonly attribute Notification notification;
     readonly attribute DOMString action;
 };

@@ -67,7 +67,7 @@ static void finishPingRequestInitialization(ResourceRequest& request, LocalFrame
 
 void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 {
-    if (!frame->document()->securityOrigin()->canDisplay(url)) {
+    if (!frame->document()->getSecurityOrigin()->canDisplay(url)) {
         FrameLoader::reportLocalLoadFailed(frame, url.getString());
         return;
     }
@@ -117,7 +117,7 @@ void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, P
 
     FetchInitiatorInfo initiatorInfo;
     initiatorInfo.name = FetchInitiatorTypeNames::violationreport;
-    PingLoader::start(frame, request, initiatorInfo, SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->securityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials);
+    PingLoader::start(frame, request, initiatorInfo, SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->getSecurityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials);
 }
 
 void PingLoader::start(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)

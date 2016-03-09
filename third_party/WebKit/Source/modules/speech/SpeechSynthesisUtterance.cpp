@@ -43,9 +43,9 @@ SpeechSynthesisUtterance::~SpeechSynthesisUtterance()
 {
 }
 
-ExecutionContext* SpeechSynthesisUtterance::executionContext() const
+ExecutionContext* SpeechSynthesisUtterance::getExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 const AtomicString& SpeechSynthesisUtterance::interfaceName() const

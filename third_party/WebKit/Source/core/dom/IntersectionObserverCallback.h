@@ -17,7 +17,7 @@ class IntersectionObserverCallback : public GarbageCollectedFinalized<Intersecti
 public:
     virtual ~IntersectionObserverCallback() {}
     virtual void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&, IntersectionObserver&) = 0;
-    virtual ExecutionContext* executionContext() const = 0;
+    virtual ExecutionContext* getExecutionContext() const = 0;
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 

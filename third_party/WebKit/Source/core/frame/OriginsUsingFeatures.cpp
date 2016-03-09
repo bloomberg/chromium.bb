@@ -35,7 +35,7 @@ void OriginsUsingFeatures::countMainWorldOnly(const ScriptState* scriptState, Do
 
 static Document* documentFromEventTarget(EventTarget& target)
 {
-    ExecutionContext* executionContext = target.executionContext();
+    ExecutionContext* executionContext = target.getExecutionContext();
     if (!executionContext)
         return nullptr;
     if (executionContext->isDocument())

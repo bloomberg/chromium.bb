@@ -231,15 +231,15 @@ public:
         return Cache::create(fetcher->weakPtr(), adoptPtr(webCache));
     }
 
-    ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    ExecutionContext* executionContext() { return scriptState()->executionContext(); }
-    v8::Isolate* isolate() { return scriptState()->isolate(); }
-    v8::Local<v8::Context> context() { return scriptState()->context(); }
+    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
+    ExecutionContext* getExecutionContext() { return getScriptState()->getExecutionContext(); }
+    v8::Isolate* isolate() { return getScriptState()->isolate(); }
+    v8::Local<v8::Context> context() { return getScriptState()->context(); }
 
     Request* newRequestFromUrl(const String& url)
     {
         TrackExceptionState exceptionState;
-        Request* request = Request::create(scriptState(), url, exceptionState);
+        Request* request = Request::create(getScriptState(), url, exceptionState);
         EXPECT_FALSE(exceptionState.hadException());
         return exceptionState.hadException() ? 0 : request;
     }
@@ -248,7 +248,7 @@ public:
     ScriptValue getRejectValue(ScriptPromise& promise)
     {
         ScriptValue onReject;
-        promise.then(UnreachableFunction::create(scriptState()), TestFunction::create(scriptState(), &onReject));
+        promise.then(UnreachableFunction::create(getScriptState()), TestFunction::create(getScriptState(), &onReject));
         v8::MicrotasksScope::PerformCheckpoint(isolate());
         return onReject;
     }
@@ -262,7 +262,7 @@ public:
     ScriptValue getResolveValue(ScriptPromise& promise)
     {
         ScriptValue onResolve;
-        promise.then(TestFunction::create(scriptState(), &onResolve), UnreachableFunction::create(scriptState()));
+        promise.then(TestFunction::create(getScriptState(), &onResolve), UnreachableFunction::create(getScriptState()));
         v8::MicrotasksScope::PerformCheckpoint(isolate());
         return onResolve;
     }
@@ -342,7 +342,7 @@ RequestInfo requestToRequestInfo(Request* value)
 
 TEST_F(CacheStorageTest, Basics)
 {
-    ScriptState::Scope scope(scriptState());
+    ScriptState::Scope scope(getScriptState());
     OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     ErrorWebCacheForTests* testCache;
     Cache* cache = createCache(fetcher.get(), testCache = new NotImplementedErrorCache());
@@ -351,16 +351,16 @@ TEST_F(CacheStorageTest, Basics)
     const String url = "http://www.cachetest.org/";
 
     CacheQueryOptions options;
-    ScriptPromise matchPromise = cache->match(scriptState(), stringToRequestInfo(url), options, exceptionState());
+    ScriptPromise matchPromise = cache->match(getScriptState(), stringToRequestInfo(url), options, exceptionState());
     EXPECT_EQ(kNotImplementedString, getRejectString(matchPromise));
 
     cache = createCache(fetcher.get(), testCache = new ErrorWebCacheForTests(WebServiceWorkerCacheErrorNotFound));
-    matchPromise = cache->match(scriptState(), stringToRequestInfo(url), options, exceptionState());
+    matchPromise = cache->match(getScriptState(), stringToRequestInfo(url), options, exceptionState());
     ScriptValue scriptValue = getResolveValue(matchPromise);
     EXPECT_TRUE(scriptValue.isUndefined());
 
     cache = createCache(fetcher.get(), testCache = new ErrorWebCacheForTests(WebServiceWorkerCacheErrorExists));
-    matchPromise = cache->match(scriptState(), stringToRequestInfo(url), options, exceptionState());
+    matchPromise = cache->match(getScriptState(), stringToRequestInfo(url), options, exceptionState());
     EXPECT_EQ("InvalidAccessError: Entry already exists.", getRejectString(matchPromise));
 }
 
@@ -368,7 +368,7 @@ TEST_F(CacheStorageTest, Basics)
 // which are tested later.
 TEST_F(CacheStorageTest, BasicArguments)
 {
-    ScriptState::Scope scope(scriptState());
+    ScriptState::Scope scope(getScriptState());
     OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     ErrorWebCacheForTests* testCache;
     Cache* cache = createCache(fetcher.get(), testCache = new NotImplementedErrorCache());
@@ -388,35 +388,35 @@ TEST_F(CacheStorageTest, BasicArguments)
 
     Request* request = newRequestFromUrl(url);
     ASSERT(request);
-    ScriptPromise matchResult = cache->match(scriptState(), requestToRequestInfo(request), options, exceptionState());
+    ScriptPromise matchResult = cache->match(getScriptState(), requestToRequestInfo(request), options, exceptionState());
     EXPECT_EQ("dispatchMatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(matchResult));
 
-    ScriptPromise stringMatchResult = cache->match(scriptState(), stringToRequestInfo(url), options, exceptionState());
+    ScriptPromise stringMatchResult = cache->match(getScriptState(), stringToRequestInfo(url), options, exceptionState());
     EXPECT_EQ("dispatchMatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(stringMatchResult));
 
     request = newRequestFromUrl(url);
     ASSERT(request);
-    ScriptPromise matchAllResult = cache->matchAll(scriptState(), requestToRequestInfo(request), options, exceptionState());
+    ScriptPromise matchAllResult = cache->matchAll(getScriptState(), requestToRequestInfo(request), options, exceptionState());
     EXPECT_EQ("dispatchMatchAll", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(matchAllResult));
 
-    ScriptPromise stringMatchAllResult = cache->matchAll(scriptState(), stringToRequestInfo(url), options, exceptionState());
+    ScriptPromise stringMatchAllResult = cache->matchAll(getScriptState(), stringToRequestInfo(url), options, exceptionState());
     EXPECT_EQ("dispatchMatchAll", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(stringMatchAllResult));
 
-    ScriptPromise keysResult1 = cache->keys(scriptState(), exceptionState());
+    ScriptPromise keysResult1 = cache->keys(getScriptState(), exceptionState());
     EXPECT_EQ("dispatchKeys", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(keysResult1));
 
     request = newRequestFromUrl(url);
     ASSERT(request);
-    ScriptPromise keysResult2 = cache->keys(scriptState(), requestToRequestInfo(request), options, exceptionState());
+    ScriptPromise keysResult2 = cache->keys(getScriptState(), requestToRequestInfo(request), options, exceptionState());
     EXPECT_EQ("dispatchKeys", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(keysResult2));
 
-    ScriptPromise stringKeysResult2 = cache->keys(scriptState(), stringToRequestInfo(url), options, exceptionState());
+    ScriptPromise stringKeysResult2 = cache->keys(getScriptState(), stringToRequestInfo(url), options, exceptionState());
     EXPECT_EQ("dispatchKeys", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(stringKeysResult2));
 }
@@ -424,7 +424,7 @@ TEST_F(CacheStorageTest, BasicArguments)
 // Tests that arguments are faithfully passed to API calls that degrade to batch operations.
 TEST_F(CacheStorageTest, BatchOperationArguments)
 {
-    ScriptState::Scope scope(scriptState());
+    ScriptState::Scope scope(getScriptState());
     OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     ErrorWebCacheForTests* testCache;
     Cache* cache = createCache(fetcher.get(), testCache = new NotImplementedErrorCache());
@@ -443,7 +443,7 @@ TEST_F(CacheStorageTest, BatchOperationArguments)
 
     WebServiceWorkerResponse webResponse;
     webResponse.setURL(KURL(ParsedURLString, url));
-    Response* response = Response::create(executionContext(), webResponse);
+    Response* response = Response::create(getExecutionContext(), webResponse);
 
     WebVector<WebServiceWorkerCache::BatchOperation> expectedDeleteOperations(size_t(1));
     {
@@ -455,11 +455,11 @@ TEST_F(CacheStorageTest, BatchOperationArguments)
     }
     testCache->setExpectedBatchOperations(&expectedDeleteOperations);
 
-    ScriptPromise deleteResult = cache->deleteFunction(scriptState(), requestToRequestInfo(request), options, exceptionState());
+    ScriptPromise deleteResult = cache->deleteFunction(getScriptState(), requestToRequestInfo(request), options, exceptionState());
     EXPECT_EQ("dispatchBatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(deleteResult));
 
-    ScriptPromise stringDeleteResult = cache->deleteFunction(scriptState(), stringToRequestInfo(url), options, exceptionState());
+    ScriptPromise stringDeleteResult = cache->deleteFunction(getScriptState(), stringToRequestInfo(url), options, exceptionState());
     EXPECT_EQ("dispatchBatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(stringDeleteResult));
 
@@ -475,11 +475,11 @@ TEST_F(CacheStorageTest, BatchOperationArguments)
 
     request = newRequestFromUrl(url);
     ASSERT(request);
-    ScriptPromise putResult = cache->put(scriptState(), requestToRequestInfo(request), response->clone(exceptionState()), exceptionState());
+    ScriptPromise putResult = cache->put(getScriptState(), requestToRequestInfo(request), response->clone(exceptionState()), exceptionState());
     EXPECT_EQ("dispatchBatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(putResult));
 
-    ScriptPromise stringPutResult = cache->put(scriptState(), stringToRequestInfo(url), response, exceptionState());
+    ScriptPromise stringPutResult = cache->put(getScriptState(), stringToRequestInfo(url), response, exceptionState());
     EXPECT_EQ("dispatchBatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(stringPutResult));
 
@@ -504,7 +504,7 @@ private:
 
 TEST_F(CacheStorageTest, MatchResponseTest)
 {
-    ScriptState::Scope scope(scriptState());
+    ScriptState::Scope scope(getScriptState());
     OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     const String requestUrl = "http://request.url/";
     const String responseUrl = "http://match.response.test/";
@@ -516,7 +516,7 @@ TEST_F(CacheStorageTest, MatchResponseTest)
     Cache* cache = createCache(fetcher.get(), new MatchTestCache(webResponse));
     CacheQueryOptions options;
 
-    ScriptPromise result = cache->match(scriptState(), stringToRequestInfo(requestUrl), options, exceptionState());
+    ScriptPromise result = cache->match(getScriptState(), stringToRequestInfo(requestUrl), options, exceptionState());
     ScriptValue scriptValue = getResolveValue(result);
     Response* response = V8Response::toImplWithTypeCheck(isolate(), scriptValue.v8Value());
     ASSERT_TRUE(response);
@@ -540,7 +540,7 @@ private:
 
 TEST_F(CacheStorageTest, KeysResponseTest)
 {
-    ScriptState::Scope scope(scriptState());
+    ScriptState::Scope scope(getScriptState());
     OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     const String url1 = "http://first.request/";
     const String url2 = "http://second.request/";
@@ -555,7 +555,7 @@ TEST_F(CacheStorageTest, KeysResponseTest)
 
     Cache* cache = createCache(fetcher.get(), new KeysTestCache(webRequests));
 
-    ScriptPromise result = cache->keys(scriptState(), exceptionState());
+    ScriptPromise result = cache->keys(getScriptState(), exceptionState());
     ScriptValue scriptValue = getResolveValue(result);
 
     Vector<v8::Local<v8::Value>> requests = toImplArray<Vector<v8::Local<v8::Value>>>(scriptValue.v8Value(), 0, isolate(), exceptionState());
@@ -591,7 +591,7 @@ private:
 
 TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest)
 {
-    ScriptState::Scope scope(scriptState());
+    ScriptState::Scope scope(getScriptState());
     OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     const String url1 = "http://first.response/";
     const String url2 = "http://second.response/";
@@ -609,7 +609,7 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest)
     Cache* cache = createCache(fetcher.get(), new MatchAllAndBatchTestCache(webResponses));
 
     CacheQueryOptions options;
-    ScriptPromise result = cache->matchAll(scriptState(), stringToRequestInfo("http://some.url/"), options, exceptionState());
+    ScriptPromise result = cache->matchAll(getScriptState(), stringToRequestInfo("http://some.url/"), options, exceptionState());
     ScriptValue scriptValue = getResolveValue(result);
 
     Vector<v8::Local<v8::Value>> responses = toImplArray<Vector<v8::Local<v8::Value>>>(scriptValue.v8Value(), 0, isolate(), exceptionState());
@@ -621,7 +621,7 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest)
             EXPECT_EQ(expectedUrls[i], response->url());
     }
 
-    result = cache->deleteFunction(scriptState(), stringToRequestInfo("http://some.url/"), options, exceptionState());
+    result = cache->deleteFunction(getScriptState(), stringToRequestInfo("http://some.url/"), options, exceptionState());
     scriptValue = getResolveValue(result);
     EXPECT_TRUE(scriptValue.v8Value()->IsBoolean());
     EXPECT_EQ(true, scriptValue.v8Value().As<v8::Boolean>()->Value());
@@ -629,7 +629,7 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest)
 
 TEST_F(CacheStorageTest, Add)
 {
-    ScriptState::Scope scope(scriptState());
+    ScriptState::Scope scope(getScriptState());
     OwnPtrWillBeRawPtr<ScopedFetcherForTests> fetcher = ScopedFetcherForTests::create();
     const String url = "http://www.cacheadd.test/";
     const String contentType = "text/plain";
@@ -641,7 +641,7 @@ TEST_F(CacheStorageTest, Add)
     fetcher->setExpectedFetchUrl(&url);
 
     Request* request = newRequestFromUrl(url);
-    Response* response = Response::create(executionContext(), FetchFormDataConsumerHandle::create(content), contentType, ResponseInit(), exceptionState());
+    Response* response = Response::create(getExecutionContext(), FetchFormDataConsumerHandle::create(content), contentType, ResponseInit(), exceptionState());
     fetcher->setResponse(response);
 
     WebVector<WebServiceWorkerCache::BatchOperation> expectedPutOperations(size_t(1));
@@ -654,7 +654,7 @@ TEST_F(CacheStorageTest, Add)
     }
     testCache->setExpectedBatchOperations(&expectedPutOperations);
 
-    ScriptPromise addResult = cache->add(scriptState(), requestToRequestInfo(request), exceptionState());
+    ScriptPromise addResult = cache->add(getScriptState(), requestToRequestInfo(request), exceptionState());
 
     EXPECT_EQ(kNotImplementedString, getRejectString(addResult));
     EXPECT_EQ(1, fetcher->fetchCount());

@@ -178,7 +178,7 @@ AXObject* AXObjectCacheImpl::focusedObject()
     Element* adjustedFocusedElement = focusedDocument->adjustedFocusedElement();
     if (isHTMLInputElement(adjustedFocusedElement)) {
         if (AXObject* axPopup = toHTMLInputElement(adjustedFocusedElement)->popupRootAXObject()) {
-            if (Element* focusedElementInPopup = axPopup->document()->focusedElement())
+            if (Element* focusedElementInPopup = axPopup->getDocument()->focusedElement())
                 focusedNode = focusedElementInPopup;
         }
 
@@ -681,7 +681,7 @@ void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
         // Notifications should only be sent after the layoutObject has finished
         if (obj->isAXLayoutObject()) {
             AXLayoutObject* layoutObj = toAXLayoutObject(obj);
-            LayoutObject* layoutObject = layoutObj->layoutObject();
+            LayoutObject* layoutObject = layoutObj->getLayoutObject();
             if (layoutObject && layoutObject->view())
                 ASSERT(!layoutObject->view()->layoutState());
         }
@@ -779,7 +779,7 @@ void AXObjectCacheImpl::updateAriaOwns(const AXObject* owner, const Vector<Strin
     //
 
     // Figure out the children that are owned by this object and are in the tree.
-    TreeScope& scope = owner->node()->treeScope();
+    TreeScope& scope = owner->getNode()->treeScope();
     Vector<AXID> newChildAXIDs;
     for (const String& idName : idVector) {
         Element* element = scope.getElementById(AtomicString(idName));
@@ -1145,17 +1145,17 @@ bool isNodeAriaVisible(Node* node)
 
 void AXObjectCacheImpl::postPlatformNotification(AXObject* obj, AXNotification notification)
 {
-    if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame().page())
+    if (!obj || !obj->getDocument() || !obj->documentFrameView() || !obj->documentFrameView()->frame().page())
         return;
 
-    ChromeClient& client = obj->document()->axObjectCacheOwner().page()->chromeClient();
+    ChromeClient& client = obj->getDocument()->axObjectCacheOwner().page()->chromeClient();
 
     if (notification == AXActiveDescendantChanged
-        && obj->document()->focusedElement()
-        && obj->node() == obj->document()->focusedElement()) {
+        && obj->getDocument()->focusedElement()
+        && obj->getNode() == obj->getDocument()->focusedElement()) {
         // Calling handleFocusedUIElementChanged will focus the new active
         // descendant and send the AXFocusedUIElementChanged notification.
-        handleFocusedUIElementChanged(0, obj->document()->focusedElement());
+        handleFocusedUIElementChanged(0, obj->getDocument()->focusedElement());
     }
 
     client.postAccessibilityNotification(obj, notification);

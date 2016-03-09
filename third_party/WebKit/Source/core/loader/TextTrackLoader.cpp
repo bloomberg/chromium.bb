@@ -110,10 +110,10 @@ bool TextTrackLoader::load(const KURL& url, CrossOriginAttributeValue crossOrigi
     FetchRequest cueRequest(ResourceRequest(document().completeURL(url)), FetchInitiatorTypeNames::texttrack);
 
     if (crossOrigin != CrossOriginAttributeNotSet) {
-        cueRequest.setCrossOriginAccessControl(document().securityOrigin(), crossOrigin);
-    } else if (!document().securityOrigin()->canRequestNoSuborigin(url)) {
+        cueRequest.setCrossOriginAccessControl(document().getSecurityOrigin(), crossOrigin);
+    } else if (!document().getSecurityOrigin()->canRequestNoSuborigin(url)) {
         // Text track elements without 'crossorigin' set on the parent are "No CORS"; report error if not same-origin.
-        corsPolicyPreventedLoad(document().securityOrigin(), url);
+        corsPolicyPreventedLoad(document().getSecurityOrigin(), url);
         return false;
     }
 

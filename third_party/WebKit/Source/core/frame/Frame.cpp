@@ -183,7 +183,7 @@ static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, const 
 
     const bool isLocalActiveOrigin = activeSecurityOrigin.isLocal();
     for (const Frame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
-        const SecurityOrigin* ancestorSecurityOrigin = ancestorFrame->securityContext()->securityOrigin();
+        const SecurityOrigin* ancestorSecurityOrigin = ancestorFrame->securityContext()->getSecurityOrigin();
         if (activeSecurityOrigin.canAccess(ancestorSecurityOrigin))
             return true;
 
@@ -221,8 +221,8 @@ bool Frame::canNavigate(const Frame& targetFrame)
         return false;
     }
 
-    ASSERT(securityContext()->securityOrigin());
-    SecurityOrigin& origin = *securityContext()->securityOrigin();
+    ASSERT(securityContext()->getSecurityOrigin());
+    SecurityOrigin& origin = *securityContext()->getSecurityOrigin();
 
     // This is the normal case. A document can navigate its decendant frames,
     // or, more generally, a document can navigate a frame if the document is
@@ -262,7 +262,7 @@ Frame* Frame::findUnsafeParentScrollPropagationBoundary()
     Frame* ancestorFrame = tree().parent();
 
     while (ancestorFrame) {
-        if (!ancestorFrame->securityContext()->securityOrigin()->canAccess(securityContext()->securityOrigin()))
+        if (!ancestorFrame->securityContext()->getSecurityOrigin()->canAccess(securityContext()->getSecurityOrigin()))
             return currentFrame;
         currentFrame = ancestorFrame;
         ancestorFrame = ancestorFrame->tree().parent();

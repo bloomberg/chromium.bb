@@ -144,7 +144,7 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
 {
     if (corsStatus == OpaqueResource)
         return true;
-    return !(securityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
+    return !(getSecurityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
 void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event, int scriptId, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
@@ -213,9 +213,9 @@ PublicURLManager& ExecutionContext::publicURLManager()
     return *m_publicURLManager;
 }
 
-SecurityOrigin* ExecutionContext::securityOrigin()
+SecurityOrigin* ExecutionContext::getSecurityOrigin()
 {
-    return securityContext().securityOrigin();
+    return securityContext().getSecurityOrigin();
 }
 
 ContentSecurityPolicy* ExecutionContext::contentSecurityPolicy()

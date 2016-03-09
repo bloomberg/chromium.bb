@@ -39,7 +39,7 @@ public:
 
 protected:
     explicit UnderlyingSourceBase(ScriptState* scriptState)
-        : ContextLifecycleObserver(scriptState->executionContext())
+        : ContextLifecycleObserver(scriptState->getExecutionContext())
     {
     }
 

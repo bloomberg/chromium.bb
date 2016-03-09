@@ -156,7 +156,7 @@ bool CSPDirectiveList::checkAncestors(SourceListDirective* directive, LocalFrame
         //
         // TODO(mkwst): Move this check up into the browser process.  See
         // https://crbug.com/555418.
-        KURL url(KURL(), current->securityContext()->securityOrigin()->toString());
+        KURL url(KURL(), current->securityContext()->getSecurityOrigin()->toString());
         if (!directive->allows(url, ContentSecurityPolicy::DidNotRedirect))
             return false;
     }

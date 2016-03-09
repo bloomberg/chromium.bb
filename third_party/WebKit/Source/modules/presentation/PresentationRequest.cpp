@@ -66,22 +66,22 @@ const AtomicString& PresentationRequest::interfaceName() const
     return EventTargetNames::PresentationRequest;
 }
 
-ExecutionContext* PresentationRequest::executionContext() const
+ExecutionContext* PresentationRequest::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 bool PresentationRequest::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::connectionavailable)
-        UseCounter::count(executionContext(), UseCounter::PresentationRequestConnectionAvailableEventListener);
+        UseCounter::count(getExecutionContext(), UseCounter::PresentationRequestConnectionAvailableEventListener);
 
     return EventTarget::addEventListenerInternal(eventType, listener, options);
 }
 
 bool PresentationRequest::hasPendingActivity() const
 {
-    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+    if (!getExecutionContext() || getExecutionContext()->activeDOMObjectsAreStopped())
         return false;
 
     // Prevents garbage collecting of this object when not hold by another
@@ -94,7 +94,7 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    Settings* contextSettings = settings(executionContext());
+    Settings* contextSettings = settings(getExecutionContext());
     bool isUserGestureRequired = !contextSettings || contextSettings->presentationRequiresUserGesture();
 
     if (isUserGestureRequired && !UserGestureIndicator::processingUserGesture()) {
@@ -102,7 +102,7 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
         return promise;
     }
 
-    WebPresentationClient* client = presentationClient(executionContext());
+    WebPresentationClient* client = presentationClient(getExecutionContext());
     if (!client) {
         resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
         return promise;
@@ -117,7 +117,7 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState, const Str
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    WebPresentationClient* client = presentationClient(executionContext());
+    WebPresentationClient* client = presentationClient(getExecutionContext());
     if (!client) {
         resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
         return promise;
@@ -132,7 +132,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    WebPresentationClient* client = presentationClient(executionContext());
+    WebPresentationClient* client = presentationClient(getExecutionContext());
     if (!client) {
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer associated to a frame."));
         return promise;

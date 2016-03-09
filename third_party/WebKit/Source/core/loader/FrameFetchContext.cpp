@@ -102,7 +102,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request, Fe
         RefPtr<SecurityOrigin> outgoingOrigin;
         if (!request.didSetHTTPReferrer()) {
             ASSERT(m_document);
-            outgoingOrigin = m_document->securityOrigin();
+            outgoingOrigin = m_document->getSecurityOrigin();
             request.setHTTPReferrer(SecurityPolicy::generateReferrer(m_document->getReferrerPolicy(), request.url(), m_document->outgoingReferrer()));
         } else {
             RELEASE_ASSERT(SecurityPolicy::generateReferrer(request.getReferrerPolicy(), request.url(), request.httpReferrer()).referrer == request.httpReferrer());
@@ -411,7 +411,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
 
     SecurityOrigin* securityOrigin = options.securityOrigin.get();
     if (!securityOrigin && m_document)
-        securityOrigin = m_document->securityOrigin();
+        securityOrigin = m_document->getSecurityOrigin();
 
     if (originRestriction != FetchRequest::NoOriginRestriction && securityOrigin && !securityOrigin->canDisplay(url)) {
         if (!forPreload)
@@ -547,7 +547,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     // block them at some point in the future.
     if (resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel) {
         ASSERT(frame()->document());
-        if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) && !SchemeRegistry::shouldTreatURLSchemeAsLegacy(frame()->document()->securityOrigin()->protocol()))
+        if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) && !SchemeRegistry::shouldTreatURLSchemeAsLegacy(frame()->document()->getSecurityOrigin()->protocol()))
             UseCounter::count(frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
         if (!url.user().isEmpty() || !url.pass().isEmpty())
             UseCounter::count(frame()->document(), UseCounter::RequestedSubresourceWithEmbeddedCredentials);
@@ -640,9 +640,9 @@ void FrameFetchContext::addConsoleMessage(const String& message) const
         frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 }
 
-SecurityOrigin* FrameFetchContext::securityOrigin() const
+SecurityOrigin* FrameFetchContext::getSecurityOrigin() const
 {
-    return m_document ? m_document->securityOrigin() : nullptr;
+    return m_document ? m_document->getSecurityOrigin() : nullptr;
 }
 
 void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)

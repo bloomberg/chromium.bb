@@ -38,7 +38,7 @@ public:
     }
 
 #if ENABLE(ASSERT)
-    // Eagerly finalized so as to ensure valid access to executionContext()
+    // Eagerly finalized so as to ensure valid access to getExecutionContext()
     // from the destructor's assert.
     EAGERLY_FINALIZE();
 
@@ -49,7 +49,7 @@ public:
         //  - this resolver is destructed before it is resolved, rejected,
         //    detached, the V8 isolate is terminated or the associated
         //    ExecutionContext is stopped.
-        ASSERT(m_state == Detached || !m_isPromiseCalled || !scriptState()->contextIsValid() || !executionContext() || executionContext()->activeDOMObjectsAreStopped());
+        ASSERT(m_state == Detached || !m_isPromiseCalled || !getScriptState()->contextIsValid() || !getExecutionContext() || getExecutionContext()->activeDOMObjectsAreStopped());
     }
 #endif
 
@@ -70,7 +70,7 @@ public:
     void resolve() { resolve(ToV8UndefinedGenerator()); }
     void reject() { reject(ToV8UndefinedGenerator()); }
 
-    ScriptState* scriptState() { return m_scriptState.get(); }
+    ScriptState* getScriptState() { return m_scriptState.get(); }
 
     // Note that an empty ScriptPromise will be returned after resolve or
     // reject is called.
@@ -82,7 +82,7 @@ public:
         return m_resolver.promise();
     }
 
-    ScriptState* scriptState() const { return m_scriptState.get(); }
+    ScriptState* getScriptState() const { return m_scriptState.get(); }
 
     // ActiveDOMObject implementation.
     void suspend() override;
@@ -118,7 +118,7 @@ private:
     template<typename T>
     void resolveOrReject(T value, ResolutionState newState)
     {
-        if (m_state != Pending || !scriptState()->contextIsValid() || !executionContext() || executionContext()->activeDOMObjectsAreStopped())
+        if (m_state != Pending || !getScriptState()->contextIsValid() || !getExecutionContext() || getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         ASSERT(newState == Resolving || newState == Rejecting);
         m_state = newState;
@@ -128,7 +128,7 @@ private:
             m_scriptState->isolate(),
             toV8(value, m_scriptState->context()->Global(), m_scriptState->isolate()));
 
-        if (executionContext()->activeDOMObjectsAreSuspended()) {
+        if (getExecutionContext()->activeDOMObjectsAreSuspended()) {
             // Retain this object until it is actually resolved or rejected.
             keepAliveWhilePending();
             return;

@@ -131,9 +131,9 @@ const AtomicString& RTCDTMFSender::interfaceName() const
     return EventTargetNames::RTCDTMFSender;
 }
 
-ExecutionContext* RTCDTMFSender::executionContext() const
+ExecutionContext* RTCDTMFSender::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 void RTCDTMFSender::stop()

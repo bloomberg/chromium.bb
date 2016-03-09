@@ -59,18 +59,18 @@ public:
     void SetUp() override
     {
         m_executionContext = adoptRefWillBeNoop(new NullExecutionContext());
-        m_scope.scriptState()->setExecutionContext(m_executionContext.get());
+        m_scope.getScriptState()->setExecutionContext(m_executionContext.get());
     }
 
     void TearDown() override
     {
         m_executionContext->notifyContextDestroyed();
-        m_scope.scriptState()->setExecutionContext(nullptr);
+        m_scope.getScriptState()->setExecutionContext(nullptr);
     }
 
     v8::Isolate* isolate() const { return m_scope.isolate(); }
-    ScriptState* scriptState() const { return m_scope.scriptState(); }
-    ExecutionContext* executionContext() const { return m_scope.scriptState()->executionContext(); }
+    ScriptState* getScriptState() const { return m_scope.getScriptState(); }
+    ExecutionContext* getExecutionContext() const { return m_scope.getScriptState()->getExecutionContext(); }
 
 private:
     V8TestingScope m_scope;
@@ -80,9 +80,9 @@ private:
 TEST_F(IDBRequestTest, EventsAfterStopping)
 {
     IDBTransaction* transaction = nullptr;
-    IDBRequest* request = IDBRequest::create(scriptState(), IDBAny::createUndefined(), transaction);
+    IDBRequest* request = IDBRequest::create(getScriptState(), IDBAny::createUndefined(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
-    executionContext()->stopActiveDOMObjects();
+    getExecutionContext()->stopActiveDOMObjects();
 
     // Ensure none of the following raise assertions in stopped state:
     request->onError(DOMException::create(AbortError, "Description goes here."));
@@ -98,7 +98,7 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
 TEST_F(IDBRequestTest, AbortErrorAfterAbort)
 {
     IDBTransaction* transaction = nullptr;
-    IDBRequest* request = IDBRequest::create(scriptState(), IDBAny::createUndefined(), transaction);
+    IDBRequest* request = IDBRequest::create(getScriptState(), IDBAny::createUndefined(), transaction);
     EXPECT_EQ(request->readyState(), "pending");
 
     // Simulate the IDBTransaction having received onAbort from back end and aborting the request:
@@ -110,7 +110,7 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
 
     // Stop the request lest it be GCed and its destructor
     // finds the object in a pending state (and asserts.)
-    executionContext()->stopActiveDOMObjects();
+    getExecutionContext()->stopActiveDOMObjects();
 }
 
 TEST_F(IDBRequestTest, ConnectionsAfterStopping)
@@ -127,10 +127,10 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
             .Times(1);
         EXPECT_CALL(*backend, close())
             .Times(1);
-        IDBOpenDBRequest* request = IDBOpenDBRequest::create(scriptState(), callbacks, transactionId, version);
+        IDBOpenDBRequest* request = IDBOpenDBRequest::create(getScriptState(), callbacks, transactionId, version);
         EXPECT_EQ(request->readyState(), "pending");
 
-        executionContext()->stopActiveDOMObjects();
+        getExecutionContext()->stopActiveDOMObjects();
         request->onUpgradeNeeded(oldVersion, backend.release(), metadata, WebIDBDataLossNone, String());
     }
 
@@ -138,10 +138,10 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
         OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
         EXPECT_CALL(*backend, close())
             .Times(1);
-        IDBOpenDBRequest* request = IDBOpenDBRequest::create(scriptState(), callbacks, transactionId, version);
+        IDBOpenDBRequest* request = IDBOpenDBRequest::create(getScriptState(), callbacks, transactionId, version);
         EXPECT_EQ(request->readyState(), "pending");
 
-        executionContext()->stopActiveDOMObjects();
+        getExecutionContext()->stopActiveDOMObjects();
         request->onSuccess(backend.release(), metadata);
     }
 }

@@ -49,57 +49,57 @@ PassOwnPtr<WorkerObjectProxy> WorkerObjectProxy::create(WorkerMessagingProxy* me
 
 void WorkerObjectProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
 {
-    executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::postMessageToWorkerObject, m_messagingProxy, message, channels));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::postMessageToWorkerObject, m_messagingProxy, message, channels));
 }
 
 void WorkerObjectProxy::postTaskToMainExecutionContext(PassOwnPtr<ExecutionContextTask> task)
 {
-    executionContext()->postTask(BLINK_FROM_HERE, task);
+    getExecutionContext()->postTask(BLINK_FROM_HERE, task);
 }
 
 void WorkerObjectProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
 {
-    executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::confirmMessageFromWorkerObject, m_messagingProxy, hasPendingActivity));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::confirmMessageFromWorkerObject, m_messagingProxy, hasPendingActivity));
 }
 
 void WorkerObjectProxy::reportPendingActivity(bool hasPendingActivity)
 {
-    executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::reportPendingActivity, m_messagingProxy, hasPendingActivity));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::reportPendingActivity, m_messagingProxy, hasPendingActivity));
 }
 
 void WorkerObjectProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId)
 {
-    executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::reportException, m_messagingProxy, errorMessage, lineNumber, columnNumber, sourceURL, exceptionId));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::reportException, m_messagingProxy, errorMessage, lineNumber, columnNumber, sourceURL, exceptionId));
 }
 
 void WorkerObjectProxy::reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
 {
-    executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::reportConsoleMessage, m_messagingProxy, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url()));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::reportConsoleMessage, m_messagingProxy, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url()));
 }
 
 void WorkerObjectProxy::postMessageToPageInspector(const String& message)
 {
-    ExecutionContext* context = executionContext();
+    ExecutionContext* context = getExecutionContext();
     if (context->isDocument())
         toDocument(context)->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::postMessageToPageInspector, m_messagingProxy, message));
 }
 
 void WorkerObjectProxy::postWorkerConsoleAgentEnabled()
 {
-    ExecutionContext* context = executionContext();
+    ExecutionContext* context = getExecutionContext();
     if (context->isDocument())
         toDocument(context)->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::postWorkerConsoleAgentEnabled, m_messagingProxy));
 }
 
 void WorkerObjectProxy::workerGlobalScopeClosed()
 {
-    executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::terminateWorkerGlobalScope, m_messagingProxy));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::terminateWorkerGlobalScope, m_messagingProxy));
 }
 
 void WorkerObjectProxy::workerThreadTerminated()
 {
     // This will terminate the MessagingProxy.
-    executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::workerThreadTerminated, m_messagingProxy));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::workerThreadTerminated, m_messagingProxy));
 }
 
 WorkerObjectProxy::WorkerObjectProxy(WorkerMessagingProxy* messagingProxy)
@@ -107,10 +107,10 @@ WorkerObjectProxy::WorkerObjectProxy(WorkerMessagingProxy* messagingProxy)
 {
 }
 
-ExecutionContext* WorkerObjectProxy::executionContext()
+ExecutionContext* WorkerObjectProxy::getExecutionContext()
 {
     ASSERT(m_messagingProxy);
-    return m_messagingProxy->executionContext();
+    return m_messagingProxy->getExecutionContext();
 }
 
 } // namespace blink

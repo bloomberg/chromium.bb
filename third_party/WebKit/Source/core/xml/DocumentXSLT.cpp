@@ -44,7 +44,7 @@ public:
         ASSERT(event->type() == "DOMContentLoaded");
         ScriptState::Scope scope(scriptState);
 
-        Document& document = *toDocument(scriptState->executionContext());
+        Document& document = *toDocument(scriptState->getExecutionContext());
         ASSERT(!document.parsing());
 
         // Processing instruction (XML documents only).

@@ -209,8 +209,8 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
     // On a size update check if we now qualify as a essential plugin.
     url::Origin content_origin = url::Origin(GetPluginParams().url);
     auto status = render_frame()->GetPeripheralContentStatus(
-        render_frame()->GetWebFrame()->top()->securityOrigin(), content_origin,
-        gfx::Size(width, height));
+        render_frame()->GetWebFrame()->top()->getSecurityOrigin(),
+        content_origin, gfx::Size(width, height));
     if (status != content::RenderFrame::CONTENT_STATUS_PERIPHERAL) {
       MarkPluginEssential(
           heuristic_run_before_

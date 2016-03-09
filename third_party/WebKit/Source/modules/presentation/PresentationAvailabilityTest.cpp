@@ -27,12 +27,12 @@ public:
 
     void SetUp() override
     {
-        m_scope.scriptState()->setExecutionContext(&m_page->document());
+        m_scope.getScriptState()->setExecutionContext(&m_page->document());
     }
 
     Page& page() { return m_page->page(); }
     LocalFrame& frame() { return m_page->frame(); }
-    ScriptState* scriptState() { return m_scope.scriptState(); }
+    ScriptState* getScriptState() { return m_scope.getScriptState(); }
 
 private:
     V8TestingScope m_scope;
@@ -42,7 +42,7 @@ private:
 TEST_F(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach)
 {
     const KURL url = URLTestHelpers::toKURL("https://example.com");
-    Persistent<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState());
+    Persistent<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(getScriptState());
     Persistent<PresentationAvailability> availability = PresentationAvailability::take(resolver, url, false);
 
     // These two calls should not crash.

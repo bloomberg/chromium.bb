@@ -72,7 +72,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mark);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary);
 
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     PlatformSpeechSynthesisUtterance* platformUtterance() const { return m_platformUtterance; }
 

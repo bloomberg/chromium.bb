@@ -249,7 +249,7 @@ void FileWriter::completeAbort()
 
 void FileWriter::doOperation(Operation operation)
 {
-    m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(executionContext(), "FileWriter", m_asyncOperationId);
+    m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(getExecutionContext(), "FileWriter", m_asyncOperationId);
     switch (operation) {
     case OperationWrite:
         ASSERT(m_operationInProgress == OperationNone);
@@ -298,13 +298,13 @@ void FileWriter::signalCompletion(FileError::ErrorCode code)
         fireEvent(EventTypeNames::write);
     fireEvent(EventTypeNames::writeend);
 
-    InspectorInstrumentation::traceAsyncOperationCompleted(executionContext(), m_asyncOperationId);
+    InspectorInstrumentation::traceAsyncOperationCompleted(getExecutionContext(), m_asyncOperationId);
     m_asyncOperationId = 0;
 }
 
 void FileWriter::fireEvent(const AtomicString& type)
 {
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(executionContext(), m_asyncOperationId);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(getExecutionContext(), m_asyncOperationId);
     ++m_recursionDepth;
     dispatchEvent(ProgressEvent::create(type, true, m_bytesWritten, m_bytesToWrite));
     --m_recursionDepth;

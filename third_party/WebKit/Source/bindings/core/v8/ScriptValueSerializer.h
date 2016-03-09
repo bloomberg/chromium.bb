@@ -496,7 +496,7 @@ public:
 
     bool isEof() const { return m_position >= m_length; }
 
-    ScriptState* scriptState() const { return m_scriptState.get(); }
+    ScriptState* getScriptState() const { return m_scriptState.get(); }
 
 protected:
     v8::Isolate* isolate() const { return m_scriptState->isolate(); }

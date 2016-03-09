@@ -19,7 +19,7 @@ namespace {
 
 String getCurrentOrigin(ExecutionContext* executionContext)
 {
-    return executionContext->securityOrigin()->toString();
+    return executionContext->getSecurityOrigin()->toString();
 }
 
 String getDisabledMessage(const String& featureName)
@@ -49,8 +49,8 @@ bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* err
 
     // Feature trials are only enabled for secure origins
     bool isSecure = errorMessage
-        ? executionContext()->isSecureContext(*errorMessage)
-        : executionContext()->isSecureContext();
+        ? getExecutionContext()->isSecureContext(*errorMessage)
+        : getExecutionContext()->isSecureContext();
     if (!isSecure) {
         // The execution context should always set a message here, if a valid
         // pointer was passed in. If it does not, then we should find out why
@@ -74,7 +74,7 @@ bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* err
 
 bool OriginTrialContext::hasValidToken(Vector<String> tokens, const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
-    String origin = getCurrentOrigin(executionContext());
+    String origin = getCurrentOrigin(getExecutionContext());
 
     for (const String& token : tokens) {
         // Check with the validator service to verify the signature.

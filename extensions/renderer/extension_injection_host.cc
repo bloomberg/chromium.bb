@@ -51,7 +51,7 @@ PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
     int tab_id,
     bool is_declarative) const {
   blink::WebSecurityOrigin top_frame_security_origin =
-      render_frame->GetWebFrame()->top()->securityOrigin();
+      render_frame->GetWebFrame()->top()->getSecurityOrigin();
   // Only whitelisted extensions may run scripts on another extension's page.
   if (top_frame_security_origin.protocol().utf8() == kExtensionScheme &&
       top_frame_security_origin.host().utf8() != extension_->id() &&

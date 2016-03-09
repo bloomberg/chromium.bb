@@ -31,8 +31,8 @@ public:
     ScriptPromiseResolver* resolver() { return m_resolver; }
     void didFetchDataLoadFailed() override
     {
-        ScriptState::Scope scope(resolver()->scriptState());
-        m_resolver->reject(V8ThrowException::createTypeError(resolver()->scriptState()->isolate(), "Failed to fetch"));
+        ScriptState::Scope scope(resolver()->getScriptState());
+        m_resolver->reject(V8ThrowException::createTypeError(resolver()->getScriptState()->isolate(), "Failed to fetch"));
     }
 
     DEFINE_INLINE_TRACE()
@@ -85,10 +85,10 @@ public:
 
     void didFetchDataLoadedString(const String& string) override
     {
-        if (!resolver()->executionContext() || resolver()->executionContext()->activeDOMObjectsAreStopped())
+        if (!resolver()->getExecutionContext() || resolver()->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        ScriptState::Scope scope(resolver()->scriptState());
-        v8::Isolate* isolate = resolver()->scriptState()->isolate();
+        ScriptState::Scope scope(resolver()->getScriptState());
+        v8::Isolate* isolate = resolver()->getScriptState()->isolate();
         v8::Local<v8::String> inputString = v8String(isolate, string);
         v8::TryCatch trycatch(isolate);
         v8::Local<v8::Value> parsed;
@@ -113,13 +113,13 @@ ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
     // first check the ExecutionContext and return immediately if it's already
     // gone (which means that the V8::TerminateExecution() signal has been sent
     // to this worker thread).
-    if (!scriptState->executionContext())
+    if (!scriptState->getExecutionContext())
         return ScriptPromise();
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     promise = resolver->promise();
     if (bodyBuffer()) {
-        bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsArrayBuffer(), new BodyArrayBufferConsumer(resolver));
+        bodyBuffer()->startLoading(scriptState->getExecutionContext(), FetchDataLoader::createLoaderAsArrayBuffer(), new BodyArrayBufferConsumer(resolver));
     } else {
         resolver->resolve(DOMArrayBuffer::create(0u, 1));
     }
@@ -133,13 +133,13 @@ ScriptPromise Body::blob(ScriptState* scriptState)
         return promise;
 
     // See above comment.
-    if (!scriptState->executionContext())
+    if (!scriptState->getExecutionContext())
         return ScriptPromise();
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     promise = resolver->promise();
     if (bodyBuffer()) {
-        bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsBlobHandle(mimeType()), new BodyBlobConsumer(resolver));
+        bodyBuffer()->startLoading(scriptState->getExecutionContext(), FetchDataLoader::createLoaderAsBlobHandle(mimeType()), new BodyBlobConsumer(resolver));
     } else {
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->setContentType(mimeType());
@@ -156,13 +156,13 @@ ScriptPromise Body::json(ScriptState* scriptState)
         return promise;
 
     // See above comment.
-    if (!scriptState->executionContext())
+    if (!scriptState->getExecutionContext())
         return ScriptPromise();
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     promise = resolver->promise();
     if (bodyBuffer()) {
-        bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsString(), new BodyJsonConsumer(resolver));
+        bodyBuffer()->startLoading(scriptState->getExecutionContext(), FetchDataLoader::createLoaderAsString(), new BodyJsonConsumer(resolver));
     } else {
         resolver->reject(V8ThrowException::createSyntaxError(scriptState->isolate(), "Unexpected end of input"));
     }
@@ -176,13 +176,13 @@ ScriptPromise Body::text(ScriptState* scriptState)
         return promise;
 
     // See above comment.
-    if (!scriptState->executionContext())
+    if (!scriptState->getExecutionContext())
         return ScriptPromise();
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     promise = resolver->promise();
     if (bodyBuffer()) {
-        bodyBuffer()->startLoading(scriptState->executionContext(), FetchDataLoader::createLoaderAsString(), new BodyTextConsumer(resolver));
+        bodyBuffer()->startLoading(scriptState->getExecutionContext(), FetchDataLoader::createLoaderAsString(), new BodyTextConsumer(resolver));
     } else {
         resolver->resolve(String());
     }
@@ -196,7 +196,7 @@ ReadableByteStream* Body::body()
 
 ReadableByteStream* Body::bodyWithUseCounter()
 {
-    UseCounter::count(executionContext(), UseCounter::FetchBodyStream);
+    UseCounter::count(getExecutionContext(), UseCounter::FetchBodyStream);
     return body();
 }
 
@@ -212,7 +212,7 @@ bool Body::isBodyLocked()
 
 bool Body::hasPendingActivity() const
 {
-    if (executionContext()->activeDOMObjectsAreStopped())
+    if (getExecutionContext()->activeDOMObjectsAreStopped())
         return false;
     if (!bodyBuffer())
         return false;

@@ -38,7 +38,7 @@ static const double MaxBiquadDelayTime = 0.2;
 
 void BiquadDSPKernel::updateCoefficientsIfNecessary(int framesToProcess)
 {
-    if (biquadProcessor()->filterCoefficientsDirty()) {
+    if (getBiquadProcessor()->filterCoefficientsDirty()) {
         float cutoffFrequency[AudioUtilities::kRenderQuantumFrames];
         float Q[AudioUtilities::kRenderQuantumFrames];
         float gain[AudioUtilities::kRenderQuantumFrames];
@@ -47,17 +47,17 @@ void BiquadDSPKernel::updateCoefficientsIfNecessary(int framesToProcess)
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(
             static_cast<unsigned>(framesToProcess) <= AudioUtilities::kRenderQuantumFrames);
 
-        if (biquadProcessor()->hasSampleAccurateValues()) {
-            biquadProcessor()->parameter1().calculateSampleAccurateValues(cutoffFrequency, framesToProcess);
-            biquadProcessor()->parameter2().calculateSampleAccurateValues(Q, framesToProcess);
-            biquadProcessor()->parameter3().calculateSampleAccurateValues(gain, framesToProcess);
-            biquadProcessor()->parameter4().calculateSampleAccurateValues(detune, framesToProcess);
+        if (getBiquadProcessor()->hasSampleAccurateValues()) {
+            getBiquadProcessor()->parameter1().calculateSampleAccurateValues(cutoffFrequency, framesToProcess);
+            getBiquadProcessor()->parameter2().calculateSampleAccurateValues(Q, framesToProcess);
+            getBiquadProcessor()->parameter3().calculateSampleAccurateValues(gain, framesToProcess);
+            getBiquadProcessor()->parameter4().calculateSampleAccurateValues(detune, framesToProcess);
             updateCoefficients(framesToProcess, cutoffFrequency, Q, gain, detune);
         } else {
-            cutoffFrequency[0] = biquadProcessor()->parameter1().smoothedValue();
-            Q[0] = biquadProcessor()->parameter2().smoothedValue();
-            gain[0] = biquadProcessor()->parameter3().smoothedValue();
-            detune[0] = biquadProcessor()->parameter4().smoothedValue();
+            cutoffFrequency[0] = getBiquadProcessor()->parameter1().smoothedValue();
+            Q[0] = getBiquadProcessor()->parameter2().smoothedValue();
+            gain[0] = getBiquadProcessor()->parameter3().smoothedValue();
+            detune[0] = getBiquadProcessor()->parameter4().smoothedValue();
             updateCoefficients(1, cutoffFrequency, Q, gain, detune);
         }
     }
@@ -78,7 +78,7 @@ void BiquadDSPKernel::updateCoefficients(int numberOfFrames, const float* cutoff
             normalizedFrequency *= pow(2, detune[k] / 1200);
 
         // Configure the biquad with the new filter parameters for the appropriate type of filter.
-        switch (biquadProcessor()->type()) {
+        switch (getBiquadProcessor()->type()) {
         case BiquadProcessor::LowPass:
             m_biquad.setLowpassParams(k, normalizedFrequency, Q[k]);
             break;
@@ -118,7 +118,7 @@ void BiquadDSPKernel::process(const float* source, float* destination, size_t fr
 {
     ASSERT(source);
     ASSERT(destination);
-    ASSERT(biquadProcessor());
+    ASSERT(getBiquadProcessor());
 
     // Recompute filter coefficients if any of the parameters have changed.
     // FIXME: as an optimization, implement a way that a Biquad object can simply copy its internal filter coefficients from another Biquad object.
@@ -172,10 +172,10 @@ void BiquadDSPKernel::getFrequencyResponse(int nFrequencies, const float* freque
         // FIXME: Simplify this: crbug.com/390266
         MutexLocker processLocker(m_processLock);
 
-        cutoffFrequency = biquadProcessor()->parameter1().value();
-        Q = biquadProcessor()->parameter2().value();
-        gain = biquadProcessor()->parameter3().value();
-        detune = biquadProcessor()->parameter4().value();
+        cutoffFrequency = getBiquadProcessor()->parameter1().value();
+        Q = getBiquadProcessor()->parameter2().value();
+        gain = getBiquadProcessor()->parameter3().value();
+        detune = getBiquadProcessor()->parameter4().value();
     }
 
     updateCoefficients(1, &cutoffFrequency, &Q, &gain, &detune);

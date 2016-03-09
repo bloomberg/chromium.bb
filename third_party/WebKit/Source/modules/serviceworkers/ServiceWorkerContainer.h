@@ -79,7 +79,7 @@ public:
     void dispatchMessageEvent(WebPassOwnPtr<WebServiceWorker::Handle>, const WebString& message, const WebMessagePortChannelArray&) override;
 
     // EventTarget overrides.
-    ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
     const AtomicString& interfaceName() const override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange);

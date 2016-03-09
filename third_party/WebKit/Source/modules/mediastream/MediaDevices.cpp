@@ -22,7 +22,7 @@ namespace blink {
 
 ScriptPromise MediaDevices::enumerateDevices(ScriptState* scriptState)
 {
-    Document* document = toDocument(scriptState->executionContext());
+    Document* document = toDocument(scriptState->getExecutionContext());
     UserMediaController* userMedia = UserMediaController::from(document->frame());
     if (!userMedia)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "No media device controller available; is this a detached window?"));
@@ -94,7 +94,7 @@ ScriptPromise MediaDevices::getUserMedia(ScriptState* scriptState, const MediaSt
     NavigatorUserMediaSuccessCallback* successCallback = new PromiseSuccessCallback(resolver);
     NavigatorUserMediaErrorCallback* errorCallback = new PromiseErrorCallback(resolver);
 
-    Document* document = toDocument(scriptState->executionContext());
+    Document* document = toDocument(scriptState->getExecutionContext());
     UserMediaController* userMedia = UserMediaController::from(document->frame());
     if (!userMedia)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "No media device controller available; is this a detached window?"));

@@ -76,7 +76,7 @@ void AcceptConnectionObserver::contextDestroyed()
 
 void AcceptConnectionObserver::didDispatchEvent()
 {
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     if (m_state != Initial)
         return;
     responseWasRejected();
@@ -99,7 +99,7 @@ ScriptPromise AcceptConnectionObserver::respondWith(ScriptState* scriptState, Sc
 
 void AcceptConnectionObserver::responseWasRejected()
 {
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     if (m_resolver)
         m_resolver->reject(DOMException::create(AbortError));
     m_callbacks->onError();
@@ -108,9 +108,9 @@ void AcceptConnectionObserver::responseWasRejected()
 
 void AcceptConnectionObserver::responseWasResolved(const ScriptValue& value)
 {
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
 
-    ScriptState* scriptState = m_resolver->scriptState();
+    ScriptState* scriptState = m_resolver->getScriptState();
     ExceptionState exceptionState(ExceptionState::UnknownContext, nullptr, nullptr, scriptState->context()->Global(), scriptState->isolate());
     ServicePortConnectResponse response = ScriptValue::to<ServicePortConnectResponse>(scriptState->isolate(), value, exceptionState);
     if (exceptionState.hadException()) {
@@ -145,7 +145,7 @@ void AcceptConnectionObserver::responseWasResolved(const ScriptValue& value)
 }
 
 AcceptConnectionObserver::AcceptConnectionObserver(ServicePortCollection* collection, PassOwnPtr<WebServicePortConnectEventCallbacks> callbacks, WebServicePortID portID, const KURL& targetURL)
-    : ContextLifecycleObserver(collection->executionContext())
+    : ContextLifecycleObserver(collection->getExecutionContext())
     , m_callbacks(callbacks)
     , m_collection(collection)
     , m_portID(portID)

@@ -53,7 +53,7 @@ namespace blink {
 class CORE_EXPORT ScriptFunction : public GarbageCollectedFinalized<ScriptFunction> {
 public:
     virtual ~ScriptFunction() { }
-    ScriptState* scriptState() const { return m_scriptState.get(); }
+    ScriptState* getScriptState() const { return m_scriptState.get(); }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:

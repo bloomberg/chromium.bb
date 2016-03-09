@@ -88,16 +88,16 @@ public:
 
     String toString(const ScriptValue& value)
     {
-        return toCoreString(value.v8Value()->ToString(scriptState()->context()).ToLocalChecked());
+        return toCoreString(value.v8Value()->ToString(getScriptState()->context()).ToLocalChecked());
     }
 
     Vector<String> toStringArray(const ScriptValue& value)
     {
         NonThrowableExceptionState exceptionState;
-        return toImplArray<Vector<String>>(value.v8Value(), 0, scriptState()->isolate(), exceptionState);
+        return toImplArray<Vector<String>>(value.v8Value(), 0, getScriptState()->isolate(), exceptionState);
     }
 
-    ScriptState* scriptState() const { return m_scope.scriptState(); }
+    ScriptState* getScriptState() const { return m_scope.getScriptState(); }
     v8::Isolate* isolate() const { return m_scope.isolate(); }
 
 protected:
@@ -108,17 +108,17 @@ protected:
 TEST_F(ScriptPromiseTest, constructFromNonPromise)
 {
     v8::TryCatch trycatch(isolate());
-    ScriptPromise promise(scriptState(), v8::Undefined(isolate()));
+    ScriptPromise promise(getScriptState(), v8::Undefined(isolate()));
     ASSERT_TRUE(trycatch.HasCaught());
     ASSERT_TRUE(promise.isEmpty());
 }
 
 TEST_F(ScriptPromiseTest, thenResolve)
 {
-    Resolver resolver(scriptState());
+    Resolver resolver(getScriptState());
     ScriptPromise promise = resolver.promise();
     ScriptValue onFulfilled, onRejected;
-    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+    promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_TRUE(onFulfilled.isEmpty());
@@ -138,11 +138,11 @@ TEST_F(ScriptPromiseTest, thenResolve)
 
 TEST_F(ScriptPromiseTest, resolveThen)
 {
-    Resolver resolver(scriptState());
+    Resolver resolver(getScriptState());
     ScriptPromise promise = resolver.promise();
     ScriptValue onFulfilled, onRejected;
     resolver.resolve(v8String(isolate(), "hello"));
-    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+    promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_TRUE(onFulfilled.isEmpty());
@@ -156,10 +156,10 @@ TEST_F(ScriptPromiseTest, resolveThen)
 
 TEST_F(ScriptPromiseTest, thenReject)
 {
-    Resolver resolver(scriptState());
+    Resolver resolver(getScriptState());
     ScriptPromise promise = resolver.promise();
     ScriptValue onFulfilled, onRejected;
-    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+    promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_TRUE(onFulfilled.isEmpty());
@@ -179,11 +179,11 @@ TEST_F(ScriptPromiseTest, thenReject)
 
 TEST_F(ScriptPromiseTest, rejectThen)
 {
-    Resolver resolver(scriptState());
+    Resolver resolver(getScriptState());
     ScriptPromise promise = resolver.promise();
     ScriptValue onFulfilled, onRejected;
     resolver.reject(v8String(isolate(), "hello"));
-    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+    promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_TRUE(onFulfilled.isEmpty());
@@ -197,8 +197,8 @@ TEST_F(ScriptPromiseTest, rejectThen)
 
 TEST_F(ScriptPromiseTest, castPromise)
 {
-    ScriptPromise promise = Resolver(scriptState()).promise();
-    ScriptPromise newPromise = ScriptPromise::cast(scriptState(), promise.v8Value());
+    ScriptPromise promise = Resolver(getScriptState()).promise();
+    ScriptPromise newPromise = ScriptPromise::cast(getScriptState(), promise.v8Value());
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_EQ(promise.v8Value(), newPromise.v8Value());
@@ -208,11 +208,11 @@ TEST_F(ScriptPromiseTest, castNonPromise)
 {
     ScriptValue onFulfilled1, onFulfilled2, onRejected1, onRejected2;
 
-    ScriptValue value = ScriptValue(scriptState(), v8String(isolate(), "hello"));
-    ScriptPromise promise1 = ScriptPromise::cast(scriptState(), ScriptValue(value));
-    ScriptPromise promise2 = ScriptPromise::cast(scriptState(), ScriptValue(value));
-    promise1.then(Function::createFunction(scriptState(), &onFulfilled1), Function::createFunction(scriptState(), &onRejected1));
-    promise2.then(Function::createFunction(scriptState(), &onFulfilled2), Function::createFunction(scriptState(), &onRejected2));
+    ScriptValue value = ScriptValue(getScriptState(), v8String(isolate(), "hello"));
+    ScriptPromise promise1 = ScriptPromise::cast(getScriptState(), ScriptValue(value));
+    ScriptPromise promise2 = ScriptPromise::cast(getScriptState(), ScriptValue(value));
+    promise1.then(Function::createFunction(getScriptState(), &onFulfilled1), Function::createFunction(getScriptState(), &onRejected1));
+    promise2.then(Function::createFunction(getScriptState(), &onFulfilled2), Function::createFunction(getScriptState(), &onRejected2));
 
     ASSERT_FALSE(promise1.isEmpty());
     ASSERT_FALSE(promise2.isEmpty());
@@ -238,9 +238,9 @@ TEST_F(ScriptPromiseTest, reject)
 {
     ScriptValue onFulfilled, onRejected;
 
-    ScriptValue value = ScriptValue(scriptState(), v8String(isolate(), "hello"));
-    ScriptPromise promise = ScriptPromise::reject(scriptState(), ScriptValue(value));
-    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+    ScriptValue value = ScriptValue(getScriptState(), v8String(isolate(), "hello"));
+    ScriptPromise promise = ScriptPromise::reject(getScriptState(), ScriptValue(value));
+    promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     ASSERT_TRUE(promise.v8Value()->IsPromise());
@@ -257,8 +257,8 @@ TEST_F(ScriptPromiseTest, reject)
 TEST_F(ScriptPromiseTest, rejectWithExceptionState)
 {
     ScriptValue onFulfilled, onRejected;
-    ScriptPromise promise = ScriptPromise::rejectWithDOMException(scriptState(), DOMException::create(SyntaxError, "some syntax error"));
-    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+    ScriptPromise promise = ScriptPromise::rejectWithDOMException(getScriptState(), DOMException::create(SyntaxError, "some syntax error"));
+    promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_TRUE(onFulfilled.isEmpty());
@@ -274,10 +274,10 @@ TEST_F(ScriptPromiseTest, allWithEmptyPromises)
 {
     ScriptValue onFulfilled, onRejected;
 
-    ScriptPromise promise = ScriptPromise::all(scriptState(), Vector<ScriptPromise>());
+    ScriptPromise promise = ScriptPromise::all(getScriptState(), Vector<ScriptPromise>());
     ASSERT_FALSE(promise.isEmpty());
 
-    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+    promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
@@ -294,12 +294,12 @@ TEST_F(ScriptPromiseTest, allWithResolvedPromises)
     ScriptValue onFulfilled, onRejected;
 
     Vector<ScriptPromise> promises;
-    promises.append(ScriptPromise::cast(scriptState(), v8String(isolate(), "hello")));
-    promises.append(ScriptPromise::cast(scriptState(), v8String(isolate(), "world")));
+    promises.append(ScriptPromise::cast(getScriptState(), v8String(isolate(), "hello")));
+    promises.append(ScriptPromise::cast(getScriptState(), v8String(isolate(), "world")));
 
-    ScriptPromise promise = ScriptPromise::all(scriptState(), promises);
+    ScriptPromise promise = ScriptPromise::all(getScriptState(), promises);
     ASSERT_FALSE(promise.isEmpty());
-    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+    promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());
@@ -319,12 +319,12 @@ TEST_F(ScriptPromiseTest, allWithRejectedPromise)
     ScriptValue onFulfilled, onRejected;
 
     Vector<ScriptPromise> promises;
-    promises.append(ScriptPromise::cast(scriptState(), v8String(isolate(), "hello")));
-    promises.append(ScriptPromise::reject(scriptState(), v8String(isolate(), "world")));
+    promises.append(ScriptPromise::cast(getScriptState(), v8String(isolate(), "hello")));
+    promises.append(ScriptPromise::reject(getScriptState(), v8String(isolate(), "world")));
 
-    ScriptPromise promise = ScriptPromise::all(scriptState(), promises);
+    ScriptPromise promise = ScriptPromise::all(getScriptState(), promises);
     ASSERT_FALSE(promise.isEmpty());
-    promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+    promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
 
     EXPECT_TRUE(onFulfilled.isEmpty());
     EXPECT_TRUE(onRejected.isEmpty());

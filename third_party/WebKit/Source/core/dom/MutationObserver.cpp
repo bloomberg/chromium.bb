@@ -71,7 +71,7 @@ MutationObserver::~MutationObserver()
     ASSERT(m_registrations.isEmpty());
 #endif
     if (!m_records.isEmpty())
-        InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
+        InspectorInstrumentation::didClearAllMutationRecords(m_callback->getExecutionContext(), this);
 }
 
 void MutationObserver::observe(Node* node, const MutationObserverInit& observerInit, ExceptionState& exceptionState)
@@ -135,14 +135,14 @@ MutationRecordVector MutationObserver::takeRecords()
 {
     MutationRecordVector records;
     records.swap(m_records);
-    InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
+    InspectorInstrumentation::didClearAllMutationRecords(m_callback->getExecutionContext(), this);
     return records;
 }
 
 void MutationObserver::disconnect()
 {
     m_records.clear();
-    InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
+    InspectorInstrumentation::didClearAllMutationRecords(m_callback->getExecutionContext(), this);
     MutationObserverRegistrationSet registrations(m_registrations);
     for (auto& registration : registrations) {
         // The registration may be already unregistered while iteration.
@@ -190,7 +190,7 @@ void MutationObserver::enqueueMutationRecord(PassRefPtrWillBeRawPtr<MutationReco
     ASSERT(isMainThread());
     m_records.append(mutation);
     activateObserver(this);
-    InspectorInstrumentation::didEnqueueMutationRecord(m_callback->executionContext(), this);
+    InspectorInstrumentation::didEnqueueMutationRecord(m_callback->getExecutionContext(), this);
 }
 
 void MutationObserver::setHasTransientRegistration()
@@ -209,7 +209,7 @@ WillBeHeapHashSet<RawPtrWillBeMember<Node>> MutationObserver::getObservedNodes()
 
 bool MutationObserver::shouldBeSuspended() const
 {
-    return m_callback->executionContext() && m_callback->executionContext()->activeDOMObjectsAreSuspended();
+    return m_callback->getExecutionContext() && m_callback->getExecutionContext()->activeDOMObjectsAreSuspended();
 }
 
 void MutationObserver::deliver()
@@ -232,9 +232,9 @@ void MutationObserver::deliver()
     MutationRecordVector records;
     records.swap(m_records);
 
-    InspectorInstrumentation::willDeliverMutationRecords(m_callback->executionContext(), this);
+    InspectorInstrumentation::willDeliverMutationRecords(m_callback->getExecutionContext(), this);
     m_callback->call(records, this);
-    InspectorInstrumentation::didDeliverMutationRecords(m_callback->executionContext());
+    InspectorInstrumentation::didDeliverMutationRecords(m_callback->getExecutionContext());
 }
 
 void MutationObserver::resumeSuspendedObservers()

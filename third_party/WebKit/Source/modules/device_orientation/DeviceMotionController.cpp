@@ -90,7 +90,7 @@ PassRefPtrWillBeRawPtr<Event> DeviceMotionController::lastEvent() const
 bool DeviceMotionController::isNullEvent(Event* event) const
 {
     DeviceMotionEvent* motionEvent = toDeviceMotionEvent(event);
-    return !motionEvent->deviceMotionData()->canProvideEventData();
+    return !motionEvent->getDeviceMotionData()->canProvideEventData();
 }
 
 const AtomicString& DeviceMotionController::eventTypeName() const

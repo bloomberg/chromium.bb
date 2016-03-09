@@ -28,7 +28,7 @@ public:
     }
     ~GamepadEvent() override;
 
-    Gamepad* gamepad() const { return m_gamepad.get(); }
+    Gamepad* getGamepad() const { return m_gamepad.get(); }
 
     const AtomicString& interfaceName() const override;
 

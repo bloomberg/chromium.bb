@@ -80,7 +80,7 @@ public:
     PassRefPtrWillBeRawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
     // EventTarget overrides:
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
     const LocalDOMWindow* toDOMWindow() const override;
     LocalDOMWindow* toDOMWindow() override;
 
@@ -185,7 +185,7 @@ public:
 
     void willDetachDocumentFromFrame();
 
-    EventQueue* eventQueue() const;
+    EventQueue* getEventQueue() const;
     void enqueueWindowEvent(PassRefPtrWillBeRawPtr<Event>);
     void enqueueDocumentEvent(PassRefPtrWillBeRawPtr<Event>);
     void enqueuePageshowEvent(PageshowEventPersistence);

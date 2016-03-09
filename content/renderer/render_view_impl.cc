@@ -1623,11 +1623,11 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
     params.opener_top_level_frame_url = creator->top()->document().url();
   } else {
     params.opener_top_level_frame_url =
-        blink::WebStringToGURL(creator->top()->securityOrigin().toString());
+        blink::WebStringToGURL(creator->top()->getSecurityOrigin().toString());
   }
 
   GURL security_url(blink::WebStringToGURL(
-      creator->document().securityOrigin().toString()));
+      creator->document().getSecurityOrigin().toString()));
   if (!security_url.is_valid())
     security_url = GURL();
   params.opener_security_origin = security_url;

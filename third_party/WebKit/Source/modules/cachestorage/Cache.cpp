@@ -49,15 +49,15 @@ public:
 
     void onSuccess(const WebServiceWorkerResponse& webResponse) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), webResponse));
+        m_resolver->resolve(Response::create(m_resolver->getScriptState()->getExecutionContext(), webResponse));
         m_resolver.clear();
     }
 
     void onError(WebServiceWorkerCacheError reason) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
@@ -79,18 +79,18 @@ public:
 
     void onSuccess(const WebVector<WebServiceWorkerResponse>& webResponses) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         HeapVector<Member<Response>> responses;
         for (size_t i = 0; i < webResponses.size(); ++i)
-            responses.append(Response::create(m_resolver->scriptState()->executionContext(), webResponses[i]));
+            responses.append(Response::create(m_resolver->getScriptState()->getExecutionContext(), webResponses[i]));
         m_resolver->resolve(responses);
         m_resolver.clear();
     }
 
     void onError(WebServiceWorkerCacheError reason) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
@@ -109,7 +109,7 @@ public:
 
     void onSuccess() override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->resolve(true);
         m_resolver.clear();
@@ -117,7 +117,7 @@ public:
 
     void onError(WebServiceWorkerCacheError reason) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
@@ -139,18 +139,18 @@ public:
 
     void onSuccess(const WebVector<WebServiceWorkerRequest>& webRequests) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         HeapVector<Member<Request>> requests;
         for (size_t i = 0; i < webRequests.size(); ++i)
-            requests.append(Request::create(m_resolver->scriptState()->executionContext(), webRequests[i]));
+            requests.append(Request::create(m_resolver->getScriptState()->getExecutionContext(), webRequests[i]));
         m_resolver->resolve(requests);
         m_resolver.clear();
     }
 
     void onError(WebServiceWorkerCacheError reason) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
@@ -230,24 +230,24 @@ public:
     ScriptValue call(ScriptValue value) override
     {
         NonThrowableExceptionState exceptionState;
-        HeapVector<Member<Response>> responses = toMemberNativeArray<Response, V8Response>(value.v8Value(), m_requests.size(), scriptState()->isolate(), exceptionState);
+        HeapVector<Member<Response>> responses = toMemberNativeArray<Response, V8Response>(value.v8Value(), m_requests.size(), getScriptState()->isolate(), exceptionState);
 
         for (const auto& response : responses) {
             if (!response->ok()) {
-                ScriptPromise rejection = ScriptPromise::reject(scriptState(), V8ThrowException::createTypeError(scriptState()->isolate(), "Request failed"));
-                return ScriptValue(scriptState(), rejection.v8Value());
+                ScriptPromise rejection = ScriptPromise::reject(getScriptState(), V8ThrowException::createTypeError(getScriptState()->isolate(), "Request failed"));
+                return ScriptValue(getScriptState(), rejection.v8Value());
             }
             if (varyHeaderContainsAsterisk(response)) {
-                ScriptPromise rejection = ScriptPromise::reject(scriptState(), V8ThrowException::createTypeError(scriptState()->isolate(), "Vary header contains *"));
-                return ScriptValue(scriptState(), rejection.v8Value());
+                ScriptPromise rejection = ScriptPromise::reject(getScriptState(), V8ThrowException::createTypeError(getScriptState()->isolate(), "Vary header contains *"));
+                return ScriptValue(getScriptState(), rejection.v8Value());
             }
         }
 
         for (const auto& response : responses)
             RecordResponseTypeForAdd(response);
 
-        ScriptPromise putPromise = m_cache->putImpl(scriptState(), m_requests, responses);
-        return ScriptValue(scriptState(), putPromise.v8Value());
+        ScriptPromise putPromise = m_cache->putImpl(getScriptState(), m_requests, responses);
+        return ScriptValue(getScriptState(), putPromise.v8Value());
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -285,7 +285,7 @@ public:
         ASSERT(index < m_batchOperations.size());
         if (m_completed)
             return;
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_batchOperations[index] = batchOperation;
         if (--m_numberOfRemainingOperations != 0)
@@ -298,9 +298,9 @@ public:
         if (m_completed)
             return;
         m_completed = true;
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        ScriptState* state = m_resolver->scriptState();
+        ScriptState* state = m_resolver->getScriptState();
         ScriptState::Scope scope(state);
         m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), errorMessage));
     }
@@ -487,7 +487,7 @@ ScriptPromise Cache::matchImpl(ScriptState* scriptState, const Request* request,
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
-    checkCacheQueryOptions(options, scriptState->executionContext());
+    checkCacheQueryOptions(options, scriptState->getExecutionContext());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
@@ -507,7 +507,7 @@ ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, const Request* reque
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
-    checkCacheQueryOptions(options, scriptState->executionContext());
+    checkCacheQueryOptions(options, scriptState->getExecutionContext());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
@@ -542,7 +542,7 @@ ScriptPromise Cache::deleteImpl(ScriptState* scriptState, const Request* request
     WebVector<WebServiceWorkerCache::BatchOperation> batchOperations(size_t(1));
     batchOperations[0].operationType = WebServiceWorkerCache::OperationTypeDelete;
     request->populateWebServiceWorkerRequest(batchOperations[0].request);
-    checkCacheQueryOptions(options, scriptState->executionContext());
+    checkCacheQueryOptions(options, scriptState->getExecutionContext());
     batchOperations[0].matchParams = toWebQueryParams(options);
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -584,7 +584,7 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<R
             // If the response has body, read the all data and create
             // the blob handle and dispatch the put batch asynchronously.
             FetchDataLoader* loader = FetchDataLoader::createLoaderAsBlobHandle(responses[i]->internalMIMEType());
-            buffer->startLoading(scriptState->executionContext(), loader, new BlobHandleCallbackForPut(i, barrierCallback, requests[i], responses[i]));
+            buffer->startLoading(scriptState->getExecutionContext(), loader, new BlobHandleCallbackForPut(i, barrierCallback, requests[i], responses[i]));
             continue;
         }
 
@@ -610,7 +610,7 @@ ScriptPromise Cache::keysImpl(ScriptState* scriptState, const Request* request, 
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
-    checkCacheQueryOptions(options, scriptState->executionContext());
+    checkCacheQueryOptions(options, scriptState->getExecutionContext());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();

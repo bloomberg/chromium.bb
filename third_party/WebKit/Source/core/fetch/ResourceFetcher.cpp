@@ -236,7 +236,7 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
         return false;
 
     if (!sourceOrigin)
-        sourceOrigin = context().securityOrigin();
+        sourceOrigin = context().getSecurityOrigin();
 
     if (sourceOrigin->canRequestNoSuborigin(url))
         return true;
@@ -1067,7 +1067,7 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& new
     if (options.corsEnabled == IsCORSEnabled) {
         SecurityOrigin* sourceOrigin = options.securityOrigin.get();
         if (!sourceOrigin)
-            sourceOrigin = context().securityOrigin();
+            sourceOrigin = context().getSecurityOrigin();
 
         String errorMessage;
         StoredCredentials withCredentials = resource->lastResourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials;

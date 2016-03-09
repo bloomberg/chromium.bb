@@ -303,7 +303,7 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const final;
-    ExecutionContext* executionContext() const final;
+    ExecutionContext* getExecutionContext() const final;
 
     // Called inside AudioHandler constructors.
     void didAddOutput(unsigned numberOfOutputs);

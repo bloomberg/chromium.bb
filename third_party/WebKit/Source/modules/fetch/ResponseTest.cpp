@@ -47,8 +47,8 @@ public:
     ServiceWorkerResponseTest()
         : m_page(DummyPageHolder::create(IntSize(1, 1))) { }
 
-    ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    ExecutionContext* executionContext() { return scriptState()->executionContext(); }
+    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
+    ExecutionContext* getExecutionContext() { return getScriptState()->getExecutionContext(); }
 
 private:
     OwnPtr<DummyPageHolder> m_page;
@@ -62,7 +62,7 @@ TEST_F(ServiceWorkerResponseTest, FromFetchResponseData)
     FetchResponseData* fetchResponseData = FetchResponseData::create();
     fetchResponseData->setURL(url);
 
-    Response* response = Response::create(executionContext(), fetchResponseData);
+    Response* response = Response::create(getExecutionContext(), fetchResponseData);
     ASSERT(response);
     EXPECT_EQ(url, response->url());
 }
@@ -70,7 +70,7 @@ TEST_F(ServiceWorkerResponseTest, FromFetchResponseData)
 TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponse)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
-    Response* response = Response::create(executionContext(), *webResponse);
+    Response* response = Response::create(getExecutionContext(), *webResponse);
     ASSERT(response);
     EXPECT_EQ(webResponse->url(), response->url());
     EXPECT_EQ(webResponse->status(), response->status());
@@ -92,7 +92,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseDefault)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeDefault);
-    Response* response = Response::create(executionContext(), *webResponse);
+    Response* response = Response::create(getExecutionContext(), *webResponse);
 
     Headers* responseHeaders = response->headers();
     TrackExceptionState exceptionState;
@@ -106,7 +106,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseBasic)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeBasic);
-    Response* response = Response::create(executionContext(), *webResponse);
+    Response* response = Response::create(getExecutionContext(), *webResponse);
 
     Headers* responseHeaders = response->headers();
     TrackExceptionState exceptionState;
@@ -120,7 +120,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseCORS)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeCORS);
-    Response* response = Response::create(executionContext(), *webResponse);
+    Response* response = Response::create(getExecutionContext(), *webResponse);
 
     Headers* responseHeaders = response->headers();
     TrackExceptionState exceptionState;
@@ -134,7 +134,7 @@ TEST_F(ServiceWorkerResponseTest, FromWebServiceWorkerResponseOpaque)
 {
     OwnPtr<WebServiceWorkerResponse> webResponse = createTestWebServiceWorkerResponse();
     webResponse->setResponseType(WebServiceWorkerResponseTypeOpaque);
-    Response* response = Response::create(executionContext(), *webResponse);
+    Response* response = Response::create(getExecutionContext(), *webResponse);
 
     Headers* responseHeaders = response->headers();
     TrackExceptionState exceptionState;
@@ -180,8 +180,8 @@ void checkResponseStream(Response* response, bool checkResponseBodyStreamBuffer)
     EXPECT_CALL(*client1, didFetchDataLoadedString(String("Hello, world")));
     EXPECT_CALL(*client2, didFetchDataLoadedString(String("Hello, world")));
 
-    response->internalBodyBuffer()->startLoading(response->executionContext(), FetchDataLoader::createLoaderAsString(), client1);
-    clonedResponse->internalBodyBuffer()->startLoading(response->executionContext(), FetchDataLoader::createLoaderAsString(), client2);
+    response->internalBodyBuffer()->startLoading(response->getExecutionContext(), FetchDataLoader::createLoaderAsString(), client1);
+    clonedResponse->internalBodyBuffer()->startLoading(response->getExecutionContext(), FetchDataLoader::createLoaderAsString(), client2);
     blink::testing::runPendingTasks();
 }
 
@@ -200,7 +200,7 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault)
     BodyStreamBuffer* buffer = createHelloWorldBuffer();
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
-    Response* response = Response::create(executionContext(), fetchResponseData);
+    Response* response = Response::create(getExecutionContext(), fetchResponseData);
     EXPECT_EQ(response->internalBodyBuffer(), buffer);
     checkResponseStream(response, true);
 }
@@ -211,7 +211,7 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneBasic)
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     fetchResponseData = fetchResponseData->createBasicFilteredResponse();
-    Response* response = Response::create(executionContext(), fetchResponseData);
+    Response* response = Response::create(getExecutionContext(), fetchResponseData);
     EXPECT_EQ(response->internalBodyBuffer(), buffer);
     checkResponseStream(response, true);
 }
@@ -222,7 +222,7 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneCORS)
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     fetchResponseData = fetchResponseData->createCORSFilteredResponse();
-    Response* response = Response::create(executionContext(), fetchResponseData);
+    Response* response = Response::create(getExecutionContext(), fetchResponseData);
     EXPECT_EQ(response->internalBodyBuffer(), buffer);
     checkResponseStream(response, true);
 }
@@ -233,7 +233,7 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneOpaque)
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
     fetchResponseData = fetchResponseData->createOpaqueFilteredResponse();
-    Response* response = Response::create(executionContext(), fetchResponseData);
+    Response* response = Response::create(getExecutionContext(), fetchResponseData);
     EXPECT_EQ(response->internalBodyBuffer(), buffer);
     checkResponseStream(response, false);
 }
@@ -243,7 +243,7 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneError)
     BodyStreamBuffer* buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle()));
     FetchResponseData* fetchResponseData = FetchResponseData::createWithBuffer(buffer);
     fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
-    Response* response = Response::create(executionContext(), fetchResponseData);
+    Response* response = Response::create(getExecutionContext(), fetchResponseData);
     TrackExceptionState exceptionState;
     Response* clonedResponse = response->clone(exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
@@ -253,8 +253,8 @@ TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneError)
     EXPECT_CALL(*client1, didFetchDataLoadFailed());
     EXPECT_CALL(*client2, didFetchDataLoadFailed());
 
-    response->internalBodyBuffer()->startLoading(response->executionContext(), FetchDataLoader::createLoaderAsString(), client1);
-    clonedResponse->internalBodyBuffer()->startLoading(response->executionContext(), FetchDataLoader::createLoaderAsString(), client2);
+    response->internalBodyBuffer()->startLoading(response->getExecutionContext(), FetchDataLoader::createLoaderAsString(), client1);
+    clonedResponse->internalBodyBuffer()->startLoading(response->getExecutionContext(), FetchDataLoader::createLoaderAsString(), client2);
     blink::testing::runPendingTasks();
 }
 

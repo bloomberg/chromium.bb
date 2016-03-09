@@ -38,9 +38,9 @@ const WebVector<WebMediaKeySystemConfiguration>& WebEncryptedMediaRequest::suppo
     return m_private->supportedConfigurations();
 }
 
-WebSecurityOrigin WebEncryptedMediaRequest::securityOrigin() const
+WebSecurityOrigin WebEncryptedMediaRequest::getSecurityOrigin() const
 {
-    return WebSecurityOrigin(m_private->securityOrigin());
+    return WebSecurityOrigin(m_private->getSecurityOrigin());
 }
 
 void WebEncryptedMediaRequest::requestSucceeded(WebContentDecryptionModuleAccess* access)

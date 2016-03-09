@@ -66,7 +66,7 @@ StyleFetchedImage* CSSImageValue::cacheImage(Document* document, CrossOriginAttr
         request.mutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrer.referrerPolicy, request.url(), m_referrer.referrer));
 
         if (crossOrigin != CrossOriginAttributeNotSet)
-            request.setCrossOriginAccessControl(document->securityOrigin(), crossOrigin);
+            request.setCrossOriginAccessControl(document->getSecurityOrigin(), crossOrigin);
 
         if (RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher()))
             m_cachedImage = StyleFetchedImage::create(cachedImage.get(), document, request.url());

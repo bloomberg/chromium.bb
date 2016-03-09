@@ -83,12 +83,12 @@ public:
         ASSERT(executionContext->isContextThread());
         ASSERT(!m_loader);
 
-        KURL url = BlobURL::createPublicURL(executionContext->securityOrigin());
+        KURL url = BlobURL::createPublicURL(executionContext->getSecurityOrigin());
         if (url.isEmpty()) {
             m_updater->update(createUnexpectedErrorDataConsumerHandle());
             return;
         }
-        BlobRegistry::registerPublicBlobURL(executionContext->securityOrigin(), url, m_blobDataHandle);
+        BlobRegistry::registerPublicBlobURL(executionContext->getSecurityOrigin(), url, m_blobDataHandle);
 
         m_loader = createLoader(executionContext, this);
         ASSERT(m_loader);

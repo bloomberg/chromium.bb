@@ -42,7 +42,7 @@ protected:
     double delayTime(float sampleRate) override;
 
 private:
-    DelayProcessor* delayProcessor() { return static_cast<DelayProcessor*>(processor()); }
+    DelayProcessor* getDelayProcessor() { return static_cast<DelayProcessor*>(processor()); }
 };
 
 } // namespace blink

@@ -283,7 +283,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
         return true;
     }
 
-    if (!document().securityOrigin()->canDisplay(url)) {
+    if (!document().getSecurityOrigin()->canDisplay(url)) {
         FrameLoader::reportLocalLoadFailed(parentFrame.get(), url.getString());
         return false;
     }

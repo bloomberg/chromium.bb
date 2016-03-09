@@ -108,7 +108,7 @@ bool CanOpenViaFastPath(content::PepperPluginInstance* plugin_instance,
   // same-origin policy which prevents the app from requesting resources from
   // another app.
   blink::WebSecurityOrigin security_origin =
-      plugin_instance->GetContainer()->element().document().securityOrigin();
+      plugin_instance->GetContainer()->element().document().getSecurityOrigin();
   return security_origin.canRequest(gurl);
 }
 
@@ -333,7 +333,7 @@ blink::WebURLLoader* CreateWebURLLoader(const blink::WebDocument& document,
 
   // Options settings here follow the original behavior in the trusted
   // plugin and PepperURLLoaderHost.
-  if (document.securityOrigin().canRequest(gurl)) {
+  if (document.getSecurityOrigin().canRequest(gurl)) {
     options.allowCredentials = true;
   } else {
     // Allow CORS.

@@ -226,7 +226,7 @@ void FileReader::contextDestroyed()
         return;
 
     if (hasPendingActivity())
-        ThrottlingController::finishReader(executionContext(), this, ThrottlingController::removeReader(executionContext(), this));
+        ThrottlingController::finishReader(getExecutionContext(), this, ThrottlingController::removeReader(getExecutionContext(), this));
     terminate();
 }
 
@@ -286,7 +286,7 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
         return;
     }
 
-    ExecutionContext* context = executionContext();
+    ExecutionContext* context = getExecutionContext();
     if (!context) {
         exceptionState.throwDOMException(AbortError, "Reading from a detached FileReader is not supported.");
         return;
@@ -319,7 +319,7 @@ void FileReader::executePendingRead()
     m_loader = FileReaderLoader::create(m_readType, this);
     m_loader->setEncoding(m_encoding);
     m_loader->setDataType(m_blobType);
-    m_loader->start(executionContext(), m_blobDataHandle);
+    m_loader->start(getExecutionContext(), m_blobDataHandle);
     m_blobDataHandle = nullptr;
 }
 
@@ -339,7 +339,7 @@ void FileReader::abort()
     m_loadingState = LoadingStateAborted;
 
     // Schedule to have the abort done later since abort() might be called from the event handler and we do not want the resource loading code to be in the stack.
-    executionContext()->postTask(
+    getExecutionContext()->postTask(
         BLINK_FROM_HERE, createSameThreadTask(&delayedAbort, this));
 }
 
@@ -352,14 +352,14 @@ void FileReader::doAbort()
     m_error = FileError::create(FileError::ABORT_ERR);
 
     // Unregister the reader.
-    ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(executionContext(), this);
+    ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(getExecutionContext(), this);
 
     fireEvent(EventTypeNames::error);
     fireEvent(EventTypeNames::abort);
     fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
-    ThrottlingController::finishReader(executionContext(), this, finalStep);
+    ThrottlingController::finishReader(getExecutionContext(), this, finalStep);
 }
 
 void FileReader::result(StringOrArrayBuffer& resultAttribute) const
@@ -417,13 +417,13 @@ void FileReader::didFinishLoading()
     m_state = DONE;
 
     // Unregister the reader.
-    ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(executionContext(), this);
+    ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(getExecutionContext(), this);
 
     fireEvent(EventTypeNames::load);
     fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
-    ThrottlingController::finishReader(executionContext(), this, finalStep);
+    ThrottlingController::finishReader(getExecutionContext(), this, finalStep);
 }
 
 void FileReader::didFail(FileError::ErrorCode errorCode)
@@ -439,18 +439,18 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
     m_error = FileError::create(static_cast<FileError::ErrorCode>(errorCode));
 
     // Unregister the reader.
-    ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(executionContext(), this);
+    ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(getExecutionContext(), this);
 
     fireEvent(EventTypeNames::error);
     fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
-    ThrottlingController::finishReader(executionContext(), this, finalStep);
+    ThrottlingController::finishReader(getExecutionContext(), this, finalStep);
 }
 
 void FileReader::fireEvent(const AtomicString& type)
 {
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(executionContext(), m_asyncOperationId);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(getExecutionContext(), m_asyncOperationId);
     if (!m_loader) {
         dispatchEvent(ProgressEvent::create(type, false, 0, 0));
         InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);

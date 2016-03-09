@@ -818,7 +818,7 @@ PassOwnPtr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
 
     WebMediaSession* webMediaSession = nullptr;
     if (MediaSession* mediaSession = HTMLMediaElementMediaSession::session(htmlMediaElement))
-        webMediaSession = mediaSession->webMediaSession();
+        webMediaSession = mediaSession->getWebMediaSession();
 
     HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(htmlMediaElement);
     WebString sinkId(HTMLMediaElementAudioOutputDevice::sinkId(htmlMediaElement));

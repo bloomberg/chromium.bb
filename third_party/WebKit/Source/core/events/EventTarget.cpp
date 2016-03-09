@@ -113,7 +113,7 @@ MessagePort* EventTarget::toMessagePort()
 
 inline LocalDOMWindow* EventTarget::executingWindow()
 {
-    if (ExecutionContext* context = executionContext())
+    if (ExecutionContext* context = getExecutionContext())
         return context->executingWindow();
     return nullptr;
 }
@@ -260,7 +260,7 @@ bool EventTarget::dispatchEventForBindings(PassRefPtrWillBeRawPtr<Event> event, 
         return false;
     }
 
-    if (!executionContext())
+    if (!getExecutionContext())
         return false;
 
     event->setTrusted(false);
@@ -377,7 +377,7 @@ DispatchEventResult EventTarget::fireEventListeners(Event* event)
         event->setType(unprefixedTypeName);
     }
 
-    Editor::countEvent(executionContext(), event);
+    Editor::countEvent(getExecutionContext(), event);
     countLegacyEvents(legacyTypeName, listenersVector, legacyListenersVector);
     return dispatchEventResult(*event);
 }
@@ -435,7 +435,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (event->immediatePropagationStopped())
             break;
 
-        ExecutionContext* context = executionContext();
+        ExecutionContext* context = getExecutionContext();
         if (!context)
             break;
 

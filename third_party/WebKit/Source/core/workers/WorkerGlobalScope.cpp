@@ -88,7 +88,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
 {
     setSecurityOrigin(SecurityOrigin::create(url));
     if (starterOriginPrivilageData)
-        securityOrigin()->transferPrivilegesFrom(starterOriginPrivilageData);
+        getSecurityOrigin()->transferPrivilegesFrom(starterOriginPrivilageData);
 
     if (m_workerClients)
         m_workerClients->reattachThread();
@@ -108,10 +108,10 @@ void WorkerGlobalScope::applyContentSecurityPolicyFromVector(const Vector<CSPHea
     }
     for (const auto& policyAndType : headers)
         contentSecurityPolicy()->didReceiveHeader(policyAndType.first, policyAndType.second, ContentSecurityPolicyHeaderSourceHTTP);
-    contentSecurityPolicy()->bindToExecutionContext(executionContext());
+    contentSecurityPolicy()->bindToExecutionContext(getExecutionContext());
 }
 
-ExecutionContext* WorkerGlobalScope::executionContext() const
+ExecutionContext* WorkerGlobalScope::getExecutionContext() const
 {
     return const_cast<WorkerGlobalScope*>(this);
 }
@@ -233,9 +233,9 @@ void WorkerGlobalScope::didEvaluateWorkerScript()
 void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& exceptionState)
 {
     ASSERT(contentSecurityPolicy());
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
 
-    ExecutionContext& executionContext = *this->executionContext();
+    ExecutionContext& executionContext = *this->getExecutionContext();
 
     Vector<KURL> completedURLs;
     for (const String& urlString : urls) {
@@ -320,7 +320,7 @@ bool WorkerGlobalScope::isJSExecutionForbidden() const
     return m_scriptController->isExecutionForbidden();
 }
 
-WorkerEventQueue* WorkerGlobalScope::eventQueue() const
+WorkerEventQueue* WorkerGlobalScope::getEventQueue() const
 {
     return m_eventQueue.get();
 }
@@ -353,8 +353,8 @@ void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
     if (!m_deprecationWarningBits.hasRecordedMeasurement(feature)) {
         m_deprecationWarningBits.recordMeasurement(feature);
         ASSERT(!Deprecation::deprecationMessage(feature).isEmpty());
-        ASSERT(executionContext());
-        executionContext()->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, Deprecation::deprecationMessage(feature)));
+        ASSERT(getExecutionContext());
+        getExecutionContext()->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, Deprecation::deprecationMessage(feature)));
     }
 }
 
@@ -378,9 +378,9 @@ bool WorkerGlobalScope::isSecureContext(String& errorMessage, const SecureContex
     // |isSecureContext| check here, we can check the responsible
     // document for a privileged context at worker creation time, pass
     // it in via WorkerThreadStartupData, and check it here.
-    if (securityOrigin()->isPotentiallyTrustworthy())
+    if (getSecurityOrigin()->isPotentiallyTrustworthy())
         return true;
-    errorMessage = securityOrigin()->isPotentiallyTrustworthyErrorMessage();
+    errorMessage = getSecurityOrigin()->isPotentiallyTrustworthyErrorMessage();
     return false;
 }
 

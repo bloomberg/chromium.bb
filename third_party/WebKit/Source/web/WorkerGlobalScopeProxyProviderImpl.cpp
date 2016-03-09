@@ -47,8 +47,8 @@ namespace blink {
 
 WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalScopeProxy(Worker* worker)
 {
-    if (worker->executionContext()->isDocument()) {
-        Document* document = toDocument(worker->executionContext());
+    if (worker->getExecutionContext()->isDocument()) {
+        Document* document = toDocument(worker->getExecutionContext());
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
         provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());

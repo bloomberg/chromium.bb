@@ -26,7 +26,7 @@ public:
             return new OffscreenCanvasRenderingContext2D(canvas, attrs);
         }
 
-        OffscreenCanvasRenderingContext::ContextType contextType() const override
+        OffscreenCanvasRenderingContext::ContextType getContextType() const override
         {
             return OffscreenCanvasRenderingContext::Context2d;
         }
@@ -36,7 +36,7 @@ public:
 
     // OffscreenCanvasRenderingContext implementation
     ~OffscreenCanvasRenderingContext2D() override;
-    ContextType contextType() const override { return Context2d; }
+    ContextType getContextType() const override { return Context2d; }
     bool is2d() const override { return true; }
 
     // BaseRenderingContext2D implementation

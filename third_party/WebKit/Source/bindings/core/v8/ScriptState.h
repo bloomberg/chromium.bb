@@ -87,7 +87,7 @@ public:
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }
     LocalDOMWindow* domWindow() const;
-    virtual ExecutionContext* executionContext() const;
+    virtual ExecutionContext* getExecutionContext() const;
     virtual void setExecutionContext(ExecutionContext*);
     int contextIdInDebugger();
 

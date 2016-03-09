@@ -52,7 +52,7 @@ public:
 private:
     explicit WaveShaperNode(AbstractAudioContext&);
 
-    WaveShaperProcessor* waveShaperProcessor() const;
+    WaveShaperProcessor* getWaveShaperProcessor() const;
 };
 
 } // namespace blink

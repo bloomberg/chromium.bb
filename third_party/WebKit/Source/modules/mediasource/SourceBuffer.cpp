@@ -99,7 +99,7 @@ SourceBuffer* SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, 
 }
 
 SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
-    : ActiveDOMObject(source->executionContext())
+    : ActiveDOMObject(source->getExecutionContext())
     , m_webSourceBuffer(webSourceBuffer)
     , m_source(source)
     , m_trackDefaults(TrackDefaultList::create())
@@ -520,9 +520,9 @@ void SourceBuffer::stop()
     m_appendStreamAsyncPartRunner->stop();
 }
 
-ExecutionContext* SourceBuffer::executionContext() const
+ExecutionContext* SourceBuffer::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 const AtomicString& SourceBuffer::interfaceName() const
@@ -758,7 +758,7 @@ void SourceBuffer::appendStreamAsyncPart()
 
     // Steps 3-11 are handled by m_loader.
     // Note: Passing 0 here signals that maxSize was not set. (i.e. Read all the data in the stream).
-    m_loader->start(executionContext(), *m_stream, m_streamMaxSizeValid ? m_streamMaxSize : 0);
+    m_loader->start(getExecutionContext(), *m_stream, m_streamMaxSizeValid ? m_streamMaxSize : 0);
 }
 
 void SourceBuffer::appendStreamDone(bool success)

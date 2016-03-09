@@ -105,7 +105,7 @@ void HTMLKeygenElement::appendToFormData(FormData& formData)
     const AtomicString& keyType = fastGetAttribute(keytypeAttr);
     if (!keyType.isNull() && !equalIgnoringCase(keyType, "rsa"))
         return;
-    SecurityOrigin* topOrigin = document().frame()->tree().top()->securityContext()->securityOrigin();
+    SecurityOrigin* topOrigin = document().frame()->tree().top()->securityContext()->getSecurityOrigin();
     String value = Platform::current()->signedPublicKeyAndChallengeString(
         shadowSelect()->selectedIndex(), fastGetAttribute(challengeAttr), document().baseURL(),
         KURL(KURL(), topOrigin->toString()));

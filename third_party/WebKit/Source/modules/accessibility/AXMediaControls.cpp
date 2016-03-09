@@ -69,10 +69,10 @@ AXObject* AccessibilityMediaControl::create(LayoutObject* layoutObject, AXObject
 
 MediaControlElementType AccessibilityMediaControl::controlType() const
 {
-    if (!layoutObject() || !layoutObject()->node())
+    if (!getLayoutObject() || !getLayoutObject()->node())
         return MediaTimelineContainer; // Timeline container is not accessible.
 
-    return mediaControlElementType(layoutObject()->node());
+    return mediaControlElementType(getLayoutObject()->node());
 }
 
 String AccessibilityMediaControl::textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXRelatedObjectVector* relatedObjects, NameSources* nameSources) const

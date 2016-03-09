@@ -27,7 +27,7 @@ DOMException* createNoImplementationException()
 
 bool commonChecks(ScriptState* scriptState, ExceptionState& exceptionState)
 {
-    ExecutionContext* executionContext = scriptState->executionContext();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
     // FIXME: May be null due to worker termination: http://crbug.com/413518.
     if (!executionContext)
         return false;
@@ -62,7 +62,7 @@ public:
 
     void onSuccess() override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->resolve(true);
         m_resolver.clear();
@@ -70,7 +70,7 @@ public:
 
     void onError(WebServiceWorkerCacheError reason) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
@@ -93,7 +93,7 @@ public:
 
     void onSuccess(WebPassOwnPtr<WebServiceWorkerCache> webCache) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         Cache* cache = Cache::create(m_cacheStorage->m_scopedFetcher, webCache.release());
         m_cacheStorage->m_nameToCacheMap.set(m_cacheName, cache);
@@ -103,7 +103,7 @@ public:
 
     void onError(WebServiceWorkerCacheError reason) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
@@ -127,15 +127,15 @@ public:
 
     void onSuccess(const WebServiceWorkerResponse& webResponse) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), webResponse));
+        m_resolver->resolve(Response::create(m_resolver->getScriptState()->getExecutionContext(), webResponse));
         m_resolver.clear();
     }
 
     void onError(WebServiceWorkerCacheError reason) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
@@ -160,7 +160,7 @@ public:
     void onSuccess() override
     {
         m_cacheStorage->m_nameToCacheMap.remove(m_cacheName);
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->resolve(true);
         m_resolver.clear();
@@ -168,7 +168,7 @@ public:
 
     void onError(WebServiceWorkerCacheError reason) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
@@ -193,7 +193,7 @@ public:
 
     void onSuccess(const WebVector<WebString>& keys) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         Vector<String> wtfKeys;
         for (size_t i = 0; i < keys.size(); ++i)
@@ -204,7 +204,7 @@ public:
 
     void onError(WebServiceWorkerCacheError reason) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
@@ -312,7 +312,7 @@ ScriptPromise CacheStorage::matchImpl(ScriptState* scriptState, const Request* r
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
-    checkCacheQueryOptions(options, scriptState->executionContext());
+    checkCacheQueryOptions(options, scriptState->getExecutionContext());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();

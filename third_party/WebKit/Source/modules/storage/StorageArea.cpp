@@ -147,7 +147,7 @@ bool StorageArea::canAccessStorage(LocalFrame* frame)
     StorageNamespaceController* controller = StorageNamespaceController::from(frame->page());
     if (!controller)
         return false;
-    bool result = controller->storageClient()->canAccessStorage(frame, m_storageType);
+    bool result = controller->getStorageClient()->canAccessStorage(frame, m_storageType);
     // Move attention to the new LocalFrame.
     LocalFrameLifecycleObserver::setContext(frame);
     m_canAccessStorageCachedResult = result;
@@ -165,7 +165,7 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
             LocalFrame* localFrame = toLocalFrame(frame);
             LocalDOMWindow* localWindow = localFrame->localDOMWindow();
             Storage* storage = DOMWindowStorage::from(*localWindow).optionalLocalStorage();
-            if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
+            if (storage && localFrame->document()->getSecurityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
                 localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
         }
         if (InspectorDOMStorageAgent* agent = StorageNamespaceController::from(page)->inspectorAgent())
@@ -198,7 +198,7 @@ void StorageArea::dispatchSessionStorageEvent(const String& key, const String& o
         LocalFrame* localFrame = toLocalFrame(frame);
         LocalDOMWindow* localWindow = localFrame->localDOMWindow();
         Storage* storage = DOMWindowStorage::from(*localWindow).optionalSessionStorage();
-        if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
+        if (storage && localFrame->document()->getSecurityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
             localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
     }
     if (InspectorDOMStorageAgent* agent = StorageNamespaceController::from(page)->inspectorAgent())

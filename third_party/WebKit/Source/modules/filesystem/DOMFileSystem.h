@@ -90,13 +90,13 @@ public:
     template <typename CB, typename CBArg>
     void scheduleCallback(CB* callback, CBArg* callbackArg)
     {
-        scheduleCallback(executionContext(), callback, callbackArg);
+        scheduleCallback(getExecutionContext(), callback, callbackArg);
     }
 
     template <typename CB, typename CBArg>
     void scheduleCallback(CB* callback, const CBArg& callbackArg)
     {
-        scheduleCallback(executionContext(), callback, callbackArg);
+        scheduleCallback(getExecutionContext(), callback, callbackArg);
     }
 
     DECLARE_VIRTUAL_TRACE();

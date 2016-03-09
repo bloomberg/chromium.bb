@@ -44,7 +44,7 @@ V8EventListener::V8EventListener(bool isAttribute, ScriptState* scriptState)
 
 v8::Local<v8::Function> V8EventListener::getListenerFunction(ScriptState* scriptState)
 {
-    v8::Local<v8::Object> listener = getListenerObject(scriptState->executionContext());
+    v8::Local<v8::Object> listener = getListenerObject(scriptState->getExecutionContext());
 
     // Has the listener been disposed?
     if (listener.IsEmpty())
@@ -79,10 +79,10 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptState* scriptSt
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())
         return v8::Local<v8::Value>();
 
-    if (!scriptState->executionContext()->isDocument())
+    if (!scriptState->getExecutionContext()->isDocument())
         return v8::Local<v8::Value>();
 
-    LocalFrame* frame = toDocument(scriptState->executionContext())->frame();
+    LocalFrame* frame = toDocument(scriptState->getExecutionContext())->frame();
     if (!frame)
         return v8::Local<v8::Value>();
 

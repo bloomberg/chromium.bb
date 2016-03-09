@@ -39,7 +39,7 @@ public:
     static const char kTrialHeaderName[];
     virtual ~OriginTrialContext() = default;
 
-    virtual ExecutionContext* executionContext() = 0;
+    virtual ExecutionContext* getExecutionContext() = 0;
     virtual Vector<String> getTokens() = 0;
 
     DECLARE_VIRTUAL_TRACE();

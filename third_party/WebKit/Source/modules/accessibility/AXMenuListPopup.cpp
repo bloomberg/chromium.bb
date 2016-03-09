@@ -82,7 +82,7 @@ int AXMenuListPopup::getSelectedIndex() const
     if (!m_parent)
         return -1;
 
-    Node* parentNode = m_parent->node();
+    Node* parentNode = m_parent->getNode();
     if (!isHTMLSelectElement(parentNode))
         return -1;
 
@@ -105,7 +105,7 @@ void AXMenuListPopup::addChildren()
     if (!m_parent)
         return;
 
-    Node* parentNode = m_parent->node();
+    Node* parentNode = m_parent->getNode();
     if (!isHTMLSelectElement(parentNode))
         return;
 

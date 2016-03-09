@@ -36,7 +36,7 @@ WebBluetooth* BluetoothSupplement::from(LocalFrame* frame)
 
 WebBluetooth* BluetoothSupplement::fromScriptState(ScriptState* scriptState)
 {
-    return fromExecutionContext(scriptState->executionContext());
+    return fromExecutionContext(scriptState->getExecutionContext());
 }
 
 WebBluetooth* BluetoothSupplement::fromExecutionContext(ExecutionContext* executionContext)

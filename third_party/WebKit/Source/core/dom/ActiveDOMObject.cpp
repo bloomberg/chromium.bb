@@ -52,9 +52,9 @@ ActiveDOMObject::~ActiveDOMObject()
 
     ASSERT(m_suspendIfNeededCalled);
 
-    // Oilpan: not valid to access executionContext() in the destructor.
+    // Oilpan: not valid to access getExecutionContext() in the destructor.
 #if !ENABLE(OILPAN)
-    ASSERT(!executionContext() || executionContext()->isContextThread());
+    ASSERT(!getExecutionContext() || getExecutionContext()->isContextThread());
 #endif
 }
 
@@ -64,7 +64,7 @@ void ActiveDOMObject::suspendIfNeeded()
     ASSERT(!m_suspendIfNeededCalled);
     m_suspendIfNeededCalled = true;
 #endif
-    if (ExecutionContext* context = executionContext())
+    if (ExecutionContext* context = getExecutionContext())
         context->suspendActiveDOMObjectIfNeeded(this);
 }
 

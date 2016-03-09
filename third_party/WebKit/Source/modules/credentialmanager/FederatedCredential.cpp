@@ -36,7 +36,7 @@ FederatedCredential* FederatedCredential::create(const FederatedCredentialData& 
 }
 
 FederatedCredential::FederatedCredential(WebFederatedCredential* webFederatedCredential)
-    : Credential(webFederatedCredential->platformCredential())
+    : Credential(webFederatedCredential->getPlatformCredential())
 {
 }
 

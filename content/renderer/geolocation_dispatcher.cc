@@ -81,7 +81,7 @@ void GeolocationDispatcher::requestPermission(
 
   permission_service_->RequestPermission(
       PermissionName::GEOLOCATION,
-      permissionRequest.securityOrigin().toString().utf8(),
+      permissionRequest.getSecurityOrigin().toString().utf8(),
       base::Bind(&GeolocationDispatcher::OnPermissionSet,
                  base::Unretained(this), permission_request_id));
 }

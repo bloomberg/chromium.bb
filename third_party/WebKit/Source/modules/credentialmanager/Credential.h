@@ -27,7 +27,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    PlatformCredential* platformCredential() const { return m_platformCredential; }
+    PlatformCredential* getPlatformCredential() const { return m_platformCredential; }
 
 protected:
     Credential(PlatformCredential*);

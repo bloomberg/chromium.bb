@@ -85,7 +85,7 @@ public:
         ASSERT(isEmpty() || m_scriptState);
     }
 
-    ScriptState* scriptState() const
+    ScriptState* getScriptState() const
     {
         return m_scriptState.get();
     }

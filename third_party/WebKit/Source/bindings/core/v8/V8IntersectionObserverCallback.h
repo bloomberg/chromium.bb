@@ -22,7 +22,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void handleEvent(const HeapVector<Member<IntersectionObserverEntry>>&, IntersectionObserver&) override;
-    ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
 private:
 
     static void setWeakCallback(const v8::WeakCallbackInfo<V8IntersectionObserverCallback>&);

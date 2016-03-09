@@ -39,7 +39,7 @@ namespace blink {
 
 static inline bool canReferToParentFrameEncoding(const LocalFrame* frame, const LocalFrame* parentFrame)
 {
-    return parentFrame && parentFrame->document()->securityOrigin()->canAccess(frame->document()->securityOrigin());
+    return parentFrame && parentFrame->document()->getSecurityOrigin()->canAccess(frame->document()->getSecurityOrigin());
 }
 
 

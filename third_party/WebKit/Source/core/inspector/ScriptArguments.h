@@ -51,7 +51,7 @@ public:
     const ScriptValue& argumentAt(size_t) const;
     size_t argumentCount() const { return m_arguments.size(); }
 
-    ScriptState* scriptState() const { return m_scriptState.get(); }
+    ScriptState* getScriptState() const { return m_scriptState.get(); }
 
     bool getFirstArgumentAsString(String&) const;
 

@@ -98,7 +98,7 @@ void DOMTimer::disposeTimer()
 
 void DOMTimer::fired()
 {
-    ExecutionContext* context = executionContext();
+    ExecutionContext* context = getExecutionContext();
     ASSERT(context);
     context->timers()->setTimerNestingLevel(m_nestingLevel);
     ASSERT(!context->activeDOMObjectsAreSuspended());
@@ -137,8 +137,8 @@ void DOMTimer::fired()
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 
     // ExecutionContext might be already gone when we executed action->execute().
-    if (executionContext())
-        executionContext()->timers()->setTimerNestingLevel(0);
+    if (getExecutionContext())
+        getExecutionContext()->timers()->setTimerNestingLevel(0);
 }
 
 void DOMTimer::stop()
@@ -152,7 +152,7 @@ void DOMTimer::stop()
 
 WebTaskRunner* DOMTimer::timerTaskRunner() const
 {
-    return executionContext()->timers()->timerTaskRunner();
+    return getExecutionContext()->timers()->timerTaskRunner();
 }
 
 DEFINE_TRACE(DOMTimer)

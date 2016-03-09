@@ -64,7 +64,7 @@ public:
 
     bool allowDatabaseAccess() const;
 
-    SecurityOrigin* securityOrigin() const;
+    SecurityOrigin* getSecurityOrigin() const;
     bool isContextThread() const;
 
 private:

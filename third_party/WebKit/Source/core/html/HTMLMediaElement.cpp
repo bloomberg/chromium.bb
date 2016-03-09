@@ -422,7 +422,7 @@ void HTMLMediaElement::dispose()
     // to update the delayed load count. But if the Document hasn't
     // been detached cleanly from any frame or it isn't dying in the
     // same GC, we do update the delayed load count from the prefinalizer.
-    if (ActiveDOMObject::executionContext())
+    if (ActiveDOMObject::getExecutionContext())
         setShouldDelayLoadEvent(false);
 
     // If the MediaSource object survived, notify that the media element
@@ -1034,7 +1034,7 @@ void HTMLMediaElement::startPlayerLoad()
     if (layoutObject())
         layoutObject()->setShouldDoFullPaintInvalidation();
     // Make sure if we create/re-create the WebMediaPlayer that we update our wrapper.
-    m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
+    m_audioSourceProvider.wrap(m_webMediaPlayer->getAudioSourceProvider());
     m_webMediaPlayer->setVolume(effectiveMediaVolume());
 
     m_webMediaPlayer->setPoster(posterImageURL());
@@ -1190,7 +1190,7 @@ bool HTMLMediaElement::isSafeToLoadURL(const KURL& url, InvalidURLAction actionI
     }
 
     LocalFrame* frame = document().frame();
-    if (!frame || !document().securityOrigin()->canDisplay(url)) {
+    if (!frame || !document().getSecurityOrigin()->canDisplay(url)) {
         if (actionIfInvalid == Complain)
             FrameLoader::reportLocalLoadFailed(frame, url.elidedString());
         WTF_LOG(Media, "HTMLMediaElement::isSafeToLoadURL(%p, %s) -> FALSE rejected by SecurityOrigin", this, urlForLoggingMedia(url).utf8().data());
@@ -3069,7 +3069,7 @@ void HTMLMediaElement::stopPeriodicTimers()
 
 void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClientWithoutLocking()
 {
-    audioSourceProvider().setClient(nullptr);
+    getAudioSourceProvider().setClient(nullptr);
     if (m_webMediaPlayer) {
         m_audioSourceProvider.wrap(nullptr);
         m_webMediaPlayer.clear();
@@ -3502,7 +3502,7 @@ void HTMLMediaElement::resetMediaPlayerAndMediaSource()
     m_playingRemotely = false;
 
     if (m_audioSourceNode)
-        audioSourceProvider().setClient(m_audioSourceNode);
+        getAudioSourceProvider().setClient(m_audioSourceNode);
 }
 
 void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
@@ -3511,7 +3511,7 @@ void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
     m_audioSourceNode = sourceNode;
 
     AudioSourceProviderClientLockScope scope(*this);
-    audioSourceProvider().setClient(m_audioSourceNode);
+    getAudioSourceProvider().setClient(m_audioSourceNode);
 }
 
 void HTMLMediaElement::setAllowHiddenVolumeControls(bool allow)
@@ -3727,7 +3727,7 @@ void HTMLMediaElement::rejectPlayPromises(ExceptionCode code, const String& mess
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
 {
     if (!Heap::isHeapObjectAlive(m_audioSourceNode))
-        audioSourceProvider().setClient(nullptr);
+        getAudioSourceProvider().setClient(nullptr);
 }
 
 void HTMLMediaElement::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)

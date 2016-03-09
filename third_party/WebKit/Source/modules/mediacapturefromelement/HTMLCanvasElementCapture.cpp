@@ -64,7 +64,7 @@ MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element,
 
     MediaStreamTrackVector tracks;
     tracks.append(canvasTrack);
-    return MediaStream::create(element.executionContext(), tracks);
+    return MediaStream::create(element.getExecutionContext(), tracks);
 }
 
 } // namespace blink

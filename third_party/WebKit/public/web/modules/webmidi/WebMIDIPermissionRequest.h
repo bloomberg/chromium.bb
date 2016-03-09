@@ -56,7 +56,7 @@ public:
         reset();
     }
 
-    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_EXPORT WebSecurityOrigin getSecurityOrigin() const;
     BLINK_EXPORT void setIsAllowed(bool);
 
     BLINK_EXPORT bool equals(const WebMIDIPermissionRequest&) const;

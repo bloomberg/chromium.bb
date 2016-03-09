@@ -114,7 +114,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(cancel);
 
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
     bool hasPendingActivity() const override;
     void contextDestroyed() override;
 

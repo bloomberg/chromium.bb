@@ -42,7 +42,7 @@ public:
     WorkletConsole* console();
 
     // WorkerOrWorkletGlobalScope
-    ScriptWrappable* scriptWrappable() const final { return const_cast<WorkletGlobalScope*>(this); }
+    ScriptWrappable* getScriptWrappable() const final { return const_cast<WorkletGlobalScope*>(this); }
     WorkerOrWorkletScriptController* scriptController() final { return m_scriptController.get(); }
 
     // ScriptWrappable
@@ -53,10 +53,10 @@ public:
     void disableEval(const String& errorMessage) final;
     String userAgent() const final { return m_userAgent; }
     SecurityContext& securityContext() final { return *this; }
-    EventQueue* eventQueue() const final { ASSERT_NOT_REACHED(); return nullptr; } // WorkletGlobalScopes don't have an event queue.
+    EventQueue* getEventQueue() const final { ASSERT_NOT_REACHED(); return nullptr; } // WorkletGlobalScopes don't have an event queue.
     bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const final;
 
-    using SecurityContext::securityOrigin;
+    using SecurityContext::getSecurityOrigin;
     using SecurityContext::contentSecurityPolicy;
 
     DOMTimerCoordinator* timers() final { ASSERT_NOT_REACHED(); return nullptr; } // WorkletGlobalScopes don't have timers.

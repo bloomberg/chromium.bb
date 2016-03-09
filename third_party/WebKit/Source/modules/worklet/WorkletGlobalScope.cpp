@@ -63,9 +63,9 @@ bool WorkletGlobalScope::isSecureContext(String& errorMessage, const SecureConte
     // Until there are APIs that are available in worklets and that
     // require a privileged context test that checks ancestors, just do
     // a simple check here.
-    if (securityOrigin()->isPotentiallyTrustworthy())
+    if (getSecurityOrigin()->isPotentiallyTrustworthy())
         return true;
-    errorMessage = securityOrigin()->isPotentiallyTrustworthyErrorMessage();
+    errorMessage = getSecurityOrigin()->isPotentiallyTrustworthyErrorMessage();
     return false;
 }
 

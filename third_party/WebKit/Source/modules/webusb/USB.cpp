@@ -94,7 +94,7 @@ ScriptPromise USB::getDevices(ScriptState* scriptState)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
     String errorMessage;
-    if (!scriptState->executionContext()->isSecureContext(errorMessage))
+    if (!scriptState->getExecutionContext()->isSecureContext(errorMessage))
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, errorMessage));
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -110,7 +110,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 
     String errorMessage;
-    if (!scriptState->executionContext()->isSecureContext(errorMessage))
+    if (!scriptState->getExecutionContext()->isSecureContext(errorMessage))
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, errorMessage));
 
     if (!UserGestureIndicator::consumeUserGesture())
@@ -126,7 +126,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
     return promise;
 }
 
-ExecutionContext* USB::executionContext() const
+ExecutionContext* USB::getExecutionContext() const
 {
     return frame() ? frame()->document() : nullptr;
 }

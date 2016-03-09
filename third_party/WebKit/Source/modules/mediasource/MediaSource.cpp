@@ -97,8 +97,8 @@ MediaSource::MediaSource(ExecutionContext* context)
     , m_readyState(closedKeyword())
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_attachedElement(nullptr)
-    , m_sourceBuffers(SourceBufferList::create(executionContext(), m_asyncEventQueue.get()))
-    , m_activeSourceBuffers(SourceBufferList::create(executionContext(), m_asyncEventQueue.get()))
+    , m_sourceBuffers(SourceBufferList::create(getExecutionContext(), m_asyncEventQueue.get()))
+    , m_activeSourceBuffers(SourceBufferList::create(getExecutionContext(), m_asyncEventQueue.get()))
     , m_isAddedToRegistry(false)
 {
     WTF_LOG(Media, "MediaSource::MediaSource %p", this);
@@ -270,9 +270,9 @@ const AtomicString& MediaSource::interfaceName() const
     return EventTargetNames::MediaSource;
 }
 
-ExecutionContext* MediaSource::executionContext() const
+ExecutionContext* MediaSource::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 DEFINE_TRACE(MediaSource)

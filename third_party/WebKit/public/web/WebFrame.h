@@ -159,7 +159,7 @@ public:
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) = 0;
 
     // The security origin of this frame.
-    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_EXPORT WebSecurityOrigin getSecurityOrigin() const;
 
     // Updates the sandbox flags in the frame's FrameOwner.  This is used when
     // this frame's parent is in another process and it dynamically updates

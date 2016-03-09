@@ -87,7 +87,7 @@ public:
     FileSystemType type() const { return m_type; }
     KURL rootURL() const { return m_filesystemRootURL; }
     WebFileSystem* fileSystem() const;
-    SecurityOrigin* securityOrigin() const;
+    SecurityOrigin* getSecurityOrigin() const;
 
     // The clonable flag is used in the structured clone algorithm to test
     // whether the FileSystem API object is permitted to be cloned. It defaults

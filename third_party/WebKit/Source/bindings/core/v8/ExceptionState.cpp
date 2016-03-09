@@ -52,7 +52,7 @@ ScriptPromise ExceptionState::reject(ScriptState* scriptState)
 
 void ExceptionState::reject(ScriptPromiseResolver* resolver)
 {
-    resolver->reject(m_exception.newLocal(resolver->scriptState()->isolate()));
+    resolver->reject(m_exception.newLocal(resolver->getScriptState()->isolate()));
     clearException();
 }
 

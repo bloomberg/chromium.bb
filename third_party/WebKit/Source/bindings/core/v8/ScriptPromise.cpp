@@ -174,7 +174,7 @@ ScriptPromise ScriptPromise::InternalResolver::promise() const
 {
     if (m_resolver.isEmpty())
         return ScriptPromise();
-    return ScriptPromise(m_resolver.scriptState(), v8Promise());
+    return ScriptPromise(m_resolver.getScriptState(), v8Promise());
 }
 
 void ScriptPromise::InternalResolver::resolve(v8::Local<v8::Value> value)

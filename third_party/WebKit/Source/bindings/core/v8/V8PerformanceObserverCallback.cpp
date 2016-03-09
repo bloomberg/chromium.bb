@@ -16,7 +16,7 @@
 namespace blink {
 
 V8PerformanceObserverCallback::V8PerformanceObserverCallback(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
-    : ActiveDOMCallback(scriptState->executionContext())
+    : ActiveDOMCallback(scriptState->getExecutionContext())
     , m_callback(scriptState->isolate(), callback)
     , m_scriptState(scriptState)
 {
@@ -58,7 +58,7 @@ void V8PerformanceObserverCallback::handleEvent(PerformanceObserverEntryList* en
 
     v8::TryCatch exceptionCatcher(m_scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(m_scriptState->executionContext(), m_callback.newLocal(m_scriptState->isolate()), thisObject, 2, argv, m_scriptState->isolate());
+    ScriptController::callFunction(m_scriptState->getExecutionContext(), m_callback.newLocal(m_scriptState->isolate()), thisObject, 2, argv, m_scriptState->isolate());
 }
 
 void V8PerformanceObserverCallback::setWeakCallback(const v8::WeakCallbackInfo<V8PerformanceObserverCallback>& data)

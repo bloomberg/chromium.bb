@@ -38,7 +38,7 @@ class ServiceWorkerRegistration final
 public:
     // EventTarget overrides.
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
 
     // WebServiceWorkerRegistrationProxy overrides.
     void dispatchUpdateFoundEvent() override;
@@ -94,7 +94,7 @@ public:
     {
         HeapVector<Member<ServiceWorkerRegistration>> registrations;
         for (auto& registration : *webServiceWorkerRegistrations)
-            registrations.append(ServiceWorkerRegistration::getOrCreate(resolver->executionContext(), registration.release()));
+            registrations.append(ServiceWorkerRegistration::getOrCreate(resolver->getExecutionContext(), registration.release()));
         return registrations;
     }
 };

@@ -70,7 +70,7 @@ void AXTableColumn::headerObjectsForColumn(AXObjectVector& headers)
     if (!m_parent)
         return;
 
-    LayoutObject* layoutObject = m_parent->layoutObject();
+    LayoutObject* layoutObject = m_parent->getLayoutObject();
     if (!layoutObject)
         return;
 

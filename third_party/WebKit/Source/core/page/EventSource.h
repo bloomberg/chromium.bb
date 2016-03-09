@@ -77,7 +77,7 @@ public:
     void close();
 
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     // Note: We don't need to override suspend() because it is noop since
     // ScopedPageLoadDeferrer calls Page::setDefersLoading() and it defers

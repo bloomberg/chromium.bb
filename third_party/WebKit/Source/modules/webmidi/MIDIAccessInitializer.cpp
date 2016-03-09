@@ -43,11 +43,11 @@ void MIDIAccessInitializer::dispose()
     if (m_hasBeenDisposed)
         return;
 
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
 
     if (!m_permissionResolved) {
-        Document* document = toDocument(executionContext());
+        Document* document = toDocument(getExecutionContext());
         ASSERT(document);
         if (MIDIController* controller = MIDIController::from(document->frame()))
             controller->cancelPermissionRequest(this);
@@ -62,7 +62,7 @@ ScriptPromise MIDIAccessInitializer::start()
     ScriptPromise promise = this->promise();
     m_accessor = MIDIAccessor::create(this);
 
-    Document* document = toDocument(executionContext());
+    Document* document = toDocument(getExecutionContext());
     ASSERT(document);
     if (MIDIController* controller = MIDIController::from(document->frame()))
         controller->requestPermission(this, m_options);
@@ -102,7 +102,7 @@ void MIDIAccessInitializer::didStartSession(bool success, const String& error, c
 {
     ASSERT(m_accessor);
     if (success) {
-        resolve(MIDIAccess::create(m_accessor.release(), m_options.hasSysex() && m_options.sysex(), m_portDescriptors, executionContext()));
+        resolve(MIDIAccess::create(m_accessor.release(), m_options.hasSysex() && m_options.sysex(), m_portDescriptors, getExecutionContext()));
     } else {
         // The spec says the name is one of
         //  - SecurityError
@@ -134,14 +134,14 @@ void MIDIAccessInitializer::resolvePermission(bool allowed)
         reject(DOMException::create(SecurityError));
 }
 
-SecurityOrigin* MIDIAccessInitializer::securityOrigin() const
+SecurityOrigin* MIDIAccessInitializer::getSecurityOrigin() const
 {
-    return executionContext()->securityOrigin();
+    return getExecutionContext()->getSecurityOrigin();
 }
 
-ExecutionContext* MIDIAccessInitializer::executionContext() const
+ExecutionContext* MIDIAccessInitializer::getExecutionContext() const
 {
-    return scriptState()->executionContext();
+    return getScriptState()->getExecutionContext();
 }
 
 } // namespace blink

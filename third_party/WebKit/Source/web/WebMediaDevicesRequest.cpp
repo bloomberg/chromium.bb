@@ -47,10 +47,10 @@ void WebMediaDevicesRequest::reset()
     m_private.reset();
 }
 
-WebSecurityOrigin WebMediaDevicesRequest::securityOrigin() const
+WebSecurityOrigin WebMediaDevicesRequest::getSecurityOrigin() const
 {
-    ASSERT(!isNull() && m_private->executionContext());
-    return WebSecurityOrigin(m_private->executionContext()->securityOrigin());
+    ASSERT(!isNull() && m_private->getExecutionContext());
+    return WebSecurityOrigin(m_private->getExecutionContext()->getSecurityOrigin());
 }
 
 WebDocument WebMediaDevicesRequest::ownerDocument() const

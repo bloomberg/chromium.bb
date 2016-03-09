@@ -23,7 +23,7 @@ public:
     }
 
     v8::Isolate* isolate() const { return m_scope.isolate(); }
-    v8::Local<v8::Object> creationContext() const { return m_scope.scriptState()->context()->Global(); }
+    v8::Local<v8::Object> creationContext() const { return m_scope.getScriptState()->context()->Global(); }
 
 protected:
     V8TestingScope m_scope;

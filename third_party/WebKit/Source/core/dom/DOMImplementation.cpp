@@ -88,7 +88,7 @@ PassRefPtrWillBeRawPtr<XMLDocument> DOMImplementation::createDocument(const Atom
         doc = XMLDocument::create(init);
     }
 
-    doc->setSecurityOrigin(document().securityOrigin()->isolatedCopy());
+    doc->setSecurityOrigin(document().getSecurityOrigin()->isolatedCopy());
     doc->setContextFeatures(document().contextFeatures());
 
     RefPtrWillBeRawPtr<Node> documentElement = nullptr;
@@ -210,7 +210,7 @@ PassRefPtrWillBeRawPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const
         headElement->appendChild(titleElement);
         titleElement->appendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
     }
-    d->setSecurityOrigin(document().securityOrigin()->isolatedCopy());
+    d->setSecurityOrigin(document().getSecurityOrigin()->isolatedCopy());
     d->setContextFeatures(document().contextFeatures());
     return d.release();
 }

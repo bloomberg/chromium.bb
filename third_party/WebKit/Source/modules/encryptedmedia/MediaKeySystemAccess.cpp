@@ -49,7 +49,7 @@ public:
     {
         // NOTE: Continued from step 2.8 of createMediaKeys().
         // 2.9. Let media keys be a new MediaKeys object.
-        MediaKeys* mediaKeys = MediaKeys::create(executionContext(), m_supportedSessionTypes, adoptPtr(cdm));
+        MediaKeys* mediaKeys = MediaKeys::create(getExecutionContext(), m_supportedSessionTypes, adoptPtr(cdm));
 
         // 2.10. Resolve promise with media keys.
         resolve(mediaKeys);

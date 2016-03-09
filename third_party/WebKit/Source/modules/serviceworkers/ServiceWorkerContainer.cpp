@@ -66,14 +66,14 @@ public:
 
     void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> handle) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(m_resolver->executionContext(), handle.release()));
+        m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(m_resolver->getExecutionContext(), handle.release()));
     }
 
     void onError(const WebServiceWorkerError& error) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
     }
@@ -92,19 +92,19 @@ public:
     void onSuccess(WebPassOwnPtr<WebServiceWorkerRegistration::Handle> webPassHandle) override
     {
         OwnPtr<WebServiceWorkerRegistration::Handle> handle = webPassHandle.release();
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         if (!handle) {
             // Resolve the promise with undefined.
             m_resolver->resolve();
             return;
         }
-        m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(m_resolver->executionContext(), handle.release()));
+        m_resolver->resolve(ServiceWorkerRegistration::getOrCreate(m_resolver->getExecutionContext(), handle.release()));
     }
 
     void onError(const WebServiceWorkerError& error) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
     }
@@ -128,14 +128,14 @@ public:
             handles.append(adoptPtr(handle));
         }
 
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->resolve(ServiceWorkerRegistrationArray::take(m_resolver.get(), &handles));
     }
 
     void onError(const WebServiceWorkerError& error) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
     }
@@ -155,8 +155,8 @@ public:
     {
         ASSERT(m_ready->getState() == ReadyProperty::Pending);
 
-        if (m_ready->executionContext() && !m_ready->executionContext()->activeDOMObjectsAreStopped())
-            m_ready->resolve(ServiceWorkerRegistration::getOrCreate(m_ready->executionContext(), handle.release()));
+        if (m_ready->getExecutionContext() && !m_ready->getExecutionContext()->activeDOMObjectsAreStopped())
+            m_ready->resolve(ServiceWorkerRegistration::getOrCreate(m_ready->getExecutionContext(), handle.release()));
     }
 
 private:
@@ -200,12 +200,12 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         return promise;
     }
 
-    ExecutionContext* executionContext = scriptState->executionContext();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
     // FIXME: May be null due to worker termination: http://crbug.com/413518.
     if (!executionContext)
         return ScriptPromise();
 
-    RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
+    RefPtr<SecurityOrigin> documentOrigin = executionContext->getSecurityOrigin();
     String errorMessage;
     // Restrict to secure origins: https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged
     if (!executionContext->isSecureContext(errorMessage)) {
@@ -269,12 +269,12 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
         return promise;
     }
 
-    ExecutionContext* executionContext = scriptState->executionContext();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
     // FIXME: May be null due to worker termination: http://crbug.com/413518.
     if (!executionContext)
         return ScriptPromise();
 
-    RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
+    RefPtr<SecurityOrigin> documentOrigin = executionContext->getSecurityOrigin();
     String errorMessage;
     if (!executionContext->isSecureContext(errorMessage)) {
         resolver->reject(DOMException::create(SecurityError, errorMessage));
@@ -309,8 +309,8 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(ScriptState* scriptState)
         return promise;
     }
 
-    ExecutionContext* executionContext = scriptState->executionContext();
-    RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
+    RefPtr<SecurityOrigin> documentOrigin = executionContext->getSecurityOrigin();
     String errorMessage;
     if (!executionContext->isSecureContext(errorMessage)) {
         resolver->reject(DOMException::create(SecurityError, errorMessage));
@@ -330,12 +330,12 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(ScriptState* scriptState)
 
 ServiceWorkerContainer::ReadyProperty* ServiceWorkerContainer::createReadyProperty()
 {
-    return new ReadyProperty(executionContext(), this, ReadyProperty::Ready);
+    return new ReadyProperty(getExecutionContext(), this, ReadyProperty::Ready);
 }
 
 ScriptPromise ServiceWorkerContainer::ready(ScriptState* callerState)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return ScriptPromise();
 
     if (!callerState->world().isMainWorld()) {
@@ -355,24 +355,24 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* callerState)
 
 void ServiceWorkerContainer::setController(WebPassOwnPtr<WebServiceWorker::Handle> handle, bool shouldNotifyControllerChange)
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return;
-    m_controller = ServiceWorker::from(executionContext(), handle.release());
+    m_controller = ServiceWorker::from(getExecutionContext(), handle.release());
     if (m_controller)
-        UseCounter::count(executionContext(), UseCounter::ServiceWorkerControlledPage);
+        UseCounter::count(getExecutionContext(), UseCounter::ServiceWorkerControlledPage);
     if (shouldNotifyControllerChange)
         dispatchEvent(Event::create(EventTypeNames::controllerchange));
 }
 
 void ServiceWorkerContainer::dispatchMessageEvent(WebPassOwnPtr<WebServiceWorker::Handle> handle, const WebString& message, const WebMessagePortChannelArray& webChannels)
 {
-    if (!executionContext() || !executionContext()->executingWindow())
+    if (!getExecutionContext() || !getExecutionContext()->executingWindow())
         return;
 
-    MessagePortArray* ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
+    MessagePortArray* ports = MessagePort::toMessagePortArray(getExecutionContext(), webChannels);
     RefPtr<SerializedScriptValue> value = SerializedScriptValueFactory::instance().createFromWire(message);
-    ServiceWorker* source = ServiceWorker::from(executionContext(), handle.release());
-    dispatchEvent(ServiceWorkerMessageEvent::create(ports, value, source, executionContext()->securityOrigin()->toString()));
+    ServiceWorker* source = ServiceWorker::from(getExecutionContext(), handle.release());
+    dispatchEvent(ServiceWorkerMessageEvent::create(ports, value, source, getExecutionContext()->getSecurityOrigin()->toString()));
 }
 
 const AtomicString& ServiceWorkerContainer::interfaceName() const

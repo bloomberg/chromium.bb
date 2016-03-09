@@ -65,7 +65,7 @@ DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context
         return 0;
 
     StringBuilder filesystemName;
-    filesystemName.append(createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin()));
+    filesystemName.append(createDatabaseIdentifierFromSecurityOrigin(context->getSecurityOrigin()));
     filesystemName.appendLiteral(":Isolated_");
     filesystemName.append(filesystemId);
 
@@ -73,7 +73,7 @@ DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context
     // is to be validated each time the request is being handled.
     StringBuilder rootURL;
     rootURL.appendLiteral("filesystem:");
-    rootURL.append(context->securityOrigin()->toString());
+    rootURL.append(context->getSecurityOrigin()->toString());
     rootURL.append('/');
     rootURL.append(isolatedPathPrefix);
     rootURL.append('/');
@@ -156,7 +156,7 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, FileWriterCallback*
         return;
     }
 
-    FileWriter* fileWriter = FileWriter::create(executionContext());
+    FileWriter* fileWriter = FileWriter::create(getExecutionContext());
     FileWriterBaseCallback* conversionCallback = ConvertToFileWriterCallback::create(successCallback);
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback, errorCallback, m_context);
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, callbacks.release());

@@ -357,7 +357,7 @@ void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType ini
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::encrypted");
 
     RefPtrWillBeRawPtr<Event> event;
-    if (m_mediaElement->isMediaDataCORSSameOrigin(m_mediaElement->executionContext()->securityOrigin())) {
+    if (m_mediaElement->isMediaDataCORSSameOrigin(m_mediaElement->getExecutionContext()->getSecurityOrigin())) {
         event = createEncryptedEvent(initDataType, initData, initDataLength);
     } else {
         // Current page is not allowed to see content from the media file,

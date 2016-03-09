@@ -123,7 +123,7 @@ int WebAXObject::axID() const
 bool WebAXObject::updateLayoutAndCheckValidity()
 {
     if (!isDetached()) {
-        Document* document = m_private->document();
+        Document* document = m_private->getDocument();
         if (!document || !document->topDocument().view())
             return false;
         document->view()->updateAllLifecyclePhases();
@@ -631,7 +631,7 @@ WebRect WebAXObject::boundingBoxRect() const
     if (isDetached())
         return WebRect();
 
-    ASSERT(isLayoutClean(m_private->document()));
+    ASSERT(isLayoutClean(m_private->getDocument()));
 
     return pixelSnappedIntRect(m_private->elementRect());
 }
@@ -923,7 +923,7 @@ void WebAXObject::showContextMenu() const
     if (isDetached())
         return;
 
-    Node* node = m_private->node();
+    Node* node = m_private->getNode();
     if (!node)
         return;
 
@@ -1082,7 +1082,7 @@ WebNode WebAXObject::node() const
     if (isDetached())
         return WebNode();
 
-    Node* node = m_private->node();
+    Node* node = m_private->getNode();
     if (!node)
         return WebNode();
 
@@ -1094,7 +1094,7 @@ WebDocument WebAXObject::document() const
     if (isDetached())
         return WebDocument();
 
-    Document* document = m_private->document();
+    Document* document = m_private->getDocument();
     if (!document)
         return WebDocument();
 
@@ -1106,11 +1106,11 @@ bool WebAXObject::hasComputedStyle() const
     if (isDetached())
         return false;
 
-    Document* document = m_private->document();
+    Document* document = m_private->getDocument();
     if (document)
         document->updateLayoutTree();
 
-    Node* node = m_private->node();
+    Node* node = m_private->getNode();
     if (!node)
         return false;
 
@@ -1122,11 +1122,11 @@ WebString WebAXObject::computedStyleDisplay() const
     if (isDetached())
         return WebString();
 
-    Document* document = m_private->document();
+    Document* document = m_private->getDocument();
     if (document)
         document->updateLayoutTree();
 
-    Node* node = m_private->node();
+    Node* node = m_private->getNode();
     if (!node)
         return WebString();
 

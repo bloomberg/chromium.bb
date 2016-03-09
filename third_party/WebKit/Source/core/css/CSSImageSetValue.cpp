@@ -120,7 +120,7 @@ StyleImage* CSSImageSetValue::cacheImage(Document* document, float deviceScaleFa
         request.mutableResourceRequest().setHTTPReferrer(image.referrer);
 
         if (crossOrigin != CrossOriginAttributeNotSet)
-            request.setCrossOriginAccessControl(document->securityOrigin(), crossOrigin);
+            request.setCrossOriginAccessControl(document->getSecurityOrigin(), crossOrigin);
 
         if (RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher()))
             m_cachedImage = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this, request.url());

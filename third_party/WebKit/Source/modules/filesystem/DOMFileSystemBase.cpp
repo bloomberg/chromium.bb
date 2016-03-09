@@ -85,9 +85,9 @@ WebFileSystem* DOMFileSystemBase::fileSystem() const
     return platform->fileSystem();
 }
 
-SecurityOrigin* DOMFileSystemBase::securityOrigin() const
+SecurityOrigin* DOMFileSystemBase::getSecurityOrigin() const
 {
-    return m_context->securityOrigin();
+    return m_context->getSecurityOrigin();
 }
 
 bool DOMFileSystemBase::isValidType(FileSystemType type)
@@ -146,7 +146,7 @@ KURL DOMFileSystemBase::createFileSystemURL(const String& fullPath) const
         // For external filesystem originString could be different from what we have in m_filesystemRootURL.
         StringBuilder result;
         result.appendLiteral("filesystem:");
-        result.append(securityOrigin()->toString());
+        result.append(getSecurityOrigin()->toString());
         result.append('/');
         result.append(externalPathPrefix);
         result.append(m_filesystemRootURL.path());

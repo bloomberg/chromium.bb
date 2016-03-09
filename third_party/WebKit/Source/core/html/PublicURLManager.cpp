@@ -76,7 +76,7 @@ void PublicURLManager::revoke(const String& uuid)
         for (auto& registeredUrl : registeredURLs) {
             if (uuid == registeredUrl.value) {
                 KURL url(ParsedURLString, registeredUrl.key);
-                executionContext()->removeURLFromMemoryCache(url);
+                getExecutionContext()->removeURLFromMemoryCache(url);
                 registry->unregisterURL(url);
                 urlsToRemove.append(registeredUrl.key);
             }

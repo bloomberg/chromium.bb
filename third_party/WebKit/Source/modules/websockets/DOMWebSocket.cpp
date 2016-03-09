@@ -76,7 +76,7 @@ void DOMWebSocket::EventQueue::dispatch(PassRefPtrWillBeRawPtr<Event> event)
     switch (m_state) {
     case Active:
         ASSERT(m_events.isEmpty());
-        ASSERT(m_target->executionContext());
+        ASSERT(m_target->getExecutionContext());
         m_target->dispatchEvent(event);
         break;
     case Suspended:
@@ -132,7 +132,7 @@ void DOMWebSocket::EventQueue::dispatchQueuedEvents()
         if (m_state == Stopped || m_state == Suspended)
             break;
         ASSERT(m_state == Active);
-        ASSERT(m_target->executionContext());
+        ASSERT(m_target->getExecutionContext());
         m_target->dispatchEvent(events.takeFirst());
         // |this| can be stopped here.
     }
@@ -238,7 +238,7 @@ DOMWebSocket::~DOMWebSocket()
 
 void DOMWebSocket::logError(const String& message)
 {
-    executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
+    getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 }
 
 DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
@@ -277,13 +277,13 @@ DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url,
 
 void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, ExceptionState& exceptionState)
 {
-    UseCounter::count(executionContext(), UseCounter::WebSocket);
+    UseCounter::count(getExecutionContext(), UseCounter::WebSocket);
 
     WTF_LOG(Network, "WebSocket %p connect() url='%s'", this, url.utf8().data());
     m_url = KURL(KURL(), url);
 
-    if (executionContext()->securityContext().getInsecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && m_url.protocol() == "ws") {
-        UseCounter::count(executionContext(), UseCounter::UpgradeInsecureRequestsUpgradedRequest);
+    if (getExecutionContext()->securityContext().getInsecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && m_url.protocol() == "ws") {
+        UseCounter::count(getExecutionContext(), UseCounter::UpgradeInsecureRequestsUpgradedRequest);
         m_url.setProtocol("wss");
         if (m_url.port() == 80)
             m_url.setPort(443);
@@ -313,7 +313,7 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
     }
 
     // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
-    if (!ContentSecurityPolicy::shouldBypassMainWorld(executionContext()) && !executionContext()->contentSecurityPolicy()->allowConnectToSource(m_url)) {
+    if (!ContentSecurityPolicy::shouldBypassMainWorld(getExecutionContext()) && !getExecutionContext()->contentSecurityPolicy()->allowConnectToSource(m_url)) {
         m_state = CLOSED;
         // The URL is safe to expose to JavaScript, as this check happens synchronously before redirection.
         exceptionState.throwSecurityError("Refused to connect to '" + m_url.elidedString() + "' because it violates the document's Content Security Policy.");
@@ -343,7 +343,7 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
     if (!protocols.isEmpty())
         protocolString = joinStrings(protocols, subprotocolSeperator());
 
-    m_channel = createChannel(executionContext(), this);
+    m_channel = createChannel(getExecutionContext(), this);
 
     if (!m_channel->connect(m_url, protocolString)) {
         m_state = CLOSED;
@@ -576,9 +576,9 @@ const AtomicString& DOMWebSocket::interfaceName() const
     return EventTargetNames::DOMWebSocket;
 }
 
-ExecutionContext* DOMWebSocket::executionContext() const
+ExecutionContext* DOMWebSocket::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 void DOMWebSocket::contextDestroyed()

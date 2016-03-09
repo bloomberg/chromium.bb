@@ -108,7 +108,7 @@ bool isValidReasonPhrase(const String& statusText)
 
 Response* Response::create(ScriptState* scriptState, ExceptionState& exceptionState)
 {
-    return create(scriptState->executionContext(), nullptr, String(), ResponseInit(), exceptionState);
+    return create(scriptState->getExecutionContext(), nullptr, String(), ResponseInit(), exceptionState);
 }
 
 Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, const Dictionary& init, ExceptionState& exceptionState)
@@ -116,7 +116,7 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
     v8::Local<v8::Value> body = bodyValue.v8Value();
     ScriptValue reader;
     v8::Isolate* isolate = scriptState->isolate();
-    ExecutionContext* executionContext = scriptState->executionContext();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
 
     OwnPtr<FetchDataConsumerHandle> bodyHandle;
     String contentType;
@@ -353,15 +353,15 @@ Response* Response::clone(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    FetchResponseData* response = m_response->clone(executionContext());
+    FetchResponseData* response = m_response->clone(getExecutionContext());
     Headers* headers = Headers::create(response->headerList());
     headers->setGuard(m_headers->getGuard());
-    return new Response(executionContext(), response, headers);
+    return new Response(getExecutionContext(), response, headers);
 }
 
 bool Response::hasPendingActivity() const
 {
-    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+    if (!getExecutionContext() || getExecutionContext()->activeDOMObjectsAreStopped())
         return false;
     if (!internalBodyBuffer())
         return false;

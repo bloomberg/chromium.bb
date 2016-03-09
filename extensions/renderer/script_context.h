@@ -133,7 +133,7 @@ class ScriptContext : public RequestSender::Source {
   // Get the URL of this context's web frame.
   //
   // TODO(kalman): Remove this and replace with a GetOrigin() call which reads
-  // of WebDocument::securityOrigin():
+  // of WebDocument::getSecurityOrigin():
   //  - The URL can change (e.g. pushState) but the origin cannot. Luckily it
   //    appears as though callers don't make security decisions based on the
   //    result of url() so it's not a problem... yet.

@@ -45,11 +45,11 @@ ScriptContext* ScriptContextSet::Register(
   GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
   Feature::Context context_type =
       ClassifyJavaScriptContext(extension, extension_group, frame_url,
-                                frame->document().securityOrigin());
+                                frame->document().getSecurityOrigin());
   Feature::Context effective_context_type = ClassifyJavaScriptContext(
       effective_extension, extension_group,
       ScriptContext::GetEffectiveDocumentURL(frame, frame_url, true),
-      frame->document().securityOrigin());
+      frame->document().getSecurityOrigin());
 
   ScriptContext* context =
       new ScriptContext(v8_context, frame, extension, context_type,

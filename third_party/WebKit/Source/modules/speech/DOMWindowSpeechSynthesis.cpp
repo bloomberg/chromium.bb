@@ -68,7 +68,7 @@ SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis(DOMWindow& window)
 SpeechSynthesis* DOMWindowSpeechSynthesis::speechSynthesis()
 {
     if (!m_speechSynthesis && frame())
-        m_speechSynthesis = SpeechSynthesis::create(frame()->domWindow()->executionContext());
+        m_speechSynthesis = SpeechSynthesis::create(frame()->domWindow()->getExecutionContext());
     return m_speechSynthesis;
 }
 

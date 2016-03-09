@@ -84,7 +84,7 @@ private:
 } // namespace
 
 IDBTransaction::IDBTransaction(ScriptState* scriptState, int64_t id, const HashSet<String>& objectStoreNames, WebIDBTransactionMode mode, IDBDatabase* db, IDBOpenDBRequest* openDBRequest, const IDBDatabaseMetadata& previousMetadata)
-    : ActiveDOMObject(scriptState->executionContext())
+    : ActiveDOMObject(scriptState->getExecutionContext())
     , m_id(id)
     , m_database(db)
     , m_objectStoreNames(objectStoreNames)
@@ -339,21 +339,21 @@ const AtomicString& IDBTransaction::interfaceName() const
     return EventTargetNames::IDBTransaction;
 }
 
-ExecutionContext* IDBTransaction::executionContext() const
+ExecutionContext* IDBTransaction::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 DispatchEventResult IDBTransaction::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     IDB_TRACE("IDBTransaction::dispatchEvent");
-    if (m_contextStopped || !executionContext()) {
+    if (m_contextStopped || !getExecutionContext()) {
         m_state = Finished;
         return DispatchEventResult::CanceledBeforeDispatch;
     }
     ASSERT(m_state != Finished);
     ASSERT(m_hasPendingActivity);
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     ASSERT(event->target() == this);
     m_state = Finished;
 
@@ -395,10 +395,10 @@ void IDBTransaction::stop()
 void IDBTransaction::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     ASSERT_WITH_MESSAGE(m_state != Finished, "A finished transaction tried to enqueue an event of type %s.", event->type().utf8().data());
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return;
 
-    EventQueue* eventQueue = executionContext()->eventQueue();
+    EventQueue* eventQueue = getExecutionContext()->getEventQueue();
     event->setTarget(this);
     eventQueue->enqueueEvent(event);
 }

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-ExecutionContext* RemoteDOMWindow::executionContext() const
+ExecutionContext* RemoteDOMWindow::getExecutionContext() const
 {
     return nullptr;
 }

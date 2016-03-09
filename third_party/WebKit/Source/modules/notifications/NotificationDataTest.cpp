@@ -46,7 +46,7 @@ public:
         m_executionContext = adoptRefWillBeNoop(new NullExecutionContext());
     }
 
-    ExecutionContext* executionContext() { return m_executionContext.get(); }
+    ExecutionContext* getExecutionContext() { return m_executionContext.get(); }
 
 private:
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
@@ -87,7 +87,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
     // TODO(peter): Test |options.data| and |notificationData.data|.
 
     TrackExceptionState exceptionState;
-    WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+    WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
 
     EXPECT_EQ(kNotificationTitle, notificationData.title);
@@ -128,7 +128,7 @@ TEST_F(NotificationDataTest, SilentNotificationWithVibration)
     options.setSilent(true);
 
     TrackExceptionState exceptionState;
-    WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+    WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
     ASSERT_TRUE(exceptionState.hadException());
 
     EXPECT_EQ("Silent notifications must not specify vibration patterns.", exceptionState.message());
@@ -141,7 +141,7 @@ TEST_F(NotificationDataTest, RenotifyWithEmptyTag)
     options.setRenotify(true);
 
     TrackExceptionState exceptionState;
-    WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+    WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
     ASSERT_TRUE(exceptionState.hadException());
 
     EXPECT_EQ("Notifications which set the renotify flag must specify a non-empty tag.", exceptionState.message());
@@ -163,7 +163,7 @@ TEST_F(NotificationDataTest, InvalidIconUrls)
     options.setActions(actions);
 
     TrackExceptionState exceptionState;
-    WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+    WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
 
     EXPECT_TRUE(notificationData.icon.isEmpty());
@@ -184,7 +184,7 @@ TEST_F(NotificationDataTest, VibrationNormalization)
     options.setVibrate(vibrationSequence);
 
     TrackExceptionState exceptionState;
-    WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+    WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
     Vector<int> normalizedPattern;
@@ -201,7 +201,7 @@ TEST_F(NotificationDataTest, DefaultTimestampValue)
     NotificationOptions options;
 
     TrackExceptionState exceptionState;
-    WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+    WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
     // The timestamp should be set to the current time since the epoch if it wasn't supplied by the developer.
@@ -224,7 +224,7 @@ TEST_F(NotificationDataTest, DirectionValues)
         options.setDir(direction);
 
         TrackExceptionState exceptionState;
-        WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+        WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
         ASSERT_FALSE(exceptionState.hadException());
 
         EXPECT_EQ(mappings.get(direction), notificationData.direction);
@@ -246,7 +246,7 @@ TEST_F(NotificationDataTest, MaximumActionCount)
     options.setActions(actions);
 
     TrackExceptionState exceptionState;
-    WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+    WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
 
     // The stored actions will be capped to |maxActions| entries.

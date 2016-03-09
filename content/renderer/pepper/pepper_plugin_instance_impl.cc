@@ -299,7 +299,7 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
     return false;
 
   WebElement plugin_element = instance->container()->element();
-  *security_origin = plugin_element.document().securityOrigin();
+  *security_origin = plugin_element.document().getSecurityOrigin();
   return true;
 }
 
@@ -3180,8 +3180,8 @@ bool PepperPluginInstanceImpl::CanAccessMainFrame() const {
   blink::WebDocument main_document =
       containing_document.frame()->view()->mainFrame()->document();
 
-  return containing_document.securityOrigin().canAccess(
-      main_document.securityOrigin());
+  return containing_document.getSecurityOrigin().canAccess(
+      main_document.getSecurityOrigin());
 }
 
 void PepperPluginInstanceImpl::KeepSizeAttributesBeforeFullscreen() {

@@ -43,9 +43,9 @@ WorkerPerformance::WorkerPerformance(WorkerGlobalScope* context)
 {
 }
 
-ExecutionContext* WorkerPerformance::executionContext() const
+ExecutionContext* WorkerPerformance::getExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 DEFINE_TRACE(WorkerPerformance)

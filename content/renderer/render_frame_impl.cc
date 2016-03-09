@@ -2445,7 +2445,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
   WebPluginInfo info;
   std::string mime_type;
   bool found = false;
-  WebString top_origin = frame->top()->securityOrigin().toString();
+  WebString top_origin = frame->top()->getSecurityOrigin().toString();
   Send(new FrameHostMsg_GetPluginInfo(routing_id_, params.url,
                                       blink::WebStringToGURL(top_origin),
                                       params.mimeType.utf8(), &found, &info,
@@ -2480,14 +2480,14 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
   if (!web_stream.isNull())
     return CreateWebMediaPlayerForMediaStream(client, sink_id,
-                                              frame_->securityOrigin());
+                                              frame_->getSecurityOrigin());
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
   scoped_refptr<media::RestartableAudioRendererSink> audio_renderer_sink =
       AudioDeviceFactory::NewRestartableAudioRendererSink(
           AudioDeviceFactory::kSourceMediaElement, routing_id_, 0,
-          sink_id.utf8(), frame_->securityOrigin());
+          sink_id.utf8(), frame_->getSecurityOrigin());
   media::WebMediaPlayerParams::Context3DCB context_3d_cb =
       base::Bind(&GetSharedMainThreadContext3D);
 
@@ -3718,7 +3718,7 @@ void RenderFrameImpl::willSendRequest(
 
     // If we need to set the first party, then we need to set the request's
     // initiator as well; it will not be updated during redirects.
-    request.setRequestorOrigin(frame->document().securityOrigin());
+    request.setRequestorOrigin(frame->document().getSecurityOrigin());
   }
 
   WebDataSource* provisional_data_source = frame->provisionalDataSource();
@@ -3845,7 +3845,7 @@ void RenderFrameImpl::willSendRequest(
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
   extra_data->set_frame_origin(
-      blink::WebStringToGURL(frame->document().securityOrigin().toString()));
+      blink::WebStringToGURL(frame->document().getSecurityOrigin().toString()));
   extra_data->set_parent_is_main_frame(parent && !parent->parent());
   extra_data->set_parent_render_frame_id(parent_routing_id);
   extra_data->set_allow_download(
@@ -4072,7 +4072,7 @@ void RenderFrameImpl::requestStorageQuota(
     blink::WebStorageQuotaType type,
     unsigned long long requested_size,
     blink::WebStorageQuotaCallbacks callbacks) {
-  WebSecurityOrigin origin = frame_->document().securityOrigin();
+  WebSecurityOrigin origin = frame_->document().getSecurityOrigin();
   if (origin.isUnique()) {
     // Unique origins cannot store persistent state.
     callbacks.didFail(blink::WebStorageQuotaErrorAbort);
@@ -4227,17 +4227,15 @@ bool RenderFrameImpl::allowWebGL(bool default_value) {
   bool blocked = true;
   Send(new FrameHostMsg_Are3DAPIsBlocked(
       routing_id_,
-      blink::WebStringToGURL(frame_->top()->securityOrigin().toString()),
-      THREE_D_API_TYPE_WEBGL,
-      &blocked));
+      blink::WebStringToGURL(frame_->top()->getSecurityOrigin().toString()),
+      THREE_D_API_TYPE_WEBGL, &blocked));
   return !blocked;
 }
 
 void RenderFrameImpl::didLoseWebGLContext(int arb_robustness_status_code) {
   Send(new FrameHostMsg_DidLose3DContext(
-      blink::WebStringToGURL(frame_->top()->securityOrigin().toString()),
-      THREE_D_API_TYPE_WEBGL,
-      arb_robustness_status_code));
+      blink::WebStringToGURL(frame_->top()->getSecurityOrigin().toString()),
+      THREE_D_API_TYPE_WEBGL, arb_robustness_status_code));
 }
 
 blink::WebScreenOrientationClient*
@@ -4474,10 +4472,11 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // TODO(alexmos): Origins for URLs with non-standard schemes are excluded due
   // to https://crbug.com/439608 and will be replicated as unique origins.
   if (!is_swapped_out_) {
-    std::string scheme = frame->document().securityOrigin().protocol().utf8();
+    std::string scheme =
+        frame->document().getSecurityOrigin().protocol().utf8();
     if (url::IsStandard(scheme.c_str(),
                         url::Component(0, static_cast<int>(scheme.length())))) {
-      params.origin = frame->document().securityOrigin();
+      params.origin = frame->document().getSecurityOrigin();
     }
   }
 

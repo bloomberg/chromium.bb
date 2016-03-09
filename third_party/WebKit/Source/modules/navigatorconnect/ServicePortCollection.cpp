@@ -35,7 +35,7 @@ public:
 
     void onSuccess(WebServicePortID portId) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
             return;
         }
         WebServicePort webPort;
@@ -51,7 +51,7 @@ public:
     void onError() override
     {
         // TODO(mek): Pass actual error code back.
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped()) {
             return;
         }
         m_resolver->reject(DOMException::create(AbortError));
@@ -103,10 +103,10 @@ ScriptPromise ServicePortCollection::connect(ScriptState* scriptState, const Str
     }
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    KURL targetUrl = scriptState->executionContext()->completeURL(url);
+    KURL targetUrl = scriptState->getExecutionContext()->completeURL(url);
     m_provider->connect(
         targetUrl,
-        scriptState->executionContext()->securityOrigin()->toString(),
+        scriptState->getExecutionContext()->getSecurityOrigin()->toString(),
         new ConnectCallbacks(resolver, this, targetUrl, options.name(), portData ? portData->toWireString() : String()));
     return promise;
 }
@@ -126,9 +126,9 @@ const AtomicString& ServicePortCollection::interfaceName() const
     return EventTargetNames::ServicePortCollection;
 }
 
-ExecutionContext* ServicePortCollection::executionContext() const
+ExecutionContext* ServicePortCollection::getExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 void ServicePortCollection::postMessage(WebServicePortID portId, const WebString& messageString, const WebMessagePortChannelArray& webChannels)
@@ -141,7 +141,7 @@ void ServicePortCollection::postMessage(WebServicePortID portId, const WebString
     }
     RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().createFromWire(messageString);
 
-    MessagePortArray* ports = MessagePort::entanglePorts(*executionContext(), channels.release());
+    MessagePortArray* ports = MessagePort::entanglePorts(*getExecutionContext(), channels.release());
     RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports, message.release());
     // TODO(mek): Lookup ServicePort and set events source attribute.
     dispatchEvent(evt.release());

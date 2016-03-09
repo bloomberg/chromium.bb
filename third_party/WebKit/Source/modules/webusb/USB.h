@@ -41,7 +41,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
     // EventTarget overrides.
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
     const AtomicString& interfaceName() const override;
 
     // LocalFrameLifecycleObserver overrides.

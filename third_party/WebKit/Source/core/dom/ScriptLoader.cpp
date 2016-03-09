@@ -293,7 +293,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
 
         CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(m_element->fastGetAttribute(HTMLNames::crossoriginAttr));
         if (crossOrigin != CrossOriginAttributeNotSet)
-            request.setCrossOriginAccessControl(elementDocument->securityOrigin(), crossOrigin);
+            request.setCrossOriginAccessControl(elementDocument->getSecurityOrigin(), crossOrigin);
         request.setCharset(scriptCharset());
 
         // Skip fetch-related CSP checks if the script element has a valid nonce, or if dynamically
@@ -340,7 +340,7 @@ void ScriptLoader::logScriptMimetype(ScriptResource* resource, LocalFrame* frame
     bool text = mimetype.lower().startsWith("text/");
     bool application = mimetype.lower().startsWith("application/");
     bool expectedJs = MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimetype) || (text && isLegacySupportedJavaScriptLanguage(mimetype.substring(5)));
-    bool sameOrigin = m_element->document().securityOrigin()->canRequest(m_resource->url());
+    bool sameOrigin = m_element->document().getSecurityOrigin()->canRequest(m_resource->url());
     if (expectedJs) {
         return;
     }
@@ -405,7 +405,7 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
                 accessControlStatus = OpaqueResource;
             else
                 accessControlStatus = SharableCrossOrigin;
-        } else if (sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin())) {
+        } else if (sourceCode.resource()->passesAccessControlCheck(m_element->document().getSecurityOrigin())) {
             accessControlStatus = SharableCrossOrigin;
         }
     }

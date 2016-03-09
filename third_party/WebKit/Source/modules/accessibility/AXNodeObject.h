@@ -180,8 +180,8 @@ protected:
     // DOM and Render tree access.
     Element* actionElement() const override;
     Element* anchorElement() const override;
-    Document* document() const override;
-    Node* node() const override { return m_node; }
+    Document* getDocument() const override;
+    Node* getNode() const override { return m_node; }
 
     // Modify or take an action on an object.
     void setFocused(bool) final;

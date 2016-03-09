@@ -25,14 +25,14 @@ void PresentationConnectionCallbacks::onSuccess(WebPassOwnPtr<WebPresentationCon
 {
     OwnPtr<WebPresentationConnectionClient> result(PresentationConnectionClient.release());
 
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
     m_resolver->resolve(PresentationConnection::take(m_resolver.get(), result.release(), m_request));
 }
 
 void PresentationConnectionCallbacks::onError(const WebPresentationError& error)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+    if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
     m_resolver->reject(PresentationError::take(m_resolver.get(), error));
 }

@@ -746,8 +746,8 @@ void AbstractAudioContext::setContextState(AudioContextState newState)
     m_contextState = newState;
 
     // Notify context that state changed
-    if (executionContext())
-        executionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&AbstractAudioContext::notifyStateChange, this));
+    if (getExecutionContext())
+        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&AbstractAudioContext::notifyStateChange, this));
 }
 
 void AbstractAudioContext::notifyStateChange()
@@ -904,9 +904,9 @@ const AtomicString& AbstractAudioContext::interfaceName() const
     return EventTargetNames::AudioContext;
 }
 
-ExecutionContext* AbstractAudioContext::executionContext() const
+ExecutionContext* AbstractAudioContext::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 void AbstractAudioContext::startRendering()
@@ -944,10 +944,10 @@ DEFINE_TRACE(AbstractAudioContext)
     ActiveDOMObject::trace(visitor);
 }
 
-SecurityOrigin* AbstractAudioContext::securityOrigin() const
+SecurityOrigin* AbstractAudioContext::getSecurityOrigin() const
 {
-    if (executionContext())
-        return executionContext()->securityOrigin();
+    if (getExecutionContext())
+        return getExecutionContext()->getSecurityOrigin();
 
     return nullptr;
 }

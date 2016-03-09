@@ -56,7 +56,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptSta
     if (errorEvent->world() && errorEvent->world() != &world())
         return v8::Null(isolate());
 
-    v8::Local<v8::Object> listener = getListenerObject(scriptState->executionContext());
+    v8::Local<v8::Object> listener = getListenerObject(scriptState->getExecutionContext());
     if (listener.IsEmpty() || !listener->IsFunction())
         return v8::Null(isolate());
 
@@ -74,10 +74,10 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptState* scriptSta
     v8::TryCatch tryCatch(isolate());
     tryCatch.SetVerbose(true);
     v8::MaybeLocal<v8::Value> result;
-    if (scriptState->executionContext()->isWorkerGlobalScope()) {
-        result = V8ScriptRunner::callFunction(callFunction, scriptState->executionContext(), thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+    if (scriptState->getExecutionContext()->isWorkerGlobalScope()) {
+        result = V8ScriptRunner::callFunction(callFunction, scriptState->getExecutionContext(), thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
     } else {
-        result = ScriptController::callFunction(scriptState->executionContext(), callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
+        result = ScriptController::callFunction(scriptState->getExecutionContext(), callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate());
     }
     v8::Local<v8::Value> returnValue;
     if (!result.ToLocal(&returnValue))

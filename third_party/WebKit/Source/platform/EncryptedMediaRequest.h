@@ -22,7 +22,7 @@ public:
     virtual WebString keySystem() const = 0;
     virtual const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const = 0;
 
-    virtual SecurityOrigin* securityOrigin() const = 0;
+    virtual SecurityOrigin* getSecurityOrigin() const = 0;
 
     virtual void requestSucceeded(WebContentDecryptionModuleAccess*) = 0;
     virtual void requestNotSupported(const WebString& errorMessage) = 0;

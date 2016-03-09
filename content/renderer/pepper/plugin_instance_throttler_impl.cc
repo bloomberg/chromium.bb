@@ -141,7 +141,7 @@ void PluginInstanceThrottlerImpl::Initialize(
   if (frame) {
     float zoom_factor = GetWebPlugin()->container()->pageZoomFactor();
     auto status = frame->GetPeripheralContentStatus(
-        frame->GetWebFrame()->top()->securityOrigin(), content_origin,
+        frame->GetWebFrame()->top()->getSecurityOrigin(), content_origin,
         gfx::Size(roundf(unobscured_size.width() / zoom_factor),
                   roundf(unobscured_size.height() / zoom_factor)));
     if (status != RenderFrame::CONTENT_STATUS_PERIPHERAL) {

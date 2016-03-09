@@ -24,13 +24,13 @@ Worklet* Worklet::create(LocalFrame* frame, ExecutionContext* executionContext)
 
 Worklet::Worklet(LocalFrame* frame, ExecutionContext* executionContext)
     : ActiveDOMObject(executionContext)
-    , m_workletGlobalScope(WorkletGlobalScope::create(frame, executionContext->url(), executionContext->userAgent(), executionContext->securityOrigin(), toIsolate(executionContext)))
+    , m_workletGlobalScope(WorkletGlobalScope::create(frame, executionContext->url(), executionContext->userAgent(), executionContext->getSecurityOrigin(), toIsolate(executionContext)))
 {
 }
 
 ScriptPromise Worklet::import(ScriptState* scriptState, const String& url)
 {
-    KURL scriptURL = executionContext()->completeURL(url);
+    KURL scriptURL = getExecutionContext()->completeURL(url);
     if (!scriptURL.isValid()) {
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SyntaxError, "'" + url + "' is not a valid URL."));
     }
@@ -49,8 +49,8 @@ ScriptPromise Worklet::import(ScriptState* scriptState, const String& url)
     // NOTE: WorkerScriptLoader may synchronously invoke its callbacks
     // (resolving the promise) before we return it.
     m_scriptLoaders.append(WorkerScriptLoader::create());
-    m_scriptLoaders.last()->loadAsynchronously(*executionContext(), scriptURL, DenyCrossOriginRequests,
-        executionContext()->securityContext().addressSpace(),
+    m_scriptLoaders.last()->loadAsynchronously(*getExecutionContext(), scriptURL, DenyCrossOriginRequests,
+        getExecutionContext()->securityContext().addressSpace(),
         bind(&Worklet::onResponse, this),
         bind(&Worklet::onFinished, this, m_scriptLoaders.last().get(), resolver));
 

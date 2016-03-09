@@ -55,7 +55,7 @@ ExecutionContext* WorkerConsole::context()
 {
     if (!m_scope)
         return nullptr;
-    return m_scope->executionContext();
+    return m_scope->getExecutionContext();
 }
 
 DEFINE_TRACE(WorkerConsole)

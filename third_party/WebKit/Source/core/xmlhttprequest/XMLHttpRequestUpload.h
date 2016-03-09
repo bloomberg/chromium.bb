@@ -50,7 +50,7 @@ public:
     XMLHttpRequest* xmlHttpRequest() const { return m_xmlHttpRequest; }
 
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     void dispatchEventAndLoadEnd(const AtomicString&, bool, unsigned long long, unsigned long long);
     void dispatchProgressEvent(unsigned long long, unsigned long long);

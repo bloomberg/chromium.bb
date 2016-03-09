@@ -308,7 +308,7 @@ MediaKeySession* MediaKeySession::create(ScriptState* scriptState, MediaKeys* me
 }
 
 MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys, WebEncryptedMediaSessionType sessionType)
-    : ActiveDOMObject(scriptState->executionContext())
+    : ActiveDOMObject(scriptState->getExecutionContext())
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_mediaKeys(mediaKeys)
     , m_sessionType(sessionType)
@@ -317,7 +317,7 @@ MediaKeySession::MediaKeySession(ScriptState* scriptState, MediaKeys* mediaKeys,
     , m_isUninitialized(true)
     , m_isCallable(false)
     , m_isClosed(false)
-    , m_closedPromise(new ClosedPromise(scriptState->executionContext(), this, ClosedPromise::Closed))
+    , m_closedPromise(new ClosedPromise(scriptState->getExecutionContext(), this, ClosedPromise::Closed))
     , m_actionTimer(this, &MediaKeySession::actionTimerFired)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::MediaKeySession", this);
@@ -489,7 +489,7 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
     // FIXME: Implement this (http://crbug.com/448922).
 
     // 6. Let origin be the origin of this object's Document.
-    //    (Available as executionContext()->securityOrigin() anytime.)
+    //    (Available as getExecutionContext()->getSecurityOrigin() anytime.)
 
     // 7. Let promise be a new promise.
     LoadSessionResultPromise* result = new LoadSessionResultPromise(scriptState, this);
@@ -885,9 +885,9 @@ const AtomicString& MediaKeySession::interfaceName() const
     return EventTargetNames::MediaKeySession;
 }
 
-ExecutionContext* MediaKeySession::executionContext() const
+ExecutionContext* MediaKeySession::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 bool MediaKeySession::hasPendingActivity() const

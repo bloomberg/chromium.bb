@@ -26,7 +26,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void handleEvent(PerformanceObserverEntryList*, PerformanceObserver*) override;
-    ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
 private:
     CORE_EXPORT V8PerformanceObserverCallback(v8::Local<v8::Function>, v8::Local<v8::Object>, ScriptState*);
 

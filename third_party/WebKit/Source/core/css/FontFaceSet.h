@@ -89,7 +89,7 @@ public:
     size_t size() const;
     AtomicString status() const;
 
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
     const AtomicString& interfaceName() const override;
 
     Document* document() const;

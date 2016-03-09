@@ -61,33 +61,33 @@ void DeviceMotionEvent::initDeviceMotionEvent(const AtomicString& type, bool bub
 
 DeviceAcceleration* DeviceMotionEvent::acceleration()
 {
-    if (!m_deviceMotionData->acceleration())
+    if (!m_deviceMotionData->getAcceleration())
         return nullptr;
 
     if (!m_acceleration)
-        m_acceleration = DeviceAcceleration::create(m_deviceMotionData->acceleration());
+        m_acceleration = DeviceAcceleration::create(m_deviceMotionData->getAcceleration());
 
     return m_acceleration.get();
 }
 
 DeviceAcceleration* DeviceMotionEvent::accelerationIncludingGravity()
 {
-    if (!m_deviceMotionData->accelerationIncludingGravity())
+    if (!m_deviceMotionData->getAccelerationIncludingGravity())
         return nullptr;
 
     if (!m_accelerationIncludingGravity)
-        m_accelerationIncludingGravity = DeviceAcceleration::create(m_deviceMotionData->accelerationIncludingGravity());
+        m_accelerationIncludingGravity = DeviceAcceleration::create(m_deviceMotionData->getAccelerationIncludingGravity());
 
     return m_accelerationIncludingGravity.get();
 }
 
 DeviceRotationRate* DeviceMotionEvent::rotationRate()
 {
-    if (!m_deviceMotionData->rotationRate())
+    if (!m_deviceMotionData->getRotationRate())
         return nullptr;
 
     if (!m_rotationRate)
-        m_rotationRate = DeviceRotationRate::create(m_deviceMotionData->rotationRate());
+        m_rotationRate = DeviceRotationRate::create(m_deviceMotionData->getRotationRate());
 
     return m_rotationRate.get();
 }

@@ -73,7 +73,7 @@ void AppBindings::GetDetails(
 
 v8::Local<v8::Value> AppBindings::GetDetailsImpl(blink::WebLocalFrame* frame) {
   v8::Isolate* isolate = frame->mainWorldScriptContext()->GetIsolate();
-  if (frame->document().securityOrigin().isUnique())
+  if (frame->document().getSecurityOrigin().isUnique())
     return v8::Null(isolate);
 
   const Extension* extension =
@@ -117,7 +117,7 @@ void AppBindings::GetRunningState(
   // To distinguish between ready_to_run and cannot_run states, we need the app
   // from the top frame.
   blink::WebSecurityOrigin top_frame_security_origin =
-      context()->web_frame()->top()->securityOrigin();
+      context()->web_frame()->top()->getSecurityOrigin();
   const RendererExtensionRegistry* extensions =
       RendererExtensionRegistry::Get();
 

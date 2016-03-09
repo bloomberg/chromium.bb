@@ -2434,11 +2434,11 @@ void Document::open(Document* enteredDocument, ExceptionState& exceptionState)
     }
 
     if (enteredDocument) {
-        if (!securityOrigin()->canAccess(enteredDocument->securityOrigin())) {
+        if (!getSecurityOrigin()->canAccess(enteredDocument->getSecurityOrigin())) {
             exceptionState.throwSecurityError("Can only call open() on same-origin documents.");
             return;
         }
-        setSecurityOrigin(enteredDocument->securityOrigin());
+        setSecurityOrigin(enteredDocument->getSecurityOrigin());
         setURL(enteredDocument->url());
         m_cookieURL = enteredDocument->cookieURL();
     }
@@ -2864,7 +2864,7 @@ void Document::write(const SegmentedString& text, Document* enteredDocument, Exc
         return;
     }
 
-    if (enteredDocument && !securityOrigin()->canAccess(enteredDocument->securityOrigin())) {
+    if (enteredDocument && !getSecurityOrigin()->canAccess(enteredDocument->getSecurityOrigin())) {
         exceptionState.throwSecurityError("Can only call write() on same-origin documents.");
         return;
     }
@@ -3178,7 +3178,7 @@ void Document::processReferrerPolicy(const String& policy)
 
 String Document::outgoingReferrer() const
 {
-    if (securityOrigin()->isUnique()) {
+    if (getSecurityOrigin()->isUnique()) {
         // Return |no-referrer|.
         return String();
     }
@@ -3353,7 +3353,7 @@ void Document::cloneDataFromDocument(const Document& other)
     setCompatibilityMode(other.getCompatibilityMode());
     setEncodingData(other.m_encodingData);
     setContextFeatures(other.contextFeatures());
-    setSecurityOrigin(other.securityOrigin()->isolatedCopy());
+    setSecurityOrigin(other.getSecurityOrigin()->isolatedCopy());
     setMimeType(other.contentType());
 }
 
@@ -3394,9 +3394,9 @@ bool Document::isSecureContextImpl(String* errorMessage, const SecureContextChec
         if (SchemeRegistry::schemeShouldBypassSecureContextCheck(origin->protocol()))
             return true;
     } else {
-        if (!isOriginPotentiallyTrustworthy(securityOrigin(), errorMessage))
+        if (!isOriginPotentiallyTrustworthy(getSecurityOrigin(), errorMessage))
             return false;
-        if (SchemeRegistry::schemeShouldBypassSecureContextCheck(securityOrigin()->protocol()))
+        if (SchemeRegistry::schemeShouldBypassSecureContextCheck(getSecurityOrigin()->protocol()))
             return true;
     }
 
@@ -3411,7 +3411,7 @@ bool Document::isSecureContextImpl(String* errorMessage, const SecureContextChec
                     if (!isOriginPotentiallyTrustworthy(origin.get(), errorMessage))
                         return false;
                 } else {
-                    if (!isOriginPotentiallyTrustworthy(context->securityOrigin(), errorMessage))
+                    if (!isOriginPotentiallyTrustworthy(context->getSecurityOrigin(), errorMessage))
                         return false;
                 }
             }
@@ -3952,11 +3952,11 @@ EventListener* Document::getWindowAttributeEventListener(const AtomicString& eve
     return domWindow->getAttributeEventListener(eventType);
 }
 
-EventQueue* Document::eventQueue() const
+EventQueue* Document::getEventQueue() const
 {
     if (!m_domWindow)
         return 0;
-    return m_domWindow->eventQueue();
+    return m_domWindow->getEventQueue();
 }
 
 void Document::enqueueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event> event)
@@ -4097,7 +4097,7 @@ String Document::cookie(ExceptionState& exceptionState) const
     // InvalidStateError exception on getting if the Document has no
     // browsing context.
 
-    if (!securityOrigin()->canAccessCookies()) {
+    if (!getSecurityOrigin()->canAccessCookies()) {
         if (isSandboxed(SandboxOrigin))
             exceptionState.throwSecurityError("The document is sandboxed and lacks the 'allow-same-origin' flag.");
         else if (url().protocolIs("data"))
@@ -4123,7 +4123,7 @@ void Document::setCookie(const String& value, ExceptionState& exceptionState)
     // InvalidStateError exception on setting if the Document has no
     // browsing context.
 
-    if (!securityOrigin()->canAccessCookies()) {
+    if (!getSecurityOrigin()->canAccessCookies()) {
         if (isSandboxed(SandboxOrigin))
             exceptionState.throwSecurityError("The document is sandboxed and lacks the 'allow-same-origin' flag.");
         else if (url().protocolIs("data"))
@@ -4149,7 +4149,7 @@ const AtomicString& Document::referrer() const
 
 String Document::domain() const
 {
-    return securityOrigin()->domain();
+    return getSecurityOrigin()->domain();
 }
 
 void Document::setDomain(const String& newDomain, ExceptionState& exceptionState)
@@ -4161,8 +4161,8 @@ void Document::setDomain(const String& newDomain, ExceptionState& exceptionState
         return;
     }
 
-    if (SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(securityOrigin()->protocol())) {
-        exceptionState.throwSecurityError("Assignment is forbidden for the '" + securityOrigin()->protocol() + "' scheme.");
+    if (SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(getSecurityOrigin()->protocol())) {
+        exceptionState.throwSecurityError("Assignment is forbidden for the '" + getSecurityOrigin()->protocol() + "' scheme.");
         return;
     }
 
@@ -4171,8 +4171,8 @@ void Document::setDomain(const String& newDomain, ExceptionState& exceptionState
         return;
     }
 
-    OriginAccessEntry accessEntry(securityOrigin()->protocol(), newDomain, OriginAccessEntry::AllowSubdomains);
-    OriginAccessEntry::MatchResult result = accessEntry.matchesOrigin(*securityOrigin());
+    OriginAccessEntry accessEntry(getSecurityOrigin()->protocol(), newDomain, OriginAccessEntry::AllowSubdomains);
+    OriginAccessEntry::MatchResult result = accessEntry.matchesOrigin(*getSecurityOrigin());
     if (result == OriginAccessEntry::DoesNotMatchOrigin) {
         exceptionState.throwSecurityError("'" + newDomain + "' is not a suffix of '" + domain() + "'.");
         return;
@@ -4183,9 +4183,9 @@ void Document::setDomain(const String& newDomain, ExceptionState& exceptionState
         return;
     }
 
-    securityOrigin()->setDomainFromDOM(newDomain);
+    getSecurityOrigin()->setDomainFromDOM(newDomain);
     if (m_frame)
-        m_frame->script().updateSecurityOrigin(securityOrigin());
+        m_frame->script().updateSecurityOrigin(getSecurityOrigin());
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/#dom-document-lastmodified
@@ -4228,7 +4228,7 @@ const KURL& Document::firstPartyForCookies() const
 
         // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS login forms
         // into HTTP pages; we should allow this kind of upgrade.
-        if (accessEntry.matchesDomain(*currentDocument->securityOrigin()) == OriginAccessEntry::DoesNotMatchOrigin)
+        if (accessEntry.matchesDomain(*currentDocument->getSecurityOrigin()) == OriginAccessEntry::DoesNotMatchOrigin)
             return SecurityOrigin::urlWithUniqueSecurityOrigin();
 
         currentDocument = currentDocument->parentDocument();
@@ -4916,7 +4916,7 @@ bool Document::useSecureKeyboardEntryWhenActive() const
 
 void Document::initSecurityContext(const DocumentInit& initializer)
 {
-    ASSERT(!securityOrigin());
+    ASSERT(!getSecurityOrigin());
 
     if (!initializer.hasSecurityContext()) {
         // No source for a security context.
@@ -4946,13 +4946,13 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         // but we're also sandboxed, the only thing we inherit is the ability
         // to load local resources. This lets about:blank iframes in file://
         // URL documents load images and other resources from the file system.
-        if (initializer.owner() && initializer.owner()->securityOrigin()->canLoadLocalResources())
-            securityOrigin()->grantLoadLocalResources();
+        if (initializer.owner() && initializer.owner()->getSecurityOrigin()->canLoadLocalResources())
+            getSecurityOrigin()->grantLoadLocalResources();
     } else if (initializer.owner()) {
         m_cookieURL = initializer.owner()->cookieURL();
         // We alias the SecurityOrigins to match Firefox, see Bug 15313
         // https://bugs.webkit.org/show_bug.cgi?id=15313
-        setSecurityOrigin(initializer.owner()->securityOrigin());
+        setSecurityOrigin(initializer.owner()->getSecurityOrigin());
     } else {
         m_cookieURL = m_url;
         setSecurityOrigin(SecurityOrigin::create(m_url));
@@ -4962,7 +4962,7 @@ void Document::initSecurityContext(const DocumentInit& initializer)
     // the former via the 'treat-as-public-address' directive (see
     // https://mikewest.github.io/cors-rfc1918/#csp).
     if (initializer.isHostedInReservedIPRange()) {
-        setAddressSpace(securityOrigin()->isLocalhost() ? WebAddressSpaceLocal : WebAddressSpacePrivate);
+        setAddressSpace(getSecurityOrigin()->isLocalhost() ? WebAddressSpaceLocal : WebAddressSpacePrivate);
     } else {
         setAddressSpace(WebAddressSpacePublic);
     }
@@ -4977,21 +4977,21 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         initContentSecurityPolicy();
     }
 
-    if (securityOrigin()->hasSuborigin())
-        enforceSuborigin(securityOrigin()->suboriginName());
+    if (getSecurityOrigin()->hasSuborigin())
+        enforceSuborigin(getSecurityOrigin()->suboriginName());
 
     if (Settings* settings = initializer.settings()) {
         if (!settings->webSecurityEnabled()) {
             // Web security is turned off. We should let this document access every other document. This is used primary by testing
             // harnesses for web sites.
-            securityOrigin()->grantUniversalAccess();
-        } else if (securityOrigin()->isLocal()) {
+            getSecurityOrigin()->grantUniversalAccess();
+        } else if (getSecurityOrigin()->isLocal()) {
             if (settings->allowUniversalAccessFromFileURLs()) {
                 // Some clients want local URLs to have universal access, but that setting is dangerous for other clients.
-                securityOrigin()->grantUniversalAccess();
+                getSecurityOrigin()->grantUniversalAccess();
             } else if (!settings->allowFileAccessFromFileURLs()) {
                 // Some clients do not want local URLs to have access to other local URLs.
-                securityOrigin()->blockLocalAccessFromLocalOrigin();
+                getSecurityOrigin()->blockLocalAccessFromLocalOrigin();
             }
         }
     }
@@ -5001,8 +5001,8 @@ void Document::initSecurityContext(const DocumentInit& initializer)
         setBaseURLOverride(initializer.parentBaseURL());
     }
 
-    if (securityOrigin()->hasSuborigin())
-        enforceSuborigin(securityOrigin()->suboriginName());
+    if (getSecurityOrigin()->hasSuborigin())
+        enforceSuborigin(getSecurityOrigin()->suboriginName());
 }
 
 void Document::initContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy> csp)
@@ -5024,7 +5024,7 @@ void Document::initContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityP
 bool Document::isSecureTransitionTo(const KURL& url) const
 {
     RefPtr<SecurityOrigin> other = SecurityOrigin::create(url);
-    return securityOrigin()->canAccess(other.get());
+    return getSecurityOrigin()->canAccess(other.get());
 }
 
 bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, const String& contextURL, const WTF::OrdinalNumber& contextLine)
@@ -5073,7 +5073,7 @@ void Document::didUpdateSecurityOrigin()
 {
     if (!m_frame)
         return;
-    m_frame->updateSecurityOrigin(securityOrigin());
+    m_frame->updateSecurityOrigin(getSecurityOrigin());
 }
 
 bool Document::isContextThread() const
@@ -5121,7 +5121,7 @@ void Document::initDNSPrefetch()
     Settings* settings = this->settings();
 
     m_haveExplicitlyDisabledDNSPrefetch = false;
-    m_isDNSPrefetchEnabled = settings && settings->dnsPrefetchingEnabled() && securityOrigin()->protocol() == "http";
+    m_isDNSPrefetchEnabled = settings && settings->dnsPrefetchingEnabled() && getSecurityOrigin()->protocol() == "http";
 
     // Inherit DNS prefetch opt-out from parent frame
     if (Document* parent = parentDocument()) {
@@ -5184,7 +5184,7 @@ void Document::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleM
     if (!m_frame)
         return;
 
-    if (!consoleMessage->scriptState() && consoleMessage->url().isNull() && !consoleMessage->lineNumber()) {
+    if (!consoleMessage->getScriptState() && consoleMessage->url().isNull() && !consoleMessage->lineNumber()) {
         consoleMessage->setURL(url().getString());
         if (!isInDocumentWrite() && scriptableDocumentParser()) {
             ScriptableDocumentParser* parser = scriptableDocumentParser();

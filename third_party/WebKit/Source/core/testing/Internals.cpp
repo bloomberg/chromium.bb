@@ -244,14 +244,14 @@ void Internals::resetToConsistentState(Page* page)
 }
 
 Internals::Internals(ScriptState* scriptState)
-    : ContextLifecycleObserver(scriptState->executionContext())
+    : ContextLifecycleObserver(scriptState->getExecutionContext())
     , m_runtimeFlags(InternalRuntimeFlags::create())
 {
 }
 
 Document* Internals::contextDocument() const
 {
-    return toDocument(executionContext());
+    return toDocument(getExecutionContext());
 }
 
 LocalFrame* Internals::frame() const
@@ -2283,7 +2283,7 @@ private:
         v8::Local<v8::Value> v8Value = value.v8Value();
         ASSERT(v8Value->IsNumber());
         int intValue = v8Value.As<v8::Integer>()->Value();
-        return ScriptValue(scriptState(), v8::Integer::New(scriptState()->isolate(), intValue + 1));
+        return ScriptValue(getScriptState(), v8::Integer::New(getScriptState()->isolate(), intValue + 1));
     }
 };
 

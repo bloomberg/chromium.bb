@@ -63,7 +63,7 @@ void InstallEvent::registerForeignFetch(ExecutionContext* executionContext, cons
     ServiceWorkerGlobalScopeClient* client = ServiceWorkerGlobalScopeClient::from(executionContext);
 
     String scopePath = static_cast<KURL>(client->scope()).path();
-    RefPtr<SecurityOrigin> origin = executionContext->securityOrigin();
+    RefPtr<SecurityOrigin> origin = executionContext->getSecurityOrigin();
 
     if (!options.hasScopes() || options.scopes().isEmpty()) {
         exceptionState.throwTypeError("At least one scope is required");

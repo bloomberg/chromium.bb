@@ -90,7 +90,7 @@ ContentSecurityPolicy* InProcessWorkerBase::contentSecurityPolicy()
 
 void InProcessWorkerBase::onResponse()
 {
-    InspectorInstrumentation::didReceiveScriptResponse(executionContext(), m_scriptLoader->identifier());
+    InspectorInstrumentation::didReceiveScriptResponse(getExecutionContext(), m_scriptLoader->identifier());
 }
 
 void InProcessWorkerBase::onFinished()
@@ -99,8 +99,8 @@ void InProcessWorkerBase::onFinished()
         dispatchEvent(Event::createCancelable(EventTypeNames::error));
     } else {
         ASSERT(m_contextProxy);
-        m_contextProxy->startWorkerGlobalScope(m_scriptLoader->url(), executionContext()->userAgent(), m_scriptLoader->script());
-        InspectorInstrumentation::scriptImported(executionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
+        m_contextProxy->startWorkerGlobalScope(m_scriptLoader->url(), getExecutionContext()->userAgent(), m_scriptLoader->script());
+        InspectorInstrumentation::scriptImported(getExecutionContext(), m_scriptLoader->identifier(), m_scriptLoader->script());
     }
     m_contentSecurityPolicy = m_scriptLoader->releaseContentSecurityPolicy();
     m_scriptLoader = nullptr;

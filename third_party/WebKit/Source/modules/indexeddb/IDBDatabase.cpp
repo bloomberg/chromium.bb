@@ -345,10 +345,10 @@ void IDBDatabase::closeConnection()
         m_backend.clear();
     }
 
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return;
 
-    EventQueue* eventQueue = executionContext()->eventQueue();
+    EventQueue* eventQueue = getExecutionContext()->getEventQueue();
     // Remove any pending versionchange events scheduled to fire on this
     // connection. They would have been scheduled by the backend when another
     // connection attempted an upgrade, but the frontend connection is being
@@ -362,7 +362,7 @@ void IDBDatabase::closeConnection()
 void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
 {
     IDB_TRACE("IDBDatabase::onVersionChange");
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return;
 
     if (m_closePending) {
@@ -380,8 +380,8 @@ void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
 void IDBDatabase::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     ASSERT(!m_contextStopped);
-    ASSERT(executionContext());
-    EventQueue* eventQueue = executionContext()->eventQueue();
+    ASSERT(getExecutionContext());
+    EventQueue* eventQueue = getExecutionContext()->getEventQueue();
     event->setTarget(this);
     eventQueue->enqueueEvent(event.get());
     m_enqueuedEvents.append(event);
@@ -390,7 +390,7 @@ void IDBDatabase::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 DispatchEventResult IDBDatabase::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
     IDB_TRACE("IDBDatabase::dispatchEvent");
-    if (m_contextStopped || !executionContext())
+    if (m_contextStopped || !getExecutionContext())
         return DispatchEventResult::CanceledBeforeDispatch;
     ASSERT(event->type() == EventTypeNames::versionchange || event->type() == EventTypeNames::close);
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
@@ -440,9 +440,9 @@ const AtomicString& IDBDatabase::interfaceName() const
     return EventTargetNames::IDBDatabase;
 }
 
-ExecutionContext* IDBDatabase::executionContext() const
+ExecutionContext* IDBDatabase::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 void IDBDatabase::recordApiCallsHistogram(IndexedDatabaseMethods method)

@@ -82,7 +82,7 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const override { return EventTargetNames::MIDIPort; }
-    ExecutionContext* executionContext() const final;
+    ExecutionContext* getExecutionContext() const final;
 
     // ActiveDOMObject
     bool hasPendingActivity() const override;

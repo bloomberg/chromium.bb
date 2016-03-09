@@ -22,7 +22,7 @@ public:
     virtual ~OffscreenCanvasRenderingContextFactory() { }
 
     virtual OffscreenCanvasRenderingContext* create(OffscreenCanvas*, const CanvasContextCreationAttributes&) = 0;
-    virtual OffscreenCanvasRenderingContext::ContextType contextType() const = 0;
+    virtual OffscreenCanvasRenderingContext::ContextType getContextType() const = 0;
     virtual void onError(OffscreenCanvas*, const String& error) = 0;
 };
 

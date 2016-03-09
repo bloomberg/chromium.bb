@@ -50,9 +50,9 @@ const AtomicString& PaymentRequest::interfaceName() const
     return EventTargetNames::PaymentRequest;
 }
 
-ExecutionContext* PaymentRequest::executionContext() const
+ExecutionContext* PaymentRequest::getExecutionContext() const
 {
-    return m_scriptState->executionContext();
+    return m_scriptState->getExecutionContext();
 }
 
 DEFINE_TRACE(PaymentRequest)

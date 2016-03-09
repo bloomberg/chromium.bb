@@ -218,7 +218,7 @@ LayoutRect AXLayoutObject::elementRect() const
     return m_cachedElementRect;
 }
 
-LayoutBoxModelObject* AXLayoutObject::layoutBoxModelObject() const
+LayoutBoxModelObject* AXLayoutObject::getLayoutBoxModelObject() const
 {
     if (!m_layoutObject || !m_layoutObject->isBoxModelObject())
         return 0;
@@ -264,7 +264,7 @@ static bool isImageOrAltText(LayoutBoxModelObject* box, Node* node)
 AccessibilityRole AXLayoutObject::nativeAccessibilityRoleIgnoringAria() const
 {
     Node* node = m_layoutObject->node();
-    LayoutBoxModelObject* cssBox = layoutBoxModelObject();
+    LayoutBoxModelObject* cssBox = getLayoutBoxModelObject();
 
     if ((cssBox && cssBox->isListItem()) || isHTMLLIElement(node))
         return ListItemRole;
@@ -351,26 +351,26 @@ void AXLayoutObject::detach()
 
 static bool isLinkable(const AXObject& object)
 {
-    if (!object.layoutObject())
+    if (!object.getLayoutObject())
         return false;
 
     // See https://wiki.mozilla.org/Accessibility/AT-Windows-API for the elements
     // Mozilla considers linkable.
-    return object.isLink() || object.isImage() || object.layoutObject()->isText();
+    return object.isLink() || object.isImage() || object.getLayoutObject()->isText();
 }
 
 // Requires layoutObject to be present because it relies on style
 // user-modify. Don't move this logic to AXNodeObject.
 bool AXLayoutObject::isEditable() const
 {
-    if (layoutObject() && layoutObject()->isTextControl())
+    if (getLayoutObject() && getLayoutObject()->isTextControl())
         return true;
 
-    if (node() && node()->isContentEditable())
+    if (getNode() && getNode()->isContentEditable())
         return true;
 
     if (isWebArea()) {
-        Document& document = layoutObject()->document();
+        Document& document = getLayoutObject()->document();
         HTMLElement* body = document.body();
         if (body && body->isContentEditable())
             return true;
@@ -388,7 +388,7 @@ bool AXLayoutObject::isRichlyEditable() const
     if (isARIATextControl())
         return false;
 
-    if (node() && node()->isContentRichlyEditable())
+    if (getNode() && getNode()->isContentRichlyEditable())
         return true;
 
     if (isWebArea()) {
@@ -581,7 +581,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     if (controlObject && controlObject->isCheckboxOrRadio() && controlObject->nameFromLabelElement()) {
         if (ignoredReasons) {
             HTMLLabelElement* label = labelElementContainer();
-            if (label && label != node()) {
+            if (label && label != getNode()) {
                 AXObject* labelAXObject = axObjectCache().getOrCreate(label);
                 ignoredReasons->append(IgnoredReason(AXLabelContainer, labelAXObject));
             }
@@ -987,7 +987,7 @@ KURL AXLayoutObject::url() const
 
 void AXLayoutObject::loadInlineTextBoxes()
 {
-    if (!layoutObject() || !layoutObject()->isText())
+    if (!getLayoutObject() || !getLayoutObject()->isText())
         return;
 
     clearChildren();
@@ -1086,7 +1086,7 @@ String AXLayoutObject::stringValue() const
     if (!m_layoutObject)
         return String();
 
-    LayoutBoxModelObject* cssBox = layoutBoxModelObject();
+    LayoutBoxModelObject* cssBox = getLayoutBoxModelObject();
 
     if (cssBox && cssBox->isMenuList()) {
         // LayoutMenuList will go straight to the text() of its selected item.
@@ -1119,8 +1119,8 @@ String AXLayoutObject::stringValue() const
     // Handle other HTML input elements that aren't text controls, like date and time
     // controls, by returning the string value, with the exception of checkboxes
     // and radio buttons (which would return "on").
-    if (node() && isHTMLInputElement(node())) {
-        HTMLInputElement* input = toHTMLInputElement(node());
+    if (getNode() && isHTMLInputElement(getNode())) {
+        HTMLInputElement* input = toHTMLInputElement(getNode());
         if (input->type() != InputTypeNames::checkbox && input->type() != InputTypeNames::radio)
             return input->value();
     }
@@ -1726,12 +1726,12 @@ double AXLayoutObject::estimatedLoadingProgress() const
 // DOM and layout tree access.
 //
 
-Node* AXLayoutObject::node() const
+Node* AXLayoutObject::getNode() const
 {
     return m_layoutObject ? m_layoutObject->node() : 0;
 }
 
-Document* AXLayoutObject::document() const
+Document* AXLayoutObject::getDocument() const
 {
     if (!m_layoutObject)
         return 0;
@@ -1789,10 +1789,10 @@ AXObject::AXRange AXLayoutObject::selection() const
     if (textSelection.isValid())
         return textSelection;
 
-    if (!layoutObject() || !layoutObject()->frame())
+    if (!getLayoutObject() || !getLayoutObject()->frame())
         return AXRange();
 
-    VisibleSelection selection = layoutObject()->frame()->selection().selection();
+    VisibleSelection selection = getLayoutObject()->frame()->selection().selection();
     if (selection.isNone())
         return AXRange();
 
@@ -1855,13 +1855,13 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const
     if (textSelection.isValid())
         return textSelection;
 
-    if (!node() || !layoutObject()->frame())
+    if (!getNode() || !getLayoutObject()->frame())
         return AXRange();
 
-    VisibleSelection selection = layoutObject()->frame()->selection().selection();
+    VisibleSelection selection = getLayoutObject()->frame()->selection().selection();
     RefPtrWillBeRawPtr<Range> selectionRange = firstRangeOf(selection);
-    ContainerNode* parentNode = node()->parentNode();
-    int nodeIndex = node()->nodeIndex();
+    ContainerNode* parentNode = getNode()->parentNode();
+    int nodeIndex = getNode()->nodeIndex();
     if (!selectionRange
         // Selection is contained in node.
         || !(parentNode
@@ -1880,14 +1880,14 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const
 
 AXObject::AXRange AXLayoutObject::textControlSelection() const
 {
-    if (!layoutObject())
+    if (!getLayoutObject())
         return AXRange();
 
     LayoutObject* layout = nullptr;
-    if (layoutObject()->isTextControl()) {
-        layout = layoutObject();
+    if (getLayoutObject()->isTextControl()) {
+        layout = getLayoutObject();
     } else {
-        Element* focusedElement = document()->focusedElement();
+        Element* focusedElement = getDocument()->focusedElement();
         if (focusedElement && focusedElement->layoutObject()
             && focusedElement->layoutObject()->isTextControl())
             layout = focusedElement->layoutObject();
@@ -1910,21 +1910,21 @@ AXObject::AXRange AXLayoutObject::textControlSelection() const
 
 int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& position) const
 {
-    if (layoutObject() && layoutObject()->isTextControl()) {
+    if (getLayoutObject() && getLayoutObject()->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(
-            layoutObject())->textFormControlElement();
+            getLayoutObject())->textFormControlElement();
         return textControl->indexForVisiblePosition(position);
     }
 
-    if (!node())
+    if (!getNode())
         return 0;
 
     Position indexPosition = position.deepEquivalent();
     if (indexPosition.isNull())
         return 0;
 
-    RefPtrWillBeRawPtr<Range> range = Range::create(*document());
-    range->setStart(node(), 0, IGNORE_EXCEPTION);
+    RefPtrWillBeRawPtr<Range> range = Range::create(*getDocument());
+    range->setStart(getNode(), 0, IGNORE_EXCEPTION);
     range->setEnd(indexPosition, IGNORE_EXCEPTION);
 
     return TextIterator::rangeLength(range->startPosition(), range->endPosition());
@@ -1952,7 +1952,7 @@ AXLayoutObject* AXLayoutObject::getUnignoredObjectFromNode(Node& node) const
 
 void AXLayoutObject::setSelection(const AXRange& selection)
 {
-    if (!layoutObject() || !selection.isValid())
+    if (!getLayoutObject() || !selection.isValid())
         return;
 
     AXObject* anchorObject = selection.anchorObject ?
@@ -1966,9 +1966,9 @@ void AXLayoutObject::setSelection(const AXRange& selection)
     }
 
     if (anchorObject == focusObject
-        && anchorObject->layoutObject()->isTextControl()) {
+        && anchorObject->getLayoutObject()->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(
-            anchorObject->layoutObject())->textFormControlElement();
+            anchorObject->getLayoutObject())->textFormControlElement();
         if (selection.anchorOffset <= selection.focusOffset) {
             textControl->setSelectionRange(
                 selection.anchorOffset, selection.focusOffset,
@@ -1983,20 +1983,20 @@ void AXLayoutObject::setSelection(const AXRange& selection)
 
     Node* anchorNode = nullptr;
     while (anchorObject && !anchorNode) {
-        anchorNode = anchorObject->node();
+        anchorNode = anchorObject->getNode();
         anchorObject = anchorObject->parentObject();
     }
 
     Node* focusNode = nullptr;
     while (focusObject && !focusNode) {
-        focusNode = focusObject->node();
+        focusNode = focusObject->getNode();
         focusObject = focusObject->parentObject();
     }
 
     if (!anchorNode || !focusNode)
         return;
 
-    LocalFrame* frame = layoutObject()->frame();
+    LocalFrame* frame = getLayoutObject()->frame();
     if (!frame)
         return;
 
@@ -2007,24 +2007,24 @@ void AXLayoutObject::setSelection(const AXRange& selection)
 
 bool AXLayoutObject::isValidSelectionBound(const AXObject* boundObject) const
 {
-    return layoutObject() && boundObject && !boundObject->isDetached()
-        && boundObject->isAXLayoutObject() && boundObject->layoutObject()
-        && boundObject->layoutObject()->frame() == layoutObject()->frame()
+    return getLayoutObject() && boundObject && !boundObject->isDetached()
+        && boundObject->isAXLayoutObject() && boundObject->getLayoutObject()
+        && boundObject->getLayoutObject()->frame() == getLayoutObject()->frame()
         && &boundObject->axObjectCache() == &axObjectCache();
 }
 
 void AXLayoutObject::setValue(const String& string)
 {
-    if (!node() || !node()->isElementNode())
+    if (!getNode() || !getNode()->isElementNode())
         return;
     if (!m_layoutObject || !m_layoutObject->isBoxModelObject())
         return;
 
     LayoutBoxModelObject* layoutObject = toLayoutBoxModelObject(m_layoutObject);
-    if (layoutObject->isTextField() && isHTMLInputElement(*node()))
-        toHTMLInputElement(*node()).setValue(string, DispatchInputAndChangeEvent);
-    else if (layoutObject->isTextArea() && isHTMLTextAreaElement(*node()))
-        toHTMLTextAreaElement(*node()).setValue(string, DispatchInputAndChangeEvent);
+    if (layoutObject->isTextField() && isHTMLInputElement(*getNode()))
+        toHTMLInputElement(*getNode()).setValue(string, DispatchInputAndChangeEvent);
+    else if (layoutObject->isTextArea() && isHTMLTextAreaElement(*getNode()))
+        toHTMLTextAreaElement(*getNode()).setValue(string, DispatchInputAndChangeEvent);
 }
 
 //
@@ -2033,10 +2033,10 @@ void AXLayoutObject::setValue(const String& string)
 
 void AXLayoutObject::handleActiveDescendantChanged()
 {
-    Element* element = toElement(layoutObject()->node());
+    Element* element = toElement(getLayoutObject()->node());
     if (!element)
         return;
-    Document& doc = layoutObject()->document();
+    Document& doc = getLayoutObject()->document();
     if (!doc.frame()->selection().isFocusedAndActive() || doc.focusedElement() != element)
         return;
     AXLayoutObject* activedescendant = toAXLayoutObject(activeDescendant());
@@ -2092,7 +2092,7 @@ void AXLayoutObject::textChanged()
     if (!m_layoutObject)
         return;
 
-    Settings* settings = document()->settings();
+    Settings* settings = getDocument()->settings();
     if (settings && settings->inlineTextBoxAccessibilityEnabled() && roleValue() == StaticTextRole)
         childrenChanged();
 
@@ -2144,21 +2144,21 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
 
 void AXLayoutObject::addInlineTextBoxChildren(bool force)
 {
-    Settings* settings = document()->settings();
+    Settings* settings = getDocument()->settings();
     if (!force && (!settings || !settings->inlineTextBoxAccessibilityEnabled()))
         return;
 
-    if (!layoutObject() || !layoutObject()->isText())
+    if (!getLayoutObject() || !getLayoutObject()->isText())
         return;
 
-    if (layoutObject()->needsLayout()) {
+    if (getLayoutObject()->needsLayout()) {
         // If a LayoutText needs layout, its inline text boxes are either
         // nonexistent or invalid, so defer until the layout happens and
         // the layoutObject calls AXObjectCacheImpl::inlineTextBoxesUpdated.
         return;
     }
 
-    LayoutText* layoutText = toLayoutText(layoutObject());
+    LayoutText* layoutText = toLayoutText(getLayoutObject());
     for (RefPtr<AbstractInlineTextBox> box = layoutText->firstAbstractInlineTextBox(); box.get(); box = box->nextInlineTextBox()) {
         AXObject* axObject = axObjectCache().getOrCreate(box.get());
         if (!axObject->accessibilityIsIgnored())
@@ -2355,7 +2355,7 @@ void AXLayoutObject::offsetBoundingBoxForRemoteSVGElement(LayoutRect& rect) cons
 // meaning that they should be exposed to the AX hierarchy.
 void AXLayoutObject::addHiddenChildren()
 {
-    Node* node = this->node();
+    Node* node = this->getNode();
     if (!node)
         return;
 
@@ -2403,7 +2403,7 @@ void AXLayoutObject::addHiddenChildren()
 
 void AXLayoutObject::addTextFieldChildren()
 {
-    Node* node = this->node();
+    Node* node = this->getNode();
     if (!isHTMLInputElement(node))
         return;
 
@@ -2420,7 +2420,7 @@ void AXLayoutObject::addTextFieldChildren()
 
 void AXLayoutObject::addImageMapChildren()
 {
-    LayoutBoxModelObject* cssBox = layoutBoxModelObject();
+    LayoutBoxModelObject* cssBox = getLayoutBoxModelObject();
     if (!cssBox || !cssBox->isLayoutImage())
         return;
 
@@ -2445,7 +2445,7 @@ void AXLayoutObject::addImageMapChildren()
 
 void AXLayoutObject::addCanvasChildren()
 {
-    if (!isHTMLCanvasElement(node()))
+    if (!isHTMLCanvasElement(getNode()))
         return;
 
     // If it's a canvas, it won't have laid out children, but it might have accessible fallback content.
@@ -2475,9 +2475,9 @@ void AXLayoutObject::addFrameChildren()
 
 void AXLayoutObject::addPopupChildren()
 {
-    if (!isHTMLInputElement(node()))
+    if (!isHTMLInputElement(getNode()))
         return;
-    if (AXObject* axPopup = toHTMLInputElement(node())->popupRootAXObject())
+    if (AXObject* axPopup = toHTMLInputElement(getNode())->popupRootAXObject())
         m_children.append(axPopup);
 }
 
@@ -2530,7 +2530,7 @@ LayoutRect AXLayoutObject::computeElementRect() const
         result = LayoutRect(obj->absoluteElementBoundingBoxRect());
     }
 
-    Document* document = this->document();
+    Document* document = this->getDocument();
     if (document && document->isSVGDocument())
         offsetBoundingBoxForRemoteSVGElement(result);
     if (document && document->frame() && document->frame()->pagePopupOwner()) {

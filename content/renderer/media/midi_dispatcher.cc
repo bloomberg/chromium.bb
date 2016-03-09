@@ -40,7 +40,7 @@ void MidiDispatcher::requestPermission(const WebMIDIPermissionRequest& request,
           : PermissionName::MIDI;
 
   permission_service_->RequestPermission(
-      permission_name, request.securityOrigin().toString().utf8(),
+      permission_name, request.getSecurityOrigin().toString().utf8(),
       base::Bind(&MidiDispatcher::OnPermissionSet, base::Unretained(this),
                  permission_request_id));
 }

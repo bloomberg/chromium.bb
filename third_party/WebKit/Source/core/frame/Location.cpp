@@ -123,7 +123,7 @@ PassRefPtrWillBeRawPtr<DOMStringList> Location::ancestorOrigins() const
     if (!m_frame)
         return origins.release();
     for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent())
-        origins->append(frame->securityContext()->securityOrigin()->toString());
+        origins->append(frame->securityContext()->getSecurityOrigin()->toString());
     return origins.release();
 }
 

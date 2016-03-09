@@ -89,7 +89,7 @@ static void weakCallback(const v8::WeakCallbackInfo<ScopedPersistent<T>>& data)
 
 V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptState* scriptState, v8::Local<v8::Object> prototype, v8::MaybeLocal<v8::Function> created, v8::MaybeLocal<v8::Function> attached, v8::MaybeLocal<v8::Function> detached, v8::MaybeLocal<v8::Function> attributeChanged)
     : CustomElementLifecycleCallbacks(flagSet(attached, detached, attributeChanged))
-    , ContextLifecycleObserver(scriptState->executionContext())
+    , ContextLifecycleObserver(scriptState->getExecutionContext())
     , m_scriptState(scriptState)
     , m_prototype(scriptState->isolate(), prototype)
     , m_created(scriptState->isolate(), created)
@@ -109,7 +109,7 @@ V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptState
 
 V8PerContextData* V8CustomElementLifecycleCallbacks::creationContextData()
 {
-    if (!executionContext())
+    if (!getExecutionContext())
         return 0;
 
     v8::Local<v8::Context> context = m_scriptState->context();
@@ -141,7 +141,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     // FIXME: callbacks while paused should be queued up for execution to
     // continue then be delivered in order rather than delivered immediately.
     // Bug 329665 tracks similar behavior for other synchronous events.
-    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+    if (!getExecutionContext() || getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
     if (!m_scriptState->contextIsValid())
@@ -170,7 +170,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
 
     v8::TryCatch exceptionCatcher(isolate);
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(executionContext(), callback, receiver, 0, 0, isolate);
+    ScriptController::callFunction(getExecutionContext(), callback, receiver, 0, 0, isolate);
 }
 
 void V8CustomElementLifecycleCallbacks::attached(Element* element)
@@ -188,7 +188,7 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
     // FIXME: callbacks while paused should be queued up for execution to
     // continue then be delivered in order rather than delivered immediately.
     // Bug 329665 tracks similar behavior for other synchronous events.
-    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+    if (!getExecutionContext() || getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
     if (!m_scriptState->contextIsValid())
@@ -212,7 +212,7 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
 
     v8::TryCatch exceptionCatcher(isolate);
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(executionContext(), callback, receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
+    ScriptController::callFunction(getExecutionContext(), callback, receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
 void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function>& weakCallback, Element* element)
@@ -220,7 +220,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     // FIXME: callbacks while paused should be queued up for execution to
     // continue then be delivered in order rather than delivered immediately.
     // Bug 329665 tracks similar behavior for other synchronous events.
-    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+    if (!getExecutionContext() || getExecutionContext()->activeDOMObjectsAreStopped())
         return;
 
     if (!m_scriptState->contextIsValid())
@@ -238,7 +238,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
 
     v8::TryCatch exceptionCatcher(isolate);
     exceptionCatcher.SetVerbose(true);
-    ScriptController::callFunction(executionContext(), callback, receiver, 0, 0, isolate);
+    ScriptController::callFunction(getExecutionContext(), callback, receiver, 0, 0, isolate);
 }
 
 DEFINE_TRACE(V8CustomElementLifecycleCallbacks)

@@ -50,7 +50,7 @@ public:
         // If execution termination has been triggered, quietly bail out.
         if (m_scriptState->isolate()->IsExecutionTerminating())
             return;
-        ExecutionContext* executionContext = m_scriptState->executionContext();
+        ExecutionContext* executionContext = m_scriptState->getExecutionContext();
         if (!executionContext)
             return;
 
@@ -99,7 +99,7 @@ public:
 
     void revoke()
     {
-        ExecutionContext* executionContext = m_scriptState->executionContext();
+        ExecutionContext* executionContext = m_scriptState->getExecutionContext();
         if (!executionContext)
             return;
 

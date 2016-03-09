@@ -168,7 +168,7 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Docum
     m_image = cropImage(image->cachedImage()->image(), cropRect, flipY, m_isPremultiplied, PremultiplyAlpha);
     if (!m_image)
         return;
-    m_image->setOriginClean(!image->wouldTaintOrigin(document->securityOrigin()));
+    m_image->setOriginClean(!image->wouldTaintOrigin(document->getSecurityOrigin()));
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
@@ -199,7 +199,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Docum
     } else {
         m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
     }
-    m_image->setOriginClean(!video->wouldTaintOrigin(document->securityOrigin()));
+    m_image->setOriginClean(!video->wouldTaintOrigin(document->getSecurityOrigin()));
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)

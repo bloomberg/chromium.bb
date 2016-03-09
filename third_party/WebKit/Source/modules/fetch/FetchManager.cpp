@@ -339,7 +339,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         }
     }
 
-    Response* r = Response::create(m_resolver->executionContext(), taintedResponse);
+    Response* r = Response::create(m_resolver->getExecutionContext(), taintedResponse);
     if (response.url().protocolIsData()) {
         // An "Access-Control-Allow-Origin" header is added for data: URLs
         // but no headers except for "Content-Type" should exist,
@@ -689,9 +689,9 @@ void FetchManager::Loader::failed(const String& message)
     if (!message.isEmpty())
         m_executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
     if (m_resolver) {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        ScriptState* state = m_resolver->scriptState();
+        ScriptState* state = m_resolver->getScriptState();
         ScriptState::Scope scope(state);
         m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), "Failed to fetch"));
     }
@@ -727,7 +727,7 @@ ScriptPromise FetchManager::fetch(ScriptState* scriptState, FetchRequestData* re
 
     request->setContext(WebURLRequest::RequestContextFetch);
 
-    Loader* loader = Loader::create(executionContext(), this, resolver, request, scriptState->world().isIsolatedWorld());
+    Loader* loader = Loader::create(getExecutionContext(), this, resolver, request, scriptState->world().isIsolatedWorld());
     m_loaders.add(loader);
     loader->start();
     return promise;

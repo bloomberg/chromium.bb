@@ -71,7 +71,7 @@ bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
             return true;
     }
 
-    bool taintOrigin = imageSource->wouldTaintOrigin(canvas()->securityOrigin());
+    bool taintOrigin = imageSource->wouldTaintOrigin(canvas()->getSecurityOrigin());
 
     if (hasURL) {
         if (taintOrigin)

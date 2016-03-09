@@ -49,15 +49,15 @@ void SpeechSynthesis::setPlatformSynthesizer(PlatformSpeechSynthesizer* synthesi
     m_platformSpeechSynthesizer = synthesizer;
 }
 
-ExecutionContext* SpeechSynthesis::executionContext() const
+ExecutionContext* SpeechSynthesis::getExecutionContext() const
 {
-    return ContextLifecycleObserver::executionContext();
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 void SpeechSynthesis::voicesDidChange()
 {
     m_voiceList.clear();
-    if (executionContext() && !executionContext()->activeDOMObjectsAreStopped())
+    if (getExecutionContext() && !getExecutionContext()->activeDOMObjectsAreStopped())
         dispatchEvent(Event::create(EventTypeNames::voiceschanged));
 }
 
@@ -139,7 +139,7 @@ void SpeechSynthesis::resume()
 
 void SpeechSynthesis::fireEvent(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned long charIndex, const String& name)
 {
-    if (executionContext() && !executionContext()->activeDOMObjectsAreStopped())
+    if (getExecutionContext() && !getExecutionContext()->activeDOMObjectsAreStopped())
         utterance->dispatchEvent(SpeechSynthesisEvent::create(type, utterance, charIndex, (currentTime() - utterance->startTime()), name));
 }
 

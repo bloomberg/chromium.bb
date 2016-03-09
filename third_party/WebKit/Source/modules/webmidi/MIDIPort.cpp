@@ -40,7 +40,7 @@ namespace blink {
 using PortState = MIDIAccessor::MIDIPortState;
 
 MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, TypeCode type, const String& version, PortState state)
-    : ActiveDOMObject(access->executionContext())
+    : ActiveDOMObject(access->getExecutionContext())
     , m_id(id)
     , m_manufacturer(manufacturer)
     , m_name(name)
@@ -141,9 +141,9 @@ void MIDIPort::setState(PortState state)
     }
 }
 
-ExecutionContext* MIDIPort::executionContext() const
+ExecutionContext* MIDIPort::getExecutionContext() const
 {
-    return m_access->executionContext();
+    return m_access->getExecutionContext();
 }
 
 bool MIDIPort::hasPendingActivity() const

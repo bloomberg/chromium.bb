@@ -38,7 +38,7 @@ public:
     ScriptPromise show(ScriptState*);
     void abort();
 
-    ShippingAddress* shippingAddress() const { return m_shippingAddress.get(); }
+    ShippingAddress* getShippingAddress() const { return m_shippingAddress.get(); }
     const String& shippingOption() const { return m_shippingOption; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingaddresschange);
@@ -46,7 +46,7 @@ public:
 
     // EventTargetWithInlineData:
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     DECLARE_TRACE();
 

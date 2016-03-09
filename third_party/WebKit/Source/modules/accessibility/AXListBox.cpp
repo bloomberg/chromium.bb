@@ -64,10 +64,10 @@ AccessibilityRole AXListBox::determineAccessibilityRole()
 
 AXObject* AXListBox::activeDescendant() const
 {
-    if (!isHTMLSelectElement(node()))
+    if (!isHTMLSelectElement(getNode()))
         return nullptr;
 
-    HTMLSelectElement* select = toHTMLSelectElement(node());
+    HTMLSelectElement* select = toHTMLSelectElement(getNode());
     int activeIndex = select->activeSelectionEndListIndex();
     if (activeIndex >= 0 && activeIndex < static_cast<int>(select->length())) {
         HTMLOptionElement* option = select->item(m_activeIndex);
@@ -79,10 +79,10 @@ AXObject* AXListBox::activeDescendant() const
 
 void AXListBox::activeIndexChanged()
 {
-    if (!isHTMLSelectElement(node()))
+    if (!isHTMLSelectElement(getNode()))
         return;
 
-    HTMLSelectElement* select = toHTMLSelectElement(node());
+    HTMLSelectElement* select = toHTMLSelectElement(getNode());
     int activeIndex = select->activeSelectionEndListIndex();
     if (activeIndex == m_activeIndex)
         return;

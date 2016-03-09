@@ -34,7 +34,7 @@ ProgrammaticScriptInjector::ProgrammaticScriptInjector(
       finished_(false) {
   if (url_.SchemeIs(url::kAboutScheme)) {
     origin_for_about_error_ =
-        render_frame->GetWebFrame()->securityOrigin().toString().utf8();
+        render_frame->GetWebFrame()->getSecurityOrigin().toString().utf8();
   }
 }
 

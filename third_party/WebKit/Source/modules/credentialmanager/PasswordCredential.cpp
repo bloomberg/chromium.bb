@@ -42,7 +42,7 @@ PasswordCredential* PasswordCredential::create(const PasswordCredentialData& dat
 }
 
 PasswordCredential::PasswordCredential(WebPasswordCredential* webPasswordCredential)
-    : Credential(webPasswordCredential->platformCredential())
+    : Credential(webPasswordCredential->getPlatformCredential())
     , m_idName("username")
     , m_passwordName("password")
 {

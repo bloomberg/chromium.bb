@@ -189,15 +189,15 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     if (consoleMessage->scriptId())
         jsonObj->setScriptId(String::number(consoleMessage->scriptId()));
     jsonObj->setUrl(consoleMessage->url());
-    ScriptState* scriptState = consoleMessage->scriptState();
+    ScriptState* scriptState = consoleMessage->getScriptState();
     if (scriptState)
         jsonObj->setExecutionContextId(scriptState->contextIdInDebugger());
     if (consoleMessage->source() == NetworkMessageSource && consoleMessage->requestIdentifier())
         jsonObj->setNetworkRequestId(IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
     RefPtrWillBeRawPtr<ScriptArguments> arguments = consoleMessage->scriptArguments();
     if (arguments && arguments->argumentCount()) {
-        ScriptState::Scope scope(arguments->scriptState());
-        v8::Local<v8::Context> context = arguments->scriptState()->context();
+        ScriptState::Scope scope(arguments->getScriptState());
+        v8::Local<v8::Context> context = arguments->getScriptState()->context();
         OwnPtr<protocol::Array<protocol::Runtime::RemoteObject>> jsonArgs = protocol::Array<protocol::Runtime::RemoteObject>::create();
         if (consoleMessage->type() == TableMessageType && generatePreview) {
             v8::Local<v8::Value> table = arguments->argumentAt(0).v8Value();

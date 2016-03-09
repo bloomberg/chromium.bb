@@ -83,7 +83,7 @@ public:
     void disableEval(const String&);
 
     // Used by Inspector agents:
-    ScriptState* scriptState() { return m_scriptState.get(); }
+    ScriptState* getScriptState() { return m_scriptState.get(); }
 
     // Used by V8 bindings:
     v8::Local<v8::Context> context() { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }

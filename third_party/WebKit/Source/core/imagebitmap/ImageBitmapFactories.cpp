@@ -74,7 +74,7 @@ static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSo
 ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, ExceptionState& exceptionState)
 {
     UseCounter::Feature feature = UseCounter::CreateImageBitmap;
-    UseCounter::count(scriptState->executionContext(), feature);
+    UseCounter::count(scriptState->getExecutionContext(), feature);
     ImageBitmapOptions options;
     return createImageBitmap(scriptState, eventTarget, bitmapSource, options, exceptionState);
 }
@@ -87,7 +87,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
         ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(), options, scriptState);
         ScriptPromise promise = loader->promise();
         from(eventTarget).addLoader(loader);
-        loader->loadBlobAsync(eventTarget.executionContext(), blob);
+        loader->loadBlobAsync(eventTarget.getExecutionContext(), blob);
         return promise;
     }
     IntSize srcSize = bitmapSourceInternal->bitmapSourceSize();
@@ -97,7 +97,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
 ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, const ImageBitmapSourceUnion& bitmapSource, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
 {
     UseCounter::Feature feature = UseCounter::CreateImageBitmap;
-    UseCounter::count(scriptState->executionContext(), feature);
+    UseCounter::count(scriptState->getExecutionContext(), feature);
     ImageBitmapOptions options;
     return createImageBitmap(scriptState, eventTarget, bitmapSource, sx, sy, sw, sh, options, exceptionState);
 }
@@ -119,7 +119,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
         ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), IntRect(sx, sy, sw, sh), options, scriptState);
         ScriptPromise promise = loader->promise();
         from(eventTarget).addLoader(loader);
-        loader->loadBlobAsync(eventTarget.executionContext(), blob);
+        loader->loadBlobAsync(eventTarget.getExecutionContext(), blob);
         return promise;
     }
 
@@ -136,8 +136,8 @@ ImageBitmapFactories& ImageBitmapFactories::from(EventTarget& eventTarget)
     if (LocalDOMWindow* window = eventTarget.toDOMWindow())
         return fromInternal(*window);
 
-    ASSERT(eventTarget.executionContext()->isWorkerGlobalScope());
-    return ImageBitmapFactories::fromInternal(*toWorkerGlobalScope(eventTarget.executionContext()));
+    ASSERT(eventTarget.getExecutionContext()->isWorkerGlobalScope());
+    return ImageBitmapFactories::fromInternal(*toWorkerGlobalScope(eventTarget.getExecutionContext()));
 }
 
 template<class GlobalObject>
@@ -185,7 +185,7 @@ DEFINE_TRACE(ImageBitmapFactories)
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
 {
-    m_resolver->reject(ScriptValue(m_resolver->scriptState(), v8::Null(m_resolver->scriptState()->isolate())));
+    m_resolver->reject(ScriptValue(m_resolver->getScriptState(), v8::Null(m_resolver->getScriptState()->isolate())));
     m_factory->didFinishLoading(this);
 }
 

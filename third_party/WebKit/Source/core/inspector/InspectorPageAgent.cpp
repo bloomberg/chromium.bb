@@ -705,7 +705,7 @@ PassOwnPtr<protocol::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalF
         .setLoaderId(IdentifiersFactory::loaderId(frame->loader().documentLoader()))
         .setUrl(urlWithoutFragment(frame->document()->url()).getString())
         .setMimeType(frame->loader().documentLoader()->responseMIMEType())
-        .setSecurityOrigin(frame->document()->securityOrigin()->toRawString()).build();
+        .setSecurityOrigin(frame->document()->getSecurityOrigin()->toRawString()).build();
     // FIXME: This doesn't work for OOPI.
     Frame* parentFrame = frame->tree().parent();
     if (parentFrame && parentFrame->isLocalFrame())

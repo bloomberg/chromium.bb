@@ -40,7 +40,7 @@ public:
     void setLineNumber(unsigned);
     PassRefPtr<ScriptCallStack> callStack() const;
     void setCallStack(PassRefPtr<ScriptCallStack>);
-    ScriptState* scriptState() const;
+    ScriptState* getScriptState() const;
     void setScriptState(ScriptState*);
     PassRefPtrWillBeRawPtr<ScriptArguments> scriptArguments() const;
     void setScriptArguments(PassRefPtrWillBeRawPtr<ScriptArguments>);

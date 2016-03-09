@@ -140,8 +140,8 @@ void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState, Event
             event->target()->uncaughtExceptionInEventHandler();
 
         if (!tryCatch.CanContinue()) { // Result of TerminateExecution().
-            if (scriptState->executionContext()->isWorkerGlobalScope())
-                toWorkerGlobalScope(scriptState->executionContext())->scriptController()->forbidExecution();
+            if (scriptState->getExecutionContext()->isWorkerGlobalScope())
+                toWorkerGlobalScope(scriptState->getExecutionContext())->scriptController()->forbidExecution();
             return;
         }
         tryCatch.Reset();

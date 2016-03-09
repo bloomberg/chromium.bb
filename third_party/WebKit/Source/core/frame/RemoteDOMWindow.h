@@ -18,7 +18,7 @@ public:
     }
 
     // EventTarget overrides:
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     // DOMWindow overrides:
     DECLARE_VIRTUAL_TRACE();

@@ -219,12 +219,12 @@ bool WebNode::isDocumentTypeNode() const
 void WebNode::dispatchEvent(const WebDOMEvent& event)
 {
     if (!event.isNull())
-        m_private->executionContext()->postSuspendableTask(adoptPtr(new NodeDispatchEventTask(m_private, event)));
+        m_private->getExecutionContext()->postSuspendableTask(adoptPtr(new NodeDispatchEventTask(m_private, event)));
 }
 
 void WebNode::simulateClick()
 {
-    m_private->executionContext()->postSuspendableTask(adoptPtr(new NodeDispatchSimulatedClickTask(m_private)));
+    m_private->getExecutionContext()->postSuspendableTask(adoptPtr(new NodeDispatchSimulatedClickTask(m_private)));
 }
 
 WebElementCollection WebNode::getElementsByHTMLTagName(const WebString& tag) const

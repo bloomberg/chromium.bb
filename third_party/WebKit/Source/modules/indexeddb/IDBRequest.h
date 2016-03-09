@@ -65,7 +65,7 @@ public:
     ~IDBRequest() override;
     DECLARE_VIRTUAL_TRACE();
 
-    ScriptState* scriptState() { return m_scriptState.get(); }
+    ScriptState* getScriptState() { return m_scriptState.get(); }
     ScriptValue result(ExceptionState&);
     DOMException* error(ExceptionState&) const;
     ScriptValue source() const;
@@ -115,7 +115,7 @@ public:
 
     // EventTarget
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const final;
+    ExecutionContext* getExecutionContext() const final;
     void uncaughtExceptionInEventHandler() final;
 
     // Called by a version change transaction that has finished to set this

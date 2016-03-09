@@ -79,7 +79,7 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(ScriptState* script
     }
 
     controller()->getInstalledApps(
-        WebSecurityOrigin(scriptState->executionContext()->securityOrigin()),
+        WebSecurityOrigin(scriptState->getExecutionContext()->getSecurityOrigin()),
         adoptWebPtr(new CallbackPromiseAdapter<RelatedAppArray, void>(resolver)));
     return promise;
 }

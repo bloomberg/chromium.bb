@@ -158,9 +158,9 @@ protected:
         V8GCController::collectAllGarbageForTesting(isolate());
     }
 
-    ExecutionContext* executionContext() { return &(m_page->document()); }
+    ExecutionContext* getExecutionContext() { return &(m_page->document()); }
     v8::Isolate* isolate() { return v8::Isolate::GetCurrent(); }
-    ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
+    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
 
     void provide(PassOwnPtr<WebServiceWorkerProvider> provider)
     {
@@ -182,12 +182,12 @@ protected:
         // the provider.
         provide(adoptPtr(new NotReachedWebServiceWorkerProvider()));
 
-        ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
-        ScriptState::Scope scriptScope(scriptState());
+        ServiceWorkerContainer* container = ServiceWorkerContainer::create(getExecutionContext());
+        ScriptState::Scope scriptScope(getScriptState());
         RegistrationOptions options;
         options.setScope(scope);
-        ScriptPromise promise = container->registerServiceWorker(scriptState(), scriptURL, options);
-        expectRejected(scriptState(), promise, valueTest);
+        ScriptPromise promise = container->registerServiceWorker(getScriptState(), scriptURL, options);
+        expectRejected(getScriptState(), promise, valueTest);
 
         container->willBeDetachedFromFrame();
     }
@@ -196,10 +196,10 @@ protected:
     {
         provide(adoptPtr(new NotReachedWebServiceWorkerProvider()));
 
-        ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
-        ScriptState::Scope scriptScope(scriptState());
-        ScriptPromise promise = container->getRegistration(scriptState(), documentURL);
-        expectRejected(scriptState(), promise, valueTest);
+        ServiceWorkerContainer* container = ServiceWorkerContainer::create(getExecutionContext());
+        ScriptState::Scope scriptScope(getScriptState());
+        ScriptPromise promise = container->getRegistration(getScriptState(), documentURL);
+        expectRejected(getScriptState(), promise, valueTest);
 
         container->willBeDetachedFromFrame();
     }
@@ -325,14 +325,14 @@ TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelega
     StubWebServiceWorkerProvider stubProvider;
     provide(stubProvider.provider());
 
-    ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
+    ServiceWorkerContainer* container = ServiceWorkerContainer::create(getExecutionContext());
 
     // register
     {
-        ScriptState::Scope scriptScope(scriptState());
+        ScriptState::Scope scriptScope(getScriptState());
         RegistrationOptions options;
         options.setScope("y/");
-        container->registerServiceWorker(scriptState(), "/x/y/worker.js", options);
+        container->registerServiceWorker(getScriptState(), "/x/y/worker.js", options);
 
         EXPECT_EQ(1ul, stubProvider.registerCallCount());
         EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/")), stubProvider.registerScope());
@@ -349,11 +349,11 @@ TEST_F(ServiceWorkerContainerTest, GetRegistration_OmittedDocumentURLDefaultsToP
     StubWebServiceWorkerProvider stubProvider;
     provide(stubProvider.provider());
 
-    ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
+    ServiceWorkerContainer* container = ServiceWorkerContainer::create(getExecutionContext());
 
     {
-        ScriptState::Scope scriptScope(scriptState());
-        container->getRegistration(scriptState(), "");
+        ScriptState::Scope scriptScope(getScriptState());
+        container->getRegistration(getScriptState(), "");
         EXPECT_EQ(1ul, stubProvider.getRegistrationCallCount());
         EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/index.html")), stubProvider.getRegistrationURL());
     }

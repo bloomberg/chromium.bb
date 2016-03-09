@@ -34,7 +34,7 @@ public:
 
     // EventTarget implementation.
     const WTF::AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
 
     String type() const;
     unsigned short angle() const;

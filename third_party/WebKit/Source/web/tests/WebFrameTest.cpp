@@ -7709,7 +7709,7 @@ TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener)
     popupView->setMainFrame(popupRemoteFrame);
     popupRemoteFrame->setOpener(mainFrame);
     popupRemoteFrame->setReplicatedOrigin(WebSecurityOrigin::createFromString("http://foo.com"));
-    EXPECT_FALSE(mainFrame->securityOrigin().canAccess(popupView->mainFrame()->securityOrigin()));
+    EXPECT_FALSE(mainFrame->getSecurityOrigin().canAccess(popupView->mainFrame()->getSecurityOrigin()));
 
     // Do a remote-to-local swap in the popup.
     FrameTestHelpers::TestWebFrameClient popupLocalClient;
@@ -7718,7 +7718,7 @@ TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener)
 
     // The initial document created during the remote-to-local swap should have
     // inherited its opener's SecurityOrigin.
-    EXPECT_TRUE(mainFrame->securityOrigin().canAccess(popupView->mainFrame()->securityOrigin()));
+    EXPECT_TRUE(mainFrame->getSecurityOrigin().canAccess(popupView->mainFrame()->getSecurityOrigin()));
 
     popupView->close();
 }

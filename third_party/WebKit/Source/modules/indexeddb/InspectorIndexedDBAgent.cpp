@@ -142,9 +142,9 @@ public:
     virtual ~ExecutableWithDatabase() { }
     void start(IDBFactory*, SecurityOrigin*, const String& databaseName);
     virtual void execute(IDBDatabase*) = 0;
-    virtual RequestCallback* requestCallback() = 0;
-    ExecutionContext* context() const { return m_scriptState->executionContext(); }
-    ScriptState* scriptState() const { return m_scriptState.get(); }
+    virtual RequestCallback* getRequestCallback() = 0;
+    ExecutionContext* context() const { return m_scriptState->getExecutionContext(); }
+    ScriptState* getScriptState() const { return m_scriptState.get(); }
 private:
     RefPtr<ScriptState> m_scriptState;
 };
@@ -166,20 +166,20 @@ public:
     void handleEvent(ExecutionContext* context, Event* event) override
     {
         if (event->type() != EventTypeNames::success) {
-            m_executableWithDatabase->requestCallback()->sendFailure("Unexpected event type.");
+            m_executableWithDatabase->getRequestCallback()->sendFailure("Unexpected event type.");
             return;
         }
 
         IDBOpenDBRequest* idbOpenDBRequest = static_cast<IDBOpenDBRequest*>(event->target());
         IDBAny* requestResult = idbOpenDBRequest->resultAsAny();
         if (requestResult->getType() != IDBAny::IDBDatabaseType) {
-            m_executableWithDatabase->requestCallback()->sendFailure("Unexpected result type.");
+            m_executableWithDatabase->getRequestCallback()->sendFailure("Unexpected result type.");
             return;
         }
 
         IDBDatabase* idbDatabase = requestResult->idbDatabase();
         m_executableWithDatabase->execute(idbDatabase);
-        V8PerIsolateData::from(m_executableWithDatabase->scriptState()->isolate())->runEndOfScopeTasks();
+        V8PerIsolateData::from(m_executableWithDatabase->getScriptState()->isolate())->runEndOfScopeTasks();
         idbDatabase->close();
     }
 
@@ -207,7 +207,7 @@ public:
     void handleEvent(ExecutionContext* context, Event* event) override
     {
         if (event->type() != EventTypeNames::upgradeneeded) {
-            m_executableWithDatabase->requestCallback()->sendFailure("Unexpected event type.");
+            m_executableWithDatabase->getRequestCallback()->sendFailure("Unexpected event type.");
             return;
         }
 
@@ -217,7 +217,7 @@ public:
         IDBOpenDBRequest* idbOpenDBRequest = static_cast<IDBOpenDBRequest*>(event->target());
         NonThrowableExceptionState exceptionState;
         idbOpenDBRequest->transaction()->abort(exceptionState);
-        m_executableWithDatabase->requestCallback()->sendFailure("Aborted upgrade.");
+        m_executableWithDatabase->getRequestCallback()->sendFailure("Aborted upgrade.");
     }
 
 private:
@@ -232,9 +232,9 @@ void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, cons
     RefPtrWillBeRawPtr<OpenDatabaseCallback> openCallback = OpenDatabaseCallback::create(this);
     RefPtrWillBeRawPtr<UpgradeDatabaseCallback> upgradeCallback = UpgradeDatabaseCallback::create(this);
     TrackExceptionState exceptionState;
-    IDBOpenDBRequest* idbOpenDBRequest = idbFactory->open(scriptState(), databaseName, exceptionState);
+    IDBOpenDBRequest* idbOpenDBRequest = idbFactory->open(getScriptState(), databaseName, exceptionState);
     if (exceptionState.hadException()) {
-        requestCallback()->sendFailure("Could not open database.");
+        getRequestCallback()->sendFailure("Could not open database.");
         return;
     }
     idbOpenDBRequest->addEventListener(EventTypeNames::upgradeneeded, upgradeCallback, false);
@@ -342,7 +342,7 @@ public:
         m_requestCallback->sendSuccess(result.release());
     }
 
-    RequestCallback* requestCallback() override { return m_requestCallback.get(); }
+    RequestCallback* getRequestCallback() override { return m_requestCallback.get(); }
 private:
     DatabaseLoader(ScriptState* scriptState, PassOwnPtr<RequestDatabaseCallback> requestCallback)
         : ExecutableWithDatabase(scriptState)
@@ -461,7 +461,7 @@ public:
             return;
         }
 
-        Document* document = toDocument(m_scriptState->executionContext());
+        Document* document = toDocument(m_scriptState->getExecutionContext());
         if (!document)
             return;
         // FIXME: There are no tests for this error showing when a recursive
@@ -521,7 +521,7 @@ public:
 
     void execute(IDBDatabase* idbDatabase) override
     {
-        IDBTransaction* idbTransaction = transactionForDatabase(scriptState(), idbDatabase, m_objectStoreName);
+        IDBTransaction* idbTransaction = transactionForDatabase(getScriptState(), idbDatabase, m_objectStoreName);
         if (!idbTransaction) {
             m_requestCallback->sendFailure("Could not get transaction");
             return;
@@ -540,15 +540,15 @@ public:
                 return;
             }
 
-            idbRequest = idbIndex->openCursor(scriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
+            idbRequest = idbIndex->openCursor(getScriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
         } else {
-            idbRequest = idbObjectStore->openCursor(scriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
+            idbRequest = idbObjectStore->openCursor(getScriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
         }
-        RefPtrWillBeRawPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(scriptState(), m_requestCallback.release(), m_skipCount, m_pageSize);
+        RefPtrWillBeRawPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(getScriptState(), m_requestCallback.release(), m_skipCount, m_pageSize);
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }
 
-    RequestCallback* requestCallback() override { return m_requestCallback.get(); }
+    RequestCallback* getRequestCallback() override { return m_requestCallback.get(); }
     DataLoader(ScriptState* scriptState, PassOwnPtr<RequestDataCallback> requestCallback, const String& objectStoreName, const String& indexName, IDBKeyRange* idbKeyRange, int skipCount, unsigned pageSize)
         : ExecutableWithDatabase(scriptState)
         , m_requestCallback(requestCallback)
@@ -649,7 +649,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
         requestCallback->sendFailure("Could not obtain database names.");
         return;
     }
-    idbRequest->addEventListener(EventTypeNames::success, GetDatabaseNamesCallback::create(requestCallback, document->securityOrigin()->toRawString()), false);
+    idbRequest->addEventListener(EventTypeNames::success, GetDatabaseNamesCallback::create(requestCallback, document->getSecurityOrigin()->toRawString()), false);
 }
 
 void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const String& securityOrigin, const String& databaseName, PassOwnPtr<RequestDatabaseCallback> requestCallback)
@@ -667,7 +667,7 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
         return;
     ScriptState::Scope scope(scriptState);
     RefPtr<DatabaseLoader> databaseLoader = DatabaseLoader::create(scriptState, requestCallback);
-    databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
+    databaseLoader->start(idbFactory, document->getSecurityOrigin(), databaseName);
 }
 
 void InspectorIndexedDBAgent::requestData(ErrorString* errorString,
@@ -699,7 +699,7 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString,
         return;
     ScriptState::Scope scope(scriptState);
     RefPtr<DataLoader> dataLoader = DataLoader::create(scriptState, requestCallback, objectStoreName, indexName, idbKeyRange, skipCount, pageSize);
-    dataLoader->start(idbFactory, document->securityOrigin(), databaseName);
+    dataLoader->start(idbFactory, document->getSecurityOrigin(), databaseName);
 }
 
 class ClearObjectStoreListener final : public EventListener {
@@ -759,7 +759,7 @@ public:
 
     void execute(IDBDatabase* idbDatabase) override
     {
-        IDBTransaction* idbTransaction = transactionForDatabase(scriptState(), idbDatabase, m_objectStoreName, IndexedDBNames::readwrite);
+        IDBTransaction* idbTransaction = transactionForDatabase(getScriptState(), idbDatabase, m_objectStoreName, IndexedDBNames::readwrite);
         if (!idbTransaction) {
             m_requestCallback->sendFailure("Could not get transaction");
             return;
@@ -771,7 +771,7 @@ public:
         }
 
         TrackExceptionState exceptionState;
-        idbObjectStore->clear(scriptState(), exceptionState);
+        idbObjectStore->clear(getScriptState(), exceptionState);
         ASSERT(!exceptionState.hadException());
         if (exceptionState.hadException()) {
             ExceptionCode ec = exceptionState.code();
@@ -781,7 +781,7 @@ public:
         idbTransaction->addEventListener(EventTypeNames::complete, ClearObjectStoreListener::create(m_requestCallback.release()), false);
     }
 
-    RequestCallback* requestCallback() override { return m_requestCallback.get(); }
+    RequestCallback* getRequestCallback() override { return m_requestCallback.get(); }
 private:
     const String m_objectStoreName;
     OwnPtr<ClearObjectStoreCallback> m_requestCallback;
@@ -802,7 +802,7 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
         return;
     ScriptState::Scope scope(scriptState);
     RefPtr<ClearObjectStore> clearObjectStore = ClearObjectStore::create(scriptState, objectStoreName, requestCallback);
-    clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);
+    clearObjectStore->start(idbFactory, document->getSecurityOrigin(), databaseName);
 }
 
 DEFINE_TRACE(InspectorIndexedDBAgent)

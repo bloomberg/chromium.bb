@@ -40,8 +40,8 @@ public:
 
     CacheStorage* caches(T& fetchingScope, ExceptionState& exceptionState)
     {
-        ExecutionContext* context = fetchingScope.executionContext();
-        if (!context->securityOrigin()->canAccessCacheStorage()) {
+        ExecutionContext* context = fetchingScope.getExecutionContext();
+        if (!context->getSecurityOrigin()->canAccessCacheStorage()) {
             if (context->securityContext().isSandboxed(SandboxOrigin))
                 exceptionState.throwSecurityError("Cache storage is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag.");
             else if (context->url().protocolIs("data"))
@@ -52,7 +52,7 @@ public:
         }
 
         if (!m_caches) {
-            m_caches = CacheStorage::create(GlobalFetch::ScopedFetcher::from(fetchingScope), Platform::current()->cacheStorage(WebSecurityOrigin(context->securityOrigin())));
+            m_caches = CacheStorage::create(GlobalFetch::ScopedFetcher::from(fetchingScope), Platform::current()->cacheStorage(WebSecurityOrigin(context->getSecurityOrigin())));
         }
         return m_caches;
     }
@@ -79,12 +79,12 @@ private:
 
 CacheStorage* GlobalCacheStorage::caches(DOMWindow& window, ExceptionState& exceptionState)
 {
-    return GlobalCacheStorageImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.executionContext()).caches(toLocalDOMWindow(window), exceptionState);
+    return GlobalCacheStorageImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.getExecutionContext()).caches(toLocalDOMWindow(window), exceptionState);
 }
 
 CacheStorage* GlobalCacheStorage::caches(WorkerGlobalScope& worker, ExceptionState& exceptionState)
 {
-    return GlobalCacheStorageImpl<WorkerGlobalScope>::from(worker, worker.executionContext()).caches(worker, exceptionState);
+    return GlobalCacheStorageImpl<WorkerGlobalScope>::from(worker, worker.getExecutionContext()).caches(worker, exceptionState);
 }
 
 } // namespace blink

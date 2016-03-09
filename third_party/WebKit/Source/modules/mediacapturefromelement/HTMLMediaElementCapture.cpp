@@ -35,7 +35,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(HTMLMediaElement& element, E
 
     // If |element| is actually playing a MediaStream, just clone it.
     if (HTMLMediaElement::isMediaStreamURL(element.currentSrc().getString())) {
-        return MediaStream::create(element.executionContext(), MediaStreamRegistry::registry().lookupMediaStreamDescriptor(element.currentSrc().getString()));
+        return MediaStream::create(element.getExecutionContext(), MediaStreamRegistry::registry().lookupMediaStreamDescriptor(element.currentSrc().getString()));
     }
 
     // TODO(mcasas): Only <video> tags are supported at the moment.
@@ -49,7 +49,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(HTMLMediaElement& element, E
     MediaStreamCenter::instance().didCreateMediaStream(webStream);
 
     Platform::current()->createHTMLVideoElementCapturer(&webStream, element.webMediaPlayer());
-    return MediaStream::create(element.executionContext(), webStream);
+    return MediaStream::create(element.getExecutionContext(), webStream);
 }
 
 } // namespace blink

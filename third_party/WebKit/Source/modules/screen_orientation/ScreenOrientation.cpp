@@ -123,7 +123,7 @@ const WTF::AtomicString& ScreenOrientation::interfaceName() const
     return EventTargetNames::ScreenOrientation;
 }
 
-ExecutionContext* ScreenOrientation::executionContext() const
+ExecutionContext* ScreenOrientation::getExecutionContext() const
 {
     if (!m_frame)
         return 0;

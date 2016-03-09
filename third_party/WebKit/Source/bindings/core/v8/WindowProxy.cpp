@@ -257,7 +257,7 @@ bool WindowProxy::initialize()
     if (m_world->isMainWorld()) {
         // ActivityLogger for main world is updated within updateDocument().
         updateDocument();
-        origin = m_frame->securityContext()->securityOrigin();
+        origin = m_frame->securityContext()->getSecurityOrigin();
         // FIXME: Can this be removed when CSP moves to browser?
         ContentSecurityPolicy* csp = m_frame->securityContext()->contentSecurityPolicy();
         context->AllowCodeGenerationFromStrings(csp->allowEval(0, ContentSecurityPolicy::SuppressReport));
@@ -475,7 +475,7 @@ void WindowProxy::setSecurityToken(SecurityOrigin* origin)
     if (m_world->isPrivateScriptIsolatedWorld()) {
         token = "private-script://" + token;
     } else if (m_world->isIsolatedWorld()) {
-        SecurityOrigin* frameSecurityOrigin = m_frame->securityContext()->securityOrigin();
+        SecurityOrigin* frameSecurityOrigin = m_frame->securityContext()->getSecurityOrigin();
         String frameSecurityToken = frameSecurityOrigin->toString();
         // We need to check the return value of domainWasSetInDOM() on the
         // frame's SecurityOrigin because, if that's the case, only
@@ -504,7 +504,7 @@ void WindowProxy::updateDocument()
         return;
     updateActivityLogger();
     updateDocumentProperty();
-    updateSecurityOrigin(m_frame->securityContext()->securityOrigin());
+    updateSecurityOrigin(m_frame->securityContext()->getSecurityOrigin());
 }
 
 static v8::Local<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const AtomicString& key, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)

@@ -34,7 +34,7 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBlueto
 BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothDevice> webDevice)
 {
     ASSERT(webDevice);
-    BluetoothDevice* device = new BluetoothDevice(resolver->executionContext(), webDevice);
+    BluetoothDevice* device = new BluetoothDevice(resolver->getExecutionContext(), webDevice);
     device->suspendIfNeeded();
     return device;
 }
@@ -60,7 +60,7 @@ bool BluetoothDevice::disconnectGATTIfConnected()
 {
     if (m_gatt->connected()) {
         m_gatt->setConnected(false);
-        BluetoothSupplement::fromExecutionContext(executionContext())->disconnect(id());
+        BluetoothSupplement::fromExecutionContext(getExecutionContext())->disconnect(id());
         return true;
     }
     return false;
@@ -71,9 +71,9 @@ const WTF::AtomicString& BluetoothDevice::interfaceName() const
     return EventTargetNames::BluetoothDevice;
 }
 
-ExecutionContext* BluetoothDevice::executionContext() const
+ExecutionContext* BluetoothDevice::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 DEFINE_TRACE(BluetoothDevice)

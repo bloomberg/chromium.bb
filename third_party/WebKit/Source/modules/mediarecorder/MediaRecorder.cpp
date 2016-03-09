@@ -258,9 +258,9 @@ const AtomicString& MediaRecorder::interfaceName() const
     return EventTargetNames::MediaRecorder;
 }
 
-ExecutionContext* MediaRecorder::executionContext() const
+ExecutionContext* MediaRecorder::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 void MediaRecorder::suspend()

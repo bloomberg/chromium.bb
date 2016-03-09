@@ -160,7 +160,7 @@ private:
         {
             typename S::WebType result(adopt(r));
             ScriptPromiseResolver* resolver = this->resolver();
-            if (!resolver->executionContext() || resolver->executionContext()->activeDOMObjectsAreStopped())
+            if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
                 return;
             resolver->resolve(S::take(resolver, pass(result)));
         }
@@ -172,7 +172,7 @@ private:
         void onSuccess() override
         {
             ScriptPromiseResolver* resolver = this->resolver();
-            if (!resolver->executionContext() || resolver->executionContext()->activeDOMObjectsAreStopped())
+            if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
                 return;
             resolver->resolve();
         }
@@ -185,7 +185,7 @@ private:
         {
             typename T::WebType result(adopt(e));
             ScriptPromiseResolver* resolver = this->resolver();
-            if (!resolver->executionContext() || resolver->executionContext()->activeDOMObjectsAreStopped())
+            if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
                 return;
             resolver->reject(T::take(resolver, pass(result)));
         }
@@ -197,7 +197,7 @@ private:
         void onError() override
         {
             ScriptPromiseResolver* resolver = this->resolver();
-            if (!resolver->executionContext() || resolver->executionContext()->activeDOMObjectsAreStopped())
+            if (!resolver->getExecutionContext() || resolver->getExecutionContext()->activeDOMObjectsAreStopped())
                 return;
             resolver->reject();
         }

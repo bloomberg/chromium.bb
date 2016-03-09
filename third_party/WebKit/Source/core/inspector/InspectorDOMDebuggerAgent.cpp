@@ -95,10 +95,10 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
     // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper exists on prototype chain.
     if (!target)
         target = toDOMWindow(isolate, value);
-    if (!target || !target->executionContext())
+    if (!target || !target->getExecutionContext())
         return;
 
-    ExecutionContext* executionContext = target->executionContext();
+    ExecutionContext* executionContext = target->getExecutionContext();
 
     // Nodes and their Listeners for the concerned event types (order is top to bottom)
     Vector<AtomicString> eventTypes = target->eventTypes();

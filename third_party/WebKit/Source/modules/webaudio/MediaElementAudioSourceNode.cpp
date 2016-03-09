@@ -135,13 +135,13 @@ void MediaElementAudioSourceHandler::onCurrentSrcChanged(const KURL& currentSrc)
 bool MediaElementAudioSourceHandler::passesCurrentSrcCORSAccessCheck(const KURL& currentSrc)
 {
     ASSERT(isMainThread());
-    return context()->securityOrigin() && context()->securityOrigin()->canRequest(currentSrc);
+    return context()->getSecurityOrigin() && context()->getSecurityOrigin()->canRequest(currentSrc);
 }
 
 void MediaElementAudioSourceHandler::printCORSMessage(const String& message)
 {
-    if (context()->executionContext()) {
-        context()->executionContext()->addConsoleMessage(
+    if (context()->getExecutionContext()) {
+        context()->getExecutionContext()->addConsoleMessage(
             ConsoleMessage::create(SecurityMessageSource, InfoMessageLevel,
                 "MediaElementAudioSource outputs zeroes due to CORS access restrictions for " + message));
     }
@@ -160,7 +160,7 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
             outputBus->zero();
             return;
         }
-        AudioSourceProvider& provider = mediaElement()->audioSourceProvider();
+        AudioSourceProvider& provider = mediaElement()->getAudioSourceProvider();
         // Grab data from the provider so that the element continues to make progress, even if
         // we're going to output silence anyway.
         if (m_multiChannelResampler.get()) {
@@ -177,8 +177,8 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
                 // Print a CORS message, but just once for each change in the current media
                 // element source, and only if we have a document to print to.
                 m_maybePrintCORSMessage = false;
-                if (context()->executionContext()) {
-                    context()->executionContext()->postTask(BLINK_FROM_HERE,
+                if (context()->getExecutionContext()) {
+                    context()->getExecutionContext()->postTask(BLINK_FROM_HERE,
                         createCrossThreadTask(&MediaElementAudioSourceHandler::printCORSMessage,
                             this,
                             m_currentSrcString));

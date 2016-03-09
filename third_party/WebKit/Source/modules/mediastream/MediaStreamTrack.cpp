@@ -252,9 +252,9 @@ const AtomicString& MediaStreamTrack::interfaceName() const
     return EventTargetNames::MediaStreamTrack;
 }
 
-ExecutionContext* MediaStreamTrack::executionContext() const
+ExecutionContext* MediaStreamTrack::getExecutionContext() const
 {
-    return ActiveDOMObject::executionContext();
+    return ActiveDOMObject::getExecutionContext();
 }
 
 DEFINE_TRACE(MediaStreamTrack)

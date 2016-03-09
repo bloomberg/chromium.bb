@@ -824,9 +824,9 @@ public:
     virtual double estimatedLoadingProgress() const { return 0; }
 
     // DOM and layout tree access.
-    virtual Node* node() const { return 0; }
-    virtual LayoutObject* layoutObject() const { return 0; }
-    virtual Document* document() const;
+    virtual Node* getNode() const { return 0; }
+    virtual LayoutObject* getLayoutObject() const { return 0; }
+    virtual Document* getDocument() const;
     virtual FrameView* documentFrameView() const;
     virtual Element* anchorElement() const { return 0; }
     virtual Element* actionElement() const { return 0; }

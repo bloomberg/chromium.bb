@@ -203,7 +203,7 @@ public:
     // causes an ambiguity error at compile time. This class's constructor
     // ensures that both implementations return document, so return the result
     // of one of them here.
-    using HTMLElement::executionContext;
+    using HTMLElement::getExecutionContext;
 
     bool hasSingleSecurityOrigin() const { return webMediaPlayer() && webMediaPlayer()->hasSingleSecurityOrigin(); }
 
@@ -236,7 +236,7 @@ public:
     AudioSourceProviderClient* audioSourceNode() { return m_audioSourceNode; }
     void setAudioSourceNode(AudioSourceProviderClient*);
 
-    AudioSourceProvider& audioSourceProvider() { return m_audioSourceProvider; }
+    AudioSourceProvider& getAudioSourceProvider() { return m_audioSourceProvider; }
 
     enum InvalidURLAction { DoNothing, Complain };
     bool isSafeToLoadURL(const KURL&, InvalidURLAction);

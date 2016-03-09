@@ -25,7 +25,7 @@ public:
     BLINK_PLATFORM_EXPORT WebString keySystem() const;
     BLINK_PLATFORM_EXPORT const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const;
 
-    BLINK_PLATFORM_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_PLATFORM_EXPORT WebSecurityOrigin getSecurityOrigin() const;
 
     BLINK_PLATFORM_EXPORT void requestSucceeded(WebContentDecryptionModuleAccess*);
     BLINK_PLATFORM_EXPORT void requestNotSupported(const WebString& errorMessage);

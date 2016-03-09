@@ -33,7 +33,7 @@ public:
 
     // EventTarget overrides.
     const AtomicString& interfaceName() const override;
-    ExecutionContext* executionContext() const override;
+    ExecutionContext* getExecutionContext() const override;
     void removeAllEventListeners() override;
 
     // ActiveDOMObject overrides.

@@ -76,7 +76,7 @@ public:
 
 protected:
     WorkerObjectProxy(WorkerMessagingProxy*);
-    virtual ExecutionContext* executionContext();
+    virtual ExecutionContext* getExecutionContext();
 
 private:
     // This object always outlives this proxy.

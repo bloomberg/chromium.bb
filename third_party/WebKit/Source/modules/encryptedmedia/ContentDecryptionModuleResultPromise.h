@@ -48,7 +48,7 @@ protected:
     // Rejects the promise with a DOMException.
     void reject(ExceptionCode, const String& errorMessage);
 
-    ExecutionContext* executionContext() const;
+    ExecutionContext* getExecutionContext() const;
 
 private:
     Member<ScriptPromiseResolver> m_resolver;

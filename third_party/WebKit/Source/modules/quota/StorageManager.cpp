@@ -75,8 +75,8 @@ ScriptPromise StorageManager::requestPersistent(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    ExecutionContext* executionContext = scriptState->executionContext();
-    SecurityOrigin* securityOrigin = executionContext->securityOrigin();
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
+    SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
     // TODO(dgrogan): Is the isUnique() check covered by the later
     // isSecureContext() check? If so, maybe remove it. Write a test if it
     // stays.
@@ -95,7 +95,7 @@ ScriptPromise StorageManager::requestPersistent(ScriptState* scriptState)
         resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
         return promise;
     }
-    permissionClient->requestPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new DurableStorageRequestCallbacks(resolver));
+    permissionClient->requestPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new DurableStorageRequestCallbacks(resolver));
 
     return promise;
 }
@@ -104,12 +104,12 @@ ScriptPromise StorageManager::persistentPermission(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    WebPermissionClient* permissionClient = Permissions::getClient(scriptState->executionContext());
+    WebPermissionClient* permissionClient = Permissions::getClient(scriptState->getExecutionContext());
     if (!permissionClient) {
         resolver->reject(DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
         return promise;
     }
-    permissionClient->queryPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new DurableStorageQueryCallbacks(resolver));
+    permissionClient->queryPermission(WebPermissionTypeDurableStorage, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()), new DurableStorageQueryCallbacks(resolver));
     return promise;
 }
 

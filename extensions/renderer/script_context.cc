@@ -292,8 +292,8 @@ GURL ScriptContext::GetEffectiveDocumentURL(const blink::WebFrame* frame,
   if (parent && !parent->document().isNull()) {
     // Only return the parent URL if the frame can access it.
     const blink::WebDocument& parent_document = parent->document();
-    if (frame->document().securityOrigin().canAccess(
-            parent_document.securityOrigin())) {
+    if (frame->document().getSecurityOrigin().canAccess(
+            parent_document.getSecurityOrigin())) {
       return parent_document.url();
     }
   }

@@ -50,7 +50,7 @@ bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context, const String
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument() || context->isWorkerGlobalScope());
 
     if (context->isDocument()) {
-        WebSecurityOrigin origin(context->securityOrigin());
+        WebSecurityOrigin origin(context->getSecurityOrigin());
         Document* document = toDocument(context);
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
         // FIXME: webFrame->contentSettingsClient() returns 0 in test_shell and content_shell http://crbug.com/137269

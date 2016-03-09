@@ -38,7 +38,7 @@ private:
     ScriptValue call(ScriptValue value) override
     {
         ASSERT(!value.isEmpty());
-        *m_value = toCoreString(value.v8Value()->ToString(scriptState()->context()).ToLocalChecked());
+        *m_value = toCoreString(value.v8Value()->ToString(getScriptState()->context()).ToLocalChecked());
         return value;
     }
 
@@ -54,7 +54,7 @@ public:
 
     ~ScriptPromiseResolverTest() override
     {
-        ScriptState::Scope scope(scriptState());
+        ScriptState::Scope scope(getScriptState());
         // FIXME: We put this statement here to clear an exception from the
         // isolate.
         createClosure(callback, v8::Undefined(isolate()), isolate());
@@ -64,16 +64,16 @@ public:
     }
 
     OwnPtr<DummyPageHolder> m_pageHolder;
-    ScriptState* scriptState() const { return ScriptState::forMainWorld(&m_pageHolder->frame()); }
-    ExecutionContext* executionContext() const { return &m_pageHolder->document(); }
-    v8::Isolate* isolate() const { return scriptState()->isolate(); }
+    ScriptState* getScriptState() const { return ScriptState::forMainWorld(&m_pageHolder->frame()); }
+    ExecutionContext* getExecutionContext() const { return &m_pageHolder->document(); }
+    v8::Isolate* isolate() const { return getScriptState()->isolate(); }
 };
 
 TEST_F(ScriptPromiseResolverTest, construct)
 {
-    ASSERT_FALSE(executionContext()->activeDOMObjectsAreStopped());
-    ScriptState::Scope scope(scriptState());
-    ScriptPromiseResolver::create(scriptState());
+    ASSERT_FALSE(getExecutionContext()->activeDOMObjectsAreStopped());
+    ScriptState::Scope scope(getScriptState());
+    ScriptPromiseResolver::create(getScriptState());
 }
 
 TEST_F(ScriptPromiseResolverTest, resolve)
@@ -81,16 +81,16 @@ TEST_F(ScriptPromiseResolverTest, resolve)
     ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
-        ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolver::create(scriptState());
+        ScriptState::Scope scope(getScriptState());
+        resolver = ScriptPromiseResolver::create(getScriptState());
         promise = resolver->promise();
     }
 
     String onFulfilled, onRejected;
     ASSERT_FALSE(promise.isEmpty());
     {
-        ScriptState::Scope scope(scriptState());
-        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+        ScriptState::Scope scope(getScriptState());
+        promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
     }
 
     EXPECT_EQ(String(), onFulfilled);
@@ -104,7 +104,7 @@ TEST_F(ScriptPromiseResolverTest, resolve)
     resolver->resolve("hello");
 
     {
-        ScriptState::Scope scope(scriptState());
+        ScriptState::Scope scope(getScriptState());
         EXPECT_TRUE(resolver->promise().isEmpty());
     }
 
@@ -129,16 +129,16 @@ TEST_F(ScriptPromiseResolverTest, reject)
     ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
-        ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolver::create(scriptState());
+        ScriptState::Scope scope(getScriptState());
+        resolver = ScriptPromiseResolver::create(getScriptState());
         promise = resolver->promise();
     }
 
     String onFulfilled, onRejected;
     ASSERT_FALSE(promise.isEmpty());
     {
-        ScriptState::Scope scope(scriptState());
-        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+        ScriptState::Scope scope(getScriptState());
+        promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
     }
 
     EXPECT_EQ(String(), onFulfilled);
@@ -152,7 +152,7 @@ TEST_F(ScriptPromiseResolverTest, reject)
     resolver->reject("hello");
 
     {
-        ScriptState::Scope scope(scriptState());
+        ScriptState::Scope scope(getScriptState());
         EXPECT_TRUE(resolver->promise().isEmpty());
     }
 
@@ -177,21 +177,21 @@ TEST_F(ScriptPromiseResolverTest, stop)
     ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
-        ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolver::create(scriptState());
+        ScriptState::Scope scope(getScriptState());
+        resolver = ScriptPromiseResolver::create(getScriptState());
         promise = resolver->promise();
     }
 
     String onFulfilled, onRejected;
     ASSERT_FALSE(promise.isEmpty());
     {
-        ScriptState::Scope scope(scriptState());
-        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+        ScriptState::Scope scope(getScriptState());
+        promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
     }
 
-    executionContext()->stopActiveDOMObjects();
+    getExecutionContext()->stopActiveDOMObjects();
     {
-        ScriptState::Scope scope(scriptState());
+        ScriptState::Scope scope(getScriptState());
         EXPECT_TRUE(resolver->promise().isEmpty());
     }
 
@@ -235,8 +235,8 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilResolved)
     ScriptPromiseResolverKeepAlive::reset();
     ScriptPromiseResolver* resolver = nullptr;
     {
-        ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
+        ScriptState::Scope scope(getScriptState());
+        resolver = ScriptPromiseResolverKeepAlive::create(getScriptState());
     }
     resolver->keepAliveWhilePending();
     Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
@@ -252,8 +252,8 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilRejected)
     ScriptPromiseResolverKeepAlive::reset();
     ScriptPromiseResolver* resolver = nullptr;
     {
-        ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
+        ScriptState::Scope scope(getScriptState());
+        resolver = ScriptPromiseResolverKeepAlive::create(getScriptState());
     }
     resolver->keepAliveWhilePending();
     Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
@@ -269,14 +269,14 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilStopped)
     ScriptPromiseResolverKeepAlive::reset();
     ScriptPromiseResolver* resolver = nullptr;
     {
-        ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
+        ScriptState::Scope scope(getScriptState());
+        resolver = ScriptPromiseResolverKeepAlive::create(getScriptState());
     }
     resolver->keepAliveWhilePending();
     Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
-    executionContext()->stopActiveDOMObjects();
+    getExecutionContext()->stopActiveDOMObjects();
     Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
@@ -286,19 +286,19 @@ TEST_F(ScriptPromiseResolverTest, suspend)
     ScriptPromiseResolverKeepAlive::reset();
     ScriptPromiseResolver* resolver = nullptr;
     {
-        ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolverKeepAlive::create(scriptState());
+        ScriptState::Scope scope(getScriptState());
+        resolver = ScriptPromiseResolverKeepAlive::create(getScriptState());
     }
     resolver->keepAliveWhilePending();
     Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     ASSERT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
-    executionContext()->suspendActiveDOMObjects();
+    getExecutionContext()->suspendActiveDOMObjects();
     resolver->resolve("hello");
     Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
-    executionContext()->stopActiveDOMObjects();
+    getExecutionContext()->stopActiveDOMObjects();
     Heap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
 }
@@ -308,16 +308,16 @@ TEST_F(ScriptPromiseResolverTest, resolveVoid)
     ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
-        ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolver::create(scriptState());
+        ScriptState::Scope scope(getScriptState());
+        resolver = ScriptPromiseResolver::create(getScriptState());
         promise = resolver->promise();
     }
 
     String onFulfilled, onRejected;
     ASSERT_FALSE(promise.isEmpty());
     {
-        ScriptState::Scope scope(scriptState());
-        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+        ScriptState::Scope scope(getScriptState());
+        promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
     }
 
     resolver->resolve();
@@ -332,16 +332,16 @@ TEST_F(ScriptPromiseResolverTest, rejectVoid)
     ScriptPromiseResolver* resolver = nullptr;
     ScriptPromise promise;
     {
-        ScriptState::Scope scope(scriptState());
-        resolver = ScriptPromiseResolver::create(scriptState());
+        ScriptState::Scope scope(getScriptState());
+        resolver = ScriptPromiseResolver::create(getScriptState());
         promise = resolver->promise();
     }
 
     String onFulfilled, onRejected;
     ASSERT_FALSE(promise.isEmpty());
     {
-        ScriptState::Scope scope(scriptState());
-        promise.then(Function::createFunction(scriptState(), &onFulfilled), Function::createFunction(scriptState(), &onRejected));
+        ScriptState::Scope scope(getScriptState());
+        promise.then(Function::createFunction(getScriptState(), &onFulfilled), Function::createFunction(getScriptState(), &onRejected));
     }
 
     resolver->reject();

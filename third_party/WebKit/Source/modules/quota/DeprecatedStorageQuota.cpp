@@ -62,7 +62,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(ExecutionContext* executionConte
         return;
     }
 
-    SecurityOrigin* securityOrigin = executionContext->securityOrigin();
+    SecurityOrigin* securityOrigin = executionContext->getSecurityOrigin();
     if (securityOrigin->isUnique()) {
         executionContext->postTask(BLINK_FROM_HERE, StorageErrorCallback::createSameThreadTask(errorCallback, NotSupportedError));
         return;

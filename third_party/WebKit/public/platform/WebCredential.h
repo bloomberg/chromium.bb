@@ -37,7 +37,7 @@ public:
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT static WebCredential create(PlatformCredential*);
     BLINK_PLATFORM_EXPORT WebCredential& operator=(PlatformCredential*);
-    BLINK_PLATFORM_EXPORT PlatformCredential* platformCredential() const { return m_platformCredential.get(); }
+    BLINK_PLATFORM_EXPORT PlatformCredential* getPlatformCredential() const { return m_platformCredential.get(); }
 #endif
 
 protected:

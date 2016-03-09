@@ -73,8 +73,8 @@ public:
 
     void contextDestroyed() override
     {
-        ASSERT(executionContext());
-        OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
+        ASSERT(getExecutionContext());
+        OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(getExecutionContext());
         ASSERT_UNUSED(self, self == this);
         ContextLifecycleObserver::contextDestroyed();
         disposeCallChains();
@@ -232,30 +232,30 @@ bool AsyncCallTracker::willFireAnimationFrame(ExecutionContext* context, int cal
 
 void AsyncCallTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event)
 {
-    ASSERT(eventTarget->executionContext());
+    ASSERT(eventTarget->getExecutionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     ScriptForbiddenScope::AllowUserAgentScript allowScripting;
     int operationId = m_debuggerAgent->traceAsyncOperationStarting(event->type());
-    ExecutionContextData* data = createContextDataIfNeeded(eventTarget->executionContext());
+    ExecutionContextData* data = createContextDataIfNeeded(eventTarget->getExecutionContext());
     data->m_eventCallChains.set(event, operationId);
 }
 
 void AsyncCallTracker::didRemoveEvent(EventTarget* eventTarget, Event* event)
 {
-    ASSERT(eventTarget->executionContext());
+    ASSERT(eventTarget->getExecutionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(eventTarget->executionContext()))
+    if (ExecutionContextData* data = m_executionContextDataMap.get(eventTarget->getExecutionContext()))
         data->m_eventCallChains.remove(event);
 }
 
 void AsyncCallTracker::willHandleEvent(EventTarget* eventTarget, Event* event, EventListener* listener, bool useCapture)
 {
-    ASSERT(eventTarget->executionContext());
+    ASSERT(eventTarget->getExecutionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (XMLHttpRequest* xhr = toXmlHttpRequest(eventTarget)) {
         willHandleXHREvent(xhr, event);
     } else {
-        ExecutionContext* context = eventTarget->executionContext();
+        ExecutionContext* context = eventTarget->getExecutionContext();
         if (ExecutionContextData* data = m_executionContextDataMap.get(context))
             willFireAsyncCall(data->m_eventCallChains.get(event));
         else
@@ -265,26 +265,26 @@ void AsyncCallTracker::willHandleEvent(EventTarget* eventTarget, Event* event, E
 
 void AsyncCallTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<EncodedFormData>, const HTTPHeaderMap&, bool)
 {
-    ASSERT(xhr->executionContext());
+    ASSERT(xhr->getExecutionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (!async)
         return;
     int operationId = m_debuggerAgent->traceAsyncOperationStarting(xhrSendName);
-    ExecutionContextData* data = createContextDataIfNeeded(xhr->executionContext());
+    ExecutionContextData* data = createContextDataIfNeeded(xhr->getExecutionContext());
     data->m_xhrCallChains.set(xhr, operationId);
 }
 
 void AsyncCallTracker::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
 {
-    ASSERT(xhr->executionContext());
+    ASSERT(xhr->getExecutionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(xhr->executionContext()))
+    if (ExecutionContextData* data = m_executionContextDataMap.get(xhr->getExecutionContext()))
         data->m_xhrCallChains.remove(xhr);
 }
 
 void AsyncCallTracker::willHandleXHREvent(XMLHttpRequest* xhr, Event* event)
 {
-    ExecutionContext* context = xhr->executionContext();
+    ExecutionContext* context = xhr->getExecutionContext();
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))

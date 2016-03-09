@@ -140,12 +140,12 @@ void Notification::scheduleShow()
 void Notification::show()
 {
     ASSERT(m_state == NotificationStateIdle);
-    if (Notification::checkPermission(executionContext()) != WebNotificationPermissionAllowed) {
+    if (Notification::checkPermission(getExecutionContext()) != WebNotificationPermissionAllowed) {
         dispatchErrorEvent();
         return;
     }
 
-    SecurityOrigin* origin = executionContext()->securityOrigin();
+    SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
     ASSERT(origin);
 
     notificationManager()->show(WebSecurityOrigin(origin), m_data, this);
@@ -160,14 +160,14 @@ void Notification::close()
 
     if (m_persistentId == kInvalidPersistentId) {
         // Fire the close event asynchronously.
-        executionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent, this));
+        getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent, this));
 
         m_state = NotificationStateClosing;
         notificationManager()->close(this);
     } else {
         m_state = NotificationStateClosed;
 
-        SecurityOrigin* origin = executionContext()->securityOrigin();
+        SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
         ASSERT(origin);
 
         notificationManager()->closePersistent(WebSecurityOrigin(origin), m_persistentId);
@@ -182,7 +182,7 @@ void Notification::dispatchShowEvent()
 void Notification::dispatchClickEvent()
 {
     UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
-    ScopedWindowFocusAllowedIndicator windowFocusAllowed(executionContext());
+    ScopedWindowFocusAllowedIndicator windowFocusAllowed(getExecutionContext());
     dispatchEvent(Event::create(EventTypeNames::click));
 }
 
@@ -326,7 +326,7 @@ String Notification::permission(ExecutionContext* context)
 
 WebNotificationPermission Notification::checkPermission(ExecutionContext* context)
 {
-    SecurityOrigin* origin = context->securityOrigin();
+    SecurityOrigin* origin = context->getSecurityOrigin();
     ASSERT(origin);
 
     return notificationManager()->checkPermission(WebSecurityOrigin(origin));
@@ -334,7 +334,7 @@ WebNotificationPermission Notification::checkPermission(ExecutionContext* contex
 
 ScriptPromise Notification::requestPermission(ScriptState* scriptState, NotificationPermissionCallback* deprecatedCallback)
 {
-    ExecutionContext* context = scriptState->executionContext();
+    ExecutionContext* context = scriptState->getExecutionContext();
     if (NotificationPermissionClient* permissionClient = NotificationPermissionClient::from(context))
         return permissionClient->requestPermission(scriptState, deprecatedCallback);
 
@@ -354,7 +354,7 @@ size_t Notification::maxActions()
 
 DispatchEventResult Notification::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
 {
-    ASSERT(executionContext()->isContextThread());
+    ASSERT(getExecutionContext()->isContextThread());
     return EventTarget::dispatchEventInternal(event);
 }
 

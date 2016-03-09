@@ -51,9 +51,9 @@ static void databaseModified(const String& originIdentifier, const String& datab
 
 void SQLTransactionClient::didCommitWriteTransaction(Database* database)
 {
-    String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin());
+    String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->getSecurityOrigin());
     String databaseName = database->stringIdentifier();
-    ExecutionContext* executionContext = database->databaseContext()->executionContext();
+    ExecutionContext* executionContext = database->getDatabaseContext()->getExecutionContext();
     if (!executionContext->isContextThread()) {
         executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&databaseModified, originIdentifier, databaseName));
     } else {
@@ -65,7 +65,7 @@ bool SQLTransactionClient::didExceedQuota(Database* database)
 {
     // Chromium does not allow users to manually change the quota for an origin (for now, at least).
     // Don't do anything.
-    ASSERT(database->databaseContext()->executionContext()->isContextThread());
+    ASSERT(database->getDatabaseContext()->getExecutionContext()->isContextThread());
     return false;
 }
 

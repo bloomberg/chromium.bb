@@ -67,7 +67,7 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
 {
     if (!isEntangled())
         return;
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     ASSERT(m_entangledChannel);
 
     OwnPtr<MessagePortChannelArray> channels;
@@ -86,7 +86,7 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
     }
 
     if (message->containsTransferableArrayBuffer())
-        executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "MessagePort cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/334408"));
+        getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "MessagePort cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/334408"));
 
     WebString messageString = message->toWireString();
     OwnPtr<WebMessagePortChannelArray> webChannels = toWebMessagePortChannelArray(channels.release());
@@ -129,8 +129,8 @@ PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
 // This code may be called from another thread, and so should not call any non-threadsafe APIs (i.e. should not call into the entangled channel or access mutable variables).
 void MessagePort::messageAvailable()
 {
-    ASSERT(executionContext());
-    executionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&MessagePort::dispatchMessages, m_weakFactory.createWeakPtr()));
+    ASSERT(getExecutionContext());
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&MessagePort::dispatchMessages, m_weakFactory.createWeakPtr()));
 }
 
 void MessagePort::start()
@@ -139,7 +139,7 @@ void MessagePort::start()
     if (!isEntangled())
         return;
 
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     if (m_started)
         return;
 
@@ -158,7 +158,7 @@ void MessagePort::entangle(PassOwnPtr<WebMessagePortChannel> remote)
 {
     // Only invoked to set our initial entanglement.
     ASSERT(!m_entangledChannel);
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
 
     m_entangledChannel = remote;
     m_entangledChannel->setClient(this);
@@ -207,10 +207,10 @@ void MessagePort::dispatchMessages()
     OwnPtr<MessagePortChannelArray> channels;
     while (tryGetMessage(message, channels)) {
         // close() in Worker onmessage handler should prevent next message from dispatching.
-        if (executionContext()->isWorkerGlobalScope() && toWorkerGlobalScope(executionContext())->isClosing())
+        if (getExecutionContext()->isWorkerGlobalScope() && toWorkerGlobalScope(getExecutionContext())->isClosing())
             return;
 
-        MessagePortArray* ports = MessagePort::entanglePorts(*executionContext(), channels.release());
+        MessagePortArray* ports = MessagePort::entanglePorts(*getExecutionContext(), channels.release());
         RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports, message.release());
 
         dispatchEvent(evt.release());
@@ -282,13 +282,13 @@ DEFINE_TRACE(MessagePort)
 
 v8::Isolate* MessagePort::scriptIsolate()
 {
-    ASSERT(executionContext());
-    return toIsolate(executionContext());
+    ASSERT(getExecutionContext());
+    return toIsolate(getExecutionContext());
 }
 
 v8::Local<v8::Context> MessagePort::scriptContextForMessageConversion()
 {
-    ASSERT(executionContext());
+    ASSERT(getExecutionContext());
     if (!m_scriptStateForConversion) {
         v8::Isolate* isolate = scriptIsolate();
         m_scriptStateForConversion = ScriptState::create(v8::Context::New(isolate), DOMWrapperWorld::create(isolate));
