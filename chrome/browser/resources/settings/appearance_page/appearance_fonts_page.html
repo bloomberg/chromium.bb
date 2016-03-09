@@ -8,82 +8,98 @@
       href="chrome://md-settings/appearance_page/appearance_shared.css">
   <template>
     <style include="settings-shared"></style>
-    <div>[[selectedStandardFont_]]</div>
     <div class="settings-box first">
-      <div i18n-content="fontSize"></div>
-      <paper-slider id="sizeSlider" value="{{fontSizeIndex_}}"
-          max="[[fontSizeRangeLimit_]]"
-          immediate-value="{{immediateSizeIndex_}}"
-          on-immediate-value-change="immediateSizeIndexChanged_">
+      <div class="start">$i18n{fontSize}</div>
+      <paper-slider class="slider-labels" id="sizeSlider"
+        value="{{fontSizeIndex_}}"
+        max="[[fontSizeRangeLimit_]]" max-markers="5"
+        immediate-value="{{immediateSizeIndex_}}" snaps>
       </paper-slider>
     </div>
     <div class="settings-box">
-      <settings-dropdown-menu id="standardFont"
-          i18n-values="label:standardFont"
-          pref="{{prefs.webkit.webprefs.fonts.standard.Zyyy}}"
-          menu-options="[[fontOptions_]]">
-      </settings-dropdown-menu>
-      <div class="settings-column"
-          style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.standard.Zyyy.value)]]">
-        <span>[[defaultFontSize_]]</span>:
-        <span i18n-content="loremIpsum"></span>
+      <div class="start">$i18n{minimumFont}</div>
+      <div class="list-item" style$="[[computeStyle_(minimumFontSize_, prefs.webkit.webprefs.fonts.standard.Zyyy.value)]]">
+        <span>[[minimumFontSize_]]</span>:&nbsp;
+        <span i18n-content="quickBrownFox"></span>
+      </div>
+      <paper-slider class="slider-labels" id="minimumSizeSlider"
+        value="{{minimumSizeIndex_}}"
+        max="[[minimumFontSizeRangeLimit_]]" max-markers="5"
+        immediate-value="{{immediateMinimumSizeIndex_}}" snaps>
+    </paper-slider>
+    </div>
+    <div class="settings-box">
+      <div class="start">
+        <h2 i18n-content="standardFont"></h2>
+        <div class="list-frame">
+          <div class="list-item">
+            <settings-dropdown-menu class="start" id="standardFont"
+                pref="{{prefs.webkit.webprefs.fonts.standard.Zyyy}}"
+                menu-options="[[fontOptions_]]" no-label-float>
+            </settings-dropdown-menu>
+          </div>
+          <div class="list-item underbar"
+              style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.standard.Zyyy.value)]]">
+            <span>[[defaultFontSize_]]</span>:&nbsp;
+            <span i18n-content="quickBrownFox"></span>
+          </div>
+        </div>
+        <h2 i18n-content="serifFont"></h2>
+        <div class="list-frame">
+          <div class="list-item">
+            <settings-dropdown-menu class="start" id="serifFont"
+                pref="{{prefs.webkit.webprefs.fonts.serif.Zyyy}}"
+                menu-options="[[fontOptions_]]" no-label-float>
+            </settings-dropdown-menu>
+          </div>
+          <div class="list-item underbar"
+              style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.serif.Zyyy.value)]]">
+            <span>[[defaultFontSize_]]</span>:&nbsp;
+            <span i18n-content="quickBrownFox"></span>
+          </div>
+        </div>
+        <h2 i18n-content="sansSerifFont"></h2>
+        <div class="list-frame">
+          <div class="list-item">
+            <settings-dropdown-menu class="start" id="sansSerifFont"
+                pref="{{prefs.webkit.webprefs.fonts.sansserif.Zyyy}}"
+                menu-options="[[fontOptions_]]" no-label-float>
+            </settings-dropdown-menu>
+          </div>
+          <div class="list-item underbar"
+              style$="{{computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.sansserif.Zyyy.value)}}">
+            <span>[[defaultFontSize_]]</span>:&nbsp;
+            <span i18n-content="quickBrownFox"></span>
+          </div>
+        </div>
+        <h2 i18n-content="fixedWidthFont"></h2>
+        <div class="list-frame">
+          <div class="list-item">
+            <settings-dropdown-menu class="start" id="fixedFont"
+                pref="{{prefs.webkit.webprefs.fonts.fixed.Zyyy}}"
+                menu-options="[[fontOptions_]]" no-label-float>
+            </settings-dropdown-menu>
+           </div>
+          <div class="list-item"
+              style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.fixed.Zyyy.value)]]">
+            <span>[[defaultFontSize_]]</span>:&nbsp;
+            <span i18n-content="quickBrownFox"></span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="settings-box">
-      <settings-dropdown-menu id="serifFont"
-          i18n-values="label:serifFont"
-          pref="{{prefs.webkit.webprefs.fonts.serif.Zyyy}}"
-          menu-options="[[fontOptions_]]">
-      </settings-dropdown-menu>
-      <div class="settings-column"
-          style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.serif.Zyyy.value)]]">
-        <span>[[defaultFontSize_]]</span>:
-        <span i18n-content="loremIpsum"></span>
-      </div>
-    </div>
-    <div class="settings-box">
-      <settings-dropdown-menu id="sansSerifFont"
-          i18n-values="label:sansSerifFont"
-          pref="{{prefs.webkit.webprefs.fonts.sansserif.Zyyy}}"
-          menu-options="[[fontOptions_]]">
-      </settings-dropdown-menu>
-      <div class="settings-column"
-          style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.sansserif.Zyyy.value)]]">
-        <span>[[defaultFontSize_]]</span>:
-        <span i18n-content="loremIpsum"></span>
-      </div>
-    </div>
-    <div class="settings-box">
-      <settings-dropdown-menu id="fixedFont"
-          i18n-values="label:fixedWidthFont"
-          pref="{{prefs.webkit.webprefs.fonts.fixed.Zyyy}}"
-          menu-options="[[fontOptions_]]">
-      </settings-dropdown-menu>
-      <div class="settings-column"
-          style$="[[computeStyle_(defaultFontSize_, prefs.webkit.webprefs.fonts.fixed.Zyyy.value)]]">
-        <span i18n-content="loremIpsum"></span>
-      </div>
-    </div>
-    <div class="settings-box">
-      <div>
-        <div i18n-content="minimumFont"></div>
-        <paper-slider id="minimumSizeSlider" value="{{minimumSizeIndex_}}"
-            max="[[minimumFontSizeRangeLimit_]]"
-            immediate-value="{{immediateMinimumSizeIndex_}}"
-            on-immediate-value-change="immediateMinimumSizeIndexChanged_">
-        </paper-slider>
-      </div>
-      <div style$="[[computeStyle_(minimumFontSize_, prefs.webkit.webprefs.fonts.standard.Zyyy.value)]]">
-        <span>[[minimumFontSize_]]</span>:
-        <span i18n-content="loremIpsum"></span>
-      </div>
-    </div>
-    <div class="settings-box">
+      <div class="start" i18n-content="encoding"></div>
       <settings-dropdown-menu id="encoding"
-          i18n-values="label:encoding"
           pref="{{prefs.intl.charset_default}}"
-          menu-options="[[encodingOptions_]]">
+          menu-options="[[encodingOptions_]]" no-label-float>
       </settings-dropdown-menu>
+    </div>
+    <div class="settings-box two-line">
+      <div class="start">
+        <div i18n-content="advancedFontSettings"></div>
+        <div class="secondary" i18n-content="requiresWebStoreExtension"></div>
+      </div>
     </div>
   </template>
   <script src="appearance_fonts_page.js"></script>

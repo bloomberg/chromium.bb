@@ -77,6 +77,7 @@
        * @private
        */
       immediateMinimumSizeIndex_: {
+        observer: 'immediateMinimumSizeIndexChanged_',
         type: Number,
       },
 
@@ -85,6 +86,7 @@
        * @private
        */
       immediateSizeIndex_: {
+        observer: 'immediateSizeIndexChanged_',
         type: Number,
       },
 
