@@ -5,6 +5,7 @@
 #include "base/metrics/statistics_recorder.h"
 
 #include "base/at_exit.h"
+#include "base/debug/alias.h"
 #include "base/debug/leak_annotations.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
@@ -123,13 +124,17 @@ HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
         histogram_to_return = histogram;
       } else {
         // We already have one histogram with this name.
-        DCHECK_EQ(histogram->histogram_name(),
-                  it->second->histogram_name()) << "hash collision";
+        CHECK_EQ(histogram->histogram_name(),
+                 it->second->histogram_name()) << "hash collision";
         histogram_to_return = it->second;
         histogram_to_delete = histogram;
       }
+      base::debug::Alias(&it);
+      base::debug::Alias(&name);
+      base::debug::Alias(&name_hash);
     }
   }
+  base::debug::Alias(&histogram);
   delete histogram_to_delete;
   return histogram_to_return;
 }
@@ -279,10 +284,22 @@ HistogramBase* StatisticsRecorder::FindHistogram(base::StringPiece name) {
   if (histograms_ == NULL)
     return NULL;
 
-  HistogramMap::iterator it = histograms_->find(HashMetricName(name));
+  const uint64_t lookup_hash = HashMetricName(name);
+  HistogramMap::iterator it = histograms_->find(lookup_hash);
   if (histograms_->end() == it)
     return NULL;
-  DCHECK_EQ(name, it->second->histogram_name()) << "hash collision";
+
+  const uint64_t existing_hash = it->first;
+  const char* existing_name = it->second->histogram_name().c_str();
+  HistogramMap* histograms = histograms_;
+  CHECK_EQ(name, it->second->histogram_name()) << "hash collision";
+  base::debug::Alias(&lookup_hash);
+  base::debug::Alias(&existing_hash);
+  base::debug::Alias(&name);
+  base::debug::Alias(&existing_name);
+  base::debug::Alias(&it);
+  base::debug::Alias(&histograms);
+
   return it->second;
 }
 
