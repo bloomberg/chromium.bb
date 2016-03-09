@@ -1600,7 +1600,7 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
   // cleared before it is converted to BOOL.
   BOOL active = static_cast<BOOL>(LOWORD(w_param));
 
-  bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
+  bool render_as_active = delegate_->IsAlwaysRenderAsActive();
 
   if (!delegate_->IsWidgetWindow()) {
     SetMsgHandled(FALSE);
@@ -1611,8 +1611,8 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
     return TRUE;
 
   // On activation, lift any prior restriction against rendering as inactive.
-  if (active && inactive_rendering_disabled)
-    delegate_->EnableInactiveRendering();
+  if (active && render_as_active)
+    delegate_->SetAlwaysRenderAsActive(false);
 
   if (delegate_->IsUsingCustomFrame()) {
     // TODO(beng, et al): Hack to redraw this window and child windows
@@ -1640,7 +1640,7 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
   }
 
   return DefWindowProcWithRedrawLock(
-      WM_NCACTIVATE, inactive_rendering_disabled || active, 0);
+      WM_NCACTIVATE, render_as_active || active, 0);
 }
 
 LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {

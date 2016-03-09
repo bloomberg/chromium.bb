@@ -129,8 +129,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool IsWidgetWindow() const override;
   bool IsUsingCustomFrame() const override;
   void SchedulePaint() override;
-  void EnableInactiveRendering() override;
-  bool IsInactiveRenderingDisabled() override;
+  void SetAlwaysRenderAsActive(bool always_render_as_active) override;
+  bool IsAlwaysRenderAsActive() override;
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;

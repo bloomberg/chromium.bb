@@ -500,12 +500,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns whether the Widget is the currently active window.
   virtual bool IsActive() const;
 
-  // Prevents the window from being rendered as deactivated. This state is
-  // reset automatically as soon as the window becomes activated again. There is
-  // no ability to control the state through this API as this leads to sync
-  // problems.
-  void DisableInactiveRendering();
-
   // Sets the widget to be on top of all other widgets in the windowing system.
   void SetAlwaysOnTop(bool on_top);
 
@@ -777,8 +771,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool IsModal() const override;
   bool IsDialogBox() const override;
   bool CanActivate() const override;
-  bool IsInactiveRenderingDisabled() const override;
-  void EnableInactiveRendering() override;
+  bool IsAlwaysRenderAsActive() const override;
+  void SetAlwaysRenderAsActive(bool always_render_as_active) override;
   void OnNativeWidgetActivationChanged(bool active) override;
   void OnNativeFocus() override;
   void OnNativeBlur() override;
@@ -842,10 +836,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   friend class ComboboxTest;
   friend class CustomButtonTest;
   friend class TextfieldTest;
-
-  // Sets the value of |disable_inactive_rendering_|. If the value changes,
-  // both the NonClientView and WidgetDelegate are notified.
-  void SetInactiveRenderingDisabled(bool value);
 
   // Persists the window's restored position and "show" state using the
   // window delegate.
@@ -913,7 +903,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // True when the window should be rendered as active, regardless of whether
   // or not it actually is.
-  bool disable_inactive_rendering_;
+  bool always_render_as_active_;
 
   // Set to true if the widget is in the process of closing.
   bool widget_closed_;

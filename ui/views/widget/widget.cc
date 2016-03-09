@@ -153,7 +153,7 @@ Widget::Widget()
       ownership_(InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       is_secondary_widget_(true),
       frame_type_(FRAME_TYPE_DEFAULT),
-      disable_inactive_rendering_(false),
+      always_render_as_active_(false),
       widget_closed_(false),
       saved_show_state_(ui::SHOW_STATE_DEFAULT),
       focus_on_creation_(true),
@@ -255,7 +255,6 @@ Widget* Widget::GetTopLevelWidgetForNativeView(gfx::NativeView native_view) {
       internal::NativeWidgetPrivate::GetTopLevelNativeWidget(native_view);
   return native_widget ? native_widget->GetWidget() : NULL;
 }
-
 
 // static
 void Widget::GetAllChildWidgets(gfx::NativeView native_view,
@@ -662,10 +661,6 @@ bool Widget::IsActive() const {
   return native_widget_->IsActive();
 }
 
-void Widget::DisableInactiveRendering() {
-  SetInactiveRenderingDisabled(true);
-}
-
 void Widget::SetAlwaysOnTop(bool on_top) {
   native_widget_->SetAlwaysOnTop(on_top);
 }
@@ -986,7 +981,7 @@ void Widget::SynthesizeMouseMoveEvent() {
   // In screen coordinate.
   gfx::Point mouse_location = EventMonitor::GetLastMouseLocation();
   if (!GetWindowBoundsInScreen().Contains(mouse_location))
-      return;
+    return;
 
   // Convert: screen coordinate -> widget coordinate.
   View::ConvertPointFromScreen(root_view_.get(), &mouse_location);
@@ -1010,8 +1005,7 @@ void Widget::OnSizeConstraintsChanged() {
   non_client_view_->SizeConstraintsChanged();
 }
 
-void Widget::OnOwnerClosing() {
-}
+void Widget::OnOwnerClosing() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, NativeWidgetDelegate implementation:
@@ -1028,12 +1022,8 @@ bool Widget::CanActivate() const {
   return widget_delegate_->CanActivate();
 }
 
-bool Widget::IsInactiveRenderingDisabled() const {
-  return disable_inactive_rendering_;
-}
-
-void Widget::EnableInactiveRendering() {
-  SetInactiveRenderingDisabled(false);
+bool Widget::IsAlwaysRenderAsActive() const {
+  return always_render_as_active_;
 }
 
 void Widget::OnNativeWidgetActivationChanged(bool active) {
@@ -1380,22 +1370,24 @@ void Widget::DestroyRootView() {
   root_view_.reset();
 }
 
-void Widget::OnDragWillStart() {
-}
+void Widget::OnDragWillStart() {}
 
-void Widget::OnDragComplete() {
-}
+void Widget::OnDragComplete() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, private:
 
-void Widget::SetInactiveRenderingDisabled(bool value) {
-  if (value == disable_inactive_rendering_)
+void Widget::SetAlwaysRenderAsActive(bool always_render_as_active) {
+  if (always_render_as_active_ == always_render_as_active)
     return;
 
-  disable_inactive_rendering_ = value;
-  if (non_client_view_)
-    non_client_view_->SetInactiveRenderingDisabled(value);
+  always_render_as_active_ = always_render_as_active;
+
+  // If active, the frame should already be painted. Otherwise,
+  // |always_render_as_active_| just changed, and the widget is inactive, so
+  // schedule a repaint.
+  if (non_client_view_ && !IsActive())
+    non_client_view_->frame_view()->SchedulePaint();
 }
 
 void Widget::SaveWindowPlacement() {

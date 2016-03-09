@@ -37,8 +37,8 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual bool IsUsingCustomFrame() const = 0;
 
   virtual void SchedulePaint() = 0;
-  virtual void EnableInactiveRendering() = 0;
-  virtual bool IsInactiveRenderingDisabled() = 0;
+  virtual void SetAlwaysRenderAsActive(bool always_render_as_active) = 0;
+  virtual bool IsAlwaysRenderAsActive() = 0;
 
   virtual bool CanResize() const = 0;
   virtual bool CanMaximize() const = 0;

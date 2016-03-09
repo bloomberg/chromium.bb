@@ -320,10 +320,7 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
                                                        bool visible) {
   if (widget == GetWidget() && anchor_widget() &&
       anchor_widget()->GetTopLevelWidget()) {
-    if (visible)
-      anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
-    else
-      anchor_widget()->GetTopLevelWidget()->EnableInactiveRendering();
+    anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
   }
 
   // Fire AX_EVENT_ALERT for bubbles marked as AX_ROLE_ALERT_DIALOG; this

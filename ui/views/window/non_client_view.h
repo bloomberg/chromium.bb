@@ -42,14 +42,9 @@ class VIEWS_EXPORT NonClientFrameView : public View,
 
   ~NonClientFrameView() override;
 
-  // Sets whether the window should be rendered as active regardless of the
-  // actual active state. Used when bubbles become active to make their parent
-  // appear active. A value of true makes the window render as active always,
-  // false gives normal behavior.
-  void SetInactiveRenderingDisabled(bool disable);
-
   // Used to determine if the frame should be painted as active. Keyed off the
-  // window's actual active state and |inactive_rendering_disabled_|.
+  // window's actual active state and whether the widget should be rendered as
+  // active.
   bool ShouldPaintAsActive() const;
 
   // Helper for non-client view implementations to determine which area of the
@@ -102,11 +97,6 @@ class VIEWS_EXPORT NonClientFrameView : public View,
 
   // View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-
- private:
-  // Prevents the non-client frame view from being rendered as inactive when
-  // true.
-  bool inactive_rendering_disabled_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -173,11 +163,6 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   // Replaces the frame view with a new one. Used when switching window theme
   // or frame style.
   void UpdateFrame();
-
-  // Prevents the window from being rendered as deactivated when |disable| is
-  // true, until called with |disable| false. Used when a sub-window is to be
-  // shown that shouldn't visually de-activate the window.
-  void SetInactiveRenderingDisabled(bool disable);
 
   // Returns the bounds of the window required to display the content area at
   // the specified bounds.

@@ -600,12 +600,13 @@ void DesktopWindowTreeHostWin::SchedulePaint() {
   GetWidget()->GetRootView()->SchedulePaint();
 }
 
-void DesktopWindowTreeHostWin::EnableInactiveRendering() {
-  native_widget_delegate_->EnableInactiveRendering();
+void DesktopWindowTreeHostWin::SetAlwaysRenderAsActive(
+    bool always_render_as_active) {
+  native_widget_delegate_->SetAlwaysRenderAsActive(always_render_as_active);
 }
 
-bool DesktopWindowTreeHostWin::IsInactiveRenderingDisabled() {
-  return native_widget_delegate_->IsInactiveRenderingDisabled();
+bool DesktopWindowTreeHostWin::IsAlwaysRenderAsActive() {
+  return native_widget_delegate_->IsAlwaysRenderAsActive();
 }
 
 bool DesktopWindowTreeHostWin::CanResize() const {
@@ -693,7 +694,7 @@ bool DesktopWindowTreeHostWin::ShouldHandleSystemCommands() const {
 }
 
 void DesktopWindowTreeHostWin::HandleAppDeactivated() {
-  native_widget_delegate_->EnableInactiveRendering();
+  native_widget_delegate_->SetAlwaysRenderAsActive(false);
 }
 
 void DesktopWindowTreeHostWin::HandleActivationChanged(bool active) {

@@ -84,10 +84,6 @@ void NonClientView::UpdateFrame() {
   SchedulePaint();
 }
 
-void NonClientView::SetInactiveRenderingDisabled(bool disable) {
-  frame_view_->SetInactiveRenderingDisabled(disable);
-}
-
 gfx::Rect NonClientView::GetWindowBoundsForClientBounds(
     const gfx::Rect client_bounds) const {
   return frame_view_->GetWindowBoundsForClientBounds(client_bounds);
@@ -244,20 +240,8 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
 NonClientFrameView::~NonClientFrameView() {
 }
 
-void NonClientFrameView::SetInactiveRenderingDisabled(bool disable) {
-  if (inactive_rendering_disabled_ == disable)
-    return;
-
-  bool should_paint_as_active_old = ShouldPaintAsActive();
-  inactive_rendering_disabled_ = disable;
-
-  // The widget schedules a paint when the activation changes.
-  if (should_paint_as_active_old != ShouldPaintAsActive())
-    SchedulePaint();
-}
-
 bool NonClientFrameView::ShouldPaintAsActive() const {
-  return inactive_rendering_disabled_ || GetWidget()->IsActive();
+  return GetWidget()->IsAlwaysRenderAsActive() || GetWidget()->IsActive();
 }
 
 int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
@@ -320,7 +304,7 @@ const char* NonClientFrameView::GetClassName() const {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, protected:
 
-NonClientFrameView::NonClientFrameView() : inactive_rendering_disabled_(false) {
+NonClientFrameView::NonClientFrameView() {
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
