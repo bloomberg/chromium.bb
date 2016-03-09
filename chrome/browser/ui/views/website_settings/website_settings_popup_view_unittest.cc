@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 
 #include "base/macros.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/website_settings/chosen_object_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -164,11 +165,13 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfo) {
   list.back().source = content_settings::SETTING_SOURCE_USER;
   list.back().is_incognito = false;
 
-  EXPECT_EQ(0, api_->permissions_content()->child_count());
+  const int kExpectedChildren =
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 10 : 12;
+  EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
 
   list.back().setting = CONTENT_SETTING_ALLOW;
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(1, api_->permissions_content()->child_count());
+  EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
 
   PermissionSelectorView* selector = api_->GetPermissionSelectorAt(0);
   EXPECT_EQ(3, selector->child_count());
@@ -193,26 +196,28 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfo) {
   // WebsiteSettings to update the pref.
   list.back().setting = CONTENT_SETTING_ALLOW;
   api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
-  EXPECT_EQ(1, api_->permissions_content()->child_count());
+  EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
   EXPECT_EQ(base::ASCIIToUTF16("Allowed by you"),
             api_->GetPermissionButtonAt(0)->GetText());
 
   // Setting to the default via the UI should keep the button around.
   list.back().setting = CONTENT_SETTING_ASK;
   api_->GetPermissionSelectorAt(0)->PermissionChanged(list.back());
-  EXPECT_EQ(1, api_->permissions_content()->child_count());
+  EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
   EXPECT_EQ(base::ASCIIToUTF16("Ask by you"),
             api_->GetPermissionButtonAt(0)->GetText());
 
   // However, since the setting is now default, recreating the dialog with those
   // settings should omit the permission from the UI.
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(0, api_->permissions_content()->child_count());
+  EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
 }
 
 // Test UI construction and reconstruction with USB devices.
 TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfoWithUsbDevice) {
-  EXPECT_EQ(0, api_->permissions_content()->child_count());
+  const int kExpectedChildren =
+      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ? 10 : 12;
+  EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();
   scoped_refptr<device::UsbDevice> device =
@@ -224,10 +229,10 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfoWithUsbDevice) {
 
   PermissionInfoList list;
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(1, api_->permissions_content()->child_count());
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_content()->child_count());
 
-  ChosenObjectView* object_view =
-      static_cast<ChosenObjectView*>(api_->permissions_content()->child_at(0));
+  ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
+      api_->permissions_content()->child_at(kExpectedChildren));
   EXPECT_EQ(3, object_view->child_count());
 
   const int kLabelIndex = 1;
@@ -245,7 +250,7 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfoWithUsbDevice) {
       static_cast<views::ButtonListener*>(object_view);
   button_listener->ButtonPressed(button, event);
   api_->SetPermissionInfo(list);
-  EXPECT_EQ(0, api_->permissions_content()->child_count());
+  EXPECT_EQ(kExpectedChildren, api_->permissions_content()->child_count());
   EXPECT_FALSE(store->HasDevicePermission(
       origin, origin, *device::usb::DeviceInfo::From(*device)));
 }

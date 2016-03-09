@@ -698,13 +698,14 @@ void WebsiteSettings::PresentSitePermissions() {
                                                       NULL);
     }
 
-    if ((permission_info.setting != CONTENT_SETTING_DEFAULT &&
-         permission_info.setting != permission_info.default_setting) ||
-        (permission_info.type == CONTENT_SETTINGS_TYPE_KEYGEN &&
-         tab_specific_content_settings()->IsContentBlocked(
-             permission_info.type))) {
-      permission_info_list.push_back(permission_info);
+    if (permission_info.type == CONTENT_SETTINGS_TYPE_KEYGEN &&
+        (permission_info.setting == CONTENT_SETTING_DEFAULT ||
+         permission_info.setting == permission_info.default_setting) &&
+        !tab_specific_content_settings()->IsContentBlocked(
+            permission_info.type)) {
+      continue;
     }
+    permission_info_list.push_back(permission_info);
   }
 
   for (const ChooserUIInfo& ui_info : kChooserUIInfo) {
