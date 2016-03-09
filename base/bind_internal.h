@@ -339,19 +339,19 @@ template <size_t... bound_indices,
           typename StorageType,
           typename InvokeHelperType,
           typename R,
-          typename... UnboundForwardArgs>
-struct Invoker<IndexSequence<bound_indices...>, StorageType,
-               InvokeHelperType, R(UnboundForwardArgs...)> {
-  static R Run(BindStateBase* base,
-               UnboundForwardArgs... unbound_args) {
+          typename... UnboundArgs>
+struct Invoker<IndexSequence<bound_indices...>,
+               StorageType,
+               InvokeHelperType,
+               R(UnboundArgs...)> {
+  static R Run(BindStateBase* base, UnboundArgs&&... unbound_args) {
     StorageType* storage = static_cast<StorageType*>(base);
     // Local references to make debugger stepping easier. If in a debugger,
     // you really want to warp ahead and step through the
     // InvokeHelper<>::MakeItSo() call below.
     return InvokeHelperType::MakeItSo(
-        storage->runnable_,
-        Unwrap(get<bound_indices>(storage->bound_args_))...,
-        CallbackForward(unbound_args)...);
+        storage->runnable_, Unwrap(get<bound_indices>(storage->bound_args_))...,
+        std::forward<UnboundArgs>(unbound_args)...);
   }
 };
 
@@ -406,18 +406,14 @@ struct BindState<Runnable, R(Args...), BoundArgs...> final
       IsWeakMethod<is_method, typename std::decay<BoundArgs>::type...>;
 
   using BoundIndices = MakeIndexSequence<sizeof...(BoundArgs)>;
-  using UnboundForwardArgs = DropTypeListItem<
-      sizeof...(BoundArgs),
-      TypeList<typename CallbackParamTraits<Args>::ForwardType...>>;
-  using UnboundForwardRunType = MakeFunctionType<R, UnboundForwardArgs>;
   using InvokeHelperType = InvokeHelper<IsWeakCall::value, R, Runnable>;
 
   using UnboundArgs = DropTypeListItem<sizeof...(BoundArgs), TypeList<Args...>>;
 
  public:
-  using InvokerType = Invoker<BoundIndices, StorageType,
-                              InvokeHelperType, UnboundForwardRunType>;
   using UnboundRunType = MakeFunctionType<R, UnboundArgs>;
+  using InvokerType =
+      Invoker<BoundIndices, StorageType, InvokeHelperType, UnboundRunType>;
 
   template <typename... ForwardArgs>
   BindState(const Runnable& runnable, ForwardArgs&&... bound_args)

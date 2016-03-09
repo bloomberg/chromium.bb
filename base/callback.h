@@ -386,18 +386,25 @@ class Callback<R(Args...)> : public internal::CallbackBase {
     return CallbackBase::Equals(other);
   }
 
-  R Run(typename internal::CallbackParamTraits<Args>::ForwardType... args)
-      const {
+  // Run() makes an extra copy compared to directly calling the bound function
+  // if an argument is passed-by-value and is copyable-but-not-movable:
+  // i.e. below copies CopyableNonMovableType twice.
+  //   void F(CopyableNonMovableType) {}
+  //   Bind(&F).Run(CopyableNonMovableType());
+  //
+  // We can not fully apply Perfect Forwarding idiom to the callchain from
+  // Callback::Run() to the target function. Perfect Forwarding requires
+  // knowing how the caller will pass the arguments. However, the signature of
+  // InvokerType::Run() needs to be fixed in the callback constructor, so Run()
+  // cannot template its arguments based on how it's called.
+  R Run(Args... args) const {
     PolymorphicInvoke f =
         reinterpret_cast<PolymorphicInvoke>(polymorphic_invoke_);
-
-    return f(bind_state_.get(), internal::CallbackForward(args)...);
+    return f(bind_state_.get(), std::forward<Args>(args)...);
   }
 
  private:
-  using PolymorphicInvoke =
-      R(*)(internal::BindStateBase*,
-           typename internal::CallbackParamTraits<Args>::ForwardType...);
+  using PolymorphicInvoke = R (*)(internal::BindStateBase*, Args&&...);
 };
 
 }  // namespace base

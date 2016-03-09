@@ -928,7 +928,7 @@ TEST_F(BindTest, ArgumentCopies) {
   copies = 0;
   assigns = 0;
   Bind(&VoidPolymorphic<CopyCounter>::Run).Run(counter);
-  EXPECT_EQ(1, copies);
+  EXPECT_EQ(2, copies);
   EXPECT_EQ(0, assigns);
 
   copies = 0;
@@ -967,7 +967,20 @@ TEST_F(BindTest, ArgumentMoves) {
   // TODO(tzik): Support binding move-only type into a non-reference parameter
   // of a variant of Callback.
 
-  // TODO(tzik): Support move-only type forwarding on Callback::Run.
+  move_constructs = 0;
+  move_assigns = 0;
+  Bind(&VoidPolymorphic<MoveCounter>::Run)
+      .Run(MoveCounter(&move_constructs, &move_assigns));
+  EXPECT_EQ(1, move_constructs);
+  EXPECT_EQ(0, move_assigns);
+
+  move_constructs = 0;
+  move_assigns = 0;
+  Bind(&VoidPolymorphic<MoveCounter>::Run)
+      .Run(MoveCounter(DerivedCopyMoveCounter(
+          nullptr, nullptr, &move_constructs, &move_assigns)));
+  EXPECT_EQ(2, move_constructs);
+  EXPECT_EQ(0, move_assigns);
 }
 
 // Argument constructor usage for non-reference movable-copyable
@@ -1006,22 +1019,20 @@ TEST_F(BindTest, ArgumentCopiesAndMoves) {
   Bind(&VoidPolymorphic<CopyMoveCounter>::Run).Run(counter);
   EXPECT_EQ(1, copies);
   EXPECT_EQ(0, assigns);
-  EXPECT_EQ(0, move_constructs);
+  EXPECT_EQ(1, move_constructs);
   EXPECT_EQ(0, move_assigns);
 
-  // TODO(tzik): This case should be done in no copy and one move.
   copies = 0;
   assigns = 0;
   move_constructs = 0;
   move_assigns = 0;
   Bind(&VoidPolymorphic<CopyMoveCounter>::Run)
       .Run(CopyMoveCounter(&copies, &assigns, &move_constructs, &move_assigns));
-  EXPECT_EQ(1, copies);
+  EXPECT_EQ(0, copies);
   EXPECT_EQ(0, assigns);
-  EXPECT_EQ(0, move_constructs);
+  EXPECT_EQ(1, move_constructs);
   EXPECT_EQ(0, move_assigns);
 
-  // TODO(tzik): This case should be done in one copy and one move.
   DerivedCopyMoveCounter derived_counter(&copies, &assigns, &move_constructs,
                                          &move_assigns);
   copies = 0;
@@ -1030,12 +1041,11 @@ TEST_F(BindTest, ArgumentCopiesAndMoves) {
   move_assigns = 0;
   Bind(&VoidPolymorphic<CopyMoveCounter>::Run)
       .Run(CopyMoveCounter(derived_counter));
-  EXPECT_EQ(2, copies);
+  EXPECT_EQ(1, copies);
   EXPECT_EQ(0, assigns);
-  EXPECT_EQ(0, move_constructs);
+  EXPECT_EQ(1, move_constructs);
   EXPECT_EQ(0, move_assigns);
 
-  // TODO(tzik): This case should be done in no copy and two move.
   copies = 0;
   assigns = 0;
   move_constructs = 0;
@@ -1043,9 +1053,9 @@ TEST_F(BindTest, ArgumentCopiesAndMoves) {
   Bind(&VoidPolymorphic<CopyMoveCounter>::Run)
       .Run(CopyMoveCounter(DerivedCopyMoveCounter(
           &copies, &assigns, &move_constructs, &move_assigns)));
-  EXPECT_EQ(1, copies);
+  EXPECT_EQ(0, copies);
   EXPECT_EQ(0, assigns);
-  EXPECT_EQ(1, move_constructs);
+  EXPECT_EQ(2, move_constructs);
   EXPECT_EQ(0, move_assigns);
 }
 
