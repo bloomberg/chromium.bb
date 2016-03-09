@@ -596,7 +596,8 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   if (mailbox.IsTexture()) {
     resource = InsertResource(
         id,
-        Resource(0, gfx::Size(), Resource::EXTERNAL, mailbox.target(),
+        Resource(0, mailbox.size_in_pixels(), Resource::EXTERNAL,
+                 mailbox.target(),
                  mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR,
                  TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE, RGBA_8888));
   } else {
