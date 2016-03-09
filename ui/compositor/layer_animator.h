@@ -26,6 +26,7 @@ class Animation;
 class AnimationPlayer;
 class AnimationTimeline;
 class Layer;
+class LayerAnimationController;
 }
 
 namespace gfx {
@@ -390,6 +391,11 @@ class COMPOSITOR_EXPORT LayerAnimator
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.
   base::ObserverList<LayerAnimationObserver> observers_;
+
+  // We store a state of LayerAnimationController here to save it in
+  // ResetCompositor/SetCompositor scope.
+  // TODO(loyso): Remove it. crbug.com/592873.
+  scoped_refptr<cc::LayerAnimationController> animation_controller_state_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };

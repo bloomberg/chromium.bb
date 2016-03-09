@@ -10,10 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_events.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
+#include "cc/animation/animation_registrar.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
+#include "cc/animation/layer_animation_controller.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/output/begin_frame_args.h"
 #include "ui/compositor/compositor.h"
@@ -135,6 +138,9 @@ void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
 }
 
 void LayerAnimator::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
+  // Release LAC state for old layer.
+  animation_controller_state_ = nullptr;
+
   if (delegate_) {
     if (animation_player_)
       DetachLayerFromAnimationPlayer();
@@ -154,16 +160,37 @@ void LayerAnimator::SetCompositor(Compositor* compositor) {
   if (animation_player_) {
     cc::AnimationTimeline* timeline = compositor->GetAnimationTimeline();
     DCHECK(timeline);
-    timeline->AttachPlayer(animation_player_);
 
     DCHECK(delegate_->GetCcLayer());
+
+    // Register LAC so ElementAnimations picks it up via
+    // AnimationRegistrar::GetAnimationControllerForId.
+    if (animation_controller_state_) {
+      DCHECK_EQ(animation_controller_state_->id(),
+                delegate_->GetCcLayer()->id());
+      timeline->animation_host()
+          ->animation_registrar()
+          ->RegisterAnimationController(animation_controller_state_.get());
+    }
+
+    timeline->AttachPlayer(animation_player_);
+
     AttachLayerToAnimationPlayer(delegate_->GetCcLayer()->id());
+
+    // Release LAC (it is referenced in ElementAnimations).
+    animation_controller_state_ = nullptr;
   }
 }
 
 void LayerAnimator::ResetCompositor(Compositor* compositor) {
   DCHECK(compositor);
   if (animation_player_) {
+    // Store a reference to LAC if any so it may be picked up in SetCompositor.
+    if (animation_player_->element_animations()) {
+      animation_controller_state_ =
+          animation_player_->element_animations()->layer_animation_controller();
+    }
+
     DetachLayerFromAnimationPlayer();
 
     cc::AnimationTimeline* timeline = compositor->GetAnimationTimeline();

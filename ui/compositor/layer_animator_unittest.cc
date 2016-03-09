@@ -2532,12 +2532,47 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
       LayerAnimationElement::CreateOpacityElement(target_opacity, time_delta)));
   EXPECT_TRUE(compositor_1->layer_animator_collection()->HasActiveAnimators());
   EXPECT_FALSE(compositor_2->layer_animator_collection()->HasActiveAnimators());
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimation());
 
   root_2.Add(&layer);
   EXPECT_FALSE(compositor_1->layer_animator_collection()->HasActiveAnimators());
   EXPECT_TRUE(compositor_2->layer_animator_collection()->HasActiveAnimators());
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimation());
+
   host_2.reset();
   host_1.reset();
+  TerminateContextFactoryForTests();
+}
+
+TEST(LayerAnimatorTest, ThreadedAnimationSurvivesIfLayerRemovedAdded) {
+  bool enable_pixel_output = false;
+  ui::ContextFactory* context_factory =
+      InitializeContextFactoryForTests(enable_pixel_output);
+  const gfx::Rect bounds(10, 10, 100, 100);
+  scoped_ptr<TestCompositorHost> host(
+      TestCompositorHost::Create(bounds, context_factory));
+  host->Show();
+
+  Compositor* compositor = host->GetCompositor();
+
+  Layer root;
+  compositor->SetRootLayer(&root);
+
+  Layer layer;
+  root.Add(&layer);
+
+  LayerAnimator* animator = layer.GetAnimator();
+  double target_opacity = 1.0;
+  base::TimeDelta time_delta = base::TimeDelta::FromSeconds(1);
+  animator->ScheduleAnimation(new LayerAnimationSequence(
+      LayerAnimationElement::CreateOpacityElement(target_opacity, time_delta)));
+
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimation());
+  root.Remove(&layer);
+  root.Add(&layer);
+  EXPECT_TRUE(layer.cc_layer_for_testing()->HasActiveAnimation());
+
+  host.reset();
   TerminateContextFactoryForTests();
 }
 
