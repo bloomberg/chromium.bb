@@ -771,7 +771,7 @@ public:
 
     template <typename U> void prepend(const U*, size_t);
     template <typename U> void prepend(U&&);
-    template <typename U, size_t c, typename V> void prepend(const Vector<U, c, V>&);
+    template <typename U, size_t c, typename V> void prependVector(const Vector<U, c, V>&);
 
     void remove(size_t position);
     void remove(size_t position, size_t length);
@@ -1286,7 +1286,7 @@ inline void Vector<T, inlineCapacity, Allocator>::prepend(U&& val)
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U, size_t c, typename V>
-inline void Vector<T, inlineCapacity, Allocator>::prepend(const Vector<U, c, V>& val)
+inline void Vector<T, inlineCapacity, Allocator>::prependVector(const Vector<U, c, V>& val)
 {
     insert(0, val.begin(), val.size());
 }
