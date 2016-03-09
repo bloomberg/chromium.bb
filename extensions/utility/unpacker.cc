@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <set>
+#include <tuple>
 #include <utility>
 
 #include "base/files/file_enumerator.h"
@@ -247,7 +248,7 @@ bool Unpacker::AddDecodedImage(const base::FilePath& path) {
     return false;
   }
 
-  internal_data_->decoded_images.push_back(base::MakeTuple(image_bitmap, path));
+  internal_data_->decoded_images.push_back(std::make_tuple(image_bitmap, path));
   return true;
 }
 

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -775,8 +776,8 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
       return false;
     }
 
-    const SkBitmap& image = base::get<0>(images[i]);
-    base::FilePath path_suffix = base::get<1>(images[i]);
+    const SkBitmap& image = std::get<0>(images[i]);
+    base::FilePath path_suffix = std::get<1>(images[i]);
     if (path_suffix.MaybeAsASCII() == install_icon_path)
       *install_icon = image;
 

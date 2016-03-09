@@ -5,6 +5,7 @@
 // Multiply-included message file, so no include guard.
 
 #include <string>
+#include <tuple>
 
 #include "extensions/common/update_manifest.h"
 #include "ipc/ipc_message_macros.h"
@@ -17,7 +18,7 @@
 #ifndef EXTENSIONS_COMMON_EXTENSION_UTILITY_MESSAGES_H_
 #define EXTENSIONS_COMMON_EXTENSION_UTILITY_MESSAGES_H_
 
-typedef std::vector<base::Tuple<SkBitmap, base::FilePath>> DecodedImages;
+using DecodedImages = std::vector<std::tuple<SkBitmap, base::FilePath>>;
 
 #endif  //  EXTENSIONS_COMMON_EXTENSION_UTILITY_MESSAGES_H_
 
