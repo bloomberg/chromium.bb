@@ -144,6 +144,15 @@ void WindowProxy::clearForNavigation()
     disposeContext(DetachGlobal);
 }
 
+v8::Local<v8::Object> WindowProxy::globalIfNotDetached()
+{
+    if (!isContextInitialized())
+        return v8::Local<v8::Object>();
+    ASSERT(m_scriptState->contextIsValid());
+    ASSERT(m_global == m_scriptState->context()->Global());
+    return m_global.newLocal(m_isolate);
+}
+
 v8::Local<v8::Object> WindowProxy::releaseGlobal()
 {
     ASSERT(!isContextInitialized());

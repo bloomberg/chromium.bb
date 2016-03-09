@@ -80,6 +80,7 @@ public:
     void clearForNavigation();
     void clearForClose();
 
+    v8::Local<v8::Object> globalIfNotDetached();
     v8::Local<v8::Object> releaseGlobal();
     void setGlobal(v8::Local<v8::Object>);
 
