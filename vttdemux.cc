@@ -6,14 +6,17 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
+#include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <map>
 #include <memory>
 #include <string>
-#include "./mkvparser.hpp"
-#include "./mkvreader.hpp"
-#include "./webvttparser.h"
+#include <utility>
+
+#include "mkvparser.hpp"
+#include "mkvreader.hpp"
+#include "webvttparser.h"
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.
