@@ -20,7 +20,7 @@ debug('Insertion points should be inactive in v1 shadow trees.');
 document.body.appendChild(
     createDOM('div', {},
               createDOM('div', {'id': 'host-2'},
-                        createShadowRoot(
+                        attachShadow(
                             {'mode': 'open'},
                             createDOM('content', {'id': 'content-2'})),
                         createDOM('div', {'id': 'child-2'}))));
@@ -30,7 +30,7 @@ shouldBe('document.getElementById("child-2").getDestinationInsertionPoints().len
 document.body.appendChild(
     createDOM('div', {},
               createDOM('div', {'id': 'host-3'},
-                        createShadowRoot(
+                        attachShadow(
                             {'mode': 'closed'},
                             createDOM('content', {'id': 'content-3'})),
                         createDOM('div', {'id': 'child-3'}))));

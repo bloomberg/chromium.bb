@@ -7,21 +7,21 @@ function prepareTree() {
   // Note: #target will be distributed to furthest <content>.
   document.body.appendChild(
     createDOM('div', {id: 'host_closed'},
-      createShadowRoot({mode: 'closed'},
+      attachShadow({mode: 'closed'},
         createDOM('div', {id: 'div1_open'},
           createDOM('content', {id: 'c1'}),
-          createShadowRoot({mode: 'open'},
+          attachShadow({mode: 'open'},
             createDOM('content', {id: 'c2'})))),
       createDOM('div', {id: 'host_open'},
-        createShadowRoot({mode: 'open'},
+        attachShadow({mode: 'open'},
           createDOM('div', {id: 'div2_closed'},
-            createShadowRoot({mode: 'closed'},
+            attachShadow({mode: 'closed'},
               createDOM('div', {id: 'div3_open'},
-                createShadowRoot({mode: 'open'},
+                attachShadow({mode: 'open'},
                   createDOM('div', {id: 'target'})))))))));
 }
 
-debug('Event.path should include only unclosed nodes.');
+debug('Event.deepPath() should include only unclosed nodes.');
 
 prepareTree();
 
@@ -40,13 +40,13 @@ debug('On #host_closed, #host_open, and #div2_closed,\n' +
   var node = getNodeInComposedTree(nodePath);
 
   var eventPath;
-  var clickHandler = function(e) { eventPath = e.path; };
+  var clickHandler = function(e) { eventPath = e.deepPath(); };
   node.addEventListener('click', clickHandler, false);
 
   debug('\nDispaching a click event on #target, listening on #' + node.id + '.');
   eventPath = null;
   target.click();
-  debug('Got event.path for #' + node.id + ':');
+  debug('Got event.deepPath() for #' + node.id + ':');
   debug(dumpNodeList(eventPath));
 
   node.removeEventListener('click', clickHandler, false);

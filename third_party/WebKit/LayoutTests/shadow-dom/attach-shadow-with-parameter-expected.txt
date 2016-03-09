@@ -1,9 +1,7 @@
 Attach open shadow root.
-PASS [object ShadowRoot] is non-null.
+PASS host1.attachShadow({mode: 'open'}) is non-null.
 Attach closed shadow root.
-PASS host2.createShadowRoot({mode: 'closed'}) is non-null.
-Create shadow root with empty parameter.
-PASS [object ShadowRoot] is non-null.
+PASS host2.attachShadow({mode: 'closed'}) is non-null.
 Attach shadow root whose mode is neither open nor closed.
 PASS host4.attachShadow({mode: 'illegal'}) threw exception TypeError: Failed to execute 'attachShadow' on 'Element': The provided value 'illegal' is not a valid enum value of type ShadowRootMode..
 Attach open shadow root with shadow-dom.js utility.

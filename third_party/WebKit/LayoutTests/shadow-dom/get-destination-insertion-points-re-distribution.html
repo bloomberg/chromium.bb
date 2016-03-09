@@ -1,10 +1,7 @@
 <!DOCTYPE html>
-<html>
-<head>
 <script src="../resources/js-test.js"></script>
 <script src="../fast/dom/shadow/resources/shadow-dom.js"></script>
-</head>
-<body>
+<body></body>
 <script>
 description("Tests for getDestinationInsertionPoints() which involves re-distribution.");
 
@@ -26,7 +23,7 @@ document.body.appendChild(
               createDOM('div', {'id': 'host-10'},
                         createShadowRoot(
                             createDOM('div', {'id': 'host-20'},
-                                      createShadowRoot(
+                                      attachShadow(
                                           {'mode': 'open'},
                                           createDOM('content', {'id': 'content-20'})),
                                       createDOM('content', {'id': 'content-10'}))),
@@ -40,7 +37,7 @@ document.body.appendChild(
               createDOM('div', {'id': 'host-11'},
                         createShadowRoot(
                             createDOM('div', {'id': 'host-21'},
-                                      createShadowRoot(
+                                      attachShadow(
                                           {'mode': 'closed'},
                                           createDOM('content', {'id': 'content-21'})),
                                       createDOM('content', {'id': 'content-11'}))),
@@ -52,7 +49,7 @@ shouldBeEqualAsArray(document.getElementById('child-11').getDestinationInsertion
 document.body.appendChild(
     createDOM('div', {},
               createDOM('div', {'id': 'host-12'},
-                        createShadowRoot(
+                        attachShadow(
                             {'mode': 'closed'},
                             createDOM('div', {'id': 'host-22'},
                                       createShadowRoot(
@@ -62,5 +59,3 @@ document.body.appendChild(
 
 shouldBe('document.getElementById("child-12").getDestinationInsertionPoints().length', '0');
 </script>
-</body>
-</html>

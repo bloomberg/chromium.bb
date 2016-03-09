@@ -1,38 +1,28 @@
 <!doctype html>
-<html>
-<head>
 <script src="../resources/js-test.js"></script>
 <script src="../fast/dom/shadow/resources/shadow-dom.js"></script>
-</head>
 <body>
  <div id="host1"></div>
  <div id="host2"></div>
  <div id="host3"></div>
- <div id="host4"></div>
 </body>
 <script>
 debug('Attach open shadow root.');
 var host1 = document.querySelector('#host1');
-var root1 = host1.attachShadow({mode: 'open'});
-shouldBeNonNull(root1);
+shouldBeNonNull("host1.attachShadow({mode: 'open'})");
 
 debug('Attach closed shadow root.');
 var host2 = document.querySelector('#host2');
-shouldBeNonNull("host2.createShadowRoot({mode: 'closed'})");
-
-debug('Create shadow root with empty parameter.');
-var host3 = document.querySelector('#host3');
-var root3 = host3.createShadowRoot({});
-shouldBeNonNull(root3);
+shouldBeNonNull("host2.attachShadow({mode: 'closed'})");
 
 debug('Attach shadow root whose mode is neither open nor closed.');
-var host4 = document.querySelector('#host4');
+var host4 = document.querySelector('#host3');
 shouldThrow("host4.attachShadow({mode: 'illegal'})");
 
 debug('Attach open shadow root with shadow-dom.js utility.');
 document.body.appendChild(
     createDOM('div', {id: 'host5'},
-        createShadowRoot({mode: 'open'})));
+        attachShadow({mode: 'open'})));
 var host5 = document.querySelector('#host5');
 var root5 = host5.shadowRoot;
 shouldBeNonNull(root5);
@@ -40,4 +30,3 @@ shouldBeNonNull(root5);
 debug('Attach shadow root on already shadowed host will raise InvalidStateError exception.');
 shouldThrow("host1.attachShadow({mode: 'open'})");
 </script>
-</html>

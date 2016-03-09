@@ -43,7 +43,7 @@ test(function() {
   var shadowRoot = host1.shadowRoot;
   input1.onfocus = function(e) {  
     var expected_array1 = [input1, slot1, shadowRoot, host1, document.body, document.documentElement, document, window];
-    assert_array_equals(e.path, expected_array1);
+    assert_array_equals(e.deepPath(), expected_array1);
   };
   input1.focus();
 }, 'Triggered in a slotted element, eventPath should go through shadow tree.');
@@ -62,7 +62,7 @@ test(function() {
 
   input2.onfocus = function(e) {
     var expected_array2 = [input2, slot2, slotParent, content, shadowRootV0, host3, shadowRootV1, host2, document.body, document.documentElement, document, window];
-    assert_array_equals(e.path, expected_array2);
+    assert_array_equals(e.deepPath(), expected_array2);
   };
   input2.focus();
 }, 'EventPath works fine with v0 insertion points & v1 slots.');
@@ -76,7 +76,7 @@ test(function() {
   var inputParent = document.getElementById('input-parent');
   input3.onfocus = function(e) {
     var expected_array3 = [input3, inputParent, slot3, shadowRoot2, host4, document.body, document.documentElement, document, window];
-    assert_array_equals(e.path, expected_array3);
+    assert_array_equals(e.deepPath(), expected_array3);
   };
   input3.focus();
 }, 'EventPath works fine when event happens to a descendant of a slotted element.');
