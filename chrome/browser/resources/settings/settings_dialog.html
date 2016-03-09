@@ -9,6 +9,11 @@
   <template>
     <style include="paper-dialog-shared-styles"></style>
     <style>
+      .body-content {
+        font-size: 1em;
+        margin: 20px 0;
+      }
+
       .dialog-content {
         -webkit-padding-end: 0;
         -webkit-padding-start: 0;
@@ -23,31 +28,15 @@
 
       .top-row {
         align-items: center;
-        border-bottom: 1px solid gainsboro;
+        border-bottom: 1px solid var(--paper-grey-300);
         display: flex;
         padding-bottom: 5px;
         padding-top: 5px;
       }
 
-      .body-content {
-        font-size: 1em;
-        margin: 20px 0;
-      }
-
       :host {
         max-width: 800px;
         min-width: 500px;
-      }
-
-      :host ::content .title {
-        flex: 1;
-        font-size: 1.13em;
-      }
-
-      :host ::content .title,
-      .body-content {
-        -webkit-padding-end: 24px;
-        -webkit-padding-start: 24px;
       }
 
       :host ::content .body {
@@ -60,8 +49,35 @@
       }
 
       :host ::content .button-container .cancel-button {
-        color: rgb(109, 109, 109);
+        color: var(--paper-grey-600);
         font-weight: 500;
+      }
+
+      :host ::content .footer {
+        background-color: var(--paper-grey-200);
+        margin: 0;
+        padding: 20px;
+      }
+
+      :host ::content .row {
+        align-items: center;
+        display: flex;
+        min-height: 40px;
+      }
+
+      :host ::content .row .start {
+        flex: 1;
+      }
+
+      :host ::content .title {
+        flex: 1;
+        font-size: 1.13em;
+      }
+
+      :host ::content .title,
+      .body-content {
+        -webkit-padding-end: 24px;
+        -webkit-padding-start: 24px;
       }
     </style>
     <div class="dialog-content">
