@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/android/surface_texture_peer.h"
+#include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 

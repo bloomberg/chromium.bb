@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/surface_texture_peer.h"
+#include "gpu/ipc/common/android/surface_texture_peer.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace gpu {
 
 namespace {
-SurfaceTexturePeer* g_instance_ = NULL;
+SurfaceTexturePeer* g_instance_ = nullptr;
 }  // namespace
 
-SurfaceTexturePeer::SurfaceTexturePeer() {
-}
+SurfaceTexturePeer::SurfaceTexturePeer() {}
 
-SurfaceTexturePeer::~SurfaceTexturePeer() {
-}
+SurfaceTexturePeer::~SurfaceTexturePeer() {}
 
 // static
 SurfaceTexturePeer* SurfaceTexturePeer::GetInstance() {
@@ -30,4 +28,4 @@ void SurfaceTexturePeer::InitInstance(SurfaceTexturePeer* instance) {
   g_instance_ = instance;
 }
 
-}  // namespace content
+}  // namespace gpu

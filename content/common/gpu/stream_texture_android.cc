@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/strings/stringize_macros.h"
-#include "content/common/android/surface_texture_peer.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_helper.h"
@@ -254,7 +254,7 @@ void StreamTexture::OnEstablishPeer(int32_t primary_id, int32_t secondary_id) {
 
   base::ProcessHandle process = owner_stub_->channel()->GetClientPID();
 
-  SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
+  gpu::SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
       process, surface_texture_, primary_id, secondary_id);
 }
 

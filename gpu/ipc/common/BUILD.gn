@@ -25,6 +25,15 @@ source_set("ipc_common_sources") {
     "memory_stats.h",
   ]
 
+  if (is_android) {
+    sources += [
+      "android/surface_texture_manager.cc",
+      "android/surface_texture_manager.h",
+      "android/surface_texture_peer.cc",
+      "android/surface_texture_peer.h",
+    ]
+  }
+
   configs += [
     "//gpu:gpu_implementation",
     "//third_party/khronos:khronos_headers",

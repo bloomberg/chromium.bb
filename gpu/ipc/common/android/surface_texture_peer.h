@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
-#define CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
+#ifndef GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
+#define GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
 
 #include "base/macros.h"
 #include "base/process/process.h"
+#include "gpu/gpu_export.h"
 #include "ui/gl/android/surface_texture.h"
 
-namespace content {
+namespace gpu {
 
-class SurfaceTexturePeer {
+class GPU_EXPORT SurfaceTexturePeer {
  public:
   static SurfaceTexturePeer* GetInstance();
 
@@ -33,6 +34,6 @@ class SurfaceTexturePeer {
   DISALLOW_COPY_AND_ASSIGN(SurfaceTexturePeer);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
+#endif  // GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_

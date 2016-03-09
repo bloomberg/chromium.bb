@@ -111,7 +111,7 @@ void ContentTestSuite::Initialize() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new TestInitializationListener);
 #if defined(OS_ANDROID)
-  SurfaceTextureManager::SetInstance(
+  gpu::SurfaceTextureManager::SetInstance(
       InProcessSurfaceTextureManager::GetInstance());
 #endif
 #if defined(USE_OZONE)

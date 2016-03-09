@@ -28,5 +28,13 @@
         '../ipc/ipc.gyp:ipc',
       ],
     }],
+    ['OS=="android"', {
+      'sources': [
+        'ipc/common/android/surface_texture_manager.cc',
+        'ipc/common/android/surface_texture_manager.h',
+        'ipc/common/android/surface_texture_peer.cc',
+        'ipc/common/android/surface_texture_peer.h',
+      ]
+    }]
   ],
 }

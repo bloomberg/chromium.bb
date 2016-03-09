@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_MANAGER_H_
-#define CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_MANAGER_H_
+#ifndef GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_MANAGER_H_
+#define GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_MANAGER_H_
 
-#include "content/common/content_export.h"
+#include "gpu/gpu_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class SurfaceTexture;
 }
 
-namespace content {
+namespace gpu {
 
-class CONTENT_EXPORT SurfaceTextureManager {
+class GPU_EXPORT SurfaceTextureManager {
  public:
   static SurfaceTextureManager* GetInstance();
   static void SetInstance(SurfaceTextureManager* instance);
@@ -37,6 +37,6 @@ class CONTENT_EXPORT SurfaceTextureManager {
   virtual ~SurfaceTextureManager() {}
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_MANAGER_H_
+#endif  // GPU_IPC_COMMON_ANDROID_SURFACE_TEXTURE_MANAGER_H_

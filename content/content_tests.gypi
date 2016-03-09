@@ -842,6 +842,7 @@
       'target_name': 'test_support_content',
       'type': 'static_library',
       'dependencies': [
+        '../gpu/gpu.gyp:gpu_ipc_common',
         '../mojo/mojo_base.gyp:mojo_application_base',
         '../mojo/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',

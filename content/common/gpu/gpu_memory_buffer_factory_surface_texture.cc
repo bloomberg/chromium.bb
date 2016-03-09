@@ -4,7 +4,7 @@
 
 #include "content/common/gpu/gpu_memory_buffer_factory_surface_texture.h"
 
-#include "content/common/android/surface_texture_manager.h"
+#include "gpu/ipc/common/android/surface_texture_manager.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_image_surface_texture.h"
 
@@ -50,7 +50,7 @@ GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
   if (!surface_texture.get())
     return gfx::GpuMemoryBufferHandle();
 
-  SurfaceTextureManager::GetInstance()->RegisterSurfaceTexture(
+  gpu::SurfaceTextureManager::GetInstance()->RegisterSurfaceTexture(
       id.id, client_id, surface_texture.get());
 
   {
@@ -89,8 +89,8 @@ void GpuMemoryBufferFactorySurfaceTexture::DestroyGpuMemoryBuffer(
     surface_textures_.erase(key);
   }
 
-  SurfaceTextureManager::GetInstance()->UnregisterSurfaceTexture(id.id,
-                                                                 client_id);
+  gpu::SurfaceTextureManager::GetInstance()->UnregisterSurfaceTexture(
+      id.id, client_id);
 }
 
 gpu::ImageFactory* GpuMemoryBufferFactorySurfaceTexture::AsImageFactory() {

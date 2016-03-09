@@ -5,18 +5,18 @@
 #ifndef CONTENT_BROWSER_ANDROID_BROWSER_SURFACE_TEXTURE_MANAGER_H_
 #define CONTENT_BROWSER_ANDROID_BROWSER_SURFACE_TEXTURE_MANAGER_H_
 
-#include "content/common/android/surface_texture_manager.h"
+#include "gpu/ipc/common/android/surface_texture_manager.h"
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "content/common/android/surface_texture_peer.h"
 #include "content/common/content_export.h"
+#include "gpu/ipc/common/android/surface_texture_peer.h"
 
 namespace content {
 
 class CONTENT_EXPORT BrowserSurfaceTextureManager
-    : public SurfaceTextureManager,
-      public SurfaceTexturePeer {
+    : public gpu::SurfaceTextureManager,
+      public gpu::SurfaceTexturePeer {
  public:
   static BrowserSurfaceTextureManager* GetInstance();
 

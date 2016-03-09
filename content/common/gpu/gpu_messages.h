@@ -38,7 +38,7 @@
 #include "url/ipc/url_param_traits.h"
 
 #if defined(OS_ANDROID)
-#include "content/common/android/surface_texture_peer.h"
+#include "gpu/ipc/common/android/surface_texture_peer.h"
 #elif defined(OS_MACOSX)
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/mac/io_surface.h"

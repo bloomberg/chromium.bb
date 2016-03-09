@@ -14,10 +14,10 @@
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
 #include "content/child/child_thread_impl.h"
-#include "content/common/android/surface_texture_manager.h"
-#include "content/common/android/surface_texture_peer.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
 #include "content/public/common/content_descriptors.h"
+#include "gpu/ipc/common/android/surface_texture_manager.h"
+#include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "ipc/ipc_descriptors.h"
 #include "jni/ChildProcessService_jni.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -32,8 +32,8 @@ namespace {
 
 // TODO(sievers): Use two different implementations of this depending on if
 // we're in a renderer or gpu process.
-class SurfaceTextureManagerImpl : public SurfaceTextureManager,
-                                  public SurfaceTexturePeer,
+class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
+                                  public gpu::SurfaceTexturePeer,
                                   public GpuSurfaceLookup {
  public:
   // |service| is the instance of
@@ -146,7 +146,8 @@ void InternalInitChildProcess(JNIEnv* env,
                               jlong cpu_features) {
   // Set the CPU properties.
   android_setCpu(cpu_count, cpu_features);
-  SurfaceTextureManager::SetInstance(new SurfaceTextureManagerImpl(service));
+  gpu::SurfaceTextureManager::SetInstance(
+      new SurfaceTextureManagerImpl(service));
 
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(env);
 }

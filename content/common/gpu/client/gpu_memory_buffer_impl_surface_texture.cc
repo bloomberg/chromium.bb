@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/android/surface_texture_manager.h"
 #include "content/common/gpu/gpu_memory_buffer_factory_surface_texture.h"
+#include "gpu/ipc/common/android/surface_texture_manager.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
@@ -43,7 +43,7 @@ int WindowFormat(gfx::BufferFormat format) {
 void FreeSurfaceTextureForTesting(
     scoped_refptr<gfx::SurfaceTexture> surface_texture,
     gfx::GpuMemoryBufferId id) {
-  SurfaceTextureManager::GetInstance()->UnregisterSurfaceTexture(id.id, 0);
+  gpu::SurfaceTextureManager::GetInstance()->UnregisterSurfaceTexture(id.id, 0);
 }
 
 }  // namespace
@@ -70,7 +70,7 @@ GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
   ANativeWindow* native_window =
-      SurfaceTextureManager::GetInstance()
+      gpu::SurfaceTextureManager::GetInstance()
           ->AcquireNativeWidgetForSurfaceTexture(handle.id.id);
   if (!native_window)
     return nullptr;
@@ -100,7 +100,7 @@ base::Closure GpuMemoryBufferImplSurfaceTexture::AllocateForTesting(
       gfx::SurfaceTexture::Create(0);
   DCHECK(surface_texture);
   const gfx::GpuMemoryBufferId kBufferId(1);
-  SurfaceTextureManager::GetInstance()->RegisterSurfaceTexture(
+  gpu::SurfaceTextureManager::GetInstance()->RegisterSurfaceTexture(
       kBufferId.id, 0, surface_texture.get());
   handle->type = gfx::SURFACE_TEXTURE_BUFFER;
   handle->id = kBufferId;

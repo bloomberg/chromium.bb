@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/surface_texture_manager.h"
+#include "gpu/ipc/common/android/surface_texture_manager.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace gpu {
 namespace {
 
-SurfaceTextureManager* g_instance = NULL;
+SurfaceTextureManager* g_instance = nullptr;
 
 }  // namespace
 
@@ -25,4 +25,4 @@ void SurfaceTextureManager::SetInstance(SurfaceTextureManager* instance) {
   g_instance = instance;
 }
 
-}  // namespace content
+}  // namespace gpu

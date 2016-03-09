@@ -638,10 +638,10 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTextureManager");
     if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
-      SurfaceTextureManager::SetInstance(
+      gpu::SurfaceTextureManager::SetInstance(
           InProcessSurfaceTextureManager::GetInstance());
     } else {
-      SurfaceTextureManager::SetInstance(
+      gpu::SurfaceTextureManager::SetInstance(
           BrowserSurfaceTextureManager::GetInstance());
     }
   }

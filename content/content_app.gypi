@@ -50,6 +50,7 @@
       'dependencies': [
         'content.gyp:content_jni_headers',
         '../build/android/ndk.gyp:cpu_features',
+        '../gpu/gpu.gyp:gpu_ipc_common',
         '../skia/skia.gyp:skia',
         '../ui/android/ui_android.gyp:ui_android',
       ],
