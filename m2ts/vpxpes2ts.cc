@@ -8,7 +8,9 @@
 #include "m2ts/vpxpes2ts.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
+#include <vector>
 
 namespace libwebm {
 // TODO(tomfinegan): Dedupe this and PesHeaderField.

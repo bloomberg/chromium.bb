@@ -8,11 +8,8 @@
 #ifndef LIBWEBM_M2TS_VPXPES2TS_H_
 #define LIBWEBM_M2TS_VPXPES2TS_H_
 
-#include <cstdio>
-#include <cstdint>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "common/libwebm_util.h"
 #include "m2ts/webm2pes.h"
