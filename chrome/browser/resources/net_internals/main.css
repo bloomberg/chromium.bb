@@ -9,6 +9,10 @@
   box-sizing: border-box;
 }
 
+body {
+  overflow: hidden;  /* Prevents scroll bar flickering on resize. */
+}
+
 ul {
   padding-left: 2em;
 }
