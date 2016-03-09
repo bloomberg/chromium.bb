@@ -8,7 +8,6 @@
 #include "core/animation/ConstantStyleInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/DoubleStyleInterpolation.h"
-#include "core/animation/FilterStyleInterpolation.h"
 #include "core/animation/ImageSliceStyleInterpolation.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
