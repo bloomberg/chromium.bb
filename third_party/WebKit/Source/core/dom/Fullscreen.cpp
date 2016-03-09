@@ -52,7 +52,17 @@ using namespace HTMLNames;
 
 static bool fullscreenIsAllowedForAllOwners(const Document& document)
 {
-    for (const Element* owner = document.ownerElement(); owner; owner = owner->document().ownerElement()) {
+    if (!document.frame())
+        return false;
+
+    for (const Frame* frame = document.frame(); frame->owner(); frame = frame->tree().parent()) {
+        // TODO(alexmos): The allowfullscreen attribute will need to be
+        // replicated for this to work with OOPIFs.  For now, deny fullscreen
+        // access inside OOPIFs until https://crbug.com/550497 is fixed.
+        if (!frame->owner()->isLocal())
+            return false;
+
+        HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(frame->owner());
         if (!isHTMLIFrameElement(owner))
             return false;
         if (!owner->hasAttribute(allowfullscreenAttr))
