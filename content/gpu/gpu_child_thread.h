@@ -71,6 +71,8 @@ class GpuChildThread : public ChildThreadImpl,
   void Init(const base::Time& process_start_time);
   void StopWatchdog();
 
+  static gpu::GpuPreferences GetGpuPreferencesFromCommandLine();
+
  private:
   // ChildThread overrides.
   bool Send(IPC::Message* msg) override;
@@ -101,7 +103,7 @@ class GpuChildThread : public ChildThreadImpl,
                          const std::string& shader) override;
 
   // Message handlers.
-  void OnInitialize(const gpu::GpuPreferences& gpu_preferences);
+  void OnInitialize();
   void OnFinalize();
   void OnCollectGraphicsInfo();
   void OnGetVideoMemoryUsageStats();

@@ -25,10 +25,10 @@ base::LazyInstance<scoped_refptr<gpu::InProcessCommandBuffer::Service>>
     g_gpu_service = LAZY_INSTANCE_INITIALIZER;
 
 base::Thread* CreateInProcessGpuThreadForSynchronousCompositor(
-    const InProcessChildThreadParams& params,
-    const gpu::GpuPreferences& gpu_preferences) {
+    const InProcessChildThreadParams& params) {
   DCHECK(g_gpu_service.Get());
-  return new InProcessGpuThread(params, gpu_preferences,
+  return new InProcessGpuThread(params,
+                                g_gpu_service.Get()->gpu_preferences(),
                                 g_gpu_service.Get()->sync_point_manager());
 }
 

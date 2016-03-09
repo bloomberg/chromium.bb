@@ -186,8 +186,6 @@
       'public/browser/gpu_data_manager_observer.h',
       'public/browser/gpu_service_registry.cc',
       'public/browser/gpu_service_registry.h',
-      'public/browser/gpu_utils.cc',
-      'public/browser/gpu_utils.h',
       'public/browser/histogram_fetcher.h',
       'public/browser/host_zoom_map.h',
       'public/browser/indexed_db_context.h',

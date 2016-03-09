@@ -66,10 +66,10 @@ struct GPU_EXPORT GpuPreferences {
   bool enforce_gl_minimums = false;
 
   // Sets the total amount of memory that may be allocated for GPU resources
-  uint32_t force_gpu_mem_available = 0;
+  size_t force_gpu_mem_available = 0;
 
   // Sets the maximum size of the in-memory gpu program cache, in kb
-  uint32_t gpu_program_cache_size = kDefaultMaxProgramCacheMemoryBytes;
+  size_t gpu_program_cache_size = kDefaultMaxProgramCacheMemoryBytes;
 
   // Disables the GPU shader on disk cache.
   bool disable_gpu_shader_disk_cache = false;

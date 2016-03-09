@@ -74,10 +74,9 @@ void InProcessGpuThread::CleanUp() {
 }
 
 base::Thread* CreateInProcessGpuThread(
-    const InProcessChildThreadParams& params,
-    const gpu::GpuPreferences& gpu_preferences) {
+    const InProcessChildThreadParams& params) {
   return new InProcessGpuThread(
-      params, gpu_preferences, nullptr);
+      params, GpuChildThread::GetGpuPreferencesFromCommandLine(), nullptr);
 }
 
 }  // namespace content

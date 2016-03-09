@@ -54,8 +54,7 @@ class InProcessGpuThread : public base::Thread {
 };
 
 CONTENT_EXPORT base::Thread* CreateInProcessGpuThread(
-    const InProcessChildThreadParams& params,
-    const gpu::GpuPreferences& gpu_preferences);
+    const InProcessChildThreadParams& params);
 
 }  // namespace content
 
