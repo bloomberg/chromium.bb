@@ -71,9 +71,9 @@ void loadHistoryItem(WebFrame*, const WebHistoryItem&, WebHistoryLoadType, WebUR
 void reloadFrame(WebFrame*);
 void reloadFrameIgnoringCache(WebFrame*);
 
-// Pumps pending resource requests while waiting for a frame to load. Don't use
-// this. Use one of the above helpers.
-void pumpPendingRequestsDoNotUse(WebFrame*);
+// Pumps pending resource requests while waiting for a frame to load. Consider
+// using one of the above helper methods whenever possible.
+void pumpPendingRequestsForFrameToLoad(WebFrame*);
 
 // Calls WebRemoteFrame::createLocalChild, but with some arguments prefilled
 // with default test values (i.e. with a default |client| or |properties| and/or
@@ -175,10 +175,9 @@ public:
     void didStopLoading() override;
 
     bool isLoading() { return m_loadsInProgress > 0; }
-    void waitForLoadToComplete();
 
 private:
-    int m_loadsInProgress;
+    int m_loadsInProgress = 0;
 };
 
 // Minimal implementation of WebRemoteFrameClient needed for unit tests that load remote frames. Tests that load

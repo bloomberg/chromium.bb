@@ -84,12 +84,6 @@ void runServeAsyncRequestsTask(TestWebFrameClient* client)
         testing::exitRunLoop();
 }
 
-void pumpPendingRequests(WebFrame* frame)
-{
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, testClientForFrame(frame)));
-    testing::enterRunLoop();
-}
-
 TestWebFrameClient* defaultWebFrameClient()
 {
     DEFINE_STATIC_LOCAL(TestWebFrameClient, client, ());
@@ -123,36 +117,37 @@ void loadFrame(WebFrame* frame, const std::string& url)
     urlRequest.initialize();
     urlRequest.setURL(URLTestHelpers::toKURL(url));
     frame->loadRequest(urlRequest);
-    pumpPendingRequests(frame);
+    pumpPendingRequestsForFrameToLoad(frame);
 }
 
 void loadHTMLString(WebFrame* frame, const std::string& html, const WebURL& baseURL)
 {
     frame->loadHTMLString(WebData(html.data(), html.size()), baseURL);
-    pumpPendingRequests(frame);
+    pumpPendingRequestsForFrameToLoad(frame);
 }
 
 void loadHistoryItem(WebFrame* frame, const WebHistoryItem& item, WebHistoryLoadType loadType, WebURLRequest::CachePolicy cachePolicy)
 {
     frame->loadHistoryItem(item, loadType, cachePolicy);
-    pumpPendingRequests(frame);
+    pumpPendingRequestsForFrameToLoad(frame);
 }
 
 void reloadFrame(WebFrame* frame)
 {
     frame->reload(false);
-    pumpPendingRequests(frame);
+    pumpPendingRequestsForFrameToLoad(frame);
 }
 
 void reloadFrameIgnoringCache(WebFrame* frame)
 {
     frame->reload(true);
-    pumpPendingRequests(frame);
+    pumpPendingRequestsForFrameToLoad(frame);
 }
 
-void pumpPendingRequestsDoNotUse(WebFrame* frame)
+void pumpPendingRequestsForFrameToLoad(WebFrame* frame)
 {
-    pumpPendingRequests(frame);
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runServeAsyncRequestsTask, testClientForFrame(frame)));
+    testing::enterRunLoop();
 }
 
 WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name, WebFrameClient* client, WebFrame* previousSibling, const WebFrameOwnerProperties& properties)
@@ -252,7 +247,7 @@ void WebViewHelper::resize(WebSize size)
     m_testWebViewClient->clearAnimationScheduled();
 }
 
-TestWebFrameClient::TestWebFrameClient() : m_loadsInProgress(0)
+TestWebFrameClient::TestWebFrameClient()
 {
 }
 
@@ -279,21 +274,6 @@ void TestWebFrameClient::didStopLoading()
 {
     ASSERT(m_loadsInProgress > 0);
     --m_loadsInProgress;
-}
-
-void TestWebFrameClient::waitForLoadToComplete()
-{
-    for (;;) {
-        // We call runPendingTasks multiple times as single call of
-        // runPendingTasks may not be enough.
-        // runPendingTasks only ensures that main thread task queue is empty,
-        // and asynchronous parsing make use of off main thread HTML parser.
-        testing::runPendingTasks();
-        if (!isLoading())
-            break;
-
-        testing::yieldCurrentThread();
-    }
 }
 
 TestWebRemoteFrameClient::TestWebRemoteFrameClient()

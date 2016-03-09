@@ -17,7 +17,7 @@
 namespace blink {
 
 using blink::FrameTestHelpers::WebViewHelper;
-using blink::FrameTestHelpers::pumpPendingRequestsDoNotUse;
+using blink::FrameTestHelpers::pumpPendingRequestsForFrameToLoad;
 
 class TestActivityLogger : public V8DOMActivityLogger {
 public:
@@ -77,7 +77,7 @@ protected:
     {
         v8::HandleScope scope(v8::Isolate::GetCurrent());
         m_scriptController->executeScriptInMainWorld(script);
-        pumpPendingRequestsDoNotUse(m_webViewHelper.webViewImpl()->mainFrame());
+        pumpPendingRequestsForFrameToLoad(m_webViewHelper.webViewImpl()->mainFrame());
     }
 
     void executeScriptInIsolatedWorld(const String& script) const
@@ -87,7 +87,7 @@ protected:
         sources.append(ScriptSourceCode(script));
         Vector<v8::Local<v8::Value>> results;
         m_scriptController->executeScriptInIsolatedWorld(isolatedWorldId, sources, extensionGroup, 0);
-        pumpPendingRequestsDoNotUse(m_webViewHelper.webViewImpl()->mainFrame());
+        pumpPendingRequestsForFrameToLoad(m_webViewHelper.webViewImpl()->mainFrame());
     }
 
     bool verifyActivities(const String& activities)

@@ -51,6 +51,11 @@ public:
 
     // Causes all pending asynchronous requests to be served. When this method
     // returns all the pending requests have been processed.
+    // Note: this may not work as expected if more requests could be made
+    // asynchronously from different threads (e.g. when HTML parser thread
+    // is being involved).
+    // DO NOT USE THIS for Frame loading; always use methods defined in
+    // FrameTestHelpers instead.
     virtual void serveAsynchronousMockedRequests() { }
 
     // Set a delegate that allows callbacks for all WebURLLoaderClients to be intercepted.

@@ -3273,21 +3273,21 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState)
 
     // Reload the page and end up at the same url. State should be propagated.
     webViewHelper.webViewImpl()->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + firstURL), false);
-    FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webViewImpl()->mainFrame());
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webViewImpl()->mainFrame());
     EXPECT_EQ(previousOffset.width, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().width);
     EXPECT_EQ(previousOffset.height, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().height);
     EXPECT_EQ(previousScale, webViewHelper.webViewImpl()->pageScaleFactor());
 
     // Reload the page using the cache. State should not be propagated.
     webViewHelper.webViewImpl()->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + secondURL), false);
-    FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webViewImpl()->mainFrame());
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webViewImpl()->mainFrame());
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().height);
     EXPECT_EQ(1.0f, webViewHelper.webViewImpl()->pageScaleFactor());
 
     // Reload the page while ignoring the cache. State should not be propagated.
     webViewHelper.webViewImpl()->mainFrame()->reloadWithOverrideURL(toKURL(m_baseURL + thirdURL), true);
-    FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webViewImpl()->mainFrame());
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webViewImpl()->mainFrame());
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().width);
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrame()->scrollOffset().height);
     EXPECT_EQ(1.0f, webViewHelper.webViewImpl()->pageScaleFactor());
@@ -3340,7 +3340,7 @@ TEST_P(ParameterizedWebFrameTest, IframeRedirect)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "iframe_redirect.html", true);
     // Pump pending requests one more time. The test page loads script that navigates.
-    FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webView()->mainFrame());
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webView()->mainFrame());
 
     WebFrame* iframe = webViewHelper.webView()->findFrameByName(WebString::fromUTF8("ifr"));
     ASSERT_TRUE(iframe);
@@ -5868,7 +5868,7 @@ TEST_P(ParameterizedWebFrameTest, ModifiedClickNewWindow)
     frameRequest.setTriggeringEvent(event);
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
     toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().load(frameRequest);
-    FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webView()->mainFrame());
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webView()->mainFrame());
 
     // decidePolicyForNavigation should be called both for the original request and the ctrl+click.
     EXPECT_EQ(2, webFrameClient.decidePolicyCallCount());
@@ -5931,7 +5931,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadPost)
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), "javascript:document.forms[0].submit()");
     // Pump requests one more time after the javascript URL has executed to
     // trigger the actual POST load request.
-    FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webView()->mainFrame());
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webView()->mainFrame());
     EXPECT_EQ(WebString::fromUTF8("POST"), frame->dataSource()->request().httpMethod());
 
     FrameTestHelpers::reloadFrame(frame);
@@ -6076,7 +6076,7 @@ TEST_P(ParameterizedWebFrameTest, NavigateToSame)
 
     FrameLoadRequest frameRequest(0, ResourceRequest(toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document()->url()));
     toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().load(frameRequest);
-    FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webView()->mainFrame());
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webView()->mainFrame());
 
     EXPECT_TRUE(client.frameLoadTypeSameSeen());
 }
@@ -6353,7 +6353,7 @@ TEST_P(ParameterizedWebFrameTest, CurrentHistoryItem)
     // Before commit, there is no history item.
     EXPECT_FALSE(mainFrameLoader.currentItem());
 
-    FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
+    FrameTestHelpers::pumpPendingRequestsForFrameToLoad(frame);
 
     // After commit, there is.
     HistoryItem* item = mainFrameLoader.currentItem();
