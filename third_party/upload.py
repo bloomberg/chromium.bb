@@ -2484,12 +2484,15 @@ def RealMain(argv, data=None):
     uploaded_diff_file = [("data", "data.diff", data)]
   ctype, body = EncodeMultipartFormData(form_fields, uploaded_diff_file)
   response_body = rpc_server.Send("/upload", body, content_type=ctype)
-  patchset = None
+  issue, patchset = None, None
   if not options.download_base or not uploaded_diff_file:
     lines = response_body.splitlines()
     if len(lines) >= 2:
-      msg = lines[0]
+      # lines[0] is "Issue (created|updated): <url>".
+      issue = lines[0][lines[0].rfind("/")+1:]
+      # lines[1] is just patchset number.
       patchset = lines[1].strip()
+      msg = '%s (patchset: %s)' % (lines[0], patchset)
       patches = [x.split(" ", 1) for x in lines[2:]]
     else:
       msg = response_body
@@ -2499,7 +2502,7 @@ def RealMain(argv, data=None):
   if not response_body.startswith("Issue created.") and \
   not response_body.startswith("Issue updated."):
     sys.exit(0)
-  issue = msg[msg.rfind("/")+1:]
+  assert issue
 
   if not uploaded_diff_file:
     result = UploadSeparatePatches(issue, rpc_server, patchset, data, options)
