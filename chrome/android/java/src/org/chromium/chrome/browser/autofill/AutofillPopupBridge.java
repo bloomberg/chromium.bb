@@ -136,12 +136,15 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
      * @param iconId The resource ID for the icon associated with the suggestion, or 0 for no icon.
      * @param suggestionId Identifier for the suggestion type.
      * @param deletable Whether this item is deletable.
+     * @param isLabelMultiline Whether the label should be should over multiple lines.
      */
     @CalledByNative
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
-            String label, String sublabel, int iconId, int suggestionId, boolean deletable) {
+            String label, String sublabel, int iconId, int suggestionId, boolean deletable,
+            boolean isLabelMultiline) {
         int drawableId = iconId == 0 ? DropdownItem.NO_ICON : ResourceId.mapToDrawableId(iconId);
-        array[index] = new AutofillSuggestion(label, sublabel, drawableId, suggestionId, deletable);
+        array[index] = new AutofillSuggestion(
+                label, sublabel, drawableId, suggestionId, deletable, isLabelMultiline);
     }
 
     private native void nativeSuggestionSelected(long nativeAutofillPopupViewAndroid,

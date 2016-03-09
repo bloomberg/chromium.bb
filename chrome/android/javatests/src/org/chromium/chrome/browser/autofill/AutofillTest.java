@@ -100,20 +100,22 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private AutofillSuggestion[] createTwoAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
-            new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
-                42, false),
-            new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON, 43, false),
+                new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
+                        42, false, false),
+                new AutofillSuggestion(
+                        "Arthur Dent", "West Country", DropdownItem.NO_ICON, 43, false, false),
         };
     }
 
     private AutofillSuggestion[] createFiveAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
-            new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
-                42, false),
-            new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON, 43, false),
-            new AutofillSuggestion("Arthos", "France", DropdownItem.NO_ICON, 44, false),
-            new AutofillSuggestion("Porthos", "France", DropdownItem.NO_ICON, 45, false),
-            new AutofillSuggestion("Aramis", "France", DropdownItem.NO_ICON, 46, false),
+                new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
+                        42, false, false),
+                new AutofillSuggestion(
+                        "Arthur Dent", "West Country", DropdownItem.NO_ICON, 43, false, false),
+                new AutofillSuggestion("Arthos", "France", DropdownItem.NO_ICON, 44, false, false),
+                new AutofillSuggestion("Porthos", "France", DropdownItem.NO_ICON, 45, false, false),
+                new AutofillSuggestion("Aramis", "France", DropdownItem.NO_ICON, 46, false, false),
         };
     }
 

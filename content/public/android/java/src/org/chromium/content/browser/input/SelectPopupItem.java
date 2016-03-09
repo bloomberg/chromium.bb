@@ -44,6 +44,11 @@ public class SelectPopupItem implements DropdownItem {
         return mType == PopupItemType.GROUP;
     }
 
+    @Override
+    public boolean isMultilineLabel() {
+        return false;
+    }
+
     public int getType() {
         return mType;
     }

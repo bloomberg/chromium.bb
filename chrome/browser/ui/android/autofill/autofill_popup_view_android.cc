@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -72,7 +73,7 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
             env, controller_->GetElidedLabelAt(i));
     int android_icon_id = 0;
 
-    const autofill::Suggestion& suggestion = controller_->GetSuggestionAt(i);
+    const Suggestion& suggestion = controller_->GetSuggestionAt(i);
     if (!suggestion.icon.empty()) {
       android_icon_id = ResourceMapper::MapFromChromiumId(
           controller_->layout_model().GetIconResourceID(suggestion.icon));
@@ -80,15 +81,11 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
 
     bool deletable =
         controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
+    bool is_label_multiline =
+        suggestion.frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE;
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
-        env,
-        data_array.obj(),
-        i,
-        value.obj(),
-        label.obj(),
-        android_icon_id,
-        suggestion.frontend_id,
-        deletable);
+        env, data_array.obj(), i, value.obj(), label.obj(), android_icon_id,
+        suggestion.frontend_id, deletable, is_label_multiline);
   }
 
   Java_AutofillPopupBridge_show(

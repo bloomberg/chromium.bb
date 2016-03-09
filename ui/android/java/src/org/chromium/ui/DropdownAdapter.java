@@ -77,18 +77,20 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             }
         }
 
+        DropdownItem item = getItem(position);
+
         // Note: trying to set the height of the root LinearLayout breaks accessibility,
         // so we have to adjust the height of this LinearLayout that wraps the TextViews instead.
         // If you need to modify this layout, don't forget to test it with TalkBack and make sure
         // it doesn't regress.
         // http://crbug.com/429364
         View wrapper = layout.findViewById(R.id.dropdown_label_wrapper);
-        wrapper.setLayoutParams(
-                new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, height, 1));
+        if (item.isMultilineLabel()) height = LayoutParams.WRAP_CONTENT;
+        wrapper.setLayoutParams(new LinearLayout.LayoutParams(0, height, 1));
 
-        DropdownItem item = getItem(position);
         TextView labelView = (TextView) layout.findViewById(R.id.dropdown_label);
         labelView.setText(item.getLabel());
+        labelView.setSingleLine(!item.isMultilineLabel());
 
         labelView.setEnabled(item.isEnabled());
         if (item.isGroupHeader()) {

@@ -15,6 +15,7 @@ public class AutofillSuggestion implements DropdownItem {
     private final int mIconId;
     private final int mSuggestionId;
     private final boolean mDeletable;
+    private final boolean mIsMultilineLabel;
 
     /**
      * Constructs a Autofill suggestion container.
@@ -22,14 +23,16 @@ public class AutofillSuggestion implements DropdownItem {
      * @param sublabel The describing sublabel of the Autofill suggestion.
      * @param suggestionId The type of suggestion.
      * @param deletable Whether the item can be deleted by the user.
+     * @param multilineLabel Whether the label is displayed over multiple lines.
      */
-    public AutofillSuggestion(
-            String label, String sublabel, int iconId, int suggestionId, boolean deletable) {
+    public AutofillSuggestion(String label, String sublabel, int iconId, int suggestionId,
+            boolean deletable, boolean multilineLabel) {
         mLabel = label;
         mSublabel = sublabel;
         mIconId = iconId;
         mSuggestionId = suggestionId;
         mDeletable = deletable;
+        mIsMultilineLabel = multilineLabel;
     }
 
     @Override
@@ -55,6 +58,11 @@ public class AutofillSuggestion implements DropdownItem {
     @Override
     public boolean isGroupHeader() {
         return false;
+    }
+
+    @Override
+    public boolean isMultilineLabel() {
+        return mIsMultilineLabel;
     }
 
     public int getSuggestionId() {
