@@ -57,14 +57,6 @@ LayoutSize StyleGeneratedImage::imageSize(const LayoutObject* layoutObject, floa
     return defaultObjectSize;
 }
 
-void StyleGeneratedImage::computeIntrinsicDimensions(const LayoutObject* layoutObject, FloatSize& intrinsicSize, FloatSize& intrinsicRatio)
-{
-    // At a zoom level of 1 the image is guaranteed to have an integer size.
-    LayoutSize size = imageSize(layoutObject, 1, LayoutSize());
-    ASSERT(size.fraction().isZero());
-    intrinsicSize = intrinsicRatio = FloatSize(size);
-}
-
 void StyleGeneratedImage::addClient(LayoutObject* layoutObject)
 {
     m_imageGeneratorValue->addClient(layoutObject, IntSize());

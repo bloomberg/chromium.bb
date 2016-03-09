@@ -37,12 +37,6 @@
 
 namespace blink {
 
-void GeneratedImage::computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio)
-{
-    Image::computeIntrinsicDimensions(intrinsicSize, intrinsicRatio);
-    intrinsicRatio = FloatSize();
-}
-
 void GeneratedImage::drawPattern(GraphicsContext& destContext, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect,
     const FloatSize& repeatSpacing)

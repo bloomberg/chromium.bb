@@ -49,10 +49,6 @@ public:
 
     bool usesContainerSize() const override { return m_image->usesContainerSize(); }
     bool hasRelativeSize() const override { return m_image->hasRelativeSize(); }
-    void computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio) override
-    {
-        m_image->computeIntrinsicDimensions(intrinsicSize, intrinsicRatio);
-    }
 
     void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;
 

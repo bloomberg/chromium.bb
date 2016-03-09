@@ -14,6 +14,7 @@
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGImageElement.h"
+#include "core/svg/graphics/SVGImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -80,14 +81,20 @@ FloatSize SVGImagePainter::computeImageViewportSize() const
 
     ImageResource* cachedImage = m_layoutSVGImage.imageResource()->cachedImage();
 
-    // Images with preserveAspectRatio=none should force non-uniform
-    // scaling. This can be achieved by setting the image's container size to
-    // its viewport size (i.e. if a viewBox is available - use that - else use intrinsic size.)
-    // See: http://www.w3.org/TR/SVG/single-page.html, 7.8 The 'preserveAspectRatio' attribute.
-    FloatSize intrinsicSize;
-    FloatSize intrinsicRatio;
-    cachedImage->computeIntrinsicDimensions(intrinsicSize, intrinsicRatio);
-    return intrinsicRatio;
+    // Images with preserveAspectRatio=none should force non-uniform scaling. This can be achieved
+    // by setting the image's container size to its viewport size (i.e. concrete object size
+    // returned by the default sizing algorithm.)  See
+    // https://www.w3.org/TR/SVG/single-page.html#coords-PreserveAspectRatioAttribute and
+    // https://drafts.csswg.org/css-images-3/#default-sizing.
+
+    // Avoid returning the size of the broken image.
+    if (cachedImage->errorOccurred())
+        return FloatSize();
+
+    if (cachedImage->image()->isSVGImage())
+        return toSVGImage(cachedImage->image())->concreteObjectSize(m_layoutSVGImage.objectBoundingBox().size());
+
+    return FloatSize(cachedImage->image()->size());
 }
 
 } // namespace blink

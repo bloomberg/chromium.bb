@@ -83,7 +83,6 @@ public:
     };
     // This method takes a zoom multiplier that can be used to increase the natural size of the image by the zoom.
     LayoutSize imageSize(RespectImageOrientationEnum shouldRespectImageOrientation, float multiplier, SizeType = IntrinsicSize);
-    void computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio);
 
     bool isAccessAllowed(SecurityOrigin*);
 

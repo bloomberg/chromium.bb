@@ -401,21 +401,6 @@ FrameView* SVGImage::frameView() const
     return toLocalFrame(m_page->mainFrame())->view();
 }
 
-void SVGImage::computeIntrinsicDimensions(FloatSize& intrinsicSize, FloatSize& intrinsicRatio)
-{
-    SVGSVGElement* rootElement = svgRootElement(m_page.get());
-    if (!rootElement)
-        return;
-
-    intrinsicSize = FloatSize(rootElement->intrinsicWidth(), rootElement->intrinsicHeight());
-    if (rootElement->preserveAspectRatio()->currentValue()->align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE)
-        return;
-
-    intrinsicRatio = rootElement->viewBox()->currentValue()->value().size();
-    if (intrinsicRatio.isEmpty())
-        intrinsicRatio = intrinsicSize;
-}
-
 // FIXME: support CatchUpAnimation = CatchUp.
 void SVGImage::startAnimation(CatchUpAnimation)
 {

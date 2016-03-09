@@ -109,11 +109,6 @@ bool StyleFetchedImage::imageHasRelativeSize() const
     return m_image->imageHasRelativeSize();
 }
 
-void StyleFetchedImage::computeIntrinsicDimensions(const LayoutObject*, FloatSize& intrinsicSize, FloatSize& intrinsicRatio)
-{
-    m_image->computeIntrinsicDimensions(intrinsicSize, intrinsicRatio);
-}
-
 bool StyleFetchedImage::usesImageContainerSize() const
 {
     return m_image->usesImageContainerSize();

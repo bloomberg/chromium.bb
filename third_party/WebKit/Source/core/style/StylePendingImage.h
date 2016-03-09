@@ -63,7 +63,6 @@ public:
 
     LayoutSize imageSize(const LayoutObject*, float /*multiplier*/, const LayoutSize& /*defaultObjectSize*/) const override { return LayoutSize(); }
     bool imageHasRelativeSize() const override { return false; }
-    void computeIntrinsicDimensions(const LayoutObject*, FloatSize& /* intrinsicSize */, FloatSize& /* intrinsicRatio */) override { }
     bool usesImageContainerSize() const override { return false; }
     void addClient(LayoutObject*) override { }
     void removeClient(LayoutObject*) override { }
