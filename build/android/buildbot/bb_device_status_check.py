@@ -135,7 +135,7 @@ def DeviceStatus(devices, blacklist):
     serial = device.adb.GetDeviceSerial()
     adb_status = (
         adb_devices[serial][1] if serial in adb_devices
-        else 'unknown')
+        else 'missing')
     usb_status = bool(serial in usb_devices)
 
     device_status = {
@@ -144,8 +144,8 @@ def DeviceStatus(devices, blacklist):
       'usb_status': usb_status,
     }
 
-    if adb_status == 'device':
-      if not _IsBlacklisted(serial, blacklist):
+    if not _IsBlacklisted(serial, blacklist):
+      if adb_status == 'device':
         try:
           build_product = device.build_product
           build_id = device.build_id
@@ -184,8 +184,9 @@ def DeviceStatus(devices, blacklist):
           if blacklist:
             blacklist.Extend([serial], reason='status_check_timeout')
 
-    elif blacklist:
-      blacklist.Extend([serial], reason=adb_status)
+      elif blacklist:
+        blacklist.Extend([serial],
+                         reason=adb_status if usb_status else 'offline')
 
     device_status['blacklisted'] = _IsBlacklisted(serial, blacklist)
 
@@ -212,7 +213,7 @@ def RecoverDevices(devices, blacklist):
   should_restart_usb = set(
       status['serial'] for status in statuses
       if (not status['usb_status']
-          or status['adb_status'] in ('offline', 'unknown')))
+          or status['adb_status'] in ('offline', 'missing')))
   should_restart_adb = should_restart_usb.union(set(
       status['serial'] for status in statuses
       if status['adb_status'] == 'unauthorized'))
@@ -238,10 +239,14 @@ def RecoverDevices(devices, blacklist):
   for serial in should_restart_usb:
     try:
       reset_usb.reset_android_usb(serial)
-    except (IOError, device_errors.DeviceUnreachableError):
+    except IOError:
       logging.exception('Unable to reset USB for %s.', serial)
       if blacklist:
         blacklist.Extend([serial], reason='usb_failure')
+    except device_errors.DeviceUnreachableError:
+      logging.exception('Unable to reset USB for %s.', serial)
+      if blacklist:
+        blacklist.Extend([serial], reason='offline')
 
   def blacklisting_recovery(device):
     if _IsBlacklisted(device.adb.GetDeviceSerial(), blacklist):
@@ -395,10 +400,14 @@ def main():
                 temperature=float(status['battery']['temperature']) / 10,
                 level=status['battery']['level']
             ))
-          else:
-            f.write('{serial} {adb_status}'.format(
+          elif status.get('usb_status', False):
+            f.write('{serial} {adb_status}\n'.format(
                 serial=status['serial'],
                 adb_status=status['adb_status']
+            ))
+          else:
+            f.write('{serial} offline\n'.format(
+                serial=status['serial']
             ))
         except Exception: # pylint: disable=broad-except
           pass
