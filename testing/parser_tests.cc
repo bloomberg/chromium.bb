@@ -9,7 +9,9 @@
 
 #include <array>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
+#include <iomanip>
 #include <string>
 
 #include "mkvparser.hpp"
