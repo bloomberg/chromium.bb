@@ -197,6 +197,7 @@ input {
   -webkit-flex: auto;
   -webkit-flex-flow: column;
   -webkit-padding-start: 48px;
+  -webkit-margin-start: 8px;
   background-size: 32px;
   line-height: 1.3;
 }
@@ -278,9 +279,13 @@ input {
 
 @media only screen and (max-width:600px) {
 
-  /* Omit the time on very small screens. */
+  /* Omit the time and favicon margin on very small screens. */
   .entry .time {
     display: none;
+  }
+
+  .entry .visit-entry {
+    -webkit-margin-start: 0;
   }
 
 } /* @media only screen and (max-width:600px) */
