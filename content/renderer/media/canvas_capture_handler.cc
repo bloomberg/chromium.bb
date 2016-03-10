@@ -38,6 +38,7 @@ class CanvasCaptureHandler::VideoCapturerSource
       int max_requested_height,
       double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) override {
+    DCHECK(main_render_thread_checker_.CalledOnValidThread());
     const blink::WebSize& size = canvas_handler_->GetSourceSize();
     media::VideoCaptureFormats formats;
     formats.push_back(
@@ -51,15 +52,19 @@ class CanvasCaptureHandler::VideoCapturerSource
   void StartCapture(const media::VideoCaptureParams& params,
                     const VideoCaptureDeliverFrameCB& frame_callback,
                     const RunningCallback& running_callback) override {
+    DCHECK(main_render_thread_checker_.CalledOnValidThread());
     canvas_handler_->StartVideoCapture(params, frame_callback,
                                        running_callback);
   }
   void StopCapture() override {
+    DCHECK(main_render_thread_checker_.CalledOnValidThread());
     canvas_handler_->StopVideoCapture();
   }
 
  private:
   double frame_rate_;
+  // Bound to Main Render thread.
+  base::ThreadChecker main_render_thread_checker_;
   // CanvasCaptureHandler is owned by CanvasDrawListener in blink and
   // guaranteed to be alive during the lifetime of this class.
   base::WeakPtr<CanvasCaptureHandler> canvas_handler_;
@@ -71,16 +76,16 @@ class CanvasCaptureHandler::CanvasCaptureHandlerDelegate {
       media::VideoCapturerSource::VideoCaptureDeliverFrameCB new_frame_callback)
       : new_frame_callback_(new_frame_callback),
         weak_ptr_factory_(this) {
-    thread_checker_.DetachFromThread();
+    io_thread_checker_.DetachFromThread();
   }
   ~CanvasCaptureHandlerDelegate() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
   }
 
   void SendNewFrameOnIOThread(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& current_time) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(io_thread_checker_.CalledOnValidThread());
     new_frame_callback_.Run(video_frame, current_time);
   }
 
@@ -91,7 +96,8 @@ class CanvasCaptureHandler::CanvasCaptureHandlerDelegate {
  private:
   const media::VideoCapturerSource::VideoCaptureDeliverFrameCB
       new_frame_callback_;
-  base::ThreadChecker thread_checker_;
+  // Bound to IO thread.
+  base::ThreadChecker io_thread_checker_;
   base::WeakPtrFactory<CanvasCaptureHandlerDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CanvasCaptureHandlerDelegate);
@@ -114,7 +120,7 @@ CanvasCaptureHandler::CanvasCaptureHandler(
 
 CanvasCaptureHandler::~CanvasCaptureHandler() {
   DVLOG(3) << __FUNCTION__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 }
 
@@ -132,12 +138,12 @@ CanvasCaptureHandler* CanvasCaptureHandler::CreateCanvasCaptureHandler(
 }
 
 void CanvasCaptureHandler::sendNewFrame(const SkImage* image) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   CreateNewFrame(image);
 }
 
 bool CanvasCaptureHandler::needsNewFrame() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   return ask_for_new_frame_;
 }
 
@@ -148,8 +154,8 @@ void CanvasCaptureHandler::StartVideoCapture(
     const media::VideoCapturerSource::RunningCallback& running_callback) {
   DVLOG(3) << __FUNCTION__ << " requested "
            << media::VideoCaptureFormat::ToString(params.requested_format);
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(params.requested_format.IsValid());
-  DCHECK(thread_checker_.CalledOnValidThread());
 
   // TODO(emircan): Accomodate to the given frame rate constraints here.
   capture_format_ = params.requested_format;
@@ -161,13 +167,13 @@ void CanvasCaptureHandler::StartVideoCapture(
 
 void CanvasCaptureHandler::StopVideoCapture() {
   DVLOG(3) << __FUNCTION__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   ask_for_new_frame_ = false;
   io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release());
 }
 
 void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(image);
 
   const gfx::Size size(image->width(), image->height());
@@ -213,7 +219,7 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
       base::Bind(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::
                      SendNewFrameOnIOThread,
                  delegate_->GetWeakPtrForIOThread(), video_frame,
-                 base::TimeTicks()));
+                 base::TimeTicks::Now()));
 }
 
 void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(

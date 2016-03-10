@@ -100,6 +100,8 @@ class CanvasCaptureHandlerTest : public TestWithParam<bool> {
     else
       EXPECT_EQ(media::PIXEL_FORMAT_YV12A, video_frame->format());
 
+    EXPECT_EQ(video_frame->timestamp().InMilliseconds(),
+              (estimated_capture_time - base::TimeTicks()).InMilliseconds());
     const gfx::Size& size = video_frame->coded_size();
     EXPECT_EQ(kTestCanvasCaptureFrameWidth, size.width());
     EXPECT_EQ(kTestCanvasCaptureFrameHeight, size.height());

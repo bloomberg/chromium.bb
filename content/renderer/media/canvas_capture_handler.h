@@ -92,8 +92,9 @@ class CONTENT_EXPORT CanvasCaptureHandler final
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_ptr<CanvasCaptureHandlerDelegate> delegate_;
-  // Bound to the main render thread.
-  base::ThreadChecker thread_checker_;
+
+  // Bound to Main Render thread.
+  base::ThreadChecker main_render_thread_checker_;
   base::WeakPtrFactory<CanvasCaptureHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CanvasCaptureHandler);
