@@ -3,7 +3,6 @@
 
 {%- set class_name = interface.name %}
 {%- set proxy_name = interface.name ~ "Proxy" %}
-{%- set namespace_as_string = "%s"|format(namespace|replace(".","::")) %}
 
 {%- macro alloc_params(struct, serialization_context) %}
   bool success = true;
@@ -35,7 +34,7 @@ p_{{param.name}}
 {%- endmacro %}
 
 {#--- Begin #}
-MOJO_STATIC_CONST_MEMBER_DEFINITION const char {{class_name}}::Name_[] = "{{namespace_as_string}}::{{class_name}}";
+MOJO_STATIC_CONST_MEMBER_DEFINITION const char {{class_name}}::Name_[] = "{{namespace}}.{{class_name}}";
 MOJO_STATIC_CONST_MEMBER_DEFINITION const uint32_t {{class_name}}::Version_;
 
 {#--- Constants #}
