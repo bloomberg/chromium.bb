@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/common/p2p_socket_type.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 

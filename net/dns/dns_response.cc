@@ -11,6 +11,7 @@
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_query.h"
@@ -290,7 +291,8 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
          expected_type == dns_protocol::kTypeAAAA);
 
   size_t expected_size = (expected_type == dns_protocol::kTypeAAAA)
-      ? kIPv6AddressSize : kIPv4AddressSize;
+                             ? IPAddress::kIPv6AddressSize
+                             : IPAddress::kIPv4AddressSize;
 
   uint32_t ttl_sec = std::numeric_limits<uint32_t>::max();
   IPAddressList ip_addresses;
@@ -322,8 +324,9 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
         return DNS_NAME_MISMATCH;
 
       ttl_sec = std::min(ttl_sec, record.ttl);
-      ip_addresses.push_back(IPAddressNumber(record.rdata.begin(),
-                                             record.rdata.end()));
+      ip_addresses.push_back(
+          IPAddress(reinterpret_cast<const uint8_t*>(record.rdata.data()),
+                    record.rdata.length()));
     }
   }
 

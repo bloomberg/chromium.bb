@@ -95,7 +95,7 @@ class P2PSocketDispatcherHost::DnsRequest {
     DCHECK(!addresses_.empty());
     for (net::AddressList::iterator iter = addresses_.begin();
          iter != addresses_.end(); ++iter) {
-      list.push_back(iter->address().bytes());
+      list.push_back(iter->address());
     }
     done_callback_.Run(list);
   }

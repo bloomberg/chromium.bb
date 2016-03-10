@@ -24,6 +24,7 @@
 #include "content/renderer/p2p/socket_client_impl.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/utils.h"
+#include "net/base/ip_address.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 
 namespace content {

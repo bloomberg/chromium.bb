@@ -105,6 +105,8 @@ class NET_EXPORT IPAddress {
   // This class is copyable and assignable.
 };
 
+using IPAddressList = std::vector<IPAddress>;
+
 // TODO(Martijnc): These utility functions currently forward the calls to
 // the IPAddressNumber implementations. Move the implementations over when
 // the IPAddressNumber migration is complete. https://crbug.com/496258.
