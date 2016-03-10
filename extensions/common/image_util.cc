@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/utils/SkParse.h"
 #include "ui/gfx/color_utils.h"
 
 namespace extensions {
@@ -29,6 +30,11 @@ bool ParseCssColorString(const std::string& color_string, SkColor* result) {
     NOTIMPLEMENTED();
     return false;
   }
+  if (SkParse::FindNamedColor(color_string.c_str(), color_string.size(),
+                              result) != nullptr) {
+    return true;
+  }
+
   return false;
 }
 

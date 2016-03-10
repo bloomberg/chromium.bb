@@ -56,6 +56,8 @@ const char kNoTabError[] = "No tab with id: *.";
 const char kOpenPopupError[] =
     "Failed to show popup either because there is an existing popup or another "
     "error occurred.";
+const char kInvalidColorError[] =
+    "The color specification could not be parsed.";
 
 }  // namespace
 
@@ -580,8 +582,10 @@ bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
   } else if (color_value->IsType(base::Value::TYPE_STRING)) {
     std::string color_string;
     EXTENSION_FUNCTION_VALIDATE(details_->GetString("color", &color_string));
-    if (!image_util::ParseCssColorString(color_string, &color))
+    if (!image_util::ParseCssColorString(color_string, &color)) {
+      error_ = kInvalidColorError;
       return false;
+    }
   }
 
   extension_action_->SetBadgeBackgroundColor(tab_id_, color);

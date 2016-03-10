@@ -108,4 +108,15 @@ TEST(ImageUtilTest, AcceptHsla) {
   RunPassHslTest("hsla(0, 100%, 50%, 1)", SK_ColorRED);
 }
 
+TEST(ImageUtilTest, BasicColorKeyword) {
+  SkColor color = 0;
+  EXPECT_TRUE(image_util::ParseCssColorString("red", &color));
+  EXPECT_EQ(color, SK_ColorRED);
+
+  EXPECT_TRUE(image_util::ParseCssColorString("blue", &color));
+  EXPECT_EQ(color, SK_ColorBLUE);
+
+  EXPECT_FALSE(image_util::ParseCssColorString("my_red", &color));
+}
+
 }  // namespace extensions
