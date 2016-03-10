@@ -17,7 +17,6 @@ mojo_native_application("init") {
   ]
 
   deps = [
-    ":manifest",
     "//base",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
@@ -25,6 +24,10 @@ mojo_native_application("init") {
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 }
 

@@ -33,12 +33,15 @@ mojo_native_application("font_service") {
 
   deps = [
     ":lib",
-    ":manifest",
     "//base",
     "//mojo/common",
     "//mojo/common:common_base",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/shell/public/cpp",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 }
 

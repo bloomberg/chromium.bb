@@ -16,13 +16,16 @@ mojo_native_application("browser_driver") {
   ]
 
   deps = [
-    ":manifest",
     "//base",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/cpp:sources",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 }
 

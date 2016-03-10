@@ -17,7 +17,6 @@ mojo_native_application("login") {
   ]
 
   deps = [
-    ":manifest",
     "//base",
     "//components/mus/public/cpp",
     "//mash/init/public/interfaces",
@@ -32,6 +31,7 @@ mojo_native_application("login") {
   resources = [ "$root_out_dir/views_mus_resources.pak" ]
 
   data_deps = [
+    ":manifest",
     "//components/mus",
   ]
 }

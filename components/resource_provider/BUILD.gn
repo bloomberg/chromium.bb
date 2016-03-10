@@ -71,11 +71,14 @@ if (is_android) {
 
     deps = [
       ":lib",
-      ":manifest",
       "//base",
       "//components/resource_provider/public/interfaces",
       "//mojo/shell/public/cpp",
       "//url",
+    ]
+
+    data_deps = [
+      ":manifest",
     ]
   }
 
@@ -137,7 +140,6 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
-    ":apptest_manifest",
     "//base",
     "//base/test:test_config",
     "//components/resource_provider/public/cpp",
@@ -147,6 +149,7 @@ mojo_native_application("apptests") {
   ]
 
   data_deps = [
+    ":apptest_manifest",
     ":resource_provider",
   ]
 }

@@ -15,7 +15,6 @@ source_set("shell") {
 
   deps = [
     ":interfaces",
-    ":manifest",
     "//base",
     "//base/test:test_config",
     "//mojo/common:common_base",
@@ -25,6 +24,7 @@ source_set("shell") {
   ]
 
   data_deps = [
+    ":manifest",
     ":shell_unittest_driver",
     ":shell_unittest_target",
   ]
@@ -49,7 +49,6 @@ executable("shell_unittest_driver") {
   ]
 
   deps = [
-    ":driver_manifest",
     ":interfaces",
     "//base",
     "//mojo/edk/system",
@@ -58,6 +57,10 @@ executable("shell_unittest_driver") {
     "//mojo/shell/runner:init",
     "//mojo/shell/runner/child:test_native_main",
     "//mojo/shell/runner/common",
+  ]
+
+  data_deps = [
+    ":driver_manifest",
   ]
 }
 
@@ -76,10 +79,13 @@ executable("shell_unittest_target") {
 
   deps = [
     ":interfaces",
-    ":target_manifest",
     "//base",
     "//mojo/shell/public/cpp",
     "//mojo/shell/runner/child:test_native_main",
+  ]
+
+  data_deps = [
+    ":target_manifest",
   ]
 }
 

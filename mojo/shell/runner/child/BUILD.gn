@@ -72,7 +72,6 @@ mojo_native_application("apptests") {
 
   deps = [
     ":apptest_interfaces",
-    ":manifest",
     "//base",
     "//base/test:test_config",
     "//mojo/shell/public/cpp:sources",
@@ -80,6 +79,7 @@ mojo_native_application("apptests") {
   ]
 
   data_deps = [
+    ":manifest",
     ":native_target",
   ]
 }

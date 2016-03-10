@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo_application.gni")
-import("//mojo/public/mojo_application_manifest.gni")
 
 source_set("lib") {
   sources = [

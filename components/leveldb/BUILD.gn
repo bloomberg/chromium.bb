@@ -39,7 +39,6 @@ mojo_native_application("leveldb") {
 
   deps = [
     ":lib",
-    ":manifest",
     "//components/leveldb/public/interfaces",
     "//mojo/common",
     "//mojo/platform_handle:for_shared_library",
@@ -47,6 +46,10 @@ mojo_native_application("leveldb") {
     "//mojo/public/cpp/system",
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 }
 
@@ -65,7 +68,6 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
-    ":apptest_manifest",
     "//base",
     "//components/filesystem/public/interfaces",
     "//components/leveldb/public/interfaces",
@@ -76,6 +78,7 @@ mojo_native_application("apptests") {
   ]
 
   data_deps = [
+    ":apptest_manifest",
     ":leveldb",
     "//components/filesystem:filesystem",
   ]

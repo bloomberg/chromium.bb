@@ -18,7 +18,6 @@ mojo_native_application("views_examples") {
   ]
 
   deps = [
-    ":manifest",
     "//base",
     "//components/mus/public/interfaces",
     "//mojo/converters/geometry",
@@ -37,6 +36,7 @@ mojo_native_application("views_examples") {
   resources = [ "$root_out_dir/views_mus_resources.pak" ]
 
   data_deps = [
+    ":manifest",
     "//components/mus",
   ]
 }

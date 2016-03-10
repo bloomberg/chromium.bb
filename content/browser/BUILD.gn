@@ -23,7 +23,6 @@ source_set("browser") {
 
   # Shared deps. See also non-iOS deps below.
   deps = [
-    ":chrome_renderer_manifest",
     "//base",
     "//base:base_static",
     "//components/mime_util",
@@ -68,6 +67,10 @@ source_set("browser") {
     "//ui/native_theme",
     "//ui/resources",
     "//ui/snapshot",
+  ]
+
+  data_deps = [
+    ":chrome_renderer_manifest",
   ]
 
   if (is_ios) {

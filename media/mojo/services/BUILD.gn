@@ -226,7 +226,6 @@ mojo_native_application("media_apptests") {
   ]
 
   deps = [
-    ":apptest_manifest",
     ":proxy",
     "//media/base:test_support",
     "//mojo/shell/public/cpp:test_support",
@@ -235,6 +234,7 @@ mojo_native_application("media_apptests") {
   ]
 
   data_deps = [
+    ":apptest_manifest",
     ":media",
   ]
 }
@@ -248,12 +248,12 @@ mojo_native_application("media_pipeline_integration_apptests") {
   testonly = true
 
   deps = [
-    ":pipeline_apptest_manifest",
     "//media/test:mojo_pipeline_integration_tests",
   ]
 
   data_deps = [
     ":media",
+    ":pipeline_apptest_manifest",
   ]
 }
 

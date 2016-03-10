@@ -35,7 +35,6 @@ if (is_android) {
 
     deps = [
       ":lib",
-      ":manifest",
       "//mojo/platform_handle:for_shared_library",
       "//mojo/shell/public/cpp:sources",
     ]
@@ -43,6 +42,10 @@ if (is_android) {
     if (is_win) {
       deps += [ ":copy_gl_libraries" ]
     }
+
+    data_deps = [
+      ":manifest",
+    ]
   }
 
   mojo_application_manifest("manifest") {

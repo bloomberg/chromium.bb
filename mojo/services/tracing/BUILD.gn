@@ -14,9 +14,12 @@ mojo_native_application("tracing") {
 
   deps = [
     ":lib",
-    ":manifest",
     "//mojo/public/cpp/system",
     "//mojo/shell/public/cpp",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 }
 

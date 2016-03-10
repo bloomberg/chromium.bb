@@ -103,7 +103,6 @@ mojo_native_application("wm") {
 
   deps = [
     ":lib",
-    ":manifest",
     ":resources",
     "//mojo/shell/public/cpp",
   ]
@@ -111,6 +110,7 @@ mojo_native_application("wm") {
   # TODO(beng): This target relies on //mash/shell, but there is a cycle so we
   #             can't state that dependency here.
   data_deps = [
+    ":manifest",
     "//components/mus",
   ]
 
@@ -150,7 +150,6 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
-    ":apptest_manifest",
     "//base",
     "//base/test:test_config",
     "//components/mus/public/cpp",
@@ -164,6 +163,7 @@ mojo_native_application("apptests") {
   ]
 
   data_deps = [
+    ":apptest_manifest",
     ":wm",
   ]
 

@@ -40,13 +40,16 @@ mojo_native_application("shell") {
 
   deps = [
     ":lib",
-    ":manifest",
     "//base",
     "//mash/shell/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/cpp:sources",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 }
 

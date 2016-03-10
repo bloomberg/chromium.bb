@@ -19,7 +19,6 @@ executable("window_type_launcher") {
   ]
 
   deps = [
-    ":manifest",
     ":window_type_launcher_resources",
     "//base",
     "//base:base_static",
@@ -44,6 +43,7 @@ executable("window_type_launcher") {
   ]
 
   data_deps = [
+    ":manifest",
     "//components/mus",
   ]
 }

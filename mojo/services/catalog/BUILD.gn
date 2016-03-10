@@ -28,13 +28,16 @@ source_set("lib") {
   ]
 
   deps = [
-    ":manifest",
     "//base",
     "//mojo/common:url_type_converters",
     "//mojo/services/catalog/public/interfaces",
     "//mojo/shell/public/cpp",
     "//mojo/util:filename_util",
     "//net",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 }
 

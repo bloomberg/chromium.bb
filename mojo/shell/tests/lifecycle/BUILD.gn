@@ -14,7 +14,6 @@ source_set("lifecycle") {
   ]
   deps = [
     ":interfaces",
-    ":manifest",
     "//base",
     "//base/test:test_support",
     "//mojo/edk/system",
@@ -28,6 +27,7 @@ source_set("lifecycle") {
     ":lifecycle_unittest_app",
     ":lifecycle_unittest_exe",
     ":lifecycle_unittest_package",
+    ":manifest",
   ]
 }
 
@@ -101,9 +101,12 @@ mojo_native_application("lifecycle_unittest_app") {
   deps = [
     ":app_client",
     ":interfaces",
-    ":lifecycle_unittest_app_manifest",
     "//base",
     "//mojo/shell/public/cpp:sources",
+  ]
+
+  data_deps = [
+    ":lifecycle_unittest_app_manifest",
   ]
 }
 
@@ -119,10 +122,13 @@ executable("lifecycle_unittest_exe") {
   ]
   deps = [
     ":app_client",
-    ":lifecycle_unittest_exe_manifest",
     "//base",
     "//mojo/shell/public/cpp:sources",
     "//mojo/shell/runner/child:test_native_main",
+  ]
+
+  data_deps = [
+    ":lifecycle_unittest_exe_manifest",
   ]
 }
 

@@ -10,8 +10,6 @@ source_set("mash") {
     "mash_runner.h",
   ]
   deps = [
-    ":chrome_manifest",
-    ":manifest",
     "//ash/mus:lib",
     "//ash/resources",
     "//base:i18n",
@@ -29,6 +27,10 @@ source_set("mash") {
     "//mojo/shell/runner/host:child_process_base",
     "//mojo/shell/runner/host:lib",
     "//url",
+  ]
+  data_deps = [
+    ":chrome_manifest",
+    ":manifest",
   ]
 
   if (is_linux && !is_android) {

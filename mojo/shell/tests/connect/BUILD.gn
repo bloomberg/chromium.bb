@@ -14,7 +14,6 @@ source_set("connect") {
   ]
   deps = [
     ":interfaces",
-    ":manifest",
     "//base",
     "//base/test:test_support",
     "//mojo/shell/public/cpp:shell_test_support",
@@ -25,6 +24,7 @@ source_set("connect") {
   data_deps = [
     ":connect_test_app",
     ":connect_test_package",
+    ":manifest",
   ]
 }
 

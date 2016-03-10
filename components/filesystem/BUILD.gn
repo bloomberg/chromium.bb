@@ -40,7 +40,6 @@ mojo_native_application("filesystem") {
 
   deps = [
     ":lib",
-    ":manifest",
     "//base",
     "//components/filesystem/public/interfaces",
     "//mojo/common",
@@ -49,6 +48,10 @@ mojo_native_application("filesystem") {
     "//mojo/public/cpp/system",
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 }
 
@@ -70,7 +73,6 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
-    ":apptest_manifest",
     "//base",
     "//components/filesystem/public/interfaces",
     "//mojo/common",
@@ -80,6 +82,7 @@ mojo_native_application("apptests") {
   ]
 
   data_deps = [
+    ":apptest_manifest",
     ":filesystem",
   ]
 }

@@ -76,11 +76,11 @@ mojo_native_application("mus") {
   ]
   deps = [
     ":lib",
-    ":manifest",
     "//mojo/shell/public/cpp",
   ]
 
   data_deps = [
+    ":manifest",
     "//components/mus",
   ]
 }

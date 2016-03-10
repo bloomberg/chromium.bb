@@ -33,7 +33,6 @@ mojo_native_application("quick_launch") {
 
   deps = [
     ":lib",
-    ":manifest",
     "//mojo/shell/public/cpp",
     "//ui/views/mus:for_mojo_application",
   ]
@@ -41,6 +40,7 @@ mojo_native_application("quick_launch") {
   resources = [ "$root_out_dir/views_mus_resources.pak" ]
 
   data_deps = [
+    ":manifest",
     "//components/mus",
   ]
 }

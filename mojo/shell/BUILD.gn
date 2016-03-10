@@ -34,7 +34,6 @@ source_set("shell") {
   ]
 
   deps = [
-    ":manifest",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//mojo/common",
@@ -49,6 +48,10 @@ source_set("shell") {
   public_deps = [
     # ApplicationManager exposes and uses PackageManager types in its header.
     "//mojo/services/catalog:lib",
+  ]
+
+  data_deps = [
+    ":manifest",
   ]
 
   # For mojo/shell/application_loader.h
