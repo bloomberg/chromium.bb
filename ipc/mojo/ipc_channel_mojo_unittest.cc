@@ -565,7 +565,13 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(ParamTraitInvalidMessagePipeClient,
   RunTest(false);
 }
 
-TEST_F(IPCChannelMojoTest, SendFailAfterClose) {
+// Times out on Android. crbug.com/593790
+#if defined(OS_ANDROID)
+#define MAYBE_SendFailAfterClose DISABLED_SendFailAfterClose
+#else
+#define MAYBE_SendFailAfterClose SendFailAfterClose
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_SendFailAfterClose) {
   InitWithMojo("IPCChannelMojoTestSendOkClient");
 
   ListenerThatExpectsOK listener;
