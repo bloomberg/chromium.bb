@@ -125,6 +125,8 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
       osk_state_(OSK_ALLOWED),
+      last_focused_node_(nullptr),
+      last_focused_manager_(nullptr),
       ax_tree_id_(AXTreeIDRegistry::kNoAXTreeID),
       parent_node_id_from_parent_tree_(0) {
   tree_->SetDelegate(this);
@@ -171,6 +173,40 @@ BrowserAccessibilityManager::GetEmptyDocument() {
   ui::AXTreeUpdate update;
   update.nodes.push_back(empty_document);
   return update;
+}
+
+void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
+  BrowserAccessibility* focus = GetFocus();
+  if (delegate_ && !delegate_->AccessibilityViewHasFocus())
+    focus = nullptr;
+
+  if (!CanFireEvents())
+    focus = nullptr;
+
+  // Don't allow the document to be focused if it has no children and
+  // hasn't finished loading yet. Wait for at least a tiny bit of content,
+  // or for the document to actually finish loading.
+  if (focus &&
+      focus == focus->manager()->GetRoot() &&
+      focus->PlatformChildCount() == 0 &&
+      !focus->HasState(ui::AX_STATE_BUSY) &&
+      !focus->manager()->GetTreeData().loaded) {
+    focus = nullptr;
+  }
+
+  if (focus && focus != last_focused_node_)
+    FireFocusEvent(focus);
+
+  last_focused_node_ = focus;
+  last_focused_manager_ = focus ? focus->manager() : nullptr;
+}
+
+bool BrowserAccessibilityManager::CanFireEvents() {
+  return true;
+}
+
+void BrowserAccessibilityManager::FireFocusEvent(BrowserAccessibility* node) {
+  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, node);
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
@@ -238,15 +274,15 @@ const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() {
 }
 
 void BrowserAccessibilityManager::OnWindowFocused() {
-  BrowserAccessibility* focus = GetFocus();
-  if (focus)
-    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, focus);
+  if (this == GetRootManager())
+    FireFocusEventsIfNeeded();
 }
 
 void BrowserAccessibilityManager::OnWindowBlurred() {
-  BrowserAccessibility* focus = GetFocus();
-  if (focus)
-    NotifyAccessibilityEvent(ui::AX_EVENT_BLUR, focus);
+  if (this == GetRootManager()) {
+    last_focused_node_ = nullptr;
+    last_focused_manager_ = nullptr;
+  }
 }
 
 void BrowserAccessibilityManager::UserIsNavigatingAway() {
@@ -294,7 +330,14 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     }
   }
 
-  // Now iterate over the events again and fire the events.
+  // Based on the changes to the tree, first fire focus events if needed.
+  // Screen readers might not do the right thing if they're not aware of what
+  // has focus, so always try that first. Nothing will be fired if the window
+  // itself isn't focused or if focus hasn't changed.
+  GetRootManager()->FireFocusEventsIfNeeded();
+
+  // Now iterate over the events again and fire the events other than focus
+  // events.
   for (uint32_t index = 0; index < details.size(); index++) {
     const AXEventNotificationDetails& detail = details[index];
 
@@ -311,13 +354,18 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
           osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_JUST_APPEARED)
         osk_state_ = OSK_ALLOWED;
 
-      // Don't send a native focus event if the window itself doesn't
-      // have focus.
-      if (!NativeViewHasFocus())
+      bool is_menu_list_option =
+          node->data().role == ui::AX_ROLE_MENU_LIST_OPTION;
+
+      // Skip all focus events other than ones on menu list options;
+      // we've already handled them, above. Menu list options are a weird
+      // exception because the menu list itself has focus but we need to fire
+      // focus events on the individual options.
+      if (!is_menu_list_option)
         continue;
     }
 
-    // Send the event event to the operating system.
+    // Fire the native event.
     NotifyAccessibilityEvent(event_type, GetFromAXNode(node));
   }
 }
@@ -395,10 +443,21 @@ bool BrowserAccessibilityManager::NativeViewHasFocus() {
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFocus() {
-  int32_t focus_id = GetTreeData().focus_id;
-  BrowserAccessibility* obj = GetFromID(focus_id);
+  BrowserAccessibilityManager* root_manager = GetRootManager();
+  if (!root_manager)
+    root_manager = this;
+  int32_t focused_tree_id = root_manager->GetTreeData().focused_tree_id;
+
+  BrowserAccessibilityManager* focused_manager = nullptr;
+  if (focused_tree_id)
+    focused_manager =BrowserAccessibilityManager::FromID(focused_tree_id);
+  if (!focused_manager)
+    focused_manager = root_manager;
+
+  int32_t focus_id = focused_manager->GetTreeData().focus_id;
+  BrowserAccessibility* obj = focused_manager->GetFromID(focus_id);
   if (!obj)
-    return GetRoot();
+    return focused_manager->GetRoot();
 
   if (obj->HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
     BrowserAccessibilityManager* child_manager =

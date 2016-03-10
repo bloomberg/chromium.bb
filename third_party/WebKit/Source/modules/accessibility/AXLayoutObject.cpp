@@ -1535,14 +1535,9 @@ AXObject* AXLayoutObject::computeParent() const
     if (parentObj)
         return axObjectCache().getOrCreate(parentObj);
 
-    // A WebArea's parent should be the containing frame (if local) or page popup owner.
+    // A WebArea's parent should be the page popup owner, if any, otherwise null.
     if (isWebArea()) {
         LocalFrame* frame = m_layoutObject->frame();
-        if (frame->owner() && frame->owner()->isLocal()) {
-            HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(frame->owner());
-            if (owner && owner->layoutObject())
-                return axObjectCache().getOrCreate(owner->layoutObject());
-        }
         return axObjectCache().getOrCreate(frame->pagePopupOwner());
     }
 
@@ -1568,14 +1563,9 @@ AXObject* AXLayoutObject::computeParentIfExists() const
     if (parentObj)
         return axObjectCache().get(parentObj);
 
-    // A WebArea's parent should be the containing frame (if local) or page popup owner.
+    // A WebArea's parent should be the page popup owner, if any, otherwise null.
     if (isWebArea()) {
         LocalFrame* frame = m_layoutObject->frame();
-        if (frame->owner() && frame->owner()->isLocal()) {
-            HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(frame->owner());
-            if (owner && owner->layoutObject())
-                return axObjectCache().get(owner->layoutObject());
-        }
         return axObjectCache().get(frame->pagePopupOwner());
     }
 
@@ -1666,7 +1656,6 @@ void AXLayoutObject::addChildren()
     }
 
     addHiddenChildren();
-    addFrameChildren();
     addPopupChildren();
     addImageMapChildren();
     addTextFieldChildren();
@@ -2453,24 +2442,6 @@ void AXLayoutObject::addCanvasChildren()
     ASSERT(!m_children.size());
     m_haveChildren = false;
     AXNodeObject::addChildren();
-}
-
-void AXLayoutObject::addFrameChildren()
-{
-    if (!m_layoutObject || !m_layoutObject->isLayoutPart())
-        return;
-
-    Widget* widget = toLayoutPart(m_layoutObject)->widget();
-    if (!widget || !widget->isFrameView())
-        return;
-
-    Document* doc = toFrameView(widget)->frame().document();
-    if (!doc || !doc->layoutView())
-        return;
-
-    AXObject* axChildFrame = axObjectCache().getOrCreate(doc);
-    if (!axChildFrame->accessibilityIsIgnored())
-        m_children.append(axChildFrame);
 }
 
 void AXLayoutObject::addPopupChildren()

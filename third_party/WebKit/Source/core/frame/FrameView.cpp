@@ -250,12 +250,6 @@ void FrameView::forAllNonThrottledFrameViews(Function function)
     }
 }
 
-void FrameView::removeFromAXObjectCache()
-{
-    if (AXObjectCache* cache = axObjectCache())
-        cache->childrenChanged(m_frame->pagePopupOwner());
-}
-
 void FrameView::init()
 {
     reset();
@@ -276,10 +270,6 @@ void FrameView::dispose()
     cancelProgrammaticScrollAnimation();
 
     detachScrollbars();
-
-    // When the view is no longer associated with a frame, it needs to be removed from the ax object cache
-    // right now, otherwise it won't be able to reach the topDocument()'s axObject cache later.
-    removeFromAXObjectCache();
 
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
         scrollingCoordinator->willDestroyScrollableArea(this);

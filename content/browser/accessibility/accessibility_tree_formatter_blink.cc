@@ -39,7 +39,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
     base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
 
-  dict->SetString("role", ui::ToString(node.GetData().role));
+  dict->SetString("internalRole", ui::ToString(node.GetData().role));
 
   dict->SetInteger("boundsX", node.GetData().location.x());
   dict->SetInteger("boundsY", node.GetData().location.y());
@@ -112,7 +112,7 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
   }
 
   base::string16 role_value;
-  dict.GetString("role", &role_value);
+  dict.GetString("internalRole", &role_value);
   WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
 
   for (int state_index = ui::AX_STATE_NONE;

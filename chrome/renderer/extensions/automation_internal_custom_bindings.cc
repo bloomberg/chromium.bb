@@ -136,10 +136,24 @@ static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache, ui::AXNode* node) {
       }
       need_to_offset_web_area = true;
     }
-    parent = parent->parent();
+    parent = cache->owner->GetParent(parent, &cache);
   }
 
   return bounds;
+}
+
+ui::AXNode* FindNodeWithChildTreeId(ui::AXNode* node, int child_tree_id) {
+  if (child_tree_id == node->data().GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
+    return node;
+
+  for (int i = 0; i < node->child_count(); ++i) {
+    ui::AXNode* result =
+        FindNodeWithChildTreeId(node->ChildAtIndex(i), child_tree_id);
+    if (result)
+      return result;
+  }
+
+  return nullptr;
 }
 
 //
@@ -771,6 +785,8 @@ bool AutomationInternalCustomBindings::GetFocusInternal(TreeCache* cache,
   if (!focus)
     return false;
 
+  // If the focused node is the owner of a child tree, that indicates
+  // a node within the child tree is the one that actually has focus.
   while (focus->data().HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
     // Try to keep following focus recursively, by letting |tree_id| be the
     // new subtree to search in, while keeping |focus_tree_id| set to the tree
@@ -781,6 +797,15 @@ bool AutomationInternalCustomBindings::GetFocusInternal(TreeCache* cache,
     TreeCache* child_cache = GetTreeCacheFromTreeID(child_tree_id);
     if (!child_cache)
       break;
+
+    // If the child cache is a frame tree that indicates a focused frame,
+    // jump to that frame if possible.
+    if (child_cache->tree.data().focused_tree_id > 0) {
+      TreeCache* focused_cache =
+          GetTreeCacheFromTreeID(child_cache->tree.data().focused_tree_id);
+      if (focused_cache)
+        child_cache = focused_cache;
+    }
 
     int child_focus_id = child_cache->tree.data().focus_id;
     ui::AXNode* child_focus = child_cache->tree.GetFromId(child_focus_id);
@@ -878,6 +903,47 @@ void AutomationInternalCustomBindings::UpdateOverallTreeChangeObserverFilter() {
   }
 }
 
+ui::AXNode* AutomationInternalCustomBindings::GetParent(
+    ui::AXNode* node,
+    TreeCache** in_out_cache) {
+  if (node->parent())
+    return node->parent();
+
+  int parent_tree_id = (*in_out_cache)->tree.data().parent_tree_id;
+  if (parent_tree_id < 0)
+    return nullptr;
+
+  TreeCache* parent_cache = GetTreeCacheFromTreeID(parent_tree_id);
+  if (!parent_cache)
+    return nullptr;
+
+  // Try to use the cached parent node from the most recent time this
+  // was called.
+  if (parent_cache->parent_node_id_from_parent_tree > 0) {
+    ui::AXNode* parent = parent_cache->tree.GetFromId(
+        parent_cache->parent_node_id_from_parent_tree);
+    if (parent) {
+      int parent_child_tree_id =
+          parent->data().GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID);
+      if (parent_child_tree_id == (*in_out_cache)->tree_id) {
+        *in_out_cache = parent_cache;
+        return parent;
+      }
+    }
+  }
+
+  // If that fails, search for it and cache it for next time.
+  ui::AXNode* parent = FindNodeWithChildTreeId(parent_cache->tree.root(),
+                                               (*in_out_cache)->tree_id);
+  if (parent) {
+    (*in_out_cache)->parent_node_id_from_parent_tree = parent->id();
+    *in_out_cache = parent_cache;
+    return parent;
+  }
+
+  return nullptr;
+}
+
 void AutomationInternalCustomBindings::RouteTreeIDFunction(
     const std::string& name,
     TreeIDFunction callback) {
@@ -953,7 +1019,9 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
     cache = new TreeCache();
     cache->tab_id = -1;
     cache->tree_id = params.tree_id;
+    cache->parent_node_id_from_parent_tree = -1;
     cache->tree.SetDelegate(this);
+    cache->owner = this;
     tree_id_to_tree_cache_map_.insert(std::make_pair(tree_id, cache));
     axtree_to_tree_cache_map_.insert(std::make_pair(&cache->tree, cache));
   } else {

@@ -33,7 +33,6 @@ Written by Julie
 Visit us at:www.chromium.org
 January This is an open dialog window
 
- 
 Caption
 Cell1	Cell2
 
@@ -168,11 +167,6 @@ element
         AXRole: AXDialog
             AXRole: AXStaticText "This is an open dialog window"
                 AXRole: AXInlineTextBox "This is an open dialog window"
-    AXRole: AXGroup
-        AXRole: AXUnknown
-            AXRole: AXWebArea
-        AXRole: AXUnknown
-            AXRole: AXWebArea
     AXRole: AXTable "Caption"
         AXRole: AXCaption
             AXRole: AXStaticText "Caption"

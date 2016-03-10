@@ -467,6 +467,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   void SetAccessibilityCallbackForTesting(
       const base::Callback<void(ui::AXEvent, int)>& callback);
 
+  // Called when the metadata about the accessibility tree for this frame
+  // changes due to a browser-side change, as opposed to due to an IPC from
+  // a renderer.
+  void UpdateAXTreeData();
+
   // Send a message to the render process to change text track style settings.
   void SetTextTrackSettings(const FrameMsg_TextTrackSettings_Params& params);
 
@@ -707,8 +712,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
 
   // Convert the content-layer-specific AXContentTreeData to a general-purpose
   // AXTreeData structure.
-  void AXContentTreeDataToAXTreeData(const AXContentTreeData& src,
-                                     ui::AXTreeData* dst);
+  void AXContentTreeDataToAXTreeData(ui::AXTreeData* dst);
 
   // Returns the RenderWidgetHostView used for accessibility. For subframes,
   // this function will return the platform view on the main frame; for main
@@ -880,6 +884,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // A count of the number of times we needed to reset accessibility, so
   // we don't keep trying to reset forever.
   int accessibility_reset_count_;
+
+  // The last AXContentTreeData for this frame received from the RenderFrame.
+  AXContentTreeData ax_content_tree_data_;
 
   // The mapping from callback id to corresponding callback for pending
   // accessibility tree snapshot calls created by RequestAXTreeSnapshot.

@@ -157,25 +157,16 @@ AXObject* AXObjectCacheImpl::focusedObject()
     if (!accessibilityEnabled())
         return 0;
 
-    // We don't have to return anything if the focused frame is not local;
-    // the remote frame will have its own AXObjectCacheImpl and the focused
-    // object will be sorted out by the browser process.
-    Page* page = m_document->page();
-    if (!page->focusController().focusedFrame())
-        return 0;
-
-    // Get the focused node in the page.
-    Document* focusedDocument = page->focusController().focusedFrame()->document();
-    Node* focusedNode = focusedDocument->focusedElement();
+    Node* focusedNode = m_document->focusedElement();
     if (!focusedNode)
-        focusedNode = focusedDocument;
+        focusedNode = m_document;
 
     // If it's an image map, get the focused link within the image map.
     if (isHTMLAreaElement(focusedNode))
         return focusedImageMapUIElement(toHTMLAreaElement(focusedNode));
 
     // See if there's a page popup, for example a calendar picker.
-    Element* adjustedFocusedElement = focusedDocument->adjustedFocusedElement();
+    Element* adjustedFocusedElement = m_document->adjustedFocusedElement();
     if (isHTMLInputElement(adjustedFocusedElement)) {
         if (AXObject* axPopup = toHTMLInputElement(adjustedFocusedElement)->popupRootAXObject()) {
             if (Element* focusedElementInPopup = axPopup->getDocument()->focusedElement())

@@ -97,7 +97,6 @@ public:
     void navigate(const FrameLoadRequest&) override;
     void reload(FrameLoadType, ClientRedirectPolicy) override;
     void detach(FrameDetachType) override;
-    void disconnectOwnerElement() override;
     bool shouldClose() override;
     SecurityContext* securityContext() const override;
     void printNavigationErrorMessage(const Frame&, const char* reason) override;

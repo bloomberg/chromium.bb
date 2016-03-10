@@ -303,7 +303,10 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
       class_name = "android.app.Dialog";
       break;
     case ui::AX_ROLE_ROOT_WEB_AREA:
-      class_name = "android.webkit.WebView";
+      if (GetParent() == nullptr)
+        class_name = "android.webkit.WebView";
+      else
+        class_name = "android.view.View";
       break;
     case ui::AX_ROLE_MENU_ITEM:
     case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
@@ -935,13 +938,13 @@ bool BrowserAccessibilityAndroid::Scroll(int direction) const {
   // Figure out the bounding box of the visible portion of this scrollable
   // view so we know how much to scroll by.
   gfx::Rect bounds;
-  if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA) {
+  if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && !GetParent()) {
     // If this is the root web area, use the bounds of the view to determine
     // how big one page is.
     if (!manager()->delegate())
       return false;
     bounds = manager()->delegate()->AccessibilityGetViewBounds();
-  } else if (GetRole() == ui::AX_ROLE_WEB_AREA) {
+  } else if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && GetParent()) {
     // If this is a web area inside of an iframe, try to use the bounds of
     // the containing element.
     BrowserAccessibility* parent = GetParent();

@@ -327,6 +327,11 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
 
   focused_frame_tree_node_id_ = node->frame_tree_node_id();
   node->DidFocus();
+
+  // The accessibility tree data for the root of the frame tree keeps
+  // track of the focused frame too, so update that every time the
+  // focused frame changes.
+  root()->current_frame_host()->UpdateAXTreeData();
 }
 
 void FrameTree::SetFrameRemoveListener(

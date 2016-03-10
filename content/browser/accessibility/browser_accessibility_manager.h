@@ -138,6 +138,18 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   virtual void NotifyAccessibilityEvent(
       ui::AXEvent event_type, BrowserAccessibility* node) { }
 
+  // Checks whether focus has changed since the last time it was checked,
+  // taking into account whether the window has focus and which frame within
+  // the frame tree has focus. If focus has changed, calls FireFocusEvent.
+  void FireFocusEventsIfNeeded();
+
+  // Return whether or not we are currently able to fire events.
+  virtual bool CanFireEvents();
+
+  // Fire a focus event. Virtual so that some platforms can customize it,
+  // like firing a focus event on the root first, on Windows.
+  virtual void FireFocusEvent(BrowserAccessibility* node);
+
   // Return a pointer to the root of the tree, does not make a new reference.
   BrowserAccessibility* GetRoot();
 
@@ -378,6 +390,16 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   OnScreenKeyboardState osk_state_;
 
   BrowserAccessibilityFindInPageInfo find_in_page_info_;
+
+  // These are only used by the root BrowserAccessibilityManager of a
+  // frame tree. Stores the last focused node and last focused manager so
+  // that when focus might have changed we can figure out whether we need
+  // to fire a focus event.
+  //
+  // NOTE: these pointers are not cleared, so they should never be
+  // dereferenced, only used for comparison.
+  BrowserAccessibility* last_focused_node_;
+  BrowserAccessibilityManager* last_focused_manager_;
 
   // The global ID of this accessibility tree.
   AXTreeIDRegistry::AXTreeID ax_tree_id_;

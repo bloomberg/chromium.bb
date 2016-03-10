@@ -200,8 +200,10 @@ AutomationPredicate.linebreak = function(first, second) {
  * @return {boolean}
  */
 AutomationPredicate.container = function(node) {
+  if (node.role == RoleType.rootWebArea)
+    return !node.parent || node.parent.root.role != RoleType.rootWebArea;
+
   return node.role == RoleType.toolbar ||
-      node.role == RoleType.rootWebArea ||
       node.role == RoleType.window;
 };
 

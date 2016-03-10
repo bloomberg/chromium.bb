@@ -1608,19 +1608,12 @@ void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
 BrowserAccessibilityManager*
     RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
         BrowserAccessibilityDelegate* delegate) {
-  // TODO(dmazzoni): Currently there can only be one
-  // BrowserAccessibilityManager per ContentViewCore, so return NULL
-  // if there's already a BrowserAccessibilityManager for the main
-  // frame.  Eventually, in order to support cross-process iframes on
-  // Android we'll need to add support for a
-  // BrowserAccessibilityManager for a child frame.
-  // http://crbug.com/423846
-  if (!host_ || host_->GetRootBrowserAccessibilityManager())
-    return NULL;
-
   base::android::ScopedJavaLocalRef<jobject> obj;
-  if (content_view_core_)
+  if (host_ &&
+      host_->GetRootBrowserAccessibilityManager() &&
+      content_view_core_) {
     obj = content_view_core_->GetJavaObject();
+  }
   return new BrowserAccessibilityManagerAndroid(
       obj,
       BrowserAccessibilityManagerAndroid::GetEmptyDocument(),

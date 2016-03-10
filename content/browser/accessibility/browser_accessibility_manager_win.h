@@ -43,10 +43,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void OnIAccessible2Used() override;
 
   // BrowserAccessibilityManager methods
-  void OnWindowFocused() override;
   void UserIsReloading() override;
   void NotifyAccessibilityEvent(
       ui::AXEvent event_type, BrowserAccessibility* node) override;
+  bool CanFireEvents() override;
+  void FireFocusEvent(BrowserAccessibility* node) override;
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.
@@ -73,14 +74,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // post a notification directly on it when it reaches its destination.
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
   BrowserAccessibilityWin* tracked_scroll_object_;
-
-  // Set to true if we need to fire a focus event on the root as soon as
-  // possible.
-  bool focus_event_on_root_needed_;
-
-  // A flag to keep track of if we're inside the OnWindowFocused call stack
-  // so we don't keep calling it recursively.
-  bool inside_on_window_focused_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };

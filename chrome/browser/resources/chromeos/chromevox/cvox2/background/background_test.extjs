@@ -66,7 +66,14 @@ BackgroundTest.prototype = {
       <option>grape</option>
       <option> banana</option>
     </select>
-  */}
+  */},
+
+  iframesDoc: function() {/*!
+    <p>start</p>
+    <button>Before</button>
+    <iframe srcdoc="<button>Inside</button>"></iframe>
+    <button>After</button>
+  */},
 };
 
 /** Tests that ChromeVox classic is in this context. */
@@ -584,5 +591,42 @@ TEST_F('BackgroundTest', 'Checkbox', function() {
         .expectSpeech('Check box')
         .expectSpeech('not checked')
         .replay();
+  });
+});
+
+/** Tests navigating into and out of iframes.. */
+TEST_F('BackgroundTest', 'ForwardNavigationThroughIframes', function() {
+  var mockFeedback = this.createMockFeedback();
+
+  var runTestIfIframeIsLoaded = function(rootNode) {
+    // Return if the iframe hasn't loaded yet.
+    var iframe = rootNode.find({role: 'iframe'});
+    var childDoc = iframe.firstChild;
+    if (childDoc && childDoc.children.length == 0) {
+      return;
+    }
+
+    var doCmd = this.doCmd.bind(this);
+
+    mockFeedback.expectSpeech('start').expectBraille('start');
+
+    mockFeedback.call(doCmd('nextButton'))
+        .expectSpeech('Before', 'Button');
+    mockFeedback.call(doCmd('nextButton'))
+        .expectSpeech('Inside', 'Button');
+    mockFeedback.call(doCmd('nextButton'))
+        .expectSpeech('After', 'Button');
+
+    mockFeedback.replay();
+  }.bind(this);
+
+  this.runWithLoadedTree(this.iframesDoc, function(rootNode) {
+    chrome.automation.getDesktop(function(desktopNode) {
+      runTestIfIframeIsLoaded(rootNode);
+
+      desktopNode.addEventListener('loadComplete', function(evt) {
+        runTestIfIframeIsLoaded(rootNode);
+      }, true);      
+    });
   });
 });

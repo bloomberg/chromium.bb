@@ -162,19 +162,22 @@ AXContentTreeData BlinkAXTreeSource::GetTreeData() const {
     tree_data.sel_focus_offset = focus_offset;
   }
 
-  // Get the tree ID for this frame and possibly the parent frame.
+  // Get the tree ID for this frame and the parent frame.
   WebLocalFrame* web_frame = document.frame();
   if (web_frame) {
     RenderFrame* render_frame = RenderFrame::FromWebFrame(web_frame);
     tree_data.routing_id = render_frame->GetRoutingID();
 
-    // Get the tree ID for the parent frame, if it's remote.
-    // (If it's local, it's already part of this same tree.)
+    // Get the tree ID for the parent frame.
     blink::WebFrame* parent_web_frame = web_frame->parent();
     if (parent_web_frame && parent_web_frame->isWebRemoteFrame()) {
       RenderFrameProxy* parent_render_frame_proxy =
           RenderFrameProxy::FromWebFrame(parent_web_frame);
       tree_data.parent_routing_id = parent_render_frame_proxy->routing_id();
+    } else if (parent_web_frame && parent_web_frame->isWebLocalFrame()) {
+      RenderFrame* parent_render_frame = RenderFrame::FromWebFrame(
+          parent_web_frame);
+      tree_data.parent_routing_id = parent_render_frame->GetRoutingID();
     }
   }
 
@@ -465,10 +468,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
           browser_plugin->browser_plugin_instance_id());
     }
 
-    // Out-of-process iframe.
+    // Iframe.
     if (is_iframe) {
       WebFrame* frame = WebFrame::fromFrameOwnerElement(element);
-
       if (frame && frame->isWebRemoteFrame()) {
         RenderFrameProxy* render_frame_proxy =
             RenderFrameProxy::FromWebFrame(frame);
@@ -476,6 +478,12 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         dst->AddContentIntAttribute(
             AX_CONTENT_ATTR_CHILD_ROUTING_ID,
             render_frame_proxy->routing_id());
+      } else if (frame && frame->isWebLocalFrame()) {
+        RenderFrame* render_frame = RenderFrame::FromWebFrame(frame);
+        DCHECK(render_frame);
+        dst->AddContentIntAttribute(
+            AX_CONTENT_ATTR_CHILD_ROUTING_ID,
+            render_frame->GetRoutingID());
       }
     }
   }

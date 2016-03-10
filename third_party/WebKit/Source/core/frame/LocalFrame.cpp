@@ -388,15 +388,6 @@ WindowProxyManager* LocalFrame::getWindowProxyManager() const
     return m_script->getWindowProxyManager();
 }
 
-void LocalFrame::disconnectOwnerElement()
-{
-    if (owner()) {
-        if (Document* document = this->document())
-            document->topDocument().clearAXObjectCache();
-    }
-    Frame::disconnectOwnerElement();
-}
-
 bool LocalFrame::shouldClose()
 {
     // TODO(dcheng): This should be fixed to dispatch beforeunload events to

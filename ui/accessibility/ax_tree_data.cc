@@ -19,6 +19,7 @@ namespace ui {
 AXTreeData::AXTreeData()
     : tree_id(-1),
       parent_tree_id(-1),
+      focused_tree_id(-1),
       loaded(false),
       loading_progress(0.0),
       focus_id(-1),
@@ -42,6 +43,8 @@ std::string AXTreeData::ToString() const {
     result += " tree_id=" + IntToString(tree_id);
   if (parent_tree_id != -1)
     result += " parent_tree_id=" + IntToString(parent_tree_id);
+  if (focused_tree_id != -1)
+    result += " focused_tree_id=" + IntToString(focused_tree_id);
 
   if (!url.empty())
     result += " url=" + url;
@@ -75,6 +78,7 @@ std::string AXTreeData::ToString() const {
 bool operator==(const AXTreeData& lhs, const AXTreeData& rhs) {
   return (lhs.tree_id == rhs.tree_id &&
           lhs.parent_tree_id == rhs.parent_tree_id &&
+          lhs.focused_tree_id == rhs.focused_tree_id &&
           lhs.url == rhs.url &&
           lhs.title == rhs.title &&
           lhs.mimetype == rhs.mimetype &&

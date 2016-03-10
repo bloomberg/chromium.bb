@@ -161,7 +161,6 @@ crbug.com/521093 http/tests/loading/pdf-commit-load-callbacks.html [ Failure Pas
 crbug.com/521094 [ Mac ] http/tests/navigation/beacon-cross-origin.https.html [ Crash Failure Pass ]
 crbug.com/521096 imported/web-platform-tests/webstorage/event_case_sensitive.html [ Failure Pass ]
 crbug.com/521107 [ Debug ] fast/html/imports/import-custom-element-abort.html [ Crash Pass ]
-crbug.com/520164 [ Linux ] accessibility/is-richly-editable.html [ Failure Pass ]
 crbug.com/520166 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure Pass ]
 crbug.com/520169 [ Win ] fast/dom/Geolocation/timestamp.html [ Failure Pass ]
 crbug.com/520170 [ Win ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]

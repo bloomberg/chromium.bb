@@ -148,7 +148,7 @@ BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
 
 BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  ScopedJavaLocalRef<jobject> obj = GetJavaRefFromRootManager();
   if (obj.is_null())
     return;
 
@@ -184,7 +184,7 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  ScopedJavaLocalRef<jobject> obj = GetJavaRefFromRootManager();
   if (obj.is_null())
     return;
 
@@ -277,8 +277,8 @@ void BrowserAccessibilityManagerAndroid::OnLocationChanges(
   // nodes changed location, just send a single notification after a short
   // delay (to batch them), rather than lots of individual notifications.
   if (params.size() > 3) {
+    ScopedJavaLocalRef<jobject> obj = GetJavaRefFromRootManager();
     JNIEnv* env = AttachCurrentThread();
-    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
     if (obj.is_null())
       return;
     Java_BrowserAccessibilityManager_sendDelayedWindowContentChangedEvent(
@@ -670,7 +670,7 @@ jboolean BrowserAccessibilityManagerAndroid::AdjustSlider(
 void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
     BrowserAccessibility* node) {
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  ScopedJavaLocalRef<jobject> obj = GetJavaRefFromRootManager();
   if (obj.is_null())
     return;
 
@@ -907,9 +907,12 @@ void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeDelegate::Change>& changes) {
+  BrowserAccessibilityManager::OnAtomicUpdateFinished(
+      tree, root_changed, changes);
+
   if (root_changed) {
     JNIEnv* env = AttachCurrentThread();
-    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+    ScopedJavaLocalRef<jobject> obj = GetJavaRefFromRootManager();
     if (obj.is_null())
       return;
 
@@ -927,6 +930,18 @@ BrowserAccessibilityAndroid*
 BrowserAccessibilityManagerAndroid::GetFromUniqueID(int32_t unique_id) {
   return static_cast<BrowserAccessibilityAndroid*>(
       BrowserAccessibility::GetFromUniqueID(unique_id));
+}
+
+ScopedJavaLocalRef<jobject>
+BrowserAccessibilityManagerAndroid::GetJavaRefFromRootManager() {
+  BrowserAccessibilityManagerAndroid* root_manager =
+      static_cast<BrowserAccessibilityManagerAndroid*>(
+          GetRootManager());
+  if (!root_manager)
+    return ScopedJavaLocalRef<jobject>();
+
+  JNIEnv* env = AttachCurrentThread();
+  return root_manager->java_ref().get(env);
 }
 
 bool RegisterBrowserAccessibilityManager(JNIEnv* env) {

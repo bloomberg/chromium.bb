@@ -208,7 +208,6 @@ private:
     void addTextFieldChildren();
     void addImageMapChildren();
     void addCanvasChildren();
-    void addFrameChildren();
     void addPopupChildren();
     void addRemoteSVGChildren();
     void addInlineTextBoxChildren(bool force);

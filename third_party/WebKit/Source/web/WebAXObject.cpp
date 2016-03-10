@@ -124,7 +124,7 @@ bool WebAXObject::updateLayoutAndCheckValidity()
 {
     if (!isDetached()) {
         Document* document = m_private->getDocument();
-        if (!document || !document->topDocument().view())
+        if (!document || !document->view())
             return false;
         document->view()->updateAllLifecyclePhases();
     }

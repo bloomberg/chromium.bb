@@ -2322,31 +2322,14 @@ void Document::removeAllEventListeners()
 
 Document& Document::axObjectCacheOwner() const
 {
-    // FIXME(dmazzoni): Currently there's one AXObjectCache per page, owned
-    // by the top document, but with --site-isolation the top document may
-    // be a remote frame. As a quick fix we're making the local root the owner
-    // of the AXObjectCache (http://crbug.com/510410), but the proper fix
-    // will be for each Document to  have its own AXObjectCache
-    // (http://crbug.com/532249).
-    Document* top = const_cast<Document*>(this);
-    LocalFrame* frame = this->frame();
-    if (!frame)
-        return *top;
-
-    // This loop is more efficient than calling localFrameRoot.
-    while (frame && frame->owner() && frame->owner()->isLocal()) {
-        HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(frame->owner());
-        top = &owner->document();
-        frame = top->frame();
+    // Every document has its own axObjectCache if accessibility is enabled,
+    // except for page popups, which share the axObjectCache of their owner.
+    Document* doc = const_cast<Document*>(this);
+    if (doc->frame() && doc->frame()->pagePopupOwner()) {
+        ASSERT(!doc->m_axObjectCache);
+        return doc->frame()->pagePopupOwner()->document().axObjectCacheOwner();
     }
-
-    if (top->frame() && top->frame()->pagePopupOwner()) {
-        ASSERT(!top->m_axObjectCache);
-        return top->frame()->pagePopupOwner()->document().axObjectCacheOwner();
-    }
-
-    ASSERT(top);
-    return *top;
+    return *doc;
 }
 
 void Document::clearAXObjectCache()

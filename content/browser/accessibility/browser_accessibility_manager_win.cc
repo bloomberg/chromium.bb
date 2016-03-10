@@ -38,9 +38,7 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
-      tracked_scroll_object_(NULL),
-      focus_event_on_root_needed_(false),
-      inside_on_window_focused_(false) {
+      tracked_scroll_object_(NULL) {
   ui::win::CreateATLModuleIfNeeded();
   Initialize(initial_tree);
   ui::GetIAccessible2UsageObserverList().AddObserver(this);
@@ -119,32 +117,6 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
   if (event == EVENT_OBJECT_REORDER && node->PlatformIsLeaf())
     return;
 
-  // Don't fire focus, or load complete notifications if the
-  // window isn't focused, because that can confuse screen readers into
-  // entering their "browse" mode.
-  if ((event == EVENT_OBJECT_FOCUS ||
-       event == IA2_EVENT_DOCUMENT_LOAD_COMPLETE) &&
-      !NativeViewHasFocus()) {
-    return;
-  }
-
-  // NVDA gets confused if we focus the main document element when it hasn't
-  // finished loading and it has no children at all, so suppress that event.
-  if (event == EVENT_OBJECT_FOCUS &&
-      node == GetRoot() &&
-      node->PlatformChildCount() == 0 &&
-      !node->HasState(ui::AX_STATE_BUSY) &&
-      !node->manager()->GetTreeData().loaded) {
-    return;
-  }
-
-  // If a focus event is needed on the root, fire that first before
-  // this event.
-  if (event == EVENT_OBJECT_FOCUS && node == GetRoot())
-    focus_event_on_root_needed_ = false;
-  else if (focus_event_on_root_needed_)
-    OnWindowFocused();
-
   // Pass the negation of this node's unique id in the |child_id|
   // argument to NotifyWinEvent; the AT client will then call get_accChild
   // on the HWND's accessibility object and pass it that same id, which
@@ -155,34 +127,6 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(
 
 void BrowserAccessibilityManagerWin::OnIAccessible2Used() {
   BrowserAccessibilityStateImpl::GetInstance()->OnScreenReaderDetected();
-}
-
-void BrowserAccessibilityManagerWin::OnWindowFocused() {
-  // Make sure we don't call this recursively.
-  if (inside_on_window_focused_)
-    return;
-  inside_on_window_focused_ = true;
-
-  // This is called either when this web frame gets focused, or when
-  // the root of the accessibility tree changes. In both cases, we need
-  // to fire a focus event on the root and then on the focused element
-  // within the page, if different.
-
-  // Set this flag so that we'll keep trying to fire these focus events
-  // if they're not successful this time.
-  focus_event_on_root_needed_ = true;
-
-  if (!NativeViewHasFocus()) {
-    inside_on_window_focused_ = false;
-    return;
-  }
-
-  // Try to fire a focus event on the root first and then the focused node.
-  // This will clear focus_event_on_root_needed_ if successful.
-  if (GetFocus() != GetRoot() && GetRoot())
-    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetRoot());
-  BrowserAccessibilityManager::OnWindowFocused();
-  inside_on_window_focused_ = false;
 }
 
 void BrowserAccessibilityManagerWin::UserIsReloading() {
@@ -218,23 +162,6 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
       !NativeViewHasFocus()) {
     return;
   }
-
-  // NVDA gets confused if we focus the main document element when it hasn't
-  // finished loading and it has no children at all, so suppress that event.
-  if (event_type == ui::AX_EVENT_FOCUS &&
-      node == GetRoot() &&
-      node->PlatformChildCount() == 0 &&
-      !node->HasState(ui::AX_STATE_BUSY) &&
-      !node->manager()->GetTreeData().loaded) {
-    return;
-  }
-
-  // If a focus event is needed on the root, fire that first before
-  // this event.
-  if (event_type == ui::AX_EVENT_FOCUS && node == GetRoot())
-    focus_event_on_root_needed_ = false;
-  else if (focus_event_on_root_needed_)
-    OnWindowFocused();
 
   LONG event_id = EVENT_MIN;
   switch (event_type) {
@@ -308,6 +235,26 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     tracked_scroll_object_->Release();
     tracked_scroll_object_ = NULL;
   }
+}
+
+bool BrowserAccessibilityManagerWin::CanFireEvents() {
+  BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
+  if (!root_delegate)
+    return false;
+  HWND hwnd = root_delegate->AccessibilityGetAcceleratedWidget();
+  return hwnd != nullptr;
+}
+
+void BrowserAccessibilityManagerWin::FireFocusEvent(
+    BrowserAccessibility* node) {
+  // On Windows, we always fire a FOCUS event on the root of a frame before
+  // firing a focus event within that frame.
+  if (node->manager() != last_focused_manager_ &&
+      node != node->manager()->GetRoot()) {
+    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, node->manager()->GetRoot());
+  }
+
+  BrowserAccessibilityManager::FireFocusEvent(node);
 }
 
 void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,

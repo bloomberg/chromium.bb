@@ -218,6 +218,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
               jint id,
               int direction);
 
+  JavaObjectWeakGlobalRef& java_ref() { return java_ref_; }
+
  protected:
   // AXTreeDelegate overrides.
   void OnAtomicUpdateFinished(
@@ -229,6 +231,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
 
  private:
   BrowserAccessibilityAndroid* GetFromUniqueID(int32_t unique_id);
+
+   base::android::ScopedJavaLocalRef<jobject> GetJavaRefFromRootManager();
 
   // This gives BrowserAccessibilityManager::Create access to the class
   // constructor.

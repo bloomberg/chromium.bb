@@ -1630,8 +1630,8 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
       detail.ax_tree_id = GetAXTreeID();
       if (param.update.has_tree_data) {
         detail.update.has_tree_data = true;
-        AXContentTreeDataToAXTreeData(param.update.tree_data,
-                                      &detail.update.tree_data);
+        ax_content_tree_data_ = param.update.tree_data;
+        AXContentTreeDataToAXTreeData(&detail.update.tree_data);
       }
       detail.update.node_id_to_clear = param.update.node_id_to_clear;
       detail.update.nodes.resize(param.update.nodes.size());
@@ -1724,8 +1724,8 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
                                     &dst_snapshot.nodes[i]);
     }
     if (snapshot.has_tree_data) {
-      AXContentTreeDataToAXTreeData(snapshot.tree_data,
-                                    &dst_snapshot.tree_data);
+      ax_content_tree_data_ = snapshot.tree_data;
+      AXContentTreeDataToAXTreeData(&dst_snapshot.tree_data);
       dst_snapshot.has_tree_data = true;
     }
     it->second.Run(dst_snapshot);
@@ -2343,6 +2343,27 @@ void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
   accessibility_testing_callback_ = callback;
 }
 
+void RenderFrameHostImpl::UpdateAXTreeData() {
+  AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
+  if (accessibility_mode == AccessibilityModeOff ||
+      !RenderFrameHostImpl::IsRFHStateActive(rfh_state())) {
+    return;
+  }
+
+  std::vector<AXEventNotificationDetails> details;
+  details.reserve(1U);
+  AXEventNotificationDetails detail;
+  detail.ax_tree_id = GetAXTreeID();
+  detail.update.has_tree_data = true;
+  AXContentTreeDataToAXTreeData(&detail.update.tree_data);
+  details.push_back(detail);
+
+  if (browser_accessibility_manager_)
+    browser_accessibility_manager_->OnAccessibilityEvents(details);
+
+  delegate_->AccessibilityEventReceived(details);
+}
+
 void RenderFrameHostImpl::SetTextTrackSettings(
     const FrameMsg_TextTrackSettings_Params& params) {
   DCHECK(!GetParent());
@@ -2625,8 +2646,9 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
 }
 
 void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
-    const AXContentTreeData& src,
     ui::AXTreeData* dst) {
+  const AXContentTreeData& src = ax_content_tree_data_;
+
   // Copy the common fields.
   *dst = src;
 
@@ -2635,6 +2657,19 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
 
   if (src.parent_routing_id != -1)
     dst->parent_tree_id = RoutingIDToAXTreeID(src.parent_routing_id);
+
+  // If this is not the root frame tree node, we're done.
+  if (frame_tree_node()->parent())
+    return;
+
+  // For the root frame tree node, also store the AXTreeID of the focused frame.
+  FrameTreeNode* focused_frame_tree_node = frame_tree_->GetFocusedFrame();
+  if (!focused_frame_tree_node)
+    return;
+  RenderFrameHostImpl* focused_frame =
+      focused_frame_tree_node->current_frame_host();
+  DCHECK(focused_frame);
+  dst->focused_tree_id = focused_frame->GetAXTreeID();
 }
 
 }  // namespace content

@@ -723,7 +723,6 @@ private:
     void updateScrollCorner();
 
     AXObjectCache* axObjectCache() const;
-    void removeFromAXObjectCache();
 
     void setLayoutSizeInternal(const IntSize&);
 
