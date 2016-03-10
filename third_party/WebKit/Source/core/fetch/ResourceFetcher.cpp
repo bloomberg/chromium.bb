@@ -440,6 +440,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& 
 
     updateMemoryCacheStats(resource.get(), policy, request, factory, isStaticData);
 
+    initializeResourceRequest(request.mutableResourceRequest(), factory.type());
     switch (policy) {
     case Reload:
         memoryCache()->remove(resource.get());
@@ -592,7 +593,6 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::createResourceForLoading(Fetch
 
     WTF_LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
 
-    initializeResourceRequest(request.mutableResourceRequest(), factory.type());
     RefPtrWillBeRawPtr<Resource> resource = factory.create(request.resourceRequest(), charset);
     resource->setLinkPreload(request.isLinkPreload());
     resource->setCacheIdentifier(cacheIdentifier);

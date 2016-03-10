@@ -707,16 +707,21 @@ void DocumentLoader::startLoadingMainResource()
         maybeLoadEmpty();
         return;
     }
-    m_mainResource->addClient(this);
-
-    // A bunch of headers are set when the underlying ResourceLoader is created, and m_request needs to include those.
-    if (mainResourceLoader())
+    if (mainResourceLoader()) {
+        // A bunch of headers are set when the underlying ResourceLoader
+        // is created, and m_request needs to include those.
         request = mainResourceLoader()->originalRequest();
+    } else {
+        // Even when using a cached resource, we may make some modification
+        // to the request, e.g. adding the referer header.
+        request = cachedResourceRequest.resourceRequest();
+    }
     // If there was a fragment identifier on m_request, the cache will have stripped it. m_request should include
     // the fragment identifier, so add that back in.
     if (equalIgnoringFragmentIdentifier(m_request.url(), request.url()))
         request.setURL(m_request.url());
     m_request = request;
+    m_mainResource->addClient(this);
 }
 
 void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
