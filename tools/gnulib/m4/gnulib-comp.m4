@@ -75,6 +75,8 @@ AC_DEFUN([gl_tools_EARLY],
   # Code from module strerror:
   # Code from module strerror-override:
   # Code from module string:
+  # Code from module strndup:
+  # Code from module strnlen:
   # Code from module sys_types:
   # Code from module unistd:
   # Code from module verify:
@@ -164,6 +166,17 @@ AC_DEFUN([gl_tools_INIT],
     gl_PREREQ_SYS_H_WINSOCK2
   fi
   gl_HEADER_STRING_H
+  gl_FUNC_STRNDUP
+  if test $HAVE_STRNDUP = 0 || test $REPLACE_STRNDUP = 1; then
+    AC_LIBOBJ([strndup])
+  fi
+  gl_STRING_MODULE_INDICATOR([strndup])
+  gl_FUNC_STRNLEN
+  if test $HAVE_DECL_STRNLEN = 0 || test $REPLACE_STRNLEN = 1; then
+    AC_LIBOBJ([strnlen])
+    gl_PREREQ_STRNLEN
+  fi
+  gl_STRING_MODULE_INDICATOR([strnlen])
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
   gl_UNISTD_H
@@ -332,6 +345,8 @@ AC_DEFUN([gl_tools_FILE_LIST], [
   lib/strerror-override.h
   lib/strerror.c
   lib/string.in.h
+  lib/strndup.c
+  lib/strnlen.c
   lib/sys_types.in.h
   lib/unistd.c
   lib/unistd.in.h
@@ -359,6 +374,8 @@ AC_DEFUN([gl_tools_FILE_LIST], [
   m4/stdlib_h.m4
   m4/strerror.m4
   m4/string_h.m4
+  m4/strndup.m4
+  m4/strnlen.m4
   m4/sys_socket_h.m4
   m4/sys_types_h.m4
   m4/unistd_h.m4
