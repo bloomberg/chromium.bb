@@ -141,7 +141,7 @@ void AuraWindowCaptureMachine::SetWindow(aura::Window* window) {
 
   DCHECK(!desktop_window_);
   desktop_window_ = window;
-  cursor_renderer_.reset(new CursorRendererAura(window));
+  cursor_renderer_.reset(new CursorRendererAura(window, kCursorAlwaysEnabled));
 
   // Start observing window events.
   desktop_window_->AddObserver(this);

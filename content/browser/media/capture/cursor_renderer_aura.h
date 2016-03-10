@@ -23,13 +23,21 @@
 
 namespace content {
 
+// Setting to control cursor display based on either mouse movement or always
+// forced to be enabled.
+enum CursorDisplaySetting {
+  kCursorAlwaysEnabled,
+  kCursorEnabledOnMouseMovement
+};
+
 // Tracks state for making decisions on cursor display on a captured video
 // frame.
 class CONTENT_EXPORT CursorRendererAura : public CursorRenderer,
                                           public ui::EventHandler,
                                           public aura::WindowObserver {
  public:
-  explicit CursorRendererAura(aura::Window* window);
+  explicit CursorRendererAura(aura::Window* window,
+                              CursorDisplaySetting cursor_display);
   ~CursorRendererAura() final;
 
   // CursorRender implementation.
@@ -63,6 +71,9 @@ class CONTENT_EXPORT CursorRendererAura : public CursorRenderer,
   float last_mouse_position_x_;
   float last_mouse_position_y_;
   bool cursor_displayed_;
+
+  // Controls whether cursor is displayed based on active mouse movement.
+  const CursorDisplaySetting cursor_display_setting_;
 
   // Allows tests to replace the clock.
   base::DefaultTickClock default_tick_clock_;

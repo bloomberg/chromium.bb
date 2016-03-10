@@ -441,8 +441,8 @@ ContentCaptureSubscription::ContentCaptureSubscription(
 // https://crbug.com/567735
 #if defined(USE_AURA)
   if (view) {
-    cursor_renderer_.reset(
-        new content::CursorRendererAura(view->GetNativeView()));
+    cursor_renderer_.reset(new content::CursorRendererAura(
+        view->GetNativeView(), kCursorEnabledOnMouseMovement));
     window_activity_tracker_.reset(
         new content::WindowActivityTrackerAura(view->GetNativeView()));
   }

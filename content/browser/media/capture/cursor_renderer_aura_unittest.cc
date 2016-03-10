@@ -48,7 +48,8 @@ class CursorRendererAuraTest : public AuraTestBase {
 
     window_.reset(aura::test::CreateTestWindowWithBounds(
         gfx::Rect(0, 0, 800, 600), root_window()));
-    cursor_renderer_.reset(new CursorRendererAura(window_.get()));
+    cursor_renderer_.reset(
+        new CursorRendererAura(window_.get(), kCursorEnabledOnMouseMovement));
     new wm::DefaultActivationClient(root_window());
   }
 
@@ -129,6 +130,32 @@ class CursorRendererAuraTest : public AuraTestBase {
   scoped_ptr<CursorRendererAura> cursor_renderer_;
 };
 
+TEST_F(CursorRendererAuraTest, CursorAlwaysDisplayed) {
+  // Set up cursor renderer to always display cursor.
+  cursor_renderer_.reset(
+      new CursorRendererAura(window_.get(), kCursorAlwaysEnabled));
+
+  // Cursor displayed at start.
+  EXPECT_TRUE(CursorDisplayed());
+
+  base::SimpleTestTickClock clock;
+  SetTickClock(&clock);
+
+  // Cursor displayed after mouse movement.
+  MoveMouseCursorWithinWindow();
+  EXPECT_TRUE(CursorDisplayed());
+
+  // Cursor displayed after idle period.
+  clock.Advance(base::TimeDelta::FromSeconds(5));
+  SnapshotCursorState(gfx::Rect(10, 10, 200, 200));
+  EXPECT_TRUE(CursorDisplayed());
+
+  // Cursor displayed with mouse outside the window.
+  MoveMouseCursorOutsideWindow();
+  SnapshotCursorState(gfx::Rect(10, 10, 200, 200));
+  EXPECT_TRUE(CursorDisplayed());
+}
+
 TEST_F(CursorRendererAuraTest, CursorDuringMouseMovement) {
   // Keep window activated.
   wm::ActivateWindow(window_.get());
@@ -201,7 +228,8 @@ TEST_F(CursorRendererAuraTest, CursorRenderedOnFrame) {
 }
 
 TEST_F(CursorRendererAuraTest, CursorRenderedOnRootWindow) {
-  cursor_renderer_.reset(new CursorRendererAura(root_window()));
+  cursor_renderer_.reset(new CursorRendererAura(root_window(),
+      kCursorEnabledOnMouseMovement));
   EXPECT_FALSE(CursorDisplayed());
 
   // Cursor displayed after mouse movement.
