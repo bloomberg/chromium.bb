@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -105,10 +105,9 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
   }
 
  protected:
-  // DeviceDataProviderImplBase, a super class of WifiDataProviderLinux,
-  // requires a message loop to be present. message_loop_ is defined here,
-  // as it should outlive wifi_provider_linux_.
-  base::MessageLoop message_loop_;
+  // WifiDataProvider requires a task runner to be present. The |thread_bundle_|
+  // is defined here, as it should outlive |wifi_provider_linux_|.
+  TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockObjectProxy> mock_network_manager_proxy_;
   scoped_refptr<dbus::MockObjectProxy> mock_access_point_proxy_;

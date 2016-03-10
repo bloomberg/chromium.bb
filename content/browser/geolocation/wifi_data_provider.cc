@@ -4,11 +4,16 @@
 
 #include "content/browser/geolocation/wifi_data_provider.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/location.h"
+#include "base/thread_task_runner_handle.h"
+
 namespace content {
 
 WifiDataProvider::WifiDataProvider()
-    : client_loop_(base::MessageLoop::current()) {
-  DCHECK(client_loop_);
+    : client_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+  DCHECK(client_task_runner_);
 }
 
 WifiDataProvider::~WifiDataProvider() {
@@ -27,16 +32,12 @@ bool WifiDataProvider::has_callbacks() const {
 }
 
 void WifiDataProvider::RunCallbacks() {
-  client_loop_->task_runner()->PostTask(
+  client_task_runner_->PostTask(
       FROM_HERE, base::Bind(&WifiDataProvider::DoRunCallbacks, this));
 }
 
 bool WifiDataProvider::CalledOnClientThread() const {
-  return base::MessageLoop::current() == this->client_loop_;
-}
-
-base::MessageLoop* WifiDataProvider::client_loop() const {
-  return client_loop_;
+  return client_task_runner()->BelongsToCurrentThread();
 }
 
 void WifiDataProvider::DoRunCallbacks() {

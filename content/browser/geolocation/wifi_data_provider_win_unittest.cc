@@ -6,13 +6,14 @@
 // WifiDataProviderCommon and covered by it's unit tests.
 
 #include "content/browser/geolocation/wifi_data_provider_win.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 TEST(GeolocationWifiDataProviderWinTest, CreateDestroy) {
-  // WifiDataProviderCommon requires the client to have a message loop.
-  base::MessageLoop dummy_loop;
+  // WifiDataProvider requires a task runner to be present.
+  TestBrowserThreadBundle thread_bundle;
   scoped_refptr<WifiDataProviderWin> instance(new WifiDataProviderWin);
   instance = NULL;
   SUCCEED();

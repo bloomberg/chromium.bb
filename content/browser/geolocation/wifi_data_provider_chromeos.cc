@@ -75,11 +75,11 @@ void WifiDataProviderChromeOs::DoWifiScanTaskOnUIThread() {
   WifiData new_data;
 
   if (GetAccessPointData(&new_data.access_point_data)) {
-    client_loop()->PostTask(
+    client_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&WifiDataProviderChromeOs::DidWifiScanTask, this, new_data));
   } else {
-    client_loop()->PostTask(
+    client_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&WifiDataProviderChromeOs::DidWifiScanTaskNoResults, this));
   }

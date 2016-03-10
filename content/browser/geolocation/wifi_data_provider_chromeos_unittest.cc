@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -10,6 +10,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "content/browser/geolocation/wifi_data_provider_chromeos.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -27,7 +28,7 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetShillManagerClient();
     manager_test_ = manager_client_->GetTestInterface();
     provider_ = new WifiDataProviderChromeOs();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
@@ -58,10 +59,10 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
         manager_test_->AddGeoNetwork(shill::kTypeWifi, properties);
       }
     }
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
-  base::MessageLoopForUI message_loop_;
+  TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<WifiDataProviderChromeOs> provider_;
   chromeos::ShillManagerClient* manager_client_;
   chromeos::ShillManagerClient::TestInterface* manager_test_;
@@ -69,17 +70,17 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
 };
 
 TEST_F(GeolocationChromeOsWifiDataProviderTest, NoAccessPoints) {
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Initial call to GetAccessPointData requests data and will return false.
   EXPECT_FALSE(GetAccessPointData());
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Additional call to GetAccessPointData also returns false with no devices.
   EXPECT_FALSE(GetAccessPointData());
   EXPECT_EQ(0u, ap_data_.size());
 }
 
 TEST_F(GeolocationChromeOsWifiDataProviderTest, GetOneAccessPoint) {
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetAccessPointData());
 
   AddAccessPoints(1, 1);
@@ -90,7 +91,7 @@ TEST_F(GeolocationChromeOsWifiDataProviderTest, GetOneAccessPoint) {
 }
 
 TEST_F(GeolocationChromeOsWifiDataProviderTest, GetManyAccessPoints) {
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetAccessPointData());
 
   AddAccessPoints(3, 4);

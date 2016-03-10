@@ -7,13 +7,10 @@
 
 #include <set>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
-#include "base/strings/string16.h"
-#include "base/strings/string_util.h"
+#include "base/single_thread_task_runner.h"
 #include "content/browser/geolocation/wifi_data.h"
 #include "content/common/content_export.h"
 
@@ -57,14 +54,15 @@ class CONTENT_EXPORT WifiDataProvider
 
   bool CalledOnClientThread() const;
 
-  base::MessageLoop* client_loop() const;
+  scoped_refptr<base::SingleThreadTaskRunner> client_task_runner() const {
+    return client_task_runner_;
+  }
 
  private:
   void DoRunCallbacks();
 
-  // Reference to the client's message loop. All callbacks should happen in this
-  // context.
-  base::MessageLoop* client_loop_;
+  // The task runner for the client thread, all callbacks should run on it.
+  scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
 
   CallbackSet callbacks_;
 
