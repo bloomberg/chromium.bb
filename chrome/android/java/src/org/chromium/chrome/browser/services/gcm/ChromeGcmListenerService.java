@@ -10,6 +10,7 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmListenerService;
 import com.google.ipc.invalidation.ticl.android2.channel.AndroidGcmController;
 
+import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.gcm_driver.GCMDriver;
 
@@ -18,6 +19,7 @@ import org.chromium.components.gcm_driver.GCMDriver;
  */
 public class ChromeGcmListenerService extends GcmListenerService {
     private static final String TAG = "ChromeGcmListener";
+    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     @Override
     public void onMessageReceived(String from, Bundle data) {
@@ -58,6 +60,8 @@ public class ChromeGcmListenerService extends GcmListenerService {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
+                        getApplicationContext());
                 GCMDriver.onMessageReceived(getApplicationContext(), appId, data);
             }
         });

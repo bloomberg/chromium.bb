@@ -17,6 +17,7 @@ import com.google.ipc.invalidation.external.client.types.Invalidation;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.AdvancedMockContext;
@@ -43,6 +44,7 @@ public class InvalidationClientServiceTest extends
           ServiceTestCase<TestableInvalidationClientService> {
     /** Id used when creating clients. */
     private static final byte[] CLIENT_ID = new byte[]{0, 4, 7};
+    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "invalidation_test";
 
     /** Intents provided to {@link #startService}. */
     private List<Intent> mStartServiceIntents;
@@ -54,6 +56,8 @@ public class InvalidationClientServiceTest extends
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
+                getContext());
         mStartServiceIntents = new ArrayList<Intent>();
         setContext(new AdvancedMockContext(getContext()) {
             @Override

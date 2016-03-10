@@ -104,7 +104,6 @@ public abstract class PathUtils {
         paths[DATA_DIRECTORY] = sDataDirectoryAppContext.getDir(sDataDirectorySuffix,
                 Context.MODE_PRIVATE).getPath();
         paths[DATABASE_DIRECTORY] = sDataDirectoryAppContext.getDatabasePath("foo").getParent();
-        // TODO(wnwen): Find a way to avoid calling this function in renderer process.
         if (sDataDirectoryAppContext.getCacheDir() != null) {
             paths[CACHE_DIRECTORY] = sDataDirectoryAppContext.getCacheDir().getPath();
         }

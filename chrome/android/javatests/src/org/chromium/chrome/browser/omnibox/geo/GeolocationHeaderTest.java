@@ -13,6 +13,7 @@ import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.DisableIf;
@@ -29,11 +30,16 @@ public class GeolocationHeaderTest extends InstrumentationTestCase {
     private static final String SEARCH_URL_1 = "https://www.google.com/search?q=potatoes";
     private static final String SEARCH_URL_2 = "https://www.google.co.jp/webhp?#q=dinosaurs";
 
+    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content";
+
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/575277")
     @SmallTest
     @Feature({"Location"})
     @UiThreadTest
     public void testGeolocationHeader() throws ProcessInitException {
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
+                getInstrumentation().getTargetContext());
+
         Context targetContext = getInstrumentation().getTargetContext();
         BrowserStartupController.get(targetContext, LibraryProcessType.PROCESS_BROWSER)
                 .startBrowserProcessesSync(false);

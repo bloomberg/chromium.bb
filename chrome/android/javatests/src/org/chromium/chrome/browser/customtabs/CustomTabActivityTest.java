@@ -37,6 +37,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -104,6 +105,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
     private static final String FRAGMENT_TEST_PAGE = "/chrome/test/data/android/fragment.html";
     private static final String TEST_MENU_TITLE = "testMenuTitle";
+    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     private static int sIdToIncrement = 1;
 
@@ -119,6 +121,8 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
+                getInstrumentation().getTargetContext().getApplicationContext());
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
                 .ensureInitialized(getInstrumentation().getTargetContext().getApplicationContext());
     }
