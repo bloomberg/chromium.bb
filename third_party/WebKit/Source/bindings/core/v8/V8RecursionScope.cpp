@@ -30,6 +30,13 @@
 
 #include "bindings/core/v8/V8RecursionScope.h"
 
+#include "core/dom/Microtask.h"
+
 namespace blink {
+
+void V8RecursionScope::didLeaveScriptContext()
+{
+    Microtask::performCheckpoint(m_isolate);
+}
 
 } // namespace blink

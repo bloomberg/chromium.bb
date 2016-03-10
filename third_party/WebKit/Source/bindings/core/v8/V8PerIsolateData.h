@@ -74,17 +74,30 @@ public:
 
     static void enableIdleTasks(v8::Isolate*, PassOwnPtr<gin::V8IdleTaskRunner>);
 
+    bool destructionPending() const { return m_destructionPending; }
     v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
 
     StringCache* getStringCache() { return m_stringCache.get(); }
 
     v8::Persistent<v8::Value>& ensureLiveRoot();
 
+    int recursionLevel() const { return m_recursionLevel; }
+    int incrementRecursionLevel() { return ++m_recursionLevel; }
+    int decrementRecursionLevel() { return --m_recursionLevel; }
     bool isHandlingRecursionLevelError() const { return m_isHandlingRecursionLevelError; }
     void setIsHandlingRecursionLevelError(bool value) { m_isHandlingRecursionLevelError = value; }
 
     bool isReportingException() const { return m_isReportingException; }
     void setReportingException(bool value) { m_isReportingException = value; }
+
+    bool performingMicrotaskCheckpoint() const { return m_performingMicrotaskCheckpoint; }
+    void setPerformingMicrotaskCheckpoint(bool performingMicrotaskCheckpoint) { m_performingMicrotaskCheckpoint = performingMicrotaskCheckpoint; }
+
+#if ENABLE(ASSERT)
+    int internalScriptRecursionLevel() const { return m_internalScriptRecursionLevel; }
+    int incrementInternalScriptRecursionLevel() { return ++m_internalScriptRecursionLevel; }
+    int decrementInternalScriptRecursionLevel() { return --m_internalScriptRecursionLevel; }
+#endif
 
     V8HiddenValue* hiddenValue() { return m_hiddenValue.get(); }
 
@@ -118,6 +131,7 @@ private:
     bool hasInstance(const WrapperTypeInfo* untrusted, v8::Local<v8::Value>, DOMTemplateMap&);
     v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Local<v8::Value>, DOMTemplateMap&);
 
+    bool m_destructionPending;
     OwnPtr<gin::IsolateHolder> m_isolateHolder;
     DOMTemplateMap m_domTemplateMapForMainWorld;
     DOMTemplateMap m_domTemplateMapForNonMainWorld;
@@ -129,8 +143,14 @@ private:
     bool m_constructorMode;
     friend class ConstructorMode;
 
+    int m_recursionLevel;
     bool m_isHandlingRecursionLevelError;
     bool m_isReportingException;
+
+#if ENABLE(ASSERT)
+    int m_internalScriptRecursionLevel;
+#endif
+    bool m_performingMicrotaskCheckpoint;
 
     Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
     OwnPtr<ThreadDebugger> m_threadDebugger;

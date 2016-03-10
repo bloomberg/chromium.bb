@@ -12,7 +12,6 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
-#include "bindings/core/v8/V8RecursionScope.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"
 #include "core/streams/ReadableStreamController.h"
@@ -139,7 +138,7 @@ public:
     ~ReadableStreamOperationsTest() override
     {
         // Execute all pending microtasks
-        v8::MicrotasksScope::PerformCheckpoint(isolate());
+        isolate()->RunMicrotasks();
         EXPECT_FALSE(m_block.HasCaught());
     }
 
@@ -150,7 +149,6 @@ public:
     {
         v8::Local<v8::String> source;
         v8::Local<v8::Script> script;
-        V8RecursionScope::MicrotaskSuppression microtasks(isolate());
         if (!v8Call(v8::String::NewFromUtf8(isolate(), s, v8::NewStringType::kNormal), source)) {
             ADD_FAILURE();
             return ScriptValue();
@@ -255,12 +253,12 @@ TEST_F(ReadableStreamOperationsTest, Read)
         Function::createFunction(getScriptState(), it2),
         NotReached::createFunction(getScriptState()));
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_FALSE(it1->isSet());
     EXPECT_FALSE(it2->isSet());
 
     ASSERT_FALSE(evalWithPrintingError("controller.enqueue('hello')").isEmpty());
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_TRUE(it1->isSet());
     EXPECT_TRUE(it1->isValid());
     EXPECT_FALSE(it1->isDone());
@@ -268,7 +266,7 @@ TEST_F(ReadableStreamOperationsTest, Read)
     EXPECT_FALSE(it2->isSet());
 
     ASSERT_FALSE(evalWithPrintingError("controller.close()").isEmpty());
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
     EXPECT_TRUE(it1->isSet());
     EXPECT_TRUE(it1->isValid());
     EXPECT_FALSE(it1->isDone());
@@ -311,7 +309,7 @@ TEST_F(ReadableStreamOperationsTest, CreateReadableStreamWithCustomUnderlyingSou
     ReadableStreamOperations::read(getScriptState(), reader).then(Function::createFunction(getScriptState(), it2), NotReached::createFunction(getScriptState()));
     ReadableStreamOperations::read(getScriptState(), reader).then(Function::createFunction(getScriptState(), it3), NotReached::createFunction(getScriptState()));
 
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_EQ(10, underlyingSource->desiredSize());
 
@@ -328,7 +326,7 @@ TEST_F(ReadableStreamOperationsTest, CreateReadableStreamWithCustomUnderlyingSou
     EXPECT_FALSE(it3->isSet());
 
     underlyingSource->close();
-    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    isolate()->RunMicrotasks();
 
     EXPECT_TRUE(it3->isSet());
     EXPECT_TRUE(it3->isValid());

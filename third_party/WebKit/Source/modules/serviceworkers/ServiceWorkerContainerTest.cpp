@@ -92,7 +92,7 @@ void expectRejected(ScriptState* scriptState, ScriptPromise& promise, const Scri
 {
     StubScriptFunction resolved, rejected;
     promise.then(resolved.function(scriptState), rejected.function(scriptState));
-    v8::MicrotasksScope::PerformCheckpoint(promise.isolate());
+    promise.isolate()->RunMicrotasks();
     EXPECT_EQ(0ul, resolved.callCount());
     EXPECT_EQ(1ul, rejected.callCount());
     if (rejected.callCount())

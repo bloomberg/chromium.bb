@@ -59,39 +59,63 @@ class CORE_EXPORT V8RecursionScope {
     STACK_ALLOCATED();
 public:
     explicit V8RecursionScope(v8::Isolate* isolate)
-        : m_scope(isolate, v8::MicrotasksScope::kRunMicrotasks)
+        : m_isolate(isolate)
     {
-        ASSERT(isolate->GetMicrotasksPolicy() == v8::MicrotasksPolicy::kScoped);
+        V8PerIsolateData::from(m_isolate)->incrementRecursionLevel();
+        // If you want V8 to autorun microtasks, this class needs to have a
+        // v8::Isolate::SuppressMicrotaskExecutionScope member.
+        ASSERT(!isolate->WillAutorunMicrotasks());
     }
 
     ~V8RecursionScope()
     {
+        if (!V8PerIsolateData::from(m_isolate)->decrementRecursionLevel())
+            didLeaveScriptContext();
     }
 
     static int recursionLevel(v8::Isolate* isolate)
     {
-        return v8::MicrotasksScope::GetCurrentDepth(isolate);
+        return V8PerIsolateData::from(isolate)->recursionLevel();
     }
+
+#if ENABLE(ASSERT)
+    static bool properlyUsed(v8::Isolate* isolate)
+    {
+        return recursionLevel(isolate) > 0 || V8PerIsolateData::from(isolate)->internalScriptRecursionLevel() > 0;
+    }
+#endif
 
     class MicrotaskSuppression {
         USING_FAST_MALLOC(MicrotaskSuppression);
         WTF_MAKE_NONCOPYABLE(MicrotaskSuppression);
     public:
-        explicit MicrotaskSuppression(v8::Isolate* isolate)
-            : m_scope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks)
+        MicrotaskSuppression(v8::Isolate* isolate)
+#if ENABLE(ASSERT)
+            : m_isolate(isolate)
+#endif
         {
+#if ENABLE(ASSERT)
+            V8PerIsolateData::from(m_isolate)->incrementInternalScriptRecursionLevel();
+#endif
         }
 
         ~MicrotaskSuppression()
         {
+#if ENABLE(ASSERT)
+            V8PerIsolateData::from(m_isolate)->decrementInternalScriptRecursionLevel();
+#endif
         }
 
     private:
-        v8::MicrotasksScope m_scope;
+#if ENABLE(ASSERT)
+        v8::Isolate* m_isolate;
+#endif
     };
 
 private:
-    v8::MicrotasksScope m_scope;
+    void didLeaveScriptContext();
+
+    v8::Isolate* m_isolate;
 };
 
 } // namespace blink
