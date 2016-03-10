@@ -18,7 +18,6 @@
 #include "remoting/client/audio_player.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_context.h"
-#include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
@@ -30,6 +29,9 @@
 #include "remoting/test/connection_setup_info.h"
 #include "remoting/test/test_video_renderer.h"
 
+namespace remoting {
+namespace test {
+
 namespace {
 const char kXmppHostName[] = "talk.google.com";
 const int kXmppPortNumber = 5222;
@@ -38,34 +40,24 @@ const int kXmppPortNumber = 5222;
 void FetchThirdPartyToken(
     const std::string& authorization_token,
     const std::string& shared_secret,
-    const GURL& token_url,
-    const std::string& host_public_key,
+    const std::string& token_url,
     const std::string& scope,
-    base::WeakPtr<remoting::TokenFetcherProxy> token_fetcher_proxy) {
-  VLOG(2)  << "FetchThirdPartyToken("
-           << "token_url: " << token_url << ", "
-           << "host_public_key: " << host_public_key << ", "
-           << "scope: " << scope << ") Called";
+    const protocol::ThirdPartyTokenFetchedCallback& token_fetched_callback) {
+  VLOG(2) << "FetchThirdPartyToken("
+          << "token_url: " << token_url << ", "
+          << "scope: " << scope << ") Called";
 
-  if (token_fetcher_proxy) {
-    token_fetcher_proxy->OnTokenFetched(authorization_token, shared_secret);
-    token_fetcher_proxy.reset();
-  } else {
-    LOG(ERROR) << "Invalid token fetcher proxy passed in";
-  }
+  token_fetched_callback.Run(authorization_token, shared_secret);
 }
 
 void FetchSecret(
     const std::string& client_secret,
     bool pairing_expected,
-    const remoting::protocol::SecretFetchedCallback& secret_fetched_callback) {
+    const protocol::SecretFetchedCallback& secret_fetched_callback) {
   secret_fetched_callback.Run(client_secret);
 }
 
 }  // namespace
-
-namespace remoting {
-namespace test {
 
 TestChromotingClient::TestChromotingClient()
     : TestChromotingClient(nullptr) {}
@@ -134,23 +126,21 @@ void TestChromotingClient::StartConnection(
               new ChromiumUrlRequestFactory(request_context_getter)),
           network_settings, protocol::TransportRole::CLIENT));
 
-  scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
-      token_fetcher(new TokenFetcherProxy(
-          base::Bind(&FetchThirdPartyToken,
-                     connection_setup_info.authorization_code,
-                     connection_setup_info.shared_secret),
-          connection_setup_info.public_key));
-
   protocol::FetchSecretCallback fetch_secret_callback;
   if (!connection_setup_info.pin.empty()) {
     fetch_secret_callback = base::Bind(&FetchSecret, connection_setup_info.pin);
   }
 
+  protocol::FetchThirdPartyTokenCallback fetch_third_party_token_callback =
+      base::Bind(&FetchThirdPartyToken,
+                 connection_setup_info.authorization_code,
+                 connection_setup_info.shared_secret);
+
   scoped_ptr<protocol::Authenticator> authenticator(
       new protocol::NegotiatingClientAuthenticator(
           connection_setup_info.pairing_id, connection_setup_info.shared_secret,
           connection_setup_info.host_id, fetch_secret_callback,
-          std::move(token_fetcher)));
+          fetch_third_party_token_callback));
 
   chromoting_client_->Start(
       signal_strategy_.get(), std::move(authenticator), transport_context,

@@ -51,7 +51,6 @@
 #include "remoting/client/plugin/pepper_video_renderer_2d.h"
 #include "remoting/client/plugin/pepper_video_renderer_3d.h"
 #include "remoting/client/software_video_renderer.h"
-#include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
@@ -461,17 +460,17 @@ void ChromotingInstance::OnConnectionState(
 }
 
 void ChromotingInstance::FetchThirdPartyToken(
-    const GURL& token_url,
     const std::string& host_public_key,
+    const std::string& token_url,
     const std::string& scope,
-    base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy) {
+    const protocol::ThirdPartyTokenFetchedCallback& token_fetched_callback) {
   // Once the Session object calls this function, it won't continue the
   // authentication until the callback is called (or connection is canceled).
   // So, it's impossible to reach this with a callback already registered.
-  DCHECK(!token_fetcher_proxy_.get());
-  token_fetcher_proxy_ = token_fetcher_proxy;
+  DCHECK(third_party_token_fetched_callback_.is_null());
+  third_party_token_fetched_callback_ = token_fetched_callback;
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  data->SetString("tokenUrl", token_url.spec());
+  data->SetString("tokenUrl", token_url);
   data->SetString("hostPublicKey", host_public_key);
   data->SetString("scope", scope);
   PostLegacyJsonMessage("fetchThirdPartyToken", std::move(data));
@@ -697,16 +696,14 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
           protocol::TransportRole::CLIENT));
 
   // Create Authenticator.
-  scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
-      token_fetcher(new TokenFetcherProxy(
-          base::Bind(&ChromotingInstance::FetchThirdPartyToken,
-                     weak_factory_.GetWeakPtr()),
-          host_public_key));
+  protocol::FetchThirdPartyTokenCallback fetch_third_party_token_callback =
+      base::Bind(&ChromotingInstance::FetchThirdPartyToken,
+                 weak_factory_.GetWeakPtr(), host_public_key);
 
   scoped_ptr<protocol::Authenticator> authenticator(
       new protocol::NegotiatingClientAuthenticator(
           client_pairing_id, client_paired_secret, authentication_tag,
-          fetch_secret_callback, std::move(token_fetcher)));
+          fetch_secret_callback, fetch_third_party_token_callback));
 
   scoped_ptr<protocol::CandidateSessionConfig> config =
       protocol::CandidateSessionConfig::CreateDefault();
@@ -910,9 +907,9 @@ void ChromotingInstance::HandleOnThirdPartyTokenFetched(
     LOG(ERROR) << "Invalid onThirdPartyTokenFetched data.";
     return;
   }
-  if (token_fetcher_proxy_.get()) {
-    token_fetcher_proxy_->OnTokenFetched(token, shared_secret);
-    token_fetcher_proxy_.reset();
+  if (!third_party_token_fetched_callback_.is_null()) {
+    base::ResetAndReturn(&third_party_token_fetched_callback_)
+        .Run(token, shared_secret);
   } else {
     LOG(WARNING) << "Ignored OnThirdPartyTokenFetched without a pending fetch.";
   }

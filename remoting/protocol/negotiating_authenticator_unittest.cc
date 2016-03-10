@@ -72,7 +72,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
                    pairing_expected);
     client_as_negotiating_authenticator_ = new NegotiatingClientAuthenticator(
         client_id, client_paired_secret, kTestHostId, fetch_secret_callback,
-        nullptr);
+        FetchThirdPartyTokenCallback());
     client_.reset(client_as_negotiating_authenticator_);
   }
 

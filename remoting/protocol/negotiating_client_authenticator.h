@@ -28,7 +28,7 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
       const std::string& shared_secret,
       const std::string& authentication_tag,
       const FetchSecretCallback& fetch_secret_callback,
-      scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher> token_fetcher_);
+      const FetchThirdPartyTokenCallback& fetch_third_party_token_callback);
 
   ~NegotiatingClientAuthenticator() override;
 
@@ -75,7 +75,7 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
   FetchSecretCallback fetch_secret_callback_;
 
   // Used for third party authenticators.
-  scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher> token_fetcher_;
+  FetchThirdPartyTokenCallback fetch_third_party_token_callback_;
 
   // Internal NegotiatingClientAuthenticator data.
   bool method_set_by_host_ = false;

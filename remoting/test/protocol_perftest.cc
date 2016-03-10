@@ -394,7 +394,7 @@ class ProtocolPerfTest
             std::string(),  // client_pairing_secret
             kHostId,
             base::Bind(&ProtocolPerfTest::FetchPin, base::Unretained(this)),
-            nullptr));
+            protocol::FetchThirdPartyTokenCallback()));
     client_.reset(
         new ChromotingClient(client_context_.get(), this, this, nullptr));
     client_->set_protocol_config(protocol_config_->Clone());

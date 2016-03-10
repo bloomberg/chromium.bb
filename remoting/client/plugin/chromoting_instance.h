@@ -66,7 +66,6 @@ class ClientContext;
 class DelegatingSignalStrategy;
 class PepperAudioPlayer;
 class PepperMouseLocker;
-class TokenFetcherProxy;
 
 class ChromotingInstance : public ClientUserInterface,
                            public PepperVideoRenderer::EventHandler,
@@ -162,10 +161,10 @@ class ChromotingInstance : public ClientUserInterface,
 
   // Requests the webapp to fetch a third-party token.
   void FetchThirdPartyToken(
-      const GURL& token_url,
       const std::string& host_public_key,
+      const std::string& token_url,
       const std::string& scope,
-      const base::WeakPtr<TokenFetcherProxy> pepper_token_fetcher);
+      const protocol::ThirdPartyTokenFetchedCallback& token_fetched_callback);
 
   // Updates the specified UMA enumeration histogram with the input value.
   void UpdateUmaEnumHistogram(const std::string& histogram_name,
@@ -283,7 +282,7 @@ class ChromotingInstance : public ClientUserInterface,
   bool use_async_pin_dialog_;
   protocol::SecretFetchedCallback secret_fetched_callback_;
 
-  base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy_;
+  protocol::ThirdPartyTokenFetchedCallback third_party_token_fetched_callback_;
 
   base::RepeatingTimer stats_update_timer_;
 

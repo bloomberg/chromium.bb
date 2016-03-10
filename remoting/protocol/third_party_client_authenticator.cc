@@ -14,17 +14,17 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
-#include "url/gurl.h"
 
 namespace remoting {
 namespace protocol {
 
 ThirdPartyClientAuthenticator::ThirdPartyClientAuthenticator(
     const CreateBaseAuthenticatorCallback& create_base_authenticator_callback,
-    scoped_ptr<TokenFetcher> token_fetcher)
+    const FetchThirdPartyTokenCallback& fetch_token_callback)
     : ThirdPartyAuthenticatorBase(WAITING_MESSAGE),
       create_base_authenticator_callback_(create_base_authenticator_callback),
-      token_fetcher_(std::move(token_fetcher)) {}
+      fetch_token_callback_(std::move(fetch_token_callback)),
+      weak_factory_(this) {}
 
 ThirdPartyClientAuthenticator::~ThirdPartyClientAuthenticator() {}
 
@@ -45,11 +45,10 @@ void ThirdPartyClientAuthenticator::ProcessTokenMessage(
 
   token_state_ = PROCESSING_MESSAGE;
 
-  // |token_fetcher_| is owned, so Unretained() is safe here.
-  token_fetcher_->FetchThirdPartyToken(
-      GURL(token_url), token_scope, base::Bind(
-          &ThirdPartyClientAuthenticator::OnThirdPartyTokenFetched,
-          base::Unretained(this), resume_callback));
+  fetch_token_callback_.Run(
+      token_url, token_scope,
+      base::Bind(&ThirdPartyClientAuthenticator::OnThirdPartyTokenFetched,
+                 weak_factory_.GetWeakPtr(), resume_callback));
 }
 
 void ThirdPartyClientAuthenticator::AddTokenElements(

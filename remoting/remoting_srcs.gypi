@@ -293,8 +293,6 @@
       'client/server_log_entry_client.h',
       'client/software_video_renderer.cc',
       'client/software_video_renderer.h',
-      'client/token_fetcher_proxy.cc',
-      'client/token_fetcher_proxy.h',
       'client/touch_input_scaler.cc',
       'client/touch_input_scaler.h',
     ],

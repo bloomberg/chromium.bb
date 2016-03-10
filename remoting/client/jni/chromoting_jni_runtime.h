@@ -88,7 +88,7 @@ class ChromotingJniRuntime {
 
   // Pops up a third party login page to fetch token required for
   // authentication. Call on UI thread.
-  void FetchThirdPartyToken(const GURL& token_url,
+  void FetchThirdPartyToken(const std::string& token_url,
                             const std::string& client_id,
                             const std::string& scope);
 

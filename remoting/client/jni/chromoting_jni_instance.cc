@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
@@ -21,7 +22,6 @@
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/jni_frame_consumer.h"
 #include "remoting/client/software_video_renderer.h"
-#include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/host_stub.h"
@@ -74,16 +74,12 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
   xmpp_config_.auth_token = auth_token;
 
   // Initialize |authenticator_|.
-  scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
-      token_fetcher(new TokenFetcherProxy(
-          base::Bind(&ChromotingJniInstance::FetchThirdPartyToken,
-                     weak_factory_.GetWeakPtr()),
-          host_pubkey));
-
   authenticator_.reset(new protocol::NegotiatingClientAuthenticator(
       pairing_id, pairing_secret, host_id_,
-      base::Bind(&ChromotingJniInstance::FetchSecret, this),
-      std::move(token_fetcher)));
+      base::Bind(&ChromotingJniInstance::FetchSecret,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&ChromotingJniInstance::FetchThirdPartyToken,
+                 weak_factory_.GetWeakPtr(), host_pubkey)));
 
   // Post a task to start connection
   jni_runtime_->network_task_runner()->PostTask(
@@ -128,25 +124,22 @@ void ChromotingJniInstance::Disconnect() {
 }
 
 void ChromotingJniInstance::FetchThirdPartyToken(
-    const GURL& token_url,
-    const std::string& client_id,
+    const std::string& host_public_key,
+    const std::string& token_url,
     const std::string& scope,
-    base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy) {
+    const protocol::ThirdPartyTokenFetchedCallback& token_fetched_callback) {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
-  DCHECK(!token_fetcher_proxy_.get());
+  DCHECK(third_party_token_fetched_callback_.is_null());
 
   __android_log_print(ANDROID_LOG_INFO,
                       "ThirdPartyAuth",
                       "Fetching Third Party Token from user.");
 
-  token_fetcher_proxy_ = token_fetcher_proxy;
+  third_party_token_fetched_callback_ = token_fetched_callback;
   jni_runtime_->ui_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChromotingJniRuntime::FetchThirdPartyToken,
-                 base::Unretained(jni_runtime_),
-                 token_url,
-                 client_id,
-                 scope));
+      FROM_HERE, base::Bind(&ChromotingJniRuntime::FetchThirdPartyToken,
+                            base::Unretained(jni_runtime_), token_url,
+                            host_public_key, scope));
 }
 
 void ChromotingJniInstance::HandleOnThirdPartyTokenFetched(
@@ -157,9 +150,9 @@ void ChromotingJniInstance::HandleOnThirdPartyTokenFetched(
   __android_log_print(
       ANDROID_LOG_INFO, "ThirdPartyAuth", "Third Party Token Fetched.");
 
-  if (token_fetcher_proxy_.get()) {
-    token_fetcher_proxy_->OnTokenFetched(token, shared_secret);
-    token_fetcher_proxy_.reset();
+  if (!third_party_token_fetched_callback_.is_null()) {
+    base::ResetAndReturn(&third_party_token_fetched_callback_)
+        .Run(token, shared_secret);
   } else {
     __android_log_print(
         ANDROID_LOG_WARN,

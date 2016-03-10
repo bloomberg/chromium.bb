@@ -26,15 +26,16 @@ NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
     const std::string& shared_secret,
     const std::string& authentication_tag,
     const FetchSecretCallback& fetch_secret_callback,
-    scoped_ptr<ThirdPartyClientAuthenticator::TokenFetcher> token_fetcher)
+    const FetchThirdPartyTokenCallback& fetch_third_party_token_callback)
     : NegotiatingAuthenticatorBase(MESSAGE_READY),
       client_pairing_id_(client_pairing_id),
       shared_secret_(shared_secret),
       authentication_tag_(authentication_tag),
       fetch_secret_callback_(fetch_secret_callback),
-      token_fetcher_(std::move(token_fetcher)),
+      fetch_third_party_token_callback_(fetch_third_party_token_callback),
       weak_factory_(this) {
-  AddMethod(Method::THIRD_PARTY);
+  if (!fetch_third_party_token_callback.is_null())
+    AddMethod(Method::THIRD_PARTY);
   AddMethod(Method::SPAKE2_PAIR);
   AddMethod(Method::SPAKE2_SHARED_SECRET_HMAC);
   AddMethod(Method::SPAKE2_SHARED_SECRET_PLAIN);
@@ -112,13 +113,9 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     const base::Closure& resume_callback) {
   DCHECK(current_method_ != Method::INVALID);
   if (current_method_ == Method::THIRD_PARTY) {
-    // |ThirdPartyClientAuthenticator| takes ownership of |token_fetcher_|.
-    // The authentication method negotiation logic should guarantee that only
-    // one |ThirdPartyClientAuthenticator| will need to be created per session.
-    DCHECK(token_fetcher_);
     current_authenticator_.reset(new ThirdPartyClientAuthenticator(
         base::Bind(&V2Authenticator::CreateForClient),
-        std::move(token_fetcher_)));
+        fetch_third_party_token_callback_));
     resume_callback.Run();
   } else {
     DCHECK(current_method_ == Method::SPAKE2_SHARED_SECRET_PLAIN ||

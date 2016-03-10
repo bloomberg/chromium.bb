@@ -33,7 +33,6 @@ class VideoRenderer;
 class ChromotingJniRuntime;
 class ClientStatusLogger;
 class JniFrameConsumer;
-class TokenFetcherProxy;
 
 // ClientUserInterface that indirectly makes and receives JNI calls.
 class ChromotingJniInstance
@@ -62,10 +61,10 @@ class ChromotingJniInstance
 
   // Requests the android app to fetch a third-party token.
   void FetchThirdPartyToken(
-      const GURL& token_url,
-      const std::string& client_id,
+      const std::string& host_public_key,
+      const std::string& token_url,
       const std::string& scope,
-      const base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy);
+      const protocol::ThirdPartyTokenFetchedCallback& token_fetched_callback);
 
   // Called by the android app when the token is fetched.
   void HandleOnThirdPartyTokenFetched(const std::string& token,
@@ -163,7 +162,7 @@ class ChromotingJniInstance
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   scoped_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
   scoped_ptr<ClientStatusLogger> client_status_logger_;
-  base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy_;
+  protocol::ThirdPartyTokenFetchedCallback third_party_token_fetched_callback_;
 
   // Pass this the user's PIN once we have it. To be assigned and accessed on
   // the UI thread, but must be posted to the network thread to call it.

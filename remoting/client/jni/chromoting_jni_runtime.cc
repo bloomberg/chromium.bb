@@ -308,14 +308,13 @@ void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
       env, j_host.obj(), j_id.obj(), j_secret.obj());
 }
 
-void ChromotingJniRuntime::FetchThirdPartyToken(const GURL& token_url,
+void ChromotingJniRuntime::FetchThirdPartyToken(const std::string& token_url,
                                                 const std::string& client_id,
                                                 const std::string& scope) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  ScopedJavaLocalRef<jstring> j_url =
-      ConvertUTF8ToJavaString(env, token_url.spec());
+  ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, token_url);
   ScopedJavaLocalRef<jstring> j_client_id =
       ConvertUTF8ToJavaString(env, client_id);
   ScopedJavaLocalRef<jstring> j_scope = ConvertUTF8ToJavaString(env, scope);
