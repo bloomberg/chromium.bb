@@ -37,4 +37,17 @@ void F() {
   }
 }
 
+#define CALL_METHOD_FROM_MACRO()           \
+  void callMethodFromMacro() { method(); } \
+  void pmethod() override {}
+
+struct WithMacroP {
+  virtual void pmethod() {}
+};
+
+struct WithMacro : public WithMacroP {
+  void method() {}
+  CALL_METHOD_FROM_MACRO();
+};
+
 }  // namespace blink
