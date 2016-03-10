@@ -4,6 +4,7 @@
 
 #import "media/base/mac/avfoundation_glue.h"
 
+#import <AVFoundation/AVFoundation.h>
 #include <dlfcn.h>
 #include <stddef.h>
 
@@ -15,8 +16,21 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/media_switches.h"
 
-namespace {
+// Forward declarations of AVFoundation.h strings.
+// This is needed to avoid compile time warnings since currently
+// |mac_deployment_target| is 10.6.
+extern NSString* const AVCaptureDeviceWasConnectedNotification;
+extern NSString* const AVCaptureDeviceWasDisconnectedNotification;
+extern NSString* const AVMediaTypeVideo;
+extern NSString* const AVMediaTypeAudio;
+extern NSString* const AVMediaTypeMuxed;
+extern NSString* const AVCaptureSessionRuntimeErrorNotification;
+extern NSString* const AVCaptureSessionDidStopRunningNotification;
+extern NSString* const AVCaptureSessionErrorKey;
+extern NSString* const AVVideoScalingModeKey;
+extern NSString* const AVVideoScalingModeResizeAspectFill;
 
+namespace {
 // Used for logging capture API usage. Classes are a partition. Elements in this
 // enum should not be deleted or rearranged; the only permitted operation is to
 // add new elements before CAPTURE_API_MAX, that must be equal to the last item.
@@ -44,37 +58,6 @@ class AVFoundationInternal {
   AVFoundationInternal() {
     bundle_ = [NSBundle
         bundleWithPath:@"/System/Library/Frameworks/AVFoundation.framework"];
-
-    const char* path = [[bundle_ executablePath] fileSystemRepresentation];
-    CHECK(path);
-    library_handle_ = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
-    CHECK(library_handle_) << dlerror();
-
-    struct {
-      NSString** loaded_string;
-      const char* symbol;
-    } av_strings[] = {
-        {&AVCaptureDeviceWasConnectedNotification_,
-         "AVCaptureDeviceWasConnectedNotification"},
-        {&AVCaptureDeviceWasDisconnectedNotification_,
-         "AVCaptureDeviceWasDisconnectedNotification"},
-        {&AVMediaTypeVideo_, "AVMediaTypeVideo"},
-        {&AVMediaTypeAudio_, "AVMediaTypeAudio"},
-        {&AVMediaTypeMuxed_, "AVMediaTypeMuxed"},
-        {&AVCaptureSessionRuntimeErrorNotification_,
-         "AVCaptureSessionRuntimeErrorNotification"},
-        {&AVCaptureSessionDidStopRunningNotification_,
-         "AVCaptureSessionDidStopRunningNotification"},
-        {&AVCaptureSessionErrorKey_, "AVCaptureSessionErrorKey"},
-        {&AVVideoScalingModeKey_, "AVVideoScalingModeKey"},
-        {&AVVideoScalingModeResizeAspectFill_,
-         "AVVideoScalingModeResizeAspectFill"},
-    };
-    for (auto& av_string : av_strings) {
-      *av_string.loaded_string = *reinterpret_cast<NSString**>(
-          dlsym(library_handle_, av_string.symbol));
-      CHECK(*av_string.loaded_string) << dlerror();
-    }
   }
 
   NSBundle* bundle() const { return bundle_; }
@@ -106,16 +89,21 @@ class AVFoundationInternal {
   NSBundle* bundle_;
   void* library_handle_;
   // The following members are replicas of the respectives in AVFoundation.
-  NSString* AVCaptureDeviceWasConnectedNotification_;
-  NSString* AVCaptureDeviceWasDisconnectedNotification_;
-  NSString* AVMediaTypeVideo_;
-  NSString* AVMediaTypeAudio_;
-  NSString* AVMediaTypeMuxed_;
-  NSString* AVCaptureSessionRuntimeErrorNotification_;
-  NSString* AVCaptureSessionDidStopRunningNotification_;
-  NSString* AVCaptureSessionErrorKey_;
-  NSString* AVVideoScalingModeKey_;
-  NSString* AVVideoScalingModeResizeAspectFill_;
+  NSString* AVCaptureDeviceWasConnectedNotification_ =
+      ::AVCaptureDeviceWasConnectedNotification;
+  NSString* AVCaptureDeviceWasDisconnectedNotification_ =
+      ::AVCaptureDeviceWasDisconnectedNotification;
+  NSString* AVMediaTypeVideo_ = ::AVMediaTypeVideo;
+  NSString* AVMediaTypeAudio_ = ::AVMediaTypeAudio;
+  NSString* AVMediaTypeMuxed_ = ::AVMediaTypeMuxed;
+  NSString* AVCaptureSessionRuntimeErrorNotification_ =
+      ::AVCaptureSessionRuntimeErrorNotification;
+  NSString* AVCaptureSessionDidStopRunningNotification_ =
+      ::AVCaptureSessionDidStopRunningNotification;
+  NSString* AVCaptureSessionErrorKey_ = ::AVCaptureSessionErrorKey;
+  NSString* AVVideoScalingModeKey_ = ::AVVideoScalingModeKey;
+  NSString* AVVideoScalingModeResizeAspectFill_ =
+      ::AVVideoScalingModeResizeAspectFill;
 
   DISALLOW_COPY_AND_ASSIGN(AVFoundationInternal);
 };

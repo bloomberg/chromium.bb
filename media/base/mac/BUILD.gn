@@ -21,6 +21,8 @@ source_set("mac") {
       "avfoundation_glue.mm",
     ]
     libs = [
+      "AVFoundation.framework",
+
       # Required by video_frame_mac.cc.
       "CoreVideo.framework",
     ]

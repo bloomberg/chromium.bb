@@ -956,6 +956,7 @@
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/AudioToolbox.framework',
               '$(SDKROOT)/System/Library/Frameworks/AudioUnit.framework',
+              '$(SDKROOT)/System/Library/Frameworks/AVFoundation.framework',
               '$(SDKROOT)/System/Library/Frameworks/CoreAudio.framework',
               '$(SDKROOT)/System/Library/Frameworks/CoreVideo.framework',
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
