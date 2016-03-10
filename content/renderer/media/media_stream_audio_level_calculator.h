@@ -26,7 +26,7 @@ class CONTENT_EXPORT MediaStreamAudioLevelCalculator {
   // Provides thread-safe access to the current signal level.  This object is
   // intended to be passed to modules running on other threads that poll for the
   // current signal level.
-  class Level : public base::RefCountedThreadSafe<Level> {
+  class CONTENT_EXPORT Level : public base::RefCountedThreadSafe<Level> {
    public:
     float GetCurrent() const;
 
