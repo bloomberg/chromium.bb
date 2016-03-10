@@ -7,7 +7,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebImageCache.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace android_webview {
@@ -64,17 +63,6 @@ void AwRenderViewExt::CheckContentsSize() {
       new AwViewHostMsg_OnContentsSizeChanged(
         render_view()->GetMainRenderFrame()->GetRoutingID(),
         contents_size));
-}
-
-void AwRenderViewExt::Navigate(const GURL& url) {
-  // Navigate is called only on NEW navigations, so WebImageCache won't be
-  // freed when the user just clicks on links, but only when a navigation is
-  // started, for instance via loadUrl. A better approach would be clearing the
-  // cache on cross-site boundaries, however this would require too many
-  // changes both on the browser side (in RenderViewHostManger), to the
-  // IPCmessages and to the RenderViewObserver. Thus, clearing decoding image
-  // cache on Navigate, seems a more acceptable compromise.
-  blink::WebImageCache::clear();
 }
 
 }  // namespace android_webview

@@ -26,7 +26,6 @@ class AwRenderViewExt : public content::RenderViewObserver {
   // RenderViewObserver:
   void DidCommitCompositorFrame() override;
   void DidUpdateLayout() override;
-  void Navigate(const GURL& url) override;
 
   void CheckContentsSize();
   void PostCheckContentsSize();

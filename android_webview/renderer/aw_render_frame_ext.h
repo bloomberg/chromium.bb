@@ -10,6 +10,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "url/origin.h"
 
 namespace blink {
 enum WebMeaningfulLayout;
@@ -52,6 +53,8 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
 
   blink::WebView* GetWebView();
   blink::WebFrameWidget* GetWebFrameWidget();
+
+  url::Origin last_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderFrameExt);
 };
