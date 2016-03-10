@@ -50,6 +50,8 @@
 
 #include "weston-desktop-shell-client-protocol.h"
 
+#define DEFAULT_CLOCK_FORMAT CLOCK_FORMAT_MINUTES
+
 extern char **environ; /* defined by libc */
 
 struct desktop {
@@ -84,6 +86,7 @@ struct panel {
 	struct wl_list launcher_list;
 	struct panel_clock *clock;
 	int painted;
+	int clock_format;
 	uint32_t color;
 };
 
@@ -123,6 +126,8 @@ struct panel_clock {
 	struct panel *panel;
 	struct task clock_task;
 	int clock_fd;
+	char *format_string;
+	time_t refresh_timer;
 };
 
 struct unlock_dialog {
@@ -357,7 +362,7 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(string, sizeof string, "%a %b %d, %I:%M %p", timeinfo);
+	strftime(string, sizeof string, clock->format_string, timeinfo);
 
 	widget_get_allocation(widget, &allocation);
 	if (allocation.width == 0)
@@ -386,9 +391,9 @@ clock_timer_reset(struct panel_clock *clock)
 {
 	struct itimerspec its;
 
-	its.it_interval.tv_sec = 60;
+	its.it_interval.tv_sec = clock->refresh_timer;
 	its.it_interval.tv_nsec = 0;
-	its.it_value.tv_sec = 60;
+	its.it_value.tv_sec = clock->refresh_timer;
 	its.it_value.tv_nsec = 0;
 	if (timerfd_settime(clock->clock_fd, 0, &its, NULL) < 0) {
 		fprintf(stderr, "could not set timerfd\n: %m");
@@ -408,6 +413,12 @@ panel_destroy_clock(struct panel_clock *clock)
 	free(clock);
 }
 
+enum {
+	CLOCK_FORMAT_MINUTES,
+	CLOCK_FORMAT_SECONDS,
+	CLOCK_FORMAT_NONE
+};
+
 static void
 panel_add_clock(struct panel *panel)
 {
@@ -424,6 +435,17 @@ panel_add_clock(struct panel *panel)
 	clock->panel = panel;
 	panel->clock = clock;
 	clock->clock_fd = timerfd;
+
+	switch (panel->clock_format) {
+	case CLOCK_FORMAT_MINUTES:
+		clock->format_string = "%a %b %d, %I:%M %p";
+		clock->refresh_timer = 60;
+		break;
+	case CLOCK_FORMAT_SECONDS:
+		clock->format_string = "%a %b %d, %I:%M:%S %p";
+		clock->refresh_timer = 1;
+		break;
+	}
 
 	clock->clock_task.run = clock_func;
 	display_watch_fd(window_get_display(panel->window), clock->clock_fd,
@@ -451,8 +473,13 @@ panel_resize_handler(struct widget *widget,
 				      x, y - h / 2, w + 1, h + 1);
 		x += w + 10;
 	}
-	h=20;
-	w=170;
+
+	h = 20;
+
+	if (panel->clock_format == CLOCK_FORMAT_SECONDS)
+		w = 190;
+	else /* CLOCK_FORMAT_MINUTES */
+		w = 170;
 
 	if (panel->clock)
 		widget_set_allocation(panel->clock->widget,
@@ -493,7 +520,8 @@ panel_destroy(struct panel *panel)
 	struct panel_launcher *tmp;
 	struct panel_launcher *launcher;
 
-	panel_destroy_clock(panel->clock);
+	if (panel->clock)
+		panel_destroy_clock(panel->clock);
 
 	wl_list_for_each_safe(launcher, tmp, &panel->launcher_list, link)
 		panel_destroy_launcher(launcher);
@@ -509,6 +537,7 @@ panel_create(struct desktop *desktop)
 {
 	struct panel *panel;
 	struct weston_config_section *s;
+	char *clock_format_option = NULL;
 
 	panel = xzalloc(sizeof *panel);
 
@@ -523,7 +552,22 @@ panel_create(struct desktop *desktop)
 	widget_set_redraw_handler(panel->widget, panel_redraw_handler);
 	widget_set_resize_handler(panel->widget, panel_resize_handler);
 
-	panel_add_clock(panel);
+	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
+	weston_config_section_get_string(s, "clock-format", &clock_format_option, "");
+
+	if (strcmp(clock_format_option, "minutes") == 0)
+		panel->clock_format = CLOCK_FORMAT_MINUTES;
+	else if (strcmp(clock_format_option, "seconds") == 0)
+		panel->clock_format = CLOCK_FORMAT_SECONDS;
+	else if (strcmp(clock_format_option, "none") == 0)
+		panel->clock_format = CLOCK_FORMAT_NONE;
+	else
+		panel->clock_format = DEFAULT_CLOCK_FORMAT;
+
+	if (panel->clock_format != CLOCK_FORMAT_NONE)
+		panel_add_clock(panel);
+
+	free (clock_format_option);
 
 	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
 	weston_config_section_get_uint(s, "panel-color",

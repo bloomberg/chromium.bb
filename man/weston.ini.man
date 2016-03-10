@@ -212,6 +212,13 @@ output. Tile repeats the background image to fill the output.
 sets the color of the background (unsigned integer). The hexadecimal
 digit pairs are in order alpha, red, green, and blue.
 .TP 7
+.BI "clock-format=" format
+sets the panel clock format (string). Can be
+.BR "none" ","
+.BR "minutes" ","
+.BR "seconds" "."
+By default, minutes format is used.
+.TP 7
 .BI "panel-color=" 0xAARRGGBB
 sets the color of the panel (unsigned integer). The hexadecimal
 digit pairs are in order transparency, red, green, and blue. Examples:
