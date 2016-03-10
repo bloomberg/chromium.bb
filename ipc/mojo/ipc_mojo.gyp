@@ -71,7 +71,10 @@
       'sources': [
         'run_all_unittests.cc',
 
-        "ipc_channel_mojo_unittest.cc",
+        # TODO(rockot): Re-enable these when we're ready to start using
+        # ChannelMojo again. They need to be updated to support multiprocess
+        # testing with the current Mojo EDK implementation.
+        #"ipc_channel_mojo_unittest.cc",
         'ipc_mojo_bootstrap_unittest.cc',
       ],
       'conditions': [

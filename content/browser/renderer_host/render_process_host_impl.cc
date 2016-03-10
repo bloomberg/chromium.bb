@@ -757,8 +757,7 @@ bool RenderProcessHostImpl::Init() {
         g_renderer_main_thread_factory(InProcessChildThreadParams(
             channel_id,
             BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
-                ->task_runner(),
-            in_process_renderer_handle_.release())));
+                ->task_runner())));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
@@ -817,16 +816,8 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   if (ShouldUseMojoChannel()) {
     VLOG(1) << "Mojo Channel is enabled on host";
-    mojo::ScopedMessagePipeHandle handle;
 
-    if (run_renderer_in_process()) {
-      mojo::MessagePipe pipe;
-      handle = std::move(pipe.handle0);
-      in_process_renderer_handle_ = std::move(pipe.handle1);
-    } else {
-      mojo_channel_token_ = mojo::edk::GenerateRandomToken();
-      handle = mojo::edk::CreateParentMessagePipe(mojo_channel_token_);
-    }
+    mojo_channel_token_ = mojo::edk::GenerateRandomToken();
 
     // Do NOT expand ifdef or run time condition checks here! Synchronous
     // IPCs from browser process are banned. It is only narrowly allowed
@@ -836,13 +827,13 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kIPCSyncCompositing)) {
       return IPC::SyncChannel::Create(
-          IPC::ChannelMojo::CreateServerFactory(std::move(handle)), this,
+          IPC::ChannelMojo::CreateServerFactory(mojo_channel_token_), this,
           runner.get(), true, &never_signaled_);
     }
 #endif  // OS_ANDROID
 
     return IPC::ChannelProxy::Create(
-        IPC::ChannelMojo::CreateServerFactory(std::move(handle)), this,
+        IPC::ChannelMojo::CreateServerFactory(mojo_channel_token_), this,
         runner.get());
   }
 

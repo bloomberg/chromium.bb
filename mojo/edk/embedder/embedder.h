@@ -75,8 +75,8 @@ CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
                             MojoHandle* platform_handle_wrapper_handle);
 
 // Retrieves the |PlatformHandle| that was wrapped into a |MojoHandle| (using
-// |CreatePlatformHandleWrapper()| above). Note that the |MojoHandle| is closed
-// on success.
+// |CreatePlatformHandleWrapper()| above). Note that the |MojoHandle| must still
+// be closed separately.
 MOJO_SYSTEM_IMPL_EXPORT MojoResult
 PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
                           ScopedPlatformHandle* platform_handle);

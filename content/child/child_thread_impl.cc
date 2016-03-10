@@ -291,7 +291,6 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
     const InProcessChildThreadParams& params) {
   options_.browser_process_io_runner = params.io_runner();
   options_.channel_name = params.channel_name();
-  options_.in_process_message_pipe_handle = params.handle();
   return *this;
 }
 
@@ -359,20 +358,15 @@ scoped_refptr<base::SequencedTaskRunner> ChildThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
 }
 
-void ChildThreadImpl::ConnectChannel(bool use_mojo_channel,
-                                     mojo::ScopedMessagePipeHandle handle) {
+void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
   bool create_pipe_now = true;
   if (use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
-    if (!IsInBrowserProcess()) {
-      DCHECK(!handle.is_valid());
-      handle = mojo::edk::CreateChildMessagePipe(
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kMojoChannelToken));
-    }
-    DCHECK(handle.is_valid());
-    channel_->Init(IPC::ChannelMojo::CreateClientFactory(std::move(handle)),
-                   create_pipe_now);
+    channel_->Init(
+        IPC::ChannelMojo::CreateClientFactory(
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kMojoChannelToken)),
+        create_pipe_now);
     return;
   }
 
@@ -491,9 +485,7 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(startup_filter);
   }
 
-  ConnectChannel(
-      options.use_mojo_channel,
-      mojo::MakeScopedHandle(options.in_process_message_pipe_handle));
+  ConnectChannel(options.use_mojo_channel);
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(channel_.get());

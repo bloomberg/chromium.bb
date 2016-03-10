@@ -24,10 +24,6 @@ HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle,
   }
 }
 
-HandleAttachmentWin::HandleAttachmentWin(const HANDLE& handle,
-                                         FromWire from_wire)
-    : handle_(handle), permissions_(HandleWin::INVALID), owns_handle_(true) {}
-
 HandleAttachmentWin::HandleAttachmentWin(const WireFormat& wire_format)
     : BrokerableAttachment(wire_format.attachment_id),
       handle_(LongToHandle(wire_format.handle)),

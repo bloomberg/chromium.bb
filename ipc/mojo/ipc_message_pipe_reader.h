@@ -71,7 +71,6 @@ class MessagePipeReader : public mojom::Channel {
   // Note that MessagePipeReader doesn't delete |delegate|.
   MessagePipeReader(mojom::ChannelAssociatedPtr sender,
                     mojo::AssociatedInterfaceRequest<mojom::Channel> receiver,
-                    base::ProcessId peer_pid,
                     Delegate* delegate);
   ~MessagePipeReader() override;
 
@@ -85,8 +84,6 @@ class MessagePipeReader : public mojom::Channel {
 
   bool Send(scoped_ptr<Message> message);
 
-  base::ProcessId GetPeerPid() const { return peer_pid_; }
-
  protected:
   void OnPipeClosed();
   void OnPipeError(MojoResult error);
@@ -96,7 +93,6 @@ class MessagePipeReader : public mojom::Channel {
 
   // |delegate_| is null once the message pipe is closed.
   Delegate* delegate_;
-  base::ProcessId peer_pid_;
   mojom::ChannelAssociatedPtr sender_;
   mojo::AssociatedBinding<mojom::Channel> binding_;
   base::ThreadChecker thread_checker_;

@@ -57,6 +57,8 @@ void TestingDelegate::OnBootstrapError() {
   quit_callback_.Run();
 }
 
+const char kMojoChannelToken[] = "IPCMojoBootstrapTest token";
+
 // Times out on Android; see http://crbug.com/502290
 #if defined(OS_ANDROID)
 #define MAYBE_Connect DISABLED_Connect
@@ -67,10 +69,9 @@ TEST_F(IPCMojoBootstrapTest, MAYBE_Connect) {
   base::MessageLoop message_loop;
   base::RunLoop run_loop;
   TestingDelegate delegate(run_loop.QuitClosure());
-  RUN_CHILD_ON_PIPE(IPCMojoBootstrapTestClient, pipe)
   scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
-      mojo::MakeScopedHandle(mojo::MessagePipeHandle(pipe)),
-      IPC::Channel::MODE_SERVER, &delegate);
+      kMojoChannelToken, IPC::Channel::MODE_SERVER, &delegate);
+  RUN_CHILD_ON_PIPE(IPCMojoBootstrapTestClient, unused_pipe)
 
   bootstrap->Connect();
   run_loop.Run();
@@ -91,14 +92,13 @@ namespace {
 
 // A long running process that connects to us.
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(IPCMojoBootstrapTestClient,
-                                  IPCMojoBootstrapTest,
-                                  pipe) {
+                             IPCMojoBootstrapTest,
+                             unused_pipe) {
   base::MessageLoop message_loop;
   base::RunLoop run_loop;
   TestingDelegate delegate(run_loop.QuitClosure());
   scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
-      mojo::MakeScopedHandle(mojo::MessagePipeHandle(pipe)),
-      IPC::Channel::MODE_CLIENT, &delegate);
+      kMojoChannelToken, IPC::Channel::MODE_CLIENT, &delegate);
 
   bootstrap->Connect();
 

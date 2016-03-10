@@ -20,9 +20,6 @@ MachPortAttachmentMac::MachPortAttachmentMac(mach_port_t mach_port)
         << "MachPortAttachmentMac mach_port_mod_refs";
   }
 }
-MachPortAttachmentMac::MachPortAttachmentMac(mach_port_t mach_port,
-                                             FromWire from_wire)
-    : mach_port_(mach_port), owns_mach_port_(true) {}
 
 MachPortAttachmentMac::MachPortAttachmentMac(const WireFormat& wire_format)
     : BrokerableAttachment(wire_format.attachment_id),

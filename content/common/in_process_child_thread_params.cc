@@ -8,9 +8,9 @@ namespace content {
 
 InProcessChildThreadParams::InProcessChildThreadParams(
     const std::string& channel_name,
-    scoped_refptr<base::SequencedTaskRunner> io_runner,
-    mojo::MessagePipeHandle handle)
-    : channel_name_(channel_name), io_runner_(io_runner), handle_(handle) {}
+    scoped_refptr<base::SequencedTaskRunner> io_runner)
+    : channel_name_(channel_name), io_runner_(io_runner) {
+}
 
 InProcessChildThreadParams::InProcessChildThreadParams(
     const InProcessChildThreadParams& other) = default;

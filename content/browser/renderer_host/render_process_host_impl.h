@@ -527,7 +527,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
   std::string mojo_channel_token_;
-  mojo::ScopedMessagePipeHandle in_process_renderer_handle_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

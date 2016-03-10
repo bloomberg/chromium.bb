@@ -17,22 +17,31 @@
 namespace IPC {
 namespace {
 
+const char kPerftestToken[] = "perftest-token";
+
 class MojoChannelPerfTest : public test::IPCChannelPerfTestBase {
  public:
+  MojoChannelPerfTest() { token_ = mojo::edk::GenerateRandomToken(); }
+
   void TearDown() override {
-    ipc_support_.reset();
+    {
+      base::AutoLock l(ipc_support_lock_);
+      ipc_support_.reset();
+    }
     test::IPCChannelPerfTestBase::TearDown();
   }
 
   scoped_ptr<ChannelFactory> CreateChannelFactory(
       const ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner()));
-    return ChannelMojo::CreateServerFactory(
-        helper_.StartChild("MojoPerfTestClient"));
+    EnsureIpcSupport();
+    return ChannelMojo::CreateServerFactory(token_);
   }
 
   bool StartClient() override {
+    EnsureIpcSupport();
+    helper_.StartChildWithExtraSwitch("MojoPerfTestClient", kPerftestToken,
+                                      token_);
     return true;
   }
 
@@ -40,7 +49,17 @@ class MojoChannelPerfTest : public test::IPCChannelPerfTestBase {
     return helper_.WaitForChildTestShutdown();
   }
 
+  void EnsureIpcSupport() {
+    base::AutoLock l(ipc_support_lock_);
+    if (!ipc_support_) {
+      ipc_support_.reset(
+          new mojo::edk::test::ScopedIPCSupport(io_task_runner()));
+    }
+  }
+
   mojo::edk::test::MultiprocessTestHelper helper_;
+  std::string token_;
+  base::Lock ipc_support_lock_;
   scoped_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
 };
 
@@ -80,11 +99,8 @@ class MojoPerfTestClient : public test::PingPongTestClient {
 
   scoped_ptr<Channel> CreateChannel(Listener* listener) override;
 
-  int Run(MojoHandle handle);
-
  private:
   mojo::edk::test::ScopedIPCSupport ipc_support_;
-  mojo::ScopedMessagePipeHandle handle_;
 };
 
 MojoPerfTestClient::MojoPerfTestClient()
@@ -93,19 +109,16 @@ MojoPerfTestClient::MojoPerfTestClient()
 }
 
 scoped_ptr<Channel> MojoPerfTestClient::CreateChannel(Listener* listener) {
-  return scoped_ptr<Channel>(
-      ChannelMojo::Create(std::move(handle_), Channel::MODE_CLIENT, listener));
-}
-
-int MojoPerfTestClient::Run(MojoHandle handle) {
-  handle_ = mojo::MakeScopedHandle(mojo::MessagePipeHandle(handle));
-  return RunMain();
+  return scoped_ptr<Channel>(ChannelMojo::Create(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kPerftestToken),
+      Channel::MODE_CLIENT, listener));
 }
 
 MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
   MojoPerfTestClient client;
-  int rv = mojo::edk::test::MultiprocessTestHelper::RunClientMain(
-      base::Bind(&MojoPerfTestClient::Run, base::Unretained(&client)));
+
+  int rv = client.RunMain();
 
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();

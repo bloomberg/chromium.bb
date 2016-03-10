@@ -15,7 +15,6 @@
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/test_io_thread.h"
 #include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -23,45 +22,21 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
-#include "ipc/mojo/ipc_channel_mojo.h"
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
 #include "ipc/mojo/ipc_mojo_message_helper.h"
 #include "ipc/mojo/ipc_mojo_param_traits.h"
-#include "mojo/edk/test/mojo_test_base.h"
-#include "mojo/edk/test/multiprocess_test_helper.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
-#define DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(client_name, test_base)       \
-  class client_name##_MainFixture : public test_base {                    \
-   public:                                                                \
-    void Main();                                                          \
-  };                                                                      \
-  MULTIPROCESS_TEST_MAIN_WITH_SETUP(                                      \
-      client_name##TestChildMain,                                         \
-      ::mojo::edk::test::MultiprocessTestHelper::ChildSetup) {            \
-    CHECK(!mojo::edk::test::MultiprocessTestHelper::primordial_pipe_token \
-               .empty());                                                 \
-    client_name##_MainFixture test;                                       \
-    test.Init(mojo::edk::CreateChildMessagePipe(                          \
-        mojo::edk::test::MultiprocessTestHelper::primordial_pipe_token)); \
-    test.Main();                                                          \
-    return (::testing::Test::HasFatalFailure() ||                         \
-            ::testing::Test::HasNonfatalFailure())                        \
-               ? 1                                                        \
-               : 0;                                                       \
-  }                                                                       \
-  void client_name##_MainFixture::Main()
-
 namespace {
 
 class ListenerThatExpectsOK : public IPC::Listener {
  public:
-  ListenerThatExpectsOK() : received_ok_(false) {}
+  ListenerThatExpectsOK()
+      : received_ok_(false) {}
 
   ~ListenerThatExpectsOK() override {}
 
@@ -83,8 +58,8 @@ class ListenerThatExpectsOK : public IPC::Listener {
   }
 
   static void SendOK(IPC::Sender* sender) {
-    IPC::Message* message =
-        new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+    IPC::Message* message = new IPC::Message(
+        0, 2, IPC::Message::PRIORITY_NORMAL);
     message->WriteString(std::string("OK"));
     ASSERT_TRUE(sender->Send(message));
   }
@@ -95,12 +70,13 @@ class ListenerThatExpectsOK : public IPC::Listener {
 
 class ChannelClient {
  public:
-  void Init(mojo::ScopedMessagePipeHandle handle) {
-    handle_ = std::move(handle);
-  }
-  void Connect(IPC::Listener* listener) {
-    channel_ = IPC::ChannelMojo::Create(std::move(handle_),
+  explicit ChannelClient(IPC::Listener* listener, const char* name) {
+    channel_ = IPC::ChannelMojo::Create(main_message_loop_.task_runner(),
+                                        IPCTestBase::GetChannelName(name),
                                         IPC::Channel::MODE_CLIENT, listener);
+  }
+
+  void Connect() {
     CHECK(channel_->Connect());
   }
 
@@ -117,46 +93,48 @@ class ChannelClient {
 
  private:
   base::MessageLoopForIO main_message_loop_;
-  mojo::ScopedMessagePipeHandle handle_;
   scoped_ptr<IPC::ChannelMojo> channel_;
 };
 
-class IPCChannelMojoTest : public testing::Test {
+class IPCChannelMojoTestBase : public IPCTestBase {
  public:
-  IPCChannelMojoTest() : io_thread_(base::TestIOThread::Mode::kAutoStart) {}
-
-  void TearDown() override { base::RunLoop().RunUntilIdle(); }
-
   void InitWithMojo(const std::string& test_client_name) {
-    handle_ = helper_.StartChild(test_client_name);
+    Init(test_client_name);
   }
 
-  void CreateChannel(IPC::Listener* listener) {
-    channel_ = IPC::ChannelMojo::Create(std::move(handle_),
-                                        IPC::Channel::MODE_SERVER, listener);
+  void TearDown() override {
+    // Make sure Mojo IPC support is properly shutdown on the I/O loop before
+    // TearDown continues.
+    base::RunLoop run_loop;
+    task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+
+    IPCTestBase::TearDown();
   }
-
-  bool ConnectChannel() { return channel_->Connect(); }
-
-  void DestroyChannel() { channel_.reset(); }
-
-  bool WaitForClientShutdown() { return helper_.WaitForChildTestShutdown(); }
-
-  IPC::Sender* sender() { return channel(); }
-  IPC::Channel* channel() { return channel_.get(); }
-
- private:
-  base::MessageLoop message_loop_;
-  base::TestIOThread io_thread_;
-  mojo::edk::test::MultiprocessTestHelper helper_;
-  mojo::ScopedMessagePipeHandle handle_;
-  scoped_ptr<IPC::Channel> channel_;
 };
+
+class IPCChannelMojoTest : public IPCChannelMojoTestBase {
+ protected:
+  scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
+      const IPC::ChannelHandle& handle,
+      base::SequencedTaskRunner* runner) override {
+    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle);
+  }
+
+  bool DidStartClient() override {
+    bool ok = IPCTestBase::DidStartClient();
+    DCHECK(ok);
+    return ok;
+  }
+};
+
 
 class TestChannelListenerWithExtraExpectations
     : public IPC::TestChannelListener {
  public:
-  TestChannelListenerWithExtraExpectations() : is_connected_called_(false) {}
+  TestChannelListenerWithExtraExpectations()
+      : is_connected_called_(false) {
+  }
 
   void OnChannelConnected(int32_t peer_pid) override {
     IPC::TestChannelListener::OnChannelConnected(peer_pid);
@@ -171,7 +149,8 @@ class TestChannelListenerWithExtraExpectations
 };
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_ConnectedFromClient DISABLED_ConnectedFromClient
 #else
 #define MAYBE_ConnectedFromClient ConnectedFromClient
@@ -184,12 +163,15 @@ TEST_F(IPCChannelMojoTest, MAYBE_ConnectedFromClient) {
   CreateChannel(&listener);
   listener.Init(sender());
   ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
-  IPC::TestChannelListener::SendOneMessage(sender(), "hello from parent");
+  IPC::TestChannelListener::SendOneMessage(
+      sender(), "hello from parent");
 
   base::MessageLoop::current()->Run();
+  EXPECT_TRUE(base::kNullProcessId != this->channel()->GetPeerPID());
 
-  channel()->Close();
+  this->channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
   EXPECT_TRUE(listener.is_connected_called());
@@ -199,22 +181,28 @@ TEST_F(IPCChannelMojoTest, MAYBE_ConnectedFromClient) {
 }
 
 // A long running process that connects to us
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestClient, ChannelClient) {
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestClient) {
   TestChannelListenerWithExtraExpectations listener;
-  Connect(&listener);
-  listener.Init(channel());
+  ChannelClient client(&listener, "IPCChannelMojoTestClient");
+  client.Connect();
+  listener.Init(client.channel());
 
-  IPC::TestChannelListener::SendOneMessage(channel(), "hello from child");
+  IPC::TestChannelListener::SendOneMessage(
+      client.channel(), "hello from child");
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(listener.is_connected_called());
   EXPECT_TRUE(listener.HasSentAll());
 
-  Close();
+  client.Close();
+
+  return 0;
 }
 
 class ListenerExpectingErrors : public IPC::Listener {
  public:
-  ListenerExpectingErrors() : has_error_(false) {}
+  ListenerExpectingErrors()
+      : has_error_(false) {
+  }
 
   void OnChannelConnected(int32_t peer_pid) override {
     base::MessageLoop::current()->QuitWhenIdle();
@@ -233,11 +221,30 @@ class ListenerExpectingErrors : public IPC::Listener {
   bool has_error_;
 };
 
+
+class IPCChannelMojoErrorTest : public IPCChannelMojoTestBase {
+ protected:
+  scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
+      const IPC::ChannelHandle& handle,
+      base::SequencedTaskRunner* runner) override {
+    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle);
+  }
+
+  bool DidStartClient() override {
+    bool ok = IPCTestBase::DidStartClient();
+    DCHECK(ok);
+    return ok;
+  }
+};
+
 class ListenerThatQuits : public IPC::Listener {
  public:
-  ListenerThatQuits() {}
+  ListenerThatQuits() {
+  }
 
-  bool OnMessageReceived(const IPC::Message& message) override { return true; }
+  bool OnMessageReceived(const IPC::Message& message) override {
+    return true;
+  }
 
   void OnChannelConnected(int32_t peer_pid) override {
     base::MessageLoop::current()->QuitWhenIdle();
@@ -245,23 +252,26 @@ class ListenerThatQuits : public IPC::Listener {
 };
 
 // A long running process that connects to us.
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoErraticTestClient,
-                                    ChannelClient) {
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoErraticTestClient) {
   ListenerThatQuits listener;
-  Connect(&listener);
+  ChannelClient client(&listener, "IPCChannelMojoErraticTestClient");
+  client.Connect();
 
   base::MessageLoop::current()->Run();
 
-  Close();
+  client.Close();
+
+  return 0;
 }
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_SendFailWithPendingMessages DISABLED_SendFailWithPendingMessages
 #else
 #define MAYBE_SendFailWithPendingMessages SendFailWithPendingMessages
 #endif
-TEST_F(IPCChannelMojoTest, MAYBE_SendFailWithPendingMessages) {
+TEST_F(IPCChannelMojoErrorTest, MAYBE_SendFailWithPendingMessages) {
   InitWithMojo("IPCChannelMojoErraticTestClient");
 
   // Set up IPC channel and start client.
@@ -274,13 +284,14 @@ TEST_F(IPCChannelMojoTest, MAYBE_SendFailWithPendingMessages) {
   std::string overly_large_data(kMaxMessageNumBytes, '*');
   // This messages are queued as pending.
   for (size_t i = 0; i < 10; ++i) {
-    IPC::TestChannelListener::SendOneMessage(sender(),
-                                             overly_large_data.c_str());
+    IPC::TestChannelListener::SendOneMessage(
+        sender(), overly_large_data.c_str());
   }
 
+  ASSERT_TRUE(StartClient());
   base::MessageLoop::current()->Run();
 
-  channel()->Close();
+  this->channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
   EXPECT_TRUE(listener.has_error());
@@ -326,9 +337,6 @@ class HandleSendingHelper {
     std::string content(GetSendingFileContent().size(), ' ');
 
     uint32_t num_bytes = static_cast<uint32_t>(content.size());
-    ASSERT_EQ(MOJO_RESULT_OK,
-              mojo::Wait(pipe.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                         MOJO_DEADLINE_INDEFINITE, nullptr));
     EXPECT_EQ(MOJO_RESULT_OK,
               mojo::ReadMessageRaw(pipe.get(), &content[0], &num_bytes, nullptr,
                                    nullptr, 0));
@@ -405,7 +413,8 @@ class ListenerThatExpectsMessagePipe : public IPC::Listener {
 };
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_SendMessagePipe DISABLED_SendMessagePipe
 #else
 #define MAYBE_SendMessagePipe SendMessagePipe
@@ -416,33 +425,34 @@ TEST_F(IPCChannelMojoTest, MAYBE_SendMessagePipe) {
   ListenerThatExpectsOK listener;
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   TestingMessagePipe pipe;
   HandleSendingHelper::WritePipeThenSend(channel(), &pipe);
 
   base::MessageLoop::current()->Run();
-  channel()->Close();
+  this->channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
   DestroyChannel();
 }
 
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendMessagePipeClient,
-                                    ChannelClient) {
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestSendMessagePipeClient) {
   ListenerThatExpectsMessagePipe listener;
-  Connect(&listener);
-  listener.set_sender(channel());
+  ChannelClient client(&listener, "IPCChannelMojoTestSendMessagePipeClient");
+  client.Connect();
+  listener.set_sender(client.channel());
 
   base::MessageLoop::current()->Run();
 
-  Close();
+  client.Close();
+
+  return 0;
 }
 
 void ReadOK(mojo::MessagePipeHandle pipe) {
   std::string should_be_ok("xx");
   uint32_t num_bytes = static_cast<uint32_t>(should_be_ok.size());
-  CHECK_EQ(MOJO_RESULT_OK, mojo::Wait(pipe, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_DEADLINE_INDEFINITE, nullptr));
   CHECK_EQ(MOJO_RESULT_OK,
            mojo::ReadMessageRaw(pipe, &should_be_ok[0], &num_bytes, nullptr,
                                 nullptr, 0));
@@ -487,22 +497,22 @@ class ListenerThatExpectsMessagePipeUsingParamTrait : public IPC::Listener {
   bool receiving_valid_;
 };
 
-class ParamTraitMessagePipeClient : public ChannelClient {
- public:
-  void RunTest(bool receiving_valid_handle) {
-    ListenerThatExpectsMessagePipeUsingParamTrait listener(
-        receiving_valid_handle);
-    Connect(&listener);
-    listener.set_sender(channel());
+void ParamTraitMessagePipeClient(bool receiving_valid_handle,
+                                  const char* channel_name) {
+  ListenerThatExpectsMessagePipeUsingParamTrait listener(
+      receiving_valid_handle);
+  ChannelClient client(&listener, channel_name);
+  client.Connect();
+  listener.set_sender(client.channel());
 
-    base::MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
-    Close();
-  }
-};
+  client.Close();
+}
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_ParamTraitValidMessagePipe DISABLED_ParamTraitValidMessagePipe
 #else
 #define MAYBE_ParamTraitValidMessagePipe ParamTraitValidMessagePipe
@@ -513,6 +523,7 @@ TEST_F(IPCChannelMojoTest, MAYBE_ParamTraitValidMessagePipe) {
   ListenerThatExpectsOK listener;
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   TestingMessagePipe pipe;
 
@@ -521,21 +532,22 @@ TEST_F(IPCChannelMojoTest, MAYBE_ParamTraitValidMessagePipe) {
                                                    pipe.peer.release());
   WriteOK(pipe.self.get());
 
-  channel()->Send(message.release());
+  this->channel()->Send(message.release());
   base::MessageLoop::current()->Run();
-  channel()->Close();
+  this->channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
   DestroyChannel();
 }
 
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(ParamTraitValidMessagePipeClient,
-                                    ParamTraitMessagePipeClient) {
-  RunTest(true);
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ParamTraitValidMessagePipeClient) {
+  ParamTraitMessagePipeClient(true, "ParamTraitValidMessagePipeClient");
+  return 0;
 }
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_ParamTraitInvalidMessagePipe DISABLED_ParamTraitInvalidMessagePipe
 #else
 #define MAYBE_ParamTraitInvalidMessagePipe ParamTraitInvalidMessagePipe
@@ -546,35 +558,43 @@ TEST_F(IPCChannelMojoTest, MAYBE_ParamTraitInvalidMessagePipe) {
   ListenerThatExpectsOK listener;
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   mojo::MessagePipeHandle invalid_handle;
   scoped_ptr<IPC::Message> message(new IPC::Message());
   IPC::ParamTraits<mojo::MessagePipeHandle>::Write(message.get(),
                                                    invalid_handle);
 
-  channel()->Send(message.release());
+  this->channel()->Send(message.release());
   base::MessageLoop::current()->Run();
-  channel()->Close();
+  this->channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
   DestroyChannel();
 }
 
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(ParamTraitInvalidMessagePipeClient,
-                                    ParamTraitMessagePipeClient) {
-  RunTest(false);
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ParamTraitInvalidMessagePipeClient) {
+  ParamTraitMessagePipeClient(false, "ParamTraitInvalidMessagePipeClient");
+  return 0;
 }
 
-TEST_F(IPCChannelMojoTest, SendFailAfterClose) {
+// Times out on Linux. crbug.com/585784
+#if defined(OS_LINUX)
+#define MAYBE_SendFailAfterClose DISABLED_SendFailAfterClose
+#else
+#define MAYBE_SendFailAfterClose SendFailAfterClose
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_SendFailAfterClose) {
   InitWithMojo("IPCChannelMojoTestSendOkClient");
 
   ListenerThatExpectsOK listener;
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   base::MessageLoop::current()->Run();
-  channel()->Close();
-  ASSERT_FALSE(channel()->Send(new IPC::Message()));
+  this->channel()->Close();
+  ASSERT_FALSE(this->channel()->Send(new IPC::Message()));
 
   EXPECT_TRUE(WaitForClientShutdown());
   DestroyChannel();
@@ -582,9 +602,12 @@ TEST_F(IPCChannelMojoTest, SendFailAfterClose) {
 
 class ListenerSendingOneOk : public IPC::Listener {
  public:
-  ListenerSendingOneOk() {}
+  ListenerSendingOneOk() {
+  }
 
-  bool OnMessageReceived(const IPC::Message& message) override { return true; }
+  bool OnMessageReceived(const IPC::Message& message) override {
+    return true;
+  }
 
   void OnChannelConnected(int32_t peer_pid) override {
     ListenerThatExpectsOK::SendOK(sender_);
@@ -597,21 +620,86 @@ class ListenerSendingOneOk : public IPC::Listener {
   IPC::Sender* sender_;
 };
 
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendOkClient,
-                                    ChannelClient) {
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestSendOkClient) {
   ListenerSendingOneOk listener;
-  Connect(&listener);
-  listener.set_sender(channel());
+  ChannelClient client(&listener, "IPCChannelMojoTestSendOkClient");
+  client.Connect();
+  listener.set_sender(client.channel());
 
   base::MessageLoop::current()->Run();
 
-  Close();
+  client.Close();
+
+  return 0;
 }
+
+#if defined(OS_WIN)
+class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
+ protected:
+  scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
+      const IPC::ChannelHandle& handle,
+      base::SequencedTaskRunner* runner) override {
+    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle);
+  }
+
+  bool DidStartClient() override {
+    IPCTestBase::DidStartClient();
+    // const base::ProcessHandle client = client_process().Handle();
+    // Forces GetFileHandleForProcess() fail. It happens occasionally
+    // in production, so we should exercise it somehow.
+    // TODO(morrita): figure out how to safely test this. See crbug.com/464109.
+    // ::CloseHandle(client);
+    return true;
+  }
+};
+
+// Times out on Linux. crbug.com/585784
+#if defined(OS_LINUX)
+#define MAYBE_InvalidClientHandle DISABLED_InvalidClientHandle
+#else
+#define MAYBE_InvalidClientHandle InvalidClientHandle
+#endif
+TEST_F(IPCChannelMojoDeadHandleTest, MAYBE_InvalidClientHandle) {
+  // Any client type is fine as it is going to be killed anyway.
+  InitWithMojo("IPCChannelMojoTestDoNothingClient");
+
+  // Set up IPC channel and start client.
+  ListenerExpectingErrors listener;
+  CreateChannel(&listener);
+  ASSERT_TRUE(ConnectChannel());
+
+  ASSERT_TRUE(StartClient());
+  base::MessageLoop::current()->Run();
+
+  this->channel()->Close();
+
+  // TODO(morrita): We need CloseHandle() call in DidStartClient(),
+  // which has been disabled since crrev.com/843113003, to
+  // make this fail. See crbug.com/464109.
+  // EXPECT_FALSE(WaitForClientShutdown());
+  WaitForClientShutdown();
+  EXPECT_TRUE(listener.has_error());
+
+  DestroyChannel();
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestDoNothingClient) {
+  ListenerThatQuits listener;
+  ChannelClient client(&listener, "IPCChannelMojoTestDoNothingClient");
+  client.Connect();
+
+  // Quits without running the message loop as this client won't
+  // receive any messages from the server.
+
+  return 0;
+}
+#endif
 
 #if defined(OS_POSIX)
 class ListenerThatExpectsFile : public IPC::Listener {
  public:
-  ListenerThatExpectsFile() : sender_(NULL) {}
+  ListenerThatExpectsFile()
+      : sender_(NULL) {}
 
   ~ListenerThatExpectsFile() override {}
 
@@ -623,7 +711,9 @@ class ListenerThatExpectsFile : public IPC::Listener {
     return true;
   }
 
-  void OnChannelError() override { NOTREACHED(); }
+  void OnChannelError() override {
+    NOTREACHED();
+  }
 
   void set_sender(IPC::Sender* sender) { sender_ = sender; }
 
@@ -632,7 +722,8 @@ class ListenerThatExpectsFile : public IPC::Listener {
 };
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_SendPlatformHandle DISABLED_SendPlatformHandle
 #else
 #define MAYBE_SendPlatformHandle SendPlatformHandle
@@ -643,6 +734,7 @@ TEST_F(IPCChannelMojoTest, MAYBE_SendPlatformHandle) {
   ListenerThatExpectsOK listener;
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   base::File file(HandleSendingHelper::GetSendingFilePath(),
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
@@ -650,21 +742,24 @@ TEST_F(IPCChannelMojoTest, MAYBE_SendPlatformHandle) {
   HandleSendingHelper::WriteFileThenSend(channel(), file);
   base::MessageLoop::current()->Run();
 
-  channel()->Close();
+  this->channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
   DestroyChannel();
 }
 
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendPlatformHandleClient,
-                                    ChannelClient) {
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestSendPlatformHandleClient) {
   ListenerThatExpectsFile listener;
-  Connect(&listener);
-  listener.set_sender(channel());
+  ChannelClient client(
+      &listener, "IPCChannelMojoTestSendPlatformHandleClient");
+  client.Connect();
+  listener.set_sender(client.channel());
 
   base::MessageLoop::current()->Run();
 
-  Close();
+  client.Close();
+
+  return 0;
 }
 
 class ListenerThatExpectsFileAndPipe : public IPC::Listener {
@@ -691,7 +786,8 @@ class ListenerThatExpectsFileAndPipe : public IPC::Listener {
 };
 
 // Times out on Android; see http://crbug.com/502290
-#if defined(OS_ANDROID)
+// Times out on Linux. crbug.com/585784
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_SendPlatformHandleAndPipe DISABLED_SendPlatformHandleAndPipe
 #else
 #define MAYBE_SendPlatformHandleAndPipe SendPlatformHandleAndPipe
@@ -702,6 +798,7 @@ TEST_F(IPCChannelMojoTest, MAYBE_SendPlatformHandleAndPipe) {
   ListenerThatExpectsOK listener;
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   base::File file(HandleSendingHelper::GetSendingFilePath(),
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
@@ -710,22 +807,25 @@ TEST_F(IPCChannelMojoTest, MAYBE_SendPlatformHandleAndPipe) {
   HandleSendingHelper::WriteFileAndPipeThenSend(channel(), file, &pipe);
 
   base::MessageLoop::current()->Run();
-  channel()->Close();
+  this->channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
   DestroyChannel();
 }
 
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
-    IPCChannelMojoTestSendPlatformHandleAndPipeClient,
-    ChannelClient) {
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(
+    IPCChannelMojoTestSendPlatformHandleAndPipeClient) {
   ListenerThatExpectsFileAndPipe listener;
-  Connect(&listener);
-  listener.set_sender(channel());
+  ChannelClient client(&listener,
+                       "IPCChannelMojoTestSendPlatformHandleAndPipeClient");
+  client.Connect();
+  listener.set_sender(client.channel());
 
   base::MessageLoop::current()->Run();
 
-  Close();
+  client.Close();
+
+  return 0;
 }
 
 #endif
@@ -747,12 +847,19 @@ class ListenerThatVerifiesPeerPid : public IPC::Listener {
   }
 };
 
-TEST_F(IPCChannelMojoTest, VerifyGlobalPid) {
+// Times out on Linux. crbug.com/585784
+#if defined(OS_LINUX)
+#define MAYBE_VerifyGlobalPid DISABLED_VerifyGlobalPid
+#else
+#define MAYBE_VerifyGlobalPid VerifyGlobalPid
+#endif
+TEST_F(IPCChannelMojoTest, MAYBE_VerifyGlobalPid) {
   InitWithMojo("IPCChannelMojoTestVerifyGlobalPidClient");
 
   ListenerThatVerifiesPeerPid listener;
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
+  ASSERT_TRUE(StartClient());
 
   base::MessageLoop::current()->Run();
   channel()->Close();
@@ -761,17 +868,20 @@ TEST_F(IPCChannelMojoTest, VerifyGlobalPid) {
   DestroyChannel();
 }
 
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestVerifyGlobalPidClient,
-                                    ChannelClient) {
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCChannelMojoTestVerifyGlobalPidClient) {
   IPC::Channel::SetGlobalPid(kMagicChildId);
   ListenerThatQuits listener;
-  Connect(&listener);
+  ChannelClient client(&listener,
+                       "IPCChannelMojoTestVerifyGlobalPidClient");
+  client.Connect();
 
   base::MessageLoop::current()->Run();
 
-  Close();
+  client.Close();
+
+  return 0;
 }
 
-#endif  // OS_LINUX
+#endif // OS_LINUX
 
 }  // namespace

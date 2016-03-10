@@ -34,10 +34,6 @@ class RenderThreadImplBrowserIPCTestHelper {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const;
 
-  mojo::MessagePipeHandle GetMessagePipeHandle() {
-    return message_pipe_handle_.release();
-  }
-
  private:
   class DummyListener;
 
@@ -50,7 +46,6 @@ class RenderThreadImplBrowserIPCTestHelper {
   scoped_ptr<DummyListener> dummy_listener_;
   scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
   scoped_ptr<MojoApplicationHost> mojo_application_host_;
-  mojo::ScopedMessagePipeHandle message_pipe_handle_;
   std::string channel_id_;
 };
 

@@ -5,7 +5,6 @@
 #include "content/test/render_thread_impl_browser_test_ipc_helper.h"
 
 #include "content/common/mojo/channel_init.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -24,7 +23,7 @@ RenderThreadImplBrowserIPCTestHelper::RenderThreadImplBrowserIPCTestHelper() {
 
   SetupIpcThread();
 
-  if (ShouldUseMojoChannel()) {
+  if (IPC::ChannelMojo::ShouldBeUsed()) {
     SetupMojo();
   } else {
     channel_ = IPC::ChannelProxy::Create(channel_id_, IPC::Channel::MODE_SERVER,
@@ -51,11 +50,9 @@ void RenderThreadImplBrowserIPCTestHelper::SetupMojo() {
   mojo_application_host_->OverrideIOTaskRunnerForTest(
       ipc_thread_->task_runner());
 
-  mojo::MessagePipe pipe;
   channel_ = IPC::ChannelProxy::Create(
-      IPC::ChannelMojo::CreateServerFactory(std::move(pipe.handle0)),
-      dummy_listener_.get(), ipc_thread_->task_runner());
-  message_pipe_handle_ = std::move(pipe.handle1);
+      IPC::ChannelMojo::CreateServerFactory(channel_id_), dummy_listener_.get(),
+      ipc_thread_->task_runner());
 
   mojo_application_host_->Init();
   mojo_application_host_->Activate(channel_.get(),
