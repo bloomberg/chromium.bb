@@ -150,6 +150,11 @@ def main(argv):
 
     # Add default sel_ldr options
     if not env.paranoid:
+      # Enable mmap() for loading the nexe, so that 'perf' gives usable output.
+      # Note that this makes the sandbox unsafe if the mmap()'d nexe gets
+      # modified while sel_ldr is running.
+      os.environ['NACL_FAULT_INJECTION'] = \
+        'ELF_LOAD_BYPASS_DESCRIPTOR_SAFETY_CHECK=GF1/999'
       sel_ldr_options += ['-a']
       # -S signal handling is not supported on windows, but otherwise
       # it is useful getting the address of crashes.
@@ -498,7 +503,8 @@ def ArgSplit(argv):
                       help='Additional library path for dynamic linker.')
   parser.add_argument('--paranoid', action='store_true', default=False,
                       help='Remove -S (signals) and -a (file access) ' +
-                      'from the default sel_ldr options.')
+                      'from the default sel_ldr options, and disallow mmap() ' +
+                      'for loading the nexe.')
   parser.add_argument('--loader', dest='force_sel_ldr', metavar='SEL_LDR',
                       help='Path to sel_ldr.  "dbg" or "opt" means use ' +
                       'dbg or opt version of sel_ldr. ' +
