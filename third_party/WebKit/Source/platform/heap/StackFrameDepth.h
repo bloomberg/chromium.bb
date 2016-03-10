@@ -104,7 +104,8 @@ public:
     StackFrameDepthScope()
     {
         StackFrameDepth::enableStackLimit();
-        ASSERT(StackFrameDepth::isSafeToRecurse());
+        // Enabled unless under stack pressure.
+        ASSERT(StackFrameDepth::isSafeToRecurse() || !StackFrameDepth::isEnabled());
     }
 
     ~StackFrameDepthScope()

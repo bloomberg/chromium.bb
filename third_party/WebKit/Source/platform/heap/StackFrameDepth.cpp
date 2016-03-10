@@ -71,6 +71,12 @@ void StackFrameDepth::enableStackLimit()
     size_t stackRoom = stackSize - kStackRoomSize;
     RELEASE_ASSERT(stackBase > reinterpret_cast<Address>(stackRoom));
     s_stackFrameLimit = reinterpret_cast<uintptr_t>(stackBase - stackRoom);
+
+#if ENABLE(ASSERT)
+    // If current stack use is already exceeding estimated limit, mark as disabled.
+    if (!isSafeToRecurse())
+        s_isEnabled = false;
+#endif
 }
 
 size_t StackFrameDepth::getUnderestimatedStackSize()
