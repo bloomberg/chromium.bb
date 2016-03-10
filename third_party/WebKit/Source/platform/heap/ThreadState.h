@@ -190,6 +190,7 @@ public:
 
     static void attachMainThread();
     static void detachMainThread();
+    void cleanupMainThread();
 
     // Trace all persistent roots, called when marking the managed heap objects.
     static void visitPersistentRoots(Visitor*);
@@ -429,11 +430,6 @@ public:
     {
         m_isolate = isolate;
         m_traceDOMWrappers = traceDOMWrappers;
-    }
-    void unregisterTraceDOMWrappers()
-    {
-        m_isolate = nullptr;
-        m_traceDOMWrappers = nullptr;
     }
 
     // By entering a gc-forbidden scope, conservative GCs will not

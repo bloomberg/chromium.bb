@@ -184,6 +184,8 @@ void shutdown()
     }
 #endif
 
+    ThreadState::current()->cleanupMainThread();
+
     // currentThread() is null if we are running on a thread without a message loop.
     if (Platform::current()->currentThread()) {
         Platform::current()->unregisterMemoryDumpProvider(WebCacheMemoryDumpProvider::instance());

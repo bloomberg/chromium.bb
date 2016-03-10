@@ -208,6 +208,21 @@ void ThreadState::attachMainThread()
     attachedThreads().add(state);
 }
 
+
+void ThreadState::cleanupMainThread()
+{
+    ASSERT(isMainThread());
+
+    // Finish sweeping before shutting down V8. Otherwise, some destructor
+    // may access V8 and cause crashes.
+    completeSweep();
+
+    // It is unsafe to trigger GCs after this point because some
+    // destructor may access already-detached V8 and cause crashes.
+    // Also it is useless. So we forbid GCs.
+    enterGCForbiddenScope();
+}
+
 void ThreadState::detachMainThread()
 {
     // Enter a safe point before trying to acquire threadAttachMutex
@@ -217,23 +232,19 @@ void ThreadState::detachMainThread()
     ThreadState* state = mainThreadState();
     ASSERT(state == ThreadState::current());
     ASSERT(state->checkThread());
-    // You must call unregisterTraceDOMWrappers before detaching
-    // the main thread.
-    ASSERT(!state->m_isolate);
+    ASSERT(!state->isSweepingInProgress());
 
-    // 1. Finish sweeping.
-    state->completeSweep();
-    {
-        SafePointAwareMutexLocker locker(threadAttachMutex(), BlinkGC::NoHeapPointersOnStack);
+    // The main thread must be the last thread that gets detached.
+    RELEASE_ASSERT(ThreadState::attachedThreads().size() == 1);
 
-        // 2. Add the main thread's heap pages to the orphaned pool.
-        state->cleanupPages();
+    // Add the main thread's heap pages to the orphaned pool.
+    state->cleanupPages();
 
-        // 3. Detach the main thread.
-        ASSERT(attachedThreads().contains(state));
-        attachedThreads().remove(state);
-        state->~ThreadState();
-    }
+    // Detach the main thread. We don't need to grab a lock because
+    // the main thread should be the last thread that gets detached.
+    ASSERT(attachedThreads().contains(state));
+    attachedThreads().remove(state);
+    state->~ThreadState();
 }
 
 void ThreadState::attach()

@@ -378,15 +378,14 @@ void V8Initializer::initializeMainThread()
     if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler())
         profiler->SetWrapperClassInfoProvider(WrapperTypeInfo::NodeClassId, &RetainedDOMInfo::createRetainedDOMInfo);
 
-    ASSERT(ThreadState::current());
-    ThreadState::current()->addInterruptor(adoptPtr(new V8IsolateInterruptor(isolate)));
-    ThreadState::current()->registerTraceDOMWrappers(isolate, V8GCController::traceDOMWrappers);
+    ASSERT(ThreadState::mainThreadState());
+    ThreadState::mainThreadState()->addInterruptor(adoptPtr(new V8IsolateInterruptor(isolate)));
+    ThreadState::mainThreadState()->registerTraceDOMWrappers(isolate, V8GCController::traceDOMWrappers);
 }
 
 void V8Initializer::shutdownMainThread()
 {
     ASSERT(isMainThread());
-    ThreadState::current()->unregisterTraceDOMWrappers();
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
     V8PerIsolateData::willBeDestroyed(isolate);
     V8PerIsolateData::destroy(isolate);
