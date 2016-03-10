@@ -2,59 +2,6 @@
 
 [TOC]
 
-## Looking for new crashers
-
-1. Go to [go/chromecrash](https://goto.google.com/chromecrash).
-
-2. For each platform, look through the releases for which releases to
-   investigate.  As per bug-triage.txt, this should be the most recent canary,
-   the previous canary (if the most recent is less than a day old), and any of
-   dev/beta/stable that were released in the last couple of days.
-
-3. For each release, in the "Process Type" frame, click on "browser".
-
-4. At the bottom of the "Magic Signature" frame,  click "limit 1000".  Reported
-   crashers are sorted in decreasing order of the number of reports for that
-   crash signature.
-
-5. Search the page for *"net::"*.
-
-6. For each found signature:
-    * If there is a bug already filed, make sure it is correctly describing the
-      current bug (e.g. not closed, or not describing a long-past issue), and
-      make sure that if it is a *net* bug, that it is labeled as such.
-    * Ignore signatures that only occur once, as memory corruption can easily
-      cause one-off failures when the sample size is large enough.
-    * Ignore signatures that only come from a single client ID, as individual
-      machine malware and breakage can also easily cause one-off failures.
-    * Click on the number of reports field to see details of crash. Ignore it
-      if it doesn't appear to be a network bug.
-    * Otherwise, file a new bug directly from chromecrash.  Note that this may
-      result in filing bugs for low- and very-low- frequency crashes.  That's
-      ok; the bug tracker is a better tool to figure out whether or not we put
-      resources into those crashes than a snap judgement when filing bugs.
-    * For each bug you file, include the following information:
-        * The backtrace.  Note that the backtrace should not be added to the
-          bug if Restrict-View-Google isn't set on the bug as it may contain
-          PII.  Filing the bug from the crash reporter should do this
-          automatically, but check.
-        * The channel in which the bug is seen (canary/dev/beta/stable), its
-          frequency in that channel, and its rank among crashers in the
-          channel.
-        * The frequency of this signature in recent releases.  This information
-          is available by:
-            1. Clicking on the signature in the "Magic Signature" list
-            2. Clicking "Edit" on the dremel query at the top of the page
-            3. Removing the "product.version='X.Y.Z.W' AND" string and clicking
-               "Update".
-            4. Clicking "Limit 1000" in the Product Version list in the
-               resulting page (without this, the listing will be restricted to
-               the releases in which the signature is most common, which will
-               often not include the canary/dev release being investigated).
-            5. Choose some subset of that list, or all of it, to include in the
-               bug.  Make sure to indicate if there is a defined point in the
-               past before which the signature is not present.
-
 ## Identifying unlabeled network bugs on the tracker
 
 * Look at new uncomfirmed bugs since noon PST on the last triager's rotation.
@@ -72,8 +19,7 @@
   related.  Be sure to check if other bug reports have that stack trace, and
   mark as a dupe if so.  Even if the bug isn't network related, paste the stack
   trace in the bug, so no one else has to look up the crash stack from the ID.
-    * If there's no other information than the crash ID, ask for more details
-      and add the Needs-Feedback label.
+    * If there's just a blank form and a crash ID, just ignore the bug.
 
 * If network causes are possible, ask for a net-internals log (If it's not a
   browser crash) and attach the most specific internals-network label that's
@@ -96,11 +42,10 @@
 
 * Look through uncomfirmed and untriaged component=Internals>Network bugs,
   prioritizing those updated within the last week. [Use this issue tracker
-  query](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+-status%3AAssigned+-status%3AStarted+-status%3AAvailable&sort=-modified&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&cells=ids).
+  query](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+status%3AUnconfirmed,Untriaged+-label:Needs-Feedback&sort=-modified).
 
 * If more information is needed from the reporter, ask for it and add the
-  Needs-Feedback label.  If the reporter has answered an earlier request for
-  information, remove that label.
+  Needs-Feedback label.
 
 * While investigating a new issue, change the status to Untriaged.
 
@@ -112,7 +57,8 @@
   mark it with component Privacy.
 
 * For bugs that already have a more specific network component, go ahead and
-  remove the Internals>Network component and move on.
+  remove the Internals>Network component to get them off the next triager's
+  radar and move on.
 
 * Try to figure out if it's really a network bug.  See common non-network
   components section for description of common components for issues incorrectly
@@ -161,14 +107,7 @@
   subcomponent applies, or only the Internals>Network>HTTP subcomponent
   applies, and there's no clear owner), try to figure out the exact cause.
 
-## Monitoring UMA histograms and Chirp/Gasper alerts
-
-Sign up to chrome-network-debugging@google.com mailing list to receive automated
-e-mails about UMA alerts.  Chirp is the new alert system, sending automated
-e-mails with sender address finch-chirp@google.com.  Gasper is the old alert
-system, sending automated e-mails with sender address gasper-alerts@google.com.
-While Chirp is of higher priority, Gasper is not deprecated yet, so both alerts
-should be monitored for the time being.
+## Investigate UMA notifications
 
 For each alert that fires, determine if it's a real alert and file a bug if so.
 
@@ -186,8 +125,56 @@ For each alert that fires, determine if it's a real alert and file a bug if so.
     * SimpleCache on Windows
     * DiskCache on Android.
 
-For each alert, respond to chrome-network-debugging@google.com with a summary of
-the action you've taken and why, including issue link if an issue was filed.
+## Looking for new crashers
+
+1. Go to [go/chromecrash](https://goto.google.com/chromecrash).
+
+2. For each platform, look through the releases for which releases to
+   investigate.  As per bug-triage.txt, this should be the most recent canary,
+   the previous canary (if the most recent is less than a day old), and any of
+   dev/beta/stable that were released in the last couple of days.
+
+3. For each release, in the "Process Type" frame, click on "browser".
+
+4. At the bottom of the "Magic Signature" frame,  click "limit 1000" (Or reduce
+   the limit to 100 first, as that's all the triager needs to look at).
+   Reported crashers are sorted in decreasing order of the number of reports for
+   that crash signature.
+
+5. Search the page for *"net::"*.
+
+6. For each found signature:
+    * Ignore signatures that only occur once or twice, as memory corruption can
+      easily cause one-off failures when the sample size is large enough.  Also
+      ignore crashers that are not in the top 100 for that platform / release.
+    * If there is a bug already filed, make sure it is correctly describing the
+      current bug (e.g. not closed, or not describing a long-past issue), and
+      make sure that if it is a *net* bug, that it is labeled as such.
+    * Ignore signatures that only come from one or two client IDs, as individual
+      machine malware and breakage can cause one-off failures.
+    * Click on the number of reports field to see details of crash. Ignore it
+      if it doesn't appear to be a network bug.
+    * Otherwise, file a new bug directly from chromecrash.
+    * For each bug you file, include the following information:
+        * The backtrace.  Note that the backtrace should not be added to the
+          bug if Restrict-View-Google isn't set on the bug as it may contain
+          PII.  Filing the bug from the crash reporter should do this
+          automatically, but check.
+        * The channel in which the bug is seen (canary/dev/beta/stable), and its
+          rank among crashers in the channel.
+        * The frequency of this signature in recent releases.  This information
+          is available by:
+            1. Clicking on the signature in the "Magic Signature" list
+            2. Clicking "Edit" on the dremel query at the top of the page
+            3. Removing the "product.version='X.Y.Z.W' AND" string and clicking
+               "Update".
+            4. Clicking "Limit 1000" in the Product Version list in the
+               resulting page (without this, the listing will be restricted to
+               the releases in which the signature is most common, which will
+               often not include the canary/dev release being investigated).
+            5. Choose some subset of that list, or all of it, to include in the
+               bug.  Make sure to indicate if there is a defined point in the
+               past before which the signature is not present.
 
 ## Investigating crashers
 
@@ -221,26 +208,3 @@ the action you've taken and why, including issue link if an issue was filed.
 
 * Load crash dumps, try to figure out a cause.  See
   http://www.chromium.org/developers/crash-reports for more information
-
-## Dealing with old bugs
-
-* For all network issues (Even those with owners, or a more specific component):
-
-    * If the issue has had the Needs-Feedback label for over a month, verify it
-      is waiting on feedback from the user.  If not, remove the label.
-      Otherwise, go ahead and mark the issue WontFix due to lack of response
-      and suggest the user file a new bug if the issue is still present. [Use
-      this issue tracker query for old Needs-Feedback
-      issues](https://code.google.com/p/chromium/issues/list?can=2&q=component%3AInternals>Network%20Needs=Feedback+modified-before%3Atoday-30&sort=-modified).
-
-    * If a bug is over 2 months old, and the underlying problem was never
-      reproduced or really understood:
-        * If it's over a year old, go ahead and mark the issue as Archived.
-        * Otherwise, ask reporters if the issue is still present, and attach
-          the Needs-Feedback label.
-
-* Old unconfirmed or untriaged Internals>Network issues can be investigated
-  just like newer ones.  Crashers should generally be given higher priority,
-  since we can verify if they still occur, and then newer issues, as they're
-  more likely to still be present, and more likely to have a still responsive
-  bug reporter.

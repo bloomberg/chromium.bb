@@ -5,8 +5,8 @@ with about:net-internals, with some commonly useful tips and tricks.  This
 document is aimed more at how to get started using some of its features to
 investigate bug reports, rather than as a feature overview.
 
-It would probably be useful to read [life-of-a-url-request.md](
-life-of-a-url-request.md) before this document.
+It would probably be useful to read
+[life-of-a-url-request.md](life-of-a-url-request.md) before this document.
 
 # What Data Net-Internals Contains
 
@@ -34,11 +34,12 @@ covers), but it's good to be aware of this distinction.
 
 The Event View shows events logged by the NetLog.  The NetLog model is that
 long-lived network stack objects, called sources, emit events over their
-lifetime.  Some events have a beginning and end point (during which other
-subevents may occur), and some only occur at a single point in time.  Generally
-only one event can be occuring for a source at a time.  If there can be multiple
-events doing completely independent thing, the code often uses new sources to
-represent the parallelism.
+lifetime.  When looking at the code, a "BoundNetLog" object contains a source
+ID, and a pointer to the NetLog the source emits events to.  Some events have a
+beginning and end point (during which other subevents may occur), and some only
+occur at a single point in time.  Generally only one event can be occuring for a
+source at a time.  If there can be multiple events doing completely independent
+thing, the code often uses new sources to represent the parallelism.
 
 "Sources" correspond to certain net objects, however, multiple layers of net/
 will often log to a single source.  Here are the main source types and what they
@@ -99,9 +100,8 @@ in a lot of cases:
 an error of some sort (red background).  Cache errors are often non-fatal, so
 you should generally ignore those, and look for a more interesting one.
 
-* "type:URL_REQUEST sort:duration" will show the lonest-lived requests (as of
-when about:net-internals was opened) first.  This is often useful in finding
-hung or slow requests.
+* "type:URL_REQUEST sort:duration" will show the longest-lived requests first.
+This is often useful in finding hung or slow requests.
 
 For a list of other filter commands, you can mouse over the question mark on
 about:net-internals.
