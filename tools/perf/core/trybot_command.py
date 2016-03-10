@@ -271,7 +271,7 @@ class Trybot(command_line.ArgParseCommand):
         'CL for perf tryjob on %s' % bot_platform
     ])
     if returncode:
-      raise TrybotError('Could upload to rietveld for %s, error %s' %
+      raise TrybotError('Could not upload to rietveld for %s, error %s' %
                         (bot_platform, err))
 
     match = re.search(r'https://codereview.chromium.org/[\d]+', out)
