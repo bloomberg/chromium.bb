@@ -24,8 +24,9 @@
 
 namespace {
 
-class IPCMojoBootstrapTest : public mojo::edk::test::MojoTestBase {
+class IPCMojoBootstrapTest : public testing::Test {
  protected:
+  mojo::edk::test::MultiprocessTestHelper helper_;
 };
 
 class TestingDelegate : public IPC::MojoBootstrap::Delegate {
@@ -57,8 +58,6 @@ void TestingDelegate::OnBootstrapError() {
   quit_callback_.Run();
 }
 
-const char kMojoChannelToken[] = "IPCMojoBootstrapTest token";
-
 // Times out on Android; see http://crbug.com/502290
 #if defined(OS_ANDROID)
 #define MAYBE_Connect DISABLED_Connect
@@ -70,43 +69,33 @@ TEST_F(IPCMojoBootstrapTest, MAYBE_Connect) {
   base::RunLoop run_loop;
   TestingDelegate delegate(run_loop.QuitClosure());
   scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
-      kMojoChannelToken, IPC::Channel::MODE_SERVER, &delegate);
-  RUN_CHILD_ON_PIPE(IPCMojoBootstrapTestClient, unused_pipe)
+      helper_.StartChild("IPCMojoBootstrapTestClient"),
+      IPC::Channel::MODE_SERVER, &delegate);
 
   bootstrap->Connect();
   run_loop.Run();
 
   EXPECT_TRUE(delegate.passed());
-  END_CHILD()
+  EXPECT_TRUE(helper_.WaitForChildTestShutdown());
 }
 
-class IPCMojoBootstrapTestClient {
-
-};
-
-}  // namespace
-
-namespace mojo {
-namespace edk {
-namespace {
-
 // A long running process that connects to us.
-DEFINE_TEST_CLIENT_TEST_WITH_PIPE(IPCMojoBootstrapTestClient,
-                             IPCMojoBootstrapTest,
-                             unused_pipe) {
+MULTIPROCESS_TEST_MAIN_WITH_SETUP(
+    IPCMojoBootstrapTestClientTestChildMain,
+    ::mojo::edk::test::MultiprocessTestHelper::ChildSetup) {
   base::MessageLoop message_loop;
   base::RunLoop run_loop;
   TestingDelegate delegate(run_loop.QuitClosure());
   scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
-      kMojoChannelToken, IPC::Channel::MODE_CLIENT, &delegate);
+      mojo::edk::CreateChildMessagePipe(
+          mojo::edk::test::MultiprocessTestHelper::primordial_pipe_token),
+      IPC::Channel::MODE_CLIENT, &delegate);
 
   bootstrap->Connect();
 
   run_loop.Run();
 
-  EXPECT_TRUE(delegate.passed());
+  return delegate.passed() ? 0 : 1;
 }
 
 }  // namespace
-}  // namespace edk
-}  // namespace mojo

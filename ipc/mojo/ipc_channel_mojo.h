@@ -26,8 +26,9 @@ namespace IPC {
 
 // Mojo-based IPC::Channel implementation over a Mojo message pipe.
 //
-// ChannelMojo builds a Mojo MessagePipe using the provided token and builds an
-// associated interface for each direction on the channel.
+// ChannelMojo builds a Mojo MessagePipe using the provided message pipe
+// |handle| and builds an associated interface for each direction on the
+// channel.
 //
 // TODO(morrita): Add APIs to create extra MessagePipes to let
 //                Mojo-based objects talk over this Channel.
@@ -40,8 +41,8 @@ class IPC_MOJO_EXPORT ChannelMojo
   // True if ChannelMojo should be used regardless of the flag.
   static bool ShouldBeUsed();
 
-  // Create ChannelMojo. A bootstrap channel is created as well.
-  static scoped_ptr<ChannelMojo> Create(const std::string& token,
+  // Creates a ChannelMojo.
+  static scoped_ptr<ChannelMojo> Create(mojo::ScopedMessagePipeHandle handle,
                                         Mode mode,
                                         Listener* listener);
 
@@ -49,10 +50,10 @@ class IPC_MOJO_EXPORT ChannelMojo
   // The factory is used to create Mojo-based ChannelProxy family.
   // |host| must not be null.
   static scoped_ptr<ChannelFactory> CreateServerFactory(
-      const std::string& token);
+      mojo::ScopedMessagePipeHandle handle);
 
   static scoped_ptr<ChannelFactory> CreateClientFactory(
-      const std::string& token);
+      mojo::ScopedMessagePipeHandle handle);
 
   ~ChannelMojo() override;
 
@@ -71,11 +72,11 @@ class IPC_MOJO_EXPORT ChannelMojo
   // These access protected API of IPC::Message, which has ChannelMojo
   // as a friend class.
   static MojoResult WriteToMessageAttachmentSet(
-      mojo::Array<mojo::ScopedHandle> handle_buffer,
+      mojo::Array<mojom::SerializedHandlePtr> handle_buffer,
       Message* message);
   static MojoResult ReadFromMessageAttachmentSet(
       Message* message,
-      mojo::Array<mojo::ScopedHandle>* handles);
+      mojo::Array<mojom::SerializedHandlePtr>* handles);
 
   // MojoBootstrapDelegate implementation
   void OnPipesAvailable(mojom::ChannelAssociatedPtrInfo send_channel,
@@ -89,27 +90,21 @@ class IPC_MOJO_EXPORT ChannelMojo
   void OnPipeError(internal::MessagePipeReader* reader) override;
 
  private:
-  ChannelMojo(const std::string& token,
+  ChannelMojo(mojo::ScopedMessagePipeHandle handle,
               Mode mode,
               Listener* listener);
 
   void InitMessageReader(mojom::ChannelAssociatedPtrInfo sender,
-                         mojom::ChannelAssociatedRequest receiver);
-
-  void set_peer_pid(base::ProcessId pid) { peer_pid_ = pid; }
+                         mojom::ChannelAssociatedRequest receiver,
+                         base::ProcessId peer_pid);
 
   // ChannelMojo needs to kill its MessagePipeReader in delayed manner
   // because the channel wants to kill these readers during the
   // notifications invoked by them.
   typedef internal::MessagePipeReader::DelayedDeleter ReaderDeleter;
 
-  scoped_ptr<internal::MessagePipeReader, ReaderDeleter> CreateMessageReader(
-      mojom::ChannelAssociatedPtrInfo sender,
-      mojom::ChannelAssociatedRequest receiver);
-
   scoped_ptr<MojoBootstrap> bootstrap_;
   Listener* listener_;
-  base::ProcessId peer_pid_;
 
   scoped_ptr<internal::MessagePipeReader, ReaderDeleter> message_reader_;
   std::vector<scoped_ptr<Message>> pending_messages_;

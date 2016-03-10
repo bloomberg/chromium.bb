@@ -27,8 +27,7 @@ MessageAttachment::Type MojoHandleAttachment::GetType() const {
 base::PlatformFile MojoHandleAttachment::TakePlatformFile() {
   mojo::edk::ScopedPlatformHandle platform_handle;
   MojoResult unwrap_result = mojo::edk::PassWrappedPlatformHandle(
-      handle_.get().value(), &platform_handle);
-  handle_.reset();
+      handle_.release().value(), &platform_handle);
   if (unwrap_result != MOJO_RESULT_OK) {
     LOG(ERROR) << "Pipe failed to covert handles. Closing: " << unwrap_result;
     return -1;
