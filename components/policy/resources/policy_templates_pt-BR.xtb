@@ -180,6 +180,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Esta política só é seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="1859633270756049523">Limitar a duração da sessão</translation>
+<translation id="1859859319036806634">Aviso: o substituto da versão do TLS será removido de <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016), e esta política deixará de funcionar.
+
+      Quando um handshake de TLS falha, o <ph name="PRODUCT_NAME" /> recupera a conexão com uma versão inferior do TLS para evitar bugs nos servidores HTTPS. Essa definição configura a versão na qual o processo de substituição será interrompido. Se um servidor cumpre corretamente a negociação da versão (isto é, sem cortar a conexão), esta definição não é aplicável. Independentemente disso, a conexão resultante ainda deve estar em conformidade com SSLVersionMin.
+
+      Se esta política não for configurada ou for definida como "tls1.2", o <ph name="PRODUCT_NAME" /> não realizará mais essa substituição. Isso não desativa a compatibilidade com versões de TLS mais antigas, apenas controla se o <ph name="PRODUCT_NAME" /> evitará servidores com bugs que não conseguem negociar versões corretamente.
+
+      Caso contrário, se for necessário manter a compatibilidade com um servidor com bugs, esta política pode ser definida como "tls1.1". Esta é uma medida temporária, e o servidor deve ser corrigido rapidamente.</translation>
 <translation id="1861037019115362154">Especifica uma lista de plug-ins desativados no <ph name="PRODUCT_NAME" /> e impede os usuários de alterar essa definição.
 
           Os caracteres curinga "*" e "?" podem ser usados para associar sequências de caracteres arbitrários. "*" corresponde a um número arbitrário de caracteres, enquanto "?" especifica um único caractere opcional; ou seja, corresponde a zero ou um caractere. O caractere de escape é "\"; portanto, para associar os caracteres "*", "?" ou "\" propriamente ditos, você pode adicionar "\" na frente deles.
@@ -517,6 +524,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Especifica se a extensão dos certificados vinculados ao domínio TLS deve ser ativada.
 
       Essa extensão é usada para ativar a extensão dos certificados vinculados ao domínio TLS para testes. Essa configuração experimental será removida no futuro.</translation>
+<translation id="2957506574938329824">Não permitir que nenhum site solicite acesso a dispositivos Bluetooth por meio da API Web Bluetooth</translation>
 <translation id="2957513448235202597">Tipo de conta para autenticação <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regras de proxies ignoráveis</translation>
 <translation id="2960691910306063964">Ativar ou desativar autenticação sem PIN para hosts de acesso remoto</translation>
@@ -530,6 +538,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           O valor da política deve ser especificado em milissegundos. Os valores são fixos de modo a serem inferiores ou iguais ao intervalo de desligamento da tela (se definido) e ao intervalo de inatividade.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
+<translation id="2987227569419001736">Controlar o uso da API Web Bluetooth</translation>
 <translation id="2998881342848488968">Esta política permite que o <ph name="PRODUCT_OS_NAME" /> ignore qualquer proxy de autenticação de portal cativo.
 
       Esta política só entra em vigor se um proxy é configurado (por exemplo, por meio de política pelo usuário em chrome://settings ou por extensões).
@@ -1390,6 +1399,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se essa política não for definida, o teclado na tela será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativá-lo ou desativá-lo a qualquer momento e seu status na tela de login é mantido entre os usuários.</translation>
 <translation id="6598235178374410284">Imagem do avatar do usuário</translation>
+<translation id="6628646143828354685">Permite definir se os websites podem ter acesso aos dispositivos Bluetooth nas proximidades. O acesso pode ser completamente bloqueado, ou uma pergunta será feita ao usuário cada vez que um website quiser ter acesso a dispositivos Bluetooth próximos.
+
+          Se esta política não for definida, será usado "3", e o usuário poderá fazer alterações.</translation>
 <translation id="6636268606788232221">Definir as configurações de gerenciamento de energia quando o usuário se torna inativo.
 
           Esta política controla várias configurações relativas à estratégia de gerenciamento de energia quando o usuário se torna inativo.
@@ -1465,6 +1477,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se você definir essa política, os usuários não poderão alterá-la ou modificá-la.
 
           Se essa política não for definida, as opções de acessibilidade não serão exibidas no menu da bandeja do sistema, mas o usuário poderá fazer com que elas sejam exibidas por meio da página "Configurações".</translation>
+<translation id="6766216162565713893">Permitir que os sites solicitem acesso ao usuário a um dispositivo Bluetooth próximo</translation>
 <translation id="6770454900105963262">Denunciar informações sobre sessões de quiosque ativas</translation>
 <translation id="6774533686631353488">Permite hosts de Mensagem nativos em nível de usuário (instalados sem permissão do administrador).</translation>
 <translation id="6786747875388722282">Extensões</translation>
@@ -1644,7 +1657,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Esta política controla se o app em Kiosk aberto automaticamente com zero de atraso tem permissão para controlar a versão do <ph name="PRODUCT_OS_NAME" />, declarando um required_platform_version em seu manifesto e usando-o como o prefixo de atualização automática de versão de destino.
 
-      Se a política for definida como "true", o valor da chave de manifesto required_platform_version do app em Kiosk aberto automaticamente com zero d atraso será usado como prefixo de atualização automática de versão de destino.
+      Se a política for definida como "true", o valor da chave de manifesto required_platform_version do app em Kiosk aberto automaticamente com zero de atraso será usado como prefixo de atualização automática de versão de destino.
 
       Se a política não estiver configurada ou estiver definida como "false", a chave de manifesto required_platform_version será ignorada, e a atualização automática prosseguirá normalmente.</translation>
 <translation id="7417972229667085380">Percentual pelo qual calcular o intervalo de inatividade no modo de apresentação (uso suspenso)</translation>

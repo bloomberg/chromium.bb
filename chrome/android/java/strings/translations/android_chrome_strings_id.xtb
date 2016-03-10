@@ -22,6 +22,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
+<translation id="1291207594882862231">Menghapus riwayat, cookie, data situs, cache...</translation>
 <translation id="129553762522093515">Barusan ditutup</translation>
 <translation id="1346090444609141578">Tidak ada laman tersimpan di sini</translation>
 <translation id="1369915414381695676">Situs <ph name="SITE_NAME" /> ditambahkan</translation>
@@ -52,6 +53,7 @@ Anda dapat mengontrol Web Fisik dalam setelan privasi Chrome.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Cegah dialog lain dari laman ini.</translation>
 <translation id="1641113438599504367">Penelusuran Aman</translation>
+<translation id="164269334534774161">Anda melihat salinan offline laman ini dari <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Menerjemahkan laman ke bahasa <ph name="SOURCE_LANGUAGE" />...</translation>
 <translation id="1644574205037202324">Riwayat</translation>
 <translation id="1647391597548383849">Mengakses kamera Anda</translation>
@@ -128,6 +130,7 @@ Anda dapat mengontrol Web Fisik dalam setelan privasi Chrome.</translation>
 <translation id="2707726405694321444">Segarkan laman</translation>
 <translation id="2709516037105925701">IsiOtomatis</translation>
 <translation id="271033894570825754">Baru</translation>
+<translation id="2742271047622814453">Preferensi yang disimpan di situs mungkin terhapus</translation>
 <translation id="2748463065602559597">Anda sedang melihat laman Google Chrome yang aman.</translation>
 <translation id="2762000892062317888">baru saja</translation>
 <translation id="2770465223704140727">Hapus dari daftar</translation>
@@ -168,6 +171,7 @@ Anda dapat mengontrol Web Fisik dalam setelan privasi Chrome.</translation>
 <translation id="3303414029551471755">Lanjutkan untuk mengunduh konten?</translation>
 <translation id="3328801116991980348">Informasi situs</translation>
 <translation id="3350687908700087792">Tutup semua jendela penyamaran</translation>
+<translation id="3351441609270267898">Impor data yang ada</translation>
 <translation id="3358663646935160692">Akun ini dikelola oleh <ph name="DOMAIN_NAME" />.
 
 Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chrome Anda. Data Chrome Anda akan terikat dengan akun ini secara permanen. Memutuskan tautan dengan akun ini akan menghapus data Chrome lokal.</translation>
@@ -179,6 +183,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="3492207499832628349">Tab penyamaran baru</translation>
 <translation id="3501331331116143684">Laman disimpan secara offline di <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">Terima &amp; lanjutkan</translation>
+<translation id="3522247891732774234">Pembaruan tersedia. Opsi lainnya</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3549644494707163724">Enkripsikan data yang disinkronkan dengan frasa sandi sinkronisasi Anda</translation>
 <translation id="360480449234699036">Pelajari tentang topik di situs web tanpa meninggalkan laman. Sentuh untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, serta detail lainnya.
@@ -221,7 +226,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> bookmark disimpan secara offline</translation>
 <translation id="423410644998903704">Chrome memerlukan akses izin untuk berbagi dengan situs ini.</translation>
-<translation id="4247939399682707041">Ganti data perangkat ini dengan data <ph name="ACCOUNT" />. Anda dapat mengambil data yang sudah ada dengan beralih kembali ke <ph name="ACCOUNT" /></translation>
 <translation id="424864128008805179">Keluar dari Chrome?</translation>
 <translation id="4254813446494774748">Bahasa Terjemahan:</translation>
 <translation id="4256782883801055595">Lisensi sumber terbuka</translation>
@@ -242,7 +246,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4457399174246232812">Laman Web Fisik di sekitar mendatang akan muncul di daftar notifikasi</translation>
 <translation id="4498934959426056365">Pembuatan kunci</translation>
 <translation id="4505554159887937799">Disimpan untuk offline</translation>
-<translation id="4508440807153586353">Hanya orang yang memiliki frasa sandi Anda yang dapat membaca data terenkripsi Anda. Frasa sandi tidak dikirim ke atau disimpan oleh Google. Jika lupa frasa sandi atau ingin mengubah setelan ini, Anda perlu menyetel ulang sinkronisasi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
+<translation id="4508440807153586353">Hanya orang yang memiliki frasa sandi Anda yang dapat membaca data terenkripsi. Frasa sandi tidak akan dikirim ke atau disimpan oleh Google. Jika lupa frasa sandi atau ingin mengubah setelan ini, Anda perlu menyetel ulang sinkronisasi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# hari yang lalu}other{# hari yang lalu}}</translation>
 <translation id="4522570452068850558">Detail</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
@@ -372,7 +376,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5911030830365207728">Google Terjemahan</translation>
 <translation id="5916664084637901428">Aktif</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
-<translation id="5965336165840183977">Tindakan ini menghapus data yang disinkronkan dari semua perangkat. Anda tidak akan dikeluarkan dari akun Google. Setelan situs yang tersimpan tidak akan dihapus dan dapat menunjukkan kebiasaan penjelajahan Anda.</translation>
+<translation id="5965336165840183977">Tindakan ini akan menghapus data yang disinkronkan dari semua perangkat. Anda tidak akan dikeluarkan dari akun Google. Setelan situs yang tersimpan tidak akan dihapus dan dapat menunjukkan kebiasaan penjelajahan Anda.</translation>
 <translation id="5968595432776860642">Memutar “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Mengakses masukan video</translation>
 <translation id="6012342843556706400">Chrome memerlukan akses lokasi untuk berbagi dengan situs ini.</translation>
@@ -425,6 +429,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="6612856669344839356">Simpan bookmark</translation>
 <translation id="6627583120233659107">Edit folder</translation>
+<translation id="6647073004883890710">Ingin <ph name="PASSWORD_MANAGER_BRAND" /> memperbarui sandi bagi <ph name="USERNAME" /> untuk situs ini?</translation>
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK" />Perbarui izin<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Gunakan layanan prediksi untuk menunjukkan kueri terkait dan situs web populer saat Anda mengetik di bilah alamat</translation>
 <translation id="666981079809192359">Notifikasi Privasi Chrome</translation>
@@ -452,7 +457,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6868088497967843822">Masuk untuk mendapatkan bookmark, riwayat, sandi, dan setelan Anda lainnya di semua perangkat</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6963766334940102469">Hapus bookmark</translation>
-<translation id="6964496835063002391">Tambahkan akun</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6973630695168034713">Folder</translation>
 <translation id="6978479750597523876">Setel ulang setelan terjemahan</translation>
@@ -484,6 +488,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7324738665594301612">Kami menguji pemberian proxy pada laman HTTPS melalui server Google sebagai bagian dari percobaan.</translation>
 <translation id="7346217184097589238">Setelan situs yang tersimpan tidak akan dihapus dan dapat menunjukkan kebiasaan penjelajahan Anda.</translation>
 <translation id="7346909386216857016">Oke, mengerti</translation>
+<translation id="7347770551817603360">Konten offline</translation>
 <translation id="7363354739009474003">Memuat “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">Mentransmisikan ke <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Jenis:</translation>
@@ -544,6 +549,7 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 <translation id="8050319187894766337">Laman disimpan untuk offline. Penyimpanan hampir penuh.</translation>
 <translation id="8068648041423924542">Tidak dapat memilih sertifikat.</translation>
 <translation id="8069239273282989646">Setelah kompresi</translation>
+<translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="8084156870963450514">Masuk untuk mengakses semua file web Anda dari perangkat apa pun</translation>
 <translation id="8106211421800660735">Nomor kartu kredit</translation>
 <translation id="813082847718468539">Lihat informasi situs</translation>
@@ -566,6 +572,7 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 <translation id="8413385045638830869">Tanya dulu (disarankan)</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8429160401486700187">Hapus laman tersimpan</translation>
+<translation id="8433057134996913067">Tindakan ini akan mengeluarkan Anda dari sebagian besar situs web.</translation>
 <translation id="8481940801237642152">Sambungan Anda ke situs ini bersifat pribadi, namun seseorang yang berada dalam jaringan Anda mungkin dapat mengubah tampilan laman.</translation>
 <translation id="8493948351860045254">Kosongkan ruang</translation>
 <translation id="8497726226069778601">Belum ada yang dapat dilihat di sini…</translation>
@@ -610,6 +617,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="8987061207681586800">Gayakan Chrome sesukamu</translation>
 <translation id="9019902583201351841">Dikelola oleh orang tua Anda</translation>
 <translation id="9020607083536754075">Tutup tab saat ini dan kembali ke aplikasi sebelumnya</translation>
+<translation id="9038649477754266430">Gunakan layanan prediksi agar laman dimuat dengan lebih cepat</translation>
 <translation id="9050666287014529139">Frasa sandi</translation>
 <translation id="9060538597317784206">Lihat aplikasi <ph name="APP_NAME" /> di Play Store. Rating: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Nonaktifkan Minta situs desktop</translation>

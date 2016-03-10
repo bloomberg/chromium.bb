@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1091157412887719337">Piešķires kļūme. Nav pieejamas programmas.</translation>
+<translation id="2004526128230838685">Piešķires kļūme. Nezināma problēma.</translation>
+<translation id="2023631438558435272">Piešķires kļūme. Nederīga atbilde.</translation>
+<translation id="2353984724370197742">Piešķires kļūme. Tīkla pieprasījuma kļūme.</translation>
+<translation id="3046825211487065480">Piešķires kļūme. Otrs pieprasījums nosūtīts, pirms tika saņemta atbilde uz pirmo pieprasījumu.</translation>
 <translation id="3407245330823033366">Lūdzu, izvēlieties kontu, kurš tiks izmantots ar Blimp.</translation>
+<translation id="3775180005489871350">Piešķires kļūme. 400. kļūda (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">Piešķires kļūme. Lietotāja piekļuves pilnvaras derīgums ir beidzies.</translation>
+<translation id="4562971394107096647">Piešķires kļūme. Servera kļūda.</translation>
 <translation id="4641972508298030550">Nevarēja autentificēt lietotāju.</translation>
+<translation id="5860346505531085166">Piešķires kļūme. Kontam nav piekļuves.</translation>
+<translation id="704835510384979817">Piešķires kļūme. Nav atbilstošas programmas versijas.</translation>
+<translation id="7961542533680218955">Piešķire bija veiksmīga.</translation>
 <translation id="8514856595257368555">Pilnvara ir iegūta.</translation>
 </translationbundle>

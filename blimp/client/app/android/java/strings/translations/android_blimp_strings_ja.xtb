@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1091157412887719337">割り当てが失敗しました。利用できるエンジンがありません。</translation>
+<translation id="2004526128230838685">割り当てが失敗しました。不明なエラーが発生しました。</translation>
+<translation id="2023631438558435272">割り当てが失敗しました。無効な応答が返されました。</translation>
+<translation id="2353984724370197742">割り当てが失敗しました。ネットワーク リクエストが失敗しました。</translation>
+<translation id="3046825211487065480">割り当てが失敗しました。最初のリクエストの応答がある前に、2 番目のリクエストが送信されました。</translation>
 <translation id="3407245330823033366">Blimp で使用するアカウントを選択してください。</translation>
+<translation id="3775180005489871350">割り当てが失敗しました。400（BAD_REQUEST）エラーが発生しました。</translation>
+<translation id="4542350224991263059">割り当てが失敗しました。ユーザー アクセス トークンが期限切れです。</translation>
+<translation id="4562971394107096647">割り当てが失敗しました。サーバーエラーが発生しました。</translation>
 <translation id="4641972508298030550">ユーザーを認証できません。</translation>
+<translation id="5860346505531085166">割り当てが失敗しました。アカウントにアクセス権がありません。</translation>
+<translation id="704835510384979817">割り当てが失敗しました。一致するエンジン バージョンがありません。</translation>
+<translation id="7961542533680218955">割り当てが成功しました。</translation>
 <translation id="8514856595257368555">トークンを取得しました。</translation>
 </translationbundle>

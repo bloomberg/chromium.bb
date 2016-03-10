@@ -192,6 +192,13 @@
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="1859633270756049523">限制工作階段長度</translation>
+<translation id="1859859319036806634">警告：我們將於 <ph name="PRODUCT_NAME" /> 52 版發佈 (大約在 2016 年 9 月) 之後淘汰 TLS 版本遞補功能，並停止支援這項政策。
+
+      當 TLS 交握失敗時，<ph name="PRODUCT_NAME" /> 會先重新嘗試以較低版本的 TLS 建立連線，以忽略 HTTPS 伺服器發生的錯誤。這項設定可讓您指定要在哪個版本停止遞補程序。如果伺服器正確執行版本交涉 (亦即不中斷連線)，系統就不會套用這項設定。不過，最終的連線仍然必須符合 SSLVersionMin 要求。
+
+      如果未設定這項政策，或是將這項政策的值設為「tls1.2」，<ph name="PRODUCT_NAME" /> 就不會再執行這項遞補程序。請注意，這只會影響 <ph name="PRODUCT_NAME" /> 是否略過發生錯誤的伺服器 (無法正確交涉版本)，系統並不會因此停止支援較舊的 TLS 版本。
+
+      否則，如果必須與發生錯誤的伺服器維持相容，系統可能會將這項政策的值設為「tls1.1」。這種方法是權宜之計，伺服器錯誤應該很快就會解決。</translation>
 <translation id="1861037019115362154">指定在 <ph name="PRODUCT_NAME" /> 中停用的外掛程式清單，並且防止使用者變更這項設定。
 
       萬用字元「*」和「?」可與任意字元序列比對。「*」可與任意數量的字元比對，但「?」只能指定選擇性的單一字元，例如與零或一個字元比對。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。
@@ -530,6 +537,7 @@
       指定是否要啟用 TLS 網域專屬憑證擴充功能。
 
       這項實驗性設定是用來啟用 TLS 網域專屬憑證擴充功能以供測試，我們將於日後移除。</translation>
+<translation id="2957506574938329824">不允許任何網站透過 Web Bluetooth API 要求存取藍牙裝置</translation>
 <translation id="2957513448235202597"><ph name="HTTP_NEGOTIATE" /> 驗證模式的帳戶類型</translation>
 <translation id="2959898425599642200">Proxy 略過規則</translation>
 <translation id="2960691910306063964">針對遠端存取主機啟用或停用無 PIN 碼驗證機制</translation>
@@ -543,6 +551,7 @@
 
           指定政策值時需以毫秒為單位。該值需小於或等於螢幕關閉延遲時間 (如有設定) 和閒置延遲時間。</translation>
 <translation id="2987155890997901449">啟用 ARC</translation>
+<translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
 <translation id="2998881342848488968">這項政策可讓 <ph name="PRODUCT_OS_NAME" /> 在進行監控式入口網站驗證程序時不要連線到 Proxy 伺服器。
 
       這項政策只會在 Proxy 已設定 (例如透過政策設定、由使用者在 chrome://settings 中設定，或透過擴充功能設定) 時生效。
@@ -825,6 +834,7 @@
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更新版本</translation>
+<translation id="4322842393287974810">允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
 <translation id="4347908978527632940">如果設為 true，且使用者是受監管的使用者，其他 Android 應用程式即可透過內容提供者查詢使用者的網路限制。
 
@@ -1416,6 +1426,9 @@
 
           如未設定這項政策，那麼登入畫面最初顯示時就會停用螢幕小鍵盤。使用者隨時可以啟用或停用螢幕小鍵盤，這項功能在登入畫面中的狀態，會在不同使用者之間持續下去。</translation>
 <translation id="6598235178374410284">使用者顯示圖片</translation>
+<translation id="6628646143828354685">讓您設定是否允許網站存取附近的藍牙裝置。您可以完全禁止網站存取附近的藍牙裝置，也可以要求網站一律需要經過使用者同意才能存取附近的藍牙裝置。
+
+          如果未設定這項政策，系統會使用「3」，而使用者可以自行變更設定。</translation>
 <translation id="6636268606788232221">設置使用者進入閒置狀態時的電源管理設定。
 
           這項政策是控制各項電源管理策略設定，讓系統在使用者進入閒置狀態時執行相對應的動作。
@@ -1491,6 +1504,7 @@
           如果設定了這項政策，使用者將無法予以變更或覆寫。
 
           如未設定這項政策，系統匣選單雖然不會顯示 [協助工具] 選項，但使用者仍可以透過「設定」網頁顯示 [協助工具] 選項。</translation>
+<translation id="6766216162565713893">允許網站要求使用者授權存取附近的藍牙裝置</translation>
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
 <translation id="6774533686631353488">允許使用者層級的內建訊息傳遞主機 (無管理員授權情況下安裝)。</translation>
 <translation id="6786747875388722282">擴充功能</translation>
@@ -1663,6 +1677,14 @@
 <translation id="7340034977315324840">回報裝置活動時間</translation>
 <translation id="7381326101471547614">停用 <ph name="PRODUCT_NAME" /> 中的 SPDY 通訊協定。如果啟用這項政策，SPDY 通訊協定就不會支援 <ph name="PRODUCT_NAME" />。停用這項政策即可使用 SPDY。如果未設定這項政策，即可使用 SPDY。</translation>
 <translation id="7384999953864505698">允許 QUIC 通訊協定</translation>
+<translation id="7406651467768226499">是否允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本。
+
+      這項政策可控制是否允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本；做法是在資訊清單中聲明 required_platform_version (需求平台版本)，並以該版本做為自動更新目標版本的前置字串。
+
+      如果您將這項政策設為 True，使用無延遲資訊站應用程式的自動啟動功能，required_platform_version 資訊清單金鑰的值就是自動更新目標版本的前置字串。
+
+
+      如果您將這項政策設為 False，系統就會略過 required_platform_version 資訊清單金鑰，自動更新功能則會照常運作。</translation>
 <translation id="7417972229667085380">簡報模式中的閒置延遲時間延長百分比 (已不適用)</translation>
 <translation id="7421483919690710988">設定媒體磁碟快取大小 (以位元組為單位)</translation>
 <translation id="7424751532654212117">停用的外掛程式清單的例外清單</translation>

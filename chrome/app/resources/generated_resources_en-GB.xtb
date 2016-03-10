@@ -292,6 +292,7 @@
 <translation id="1434696352799406980">This will reset your startup page, new tab page, search engine and pinned tabs. It will also disable all extensions and clear temporary data like cookies. Your bookmarks, history and saved passwords will not be cleared.</translation>
 <translation id="1434886155212424586">Homepage is the New Tab page</translation>
 <translation id="1435550882135542937">Extension toolbar redesign</translation>
+<translation id="1436402875660227532">Note: These settings are no longer used on this system, but you can still view and edit them.</translation>
 <translation id="1436784010935106834">Removed</translation>
 <translation id="1438632560381091872">Unmute tabs</translation>
 <translation id="1441841714100794440">Vietnamese keyboard (Telex)</translation>
@@ -1317,6 +1318,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2889064240420137087">Open link with...</translation>
 <translation id="2889925978073739256">Continue blocking unsandboxed plug-ins</translation>
 <translation id="2890624088306605051">Only retrieve synced settings and data</translation>
+<translation id="2890678560483811744">Out of bounds page reference</translation>
 <translation id="2893168226686371498">Default browser</translation>
 <translation id="289426338439836048">Other mobile network...</translation>
 <translation id="2894745200702272315">Enables an experimental version of 'OK Google' hotword detection features that have a hardware dependency.</translation>
@@ -1345,7 +1347,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2927017729816812676">Cache Storage</translation>
 <translation id="2927657246008729253">Change...</translation>
-<translation id="2928415919076124714">Hide toolbar in full screen</translation>
 <translation id="2928526264833629376">Continue to Hangouts</translation>
 <translation id="2930644991850369934">There was a problem during recovery image download. Network connection has been lost.</translation>
 <translation id="293111069139560936">Allows the shelf to minimise a window if a shelf item gets clicked which has only a single, already active, window associated with it.</translation>
@@ -1590,7 +1591,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3289566588497100676">Easy symbol input</translation>
 <translation id="3289856944988573801">To check for updates, please use Ethernet or Wi-Fi.</translation>
 <translation id="3293325348208285494">Fast start</translation>
-<translation id="3293894718455402932">"<ph name="EXTENSION" />" will be able to read and write images, video and sound files in the checked folders.</translation>
 <translation id="3294437725009624529">Guest</translation>
 <translation id="329650768420594634">Pack Extension Warning</translation>
 <translation id="3296763833017966289">Georgian</translation>
@@ -1648,6 +1648,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3338239663705455570">Slovenian keyboard</translation>
 <translation id="3340978935015468852">settings</translation>
 <translation id="3341703758641437857">Allow access to file URLs</translation>
+<translation id="3343813173145836998">Sign in easily on this device</translation>
 <translation id="3344786168130157628">Access Point Name:</translation>
 <translation id="3345135638360864351">Your request to access this site could not be sent to <ph name="NAME" />. Please try again.</translation>
 <translation id="3345886924813989455">No supported browser found</translation>
@@ -2287,6 +2288,7 @@ All users must sign out to continue.</translation>
 <translation id="4268025649754414643">Key Encipherment</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
+<translation id="4271396100647220620">No matches</translation>
 <translation id="4274187853770964845">Sync Error: Please stop and restart Sync.</translation>
 <translation id="4275830172053184480">Restart your device</translation>
 <translation id="4276796043975446927">Welcome to Chromebox for meetings</translation>
@@ -2356,6 +2358,7 @@ Press any key to continue exploring.</translation>
 <translation id="4378551569595875038">Connecting...</translation>
 <translation id="438122767399415311">Force UI direction</translation>
 <translation id="4381849418013903196">Colon</translation>
+<translation id="4383192539467954373">Automatically sign in across devices</translation>
 <translation id="4384652540891215547">Activate the extension</translation>
 <translation id="438503109373656455">Spirit</translation>
 <translation id="4387554346626014084">Enable App Launcher sync. This also enables Folders where available (non OSX).</translation>
@@ -2388,6 +2391,7 @@ Press any key to continue exploring.</translation>
 <translation id="444267095790823769">Protected content exceptions</translation>
 <translation id="4443536555189480885">&amp;Help</translation>
 <translation id="4444304522807523469">Access document scanners attached via USB or on the local network</translation>
+<translation id="4445559854264555037">Not seeing your device? <ph name="GET_HELP_LINK" /></translation>
 <translation id="4446933390699670756">Mirrored</translation>
 <translation id="4447465454292850432">Battery:</translation>
 <translation id="4449935293120761385">About Auto-fill</translation>
@@ -2646,6 +2650,7 @@ Press any key to continue exploring.</translation>
 <translation id="485316830061041779">German</translation>
 <translation id="4856478137399998590">Your data service is activated and ready to use</translation>
 <translation id="4858913220355269194">Footy</translation>
+<translation id="4860565041166337978">Allow downloads to be handled by the system download manager when applicable.</translation>
 <translation id="48607902311828362">Aeroplane mode</translation>
 <translation id="4861833787540810454">&amp;Play</translation>
 <translation id="4862050643946421924">Adding device...</translation>
@@ -2729,7 +2734,6 @@ Press any key to continue exploring.</translation>
 <translation id="4977942889532008999">Confirm Access</translation>
 <translation id="4982718461356080574">Hiding close buttons on inactive tabs when stacked</translation>
 <translation id="498294082491145744">Change your settings that control websites' access to features such as cookies, JavaScript, plug-ins, geo-location, microphone, camera etc.</translation>
-<translation id="4984329823325527157">Media Source API</translation>
 <translation id="4988526792673242964">Pages</translation>
 <translation id="4988792151665380515">Failed to export public key.</translation>
 <translation id="49896407730300355">Rotate a&amp;nti-clockwise</translation>
@@ -2918,7 +2922,6 @@ Press any key to continue exploring.</translation>
 <translation id="5268606875983318825">PPAPI (out-of-process)</translation>
 <translation id="526926484727016706">Causes all iframes to be denied all permissions by default. Allowing particular permissions for an iframe may involve listing the names of these permissions as values of new iframe attributes.</translation>
 <translation id="5269977353971873915">Print Failed</translation>
-<translation id="5270884342523754894">"<ph name="EXTENSION" />" will be able to read images, video and sound files in the ticked folders.</translation>
 <translation id="5271247532544265821">Toggle Simplified/Traditional Chinese mode</translation>
 <translation id="5271549068863921519">Save password</translation>
 <translation id="5273628206174272911">Experimental history navigation in response to horizontal overscroll.</translation>
@@ -3008,11 +3011,11 @@ Press any key to continue exploring.</translation>
 <translation id="5390284375844109566">Indexed Database</translation>
 <translation id="5392544185395226057">Enable support for Native Client.</translation>
 <translation id="5393125431335030955">This plug-in only works on the desktop.</translation>
-<translation id="5393559999218790205">Disable UI compositor animation timelines</translation>
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_NAME" /> on <ph name="PEPPER_PLUGIN_DOMAIN" /> wants to access your computer.</translation>
 <translation id="539755880180803351">Annotates web forms with Auto-fill field type predictions as placeholder text.</translation>
 <translation id="5397578532367286026">Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL" />) on chrome.com.</translation>
 <translation id="5397794290049113714">You</translation>
+<translation id="5398572795982417028">Out of bounds page reference, limit is <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398824043967640339"><ph name="COUNT" /> from other sites</translation>
 <translation id="5399158067281117682">PINs don't match!</translation>
 <translation id="5400640815024374115">Trusted Platform Module (TPM) chip is disabled or absent.</translation>
@@ -3032,7 +3035,7 @@ Press any key to continue exploring.</translation>
 <translation id="5423849171846380976">Activated</translation>
 <translation id="5425470845862293575">Enables the use of experimental DirectWrite font rendering system.</translation>
 <translation id="5425722269016440406">You must be online to turn off Smart Lock because this setting is synced to your phone and other devices. Please connect to a network first.</translation>
-<translation id="5426623592374109001">Use old intrusive animation subsystem for composited animations in UI.</translation>
+<translation id="5425863515030416387">Sign in easily across devices</translation>
 <translation id="5427459444770871191">Rotate &amp;Clockwise</translation>
 <translation id="5428105026674456456">Spanish</translation>
 <translation id="542872847390508405">You’re browsing as a Guest</translation>
@@ -3227,7 +3230,6 @@ Press any key to continue exploring.</translation>
 <translation id="5708171344853220004">Microsoft Principal Name</translation>
 <translation id="5709885306771508267">Pinch scale</translation>
 <translation id="5710406368443808765">Oops!  The system failed to store the device token and ID.</translation>
-<translation id="571161420693302741"><ph name="HOST_NAME" /> not responding. Unable to cast.</translation>
 <translation id="5711983031544731014">Unable to unlock. Enter your password.</translation>
 <translation id="5712966208980506909">If enabled, the chrome://md-policy URL loads the Material Design policy page.</translation>
 <translation id="5715711091495208045">Plug-in Broker: <ph name="PLUGIN_NAME" /></translation>
@@ -3496,7 +3498,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6111974609785983504">Allowed by default</translation>
 <translation id="6113134669445407638">Disable Delay Agnostic AEC in WebRTC. Use if reported system delays are very trusted, or if others experience echo from your machine.</translation>
 <translation id="6116921718742659598">Change language and input settings</translation>
-<translation id="6117536376248197233">Disable compositor animation timelines in renderers.</translation>
 <translation id="6120205520491252677">Pin this page to Start screen...</translation>
 <translation id="6122081475643980456">Your Internet connection is being controlled</translation>
 <translation id="6122093587541546701">Email (optional):</translation>
@@ -3528,6 +3529,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6163522313638838258">Expand all...</translation>
 <translation id="6164005077879661055">All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Learn more</translation>
+<translation id="6167008112175207002">Your bookmarks, history, passwords and other settings will be synced to your Google Account so that you can use them on all your devices. You can change this in <ph name="BEGIN_LINK" /></translation>
 <translation id="6171550060231646388">Simulated hardware 'OK Google' features</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
 <translation id="6178664161104547336">Select a certificate</translation>
@@ -3773,7 +3775,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6555432686520421228">Remove all user accounts and reset your <ph name="IDS_SHORT_PRODUCT_NAME" /> device to be just like new.</translation>
 <translation id="6556866813142980365">Redo</translation>
 <translation id="6557565812667414268">Enabled only for high-DPI displays</translation>
-<translation id="655845594391856372">Tab not responding. Unable to cast.</translation>
 <translation id="6559580823502247193">(already on this device)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="6562437808764959486">Extracting recovery image...</translation>
@@ -3874,6 +3875,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6723354935081862304">Print to Google Docs and other cloud destinations. <ph name="BEGIN_LINK" />Sign in<ph name="END_LINK" /> to print to Google Cloud Print.</translation>
 <translation id="6723661294526996303">Import bookmarks and settings...</translation>
 <translation id="6723839937902243910">Power</translation>
+<translation id="6725240607822645708">Run IME on its own thread.</translation>
 <translation id="6725970970008349185">Number of candidates to be displayed per page</translation>
 <translation id="672609503628871915">See what's new</translation>
 <translation id="6727005317916125192">Previous pane</translation>
@@ -4004,12 +4006,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6948736568813450284">For developers: use the sandbox service for Google Payments API calls.</translation>
 <translation id="6949306908218145636">Bookmark Open Pages...</translation>
 <translation id="695164542422037736">If this option is enabled and if the body is styled with background-attachment:fixed, the background will have its own composited layer.</translation>
-<translation id="6952626679169241027"><ph name="PASSWORD_MANAGER_BRAND" /> remembers your passwords and signs you in to sites automatically on this device.</translation>
 <translation id="6955446738988643816">Inspect Pop-up</translation>
 <translation id="695755122858488207">Unselected radio button</translation>
+<translation id="6960277925159781810">Automatically sign in on this device</translation>
 <translation id="696036063053180184">3 Set (No shift)</translation>
 <translation id="696203921837389374">Enable syncing over mobile data</translation>
-<translation id="6964308487066031935">Add folders to "<ph name="EXTENSION" />"?</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Device</translation>
@@ -4110,7 +4111,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7076293881109082629">Signing in</translation>
 <translation id="7077829361966535409">The sign-in page failed to load using the current proxy settings. Please <ph name="GAIA_RELOAD_LINK_START" />try to sign in again<ph name="GAIA_RELOAD_LINK_END" /> or use different <ph name="PROXY_SETTINGS_LINK_START" />proxy settings<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="7077872827894353012">Ignored protocol handlers</translation>
-<translation id="7079038783243627996">"<ph name="EXTENSION" />" will be able to read and delete images, video and sound files in the ticked folders.</translation>
 <translation id="708060913198414444">C&amp;opy audio address</translation>
 <translation id="708187310695946552">Session restore bubble UI</translation>
 <translation id="7082055294850503883">Ignore Caps Lock status and input lower case by default</translation>
@@ -4482,7 +4482,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7650511557061837441">"<ph name="TRIGGERING_EXTENSION_NAME" />" would like to remove "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME" /> is displayed in this language</translation>
 <translation id="7654941827281939388">This account is already being used on this computer.</translation>
-<translation id="7655165758820095116">The MediaSource object allows JavaScript to send media data directly to a video element.</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7659584679870740384">You are not authorised to use this device. Please contact the administrator for sign-in permission.</translation>
 <translation id="7664620655576155379">Unsupported Bluetooth device: "<ph name="DEVICE_NAME" />".</translation>
@@ -4613,6 +4612,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7861215335140947162">&amp;Downloads</translation>
 <translation id="7864539943188674973">Disable Bluetooth</translation>
 <translation id="7868891395842935202">Enables the Experimental Framework for controlling access to API experiments.</translation>
+<translation id="7870576007982733437">Use system download manager when applicable.</translation>
 <translation id="7870790288828963061">No Kiosk apps with newer version found. Nothing to update. Please remove the USB stick.</translation>
 <translation id="787150342916295244">Credit card scanning</translation>
 <translation id="7874357055309047713">Always run on all sites</translation>
@@ -4655,7 +4655,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7918257978052780342">Enrol</translation>
 <translation id="7920092496846849526">You asked your parent if it's OK to visit this page.</translation>
 <translation id="7925285046818567682">Waiting for <ph name="HOST_NAME" />...</translation>
-<translation id="7925425262460550824"><ph name="PASSWORD_MANAGER_BRAND" /> remembers your passwords and signs you in to apps and sites automatically across devices.</translation>
 <translation id="7925686952655276919">Do not use mobile data for sync</translation>
 <translation id="7926906273904422255">Mark non-secure origins as non-secure or "dubious".</translation>
 <translation id="7928710562641958568">Eject device</translation>
@@ -4717,7 +4716,6 @@ Key File: <ph name="KEY_FILE" />
 Keep your key file in a safe place. You will need it to create new versions of your extension.</translation>
 <translation id="799923393800005025">Can view</translation>
 <translation id="7999338963698132743">New task manager</translation>
-<translation id="8000004253404706714">Use old intrusive animation subsystem for composited animations in renderers.</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8007030362289124303">Battery Low</translation>
 <translation id="8008356846765065031">Internet disconnected. Please check your Internet connection.</translation>
@@ -5241,6 +5239,7 @@ Calculating time until full</translation>
 <translation id="8765985713192161328">Manage handlers...</translation>
 <translation id="8766796754185931010">Kotoeri</translation>
 <translation id="8767072502252310690">Users</translation>
+<translation id="8768367823103160496">Mouse cursor lock</translation>
 <translation id="8769662576926275897">Card details</translation>
 <translation id="8770196827482281187">Persian input method (ISIRI 2901 layout)</translation>
 <translation id="8774934320277480003">Top margin</translation>
@@ -5260,6 +5259,7 @@ Calculating time until full</translation>
 <translation id="8795668016723474529">Add a credit card</translation>
 <translation id="8795916974678578410">New Window</translation>
 <translation id="8798099450830957504">Default</translation>
+<translation id="8799127529310003270">If enabled, InputConnection calls run on IME thread, and instead of keeping a replica editor, each InputConnection call will directly talk to renderer.</translation>
 <translation id="8799839487311913894">Enable updating a password in the password manager after submitting a "change password" form.</translation>
 <translation id="8800004011501252845">Showing destinations for</translation>
 <translation id="8800420788467349919">Volume: <ph name="PRECENTAGE" />%</translation>
@@ -5285,6 +5285,7 @@ Calculating time until full</translation>
 <translation id="8841142799574815336">Inert visual viewport.</translation>
 <translation id="884264119367021077">Delivery address</translation>
 <translation id="8844238624737526720">Use the new and optimised implementation of the chrome task manager.</translation>
+<translation id="8845001906332463065">Get help</translation>
 <translation id="8846141544112579928">Searching for keyboard...</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Shift-key mode switch</translation>

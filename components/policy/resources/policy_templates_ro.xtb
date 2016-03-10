@@ -197,6 +197,13 @@
 
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="1859633270756049523">Limitați durata sesiunii</translation>
+<translation id="1859859319036806634">Avertisment: revenirea la versiunea TLS va fi eliminată din <ph name="PRODUCT_NAME" /> după versiunea 52 (aproximativ în septembrie 2016), iar această politică nu va mai funcționa de la data respectivă.
+
+      Când un dialog de confirmare TLS nu se finaliza, <ph name="PRODUCT_NAME" /> încerca anterior să se conecteze folosind o versiune TLS inferioară pentru a evita erorile de pe serverele HTTPS. Această setare configurează versiunea la care se va opri procesul de revenire. Dacă un server efectuează corect negocierea versiunii (de ex., fără să întrerupă conexiunea), atunci setarea nu se aplică. În orice caz, conexiunea rezultată trebuie totuși să respecte SSLVersionMin.
+
+      Dacă această politică nu este configurată sau este setată la „tls1.2”, atunci <ph name="PRODUCT_NAME" /> nu mai efectuează această revenire. Reține că astfel nu se dezactivează compatibilitatea pentru versiunile TLS mai vechi, ci doar se stabilește dacă <ph name="PRODUCT_NAME" /> va ocoli serverele cu erori care nu pot negocia corect versiunile.
+
+      În caz contrar, dacă trebuie menținută compatibilitatea cu un server cu erori, politica poate fi setată la „tls1”. Aceasta este o măsură temporară, iar problemele de pe server trebuie să fie remediate rapid.</translation>
 <translation id="1861037019115362154">Specifică o listă de pluginuri dezactivate în <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să modifice această setare.
 
       Pentru a găsi secvențe de caractere arbitrare, pot fi folosite metacaracterele „*” și „?”. „*” corespunde unui număr arbitrar de caractere, în timp ce „?” specifică un caracter opțional unic, adică înlocuiește zero caractere sau un singur caracter. Caracterul escape este „\”, astfel încât pentru a obține caracterele „*”, „?” și „\” în sine, puteți adăuga caracterul „\” în fața acestora.
@@ -540,6 +547,7 @@
       Specifică dacă extensia pentru certificatele TLS legate la domeniu trebuie să fie activată.
 
       Setarea este folosită pentru a activa extensia pentru certificatele TLS legate la domeniu în vederea testării. Pe viitor, această setare experimentală va fi eliminată.</translation>
+<translation id="2957506574938329824">Nu permite niciunui site să solicite acces la dispozitivele Bluetooth prin API-ul Web Bluetooth</translation>
 <translation id="2957513448235202597">Tipul de cont pentru autentificarea <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Reguli de ocolire a proxy-ului</translation>
 <translation id="2960691910306063964">Activează sau dezactivează autentificarea fără cod PIN pentru gazdele de acces la distanță</translation>
@@ -553,6 +561,7 @@
 
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul pentru oprirea ecranului (dacă este setat) și cu intervalul de inactivitate.</translation>
 <translation id="2987155890997901449">Activează ARC</translation>
+<translation id="2987227569419001736">Controlează folosirea API-ului Web Bluetooth</translation>
 <translation id="2998881342848488968">Această politică permite <ph name="PRODUCT_OS_NAME" /> să ocolească orice proxy pentru autentificarea prin portalul captiv.
 
       Această politică are efect numai dacă este configurat un proxy (de exemplu, conform unei politici, de utilizatori în chrome://settings sau prin extensii).
@@ -841,6 +850,7 @@
 
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 sau o versiune ulterioară</translation>
+<translation id="4322842393287974810">Permite aplicației chioșc lansate automat fără nicio întârziere să controleze versiunea <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adăugați un buton de deconectare în bara de sistem</translation>
 <translation id="4347908978527632940">Dacă este activată, iar utilizatorul este unul monitorizat, alte aplicații Android pot interoga restricțiile web ale utilizatorului printr-un furnizor de conținut.
 
@@ -1435,6 +1445,9 @@
 
           Dacă politica nu este configurată, tastatura pe ecran este dezactivată la prima afișare a ecranului de conectare. Utilizatorii pot activa sau dezactiva oricând tastatura pe ecran, iar starea acesteia pe ecranul de conectare se păstrează de la un utilizator la altul.</translation>
 <translation id="6598235178374410284">Imagine cu avatarul de utilizator</translation>
+<translation id="6628646143828354685">Îți permite să setezi dacă site-urile primesc acces la dispozitivele Bluetooth din apropiere. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele Bluetooth din apropiere.
+
+          Dacă această politică nu este configurată, va fi folosită valoarea „3”, iar utilizatorul o va putea modifica.</translation>
 <translation id="6636268606788232221">Configurează setările pentru gestionarea consumului de energie când utilizatorul devine inactiv.
 
           Această politică controlează mai multe setări pentru strategia de gestionare a consumului de energie atunci când utilizatorul devine inactiv.
@@ -1510,6 +1523,7 @@
           Dacă politica este configurată, utilizatorii nu o pot modifica sau suprascrie.
 
           Dacă politica nu este configurată, opțiunile de accesibilitate nu vor apărea în meniul barei de sistem, dar utilizatorul poate afișa opțiunile de accesibilitate prin intermediul paginii Setări.</translation>
+<translation id="6766216162565713893">Permite site-urilor să solicite utilizatorului să acorde accesul la un dispozitiv Bluetooth din apropiere</translation>
 <translation id="6770454900105963262">Raportează informații despre sesiunile chioșc active</translation>
 <translation id="6774533686631353488">Permiteți gazde de mesagerie nativă la nivel de utilizator (instalate fără permisiuni de administrator)</translation>
 <translation id="6786747875388722282">Extensii</translation>
@@ -1686,6 +1700,13 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7340034977315324840">Raportați perioadele de activitate ale dispozitivului</translation>
 <translation id="7381326101471547614">Dezactivează utilizarea protocolul SPDY în <ph name="PRODUCT_NAME" />. Dacă această politică este activată, protocolul SPDY nu va fi disponibil în <ph name="PRODUCT_NAME" />. Dezactivarea acestei politici va permite utilizarea protocolului SPDY. Dacă această politică rămâne nesetată, SPDY va fi disponibil.</translation>
 <translation id="7384999953864505698">Permite protocolul QUIC</translation>
+<translation id="7406651467768226499">Dacă aplicația chioșc lansată automat fără nicio întârziere poate să controleze versiunea <ph name="PRODUCT_OS_NAME" />.
+
+      Această politică stabilește dacă aplicația chioșc lansată automat fără nicio întârziere poate să controleze versiunea <ph name="PRODUCT_OS_NAME" /> declarând o valoare pentru required_platform_version în manifestul său și să o folosească drept prefixul versiunii țintă de actualizare automată.
+
+      Dacă politica este activată, valoarea cheii din manifest required_platform_version a aplicației chioșc lansate automat fără nicio întârziere este folosită drept prefixul versiunii țintă de actualizare automată.
+
+      Dacă politica nu este configurată sau este dezactivată, cheia din manifest required_platform_version este ignorată, iar actualizarea automată se face ca de obicei.</translation>
 <translation id="7417972229667085380">Procentul cu care se ajustează intervalul de inactivitate în modul de prezentare (politică învechită)</translation>
 <translation id="7421483919690710988">Setați dimensiunea în octeți a memoriei cache pe disc pentru conținut media</translation>
 <translation id="7424751532654212117">Lista de excepții de la lista cu pluginuri dezactivate</translation>

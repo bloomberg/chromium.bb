@@ -191,6 +191,13 @@
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="1859633270756049523">Limita la durada de la sessió</translation>
+<translation id="1859859319036806634">Advertiment: a partir de la versió 52 (cap al setembre de 2016), aquesta política deixarà de funcionar i la versió alternativa de TLS ja no estarà disponible a <ph name="PRODUCT_NAME" />.
+
+      Abans, quan un protocol d'enllaç de TLS fallava, <ph name="PRODUCT_NAME" /> provava d'establir de nou la connexió amb una versió anterior de TLS per solucionar els errors dels servidors HTTPS. Aquesta opció configura la versió en què es detindrà el procés alternatiu. Si un servidor negocia correctament les versions (és a dir, sense interrompre la connexió), aquesta opció no s'aplica. En qualsevol cas, la connexió que en resulti ha de complir la política SSLVersionMin.
+
+      Si aquesta política no es configura o s'hi estableix el valor "tls1.2", <ph name="PRODUCT_NAME" /> ja no segueix el procés alternatiu. Tingueu en compte que aquesta configuració no desactiva la compatibilitat amb versions anteriors de TLS, sinó que només defineix si <ph name="PRODUCT_NAME" /> evita els servidors amb errors que no puguin negociar correctament les versions.
+
+      Si cal mantenir la compatibilitat amb un servidor amb errors, es pot establir el valor "tls1.1" a la política. És un recurs temporal que no treu la necessitat de reparar el servidor ràpidament.</translation>
 <translation id="1861037019115362154">Especifica una llista de connectors que estan desactivats a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris puguin canviar aquesta configuració.
 
       Els caràcters comodí "*" i "?" es poden utilitzar per fer coincidir les seqüències de caràcters arbitraris. "*" coincideix amb un nombre arbitrari de caràcters, mentre que "?" especifica un sol caràcter opcional (per exemple, coincideix amb els caràcters zero o un). El caràcter d'escapada és "\", de manera que, per tal que coincideixi amb els caràcters "*", "?" o "\" reals, podeu col·locar el caràcter "\" al davant.
@@ -533,6 +540,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Especifica si l'extensió de certificats lligats al domini TLS ha d'estar activada.
 
       Aquesta configuració s'utilitza per activar l'extensió de certificats lligats al domini TLS per a proves. Aquesta configuració experimental se suprimirà properament.</translation>
+<translation id="2957506574938329824">No permetis que cap lloc sol·liciti accés a dispositius Bluetooth mitjançant l'API Web Bluetooth</translation>
 <translation id="2957513448235202597">Tipus de compte per a l'autenticació <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regles d'evitació de servidors intermediaris</translation>
 <translation id="2960691910306063964">Activa o desactiva l'autenticació sense PIN per als amfitrions d'accés remot</translation>
@@ -546,6 +554,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior o igual al retard de desactivació (si s'ha definit) i al retard d'inactivitat.</translation>
 <translation id="2987155890997901449">Activa ARC</translation>
+<translation id="2987227569419001736">Controla l'ús de l'API Web Bluetooth</translation>
 <translation id="2998881342848488968">Aquesta política permet que <ph name="PRODUCT_OS_NAME" /> eviti qualsevol servidor intermediari a l'autenticació de portals captius.
 
       Aquesta política només es fa efectiva si hi ha un servidor intermediari configurat (per exemple, mitjançant la política, configurat per l'usuari a chrome://settings o configurat per alguna extensió).
@@ -830,6 +839,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o una versió posterior</translation>
+<translation id="4322842393287974810">Permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Afegeix un botó de tancament de sessió a la safata del sistema</translation>
 <translation id="4347908978527632940">Si la política s'estableix en "true" i l'usuari és un usuari supervisat, altres aplicacions d'Android poden sol·licitar les restriccions web de l'usuari a un proveïdor de contingut.
 
@@ -1422,6 +1432,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si aquesta política es deixa sense configurar, el teclat en pantalla estarà desactivat la primera vegada que es mostri la pantalla d'inici de sessió. Els usuaris podran activar o desactivar el teclat en pantalla en qualsevol moment i l'estat que tingui a la pantalla d'inici de sessió es conservarà entre els usuaris.</translation>
 <translation id="6598235178374410284">Imatge d'avatar de l'usuari</translation>
+<translation id="6628646143828354685">Us permet definir si els llocs web poden obtenir accés a dispositius Bluetooth propers. Es pot bloquejar completament o es pot consultar a l'usuari cada cop que un lloc web vulgui obtenir accés a dispositius Bluetooth propers.
+
+          Si aquesta política es deixa sense establir, es farà servir el valor "3" i l'usuari podrà canviar-lo.</translation>
 <translation id="6636268606788232221">Configura l'administració de l'energia quan l'usuari està inactiu.
 
           Amb aquesta política es controlen diverses opcions de configuració de l'estratègia de la gestió de l'energia quan l'usuari està inactiu.
@@ -1496,6 +1509,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si configureu aquesta política, els usuaris no la podran canviar ni substituir.
 
           Si aquesta política es deixa sense configurar, les opcions d'accessibilitat no apareixeran al menú de la safata del sistema, però l'usuari podrà fer que les opcions d'accessibilitat apareguin mitjançant la pàgina "Configuració".</translation>
+<translation id="6766216162565713893">Permet que els llocs demanin a l'usuari que els concedeixi accés a un dispositiu Bluetooth proper</translation>
 <translation id="6770454900105963262">Ofereix informació de les sessions de quiosc actives</translation>
 <translation id="6774533686631353488">Permetre amfitrions de missatgeria nadius per a l'usuari (instal·lació sense permisos d'administrador)</translation>
 <translation id="6786747875388722282">Extensions</translation>
@@ -1674,6 +1688,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si no definiu aquesta política, SPDY estarà disponible.</translation>
 <translation id="7384999953864505698">Permet el protocol QUIC</translation>
+<translation id="7406651467768226499">Aquesta política defineix si es permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" />.
+
+      Per poder controlar la versió de <ph name="PRODUCT_OS_NAME" />, la política declara una required_platform_version (versió obligatòria de la plataforma) al fitxer de manifest i la utilitza com a prefix per a la versió desitjada a la qual cal actualitzar automàticament.
+
+      Si la política s'estableix en "true", el valor de la clau de manifest de required_platform_version atorgat a l'aplicació de quiosc d'inici automàtic sense retards s'utilitza com a prefix per a la versió desitjada a la qual cal actualitzar automàticament.
+
+      Si la política no es configura o s'estableix en "false", la clau de manifest de required_platform_version s'ignora i l'actualització automàtica continua com de costum.</translation>
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
 <translation id="7424751532654212117">Llista d'excepcions de la llista de connectors desactivats</translation>

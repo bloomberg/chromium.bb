@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1091157412887719337">A hozzárendelés nem sikerült. Nem áll rendelkezésre motor.</translation>
+<translation id="2004526128230838685">A hozzárendelés nem sikerült. Ismeretlen hiba történt.</translation>
+<translation id="2023631438558435272">A hozzárendelés nem sikerült. Érvénytelen válasz.</translation>
+<translation id="2353984724370197742">A hozzárendelés nem sikerült. Sikertelen hálózati kérés.</translation>
+<translation id="3046825211487065480">A hozzárendelés nem sikerült. Második kérést küldtek az első kérés megválaszolása előtt.</translation>
 <translation id="3407245330823033366">Válassza ki a Blimp alkalmazással használni kívánt fiókot.</translation>
+<translation id="3775180005489871350">A hozzárendelés nem sikerült. 400-as (BAD_REQUEST) hiba.</translation>
+<translation id="4542350224991263059">A hozzárendelés nem sikerült. Lejárt a felhasználói hozzáférés tokenje.</translation>
+<translation id="4562971394107096647">A hozzárendelés nem sikerült. Szerverhiba.</translation>
 <translation id="4641972508298030550">Nem lehet hitelesíteni a felhasználót.</translation>
+<translation id="5860346505531085166">A hozzárendelés nem sikerült. A fióknak nincs hozzáférése.</translation>
+<translation id="704835510384979817">A hozzárendelés nem sikerült. Nincs egyező motorverzió.</translation>
+<translation id="7961542533680218955">A hozzárendelés sikerült.</translation>
 <translation id="8514856595257368555">Token lekérve.</translation>
 </translationbundle>

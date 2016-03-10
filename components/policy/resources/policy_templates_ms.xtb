@@ -213,6 +213,13 @@
 
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="1859633270756049523">Hadkan panjang sesi</translation>
+<translation id="1859859319036806634">Amaran: Jatuh balik versi TLS akan dialih keluar daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (lebih kurang September 2016) dan selepas itu dasar ini akan berhenti berfungsi.
+
+      Apabila jabat tangan TLS gagal, <ph name="PRODUCT_NAME" /> akan mencuba semula sambungan dengan versi TLS yang lebih rendah bagi membetulkan pepijat dalam pelayan HTTPS. Tetapan ini mengkonfigurasikan versi pada takat mana proses jatuh balik ini berhenti. Jika pelayan melaksanakan rundingan versi dengan betul (iaitu tanpa memutuskan sambungan) maka tetapan ini tidak akan digunakan. Walau apa pun, sambungan yang terhasil tetap perlu mematuhi SSLVersionMin.
+
+      Jika dasar ini tidak dikonfigurasikan atau jika ditetapkan kepada "tls1.2" maka <ph name="PRODUCT_NAME" /> tidak lagi akan melaksanakan jatuh balik ini. Perhatian, ini tidak melumpuhkan sokongan untuk versi TLS yang lebih lama, hanya sama ada <ph name="PRODUCT_NAME" /> akan membetulkan pelayan berpepijat yang tidak dapat merundingkan versi dengan betul.
+
+      Sebaliknya, jika keserasian dengan pelayan berpepijat mesti dikekalkan, dasar ini mungkin ditetapkan kepada "tls1.1". Ini ialah langkah sementara dan pelayan harus dibetulkan dengan segera.</translation>
 <translation id="1861037019115362154">Menentukan senarai pemalam yang dilumpuhkan dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
 
       Aksara kad bebas '*' dan '?' boleh digunakan untuk memadankan urutan aksara rawak. Aksara '*' sepadan dengan bilangan aksara rawak manakala '?' menentukan aksara pilihan tunggal iaitu sepadan dengan sifar atau satu aksara. Aksara lepasan ialah '\', oleh itu untuk memadankan aksara '*', '?' atau '\' sebenar, anda boleh meletakkan '\' di hadapannya.
@@ -596,6 +603,7 @@
       Menyatakan sama ada sambungan sijil hala domain TLS harus didayakan.
 
       Tetapan ini digunakan untuk mendayakan sambungan sijil hala domain TLS untuk ujian.  Tetapan eksperimen ini akan dialih keluar pada masa hadapan.</translation>
+<translation id="2957506574938329824">Jangan benarkan mana-mana tapak meminta akses kepada peranti Bluetooth melalui API Bluetooth Web</translation>
 <translation id="2957513448235202597">Jenis akaun untuk pengesahan <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Peraturan memintas proksi</translation>
 <translation id="2960691910306063964">Dayakan atau lumpuhkan pengesahan tanpa PIN untuk hos akses jauh</translation>
@@ -609,6 +617,7 @@
 
           Nilai dasar ini harus ditetapkan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan pemadaman skrin (jika ditetapkan) dan kelewatan melahu.</translation>
 <translation id="2987155890997901449">Dayakan ARC</translation>
+<translation id="2987227569419001736">Kawal penggunaan API Bluetooth Web</translation>
 <translation id="2998881342848488968">Dasar ini membenarkan <ph name="PRODUCT_OS_NAME" /> memintas mana-mana proksi untuk pengesahan portal tawanan.
 
       Dasar ini hanya berkuat kuasa jika proksi dikonfigurasikan (contohnya menerusi dasar, oleh pengguna dalam chrome://settings atau oleh sambungan).
@@ -1607,6 +1616,9 @@ Jika anda menetapkan dasar ini, pengguna boleh mengatasi dasar sementara dengan 
 
 Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan apabila skrin log masuk mula-mula ditunjukkan. Pengguna boleh mendayakan atau melumpuhkan papan kekunci pada skrin pada bila-bila masa dan status pada skrin log masuk diteruskan antara pengguna.</translation>
 <translation id="6598235178374410284">Imej avatar pengguna</translation>
+<translation id="6628646143828354685">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mendapatkan akses kepada peranti Bluetooth berhampiran. Akses boleh disekat sepenuhnya atau pengguna boleh ditanya setiap kali tapak web ingin mendapatkan akses kepada peranti Bluetooth berhampiran.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, '3' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="6636268606788232221">Konfigurasikan tetapan pengurusan kuasa apabila pengguna melahu.
 
           Dasar ini mengawal berbilang tetapan untuk strategi pengurusan kuasa apabila pengguna melahu.
@@ -1699,6 +1711,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau mengatasinya.
 
           Jika dasar ini dibiarkan tidak ditetapkan, pilihan Kebolehaksesan tidak akan terpapar dalam menu dulang sistem, tetapi pengguna boleh menyebabkan pilihan Kebolehaksesan dipaparkan melalui halaman Tetapan.</translation>
+<translation id="6766216162565713893">Benarkan tapak web meminta pengguna memberikan akses kepada peranti Bluetooth berhampiran</translation>
 <translation id="6770454900105963262">Laporkan maklumat tentang sesi kios aktif</translation>
 <translation id="6774533686631353488">Benarkan hos Pemesejan Asli tahap pengguna (dipasang tanpa kebenaran pentadbir).</translation>
 <translation id="6786747875388722282">Pelanjutan</translation>

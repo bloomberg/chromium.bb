@@ -188,6 +188,13 @@
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="1859633270756049523">Rajoita käyttökerran pituutta</translation>
+<translation id="1859859319036806634">Varoitus: <ph name="PRODUCT_NAME" /> ei enää versiosta 52 alkaen tue TLS:n aiempien versioiden käyttöä varatoimenpiteenä. Version arvioitu julkaisupäivä on syyskuussa 2016, ja muutoksen jälkeen tämä käytäntö ei enää toimi.
+
+      TLS-kättelyn epäonnistuessa <ph name="PRODUCT_NAME" /> yritti aiemmin kiertää HTTPS-palvelimien virheet muodostamalla yhteyden uudelleen aiempaa TLS-versiota käyttämällä. Tämä asetus määrittää version, jota vanhempia versioita ei kokeilla. Jos palvelin suorittaa versioneuvottelun oikein (eli se ei katkaise yhteyttä), tätä asetusta ei käytetä. Muodostetun yhteyden täytyy joka tapauksessa noudattaa käytäntöä SSLVersionMin.
+
+      Jos tätä käytäntöä ei ole määritetty tai sen arvo on tls1.2, <ph name="PRODUCT_NAME" /> ei enää suorita tätä varatoimenpidettä. Huomaa, että tämä ei poista käytöstä vanhempien TLS-versioiden tukea, vaan se määrittää vain, voiko <ph name="PRODUCT_NAME" /> kiertää palvelimien virheitä silloin, kun versioneuvottelua ei suoriteta oikein.
+
+      Jos yhteensopivuus virheitä sisältävän palvelimen kanssa täytyy säilyttää, tämän käytännön arvoksi voidaan määrittää tls1.1. Tämä on kuitenkin tilapäinen toimenpide, ja palvelin tulee korjata mahdollisimman pian.</translation>
 <translation id="1861037019115362154">Määrittää laajennukset, jotka eivät ole käytössä tuotteessa <ph name="PRODUCT_NAME" />, ja estää käyttäjiä muuttamasta tätä asetusta.
 
       Jokerimerkkejä * ja ? voidaan käyttää vastaamaan satunnaisten merkkien jaksoja. * vastaa satunnaista merkkien lukumäärää ja ? määrittää yhden valinnaisen merkin, eli se vastaa nollaa tai yhtä merkkiä. Vaihtomerkki on \. Jos haluat käyttää merkkejä *, ? tai \ muussa kuin jokerimerkki- tai vaihtomerkityksessä, niiden eteen täytyy lisätä merkki \.
@@ -529,6 +536,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Määrittää, tuleeko TLS domain-bound -varmennelaajennuksien olla käytössä.
 
       Tämän asetuksen avulla voidaan ottaa TLS domain-bound -varmennelaajennus testikäyttöön. Asetus on kokeellinen ja se poistetaan myöhemmin.</translation>
+<translation id="2957506574938329824">Älä salli sivustojen pyytää Bluetooth-laitteiden käyttöoikeutta Web Bluetooth ‑sovellusliittymän kautta</translation>
 <translation id="2957513448235202597"><ph name="HTTP_NEGOTIATE" /> -todennuksen tilityyppi</translation>
 <translation id="2959898425599642200">Välityspalvelimen ohitussäännöt</translation>
 <translation id="2960691910306063964">Ota käyttöön tai poista käytöstä etäkäytön isäntien PIN-kooditon todennus</translation>
@@ -542,6 +550,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan korkeintaan mahdollisen ruudun sammutuksen viiveen ja käyttämättömyysajan suuruiseksi.</translation>
 <translation id="2987155890997901449">Ota ARC käyttöön.</translation>
+<translation id="2987227569419001736">Hallinnoi Web Bluetooth ‑sovellusliittymän käyttöä</translation>
 <translation id="2998881342848488968">Tämä käytäntö määrittää, että <ph name="PRODUCT_OS_NAME" /> voi ohittaa välityspalvelimet captive portal -todennuksessa.
 
       Tämä käytäntö on voimassa vain, jos esimerkiksi käytäntö, käyttäjä tai laajennus on määrittänyt välityspalvelinasetukset.
@@ -1418,6 +1427,9 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
            Jos tätä käytäntöä ei määritetä, ruutunäppäimistö ei tule näkyviin kirjautumisruudussa. Käyttäjät voivat ottaa ruutunäppäimistön käyttöön tai poistaa sen käytöstä milloin tahansa, ja käyttäjän tekemä ruutunäppäimistön tilan muutos säilyy kaikilla käyttäjillä, kunnes sitä muutetaan.</translation>
 <translation id="6598235178374410284">Käyttäjän avatar-kuva</translation>
+<translation id="6628646143828354685">Määritä, sallitaanko sivustojen käyttää lähistöllä olevia Bluetooth-laitteita. Käyttö on mahdollista estää kokonaan, tai käyttäjältä voidaan pyytää vahvistusta aina, kun verkkosivusto haluaa käyttää lähistöllä olevaa Bluetooth-laitetta.
+
+          Jos tätä käytäntöä ei ole määritetty, sen arvoksi asetetaan 3 ja käyttäjä voi halutessaan muokata sitä.</translation>
 <translation id="6636268606788232221">Määritä virransäästöasetukset, kun käyttäjä on toimettomana.
 
           Tämä käytäntö ohjaa useita virransäästöstrategian asetuksia, kun käyttäjä on toimettomana.
@@ -1493,6 +1505,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
 
           Jos tätä käytäntöä ei määritetä, esteettömyysasetuksia ei näytetä ilmaisinalueen valikossa mutta käyttäjä voi ottaa esteettömyysasetukset näkyviin Asetukset-sivulta.</translation>
+<translation id="6766216162565713893">Salli sivustojen pyytää käyttäjältä lupaa lähistöllä olevien Bluetooth-laitteiden käyttämiseen</translation>
 <translation id="6770454900105963262">Aktiivisten kioskikäyttökertojen tietojen raportointi</translation>
 <translation id="6774533686631353488">Salli laitteen oman viestijärjestelmän käyttäjätason isännät (asennettu ilman järjestelmänvalvojan oikeuksia).</translation>
 <translation id="6786747875388722282">Laajennukset</translation>

@@ -209,6 +209,13 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="1859633270756049523">Omejitev dolžine seje</translation>
+<translation id="1859859319036806634">Opozorilo: preklop na različico TLS-ja bo odstranjen iz brskalnika <ph name="PRODUCT_NAME" /> po različici 52 (približno septembra 2016) in ta pravilnik bo takrat prenehal delovati.
+
+      Če rokovanje TLS ne uspe, <ph name="PRODUCT_NAME" /> pred tem poskusi vzpostaviti povezavo z nižjo različico TLS-ja, da mu ni treba upoštevati napak v strežnikih HTTPS. Ta nastavitev konfigurira različico, pri kateri se postopek preklopa ustavi. Če strežnik pravilno izvede pogajanja glede različice (tj. brez prekinitve povezave), se ta nastavitev ne uporabi. Ne glede na to mora biti vzpostavljena povezava skladna s pravilnikom SSLVersionMin.
+
+      Če ta pravilnik ni konfiguriran ali če je nastavljen na »tls1.2«, <ph name="PRODUCT_NAME" /> ne izvede več tega preklopa. S tem ni onemogočena podpora za starejše različice TLS-ja, temveč je zgolj določeno, ali <ph name="PRODUCT_NAME" /> ne bo upošteval strežnikov z napakami, ki ne morejo pravilno izvesti pogajanj glede različice.
+
+      Če je treba ohraniti združljivost s strežnikom z napakami, je pravilnik lahko nastavljen na »tls1«. To je začasen ukrep in napake v strežniku je treba hitro odpraviti.</translation>
 <translation id="1861037019115362154">Določi seznam vtičnikov, ki so omogočeni v brskalniku <ph name="PRODUCT_NAME" />, in prepreči uporabnikom spreminjanje te nastavitve.
 
       Nadomestna znaka * in ? je mogoče uporabiti za nadomeščanje zaporedij poljubnih znakov. Znak * nadomešča poljubno število znakov, znak ? pa izbirni posamezen znak, tj. nadomešča nič znakov ali en znak. Ubežni znak je \; če torej želite nadomestiti dejanske znake *, ? ali \, lahko postavite prednje znak \.
@@ -596,6 +603,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Določa, ali mora biti razširitev za potrdila, domensko vezana na TLS, omogočena.
 
       Ta nastavitev se uporablja, da se razširitev za potrdila, domensko vezana na TLS, omogoči za preskušanje. Ta poskusna nastavitev bo v prihodnosti odstranjena.</translation>
+<translation id="2957506574938329824">Ne dovoli nobenemu spletnemu mestu zahtevanja dostopa do naprav Bluetooth prek API-ja za Web Bluetooth</translation>
 <translation id="2957513448235202597">Vrsta računa za preverjanje pristnosti z razširitvijo <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Pravila, kdaj se obide proxy</translation>
 <translation id="2960691910306063964">Omogočanje ali onemogočanje preverjanja pristnosti brez kode PIN za gostitelje za oddaljeni dostop</translation>
@@ -609,6 +617,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik izklopa zaslona (če je nastavljen) in časovnik zamik nedejavnosti.</translation>
 <translation id="2987155890997901449">Omogočanje ARC-ja</translation>
+<translation id="2987227569419001736">Nadzor uporabe API-ja za Web Bluetooth</translation>
 <translation id="2998881342848488968">Ta pravilnik sistemu <ph name="PRODUCT_OS_NAME" /> omogoča obhod katerega koli strežnika proxy za preverjanje pristnosti v prestreznih portalih.
 
       Pravilnik se uveljavi samo, če je nastavljen strežnik proxy (na primer s pravilnikom, z razširitvami ali če ga je nastavil uporabnik v »chrome://settings«).
@@ -932,6 +941,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ali novejši</translation>
+<translation id="4322842393287974810">Dovoli samodejno zagnani aplikaciji za kiosk brez zamika nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodajanje gumb za odjavo v sistemsko vrstico</translation>
 <translation id="4347908978527632940">Če je omogočeno in je uporabnik zaščiteni uporabnik, lahko druge aplikacije za Android prek ponudnika vsebine pošljejo poizvedbe o uporabnikovih spletnih omejitvah.
 
@@ -1610,6 +1620,9 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če ta pravilnik ni nastavljen, je zaslonska tipkovnica onemogočena pri prvem prikazu zaslona za prijavo. Uporabniki lahko zaslonsko tipkovnico kadar koli omogočijo ali onemogočijo in njeno stanje na zaslonu za prijavo velja za vse uporabnike.</translation>
 <translation id="6598235178374410284">Slika za avatar uporabnika</translation>
+<translation id="6628646143828354685">Omogoča nastavitev, ali lahko spletna mesta dostopajo do naprav Bluetooth v bližini. Dostop je mogoče v celoti blokirati ali pa je uporabnik vprašan, ko želi spletno mesto dostopati do naprav Bluetooth v bližini.
+
+          Če ta pravilnik ni nastavljen, je uporabljeno »3« in uporabnik lahko to spremeni.</translation>
 <translation id="6636268606788232221">Konfigurira nastavitve upravljanja energije, ko uporabnik postane nedejaven.
 
           Ta pravilnik nadzira različne nastavitve za strategijo upravljanja energije, ko uporabnik postane nedejaven.
@@ -1702,6 +1715,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
 
           Če ta pravilnik ni nastavljen, možnosti funkcij za ljudi s posebnimi potrebami niso prikazane v meniju sistemske vrstice, vendar lahko uporabniki nastavijo, da so možnosti funkcij za ljudi s posebnimi potrebami prikazane prek strani z nastavitvami.</translation>
+<translation id="6766216162565713893">Dovoli spletnim mestom, da od uporabnika zahtevajo, da omogočijo dostop do naprave Bluetooth v bližini</translation>
 <translation id="6770454900105963262">Poročanje podatkov o aktivnih sejah kioska</translation>
 <translation id="6774533686631353488">Dovoli gostitelje izvornega pošiljanja na uporabniški ravni (nameščene brez dovoljenj skrbnika).</translation>
 <translation id="6786747875388722282">Razširitve</translation>
@@ -1899,6 +1913,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če pravilnik ni nastavljen, bo protokol SPDY na voljo.</translation>
 <translation id="7384999953864505698">Dovoli protokol QUIC</translation>
+<translation id="7406651467768226499">Ali naj se samodejno zagnani aplikaciji za kiosk brez zamika dovoli nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" />.
+
+      Ta pravilnik nadzira, ali naj se samodejno zagnani aplikaciji za kiosk brez zamika dovoli nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /> z označitvijo različice required_platform_version v njenem manifestu in njeno uporabo kot predpono za samodejno posodobitev ciljne različice.
+
+      Če je pravilnik omogočen, se vrednost ključa manifesta required_platform_version samodejno zagnane aplikacije za kiosk brez zamika uporabi kot predpona za samodejno posodobitev ciljne različice.
+
+      Če pravilnik ni konfiguriran ali ni omogočen, je ključ manifesta required_platform_version prezrt in samodejna posodobitev se nadaljuje kot običajno.</translation>
 <translation id="7417972229667085380">Odstotek prilagoditve časovnega zamika nedejavnosti v načinu predstavitve (zastarelo)</translation>
 <translation id="7421483919690710988">Nastavi velikost predpomnilnika medija v bajtih</translation>
 <translation id="7424751532654212117">Seznam izjem za seznam onemogočenih vtičnikov</translation>

@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1091157412887719337">Zuweisung fehlgeschlagen. Kein Modul verfügbar.</translation>
+<translation id="2004526128230838685">Zuweisung fehlgeschlagen. Unbekanntes Problem.</translation>
+<translation id="2023631438558435272">Zuweisung fehlgeschlagen. Ungültige Antwort.</translation>
+<translation id="2353984724370197742">Zuweisung fehlgeschlagen. Netzwerkanfrage fehlgeschlagen.</translation>
+<translation id="3046825211487065480">Zuweisung fehlgeschlagen. Zweite Anfrage wurde vor Antwort auf erste Anfrage gesendet.</translation>
 <translation id="3407245330823033366">Bitte wählen Sie ein Konto zur Nutzung mit Blimp aus.</translation>
+<translation id="3775180005489871350">Zuweisung fehlgeschlagen. Fehler 400 (FEHLERHAFTE ANFRAGE).</translation>
+<translation id="4542350224991263059">Zuweisung fehlgeschlagen. Abgelaufenes Nutzerzugriffs-Token.</translation>
+<translation id="4562971394107096647">Zuweisung fehlgeschlagen. Serverfehler.</translation>
 <translation id="4641972508298030550">Nutzer kann nicht authentifiziert werden.</translation>
+<translation id="5860346505531085166">Zuweisung fehlgeschlagen. Konto hat keinen Zugriff.</translation>
+<translation id="704835510384979817">Zuweisung fehlgeschlagen. Keine übereinstimmende Modulversion.</translation>
+<translation id="7961542533680218955">Zuweisung ist erfolgt.</translation>
 <translation id="8514856595257368555">Token abgerufen.</translation>
 </translationbundle>

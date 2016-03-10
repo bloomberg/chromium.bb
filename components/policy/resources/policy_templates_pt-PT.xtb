@@ -199,6 +199,13 @@
 
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="1859633270756049523">Limitar a duração da sessão</translation>
+<translation id="1859859319036806634">Aviso: a alternativa da versão do TLS será removida do <ph name="PRODUCT_NAME" /> após a versão 52 (em meados de setembro de 2016) e esta política deixa de funcionar nessa altura.
+
+      Anteriormente, quando um handshake de TLS falhava, o <ph name="PRODUCT_NAME" /> tentava estabelecer novamente ligação com uma versão inferior do TLS para contornar os erros dos servidores HTTPS. Esta definição configura a versão na qual este processo alternativo para. Se um servidor executar corretamente a negociação da versão (ou seja, sem interromper a ligação), esta definição não se aplica. Independentemente disso, a ligação resultante deve, mesmo assim, estar em conformidade com a política SSLVersionMin.
+
+      Se esta política não estiver configurada ou estiver definida para "tls1.2", o <ph name="PRODUCT_NAME" /> já não executa este processo alternativo. Tenha em atenção que esta operação não desativa o suporte para versões mais antigas do TLS, mas determina apenas se o <ph name="PRODUCT_NAME" /> deve contornar servidores com erros que não consigam negociar versões corretamente.
+
+      Caso contrário, se for necessário manter a compatibilidade com um servidor com erros, é possível definir esta política para "tls1.1". Esta é uma medida temporária e o servidor deve ser reparado rapidamente.</translation>
 <translation id="1861037019115362154">Especifica uma lista de plug-ins desativados no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
 
       Os caracteres universais "*" e "?" podem ser utilizados para estabelecer correspondência com sequências de caracteres arbitrários. "*" corresponde a um número arbitrário de caracteres, ao passo que "?" indica um carácter único opcional, ou seja, corresponde aos caracteres zero ou um. O carácter de escape é "\", pelo que, para fazer corresponder os caracteres reais "*", "?" ou "\", pode colocar um "\" à frente deles.
@@ -540,6 +547,7 @@
       Especifica se a extensão de certificados de vinculação ao domínio TLS deveria ser ativada.
 
       Esta definição é utilizada para ativar os certificados de vinculação ao domínio TLS para testes. Esta definição experimental será removida no futuro.</translation>
+<translation id="2957506574938329824">Não permitir que os sites solicitem acesso a dispositivos Bluetooth através da API Web Bluetooth</translation>
 <translation id="2957513448235202597">Tipo de conta para a autenticação <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regras para ignorar o proxy</translation>
 <translation id="2960691910306063964">Ativar ou desativar a autenticação sem PIN para anfitriões de acesso remoto</translation>
@@ -553,6 +561,7 @@
 
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ou iguais ao atraso para desligar o ecrã (se estiver definido) e ao atraso de inatividade.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
+<translation id="2987227569419001736">Controlar a utilização da API Web Bluetooth</translation>
 <translation id="2998881342848488968">Esta política permite ao <ph name="PRODUCT_OS_NAME" /> ignorar qualquer proxy para autenticação do portal cativo.
 
       Esta política apenas é efetiva se um proxy estiver configurado (por exemplo através da política, pelo utilizador em chrome://settings ou por extensões).
@@ -1426,6 +1435,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, o teclado no ecrã é desativado quando o ecrã de início de sessão é apresentado pela primeira vez. Os utilizadores podem ativar ou desativar o teclado no ecrã a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
+<translation id="6628646143828354685">Permite definir se os Websites estão autorizados a obter acesso a dispositivos Bluetooth próximos. É possível bloquear completamente o acesso ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos Bluetooth próximos.
+
+          Se esta política não for definida, é utilizada a definição "3" e o utilizador pode alterá-la.</translation>
 <translation id="6636268606788232221">Configure definições de gestão de energia quando o utilizador fica inativo.
 
           Esta política controla várias definições para a estratégia de gestão de energia quando o utilizador fica inativo.
@@ -1501,6 +1513,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se definir esta política, os utilizadores não a podem alterar nem substituir.
 
           Se esta política não for definida, as opções de Acessibilidade não aparecerão no menu do tabuleiro do sistema, mas o utilizador pode fazer com que as opções de Acessibilidade apareçam através da página Definições.</translation>
+<translation id="6766216162565713893">Permitir que os sites solicitem ao utilizador a concessão de acesso a dispositivos Bluetooth próximos</translation>
 <translation id="6770454900105963262">Comunicar informações acerca de sessões ativas do quiosque</translation>
 <translation id="6774533686631353488">Permitir anfitriões de Mensagens nativas de nível de utilizador (instalados sem autorizações de administração).</translation>
 <translation id="6786747875388722282">Extensões</translation>

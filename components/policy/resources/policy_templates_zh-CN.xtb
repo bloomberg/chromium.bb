@@ -103,7 +103,7 @@
 
       如果此政策未设置，则对于受企业管理的用户，将使用默认值“MultiProfileUserBehaviorMustBePrimary”；对于不受企业管理的用户，则使用“MultiProfileUserBehaviorUnrestricted”。</translation>
 <translation id="1465619815762735808">点击运行</translation>
-<translation id="1468307069016535757">设置登录屏幕上高反差模式无障碍功能的默认状态。
+<translation id="1468307069016535757">设置登录屏幕上高反差模式辅助功能的默认状态。
 
           如果此政策的值设为 True，则登录屏幕显示时将会启用高反差模式。
 
@@ -178,6 +178,13 @@
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="1859633270756049523">限制会话的长度</translation>
+<translation id="1859859319036806634">警告：从 52 版开始，<ph name="PRODUCT_NAME" /> 中将取消 TLS 版本回退功能（2016 年 9 月左右）。届时，此政策将不再有效。
+
+      如果 TLS 握手失败，<ph name="PRODUCT_NAME" /> 会首先重新尝试使用较低版本的 TLS 建立连接，以便忽略 HTTPS 服务器中的错误。此设置用于指定可回退到的最低版本。如果服务器正确地执行了版本协商（即没有中断连接），系统将不会应用此设置。无论怎样，最终的连接仍必须符合 SSLVersionMin 的规定。
+
+      如果此政策未配置或设为“tls1.2”，<ph name="PRODUCT_NAME" /> 将不再执行此回退。请注意，这并不会导致停止支持旧版 TLS，只是用于指定 <ph name="PRODUCT_NAME" /> 是否忽略存在错误且无法正确协商版本的服务器。
+
+      在其他情况下，如果必须与存在错误的服务器保持兼容，则可将此政策设为“tls1.1”。这是一种权宜之计，服务器中的错误应该很快会得到解决。</translation>
 <translation id="1861037019115362154">指定在 <ph name="PRODUCT_NAME" />中停用的插件列表，并禁止用户更改此设置。
 
       可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。
@@ -247,7 +254,7 @@
 <translation id="2170233653554726857">启用WPAD优化</translation>
 <translation id="2188979373208322108">在 <ph name="PRODUCT_NAME" />中启用书签栏。如果您启用了此设置，<ph name="PRODUCT_NAME" />就会显示书签栏。如果您停用了此设置，用户就从不会看到书签栏。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" />中更改或替换此设置。如果未进行此设置，用户就可以决定是否使用此功能。</translation>
 <translation id="2201555246697292490">配置本地消息传递主机白名单</translation>
-<translation id="2204753382813641270">控制文件架是否自动隐藏</translation>
+<translation id="2204753382813641270">控制任务栏是否自动隐藏</translation>
 <translation id="2208976000652006649">在使用 POST 的搜索网址中所需的参数</translation>
 <translation id="2223598546285729819">默认通知设置</translation>
 <translation id="2231817271680715693">首次运行时，从默认浏览器导入浏览记录</translation>
@@ -398,7 +405,7 @@
       如果该政策未设置或设置为True，而设备本地帐户又配置为零延迟自动登录，则当设备无法访问互联网时，<ph name="PRODUCT_OS_NAME" />将显示网络配置提示。
 
       如果该政策设置为False，那么系统将显示错误消息，而不是网络配置提示。</translation>
-<translation id="2498238926436517902">始终自动隐藏文件架</translation>
+<translation id="2498238926436517902">始终自动隐藏任务栏</translation>
 <translation id="2514328368635166290">指定默认搜索服务提供商的首选图标网址。此政策是可选的，如果未设置，搜索服务提供商就不会显示任何图标。要实施此政策，必须启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2516525961735516234">指定视频活动是否影响电源管理。
 
@@ -510,6 +517,7 @@
       用于指定是否启用TLS网域绑定证书扩展程序。
 
       此政策用于启用TLS网域绑定证书扩展程序，以便进行测试。这一实验性政策日后将会弃用。</translation>
+<translation id="2957506574938329824">不允许任何网站通过 Web Bluetooth API 请求访问蓝牙设备</translation>
 <translation id="2957513448235202597">进行 <ph name="HTTP_NEGOTIATE" />身份验证时使用的帐户类型</translation>
 <translation id="2959898425599642200">代理绕过规则</translation>
 <translation id="2960691910306063964">针对远程访问主机启用或停用无 PIN 码身份验证</translation>
@@ -523,6 +531,7 @@
 
           指定的政策值应以毫秒为单位，并且不得大于屏幕关闭延迟时间（如果设置了的话）和闲置延迟时间。</translation>
 <translation id="2987155890997901449">启用 ARC</translation>
+<translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
 <translation id="2998881342848488968">此政策允许 <ph name="PRODUCT_OS_NAME" />在进行强制门户身份验证时跳过任何代理服务器。
 
       只有在配置了代理服务器时（例如，通过政策配置、由用户在 chrome://settings 中配置，或通过扩展程序配置），此政策才会生效。
@@ -693,12 +702,12 @@
 
       如果此政策设为false，用户登录后将无法在设备上使用音频输出。
 
-      此政策会影响所有类型的音频输出，而不只是影响内置扬声器。音频无障碍功能也受此政策约束。如果用户需要使用屏幕阅读器，请勿启用此政策。
+      此政策会影响所有类型的音频输出，而不只是影响内置扬声器。音频辅助功能也受此政策约束。如果用户需要使用屏幕阅读器，请勿启用此政策。
 
       如果此政策设为true或未配置，用户将可以在其设备上使用所有受支持的音频输出。</translation>
 <translation id="3808945828600697669">指定已停用插件的列表</translation>
 <translation id="3816312845600780067">启用停止自动登录的键盘快捷键</translation>
-<translation id="3820526221169548563">启用屏幕键盘无障碍功能。
+<translation id="3820526221169548563">启用屏幕键盘辅助功能。
 
           如果此政策设为true，屏幕键盘将始终处于启用状态。
 
@@ -741,7 +750,7 @@
 <translation id="3964909636571393861">允许访问网址列表</translation>
 <translation id="3965339130942650562">对待机用户执行退出操作前的超时时间</translation>
 <translation id="3967075520570946456">在操作系统升级后，允许该浏览器首次启动时显示欢迎页面。</translation>
-<translation id="3973371701361892765">一律不自动隐藏文件架</translation>
+<translation id="3973371701361892765">一律不自动隐藏任务栏</translation>
 <translation id="3984028218719007910">确定 <ph name="PRODUCT_OS_NAME" />是否要在退出后保留本地帐户数据。如果将此政策设置为 true，<ph name="PRODUCT_OS_NAME" />就不会持续保留帐户，且会在退出后舍弃用户会话中的所有数据。如果未配置此政策或将其设置为 false，设备就会保留（经过加密的）本地用户数据。</translation>
 <translation id="4001275826058808087">企业设备的IT管理员可以使用此项控制是否允许用户通过注册Chrome操作系统兑换优惠。
 
@@ -803,6 +812,7 @@
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更高版本</translation>
+<translation id="4322842393287974810">允许信息亭模式下的自动启动型零延迟应用控制 <ph name="PRODUCT_OS_NAME" />版本</translation>
 <translation id="4325690621216251241">向系统任务栏添加退出按钮</translation>
 <translation id="4347908978527632940">如果设为 true 且该用户是受监管用户，则其他 Android 应用可以通过内容提供方查询该用户的网络限制。
 
@@ -896,7 +906,7 @@
           如果此政策未设置，那么即使检测到某个服务器在内网上，<ph name="PRODUCT_NAME" /> 也不会委托用户凭据。</translation>
 <translation id="4752880493649142945">连接到 RemoteAccessHostTokenValidationUrl 时使用的客户端证书</translation>
 <translation id="4768493164188395498">发送监测信息的频率</translation>
-<translation id="4791031774429044540">启用大号光标无障碍功能。
+<translation id="4791031774429044540">启用大号光标辅助功能。
 
           如果此政策的值设为 True，则系统将会始终启用大号光标。
 
@@ -1101,15 +1111,15 @@
 
       如果未指定，则不会修改变体种子网址。</translation>
 <translation id="5564962323737505851">配置密码管理器。如果密码管理器已启用，您可以选择是否允许用户以明文形式显示存储的密码。</translation>
-<translation id="556941986578702361">控制 <ph name="PRODUCT_OS_NAME" />文件架是否自动隐藏。
+<translation id="556941986578702361">控制 <ph name="PRODUCT_OS_NAME" />任务栏是否自动隐藏。
 
-      如果此策略设置为“AlwaysAutoHideShelf”，文件架将始终自动隐藏。
+      如果此策略设置为“AlwaysAutoHideShelf”，任务栏将始终自动隐藏。
 
-      如果此策略设置为“NeverAutoHideShelf”，文件架一律不自动隐藏。
+      如果此策略设置为“NeverAutoHideShelf”，任务栏一律不自动隐藏。
 
       如果您设置了此策略，那么用户将无法更改或覆盖此策略。
 
-      如果未设置此策略，那么用户将可以选择是否自动隐藏文件架。</translation>
+      如果未设置此策略，那么用户将可以选择是否自动隐藏任务栏。</translation>
 <translation id="557658534286111200">启用或停用书签修改功能</translation>
 <translation id="5586942249556966598">不执行任何操作</translation>
 <translation id="5613179474872285001">配置强制远程访问客户端使用的必要客户端域名，并禁止用户进行更改。
@@ -1177,7 +1187,7 @@
 <translation id="5826047473100157858">指定用户是否可以在 <ph name="PRODUCT_NAME" />中以隐身模式打开网页。如果选择“已启用”或未设置此政策，则允许以隐身模式打开网页。如果选择“已停用”，则不能以隐身模式打开网页。如果选择“强制”，则只能以隐身模式打开网页。</translation>
 <translation id="5836064773277134605">限制远程访问主机使用的UDP端口范围</translation>
 <translation id="5845159892130426052">启用 ShowModalDialog API，有效期至 2015 年 4 月 30 日</translation>
-<translation id="5862253018042179045">设置登录屏幕上语音反馈无障碍功能的默认状态。
+<translation id="5862253018042179045">设置登录屏幕上语音反馈辅助功能的默认状态。
 
           如果此政策的值设为 True，则登录屏幕显示时将会启用语音反馈。
 
@@ -1208,7 +1218,7 @@
           如果您已停用或未配置此设置，那么系统将不会经由代理处理gnubby身份验证请求。</translation>
 <translation id="5912364507361265851">允许用户在“密码管理器”中显示密码</translation>
 <translation id="5921713479449475707">允许通过 HTTP 自动更新下载内容</translation>
-<translation id="5921888683953999946">设置登录屏幕上大号光标无障碍功能的默认状态。
+<translation id="5921888683953999946">设置登录屏幕上大号光标辅助功能的默认状态。
 
           如果此政策的值设为 True，则登录屏幕显示时将会启用大号光标。
 
@@ -1374,7 +1384,7 @@
      ChromeOsReleaseChannel 策略将会覆盖用户选择的版本，但是，如果该策略版本比设备上已安装的版本更稳定，那么仅当较稳定版本的版本值高于设备上已安装版本时，系统才会切换版本。</translation>
 <translation id="6559057113164934677">不允许任何网站使用摄像头和麦克风</translation>
 <translation id="6561396069801924653">在系统任务栏菜单中显示无障碍选项</translation>
-<translation id="6565312346072273043">设置屏幕键盘无障碍功能在登录屏幕上的默认状态。
+<translation id="6565312346072273043">设置屏幕键盘辅助功能在登录屏幕上的默认状态。
 
           如果此政策设为true，登录屏幕打开后，屏幕键盘将处于启用状态。
 
@@ -1384,6 +1394,9 @@
 
           如果此政策未设置，登录屏幕初次打开时会停用屏幕键盘。用户可以随时启用或停用屏幕键盘，并且屏幕键盘在登录屏幕上的状态对各用户均有效。</translation>
 <translation id="6598235178374410284">用户头像图片</translation>
+<translation id="6628646143828354685">可让您设置是否允许网站访问附近的蓝牙设备。您可以完全禁止此类访问，也可以设为每当有网站希望访问附近的蓝牙设备时均征求用户同意。
+
+          如果此政策未设置，系统将使用“3”，并且用户可以更改此设置。</translation>
 <translation id="6636268606788232221">配置设备闲置时的电源管理设置。
 
           此政策用于控制设备闲置时电源管理策略中的多个相关设置。
@@ -1460,6 +1473,7 @@
           如果您设置了此政策，用户将无法对其进行更改或覆盖。
 
           如果此政策未设置，系统任务栏菜单中将不会显示无障碍选项，但用户可以通过“设置”页面使无障碍选项显示在系统任务栏菜单中。</translation>
+<translation id="6766216162565713893">允许网站请求用户授予对附近蓝牙设备的访问权限</translation>
 <translation id="6770454900105963262">报告信息亭模式下的当前会话的相关信息</translation>
 <translation id="6774533686631353488">允许使用用户级本地消息传递主机（安装时没有管理员权限）。</translation>
 <translation id="6786747875388722282">扩展程序</translation>
@@ -1476,7 +1490,7 @@
 
       确定在演示会话启动时要加载的网址集。此政策将替换其他任何用于设置初始网址的机制，因此仅适用于与特定用户无关的会话。</translation>
 <translation id="6908640907898649429">配置默认搜索服务提供商。您可以指定用户会使用的默认搜索服务提供商，或选择停用默认搜索。</translation>
-<translation id="6915442654606973733">启用语音反馈无障碍功能。
+<translation id="6915442654606973733">启用语音反馈辅助功能。
 
           如果此政策的值设为 True，则系统将始终启用语音反馈。
 
@@ -1636,6 +1650,13 @@
 
       如果未设置此政策，就可以使用 SPDY 协议。</translation>
 <translation id="7384999953864505698">允许使用 QUIC 协议</translation>
+<translation id="7406651467768226499">是否允许信息亭模式下的自动启动型零延迟应用控制 <ph name="PRODUCT_OS_NAME" />版本。
+
+      该政策通过在清单中声明 required_platform_version 并将其用作自动更新目标版本前缀，来控制是否允许信息亭模式下的自动启动型零延迟应用控制 <ph name="PRODUCT_OS_NAME" />版本。
+
+      如果该政策设为“true”，信息亭模式下的自动启动型零延迟应用的 required_platform_version 清单键值便会被用作自动更新目标版本前缀。
+
+      如果该政策设为“false”或未配置，required_platform_version 清单键便会被忽略，并且系统会按照常规流程进行自动更新。</translation>
 <translation id="7417972229667085380">演示模式下待机延迟时间的调整幅度（百分比）（已弃用）</translation>
 <translation id="7421483919690710988">设置媒体磁盘缓存大小（字节）</translation>
 <translation id="7424751532654212117">已停用插件列表的例外情况</translation>
@@ -1691,7 +1712,7 @@
           此政策仅供 <ph name="PRODUCT_NAME" /> 在内部使用。</translation>
 <translation id="7712109699186360774">每当有网站要使用摄像头和/或麦克风时都要询问</translation>
 <translation id="7715711044277116530">演示模式下屏幕变暗延迟时间的调整幅度（百分比）</translation>
-<translation id="7717938661004793600">配置 <ph name="PRODUCT_OS_NAME" />无障碍功能。</translation>
+<translation id="7717938661004793600">配置 <ph name="PRODUCT_OS_NAME" />辅助功能。</translation>
 <translation id="7719251660743813569">控制是否要将使用情况指标报告回 Google。如果将此政策设置为 true，<ph name="PRODUCT_OS_NAME" />将报告使用情况指标。如果未配置此政策或将其设置为 false，指标报告就会停用。</translation>
 <translation id="7749402620209366169">为远程访问主机启用双重身份验证，而不是采用用户指定的 PIN。
 
@@ -1794,7 +1815,7 @@
 
       如果此政策设为False，则不报告接口列表。</translation>
 <translation id="8146727383888924340">允许用户通过注册 Chrome 操作系统来兑换优惠</translation>
-<translation id="8148901634826284024">启用高反差模式无障碍功能。
+<translation id="8148901634826284024">启用高反差模式辅助功能。
 
           如果此政策的值设为 True，则系统将始终启用高反差模式。
 

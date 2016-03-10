@@ -204,6 +204,13 @@
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="1859633270756049523">Begrens innloggingstiden</translation>
+<translation id="1859859319036806634">Advarsel: TLS-versjonen som fungerer som reserveløsning, fjernes fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
+
+      Når et TLS-håndtrykk mislykkes, ville <ph name="PRODUCT_NAME" /> tidligere prøvd å koble til på nytt med en dårligere versjon av TLS for å omgå feil på HTTPS-tjenere. Denne tjenesten konfigurerer hvilken versjon denne reserveprosessen stopper på. Hvis en tjener utfører versjonsforhandlingen riktig (det vil si uten å bryte tilkoblingen), gjelder ikke denne innstillingen. Tilkoblingen som opprettes, må uansett rette seg etter SSLVersionMin.
+
+      Hvis denne regelen ikke er konfigurert, eller hvis den er satt til «tls1.2», gjennomfører ikke <ph name="PRODUCT_NAME" /> denne reserveprosessen lenger. Vær oppmerksom på at dette ikke slår av støtten for eldre TLS-versjoner, det avgjør bare om <ph name="PRODUCT_NAME" /> omgår problemer med tjenere som ikke kan forhandle versjoner riktig.
+
+      Hvis det er nødvendig å beholde kompatibiliteten med en tjener med feil, kan denne regelen settes til «tls1.1». Dette er en midlertidig løsning, og tjeneren må fikses så fort som mulig.</translation>
 <translation id="1861037019115362154">Angir en liste over programtillegg deaktivert på <ph name="PRODUCT_NAME" />, og forhindrer brukere fra å endre denne innstillingen.
 
       Du kan bruke jokertegnene «*» og «?» til å matche sekvenser av vilkårlige tegn. «*» matcher et vilkårlig antall tegn, mens  «?» spesifiserer et valgfritt enkelttegn – det matcher med andre ord null eller ett tegn. Escape-tegnet er «\», så om du vil matche tegnene «*», «?», eller «\», kan du plassere «\» foran dem.
@@ -573,6 +580,7 @@
       Angi om TLS-domenebetingende sertifikatsutvidelser bør aktiveres.
 
       Disse innstillingene blir brukt til å aktivere den TLS-domenebetingede sertifikatsutvidelsen for testing. Denne eksperimentelle innstillingen blir fjernet i fremtiden.</translation>
+<translation id="2957506574938329824">Ikke tillat nettsteder å be om tilgang til Bluetooth-enheter via Web Bluetooth API</translation>
 <translation id="2957513448235202597">Kontotype for <ph name="HTTP_NEGOTIATE" />-autentisering</translation>
 <translation id="2959898425599642200">Regler for å omgå mellomtjener</translation>
 <translation id="2960691910306063964">Slå på eller av autentisering uten PIN-kode for fjerntilgangsverter</translation>
@@ -586,6 +594,7 @@
 
           Innstillingsverdien må spesifiseres i millisekunder. Verdien er låst til å være lavere enn eller samsvarende med forsinkelsen for å slå av skjermen (hvis den er konfigurert) og inaktivitetsforsinkelsen.</translation>
 <translation id="2987155890997901449">Slå på ARC</translation>
+<translation id="2987227569419001736">Kontrollér bruken av Web Bluetooth API</translation>
 <translation id="2998881342848488968">Med denne innstillingen kan <ph name="PRODUCT_OS_NAME" /> omgå eventuelle proxy-tjenere for autentisering via obligatoriske sider.
 
       Denne regelen trer bare i kraft hvis en proxy-tjener er konfigurert (for eksempel gjennom administratorinnstillingene, av brukeren i chrome://settings eller av utvidelser).
@@ -882,6 +891,7 @@
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
+<translation id="4322842393287974810">La den automatisk startede kioskappen uten forsinkelse kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
 <translation id="4347908978527632940">Hvis verdien er «true» (sann) og brukeren er en administrert bruker, kan andre Android-apper sende forespørsler om brukerens nettbegrensninger gjennom en innholdsleverandør.
 
@@ -1542,6 +1552,9 @@
           Hvis denne innstillingen ikke angis, deaktiveres skjermtastaturet når påloggingsskjermen først vises. Brukere kan aktivere eller deaktivere
 skjermtastaturet når som helst og statusen den har på påloggingsskjermen er vedvarende mellom brukerne.</translation>
 <translation id="6598235178374410284">Brukerbilde</translation>
+<translation id="6628646143828354685">Gjør det mulig å velge om nettsteder har lov til å få tilgang til Bluetooth-enheter i nærheten. Tilgangen kan blokkeres helt, eller brukeren kan bli spurt hver gang et nettsted vil ha tilgang til Bluetooth-enheter i nærheten.
+
+          Hvis denne regelen ikke angis, brukes «3», og brukeren kan endre denne innstillingen.</translation>
 <translation id="6636268606788232221">Konfigurer innstillingene for strømstyring når brukeren er inaktiv.
 
           Denne regelen kontrollerer flere innstillinger for strømstyring når brukeren er inaktiv.
@@ -1634,6 +1647,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
           Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
 
           Hvis denne innstillingen ikke angis, vises ikke tilgjengelighetsalternativer i systemstatusfeltet, men brukeren kan få tilgjengelighetsalternativene frem via Innstillinger-siden.</translation>
+<translation id="6766216162565713893">La nettsteder be brukeren om tilgang til Bluetooth-enheter i nærheten</translation>
 <translation id="6770454900105963262">Rapportér informasjon om aktive kioskøkter</translation>
 <translation id="6774533686631353488">Tillat bruk av integrerte meldingsverter på brukernivå (installert uten administratorrettigheter).</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
@@ -1822,6 +1836,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis disse retningslinjene ikke angis, blir SPDY tilgjengelig.</translation>
 <translation id="7384999953864505698">Tillater QUIC-protokollen</translation>
+<translation id="7406651467768226499">Spesifiserer om den automatisk startede kioskappen uten forsinkelse skal kunne kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen.
+
+      Denne regelen kontrollerer om den automatisk startede kioskappen uten forsinkelse skal kunne kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen ved å erklære en required_platform_version i manifestet og bruke den som prefiks for den automatisk oppdaterte målversjonen.
+
+      Hvis regelen er satt til «true» (sann), brukes verdien i manifestnøkkelen required_platfrom_version for den automatisk startede kioskappen uten forsinkelse som prefiks for den automatisk oppdaterte målversjonen.
+
+      Hvis regelen ikke er konfigurert eller er satt til «false» (usann), skal manifestnøkkelen required_platform_version ignoreres, og den automatiske oppdateringen fortsetter som normalt.</translation>
 <translation id="7417972229667085380">Prosentandelen for skalering av inaktivitetsforsinkelsen i presentasjonsmodus (avviklet)</translation>
 <translation id="7421483919690710988">Angi størrelse på mediediskbuffer i byte</translation>
 <translation id="7424751532654212117">Liste over unntak fra listen over deaktiverte programtillegg</translation>

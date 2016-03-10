@@ -209,6 +209,13 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="1859633270756049523">Limitar la duración de la sesión</translation>
+<translation id="1859859319036806634">Advertencia: La alternativa de la versión de TLS se retirará de <ph name="PRODUCT_NAME" /> después de la versión 52 (en septiembre de 2016, aproximadamente) y esta política dejará de funcionar.
+
+      Cuando no es posible establecer el protocolo de enlace TLS, <ph name="PRODUCT_NAME" /> ya habrá intentado intentar establecer la conexión con una versión anterior de TLS para evitar errores en los servidores HTTPS. Esta opción configura la versión en la que se detendrá el proceso alternativo. Si un servidor lleva a cabo la negociación de la versión correctamente (es decir, sin interrumpir la conexión) esta opción no se aplica. En cualquier caso, la conexión resultante debe cumplir la política SSLVersionMin.
+
+      Si no se configura esta política o si se le asigna el valor tls1.2, <ph name="PRODUCT_NAME" /> ya no utiliza esta alternativa. Ten en cuenta que, solo si <ph name="PRODUCT_NAME" /> evita el uso de servidores con errores que no puedan negociar las versiones correctamente, no se inhabilita la compatibilidad con versiones anteriores de TLS.
+
+      De lo contrario, el valor tls 1.1 puede asignarse a la política si se debe mantener la compatibilidad con un servidor con errores. Esta es una medida provisional y el servidor debería arreglarse rápidamente.</translation>
 <translation id="1861037019115362154">Permite especificar una lista de complementos inhabilitados en <ph name="PRODUCT_NAME" /> y evita que los usuarios modifiquen esta opción.
 
       Se pueden utilizar los caracteres comodín "*" y "?" para obtener coincidencias con secuencias de caracteres arbitrarios. El carácter "*" permite obtener coincidencias con un número arbitrario de caracteres y "?" especifica un único carácter opcional (puede coincidir con un carácter o con ninguno). Se puede escribir el carácter de escape ("\") delante de los caracteres "*", "?" o "\" para obtener coincidencias con los propios caracteres.
@@ -596,6 +603,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
       Especifica si se debe habilitar la extensión de certificados TLS limitados a dominios.
 
       Esta opción se utiliza para habilitar la extensión de certificados TLS limitados a dominios para pruebas. Esta opción experimental se eliminará en el futuro.</translation>
+<translation id="2957506574938329824">No permitir que los sitios web soliciten acceso a los dispositivos Bluetooth a través de la API Bluetooth web</translation>
 <translation id="2957513448235202597">Tipo de cuenta para la autenticación <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
 <translation id="2960691910306063964">Habilitar o inhabilitar la autenticación sin PIN para host de acceso remoto</translation>
@@ -609,6 +617,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores o iguales al retraso de desconexión de pantalla (si está establecido) y al retraso de inactividad.</translation>
 <translation id="2987155890997901449">Habilitar ARC</translation>
+<translation id="2987227569419001736">Controlar el uso de la API Bluetooth web</translation>
 <translation id="2998881342848488968">Esta política permite a <ph name="PRODUCT_OS_NAME" /> omitir cualquier proxy para la autenticación de portal cautivo.
 
       Esta política solo tendrá validez si se ha configurado un proxy (por ejemplo, a través de una política o de las extensiones, o si lo ha configurado el usuario en chrome://settings).
@@ -930,6 +939,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o posterior</translation>
+<translation id="4322842393287974810">Permite que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Añadir un botón para cerrar sesión en la bandeja del sistema</translation>
 <translation id="4347908978527632940">Si la política está activada y se trata de un usuario supervisado, otras aplicaciones de Android pueden consultar las restricciones web del usuario a través de un proveedor de contenido.
 
@@ -1602,6 +1612,9 @@ Si estableces esta política, los usuarios podrán anularla temporalmente habili
 
 Si no se establece esta política, el teclado en pantalla se inhabilitará la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios podrán habilitar o inhabilitar el teclado en pantalla en cualquier momento y su estado en la pantalla de inicio de sesión se mantendrá para todos los usuarios.</translation>
 <translation id="6598235178374410284">Imagen de avatar del usuario</translation>
+<translation id="6628646143828354685">Permite establecer si los sitios web pueden acceder a los dispositivos Bluetooth cercanos. Se puede bloquear completamente el acceso o se puede establecer que se pida permiso al usuario cada vez que un sitio web quiera acceder a los dispositivos Bluetooth cercanos.
+
+          Si no se establece esta política, se utilizará la política 3 y el usuario podrá cambiarla.</translation>
 <translation id="6636268606788232221">Modifica la configuración de la administración de energía cuando el usuario está inactivo.
 
           Esta política controla diferentes opciones de configuración de la estrategia de administración de energía cuando el usuario está inactivo.
@@ -1694,6 +1707,7 @@ Si esta política se establece en False, las opciones de accesibilidad no se mos
 Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
 Si no se establece esta política, las opciones de accesibilidad no aparecerán en el menú de la bandeja del sistema, pero el usuario podrá provocar que las opciones de accesibilidad aparezcan a través de la página de configuración.</translation>
+<translation id="6766216162565713893">Permitir que los sitios web le pidan permiso al usuario para acceder a dispositivos Bluetooth cercanos</translation>
 <translation id="6770454900105963262">Informar sobre sesiones del kiosco activas</translation>
 <translation id="6774533686631353488">Permitir hosts de mensajes nativos en nivel de usuario (instalados sin permisos de administrador).</translation>
 <translation id="6786747875388722282">Extensiones</translation>
@@ -1885,6 +1899,13 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
       Si no se establece esta política, el protocolo SPDY estará disponible.</translation>
 <translation id="7384999953864505698">Permitir protocolo QUIC</translation>
+<translation id="7406651467768226499">Permitir que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" />.
+
+      Esta política controla si se permitirá que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /> incluyendo required_platform_version en su archivo de manifiesto y la utilice como el prefijo de la versión de destino de actualización automática.
+
+      Si se asigna el valor true a esta política, el valor de la clave de manifiesto required_platform_version de la aplicación de kiosco sin retardo con inicio automático se utilizará como un prefijo de la versión de destino de actualización automática.
+
+      Si esta política no se configura o se le asigna el valor false, la clave de manifiesto required_platform_version se ignorará y la actualización automática se realizará con normalidad.</translation>
 <translation id="7417972229667085380">Porcentaje que permite ajustar el retraso de inactividad en el modo de presentación (política obsoleta)</translation>
 <translation id="7421483919690710988">Establecer tamaño de caché de disco de medios en bytes</translation>
 <translation id="7424751532654212117">Lista de excepciones de la lista de complementos inhabilitados</translation>

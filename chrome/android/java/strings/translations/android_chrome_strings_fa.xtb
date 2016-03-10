@@ -22,6 +22,7 @@
 <translation id="1258753120186372309">‏Google doodle: ‏<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
+<translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
 <translation id="129553762522093515">اخیراً بسته شده</translation>
 <translation id="1346090444609141578">صفحه ذخیره‌شده‌ای در اینجا موجود نیست</translation>
 <translation id="1369915414381695676">سایت <ph name="SITE_NAME" /> اضافه شد</translation>
@@ -52,6 +53,7 @@
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
 <translation id="1641113438599504367">مرور ایمن</translation>
+<translation id="164269334534774161">شما در حال تماشای کپی آفلاین این صفحه از <ph name="CREATION_TIME" /> هستید</translation>
 <translation id="1643702317193804718">درحال ترجمه صفحه به <ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1647391597548383849">دسترسی به دوربین</translation>
@@ -128,6 +130,7 @@
 <translation id="2707726405694321444">بازخوانی صفحه</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
 <translation id="271033894570825754">جدید</translation>
+<translation id="2742271047622814453">تنظیمات برگزیده ذخیره‌شده در سایت‌ها ممکن است حذف شوند</translation>
 <translation id="2748463065602559597">‏شما در حال مشاهده یک صفحه امن Google Chrome هستید.</translation>
 <translation id="2762000892062317888">هم‌اکنون</translation>
 <translation id="2770465223704140727">حذف از لیست</translation>
@@ -168,6 +171,7 @@
 <translation id="3303414029551471755">ادامه می‌دهید و محتوا را دانلود می‌کنید؟</translation>
 <translation id="3328801116991980348">اطلاعات سایت</translation>
 <translation id="3350687908700087792">بستن همه برگه‌های ناشناس</translation>
+<translation id="3351441609270267898">وارد کردن داده‌های موجود</translation>
 <translation id="3358663646935160692">‏<ph name="DOMAIN_NAME" /> این حساب را مدیریت می‌کند.
 
 شما با یک حساب مدیریت شده وارد سیستم می‌شوید و به سرپرست این حساب اجازه کنترل نمایه Chrome خود را می‌دهید. داده‌های Chrome شما به‌طور ثابت با این حساب مرتبط می‌شود. با قطع ارتباط از این حساب، کلیه داده‌های Chrome شما در دستگاه حذف می‌شود.</translation>
@@ -179,6 +183,7 @@
 <translation id="3492207499832628349">برگه ناشناس جدید</translation>
 <translation id="3501331331116143684">صفحه به‌صورت آفلاین در <ph name="FOLDER_NAME" /> ذخیره شد</translation>
 <translation id="3518985090088779359">پذیرش و ادامه</translation>
+<translation id="3522247891732774234">به‌روزرسانی موجود است. گزینه‌های بیشتر</translation>
 <translation id="3527085408025491307">پوشه</translation>
 <translation id="3549644494707163724">رمزگذاری همه داده‌های همگام‌سازی‌شده با رمزعبارتی همگام‌سازی خودتان</translation>
 <translation id="360480449234699036">‏بدون ترک صفحه با موضوعات موجود در وب‌سایت‌ها آشنا شوید. لمس کردن برای جستجو، کلمه و نوشتار اطراف آن را به جستجوی Google ارسال می‌کند و معانی، تصاویر، نتایج جستجو و سایر جزئیات را برمی‌گرداند.
@@ -221,8 +226,7 @@
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> نشانک به‌صورت آفلاین ذخیره شد</translation>
 <translation id="423410644998903704">‏Chrome باید به مجوزها دسترسی داشته باشد تا آن‌ها را با این سایت به اشتراک بگذارد.</translation>
-<translation id="4247939399682707041">داده‌های این دستگاه با داده‌های <ph name="ACCOUNT" /> جایگزین می‌شود. با جابه‌جایی به <ph name="ACCOUNT" />، می‌توانید داده‌های موجودتان را بازیابی کنید.</translation>
-<translation id="424864128008805179">‏از Chrome ثبت خروج می‌کنید؟</translation>
+<translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
 <translation id="4254813446494774748">زبان ترجمه:</translation>
 <translation id="4256782883801055595">مجوزهای منبع آزاد</translation>
 <translation id="4259722352634471385">پیمایش مسدود است: <ph name="URL" /></translation>
@@ -371,7 +375,7 @@
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">روشن</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
-<translation id="5965336165840183977">‏با این کار داده‌های همگام‌سازی‌شده پاک می‌شود. از سیستم حساب Google خود ثبت خروج نمی‌شوید. تنظیمات سایت ذخیره‌شده حذف نخواهند شد و می‌توانند منعکس‌کننده عادات مرور شما باشند.</translation>
+<translation id="5965336165840183977">‏با این کار داده‌های همگام‌سازی‌شده پاک می‌شود. از سیستم حساب Google خود خارج نمی‌شوید. تنظیمات سایت ذخیره‌شده حذف نخواهند شد و می‌توانند منعکس‌کننده عادات مرور شما باشند.</translation>
 <translation id="5968595432776860642">در حال پخش «<ph name="VIDEO_TITLE" />»</translation>
 <translation id="6010869025736512584">در حال دسترسی به ورودی ویدیویی</translation>
 <translation id="6012342843556706400">‏Chrome باید به موقعیت مکانی دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
@@ -424,6 +428,7 @@
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
 <translation id="6612856669344839356">ذخیره نشانک</translation>
 <translation id="6627583120233659107">ویرایش پوشه</translation>
+<translation id="6647073004883890710">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه <ph name="USERNAME" /> را برای این سایت به‌روزرسانی کند؟</translation>
 <translation id="6656545060687952787">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK" />به‌روزرسانی مجوزها<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">از یک سرویس پیش‌بینی استفاده می‌شود تا هم‌زمان با تایپ کردن شما در نوار آدرس، عبارت‌های جستجوی مرتبط و وب‌سایت‌های محبوب نشان داده شوند</translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
@@ -451,7 +456,6 @@
 <translation id="6868088497967843822">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌هایتان، به سیستم وارد شوید</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6963766334940102469">حذف نشانک‌ها</translation>
-<translation id="6964496835063002391">افزودن حساب</translation>
 <translation id="6965382102122355670">تأیید</translation>
 <translation id="6973630695168034713">پوشه‌ها</translation>
 <translation id="6978479750597523876">بازنشانی تنظیمات ترجمه</translation>
@@ -483,6 +487,7 @@
 <translation id="7324738665594301612">‏در حال آزمایش پروکسی کردن صفحات HTTPS از طریق سرورهای Google به عنوان بخشی از یک آزمایش هستیم.</translation>
 <translation id="7346217184097589238">تنظیمات سایت ذخیره‌شده حذف نخواهند شد و می‌توانند منعکس‌کننده عادات مرور شما باشند.</translation>
 <translation id="7346909386216857016">بله متوجه شدم.</translation>
+<translation id="7347770551817603360">محتوای آفلاین</translation>
 <translation id="7363354739009474003">در حال بارگیری «<ph name="VIDEO_TITLE" />»</translation>
 <translation id="7366340029385295517">درحال فرستادن به <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">نوع:</translation>
@@ -543,6 +548,7 @@
 <translation id="8050319187894766337">صفحه به‌صورت آفلاین ذخیره شد. حافظه پر است.</translation>
 <translation id="8068648041423924542">انتخاب گواهی ممکن نیست.</translation>
 <translation id="8069239273282989646">بعد از فشرده‌سازی</translation>
+<translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="8084156870963450514">به سیستم وارد شوید تا از هر دستگاهی به محتوای وبی‌تان دسترسی داشته باشید</translation>
 <translation id="8106211421800660735">شماره کارت اعتباری</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
@@ -565,6 +571,7 @@
 <translation id="8413385045638830869">ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8429160401486700187">حذف صفحه‌های ذخیره‌شده</translation>
+<translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
 <translation id="8481940801237642152">اتصال شما به این سایت خصوصی است، اما ممکن است شخصی در شبکه بتواند ظاهر این صفحه را تغییر دهد.</translation>
 <translation id="8493948351860045254">آزاد کردن فضا</translation>
 <translation id="8497726226069778601">هنوز… چیزی برای دیدن وجود ندارد</translation>
@@ -609,6 +616,7 @@
 <translation id="8987061207681586800">‏Chrome را برای خود اختصاصی کنید</translation>
 <translation id="9019902583201351841">مدیریت شده توسط والدین شما</translation>
 <translation id="9020607083536754075">بستن برگه کنونی و برگشت و به برنامه قبلی</translation>
+<translation id="9038649477754266430">استفاده از یک سرویس پیش‌بینی برای بار کردن سریع‌تر صفحه‌ها</translation>
 <translation id="9050666287014529139">عبارت عبور</translation>
 <translation id="9060538597317784206">‏مشاهده برنامه <ph name="APP_NAME" /> در فروشگاه Play.  رتبه‌بندی: <ph name="APP_RATING" /></translation>
 <translation id="9063523880881406963">خاموش کردن درخواست سایت رایانه‌ای</translation>

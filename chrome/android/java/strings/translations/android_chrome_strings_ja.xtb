@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1040144152982955218">デバイスを検索しています… <ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">警告</translation>
 <translation id="10614374240317010">未保存</translation>
 <translation id="1061441684050139317">このサイトとマイクを共有するには Chrome にマイクへのアクセスを許可する必要があります。</translation>
@@ -8,6 +9,7 @@
 <translation id="1095407227123756519">アカウントを追加すると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="1098052486217676340">終了しました</translation>
 <translation id="1121094540300013208">利用状況と障害レポート</translation>
+<translation id="1137305377394488060">過去 1 時間</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="1197267115302279827">ブックマークを移動</translation>
@@ -20,6 +22,7 @@
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
+<translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを消去…</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="1346090444609141578">ここに保存されているページはありません</translation>
 <translation id="1369915414381695676">サイト <ph name="SITE_NAME" /> を追加しました</translation>
@@ -50,6 +53,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
 <translation id="1641113438599504367">セーフ ブラウジング</translation>
+<translation id="164269334534774161">このページの <ph name="CREATION_TIME" /> のオフライン コピーを表示しています</translation>
 <translation id="1643702317193804718">ページを<ph name="SOURCE_LANGUAGE" />に翻訳しています...</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1647391597548383849">カメラへのアクセス</translation>
@@ -99,6 +103,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2381756643783702095">送信する前に確認する（推奨）</translation>
+<translation id="2385560268894525395">過去 1 週間</translation>
 <translation id="2387895666653383613">テキストの拡大と縮小</translation>
 <translation id="238909021488141516">コンテンツのダウンロード中にエラーが発生しました。</translation>
 <translation id="2414886740292270097">暗</translation>
@@ -125,6 +130,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="2707726405694321444">ページを更新</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="271033894570825754">新しいファイル</translation>
+<translation id="2742271047622814453">サイトで保存した設定が削除されることがあります</translation>
 <translation id="2748463065602559597">Google Chrome の安全なページを表示しています。</translation>
 <translation id="2762000892062317888">たった今</translation>
 <translation id="2770465223704140727">リストから削除</translation>
@@ -139,8 +145,10 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="2956410042958133412">このアカウントは <ph name="PARENT_NAME_1" /> と <ph name="PARENT_NAME_2" /> によって管理されています。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">証明書ビューア</translation>
+<translation id="2996291259634659425">パスフレーズの作成</translation>
 <translation id="2996809686854298943">URLが必要です</translation>
 <translation id="3029704984691124060">パスフレーズが一致しません</translation>
+<translation id="3036750288708366620"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">動画を保存</translation>
 <translation id="306566828762083630">デバイスのストレージがいっぱいです。他のメディアを削除して容量を空けてください。</translation>
 <translation id="307329814453917357">Google 翻訳を使ってページを翻訳するかどうかを尋ねます</translation>
@@ -151,6 +159,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
 <translation id="3207960819495026254">ブックマークしました</translation>
+<translation id="321773570071367578">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="3227137524299004712">マイク</translation>
 <translation id="3232754137068452469">ウェブアプリ</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -162,6 +171,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="3303414029551471755">コンテンツのダウンロードに進みますか？</translation>
 <translation id="3328801116991980348">サイト情報</translation>
 <translation id="3350687908700087792">すべてのシークレット タブを閉じます</translation>
+<translation id="3351441609270267898">既存のデータをインポートする</translation>
 <translation id="3358663646935160692">このアカウントは <ph name="DOMAIN_NAME" /> によって管理されています。
 
 管理対象アカウントでログインし、アカウントの管理者に自分の Chrome プロフィールの管理を委ねようとしています。あなたの Chrome データはこのアカウントに永続的に関連付けられます。このアカウントを切り離すと、ローカルの Chrome データが削除されます。</translation>
@@ -173,6 +183,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="3492207499832628349">新しいシークレット タブ</translation>
 <translation id="3501331331116143684"><ph name="FOLDER_NAME" /> にページをオフライン保存しました</translation>
 <translation id="3518985090088779359">同意して続行</translation>
+<translation id="3522247891732774234">アップデートが見つかりました。その他のオプション</translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3549644494707163724">同期パスフレーズで同期データをすべて暗号化する</translation>
 <translation id="360480449234699036">ウェブサイト上のトピックについてページを移動せずに調べられます。[タップして検索] を使用すると、単語とその周囲のコンテキストが Google 検索に送信され、定義、画像、検索結果などの情報が返されます。
@@ -193,6 +204,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="3895926599014793903">強制的にズームを有効にする</translation>
 <translation id="3917783807003067648">位置情報はブロック</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="3931947361983910192">過去 4 週間</translation>
 <translation id="393697183122708255">有効な音声検索がありません</translation>
 <translation id="3950820424414687140">ログイン</translation>
 <translation id="3988213473815854515">位置情報は許可</translation>
@@ -214,6 +226,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> のブックマークをオフライン保存しました</translation>
 <translation id="423410644998903704">このサイトと機能を共有するには Chrome にアクセスを許可する必要があります。</translation>
+<translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4254813446494774748">翻訳言語:</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
@@ -233,6 +246,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="4457399174246232812">今後、近くのフィジカル ウェブページは通知リストに表示されます</translation>
 <translation id="4498934959426056365">キーの生成</translation>
 <translation id="4505554159887937799">オフライン保存したページ</translation>
+<translation id="4508440807153586353">パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、同期をリセットする必要があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 日前}other{# 日前}}</translation>
 <translation id="4522570452068850558">詳細</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
@@ -297,6 +311,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="5233638681132016545">新しいタブ</translation>
 <translation id="5271967389191913893">デバイスでダウンロード コンテンツを開くことができません。</translation>
 <translation id="5275558766013849309">タブは最近使ったアプリと一緒に表示されます。</translation>
+<translation id="5284584623296338184">今後、ブックマーク、履歴、パスワードなどの設定への変更は Google アカウントに同期されません。ただし、既存のデータは Google アカウントに保存されたままとなります。</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5302048478445481009">言語</translation>
 <translation id="5304593522240415983">この項目は必須です</translation>
@@ -315,6 +330,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="5424715742813396254">保存した名前 / パスワードまたは例外の編集</translation>
 <translation id="5442257541162692417">保存したページを編集してください</translation>
 <translation id="544291274896356069">このリンクを外部アプリケーションで開くと、シークレット モードが解除されます。続行しますか？</translation>
+<translation id="5487521232677179737">データを消去</translation>
 <translation id="5487729733663684359">このバージョンの Android では Chrome の更新はサポートされなくなりました。</translation>
 <translation id="5511351932351731210">常に送信</translation>
 <translation id="5512137114520586844">このアカウントは <ph name="PARENT_NAME" /> によって管理されています。</translation>
@@ -360,6 +376,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="5911030830365207728">Google 翻訳</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="5939518447894949180">リセット</translation>
+<translation id="5965336165840183977">すべての端末から同期データを消去します。Google アカウントからのログアウトは行われません。保存済みのサイトの設定は消去されず、普段の閲覧行動を反映した設定などが残る可能性もあります。</translation>
 <translation id="5968595432776860642">「<ph name="VIDEO_TITLE" />」を再生しています</translation>
 <translation id="6010869025736512584">ビデオ入力にアクセスしています</translation>
 <translation id="6012342843556706400">このサイトと位置情報を共有するには Chrome に位置情報へのアクセスを許可する必要があります。</translation>
@@ -412,6 +429,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
 <translation id="6612856669344839356">ブックマークを保存</translation>
 <translation id="6627583120233659107">フォルダを編集</translation>
+<translation id="6647073004883890710"><ph name="PASSWORD_MANAGER_BRAND" /> に保存されているこのサイトの <ph name="USERNAME" /> のパスワードを更新しますか？</translation>
 <translation id="6656545060687952787">デバイスをスキャンするには、Chrome で位置情報にアクセスする必要があります。<ph name="BEGIN_LINK" />権限を更新<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">予測サービスを使用し、アドレスバーへの入力時に関連性の高い検索キーワードや人気のウェブサイトを表示します</translation>
 <translation id="666981079809192359">Chrome のプライバシーに関するお知らせ</translation>
@@ -422,6 +440,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="6720988912937197322">保存したページはオフラインで表示できません</translation>
 <translation id="6722992508235227685">ブックマーク、履歴、パスワードなどの設定が Google アカウントに同期され、どのデバイスでも利用できるようになります。同期する項目は [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で選択できます。</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
+<translation id="6762156594045689028">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6770414673596662518">また、Chrome のセーフ ブラウジング システムにより悪意のあるページが検出され、フィッシング、不正なソフトウェア、有害なダウンロードからユーザーを保護します。</translation>
 <translation id="6784675033504223784">「<ph name="SEARCH_TERM" />」を検索します</translation>
 <translation id="6790428901817661496">再生</translation>
@@ -438,7 +457,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="6868088497967843822">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
-<translation id="6964496835063002391">アカウントを追加</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">フォルダ</translation>
 <translation id="6978479750597523876">翻訳設定をリセット</translation>
@@ -455,6 +473,8 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="7056999826593229648">低速な接続が見つかりました</translation>
 <translation id="7057058088140140610">Google ペイメントのクレジット カードと住所</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
+<translation id="7074853159844403180"><ph name="SITE" /> とペア設定するデバイスを選択:</translation>
+<translation id="7081639897063626814">既存のデータを別に保持する</translation>
 <translation id="7094922512924405309">近くにフィジカル ウェブページは見つかりませんでした</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> 個の開いているタブ</translation>
 <translation id="7096034533295549981">動画を読み込み中</translation>
@@ -466,7 +486,9 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">ブックマークを削除</translation>
 <translation id="7324738665594301612">Google では試験運用の一環として、Google サーバーを経由して HTTPS ページをプロキシ送信するテストを行っています。</translation>
+<translation id="7346217184097589238">保存済みのサイトの設定は消去されず、普段の閲覧行動を反映した設定などが残る可能性もあります。</translation>
 <translation id="7346909386216857016">OK</translation>
+<translation id="7347770551817603360">オフライン コンテンツ</translation>
 <translation id="7363354739009474003">「<ph name="VIDEO_TITLE" />」を読み込んでいます</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />にキャストしています</translation>
 <translation id="7375125077091615385">タイプ:</translation>
@@ -481,6 +503,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="748127970106343339">デバイス認証情報の削除を確認する</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（<ph name="TIME_SINCE_UPDATE" />に更新）</translation>
 <translation id="7498271377022651285">お待ちください…</translation>
+<translation id="7499262814309712782">同期するアカウント</translation>
 <translation id="7501135638693251872">すべてのブックマーク</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
@@ -526,18 +549,22 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="8050319187894766337">オフライン保存完了（空き容量少）。</translation>
 <translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8069239273282989646">圧縮後</translation>
+<translation id="8073388330009372546">新しいタブで画像を開く</translation>
 <translation id="8084156870963450514">ログインすると、どのデバイスからもウェブ上の自分のデータにアクセスできます</translation>
 <translation id="8106211421800660735">クレジットカード番号</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
 <translation id="8137558756159375272">「タップして検索」では選択したキーワードと現在のページがコンテキストとして Google 検索に送信されます。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で無効にすることができます。</translation>
 <translation id="8146397137182589628">オフライン保存されていません</translation>
 <translation id="8168435359814927499">コンテンツ</translation>
+<translation id="8173098127580644436">始めから</translation>
 <translation id="8200772114523450471">再開</translation>
 <translation id="8209050860603202033">画像を開く</translation>
 <translation id="8218346974737627104">ログインの確認</translation>
 <translation id="8218934717680664417">ワンタップで検索が可能に</translation>
+<translation id="8223946939421658889">データを消去する期間:</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8275818695183729150">許可（アドレスバーでの検索）</translation>
+<translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> に同期しています</translation>
 <translation id="8310344678080805313">標準のタブ</translation>
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
 <translation id="8396312449826231789">承認済みのサイトのみ</translation>
@@ -545,6 +572,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="8413385045638830869">最初に確認する（推奨）</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8429160401486700187">保存したページを削除</translation>
+<translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
 <translation id="8481940801237642152">このサイトへの接続はプライベート接続です。ただし、ネットワーク上のユーザーがこのページのデザインを変更できる可能性はあります。</translation>
 <translation id="8493948351860045254">容量を空ける</translation>
 <translation id="8497726226069778601">表示するものがまだありません</translation>
@@ -585,9 +613,11 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="8941248009481596111">このサイトへの接続はプライベート接続です。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
+<translation id="8979340629087822094">過去 1 日</translation>
 <translation id="8987061207681586800">自分だけの Chrome を</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
 <translation id="9020607083536754075">現在のタブを閉じて前のアプリに戻る</translation>
+<translation id="9038649477754266430">予測サービスを使用してページをより迅速に読み込む</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>
 <translation id="9060538597317784206">Play ストアで <ph name="APP_NAME" /> アプリを表示。レーティング: <ph name="APP_RATING" /></translation>
 <translation id="9063523880881406963">[PC 版サイトを見る] をオフにします</translation>

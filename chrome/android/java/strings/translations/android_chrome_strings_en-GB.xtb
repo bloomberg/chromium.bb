@@ -22,6 +22,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
+<translation id="1291207594882862231">Clear history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Recently closed</translation>
 <translation id="1346090444609141578">No saved pages here</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
@@ -48,6 +49,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
 <translation id="1641113438599504367">Safe Browsing</translation>
+<translation id="164269334534774161">You are viewing an offline copy of this page from <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Translating page to <ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1647391597548383849">Access your camera</translation>
@@ -124,6 +126,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2707726405694321444">Refresh page</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="271033894570825754">New</translation>
+<translation id="2742271047622814453">Saved preferences on sites might get deleted</translation>
 <translation id="2748463065602559597">You are viewing a secure Google Chrome page.</translation>
 <translation id="2762000892062317888">just now</translation>
 <translation id="2770465223704140727">Remove from list</translation>
@@ -164,6 +167,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3303414029551471755">Proceed to download the content?</translation>
 <translation id="3328801116991980348">Site information</translation>
 <translation id="3350687908700087792">Close all incognito tabs</translation>
+<translation id="3351441609270267898">Import existing data</translation>
 <translation id="3358663646935160692">This account is managed by <ph name="DOMAIN_NAME" />.
 
 You are signing in with a managed account and giving its administrator control over your Chrome profile. Your Chrome data will become permanently tied to this account. Disconnecting from this account will delete the local Chrome data.</translation>
@@ -175,6 +179,7 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="3492207499832628349">New incognito tab</translation>
 <translation id="3501331331116143684">Page saved offline to <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
+<translation id="3522247891732774234">Update available. More options</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3549644494707163724">Encrypt all synced data with your own sync passphrase</translation>
 <translation id="360480449234699036">Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
@@ -217,7 +222,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> bookmark saved offline</translation>
 <translation id="423410644998903704">Chrome needs permissions access to share them with this site.</translation>
-<translation id="4247939399682707041">Replace this device’s data with <ph name="ACCOUNT" />’s data. You can retrieve your existing data by switching back to <ph name="ACCOUNT" /></translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4254813446494774748">Translation language:</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
@@ -421,6 +425,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6612358246767739896">Protected content</translation>
 <translation id="6612856669344839356">Save bookmark</translation>
 <translation id="6627583120233659107">Edit folder</translation>
+<translation id="6647073004883890710">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update the password for <ph name="USERNAME" /> for this site?</translation>
 <translation id="6656545060687952787">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK" />Update permissions<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Use a prediction service to show related queries and popular websites as you type in the address bar</translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
@@ -448,7 +453,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6868088497967843822">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
-<translation id="6964496835063002391">Add an account</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Folders</translation>
 <translation id="6978479750597523876">Reset translate settings</translation>
@@ -480,6 +484,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7324738665594301612">We are testing the proxying of HTTPS pages through Google servers as part of an experiment.</translation>
 <translation id="7346217184097589238">Saved site settings will not be deleted and may reflect your browsing habits.</translation>
 <translation id="7346909386216857016">OK, got it</translation>
+<translation id="7347770551817603360">Offline content</translation>
 <translation id="7363354739009474003">Loading “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">Casting to <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Type:</translation>
@@ -540,6 +545,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8050319187894766337">Page saved offline. Storage almost full.</translation>
 <translation id="8068648041423924542">Unable to select certificate.</translation>
 <translation id="8069239273282989646">After compression</translation>
+<translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8084156870963450514">Sign in to access all your web stuff from any device</translation>
 <translation id="8106211421800660735">Credit card number</translation>
 <translation id="813082847718468539">View site information</translation>
@@ -562,6 +568,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8413385045638830869">Ask first (recommended)</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8429160401486700187">Delete saved pages</translation>
+<translation id="8433057134996913067">This will sign you out of most websites.</translation>
 <translation id="8481940801237642152">Your connection to this site is private, but someone on the network might be able to change the look of the page.</translation>
 <translation id="8493948351860045254">Free up space</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
@@ -604,6 +611,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8987061207681586800">Make Chrome yours</translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
 <translation id="9020607083536754075">Close the current tab and return to the previous app</translation>
+<translation id="9038649477754266430">Use a prediction service to load pages more quickly</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9060538597317784206">View app <ph name="APP_NAME" /> on the Play Store.  Rating: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Turn off Request desktop site</translation>

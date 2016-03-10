@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1091157412887719337">Dodelitev ni uspela. Na voljo ni iskalnika.</translation>
+<translation id="2004526128230838685">Dodelitev ni uspela. Neznana težava.</translation>
+<translation id="2023631438558435272">Dodelitev ni uspela. Neveljaven odgovor.</translation>
+<translation id="2353984724370197742">Dodelitev ni uspela. Omrežna zahteva ni uspela.</translation>
+<translation id="3046825211487065480">Dodelitev ni uspela. Pred odgovorom na prvo zahtevo je bila poslana druga zahteva.</translation>
 <translation id="3407245330823033366">Izberite račun, ki ga želite uporabljati s storitvijo Blimp.</translation>
+<translation id="3775180005489871350">Dodelitev ni uspela. Napaka 400 (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">Dodelitev ni uspela. Potekel žeton za uporabniški dostop.</translation>
+<translation id="4562971394107096647">Dodelitev ni uspela. Napaka strežnika.</translation>
 <translation id="4641972508298030550">Pristnosti uporabnika ni mogoče preveriti.</translation>
+<translation id="5860346505531085166">Dodelitev ni uspela. Račun nima dostopa.</translation>
+<translation id="704835510384979817">Dodelitev ni uspela. Ni ujemajoče se različice iskalnika.</translation>
+<translation id="7961542533680218955">Dodelitev je uspela.</translation>
 <translation id="8514856595257368555">Žeton pridobljen.</translation>
 </translationbundle>

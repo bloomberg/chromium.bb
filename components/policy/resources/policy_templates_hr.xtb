@@ -192,6 +192,13 @@
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="1859633270756049523">Ograničava duljinu sesije</translation>
+<translation id="1859859319036806634">Upozorenje: rezervni postupak za verziju TLS-a uklonit će se iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 52 (otprilike u rujnu 2016.) i ovo će pravilo tada prestati funkcionirati.
+
+      U slučaju neuspjelog rukovanja TLS-a <ph name="PRODUCT_NAME" /> prije je ponovo isprobavao vezu sa starijom verzijom TLS-a da bi zaobišao programske pogreške na HTTPS poslužiteljima. Ta postavka konfigurira verziju na kojoj će se rezervni postupak zaustaviti. Ako poslužitelj ispravno dogovori verziju (tj., bez prekidanja veze), ta se postavka neće primijeniti. Neovisno o tome, postignuta veza mora i dalje biti u skladu s pravilom SSLVersionMin.
+
+      Ako se to pravilo ne konfigurira ili se postavi na "tls1.2", <ph name="PRODUCT_NAME" /> više neće izvršavati rezervni postupak. Time se ne onemogućuje podrška za starije verzije TLS-a, već se samo određuje hoće li <ph name="PRODUCT_NAME" /> zaobilaziti poslužitelje s pogreškama koji ne mogu ispravno dogovoriti verzije.
+
+      No ako se mora održati kompatibilnost s poslužiteljem koji sadrži pogreške, pravilo se može postaviti na "tls1.1". To je samo privremena mjera i problem na poslužitelju potrebno je brzo riješiti.</translation>
 <translation id="1861037019115362154">Određuje popis dodataka koji su onemogućeni u proizvodu <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
 
       Zamjenski znakovi "*" i "?" mogu se upotrijebiti za podudarne nizove proizvoljnih znakova. "*" odgovara proizvoljnom broju znakova, dok "?" određuje izborni pojedinačni znak, tj. ne odgovara nijednom ili odgovara jednom znaku. Prespojni je znak "\", tako da za podudaranje sa stvarnim znakovima "*", "?" ili "\" ispred njih morate staviti znak "\".
@@ -533,6 +540,7 @@
       Određuje hoće li proširenje TLS certifikata vezanih uz domenu biti omogućeno.
 
       Ta se postavka upotrebljava za omogućivanje proširenja TLS certifikata vezanih uz domenu za testiranje. Ta će se eksperimentalna postavka ukloniti.</translation>
+<translation id="2957506574938329824">Nemoj dopustiti nijednoj web-lokaciji da traži pristup Bluetooth uređajima putem API-ja Web Bluetooth</translation>
 <translation id="2957513448235202597">Vrsta računa za <ph name="HTTP_NEGOTIATE" /> autentifikaciju</translation>
 <translation id="2959898425599642200">Pravila zaobilaženja proxyja</translation>
 <translation id="2960691910306063964">Omogući ili onemogući autentifikaciju bez PIN-a za hostove daljinskog pristupa</translation>
@@ -546,6 +554,7 @@
 
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode isključivanja zaslona i odgode neaktivnosti ili jednako tom vremenu (ako je postavljeno).</translation>
 <translation id="2987155890997901449">Omogući ARC</translation>
+<translation id="2987227569419001736">Upravljanje upotrebom API-ja Web Bluetooth</translation>
 <translation id="2998881342848488968">To pravilo omogućuje proizvodu <ph name="PRODUCT_OS_NAME" /> da zaobiđe bilo koji proxy za autentifikaciju zaštitnim portalom.
 
       To pravilo djeluje samo ako je proxy konfiguriran (na primjer, pravilom, korisnički u chrome://settings ili proširenjima).
@@ -1418,6 +1427,9 @@
 
           Ako ne postavite to pravilo, tipkovnica na zaslonu onemogućena je prilikom prvog prikazivanja zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti tipkovnicu na zaslonu u bilo kojem trenutku i njen status na zaslonu za prijavu zadržava se među korisnicima.</translation>
 <translation id="6598235178374410284">Slika avatara korisnika</translation>
+<translation id="6628646143828354685">Omogućuje vam da odredite smiju li web-lokacije dobivati pristup Bluetooth uređajima u blizini. Pristup se može potpuno blokirati ili se može tražiti dopuštenje korisnika svaki put kad neka web-lokacija želi pristupiti Bluetooth uređajima u blizini.
+
+          Ako se pravilo ne postavi, upotrebljavat će se vrijednost "3" i korisnik će to moći promijeniti.</translation>
 <translation id="6636268606788232221">Konfiguriraj postavke upravljanja napajanjem kada korisnik postane neaktivan.
 
           To pravilo nadzire više postavki za strategiju upravljanja napajanjem kada korisnik postane neaktivan.
@@ -1493,6 +1505,7 @@
           Ako postavite ovo pravilo, korisnici ga ne mogu mijenjati niti nadjačati.
 
           Ako ne postavite to pravilo, opcije pristupačnosti neće se pojaviti u izborniku programske trake, ali ih korisnik može prikazati putem stranice Postavke.</translation>
+<translation id="6766216162565713893">Dopusti web-lokacijama da traže dopuštenje korisnika za pristup Bluetooth uređajima u blizini</translation>
 <translation id="6770454900105963262">Izvješćivanje o informacijama o aktivnim sesijama kioska</translation>
 <translation id="6774533686631353488">Dopusti hostove Lokalnog slanja poruka na razini korisnika (instaliranih bez administratorskih dopuštenja).</translation>
 <translation id="6786747875388722282">Proširenja</translation>

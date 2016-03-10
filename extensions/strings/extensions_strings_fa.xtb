@@ -23,7 +23,7 @@
 <translation id="4233778200880751280">صفحه درباره «<ph name="ABOUT_PAGE" />» بارگیری نشد.</translation>
 <translation id="4434145631756268951">{0,select, single{‏انتخاب دستگاه USB}multiple{‏انتخاب دستگاه‌های USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">‏بسته نصب نشد چون پردازش برنامه سودمند انجام نشد. سعی کنید chrome را راه‌اندازی مجدد نمایید و دوباره امتحان کنید.</translation>
-<translation id="5026754133087629784">نمای وب: <ph name="WEBVIEW_TAG_NAME" /></translation>
+<translation id="5026754133087629784">وب‌نما: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">این برنامهٔ افزودنی شامل فایل کلید «<ph name="KEY_PATH" />» است. احتمالاً نمی‌خواهید این کار را انجام دهید.</translation>
 <translation id="5627523580512561598">برنامهٔ افزودنی <ph name="EXTENSION_NAME" /></translation>

@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
+<translation id="1091157412887719337">असाइनमेंट विफल रहा.  कोई इंजन उपलब्ध नहीं.</translation>
+<translation id="2004526128230838685">असाइनमेंट विफल रहा.  अज्ञात समस्या.</translation>
+<translation id="2023631438558435272">असाइनमेंट विफल रहा.  अमान्य प्रतिसाद.</translation>
+<translation id="2353984724370197742">असाइनमेंट विफल रहा.  नेटवर्क अनुरोध विफल रहा.</translation>
+<translation id="3046825211487065480">असाइनमेंट विफल रहा.  पहले अनुरोध की प्रतिक्रिया से पूर्व दूसरा अनुरोध भेजा गया.</translation>
 <translation id="3407245330823033366">कृपया Blimp के साथ उपयोग करने के लिए एक खाता चुनें.</translation>
+<translation id="3775180005489871350">असाइनमेंट विफल रहा.  400 (BAD_REQUEST) त्रुटि.</translation>
+<translation id="4542350224991263059">असाइनमेंट विफल रहा.  उपयोगकर्ता एक्सेस टोकन की समय सीमा समाप्त.</translation>
+<translation id="4562971394107096647">असाइनमेंट विफल रहा.  सर्वर त्रुटि.</translation>
 <translation id="4641972508298030550">उपयोगकर्ता को प्रमाणित करने में असमर्थ.</translation>
+<translation id="5860346505531085166">असाइनमेंट विफल रहा.  खाते के पास एक्सेस नहीं है.</translation>
+<translation id="704835510384979817">असाइनमेंट विफल रहा.  मिलान वाला कोई इंजन वर्शन नहीं है.</translation>
+<translation id="7961542533680218955">असाइनमेंट सफल रहा.</translation>
 <translation id="8514856595257368555">टोकन प्राप्त हुआ.</translation>
 </translationbundle>

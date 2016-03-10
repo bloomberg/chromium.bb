@@ -22,6 +22,7 @@
 <translation id="1258753120186372309">‏رسم الشعار المبتكر من Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">إيقاف</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
+<translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
 <translation id="1346090444609141578">لا توجد صفحات محفوظة هنا</translation>
 <translation id="1369915414381695676">تمت إضافة الموقع <ph name="SITE_NAME" /></translation>
@@ -52,6 +53,7 @@
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
 <translation id="1641113438599504367">التصفح الآمن</translation>
+<translation id="164269334534774161">أنت تعرض نسخة بلا اتصال لهذه الصفحة من <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">جارٍ ترجمة الصفحة إلى <ph name="SOURCE_LANGUAGE" />...</translation>
 <translation id="1644574205037202324">السجل</translation>
 <translation id="1647391597548383849">الدخول إلى الكاميرا</translation>
@@ -128,6 +130,7 @@
 <translation id="2707726405694321444">تحديث الصفحة</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="271033894570825754">جديدة</translation>
+<translation id="2742271047622814453">قد يتم حذف التفضيلات المحفوظة على المواقع</translation>
 <translation id="2748463065602559597">‏أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="2762000892062317888">الآن</translation>
 <translation id="2770465223704140727">إزالة من القائمة</translation>
@@ -168,6 +171,7 @@
 <translation id="3303414029551471755">هل ترغب في الاستمرار في تنزيل المحتوى؟</translation>
 <translation id="3328801116991980348">معلومات موقع الويب</translation>
 <translation id="3350687908700087792">إغلاق كافة علامات تبويب التصفح المتخفي</translation>
+<translation id="3351441609270267898">استيراد البيانات الحالية</translation>
 <translation id="3358663646935160692">‏تتم إدارة هذا الحساب من خلال <ph name="DOMAIN_NAME" />. لقد سجلت دخولك باستخدام حساب مُدار تمنح المشرف عليه إمكانية التحكم في ملفك الشخصي على Chrome. ستظل بياناتك على Chrome مرتبطة دائمًا بهذا الحساب. ويؤدي إلغاء الربط بهذا الحساب إلى حذف بيانات Chrome المحلية.</translation>
 <translation id="3384347053049321195">مشاركة صورة</translation>
 <translation id="3387650086002190359">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب أخطاء في نظام الملف.</translation>
@@ -177,6 +181,7 @@
 <translation id="3492207499832628349">تابة جديدة للتصفح المتخفي</translation>
 <translation id="3501331331116143684">حُفظَت الصفحة بلا اتصال في <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">القبول والمتابعة</translation>
+<translation id="3522247891732774234">التحديث متاح. مزيد من الخيارات</translation>
 <translation id="3527085408025491307">المجلد</translation>
 <translation id="3549644494707163724">تشفير جميع البيانات المتزامنة باستخدام عبارة مرور المزامنة</translation>
 <translation id="360480449234699036">‏اعرف موضوعات معنية بمواقع الويب بدون مغادرة الصفحة. تُرسل ميزة "المس للبحث" الكلمة والسياق المحيط بها إلى بحث Google، والتعريفات العائدة، والصور، ونتائج البحث، وتفاصيل أخرى.
@@ -219,7 +224,6 @@
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="4198229475320555619">حُفظَت الإشارة المرجعية <ph name="PAGE_SIZE_STRING" /> بلا اتصال</translation>
 <translation id="423410644998903704">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الأذونات لمشاركتها مع موقع الويب هذا.</translation>
-<translation id="4247939399682707041">استبدال بيانات هذا الجهاز ببيانات <ph name="ACCOUNT" />. يمكنك استرداد بياناتك الحالية بالتبديل مرة ثانية إلى <ph name="ACCOUNT" /></translation>
 <translation id="424864128008805179">‏هل تريد الخروج من Chrome؟</translation>
 <translation id="4254813446494774748">لغة الترجمة:</translation>
 <translation id="4256782883801055595">تراخيص البرامج مفتوحة المصدر</translation>
@@ -424,6 +428,7 @@
 <translation id="6612358246767739896">محتوى محمي</translation>
 <translation id="6612856669344839356">حفظ الإشارة المرجعية</translation>
 <translation id="6627583120233659107">تعديل مجلد</translation>
+<translation id="6647073004883890710">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> تحديث كلمة المرور لـ <ph name="USERNAME" /> لهذا الموقع؟</translation>
 <translation id="6656545060687952787">‏يحتاج Chrome للوصول إلى المواقع للبحث عن الأجهزة. <ph name="BEGIN_LINK" />تحديث الأذونات<ph name="END_LINK" />.</translation>
 <translation id="666268767214822976">يمكنك استخدام خدمة التوقعات لعرض طلبات البحث ذات الصلة ومواقع الويب الشائعة أثناء الكتابة في شريط العناوين</translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
@@ -451,7 +456,6 @@
 <translation id="6868088497967843822">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6963766334940102469">حذف الإشارات المرجعية</translation>
-<translation id="6964496835063002391">إضافة حساب</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6973630695168034713">المجلدات</translation>
 <translation id="6978479750597523876">إعادة تعيين إعدادات الترجمة</translation>
@@ -483,6 +487,7 @@
 <translation id="7324738665594301612">‏نختبر إنشاء خادم وكيل لصفحات HTTPS عبر خوادم Google كجزء من التجربة.</translation>
 <translation id="7346217184097589238">لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عاداتك في التصفح.</translation>
 <translation id="7346909386216857016">موافق، حسنًا</translation>
+<translation id="7347770551817603360">محتوى بلا اتصال</translation>
 <translation id="7363354739009474003">يتم الآن تحميل "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">جارٍ الإرسال إلى <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">النوع:</translation>
@@ -543,6 +548,7 @@
 <translation id="8050319187894766337">حفظت صفحة بلا اتصال. سعة ممتلئة.</translation>
 <translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>
 <translation id="8069239273282989646">بعد الضغط</translation>
+<translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8084156870963450514">سجّل الدخول للوصول إلى برامج الويب من أي جهاز.</translation>
 <translation id="8106211421800660735">رقم بطاقة الائتمان</translation>
 <translation id="813082847718468539">عرض معلومات الموقع</translation>
@@ -565,6 +571,7 @@
 <translation id="8413385045638830869">السؤال أولاً (موصى به)</translation>
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8429160401486700187">حذف الصفحات المحفوظة</translation>
+<translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم مواقع الويب.</translation>
 <translation id="8481940801237642152">إن اتصالك بهذا الموقع له خصوصية، لكن قد يتمكن أحد الأشخاص على هذه الشبكة من تغيير مظهر الصفحة.</translation>
 <translation id="8493948351860045254">تفريغ بعض المساحة</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
@@ -609,6 +616,7 @@
 <translation id="8987061207681586800">‏تخصيص Chrome كما تريد</translation>
 <translation id="9019902583201351841">يديره والداك</translation>
 <translation id="9020607083536754075">إغلاق علامة التبويب الحالية والرجوع إلى التطبيق السابق</translation>
+<translation id="9038649477754266430">استخدام إحدى خدمات التوقع لتحميل الصفحات بسرعة أكبر</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>
 <translation id="9060538597317784206">‏عرض تطبيق <ph name="APP_NAME" /> في متجر Play.  التقييم: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">إيقاف طلب موقع الويب لسطح المكتب</translation>

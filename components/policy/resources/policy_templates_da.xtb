@@ -192,6 +192,13 @@
 
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="1859633270756049523">Begræns sessionslængden</translation>
+<translation id="1859859319036806634">Advarsel! Denne TLS-alternativversion fjernes fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og denne politik er da ikke længere aktuel.
+
+Når TLS-dataudveksling mislykkes, ville <ph name="PRODUCT_NAME" /> tidligere prøve at oprette forbindelse igen med en ældre TLS-version for at løse problemet med fejl i HTTPS-servere. Denne indstilling konfigurerer den version, hvor fallback-processen stopper. Hvis en server udfører versionsforhanding korrekt (dvs. uden at afbryde forbindelsen), anvendes denne indstilling ikke. Uanset hvad skal den resulterende forbindelse stadig være i overensstemmelse med SSLVersionMin.
+
+Hvis denne politik ikke konfigureres, eller hvis den indstilles til "tls1.2", udfører <ph name="PRODUCT_NAME" /> ikke længere dette fallback. Bemærk, at dette ikke deaktiverer understøttelse af ældre TLS-versioner, kun hvorvidt <ph name="PRODUCT_NAME" /> vil løse problemet med fejlbehæftede servere, som ikke kan forhandle versioner korrekt.
+
+Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne politik indstilles til "tls1.1". Dette er en midlertidig løsning, og problemet med serveren bør snarest udbedres.</translation>
 <translation id="1861037019115362154">Angiver en liste over plugins, der er deaktiveret i <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre denne indstilling.
 
       Jokertegnene "*" og "?" kan bruges til at angive sekvenser af vilkårlige tegn. "*" svarer til et vilkårligt antal tegn, mens "?" angiver et enkelt valgfrit tegn, dvs. tegnene 0 eller 1. Afslutningstegnet er "\", så for at angive de faktiske tegn "*", "?" eller "\" kan du sætte "\" foran dem.
@@ -533,6 +540,7 @@
       Angiver, om udvidelsen for certifikater, der er bundet af TLS-domænet, skal aktiveres.
 
       Denne indstilling bruges til at aktivere udvidelsen for certifikater, der er bundet af TLS-domænet, til testformål. Denne eksperimentelle indstilling vil blive fjernet senere hen.</translation>
+<translation id="2957506574938329824">Tillad ikke, at websites får adgang til Bluetooth-enheder via Web Bluetooth API</translation>
 <translation id="2957513448235202597">Kontotype for <ph name="HTTP_NEGOTIATE" />-godkendelse</translation>
 <translation id="2959898425599642200">Regler for omgåelse af proxy</translation>
 <translation id="2960691910306063964">Aktivér eller deaktiver godkendelse uden pinkode for hosts til fjernadgang</translation>
@@ -546,6 +554,7 @@
 
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end eller lig med skærmslukforsinkelsen (hvis angivet) og inaktivitetsforsinkelsen.</translation>
 <translation id="2987155890997901449">Aktivér ARC</translation>
+<translation id="2987227569419001736">Kontrollér brugen af Web Bluetooth API</translation>
 <translation id="2998881342848488968">Denne politik giver <ph name="PRODUCT_OS_NAME" /> tilladelse til at omgå enhver proxy, der kræver godkendelse via en loginportal.
 
       Denne politik træder kun i kraft, hvis der er konfigureret en proxy (f.eks. via en politik, af en bruger på chrome://settings eller via udvidelser).
@@ -836,6 +845,7 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
+<translation id="4322842393287974810">Tillad, at den automatisk startede terminalapp uden forsinkelse kontrollerer <ph name="PRODUCT_OS_NAME" />-versionen</translation>
 <translation id="4325690621216251241">Tilføj en log ud-knap til systembakken</translation>
 <translation id="4347908978527632940">Hvis den er sand, og brugeren er en administreret bruger, kan andre Android-apps sende forespørgsler vedrørende brugerens webbegrænsninger via en indholdsudbyder.
 
@@ -1443,6 +1453,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Hvis denne politik ikke indstilles, deaktiveres skærmtastaturet, når loginskærmen vises første gang. Brugerne kan til enhver tid aktivere eller deaktivere skærmtastaturet, og status for skærmtastaturet på loginskærmen bibeholdes for de enkelte brugere.</translation>
 <translation id="6598235178374410284">Brugerens avatarbillede</translation>
+<translation id="6628646143828354685">Giver dig mulighed for at angive, om websites må få adgang til Bluetooth-enheder i nærheden. Adgangen kan være fuldstændig blokeret, eller brugeren kan få en anmodning, hver gang et website vil have adgang til en Bluetooth-enhed i nærheden.
+
+          Hvis denne politik ikke indstilles, bruges "3", og brugeren kan ændre denne indstilling.</translation>
 <translation id="6636268606788232221">Konfigurer indstillinger for strømstyring, når brugeren bliver inaktiv.
 
           Denne politik kontrollerer flere indstillinger for strømstyringsstrategien, når brugeren bliver inaktiv.
@@ -1518,6 +1531,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Hvis du har indstillet denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
           Hvis denne politik ikke er indstillet, vises hjælpeindstillingerne ikke i proceslinjemenuen, men brugeren kan forårsage, at hjælpeindstillingerne vises via siden Indstillinger.</translation>
+<translation id="6766216162565713893">Tillad, at websites anmoder en bruger om adgang til en Bluetooth-enhed i nærheden.</translation>
 <translation id="6770454900105963262">Rapportér oplysninger om aktive terminalsessioner</translation>
 <translation id="6774533686631353488">Tillad indbyggede beskedhosts, der er installeret på brugerniveau (installeret uden administratortilladelser).</translation>
 <translation id="6786747875388722282">Udvidelser</translation>
@@ -1695,6 +1709,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7340034977315324840">Rapportér tidspunkter for aktiviteter på enheden</translation>
 <translation id="7381326101471547614">Deaktiverer brug af SPDY-protokollen i <ph name="PRODUCT_NAME" />. Hvis denne politik er aktiveret, vil SPDY-protokollen ikke være tilgængelig i <ph name="PRODUCT_NAME" />. Hvis du deaktiverer denne politik, tillades brug af ​​SPDY. Hvis retningslinjerne for denne politik ikke angives, vil SPDY være tilgængelig.</translation>
 <translation id="7384999953864505698">Tillader QUIC-protokol</translation>
+<translation id="7406651467768226499">Om den automatisk startede terminalapp uden forsinkelse skal kunne kontrollere <ph name="PRODUCT_OS_NAME" />-versionen.
+
+      Denne politik bestemmer, om den automatisk startede terminalapp uden forsinkelse skal kunne styre <ph name="PRODUCT_OS_NAME" />-versionen ved at angive en required_platform_version i sit manifest og bruge den som et præfiks for en automatisk opdateret målversion.
+
+      Hvis politikken er angivet til sand, bruges værdien i manifestnøglen required_platform_version fra den automatisk startede terminalapp uden forsinkelse til automatisk at opdatere præfikset for målversionen.
+
+      Hvis politikken ikke konfigureres, eller den indstilles til falsk, ignoreres manifestnøglen required_platform_version, og den automatiske opdatering fortsætter som normalt.</translation>
 <translation id="7417972229667085380">Den procentdel, som inaktivitetsforsinkelsen i præsentationstilstand skaleres efter (udfases)</translation>
 <translation id="7421483919690710988">Angiv størrelsen på mediediskcache i bytes</translation>
 <translation id="7424751532654212117">Liste over undtagelser for listen over ​​deaktiverede plugins</translation>

@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="1091157412887719337">Hindi naitalaga.  Walang available na engine.</translation>
+<translation id="2004526128230838685">Hindi naitalaga.  May hindi matukoy na isyu.</translation>
+<translation id="2023631438558435272">Hindi naitalaga.  Di-wasto ang tugon.</translation>
+<translation id="2353984724370197742">Hindi naitalaga.  Hindi naisagawa ang kahilingan sa network.</translation>
+<translation id="3046825211487065480">Hindi naitalaga.  Nagpadala ng pangalawang kahilingan bago pa natugunan ang unang kahilingan.</translation>
 <translation id="3407245330823033366">Mangyaring pumili ng account na gagamitin sa Blimp.</translation>
+<translation id="3775180005489871350">Hindi naitalaga.  400 (BAD_REQUEST) error.</translation>
+<translation id="4542350224991263059">Hindi naitalaga.  Nag-expire na ang token ng access ng user.</translation>
+<translation id="4562971394107096647">Hindi naitalaga.  May error sa server.</translation>
 <translation id="4641972508298030550">Hindi mapatotohanan ang user.</translation>
+<translation id="5860346505531085166">Hindi naitalaga.  Walang access ang account.</translation>
+<translation id="704835510384979817">Hindi naitalaga.  Walang tumutugmang bersyon ng engine.</translation>
+<translation id="7961542533680218955">Naging matagumpay ang pagtatalaga.</translation>
 <translation id="8514856595257368555">Nabawi ang token.</translation>
 </translationbundle>

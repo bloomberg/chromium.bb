@@ -22,6 +22,7 @@
 <translation id="1258753120186372309">Doodle do Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
+<translation id="1291207594882862231">Limpar histórico, cookies, dados do site, cache…</translation>
 <translation id="129553762522093515">Recentemente fechadas</translation>
 <translation id="1346090444609141578">Nenhuma página salva aqui</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> adicionado</translation>
@@ -52,6 +53,7 @@ O Chrome verificará páginas nas proximidades quando o dispositivo estiver desb
 <translation id="1620510694547887537">Câmera</translation>
 <translation id="1623104350909869708">Impedir que esta página crie caixas de diálogo adicionais</translation>
 <translation id="1641113438599504367">Navegação segura</translation>
+<translation id="164269334534774161">Você está vendo uma cópia off-line desta página de <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Traduzindo página para <ph name="SOURCE_LANGUAGE" />...</translation>
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1647391597548383849">Acessar sua câmera</translation>
@@ -128,6 +130,7 @@ O Chrome verificará páginas nas proximidades quando o dispositivo estiver desb
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="271033894570825754">Novo</translation>
+<translation id="2742271047622814453">É possível que as preferências salvas em sites sejam excluídas</translation>
 <translation id="2748463065602559597">Você está em uma página segura do Google Chrome.</translation>
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2770465223704140727">Remover da lista</translation>
@@ -168,6 +171,7 @@ O Chrome verificará páginas nas proximidades quando o dispositivo estiver desb
 <translation id="3303414029551471755">Continuar com o download do conteúdo?</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3350687908700087792">Fechar todas as guias anônimas</translation>
+<translation id="3351441609270267898">Importar dados existentes</translation>
 <translation id="3358663646935160692">Esta conta é administrada por <ph name="DOMAIN_NAME" />.
 
 Você está fazendo login com uma conta gerenciada e fornecendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Chrome serão permanentemente vinculados a esta conta. Se você se desconectar desta conta, os dados locais do Chrome serão excluídos.</translation>
@@ -179,6 +183,7 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="3492207499832628349">Nova guia anônima</translation>
 <translation id="3501331331116143684">Página salva off-line em <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
+<translation id="3522247891732774234">Atualização disponível. Mais opções</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3549644494707163724">Criptografar todos os dados sincronizados com sua senha de sincronização</translation>
 <translation id="360480449234699036">Saiba mais sobre tópicos em websites sem sair da página. A opção "Tocar para pesquisar" envia uma palavra e seu respectivo contexto para a Pesquisa Google, que retorna definições, imagens, resultados de pesquisa e outros detalhes.
@@ -221,7 +226,6 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="4198229475320555619">Favorito de <ph name="PAGE_SIZE_STRING" /> salvo off-line</translation>
 <translation id="423410644998903704">O Chrome precisa ter acesso às permissões para compartilhá-las com este site.</translation>
-<translation id="4247939399682707041">Substitui os dados deste dispositivo com os dados de <ph name="ACCOUNT" />. É possível recuperar os dados já existentes voltando para <ph name="ACCOUNT" /></translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4254813446494774748">Idioma de tradução:</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
@@ -371,7 +375,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5939518447894949180">Redefinir</translation>
-<translation id="5965336165840183977">Limpa os dados sincronizados de todos os dispositivos. Você não será desconectado da sua Conta do Google. As configurações do site salvas não serão excluídas e podem refletir seus hábitos de navegação.</translation>
+<translation id="5965336165840183977">Limpa os dados sincronizados de todos os dispositivos. Você não será desconectado da sua Conta do Google. As configurações salvas em sites não serão excluídas e podem refletir seus hábitos de navegação.</translation>
 <translation id="5968595432776860642">Reproduzindo “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="6010869025736512584">Acessando entrada de vídeo</translation>
 <translation id="6012342843556706400">O Chrome precisa ter acesso ao local para compartilhá-lo com este site.</translation>
@@ -424,6 +428,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6612856669344839356">Salvar favorito</translation>
 <translation id="6627583120233659107">Editar pasta</translation>
+<translation id="6647073004883890710">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize a senha de <ph name="USERNAME" /> para este site?</translation>
 <translation id="6656545060687952787">O Chrome precisa de acesso ao local para procurar por dispositivos. <ph name="BEGIN_LINK" />Atualizar permissões<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Usar um serviço de previsão para mostrar consultas relacionadas e sites populares quando você digitar na barra de endereços</translation>
 <translation id="666981079809192359">Aviso de Privacidade do Chrome</translation>
@@ -451,7 +456,6 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6868088497967843822">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
-<translation id="6964496835063002391">Adicionar uma conta</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="6978479750597523876">Redefinir configurações do Google Tradutor</translation>
@@ -481,8 +485,9 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Excluir favorito</translation>
 <translation id="7324738665594301612">Estamos testando o uso de proxy de páginas HTTPS por meio de servidores do Google como parte de um experimento.</translation>
-<translation id="7346217184097589238">As configurações do site salvas não serão excluídas e podem refletir seus hábitos de navegação.</translation>
+<translation id="7346217184097589238">As configurações salvas em sites não serão excluídas e podem refletir seus hábitos de navegação.</translation>
 <translation id="7346909386216857016">Ok, entendi.</translation>
+<translation id="7347770551817603360">Conteúdo off-line</translation>
 <translation id="7363354739009474003">Carregando "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Transmitindo em <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Tipo:</translation>
@@ -543,6 +548,7 @@ No entanto, você não fica invisível. O modo anônimo não oculta sua navegaç
 <translation id="8050319187894766337">Página salva off-line. Armazenamento quase cheio.</translation>
 <translation id="8068648041423924542">Não foi possível selecionar certificado.</translation>
 <translation id="8069239273282989646">Após compactação</translation>
+<translation id="8073388330009372546">Abrir imagem em nova guia</translation>
 <translation id="8084156870963450514">Faça login para acessar tudo o que você tem na Web, a partir de qualquer dispositivo</translation>
 <translation id="8106211421800660735">Número do cartão de crédito</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
@@ -565,6 +571,7 @@ No entanto, você não fica invisível. O modo anônimo não oculta sua navegaç
 <translation id="8413385045638830869">Perguntar primeiro (recomendado)</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8429160401486700187">Excluir páginas salvas</translation>
+<translation id="8433057134996913067">Essa opção desconecta você da maioria dos websites.</translation>
 <translation id="8481940801237642152">Sua conexão a este site é particular, mas alguém na rede pode conseguir alterar a aparência da página.</translation>
 <translation id="8493948351860045254">Liberar espaço</translation>
 <translation id="8497726226069778601">Não há nada para ver aqui... ainda</translation>
@@ -608,6 +615,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8987061207681586800">O Chrome é seu</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
 <translation id="9020607083536754075">Fechar a guia atual e retornar para o app anterior</translation>
+<translation id="9038649477754266430">Usar um serviço de previsão para carregar páginas mais rapidamente</translation>
 <translation id="9050666287014529139">Senha</translation>
 <translation id="9060538597317784206">Ver aplicativo <ph name="APP_NAME" /> na Play Store.  Classificação: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Desativar "Ver versão para Web"</translation>

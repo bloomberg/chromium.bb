@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="1091157412887719337">Ha fallado la asignación. No hay motores disponibles.</translation>
+<translation id="2004526128230838685">Ha fallado la asignación. Problema desconocido.</translation>
+<translation id="2023631438558435272">Ha fallado la asignación. La respuesta no es válida.</translation>
+<translation id="2353984724370197742">Ha fallado la asignación. Error en la solicitud de red.</translation>
+<translation id="3046825211487065480">Ha fallado la asignación. Se ha enviado la segunda petición antes de que se respondiera la primera.</translation>
 <translation id="3407245330823033366">Selecciona una cuenta para utilizar con Blimp.</translation>
+<translation id="3775180005489871350">Ha fallado la asignación. Error 400 (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">Ha fallado la asignación. Ha caducado el token de acceso del usuario.</translation>
+<translation id="4562971394107096647">Ha fallado la asignación. Error del servidor.</translation>
 <translation id="4641972508298030550">No ha sido posible autenticar el usuario.</translation>
+<translation id="5860346505531085166">Ha fallado la asignación. La cuenta no dispone de acceso.</translation>
+<translation id="704835510384979817">Ha fallado la asignación. La versión del motor no coincide.</translation>
+<translation id="7961542533680218955">Asignación correcta.</translation>
 <translation id="8514856595257368555">Se ha recuperado el token.</translation>
 </translationbundle>

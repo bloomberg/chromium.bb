@@ -213,6 +213,13 @@
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="1859633270756049523">Giới hạn độ dài phiên</translation>
+<translation id="1859859319036806634">Cảnh báo: Phiên bản dự phòng TLS sẽ bị xóa khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 52 (khoảng tháng 9 năm 2016) và chính sách này sẽ ngừng hoạt động ngay sau đó.
+
+      Khi không kết hợp được qua TLS, trước đó <ph name="PRODUCT_NAME" /> sẽ thử kết nối lại với phiên bản TLS thấp hơn để khắc phục các lỗi trong máy chủ HTTPS. Cài đặt này sẽ định cấu hình phiên bản mà tại đó quá trình dự phòng này sẽ ngừng. Nếu máy chủ thực hiện đúng cách việc dàn xếp phiên bản (tức là không phá vỡ kết nối) thì cài đặt này sẽ không áp dụng. Tuy nhiên, kết nối đầu ra vẫn phải tuân thủ SSLVersionMin.
+
+     Nếu chính sách này không được định cấu hình hoặc được đặt thành "tls1.2" thì <ph name="PRODUCT_NAME" /> không còn thực hiện bản dự phòng này nữa. Xin lưu ý rằng điều này không tắt hỗ trợ dành cho các phiên bản TLS cũ hơn, chỉ khi <ph name="PRODUCT_NAME" /> giải quyết các máy chủ bị lỗi mà không thể dàn xếp phiên bản đúng cách.
+
+       Ngoài ra, nếu phải duy trì khả năng tương thích với máy chủ bị lỗi thì chính sách này có thể được đặt thành "tls1.1". Đây là một giải pháp tạm thời và máy chủ cần được khắc phục nhanh chóng.</translation>
 <translation id="1861037019115362154">Chỉ định danh sách các plugin bị tắt trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
 
       Các ký tự đại diện '*' và '?' có thể được sử dụng để khớp với chuỗi các ký tự ngẫu nhiên. '*' khớp với một số ngẫu nhiên các ký tự còn '?' chỉ định ký tự đơn tùy chọn, tức là khớp với ký tự 0 hoặc 1. Ký tự thoát là '\', vì vậy để khớp với các ký tự '*', '?' hoặc '\' thực, bạn có thể đặt '\' trước các ký tự này.
@@ -592,6 +599,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chỉ định xem có cần bật tiện ích chứng chỉ giới hạn miền TLS hay không.
 
       Cài đặt này được sử dụng để bật tiện ích chứng chỉ giới hạn miền TLS dành cho thử nghiệm.  Cài đặt thử nghiệm này sẽ bị xóa trong tương lai.</translation>
+<translation id="2957506574938329824">Không cho phép bất kỳ trang web nào yêu cầu quyền truy cập vào thiết bị Bluetooth qua API Web Bluetooth</translation>
 <translation id="2957513448235202597">Loại tài khoản để xác thực <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Quy tắc bỏ qua proxy</translation>
 <translation id="2960691910306063964">Bật hoặc tắt xác thực không có mã PIN cho các máy chủ truy cập từ xa</translation>
@@ -605,6 +613,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng độ trễ tắt màn hình (nếu được đặt) và độ trễ khi không sử dụng.</translation>
 <translation id="2987155890997901449">Bật ARC</translation>
+<translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
 <translation id="2998881342848488968">Chính sách này cho phép <ph name="PRODUCT_OS_NAME" /> bỏ qua proxy bất kỳ để xác thực cổng cố định.
 
       Chính sách này chỉ có hiệu lực khi một proxy được định cấu hình (ví dụ: thông qua chính sách, bởi người dùng trong chrome://settings hoặc bởi các tiện ích).
@@ -1593,6 +1602,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu chính sách này không được đặt, bàn phím ảo bị tắt khi màn hình đăng nhập được hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt bàn phím ảo bất kỳ lúc nào và trạng thái của bàn phím trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
 <translation id="6598235178374410284">Hình đại diện của người dùng</translation>
+<translation id="6628646143828354685">Cho phép bạn đặt có cho phép trang web truy cập vào các thiết bị Bluetooth lân cận hay không. Quyền truy cập có thể bị chặn hoàn toàn hoặc người dùng có thể được hỏi mỗi lần trang web muốn truy cập vào các thiết bị Bluetooth lân cận.
+
+          Nếu chính sách này không được đặt, '3' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="6636268606788232221">Định cấu hình cài đặt quản lý nguồn khi người dùng không sử dụng.
 
           Chính sách này kiểm soát nhiều cài đặt cho chiến lược quản lý nguồn khi người dùng không sử dụng.
@@ -1684,6 +1696,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách đó.
 
           Nếu chính sách này không được đặt, tùy chọn Trợ năng sẽ không xuất hiện trong menu khay hệ thống nhưng người dùng có thể làm cho tùy chọn Trợ năng hiển thị qua trang Cài đặt.</translation>
+<translation id="6766216162565713893">Cho phép trang web yêu cầu người dùng cấp quyền truy cập vào thiết bị Bluetooth lân cận</translation>
 <translation id="6770454900105963262">Báo cáo thông tin về các phiên kiosk hiện hoạt</translation>
 <translation id="6774533686631353488">Cho phép các máy chủ Nhắn tin gốc ở mức người dùng (được cài đặt mà không cần có quyền quản trị).</translation>
 <translation id="6786747875388722282">Tiện ích</translation>

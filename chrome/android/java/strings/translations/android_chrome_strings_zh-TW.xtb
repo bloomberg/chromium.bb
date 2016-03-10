@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="1040144152982955218">正在搜尋裝置… <ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">警告</translation>
 <translation id="10614374240317010">永不儲存</translation>
 <translation id="1061441684050139317">Chrome 需要存取麥克風，才能與這個網站分享。</translation>
@@ -8,6 +9,7 @@
 <translation id="1095407227123756519">新增帳戶後，即可從任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定。</translation>
 <translation id="1098052486217676340">已結束</translation>
 <translation id="1121094540300013208">使用資料和當機報告</translation>
+<translation id="1137305377394488060">過去 1 小時</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="1197267115302279827">移動書籤</translation>
@@ -20,6 +22,7 @@
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
+<translation id="1291207594882862231">清除歷史紀錄、Cookie、網站資料、快取…</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="1346090444609141578">這個資料夾中尚未儲存任何網頁</translation>
 <translation id="1369915414381695676">已新增 <ph name="SITE_NAME" /> 網站</translation>
@@ -50,6 +53,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1623104350909869708">防止這個網頁產生其他對話方塊</translation>
 <translation id="1641113438599504367">安全瀏覽</translation>
+<translation id="164269334534774161">您目前瀏覽的是這個網頁的離線複本 (建立時間：<ph name="CREATION_TIME" />)</translation>
 <translation id="1643702317193804718">正在將網頁內容翻譯成<ph name="SOURCE_LANGUAGE" />…</translation>
 <translation id="1644574205037202324">歷史紀錄</translation>
 <translation id="1647391597548383849">存取您的攝影機</translation>
@@ -99,6 +103,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="2351097562818989364">您的翻譯設定已重設。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2381756643783702095">傳送前詢問我 (建議)</translation>
+<translation id="2385560268894525395">過去 1 週</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="238909021488141516">下載這項內容時發生錯誤。</translation>
 <translation id="2414886740292270097">深色</translation>
@@ -125,6 +130,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="2707726405694321444">重新整理頁面</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="271033894570825754">新</translation>
+<translation id="2742271047622814453">已儲存的網站偏好設定可能會遭到刪除</translation>
 <translation id="2748463065602559597">您正在瀏覽安全型 Google Chrome 網頁。</translation>
 <translation id="2762000892062317888">剛剛</translation>
 <translation id="2770465223704140727">從清單中移除</translation>
@@ -139,8 +145,10 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="2956410042958133412">這個帳戶受 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. 版權所有。</translation>
 <translation id="2968755619301702150">憑證檢視器</translation>
+<translation id="2996291259634659425">建立通關密語</translation>
 <translation id="2996809686854298943">必須要有網址</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
+<translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">儲存影片</translation>
 <translation id="306566828762083630">您的裝置儲存空間已用盡，請移除其他媒體以釋出空間。</translation>
 <translation id="307329814453917357">可使用「Google 翻譯」翻譯網頁內容</translation>
@@ -151,6 +159,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="3190152372525844641">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這些權限。</translation>
 <translation id="3198916472715691905">儲存了 <ph name="STORAGE_AMOUNT" /> 的資料</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
+<translation id="321773570071367578">如果您忘記通關密語，或是想變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="3232754137068452469">網路應用程式</translation>
 <translation id="3244271242291266297">月</translation>
@@ -162,6 +171,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
+<translation id="3351441609270267898">匯入現有的資料</translation>
 <translation id="3358663646935160692">這個帳戶由 <ph name="DOMAIN_NAME" /> 負責管理。
 
 您即將登入受管理的帳戶，並且讓帳戶管理員控制您的 Chrome 設定檔。您的 Chrome 資料將與這個帳戶建立永久連結。如果與這個帳戶解除連結，本機 Chrome 資料將會遭到刪除。</translation>
@@ -173,6 +183,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="3492207499832628349">新無痕式分頁</translation>
 <translation id="3501331331116143684">已將離線網頁儲存至「<ph name="FOLDER_NAME" />」</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
+<translation id="3522247891732774234">有可用的更新。更多選項</translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3549644494707163724">使用您的通關密語對所有已同步處理的資料進行加密</translation>
 <translation id="360480449234699036">不需離開網頁即可瞭解網站上的主題。「輕觸搜尋」可將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片、搜尋結果和其他詳細資料。
@@ -193,6 +204,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="3895926599014793903">強制啟用縮放功能</translation>
 <translation id="3917783807003067648">位置資訊遭到封鎖</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="3931947361983910192">過去 4 週</translation>
 <translation id="393697183122708255">沒有可用的語音搜尋功能</translation>
 <translation id="3950820424414687140">登入</translation>
 <translation id="3988213473815854515">禁止存取位置資訊</translation>
@@ -214,6 +226,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198229475320555619">已儲存離線書籤 (大小：<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="423410644998903704">Chrome 需要存取權限，才能與這個網站分享。</translation>
+<translation id="424864128008805179">要登出 Chrome 嗎？</translation>
 <translation id="4254813446494774748">翻譯語言：</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4259722352634471385">瀏覽的網址已封鎖：<ph name="URL" /></translation>
@@ -233,6 +246,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="4457399174246232812">日後附近的實體化網路網頁會顯示在您的通知清單中</translation>
 <translation id="4498934959426056365">金鑰產生</translation>
 <translation id="4505554159887937799">儲存的離線網頁</translation>
+<translation id="4508440807153586353">只有知道您通關密語的使用者，才能讀取加密保護的資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果您忘記自己的通關密語，或是想變更這項設定，則必須重設同步功能。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 天前}other{# 天前}}</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
@@ -297,6 +311,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="5233638681132016545">新增分頁</translation>
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
 <translation id="5275558766013849309">分頁和最近使用的應用程式將會並列顯示。</translation>
+<translation id="5284584623296338184">您更改過的書籤、歷史紀錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
 <translation id="5301954838959518834">好，我瞭解了</translation>
 <translation id="5302048478445481009">語言</translation>
 <translation id="5304593522240415983">這個欄位不能留空</translation>
@@ -315,6 +330,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="5424715742813396254">編輯已儲存的名稱/密碼或例外</translation>
 <translation id="5442257541162692417">編輯已儲存的網頁</translation>
 <translation id="544291274896356069">如果使用外部應用程式開啟這個連結，無痕模式就會結束。要繼續嗎？</translation>
+<translation id="5487521232677179737">清除資料</translation>
 <translation id="5487729733663684359">這個 Android 版本已停止支援 Chrome 更新。</translation>
 <translation id="5511351932351731210">一律傳送</translation>
 <translation id="5512137114520586844">這個帳戶受 <ph name="PARENT_NAME" /> 管理。</translation>
@@ -360,6 +376,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="5911030830365207728">Google 翻譯</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5939518447894949180">重設</translation>
+<translation id="5965336165840183977">這麼做會將已同步處理的資料從所有裝置上清除。您不會因此登出自己的 Google 帳戶。已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。</translation>
 <translation id="5968595432776860642">正在播放「<ph name="VIDEO_TITLE" />」</translation>
 <translation id="6010869025736512584">正在存取視訊輸入</translation>
 <translation id="6012342843556706400">Chrome 需要存取位置資訊，才能與這個網站分享。</translation>
@@ -412,6 +429,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6612856669344839356">儲存書籤</translation>
 <translation id="6627583120233659107">編輯資料夾</translation>
+<translation id="6647073004883890710">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新 <ph name="USERNAME" /> 在這個網站設定的密碼嗎？</translation>
 <translation id="6656545060687952787">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />更新權限<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">啟用預測查詢字串服務，讓您在網址列中輸入查詢內容時，能夠即時看到相關查詢和熱門網站</translation>
 <translation id="666981079809192359">Chrome 隱私權聲明</translation>
@@ -422,6 +440,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="6720988912937197322">無法離線存取您剛儲存的網頁</translation>
 <translation id="6722992508235227685">您的書籤、歷史紀錄、密碼和其他設定都會在您的 Google 帳戶中保持同步，讓您在所有個人裝置上使用。您可以在 [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] 中選擇要同步處理的資料。</translation>
 <translation id="6738867403308150051">下載中…</translation>
+<translation id="6762156594045689028">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6770414673596662518">Chrome 的安全瀏覽系統也會用於偵測惡意網頁，保護您不受網路釣魚、惡意軟體和有害下載內容的攻擊。</translation>
 <translation id="6784675033504223784">搜尋「<ph name="SEARCH_TERM" />」</translation>
 <translation id="6790428901817661496">播放</translation>
@@ -438,7 +457,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="6868088497967843822">登入後，即可從任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6963766334940102469">刪除書籤</translation>
-<translation id="6964496835063002391">新增帳戶</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6973630695168034713">資料夾</translation>
 <translation id="6978479750597523876">重設翻譯設定</translation>
@@ -455,6 +473,8 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7056999826593229648">偵測到連線速度緩慢</translation>
 <translation id="7057058088140140610">使用 Google Payments 儲存的信用卡和地址資訊。</translation>
 <translation id="7063006564040364415">無法連線至同步處理伺服器。</translation>
+<translation id="7074853159844403180"><ph name="SITE" /> 要求與下列藍牙裝置配對：</translation>
+<translation id="7081639897063626814">與現有資料分開保留</translation>
 <translation id="7094922512924405309">找不到附近的實體化網路網頁</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> 個開啟的分頁</translation>
 <translation id="7096034533295549981">正在載入影片</translation>
@@ -466,7 +486,9 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />說明<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">刪除書籤</translation>
 <translation id="7324738665594301612">我們正在執行實驗功能，測試透過 Google 伺服器對 HTTPS 網頁執行 Proxy 處理的效能。</translation>
+<translation id="7346217184097589238">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。</translation>
 <translation id="7346909386216857016">好，我瞭解了</translation>
+<translation id="7347770551817603360">離線內容</translation>
 <translation id="7363354739009474003">正在載入「<ph name="VIDEO_TITLE" />」</translation>
 <translation id="7366340029385295517">正在投放到 <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">類型：</translation>
@@ -481,6 +503,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="748127970106343339">確認刪除裝置憑證</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (上次更新時間：<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">請稍候…</translation>
+<translation id="7499262814309712782">同步處理帳戶</translation>
 <translation id="7501135638693251872">所有書籤</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
@@ -526,18 +549,22 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="8050319187894766337">已離線儲存網頁。儲存空間即將用盡。</translation>
 <translation id="8068648041423924542">無法選取憑證。</translation>
 <translation id="8069239273282989646">壓縮後大小</translation>
+<translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="8084156870963450514">登入帳戶即可透過任何裝置存取您在網路上的所有資料</translation>
 <translation id="8106211421800660735">信用卡號碼</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
 <translation id="8137558756159375272">「輕觸搜尋」會將選取的字詞和目前所在的網頁 (以便建立關聯) 傳送給 Google 搜尋。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中關閉這項功能。</translation>
 <translation id="8146397137182589628">未離線儲存</translation>
 <translation id="8168435359814927499">內容</translation>
+<translation id="8173098127580644436">不限時間</translation>
 <translation id="8200772114523450471">繼續</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
 <translation id="8218346974737627104">確認登入</translation>
 <translation id="8218934717680664417">從現在起，只要輕觸即可搜尋</translation>
+<translation id="8223946939421658889">資料清除範圍：</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8275818695183729150">允許 (從網址列搜尋)</translation>
+<translation id="8283853025636624853">正在同步到 <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">標準分頁</translation>
 <translation id="8374821112118309944">請更新至新版 TalkBack。</translation>
 <translation id="8396312449826231789">僅限核准的網站</translation>
@@ -545,6 +572,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="8413385045638830869">先詢問我 (建議)</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8429160401486700187">刪除儲存的網頁</translation>
+<translation id="8433057134996913067">您會因此登出大多數網站。</translation>
 <translation id="8481940801237642152">您與這個網站建立了私人連線，但網路上的其他人可能可以變更網頁的外觀。</translation>
 <translation id="8493948351860045254">釋出空間</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
@@ -585,9 +613,11 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="8941248009481596111">您與這個網站建立了私人連線。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL" /></translation>
+<translation id="8979340629087822094">過去 1 天</translation>
 <translation id="8987061207681586800">自訂您專屬的 Chrome</translation>
 <translation id="9019902583201351841">您的家長已停用這項功能</translation>
 <translation id="9020607083536754075">關閉目前的分頁並返回上一個應用程式</translation>
+<translation id="9038649477754266430">使用預測查詢字串服務，以便更快載入網頁</translation>
 <translation id="9050666287014529139">通關密語</translation>
 <translation id="9060538597317784206">前往 Play 商店查看「<ph name="APP_NAME" />」應用程式。評分：<ph name="APP_RATING" />。</translation>
 <translation id="9063523880881406963">關閉「要求電腦版網站」</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1040144152982955218">기기 검색 중… <ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="1056898198331236512">경고</translation>
 <translation id="10614374240317010">비밀번호를 저장하지 않은 사이트</translation>
 <translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
@@ -8,6 +9,7 @@
 <translation id="1095407227123756519">계정을 추가하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="1098052486217676340">완료</translation>
 <translation id="1121094540300013208">사용 및 충돌 보고서</translation>
+<translation id="1137305377394488060">지난 1시간</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1197267115302279827">북마크 이동</translation>
@@ -20,6 +22,7 @@
 <translation id="1258753120186372309">Google 기념일 로고: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
+<translation id="1291207594882862231">방문 기록, 쿠키, 사이트 데이터, 캐시 삭제…</translation>
 <translation id="129553762522093515">최근에 닫은 탭</translation>
 <translation id="1346090444609141578">저장된 페이지 없음</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> 사이트 추가됨</translation>
@@ -50,6 +53,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="1620510694547887537">카메라</translation>
 <translation id="1623104350909869708">이 페이지가 추가적인 대화를 생성하지 않도록 차단</translation>
 <translation id="1641113438599504367">안전 브라우징</translation>
+<translation id="164269334534774161"><ph name="CREATION_TIME" />에 작성된 이 페이지의 오프라인 사본을 보는 중입니다.</translation>
 <translation id="1643702317193804718">페이지를 <ph name="SOURCE_LANGUAGE" />로 번역 중...</translation>
 <translation id="1644574205037202324">방문 기록</translation>
 <translation id="1647391597548383849">카메라에 액세스</translation>
@@ -99,6 +103,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="2351097562818989364">번역 설정이 재설정되었습니다.</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2381756643783702095">보내기 전에 확인(권장)</translation>
+<translation id="2385560268894525395">지난주</translation>
 <translation id="2387895666653383613">텍스트 크기 조정</translation>
 <translation id="238909021488141516">콘텐츠를 다운로드하는 중에 오류가 발생했습니다.</translation>
 <translation id="2414886740292270097">어두운</translation>
@@ -125,6 +130,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="2707726405694321444">페이지 새로고침</translation>
 <translation id="2709516037105925701">자동완성</translation>
 <translation id="271033894570825754">새 파일</translation>
+<translation id="2742271047622814453">사이트에 저장된 환경설정이 삭제될 수 있습니다.</translation>
 <translation id="2748463065602559597">지금 안전한 Chrome 페이지를 보고 계십니다.</translation>
 <translation id="2762000892062317888">방금 전</translation>
 <translation id="2770465223704140727">목록에서 삭제</translation>
@@ -139,8 +145,10 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />님과 <ph name="PARENT_NAME_2" />님이 관리하는 계정입니다.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">인증서 뷰어</translation>
+<translation id="2996291259634659425">암호 만들기</translation>
 <translation id="2996809686854298943">URL이 필요합니다.</translation>
 <translation id="3029704984691124060">암호가 일치하지 않습니다.</translation>
+<translation id="3036750288708366620"><ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">동영상 저장</translation>
 <translation id="306566828762083630">기기 저장용량이 가득 찼습니다. 다른 미디어를 삭제하여 공간을 확보하세요.</translation>
 <translation id="307329814453917357">Google 번역을 사용하여 페이지를 번역할 것을 제안합니다.</translation>
@@ -151,6 +159,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="3198916472715691905">저장 데이터 <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3207960819495026254">북마크됨</translation>
+<translation id="321773570071367578">암호를 잊어버렸거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="3227137524299004712">마이크</translation>
 <translation id="3232754137068452469">웹 앱</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -162,6 +171,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="3303414029551471755">콘텐츠를 다운로드하시겠습니까?</translation>
 <translation id="3328801116991980348">사이트 정보</translation>
 <translation id="3350687908700087792">모든 시크릿 탭 닫기</translation>
+<translation id="3351441609270267898">기존 데이터 가져오기</translation>
 <translation id="3358663646935160692"><ph name="DOMAIN_NAME" />에서 관리하는 계정입니다.
 
 관리 계정으로 로그인하면 사용자의 Chrome 프로필에 대한 제어 권한이 관리자에게 부여됩니다. 사용자의 Chrome 데이터는 이 계정에 영구적으로 연결되며, 이 계정의 연결을 해제하면 로컬 Chrome 데이터가 삭제됩니다.</translation>
@@ -173,6 +183,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="3492207499832628349">새 시크릿 탭</translation>
 <translation id="3501331331116143684">페이지가 오프라인에서 <ph name="FOLDER_NAME" />(으)로 저장되었습니다.</translation>
 <translation id="3518985090088779359">동의하고 계속</translation>
+<translation id="3522247891732774234">업데이트할 수 있습니다. 옵션 더보기</translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3549644494707163724">나만의 동기화 암호로 모든 동기화 데이터 암호화</translation>
 <translation id="360480449234699036">페이지에 남아 웹사이트의 주제에 대해 알아보세요. 터치하여 검색 기능은 Google 검색에 단어와 관련 컨텍스트를 전송하여 정의, 사진, 검색결과, 기타 자세한 사항을 반환합니다.
@@ -193,6 +204,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="3895926599014793903">확대/축소 강제 사용</translation>
 <translation id="3917783807003067648">위치가 차단됨</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
+<translation id="3931947361983910192">지난 4주</translation>
 <translation id="393697183122708255">사용 가능한 음성 검색이 없습니다.</translation>
 <translation id="3950820424414687140">로그인</translation>
 <translation id="3988213473815854515">위치 허용됨</translation>
@@ -214,6 +226,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="4195643157523330669">새 탭에서 열기</translation>
 <translation id="4198229475320555619"><ph name="PAGE_SIZE_STRING" /> 북마크가 오프라인에 저장됨</translation>
 <translation id="423410644998903704">이 사이트에 공유하려면 Chrome에 액세스 권한이 있어야 합니다.</translation>
+<translation id="424864128008805179">Chrome에서 로그아웃하시겠습니까?</translation>
 <translation id="4254813446494774748">번역 언어:</translation>
 <translation id="4256782883801055595">오픈소스 라이선스</translation>
 <translation id="4259722352634471385">탐색이 차단됨: <ph name="URL" /></translation>
@@ -233,6 +246,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="4457399174246232812">향후 주변의 피지컬 웹페이지가 알림 목록에 표시됩니다.</translation>
 <translation id="4498934959426056365">키 생성</translation>
 <translation id="4505554159887937799">오프라인에 저장</translation>
+<translation id="4508440807153586353">암호를 아는 사람만 암호화된 데이터를 읽을 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않거나 이 설정을 변경하려면 동기화를 재설정해야 합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{#일 전}other{#일 전}}</translation>
 <translation id="4522570452068850558">세부정보</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
@@ -297,6 +311,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="5233638681132016545">새 탭</translation>
 <translation id="5271967389191913893">기기에서 다운로드하려는 콘텐츠를 열 수 없습니다.</translation>
 <translation id="5275558766013849309">탭은 최근 앱과 함께 보유할 수 있습니다.</translation>
+<translation id="5284584623296338184">북마크, 방문 기록, 비밀번호, 기타 설정이 더 이상 Google 계정에 동기화되지 않습니다. 하지만 기존 데이터는 Google 계정에 계속 저장됩니다.</translation>
 <translation id="5301954838959518834">확인</translation>
 <translation id="5302048478445481009">언어</translation>
 <translation id="5304593522240415983">필수 입력란입니다.</translation>
@@ -315,6 +330,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="5424715742813396254">저장된 이름/비밀번호 또는 예외 수정</translation>
 <translation id="5442257541162692417">저장된 페이지 수정</translation>
 <translation id="544291274896356069">이 링크가 외부 애플리케이션에서 열리면 시크릿 모드가 종료됩니다. 계속하시겠습니까?</translation>
+<translation id="5487521232677179737">데이터 삭제</translation>
 <translation id="5487729733663684359">Chrome 업데이트는 더 이상 이 버전의 Android에서 지원되지 않습니다.</translation>
 <translation id="5511351932351731210">항상 보내기</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" />님이 관리하는 계정입니다.</translation>
@@ -360,6 +376,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="5911030830365207728">Google 번역</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="5939518447894949180">초기화</translation>
+<translation id="5965336165840183977">이렇게 하면 동기화된 데이터가 모든 기기에서 삭제되지만 Google 계정에서 로그아웃되지는 않습니다. 저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관을 반영할 수 있습니다.</translation>
 <translation id="5968595432776860642">'<ph name="VIDEO_TITLE" />' 재생 중</translation>
 <translation id="6010869025736512584">비디오 입력 장치에 액세스 중</translation>
 <translation id="6012342843556706400">이 사이트에 공유하려면 Chrome에 위치 정보 액세스 권한이 있어야 합니다.</translation>
@@ -412,6 +429,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6612856669344839356">북마크 저장</translation>
 <translation id="6627583120233659107">폴더 수정</translation>
+<translation id="6647073004883890710"><ph name="PASSWORD_MANAGER_BRAND" />이(가) 이 사이트에서 <ph name="USERNAME" />의 비밀번호를 업데이트하도록 하시겠습니까?</translation>
 <translation id="6656545060687952787">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. <ph name="BEGIN_LINK" />권한 업데이트<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">예상 검색어 서비스를 사용하여 검색주소창에 입력할 때 관련 검색어 및 인기 웹사이트를 표시합니다.</translation>
 <translation id="666981079809192359">Chrome 개인정보 보호정책</translation>
@@ -422,6 +440,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="6720988912937197322">저장한 페이지를 오프라인에서 사용할 수 없습니다.</translation>
 <translation id="6722992508235227685">북마크, 방문 기록, 비밀번호 등 기타 설정이 Google 계정에 동기화되어 모든 기기에서 사용할 수 있습니다. <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 동기화할 항목을 선택할 수 있습니다.</translation>
 <translation id="6738867403308150051">다운로드 중...</translation>
+<translation id="6762156594045689028">이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="6770414673596662518">또한 Chrome의 세이프 브라우징 시스템이 악성 웹페이지를 탐지하여 피싱, 멀웨어, 유해한 다운로드로부터 사용자를 보호합니다.</translation>
 <translation id="6784675033504223784">'<ph name="SEARCH_TERM" />' 검색</translation>
 <translation id="6790428901817661496">재생</translation>
@@ -438,7 +457,6 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="6868088497967843822">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6963766334940102469">북마크 삭제</translation>
-<translation id="6964496835063002391">계정 추가</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6973630695168034713">폴더</translation>
 <translation id="6978479750597523876">번역 설정 재설정</translation>
@@ -455,6 +473,8 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="7056999826593229648">느린 연결이 감지됨</translation>
 <translation id="7057058088140140610">Google Payments를 사용하는 신용카드 및 주소</translation>
 <translation id="7063006564040364415">동기화 서버에 연결할 수 없습니다.</translation>
+<translation id="7074853159844403180"><ph name="SITE" /> 사이트에서 페어링하려는 기기:</translation>
+<translation id="7081639897063626814">기존 데이터를 별도로 유지</translation>
 <translation id="7094922512924405309">주변에 피지컬 웹페이지가 없습니다.</translation>
 <translation id="7095930899177687653">탭 <ph name="OPEN_TABS" />개가 열려 있음</translation>
 <translation id="7096034533295549981">동영상 로드 중</translation>
@@ -466,7 +486,9 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />도움말<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">북마크 삭제</translation>
 <translation id="7324738665594301612">Google은 실험의 일환으로 Google 서버를 통해 HTTPS 페이지의 프록시를 테스트하고 있습니다.</translation>
+<translation id="7346217184097589238">저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관을 반영할 수 있습니다.</translation>
 <translation id="7346909386216857016">확인</translation>
+<translation id="7347770551817603360">오프라인 콘텐츠</translation>
 <translation id="7363354739009474003">'<ph name="VIDEO_TITLE" />' 로드 중</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />(으)로 전송 중</translation>
 <translation id="7375125077091615385">유형:</translation>
@@ -481,6 +503,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="748127970106343339">기기 사용자 인증 정보 삭제 확인</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />(<ph name="TIME_SINCE_UPDATE" />에 업데이트됨)</translation>
 <translation id="7498271377022651285">잠시 기다려 주세요…</translation>
+<translation id="7499262814309712782">계정 동기화</translation>
 <translation id="7501135638693251872">모든 북마크</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
 <translation id="7562080006725997899">인터넷 사용 기록 삭제</translation>
@@ -521,23 +544,27 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
 <translation id="7999064672810608036">쿠키를 포함하여 이 웹사이트의 데이터를 모두 삭제하고 모든 권한을 재설정하시겠습니까?</translation>
 <translation id="8007176423574883786">기기에 대해 사용 중지됨</translation>
-<translation id="8026334261755873520">인터넷 사용정보 삭제</translation>
+<translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
 <translation id="8035133914807600019">새 폴더…</translation>
 <translation id="8050319187894766337">페이지 오프라인 저장, 저장용량 거의 참</translation>
 <translation id="8068648041423924542">인증서를 선택할 수 없습니다.</translation>
 <translation id="8069239273282989646">압축 후</translation>
+<translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="8084156870963450514">모든 기기에서 모든 웹 항목에 액세스하려면 로그인하세요.</translation>
 <translation id="8106211421800660735">신용카드 번호</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8137558756159375272">터치하여 검색에서 선택한 단어와 현재 페이지를 Google 검색에 컨텍스트로 발송하세요. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>
 <translation id="8146397137182589628">오프라인으로 저장되지 않음</translation>
 <translation id="8168435359814927499">콘텐츠</translation>
+<translation id="8173098127580644436">전체</translation>
 <translation id="8200772114523450471">다시 시작</translation>
 <translation id="8209050860603202033">이미지 열기</translation>
 <translation id="8218346974737627104">로그인 확인</translation>
 <translation id="8218934717680664417">이제 터치 한 번으로 검색할 수 있습니다.</translation>
+<translation id="8223946939421658889">다음 기간의 데이터 삭제</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8275818695183729150">허용(검색주소창 검색)</translation>
+<translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" />에 동기화 중</translation>
 <translation id="8310344678080805313">일반 탭</translation>
 <translation id="8374821112118309944">음성 안내 지원을 최신 버전으로 업데이트해야 합니다.</translation>
 <translation id="8396312449826231789">승인된 사이트만 허용</translation>
@@ -545,6 +572,7 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="8413385045638830869">우선 확인(권장)</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8429160401486700187">저장된 페이지 삭제</translation>
+<translation id="8433057134996913067">이 작업을 수행하면 대부분의 웹사이트에서 로그아웃됩니다.</translation>
 <translation id="8481940801237642152">이 사이트에 대한 연결은 비공개지만 네트워크에 있는 다른 사람은 페이지 디자인을 변경할 수 있습니다.</translation>
 <translation id="8493948351860045254">저장 공간 확보하기</translation>
 <translation id="8497726226069778601">아직 표시할 내용 없음</translation>
@@ -585,9 +613,11 @@ Chrome 개인정보 보호 설정에서 피지컬 웹을 관리할 수 있습니
 <translation id="8941248009481596111">이 사이트에 대한 연결은 비공개입니다.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">탐색할 수 없음: <ph name="URL" /></translation>
+<translation id="8979340629087822094">지난 1일</translation>
 <translation id="8987061207681586800">나만의 Chrome 만들기</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
 <translation id="9020607083536754075">현재 탭을 닫고 이전 앱으로 돌아가기</translation>
+<translation id="9038649477754266430">빠른 페이지 로드를 위해 예상 검색어 서비스 사용</translation>
 <translation id="9050666287014529139">암호</translation>
 <translation id="9060538597317784206">Play 스토어에서 <ph name="APP_NAME" /> 앱을 봅니다.  등급은 <ph name="APP_RATING" />입니다.</translation>
 <translation id="9063523880881406963">데스크톱 버전으로 보기 사용 중지</translation>

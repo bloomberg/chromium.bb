@@ -213,6 +213,13 @@
 
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="1859633270756049523">Begränsa sessionslängd</translation>
+<translation id="1859859319036806634">Varning! Den alternativa TLS-versionen tas bort från <ph name="PRODUCT_NAME" /> efter version 52 (i september 2016) och den här principen slutar då att fungera.
+
+      När en TLS-handskakning misslyckas försökte <ph name="PRODUCT_NAME" /> tidigare ansluta igen med en lägre version av TLS för att kunna kringgå fel i HTTPS-servrar. Den här inställningen konfigurerar versionen då den alternativa processen upphör. Om versionsförhandling utförs korrekt i en server (dvs. utan att bryta anslutningen) gäller inte denna inställning. I vilket fall som helst måste den resulterande anslutningen överensstämma med SSLVersionMin.
+
+      Om den här principen inte är konfigurerad eller om den är inställd på tls1.2 använder <ph name="PRODUCT_NAME" /> inte längre den alternativa versionen. Tänk på att detta inte inaktiverar stöd för äldre TLS-versioner. Det avgör bara om <ph name="PRODUCT_NAME" /> kringgår servrar med fel som inte kan förhandla versioner korrekt.
+
+      Om kompatibiliteten med en server med fel måste upprätthållas kan den ställas in på tls1.1. Det här är en nödlösning och servern bör snabbt åtgärdas.</translation>
 <translation id="1861037019115362154">Policyn anger en lista med plugin-program som inaktiveras i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
 
       Jokertecknen * och ? kan användas för att matcha sekvenser med arbiträra tecken. * matchar ett arbiträrt antal tecken medan ? anger ett valfritt enstaka tecken, dvs. noll eller ett tecken. Escape-tecknet är \, så om du vill matcha det faktiska tecknet *, ? eller \ kan du skriva \ framför dem.
@@ -600,6 +607,7 @@
       Anger om domänbundna TLS-certifikattillägg ska aktiveras.
 
       Inställningen används för att aktivera domänbundna TLS-certifikattillägg för testning. De experimentella inställningarna tas bort framöver.</translation>
+<translation id="2957506574938329824">Tillåt inte att webbplatser kan begära att få tillgång till Bluetooth-enheter via Web Bluetooth API</translation>
 <translation id="2957513448235202597">Kontotyp för autentisering av <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Regler för proxybypass</translation>
 <translation id="2960691910306063964">Aktivera eller inaktivera autentisering utan pinkod för fjärråtkomstvärdar</translation>
@@ -613,6 +621,7 @@
 
           Policyns värde anges i millisekunder. Värdena måste vara mindre än eller lika med skärmavstängningstiden (om den har ställts in) och inaktivitetstiden.</translation>
 <translation id="2987155890997901449">Aktivera ARC</translation>
+<translation id="2987227569419001736">Kontrollera användningen av Web Bluetooth API</translation>
 <translation id="2998881342848488968">Med den här policyn kan <ph name="PRODUCT_OS_NAME" /> kringgå en proxyserver för autentisering av infångstportaler.
 
       Den här policyn gäller endast om en proxyserver har konfigurerats (till exempel via en policy, av användaren i chrome://settings eller via tillägg).
@@ -936,6 +945,7 @@
 
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller senare</translation>
+<translation id="4322842393287974810">Tillåt att kioskappen som startas automatiskt utan fördröjning styr <ph name="PRODUCT_OS_NAME" />-versionen</translation>
 <translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
 <translation id="4347908978527632940">Om den här principen är inställd på sant och användaren är en kontrollerad användare så kan andra Android-appar fråga om användarens webbrestriktioner via en innehållsleverantör.
 
@@ -1614,6 +1624,9 @@
 
           Om policyn inte ställs in är skärmtangentbordet inaktiverat när inloggningsskärmen visas första gången. Användaren kan aktivera eller inaktivera skärmtangentbordet när som helst och dess status på inloggningsskärmen sparas för användaren.</translation>
 <translation id="6598235178374410284">Användarens avatarbild</translation>
+<translation id="6628646143828354685">Principen innebär att du kan ange om webbplatser får tillgång till Bluetooth-enheter i närheten. Åtkomsten kan blockeras helt eller så kan användaren bli tillfrågad varje gång en webbplats begär att få tillgång till Bluetooth-enheter i närheten.
+
+          Om policyn inte anges används 3 och användaren kan ändra inställningen.</translation>
 <translation id="6636268606788232221">Konfigurera energisparinställningarna när användaren är inaktiv.
 
           Den här policyn styr flera energisparinställningar när användaren är inaktiv.
@@ -1705,6 +1718,7 @@
           Om du ställer in policyn kan den inte ändras eller åsidosättas av användaren.
 
           Om du inte ställer in policyn visas inte tillgänglighetsalternativ i systemfältsmenyn, men användaren kan välja att tillgänglighetsalternativen ska visas via menyn Inställningar.</translation>
+<translation id="6766216162565713893">Tillåt att webbplatser begär att få tillgång till Bluetooth-enheter i närheten</translation>
 <translation id="6770454900105963262">Rapportera information om aktiva kiosksessioner</translation>
 <translation id="6774533686631353488">Tillåt Native Messaging-värdar på användarnivå (installerade utan administratörsbehörighet).</translation>
 <translation id="6786747875388722282">Tillägg</translation>
@@ -1901,6 +1915,13 @@
 
       Om den här policyn inte anges kommer SPDY att bli tillgängligt.</translation>
 <translation id="7384999953864505698">Tillåter QUIC-protokoll</translation>
+<translation id="7406651467768226499">Tillåta eller inte tillåta att kioskappen som startas automatiskt utan fördröjning styr <ph name="PRODUCT_OS_NAME" />-versionen.
+
+      Den här policyn styr om kioskappen som startas automatiskt utan fördröjning ska styra <ph name="PRODUCT_OS_NAME" />-versionen genom att en required_platform_version anges i manifestfilen och används som målversionsprefix för automatisk uppdatering.
+
+      Om Sant har angetts för policyn används värdet i manifestnyckeln required_platform_version för kioskappen som startas automatiskt utan fördröjning som målversionsprefix för automatisk uppdatering.
+
+      Om Falskt har angetts för policyn, eller om den inte är konfigurerad, ignoreras manifestnyckeln required_platform_version och den automatiska uppdateringen fortsätter som vanligt.</translation>
 <translation id="7417972229667085380">Procentsatsen med vilken fördröjningen vid dödtid skalanpassas i presentationsläge (föråldrad)</translation>
 <translation id="7421483919690710988">Ange medieenhetens cachestorlek i byte</translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>

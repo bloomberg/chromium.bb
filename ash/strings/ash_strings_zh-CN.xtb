@@ -4,7 +4,7 @@
 <translation id="1012876632442809908">USB-C 设备（前方端口）</translation>
 <translation id="1013923882670373915">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下PIN码：<ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">用于切换到下一种输入法的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
-<translation id="112308213915226829">自动隐藏文件架</translation>
+<translation id="112308213915226829">自动隐藏任务栏</translation>
 <translation id="1195412055398077112">过扫描</translation>
 <translation id="1252999807265626933">正在通过“<ph name="POWER_SOURCE" />”充电</translation>
 <translation id="1270290102613614947">屏幕键盘已停用</translation>
@@ -60,10 +60,10 @@
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="2805756323405976993">应用</translation>
 <translation id="2819276065543622893">您将立即退出。</translation>
-<translation id="2825619548187458965">文件架</translation>
+<translation id="2825619548187458965">任务栏</translation>
 <translation id="2844169650293029770">USB-C 设备（左侧前端端口）</translation>
 <translation id="2872961005593481000">关闭</translation>
-<translation id="2942516765047364088">文件架位置</translation>
+<translation id="2942516765047364088">任务栏位置</translation>
 <translation id="2946640296642327832">启用蓝牙</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2964193600955408481">停用 Wi-Fi</translation>

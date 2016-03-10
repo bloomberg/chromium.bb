@@ -192,6 +192,13 @@
 
           Ta zasada jest uwzględniana tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="1859633270756049523">Ogranicz długość sesji</translation>
+<translation id="1859859319036806634">Ostrzeżenie: możliwość zastępczego użycia starszej wersji protokołu TLS zostanie wycofana z <ph name="PRODUCT_NAME" /> po wersji 52 (w okolicach września 2016 roku), a zasada przestanie działać.
+
+      Jeśli uzgadnianie połączenia w protokole TLS nie udało się, <ph name="PRODUCT_NAME" /> wcześniej podejmował ponowną próbę nawiązania połączenia przy użyciu starszej wersji protokołu TLS, by obejść błędy w działaniu serwerów HTTPS. To ustawienie pozwala skonfigurować wersję, przy której ten proces zastępczego używania starszej wersji się zatrzyma. Jeśli serwer prawidłowo (tj. bez przerywania połączenia) przeprowadzi negocjowanie wersji, ustawienie nie będzie stosowane. Niezależnie od sposobu, w jaki zostanie nawiązane połączenie, musi być ono zgodne z wartością SSLVersionMin.
+
+      Jeśli ta zasada nie jest skonfigurowana lub jest ustawiona na „tls1.2”, <ph name="PRODUCT_NAME" /> nie stosuje już tego rozwiązania zastępczego. Pamiętaj, że nie wyłącza to obsługi starszych wersji protokołu TLS, tylko określa, czy <ph name="PRODUCT_NAME" /> będzie mieć możliwość obejścia wadliwie działających serwerów, które nie są w stanie przeprowadzić prawidłowego negocjowania wersji.
+
+      Jeśli utrzymanie zgodności z wadliwie działającym serwerem jest konieczne, można wybrać „tls1.1”. To jednak tylko rozwiązanie tymczasowe – serwer trzeba jak najszybciej naprawić.</translation>
 <translation id="1861037019115362154">Pozwala określić listę wtyczek wyłączonych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia. Możesz użyć symboli wieloznacznych „*” i „?”, by dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego by wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”. Jeśli włączysz to ustawienie, wtyczki wymienione na liście nigdy nie będą używane w <ph name="PRODUCT_NAME" />. Wtyczki są oznaczone jako wyłączone na stronie „about:plugins”, a użytkownicy nie mogą ich włączyć. Pamiętaj, że ta zasada jest zastępowana przez zasady EnabledPlugins i DisabledPluginsExceptions. Jeśli zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać ze wszystkich wtyczek zainstalowanych w systemie oprócz przestarzałych, niebezpiecznych i niezgodnych wbudowanych wtyczek.</translation>
 <translation id="1865417998205858223">Uprawnienia klucza</translation>
 <translation id="186719019195685253">Działanie, jakie ma zostać podjęte po osiągnięciu opóźnienia bezczynności przy zasilaniu prądem zmiennym</translation>
@@ -529,6 +536,7 @@
       Określa, czy ma być włączone rozszerzenie certyfikatów TLS powiązanych z domeną.
 
       To ustawienie umożliwia testowanie rozszerzenia certyfikatów TLS powiązanych z domeną. Jest eksperymentalne i zostanie usunięte w przyszłości.</translation>
+<translation id="2957506574938329824">Nie pozwalaj żadnym witrynom na wysyłanie żądań dostępu do urządzeń Bluetooth poprzez interfejs API Web Bluetooth</translation>
 <translation id="2957513448235202597">Rodzaj konta na potrzeby uwierzytelniania <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Reguły omijania serwera proxy</translation>
 <translation id="2960691910306063964">Włącz lub wyłącz uwierzytelnianie hostów dostępu zdalnego bez kodu PIN</translation>
@@ -542,6 +550,7 @@
 
           Wartość tej zasady powinna być określona w milisekundach. Wartości nie mogą być większe niż opóźnienie wyłączenia ekranu (jeśli jest ustawione) i opóźnienie bezczynności.</translation>
 <translation id="2987155890997901449">Włączenie ARC</translation>
+<translation id="2987227569419001736">Kontrolowanie użycia interfejsu API Web Bluetooth</translation>
 <translation id="2998881342848488968">Ta zasada umożliwia <ph name="PRODUCT_OS_NAME" /> ominięcie dowolnego serwera proxy w celu uwierzytelnienia portalu przechwytującego.
 
       Zasada działa tylko wtedy, gdy serwer proxy jest skonfigurowany (np. przez zasadę, użytkownika na chrome://settings lub rozszerzenie).
@@ -826,6 +835,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Ta zasada jest uwzględniana tyko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP z dodatkiem SP2 lub nowszy</translation>
+<translation id="4322842393287974810">Zezwalaj aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
 <translation id="4347908978527632940">Jeśli jest włączona i użytkownik jest nadzorowany, inne aplikacje na Androida mogą sprawdzać ograniczenia dostępu do internetu dla użytkownika za pośrednictwem dostawcy treści.
 
@@ -1416,6 +1426,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli nie skonfigurujesz tej zasady, klawiatura ekranowa będzie wyłączona po pierwszym wyświetleniu ekranu logowania. Użytkownicy będą mogli ją włączyć i wyłączyć w każdej chwili i jej stan na tym ekranie będzie utrzymywany między użytkownikami.</translation>
 <translation id="6598235178374410284">Obraz awatara użytkownika</translation>
+<translation id="6628646143828354685">Pozwala określić, czy strony mogą korzystać z urządzeń Bluetooth w pobliżu. Dostęp może być całkowicie zablokowany lub użytkownik może być pytany za każdym razem, gdy strona chce użyć takiego urządzenia.
+
+          Jeśli ta zasada nie zostanie ustawiona, będzie stosowane ustawienie „3”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="6636268606788232221">Skonfiguruj ustawienia zarządzania energią, gdy użytkownik jest nieaktywny.
 
           Ta zasada określa szereg ustawień strategii zarządzania energią, gdy użytkownik jest nieaktywny.
@@ -1491,6 +1504,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
 
           Jeśli nie skonfigurujesz tej zasady, Opcje ułatwień dostępu nie będą widoczne w menu na pasku zadań, ale użytkownik będzie mógł włączyć ich wyświetlanie na stronie Ustawień.</translation>
+<translation id="6766216162565713893">Zezwól, by witryny prosiły użytkownika o przyznanie dostępu do urządzeń Bluetooth w pobliżu</translation>
 <translation id="6770454900105963262">Informuj o aktywnych sesjach kiosku</translation>
 <translation id="6774533686631353488">Zezwól na hosty Wiadomości natywnych na poziomie użytkownika (instalowane bez uprawnień administratora).</translation>
 <translation id="6786747875388722282">Rozszerzenia</translation>
@@ -1656,6 +1670,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
 <translation id="7381326101471547614">Wyłącza protokół SPDY w <ph name="PRODUCT_NAME" />. Po włączeniu tej zasady protokół SPDY jest niedostępny w <ph name="PRODUCT_NAME" />. W przeciwnym razie protokołu można używać. Jeśli zasada nie zostanie ustawiona, protokół SPDY będzie dostępny.</translation>
 <translation id="7384999953864505698">Zezwala na protokół QUIC</translation>
+<translation id="7406651467768226499">Czy zezwolić aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" />.
+
+      Ta zasada określa, czy uruchamiana automatycznie z zerowym opóźnieniem aplikacja kiosku może kontrolować wersję <ph name="PRODUCT_OS_NAME" /> przez zadeklarowanie w swoim pliku manifestu wartości klucza required_platform_version i używanie jej jako przedrostka docelowej wersji po aktualizacji automatycznej.
+
+      Jeśli ustawisz w niej wartość prawda, wartość klucza manifestu required_platform_version uruchamianej automatycznie z zerowym opóźnieniem aplikacji kiosku będzie używana jako przedrostek docelowej wersji po aktualizacji automatycznej.
+
+      Jeśli nie skonfigurujesz tej zasady lub ustawisz w niej wartość fałsz, klucz manifestu required_platform_version będzie ignorowany i aktualizacje automatyczne będą przebiegać normalnie.</translation>
 <translation id="7417972229667085380">Wartość procentowa skalowania opóźnienia bezczynności w trybie prezentacji (wycofana)</translation>
 <translation id="7421483919690710988">Ustaw rozmiar dyskowej pamięci podręcznej multimediów w bajtach</translation>
 <translation id="7424751532654212117">Lista wyjątków od listy wyłączonych wtyczek</translation>

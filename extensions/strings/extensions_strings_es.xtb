@@ -49,7 +49,7 @@
 <translation id="8341840687457896278">Esta extensión no ha podido proporcionar credenciales a una solicitud de red porque otra extensión (<ph name="EXTENSION_NAME" />) ha proporcionado otras credenciales.</translation>
 <translation id="8602184400052594090">Falta el archivo de manifiesto o no se puede leer.</translation>
 <translation id="8636666366616799973">El paquete no es válido. Detalles: "<ph name="ERROR_MESSAGE" />"</translation>
-<translation id="8670869118777164560">Esta extensión no ha podido redireccionar una solicitud de red a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> porque otra extensión (<ph name="EXTENSION_NAME" />) la ha redireccionado a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
+<translation id="8670869118777164560">Esta extensión no ha podido redirigir una solicitud de red a <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> porque otra extensión (<ph name="EXTENSION_NAME" />) la ha redireccionado a <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Descompresor de extensiones</translation>
 <translation id="8825366169884721447">Esta extensión no ha podido modificar el encabezado de solicitud "<ph name="HEADER_NAME" />" de una solicitud de red porque la modificación ha entrado en conflicto con otra extensión (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="9111791539553342076">Esta extensión no ha podido modificar el encabezado de respuesta "<ph name="HEADER_NAME" />" de una solicitud de red porque la modificación ha entrado en conflicto con otra extensión (<ph name="EXTENSION_NAME" />).</translation>

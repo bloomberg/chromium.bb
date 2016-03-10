@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="1091157412887719337">ההקצאה נכשלה. אין מנוע זמין.</translation>
+<translation id="2004526128230838685">ההקצאה נכשלה. בעיה לא ידועה.</translation>
+<translation id="2023631438558435272">ההקצאה נכשלה. תגובה לא חוקית.</translation>
+<translation id="2353984724370197742">ההקצאה נכשלה. בקשת הרשת נכשלה.</translation>
+<translation id="3046825211487065480">ההקצאה נכשלה. הבקשה השנייה נשלחה לפני התגובה לבקשה הראשונה.</translation>
 <translation id="3407245330823033366">‏בחר חשבון לשימוש עם Blimp.</translation>
+<translation id="3775180005489871350">‏ההקצאה נכשלה. שגיאה 400 (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">ההקצאה נכשלה. פג תוקף אסימון הגישה של המשתמש.</translation>
+<translation id="4562971394107096647">ההקצאה נכשלה. שגיאת שרת.</translation>
 <translation id="4641972508298030550">לא ניתן לאמת את המשתמש.</translation>
+<translation id="5860346505531085166">ההקצאה נכשלה. אין לחשבון הרשאת גישה.</translation>
+<translation id="704835510384979817">ההקצאה נכשלה. לא נמצאה גירסת מנוע תואמת.</translation>
+<translation id="7961542533680218955">ההקצאה הצליחה.</translation>
 <translation id="8514856595257368555">האסימון אוחזר.</translation>
 </translationbundle>

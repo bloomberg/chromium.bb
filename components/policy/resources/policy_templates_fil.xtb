@@ -209,6 +209,13 @@
 
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="1859633270756049523">Limitahan ang haba ng session</translation>
+<translation id="1859859319036806634">Babala: Aalisin na ang fallback na bersyon ng TLS mula sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 52 (bandang Setyembre 2016) at hindi na gagana ang patakarang ito pagkatapos noon.
+
+      Kapag hindi nakumpleto ang isang TLS handshake, susubukang muli ng <ph name="PRODUCT_NAME" /> ang koneksyon gamit ang mas mababang bersyon ng TLS upang makahanap ng paraan sa mga bug sa mga HTTPS server. Kino-configure ng setting na ito ang bersyon kung saan hihinto ang fallback na prosesong ito. Kung maisasagawa nang tama ng isang server ang paghahanap ng kompromiso sa bersyon (ibig sabihin, nang hindi nawawala ang koneksyon), hindi malalapat ang setting na ito. Anuman ang mangyari, dapat pa ring sumusunod sa SSLVersionMin ang magreresultang koneksyon.
+
+      Kung hindi naka-configure ang patakarang ito o kung ito ay nakatakda sa "tls1.2," hindi na isasagawa ng <ph name="PRODUCT_NAME" /> ang fallback na ito. Tandaang hindi nito dini-disable ang suporta para sa mga mas lumang bersyon ng TLS, kung gagana lang ang <ph name="PRODUCT_NAME" /> sa mga server na may maraming bug na hindi makakahanap ng kompromiso sa mga bersyon nang tama.
+
+      Kung hindi, kung kailangang panatilihin ang compatibility sa isang server na maraming bug, maaaring itakda ang patakarang ito sa "tls1.1". Isa itong pansamantalang solusyon at dapat na maayos kaagad ang server.</translation>
 <translation id="1861037019115362154">Tumutukoy ng listahan ng mga plugin na hindi pinapagana sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Maaaring gamitin ang mga wildcard na character na '*' at '?' upang itugma ang mga pagkakasunud-sunod ng mga arbitrary na character. Itinutugma ng '*' ang isang arbitrary na dami ng character habang tinutukoy ng '?' ang isang opsyonal na isahang character, hal. itinutugma ang zero o isang character. Ang escape character ay '\', kaya upang tumugma sa aktwal na '*', '?', o '\' na mga character, makakapaglagay ka ng '\' sa unahan ng mga ito.
@@ -595,6 +602,7 @@
       Tinutukoy kung dapat i-enable ang mga extension ng TLS domain-bound na certificate.
 
       Ginagamit ang setting na ito upang i-enable ang extension ng mga TLS domain-bound na certificate para sa pagsusubok.  Aalisin ang pang-eksperimentong setting na ito sa hinaharap.</translation>
+<translation id="2957506574938329824">Huwag payagan ang anumang site na humiling ng access sa mga Bluetooth device sa pamamagitan ng Web Bluetooth API</translation>
 <translation id="2957513448235202597">Uri ng account para sa pagpapatotoo ng <ph name="HTTP_NEGOTIATE" /></translation>
 <translation id="2959898425599642200">Mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="2960691910306063964">I-enable o i-disable ang pagpapatotoo na hindi gumagamit ng PIN para sa mga host ng malayuang access</translation>
@@ -608,6 +616,7 @@
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa o katumbas ng delay ng pag-off ng screen (kung nakatakda) at idle delay ang mga halaga.</translation>
 <translation id="2987155890997901449">I-enable ang ARC</translation>
+<translation id="2987227569419001736">Kontrolin ang paggamit ng Web Bluetooth API</translation>
 <translation id="2998881342848488968">Binibigyang-daan ng patakarang ito ang <ph name="PRODUCT_OS_NAME" /> na i-bypass ang anumang proxy para sa pagpapatotoo ng captive portal.
 
       Magkakaroon lang ng epekto ang patakaran na ito kung naka-configure ang isang proxy (halimbawa, sa pamamagitan ng patakaran, sa pamamagitan ng user sa chrome://settings, o sa pamamagitan ng mga extension).
@@ -925,6 +934,7 @@
 
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o mas bago</translation>
+<translation id="4322842393287974810">Payagan ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Magdagdag ng button sa pag-logout sa tray ng system</translation>
 <translation id="4347908978527632940">Kung true at ang user ay isang pinangangasiwaang user, maaaring i-query ng iba pang mga Android app ang mga paghihigpit ng user sa web sa pamamagitan ng isang content provider.
 
@@ -1600,6 +1610,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung iniwang hindi nakatakda ang patakarang ito, naka-disable ang on-screen na keyboard kapag unang ipinakita ang screen sa pag-log in. Maaaring i-enable o i-disable ng mga user ang on-screen na keyboard anumang oras at magpapatuloy ang status nito sa screen sa pag-log in sa pagitan ng mga user.</translation>
 <translation id="6598235178374410284">Larawan ng avatar ng user</translation>
+<translation id="6628646143828354685">Binibigyang-daan kang magtakda kung pinapayagan ang mga website na kumuha ng access sa malalapit na Bluetooth device. Maaaring ganap na i-block ang access, o maaaring tanungin ang user sa tuwing gusto ng website na kumuha ng access sa malalapit na Bluetooth device.
+
+          Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang '3,' at magagawa ng user na baguhin ito.</translation>
 <translation id="6636268606788232221">I-configure ang mga setting ng pamamahala ng power kapag naging idle ang user.
 
           Maraming kinokontrol ang patakarang ito na mga setting ng diskarte sa pamamahala ng power kapag naging idle ang user.
@@ -1692,6 +1705,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung itinakda mo ang patakarang ito, hindi ito mababago o ma-o-override ng mga user.
 
           Kung iniwang hindi nakatakda ang patakarang ito, hindi lalabas ang mga opsyon sa Pagiging naa-access sa menu ng system tray, ngunit maaaring idulot ng user ang paglabas ng mga opsyon sa Pagiging naa-access sa pamamagitan ng pahina ng Mga Setting.</translation>
+<translation id="6766216162565713893">Payagan ang mga site na hilingin sa user na magbigay ng access sa malapit na Bluetooth device</translation>
 <translation id="6770454900105963262">Mag-ulat ng impormasyon tungkol sa mga aktibong session ng kiosk</translation>
 <translation id="6774533686631353488">Bigyang-daan ang mga host ng Native na Pagmemensahe sa antas ng user (na-install nang walang mga pahintulot ng admin).</translation>
 <translation id="6786747875388722282">Mga Extension</translation>
@@ -1883,6 +1897,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
 <translation id="7381326101471547614">Hindi pinapagana ang paggamit ng SPDY protocol sa <ph name="PRODUCT_NAME" />. Kung pinagana ang patakarang ito, ang SPDY protocol ay hindi magiging available sa <ph name="PRODUCT_NAME" />. Ang pagtatakda ng patakarang ito sa hindi pinagana ay papayagan ang paggamit ng SPDY. Kung iwanang hindi nakatakda ang SPDY na ito, magiging available ang Spf.</translation>
 <translation id="7384999953864505698">Pinapayagan ang QUIC protocol</translation>
+<translation id="7406651467768226499">Kung papayagan ba ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" />.
+
+      Kinokontrol ng patakarang ito kung papayagan ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" /> sa pamamagitan ng pagpapahayag ng required_platform_version sa manifest nito at gamitin ito bilang ang prefix ng bersyon ng target ng awtomatikong pag-update.
+
+      Kung itatakda sa true ang patakaran, ang value ng required_platform_version manifest key ng awtomatikong inilunsad na walang pagkaantalang kiosk app ay gagamitin bilang prefix ng bersyon ng target ng awtomatikong pag-update.
+
+      Kung hindi naka-configure o nakatakda sa false ang patakaran, babalewalain ang required_platform_version manifest key at magpapatuloy ayon sa nakasanayan ang awtomatikong pag-update.</translation>
 <translation id="7417972229667085380">Porsyento ng pag-scale ng idle delay kapag nasa presentation mode (hindi na ginagamit)</translation>
 <translation id="7421483919690710988">Itakda ang laki ng cache ng disk ng media sa bytes</translation>
 <translation id="7424751532654212117">Listahan ng mga pagbubukod sa listahan ng hindi pinaganang mga plugin</translation>

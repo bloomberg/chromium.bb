@@ -209,6 +209,13 @@
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="1859633270756049523">Sesijas ilguma ierobežošana</translation>
+<translation id="1859859319036806634">Brīdinājums: TLS versijas atkāpšanās protokols tiks noņemts no pārlūka <ph name="PRODUCT_NAME" /> pēc 52. versijas izlaišanas (ap 2016. gada septembri), un pēc tam šī politika vairs nedarbosies.
+
+      Ja neizdodas izveidot TLS savienojumu, iepriekš <ph name="PRODUCT_NAME" /> mēģinātu atkārtoti izveidot savienojumu ar vecāku TLS versiju, lai apietu kļūdas HTTPS serveros. Ar šo iestatījumu tiek konfigurēta versija, kurā tiks pārtraukts šis atkāpšanās process. Ja serverī tiek pareizi veikta versiju saskaņošana (proti, nepārtraucot savienojumu), šis iestatījums netiek izmantots. Neatkarīgi no šī iestatījuma izveidotajam savienojumam joprojām ir jāatbilst politikai SSLVersionMin.
+
+      Ja šī politika nav konfigurēta vai ir iestatīta uz “tls1.2”, pārlūkā <ph name="PRODUCT_NAME" /> vairs netiek veikts šis atkāpšanās process. Ņemiet vērā, ka šādi netiek atspējots vecāku TLS versiju atbalsts, bet tikai tas, vai <ph name="PRODUCT_NAME" /> apies kļūdainos serverus, kuri nevar pareizi saskaņot versijas.
+
+      Pretējā gadījumā, ja ir jāuztur saderība ar kļūdainu serveri, šo politiku var iestatīt uz “tls1.1”. Tas ir pagaidu risinājums, un serveris ir steidzami jālabo.</translation>
 <translation id="1861037019115362154">Norāda atspējoto spraudņu sarakstu pārlūkā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem mainīt šo iestatījumu.
 
       Var lietot aizstājējzīmes “*” un “?”, lai aizstātu dažādas rakstzīmes. Rakstzīme “*” atbilst vairāku rakstzīmju virknei, bet rakstzīme “?” var norādīt vienu noteiktu rakstzīmi, t.i., var atbilst vienai rakstzīmei vai neatbilst nevienai. Atsoļa rakstzīme ir “\”, tādējādi, lai veidotu atbilstību faktiskajām rakstzīmēm “*”, “?” un “\”, pirms tām jāievieto rakstzīme “\”.
@@ -597,6 +604,7 @@
       Norāda, vai jāiespējo TLS domēnam piesaistītais sertifikātu paplašinājums.
 
       Šis iestatījums tiek izmantots, lai testēšanai iespējotu TLS domēnam piesaistītos sertifikātu paplašinājumus. Šis eksperimentālais iestatījums vēlāk tiks noņemts.</translation>
+<translation id="2957506574938329824">Neatļaut neviena vietnei pieprasīt piekļuvi Bluetooth ierīcēm, izmantojot Web Bluetooth API</translation>
 <translation id="2957513448235202597">Konta veids <ph name="HTTP_NEGOTIATE" /> autentifikācijas saskaņošanai</translation>
 <translation id="2959898425599642200">Starpniekserveru apiešanas kārtulas</translation>
 <translation id="2960691910306063964">Autentifikācijas bez PIN iespējošana vai atspējošana attālās piekļuves saimniekdatoriem</translation>
@@ -610,6 +618,7 @@
 
           Politikas vērtību nedrīkst norādīt milisekundēs. Ir jānorāda vērtības, kas ir mazākas par aizkavi līdz ekrāna izslēgšanai (ja tāda ir iestatīta) un dīkstāvei vai kas ir vienādas ar to.</translation>
 <translation id="2987155890997901449">ARC iespējošana</translation>
+<translation id="2987227569419001736">Web Bluetooth API lietošanas pārvaldība</translation>
 <translation id="2998881342848488968">Šī politika ļauj operētājsistēmai <ph name="PRODUCT_OS_NAME" /> apiet visus caurlaides lapu autentifikācijas starpniekserverus.
 
       Šī politika ir spēkā tikai tad, ja ir konfigurēts starpniekserveris (piemēram, izmantojot politiku, lietotāja iestatījumus lapā chrome://settings vai paplašinājumus).
@@ -931,6 +940,7 @@
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 vai jaunāka versija</translation>
+<translation id="4322842393287974810">Atļaut kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju</translation>
 <translation id="4325690621216251241">Atteikšanās pogas pievienošana sistēmas teknei</translation>
 <translation id="4347908978527632940">Ja ir iestatīta vērtība “true” un lietotājs ir uzraudzīts lietotājs, citas Android lietotnes var nosūtīt vaicājumus par lietotāja tīmekļa ierobežojumiem, izmantojot satura nodrošinātāju.
 
@@ -1605,6 +1615,9 @@
 
           Ja šī politika netiek iestatīta, ekrāna tastatūra ir atspējota, pirmoreiz atverot pieteikšanās ekrānu. Lietotāji jebkurā laikā var iespējot vai atspējot ekrāna tastatūru, un tastatūras statuss pieteikšanās ekrānā tiek saglabāts arī citiem lietotājiem.</translation>
 <translation id="6598235178374410284">Lietotāja iemiesojuma attēls</translation>
+<translation id="6628646143828354685">Ļauj iestatīt, vai vietnēm ir atļauts iegūt piekļuvi tuvumā esošām Bluetooth ierīcēm. Piekļuvi var pilnībā bloķēt, vai lietotājam var tikt parādīta uzvedne ar jautājumu katru reizi, kad vietne vēlas iegūt piekļuvi tuvumā esošām Bluetooth ierīcēm.
+
+          Ja šī politika nav iestatīta, tiks izmantota vērtība “3”, un lietotājs to varēs mainīt.</translation>
 <translation id="6636268606788232221">Konfigurējiet barošanas pārvaldības iestatījumus gadījumiem, kad lietotājs kļūst neaktīvs.
 
           Šī politika nosaka vairākus iestatījumus barošanas pārvaldības stratēģijai, kura tiek iespējota pēc tam, kad lietotājs ir kļuvis neaktīvs.
@@ -1697,6 +1710,7 @@
           Ja iestatīsiet šo politiku, lietotāji to nevarēs mainīt vai ignorēt.
 
           Ja šī politika netiek iestatīta, pieejamības opcijas netiks rādītas sistēmas teknes izvēlnē, taču lietotājs varēs skatīt pieejamības opcijas, izmantojot lapu Iestatījumi.</translation>
+<translation id="6766216162565713893">Ļaut vietnēm pieprasīt, lai lietotājs piešķirtu piekļuvi tuvumā esošai Bluetooth ierīcei</translation>
 <translation id="6770454900105963262">Ziņošana par aktīvām kioska sesijām</translation>
 <translation id="6774533686631353488">Atļaut izmantot lietotāja līmeņa vietējās ziņojumapmaiņas saimniekdatorus (tiks instalēti bez administratora atļaujas).</translation>
 <translation id="6786747875388722282">Paplašinājumi</translation>
@@ -1894,6 +1908,13 @@
 
       Ja šī politika nav iestatīta, SPDY būs pieejams.</translation>
 <translation id="7384999953864505698">Atļauja lietot QUIC protokolu</translation>
+<translation id="7406651467768226499">Atļauja kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju.
+
+      Šī politika nosaka, vai atļaut kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju, manifestā norādot parametru required_platform_version, un izmantot to kā automātiskās atjaunināšanas mērķa versijas prefiksu.
+
+      Ja politikai ir iestatīta vērtība “Patiesa”, tās kioska lietotnes, kura tiek automātiski palaista ar nulles aizkavi, manifesta atslēgas required_platform_version vērtība tiek izmantota kā automātiskās atjaunināšanas mērķa versijas prefikss.
+
+      Ja politika nav konfigurēta vai tai ir iestatīta vērtība “Nepatiesa”, manifesta atslēga required_platform_version tiek ignorēta un automātiskā atjaunināšana tiek veikta kā parasti.</translation>
 <translation id="7417972229667085380">Aizkaves līdz dīkstāvei norādīšana procentos (prezentācijas režīmā; pārtraukta)</translation>
 <translation id="7421483919690710988">Iestatīt datu nesēja kešatmiņas lielumu baitos</translation>
 <translation id="7424751532654212117">Atspējoto spraudņu saraksta izņēmumu saraksts</translation>

@@ -1,7 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1091157412887719337">Se produjo un error de asignación. No hay motores disponibles.</translation>
+<translation id="2004526128230838685">Se produjo un error de asignación. Hay un problema desconocido.</translation>
+<translation id="2023631438558435272">Se produjo un error de asignación. La respuesta no es válida.</translation>
+<translation id="2353984724370197742">Se produjo un error de asignación. Se produjo un error en la solicitud de la red.</translation>
+<translation id="3046825211487065480">Se produjo un error de asignación. Se envió una segunda solicitud antes de que se respondiera la primera.</translation>
 <translation id="3407245330823033366">Elige una cuenta para usar con Blimp.</translation>
+<translation id="3775180005489871350">Se produjo un error de asignación. Se produjo el error 400 (BAD_REQUEST).</translation>
+<translation id="4542350224991263059">Se produjo un error de asignación. Caducó el token de acceso del usuario.</translation>
+<translation id="4562971394107096647">Se produjo un error de asignación. Se produjo un error en el servidor.</translation>
 <translation id="4641972508298030550">No se puede autenticar el usuario.</translation>
+<translation id="5860346505531085166">Se produjo un error de asignación. La cuenta no tiene acceso.</translation>
+<translation id="704835510384979817">Se produjo un error de asignación. No hay ninguna versión coincidente del motor.</translation>
+<translation id="7961542533680218955">La asignación se completó correctamente.</translation>
 <translation id="8514856595257368555">Se recuperó el token.</translation>
 </translationbundle>
