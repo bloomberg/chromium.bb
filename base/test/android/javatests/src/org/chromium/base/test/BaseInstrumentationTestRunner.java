@@ -8,28 +8,18 @@ import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.test.AndroidTestRunner;
 import android.test.InstrumentationTestRunner;
-import android.text.TextUtils;
 
-import junit.framework.TestCase;
 import junit.framework.TestResult;
 
-import org.chromium.base.Log;
-import org.chromium.base.SysUtils;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIfSkipCheck;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.SkipCheck;
+import org.chromium.base.test.util.MinAndroidSdkLevelSkipCheck;
+import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.test.reporter.TestStatusListener;
-
-import java.lang.reflect.Method;
 
 // TODO(jbudorick): Add support for on-device handling of timeouts.
 /**
@@ -67,95 +57,10 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
      */
     protected void addTestHooks(BaseTestResult result) {
         result.addSkipCheck(new MinAndroidSdkLevelSkipCheck());
-        result.addSkipCheck(new RestrictionSkipCheck());
+        result.addSkipCheck(new RestrictionSkipCheck(getTargetContext()));
         result.addSkipCheck(new DisableIfSkipCheck());
 
         result.addPreTestHook(CommandLineFlags.getRegistrationHook());
-    }
-
-
-    /**
-     * Checks if any restrictions exist and skip the test if it meets those restrictions.
-     */
-    public class RestrictionSkipCheck extends SkipCheck {
-        @Override
-        public boolean shouldSkip(TestCase testCase) {
-            Method method = getTestMethod(testCase);
-            if (method == null) return true;
-
-            Restriction restrictions = method.getAnnotation(Restriction.class);
-            if (restrictions != null) {
-                for (String restriction : restrictions.value()) {
-                    if (restrictionApplies(restriction)) {
-                        Log.i(TAG, "Test " + testCase.getClass().getName() + "#"
-                                + testCase.getName() + " skipped because of restriction "
-                                + restriction);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        protected boolean restrictionApplies(String restriction) {
-            if (TextUtils.equals(restriction, Restriction.RESTRICTION_TYPE_LOW_END_DEVICE)
-                    && !SysUtils.isLowEndDevice()) {
-                return true;
-            }
-            if (TextUtils.equals(restriction, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-                    && SysUtils.isLowEndDevice()) {
-                return true;
-            }
-            if (TextUtils.equals(restriction, Restriction.RESTRICTION_TYPE_INTERNET)
-                    && !isNetworkAvailable()) {
-                return true;
-            }
-            return false;
-        }
-
-        private boolean isNetworkAvailable() {
-            final ConnectivityManager connectivityManager = (ConnectivityManager)
-                    getTargetContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-            final NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-        }
-    }
-
-    /**
-     * Checks the device's SDK level against any specified minimum requirement.
-     */
-    public static class MinAndroidSdkLevelSkipCheck extends SkipCheck {
-
-        /**
-         * If {@link MinAndroidSdkLevel} is present, checks its value
-         * against the device's SDK level.
-         *
-         * @param testCase The test to check.
-         * @return true if the device's SDK level is below the specified minimum.
-         */
-        @Override
-        public boolean shouldSkip(TestCase testCase) {
-            Class<?> testClass = testCase.getClass();
-            Method testMethod = getTestMethod(testCase);
-
-            int minSdkLevel = 0;
-            if (testClass.isAnnotationPresent(MinAndroidSdkLevel.class)) {
-                minSdkLevel = Math.max(testClass.getAnnotation(MinAndroidSdkLevel.class).value(),
-                        minSdkLevel);
-            }
-            if (testMethod != null && testMethod.isAnnotationPresent(MinAndroidSdkLevel.class)) {
-                minSdkLevel = Math.max(testMethod.getAnnotation(MinAndroidSdkLevel.class).value(),
-                        minSdkLevel);
-            }
-
-            if (Build.VERSION.SDK_INT < minSdkLevel) {
-                Log.i(TAG, "Test " + testClass.getName() + "#" + testCase.getName()
-                        + " is not enabled at SDK level " + Build.VERSION.SDK_INT
-                        + ".");
-                return true;
-            }
-            return false;
-        }
     }
 
     @Override

@@ -8,7 +8,11 @@ import junit.framework.TestCase;
 
 import org.chromium.base.Log;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Check whether a test case should be skipped.
@@ -34,6 +38,23 @@ public abstract class SkipCheck {
                     testCase.getClass().getName(), e);
             return null;
         }
+    }
+
+    protected static <T extends Annotation> List<T> getAnnotations(AnnotatedElement element,
+            Class<T> annotationClass) {
+        AnnotatedElement parent = (element instanceof Method)
+                ? ((Method) element).getDeclaringClass()
+                : ((Class) element).getSuperclass();
+        List<T> annotations = (parent == null)
+                ? new ArrayList<T>()
+                : getAnnotations(parent, annotationClass);
+        Annotation[] allAnnotations = element.getAnnotations();
+        for (Annotation a : allAnnotations) {
+            if (annotationClass.isInstance(a)) {
+                annotations.add((T) a);
+            }
+        }
+        return annotations;
     }
 }
 

@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  *     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_SMALL_MEMORY})
  * Test classes are free to define restrictions and enforce them using reflection at runtime.
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Restriction {
     /** Specifies the test is only valid on low end devices that have less memory. */

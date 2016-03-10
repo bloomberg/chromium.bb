@@ -1558,6 +1558,9 @@
             'src_paths': [
               '../base/android/junit/',
               '../base/test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java',
+              '../base/test/android/junit/src/org/chromium/base/test/util/MinAndroidSdkLevelSkipCheckTest.java',
+              '../base/test/android/junit/src/org/chromium/base/test/util/RestrictionSkipCheckTest.java',
+              '../base/test/android/junit/src/org/chromium/base/test/util/SkipCheckTest.java',
             ],
             'test_type': 'junit',
             'wrapper_script_name': 'helper/<(_target_name)',

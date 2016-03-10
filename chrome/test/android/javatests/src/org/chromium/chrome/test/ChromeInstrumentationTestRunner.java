@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.test;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -15,6 +16,7 @@ import junit.framework.TestCase;
 
 import org.chromium.base.test.BaseInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
+import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.ChromeRestriction;
@@ -44,12 +46,16 @@ public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunn
     protected void addTestHooks(BaseTestResult result) {
         super.addTestHooks(result);
         result.addSkipCheck(new DisableInTabbedModeSkipCheck());
-        result.addSkipCheck(new ChromeRestrictionSkipCheck());
+        result.addSkipCheck(new ChromeRestrictionSkipCheck(getTargetContext()));
 
         result.addPreTestHook(Policies.getRegistrationHook());
     }
 
     private class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {
+
+        public ChromeRestrictionSkipCheck(Context targetContext) {
+            super(targetContext);
+        }
 
         @Override
         protected boolean restrictionApplies(String restriction) {
