@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -37,6 +38,7 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
+#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
@@ -251,6 +253,49 @@ installer::InstallStatus InstallNewVersion(
   return installer::INSTALL_FAILED;
 }
 
+void UpdatePerUserShortcutsInLocation(
+    const ShellUtil::ShortcutLocation shortcut_location,
+    BrowserDistribution* dist,
+    const base::FilePath& old_target_path_prefix,
+    const base::FilePath& old_target_path_suffix,
+    const base::FilePath& new_target_path) {
+  base::FilePath shortcut_path;
+  const bool get_shortcut_path_return = ShellUtil::GetShortcutPath(
+      shortcut_location, dist, ShellUtil::CURRENT_USER, &shortcut_path);
+  DCHECK(get_shortcut_path_return);
+
+  bool recursive = false;
+
+  // TODO(fdoray): Modify GetShortcutPath such that it returns
+  // ...\Quick Launch\User Pinned instead of
+  // ...\Quick Launch\User Pinned\TaskBar for SHORTCUT_LOCATION_TASKBAR_PINS.
+  if (shortcut_location == ShellUtil::SHORTCUT_LOCATION_TASKBAR_PINS) {
+    shortcut_path = shortcut_path.DirName();
+    recursive = true;
+  }
+
+  base::FileEnumerator shortcuts_enum(shortcut_path, recursive,
+                                      base::FileEnumerator::FILES);
+  for (base::FilePath shortcut = shortcuts_enum.Next(); !shortcut.empty();
+       shortcut = shortcuts_enum.Next()) {
+    base::FilePath existing_target_path;
+    if (!base::win::ResolveShortcut(shortcut, &existing_target_path, nullptr) ||
+        !base::StartsWith(existing_target_path.value(),
+                          old_target_path_prefix.value(),
+                          base::CompareCase::INSENSITIVE_ASCII) ||
+        !base::EndsWith(existing_target_path.value(),
+                        old_target_path_suffix.value(),
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+      continue;
+    }
+
+    base::win::ShortcutProperties updated_properties;
+    updated_properties.set_target(new_target_path);
+    base::win::CreateOrUpdateShortcutLink(shortcut, updated_properties,
+                                          base::win::SHORTCUT_UPDATE_EXISTING);
+  }
+}
+
 }  // end namespace
 
 namespace installer {
@@ -418,6 +463,21 @@ void CreateOrUpdateShortcuts(
   ExecuteAndLogShortcutOperation(
       ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, dist,
       start_menu_properties, shortcut_operation);
+
+  // Update the target path of existing per-user shortcuts.
+  if (install_operation == INSTALL_SHORTCUT_REPLACE_EXISTING) {
+    const base::FilePath updated_prefix = target.DirName().DirName();
+    const base::FilePath updated_suffix = target.BaseName();
+
+    UpdatePerUserShortcutsInLocation(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist,
+                                     updated_prefix, updated_suffix, target);
+    UpdatePerUserShortcutsInLocation(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+                                     dist, updated_prefix, updated_suffix,
+                                     target);
+    UpdatePerUserShortcutsInLocation(ShellUtil::SHORTCUT_LOCATION_TASKBAR_PINS,
+                                     dist, updated_prefix, updated_suffix,
+                                     target);
+  }
 }
 
 void RegisterChromeOnMachine(const installer::InstallerState& installer_state,
