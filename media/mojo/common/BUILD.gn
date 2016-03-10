@@ -44,7 +44,6 @@ test("media_mojo_unittests") {
     "//mojo/edk/test:run_all_unittests",
     "//testing/gmock",
     "//testing/gtest",
-    "//ui/gfx:test_support",
   ]
 }
 

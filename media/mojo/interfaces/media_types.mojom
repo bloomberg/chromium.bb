@@ -266,6 +266,8 @@ struct AudioBuffer {
 };
 
 // This defines a mojo transport format for media::VideoFrame.
+// TODO(jrummell): Support shared memory based VideoFrame to avoid copying
+// the data multiple times.
 struct VideoFrame {
   // Format of the frame.
   VideoFormat format;
@@ -285,16 +287,8 @@ struct VideoFrame {
   // Timestamp in microseconds of the associated frame.
   int64 timestamp_usec;
 
-  // Reference to the shared memory containing the frame's data.
-  handle<shared_buffer> frame_data;
-  uint64 frame_data_size;
-
-  // Stride and offsets for each plane. Offsets are relative to the start
-  // of |frame_data|.
-  int32 y_stride;
-  int32 u_stride;
-  int32 v_stride;
-  int32 y_offset;
-  int32 u_offset;
-  int32 v_offset;
+  // Frame data for each plane. Will be null for EOS buffers.
+  array<uint8>? y_data;
+  array<uint8>? u_data;
+  array<uint8>? v_data;
 };
