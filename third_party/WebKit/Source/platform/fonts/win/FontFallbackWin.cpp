@@ -194,7 +194,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* runicFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
     static const UChar* shavianFonts[] = { L"Segoe UI Historic", 0 };
-    static const UChar* simplifiedHanFonts[] = { L"simsun", L"Microsoft YaHei",
+    static const UChar* simplifiedHanFonts[] = { L"Microsoft YaHei", L"simsun",
         0 };
     static const UChar* sinhalaFonts[] = { L"Iskoola Pota", L"AksharUnicode",
         L"Nirmala UI", 0 };
@@ -211,8 +211,8 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* tibetanFonts[] = { L"Microsoft Himalaya", L"Jomolhari",
         L"Tibetan Machine Uni", 0 };
     static const UChar* tifinaghFonts[] = { L"Ebrima", 0 };
-    static const UChar* traditionalHanFonts[] = { L"pmingliu",
-        L"Microsoft JhengHei", 0 };
+    static const UChar* traditionalHanFonts[] = { L"Microsoft JhengHei",
+        L"pmingliu", 0 };
     static const UChar* vaiFonts[] = { L"Ebrima", 0 };
     static const UChar* yiFonts[] = { L"Microsoft Yi Baiti", L"Nuosu SIL",
         L"Code2000", 0 };
