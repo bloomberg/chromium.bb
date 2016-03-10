@@ -192,6 +192,7 @@ namespace http://www.w3.org/1999/xhtml
     property removeEventListener
     property replaceChild
     property requestPointerLock
+    property rootNode
     property scrollHeight
     property scrollIntoView
     property scrollIntoViewIfNeeded
@@ -1236,6 +1237,7 @@ namespace http://www.w3.org/2000/svg
     property removeEventListener
     property replaceChild
     property requestPointerLock
+    property rootNode
     property scrollHeight
     property scrollIntoView
     property scrollIntoViewIfNeeded

@@ -3122,6 +3122,7 @@ interface Node : EventTarget
     getter parentElement
     getter parentNode
     getter previousSibling
+    getter rootNode
     getter textContent
     method appendChild
     method cloneNode
