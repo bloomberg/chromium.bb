@@ -4,12 +4,27 @@
 
 module arc;
 
+// These values describe failure reason of sign-in.
+enum ArcSignInFailureReason {
+  UNKNOWN_ERROR = 0,
+  NETWORK_ERROR = 1,
+  SERVICE_UNAVAILABLE = 2,
+  BAD_AUTHENTICATION = 3,
+  GMS_CORE_NOT_AVAILABLE = 4,
+  CLOUD_PROVISION_FLOW_FAIL = 5,
+};
+
 interface AuthHost {
   // Returns an authorization code, which can be used to sign in.
   GetAuthCodeDeprecated@0() => (string auth_code);
   // Returns an authorization code in case is_enforced is set, which can be used
   // to sign in.
   [MinVersion=1] GetAuthCode@1() => (string auth_code, bool is_enforced);
+  // Notifies Chrome that the sign-in is completed successfully.
+  [MinVersion=2] OnSignInComplete@2();
+  // Notifies Chrome that the sign-in fails to complete and provides failure
+  // reason.
+  [MinVersion=2] OnSignInFailed@3(ArcSignInFailureReason reason);
 };
 
 interface AuthInstance {

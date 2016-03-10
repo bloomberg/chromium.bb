@@ -42,10 +42,9 @@ const char kArcSupportStorageId[] = "arc_support";
 // Skip creating UI in unit tests
 bool disable_ui_for_testing = false;
 
-const char kStateDisable[] = "DISABLE";
+const char kStateStopped[] = "STOPPED";
 const char kStateFetchingCode[] = "FETCHING_CODE";
-const char kStateNoCode[] = "NO_CODE";
-const char kStateEnable[] = "ENABLE";
+const char kStateActive[] = "ACTIVE";
 }  // namespace
 
 ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
@@ -77,6 +76,7 @@ void ArcAuthService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kArcEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kArcSignedIn, false);
 }
 
 // static
@@ -111,8 +111,30 @@ void ArcAuthService::GetAuthCodeDeprecated(
 
 void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  callback.Run(mojo::String(GetAndResetAuthCode()),
-               !IsOptInVerificationDisabled());
+  std::string auth_code = GetAndResetAuthCode();
+  if (!auth_code.empty()) {
+    callback.Run(mojo::String(auth_code), !IsOptInVerificationDisabled());
+    return;
+  }
+
+  auth_callback_ = callback;
+  SetState(State::FETCHING_CODE);
+  FetchAuthCode();
+}
+
+void ArcAuthService::OnSignInComplete() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(state_, State::ACTIVE);
+
+  profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
+}
+
+void ArcAuthService::OnSignInFailed(arc::ArcSignInFailureReason reason) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(state_, State::ACTIVE);
+
+  profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+  ShutdownBridgeAndCloseUI();
 }
 
 void ArcAuthService::SetState(State state) {
@@ -154,8 +176,7 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
     }
   } else {
     auth_code_.clear();
-    ArcBridgeService::Get()->HandleStartup();
-    SetState(State::ENABLE);
+    StartArc();
   }
 }
 
@@ -218,11 +239,18 @@ void ArcAuthService::OnOptInPreferenceChanged() {
   DCHECK(profile_);
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
-    if (state_ != State::ENABLE) {
+    if (state_ != State::ACTIVE) {
       CloseUI();
       auth_code_.clear();
-      SetState(State::FETCHING_CODE);
-      FetchAuthCode();
+
+      if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
+        // Need pre-fetch auth code and show OptIn UI if needed.
+        SetState(State::FETCHING_CODE);
+        FetchAuthCode();
+      } else {
+        // Ready to start Arc.
+        StartArc();
+      }
     }
   } else {
     ShutdownBridgeAndCloseUI();
@@ -231,11 +259,12 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 
 void ArcAuthService::ShutdownBridgeAndCloseUI() {
   CloseUI();
+  auth_callback_.reset();
   auth_fetcher_.reset();
   ubertoken_fethcher_.reset();
   merger_fetcher_.reset();
   ArcBridgeService::Get()->Shutdown();
-  SetState(State::DISABLE);
+  SetState(State::STOPPED);
 }
 
 void ArcAuthService::AddObserver(Observer* observer) {
@@ -252,9 +281,24 @@ void ArcAuthService::CloseUI() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInUINeedToClose());
 }
 
+void ArcAuthService::StartArc() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ArcBridgeService::Get()->HandleStartup();
+  SetState(State::ACTIVE);
+}
+
 void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!auth_code.empty());
+
+  if (!auth_callback_.is_null()) {
+    DCHECK_EQ(state_, State::FETCHING_CODE);
+    SetState(State::ACTIVE);
+    CloseUI();
+    auth_callback_.Run(mojo::String(auth_code), !IsOptInVerificationDisabled());
+    auth_callback_.reset();
+    return;
+  }
 
   State state = state_;
 
@@ -264,8 +308,7 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
     return;
 
   auth_code_ = auth_code;
-  ArcBridgeService::Get()->HandleStartup();
-  SetState(State::ENABLE);
+  StartArc();
 }
 
 void ArcAuthService::FetchAuthCode() {
@@ -329,21 +372,18 @@ void ArcAuthService::OnAuthCodeNeedUI() {
 
 void ArcAuthService::OnAuthCodeFailed() {
   DCHECK_EQ(state_, State::FETCHING_CODE);
-  CloseUI();
 
-  SetState(State::NO_CODE);
+  ShutdownBridgeAndCloseUI();
 }
 
 std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state) {
   switch (state) {
-    case ArcAuthService::State::DISABLE:
-      return os << kStateDisable;
+    case ArcAuthService::State::STOPPED:
+      return os << kStateStopped;
     case ArcAuthService::State::FETCHING_CODE:
       return os << kStateFetchingCode;
-    case ArcAuthService::State::NO_CODE:
-      return os << kStateNoCode;
-    case ArcAuthService::State::ENABLE:
-      return os << kStateEnable;
+    case ArcAuthService::State::ACTIVE:
+      return os << kStateActive;
     default:
       NOTREACHED();
       return os;

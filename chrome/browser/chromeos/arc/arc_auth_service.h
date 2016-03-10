@@ -48,10 +48,9 @@ class ArcAuthService : public ArcService,
                        public syncable_prefs::PrefServiceSyncableObserver {
  public:
   enum class State {
-    DISABLE,        // ARC is not allowed to run (default).
-    FETCHING_CODE,  // ARC is allowed, receiving auth_2 code.
-    NO_CODE,        // ARC is allowed, auth_2 code was not received.
-    ENABLE,         // ARC is allowed, auth_2 code was received.
+    STOPPED,        // ARC is not running.
+    FETCHING_CODE,  // ARC may be running or not. Auth code is fetching.
+    ACTIVE,         // ARC is running.
   };
 
   class Observer {
@@ -92,11 +91,14 @@ class ArcAuthService : public ArcService,
   // ArcBridgeService::Observer:
   void OnAuthInstanceReady() override;
 
-  // Overrides AuthHost.  For security reason this code can be used only
-  // once and exists for specific period of time.
+  // AuthHost:
+  // For security reason this code can be used only once and exists for specific
+  // period of time.
   void GetAuthCodeDeprecated(
       const GetAuthCodeDeprecatedCallback& callback) override;
   void GetAuthCode(const GetAuthCodeCallback& callback) override;
+  void OnSignInComplete() override;
+  void OnSignInFailed(arc::ArcSignInFailureReason reason) override;
 
   // May be called internally as response to on Arc OptIn preference change
   // or externally from Arc support platform app.
@@ -125,6 +127,7 @@ class ArcAuthService : public ArcService,
   void OnIsSyncingChanged() override;
 
  private:
+  void StartArc();
   void SetAuthCodeAndStartArc(const std::string& auth_code);
   void ShowUI();
   void CloseUI();
@@ -143,12 +146,13 @@ class ArcAuthService : public ArcService,
 
   mojo::Binding<AuthHost> binding_;
   base::ThreadChecker thread_checker_;
-  State state_ = State::DISABLE;
+  State state_ = State::STOPPED;
   base::ObserverList<Observer> observer_list_;
   scoped_ptr<ArcAuthFetcher> auth_fetcher_;
   scoped_ptr<GaiaAuthFetcher> merger_fetcher_;
   scoped_ptr<UbertokenFetcher> ubertoken_fethcher_;
   std::string auth_code_;
+  GetAuthCodeCallback auth_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthService);
 };

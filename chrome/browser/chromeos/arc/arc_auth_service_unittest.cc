@@ -115,20 +115,20 @@ class ArcAuthServiceTest : public testing::Test {
 };
 
 TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
-  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
   PrefService* pref = profile()->GetPrefs();
   DCHECK_EQ(false, pref->GetBoolean(prefs::kArcEnabled));
 
   auth_service()->OnPrimaryUserProfilePrepared(profile());
-  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
   PrepareURLResponse(net::HTTP_OK, false);
   pref->SetBoolean(prefs::kArcEnabled, true);
   ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
 
   pref->SetBoolean(prefs::kArcEnabled, false);
-  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
   // Correctly stop service.
   auth_service()->Shutdown();
@@ -136,14 +136,14 @@ TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
 
 TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
-  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   PrepareURLResponse(net::HTTP_OK, true);
   auth_service()->OnPrimaryUserProfilePrepared(profile());
 
   // By default ARC is not enabled.
-  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
 
@@ -153,14 +153,14 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(ArcAuthService::State::ENABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
   ASSERT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
   // Auth code valid only for one call.
   ASSERT_EQ(kTestAuthCode, auth_service()->GetAndResetAuthCode());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   auth_service()->Shutdown();
-  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
   ASSERT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
@@ -179,14 +179,14 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   // Send error response.
   PrepareURLResponse(net::HTTP_BAD_REQUEST, false);
   auth_service()->Shutdown();
-  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
   auth_service()->OnPrimaryUserProfilePrepared(profile());
 
   ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(ArcAuthService::State::NO_CODE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
   // Correctly stop service.
   auth_service()->Shutdown();
@@ -201,7 +201,7 @@ TEST_F(ArcAuthServiceTest, CancelFetchingDisablesArc) {
   ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
 
   auth_service()->CancelAuthCode();
-  ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
   ASSERT_EQ(false, pref->GetBoolean(prefs::kArcEnabled));
 
   // Correctly stop service.
@@ -218,10 +218,10 @@ TEST_F(ArcAuthServiceTest, CloseUIKeepsArcEnabled) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(ArcAuthService::State::ENABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
 
   auth_service()->CancelAuthCode();
-  ASSERT_EQ(ArcAuthService::State::ENABLE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
   ASSERT_EQ(true, pref->GetBoolean(prefs::kArcEnabled));
 
   // Correctly stop service.
@@ -238,6 +238,44 @@ TEST_F(ArcAuthServiceTest, EnableDisablesArc) {
   EXPECT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
   auth_service()->DisableArc();
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
+
+  // Correctly stop service.
+  auth_service()->Shutdown();
+}
+
+TEST_F(ArcAuthServiceTest, SignInStatus) {
+  PrefService* prefs = profile()->GetPrefs();
+
+  PrepareURLResponse(net::HTTP_OK, true);
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
+  prefs->SetBoolean(prefs::kArcEnabled, true);
+
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  EXPECT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  EXPECT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
+  auth_service()->OnSignInComplete();
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
+  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  EXPECT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
+
+  // Second start, no fetching code is expected.
+  auth_service()->Shutdown();
+  EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  EXPECT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
+  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+  EXPECT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
+
+  // Report failure.
+  auth_service()->OnSignInFailed(arc::ArcSignInFailureReason::UNKNOWN_ERROR);
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
+  EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  EXPECT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
 
   // Correctly stop service.
   auth_service()->Shutdown();
