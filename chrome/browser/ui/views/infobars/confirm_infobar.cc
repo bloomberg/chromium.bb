@@ -28,10 +28,10 @@ scoped_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
 
 ConfirmInfoBar::ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate)
     : InfoBarView(std::move(delegate)),
-      label_(NULL),
-      ok_button_(NULL),
-      cancel_button_(NULL),
-      link_(NULL) {}
+      label_(nullptr),
+      ok_button_(nullptr),
+      cancel_button_(nullptr),
+      link_(nullptr) {}
 
 ConfirmInfoBar::~ConfirmInfoBar() {
   // Ensure |elevation_icon_setter_| is destroyed before |ok_button_|.
@@ -64,23 +64,18 @@ void ConfirmInfoBar::Layout() {
 
 void ConfirmInfoBar::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this && (label_ == NULL)) {
+  if (details.is_add && details.child == this && (label_ == nullptr)) {
     ConfirmInfoBarDelegate* delegate = GetDelegate();
     label_ = CreateLabel(delegate->GetMessageText());
     AddViewToContentArea(label_);
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
+      ok_button_ = CreateTextButton(
+          this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
       if (delegate->OKButtonTriggersUACPrompt()) {
-        // Use a label button even in MD mode as MD buttons don't support icons.
-        views::LabelButton* ok_button = CreateLabelButton(
-            this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
         elevation_icon_setter_.reset(new ElevationIconSetter(
-            ok_button,
+            ok_button_,
             base::Bind(&ConfirmInfoBar::Layout, base::Unretained(this))));
-        ok_button_ = ok_button;
-      } else {
-        ok_button_ = CreateTextButton(
-            this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
       }
       AddViewToContentArea(ok_button_);
       ok_button_->SizeToPreferredSize();
