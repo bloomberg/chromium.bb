@@ -4,12 +4,6 @@
 
 {
   'variables': {
-    # Some plaform want to override part of the version number generation
-    # (for example iOS uses a different value for PATCH level for canary).
-    # This can be done settings "extra_version_path" variable to the path
-    # of a file with the corresponding value overrides. If present it will
-    # be loaded after all other input files.
-    'extra_version_name': '',
     'conditions': [
       ['branding == "Chrome"', {
         'use_unofficial_version_number%': 0,
@@ -93,35 +87,8 @@
             '<(template_input_path)',
             '<@(_outputs)',
           ],
-          'conditions': [
-            ['extra_version_name!=""', {
-              'variables': {
-                'extra_version_flags': [
-                  '-f', '<(extra_version_name)',
-                ],
-              },
-              'inputs': [
-                '<(extra_version_name)'
-              ],
-            }],
-          ],
         },
       ],
     },
-  ],
-  'conditions': [
-    ['OS=="ios"', {
-      'variables': {
-        # Use nested 'variables' to workaround how variables work with gyp (no
-        # determined ordering and thuse it is not possible to define a variable
-        # in function of another).
-        'variables': {
-          # Path to the file used to override the version PATH level on iOS.
-          # Default to ios/build/util/VERSION.
-          'ios_extra_version_path%': '../ios/build/util/VERSION',
-        },
-        'extra_version_name': '<(ios_extra_version_path)'
-      },
-    }],
   ],
 }

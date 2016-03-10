@@ -6,12 +6,6 @@ import("//build/config/chrome_build.gni")
 import("//chrome/version.gni")
 
 declare_args() {
-  if (is_ios) {
-    # Path to the file used to override the version PATH level on iOS.
-    # Default to ios/build/util/VERSION.
-    ios_extra_version_path = "//ios/build/util/VERSION"
-  }
-
   use_unofficial_version_number = !is_chrome_branded
 }
 
@@ -36,19 +30,4 @@ source_set("version_info") {
 process_version("generate_version_info") {
   template_file = "version_info_values.h.version"
   output = "$target_gen_dir/version_info_values.h"
-
-  if (is_ios) {
-    # iOS overrides PATCH level of the version with the value from the file
-    # named by ios_version_path, however, this needs to be the last argument
-    # to the version.py script, so it cannot be added to the sources variable
-    # and instead need to be managed manually.
-
-    inputs = [
-      ios_extra_version_path,
-    ]
-    extra_args = [
-      "-f",
-      rebase_path(ios_extra_version_path, root_build_dir),
-    ]
-  }
 }

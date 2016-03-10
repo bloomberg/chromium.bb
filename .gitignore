@@ -184,7 +184,6 @@ vs-chromium-project.txt
 /gyp-mac-tool
 /infra/.recipe_deps
 /internal_gyp
-/ios/build/util/CANARY_VERSION
 /ios/third_party/earl_grey/src
 /ios/third_party/fishhook/src
 /ios/third_party/gcdwebserver/src
