@@ -202,7 +202,7 @@ IPC_TEST_MESSAGE(__COUNTER__, (char, short, std::pair<size_t, bool>)) // ERROR
 IPC_TEST_MESSAGE(__COUNTER__, (std::vector<std::vector<long&>&>&)) // ERROR
 
 
-/* Check IPC::WriteParam() arguments. ERRORS: 31 */
+/* Check IPC::WriteParam() arguments. ERRORS: 30 */
 
 // ERRORS: 21
 void TestWriteParamArgument() {
@@ -305,7 +305,7 @@ struct Provider {
   std::vector<uint64_t> uint64s_data;
 };
 
-// ERRORS: 10
+// ERRORS: 9
 void TestWriteParamMemberArgument() {
   Provider p;
 
@@ -325,7 +325,9 @@ void TestWriteParamMemberArgument() {
   IPC::WriteParam(nullptr, p.get_long()); // ERROR
   IPC::WriteParam(nullptr, p.long_data); // ERROR
 
-  IPC::WriteParam(nullptr, p.get<size_t>()); // ERROR
+  // This one is flaky and depends on whether size_t is typedefed to a
+  // blacklisted type (unsigned long).
+  //IPC::WriteParam(nullptr, p.get<size_t>()); // ERROR
   IPC::WriteParam(nullptr, p.get_size()); // ERROR
   IPC::WriteParam(nullptr, p.size_data); // ERROR
 
@@ -348,4 +350,4 @@ void TestWriteParamMemberArgument() {
 }
 
 
-/* ERRORS: 42 */
+/* ERRORS: 41 */

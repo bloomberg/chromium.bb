@@ -203,25 +203,22 @@ ipc.cpp:325:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted
 ipc.cpp:326:30: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'long'.
   IPC::WriteParam(nullptr, p.long_data); // ERROR
                              ^
-ipc.cpp:328:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'unsigned long'.
-  IPC::WriteParam(nullptr, p.get<size_t>()); // ERROR
-                           ^
-ipc.cpp:329:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'size_t'.
+ipc.cpp:331:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'size_t'.
   IPC::WriteParam(nullptr, p.get_size()); // ERROR
                            ^
-ipc.cpp:330:30: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'size_t'.
+ipc.cpp:332:30: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'size_t'.
   IPC::WriteParam(nullptr, p.size_data); // ERROR
                              ^
-ipc.cpp:334:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'unsigned long'.
+ipc.cpp:336:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'unsigned long'.
   IPC::WriteParam(nullptr, p.get<uint64_t>()); // ERROR
                            ^
-ipc.cpp:339:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'unsigned long' via 'struct std::vector<unsigned long, struct std::allocator<unsigned long> >'.
+ipc.cpp:341:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'unsigned long' via 'struct std::vector<unsigned long, struct std::allocator<unsigned long> >'.
   IPC::WriteParam(nullptr, p.get<std::vector<uint64_t>>()); // ERROR
                            ^
-ipc.cpp:346:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'size_t' via 'std::vector<size_t>'.
+ipc.cpp:348:28: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'size_t' via 'std::vector<size_t>'.
   IPC::WriteParam(nullptr, p.get_sizes()); // ERROR
                            ^
-ipc.cpp:347:30: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'size_t' via 'std::vector<size_t>'.
+ipc.cpp:349:30: error: [chromium-ipc] IPC::WriteParam() is called on blacklisted type 'size_t' via 'std::vector<size_t>'.
   IPC::WriteParam(nullptr, p.sizes_data); // ERROR
                              ^
-42 errors generated.
+41 errors generated.
