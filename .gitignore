@@ -87,7 +87,6 @@ TAGS
 /gnulib/m4/absolute-header.m4
 /gnulib/m4/ld-output-def.m4
 /gnulib/stddef.h
-/gnulib/stdio.h
 /gnulib/stdlib.h
 /gnulib/string.h
 /gnulib/sys/
@@ -196,7 +195,9 @@ TAGS
 /tools/gnulib/arg-nonnull.h
 /tools/gnulib/c++defs.h
 /tools/gnulib/stddef.h
+/tools/gnulib/stdio.h
 /tools/gnulib/stdlib.h
+/tools/gnulib/string.h
 /tools/gnulib/sys/
 /tools/gnulib/unistd.h
 /tools/gnulib/warn-on-use.h

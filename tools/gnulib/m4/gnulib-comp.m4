@@ -43,14 +43,19 @@ AC_DEFUN([gl_tools_EARLY],
   AC_REQUIRE([gl_PROG_AR_RANLIB])
 
   # Code from module absolute-header:
+  # Code from module errno:
+  # Code from module error:
   # Code from module extensions:
   # Code from module extern-inline:
   # Code from module getopt-gnu:
   # Code from module getopt-posix:
   # Code from module gettext-h:
   # Code from module include_next:
+  # Code from module intprops:
   # Code from module malloc-gnu:
   # Code from module malloc-posix:
+  # Code from module msvc-inval:
+  # Code from module msvc-nothrow:
   # Code from module nocrash:
   # Code from module progname:
   # Code from module snippet/_Noreturn:
@@ -65,9 +70,14 @@ AC_DEFUN([gl_tools_EARLY],
   dnl shouldn't hurt, though installers are on their own to set c99 mode.
   gl_PROG_CC_C99
   # Code from module stddef:
+  # Code from module stdio:
   # Code from module stdlib:
+  # Code from module strerror:
+  # Code from module strerror-override:
+  # Code from module string:
   # Code from module sys_types:
   # Code from module unistd:
+  # Code from module verify:
   # Code from module version-etc:
 ])
 
@@ -85,6 +95,15 @@ AC_DEFUN([gl_tools_INIT],
   m4_pushdef([gl_tools_LIBSOURCES_DIR], [])
   gl_COMMON
   gl_source_base='tools/gnulib'
+  gl_HEADER_ERRNO_H
+  gl_ERROR
+  if test $ac_cv_lib_error_at_line = no; then
+    AC_LIBOBJ([error])
+    gl_PREREQ_ERROR
+  fi
+  m4_ifdef([AM_XGETTEXT_OPTION],
+    [AM_][XGETTEXT_OPTION([--flag=error:3:c-format])
+     AM_][XGETTEXT_OPTION([--flag=error_at_line:5:c-format])])
   AC_REQUIRE([gl_EXTERN_INLINE])
   gl_FUNC_GETOPT_GNU
   if test $REPLACE_GETOPT = 1; then
@@ -117,12 +136,34 @@ AC_DEFUN([gl_tools_INIT],
     AC_LIBOBJ([malloc])
   fi
   gl_STDLIB_MODULE_INDICATOR([malloc-posix])
+  AC_REQUIRE([gl_MSVC_INVAL])
+  if test $HAVE_MSVC_INVALID_PARAMETER_HANDLER = 1; then
+    AC_LIBOBJ([msvc-inval])
+  fi
+  AC_REQUIRE([gl_MSVC_NOTHROW])
+  if test $HAVE_MSVC_INVALID_PARAMETER_HANDLER = 1; then
+    AC_LIBOBJ([msvc-nothrow])
+  fi
   AC_CHECK_DECLS([program_invocation_name], [], [], [#include <errno.h>])
   AC_CHECK_DECLS([program_invocation_short_name], [], [], [#include <errno.h>])
   gt_TYPE_SSIZE_T
   gl_STDARG_H
   gl_STDDEF_H
+  gl_STDIO_H
   gl_STDLIB_H
+  gl_FUNC_STRERROR
+  if test $REPLACE_STRERROR = 1; then
+    AC_LIBOBJ([strerror])
+  fi
+  gl_MODULE_INDICATOR([strerror])
+  gl_STRING_MODULE_INDICATOR([strerror])
+  AC_REQUIRE([gl_HEADER_ERRNO_H])
+  AC_REQUIRE([gl_FUNC_STRERROR_0])
+  if test -n "$ERRNO_H" || test $REPLACE_STRERROR_0 = 1; then
+    AC_LIBOBJ([strerror-override])
+    gl_PREREQ_SYS_H_WINSOCK2
+  fi
+  gl_HEADER_STRING_H
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
   gl_UNISTD_H
@@ -267,36 +308,58 @@ AC_DEFUN([gl_tools_FILE_LIST], [
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
+  lib/errno.in.h
+  lib/error.c
+  lib/error.h
   lib/getopt.c
   lib/getopt.in.h
   lib/getopt1.c
   lib/getopt_int.h
   lib/gettext.h
+  lib/intprops.h
   lib/malloc.c
+  lib/msvc-inval.c
+  lib/msvc-inval.h
+  lib/msvc-nothrow.c
+  lib/msvc-nothrow.h
   lib/progname.c
   lib/progname.h
   lib/stdarg.in.h
   lib/stddef.in.h
+  lib/stdio.in.h
   lib/stdlib.in.h
+  lib/strerror-override.c
+  lib/strerror-override.h
+  lib/strerror.c
+  lib/string.in.h
   lib/sys_types.in.h
   lib/unistd.c
   lib/unistd.in.h
+  lib/verify.h
   lib/version-etc.c
   lib/version-etc.h
   m4/00gnulib.m4
   m4/absolute-header.m4
+  m4/errno_h.m4
+  m4/error.m4
   m4/extensions.m4
   m4/extern-inline.m4
   m4/getopt.m4
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/malloc.m4
+  m4/msvc-inval.m4
+  m4/msvc-nothrow.m4
   m4/nocrash.m4
   m4/off_t.m4
   m4/ssize_t.m4
   m4/stdarg.m4
   m4/stddef_h.m4
+  m4/stdio_h.m4
   m4/stdlib_h.m4
+  m4/strerror.m4
+  m4/string_h.m4
+  m4/sys_socket_h.m4
   m4/sys_types_h.m4
   m4/unistd_h.m4
   m4/version-etc.m4
