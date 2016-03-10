@@ -17,6 +17,10 @@
 #include "base/threading/thread_checker.h"
 #include "components/component_updater/timer.h"
 
+namespace base {
+class TimeTicks;
+}
+
 namespace component_updater {
 
 class OnDemandUpdater;
@@ -44,12 +48,14 @@ class CrxUpdateService : public ComponentUpdateService,
   void MaybeThrottle(const std::string& id,
                      const base::Closure& callback) override;
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() override;
-  bool OnDemandUpdate(const std::string& id) override;
   bool GetComponentDetails(const std::string& id,
                            CrxUpdateItem* item) const override;
 
   // Overrides for Observer.
   void OnEvent(Events event, const std::string& id) override;
+
+  // Overrides for OnDemandUpdater.
+  bool OnDemandUpdate(const std::string& id) override;
 
  private:
   void Start();
@@ -68,7 +74,7 @@ class CrxUpdateService : public ComponentUpdateService,
 
   void OnUpdate(const std::vector<std::string>& ids,
                 std::vector<CrxComponent>* components);
-  void OnUpdateComplete(int error);
+  void OnUpdateComplete(const base::TimeTicks& start_time, int error);
 
   base::ThreadChecker thread_checker_;
 

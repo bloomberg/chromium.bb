@@ -5138,6 +5138,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of tries before successful ping. 99 means giving up.</summary>
 </histogram>
 
+<histogram name="ComponentUpdater.Calls" enum="ComponentUpdaterCalls">
+  <owner>sorin@chromium.org</owner>
+  <summary>
+    The number of times the component updater called UpdateClient::Install or
+    UpdateClient::Update. These correspond to the number of manual component
+    update checks performed as a result of a user action, and the number of
+    automated component update checks.
+  </summary>
+</histogram>
+
+<histogram name="ComponentUpdater.UpdateCompleteResult" enum="BooleanError">
+  <owner>sorin@chromium.org</owner>
+  <summary>The result of an install or an update check.</summary>
+</histogram>
+
+<histogram name="ComponentUpdater.UpdateCompleteTime" units="ms">
+  <owner>sorin@chromium.org</owner>
+  <summary>
+    Time to complete an Install or an Update component update call.
+  </summary>
+</histogram>
+
 <histogram
     name="Compositing.Browser.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">
@@ -61276,6 +61298,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Committed load started"/>
   <int value="1" label="Committed load failed before first layout"/>
   <int value="2" label="Successful first layout"/>
+</enum>
+
+<enum name="ComponentUpdaterCalls" type="int">
+  <int value="0" label="Install"/>
+  <int value="1" label="Update"/>
 </enum>
 
 <enum name="CompositedScrolling" type="int">
