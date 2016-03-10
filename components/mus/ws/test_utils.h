@@ -139,10 +139,7 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
   ~TestPlatformDisplayFactory();
 
   // PlatformDisplayFactory:
-  PlatformDisplay* CreatePlatformDisplay(
-      mojo::Connector* connector,
-      const scoped_refptr<GpuState>& gpu_state,
-      const scoped_refptr<mus::SurfacesState>& surfaces_state) override;
+  PlatformDisplay* CreatePlatformDisplay() override;
 
  private:
   int32_t* cursor_id_storage_;

@@ -87,10 +87,7 @@ TestPlatformDisplayFactory::TestPlatformDisplayFactory(
 
 TestPlatformDisplayFactory::~TestPlatformDisplayFactory() {}
 
-PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay(
-    mojo::Connector* connector,
-    const scoped_refptr<GpuState>& gpu_state,
-    const scoped_refptr<mus::SurfacesState>& surfaces_state) {
+PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay() {
   return new TestPlatformDisplay(cursor_id_storage_);
 }
 
@@ -280,8 +277,7 @@ void TestConnectionManagerDelegate::CreateDefaultDisplays() {
   for (int i = 0; i < num_displays_to_create_; ++i) {
     // Display manages its own lifetime.
     Display* display =
-        new Display(connection_manager_, nullptr, scoped_refptr<GpuState>(),
-                    scoped_refptr<mus::SurfacesState>());
+        new Display(connection_manager_, PlatformDisplayInitParams());
     display->Init(nullptr);
   }
 }

@@ -155,22 +155,18 @@ PlatformDisplayFactory* PlatformDisplay::factory_ = nullptr;
 
 // static
 PlatformDisplay* PlatformDisplay::Create(
-    mojo::Connector* connector,
-    const scoped_refptr<GpuState>& gpu_state,
-    const scoped_refptr<SurfacesState>& surfaces_state) {
+    const PlatformDisplayInitParams& init_params) {
   if (factory_)
-    return factory_->CreatePlatformDisplay(connector, gpu_state,
-                                           surfaces_state);
-  return new DefaultPlatformDisplay(connector, gpu_state, surfaces_state);
+    return factory_->CreatePlatformDisplay();
+
+  return new DefaultPlatformDisplay(init_params);
 }
 
 DefaultPlatformDisplay::DefaultPlatformDisplay(
-    mojo::Connector* connector,
-    const scoped_refptr<GpuState>& gpu_state,
-    const scoped_refptr<SurfacesState>& surfaces_state)
-    : connector_(connector),
-      gpu_state_(gpu_state),
-      surfaces_state_(surfaces_state),
+    const PlatformDisplayInitParams& init_params)
+    : connector_(init_params.connector),
+      gpu_state_(init_params.gpu_state),
+      surfaces_state_(init_params.surfaces_state),
       delegate_(nullptr),
       draw_timer_(false, false),
       frame_pending_(false),

@@ -32,6 +32,7 @@ class ConnectionManager;
 class DisplayBinding;
 class DisplayManager;
 class FocusController;
+struct PlatformDisplayInitParams;
 class WindowManagerState;
 class WindowTree;
 
@@ -56,14 +57,8 @@ class Display : public PlatformDisplayDelegate,
                 public UserIdTrackerObserver,
                 public WindowManagerFactoryRegistryObserver {
  public:
-  // TODO(fsamuel): All these parameters are just plumbing for creating
-  // PlatformDisplays. We should probably just store these common parameters
-  // in the PlatformDisplayFactory and pass them along on
-  // PlatformDisplay::Create.
   Display(ConnectionManager* connection_manager,
-          mojo::Connector* connector,
-          const scoped_refptr<GpuState>& gpu_state,
-          const scoped_refptr<SurfacesState>& surfaces_state);
+          const PlatformDisplayInitParams& platform_display_init_params);
   ~Display() override;
 
   // Initializes state that depends on the existence of a Display.

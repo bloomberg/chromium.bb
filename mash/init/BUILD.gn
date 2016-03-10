@@ -20,6 +20,7 @@ mojo_native_application("init") {
     ":manifest",
     "//base",
     "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//mash/init/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",

@@ -19,6 +19,7 @@ mojom("interfaces") {
     "mus_constants.mojom",
     "quads.mojom",
     "surface_id.mojom",
+    "user_access_manager.mojom",
     "window_manager.mojom",
     "window_manager_constants.mojom",
     "window_manager_factory.mojom",

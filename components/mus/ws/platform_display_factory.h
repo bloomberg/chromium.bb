@@ -5,15 +5,7 @@
 #ifndef COMPONENTS_MUS_WS_PLATFORM_DISPLAY_FACTORY_H_
 #define COMPONENTS_MUS_WS_PLATFORM_DISPLAY_FACTORY_H_
 
-#include "components/mus/gles2/gpu_state.h"
-#include "mojo/public/cpp/bindings/callback.h"
-
-namespace mojo {
-class Connector;
-}
-
 namespace mus {
-
 namespace ws {
 
 class PlatformDisplay;
@@ -22,14 +14,10 @@ class PlatformDisplay;
 // PlatformDisplays.
 class PlatformDisplayFactory {
  public:
-  virtual PlatformDisplay* CreatePlatformDisplay(
-      mojo::Connector* connector,
-      const scoped_refptr<mus::GpuState>& gpu_state,
-      const scoped_refptr<mus::SurfacesState>& surfaces_state) = 0;
+  virtual PlatformDisplay* CreatePlatformDisplay() = 0;
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_PLATFORM_DISPLAY_FACTORY_H_

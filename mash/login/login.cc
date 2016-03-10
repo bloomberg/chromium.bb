@@ -4,6 +4,7 @@
 
 #include "mash/login/login.h"
 
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +28,8 @@ class LoginView : public views::WidgetDelegateView,
  public:
   explicit LoginView(Login* login)
       : login_(login),
+        user_id_1_(base::GenerateGUID()),
+        user_id_2_(base::GenerateGUID()),
         login_button_1_(
             new views::LabelButton(this, base::ASCIIToUTF16("Timothy"))),
         login_button_2_(
@@ -72,9 +75,9 @@ class LoginView : public views::WidgetDelegateView,
     // Login...
     mojo::Connector::ConnectParams params("mojo:mash_shell");
     if (sender == login_button_1_) {
-      login_->login()->LoginAs("3");
+      login_->login()->LoginAs(user_id_1_);
     } else if (sender == login_button_2_) {
-      login_->login()->LoginAs("4");
+      login_->login()->LoginAs(user_id_2_);
     } else {
       NOTREACHED();
     }
@@ -82,6 +85,8 @@ class LoginView : public views::WidgetDelegateView,
   }
 
   Login* login_;
+  const std::string user_id_1_;
+  const std::string user_id_2_;
   views::LabelButton* login_button_1_;
   views::LabelButton* login_button_2_;
 

@@ -14,11 +14,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
+#include "components/mus/public/interfaces/user_access_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/connection_manager_delegate.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "components/mus/ws/platform_display_init_params.h"
+#include "components/mus/ws/user_id.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -32,25 +34,20 @@ class PlatformEventSource;
 }
 
 namespace mus {
-
-class GpuState;
-class SurfacesState;
-
 namespace ws {
 class ConnectionManager;
 class ForwardingWindowManager;
-class WindowTreeFactory;
 }
 
 class MandolineUIServicesApp
     : public mojo::ShellClient,
       public ws::ConnectionManagerDelegate,
       public mojo::InterfaceFactory<mojom::DisplayManager>,
+      public mojo::InterfaceFactory<mojom::UserAccessManager>,
       public mojo::InterfaceFactory<mojom::WindowManagerFactoryService>,
       public mojo::InterfaceFactory<mojom::WindowTreeFactory>,
       public mojo::InterfaceFactory<mojom::WindowTreeHostFactory>,
-      public mojo::InterfaceFactory<mojom::Gpu>,
-      public mojom::WindowTreeHostFactory {
+      public mojo::InterfaceFactory<mojom::Gpu> {
  public:
   MandolineUIServicesApp();
   ~MandolineUIServicesApp() override;
@@ -59,8 +56,19 @@ class MandolineUIServicesApp
   // Holds InterfaceRequests received before the first WindowTreeHost Display
   // has been established.
   struct PendingRequest;
+  struct UserState;
+
+  using UserIdToUserState = std::map<ws::UserId, scoped_ptr<UserState>>;
 
   void InitializeResources(mojo::Connector* connector);
+
+  // Returns the user specific state for the user id of |connection|. MusApp
+  // owns the return value.
+  // TODO(sky): if we allow removal of user ids then we need to close anything
+  // associated with the user (all incoming pipes...) on removal.
+  UserState* GetUserState(mojo::Connection* connection);
+
+  void AddUserIfNecessary(mojo::Connection* connection);
 
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
@@ -81,6 +89,10 @@ class MandolineUIServicesApp
   void Create(mojo::Connection* connection,
               mojom::DisplayManagerRequest request) override;
 
+  // mojo::InterfaceFactory<mojom::UserAccessManager> implementation.
+  void Create(mojo::Connection* connection,
+              mojom::UserAccessManagerRequest request) override;
+
   // mojo::InterfaceFactory<mojom::WindowManagerFactoryService> implementation.
   void Create(mojo::Connection* connection,
               mojom::WindowManagerFactoryServiceRequest request) override;
@@ -96,22 +108,14 @@ class MandolineUIServicesApp
   // mojo::InterfaceFactory<mojom::Gpu> implementation.
   void Create(mojo::Connection* connection, mojom::GpuRequest request) override;
 
-  // mojom::WindowTreeHostFactory implementation.
-  void CreateWindowTreeHost(mojom::WindowTreeHostRequest host,
-                            mojom::WindowTreeClientPtr tree_client) override;
-
-  mojo::BindingSet<mojom::WindowTreeHostFactory> factory_bindings_;
-  mojo::Connector* connector_;
+  ws::PlatformDisplayInitParams platform_display_init_params_;
   scoped_ptr<ws::ConnectionManager> connection_manager_;
-  scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
   mojo::TracingImpl tracing_;
   using PendingRequests = std::vector<scoped_ptr<PendingRequest>>;
   PendingRequests pending_requests_;
-  scoped_ptr<ws::WindowTreeFactory> window_tree_factory_;
 
-  // Surfaces
-  scoped_refptr<SurfacesState> surfaces_state_;
+  UserIdToUserState user_id_to_user_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MandolineUIServicesApp);
 };

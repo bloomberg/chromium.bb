@@ -20,6 +20,7 @@
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_factory.h"
+#include "components/mus/ws/platform_display_init_params.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_change_tracker.h"
@@ -28,6 +29,7 @@
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -105,7 +107,7 @@ class TestDisplayBinding : public DisplayBinding {
   WindowTree* CreateWindowTree(ServerWindow* root) override {
     return connection_manager_->EmbedAtWindow(
         root, mus::mojom::WindowTree::kAccessPolicyEmbedRoot,
-        mus::mojom::WindowTreeClientPtr());
+        mojo::shell::mojom::kRootUserID, mus::mojom::WindowTreeClientPtr());
   }
 
   Display* display_;
@@ -217,15 +219,28 @@ class WindowTreeTest : public testing::Test {
                            WindowTree** window_tree,
                            ServerWindow** window);
 
+  // Creates a new tree as the specified user. This does what creation via
+  // a WindowTreeFactory does.
+  WindowTree* CreateNewTree(const UserId& user_id,
+                            TestWindowTreeBinding** binding) {
+    WindowTree* tree =
+        new WindowTree(connection_manager_.get(), user_id, nullptr,
+                       mojom::WindowTree::kAccessPolicyDefault);
+    *binding = new TestWindowTreeBinding;
+    connection_manager_->AddTree(make_scoped_ptr(tree),
+                                 make_scoped_ptr(*binding), nullptr);
+    return tree;
+  }
+
  protected:
   // testing::Test:
   void SetUp() override {
     PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
     connection_manager_.reset(
         new ConnectionManager(&delegate_, surfaces_state_));
-    display_ = new Display(connection_manager_.get(), nullptr,
-                           scoped_refptr<GpuState>(),
-                           surfaces_state_);
+    PlatformDisplayInitParams display_init_params;
+    display_init_params.surfaces_state = surfaces_state_;
+    display_ = new Display(connection_manager_.get(), display_init_params);
     display_binding_ =
         new TestDisplayBinding(display_, connection_manager_.get());
     display_->Init(make_scoped_ptr(display_binding_));
@@ -567,26 +582,25 @@ TEST_F(WindowTreeTest, EventAck) {
 TEST_F(WindowTreeTest, NewTopLevelWindow) {
   TestWindowManager wm_internal;
   set_window_manager_internal(wm_tree(), &wm_internal);
-  TestWindowTreeClient* embed_connection = nullptr;
-  WindowTree* tree = nullptr;
-  ServerWindow* window = nullptr;
-  ASSERT_NO_FATAL_FAILURE(
-      SetupEventTargeting(&embed_connection, &tree, &window));
-  embed_connection->tracker()->changes()->clear();
-  embed_connection->set_record_on_change_completed(true);
+
+  TestWindowTreeBinding* child_binding;
+  WindowTree* child_tree = CreateNewTree(wm_tree()->user_id(), &child_binding);
+  child_binding->client()->tracker()->changes()->clear();
+  child_binding->client()->set_record_on_change_completed(true);
 
   // Create a new top level window.
   mojo::Map<mojo::String, mojo::Array<uint8_t>> properties;
   const uint32_t initial_change_id = 17;
   // Explicitly use an id that does not contain the connection id.
   const ClientWindowId embed_window_id2_in_child(45 << 16 | 27);
-  static_cast<mojom::WindowTree*>(tree)->NewTopLevelWindow(
-      initial_change_id, embed_window_id2_in_child.id, std::move(properties));
+  static_cast<mojom::WindowTree*>(child_tree)
+      ->NewTopLevelWindow(initial_change_id, embed_window_id2_in_child.id,
+                          std::move(properties));
 
   // The binding should be paused until the wm acks the change.
   uint32_t wm_change_id = 0u;
   ASSERT_TRUE(wm_internal.did_call_create_top_level_window(&wm_change_id));
-  EXPECT_TRUE(last_binding()->is_paused());
+  EXPECT_TRUE(child_binding->is_paused());
 
   // Create the window for |embed_window_id2_in_child|.
   const ClientWindowId embed_window_id2 = BuildClientWindowId(wm_tree(), 2);
@@ -597,12 +611,13 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
   // Ack the change, which should resume the binding.
   static_cast<mojom::WindowManagerClient*>(wm_tree())
       ->OnWmCreatedTopLevelWindow(wm_change_id, embed_window_id2.id);
-  EXPECT_FALSE(last_binding()->is_paused());
+  EXPECT_FALSE(child_binding->is_paused());
   EXPECT_EQ("TopLevelCreated id=17 window_id=" +
                 WindowIdToString(
                     WindowIdFromTransportId(embed_window_id2_in_child.id)),
-            SingleChangeToDescription(*embed_connection->tracker()->changes()));
-  embed_connection->tracker()->changes()->clear();
+            SingleChangeToDescription(
+                *child_binding->client()->tracker()->changes()));
+  child_binding->client()->tracker()->changes()->clear();
 
   // Change the visibility of the window from the owner and make sure the
   // client sees the right id.
@@ -616,10 +631,12 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
                 WindowIdToString(
                     WindowIdFromTransportId(embed_window_id2_in_child.id)) +
                 " visible=true",
-            SingleChangeToDescription(*embed_connection->tracker()->changes()));
+            SingleChangeToDescription(
+                *child_binding->client()->tracker()->changes()));
 
   // Set the visibility from the child using the client assigned id.
-  ASSERT_TRUE(tree->SetWindowVisibility(embed_window_id2_in_child, false));
+  ASSERT_TRUE(
+      child_tree->SetWindowVisibility(embed_window_id2_in_child, false));
   EXPECT_FALSE(embed_window->visible());
 }
 

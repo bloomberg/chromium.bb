@@ -37,6 +37,8 @@ source_set("lib") {
     "platform_display.h",
     "platform_display_delegate.h",
     "platform_display_factory.h",
+    "platform_display_init_params.cc",
+    "platform_display_init_params.h",
     "server_window.cc",
     "server_window.h",
     "server_window_delegate.h",
@@ -74,6 +76,8 @@ source_set("lib") {
     "window_tree_binding.h",
     "window_tree_factory.cc",
     "window_tree_factory.h",
+    "window_tree_host_factory.cc",
+    "window_tree_host_factory.h",
   ]
 
   deps = [

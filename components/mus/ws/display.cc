@@ -13,6 +13,7 @@
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/focus_controller.h"
 #include "components/mus/ws/platform_display.h"
+#include "components/mus/ws/platform_display_init_params.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_tree.h"
@@ -25,13 +26,10 @@ namespace mus {
 namespace ws {
 
 Display::Display(ConnectionManager* connection_manager,
-                 mojo::Connector* connector,
-                 const scoped_refptr<GpuState>& gpu_state,
-                 const scoped_refptr<SurfacesState>& surfaces_state)
+                 const PlatformDisplayInitParams& platform_display_init_params)
     : id_(connection_manager->display_manager()->GetAndAdvanceNextDisplayId()),
       connection_manager_(connection_manager),
-      platform_display_(
-          PlatformDisplay::Create(connector, gpu_state, surfaces_state)),
+      platform_display_(PlatformDisplay::Create(platform_display_init_params)),
       last_cursor_(0) {
   platform_display_->Init(this);
 
@@ -286,7 +284,7 @@ void Display::CreateWindowManagerStateFromService(
   WindowManagerState* wms = wms_ptr.get();
   window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
   wms->tree_ = connection_manager_->CreateTreeForWindowManager(
-      this, service->window_manager_factory(), wms->root());
+      this, service->window_manager_factory(), wms->root(), service->user_id());
 }
 
 ServerWindow* Display::GetRootWindow() {

@@ -6,13 +6,14 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/connector.h"
 
 namespace mash {
 namespace init {
 
-Init::Init() : connector_(nullptr) {}
+Init::Init() : connector_(nullptr), login_user_id_(base::GenerateGUID()) {}
 Init::~Init() {}
 
 void Init::Initialize(mojo::Connector* connector,
@@ -20,11 +21,14 @@ void Init::Initialize(mojo::Connector* connector,
                       uint32_t id) {
   connector_ = connector;
   mus_connection_ = connector_->Connect("mojo:mus");
+  mus_connection_->GetInterface(&user_access_manager_);
+  user_access_manager_->SetActiveUser(login_user_id_);
   StartWindowManager();
   StartLogin();
 }
 
 void Init::LoginAs(const mojo::String& user_id) {
+  user_access_manager_->SetActiveUser(user_id);
   connections_["mojo:mash_login"].reset();
   connections_["mojo:desktop_wm"].reset();
   mojo::Connector::ConnectParams params(
@@ -37,14 +41,16 @@ void Init::Create(mojo::Connection* connection, mojom::LoginRequest request) {
 }
 
 void Init::StartWindowManager() {
-  mojo::Connector::ConnectParams params(mojo::Identity("mojo:desktop_wm", "2"));
+  mojo::Connector::ConnectParams params(
+      mojo::Identity("mojo:desktop_wm", login_user_id_));
   StartRestartableService(
       &params,
       base::Bind(&Init::StartWindowManager, base::Unretained(this)));
 }
 
 void Init::StartLogin() {
-  mojo::Connector::ConnectParams params(mojo::Identity("mojo:mash_login", "2"));
+  mojo::Connector::ConnectParams params(
+      mojo::Identity("mojo:mash_login", login_user_id_));
   StartRestartableService(
       &params,
       base::Bind(&Init::StartLogin, base::Unretained(this)));

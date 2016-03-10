@@ -12,6 +12,10 @@ namespace ws {
 
 using UserId = std::string;
 
+inline UserId InvalidUserId() {
+  return std::string();
+}
+
 }  // namespace ws
 }  // namespace mus
 

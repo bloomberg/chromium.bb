@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/interfaces/user_access_manager.mojom.h"
 #include "mash/init/public/interfaces/login.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/connector.h"
@@ -53,6 +54,8 @@ class Init : public mojo::ShellClient,
   std::map<std::string, scoped_ptr<mojo::Connection>> connections_;
   mojo::BindingSet<mojom::Login> login_bindings_;
   scoped_ptr<mojo::Connection> mus_connection_;
+  mus::mojom::UserAccessManagerPtr user_access_manager_;
+  const std::string login_user_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Init);
 };

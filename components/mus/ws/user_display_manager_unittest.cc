@@ -20,6 +20,7 @@
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_factory.h"
+#include "components/mus/ws/platform_display_init_params.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/test_utils.h"
 #include "components/mus/ws/window_manager_state.h"
@@ -208,8 +209,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
 
   // Add another display.
   Display* display2 =
-      new Display(connection_manager_.get(), nullptr, scoped_refptr<GpuState>(),
-                  scoped_refptr<mus::SurfacesState>());
+      new Display(connection_manager_.get(), PlatformDisplayInitParams());
   display2->Init(nullptr);
 
   // Observer should not have been notified yet as frame decorations not set.

@@ -19,6 +19,7 @@
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/platform_display_delegate.h"
+#include "components/mus/ws/platform_display_init_params.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -61,10 +62,7 @@ class PlatformDisplay {
  public:
   virtual ~PlatformDisplay() {}
 
-  static PlatformDisplay* Create(
-      mojo::Connector* connector,
-      const scoped_refptr<GpuState>& gpu_state,
-      const scoped_refptr<SurfacesState>& surfaces_state);
+  static PlatformDisplay* Create(const PlatformDisplayInitParams& init_params);
 
   virtual void Init(PlatformDisplayDelegate* delegate) = 0;
 
@@ -111,9 +109,7 @@ class PlatformDisplay {
 class DefaultPlatformDisplay : public PlatformDisplay,
                                public ui::PlatformWindowDelegate {
  public:
-  DefaultPlatformDisplay(mojo::Connector* connector,
-                         const scoped_refptr<GpuState>& gpu_state,
-                         const scoped_refptr<SurfacesState>& surfaces_state);
+  explicit DefaultPlatformDisplay(const PlatformDisplayInitParams& init_params);
   ~DefaultPlatformDisplay() override;
 
   // PlatformDisplay:

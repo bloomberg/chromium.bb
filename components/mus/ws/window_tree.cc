@@ -66,9 +66,11 @@ class TargetedEvent : public ServerWindowObserver {
 };
 
 WindowTree::WindowTree(ConnectionManager* connection_manager,
+                       const UserId& user_id,
                        ServerWindow* root,
                        uint32_t policy_bitmask)
     : connection_manager_(connection_manager),
+      user_id_(user_id),
       id_(connection_manager_->GetAndAdvanceNextConnectionId()),
       next_window_id_(1),
       event_ack_id_(0),
@@ -285,8 +287,10 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
     return false;
   ServerWindow* window = GetWindowByClientId(window_id);
   PrepareForEmbed(window);
+  // When embedding we don't know the user id of where the TreeClient came
+  // from. Use an invalid id, which limits what the client is able to do.
   WindowTree* new_tree = connection_manager_->EmbedAtWindow(
-      window, policy_bitmask, std::move(client));
+      window, policy_bitmask, InvalidUserId(), std::move(client));
   if (is_embed_root_)
     *connection_id = new_tree->id();
   return true;
@@ -936,12 +940,14 @@ void WindowTree::NewTopLevelWindow(
   DCHECK(!waiting_for_top_level_window_info_);
   const ClientWindowId client_window_id(transport_window_id);
   // TODO(sky): need a way for client to provide context to figure out display.
-  // TODO(sky): get WMS for user_id for this connection.
   Display* display = display_manager()->displays().empty()
                          ? nullptr
                          : *(display_manager()->displays().begin());
+  // TODO(sky): move checks to accesspolicy.
   WindowManagerState* wms =
-      display ? display->GetFirstWindowManagerState() : nullptr;
+      display && user_id_ != InvalidUserId()
+          ? display->GetWindowManagerStateForUser(user_id_)
+          : nullptr;
   if (!wms || wms->tree() == this || !IsValidIdForNewWindow(client_window_id)) {
     client()->OnChangeCompleted(change_id, false);
     return;

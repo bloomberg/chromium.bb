@@ -11,8 +11,9 @@
 namespace mus {
 namespace ws {
 
-WindowTreeFactory::WindowTreeFactory(ConnectionManager* connection_manager)
-    : connection_manager_(connection_manager) {}
+WindowTreeFactory::WindowTreeFactory(ConnectionManager* connection_manager,
+                                     const UserId& user_id)
+    : connection_manager_(connection_manager), user_id_(user_id) {}
 
 WindowTreeFactory::~WindowTreeFactory() {}
 
@@ -24,8 +25,9 @@ void WindowTreeFactory::AddBinding(
 void WindowTreeFactory::CreateWindowTree(
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<ws::WindowTree> service(new ws::WindowTree(
-      connection_manager_, nullptr, mojom::WindowTree::kAccessPolicyDefault));
+  scoped_ptr<ws::WindowTree> service(
+      new ws::WindowTree(connection_manager_, user_id_, nullptr,
+                         mojom::WindowTree::kAccessPolicyDefault));
   scoped_ptr<ws::DefaultWindowTreeBinding> binding(
       new ws::DefaultWindowTreeBinding(service.get(), connection_manager_,
                                        std::move(tree_request),

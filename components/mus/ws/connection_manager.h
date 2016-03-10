@@ -71,6 +71,7 @@ class ConnectionManager : public ServerWindowDelegate,
   // |transport_window_id| is valid.
   WindowTree* EmbedAtWindow(ServerWindow* root,
                             uint32_t policy_bitmask,
+                            const UserId& user_id,
                             mojom::WindowTreeClientPtr client);
 
   // Adds |tree_impl_ptr| to the set of known trees. Use DestroyTree() to
@@ -80,7 +81,8 @@ class ConnectionManager : public ServerWindowDelegate,
                       mojom::WindowTreePtr tree_ptr);
   WindowTree* CreateTreeForWindowManager(Display* display,
                                          mojom::WindowManagerFactory* factory,
-                                         ServerWindow* root);
+                                         ServerWindow* root,
+                                         const UserId& user_id);
   // Invoked when a WindowTree's connection encounters an error.
   void DestroyTree(WindowTree* tree);
 

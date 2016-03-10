@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/display.h"
+#include "components/mus/ws/user_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mus {
@@ -35,6 +36,7 @@ class DisplayBindingImpl : public DisplayBinding {
  public:
   DisplayBindingImpl(mojom::WindowTreeHostRequest request,
                      Display* display,
+                     const UserId& user_id,
                      mojom::WindowTreeClientPtr client,
                      ConnectionManager* connection_manager);
   ~DisplayBindingImpl() override;
@@ -44,6 +46,7 @@ class DisplayBindingImpl : public DisplayBinding {
   WindowTree* CreateWindowTree(ServerWindow* root) override;
 
   ConnectionManager* connection_manager_;
+  const UserId user_id_;
   mojo::Binding<mojom::WindowTreeHost> binding_;
   mojom::WindowTreeClientPtr client_;
 

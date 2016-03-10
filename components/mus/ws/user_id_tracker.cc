@@ -10,10 +10,10 @@
 namespace mus {
 namespace ws {
 
-UserIdTracker::UserIdTracker()
-    : active_id_(mojo::shell::mojom::kRootUserID) {}
+UserIdTracker::UserIdTracker() : active_id_(mojo::shell::mojom::kRootUserID) {
+  ids_.insert(active_id_);
+}
 UserIdTracker::~UserIdTracker() {
-  DCHECK(ids_.empty());
 }
 
 bool UserIdTracker::IsValidUserId(const UserId& id) const {
@@ -31,7 +31,9 @@ void UserIdTracker::SetActiveUserId(const UserId& id) {
 }
 
 void UserIdTracker::AddUserId(const UserId& id) {
-  DCHECK(!IsValidUserId(id));
+  if (IsValidUserId(id))
+    return;
+
   ids_.insert(id);
   FOR_EACH_OBSERVER(UserIdTrackerObserver, observers_, OnUserIdAdded(id));
 }
@@ -48,6 +50,16 @@ void UserIdTracker::AddObserver(UserIdTrackerObserver* observer) {
 
 void UserIdTracker::RemoveObserver(UserIdTrackerObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void UserIdTracker::Bind(mojom::UserAccessManagerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void UserIdTracker::SetActiveUser(const mojo::String& user_id) {
+  if (!IsValidUserId(user_id))
+    AddUserId(user_id);
+  SetActiveUserId(user_id);
 }
 
 }  // namespace ws

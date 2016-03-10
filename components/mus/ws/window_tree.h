@@ -20,6 +20,7 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/access_policy_delegate.h"
 #include "components/mus/ws/ids.h"
+#include "components/mus/ws/user_id.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -58,6 +59,7 @@ class WindowTree : public mojom::WindowTree,
                    public mojom::WindowManagerClient {
  public:
   WindowTree(ConnectionManager* connection_manager,
+             const UserId& user_id,
              ServerWindow* root,
              uint32_t policy_bitmask);
   ~WindowTree() override;
@@ -69,6 +71,8 @@ class WindowTree : public mojom::WindowTree,
   void ConfigureWindowManager();
 
   ConnectionSpecificId id() const { return id_; }
+
+  const UserId& user_id() const { return user_id_; }
 
   mojom::WindowTreeClient* client() { return binding_->client(); }
 
@@ -389,6 +393,8 @@ class WindowTree : public mojom::WindowTree,
   bool IsDescendantOfEmbedRoot(const ServerWindow* window) override;
 
   ConnectionManager* connection_manager_;
+
+  const UserId user_id_;
 
   // Id of this tree as assigned by ConnectionManager.
   const ConnectionSpecificId id_;
