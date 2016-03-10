@@ -82,6 +82,7 @@ TestingPlatformSupport::TestingPlatformSupport(const Config& config)
     : m_config(config)
     , m_oldPlatform(Platform::current())
 {
+    ASSERT(m_oldPlatform);
     Platform::setCurrentPlatformForTesting(this);
 }
 

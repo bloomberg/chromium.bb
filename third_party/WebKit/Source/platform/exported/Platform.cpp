@@ -59,12 +59,12 @@ Platform::Platform()
 
 void Platform::initialize(Platform* platform)
 {
+    ASSERT(platform);
     s_platform = platform;
-    if (s_platform)
-        s_platform->m_mainThread = platform->currentThread();
+    s_platform->m_mainThread = platform->currentThread();
 
     // TODO(ssid): remove this check after fixing crbug.com/486782.
-    if (s_platform && s_platform->m_mainThread)
+    if (s_platform->m_mainThread)
         s_platform->registerMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance(), "PartitionAlloc");
 
     CompositorFactory::initializeDefault();
@@ -77,16 +77,15 @@ void Platform::shutdown()
     if (s_platform->m_mainThread)
         s_platform->unregisterMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance());
 
-    if (s_platform)
-        s_platform->m_mainThread = 0;
-    s_platform = 0;
+    s_platform->m_mainThread = nullptr;
+    s_platform = nullptr;
 }
 
 void Platform::setCurrentPlatformForTesting(Platform* platform)
 {
+    ASSERT(platform);
     s_platform = platform;
-    if (s_platform)
-        s_platform->m_mainThread = platform->currentThread();
+    s_platform->m_mainThread = platform->currentThread();
 }
 
 Platform* Platform::current()
