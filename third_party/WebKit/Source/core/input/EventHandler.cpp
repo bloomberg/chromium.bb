@@ -600,8 +600,10 @@ void EventHandler::stopAutoscroll()
         controller->stopAutoscroll();
 }
 
-ScrollResult EventHandler::physicalScroll(ScrollGranularity granularity, const FloatSize& delta, Node* startNode, Node** stopNode)
+ScrollResult EventHandler::physicalScroll(ScrollGranularity granularity, const FloatSize& delta, Node* startNode, Node** stopNode, bool* consumed)
 {
+    if (consumed)
+        *consumed = false;
     if (delta.isZero())
         return ScrollResult();
 
@@ -613,7 +615,7 @@ ScrollResult EventHandler::physicalScroll(ScrollGranularity granularity, const F
     ScrollResult result;
 
     LayoutBox* curBox = node->layoutObject()->enclosingBox();
-    while (curBox && !curBox->isLayoutView()) {
+    while (curBox) {
         // If we're at the stopNode, we should try to scroll it but we shouldn't
         // chain past it.
         bool shouldStopChaining =
@@ -625,12 +627,8 @@ ScrollResult EventHandler::physicalScroll(ScrollGranularity granularity, const F
 
         if (result.didScroll() || shouldStopChaining) {
             setFrameWasScrolledByUser();
-            if (!result.didScroll()) {
-                // TODO(bokan): We should probably add a "shouldPropagate" bit
-                // on the result rather than lying to the caller.
-                result.didScrollX = true;
-                result.didScrollY = true;
-            }
+            if (consumed)
+                *consumed = true;
             return result;
         }
 
@@ -651,12 +649,12 @@ bool EventHandler::logicalScroll(ScrollDirection direction, ScrollGranularity gr
         node = m_mousePressNode.get();
 
     if (!node || !node->layoutObject())
-        return false;
+        node = m_frame->view()->layoutView()->node();
 
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
     LayoutBox* curBox = node->layoutObject()->enclosingBox();
-    while (curBox && !curBox->isLayoutView()) {
+    while (curBox) {
         ScrollDirectionPhysical physicalDirection = toPhysicalDirection(
             direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
 
@@ -698,18 +696,8 @@ bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity g
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (logicalScroll(direction, granularity, startingNode))
         return true;
-    LocalFrame* frame = m_frame;
-    FrameView* view = frame->view();
-    if (view) {
-        ScrollDirectionPhysical physicalDirection =
-            toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
-        if (view->scrollableArea()->userScroll(granularity, toScrollDelta(physicalDirection, 1)).didScroll()) {
-            setFrameWasScrolledByUser();
-            return true;
-        }
-    }
 
-    Frame* parentFrame = frame->tree().parent();
+    Frame* parentFrame = m_frame->tree().parent();
     if (!parentFrame || !parentFrame->isLocalFrame())
         return false;
     // FIXME: Broken for OOPI.
@@ -1784,35 +1772,6 @@ bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
     return false;
 }
 
-namespace {
-
-ScrollResult scrollAreaWithWheelEvent(const PlatformWheelEvent& event, ScrollableArea& scrollableArea)
-{
-    float deltaX = event.getRailsMode() != PlatformEvent::RailsModeVertical ? event.deltaX() : 0;
-    float deltaY = event.getRailsMode() != PlatformEvent::RailsModeHorizontal ? event.deltaY() : 0;
-
-    ScrollGranularity granularity =
-        event.granularity() == ScrollByPixelWheelEvent ? ScrollByPixel : ScrollByPage;
-
-    if (event.hasPreciseScrollingDeltas() && granularity == ScrollByPixel)
-        granularity = ScrollByPrecisePixel;
-
-    // If the event is a "PageWheelEvent" we should disregard the delta and
-    // scroll by *one* page length per event.
-    if (event.granularity() == ScrollByPageWheelEvent) {
-        if (deltaX)
-            deltaX = deltaX > 0 ? 1 : -1;
-        if (deltaY)
-            deltaY = deltaY > 0 ? 1 : -1;
-    }
-
-    // On a wheel event, positive delta is meant to scroll up and left, which
-    // is the opposite of deltas in the scrolling system.
-    return scrollableArea.userScroll(granularity, FloatSize(-deltaX, -deltaY));
-}
-
-} // namespace
-
 WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 {
     Document* doc = m_frame->document();
@@ -1853,31 +1812,17 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
         sendDOMEvent = false;
     }
 
-    if (node && sendDOMEvent) {
-        RefPtrWillBeRawPtr<Event> domEvent = WheelEvent::create(event, node->document().domWindow());
-        DispatchEventResult domEventResult = node->dispatchEvent(domEvent);
-        if (domEventResult != DispatchEventResult::NotCanceled) {
-            setFrameWasScrolledByUser();
-            return toWebInputEventResult(domEventResult);
+    if (node) {
+        RefPtrWillBeRawPtr<WheelEvent> domEvent = WheelEvent::create(event, node->document().domWindow());
+        if (sendDOMEvent) {
+            DispatchEventResult domEventResult = node->dispatchEvent(domEvent);
+            if (domEventResult != DispatchEventResult::NotCanceled)
+                return toWebInputEventResult(domEventResult);
+        } else {
+            defaultWheelEventHandler(node, domEvent.get());
+            if (domEvent->defaultHandled())
+                return WebInputEventResult::HandledSystem;
         }
-    }
-
-    // We do another check on the frame view because the event handler can run
-    // JS which results in the frame getting destroyed.
-    view = m_frame->view();
-    if (!view)
-        return WebInputEventResult::NotHandled;
-
-    // Wheel events which do not scroll are used to trigger zooming.
-    if (!event.canScroll())
-        return WebInputEventResult::NotHandled;
-
-    ScrollResult scrollResult = scrollAreaWithWheelEvent(event, *view->scrollableArea());
-    if (m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->reportWheelOverscroll())
-        handleOverscroll(scrollResult);
-    if (scrollResult.didScroll()) {
-        setFrameWasScrolledByUser();
-        return WebInputEventResult::HandledSystem;
     }
 
     return WebInputEventResult::NotHandled;
@@ -1905,11 +1850,25 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
     if (wheelEvent->getRailsMode() != Event::RailsModeHorizontal)
         delta.setHeight(wheelEvent->deltaY());
 
-    // FIXME: enable scroll customization in this case. See crbug.com/410974.
-    ScrollResult result = physicalScroll(granularity, delta, startNode, &node);
+    // We can get page wheel events with non-[0|1] deltas in the case where the
+    // events are coalesced but we still want to scroll by just one page length.
+    // TODO(bokan): This seems like it belongs in the coalescing logic.
+    if (granularity == ScrollByPage) {
+        if (delta.width())
+            delta.setWidth(delta.width() > 0 ? 1 : -1);
+        if (delta.height())
+            delta.setHeight(delta.height() > 0 ? 1 : -1);
+    }
 
-    if (result.didScroll())
+    // FIXME: enable scroll customization in this case. See crbug.com/410974.
+    bool consumed = false;
+    ScrollResult result = physicalScroll(granularity, delta, startNode, &node, &consumed);
+
+    if (consumed)
         wheelEvent->setDefaultHandled();
+
+    if (m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->reportWheelOverscroll())
+        handleOverscroll(result);
 }
 
 WebInputEventResult EventHandler::handleGestureShowPress()
@@ -2437,7 +2396,6 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
             return result;
         }
 
-        bool scrolled = false;
         if (handleScrollCustomization) {
             OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
             scrollStateData->delta_x = delta.width();
@@ -2460,40 +2418,32 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
             customizedScroll(*node, *scrollState);
             m_previousGestureScrolledNode = scrollState->currentNativeScrollingElement();
             m_deltaConsumedForScrollSequence = scrollState->deltaConsumedForScrollSequence();
-            scrolled = scrollState->deltaX() != delta.width()
-                || scrollState->deltaY() != delta.height();
+            if (scrollState->deltaX() != delta.width()
+                || scrollState->deltaY() != delta.height()) {
+                setFrameWasScrolledByUser();
+                return WebInputEventResult::HandledSystem;
+            }
         } else {
             Node* stopNode = nullptr;
             if (gestureEvent.preventPropagation())
                 stopNode = m_previousGestureScrolledNode.get();
 
-            ScrollResult result = physicalScroll(granularity, delta, node, &stopNode);
-
-            scrolled = result.didScroll();
+            bool consumed = false;
+            ScrollResult result = physicalScroll(granularity, delta, node, &stopNode, &consumed);
 
             if (gestureEvent.preventPropagation())
                 m_previousGestureScrolledNode = stopNode;
 
-            resetOverscroll(result.didScrollX, result.didScrollY);
-        }
-        if (scrolled) {
-            setFrameWasScrolledByUser();
-            return WebInputEventResult::HandledSystem;
-        }
-    }
+            if (m_frame->isMainFrame() && (!stopNode || stopNode->layoutObject() == m_frame->view()->layoutView())) {
+                FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
+                handleOverscroll(result, position, velocity);
+            } else {
+                resetOverscroll(result.didScrollX, result.didScrollY);
+            }
 
-    if (handleScrollCustomization)
-        return WebInputEventResult::NotHandled;
-
-    // Try to scroll the frame view.
-    ScrollResult scrollResult = m_frame->applyScrollDelta(granularity, delta, false);
-    if (m_frame->isMainFrame()) {
-        FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
-        handleOverscroll(scrollResult, position, velocity);
-    }
-    if (scrollResult.didScroll()) {
-        setFrameWasScrolledByUser();
-        return WebInputEventResult::HandledSystem;
+            if (consumed)
+                return WebInputEventResult::HandledSystem;
+        }
     }
 
     return WebInputEventResult::NotHandled;
@@ -3455,16 +3405,6 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
         event->setDefaultHandled();
         return;
     }
-
-    FrameView* view = m_frame->view();
-    if (!view)
-        return;
-
-    ScrollDirectionPhysical physicalDirection =
-        toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
-
-    if (view->scrollableArea()->userScroll(ScrollByPage, toScrollDelta(physicalDirection, 1)).didScroll())
-        event->setDefaultHandled();
 }
 
 void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)

@@ -193,7 +193,7 @@ private:
 
     LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
-    bool shouldScrollTopControls(const FloatSize& delta) const;
+    bool shouldScrollTopControls(ScrollGranularity, const FloatSize& delta) const;
 
     // Internal Frame helper overrides:
     WindowProxyManager* getWindowProxyManager() const override;

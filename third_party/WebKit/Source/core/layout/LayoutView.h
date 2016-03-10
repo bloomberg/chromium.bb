@@ -210,6 +210,10 @@ public:
     // have changed.  visibleRect is the clipping boundary.
     void sendMediaPositionChangeNotifications(const IntRect& visibleRect);
 
+    // The rootLayerScrolls setting will ultimately determine whether FrameView
+    // or PaintLayerScrollableArea handle the scroll.
+    ScrollResult scroll(ScrollGranularity, const FloatSize&) override;
+
 private:
     void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
 

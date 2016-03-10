@@ -167,7 +167,7 @@ TEST_F(TopControlsTest, MAYBE(HideOnScrollDown))
     EXPECT_FLOAT_EQ(25.f, webView->topControls().contentOffset());
     EXPECT_POINT_EQ(IntPoint(0, 0), frame()->view()->scrollPosition());
 
-    // Top controls should consume 30px and become hidden. Excess scroll should be consumed by the page.
+    // Top controls should consume 25px and become hidden. Excess scroll should be consumed by the page.
     webView->handleInputEvent(generateEvent(WebInputEvent::GestureScrollUpdate, 0, -40.f));
     EXPECT_FLOAT_EQ(0.f, webView->topControls().contentOffset());
     EXPECT_POINT_EQ(IntPoint(0, 15), frame()->view()->scrollPosition());

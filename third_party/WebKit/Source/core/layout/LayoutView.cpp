@@ -1025,4 +1025,12 @@ bool LayoutView::allowsOverflowClip() const
     return document().settings() && document().settings()->rootLayerScrolls();
 }
 
+ScrollResult LayoutView::scroll(ScrollGranularity granularity, const FloatSize& delta)
+{
+    if (!frameView())
+        return ScrollResult();
+
+    return frame()->applyScrollDelta(granularity, delta, false);
+}
+
 } // namespace blink

@@ -273,21 +273,24 @@ private:
     ScrollableArea* associatedScrollableArea(const PaintLayer*) const;
 
     // Performs a chaining scroll, within a *single* frame, starting from a
-    // given node and optionally stopping on a given node. Does *not* attempt
-    // to scroll the layout view.
+    // given node and optionally stopping on a given node.
     // granularity - The units that the  scroll delta parameter is in.
     // delta - The delta to scroll by, in the units of the granularity param
     //         (e.g. pixels, lines, pages, etc.). These are in a physical
     //         direction. i.e. Positive is down and right.
     // startNode - The node to start the scroll chaining from.
-    // stopNode - On input, if provided and non-null, the node at which we
-    //            should stop chaining. On output, if provided and a node was
-    //            scrolled, stopNode will point to that node.
-    ScrollResult physicalScroll(ScrollGranularity, const FloatSize& delta, Node* startNode, Node** stopNode = nullptr);
+    // stopNode - On input, if non-null, the node at which we should stop
+    //            chaining. On output, if provided and a node was scrolled,
+    //            stopNode will point to that node.
+    // consumed - [OUT] Whether the scroll was consumed. This is different than
+    //            ScrollResult.didScroll since we might not have scrolled but
+    //            have reached the stopNode and thus don't want to continue
+    //            chaining the scroll.
+    ScrollResult physicalScroll(ScrollGranularity, const FloatSize& delta, Node* startNode, Node** stopNode, bool* consumed);
 
     // Performs a chaining logical scroll, within a *single* frame, starting
     // from either a provided starting node or a default based on the focused or
-    // most recently clicked node.
+    // most recently clicked node, falling back to the frame.
     // Returns true if the scroll was consumed.
     // direction - The logical direction to scroll in. This will be converted to
     //             a physical direction for each LayoutBox we try to scroll

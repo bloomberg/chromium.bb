@@ -781,7 +781,7 @@ ScrollResult LocalFrame::applyScrollDelta(ScrollGranularity granularity, const F
     FloatSize remainingDelta = delta;
 
     // If this is main frame, allow top controls to scroll first.
-    if (shouldScrollTopControls(delta))
+    if (shouldScrollTopControls(granularity, delta))
         remainingDelta = host()->topControls().scrollBy(remainingDelta);
 
     if (remainingDelta.isZero())
@@ -794,9 +794,12 @@ ScrollResult LocalFrame::applyScrollDelta(ScrollGranularity granularity, const F
     return result;
 }
 
-bool LocalFrame::shouldScrollTopControls(const FloatSize& delta) const
+bool LocalFrame::shouldScrollTopControls(ScrollGranularity granularity, const FloatSize& delta) const
 {
     if (!isMainFrame())
+        return false;
+
+    if (granularity != ScrollByPixel && granularity != ScrollByPrecisePixel)
         return false;
 
     // Always give the delta to the top controls if the scroll is in

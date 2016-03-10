@@ -3,9 +3,9 @@
         <script src="../../resources/js-test.js"></script>
         <script>
             window.jsTestIsAsync = true;
-            var givenScrollTop = 2;
+            var givenScrollTop = 2; // When paging, this is ignored. Every event is one page.
             var givenScrollLeft = 0;
-            var expectedScrollTop = 322; // 2 pages, 161 * 2, see comment in HTML below.
+            var expectedScrollTop = 161;
             var expectedScrollLeft = 0;
             var event;
             var div;
