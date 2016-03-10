@@ -8,6 +8,7 @@
 
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer_settings.h"
+#include "cc/layers/picture_image_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/context_provider.h"
@@ -19,6 +20,8 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "content/public/common/content_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/render_frame_impl.h"
@@ -28,6 +31,9 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 
@@ -115,7 +121,29 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
   scoped_refptr<cc::SolidColorLayer> crashed_layer =
       cc::SolidColorLayer::Create(cc::LayerSettings());
   crashed_layer->SetMasksToBounds(true);
-  crashed_layer->SetBackgroundColor(SkColorSetARGBInline(255, 0, 128, 0));
+  crashed_layer->SetBackgroundColor(SK_ColorBLACK);
+
+  if (web_layer_) {
+    SkBitmap* sad_bitmap =
+        GetContentClient()->renderer()->GetSadWebViewBitmap();
+    if (sad_bitmap && web_layer_->bounds().width > sad_bitmap->width() &&
+        web_layer_->bounds().height > sad_bitmap->height()) {
+      scoped_refptr<cc::PictureImageLayer> sad_layer =
+          cc::PictureImageLayer::Create(cc::LayerSettings());
+      skia::RefPtr<SkImage> image =
+          skia::AdoptRef(SkImage::NewFromBitmap(*sad_bitmap));
+      sad_layer->SetImage(image);
+      sad_layer->SetBounds(
+          gfx::Size(sad_bitmap->width(), sad_bitmap->height()));
+      sad_layer->SetPosition(gfx::PointF(
+          (web_layer_->bounds().width - sad_bitmap->width()) / 2,
+          (web_layer_->bounds().height - sad_bitmap->height()) / 2));
+      sad_layer->SetIsDrawable(true);
+
+      crashed_layer->AddChild(sad_layer);
+    }
+  }
+
   blink::WebLayer* layer = new cc_blink::WebLayerImpl(crashed_layer);
   UpdateWebLayer(layer);
 }
