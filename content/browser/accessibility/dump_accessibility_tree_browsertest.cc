@@ -1089,8 +1089,15 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-opened.html"));
 }
 
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityModalDialogInIframeClosed \
+    DISABLED_AccessibilityModalDialogInIframeClosed
+#else
+#define MAYBE_AccessibilityModalDialogInIframeClosed \
+    AccessibilityModalDialogInIframeClosed
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogInIframeClosed) {
+                       MAYBE_AccessibilityModalDialogInIframeClosed) {
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-in-iframe-closed.html"));
 }
 
