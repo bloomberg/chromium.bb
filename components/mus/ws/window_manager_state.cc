@@ -275,8 +275,15 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
           ? connection_manager()->GetTreeWithId(target->id().connection_id)
           : connection_manager()->GetTreeWithRoot(target);
   if (!tree) {
-    DCHECK(!in_nonclient_area);
-    tree = connection_manager()->GetTreeWithId(target->id().connection_id);
+    if (in_nonclient_area) {
+      // Being the root of the tree means we may get events outside the bounds
+      // of the platform window. Because the root has a connection id of 0,
+      // no WindowTree is found for it and we have to special case it here.
+      DCHECK_EQ(target, root_.get());
+      tree = tree_;
+    } else {
+      tree = connection_manager()->GetTreeWithId(target->id().connection_id);
+    }
   }
 
   // TOOD(sad): Adjust this delay, possibly make this dynamic.
