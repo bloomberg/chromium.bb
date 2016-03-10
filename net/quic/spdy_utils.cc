@@ -26,7 +26,8 @@ string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
 
   size_t length = SpdyFramer::GetSerializedLength(spdy_version, &headers);
   SpdyFrameBuilder builder(length, spdy_version);
-  SpdyFramer::WriteHeaderBlock(&builder, spdy_version, &headers);
+  SpdyFramer framer(spdy_version);
+  framer.SerializeHeaderBlockWithoutCompression(&builder, headers);
   scoped_ptr<SpdyFrame> block(builder.take());
   return string(block->data(), length);
 }

@@ -352,10 +352,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // purposes.)
   static const size_t kHeaderDataChunkMaxSize;
 
-  // Serializes a SpdyHeaderBlock.
-  static void WriteHeaderBlock(SpdyFrameBuilder* frame,
-                               const SpdyMajorVersion spdy_version,
-                               const SpdyHeaderBlock* headers);
+  void SerializeHeaderBlockWithoutCompression(
+      SpdyFrameBuilder* builder,
+      const SpdyHeaderBlock& header_block) const;
 
   // Retrieve serialized length of SpdyHeaderBlock.
   // TODO(hkhalil): Remove, or move to quic code.
@@ -690,10 +689,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   void WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
                            z_stream* out) const;
-
-  void SerializeHeaderBlockWithoutCompression(
-      SpdyFrameBuilder* builder,
-      const SpdyHeaderBlock& header_block) const;
 
   // Compresses automatically according to enable_compression_.
   void SerializeHeaderBlock(SpdyFrameBuilder* builder,

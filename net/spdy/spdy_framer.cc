@@ -1174,17 +1174,6 @@ size_t SpdyFramer::GetSerializedLength(
   return total_length;
 }
 
-void SpdyFramer::WriteHeaderBlock(SpdyFrameBuilder* frame,
-                                  const SpdyMajorVersion spdy_version,
-                                  const SpdyHeaderBlock* headers) {
-  frame->WriteUInt32(headers->size());
-  SpdyHeaderBlock::const_iterator it;
-  for (it = headers->begin(); it != headers->end(); ++it) {
-    frame->WriteStringPiece32(it->first);
-    frame->WriteStringPiece32(it->second);
-  }
-}
-
 // TODO(phajdan.jr): Clean up after we no longer need
 // to workaround http://crbug.com/139744.
 #if !defined(USE_SYSTEM_ZLIB)
