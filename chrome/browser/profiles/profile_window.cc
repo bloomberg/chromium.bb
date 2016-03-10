@@ -5,6 +5,8 @@
 #include "chrome/browser/profiles/profile_window.h"
 
 #include <stddef.h>
+#include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -197,7 +199,8 @@ void OnUserManagerSystemProfileCreated(
     return;
 
   // Tell the webui which user should be focused.
-  std::string page = chrome::kChromeUIUserManagerURL;
+  std::string page = switches::IsMaterialDesignUserManager() ?
+      chrome::kChromeUIMdUserManagerUrl : chrome::kChromeUIUserManagerURL;
 
   if (tutorial_mode == profiles::USER_MANAGER_TUTORIAL_OVERVIEW) {
     page += profiles::kUserManagerDisplayTutorial;

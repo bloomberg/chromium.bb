@@ -35,10 +35,14 @@ const char kExtensionsMultiAccount[] = "extensions-multi-account";
 // Enables using GAIA information to populate profile name and icon.
 const char kGoogleProfileInfo[] = "google-profile-info";
 
+const base::Feature kMaterialDesignUserManager {
+  "MaterialDesignUserManager", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 // Enables or disables the new password separated sign in flow in a tab modal
 // dialog.
 const base::Feature kUsePasswordSeparatedSigninFlow {
- "UsePasswordSeparatedSigninFlow", base::FEATURE_DISABLED_BY_DEFAULT
+  "UsePasswordSeparatedSigninFlow", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 }  // namespace switches
