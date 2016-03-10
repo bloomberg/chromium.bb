@@ -29,6 +29,7 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
+#include "wtf/MainThread.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
@@ -36,6 +37,8 @@
 #include "wtf/WTFExport.h"
 
 namespace WTF {
+
+typedef void(*AdjustAmountOfExternalAllocatedMemoryFunction)(int size);
 
 class WTF_EXPORT ArrayBufferContents {
     WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
@@ -76,8 +79,9 @@ public:
     static void allocateMemory(size_t, InitializationPolicy, void*&);
     static void allocateMemoryOrNull(size_t, InitializationPolicy, void*&);
     static void freeMemory(void*, size_t);
-    static void setAdjustAmoutOfExternalAllocatedMemoryFunction(AdjustAmountOfExternalAllocatedMemoryFunction function)
+    static void initialize(AdjustAmountOfExternalAllocatedMemoryFunction function)
     {
+        ASSERT(isMainThread());
         ASSERT(!s_adjustAmountOfExternalAllocatedMemoryFunction);
         s_adjustAmountOfExternalAllocatedMemoryFunction = function;
     }

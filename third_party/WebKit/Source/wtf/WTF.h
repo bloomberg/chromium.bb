@@ -36,10 +36,8 @@
 
 namespace WTF {
 
-typedef void(*AdjustAmountOfExternalAllocatedMemoryFunction)(int size);
-
 // This function must be called exactly once from the main thread before using anything else in WTF.
-WTF_EXPORT void initialize(AdjustAmountOfExternalAllocatedMemoryFunction);
+WTF_EXPORT void initialize();
 WTF_EXPORT void shutdown();
 WTF_EXPORT bool isShutdown();
 

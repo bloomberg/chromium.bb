@@ -351,9 +351,16 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
 
 } // namespace
 
+static void adjustAmountOfExternalAllocatedMemory(int size)
+{
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(size);
+}
+
 void V8Initializer::initializeMainThread()
 {
     ASSERT(isMainThread());
+
+    WTF::ArrayBufferContents::initialize(adjustAmountOfExternalAllocatedMemory);
 
     DEFINE_STATIC_LOCAL(ArrayBufferAllocator, arrayBufferAllocator, ());
     auto v8ExtrasMode = RuntimeEnabledFeatures::experimentalV8ExtrasEnabled() ? gin::IsolateHolder::kStableAndExperimentalV8Extras : gin::IsolateHolder::kStableV8Extras;

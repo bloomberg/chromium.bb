@@ -141,18 +141,13 @@ static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* con
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(function, AllowCrossThreadAccess(context)));
 }
 
-static void adjustAmountOfExternalAllocatedMemory(int size)
-{
-    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(size);
-}
-
 void initializeWithoutV8(Platform* platform)
 {
     ASSERT(!s_webKitInitialized);
     s_webKitInitialized = true;
 
     WTF::Partitions::initialize(maxObservedSizeFunction);
-    WTF::initialize(adjustAmountOfExternalAllocatedMemory);
+    WTF::initialize();
     WTF::initializeMainThread(callOnMainThreadFunction);
 
     ASSERT(platform);

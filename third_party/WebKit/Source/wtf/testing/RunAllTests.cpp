@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 {
     WTF::Partitions::initialize(nullptr);
     WTF::setTimeFunctionsForTesting(dummyCurrentTime);
-    WTF::initialize(nullptr);
+    WTF::initialize();
     WTF::initializeMainThread(0);
     return base::RunUnitTestsUsingBaseTestSuite(argc, argv);
 }
