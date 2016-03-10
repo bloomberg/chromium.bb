@@ -368,7 +368,8 @@ public:
         // Restore when resources are available.
         WhenAvailable,
 
-        // Restore as soon as possible.
+        // Restore as soon as possible, but only when
+        // the canvas is visible.
         Auto
     };
     void loseContext(LostContextMode) override;
@@ -493,6 +494,7 @@ protected:
 
     RefPtr<WebGLContextGroup> m_contextGroup;
 
+    bool m_isHidden;
     LostContextMode m_contextLostMode;
     AutoRecoveryMethod m_autoRecoveryMethod;
     // Dispatches a context lost event once it is determined that one is needed.

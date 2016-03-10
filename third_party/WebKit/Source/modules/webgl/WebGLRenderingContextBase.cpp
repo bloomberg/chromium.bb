@@ -833,6 +833,7 @@ bool isSRGBFormat(GLenum internalformat)
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
+    , m_isHidden(false)
     , m_contextLostMode(NotLostContext)
     , m_autoRecoveryMethod(Manual)
     , m_dispatchContextLostEventTimer(this, &WebGLRenderingContextBase::dispatchContextLostEvent)
@@ -1214,8 +1215,14 @@ void WebGLRenderingContextBase::markLayerComposited()
 
 void WebGLRenderingContextBase::setIsHidden(bool hidden)
 {
+    m_isHidden = hidden;
     if (drawingBuffer())
         drawingBuffer()->setIsHidden(hidden);
+
+    if (!hidden && isContextLost() && m_restoreAllowed && m_autoRecoveryMethod == Auto) {
+        ASSERT(!m_restoreTimer.isActive());
+        m_restoreTimer.startOneShot(0, BLINK_FROM_HERE);
+    }
 }
 
 bool WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffer sourceBuffer)
@@ -5901,7 +5908,7 @@ void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingCon
     RefPtrWillBeRawPtr<WebGLContextEvent> event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
     canvas()->dispatchEvent(event);
     m_restoreAllowed = event->defaultPrevented();
-    if (m_restoreAllowed) {
+    if (m_restoreAllowed && !m_isHidden) {
         if (m_autoRecoveryMethod == Auto)
             m_restoreTimer.startOneShot(0, BLINK_FROM_HERE);
     }
