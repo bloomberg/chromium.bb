@@ -312,6 +312,8 @@ per-file storage_monitor.gypi=gbillock@chromium.org
 per-file storage_monitor.gypi=thestig@chromium.org
 per-file storage_monitor.gypi=vandebo@chromium.org
 
+per-file suggestions.gypi=file://components/suggestions/OWNERS
+
 per-file sync_driver*=pavely@chromium.org
 per-file sync_driver*=stanisc@chromium.org
 per-file sync_driver*=zea@chromium.org
