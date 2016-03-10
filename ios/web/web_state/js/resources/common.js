@@ -79,19 +79,6 @@ __gCrWeb['common'] = {};
   };
 
   /**
-   * Detects focusable elements.
-   * @param {Element} element A DOM element.
-   * @return {boolean} true if the |element| is focusable.
-   */
-  __gCrWeb.common.isFocusable = function(element) {
-    // When the disabled or hidden attributes are present, controls do not
-    // receive focus.
-    if (element.hasAttribute('disabled') || element.hasAttribute('hidden'))
-      return false;
-    return __gCrWeb.common.isFormControlElement(element);
-  };
-
-  /**
    * Returns an array of control elements in a form.
    *
    * This method is based on the logic in method
