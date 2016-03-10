@@ -67,6 +67,7 @@
           'conditions': [
             ['OS == "ios"', {
               'dependencies': [
+                'sqlite_recover',
                 'sqlite_regexp',
               ],
               'link_settings': {
@@ -242,6 +243,18 @@
     },],
     ['OS == "ios"', {
       'targets': [
+        {
+          # Virtual table used by sql::Recovery to recover corrupt
+          # databases, for use with USE_SYSTEM_SQLITE.
+          'target_name': 'sqlite_recover',
+          'type': 'static_library',
+          'sources': [
+            # TODO(shess): Move out of the SQLite source tree, perhaps to ext/.
+            'src/src/recover_varint.c',
+            'src/src/recover.c',
+            'src/src/recover.h',
+          ],
+        },
         {
           'target_name': 'sqlite_regexp',
           'type': 'static_library',
