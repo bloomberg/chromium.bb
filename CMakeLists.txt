@@ -17,6 +17,7 @@ set(LIBWEBM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 # Build/test configuration flags. Defined here for visibility.
 option(ENABLE_WEBMTS "Enables WebM PES/TS support." ON)
 option(ENABLE_TESTS "Enables tests." OFF)
+option(ENABLE_IWYU "Enables include-what-you-use support." OFF)
 set(GTEST_SRC_DIR "${LIBWEBM_SRC_DIR}/../googletest" CACHE PATH
     "Path to Googletest git repository.")
 
@@ -196,6 +197,37 @@ if (ENABLE_TESTS)
                   "${LIBWEBM_SRC_DIR}/testing/test_util.h"
                   "${LIBWEBM_SRC_DIR}/m2ts/tests/webm2pes_tests.cc")
     target_link_libraries(webm2pes_tests LINK_PUBLIC gtest webm webmts)
+  endif ()
+endif ()
+
+# Include-what-you-use section.
+if (ENABLE_IWYU)
+  # Make sure all the tools necessary for IWYU are present.
+  find_program(iwyu_path NAMES include-what-you-use)
+  find_program(iwyu_tool_path NAMES iwyu_tool.py)
+
+  # Some odd behavior on cmake's part: PYTHON_EXECUTABLE and PYTHON_VERSION_*
+  # are set by cmake when it does its internal python check, but
+  # PYTHONINTERP_FOUND is empty without explicitly looking for it.
+  find_package(PythonInterp)
+
+  if (iwyu_path AND iwyu_tool_path AND PYTHONINTERP_FOUND)
+    # Enable compilation command export (needed for iwyu_tool.py)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+    # Add a custom target to run iwyu across all targets.
+    add_custom_target(iwyu
+                      ALL
+                      COMMAND "${PYTHON_EXECUTABLE}" "${iwyu_tool_path}" -p
+                          "${CMAKE_BINARY_DIR}"
+                      COMMENT "Running include-what-you-use..."
+                      VERBATIM)
+  else ()
+    message(STATUS "Ignoring ENABLE_IWYU because reasons:")
+    message(STATUS "  iwyu_path=" ${iwyu_path})
+    message(STATUS "  iwyu_tool_path=" ${iwyu_tool_path})
+    message(STATUS "  PYTHONINTERP_FOUND=" ${PYTHONINTERP_FOUND})
+    message(STATUS "  See README.libwebm for more information.")
   endif ()
 endif ()
 

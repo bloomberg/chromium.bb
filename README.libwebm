@@ -81,3 +81,41 @@ Note: Libwebm Googletest integration was built with googletest from
       https://github.com/google/googletest.git at git revision
       ddb8012eb48bc203aa93dcc2b22c1db516302b29.
 
+
+CMake Include-what-you-use integration
+
+Include-what-you-use is an analysis tool that helps ensure libwebm includes the
+C/C++ header files actually in use. To enable the integration support
+ENABLE_IWYU must be turned on at cmake run time:
+
+$ cmake path/to/libwebm -G "Unix Makefiles" -DENABLE_IWYU=ON
+
+This adds the iwyu target to the build. To run include-what-you-use:
+
+$ make iwyu
+
+The following requirements must be met for ENABLE_IWYU to enable the iwyu
+target:
+
+1. include-what-you-use and iwyu_tool.py must be in your PATH.
+2. A python interpreter must be on the system and available to CMake.
+
+The values of the following variables are used to determine if the requirements
+have been met. Values to the right of the equals sign are what a successful run
+might look like:
+  iwyu_path=/path/to/iwyu_tool.py
+  iwyu_tool_path=/path/to/include-what-you-use
+  PYTHONINTERP_FOUND=TRUE
+
+An empty PYTHONINTERP_FOUND, or iwyu_path/iwyu_tool_path suffixed with NOTFOUND
+are failures.
+
+For Include-what-you-use setup instructions, see:
+https://github.com/include-what-you-use/include-what-you-use/blob/master/docs/InstructionsForUsers.md
+
+If, when building the iwyu target, compile errors reporting failures loading
+standard include files occur, one solution can be found here:
+https://github.com/include-what-you-use/include-what-you-use/issues/100
+
+
+
