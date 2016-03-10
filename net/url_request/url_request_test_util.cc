@@ -51,19 +51,13 @@ const int kStageDestruction = 1 << 10;
 
 }  // namespace
 
-TestURLRequestContext::TestURLRequestContext()
-    : initialized_(false),
-      client_socket_factory_(nullptr),
-      proxy_delegate_(nullptr),
-      ct_policy_enforcer_(nullptr),
-      context_storage_(this) {
-  Init();
-}
+TestURLRequestContext::TestURLRequestContext() : TestURLRequestContext(false) {}
 
 TestURLRequestContext::TestURLRequestContext(bool delay_initialization)
     : initialized_(false),
       client_socket_factory_(nullptr),
       proxy_delegate_(nullptr),
+      ct_policy_enforcer_(nullptr),
       context_storage_(this) {
   if (!delay_initialization)
     Init();
