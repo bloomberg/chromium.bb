@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/net/chrome_cookie_store_ios_client.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/browsing_data_change_listening.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_change_listening.h"
 #include "ios/web/public/web_thread.h"
 
 ChromeCookieStoreIOSClient::ChromeCookieStoreIOSClient(
