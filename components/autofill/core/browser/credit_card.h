@@ -17,6 +17,9 @@
 
 namespace autofill {
 
+// A midline horizontal ellipsis (U+22EF).
+extern const base::char16 kMidlineEllipsis[];
+
 // A form group that stores credit card information.
 class CreditCard : public AutofillDataModel {
  public:

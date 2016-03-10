@@ -174,9 +174,8 @@ scoped_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
       views::Border::CreateSolidBorder(1, kSubtleBorderColor));
   description_view->AddChildView(card_type_icon);
 
-  // Midline horizontal ellipsis follwed by last four digits:
   description_view->AddChildView(new views::Label(
-      base::UTF8ToUTF16("\xE2\x8B\xAF") + card.LastFourDigits()));
+      base::string16(kMidlineEllipsis) + card.LastFourDigits()));
   description_view->AddChildView(
       new views::Label(card.AbbreviatedExpirationDateForDisplay()));
 

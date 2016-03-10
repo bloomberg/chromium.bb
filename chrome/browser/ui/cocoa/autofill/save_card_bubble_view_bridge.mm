@@ -248,7 +248,7 @@ void SaveCardBubbleViewBridge::Hide() {
 
   // Midline horizontal ellipsis follwed by last four digits.
   base::scoped_nsobject<NSTextField> lastFourLabel([SaveCardBubbleViewCocoa
-      makeLabel:SysUTF16ToNSString(base::UTF8ToUTF16("\xE2\x8B\xAF") +
+      makeLabel:SysUTF16ToNSString(base::string16(autofill::kMidlineEllipsis) +
                                    card.LastFourDigits())]);
 
   base::scoped_nsobject<NSTextField> expirationDateLabel(

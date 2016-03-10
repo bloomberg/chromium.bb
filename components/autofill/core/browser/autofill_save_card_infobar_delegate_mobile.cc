@@ -31,8 +31,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       issuer_icon_id_(CreditCard::IconResourceId(
           CreditCard::GetCreditCardType(card.GetRawInfo(CREDIT_CARD_NUMBER)))),
 #endif
-      // Prepend the midline horizontal ellipsis (U+22EF).
-      card_label_(base::UTF8ToUTF16("\xE2\x8B\xAF") + card.LastFourDigits()),
+      card_label_(base::string16(kMidlineEllipsis) + card.LastFourDigits()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay()) {
   if (legal_message)
     LegalMessageLine::Parse(*legal_message, &legal_messages_);
