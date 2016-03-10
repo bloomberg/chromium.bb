@@ -53,11 +53,13 @@ struct WebEmbeddedWorkerStartData {
     PauseAfterDownloadMode pauseAfterDownloadMode;
     WaitForDebuggerMode waitForDebuggerMode;
     WebSettings::V8CacheOptions v8CacheOptions;
+    bool dataSaverEnabled;
 
     WebEmbeddedWorkerStartData()
         : pauseAfterDownloadMode(DontPauseAfterDownload)
         , waitForDebuggerMode(DontWaitForDebugger)
         , v8CacheOptions(WebSettings::V8CacheOptionsDefault)
+        , dataSaverEnabled(false)
     {
     }
 };

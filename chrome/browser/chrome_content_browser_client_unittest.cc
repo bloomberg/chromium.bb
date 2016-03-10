@@ -28,6 +28,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #endif
@@ -51,6 +52,14 @@ static void DidOpenURLForWindowTest(content::WebContents** target_contents,
   DCHECK(target_contents);
 
   *target_contents = opened_contents;
+}
+
+TEST_F(ChromeContentBrowserClientWindowTest, IsDataSaverEnabled) {
+  ChromeContentBrowserClient client;
+  content::BrowserContext* context = browser()->profile();
+  EXPECT_FALSE(client.IsDataSaverEnabled(context));
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kDataSaverEnabled, true);
+  EXPECT_TRUE(client.IsDataSaverEnabled(context));
 }
 
 // This test opens two URLs using ContentBrowserClient::OpenURL. It expects the

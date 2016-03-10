@@ -609,6 +609,7 @@
       'common/service_port_type_converters.cc',
       'common/service_port_type_converters.h',
       'common/service_worker/embedded_worker_messages.h',
+      'common/service_worker/embedded_worker_settings.h',
       'common/service_worker/service_worker_client_info.cc',
       'common/service_worker/service_worker_client_info.h',
       'common/service_worker/service_worker_messages.h',

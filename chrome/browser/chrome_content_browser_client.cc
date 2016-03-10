@@ -1725,6 +1725,15 @@ const gfx::ImageSkia* ChromeContentBrowserClient::GetDefaultFavicon() {
   return rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToImageSkia();
 }
 
+bool ChromeContentBrowserClient::IsDataSaverEnabled(
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return false;
+  PrefService* prefs = profile->GetPrefs();
+  return prefs && prefs->GetBoolean(prefs::kDataSaverEnabled);
+}
+
 bool ChromeContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
     const GURL& first_party,

@@ -97,8 +97,9 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
       params.wait_for_debugger ?
           blink::WebEmbeddedWorkerStartData::WaitForDebugger :
           blink::WebEmbeddedWorkerStartData::DontWaitForDebugger;
-  start_data.v8CacheOptions =
-      static_cast<blink::WebSettings::V8CacheOptions>(params.v8_cache_options);
+  start_data.v8CacheOptions = static_cast<blink::WebSettings::V8CacheOptions>(
+      params.settings.v8_cache_options);
+  start_data.dataSaverEnabled = params.settings.data_saver_enabled;
   start_data.pauseAfterDownloadMode =
       params.pause_after_download
           ? blink::WebEmbeddedWorkerStartData::PauseAfterDownload

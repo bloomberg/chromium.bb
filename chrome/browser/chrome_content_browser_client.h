@@ -25,6 +25,7 @@ class CommandLine;
 }
 
 namespace content {
+class BrowserContext;
 class QuotaPermissionContext;
 }
 
@@ -126,6 +127,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   const gfx::ImageSkia* GetDefaultFavicon() override;
+  bool IsDataSaverEnabled(content::BrowserContext* context) override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::ResourceContext* context) override;

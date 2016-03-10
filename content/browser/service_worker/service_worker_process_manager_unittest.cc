@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
+#include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -24,7 +25,8 @@ void DidAllocateWorkerProcess(const base::Closure& quit_closure,
                               bool* is_new_process_out,
                               ServiceWorkerStatusCode status,
                               int process_id,
-                              bool is_new_process) {
+                              bool is_new_process,
+                              const EmbeddedWorkerSettings& settings) {
   *status_out = status;
   *process_id_out = process_id;
   *is_new_process_out = is_new_process;

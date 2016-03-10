@@ -20,6 +20,7 @@ class GURL;
 namespace content {
 
 class BrowserContext;
+struct EmbeddedWorkerSettings;
 class SiteInstance;
 
 // Interacts with the UI thread to keep RenderProcessHosts alive while the
@@ -52,7 +53,8 @@ class CONTENT_EXPORT ServiceWorkerProcessManager {
       bool can_use_existing_process,
       const base::Callback<void(ServiceWorkerStatusCode,
                                 int process_id,
-                                bool is_new_process)>& callback);
+                                bool is_new_process,
+                                const EmbeddedWorkerSettings&)>& callback);
 
   // Drops a reference to a process that was running a Service Worker, and its
   // SiteInstance.  This must match a call to AllocateWorkerProcess.

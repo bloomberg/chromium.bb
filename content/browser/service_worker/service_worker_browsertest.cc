@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -31,19 +32,24 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/test/test_content_browser_client.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -192,6 +198,25 @@ scoped_ptr<net::test_server::HttpResponse> VerifyServiceWorkerHeaderInRequest(
       new net::test_server::BasicHttpResponse());
   http_response->set_content_type("text/javascript");
   return std::move(http_response);
+}
+
+scoped_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderInRequest(
+    const net::test_server::HttpRequest& request) {
+  auto it = request.headers.find("Save-Data");
+  EXPECT_NE(request.headers.end(), it);
+  EXPECT_EQ("on", it->second);
+
+  scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse());
+  http_response->set_content_type("text/javascript");
+  return std::move(http_response);
+}
+
+scoped_ptr<net::test_server::HttpResponse> VerifySaveDataHeaderNotInRequest(
+    const net::test_server::HttpRequest& request) {
+  auto it = request.headers.find("Save-Data");
+  EXPECT_EQ(request.headers.end(), it);
+  return make_scoped_ptr(new net::test_server::BasicHttpResponse());
 }
 
 // The ImportsBustMemcache test requires that the imported script
@@ -1000,6 +1025,128 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ(0, response.status_code);
 
   ASSERT_FALSE(blob_data_handle);
+}
+
+class MockContentBrowserClient : public TestContentBrowserClient {
+ public:
+  MockContentBrowserClient()
+      : TestContentBrowserClient(), data_saver_enabled_(false) {}
+
+  ~MockContentBrowserClient() override {}
+
+  void set_data_saver_enabled(bool enabled) { data_saver_enabled_ = enabled; }
+
+  // ContentBrowserClient overrides:
+  bool IsDataSaverEnabled(BrowserContext* context) override {
+    return data_saver_enabled_;
+  }
+
+  void OverrideWebkitPrefs(RenderViewHost* render_view_host,
+                           WebPreferences* prefs) override {
+    prefs->data_saver_enabled = data_saver_enabled_;
+  }
+
+ private:
+  bool data_saver_enabled_;
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithSaveData) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&VerifySaveDataHeaderInRequest));
+  MockContentBrowserClient content_browser_client;
+  content_browser_client.set_data_saver_enabled(true);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  InstallTestHelper("/service_worker/fetch_in_install.js", SERVICE_WORKER_OK);
+  SetBrowserClientForTesting(old_client);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       RequestWorkerScriptWithSaveData) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&VerifySaveDataHeaderInRequest));
+  MockContentBrowserClient content_browser_client;
+  content_browser_client.set_data_saver_enabled(true);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  InstallTestHelper("/service_worker/generated_sw.js", SERVICE_WORKER_OK);
+  SetBrowserClientForTesting(old_client);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithoutSaveData) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&VerifySaveDataHeaderNotInRequest));
+  MockContentBrowserClient content_browser_client;
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  InstallTestHelper("/service_worker/fetch_in_install.js", SERVICE_WORKER_OK);
+  SetBrowserClientForTesting(old_client);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {
+  const char kPageUrl[] = "/service_worker/handle_fetch.html";
+  const char kWorkerUrl[] = "/service_worker/add_save_data_to_title.js";
+  MockContentBrowserClient content_browser_client;
+  content_browser_client.set_data_saver_enabled(true);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  scoped_refptr<WorkerActivatedObserver> observer =
+      new WorkerActivatedObserver(wrapper());
+  observer->Init();
+  public_context()->RegisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      embedded_test_server()->GetURL(kWorkerUrl),
+      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+  observer->Wait();
+
+  const base::string16 title1 = base::ASCIIToUTF16("save-data=on");
+  TitleWatcher title_watcher1(shell()->web_contents(), title1);
+  NavigateToURL(shell(), embedded_test_server()->GetURL(kPageUrl));
+  EXPECT_EQ(title1, title_watcher1.WaitAndGetTitle());
+
+  SetBrowserClientForTesting(old_client);
+  shell()->Close();
+
+  base::RunLoop run_loop;
+  public_context()->UnregisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
+                       FetchPageWithSaveDataPassThroughOnFetch) {
+  const char kPageUrl[] = "/service_worker/pass_through_fetch.html";
+  const char kWorkerUrl[] = "/service_worker/fetch_event_pass_through.js";
+  MockContentBrowserClient content_browser_client;
+  content_browser_client.set_data_saver_enabled(true);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  scoped_refptr<WorkerActivatedObserver> observer =
+      new WorkerActivatedObserver(wrapper());
+  observer->Init();
+  public_context()->RegisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      embedded_test_server()->GetURL(kWorkerUrl),
+      base::Bind(&ExpectResultAndRun, true, base::Bind(&base::DoNothing)));
+  observer->Wait();
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&VerifySaveDataHeaderInRequest));
+
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), embedded_test_server()->GetURL(kPageUrl), 1);
+
+  SetBrowserClientForTesting(old_client);
+  shell()->Close();
+
+  base::RunLoop run_loop;
+  public_context()->UnregisterServiceWorker(
+      embedded_test_server()->GetURL(kPageUrl),
+      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, Reload) {

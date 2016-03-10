@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/public/common/web_preferences.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -19,6 +20,11 @@
 
 #define IPC_MESSAGE_START EmbeddedWorkerMsgStart
 
+IPC_STRUCT_TRAITS_BEGIN(content::EmbeddedWorkerSettings)
+  IPC_STRUCT_TRAITS_MEMBER(v8_cache_options)
+  IPC_STRUCT_TRAITS_MEMBER(data_saver_enabled)
+IPC_STRUCT_TRAITS_END()
+
 // Parameters structure for EmbeddedWorkerMsg_StartWorker.
 IPC_STRUCT_BEGIN(EmbeddedWorkerMsg_StartWorker_Params)
   IPC_STRUCT_MEMBER(int, embedded_worker_id)
@@ -28,7 +34,7 @@ IPC_STRUCT_BEGIN(EmbeddedWorkerMsg_StartWorker_Params)
   IPC_STRUCT_MEMBER(int, worker_devtools_agent_route_id)
   IPC_STRUCT_MEMBER(bool, pause_after_download)
   IPC_STRUCT_MEMBER(bool, wait_for_debugger)
-  IPC_STRUCT_MEMBER(content::V8CacheOptions, v8_cache_options)
+  IPC_STRUCT_MEMBER(content::EmbeddedWorkerSettings, settings)
 IPC_STRUCT_END()
 
 // Parameters structure for EmbeddedWorkerHostMsg_ReportConsoleMessage.

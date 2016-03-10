@@ -351,6 +351,8 @@ class CONTENT_EXPORT ContentBrowserClient {
                                   int render_process_id,
                                   int render_frame_id);
 
+  virtual bool IsDataSaverEnabled(BrowserContext* context);
+
   // Allow the embedder to control if the given cookie can be read.
   // This is called on the IO thread.
   virtual bool AllowGetCookie(const GURL& url,

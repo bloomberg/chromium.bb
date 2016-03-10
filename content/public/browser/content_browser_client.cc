@@ -161,6 +161,10 @@ bool ContentBrowserClient::AllowServiceWorker(const GURL& scope,
   return true;
 }
 
+bool ContentBrowserClient::IsDataSaverEnabled(BrowserContext* context) {
+  return false;
+}
+
 bool ContentBrowserClient::AllowGetCookie(const GURL& url,
                                           const GURL& first_party,
                                           const net::CookieList& cookie_list,

@@ -17,6 +17,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -248,7 +249,8 @@ class EmbeddedWorkerInstance::StartTask {
       scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
       ServiceWorkerStatusCode status,
       int process_id,
-      bool is_new_process) {
+      bool is_new_process,
+      const EmbeddedWorkerSettings& settings) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_ASYNC_END1("ServiceWorker",
                            "EmbeddedWorkerInstance::ProcessAllocate",
@@ -267,6 +269,10 @@ class EmbeddedWorkerInstance::StartTask {
     state_ = ProcessAllocationState::ALLOCATED;
     instance_->OnProcessAllocated(make_scoped_ptr(new WorkerProcessHandle(
         instance_->context_, instance_->embedded_worker_id(), process_id)));
+
+    // TODO(bengr): Support changes to this setting while the worker
+    // is running.
+    params->settings.data_saver_enabled = settings.data_saver_enabled;
 
     // Register the instance to DevToolsManager on UI thread.
     const int64_t service_worker_version_id = params->service_worker_version_id;
@@ -371,7 +377,7 @@ void EmbeddedWorkerInstance::Start(int64_t service_worker_version_id,
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   params->wait_for_debugger = false;
   params->pause_after_download = pause_after_download;
-  params->v8_cache_options = GetV8CacheOptions();
+  params->settings.v8_cache_options = GetV8CacheOptions();
 
   inflight_start_task_.reset(new StartTask(this));
   inflight_start_task_->Start(std::move(params), callback);

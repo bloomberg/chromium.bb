@@ -11,9 +11,12 @@
 
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_client.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -139,7 +142,8 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     bool can_use_existing_process,
     const base::Callback<void(ServiceWorkerStatusCode,
                               int process_id,
-                              bool is_new_process)>& callback) {
+                              bool is_new_process,
+                              const EmbeddedWorkerSettings&)>& callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -149,6 +153,14 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     return;
   }
 
+  // This |EmbeddedWorkerSettings| only populates |data_saver_enabled|,
+  // but in general, this function will populate settings from prefs, while
+  // the caller will be responsible for populating settings from other sources,
+  // such as command line switches.
+  EmbeddedWorkerSettings settings;
+  settings.data_saver_enabled =
+      GetContentClient()->browser()->IsDataSaverEnabled(browser_context_);
+
   if (process_id_for_test_ != ChildProcessHost::kInvalidUniqueID) {
     // Let tests specify the returned process ID. Note: We may need to be able
     // to specify the error code too.
@@ -156,7 +168,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
                                           : new_process_id_for_test_;
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(callback, SERVICE_WORKER_OK, result,
-                                       false /* is_new_process */));
+                                       false /* is_new_process */, settings));
     return;
   }
 
@@ -164,7 +176,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(callback, SERVICE_WORKER_ERROR_ABORT,
                                        ChildProcessHost::kInvalidUniqueID,
-                                       false /* is_new_process */));
+                                       false /* is_new_process */, settings));
     return;
   }
 
@@ -182,7 +194,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(callback, SERVICE_WORKER_OK, process_id,
-                     false /* is_new_process */));
+                     false /* is_new_process */, settings));
       return;
     }
   }
@@ -201,7 +213,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
         BrowserThread::IO, FROM_HERE,
         base::Bind(callback, SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND,
                    ChildProcessHost::kInvalidUniqueID,
-                   false /* is_new_process */));
+                   false /* is_new_process */, settings));
     return;
   }
 
@@ -211,7 +223,7 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
   rph->IncrementWorkerRefCount();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, SERVICE_WORKER_OK, rph->GetID(),
-                                     true /* is_new_process */));
+                                     true /* is_new_process */, settings));
 }
 
 void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
