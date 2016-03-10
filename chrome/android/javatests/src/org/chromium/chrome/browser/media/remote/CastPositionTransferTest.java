@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.browser.media.remote;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.graphics.Rect;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 
@@ -133,6 +136,7 @@ public class CastPositionTransferTest extends CastTestBase {
     /** Test for crbug.com/425105 */
     @Feature({"VideoFling"})
     @LargeTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE) // Flaky - crbug.com/593840
     public void testPositionUpdate() throws InterruptedException, TimeoutException {
         final Tab tab = getActivity().getActivityTab();
         final Rect videoRect = prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);
