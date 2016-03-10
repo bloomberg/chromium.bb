@@ -1089,6 +1089,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-opened.html"));
 }
 
+// Flaky on Windows: crbug.com/593846
 #if defined(OS_WIN)
 #define MAYBE_AccessibilityModalDialogInIframeClosed \
     DISABLED_AccessibilityModalDialogInIframeClosed
@@ -1101,8 +1102,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-in-iframe-closed.html"));
 }
 
+// Flaky on Windows: crbug.com/593846
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityModalDialogInIframeOpened \
+    DISABLED_AccessibilityModalDialogInIframeOpened
+#else
+#define MAYBE_AccessibilityModalDialogInIframeOpened \
+    AccessibilityModalDialogInIframeOpened
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogInIframeOpened) {
+                       MAYBE_AccessibilityModalDialogInIframeOpened) {
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-in-iframe-opened.html"));
 }
 
