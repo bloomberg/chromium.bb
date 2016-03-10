@@ -152,11 +152,11 @@ void initializeWithoutV8(Platform* platform)
     s_webKitInitialized = true;
 
     WTF::Partitions::initialize(maxObservedSizeFunction);
-    ASSERT(platform);
-    Platform::initialize(platform);
-
     WTF::initialize(adjustAmountOfExternalAllocatedMemory);
     WTF::initializeMainThread(callOnMainThreadFunction);
+
+    ASSERT(platform);
+    Platform::initialize(platform);
     Heap::init();
 
     ThreadState::attachMainThread();
@@ -223,8 +223,9 @@ void shutdownWithoutV8()
 
     ASSERT(!s_endOfTaskRunner);
     Heap::shutdown();
-    WTF::shutdown();
     Platform::shutdown();
+
+    WTF::shutdown();
     WebPrerenderingSupport::shutdown();
     WTF::Partitions::shutdown();
 }
