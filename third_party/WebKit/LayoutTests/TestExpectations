@@ -461,6 +461,8 @@ crbug.com/589267 virtual/spv2/fast/overflow/scrollbar-position-update.html [ Fai
 crbug.com/589267 virtual/spv2/fast/overflow/table-overflow-float.html [ Failure ]
 crbug.com/589267 virtual/spv2/fast/overflow/unreachable-overflow-rtl-bug.html [ Failure ]
 crbug.com/589279 virtual/spv2/fast/overflow/006.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-x.html [ Failure ]
+crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-y.html [ Failure ]
 crbug.com/589279 virtual/spv2/fast/overflow/position-fixed-transform-clipping.html [ Failure ]
 
 crbug.com/537409 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Pass ]
