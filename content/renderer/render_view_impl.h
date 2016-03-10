@@ -444,7 +444,7 @@ class CONTENT_EXPORT RenderViewImpl
                               TopControlsState current,
                               bool animate) override;
 #endif
-  void convertViewportToWindow(blink::WebRect* rect) override;
+  void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
   gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
   float GetDeviceScaleFactorForTest() const override;
 

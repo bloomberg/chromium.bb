@@ -140,7 +140,7 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
   // Converts the |rect| from Viewport coordinates to Window coordinates.
   // See blink::WebWidgetClient::convertViewportToWindow for more details.
-  virtual void convertViewportToWindow(blink::WebRect* rect) = 0;
+  virtual void ConvertViewportToWindowViaWidget(blink::WebRect* rect) = 0;
 
   // Returns the bounds of |element| in Window coordinates. The bounds have been
   // adjusted to include any transformations, including page scale.

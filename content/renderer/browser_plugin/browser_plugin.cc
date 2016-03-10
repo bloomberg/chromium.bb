@@ -416,7 +416,8 @@ void BrowserPlugin::updateGeometry(const WebRect& plugin_rect_in_viewport,
   // Convert the plugin_rect_in_viewport to window coordinates, which is css.
   WebRect rect_in_css(plugin_rect_in_viewport);
   blink::WebView* webview = container()->element().document().frame()->view();
-  RenderView::FromWebView(webview)->convertViewportToWindow(&rect_in_css);
+  RenderView::FromWebView(webview)->GetWidget()->convertViewportToWindow(
+      &rect_in_css);
   view_rect_ = rect_in_css;
 
   if (!ready_) {

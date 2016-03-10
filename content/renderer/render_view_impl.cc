@@ -1958,7 +1958,7 @@ void RenderViewImpl::startDragging(WebLocalFrame* frame,
                                    const WebImage& image,
                                    const WebPoint& webImageOffset) {
   blink::WebRect offset_in_window(webImageOffset.x, webImageOffset.y, 0, 0);
-  convertViewportToWindow(&offset_in_window);
+  ConvertViewportToWindowViaWidget(&offset_in_window);
   DropData drop_data(DropDataBuilder::Build(data));
   drop_data.referrer_policy = frame->document().referrerPolicy();
   gfx::Vector2d imageOffset(offset_in_window.x, offset_in_window.y);
@@ -1989,7 +1989,7 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& fromNode,
   if (!toNode.isNull() && toNode.isElementNode()) {
     WebElement element = const_cast<WebNode&>(toNode).to<WebElement>();
     blink::WebRect rect = element.boundsInViewport();
-    convertViewportToWindow(&rect);
+    ConvertViewportToWindowViaWidget(&rect);
     node_bounds = gfx::Rect(rect);
     is_editable = element.isEditable();
   }
@@ -2187,14 +2187,14 @@ const std::string& RenderViewImpl::GetAcceptLanguages() const {
   return renderer_preferences_.accept_languages;
 }
 
-void RenderViewImpl::convertViewportToWindow(blink::WebRect* rect) {
-  RenderWidget::convertViewportToWindow(rect);
+void RenderViewImpl::ConvertViewportToWindowViaWidget(blink::WebRect* rect) {
+  convertViewportToWindow(rect);
 }
 
 gfx::RectF RenderViewImpl::ElementBoundsInWindow(
     const blink::WebElement& element) {
   blink::WebRect bounding_box_in_window = element.boundsInViewport();
-  convertViewportToWindow(&bounding_box_in_window);
+  ConvertViewportToWindowViaWidget(&bounding_box_in_window);
   return gfx::RectF(bounding_box_in_window);
 }
 
@@ -3076,7 +3076,7 @@ void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
     // use the caret position as an empty range for now. It will be updated
     // after Pepper API equips features related to surrounding text retrieval.
     blink::WebRect caret(focused_pepper_plugin_->GetCaretBounds());
-    convertViewportToWindow(&caret);
+    ConvertViewportToWindowViaWidget(&caret);
     *start = caret;
     *end = caret;
     return;
@@ -3117,7 +3117,7 @@ void RenderViewImpl::GetCompositionCharacterBounds(
       bounds_in_window->clear();
       return;
     }
-    convertViewportToWindow(&webrect);
+    ConvertViewportToWindowViaWidget(&webrect);
     bounds_in_window->push_back(webrect);
   }
 }
