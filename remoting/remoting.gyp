@@ -236,7 +236,6 @@
         '../crypto/crypto.gyp:crypto',
         '../jingle/jingle.gyp:jingle_glue',
         '../net/net.gyp:net',
-        '../third_party/boringssl/boringssl.gyp:boringssl',
         '../third_party/expat/expat.gyp:expat',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libyuv/libyuv.gyp:libyuv',
@@ -251,7 +250,7 @@
         '<@(remoting_signaling_sources)',
       ],
       'conditions': [
-        ['enable_webrtc == 1', {
+        ['enable_webrtc==1', {
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
             '../third_party/libjingle/libjingle.gyp:libpeerconnection',
