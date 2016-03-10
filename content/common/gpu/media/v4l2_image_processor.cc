@@ -468,24 +468,22 @@ void V4L2ImageProcessor::Enqueue() {
     }
   }
 
-  // TODO(posciak): Fix this to be non-Exynos specific.
-  // Exynos GSC is liable to race conditions if more than one output buffer is
-  // simultaneously enqueued, so enqueue just one.
-  if (output_buffer_queued_count_ == 0 && !free_output_buffers_.empty()) {
-    const int old_outputs_queued = output_buffer_queued_count_;
+  const int old_outputs_queued = output_buffer_queued_count_;
+  while (!free_output_buffers_.empty()) {
     if (!EnqueueOutputRecord())
       return;
-    if (old_outputs_queued == 0 && output_buffer_queued_count_ != 0) {
-      // We just started up a previously empty queue.
-      // Queue state changed; signal interrupt.
-      if (!device_->SetDevicePollInterrupt())
-        return;
-      // Start VIDIOC_STREAMON if we haven't yet.
-      if (!output_streamon_) {
-        __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-        IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
-        output_streamon_ = true;
-      }
+  }
+
+  if (old_outputs_queued == 0 && output_buffer_queued_count_ != 0) {
+    // We just started up a previously empty queue.
+    // Queue state changed; signal interrupt.
+    if (!device_->SetDevicePollInterrupt())
+      return;
+    // Start VIDIOC_STREAMON if we haven't yet.
+    if (!output_streamon_) {
+      __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+      IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
+      output_streamon_ = true;
     }
   }
   DCHECK_LE(output_buffer_queued_count_, 1);
