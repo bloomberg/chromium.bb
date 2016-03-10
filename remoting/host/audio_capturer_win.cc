@@ -54,6 +54,7 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   DCHECK(!audio_capture_client_.get());
   DCHECK(!audio_client_.get());
   DCHECK(!mm_device_.get());
+  DCHECK(!audio_volume_.get());
   DCHECK(static_cast<PWAVEFORMATEX>(wave_format_ex_) == nullptr);
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -193,6 +194,15 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
     return false;
   }
 
+  // Initialize ISimpleAudioVolume.
+  // TODO(zijiehe): Do we need to control per process volume?
+  hr = audio_client_->GetService(__uuidof(ISimpleAudioVolume),
+                                 audio_volume_.ReceiveVoid());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to get an ISimpleAudioVolume. Error " << hr;
+    return false;
+  }
+
   silence_detector_.Reset(sampling_rate_, kChannels);
 
   // Start capturing.
@@ -201,6 +211,70 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
                         this,
                         &AudioCapturerWin::DoCapture);
   return true;
+}
+
+float AudioCapturerWin::GetAudioLevel() {
+  BOOL mute;
+  HRESULT hr = audio_volume_->GetMute(&mute);
+  if (FAILED(hr)) {
+    return 1;
+  }
+  if (mute) {
+    return 0;
+  }
+
+  float level;
+  hr = audio_volume_->GetMasterVolume(&level);
+  if (FAILED(hr) || level > 1) {
+    return 1;
+  }
+  if (level < 0) {
+    return 0;
+  }
+  return level;
+}
+
+void AudioCapturerWin::ProcessSamples(uint8_t* data,
+                                      size_t frames,
+                                      int32_t flags) {
+  if (frames == 0) {
+    return;
+  }
+
+  if ((flags & AUDCLNT_BUFFERFLAGS_SILENT) == 0) {
+    return;
+  }
+
+  int16_t* samples = reinterpret_cast<int16_t*>(data);
+  static_assert(sizeof(samples[0]) == kBytesPerSample,
+                "expect 16 bits per sample");
+  size_t sample_count = frames * kChannels;
+  if (silence_detector_.IsSilence(samples, sample_count)) {
+    return;
+  }
+
+  float level = GetAudioLevel();
+  if (level == 0) {
+    return;
+  }
+
+  if (level < 1) {
+    // Windows API does not provide volume adjusted audio sample as Linux does.
+    // So we need to manually append volume signal to the samples.
+    int32_t level_int = static_cast<int32_t>(level * 65536);
+    for (size_t i = 0; i < sample_count; i++) {
+      samples[i] = (static_cast<int32_t>(samples[i]) * level_int) >> 16;
+    }
+  }
+
+  scoped_ptr<AudioPacket> packet(new AudioPacket());
+  packet->add_data(data, frames * wave_format_ex_->nBlockAlign);
+  packet->set_encoding(AudioPacket::ENCODING_RAW);
+  packet->set_sampling_rate(sampling_rate_);
+  packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
+  packet->set_channels(AudioPacket::CHANNELS_STEREO);
+
+  callback_.Run(std::move(packet));
 }
 
 void AudioCapturerWin::DoCapture() {
@@ -227,18 +301,7 @@ void AudioCapturerWin::DoCapture() {
     if (FAILED(hr))
       break;
 
-    if ((flags & AUDCLNT_BUFFERFLAGS_SILENT) == 0 &&
-        !silence_detector_.IsSilence(reinterpret_cast<const int16_t*>(data),
-                                     frames * kChannels)) {
-      scoped_ptr<AudioPacket> packet(new AudioPacket());
-      packet->add_data(data, frames * wave_format_ex_->nBlockAlign);
-      packet->set_encoding(AudioPacket::ENCODING_RAW);
-      packet->set_sampling_rate(sampling_rate_);
-      packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
-      packet->set_channels(AudioPacket::CHANNELS_STEREO);
-
-      callback_.Run(std::move(packet));
-    }
+    ProcessSamples(data, frames, flags);
 
     hr = audio_capture_client_->ReleaseBuffer(frames);
     if (FAILED(hr))
