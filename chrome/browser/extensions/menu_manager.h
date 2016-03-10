@@ -32,6 +32,7 @@ class SkBitmap;
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 class WebContents;
 struct ContextMenuParams;
 }
@@ -340,6 +341,7 @@ class MenuManager : public content::NotificationObserver,
   // Called when a menu item is clicked on by the user.
   void ExecuteCommand(content::BrowserContext* context,
                       content::WebContents* web_contents,
+                      content::RenderFrameHost* render_frame_host,
                       const content::ContextMenuParams& params,
                       const MenuItem::Id& menu_item_id);
 

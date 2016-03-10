@@ -1654,7 +1654,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
   // Process extension menu items.
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id)) {
-    extension_items_.ExecuteCommand(id, source_web_contents_, params_);
+    extension_items_.ExecuteCommand(id, source_web_contents_,
+                                    GetRenderFrameHost(), params_);
     return;
   }
 

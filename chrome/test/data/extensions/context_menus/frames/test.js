@@ -3,8 +3,13 @@
 // found in the LICENSE file.
 
 window.onload = function() {
+  function onclick(info, tab) {
+    chrome.test.sendMessage('pageUrl=' + info.pageUrl +
+        ', frameUrl=' + info.frameUrl +
+        ', frameId=' + info.frameId);
+  }
   chrome.contextMenus.create(
-      {"title":"Page item", contexts: ["page"]},
+      {'title':'Page item', contexts: ['page'], id: 'item1', onclick: onclick},
       function() {
         if (!chrome.runtime.lastError) {
           chrome.contextMenus.create(

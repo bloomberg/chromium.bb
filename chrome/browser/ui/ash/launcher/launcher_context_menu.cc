@@ -312,7 +312,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
     default:
       if (extension_items_) {
-        extension_items_->ExecuteCommand(command_id, nullptr,
+        extension_items_->ExecuteCommand(command_id, nullptr, nullptr,
                                          content::ContextMenuParams());
       }
   }

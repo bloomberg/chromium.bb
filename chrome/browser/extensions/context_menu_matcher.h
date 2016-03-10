@@ -20,6 +20,7 @@ class ExtensionContextMenuBrowserTest;
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 }
 
 namespace extensions {
@@ -66,6 +67,7 @@ class ContextMenuMatcher {
   bool IsCommandIdEnabled(int command_id) const;
   void ExecuteCommand(int command_id,
                       content::WebContents* web_contents,
+                      content::RenderFrameHost* render_frame_host,
                       const content::ContextMenuParams& params);
 
  private:

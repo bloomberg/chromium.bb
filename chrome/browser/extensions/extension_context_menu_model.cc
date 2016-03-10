@@ -242,7 +242,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
       command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     DCHECK(extension_items_);
     extension_items_->ExecuteCommand(command_id, GetActiveWebContents(),
-                                     content::ContextMenuParams());
+                                     nullptr, content::ContextMenuParams());
     return;
   }
 

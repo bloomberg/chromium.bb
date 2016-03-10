@@ -10,5 +10,6 @@ chrome.runtime.onInstalled.addListener(function() {
 
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
   chrome.test.assertTrue(tab.id != null);
+  chrome.test.assertEq(0, info.frameId); // 0 = main frame
   chrome.test.sendMessage("onClicked fired for " + info.menuItemId);
 });

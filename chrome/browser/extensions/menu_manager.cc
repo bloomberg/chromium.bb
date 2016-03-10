@@ -28,6 +28,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/state_store.h"
@@ -617,6 +618,7 @@ static void AddURLProperty(base::DictionaryValue* dictionary,
 
 void MenuManager::ExecuteCommand(content::BrowserContext* context,
                                  WebContents* web_contents,
+                                 content::RenderFrameHost* render_frame_host,
                                  const content::ContextMenuParams& params,
                                  const MenuItem::Id& menu_item_id) {
   EventRouter* event_router = EventRouter::Get(context);
@@ -679,6 +681,10 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   if (!extension || !extension->is_platform_app()) {
     // Note: web_contents are NULL in unit tests :(
     if (web_contents) {
+      int frame_id = ExtensionApiFrameIdMap::GetFrameId(render_frame_host);
+      if (frame_id != ExtensionApiFrameIdMap::kInvalidFrameId)
+        properties->SetInteger("frameId", frame_id);
+
       args->Append(
           ExtensionTabUtil::CreateTabObject(web_contents)->ToValue().release());
     } else {

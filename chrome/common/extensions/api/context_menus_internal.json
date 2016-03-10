@@ -52,6 +52,11 @@
             "optional": true,
             "description": " The URL of the frame of the element where the context menu was clicked, if it was in a frame."
           },
+          "frameId": {
+            "type": "integer",
+            "optional": true,
+            "description": " The <a href='webNavigation#frame_ids'>ID of the frame</a> of the element where the context menu was clicked, if it was in a frame."
+          },
           "selectionText": {
             "type": "string",
             "optional": true,

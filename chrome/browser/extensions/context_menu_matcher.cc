@@ -166,15 +166,18 @@ bool ContextMenuMatcher::IsCommandIdEnabled(int command_id) const {
   return item->enabled();
 }
 
-void ContextMenuMatcher::ExecuteCommand(int command_id,
+void ContextMenuMatcher::ExecuteCommand(
+    int command_id,
     content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   MenuItem* item = GetExtensionMenuItem(command_id);
   if (!item)
     return;
 
   MenuManager* manager = MenuManager::Get(browser_context_);
-  manager->ExecuteCommand(browser_context_, web_contents, params, item->id());
+  manager->ExecuteCommand(browser_context_, web_contents, render_frame_host,
+                          params, item->id());
 }
 
 bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(

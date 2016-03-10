@@ -590,7 +590,8 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
       .Times(1)
       .WillOnce(DeleteArg<2>());
   }
-  manager_.ExecuteCommand(&profile, NULL /* web_contents */, params, id);
+  manager_.ExecuteCommand(&profile, nullptr /* web_contents */,
+                          nullptr /* render_frame_host */, params, id);
 
   ASSERT_EQ(2u, list->GetSize());
 

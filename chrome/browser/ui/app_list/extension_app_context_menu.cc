@@ -237,7 +237,7 @@ void ExtensionAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     controller()->UninstallApp(profile(), app_id());
   } else if (extensions::ContextMenuMatcher::IsExtensionsCustomCommandId(
                  command_id)) {
-    extension_menu_items_->ExecuteCommand(command_id, nullptr,
+    extension_menu_items_->ExecuteCommand(command_id, nullptr, nullptr,
                                           content::ContextMenuParams());
   } else if (command_id == MENU_NEW_WINDOW) {
     controller()->CreateNewWindow(profile(), false);
