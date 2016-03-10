@@ -277,7 +277,6 @@
       "midi_unittests",
       "mojo_system_unittests",
       "mojo_public_system_unittests",
-      "mojo_public_utility_unittests",
       "mojo_public_bindings_unittests",
       "mojo_common_unittests",
       "net_unittests",
@@ -315,7 +314,6 @@
       "cacheinvalidation_unittests",
       "mojo_system_unittests",
       "mojo_public_system_unittests",
-      "mojo_public_utility_unittests",
       "mojo_public_bindings_unittests",
       "mojo_common_unittests",
       "cast_unittests",
@@ -535,12 +533,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_public_system_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_public_utility_unittests"
       },
       {
         "test": "mojo_system_unittests"
@@ -831,12 +823,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_public_system_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mojo_public_utility_unittests"
       },
       {
         "test": "mojo_system_unittests"
@@ -2104,9 +2090,6 @@
         "test": "mojo_public_system_unittests"
       },
       {
-        "test": "mojo_public_utility_unittests"
-      },
-      {
         "test": "mojo_system_unittests"
       },
       {
@@ -2398,9 +2381,6 @@
         "test": "mojo_public_system_unittests"
       },
       {
-        "test": "mojo_public_utility_unittests"
-      },
-      {
         "test": "mojo_system_unittests"
       },
       {
@@ -2529,9 +2509,6 @@
       },
       {
         "test": "mojo_public_system_unittests"
-      },
-      {
-        "test": "mojo_public_utility_unittests"
       },
       {
         "test": "mojo_system_unittests"

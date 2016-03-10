@@ -57,7 +57,6 @@
             '../mojo/mojo_edk.gyp:mojo_system_impl',
             '../mojo/mojo_edk_tests.gyp:mojo_public_bindings_unittests',
             '../mojo/mojo_edk_tests.gyp:mojo_public_system_unittests',
-            '../mojo/mojo_edk_tests.gyp:mojo_public_utility_unittests',
             '../mojo/mojo_edk_tests.gyp:mojo_system_unittests',
             '../mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../mojo/mojo_public.gyp:mojo_public_test_utils',

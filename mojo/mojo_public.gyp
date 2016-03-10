@@ -20,7 +20,6 @@
         'mojo_public_test_interfaces',
         'mojo_public_test_utils',
         'mojo_system',
-        'mojo_utility',
       ],
     },
     {
@@ -229,37 +228,6 @@
       'sources': [
         'public/js/constants.cc',
         'public/js/constants.h',
-      ],
-    },
-    {
-      # GN version: //mojo/public/cpp/utility
-      'target_name': 'mojo_utility',
-      'type': 'static_library',
-      'sources': [
-        'public/cpp/utility/lib/mutex.cc',
-        'public/cpp/utility/lib/run_loop.cc',
-        'public/cpp/utility/lib/thread.cc',
-        'public/cpp/utility/lib/thread_local.h',
-        'public/cpp/utility/lib/thread_local_posix.cc',
-        'public/cpp/utility/lib/thread_local_win.cc',
-        'public/cpp/utility/mutex.h',
-        'public/cpp/utility/run_loop.h',
-        'public/cpp/utility/run_loop_handler.h',
-        'public/cpp/utility/thread.h',
-      ],
-      'conditions': [
-        # See crbug.com/342893:
-        ['OS=="win"', {
-          'sources!': [
-            'public/cpp/utility/lib/mutex.cc',
-            'public/cpp/utility/lib/thread.cc',
-            'public/cpp/utility/mutex.h',
-            'public/cpp/utility/thread.h',
-          ],
-        }],
-      ],
-      'include_dirs': [
-        '..',
       ],
     },
     {

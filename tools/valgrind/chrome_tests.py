@@ -418,10 +418,6 @@ class ChromeTests:
     return self.SimpleTest("mojo_public_sysperf",
                            "mojo_public_system_perftests")
 
-  def TestMojoPublicUtility(self):
-    return self.SimpleTest("mojo_public_utility",
-                           "mojo_public_utility_unittests")
-
   def TestMojoSystem(self):
     return self.SimpleTest("mojo_system", "mojo_system_unittests")
 
@@ -699,8 +695,6 @@ class ChromeTests:
     "mojo_system_unittests": TestMojoSystem,
     "mojo_public_system": TestMojoPublicSystem,
     "mojo_public_system_unittests": TestMojoPublicSystem,
-    "mojo_public_utility": TestMojoPublicUtility,
-    "mojo_public_utility_unittests": TestMojoPublicUtility,
     "mojo_public_bindings": TestMojoPublicBindings,
     "mojo_public_bindings_unittests": TestMojoPublicBindings,
     "mojo_public_sysperf": TestMojoPublicSysPerf,

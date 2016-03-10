@@ -224,7 +224,6 @@
     "mojo_common_unittests",
     "mojo_public_bindings_unittests",
     "mojo_public_system_unittests",
-    "mojo_public_utility_unittests",
     "mojo_system_unittests",
     {
       "platforms": [

@@ -215,7 +215,6 @@
         '../testing/gtest.gyp:gtest',
         'mojo_application_base',
         'mojo_edk.gyp:mojo_run_all_unittests',
-        'mojo_public.gyp:mojo_utility',
       ],
       'sources': [
         'shell/public/cpp/tests/interface_registry_unittest.cc',

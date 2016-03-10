@@ -8,7 +8,6 @@ group("public") {
   deps = [
     ":sdk",
     "cpp/bindings",
-    "cpp/utility",
     "interfaces/bindings/tests:test_interfaces",
   ]
 
@@ -24,7 +23,6 @@ group("sdk") {
   deps = [
     "c/system",
     "cpp/bindings",
-    "cpp/utility",
     "interfaces/bindings",
     "js",
   ]

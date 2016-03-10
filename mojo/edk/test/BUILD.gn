@@ -94,7 +94,6 @@ group("public_tests") {
     ":mojo_public_bindings_unittests",
     ":mojo_public_system_perftests",
     ":mojo_public_system_unittests",
-    ":mojo_public_utility_unittests",
   ]
 }
 
@@ -125,12 +124,5 @@ test("mojo_public_system_unittests") {
   deps = [
     ":run_all_unittests",
     "//mojo/public/cpp/system/tests",
-  ]
-}
-
-test("mojo_public_utility_unittests") {
-  deps = [
-    ":run_all_unittests",
-    "//mojo/public/cpp/utility/tests",
   ]
 }

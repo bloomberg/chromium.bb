@@ -36,13 +36,3 @@ Test Support
 The test_support/ subdirectory contains C++ wrappers of the test-only API
 defined in mojo/public/c/test_support/. It is not meant for general use by Mojo
 applications.
-
-Utility
--------
-
-TODO(yzshen): remove.
-
-The utility/ subdirectory contains a support (static) library that provides
-various basic functionality. Most notably, it provides an implementation of a
-RunLoop based on MojoWaitMany() that applications may use as the basis for
-asynchronous message processing.
