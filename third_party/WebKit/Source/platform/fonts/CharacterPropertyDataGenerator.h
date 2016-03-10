@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CharacterData_h
-#define CharacterData_h
+#ifndef CharacterPropertyDataGenerator_h
+#define CharacterPropertyDataGenerator_h
 
 #include <unicode/uobject.h>
 

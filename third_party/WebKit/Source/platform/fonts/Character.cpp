@@ -37,7 +37,7 @@
 #include <unicode/uscript.h>
 
 #if defined(USING_SYSTEM_ICU)
-#include "CharacterData.h"
+#include "platform/fonts/CharacterPropertyDataGenerator.h"
 #include <unicode/uniset.h>
 #else
 #define MUTEX_H // Prevent compile failure of utrie2.h on Windows

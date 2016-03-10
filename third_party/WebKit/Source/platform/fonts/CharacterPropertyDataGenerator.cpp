@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "CharacterData.h"
+// TODO(kojii): This file is compiled with $host_toolchain, which cannot find
+// include files in platform/fonts. The build scripts should include this
+// directory, and fix these #include's to "platform/fonts/...".
+#include "CharacterPropertyDataGenerator.h"
 
 #include "CharacterProperty.h"
 #include <cassert>

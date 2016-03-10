@@ -139,25 +139,25 @@
           ],
         },
         {
-          'action_name': 'CharacterData',
+          'action_name': 'CharacterPropertyData',
           'inputs': [
-            'fonts/CharacterDataGenerator.cpp',
-            'fonts/CharacterData.h'
+            'fonts/CharacterPropertyDataGenerator.cpp',
+            'fonts/CharacterPropertyDataGenerator.h'
           ],
           'outputs': [
-            '<(blink_platform_output_dir)/CharacterData.cpp',
+            '<(blink_platform_output_dir)/CharacterPropertyData.cpp',
           ],
           'conditions': [
             ['generate_character_data==1', {
               'action': [
                 '<(PRODUCT_DIR)/character_data_generator',
-                '<(blink_platform_output_dir)/CharacterData.cpp',
+                '<(blink_platform_output_dir)/CharacterPropertyData.cpp',
               ],
             }, {
               'action': [
                 'cp',
-                'fonts/CharacterData.cpp',
-                '<(blink_platform_output_dir)/CharacterData.cpp',
+                'fonts/CharacterPropertyData.cpp',
+                '<(blink_platform_output_dir)/CharacterPropertyData.cpp',
               ],
             }]
           ],
@@ -169,7 +169,7 @@
       'type': 'executable',
       'toolsets': ['host'],
       'sources': [
-        'fonts/CharacterDataGenerator.cpp',
+        'fonts/CharacterPropertyDataGenerator.cpp',
       ],
       'dependencies': [
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc#host',

@@ -145,7 +145,7 @@ action("character_data") {
   deps = [
     ":character_data_generator($host_toolchain)",
   ]
-  output_file = "$blink_platform_output_dir/CharacterData.cpp"
+  output_file = "$blink_platform_output_dir/CharacterPropertyData.cpp"
   outputs = [
     output_file,
   ]
@@ -164,7 +164,8 @@ action("character_data") {
 
 executable("character_data_generator") {
   sources = [
-    "fonts/CharacterDataGenerator.cpp",
+    "fonts/CharacterPropertyDataGenerator.cpp",
+    "fonts/CharacterPropertyDataGenerator.h",
   ]
   configs += [ "//third_party/WebKit/Source:config" ]
   deps = [
