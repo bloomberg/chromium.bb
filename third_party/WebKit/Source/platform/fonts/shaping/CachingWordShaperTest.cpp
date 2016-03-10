@@ -351,6 +351,25 @@ TEST_F(CachingWordShaperTest, SegmentEmojiHeartZWJSequence)
     ASSERT_FALSE(iterator.next(&wordResult));
 }
 
+TEST_F(CachingWordShaperTest, SegmentEmojiSignsOfHornsModifier)
+{
+    // A Sign of the Horns emoji, followed by a fitzpatrick modifer
+    const UChar str[] = {
+        0xD83E, 0xDD18,
+        0xD83C, 0xDFFB,
+        0x0
+    };
+    TextRun textRun(str, 4);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(4u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
 TEST_F(CachingWordShaperTest, SegmentEmojiExtraZWJPrefix)
 {
     // A ZWJ, followed by a family and a heart-kiss sequence.

@@ -175,6 +175,11 @@ TEST_F(SymbolsIteratorTest, Modifier)
     CHECK_RUNS({ { "👶🏿", FontFallbackPriority::EmojiEmoji } });
 }
 
+TEST_F(SymbolsIteratorTest, DingbatsMiscSymbolsModifier)
+{
+    CHECK_RUNS({ { "⛹🏻✍🏻✊🏼", FontFallbackPriority::EmojiEmoji } });
+}
+
 TEST_F(SymbolsIteratorTest, ExtraZWJPrefix)
 {
     CHECK_RUNS({ { "\xE2\x80\x8D", FontFallbackPriority::Text },

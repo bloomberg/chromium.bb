@@ -127,9 +127,9 @@ private:
                 bool hasAnyScript = !Character::isCommonOrInheritedScript(ch);
                 for (unsigned i = end; i < length; end = i) {
                     U16_NEXT(m_textRun.characters16(), i, length, ch);
-                    // ZWJ check in order not to split Emoji ZWJ sequences.
+                    // ZWJ and modifier check in order not to split those Emoji sequences.
                     if (U_GET_GC_MASK(ch) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK)
-                        || ch == zeroWidthJoinerCharacter)
+                        || ch == zeroWidthJoinerCharacter || Character::isModifier(ch))
                         continue;
                     // Avoid delimiting COMMON/INHERITED alone, which makes harder to
                     // identify the script.

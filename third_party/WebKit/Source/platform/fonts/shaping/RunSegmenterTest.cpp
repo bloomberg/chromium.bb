@@ -210,6 +210,12 @@ TEST_F(RunSegmenterTest, JapaneseSmallCaps)
     });
 }
 
+TEST_F(RunSegmenterTest, DingbatsMiscSymbolsModifier)
+{
+    CHECK_RUNS_HORIZONTAL_NORMAL({ { "⛹🏻✍🏻✊🏼", USCRIPT_UNKNOWN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase, FontFallbackPriority::EmojiEmoji } });
+}
+
+
 TEST_F(RunSegmenterTest, ArmenianCyrillicSmallCaps)
 {
     CHECK_RUNS_HORIZONTAL_SMALLCAPS({ { "աբգ", USCRIPT_ARMENIAN, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsUppercaseNeeded, FontFallbackPriority::Text },

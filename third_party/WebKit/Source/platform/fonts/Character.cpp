@@ -190,6 +190,12 @@ CodePath Character::characterRangeCodePath(const UChar* characters, unsigned len
             if (supplementaryCharacter <= 0x1F1FF)
                 return ComplexPath;
 
+            // Emoji Fitzpatrick modifiers trigger upgrade to complex path for shaping them.
+            if (supplementaryCharacter < 0x1F3FB)
+                continue;
+            if (supplementaryCharacter <= 0x1F3FF)
+                return ComplexPath;
+
             // Man and Woman Emojies,
             // in order to support emoji joiner combinations for family and couple pictographs.
             // Compare http://unicode.org/reports/tr51/#Emoji_ZWJ_Sequences
