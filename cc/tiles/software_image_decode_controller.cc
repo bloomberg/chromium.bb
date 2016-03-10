@@ -262,6 +262,15 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
 
   base::AutoLock lock(lock_);
 
+  // We could have finished all of the raster tasks (cancelled) while the task
+  // was just starting to run. Since this task already started running, it
+  // wasn't cancelled. So, if the ref count for the image is 0 then we can just
+  // abort.
+  if (decoded_images_ref_counts_.find(key) ==
+      decoded_images_ref_counts_.end()) {
+    return;
+  }
+
   auto image_it = decoded_images_.Peek(key);
   if (image_it != decoded_images_.end()) {
     if (image_it->second->is_locked() || image_it->second->Lock()) {
