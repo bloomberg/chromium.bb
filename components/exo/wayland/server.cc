@@ -20,6 +20,7 @@
 
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/screen_ash.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
@@ -43,6 +44,7 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/gfx/display_observer.h"
 
 #if defined(USE_OZONE)
 #include <drm_fourcc.h>
@@ -893,43 +895,90 @@ void bind_shell(wl_client* client, void* data, uint32_t version, uint32_t id) {
 ////////////////////////////////////////////////////////////////////////////////
 // wl_output_interface:
 
+class WaylandDisplayObserver : public gfx::DisplayObserver {
+ public:
+  WaylandDisplayObserver(const gfx::Display& display,
+                         wl_resource* output_resource)
+      : display_id_(display.id()), output_resource_(output_resource) {
+    gfx::Screen::GetScreen()->AddObserver(this);
+    SendDisplayMetrics(display);
+  }
+  ~WaylandDisplayObserver() override {
+    gfx::Screen::GetScreen()->RemoveObserver(this);
+  }
+
+  // Overridden from gfx::DisplayObserver:
+  void OnDisplayAdded(const gfx::Display& new_display) override {}
+  void OnDisplayRemoved(const gfx::Display& new_display) override {}
+  void OnDisplayMetricsChanged(const gfx::Display& display,
+                               uint32_t changed_metrics) override {
+    if (display.id() != display_id_)
+      return;
+
+    if (changed_metrics &
+        (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR)) {
+      SendDisplayMetrics(display);
+    }
+  }
+
+ private:
+  void SendDisplayMetrics(const gfx::Display& display) {
+    const ash::DisplayInfo& info =
+        ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
+            display.id());
+
+    const float kInchInMm = 25.4f;
+    const char* kUnknownMake = "unknown";
+    const char* kUnknownModel = "unknown";
+
+    gfx::Rect bounds = info.bounds_in_native();
+    // TODO(reveman): Send the actual active device rotation.
+    wl_output_send_geometry(
+        output_resource_, bounds.x(), bounds.y(),
+        static_cast<int>(kInchInMm * bounds.width() / info.device_dpi()),
+        static_cast<int>(kInchInMm * bounds.height() / info.device_dpi()),
+        WL_OUTPUT_SUBPIXEL_UNKNOWN, kUnknownMake, kUnknownModel,
+        WL_OUTPUT_TRANSFORM_NORMAL);
+
+    if (wl_resource_get_version(output_resource_) >=
+        WL_OUTPUT_SCALE_SINCE_VERSION) {
+      wl_output_send_scale(output_resource_, display.device_scale_factor());
+    }
+
+    // TODO(reveman): Send real list of modes.
+    wl_output_send_mode(
+        output_resource_, WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED,
+        bounds.width(), bounds.height(), static_cast<int>(60000));
+
+    if (wl_resource_get_version(output_resource_) >=
+        WL_OUTPUT_DONE_SINCE_VERSION) {
+      wl_output_send_done(output_resource_);
+    }
+  }
+
+  // The identifier associated with the observed display.
+  int64_t display_id_;
+
+  // The output resource associated with the display.
+  wl_resource* const output_resource_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandDisplayObserver);
+};
+
 const uint32_t output_version = 2;
 
 void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(
       client, &wl_output_interface, std::min(version, output_version), id);
 
-  // TODO(reveman): Watch for display changes and report them.
   // TODO(reveman): Multi-display support.
-  ash::DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
-  const gfx::Display& primary = display_manager->GetPrimaryDisplayCandidate();
+  const gfx::Display& display = ash::Shell::GetInstance()
+                                    ->display_manager()
+                                    ->GetPrimaryDisplayCandidate();
 
-  const ash::DisplayInfo& info = display_manager->GetDisplayInfo(primary.id());
-  const float kInchInMm = 25.4f;
-  const char* kUnknownMake = "unknown";
-  const char* kUnknownModel = "unknown";
-  gfx::Rect bounds = info.bounds_in_native();
-  // TODO(reveman): Send the actual active device rotation.
-  wl_output_send_geometry(
-      resource, bounds.x(), bounds.y(),
-      static_cast<int>(kInchInMm * bounds.width() / info.device_dpi()),
-      static_cast<int>(kInchInMm * bounds.height() / info.device_dpi()),
-      WL_OUTPUT_SUBPIXEL_UNKNOWN, kUnknownMake, kUnknownModel,
-      WL_OUTPUT_TRANSFORM_NORMAL);
-
-  // TODO(reveman): Send correct device scale factor when surface API respects
-  // scale.
-  if (version >= WL_OUTPUT_SCALE_SINCE_VERSION)
-    wl_output_send_scale(resource, primary.device_scale_factor());
-
-  // TODO(reveman): Send real list of modes after adding multi-display support.
-  wl_output_send_mode(resource,
-                      WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED,
-                      bounds.width(), bounds.height(), static_cast<int>(60000));
-
-  if (version >= WL_OUTPUT_DONE_SINCE_VERSION)
-    wl_output_send_done(resource);
+  SetImplementation(
+      resource, nullptr,
+      make_scoped_ptr(new WaylandDisplayObserver(display, resource)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
