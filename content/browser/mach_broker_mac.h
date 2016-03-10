@@ -24,7 +24,8 @@ namespace content {
 // access to mach task ports for content child processes.
 class CONTENT_EXPORT MachBroker : public base::PortProvider,
                                   public BrowserChildProcessObserver,
-                                  public NotificationObserver {
+                                  public NotificationObserver,
+                                  public base::PortProvider::Observer {
  public:
   // For use in child processes. This will send the task port of the current
   // process over Mach IPC to the port registered by name (via this class) in
@@ -73,6 +74,9 @@ class CONTENT_EXPORT MachBroker : public base::PortProvider,
 
   MachBroker();
   ~MachBroker() override;
+
+  // Implement |base::PortProvider::Observer|.
+  void OnReceivedTaskPort(base::ProcessHandle process) override;
 
   // Removes all mappings belonging to |child_process_id| from the broker.
   void InvalidateChildProcessId(int child_process_id);

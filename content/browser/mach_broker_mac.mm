@@ -99,9 +99,17 @@ std::string MachBroker::GetMachPortName() {
   return base::MachPortBroker::GetMachPortName(kBootstrapName, is_child);
 }
 
-MachBroker::MachBroker() : initialized_(false), broker_(kBootstrapName) {}
+MachBroker::MachBroker() : initialized_(false), broker_(kBootstrapName) {
+  broker_.AddObserver(this);
+}
 
-MachBroker::~MachBroker() {}
+MachBroker::~MachBroker() {
+  broker_.RemoveObserver(this);
+}
+
+void MachBroker::OnReceivedTaskPort(base::ProcessHandle process) {
+  NotifyObservers(process);
+}
 
 void MachBroker::InvalidateChildProcessId(int child_process_id) {
   base::AutoLock lock(GetLock());

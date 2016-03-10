@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -14,8 +15,17 @@
 
 namespace content {
 
-class MachBrokerTest : public testing::Test {
+class MachBrokerTest : public testing::Test,
+                       public base::PortProvider::Observer {
  public:
+  MachBrokerTest()
+      : event_(true, false), received_process_(base::kNullProcessHandle) {
+    broker_.AddObserver(this);
+  }
+  ~MachBrokerTest() override {
+    broker_.RemoveObserver(this);
+  }
+
   // Helper function to acquire/release locks and call |PlaceholderForPid()|.
   void AddPlaceholderForPid(base::ProcessHandle pid, int child_process_id) {
     base::AutoLock lock(broker_.GetLock());
@@ -47,8 +57,20 @@ class MachBrokerTest : public testing::Test {
     EXPECT_EQ(0, rv);
   }
 
+  void WaitForTaskPort() {
+    event_.Wait();
+  }
+
+  // base::PortProvider::Observer:
+  void OnReceivedTaskPort(base::ProcessHandle process) override {
+    received_process_ = process;
+    event_.Signal();
+  }
+
  protected:
   MachBroker broker_;
+  base::WaitableEvent event_;
+  base::ProcessHandle received_process_;
   TestBrowserThreadBundle thread_bundle_;
 };
 
@@ -68,6 +90,8 @@ TEST_F(MachBrokerTest, AddChildProcess) {
     broker_.EnsureRunning();
   }
   base::Process child_process = LaunchTestChild("MachBrokerTestChild", 7);
+  WaitForTaskPort();
+  EXPECT_EQ(child_process.Handle(), received_process_);
   WaitForChildExit(child_process);
 
   EXPECT_NE(static_cast<mach_port_t>(MACH_PORT_NULL),

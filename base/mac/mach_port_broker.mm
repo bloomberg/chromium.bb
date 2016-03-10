@@ -163,8 +163,11 @@ void MachPortBroker::HandleRequest() {
   mach_port_t child_task_port = msg.child_task_port.name;
 
   // Take the lock and update the broker information.
-  base::AutoLock lock(lock_);
-  FinalizePid(child_pid, child_task_port);
+  {
+    base::AutoLock lock(lock_);
+    FinalizePid(child_pid, child_task_port);
+  }
+  NotifyObservers(child_pid);
 }
 
 void MachPortBroker::FinalizePid(base::ProcessHandle pid,

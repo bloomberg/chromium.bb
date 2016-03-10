@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,9 +18,18 @@ namespace {
 const char kBootstrapPortName[] = "thisisatest";
 }
 
-class MachPortBrokerTest : public testing::Test {
+class MachPortBrokerTest : public testing::Test,
+                           public base::PortProvider::Observer {
  public:
-  MachPortBrokerTest() : broker_(kBootstrapPortName) {}
+  MachPortBrokerTest()
+      : broker_(kBootstrapPortName),
+        event_(true, false),
+        received_process_(kNullProcessHandle) {
+    broker_.AddObserver(this);
+  }
+  ~MachPortBrokerTest() override {
+    broker_.RemoveObserver(this);
+  }
 
   // Helper function to acquire/release locks and call |PlaceholderForPid()|.
   void AddPlaceholderForPid(base::ProcessHandle pid) {
@@ -34,8 +44,20 @@ class MachPortBrokerTest : public testing::Test {
     broker_.FinalizePid(pid, task_port);
   }
 
+  void WaitForTaskPort() {
+    event_.Wait();
+  }
+
+  // base::PortProvider::Observer:
+  void OnReceivedTaskPort(ProcessHandle process) override {
+    received_process_ = process;
+    event_.Signal();
+  }
+
  protected:
   MachPortBroker broker_;
+  WaitableEvent event_;
+  ProcessHandle received_process_;
 };
 
 TEST_F(MachPortBrokerTest, Locks) {
@@ -76,6 +98,9 @@ TEST_F(MachPortBrokerTest, ReceivePortFromChild) {
       "MachPortBrokerTestChild", command_line, LaunchOptions());
   broker_.AddPlaceholderForPid(test_child_process.Handle());
   broker_.GetLock().Release();
+
+  WaitForTaskPort();
+  EXPECT_EQ(test_child_process.Handle(), received_process_);
 
   int rv = -1;
   ASSERT_TRUE(test_child_process.WaitForExitWithTimeout(
