@@ -90,7 +90,7 @@
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
 {
-   b_555798_a
+   bug_555798_a
    Memcheck:Leak
    fun:malloc
    fun:strdup
@@ -100,7 +100,7 @@
    fun:*ExternalClearKeyTestHelper*
 }
 {
-   b_555798_b
+   bug_555798_b
    Memcheck:Leak
    fun:_Znw*
    obj:*
@@ -109,7 +109,7 @@
    fun:dl_open_worker
 }
 {
-   b_569736
+   bug_569736
    Memcheck:Leak
    fun:_Znw*
    obj:*
@@ -117,27 +117,27 @@
    fun:_ZN5media14CdmWrapperImplIN3cdm25ContentDecryptionModule_8EE7DecryptERKNS1_11InputBufferEPNS1_14DecryptedBlockE
 }
 {
-  b_588788
-  Memcheck:Unaddressable
-  ...
-  fun:_ZN5views14AXAuraObjCache14GetFocusedViewEv
-  fun:_ZN5views14AXAuraObjCache8GetFocusEv
-  fun:_ZNK16AXTreeSourceAura11GetTreeDataEv
-  fun:_ZN2ui16AXTreeSerializerIPN5views16AXAuraObjWrapperENS_10AXNodeDataENS_10AXTreeDataEE16SerializeChangesES3_PNS_16AXTreeUpdateBaseIS4_S5_EE
-  fun:_ZN35AXTreeSourceAuraTest_Serialize_Test8TestBodyEv
+   bug_588788
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN5views14AXAuraObjCache14GetFocusedViewEv
+   fun:_ZN5views14AXAuraObjCache8GetFocusEv
+   fun:_ZNK16AXTreeSourceAura11GetTreeDataEv
+   fun:_ZN2ui16AXTreeSerializerIPN5views16AXAuraObjWrapperENS_10AXNodeDataENS_10AXTreeDataEE16SerializeChangesES3_PNS_16AXTreeUpdateBaseIS4_S5_EE
+   fun:_ZN35AXTreeSourceAuraTest_Serialize_Test8TestBodyEv
 }
 {
-  b_588849a
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN4base4BindIMN6syncer15ModelSafeWorkerEFvNS_8CallbackIFvNS1_14ModelSafeGroupEEEEEJPS2_RS6_EEENS3_INS_8internal22MakeUnboundRunTypeImplIT_JDpT0_EE4TypeEEESD_DpOSE_
-  fun:_ZN6syncer15ModelSafeWorker28UnregisterForLoopDestructionEN4base8CallbackIFvNS_14ModelSafeGroupEEEE
-  fun:_ZN12browser_sync20SyncBackendRegistrar8ShutdownEv
+   bug_588849a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4BindIMN6syncer15ModelSafeWorkerEFvNS_8CallbackIFvNS1_14ModelSafeGroupEEEEEJPS2_RS6_EEENS3_INS_8internal22MakeUnboundRunTypeImplIT_JDpT0_EE4TypeEEESD_DpOSE_
+   fun:_ZN6syncer15ModelSafeWorker28UnregisterForLoopDestructionEN4base8CallbackIFvNS_14ModelSafeGroupEEEE
+   fun:_ZN12browser_sync20SyncBackendRegistrar8ShutdownEv
 }
 {
-  b_588849b
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN30ProfileSyncServiceAutofillTest24CreateDataTypeControllerEN6syncer9ModelTypeE
-  fun:_ZN30ProfileSyncServiceAutofillTest16StartSyncServiceERKN4base8CallbackIFvvEEEbN6syncer9ModelTypeE
+   bug_588849b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN30ProfileSyncServiceAutofillTest24CreateDataTypeControllerEN6syncer9ModelTypeE
+   fun:_ZN30ProfileSyncServiceAutofillTest16StartSyncServiceERKN4base8CallbackIF*syncer9ModelTypeE
 }
