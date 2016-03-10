@@ -47,10 +47,13 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info,
   return true;
 }
 
-bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3],
-                                             void* planes[3],
-                                             size_t rowBytes[3],
-                                             SkYUVColorSpace*) {
+bool DecodingImageGenerator::onQueryYUV8(SkYUVSizeInfo* sizeInfo,
+                                         SkYUVColorSpace* colorSpace) const {
+  return false;
+}
+
+bool DecodingImageGenerator::onGetYUV8Planes(const SkYUVSizeInfo& sizeInfo,
+                                             void* planes[3]) {
   return false;
 }
 

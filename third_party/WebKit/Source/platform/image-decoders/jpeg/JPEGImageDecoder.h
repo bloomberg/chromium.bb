@@ -43,8 +43,9 @@ public:
     void onSetData(SharedBuffer* data) override;
     bool hasColorProfile() const override { return m_hasColorProfile; }
     IntSize decodedSize() const override { return m_decodedSize; }
-    IntSize decodedYUVSize(int component, SizeType) const override;
     bool setSize(unsigned width, unsigned height) override;
+    IntSize decodedYUVSize(int component) const override;
+    size_t decodedYUVWidthBytes(int component) const override;
     bool canDecodeToYUV() override;
     bool decodeToYUV() override;
     void setImagePlanes(PassOwnPtr<ImagePlanes>) override;

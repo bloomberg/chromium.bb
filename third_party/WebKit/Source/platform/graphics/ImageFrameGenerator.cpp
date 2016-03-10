@@ -84,17 +84,20 @@ private:
     size_t m_rowBytes;
 };
 
-static bool updateYUVComponentSizes(ImageDecoder* decoder, SkISize componentSizes[3], ImageDecoder::SizeType sizeType)
+static bool updateYUVComponentSizes(ImageDecoder* decoder, SkISize componentSizes[3], size_t componentWidthBytes[3])
 {
     if (!decoder->canDecodeToYUV())
         return false;
 
-    IntSize size = decoder->decodedYUVSize(0, sizeType);
+    IntSize size = decoder->decodedYUVSize(0);
     componentSizes[0].set(size.width(), size.height());
-    size = decoder->decodedYUVSize(1, sizeType);
+    componentWidthBytes[0] = decoder->decodedYUVWidthBytes(0);
+    size = decoder->decodedYUVSize(1);
     componentSizes[1].set(size.width(), size.height());
-    size = decoder->decodedYUVSize(2, sizeType);
+    componentWidthBytes[1] = decoder->decodedYUVWidthBytes(1);
+    size = decoder->decodedYUVSize(2);
     componentSizes[2].set(size.width(), size.height());
+    componentWidthBytes[2] = decoder->decodedYUVWidthBytes(2);
     return true;
 }
 
@@ -206,7 +209,7 @@ bool ImageFrameGenerator::decodeAndScale(size_t index, const SkImageInfo& info, 
     return true;
 }
 
-bool ImageFrameGenerator::decodeToYUV(size_t index, SkISize componentSizes[3], void* planes[3], size_t rowBytes[3])
+bool ImageFrameGenerator::decodeToYUV(size_t index, const SkISize componentSizes[3], void* planes[3], const size_t rowBytes[3])
 {
     // Prevent concurrent decode or scale operations on the same image data.
     MutexLocker lock(m_decodeMutex);
@@ -237,8 +240,7 @@ bool ImageFrameGenerator::decodeToYUV(size_t index, SkISize componentSizes[3], v
     OwnPtr<ImagePlanes> imagePlanes = adoptPtr(new ImagePlanes(planes, rowBytes));
     decoder->setImagePlanes(imagePlanes.release());
 
-    bool sizeUpdated = updateYUVComponentSizes(decoder.get(), componentSizes, ImageDecoder::ActualSize);
-    RELEASE_ASSERT(sizeUpdated);
+    ASSERT(decoder->canDecodeToYUV());
 
     if (decoder->decodeToYUV()) {
         setHasAlpha(0, false); // YUV is always opaque
@@ -389,7 +391,7 @@ bool ImageFrameGenerator::hasAlpha(size_t index)
     return true;
 }
 
-bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
+bool ImageFrameGenerator::getYUVComponentSizes(SkYUVSizeInfo* sizeInfo)
 {
     TRACE_EVENT2("blink", "ImageFrameGenerator::getYUVComponentSizes", "width", m_fullSize.width(), "height", m_fullSize.height());
 
@@ -410,8 +412,7 @@ bool ImageFrameGenerator::getYUVComponentSizes(SkISize componentSizes[3])
     OwnPtr<ImagePlanes> dummyImagePlanes = adoptPtr(new ImagePlanes);
     decoder->setImagePlanes(dummyImagePlanes.release());
 
-    ASSERT(componentSizes);
-    return updateYUVComponentSizes(decoder.get(), componentSizes, ImageDecoder::SizeForMemoryAllocation);
+    return updateYUVComponentSizes(decoder.get(), sizeInfo->fSizes, sizeInfo->fWidthBytes);
 }
 
 } // namespace blink

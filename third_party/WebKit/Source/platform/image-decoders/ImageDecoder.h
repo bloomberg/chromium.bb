@@ -55,7 +55,7 @@ class PLATFORM_EXPORT ImagePlanes final {
     WTF_MAKE_NONCOPYABLE(ImagePlanes);
 public:
     ImagePlanes();
-    ImagePlanes(void* planes[3], size_t rowBytes[3]);
+    ImagePlanes(void* planes[3], const size_t rowBytes[3]);
 
     void* plane(int);
     size_t rowBytes(int) const;
@@ -71,8 +71,6 @@ private:
 class PLATFORM_EXPORT ImageDecoder {
     WTF_MAKE_NONCOPYABLE(ImageDecoder); USING_FAST_MALLOC(ImageDecoder);
 public:
-    enum SizeType { ActualSize, SizeForMemoryAllocation };
-
     static const size_t noDecodedImageByteLimit = Platform::noDecodedImageByteLimit;
 
     enum AlphaOption {
@@ -136,9 +134,21 @@ public:
     // return the actual decoded size.
     virtual IntSize decodedSize() const { return size(); }
 
-    // Decoders which support YUV decoding can override this to
-    // give potentially different sizes per component.
-    virtual IntSize decodedYUVSize(int component, SizeType) const { return decodedSize(); }
+    // Image decoders that support YUV decoding must override this to
+    // provide the size of each component.
+    virtual IntSize decodedYUVSize(int component) const
+    {
+        ASSERT(false);
+        return IntSize();
+    }
+
+    // Image decoders that support YUV decoding must override this to
+    // return the width of each row of the memory allocation.
+    virtual size_t decodedYUVWidthBytes(int component) const
+    {
+        ASSERT(false);
+        return 0;
+    }
 
     // This will only differ from size() for ICO (where each frame is a
     // different icon) or other formats where different frames are different

@@ -30,10 +30,11 @@ class DecodingImageGenerator : public SkImageGenerator {
                    SkPMColor table[],
                    int* tableCount) override;
 
-  bool onGetYUV8Planes(SkISize sizes[3],
-                       void* planes[3],
-                       size_t rowBytes[3],
-                       SkYUVColorSpace*) override;
+  bool onQueryYUV8(SkYUVSizeInfo* sizeInfo,
+                   SkYUVColorSpace* colorSpace) const override;
+
+  bool onGetYUV8Planes(const SkYUVSizeInfo&,
+                       void* planes[3]) override;
 
  private:
   SkBitmap decoded_bitmap_;

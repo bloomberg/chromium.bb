@@ -227,10 +227,8 @@ class VideoImageGenerator : public SkImageGenerator {
     return true;
   }
 
-  bool onGetYUV8Planes(SkISize sizes[3],
-                       void* planes[3],
-                       size_t row_bytes[3],
-                       SkYUVColorSpace* color_space) override {
+  bool onQueryYUV8(SkYUVSizeInfo* sizeInfo,
+                   SkYUVColorSpace* color_space) const override {
     if (!media::IsYuvPlanar(frame_->format()) ||
         // TODO(rileya): Skia currently doesn't support YUVA conversion. Remove
         // this case once it does. As-is we will fall back on the pure-software
@@ -250,46 +248,61 @@ class VideoImageGenerator : public SkImageGenerator {
 
     for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane;
          ++plane) {
-      if (sizes) {
-        const gfx::Size size =
-            VideoFrame::PlaneSize(frame_->format(), plane,
-                                  gfx::Size(frame_->visible_rect().width(),
-                                            frame_->visible_rect().height()));
-        sizes[plane].set(size.width(), size.height());
-      }
-      if (row_bytes && planes) {
-        size_t offset;
-        const int y_shift =
-            (frame_->format() == media::PIXEL_FORMAT_YV16) ? 0 : 1;
-        if (plane == VideoFrame::kYPlane) {
-          offset = (frame_->stride(VideoFrame::kYPlane) *
-                    frame_->visible_rect().y()) +
-                   frame_->visible_rect().x();
-        } else {
-          offset = (frame_->stride(VideoFrame::kUPlane) *
-                    (frame_->visible_rect().y() >> y_shift)) +
-                   (frame_->visible_rect().x() >> 1);
-        }
+      const gfx::Size size = VideoFrame::PlaneSize(
+          frame_->format(), plane, gfx::Size(frame_->visible_rect().width(),
+                                             frame_->visible_rect().height()));
+      sizeInfo->fSizes[plane].set(size.width(), size.height());
+      sizeInfo->fWidthBytes[plane] = size.width();
+    }
 
-        // Copy the frame to the supplied memory.
-        // TODO: Find a way (API change?) to avoid this copy.
-        char* out_line = static_cast<char*>(planes[plane]);
-        int out_line_stride = row_bytes[plane];
-        uint8_t* in_line = frame_->data(plane) + offset;
-        int in_line_stride = frame_->stride(plane);
-        int plane_height = sizes[plane].height();
-        if (in_line_stride == out_line_stride) {
-          memcpy(out_line, in_line, plane_height * in_line_stride);
-        } else {
-          // Different line padding so need to copy one line at a time.
-          int bytes_to_copy_per_line = out_line_stride < in_line_stride
-                                           ? out_line_stride
-                                           : in_line_stride;
-          for (int line_no = 0; line_no < plane_height; line_no++) {
-            memcpy(out_line, in_line, bytes_to_copy_per_line);
-            in_line += in_line_stride;
-            out_line += out_line_stride;
-          }
+    return true;
+  }
+
+  bool onGetYUV8Planes(const SkYUVSizeInfo& sizeInfo,
+                       void* planes[3]) override {
+    media::VideoPixelFormat format = frame_->format();
+    DCHECK(media::IsYuvPlanar(format) && format != PIXEL_FORMAT_YV12A);
+
+    for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane;
+         ++plane) {
+      const gfx::Size size = VideoFrame::PlaneSize(
+          frame_->format(), plane, gfx::Size(frame_->visible_rect().width(),
+                                             frame_->visible_rect().height()));
+      if (size.width() != sizeInfo.fSizes[plane].width() ||
+          size.height() != sizeInfo.fSizes[plane].height()) {
+        return false;
+      }
+
+      size_t offset;
+      const int y_shift =
+          (frame_->format() == media::PIXEL_FORMAT_YV16) ? 0 : 1;
+      if (plane == VideoFrame::kYPlane) {
+        offset =
+            (frame_->stride(VideoFrame::kYPlane) * frame_->visible_rect().y()) +
+            frame_->visible_rect().x();
+      } else {
+        offset = (frame_->stride(VideoFrame::kUPlane) *
+                  (frame_->visible_rect().y() >> y_shift)) +
+                 (frame_->visible_rect().x() >> 1);
+      }
+
+      // Copy the frame to the supplied memory.
+      // TODO: Find a way (API change?) to avoid this copy.
+      char* out_line = static_cast<char*>(planes[plane]);
+      int out_line_stride = sizeInfo.fWidthBytes[plane];
+      uint8_t* in_line = frame_->data(plane) + offset;
+      int in_line_stride = frame_->stride(plane);
+      int plane_height = sizeInfo.fSizes[plane].height();
+      if (in_line_stride == out_line_stride) {
+        memcpy(out_line, in_line, plane_height * in_line_stride);
+      } else {
+        // Different line padding so need to copy one line at a time.
+        int bytes_to_copy_per_line =
+            out_line_stride < in_line_stride ? out_line_stride : in_line_stride;
+        for (int line_no = 0; line_no < plane_height; line_no++) {
+          memcpy(out_line, in_line, bytes_to_copy_per_line);
+          in_line += in_line_stride;
+          out_line += out_line_stride;
         }
       }
     }

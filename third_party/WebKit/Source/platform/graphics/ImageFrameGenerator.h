@@ -31,6 +31,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkTypes.h"
+#include "third_party/skia/include/core/SkYUVSizeInfo.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
@@ -80,7 +81,7 @@ public:
     bool decodeAndScale(size_t index, const SkImageInfo&, void* pixels, size_t rowBytes);
 
     // Decodes YUV components directly into the provided memory planes.
-    bool decodeToYUV(size_t index, SkISize componentSizes[3], void* planes[3], size_t rowBytes[3]);
+    bool decodeToYUV(size_t index, const SkISize componentSizes[3], void* planes[3], const size_t rowBytes[3]);
 
     const SkISize& getFullSize() const { return m_fullSize; }
 
@@ -89,7 +90,7 @@ public:
 
     bool hasAlpha(size_t index);
 
-    bool getYUVComponentSizes(SkISize componentSizes[3]);
+    bool getYUVComponentSizes(SkYUVSizeInfo*);
 
 private:
     ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer>, bool allDataReceived, bool isMultiFrame);

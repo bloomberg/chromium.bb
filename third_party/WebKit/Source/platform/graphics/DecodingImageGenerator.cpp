@@ -75,23 +75,27 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, 
     return decoded;
 }
 
-bool DecodingImageGenerator::onGetYUV8Planes(SkISize sizes[3], void* planes[3], size_t rowBytes[3], SkYUVColorSpace* colorSpace)
+bool DecodingImageGenerator::onQueryYUV8(SkYUVSizeInfo* sizeInfo, SkYUVColorSpace* colorSpace) const
 {
     if (!m_canYUVDecode)
         return false;
 
-    bool requestingYUVSizes = !planes || !planes[0];
-
-    TRACE_EVENT1("blink", "DecodingImageGenerator::getYUV8Planes", requestingYUVSizes ? "sizes" : "frame index", static_cast<int>(m_frameIndex));
-
-    if (requestingYUVSizes)
-        return m_frameGenerator->getYUVComponentSizes(sizes);
+    TRACE_EVENT1("blink", "DecodingImageGenerator::queryYUV8", "sizes", static_cast<int>(m_frameIndex));
 
     if (colorSpace)
         *colorSpace = kJPEG_SkYUVColorSpace;
 
+    return m_frameGenerator->getYUVComponentSizes(sizeInfo);
+}
+
+bool DecodingImageGenerator::onGetYUV8Planes(const SkYUVSizeInfo& sizeInfo, void* planes[3])
+{
+    ASSERT(m_canYUVDecode);
+
+    TRACE_EVENT1("blink", "DecodingImageGenerator::getYUV8Planes", "frame index", static_cast<int>(m_frameIndex));
+
     PlatformInstrumentation::willDecodeLazyPixelRef(m_generationId);
-    bool decoded = m_frameGenerator->decodeToYUV(m_frameIndex, sizes, planes, rowBytes);
+    bool decoded = m_frameGenerator->decodeToYUV(m_frameIndex, sizeInfo.fSizes, planes, sizeInfo.fWidthBytes);
     PlatformInstrumentation::didDecodeLazyPixelRef();
 
     return decoded;
