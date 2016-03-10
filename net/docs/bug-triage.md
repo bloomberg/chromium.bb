@@ -61,8 +61,7 @@ uniform, predictable two day commitment for all triagers.
       fact an alert was responded to as an inidicator of which of them need
       to be followed up on.
 
-* Investigate [Uncomfirmed / Untriaged Internals>Network issues that don't
-  belong to a more specific network component](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+status%3AUnconfirmed,Untriaged+-label:Needs-Feedback&sort=-modified),
+* Investigate [Uncomfirmed / Untriaged Internals>Network issues that don't belong to a more specific network component](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+status%3AUnconfirmed,Untriaged+-label:Needs-Feedback&sort=-modified),
   prioritizing the most recent issues, ones with the most responsive reporters,
   and major crashers.  This will generally take up the majority of your time as
   triager. Continue digging until you can do one of the following:
@@ -90,8 +89,7 @@ uniform, predictable two day commitment for all triagers.
       its status should be set to Available.  Future triagers should ignore bugs
       with this status, unless investigating stale bugs.
 
-* Follow up on [Needs-Feedback issues for all components owned by the network
-  stack team](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AInternals%3ENetwork%2CUI>Browser>Downloads+-component%3AInternals%3ENetwork%3EDataProxy+-component%3AInternals%3ENetwork%3EDataUse+-component%3AInternals%3ENetwork%3EVPN+Needs%3DFeedback).
+* Follow up on [Needs-Feedback issues for all components owned by the network stack team](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AInternals%3ENetwork%2CUI>Browser>Downloads+-component%3AInternals%3ENetwork%3EDataProxy+-component%3AInternals%3ENetwork%3EDataUse+-component%3AInternals%3ENetwork%3EVPN+Needs%3DFeedback&sort=-modified).
 
     * Remove label once feedback is provided.  Continue to investigate, if
       the previous section applies.
@@ -115,6 +113,8 @@ uniform, predictable two day commitment for all triagers.
   the tracker when new crashers are found.  Bugs  should only be filed for
   crashes that are both in the top 100 for each release and occurred for more
   than two users.
+
+    * Make sure to check for new crashes on all platforms, not just Windows.
 
 ### Best Effort (As you have time):
 
