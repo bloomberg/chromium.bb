@@ -22,8 +22,8 @@
 
 #define IPC_MESSAGE_START MediaMsgStart
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_MESSAGES_H_
-#define CONTENT_COMMON_GPU_MEDIA_MESSAGES_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_MEDIA_MESSAGES_H_
+#define CONTENT_COMMON_GPU_MEDIA_MEDIA_MESSAGES_H_
 
 namespace IPC {
 template <>
@@ -38,7 +38,7 @@ struct ParamTraits<media::BitstreamBuffer> {
 
 }  // namespace IPC
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_MESSAGES_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_MEDIA_MESSAGES_H_
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::JpegDecodeAccelerator::Error,
                           media::JpegDecodeAccelerator::LARGEST_ERROR_ENUM)
