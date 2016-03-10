@@ -2471,7 +2471,7 @@ void QuicConnection::MaybeMigrateConnectionToNewPeerAddress() {
              << old_peer_address.ToString() << " to "
              << peer_address_.ToString() << ", migrating connection.";
 
-    visitor_->OnConnectionMigration();
+    visitor_->OnConnectionMigration(peer_address_change_type);
     sent_packet_manager_.OnConnectionMigration(peer_address_change_type);
 
     return;
@@ -2487,7 +2487,7 @@ void QuicConnection::MaybeMigrateConnectionToNewPeerAddress() {
              << old_peer_address.ToString() << " to "
              << peer_address_.ToString() << ", migrating connection.";
 
-    visitor_->OnConnectionMigration();
+    visitor_->OnConnectionMigration(peer_address_change_type);
     DCHECK_NE(peer_address_change_type, NO_CHANGE);
     sent_packet_manager_.OnConnectionMigration(peer_address_change_type);
   }

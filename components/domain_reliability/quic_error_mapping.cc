@@ -87,8 +87,10 @@ const struct QuicErrorMapping {
   // We hit our overall connection timeout
   { net::QUIC_HANDSHAKE_TIMEOUT,
    "quic.connection.handshake_timed_out" },
-  // There was an error encountered migrating addresses
+  // There was an error encountered migrating addresses.
   { net::QUIC_ERROR_MIGRATING_ADDRESS, "quic.error_migrating_address" },
+  // There was an error encountered migrating port only.
+  { net::QUIC_ERROR_MIGRATING_PORT, "quic.error_migrating_port" },
   // There was an error while writing to the socket.
   { net::QUIC_PACKET_WRITE_ERROR, "quic.packet.write_error" },
   // There was an error while reading from the socket.
@@ -124,7 +126,8 @@ const struct QuicErrorMapping {
   { net::QUIC_TIMEOUTS_WITH_OPEN_STREAMS, "quic.timeouts_with_open_streams" },
   // Closed because we failed to serialize a packet.
   { net::QUIC_FAILED_TO_SERIALIZE_PACKET, "quic.failed_to_serialize_packet" },
-
+  // QUIC timed out after too many RTOs.
+  { net::QUIC_TOO_MANY_RTOS, "quic.too_many_rtos" },
   // Crypto errors.
 
   // Hanshake failed.

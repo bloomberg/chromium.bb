@@ -571,8 +571,10 @@ enum QuicErrorCode {
   QUIC_NETWORK_IDLE_TIMEOUT = 25,
   // The connection timed out waiting for the handshake to complete.
   QUIC_HANDSHAKE_TIMEOUT = 67,
-  // There was an error encountered migrating addresses
+  // There was an error encountered migrating addresses.
   QUIC_ERROR_MIGRATING_ADDRESS = 26,
+  // There was an error encountered migrating port only.
+  QUIC_ERROR_MIGRATING_PORT = 86,
   // There was an error while writing to the socket.
   QUIC_PACKET_WRITE_ERROR = 27,
   // There was an error while reading from the socket.
@@ -603,6 +605,8 @@ enum QuicErrorCode {
   QUIC_TIMEOUTS_WITH_OPEN_STREAMS = 74,
   // Closed because we failed to serialize a packet.
   QUIC_FAILED_TO_SERIALIZE_PACKET = 75,
+  // QUIC timed out after too many RTOs.
+  QUIC_TOO_MANY_RTOS = 85,
 
   // Crypto errors.
 
@@ -679,7 +683,7 @@ enum QuicErrorCode {
   QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM = 84,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 85,
+  QUIC_LAST_ERROR = 87,
 };
 
 // Must be updated any time a QuicErrorCode is deprecated.

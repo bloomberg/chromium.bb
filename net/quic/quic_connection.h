@@ -132,7 +132,7 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   virtual void OnCongestionWindowChange(QuicTime now) = 0;
 
   // Called when the connection receives a packet from a migrated client.
-  virtual void OnConnectionMigration() = 0;
+  virtual void OnConnectionMigration(PeerAddressChangeType type) = 0;
 
   // Called when the peer seems unreachable over the current path.
   virtual void OnPathDegrading() = 0;
