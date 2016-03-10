@@ -9,7 +9,6 @@ from __future__ import print_function
 import mock
 
 from chromite.cbuildbot import cbuildbot_unittest
-from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
 from chromite.cbuildbot import failures_lib
@@ -45,9 +44,7 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare()
 
   def ConstructStage(self):
-    archive_stage = artifact_stages.ArchiveStage(self._run, self._current_board)
-    return release_stages.SigningStage(self._run, self._current_board,
-                                       archive_stage)
+    return release_stages.SigningStage(self._run, self._current_board)
 
   def testWaitForPushImageSuccess(self):
     """Test waiting for input from PushImage."""
@@ -309,7 +306,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         paygen_build_lib, 'ValidateBoardConfig')
 
   def ConstructStage(self):
-    return release_stages.PaygenStage(self._run, self._current_board, None)
+    return release_stages.PaygenStage(self._run, self._current_board)
 
   def testPerformStageSuccess(self):
     """Test that PaygenStage works when signing works."""
@@ -361,8 +358,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       create_payloads.side_effect = failures_lib.TestLabFailure
 
       stage = release_stages.PaygenStage(
-          self._run, self._current_board,
-          archive_stage=None, channels=['foo', 'bar'])
+          self._run, self._current_board, channels=['foo', 'bar'])
 
       with patch(stage, '_HandleExceptionAsWarning') as warning_handler:
         warning_handler.return_value = (results_lib.Results.FORGIVEN,
@@ -382,8 +378,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # The stage is constructed differently for trybots, so don't use
       # ConstructStage.
       stage = release_stages.PaygenStage(
-          self._run, self._current_board, archive_stage=None,
-          channels=['foo', 'bar'])
+          self._run, self._current_board, channels=['foo', 'bar'])
       stage.PerformStage()
 
       # Notice that we didn't put anything in _wait_for_channel_signing, but

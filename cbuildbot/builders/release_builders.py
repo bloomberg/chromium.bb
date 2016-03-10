@@ -28,7 +28,7 @@ class GeneratePayloadsBuilder(simple_builders.SimpleBuilder):
     """Runs through build process."""
     def _RunStageWrapper(board):
       self._RunStage(release_stages.PaygenStage, board=board,
-                     channels=self._run.options.channels, archive_stage=None)
+                     channels=self._run.options.channels)
 
     with parallel.BackgroundTaskRunner(_RunStageWrapper) as queue:
       for board in self._run.config.boards:

@@ -12,6 +12,7 @@ import os
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot.stages import artifact_stages
+from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -70,12 +71,11 @@ class PaygenNoPaygenConfigForBoard(failures_lib.StepFailure):
   """Paygen can't run with a release.conf config for the board."""
 
 
-class SigningStage(artifact_stages.ArchivingStage):
+class SigningStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that waits for image signing.
 
-  If this stage is created with a 'channels' argument, it can run
-  independently. Otherwise, it's dependent on values queued up by
-  the ArchiveStage (push_image).
+  This stage waits for values from ArchiveStage (push_image), then waits until
+  the signing servers sign the uploaded images.
   """
   option_name = 'paygen'
   config_name = 'paygen'
@@ -86,16 +86,14 @@ class SigningStage(artifact_stages.ArchivingStage):
   # Timeout for the signing process. 2 hours in seconds.
   SIGNING_TIMEOUT = 2 * 60 * 60
 
-  def __init__(self, builder_run, board, archive_stage, **kwargs):
+  def __init__(self, builder_run, board, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchivingStage.
       board: See board on ArchivingStage.
-      archive_stage: See archive_stage on ArchivingStage.
     """
-    super(SigningStage, self).__init__(builder_run, board, archive_stage,
-                                       **kwargs)
+    super(SigningStage, self).__init__(builder_run, board, **kwargs)
 
     # Used to remember partial results between retries.
     self.signing_results = {}
@@ -303,31 +301,28 @@ class SigningStage(artifact_stages.ArchivingStage):
     self.board_runattrs.SetParallel('signed_images_ready', channels)
 
 
-class PaygenStage(artifact_stages.ArchivingStage):
+class PaygenStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that generates release payloads.
 
   If this stage is created with a 'channels' argument, it can run
   independently. Otherwise, it's dependent on values queued up by
-  the ArchiveStage (push_image).
+  the SigningStage.
   """
   option_name = 'paygen'
   config_name = 'paygen'
 
-  def __init__(self, builder_run, board, archive_stage, channels=None,
-               **kwargs):
+  def __init__(self, builder_run, board, channels=None, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchivingStage.
       board: See board on ArchivingStage.
-      archive_stage: See archive_stage on ArchivingStage.
       channels: Explicit list of channels to generate payloads for.
                 If empty, will instead wait on values from push_image.
                 Channels is normally None in release builds, and normally set
                 for trybot 'payloads' builds.
     """
-    super(PaygenStage, self).__init__(builder_run, board, archive_stage,
-                                      **kwargs)
+    super(PaygenStage, self).__init__(builder_run, board, **kwargs)
     self.channels = channels
 
   def _HandleStageException(self, exc_info):
