@@ -576,8 +576,8 @@ function test()
     InspectorTest.setTraceEvents(InspectorTest.timelineModel(), InspectorTest.tracingModel(), rawTraceEvents);
 
     timeline.requestWindowTimes(0, Infinity);
-    for (var grouping in WebInspector.AggregatedTimelineTreeView.GroupBy) {
-        var groupingValue = WebInspector.AggregatedTimelineTreeView.GroupBy[grouping];
+    for (var grouping in WebInspector.TimelineAggregator.GroupBy) {
+        var groupingValue = WebInspector.TimelineAggregator.GroupBy[grouping];
         testEventTree(WebInspector.TimelinePanel.DetailsTab.CallTree, groupingValue);
         testEventTree(WebInspector.TimelinePanel.DetailsTab.BottomUp, groupingValue);
     }
@@ -599,14 +599,19 @@ function test()
         }
         var rootNode = callTree._dataGrid.rootNode();
         for (var node of rootNode.children)
-            printEventTree(1, node._profileNode);
+            printEventTree(1, node._profileNode, node._treeView);
     }
 
-    function printEventTree(padding, node)
+    function printEventTree(padding, node, treeView)
     {
-        var name = node.name || (node.event.name === WebInspector.TimelineModel.RecordType.JSFrame
-            ? WebInspector.beautifyFunctionName(node.event.args["data"]["functionName"])
-            : WebInspector.TimelineUIUtils.eventTitle(node.event));
+        var name;
+        if (node.isGroupNode()) {
+           name = treeView._displayInfoForGroupNode(node).name;
+        } else {
+           name = node.event.name === WebInspector.TimelineModel.RecordType.JSFrame
+                      ? WebInspector.beautifyFunctionName(node.event.args["data"]["functionName"])
+                      : WebInspector.TimelineUIUtils.eventTitle(node.event);
+        }
         InspectorTest.addResult("  ".repeat(padding) + name + ": " + [node.selfTime, node.totalTime].map(function (t) { return t.toFixed(3); }).join("  "));
         (node.children || new Map()).forEach(printEventTree.bind(null, padding + 1));
     }
