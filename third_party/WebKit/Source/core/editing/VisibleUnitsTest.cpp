@@ -1090,8 +1090,36 @@ TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor)
     updateLayoutAndStyleForPainting();
     RefPtrWillBeRawPtr<Element> sample = document().getElementById("sample");
 
+    EXPECT_FALSE(rendersInDifferentPosition(Position(), Position()));
+    EXPECT_FALSE(rendersInDifferentPosition(Position(), Position::afterNode(sample.get())))
+        << "if one of position is null, the reuslt is false.";
     EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample.get()), Position(sample.get(), 1)));
     EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample.get()), Position(sample.get(), 1)));
+}
+
+TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchorWithHidden)
+{
+    const char* bodyContent = "<p><span id=one>11</span><span id=two style='display:none'>  </span></p>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+    RefPtrWillBeRawPtr<Element> two = document().getElementById("two");
+
+    EXPECT_TRUE(rendersInDifferentPosition(Position::lastPositionInNode(one.get()), Position(two.get(), 0)))
+        << "two doesn't have layout object";
+}
+
+TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchorWithDifferentLayoutObjects)
+{
+    const char* bodyContent = "<p><span id=one>11</span><span id=two>  </span></p>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
+    RefPtrWillBeRawPtr<Element> two = document().getElementById("two");
+
+    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(one.get()), Position(two.get(), 0)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(one.get()), Position(two.get(), 1)))
+        << "width of two is zero since contents is collapsed whitespaces";
 }
 
 TEST_F(VisibleUnitsTest, renderedOffset)
