@@ -2,6 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function onPickerResult(request_audio, audio_track_num, id) {
+  chrome.test.assertEq("string", typeof id);
+  chrome.test.assertTrue(id != "");
+  var video_constraint = { mandatory: { chromeMediaSource: "desktop",
+                                        chromeMediaSourceId: id } };
+  var audio_constraint = request_audio ? video_constraint : false;
+  navigator.webkitGetUserMedia({
+    audio: audio_constraint,
+    video: video_constraint
+  },
+    function(stream) {
+      if (audio_track_num != null)
+        chrome.test.assertEq(audio_track_num, stream.getAudioTracks().length);
+      chrome.test.succeed();
+  }, chrome.test.fail);
+}
+
+// We can support audio for screen share on Windows. For ChromeOS, it depends
+// on whether USE_CRAS is on or not, thus we disable the check here. We cannot
+// support audio on other platforms.
+var expected_audio_tracks_for_screen_share = 0;
+if (navigator.appVersion.indexOf("Windows") != -1)
+  expected_audio_tracks_for_screen_share = 1;
+else if (navigator.appVersion.indexOf("CrOS") != -1)
+  expected_audio_tracks_for_screen_share = null;
+
 chrome.test.runTests([
   function emptySourceList() {
     chrome.desktopCapture.chooseDesktopMedia(
@@ -31,7 +57,7 @@ chrome.test.runTests([
         }));
   },
 
-  // For the following two tests FakeDestkopPickerFactory will verify that
+  // For the following four tests FakeDestkopPickerFactory will verify that
   // the right set of sources is selected when creating picker model.
   function screensOnly() {
     chrome.desktopCapture.chooseDesktopMedia(
@@ -43,21 +69,23 @@ chrome.test.runTests([
         ["window"], chrome.test.callbackPass(function(id) {}));
   },
 
+  function tabOnly() {
+    chrome.desktopCapture.chooseDesktopMedia(
+        ["tab"],
+        chrome.test.succeed);
+  },
+
+  function audioShare() {
+    chrome.desktopCapture.chooseDesktopMedia(
+        ["screen", "window", "tab", "audio"],
+        chrome.test.succeed);
+  },
+
   // Show window picker and then get the selected stream using
   // getUserMedia().
   function chooseMediaAndGetStream() {
-    function onPickerResult(id) {
-      chrome.test.assertEq("string", typeof id);
-      chrome.test.assertTrue(id != "");
-      navigator.webkitGetUserMedia({
-        audio: false,
-        video: { mandatory: { chromeMediaSource: "desktop",
-                              chromeMediaSourceId: id } }
-      }, chrome.test.succeed, chrome.test.fail);
-    }
-
     chrome.desktopCapture.chooseDesktopMedia(
-        ["screen", "window"], onPickerResult);
+        ["screen", "window"], onPickerResult.bind(undefined, false, 0));
   },
 
   // Same as above but attempts to specify invalid source id.
@@ -81,5 +109,48 @@ chrome.test.runTests([
     chrome.test.assertEq("number", typeof requestId);
     chrome.desktopCapture.cancelChooseDesktopMedia(requestId);
     chrome.test.succeed();
+  },
+
+  // For the following six, they all request audio track. Based on user's
+  // permission and the source type, it may or may not actually get the audio
+  // track.
+  // In detail:
+  //  1. We cannot support audio for Window share;
+  //  2. We can support audio for Tab share;
+  //  3. We can support audio for Screen share on Windows;
+  //  4. We can support audio for Screen Share on ChromeOS if USE_CRAS is on;
+  //  5. To actually get audio track, user permission is always necessary;
+  //  6. To actually get audio track, getUserMedia() should set audio
+  //     constraint.
+  function tabShareWithAudioPermissionGetStream() {
+    chrome.desktopCapture.chooseDesktopMedia(
+        ["tab", "audio"], onPickerResult.bind(undefined, true, 1));
+  },
+
+  function windowShareWithAudioPermissionGetStream() {
+    chrome.desktopCapture.chooseDesktopMedia(
+        ["window", "audio"], onPickerResult.bind(undefined, true, 0));
+  },
+
+  function screenShareWithAudioPermissionGetStream() {
+    chrome.desktopCapture.chooseDesktopMedia(
+        ["screen", "audio"],
+        onPickerResult.bind(undefined, true,
+                            expected_audio_tracks_for_screen_share));
+  },
+
+  function tabShareWithoutAudioPermissionGetStream() {
+    chrome.desktopCapture.chooseDesktopMedia(
+        ["tab", "audio"], onPickerResult.bind(undefined, true, 0));
+  },
+
+  function windowShareWithoutAudioPermissionGetStream() {
+    chrome.desktopCapture.chooseDesktopMedia(
+        ["window", "audio"], onPickerResult.bind(undefined, true, 0));
+  },
+
+  function screenShareWithoutAudioPermissionGetStream() {
+    chrome.desktopCapture.chooseDesktopMedia(
+        ["screen", "audio"], onPickerResult.bind(undefined, true, 0));
   }
 ]);

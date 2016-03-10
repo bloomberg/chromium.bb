@@ -27,7 +27,9 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
   class PickerFactory {
    public:
     virtual scoped_ptr<DesktopMediaList> CreateModel(bool show_screens,
-                                                     bool show_windows) = 0;
+                                                     bool show_windows,
+                                                     bool show_tabs,
+                                                     bool show_audio) = 0;
     virtual scoped_ptr<DesktopMediaPicker> CreatePicker() = 0;
    protected:
     virtual ~PickerFactory() {}

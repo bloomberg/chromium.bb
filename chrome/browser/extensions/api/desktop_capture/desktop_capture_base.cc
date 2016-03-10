@@ -120,8 +120,8 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
       web_contents->GetTopLevelNativeWindow();
   scoped_ptr<DesktopMediaList> media_list;
   if (g_picker_factory) {
-    media_list = g_picker_factory->CreateModel(
-        show_screens, show_windows);
+    media_list = g_picker_factory->CreateModel(show_screens, show_windows,
+                                               show_tabs, request_audio);
     picker_ = g_picker_factory->CreatePicker();
   } else {
     std::vector<scoped_ptr<DesktopMediaList>> media_lists;
