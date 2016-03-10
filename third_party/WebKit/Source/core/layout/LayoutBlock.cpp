@@ -721,36 +721,18 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
         LayoutBlockFlow* nextBlock = toLayoutBlockFlow(next);
         LayoutBlockFlow* prevBlock = toLayoutBlockFlow(prev);
 
-        if (prev->childrenInline() != next->childrenInline()) {
-            LayoutBlock* inlineChildrenBlock = prev->childrenInline() ? prevBlock : nextBlock;
-            LayoutBlock* blockChildrenBlock = prev->childrenInline() ? nextBlock : prevBlock;
+        // If the inlineness of children of the two block don't match, we'd need special code here
+        // (but there should be no need for it).
+        ASSERT(nextBlock->childrenInline() == prevBlock->childrenInline());
 
-            // Place the inline children block inside of the block children block instead of deleting it.
-            ASSERT(!inlineChildrenBlock->continuation());
-            bool inlineChildrenBlockHasLayer = inlineChildrenBlock->hasLayer();
-            children()->removeChildNode(this, inlineChildrenBlock, inlineChildrenBlockHasLayer);
+        // Take all the children out of the |next| block and put them in
+        // the |prev| block.
+        nextBlock->moveAllChildrenIncludingFloatsTo(prevBlock, nextBlock->hasLayer() || prevBlock->hasLayer());
 
-            // Now just put the inlineChildrenBlock inside the blockChildrenBlock.
-            blockChildrenBlock->children()->insertChildNode(blockChildrenBlock, inlineChildrenBlock, prev == inlineChildrenBlock ? blockChildrenBlock->firstChild() : 0,
-                inlineChildrenBlockHasLayer || blockChildrenBlock->hasLayer());
-            next->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
-
-            // inlineChildrenBlock got reparented to blockChildrenBlock, so it is no longer a child
-            // of "this". we null out prev or next so that is not used later in the function.
-            if (inlineChildrenBlock == prevBlock)
-                prev = nullptr;
-            else
-                next = nullptr;
-        } else {
-            // Take all the children out of the |next| block and put them in
-            // the |prev| block.
-            nextBlock->moveAllChildrenIncludingFloatsTo(prevBlock, nextBlock->hasLayer() || prevBlock->hasLayer());
-
-            // Delete the now-empty block's lines and nuke it.
-            nextBlock->deleteLineBoxTree();
-            nextBlock->destroy();
-            next = nullptr;
-        }
+        // Delete the now-empty block's lines and nuke it.
+        nextBlock->deleteLineBoxTree();
+        nextBlock->destroy();
+        next = nullptr;
     }
 
     LayoutBox::removeChild(oldChild);
