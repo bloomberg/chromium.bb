@@ -43,7 +43,7 @@ Polymer({
 
   /** @private */
   onDomChange_: function() {
-    var systemPage = /** @type {?SystemPageElement} */(
+    var systemPage = /** @type {?SettingsSystemPageElement} */(
         this.$$('settings-system-page'));
     if (systemPage && !systemPage.delegate)
       systemPage.delegate = new settings.SystemPageDelegateImpl;
