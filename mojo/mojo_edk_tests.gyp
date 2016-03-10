@@ -172,7 +172,6 @@
         '../testing/gtest.gyp:gtest',
         'mojo_edk.gyp:mojo_run_all_perftests',
         'mojo_public.gyp:mojo_public_test_utils',
-        'mojo_public.gyp:mojo_utility',
       ],
       'sources': [
         'public/c/system/tests/core_perftest.cc',

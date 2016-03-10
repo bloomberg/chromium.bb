@@ -32,7 +32,6 @@ source_set("perftests") {
   deps = [
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",
-    "//mojo/public/cpp/utility",
     "//testing/gtest",
   ]
 }

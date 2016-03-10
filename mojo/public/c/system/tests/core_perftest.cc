@@ -10,24 +10,26 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "base/threading/simple_thread.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(vtl): (here and below) crbug.com/342893
 #if !defined(WIN32)
 #include <time.h>
-#include "mojo/public/cpp/utility/thread.h"
 #endif  // !defined(WIN32)
 
 namespace {
 
 #if !defined(WIN32)
-class MessagePipeWriterThread : public mojo::Thread {
+class MessagePipeWriterThread : public base::SimpleThread {
  public:
   MessagePipeWriterThread(MojoHandle handle, uint32_t num_bytes)
-      : handle_(handle), num_bytes_(num_bytes), num_writes_(0) {}
+      : SimpleThread("MessagePipeWriterThread"),
+        handle_(handle),
+        num_bytes_(num_bytes),
+        num_writes_(0) {}
   ~MessagePipeWriterThread() override {}
 
   void Run() override {
@@ -62,10 +64,12 @@ class MessagePipeWriterThread : public mojo::Thread {
   DISALLOW_COPY_AND_ASSIGN(MessagePipeWriterThread);
 };
 
-class MessagePipeReaderThread : public mojo::Thread {
+class MessagePipeReaderThread : public base::SimpleThread {
  public:
   explicit MessagePipeReaderThread(MojoHandle handle)
-      : handle_(handle), num_reads_(0) {}
+      : SimpleThread("MessagePipeReaderThread"),
+        handle_(handle),
+        num_reads_(0) {}
   ~MessagePipeReaderThread() override {}
 
   void Run() override {
