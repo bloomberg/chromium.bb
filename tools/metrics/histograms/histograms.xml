@@ -34350,6 +34350,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PasswordManager.SavePasswordPromptDisappearedQuickly"
     enum="Boolean">
   <owner>vabr@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 03/2016.
+  </obsolete>
   <summary>
     Indicates whether the save password prompt disappeared in less than one
     second. This most likely indicates that the prompt was dismissed
@@ -34360,12 +34363,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.SavePasswordPromptDisplayed" enum="Boolean">
   <owner>vabr@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 03/2016.
+  </obsolete>
   <summary>Indicates whether the save password prompt was displayed.</summary>
 </histogram>
 
 <histogram name="PasswordManager.SavePasswordPromptResponse"
     enum="SavePasswordPromptResponseType">
   <owner>vabr@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 03/2016.
+  </obsolete>
   <summary>
     Breakdown of which response the user selected from the save password prompt.
   </summary>
@@ -88045,6 +88054,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="PasswordManagerMonitor">
+  <obsolete>
+    Deprecated as of 03/2016.
+  </obsolete>
   <suffix name="group_1" label="group 1"/>
   <suffix name="group_2" label="group 2"/>
   <suffix name="group_3" label="group 3"/>

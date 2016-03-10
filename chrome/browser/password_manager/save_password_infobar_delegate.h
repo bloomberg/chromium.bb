@@ -32,14 +32,10 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
  public:
   // If we won't be showing the one-click signin infobar, creates a save
   // password infobar and delegate and adds the infobar to the InfoBarService
-  // for |web_contents|.  |uma_histogram_suffix| is empty, or one of the
-  // "group_X" suffixes used in the histogram names for infobar usage reporting;
-  // if empty, the usage is not reported, otherwise the suffix is used to choose
-  // the right histogram.
+  // for |web_contents|.
   static void Create(
       content::WebContents* web_contents,
-      scoped_ptr<password_manager::PasswordFormManager> form_to_save,
-      const std::string& uma_histogram_suffix);
+      scoped_ptr<password_manager::PasswordFormManager> form_to_save);
 
   ~SavePasswordInfoBarDelegate() override;
 
@@ -57,7 +53,6 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   SavePasswordInfoBarDelegate(
       content::WebContents* web_contents,
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
-      const std::string& uma_histogram_suffix,
       bool is_smartlock_branding_enabled,
       bool should_show_first_run_experience);
 
@@ -72,10 +67,6 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   // Measures the "Save password?" prompt lifetime. Used to report an UMA
   // signal.
   base::ElapsedTimer timer_;
-
-  // The group name corresponding to the domain name of |form_to_save_| if the
-  // form is on a monitored domain. Otherwise, an empty string.
-  const std::string uma_histogram_suffix_;
 
   // Records source from where infobar was triggered.
   // Infobar appearance (message, buttons) depends on value of this parameter.

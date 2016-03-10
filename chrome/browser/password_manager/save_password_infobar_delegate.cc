@@ -25,8 +25,7 @@
 // static
 void SavePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    scoped_ptr<password_manager::PasswordFormManager> form_to_save,
-    const std::string& uma_histogram_suffix) {
+    scoped_ptr<password_manager::PasswordFormManager> form_to_save) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   sync_driver::SyncService* sync_service =
@@ -38,11 +37,10 @@ void SavePasswordInfoBarDelegate::Create(
       password_bubble_experiment::ShouldShowSavePromptFirstRunExperience(
           sync_service, profile->GetPrefs());
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(CreateSavePasswordInfoBar(
-          make_scoped_ptr(new SavePasswordInfoBarDelegate(
-              web_contents, std::move(form_to_save), uma_histogram_suffix,
-              is_smartlock_branding_enabled,
-              should_show_first_run_experience))));
+      ->AddInfoBar(CreateSavePasswordInfoBar(make_scoped_ptr(
+          new SavePasswordInfoBarDelegate(web_contents, std::move(form_to_save),
+                                          is_smartlock_branding_enabled,
+                                          should_show_first_run_experience))));
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
@@ -52,22 +50,6 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
 
   password_manager::metrics_util::LogUIDismissalReason(infobar_response_);
 
-  // The shortest period for which the prompt needs to live, so that we don't
-  // consider it killed prematurely, as might happen, e.g., if a pre-rendered
-  // page gets swapped in (and the current WebContents is destroyed).
-  const base::TimeDelta kMinimumPromptDisplayTime =
-      base::TimeDelta::FromSeconds(1);
-
-  if (!uma_histogram_suffix_.empty()) {
-    password_manager::metrics_util::LogUMAHistogramEnumeration(
-        "PasswordManager.SavePasswordPromptResponse_" + uma_histogram_suffix_,
-        infobar_response_,
-        password_manager::metrics_util::NUM_RESPONSE_TYPES);
-    password_manager::metrics_util::LogUMAHistogramBoolean(
-        "PasswordManager.SavePasswordPromptDisappearedQuickly_" +
-            uma_histogram_suffix_,
-        timer_.Elapsed() < kMinimumPromptDisplayTime);
-  }
   if (should_show_first_run_experience_) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents_->GetBrowserContext());
@@ -79,20 +61,13 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     content::WebContents* web_contents,
     scoped_ptr<password_manager::PasswordFormManager> form_to_save,
-    const std::string& uma_histogram_suffix,
     bool is_smartlock_branding_enabled,
     bool should_show_first_run_experience)
     : PasswordManagerInfoBarDelegate(),
       form_to_save_(std::move(form_to_save)),
       infobar_response_(password_manager::metrics_util::NO_RESPONSE),
-      uma_histogram_suffix_(uma_histogram_suffix),
       should_show_first_run_experience_(should_show_first_run_experience),
       web_contents_(web_contents) {
-  if (!uma_histogram_suffix_.empty()) {
-    password_manager::metrics_util::LogUMAHistogramBoolean(
-        "PasswordManager.SavePasswordPromptDisplayed_" + uma_histogram_suffix_,
-        true);
-  }
   base::string16 message;
   gfx::Range message_link_range = gfx::Range();
   PasswordTittleType type =

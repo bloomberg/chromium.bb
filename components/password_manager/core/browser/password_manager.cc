@@ -163,7 +163,6 @@ void PasswordManager::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords,
                                 true);
-  registry->RegisterListPref(prefs::kPasswordManagerGroupsForDomains);
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
                                 static_cast<int>(MigrationStatus::NOT_STARTED));
@@ -369,16 +368,6 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
                                     BrowserSavePasswordProgressLogger* logger) {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.ProvisionalSaveFailure", failure, MAX_FAILURE_VALUE);
-
-  std::string group_name =
-      metrics_util::GroupIdToString(metrics_util::MonitoredDomainGroupId(
-          form_origin.host(), client_->GetPrefs()));
-  if (!group_name.empty()) {
-    metrics_util::LogUMAHistogramEnumeration(
-        "PasswordManager.ProvisionalSaveFailure_" + group_name,
-        failure,
-        MAX_FAILURE_VALUE);
-  }
 
   if (logger) {
     switch (failure) {

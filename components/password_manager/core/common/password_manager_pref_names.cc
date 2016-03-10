@@ -28,8 +28,6 @@ const char kKeychainMigrationStatus[] = "password_manager.keychain_migration";
 const char kPasswordManagerAllowShowPasswords[] =
     "profile.password_manager_allow_show_passwords";
 const char kPasswordManagerSavingEnabled[] = "profile.password_manager_enabled";
-const char kPasswordManagerGroupsForDomains[] =
-    "profile.password_manager_groups_for_domains";
 
 const char kWasAutoSignInFirstRunExperienceShown[] =
     "profile.was_auto_sign_in_first_run_experience_shown";

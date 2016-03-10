@@ -247,12 +247,8 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
       return true;
     }
 #endif
-    std::string uma_histogram_suffix(
-        password_manager::metrics_util::GroupIdToString(
-            password_manager::metrics_util::MonitoredDomainGroupId(
-                form_to_save->pending_credentials().signon_realm, GetPrefs())));
-    SavePasswordInfoBarDelegate::Create(web_contents(), std::move(form_to_save),
-                                        uma_histogram_suffix);
+    SavePasswordInfoBarDelegate::Create(web_contents(),
+                                        std::move(form_to_save));
 #else
     NOTREACHED() << "Aura platforms should always use the bubble";
 #endif

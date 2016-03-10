@@ -49,7 +49,6 @@ class TestSavePasswordInfobarDelegate : public SavePasswordInfoBarDelegate {
       bool should_show_first_run_experience)
       : SavePasswordInfoBarDelegate(web_contents,
                                     std::move(form_to_save),
-                                    std::string(),
                                     true /* is_smartlock_branding_enabled */,
                                     should_show_first_run_experience) {}
 

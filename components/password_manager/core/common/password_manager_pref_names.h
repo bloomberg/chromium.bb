@@ -59,12 +59,6 @@ extern const char kPasswordManagerAllowShowPasswords[];
 // See http://crbug.com/392387
 extern const char kPasswordManagerSavingEnabled[];
 
-// A list of numbers. Each number corresponds to one of the domains monitored
-// for save-password-prompt breakages. That number is a random index into
-// the array of groups containing the monitored domain. That group should be
-// used for reporting that domain.
-extern const char kPasswordManagerGroupsForDomains[];
-
 // Boolean that indicated whether first run experience for the auto sign-in
 // prompt was shown or not.
 extern const char kWasAutoSignInFirstRunExperienceShown[];
