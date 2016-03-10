@@ -3716,6 +3716,17 @@ void HTMLMediaElement::rejectPlayPromises()
 
 void HTMLMediaElement::rejectPlayPromises(ExceptionCode code, const String& message)
 {
+    // TODO(mlamouri): band-aid to fix a crash where inserting a <source> will
+    // resolve the promise in the same stack as the <source> insertion. The
+    // underlying cause is that when <source> is inserted, the implementation
+    // is running the loading algorithm instead of the resource selection
+    // algorithm. See https://crbug.com/590634.
+    if (ScriptForbiddenScope::isScriptForbidden()) {
+        if (!m_playResolvers.isEmpty())
+            scheduleRejectPlayPromises(code);
+        return;
+    }
+
     ASSERT(code == AbortError || code == NotSupportedError);
 
     for (auto& resolver: m_playResolvers)
