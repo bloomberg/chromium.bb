@@ -5,6 +5,7 @@
 ### Pre-requisites
 
 You'll need Java 7 (preferably the OpenJDK version).  To install on Ubuntu:
+
 ```shell
 sudo apt-get install openjdk-7-jre
 ```
@@ -15,28 +16,33 @@ On Mac or Windows, visit:
 ### Using ninja to compile the code
 
 We use GYP and ninja as our build system. To generate the ninja files from GYP:
+
 ```shell
 # notice the 2 in compiled_resources.gyp
 GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources2.gyp
 ```
 
 To compile the JavaScript:
+
 ```shell
 ninja -C out/Default -j4
 ```
 
 The output should look something like this:
+
 ```shell
 ninja: Entering directory `out/Default/'
 [30/106] ACTION Compiling chrome/browser/resources/md_history/constants.js
 ```
 
 To generate and run the **deprecated** v1 gyp format, remove the "2" from "compiled_resources2.gyp":
+
 ```shell
 $ GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources.gyp
 ```
 
 Compiling works the same way for both v1 and v2 systems:
+
 ```shell
 ninja -C out/Default -j4
 ```
