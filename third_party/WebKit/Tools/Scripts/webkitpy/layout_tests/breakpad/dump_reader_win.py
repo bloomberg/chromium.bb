@@ -86,6 +86,8 @@ class DumpReaderWin(DumpReader):
             '%s\\Windows Kits\\8.0\\Debuggers\\x64',
             '%s\\Windows Kits\\8.1\\Debuggers\\x86',
             '%s\\Windows Kits\\8.1\\Debuggers\\x64',
+            '%s\\Windows Kits\\10\\Debuggers\\x86',
+            '%s\\Windows Kits\\10\\Debuggers\\x64',
         ]
 
         program_files_directories = ['C:\\Program Files']
