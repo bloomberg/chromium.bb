@@ -45,22 +45,20 @@ class ResourceFetcher;
 
 class CORE_EXPORT ResourceLoader final : public GarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
 public:
-    static ResourceLoader* create(ResourceFetcher*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
+    static ResourceLoader* create(ResourceFetcher*, Resource*);
     ~ResourceLoader() override;
     DECLARE_TRACE();
 
     // Promptly release m_loader.
     EAGERLY_FINALIZE();
 
-    void start();
-    void changeToSynchronous();
+    void start(ResourceRequest&);
 
     void cancel();
     void cancel(const ResourceError&);
     void cancelIfNotFinishing();
 
     Resource* cachedResource() { return m_resource.get(); }
-    const ResourceRequest& originalRequest() const { return m_originalRequest; }
 
     void setDefersLoading(bool);
 
@@ -81,10 +79,9 @@ public:
 
 private:
     // Assumes ResourceFetcher and Resource are non-null.
-    ResourceLoader(ResourceFetcher*, Resource*, const ResourceLoaderOptions&);
+    ResourceLoader(ResourceFetcher*, Resource*);
 
-    void init(const ResourceRequest&);
-    void requestSynchronously();
+    void requestSynchronously(ResourceRequest&);
 
     void didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength);
 
@@ -97,13 +94,9 @@ private:
     OwnPtr<WebURLLoader> m_loader;
     Member<ResourceFetcher> m_fetcher;
 
-    ResourceRequest m_request;
-    ResourceRequest m_originalRequest; // Before redirects.
-
     bool m_notifiedLoadComplete;
 
     bool m_loadingMultipartContent;
-    ResourceLoaderOptions m_options;
 
     enum ConnectionState {
         ConnectionStateNew,

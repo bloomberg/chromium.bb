@@ -138,14 +138,6 @@ void RawResource::willFollowRedirect(ResourceRequest& newRequest, const Resource
     Resource::willFollowRedirect(newRequest, redirectResponse);
 }
 
-void RawResource::updateRequest(const ResourceRequest& request)
-{
-    RefPtrWillBeRawPtr<RawResource> protect(this);
-    ResourceClientWalker<RawResourceClient> w(m_clients);
-    while (RawResourceClient* c = w.next())
-        c->updateRequest(this, request);
-}
-
 void RawResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     RefPtrWillBeRawPtr<RawResource> protect(this);

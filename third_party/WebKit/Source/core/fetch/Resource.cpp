@@ -201,30 +201,32 @@ DEFINE_TRACE(Resource)
 
 void Resource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
 {
+    RELEASE_ASSERT(!m_loader);
     m_options = options;
     m_loading = true;
+    m_status = Pending;
 
-    ResourceRequest request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
+    ResourceRequest& request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
     if (!accept().isEmpty())
         request.setHTTPAccept(accept());
+    request.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
 
     // FIXME: It's unfortunate that the cache layer and below get to know anything about fragment identifiers.
     // We should look into removing the expectation of that knowledge from the platform network stacks.
+    KURL urlWithoutFragment = request.url();
     if (!m_fragmentIdentifierForRequest.isNull()) {
         KURL url = request.url();
         url.setFragmentIdentifier(m_fragmentIdentifierForRequest);
         request.setURL(url);
         m_fragmentIdentifierForRequest = String();
     }
-    m_status = Pending;
-    if (m_loader) {
-        ASSERT(m_revalidatingRequest.isNull());
-        RELEASE_ASSERT(m_options.synchronousPolicy == RequestSynchronously);
-        m_loader->changeToSynchronous();
-        return;
-    }
-    m_loader = ResourceLoader::create(fetcher, this, request, options);
-    m_loader->start();
+
+    m_loader = ResourceLoader::create(fetcher, this);
+    m_loader->start(request);
+    // If the request reference is null (i.e., a synchronous revalidation will
+    // null the request), don't make the request non-null by setting the url.
+    if (!request.isNull())
+        request.setURL(urlWithoutFragment);
 }
 
 void Resource::checkNotify()
@@ -424,6 +426,7 @@ const ResourceRequest& Resource::lastResourceRequest() const
 
 void Resource::willFollowRedirect(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
 {
+    newRequest.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
     m_redirectChain.append(RedirectPair(newRequest, redirectResponse));
     m_requestedFromNetworkingLayer = true;
 }
@@ -835,6 +838,7 @@ void Resource::revalidationFailed()
 {
     m_resourceRequest = m_revalidatingRequest;
     m_revalidatingRequest = ResourceRequest();
+    m_redirectChain.clear();
     m_data.clear();
     m_cachedMetadata.clear();
     destroyDecodedDataForFailedRevalidation();

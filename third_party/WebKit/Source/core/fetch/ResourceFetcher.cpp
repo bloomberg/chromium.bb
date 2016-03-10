@@ -262,11 +262,7 @@ bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& 
 {
     if (FetchRequest::DeferredByClient == request.defer())
         return false;
-    if (policy != Use)
-        return true;
-    if (resource->stillNeedsLoad())
-        return true;
-    return request.options().synchronousPolicy == RequestSynchronously && resource->isLoading();
+    return policy != Use || resource->stillNeedsLoad();
 }
 
 // Limit the number of URLs in m_validatedURLs to avoid memory bloat.
@@ -689,6 +685,10 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (request.isConditional())
         return Reload;
 
+    // Don't try to reuse an in-progress async request for a new sync request.
+    if (fetchRequest.options().synchronousPolicy == RequestSynchronously && existingResource->isLoading())
+        return Reload;
+
     // Don't reload resources while pasting.
     if (m_allowStaleResources)
         return Use;
@@ -838,13 +838,6 @@ void ResourceFetcher::reloadImagesIfNotDeferred()
     }
 }
 
-void ResourceFetcher::redirectReceived(Resource* resource, const ResourceResponse& redirectResponse)
-{
-    ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
-    if (it != m_resourceTimingInfoMap.end())
-        it->value->addRedirect(redirectResponse);
-}
-
 void ResourceFetcher::didLoadResource(Resource* resource)
 {
     context().didLoadResource(resource);
@@ -958,11 +951,6 @@ void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceErr
     context().dispatchDidFail(resource->identifier(), error, isInternalRequest);
 }
 
-void ResourceFetcher::willSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
-{
-    context().dispatchWillSendRequest(identifier, request, redirectResponse, initiatorInfo);
-}
-
 void ResourceFetcher::didReceiveResponse(const Resource* resource, const ResourceResponse& response)
 {
     // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
@@ -1004,7 +992,7 @@ void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* lo
     didLoadResource(loader->cachedResource());
 }
 
-void ResourceFetcher::didInitializeResourceLoader(ResourceLoader* loader)
+void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceLoader* loader, ResourceRequest& request)
 {
     if (loader->cachedResource()->shouldBlockLoadEvent()) {
         if (!m_loaders)
@@ -1015,6 +1003,12 @@ void ResourceFetcher::didInitializeResourceLoader(ResourceLoader* loader)
             m_nonBlockingLoaders = ResourceLoaderSet::create();
         m_nonBlockingLoaders->add(loader);
     }
+
+    context().willStartLoadingResource(request);
+    storeResourceTimingInitiatorInformation(resource);
+    TRACE_EVENT_ASYNC_BEGIN2("blink.net", "Resource", resource, "url", resource->url().getString().ascii(), "priority", resource->resourceRequest().priority());
+
+    context().dispatchWillSendRequest(resource->identifier(), request, ResourceResponse(), resource->options().initiatorInfo);
 }
 
 void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
@@ -1025,13 +1019,6 @@ void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
         m_nonBlockingLoaders->remove(loader);
     else
         ASSERT_NOT_REACHED();
-}
-
-void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceRequest& request)
-{
-    context().willStartLoadingResource(request);
-    storeResourceTimingInitiatorInformation(resource);
-    TRACE_EVENT_ASYNC_BEGIN2("blink.net", "Resource", resource, "url", resource->url().getString().ascii(), "priority", resource->resourceRequest().priority());
 }
 
 void ResourceFetcher::stopFetching()
@@ -1060,25 +1047,37 @@ bool ResourceFetcher::defersLoading() const
     return context().defersLoading();
 }
 
-bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& newRequest, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options)
+static bool isManualRedirectFetchRequest(const ResourceRequest& request)
 {
-    if (!context().canRequest(resource->getType(), newRequest, newRequest.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
-        return false;
-    if (options.corsEnabled == IsCORSEnabled) {
-        SecurityOrigin* sourceOrigin = options.securityOrigin.get();
-        if (!sourceOrigin)
-            sourceOrigin = context().getSecurityOrigin();
+    return request.fetchRedirectMode() == WebURLRequest::FetchRedirectModeManual && request.requestContext() == WebURLRequest::RequestContextFetch;
+}
 
-        String errorMessage;
-        StoredCredentials withCredentials = resource->lastResourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-        if (!CrossOriginAccessControl::handleRedirect(sourceOrigin, newRequest, redirectResponse, withCredentials, options, errorMessage)) {
-            resource->setCORSFailed();
-            context().addConsoleMessage(errorMessage);
+bool ResourceFetcher::willFollowRedirect(Resource* resource, ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
+{
+    if (!isManualRedirectFetchRequest(resource->resourceRequest())) {
+        if (!context().canRequest(resource->getType(), newRequest, newRequest.url(), resource->options(), resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
             return false;
+        if (resource->options().corsEnabled == IsCORSEnabled) {
+            SecurityOrigin* sourceOrigin = resource->options().securityOrigin.get();
+            if (!sourceOrigin)
+                sourceOrigin = context().getSecurityOrigin();
+
+            String errorMessage;
+            StoredCredentials withCredentials = resource->lastResourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+            if (!CrossOriginAccessControl::handleRedirect(sourceOrigin, newRequest, redirectResponse, withCredentials, resource->mutableOptions(), errorMessage)) {
+                resource->setCORSFailed();
+                context().addConsoleMessage(errorMessage);
+                return false;
+            }
         }
+        if (resource->getType() == Resource::Image && shouldDeferImageLoad(newRequest.url()))
+            return false;
     }
-    if (resource->getType() == Resource::Image && shouldDeferImageLoad(newRequest.url()))
-        return false;
+
+    ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
+    if (it != m_resourceTimingInfoMap.end())
+        it->value->addRedirect(redirectResponse);
+    context().dispatchWillSendRequest(resource->identifier(), newRequest, redirectResponse, resource->options().initiatorInfo);
     return true;
 }
 

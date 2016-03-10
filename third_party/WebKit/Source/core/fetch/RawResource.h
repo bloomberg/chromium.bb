@@ -80,7 +80,6 @@ private:
     bool shouldIgnoreHTTPStatusCodeErrors() const override { return !isLinkPreload(); }
 
     void willFollowRedirect(ResourceRequest&, const ResourceResponse&) override;
-    void updateRequest(const ResourceRequest&) override;
     void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void setSerializedCachedMetadata(const char*, size_t) override;
     void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
@@ -112,7 +111,6 @@ public:
     virtual void setSerializedCachedMetadata(Resource*, const char*, size_t) { }
     virtual void dataReceived(Resource*, const char* /* data */, size_t /* length */) { }
     virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) { }
-    virtual void updateRequest(Resource*, const ResourceRequest&) { }
     virtual void dataDownloaded(Resource*, int) { }
     virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) { }
 };

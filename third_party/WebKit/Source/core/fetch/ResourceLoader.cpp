@@ -47,27 +47,15 @@
 
 namespace blink {
 
-namespace {
-
-bool isManualRedirectFetchRequest(const ResourceRequest& request)
+ResourceLoader* ResourceLoader::create(ResourceFetcher* fetcher, Resource* resource)
 {
-    return request.fetchRedirectMode() == WebURLRequest::FetchRedirectModeManual && request.requestContext() == WebURLRequest::RequestContextFetch;
+    return new ResourceLoader(fetcher, resource);
 }
 
-} // namespace
-
-ResourceLoader* ResourceLoader::create(ResourceFetcher* fetcher, Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
-{
-    ResourceLoader* loader = new ResourceLoader(fetcher, resource, options);
-    loader->init(request);
-    return loader;
-}
-
-ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource, const ResourceLoaderOptions& options)
+ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource)
     : m_fetcher(fetcher)
     , m_notifiedLoadComplete(false)
     , m_loadingMultipartContent(false)
-    , m_options(options)
     , m_resource(resource)
     , m_state(ConnectionStateNew)
 {
@@ -105,21 +93,11 @@ void ResourceLoader::releaseResources()
     m_fetcher.clear();
 }
 
-void ResourceLoader::init(const ResourceRequest& passedRequest)
-{
-    ResourceRequest request(passedRequest);
-    m_fetcher->willSendRequest(m_resource->identifier(), request, ResourceResponse(), m_options.initiatorInfo);
-    m_originalRequest = m_request = applyOptions(request);
-    m_resource->updateRequest(request);
-    m_fetcher->didInitializeResourceLoader(this);
-}
-
-void ResourceLoader::start()
+void ResourceLoader::start(ResourceRequest& request)
 {
     ASSERT(!m_loader);
-    ASSERT(!m_request.isNull());
 
-    m_fetcher->willStartLoadingResource(m_resource.get(), m_request);
+    m_fetcher->willStartLoadingResource(m_resource.get(), this, request);
     RELEASE_ASSERT(m_state == ConnectionStateNew);
     m_state = ConnectionStateStarted;
 
@@ -128,23 +106,10 @@ void ResourceLoader::start()
     ASSERT(m_loader);
     m_loader->setLoadingTaskRunner(m_fetcher->loadingTaskRunner());
 
-    if (m_options.synchronousPolicy == RequestSynchronously)
-        requestSynchronously();
+    if (m_resource->options().synchronousPolicy == RequestSynchronously)
+        requestSynchronously(request);
     else
-        m_loader->loadAsynchronously(WrappedResourceRequest(m_request), this);
-}
-
-void ResourceLoader::changeToSynchronous()
-{
-    ASSERT(m_options.synchronousPolicy == RequestAsynchronously);
-    ASSERT(m_loader);
-    m_loader->cancel();
-    m_loader.clear();
-    m_loader = adoptPtr(Platform::current()->createURLLoader());
-    ASSERT(m_loader);
-    m_request.setPriority(ResourceLoadPriorityHighest);
-    m_state = ConnectionStateStarted;
-    requestSynchronously();
+        m_loader->loadAsynchronously(WrappedResourceRequest(request), this);
 }
 
 void ResourceLoader::setDefersLoading(bool defers)
@@ -204,7 +169,7 @@ void ResourceLoader::cancel(const ResourceError& error)
         return;
     }
 
-    ResourceError nonNullError = error.isNull() ? ResourceError::cancelledError(m_request.url()) : error;
+    ResourceError nonNullError = error.isNull() ? ResourceError::cancelledError(m_resource->lastResourceRequest().url()) : error;
 
     WTF_LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().getString().latin1().data());
     m_state = ConnectionStateCanceled;
@@ -224,31 +189,17 @@ void ResourceLoader::cancel(const ResourceError& error)
 void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse)
 {
     ASSERT(m_state != ConnectionStateReleased);
+    ASSERT(!passedNewRequest.isNull());
+    ASSERT(!passedRedirectResponse.isNull());
 
-    ResourceRequest& newRequest(applyOptions(passedNewRequest.toMutableResourceRequest()));
-
-    ASSERT(!newRequest.isNull());
+    ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
-    ASSERT(!redirectResponse.isNull());
     newRequest.setFollowedRedirect(true);
-    if (!isManualRedirectFetchRequest(m_resource->resourceRequest()) && !m_fetcher->canAccessRedirect(m_resource.get(), newRequest, redirectResponse, m_options)) {
+
+    if (m_fetcher->willFollowRedirect(m_resource.get(), newRequest, redirectResponse))
+        m_resource->willFollowRedirect(newRequest, redirectResponse);
+    else
         cancel(ResourceError::cancelledDueToAccessCheckError(newRequest.url()));
-        return;
-    }
-    ASSERT(m_state != ConnectionStateReleased);
-
-    applyOptions(newRequest); // canAccessRedirect() can modify m_options so we should re-apply it.
-    m_fetcher->redirectReceived(m_resource.get(), redirectResponse);
-    ASSERT(m_state != ConnectionStateReleased);
-    m_resource->willFollowRedirect(newRequest, redirectResponse);
-    if (newRequest.isNull() || m_state == ConnectionStateReleased)
-        return;
-
-    m_fetcher->willSendRequest(m_resource->identifier(), newRequest, redirectResponse, m_options.initiatorInfo);
-    ASSERT(m_state != ConnectionStateReleased);
-    ASSERT(!newRequest.isNull());
-    m_resource->updateRequest(newRequest);
-    m_request = newRequest;
 }
 
 void ResourceLoader::didReceiveCachedMetadata(WebURLLoader*, const char* data, int length)
@@ -265,7 +216,7 @@ void ResourceLoader::didSendData(WebURLLoader*, unsigned long long bytesSent, un
 bool ResourceLoader::responseNeedsAccessControlCheck() const
 {
     // If the fetch was (potentially) CORS enabled, an access control check of the response is required.
-    return m_options.corsEnabled == IsCORSEnabled;
+    return m_resource->options().corsEnabled == IsCORSEnabled;
 }
 
 void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& response, WebDataConsumerHandle* rawHandle)
@@ -290,16 +241,16 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
                 m_state = ConnectionStateStarted;
                 m_loader = adoptPtr(Platform::current()->createURLLoader());
                 ASSERT(m_loader);
-                ASSERT(!m_request.skipServiceWorker());
-                m_request.setSkipServiceWorker(true);
-                WrappedResourceRequest wrappedRequest(m_request);
-                m_loader->loadAsynchronously(wrappedRequest, this);
+                ResourceRequest request = m_resource->lastResourceRequest();
+                ASSERT(!request.skipServiceWorker());
+                request.setSkipServiceWorker(true);
+                m_loader->loadAsynchronously(WrappedResourceRequest(request), this);
                 return;
             }
         } else {
             if (!m_resource->isCacheValidator() || resourceResponse.httpStatusCode() != 304)
                 m_resource->setResponse(resourceResponse);
-            if (!m_fetcher->canAccessResource(m_resource.get(), m_options.securityOrigin.get(), response.url(), ResourceFetcher::ShouldLogAccessControlErrors)) {
+            if (!m_fetcher->canAccessResource(m_resource.get(), m_resource->options().securityOrigin.get(), response.url(), ResourceFetcher::ShouldLogAccessControlErrors)) {
                 m_fetcher->didReceiveResponse(m_resource.get(), resourceResponse);
                 cancel(ResourceError::cancelledDueToAccessCheckError(KURL(response.url())));
                 return;
@@ -319,7 +270,7 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
         // We only support multipart for images, though the image may be loaded
         // as a main resource that we end up displaying through an ImageDocument.
         if (!m_resource->isImage() && m_resource->getType() != Resource::MainResource) {
-            cancel();
+            cancel(ResourceError::cancelledError(resourceResponse.url()));
             return;
         }
         m_loadingMultipartContent = true;
@@ -337,12 +288,12 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
 
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
-        m_fetcher->didFailLoading(m_resource.get(), ResourceError::cancelledError(m_request.url()));
+        m_fetcher->didFailLoading(m_resource.get(), ResourceError::cancelledError(resourceResponse.url()));
     }
 
     ASSERT(m_state != ConnectionStateReleased);
     m_resource->error(Resource::LoadError);
-    cancel();
+    cancel(ResourceError::cancelledError(resourceResponse.url()));
 }
 
 void ResourceLoader::didReceiveResponse(WebURLLoader* loader, const WebURLResponse& response)
@@ -416,11 +367,14 @@ void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
     releaseResources();
 }
 
-void ResourceLoader::requestSynchronously()
+void ResourceLoader::requestSynchronously(ResourceRequest& request)
 {
     // downloadToFile is not supported for synchronous requests.
-    ASSERT(!m_request.downloadToFile());
+    ASSERT(!request.downloadToFile());
     ASSERT(m_loader);
+
+    // Synchronous requests should always be max priority, lest they hang the renderer.
+    request.setPriority(ResourceLoadPriorityHighest);
 
     if (m_fetcher->defersLoading()) {
         cancel();
@@ -428,7 +382,7 @@ void ResourceLoader::requestSynchronously()
     }
 
     RefPtrWillBeRawPtr<Resource> protectResource(m_resource.get());
-    WrappedResourceRequest requestIn(m_request);
+    WrappedResourceRequest requestIn(request);
     WebURLResponse responseOut;
     responseOut.initialize();
     WebURLError errorOut;
@@ -459,12 +413,6 @@ void ResourceLoader::requestSynchronously()
         m_resource->setResourceBuffer(dataOut);
     }
     didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength);
-}
-
-ResourceRequest& ResourceLoader::applyOptions(ResourceRequest& request) const
-{
-    request.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
-    return request;
 }
 
 } // namespace blink

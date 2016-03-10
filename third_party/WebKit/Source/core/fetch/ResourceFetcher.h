@@ -107,23 +107,20 @@ public:
     bool isFetching() const;
 
     void didLoadResource(Resource*);
-    void redirectReceived(Resource*, const ResourceResponse&);
+    bool willFollowRedirect(Resource*, ResourceRequest&, const ResourceResponse&);
     void didFinishLoading(Resource*, double finishTime, int64_t encodedDataLength);
     void didFailLoading(const Resource*, const ResourceError&);
-    void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void didReceiveResponse(const Resource*, const ResourceResponse&);
     void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength);
     void didDownloadData(const Resource*, int dataLength, int encodedDataLength);
     void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*);
-    void didInitializeResourceLoader(ResourceLoader*);
-    void willStartLoadingResource(Resource*, ResourceRequest&);
+    void willStartLoadingResource(Resource*, ResourceLoader*, ResourceRequest&);
     bool defersLoading() const;
 
     enum AccessControlLoggingDecision {
         ShouldLogAccessControlErrors,
         ShouldNotLogAccessControlErrors
     };
-    bool canAccessRedirect(Resource*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&);
     bool canAccessResource(Resource*, SecurityOrigin*, const KURL&, AccessControlLoggingDecision) const;
     bool isControlledByServiceWorker() const;
 

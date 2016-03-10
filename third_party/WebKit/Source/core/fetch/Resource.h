@@ -123,6 +123,7 @@ public:
     const KURL& url() const { return m_resourceRequest.url();}
     Type getType() const { return static_cast<Type>(m_type); }
     const ResourceLoaderOptions& options() const { return m_options; }
+    ResourceLoaderOptions& mutableOptions() { return m_options; }
     void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
 
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
@@ -184,7 +185,6 @@ public:
 
     virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);
 
-    virtual void updateRequest(const ResourceRequest&) { }
     virtual void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
     void setResponse(const ResourceResponse& response) { m_response = response; }
     const ResourceResponse& response() const { return m_response; }

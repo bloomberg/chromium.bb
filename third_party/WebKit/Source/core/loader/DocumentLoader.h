@@ -175,7 +175,6 @@ private:
     void mainReceivedError(const ResourceError&);
     void cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse&);
     void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) final;
-    void updateRequest(Resource*, const ResourceRequest&) final;
     void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) final;
     void dataReceived(Resource*, const char* data, size_t length) final;
     void processData(const char* data, size_t length);
