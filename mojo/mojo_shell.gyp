@@ -121,6 +121,7 @@
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/base/base.gyp:base_i18n',
       '<(DEPTH)/base/base.gyp:base_static',
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/mojo/mojo_platform_handle.gyp:platform_handle',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_message_pump_lib',
