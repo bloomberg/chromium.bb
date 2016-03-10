@@ -38,7 +38,7 @@ NSString* const kBlobToBase64StringScript =
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_LoadsCorrectHTML LoadsCorrectHTML
 #else
-#define MAYBE_LoadsCorrectHTML FLAKY_LoadsCorrectHTML
+#define MAYBE_LoadsCorrectHTML DISABLED_LoadsCorrectHTML
 #endif
 TEST_F(CRWJSPOSTRequestLoaderTest, MAYBE_LoadsCorrectHTML) {
   // Set up necessary objects.
