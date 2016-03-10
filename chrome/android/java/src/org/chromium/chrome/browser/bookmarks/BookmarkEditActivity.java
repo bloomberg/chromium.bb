@@ -71,8 +71,8 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
             if (mModel.doesBookmarkExist(mBookmarkId)) {
                 updateViewContent(true);
             } else {
-                Log.wtf(TAG, "A partner bookmark might be removed while the user is editing it.",
-                        new Exception(TAG));
+                // This happens either when the user clicks delete button or partner bookmark is
+                // removed in background.
                 finish();
             }
         }
