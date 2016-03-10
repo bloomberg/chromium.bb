@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/engine/app/blimp_engine_config.h"
@@ -72,14 +73,32 @@ net::IPAddress GetIPv4AnyAddress() {
   return net::IPAddress(0, 0, 0, 0);
 }
 
+// Proxies calls to TaskRunner::PostTask while stripping the return value,
+// which provides a suitable function prototype for binding a base::Closure.
+void PostTask(const scoped_refptr<base::TaskRunner>& task_runner,
+              const base::Closure& closure) {
+  task_runner->PostTask(FROM_HERE, closure);
+}
+
+// Returns a closure that quits the current (bind-time) MessageLoop.
+base::Closure QuitCurrentMessageLoopClosure() {
+  return base::Bind(&PostTask, base::ThreadTaskRunnerHandle::Get(),
+                    base::MessageLoop::QuitWhenIdleClosure());
+}
+
 }  // namespace
 
 // EngineNetworkComponents is created by the BlimpEngineSession on the UI
 // thread, and then used and destroyed on the IO thread.
-class EngineNetworkComponents {
+class EngineNetworkComponents : public ConnectionHandler,
+                                public ConnectionErrorObserver {
  public:
-  explicit EngineNetworkComponents(net::NetLog* net_log);
-  ~EngineNetworkComponents();
+  // |net_log|: The log to use for network-related events.
+  // |quit_closure|: A closure which will terminate the engine when
+  //                 invoked.
+  EngineNetworkComponents(net::NetLog* net_log,
+                          const base::Closure& quit_closure);
+  ~EngineNetworkComponents() override;
 
   // Sets up network components and starts listening for incoming connection.
   // This should be called after all features have been registered so that
@@ -89,7 +108,17 @@ class EngineNetworkComponents {
   BrowserConnectionHandler* GetBrowserConnectionHandler();
 
  private:
+  // ConnectionHandler implementation.
+  void HandleConnection(scoped_ptr<BlimpConnection> connection) override;
+
+  // ConnectionErrorObserver implementation.
+  // Signals the engine session that an authenticated connection was
+  // terminated.
+  void OnConnectionError(int error) override;
+
   net::NetLog* net_log_;
+  base::Closure quit_closure_;
+
   scoped_ptr<BrowserConnectionHandler> connection_handler_;
   scoped_ptr<EngineAuthenticationHandler> authentication_handler_;
   scoped_ptr<EngineConnectionManager> connection_manager_;
@@ -97,8 +126,12 @@ class EngineNetworkComponents {
   DISALLOW_COPY_AND_ASSIGN(EngineNetworkComponents);
 };
 
-EngineNetworkComponents::EngineNetworkComponents(net::NetLog* net_log)
-    : net_log_(net_log), connection_handler_(new BrowserConnectionHandler) {}
+EngineNetworkComponents::EngineNetworkComponents(
+    net::NetLog* net_log,
+    const base::Closure& quit_closure)
+    : net_log_(net_log),
+      quit_closure_(quit_closure),
+      connection_handler_(new BrowserConnectionHandler) {}
 
 EngineNetworkComponents::~EngineNetworkComponents() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -108,11 +141,12 @@ void EngineNetworkComponents::Initialize(const std::string& client_token) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!connection_manager_);
 
-  // Creates and connects net components.
-  // A BlimpConnection flows from
-  // connection_manager_ --> authentication_handler_ --> connection_handler_
-  authentication_handler_ = make_scoped_ptr(
-      new EngineAuthenticationHandler(connection_handler_.get(), client_token));
+  // Plumb authenticated connections from the authentication handler
+  // to |this| (which will then pass it to |connection_handler_|.
+  authentication_handler_ =
+      make_scoped_ptr(new EngineAuthenticationHandler(this, client_token));
+
+  // Plumb unauthenticated connections to |authentication_handler_|.
   connection_manager_ = make_scoped_ptr(
       new EngineConnectionManager(authentication_handler_.get()));
 
@@ -120,6 +154,18 @@ void EngineNetworkComponents::Initialize(const std::string& client_token) {
   net::IPEndPoint address(GetIPv4AnyAddress(), kDefaultPort);
   connection_manager_->AddTransport(
       make_scoped_ptr(new TCPEngineTransport(address, net_log_)));
+}
+
+void EngineNetworkComponents::HandleConnection(
+    scoped_ptr<BlimpConnection> connection) {
+  // Observe |connection| for disconnection events.
+  connection->AddConnectionErrorObserver(this);
+  connection_handler_->HandleConnection(std::move(connection));
+}
+
+void EngineNetworkComponents::OnConnectionError(int error) {
+  DVLOG(1) << "EngineNetworkComponents::OnConnectionError(" << error << ")";
+  quit_closure_.Run();
 }
 
 BrowserConnectionHandler*
@@ -134,7 +180,9 @@ BlimpEngineSession::BlimpEngineSession(
     : browser_context_(std::move(browser_context)),
       engine_config_(engine_config),
       screen_(new BlimpScreen),
-      net_components_(new EngineNetworkComponents(net_log)) {
+      net_components_(
+          new EngineNetworkComponents(net_log,
+                                      QuitCurrentMessageLoopClosure())) {
   DCHECK(engine_config_);
   screen_->UpdateDisplayScaleAndSize(kDefaultScaleFactor,
                                      gfx::Size(kDefaultDisplayWidth,
@@ -144,6 +192,10 @@ BlimpEngineSession::BlimpEngineSession(
 
 BlimpEngineSession::~BlimpEngineSession() {
   render_widget_feature_.RemoveDelegate(kDummyTabId);
+
+  // Ensure that all WebContents are torn down first, since teardown will
+  // trigger RenderViewDeleted callbacks to their observers.
+  web_contents_.reset();
 
   // Safely delete network components on the IO thread.
   content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
