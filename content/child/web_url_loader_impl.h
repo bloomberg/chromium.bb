@@ -68,6 +68,12 @@ class CONTENT_EXPORT WebURLLoaderImpl
                          int intra_priority_value) override;
   void setLoadingTaskRunner(blink::WebTaskRunner* loading_task_runner) override;
 
+  // This is a utility function for multipart image resources.
+  static bool ParseMultipartHeadersFromBody(const char* bytes,
+                                            size_t size,
+                                            blink::WebURLResponse* response,
+                                            size_t* end);
+
  private:
   class Context;
   class RequestPeerImpl;

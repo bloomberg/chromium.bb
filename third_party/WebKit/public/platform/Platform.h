@@ -120,6 +120,7 @@ class WebThread;
 class WebTrialTokenValidator;
 class WebURL;
 class WebURLLoader;
+class WebURLResponse;
 class WebUnitTestSupport;
 struct WebLocalizedString;
 struct WebSize;
@@ -324,6 +325,10 @@ public:
     virtual bool isReservedIPAddress(const WebString& host) const { return false; }
 
     virtual bool portAllowed(const WebURL&) const { return false; }
+
+    // Returns true and stores the position of the end of the headers to |*end|
+    // if the headers part ends in |bytes[0..size]|. Returns false otherwise.
+    virtual bool parseMultipartHeadersFromBody(const char* bytes, size_t /* size */, WebURLResponse*, size_t* end) const { return false; }
 
     // Plugins -------------------------------------------------------------
 

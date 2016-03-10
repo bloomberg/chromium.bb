@@ -83,6 +83,17 @@ namespace content {
 
 namespace {
 
+// The list of response headers that we do not copy from the original
+// response when generating a WebURLResponse for a MIME payload.
+const char* const kReplaceHeaders[] = {
+  "content-type",
+  "content-length",
+  "content-disposition",
+  "content-range",
+  "range",
+  "set-cookie"
+};
+
 using HeadersVector = ResourceDevToolsInfo::HeadersVector;
 
 // Converts timing data from |load_timing| to the format used by WebKit.
@@ -1141,6 +1152,54 @@ void WebURLLoaderImpl::setLoadingTaskRunner(
   // There's no guarantee on the lifetime of |loading_task_runner| so we take a
   // copy.
   context_->SetWebTaskRunner(make_scoped_ptr(loading_task_runner->clone()));
+}
+
+// This function is implemented here because it uses net functions. it is
+// tested in
+// third_party/WebKit/Source/core/fetch/MultipartImageResourceParserTest.cpp.
+bool WebURLLoaderImpl::ParseMultipartHeadersFromBody(
+    const char* bytes,
+    size_t size,
+    blink::WebURLResponse* response,
+    size_t* end) {
+  int headers_end_pos =
+      net::HttpUtil::LocateEndOfAdditionalHeaders(bytes, size, 0);
+
+  if (headers_end_pos < 0)
+    return false;
+
+  *end = headers_end_pos;
+  // Eat headers and prepend a status line as is required by
+  // HttpResponseHeaders.
+  std::string headers("HTTP/1.1 200 OK\r\n");
+  headers.append(bytes, headers_end_pos);
+
+  scoped_refptr<net::HttpResponseHeaders> response_headers =
+      new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+
+  std::string mime_type;
+  response_headers->GetMimeType(&mime_type);
+  response->setMIMEType(WebString::fromUTF8(mime_type));
+
+  std::string charset;
+  response_headers->GetCharset(&charset);
+  response->setTextEncodingName(WebString::fromUTF8(charset));
+
+  // Copy headers listed in kReplaceHeaders to the response.
+  for (size_t i = 0; i < arraysize(kReplaceHeaders); ++i) {
+    std::string name(kReplaceHeaders[i]);
+    std::string value;
+    WebString webStringName(WebString::fromLatin1(name));
+    size_t iterator = 0;
+
+    response->clearHTTPHeaderField(webStringName);
+    while (response_headers->EnumerateHeader(&iterator, name, &value)) {
+      response->addHTTPHeaderField(webStringName,
+                                   WebString::fromLatin1(value));
+    }
+  }
+  return true;
 }
 
 }  // namespace content

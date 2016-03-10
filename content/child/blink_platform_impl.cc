@@ -467,6 +467,15 @@ bool BlinkPlatformImpl::portAllowed(const blink::WebURL& url) const {
   return net::IsPortAllowedForScheme(gurl.EffectiveIntPort(), gurl.scheme());
 }
 
+bool BlinkPlatformImpl::parseMultipartHeadersFromBody(
+    const char* bytes,
+    size_t size,
+    blink::WebURLResponse* response,
+    size_t* end) const {
+  return WebURLLoaderImpl::ParseMultipartHeadersFromBody(
+      bytes, size, response, end);
+}
+
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
   scoped_ptr<WebThreadImplForWorkerScheduler> thread(
       new WebThreadImplForWorkerScheduler(name));
