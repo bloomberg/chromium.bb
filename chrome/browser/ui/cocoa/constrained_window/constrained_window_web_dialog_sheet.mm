@@ -22,8 +22,24 @@
   if (web_dialog_delegate_) {
     gfx::Size size;
     web_dialog_delegate_->GetDialogSize(&size);
-    [customWindow_ setContentSize:NSMakeSize(size.width(), size.height())];
+
+    // If the dialog has autoresizing enabled, |size| will be empty. Use the
+    // last known dialog size.
+    NSSize content_size = size.IsEmpty() ? current_size_ :
+        NSMakeSize(size.width(), size.height());
+    [customWindow_ setContentSize:content_size];
   }
+  [super updateSheetPosition];
+}
+
+- (void)resizeWithNewSize:(NSSize)size {
+  current_size_ = size;
+  [customWindow_ setContentSize:current_size_];
+
+  // self's updateSheetPosition() sets |customWindow_|'s contentSize to a
+  // fixed dialog size. Here, we want to resize to |size| instead. Use
+  // super rather than self to bypass the setContentSize() call for the fixed
+  // size.
   [super updateSheetPosition];
 }
 

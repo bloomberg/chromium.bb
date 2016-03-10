@@ -80,8 +80,8 @@ class LoginHandlerMac : public LoginHandler,
     base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
         [[CustomConstrainedWindowSheet alloc]
             initWithCustomWindow:[sheet_controller_ window]]);
-    constrained_window_.reset(new ConstrainedWindowMac(
-        this, requesting_contents, sheet));
+    constrained_window_ = CreateAndShowWebModalDialogMac(
+        this, requesting_contents, sheet);
 
     NotifyAuthNeeded();
   }

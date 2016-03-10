@@ -203,9 +203,9 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
     base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
        [[CustomConstrainedWindowSheet alloc]
            initWithCustomWindow:[self window]]);
-    constrained_window_.reset(
-       new ConstrainedWindowMac(
-          webContentsDelegate_.get(), webContents_, sheet));
+    constrained_window_ =
+        CreateAndShowWebModalDialogMac(
+            webContentsDelegate_.get(), webContents_, sheet);
 
     // The close button needs to call CloseWebContentsModalDialog() on the
     // constrained window isntead of just [window close] so grab a reference to

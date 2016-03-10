@@ -14,6 +14,7 @@ class WebDialogDelegate;
 // Represents a custom sheet for web dialog.
 @interface WebDialogConstrainedWindowSheet : CustomConstrainedWindowSheet {
  @private
+  NSSize current_size_;
   ui::WebDialogDelegate* web_dialog_delegate_;  // Weak.
 }
 

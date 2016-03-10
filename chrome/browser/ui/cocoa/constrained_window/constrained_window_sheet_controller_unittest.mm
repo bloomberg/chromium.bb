@@ -59,6 +59,10 @@ const int kSystemSheetReturnCode = 77;
 - (void)updateSheetPosition {
 }
 
+- (void)resizeWithNewSize:(NSSize)size {
+  // NOOP
+}
+
 - (NSWindow*)sheetWindow {
   return [alert_ window];
 }

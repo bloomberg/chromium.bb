@@ -59,7 +59,7 @@ ProfileSigninConfirmationDialogCocoa::ProfileSigninConfirmationDialogCocoa(
   [[window contentView] addSubview:[controller_ view]];
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
-  window_.reset(new ConstrainedWindowMac(this, web_contents, sheet));
+  window_ = CreateAndShowWebModalDialogMac(this, web_contents, sheet);
 }
 
 ProfileSigninConfirmationDialogCocoa::~ProfileSigninConfirmationDialogCocoa() {
