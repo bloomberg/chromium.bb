@@ -44,10 +44,6 @@ void SavePasswordInfoBarDelegate::Create(
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.InfoBarResponse",
-                            infobar_response_,
-                            password_manager::metrics_util::NUM_RESPONSE_TYPES);
-
   password_manager::metrics_util::LogUIDismissalReason(infobar_response_);
 
   if (should_show_first_run_experience_) {
@@ -65,7 +61,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     bool should_show_first_run_experience)
     : PasswordManagerInfoBarDelegate(),
       form_to_save_(std::move(form_to_save)),
-      infobar_response_(password_manager::metrics_util::NO_RESPONSE),
+      infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       should_show_first_run_experience_(should_show_first_run_experience),
       web_contents_(web_contents) {
   base::string16 message;
@@ -96,7 +92,7 @@ SavePasswordInfoBarDelegate::GetIdentifier() const {
 
 void SavePasswordInfoBarDelegate::InfoBarDismissed() {
   DCHECK(form_to_save_.get());
-  infobar_response_ = password_manager::metrics_util::INFOBAR_DISMISSED;
+  infobar_response_ = password_manager::metrics_util::CLICKED_CANCEL;
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(
@@ -109,13 +105,13 @@ base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(
 bool SavePasswordInfoBarDelegate::Accept() {
   DCHECK(form_to_save_.get());
   form_to_save_->Save();
-  infobar_response_ = password_manager::metrics_util::REMEMBER_PASSWORD;
+  infobar_response_ = password_manager::metrics_util::CLICKED_SAVE;
   return true;
 }
 
 bool SavePasswordInfoBarDelegate::Cancel() {
   DCHECK(form_to_save_.get());
   form_to_save_->PermanentlyBlacklist();
-  infobar_response_ = password_manager::metrics_util::NEVER_REMEMBER_PASSWORD;
+  infobar_response_ = password_manager::metrics_util::CLICKED_NEVER;
   return true;
 }

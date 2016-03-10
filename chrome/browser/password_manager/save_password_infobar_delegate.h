@@ -62,7 +62,7 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   scoped_ptr<password_manager::PasswordFormManager> form_to_save_;
 
   // Used to track the results we get from the info bar.
-  password_manager::metrics_util::ResponseType infobar_response_;
+  password_manager::metrics_util::UIDismissalReason infobar_response_;
 
   // Measures the "Save password?" prompt lifetime. Used to report an UMA
   // signal.

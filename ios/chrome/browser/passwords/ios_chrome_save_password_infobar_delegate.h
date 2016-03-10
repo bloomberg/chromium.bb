@@ -54,7 +54,7 @@ class IOSChromeSavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   scoped_ptr<password_manager::PasswordFormManager> form_to_save_;
 
   // Used to track the results we get from the info bar.
-  password_manager::metrics_util::ResponseType infobar_response_;
+  password_manager::metrics_util::UIDismissalReason infobar_response_;
 
   // Whether to show the password manager branded as Smart Lock.
   bool is_smart_lock_branding_enabled_;

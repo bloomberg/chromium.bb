@@ -34181,6 +34181,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.InfoBarResponse" enum="InfoBarResponse">
   <owner>vabr@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 03/2016. This metric has been replaced by
+    PasswordManager.UIDismissalReason.
+  </obsolete>
   <summary>
     The distribution of responses to the &quot;Do you want Chrome to remember
     this password&quot;? info bar prompt.

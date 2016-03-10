@@ -39,16 +39,14 @@ void IOSChromeSavePasswordInfoBarDelegate::Create(
 }
 
 IOSChromeSavePasswordInfoBarDelegate::~IOSChromeSavePasswordInfoBarDelegate() {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.InfoBarResponse",
-                            infobar_response_,
-                            password_manager::metrics_util::NUM_RESPONSE_TYPES);
+  password_manager::metrics_util::LogUIDismissalReason(infobar_response_);
 }
 
 IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
     bool is_smart_lock_branding_enabled,
     scoped_ptr<PasswordFormManager> form_to_save)
     : form_to_save_(std::move(form_to_save)),
-      infobar_response_(password_manager::metrics_util::NO_RESPONSE),
+      infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       is_smart_lock_branding_enabled_(is_smart_lock_branding_enabled) {}
 
 infobars::InfoBarDelegate::Type
@@ -86,14 +84,14 @@ base::string16 IOSChromeSavePasswordInfoBarDelegate::GetButtonLabel(
 bool IOSChromeSavePasswordInfoBarDelegate::Accept() {
   DCHECK(form_to_save_);
   form_to_save_->Save();
-  infobar_response_ = password_manager::metrics_util::REMEMBER_PASSWORD;
+  infobar_response_ = password_manager::metrics_util::CLICKED_SAVE;
   return true;
 }
 
 bool IOSChromeSavePasswordInfoBarDelegate::Cancel() {
   DCHECK(form_to_save_);
   form_to_save_->PermanentlyBlacklist();
-  infobar_response_ = password_manager::metrics_util::NEVER_REMEMBER_PASSWORD;
+  infobar_response_ = password_manager::metrics_util::CLICKED_NEVER;
   return true;
 }
 

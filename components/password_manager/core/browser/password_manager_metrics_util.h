@@ -128,15 +128,6 @@ void LogUMAHistogramBoolean(const std::string& name, bool sample);
 // Log the |reason| a user dismissed the password manager UI.
 void LogUIDismissalReason(UIDismissalReason reason);
 
-// Given a ResponseType, log the appropriate UIResponse. We'll use this
-// mapping to migrate from "PasswordManager.InfoBarResponse" to
-// "PasswordManager.UIDismissalReason" so we can accurately evaluate the
-// impact of the bubble UI.
-//
-// TODO(mkwst): Drop this (and the infobar metric itself) once the new metric
-// has rolled out to stable.
-void LogUIDismissalReason(ResponseType type);
-
 // Log the appropriate display disposition.
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);
 
