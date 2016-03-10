@@ -16,11 +16,14 @@ class BrowserContext;
 
 namespace arc {
 using CanHandleResolutionCallback = base::Callback<void(bool)>;
-}
 
-namespace arc {
-
+// Launch an app and let the system decide how big and where to place it.
 bool LaunchApp(content::BrowserContext* context, const std::string& app_id);
+
+// Launch an app and place it at the specified coordinates.
+bool LaunchAppWithRect(content::BrowserContext* context,
+                       const std::string& app_id,
+                       const gfx::Rect& target_rect);
 
 // Tests if the application can use the given target resolution.
 // The callback will receive the information once known.

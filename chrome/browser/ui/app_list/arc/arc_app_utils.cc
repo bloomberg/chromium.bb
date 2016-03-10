@@ -4,17 +4,125 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 
+#include "ash/shell.h"
+#include "base/bind.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/arc_bridge_service.h"
+#include "ui/aura/window.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 
 namespace arc {
 
-void GetAndroidAppTargetRect(gfx::Rect& target_rect) {
-  // TODO: Figure out where to put the android window.
-  target_rect.SetRect(0, 0, 0, 0);
-}
+namespace {
 
-bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
+// A class which handles the asynchronous ARC runtime callback to figure out if
+// an app can handle a certain resolution or not.
+// After LaunchAndRelease() got called, the object will destroy itself once
+// done.
+class LaunchAppWithoutSize {
+ public:
+  LaunchAppWithoutSize(content::BrowserContext* context, std::string app_id) :
+      context_(context), app_id_(app_id) {}
+
+  // This will launch the request and after the return the creator does not
+  // need to delete the object anymore.
+  bool LaunchAndRelease() {
+    landscape_ = gfx::Rect(0, 0, NEXUS7_WIDTH, NEXUS7_HEIGHT);
+    if (!ash::Shell::HasInstance()) {
+      // Skip this if there is no Ash shell.
+      LaunchAppWithRect(context_, app_id_, landscape_);
+      delete this;
+      return true;
+    }
+    bool result = CanHandleResolution(context_, app_id_, landscape_,
+        base::Bind(&LaunchAppWithoutSize::Callback, base::Unretained(this)));
+    if (!result)
+      delete this;
+    return result;
+  }
+
+ private:
+  // Default sizes to use.
+  static const int NEXUS7_WIDTH = 1170;
+  static const int NEXUS7_HEIGHT = 800;
+  static const int NEXUS6_WIDTH = 410;
+  static const int NEXUS6_HEIGHT = 730;
+
+  // Constants which are (for now) defined by constants coming from Wayland.
+  static const int WINDOW_TITLE_HEIGHT = 30;
+
+  content::BrowserContext* context_;
+  const std::string app_id_;
+  gfx::Rect landscape_;
+
+  // The callback handler which gets called from the CanHandleResolution
+  // function.
+  void Callback(bool can_handle) {
+    gfx::Size target_size = can_handle ? landscape_.size() :
+        gfx::Size(NEXUS6_WIDTH, NEXUS6_HEIGHT);
+    LaunchAppWithRect(context_, app_id_, getTargetRect(target_size));
+    // Now that we are done, we can delete ourselves.
+    delete this;
+  }
+
+  // Find a proper size and position for a given rectangle on the screen.
+  // TODO(skuhne): This needs more consideration, but it is lacking
+  // WindowPositioner functionality since we do not have an Aura::Window yet.
+  gfx::Rect getTargetRect(const gfx::Size& size) {
+    // Make sure that the window will fit into our workspace.
+    // Note that Arc++ will always be on the primary screen (for now).
+    // Note that Android's coordinate system is only valid inside the working
+    // area. We can therefore ignore the provided left / top offsets.
+    aura::Window* root = ash::Shell::GetPrimaryRootWindow();
+    gfx::Rect work_area =
+        gfx::Screen::GetScreen()->GetDisplayNearestWindow(root).work_area();
+
+    // For what Android is concerned, the title bar starts at -TITLE_BAR_HEIGHT.
+    // as such we deduct the title bar height simply from the height, but leave
+    // the top as it is.
+    work_area.set_height(work_area.height() - WINDOW_TITLE_HEIGHT);
+    gfx::Rect result(size);
+
+    // Make sure that the window fits entirely into the work area.
+    if (size.width() < work_area.width() ||
+        size.height() < work_area.height()) {
+      float aspect = static_cast<float>(size.width()) /
+                     static_cast<float>(size.height());
+      // Calculate the complementary size from the aspect ratio.
+      int w = static_cast<int>(static_cast<float>(work_area.height()) * aspect);
+      int h = static_cast<int>(static_cast<float>(work_area.width()) / aspect);
+      // Overwrite the dimension which is too big with the possible maximum,
+      // keeping the complementary size.
+      if (h > work_area.height()) {
+          result.set_height(work_area.height());
+          result.set_width(w);
+      } else {
+          result.set_width(work_area.width());
+          result.set_height(h);
+      }
+    }
+
+    // ChromeOS does not give us much logic at this time, so we emulate what
+    // WindowPositioner::GetDefaultWindowBounds does for now.
+    // Note: Android's positioning will not overlap the shelf - as such we can
+    // ignore the given workspace inset.
+    // TODO(skuhne): Replace this with some more useful logic from the
+    // WindowPositioner.
+    result.set_x((work_area.width() - result.width()) / 2);
+    result.set_y((work_area.height() - result.height()) / 2);
+    return result;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(LaunchAppWithoutSize);
+};
+
+}  // namespace
+
+bool LaunchAppWithRect(content::BrowserContext* context,
+                       const std::string& app_id,
+                       const gfx::Rect& target_rect) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   CHECK(prefs);
 
@@ -42,9 +150,6 @@ bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
     return false;
   }
 
-  gfx::Rect target_rect;
-  GetAndroidAppTargetRect(target_rect);
-
   arc::ScreenRectPtr rect = arc::ScreenRect::New();
   rect->left = target_rect.x();
   rect->right = target_rect.right();
@@ -56,6 +161,10 @@ bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
   prefs->SetLastLaunchTime(app_id, base::Time::Now());
 
   return true;
+}
+
+bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
+  return (new LaunchAppWithoutSize(context, app_id))->LaunchAndRelease();
 }
 
 bool CanHandleResolution(content::BrowserContext* context,
