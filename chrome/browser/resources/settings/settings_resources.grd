@@ -178,6 +178,12 @@
       <structure name="IDR_SETTINGS_CERTIFICATES_BROWSER_PROXY_JS"
                  file="certificate_manager_page/certificates_browser_proxy.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CERTIFICATES_CA_TRUST_EDIT_DIALOG_JS"
+                 file="certificate_manager_page/ca_trust_edit_dialog.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CERTIFICATES_CA_TRUST_EDIT_DIALOG_HTML"
+                 file="certificate_manager_page/ca_trust_edit_dialog.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_PAGE_CSS"
                  file="clear_browsing_data_page/clear_browsing_data_page.css"
                  type="chrome_html" />

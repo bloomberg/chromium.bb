@@ -135,6 +135,32 @@ TEST_F('CrSettingsSearchEnginesTest', 'SearchEngines', function() {
   mocha.run();
 });
 
+/**
+ * Test fixture for chrome/browser/resources/settings/certificate_manager_page/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsCertificateManagerTest() {}
+
+CrSettingsCertificateManagerTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/certificate_manager_page/' +
+      'certificate_manager_page.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'certificate_manager_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsCertificateManagerTest', 'CertificateManager', function() {
+  certificate_manager_page.registerCaTrustEditDialogTests();
+  mocha.run();
+});
+
 GEN('#if defined(OS_CHROMEOS)');
 /**
  * Test fixture for device-page.

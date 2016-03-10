@@ -17,15 +17,4 @@
  */
 Polymer({
   is: 'settings-certificate-manager-page',
-
-  properties: {
-    /**
-     * Preferences state.
-     * TODO(dschuyler) check whether this is necessary.
-     */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-  },
 });

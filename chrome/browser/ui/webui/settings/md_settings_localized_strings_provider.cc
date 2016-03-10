@@ -189,6 +189,19 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
       {"certificateManagerExport", IDS_SETTINGS_CERTIFICATE_MANAGER_EXPORT},
       {"certificateManagerDelete", IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE},
       {"certificateManagerDone", IDS_SETTINGS_CERTIFICATE_MANAGER_DONE},
+       // CA trust edit dialog.
+      {"certificateManagerCaTrustEditDialogTitle",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_TITLE},
+      {"certificateManagerCaTrustEditDialogDescription",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_DESCRIPTION},
+      {"certificateManagerCaTrustEditDialogExplanation",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_EXPLANATION},
+      {"certificateManagerCaTrustEditDialogSsl",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_SSL},
+      {"certificateManagerCaTrustEditDialogEmail",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_EMAIL},
+      {"certificateManagerCaTrustEditDialogObjSign",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_OBJ_SIGN},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

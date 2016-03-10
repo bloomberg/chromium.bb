@@ -239,6 +239,26 @@
     You have certificates from these organizations that identify you:
   </message>
 
+  <!-- Certificate Manager Page, Edit Certificate Authority Trust dialog-->
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_TITLE" desc="Title of the certificate manager edit trust dialog">
+    Certificate authority
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_DESCRIPTION" desc="Line displayed in certificate manager edit trust dialog before the checkboxes for setting certificate trust flags">
+    Edit trust settings:
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_EXPLANATION" desc="Description in dialog for editing Certification Authority trust flags">
+    The certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" represents a Certification Authority.
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_SSL" desc="Description in Certification Authority trust dialog for the SSL trust checkbox.">
+    Trust this certificate for identifying websites.
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_EMAIL" desc="Description in Certification Authority trust dialog for the Email trust checkbox.">
+    Trust this certificate for identifying email users.
+  </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_OBJ_SIGN" desc="Description in Certification Authority trust dialog for the Code Signing trust checkbox.">
+    Trust this certificate for identifying software makers.
+  </message>
+
   <!-- Clear Browsing Data -->
   <message name="IDS_SETTINGS_CLEAR_FOLLOWING_ITEMS_FROM" desc="Label at the top of the client area of the dialog, preceding the period combo box">
     Clear the following items from
