@@ -885,7 +885,6 @@ test("cc_unittests") {
     "trees/layer_tree_host_pixeltest_tiles.cc",
     "trees/layer_tree_host_unittest.cc",
     "trees/layer_tree_host_unittest_animation.cc",
-    "trees/layer_tree_host_unittest_animation_timelines.cc",
     "trees/layer_tree_host_unittest_context.cc",
     "trees/layer_tree_host_unittest_copyrequest.cc",
     "trees/layer_tree_host_unittest_damage.cc",
