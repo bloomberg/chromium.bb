@@ -82,6 +82,13 @@ void Platform::shutdown()
     s_platform = 0;
 }
 
+void Platform::setCurrentPlatformForTesting(Platform* platform)
+{
+    s_platform = platform;
+    if (s_platform)
+        s_platform->m_mainThread = platform->currentThread();
+}
+
 Platform* Platform::current()
 {
     return s_platform;

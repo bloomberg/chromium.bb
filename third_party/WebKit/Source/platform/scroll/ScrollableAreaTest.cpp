@@ -75,26 +75,22 @@ private:
 
 class ScrollableAreaTest : public testing::Test {
 public:
-    ScrollableAreaTest() : m_oldPlatform(nullptr) { }
+    ScrollableAreaTest() { }
 
     void SetUp() override
     {
-        m_oldPlatform = Platform::current();
         TestingPlatformSupport::Config config;
-        config.compositorSupport = m_oldPlatform->compositorSupport();
+        config.compositorSupport = Platform::current()->compositorSupport();
         m_fakePlatform = adoptPtr(new TestingPlatformSupportWithMockScheduler(config));
-        Platform::initialize(m_fakePlatform.get());
     }
 
     void TearDown() override
     {
-        Platform::initialize(m_oldPlatform);
         m_fakePlatform = nullptr;
     }
 
 private:
     OwnPtr<TestingPlatformSupportWithMockScheduler> m_fakePlatform;
-    Platform* m_oldPlatform; // Not owned.
 };
 
 TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)

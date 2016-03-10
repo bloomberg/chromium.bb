@@ -82,12 +82,12 @@ TestingPlatformSupport::TestingPlatformSupport(const Config& config)
     : m_config(config)
     , m_oldPlatform(Platform::current())
 {
-    Platform::initialize(this);
+    Platform::setCurrentPlatformForTesting(this);
 }
 
 TestingPlatformSupport::~TestingPlatformSupport()
 {
-    Platform::initialize(m_oldPlatform);
+    Platform::setCurrentPlatformForTesting(m_oldPlatform);
 }
 
 WebDiscardableMemory* TestingPlatformSupport::allocateAndLockDiscardableMemory(size_t bytes)

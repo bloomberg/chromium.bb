@@ -138,6 +138,9 @@ public:
     static void shutdown();
     static Platform* current();
 
+    // Used to switch the current platform only for testing.
+    static void setCurrentPlatformForTesting(Platform*);
+
     // May return null.
     virtual WebCookieJar* cookieJar() { return nullptr; }
 

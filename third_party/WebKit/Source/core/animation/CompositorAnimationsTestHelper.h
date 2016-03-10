@@ -135,15 +135,6 @@ public:
         MOCK_METHOD0(createAnimationPlayer, CompositorAnimationPlayer*());
         MOCK_METHOD0(createAnimationTimeline, CompositorAnimationTimeline*());
     };
-
-private:
-    TestingPlatformSupport m_proxyPlatform;
-
-protected:
-    void SetUp() override
-    {
-        Platform::initialize(&m_proxyPlatform);
-    }
 };
 
 } // namespace blink

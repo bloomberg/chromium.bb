@@ -35,6 +35,7 @@
 #include "platform/HTTPNames.h"
 #include "platform/heap/Heap.h"
 #include "platform/testing/TestingPlatformSupport.h"
+#include "public/platform/Platform.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
@@ -72,6 +73,7 @@ int main(int argc, char** argv)
     WTF::initialize(nullptr);
     WTF::initializeMainThread(0);
 
+    blink::Platform::initialize(nullptr);
     blink::TestingPlatformSupport::Config platformConfig;
     cc_blink::WebCompositorSupportImpl compositorSupport;
     platformConfig.compositorSupport = &compositorSupport;
@@ -95,6 +97,8 @@ int main(int argc, char** argv)
 
     blink::ThreadState::detachMainThread();
     blink::Heap::shutdown();
+
+    blink::Platform::shutdown();
 
     WTF::shutdown();
     WTF::Partitions::shutdown();
