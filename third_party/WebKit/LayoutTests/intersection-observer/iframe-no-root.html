@@ -8,76 +8,81 @@
 <script>
 description("Simple intersection observer test with no explicit root and target in an iframe.");
 var entries = [];
-var observer = new IntersectionObserver(changes => { entries = entries.concat(changes) }, {});
 var targetIframe = document.getElementById("target-iframe");
-var target;
-var iframeScroller;
 
 targetIframe.onload = function() {
-  target = targetIframe.contentDocument.getElementById("target");
-  iframeScroller = targetIframe.contentDocument.scrollingElement;
+  var target = targetIframe.contentDocument.getElementById("target");
+  var iframeScroller = targetIframe.contentDocument.scrollingElement;
+
+  observer_callback = function(changes) {
+    for (var i in changes)
+      entries.push(changes[i]);
+  };
+  var observer = new IntersectionObserver(observer_callback, {});
   observer.observe(target);
-  entries = entries.concat(observer.takeRecords());
-  shouldBeEqualToNumber("entries.length", 0);
-  // See README for explanation of double RAF.
-  requestAnimationFrame(() => { requestAnimationFrame(step0) });
-}
 
-function step0() {
-  entries = entries.concat(observer.takeRecords());
-  shouldBeEqualToNumber("entries.length", 0);
-  document.scrollingElement.scrollTop = 200;
-  requestAnimationFrame(step1);
-}
-
-function step1() {
-  entries = entries.concat(observer.takeRecords());
-  shouldBeEqualToNumber("entries.length", 0);
-  iframeScroller.scrollTop = 250;
-  requestAnimationFrame(step2);
-}
-
-function step2() {
-  entries = entries.concat(observer.takeRecords());
-  shouldBeEqualToNumber("entries.length", 1);
-  if (entries.length > 0) {
-    shouldBeEqualToNumber("entries[0].boundingClientRect.left", 8);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.right", 108);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.top", -42);
-    shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 58);
-    shouldBeEqualToNumber("entries[0].intersectionRect.left", 8);
-    shouldBeEqualToNumber("entries[0].intersectionRect.right", 108);
-    shouldBeEqualToNumber("entries[0].intersectionRect.top", 0);
-    shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 58);
-    shouldBeEqualToNumber("entries[0].rootBounds.left", 0);
-    shouldBeEqualToNumber("entries[0].rootBounds.right", 785);
-    shouldBeEqualToNumber("entries[0].rootBounds.top", 0);
-    shouldBeEqualToNumber("entries[0].rootBounds.bottom", 600);
-    shouldEvaluateToSameObject("entries[0].target", target);
+  function step0() {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 0);
+      document.scrollingElement.scrollTop = 200;
+      requestAnimationFrame(step1);
+    });
   }
-  document.scrollingElement.scrollTop = 100;
-  requestAnimationFrame(step3);
-}
 
-function step3() {
-  entries = entries.concat(observer.takeRecords());
-  shouldBeEqualToNumber("entries.length", 2);
-  if (entries.length > 1) {
-    shouldBeEqualToNumber("entries[1].boundingClientRect.left", 8);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.right", 108);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.top", -42);
-    shouldBeEqualToNumber("entries[1].boundingClientRect.bottom", 58);
-    shouldBeEqualToNumber("entries[1].intersectionRect.left", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.right", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.top", 0);
-    shouldBeEqualToNumber("entries[1].intersectionRect.bottom", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.left", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.right", 785);
-    shouldBeEqualToNumber("entries[1].rootBounds.top", 0);
-    shouldBeEqualToNumber("entries[1].rootBounds.bottom", 600);
-    shouldEvaluateToSameObject("entries[1].target", target);
+  function step1() {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 0);
+      iframeScroller.scrollTop = 250;
+      requestAnimationFrame(step2);
+    });
   }
-  finishJSTest();
-  document.scrollingElement.scrollTop = 0;
+
+  function step2() {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 1);
+      if (entries.length > 0) {
+        shouldBeEqualToNumber("entries[0].boundingClientRect.left", 8);
+        shouldBeEqualToNumber("entries[0].boundingClientRect.right", 108);
+        shouldBeEqualToNumber("entries[0].boundingClientRect.top", -42);
+        shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 58);
+        shouldBeEqualToNumber("entries[0].intersectionRect.left", 8);
+        shouldBeEqualToNumber("entries[0].intersectionRect.right", 108);
+        shouldBeEqualToNumber("entries[0].intersectionRect.top", 0);
+        shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 58);
+        shouldBeEqualToNumber("entries[0].rootBounds.left", 0);
+        shouldBeEqualToNumber("entries[0].rootBounds.right", 785);
+        shouldBeEqualToNumber("entries[0].rootBounds.top", 0);
+        shouldBeEqualToNumber("entries[0].rootBounds.bottom", 600);
+        shouldEvaluateToSameObject("entries[0].target", target);
+      }
+      document.scrollingElement.scrollTop = 100;
+      requestAnimationFrame(step3);
+    });
+  }
+
+  function step3() {
+    setTimeout(function() {
+      shouldBeEqualToNumber("entries.length", 2);
+      if (entries.length > 1) {
+        shouldBeEqualToNumber("entries[1].boundingClientRect.left", 8);
+        shouldBeEqualToNumber("entries[1].boundingClientRect.right", 108);
+        shouldBeEqualToNumber("entries[1].boundingClientRect.top", -42);
+        shouldBeEqualToNumber("entries[1].boundingClientRect.bottom", 58);
+        shouldBeEqualToNumber("entries[1].intersectionRect.left", 0);
+        shouldBeEqualToNumber("entries[1].intersectionRect.right", 0);
+        shouldBeEqualToNumber("entries[1].intersectionRect.top", 0);
+        shouldBeEqualToNumber("entries[1].intersectionRect.bottom", 0);
+        shouldBeEqualToNumber("entries[1].rootBounds.left", 0);
+        shouldBeEqualToNumber("entries[1].rootBounds.right", 785);
+        shouldBeEqualToNumber("entries[1].rootBounds.top", 0);
+        shouldBeEqualToNumber("entries[1].rootBounds.bottom", 600);
+        shouldEvaluateToSameObject("entries[1].target", target);
+      }
+      finishJSTest();
+      document.scrollingElement.scrollTop = 0;
+    });
+  }
+
+  step0();
 }
 </script>

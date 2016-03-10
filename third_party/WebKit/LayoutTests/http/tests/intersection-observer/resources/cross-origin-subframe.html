@@ -14,54 +14,60 @@ var nextStep;
 // Instead of RAF-ing, we just post an empty message to the parent window, which will
 // RAF when it is received, and then send us a message to cause the next step to run.
 
+function observer_callback(changes) {
+  for (var i in changes)
+    entries.push(changes[i]);
+}
+
 // Use a rootMargin here, and verify it does NOT get applied for the cross-origin case.
-var observer = new IntersectionObserver(
-    changes => { entries = entries.concat(changes) },
-    { rootMargin: "7px" }
-);
+var observer = new IntersectionObserver(observer_callback, {rootMargin: "7px"});
 observer.observe(target);
 
 function step0() {
-  entries = entries.concat(observer.takeRecords());
-  nextStep = step1;
-  port.postMessage({actual: entries.map(entryToJson), expected: []}, "*");
-  entries = [];
-  port.postMessage({scrollTo: 200}, "*");
+  setTimeout(function() {
+    nextStep = step1;
+    port.postMessage({actual: entries.map(entryToJson), expected: []}, "*");
+    entries = [];
+    port.postMessage({scrollTo: 200}, "*");
+  });
 }
 
 function step1() {
-  entries = entries.concat(observer.takeRecords());
-  port.postMessage({actual: entries.map(entryToJson), expected: []}, "*");
-  entries = [];
-  scroller.scrollTop = 250;
-  nextStep = step2;
-  port.postMessage({}, "*");
+  setTimeout(function() {
+    port.postMessage({actual: entries.map(entryToJson), expected: []}, "*");
+    entries = [];
+    scroller.scrollTop = 250;
+    nextStep = step2;
+    port.postMessage({}, "*");
+  });
 }
 
 function step2() {
-  entries = entries.concat(observer.takeRecords());
-  var expected = [{
-    boundingClientRect: coordinatesToClientRectJson(-42, 108, 58, 8),
-    intersectionRect: coordinatesToClientRectJson(0, 108, 58, 8),
-    rootBounds: "null",
-    target: target.id
-  }];
-  port.postMessage({actual: entries.map(entryToJson), expected: expected}, "*");
-  entries = [];
-  nextStep = step3;
-  port.postMessage({scrollTo: 100}, "*");
+  setTimeout(function() {
+    var expected = [{
+      boundingClientRect: coordinatesToClientRectJson(-42, 108, 58, 8),
+      intersectionRect: coordinatesToClientRectJson(0, 108, 58, 8),
+      rootBounds: "null",
+      target: target.id
+    }];
+    port.postMessage({actual: entries.map(entryToJson), expected: expected}, "*");
+    entries = [];
+    nextStep = step3;
+    port.postMessage({scrollTo: 100}, "*");
+  });
 }
 
 function step3() {
-  entries = entries.concat(observer.takeRecords());
-  var expected = [{
-    boundingClientRect: coordinatesToClientRectJson(-42, 108, 58, 8),
-    intersectionRect: coordinatesToClientRectJson(0, 0, 0, 0),
-    rootBounds: "null",
-    target: target.id
-  }];
-  port.postMessage({actual: entries.map(entryToJson), expected: expected}, "*");
-  port.postMessage({DONE: 1}, "*");
+  setTimeout(function() {
+    var expected = [{
+      boundingClientRect: coordinatesToClientRectJson(-42, 108, 58, 8),
+      intersectionRect: coordinatesToClientRectJson(0, 0, 0, 0),
+      rootBounds: "null",
+      target: target.id
+    }];
+    port.postMessage({actual: entries.map(entryToJson), expected: expected}, "*");
+    port.postMessage({DONE: 1}, "*");
+  });
 }
 
 function handleMessage(event)

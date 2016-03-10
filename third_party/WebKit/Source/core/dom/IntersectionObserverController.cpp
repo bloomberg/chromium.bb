@@ -5,7 +5,6 @@
 #include "core/dom/IntersectionObserverController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/IdleRequestOptions.h"
 
 namespace blink {
 
@@ -20,8 +19,8 @@ IntersectionObserverController* IntersectionObserverController::create(Document*
 
 IntersectionObserverController::IntersectionObserverController(Document* document)
     : ActiveDOMObject(document)
-    , m_callbackIsScheduled(false)
-    , m_callbackFiredWhileSuspended(false)
+    , m_timer(this, &IntersectionObserverController::deliverIntersectionObservations)
+    , m_timerFiredWhileSuspended(false)
 {
 }
 
@@ -29,39 +28,28 @@ IntersectionObserverController::~IntersectionObserverController() { }
 
 void IntersectionObserverController::scheduleIntersectionObserverForDelivery(IntersectionObserver& observer)
 {
+    // TODO(szager): use idle callback with a timeout.  Until we do that, there is no
+    // reliable way to write a test for takeRecords, because it's impossible to guarantee
+    // that javascript will get a chance to run before the timer fires.
+    if (!m_timer.isActive())
+        m_timer.startOneShot(0, BLINK_FROM_HERE);
     m_pendingIntersectionObservers.add(&observer);
-    if (m_callbackIsScheduled)
-        return;
-    Document* document = toDocument(getExecutionContext());
-    if (!document)
-        return;
-    m_callbackIsScheduled = true;
-    IdleRequestOptions options;
-    // The IntersectionObserver spec mandates that notifications be sent within 100ms.
-    options.setTimeout(100);
-    document->requestIdleCallback(this, options);
 }
 
 void IntersectionObserverController::resume()
 {
-    // If the callback fired while DOM objects were suspended, notifications might be late, so deliver
-    // them right away (rather than waiting to fire again).
-    if (m_callbackFiredWhileSuspended) {
-        m_callbackFiredWhileSuspended = false;
-        deliverIntersectionObservations();
+    // If the timer fired while DOM objects were suspended, notifications might be late, so deliver
+    // them right away (rather than waiting for m_timer to fire again).
+    if (m_timerFiredWhileSuspended) {
+        m_timerFiredWhileSuspended = false;
+        deliverIntersectionObservations(nullptr);
     }
 }
 
-void IntersectionObserverController::handleEvent(IdleDeadline*)
-{
-    m_callbackIsScheduled = false;
-    deliverIntersectionObservations();
-}
-
-void IntersectionObserverController::deliverIntersectionObservations()
+void IntersectionObserverController::deliverIntersectionObservations(Timer<IntersectionObserverController>*)
 {
     if (getExecutionContext()->activeDOMObjectsAreSuspended()) {
-        m_callbackFiredWhileSuspended = true;
+        m_timerFiredWhileSuspended = true;
         return;
     }
     IntersectionObserverVector observers;
@@ -100,7 +88,6 @@ DEFINE_TRACE(IntersectionObserverController)
     visitor->trace(m_trackedIntersectionObservers);
     visitor->trace(m_pendingIntersectionObservers);
     ActiveDOMObject::trace(visitor);
-    IdleRequestCallback::trace(visitor);
 }
 
 } // namespace blink
