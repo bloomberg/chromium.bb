@@ -6,6 +6,7 @@
 
 #include <xdg-shell-unstable-v5-client-protocol.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
@@ -60,9 +61,29 @@ bool WaylandDisplay::Initialize() {
   return true;
 }
 
-void WaylandDisplay::Flush() {
+bool WaylandDisplay::StartProcessingEvents() {
+  if (watching_)
+    return true;
+
   DCHECK(display_);
   wl_display_flush(display_.get());
+
+  DCHECK(base::MessageLoopForUI::IsCurrent());
+  if (!base::MessageLoopForUI::current()->WatchFileDescriptor(
+          wl_display_get_fd(display_.get()), true,
+          base::MessagePumpLibevent::WATCH_READ, &controller_, this))
+    return false;
+
+  watching_ = true;
+  return true;
+}
+
+void WaylandDisplay::ScheduleFlush() {
+  if (scheduled_flush_ || !watching_)
+    return;
+  base::MessageLoopForUI::current()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&WaylandDisplay::Flush, base::Unretained(this)));
+  scheduled_flush_ = true;
 }
 
 WaylandWindow* WaylandDisplay::GetWindow(gfx::AcceleratedWidget widget) {
@@ -80,15 +101,12 @@ void WaylandDisplay::RemoveWindow(gfx::AcceleratedWidget widget) {
 }
 
 void WaylandDisplay::OnDispatcherListChanged() {
-  if (watching_)
-    return;
+  StartProcessingEvents();
+}
 
-  DCHECK(display_);
-  DCHECK(base::MessageLoopForUI::IsCurrent());
-  base::MessageLoopForUI::current()->WatchFileDescriptor(
-      wl_display_get_fd(display_.get()), true,
-      base::MessagePumpLibevent::WATCH_READ, &controller_, this);
-  watching_ = true;
+void WaylandDisplay::Flush() {
+  wl_display_flush(display_.get());
+  scheduled_flush_ = false;
 }
 
 void WaylandDisplay::OnFileCanReadWithoutBlocking(int fd) {
@@ -131,6 +149,8 @@ void WaylandDisplay::Global(void* data,
     xdg_shell_use_unstable_version(display->shell_.get(),
                                    XDG_SHELL_VERSION_CURRENT);
   }
+
+  display->ScheduleFlush();
 }
 
 // static
@@ -142,7 +162,9 @@ void WaylandDisplay::GlobalRemove(void* data,
 
 // static
 void WaylandDisplay::Ping(void* data, xdg_shell* shell, uint32_t serial) {
+  WaylandDisplay* display = static_cast<WaylandDisplay*>(data);
   xdg_shell_pong(shell, serial);
+  display->ScheduleFlush();
 }
 
 }  // namespace ui

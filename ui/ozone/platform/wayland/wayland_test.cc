@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/wayland_test.h"
 
+#include "base/run_loop.h"
+
 using ::testing::SaveArg;
 using ::testing::_;
 
@@ -17,28 +19,38 @@ WaylandTest::~WaylandTest() {}
 void WaylandTest::SetUp() {
   ASSERT_TRUE(server.Start());
   ASSERT_TRUE(display.Initialize());
+  display.StartProcessingEvents();
   EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_, _))
       .WillOnce(SaveArg<0>(&widget));
   ASSERT_TRUE(window.Initialize());
   ASSERT_NE(widget, gfx::kNullAcceleratedWidget);
-  wl_display_roundtrip(display.display());
 
+  // Wait for the client to flush all pending requests from initialization.
+  base::RunLoop().RunUntilIdle();
+
+  // Pause the server after it has responded to all incoming events.
   server.Pause();
 
   surface = server.GetObject<wl::MockSurface>(widget);
   ASSERT_TRUE(surface);
+
   initialized = true;
 }
 
 void WaylandTest::TearDown() {
-  server.Resume();
   if (initialized)
-    wl_display_roundtrip(display.display());
+    Sync();
 }
 
 void WaylandTest::Sync() {
+  // Resume the server, flushing its pending events.
   server.Resume();
-  wl_display_roundtrip(display.display());
+
+  // Wait for the client to finish processing these events.
+  base::RunLoop().RunUntilIdle();
+
+  // Pause the server, after it has finished processing any follow-up requests
+  // from the client.
   server.Pause();
 }
 

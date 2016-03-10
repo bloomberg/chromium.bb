@@ -28,6 +28,7 @@ class WaylandTest : public testing::Test {
  private:
   bool initialized = false;
   wl::FakeServer server;
+  base::MessageLoopForUI message_loop;
 
  protected:
   wl::MockSurface* surface;

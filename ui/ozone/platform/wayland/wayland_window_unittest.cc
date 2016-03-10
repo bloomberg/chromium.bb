@@ -5,6 +5,7 @@
 #include <wayland-server-core.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,13 +68,8 @@ TEST_F(WaylandWindowTest, ConfigureEvent) {
 
   // Make sure that the implementation does not call OnBoundsChanged for each
   // configure event if it receives multiple in a row.
-  EXPECT_CALL(delegate, OnBoundsChanged(_)).Times(0);
-  Sync();
-  Mock::VerifyAndClearExpectations(&delegate);
-
   EXPECT_CALL(delegate, OnBoundsChanged(Eq(gfx::Rect(0, 0, 1500, 1000))));
   EXPECT_CALL(*xdg_surface, AckConfigure(13));
-  window.ApplyPendingBounds();
 }
 
 }  // namespace ui

@@ -41,6 +41,7 @@ bool WaylandWindow::Initialize() {
     return false;
   }
   xdg_surface_add_listener(xdg_surface_.get(), &xdg_surface_listener, this);
+  display_->ScheduleFlush();
 
   display_->AddWindow(surface_.id(), this);
   delegate_->OnAcceleratedWidgetAvailable(surface_.id(), 1.f);
@@ -56,6 +57,7 @@ void WaylandWindow::ApplyPendingBounds() {
   DCHECK(xdg_surface_);
   xdg_surface_ack_configure(xdg_surface_.get(), pending_configure_serial_);
   pending_bounds_ = gfx::Rect();
+  display_->ScheduleFlush();
 }
 
 void WaylandWindow::Show() {}
@@ -82,6 +84,7 @@ gfx::Rect WaylandWindow::GetBounds() {
 void WaylandWindow::SetTitle(const base::string16& title) {
   DCHECK(xdg_surface_);
   xdg_surface_set_title(xdg_surface_.get(), UTF16ToUTF8(title).c_str());
+  display_->ScheduleFlush();
 }
 
 void WaylandWindow::SetCapture() {
@@ -99,16 +102,19 @@ void WaylandWindow::ToggleFullscreen() {
 void WaylandWindow::Maximize() {
   DCHECK(xdg_surface_);
   xdg_surface_set_maximized(xdg_surface_.get());
+  display_->ScheduleFlush();
 }
 
 void WaylandWindow::Minimize() {
   DCHECK(xdg_surface_);
   xdg_surface_set_minimized(xdg_surface_.get());
+  display_->ScheduleFlush();
 }
 
 void WaylandWindow::Restore() {
   DCHECK(xdg_surface_);
   xdg_surface_unset_maximized(xdg_surface_.get());
+  display_->ScheduleFlush();
 }
 
 void WaylandWindow::SetCursor(PlatformCursor cursor) {

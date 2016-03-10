@@ -146,9 +146,10 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
   // wl_display_connect).
   bool Start();
 
-  void Flush();
-
+  // Pause the server when it becomes idle.
   void Pause();
+
+  // Resume the server after flushing client connections.
   void Resume();
 
   template <typename T>

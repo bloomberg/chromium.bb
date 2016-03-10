@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_file.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace wl {
@@ -274,6 +275,7 @@ FakeServer::FakeServer()
       resume_event_(false, false) {}
 
 FakeServer::~FakeServer() {
+  Resume();
   Stop();
 }
 
@@ -312,10 +314,6 @@ bool FakeServer::Start() {
   return true;
 }
 
-void FakeServer::Flush() {
-  wl_display_flush_clients(display_.get());
-}
-
 void FakeServer::Pause() {
   task_runner()->PostTask(
       FROM_HERE, base::Bind(&FakeServer::DoPause, base::Unretained(this)));
@@ -323,10 +321,13 @@ void FakeServer::Pause() {
 }
 
 void FakeServer::Resume() {
+  if (display_)
+    wl_display_flush_clients(display_.get());
   resume_event_.Signal();
 }
 
 void FakeServer::DoPause() {
+  base::RunLoop().RunUntilIdle();
   pause_event_.Signal();
   resume_event_.Wait();
 }

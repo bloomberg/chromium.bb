@@ -108,7 +108,7 @@ void WaylandCanvasSurface::PresentCanvas(const gfx::Rect& damage) {
                     damage.height());
   wl_surface_attach(surface, buffer_.get(), 0, 0);
   wl_surface_commit(surface);
-  display_->Flush();
+  display_->ScheduleFlush();
 }
 
 scoped_ptr<gfx::VSyncProvider> WaylandCanvasSurface::CreateVSyncProvider() {

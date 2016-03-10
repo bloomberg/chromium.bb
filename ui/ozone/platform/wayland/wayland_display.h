@@ -23,9 +23,10 @@ class WaylandDisplay : public PlatformEventSource,
   ~WaylandDisplay() override;
 
   bool Initialize();
+  bool StartProcessingEvents();
 
-  // Flushes the Wayland connection.
-  void Flush();
+  // Schedules a flush of the Wayland connection.
+  void ScheduleFlush();
 
   wl_display* display() { return display_.get(); }
   wl_compositor* compositor() { return compositor_.get(); }
@@ -37,6 +38,8 @@ class WaylandDisplay : public PlatformEventSource,
   void RemoveWindow(gfx::AcceleratedWidget widget);
 
  private:
+  void Flush();
+
   // PlatformEventSource
   void OnDispatcherListChanged() override;
 
@@ -63,6 +66,7 @@ class WaylandDisplay : public PlatformEventSource,
   wl::Object<wl_shm> shm_;
   wl::Object<xdg_shell> shell_;
 
+  bool scheduled_flush_ = false;
   bool watching_ = false;
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
