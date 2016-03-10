@@ -999,6 +999,9 @@ crbug.com/249112 imported/csswg-test/css-flexbox-1/flex-minimum-width-flex-items
 crbug.com/519124 fast/text/zero-font-size.html [ NeedsRebaseline ]
 
 crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-grow-006.html [ Failure ]
+crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-aspect-ratio-img-column-003.html [ Failure ]
+crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-aspect-ratio-img-row-002.html [ Failure ]
+crbug.com/467127 imported/csswg-test/css-flexbox-1/flex-aspect-ratio-img-row-003.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/flexbox_justifycontent-center-overflow.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_computedstyle_align-items-invalid.html [ Failure ]
 crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_computedstyle_align-self-invalid.html [ Failure ]
