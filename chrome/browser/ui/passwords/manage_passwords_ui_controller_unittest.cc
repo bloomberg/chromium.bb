@@ -605,7 +605,8 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
 TEST_F(ManagePasswordsUIControllerTest, AutoSignin) {
   ScopedVector<autofill::PasswordForm> local_credentials;
   local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
-  controller()->OnAutoSignin(std::move(local_credentials));
+  controller()->OnAutoSignin(std::move(local_credentials),
+                             test_local_form().origin);
   EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, controller()->GetState());
   EXPECT_EQ(test_local_form().origin, controller()->GetOrigin());
   ASSERT_FALSE(controller()->GetCurrentForms().empty());
@@ -668,7 +669,8 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterNavigation) {
 TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
   ScopedVector<autofill::PasswordForm> local_credentials;
   local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
-  controller()->OnAutoSignin(std::move(local_credentials));
+  controller()->OnAutoSignin(std::move(local_credentials),
+                             test_local_form().origin);
   ExpectIconAndControllerStateIs(password_manager::ui::AUTO_SIGNIN_STATE);
   scoped_ptr<autofill::PasswordForm> test_form(
       new autofill::PasswordForm(test_local_form()));

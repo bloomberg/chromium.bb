@@ -63,7 +63,8 @@ class ChromePasswordManagerClient
   void ForceSavePassword() override;
   void GeneratePassword() override;
   void NotifyUserAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms) override;
+      ScopedVector<autofill::PasswordForm> local_forms,
+      const GURL& origin) override;
   void NotifyUserCouldBeAutoSignedIn(
       scoped_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(

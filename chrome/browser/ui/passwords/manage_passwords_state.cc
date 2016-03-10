@@ -112,7 +112,7 @@ void ManagePasswordsState::OnPendingPassword(
   current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
   AddRawPtrFromOwningVector(form_manager_->federated_matches(),
                             &current_forms_weak_);
-  origin_ = form_manager_->pending_credentials().origin;
+  origin_ = form_manager_->observed_form().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
@@ -123,7 +123,7 @@ void ManagePasswordsState::OnUpdatePassword(
   current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
   AddRawPtrFromOwningVector(form_manager_->federated_matches(),
                             &current_forms_weak_);
-  origin_ = form_manager_->pending_credentials().origin;
+  origin_ = form_manager_->observed_form().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
 }
 
@@ -139,11 +139,11 @@ void ManagePasswordsState::OnRequestCredentials(
 }
 
 void ManagePasswordsState::OnAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms) {
+    ScopedVector<autofill::PasswordForm> local_forms, const GURL& origin) {
   DCHECK(!local_forms.empty());
   ClearData();
   local_credentials_forms_ = ConstifyVector(&local_forms);
-  origin_ = local_credentials_forms_[0]->origin;
+  origin_ = origin;
   SetState(password_manager::ui::AUTO_SIGNIN_STATE);
 }
 
@@ -160,7 +160,7 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
   current_forms_weak_ = MapToVector(current_forms);
   AddRawPtrFromOwningVector(form_manager_->federated_matches(),
                             &current_forms_weak_);
-  origin_ = form_manager_->pending_credentials().origin;
+  origin_ = form_manager_->observed_form().origin;
   SetState(password_manager::ui::CONFIRMATION_STATE);
 }
 

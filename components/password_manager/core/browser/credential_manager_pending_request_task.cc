@@ -107,7 +107,8 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
                         local_results[0]->federation_origin.unique()
                             ? CredentialType::CREDENTIAL_TYPE_PASSWORD
                             : CredentialType::CREDENTIAL_TYPE_FEDERATED);
-    delegate_->client()->NotifyUserAutoSignin(std::move(local_results));
+    delegate_->client()->NotifyUserAutoSignin(std::move(local_results),
+                                              origin_);
     delegate_->SendCredential(id_, info);
     return;
   }

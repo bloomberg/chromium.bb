@@ -54,7 +54,8 @@ class ManagePasswordsUIController
       const GURL& origin,
       base::Callback<void(const password_manager::CredentialInfo&)> callback)
       override;
-  void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms) override;
+  void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms,
+                    const GURL& origin) override;
   void OnPromptEnableAutoSignin() override;
   void OnAutomaticPasswordSave(
       scoped_ptr<password_manager::PasswordFormManager> form_manager) override;

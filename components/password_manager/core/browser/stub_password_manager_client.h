@@ -30,8 +30,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       const GURL& origin,
       base::Callback<void(const password_manager::CredentialInfo&)> callback)
       override;
-  void NotifyUserAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms) override;
+  void NotifyUserAutoSignin(ScopedVector<autofill::PasswordForm> local_forms,
+                            const GURL& origin) override;
   void NotifyUserCouldBeAutoSignedIn(
       scoped_ptr<autofill::PasswordForm>) override;
   void NotifySuccessfulLoginWithExistingPassword(

@@ -350,14 +350,14 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
                  ? PasswordTittleType::SAVE_PASSWORD
                  : PasswordTittleType::SAVE_ACCOUNT);
   GetSavePasswordDialogTitleTextAndLinkRange(
-      web_contents()->GetVisibleURL(), origin(),
+      web_contents()->GetVisibleURL(), origin_,
       GetSmartLockBrandingState(GetProfile()) !=
           password_bubble_experiment::SmartLockBranding::NONE,
       type, &title_, &title_brand_link_range_);
 }
 
 void ManagePasswordsBubbleModel::UpdateManageStateTitle() {
-  GetManagePasswordsDialogTitleText(web_contents()->GetVisibleURL(), origin(),
+  GetManagePasswordsDialogTitleText(web_contents()->GetVisibleURL(), origin_,
                                     &title_);
 }
 

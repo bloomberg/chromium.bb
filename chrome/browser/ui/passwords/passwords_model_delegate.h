@@ -26,7 +26,7 @@ class GURL;
 // and notify about user actions.
 class PasswordsModelDelegate {
  public:
-  // Returns the origin of the current page.
+  // Returns the URL of the site the current forms are retrieved for.
   virtual const GURL& GetOrigin() const = 0;
 
   // Returns the current tab state.

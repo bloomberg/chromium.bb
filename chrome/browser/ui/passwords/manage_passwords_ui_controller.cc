@@ -119,10 +119,11 @@ bool ManagePasswordsUIController::OnChooseCredentials(
 }
 
 void ManagePasswordsUIController::OnAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms) {
+    ScopedVector<autofill::PasswordForm> local_forms,
+    const GURL& origin) {
   DCHECK(!local_forms.empty());
   DestroyAccountChooser();
-  passwords_data_.OnAutoSignin(std::move(local_forms));
+  passwords_data_.OnAutoSignin(std::move(local_forms), origin);
   bubble_status_ = SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }

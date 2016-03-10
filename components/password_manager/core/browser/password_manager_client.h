@@ -105,11 +105,12 @@ class PasswordManagerClient {
   virtual void GeneratePassword();
 
   // Informs the embedder that automatic signing in just happened. The form
-  // returned to the site is |local_forms[0]|. |local_forms| and
-  // |federated_forms| contain all the local and federated credentials for the
-  // site.
+  // returned to the site is |local_forms[0]|. |local_forms| contains all the
+  // local credentials for the site. |origin| is a URL of the site the user was
+  // auto signed in to.
   virtual void NotifyUserAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms) = 0;
+      ScopedVector<autofill::PasswordForm> local_forms,
+      const GURL& origin) = 0;
 
   // Inform the embedder that automatic signin would have happened if the user
   // had been through the first-run experience to ensure their opt-in. |form|

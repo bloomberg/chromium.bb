@@ -57,7 +57,8 @@ class ManagePasswordsState {
       const GURL& origin);
 
   // Move to AUTO_SIGNIN_STATE. |local_forms| can't be empty.
-  void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms);
+  void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms,
+                    const GURL& origin);
 
   // Move to CONFIRMATION_STATE.
   void OnAutomaticPasswordSave(
@@ -127,8 +128,8 @@ class ManagePasswordsState {
 
   void SetState(password_manager::ui::State state);
 
-  // The origin of the current page. It's used to determine which PasswordStore
-  // changes are applicable to the internal state.
+  // The origin of the current page for which the state is stored. It's used to
+  // determine which PasswordStore changes are applicable to the internal state.
   GURL origin_;
 
   // Contains the password that was submitted.

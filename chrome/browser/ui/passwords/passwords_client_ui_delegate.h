@@ -40,7 +40,8 @@ class PasswordsClientUIDelegate {
 
   // Called when the site asks user to choose from credentials. This triggers
   // the UI to prompt the user. |local_credentials| and |federated_credentials|
-  // shouldn't both be empty.
+  // shouldn't both be empty. |origin| is a URL of the site that requested a
+  // credential.
   // Returns true when the UI is shown. |callback| is called when the user made
   // a decision. If the UI isn't shown the method returns false and doesn't call
   // |callback|.
@@ -52,9 +53,10 @@ class PasswordsClientUIDelegate {
           callback) = 0;
 
   // Called when user is auto signed in to the site. |local_forms[0]| contains
-  // the credential returned to the site.
+  // the credential returned to the site. |origin| is a URL of the site.
   virtual void OnAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms) = 0;
+      ScopedVector<autofill::PasswordForm> local_forms,
+      const GURL& origin) = 0;
 
   // Called when it's the right time to enable autosign-in explicitly.
   virtual void OnPromptEnableAutoSignin() = 0;

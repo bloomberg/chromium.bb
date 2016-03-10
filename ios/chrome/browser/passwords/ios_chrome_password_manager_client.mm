@@ -98,7 +98,8 @@ PasswordStore* IOSChromePasswordManagerClient::GetPasswordStore() const {
 }
 
 void IOSChromePasswordManagerClient::NotifyUserAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms) {}
+    ScopedVector<autofill::PasswordForm> local_forms,
+    const GURL& origin) {}
 
 void IOSChromePasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
     scoped_ptr<autofill::PasswordForm> form) {}

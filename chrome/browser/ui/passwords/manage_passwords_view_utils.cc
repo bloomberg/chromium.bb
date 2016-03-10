@@ -78,6 +78,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     PasswordTittleType dialog_type,
     base::string16* title,
     gfx::Range* title_link_range) {
+  DCHECK(!password_manager::IsValidAndroidFacetURI(form_origin_url.spec()));
   std::vector<size_t> offsets;
   std::vector<base::string16> replacements;
   int title_id = 0;
@@ -96,14 +97,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
   // Check whether the registry controlled domains for user-visible URL (i.e.
   // the one seen in the omnibox) and the password form post-submit navigation
   // URL differs or not.
-  password_manager::FacetURI facet_uri =
-      password_manager::FacetURI::FromPotentiallyInvalidSpec(
-          form_origin_url.spec());
-  if (facet_uri.IsValidAndroidFacetURI()) {
-    title_id = IDS_SAVE_PASSWORD_TITLE;
-    replacements.push_back(
-        base::ASCIIToUTF16(GetHumanReadableOriginForAndroidUri(facet_uri)));
-  } else if (!SameDomainOrHost(user_visible_url, form_origin_url)) {
+  if (!SameDomainOrHost(user_visible_url, form_origin_url)) {
     title_id = IDS_SAVE_PASSWORD_TITLE;
     // TODO(palmer): Look into passing real language prefs here, not "".
     // crbug.com/498069.
@@ -130,17 +124,11 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
 void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
                                        const GURL& password_origin_url,
                                        base::string16* title) {
+  DCHECK(!password_manager::IsValidAndroidFacetURI(password_origin_url.spec()));
   // Check whether the registry controlled domains for user-visible URL
   // (i.e. the one seen in the omnibox) and the managed password origin URL
   // differ or not.
-  password_manager::FacetURI facet_uri =
-      password_manager::FacetURI::FromPotentiallyInvalidSpec(
-          password_origin_url.spec());
-  if (facet_uri.IsValidAndroidFacetURI()) {
-    *title = l10n_util::GetStringFUTF16(
-        IDS_MANAGE_PASSWORDS_TITLE_DIFFERENT_DOMAIN,
-        base::ASCIIToUTF16(GetHumanReadableOriginForAndroidUri(facet_uri)));
-  } else if (!SameDomainOrHost(user_visible_url, password_origin_url)) {
+  if (!SameDomainOrHost(user_visible_url, password_origin_url)) {
     // TODO(palmer): Look into passing real language prefs here, not "".
     base::string16 formatted_url = url_formatter::FormatUrlForSecurityDisplay(
         password_origin_url, std::string());

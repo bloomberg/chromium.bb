@@ -42,8 +42,8 @@ bool StubPasswordManagerClient::PromptUserToChooseCredentials(
 }
 
 void StubPasswordManagerClient::NotifyUserAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms) {
-}
+    ScopedVector<autofill::PasswordForm> local_forms,
+    const GURL& origin) {}
 
 void StubPasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
     scoped_ptr<autofill::PasswordForm> form) {}

@@ -307,14 +307,14 @@ void ChromePasswordManagerClient::GeneratePassword() {
 }
 
 void ChromePasswordManagerClient::NotifyUserAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms) {
+    ScopedVector<autofill::PasswordForm> local_forms,
+    const GURL& origin) {
   DCHECK(!local_forms.empty());
 #if BUILDFLAG(ANDROID_JAVA_UI)
   ShowAutoSigninPrompt(web_contents(), local_forms[0]->username_value);
 #else
   PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnAutoSignin(std::move(local_forms));
-
+      ->OnAutoSignin(std::move(local_forms), origin);
 #endif
 }
 

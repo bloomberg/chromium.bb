@@ -109,8 +109,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     return true;
   }
 
-  void NotifyUserAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms) override {
+  void NotifyUserAutoSignin(ScopedVector<autofill::PasswordForm> local_forms,
+                            const GURL& origin) override {
     EXPECT_FALSE(local_forms.empty());
     NotifyUserAutoSigninPtr(local_forms.get());
   }

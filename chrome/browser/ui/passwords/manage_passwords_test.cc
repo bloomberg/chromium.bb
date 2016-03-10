@@ -81,7 +81,9 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
 
 void ManagePasswordsTest::SetupAutoSignin(
     ScopedVector<autofill::PasswordForm> local_credentials) {
-  GetController()->OnAutoSignin(std::move(local_credentials));
+  ASSERT_FALSE(local_credentials.empty());
+  GURL origin = local_credentials[0]->origin;
+  GetController()->OnAutoSignin(std::move(local_credentials), origin);
 }
 
 scoped_ptr<base::HistogramSamples> ManagePasswordsTest::GetSamples(

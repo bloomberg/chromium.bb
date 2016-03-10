@@ -73,8 +73,6 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   void OnPasswordAction(const autofill::PasswordForm& password_form,
                         PasswordAction action);
 
-  GURL origin() const { return origin_; }
-
   password_manager::ui::State state() const { return state_; }
 
   const base::string16& title() const { return title_; }

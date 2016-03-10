@@ -56,8 +56,8 @@ class IOSChromePasswordManagerClient
   bool IsOffTheRecord() const override;
   PrefService* GetPrefs() override;
   password_manager::PasswordStore* GetPasswordStore() const override;
-  void NotifyUserAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms) override;
+  void NotifyUserAutoSignin(ScopedVector<autofill::PasswordForm> local_forms,
+                            const GURL& origin) override;
   void NotifyUserCouldBeAutoSignedIn(
       scoped_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
