@@ -49,19 +49,11 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_KEEP_ALIVE = "android.support.customtabs.extra.KEEP_ALIVE";
 
     /**
-     * Herb: Extra used by Chrome to tell the CustomTabActivity to finish itself and open the
-     * current URL in the browser.  Guarded explicitly for use only by PendingIntents with the
-     * Chrome package.
+     * Herb: Extra that indicates whether or not the Custom Tab is being launched by an Intent fired
+     * by Chrome itself.
      */
-    public static final String EXTRA_FINISH_AFTER_OPENING_IN_BROWSER =
-            "org.chromium.chrome.browser.customtabs.FINISH_AFTER_OPENING_IN_BROWSER";
-
-    /**
-     * Herb: Extra used by the main Chrome browser to tell the {@link CustomTabActivity} that it
-     * sits on top of the main browser Activity.
-     */
-    public static final String EXTRA_OPENED_BY_BROWSER =
-            "org.chromium.chrome.browser.customtabs.OPENED_BY_BROWSER";
+    public static final String EXTRA_IS_OPENED_BY_CHROME =
+            "org.chromium.chrome.browser.customtabs.IS_OPENED_BY_CHROME";
 
     /**
      * Herb: Extra used by the main Chrome browser to enable the bookmark icon in the menu.
@@ -94,11 +86,8 @@ public class CustomTabIntentDataProvider {
     // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
 
-    /** Herb: "Open in Browser" will send the Tab to the Browser and kill this Activity. */
-    private boolean mFinishAfterOpeningInBrowser;
-
-    /** Herb: Whether or not this CustomTabActivity was opened by the Browser directly. */
-    private boolean mIsOpenedByBrowser;
+    /** Herb: Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
+    private boolean mIsOpenedByChrome;
 
     /** Herb: Whether or not the bookmark button should be shown. */
     private boolean mShowBookmarkItem;
@@ -415,17 +404,10 @@ public class CustomTabIntentDataProvider {
     }
 
     /**
-     * @return See {@link #EXTRA_FINISH_AFTER_OPENING_IN_BROWSER}.
+     * @return See {@link #EXTRA_IS_OPENED_BY_CHROME}.
      */
-    boolean finishAfterOpeningInBrowser() {
-        return mFinishAfterOpeningInBrowser;
-    }
-
-    /**
-     * @return See {@link #EXTRA_OPENED_BY_BROWSER}.
-     */
-    boolean isOpenedByBrowser() {
-        return mIsOpenedByBrowser;
+    boolean isOpenedByChrome() {
+        return mIsOpenedByChrome;
     }
 
     /**
@@ -442,10 +424,8 @@ public class CustomTabIntentDataProvider {
         }
         if (!IntentHandler.isIntentChromeOrFirstParty(intent, context)) return;
 
-        mFinishAfterOpeningInBrowser = IntentUtils.safeGetBooleanExtra(
-                intent, EXTRA_FINISH_AFTER_OPENING_IN_BROWSER, false);
-        mIsOpenedByBrowser = IntentUtils.safeGetBooleanExtra(
-                intent, EXTRA_OPENED_BY_BROWSER, false);
+        mIsOpenedByChrome = IntentUtils.safeGetBooleanExtra(
+                intent, EXTRA_IS_OPENED_BY_CHROME, false);
         mShowBookmarkItem = IntentUtils.safeGetBooleanExtra(
                 intent, EXTRA_SHOW_STAR_ICON, false);
     }

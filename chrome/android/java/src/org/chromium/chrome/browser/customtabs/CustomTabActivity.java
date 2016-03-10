@@ -34,6 +34,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
@@ -56,6 +58,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
@@ -189,7 +192,7 @@ public class CustomTabActivity extends ChromeActivity {
         // alive.
         // TODO(dfalcantara): Once this is addressed on M50, consider transferring the Tab directly
         //                    via Tab reparenting.
-        if (mIntentDataProvider.isOpenedByBrowser()) {
+        if (mIntentDataProvider.isOpenedByChrome() && isHerbResultNeeded()) {
             createHerbResultIntent(RESULT_STOPPED);
             finish();
         }
@@ -273,7 +276,7 @@ public class CustomTabActivity extends ChromeActivity {
                 new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (mIntentDataProvider.isOpenedByBrowser()) {
+                        if (mIntentDataProvider.isOpenedByChrome() && isHerbResultNeeded()) {
                             createHerbResultIntent(RESULT_CLOSED);
                         }
                         RecordUserAction.record("CustomTabs.CloseButtonClicked");
@@ -499,7 +502,8 @@ public class CustomTabActivity extends ChromeActivity {
     protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, mIntentDataProvider.getMenuTitles(),
                 mIntentDataProvider.shouldShowShareMenuItem(),
-                mIntentDataProvider.shouldShowBookmarkMenuItem());
+                mIntentDataProvider.shouldShowBookmarkMenuItem(),
+                mIntentDataProvider.isOpenedByChrome());
     }
 
     @Override
@@ -546,7 +550,7 @@ public class CustomTabActivity extends ChromeActivity {
             if (getCurrentTabModel().getCount() > 1) {
                 getCurrentTabModel().closeTab(getActivityTab(), false, false, false);
             } else {
-                if (mIntentDataProvider.isOpenedByBrowser()) {
+                if (mIntentDataProvider.isOpenedByChrome() && isHerbResultNeeded()) {
                     createHerbResultIntent(RESULT_BACK_PRESSED);
                 }
                 finish();
@@ -569,7 +573,7 @@ public class CustomTabActivity extends ChromeActivity {
                     public void onClick(View v) {
                         String creatorPackage =
                                 ApiCompatibilityUtils.getCreatorPackage(params.getPendingIntent());
-                        if (mIntentDataProvider.finishAfterOpeningInBrowser()
+                        if (mIntentDataProvider.isOpenedByChrome()
                                 && TextUtils.equals(getPackageName(), creatorPackage)) {
                             RecordUserAction.record(
                                     "TaskManagement.OpenInChromeActionButtonClicked");
@@ -755,40 +759,43 @@ public class CustomTabActivity extends ChromeActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, false);
 
-        boolean chromeIsDefault;
+        boolean willChromeHandleIntent = getIntentDataProvider().isOpenedByChrome();
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
-            chromeIsDefault = ExternalNavigationDelegateImpl
+            willChromeHandleIntent |= ExternalNavigationDelegateImpl
                     .willChromeHandleIntent(this, intent, true);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
-        boolean enableTabReparenting = ChromeVersionInfo.isLocalBuild()
-                || ChromeVersionInfo.isCanaryBuild() || ChromeVersionInfo.isDevBuild()
-                || FieldTrialList.findFullName("TabReparenting").startsWith("Enabled");
-        if (enableTabReparenting && chromeIsDefault) {
-            // Take the activity tab and set it aside for reparenting.
-            final Tab tab = getActivityTab();
-            // TODO(yusufo): The removal should happen as a part of the callback or as a part of
-            // onDestroy when finish() gets called. Find a way to do this properly without confusing
-            // the TabModel and without hiding the tab. crbug.com/590278
-            getCurrentTabModel().removeTab(getActivityTab());
-            mMainTab = null;
-            tab.getContentViewCore().updateWindowAndroid(null);
-            tab.attachTabContentManager(null);
-
-            Runnable finalizeCallback = new Runnable() {
-                @Override
-                public void run() {
-                    finish();
-                }
-            };
-            AsyncTabParamsManager.add(
-                    tab.getId(), new TabReparentingParams(tab, intent, finalizeCallback));
-            intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
+        if (willChromeHandleIntent) {
             intent.setPackage(getPackageName());
+
+            boolean enableTabReparenting = ChromeVersionInfo.isLocalBuild()
+                    || ChromeVersionInfo.isCanaryBuild() || ChromeVersionInfo.isDevBuild()
+                    || FieldTrialList.findFullName("TabReparenting").startsWith("Enabled");
+            if (enableTabReparenting) {
+                // Take the activity tab and set it aside for reparenting.
+                final Tab tab = getActivityTab();
+                // TODO(yusufo): The removal should happen as a part of the callback or as a part of
+                // onDestroy when finish() gets called. Find a way to do this properly without
+                // confusing the TabModel and without hiding the tab. crbug.com/590278
+                getCurrentTabModel().removeTab(getActivityTab());
+                mMainTab = null;
+                tab.getContentViewCore().updateWindowAndroid(null);
+                tab.attachTabContentManager(null);
+
+                Runnable finalizeCallback = new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                };
+                AsyncTabParamsManager.add(
+                        tab.getId(), new TabReparentingParams(tab, intent, finalizeCallback));
+                intent.putExtra(IntentHandler.EXTRA_TAB_ID, tab.getId());
+            }
         }
 
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
@@ -801,6 +808,19 @@ public class CustomTabActivity extends ChromeActivity {
             StrictMode.setThreadPolicy(oldPolicy);
         }
         return true;
+    }
+
+    /**
+     * @return Whether {@link ChromeTabbedActivity} is waiting for a result from this Activity.
+     */
+    private boolean isHerbResultNeeded() {
+        if (!TextUtils.equals(FeatureUtilities.getHerbFlavor(), ChromeSwitches.HERB_FLAVOR_DILL)) {
+            return false;
+        }
+
+        String callingActivity =
+                getCallingActivity() == null ? null : getCallingActivity().getClassName();
+        return TextUtils.equals(callingActivity, ChromeTabbedActivity.class.getName());
     }
 
     /**

@@ -30,6 +30,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
@@ -64,12 +65,14 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -296,9 +299,11 @@ public class ChromeLauncherActivity extends Activity
      * @return Whether or not an Herb prototype may hijack an Intent.
      */
     public static boolean canBeHijackedByHerb(Intent intent) {
+        String url = IntentHandler.getUrlFromIntent(intent);
+
         // Only VIEW Intents with URLs are rerouted to Custom Tabs.
         if (intent == null || !TextUtils.equals(Intent.ACTION_VIEW, intent.getAction())
-                || TextUtils.isEmpty(IntentHandler.getUrlFromIntent(intent))) {
+                || TextUtils.isEmpty(url)) {
             return false;
         }
 
@@ -306,6 +311,14 @@ public class ChromeLauncherActivity extends Activity
         Context context = ApplicationStatus.getApplicationContext();
         if (TextUtils.equals(context.getPackageName(),
                 IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID))) {
+            return false;
+        }
+
+        // Don't reroute internal chrome URLs.
+        try {
+            URI uri = URI.create(url);
+            if (UrlUtilities.isInternalScheme(uri)) return false;
+        } catch (IllegalArgumentException e) {
             return false;
         }
 
@@ -364,12 +377,13 @@ public class ChromeLauncherActivity extends Activity
                 PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
         herbBundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pendingIntent);
 
-        herbBundle.putString(CustomTabsIntent.KEY_DESCRIPTION,
-                context.getResources().getString(R.string.menu_open_in_chrome));
+        String openString = context.getString(
+                R.string.menu_open_in_product, BuildInfo.getPackageLabel(context));
+        herbBundle.putString(CustomTabsIntent.KEY_DESCRIPTION, openString);
 
         newIntent.putExtra(CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE, herbBundle);
         newIntent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
-        newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_FINISH_AFTER_OPENING_IN_BROWSER, true);
+        newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
         newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_SHOW_STAR_ICON, true);
 
         // Mark this as a trusted Chrome Intent.

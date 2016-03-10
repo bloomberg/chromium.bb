@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -41,7 +42,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
      * Creates an {@link CustomTabAppMenuPropertiesDelegate} instance.
      */
     public CustomTabAppMenuPropertiesDelegate(final ChromeActivity activity,
-            List<String> menuEntries, boolean showShare, boolean showBookmark) {
+            List<String> menuEntries, boolean showShare, boolean showBookmark,
+            final boolean isOpenedByChrome) {
         super(activity);
         mMenuEntries = menuEntries;
         mShowShare = showShare;
@@ -49,13 +51,23 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
         mDefaultBrowserFetcher = new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SAMPLE_URL));
-                PackageManager pm = activity.getPackageManager();
-                ResolveInfo info = pm.resolveActivity(intent, 0);
-                return info != null && info.match != 0
-                        ? activity.getString(
-                                R.string.menu_open_in_product, info.loadLabel(pm).toString())
-                        : activity.getString(R.string.menu_open_in_product_default);
+                String packageLabel = null;
+                if (isOpenedByChrome) {
+                    // If the Custom Tab was created by Chrome, Chrome should open it.
+                    packageLabel = BuildInfo.getPackageLabel(activity);
+                } else {
+                    // Check if there is a default handler for the Intent.  If so, grab its label.
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SAMPLE_URL));
+                    PackageManager pm = activity.getPackageManager();
+                    ResolveInfo info = pm.resolveActivity(intent, 0);
+                    if (info != null && info.match != 0) {
+                        packageLabel = info.loadLabel(pm).toString();
+                    }
+                }
+
+                return packageLabel == null
+                        ? activity.getString(R.string.menu_open_in_product_default)
+                        : activity.getString(R.string.menu_open_in_product, packageLabel);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
