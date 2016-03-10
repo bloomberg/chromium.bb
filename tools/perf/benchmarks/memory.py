@@ -38,17 +38,6 @@ class MemoryTop7Stress(perf_benchmark.PerfBenchmark):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/555092
 
 
-class MemoryLongRunningIdleGmail(perf_benchmark.PerfBenchmark):
-  """Use (recorded) real world web sites and measure memory consumption
-  of long running idle Gmail page """
-  test = memory.Memory
-  page_set = page_sets.LongRunningIdleGmailPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'memory.long_running_idle_gmail'
-
-
 @benchmark.Disabled('android')  # crbug.com/542682
 class MemoryLongRunningIdleGmailBackground(perf_benchmark.PerfBenchmark):
   """Use (recorded) real world web sites and measure memory consumption

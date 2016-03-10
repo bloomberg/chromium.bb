@@ -6,12 +6,19 @@ from telemetry import story
 
 from page_sets import google_pages
 
+STARTUP_TIME_IN_SECONDS = 2
 IDLE_TIME_IN_SECONDS = 100
 
 def _CreateIdlePageClass(base_page_cls):
   class DerivedIdlePage(base_page_cls):  # pylint: disable=no-init
     def RunPageInteractions(self, action_runner):
-      action_runner.Wait(IDLE_TIME_IN_SECONDS)
+      action_runner.Wait(STARTUP_TIME_IN_SECONDS)
+      with action_runner.CreateInteraction('Begin'):
+        action_runner.tab.browser.DumpMemory()
+      with action_runner.CreateInteraction('Idle'):
+        action_runner.Wait(IDLE_TIME_IN_SECONDS)
+      with action_runner.CreateInteraction('End'):
+        action_runner.tab.browser.DumpMemory()
   return DerivedIdlePage
 
 
