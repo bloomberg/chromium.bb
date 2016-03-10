@@ -72,7 +72,6 @@ def run_runtest(cmd_args, runtest_args):
       sys.executable,
       os.path.join(
           cmd_args.paths['checkout'], 'infra', 'scripts', 'runtest_wrapper.py'),
-      '--path-build', cmd_args.paths['build'],
       '--',
     ]
   else:

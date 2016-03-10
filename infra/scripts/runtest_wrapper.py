@@ -19,9 +19,6 @@ SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 def main(argv):
   parser = argparse.ArgumentParser()
-  # TODO(phajdan.jr): Remove after cleaning up build repo side.
-  parser.add_argument(
-      '--path-build', help='Path to the build repo')
   parser.add_argument('args', nargs='*', help='Arguments to pass to runtest.py')
   args = parser.parse_args(argv)
 
