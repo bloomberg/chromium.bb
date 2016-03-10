@@ -174,9 +174,6 @@ void DefaultWebClientWorker::StartSetAsDefault() {
   set_as_default_in_progress_ = true;
   set_as_default_initialized_ = InitializeSetAsDefault();
 
-  // Remember the start time.
-  start_time_ = base::TimeTicks::Now();
-
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DefaultWebClientWorker::SetAsDefault, this));
@@ -231,25 +228,12 @@ void DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
 }
 
 void DefaultWebClientWorker::ReportAttemptResult(AttemptResult result) {
-  const char* histogram_prefix = GetHistogramPrefix();
-
-  // Report result.
   base::LinearHistogram::FactoryGet(
-      base::StringPrintf("%s.SetDefaultResult", histogram_prefix), 1,
+      base::StringPrintf("%s.SetDefaultResult", GetHistogramPrefix()), 1,
       AttemptResult::NUM_ATTEMPT_RESULT_TYPES,
       AttemptResult::NUM_ATTEMPT_RESULT_TYPES + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(result);
-
-  // Report asynchronous duration.
-  if (IsSetAsDefaultAsynchronous() && ShouldReportDurationForResult(result)) {
-    base::Histogram::FactoryTimeGet(
-        base::StringPrintf("%s.SetDefaultAsyncDuration_%s", histogram_prefix,
-                           AttemptResultToString(result)),
-        base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(3),
-        50, base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->AddTime(base::TimeTicks::Now() - start_time_);
-  }
 }
 
 bool DefaultWebClientWorker::InitializeSetAsDefault() {
@@ -275,35 +259,6 @@ void DefaultWebClientWorker::UpdateUI(DefaultWebClientState state) {
         break;
     }
   }
-}
-
-bool DefaultWebClientWorker::ShouldReportDurationForResult(
-    AttemptResult result) {
-  return result == SUCCESS || result == FAILURE || result == RETRY;
-}
-
-const char* DefaultWebClientWorker::AttemptResultToString(
-    AttemptResult result) {
-  switch (result) {
-    case SUCCESS:
-      return "Success";
-    case ALREADY_DEFAULT:
-      return "AlreadyDefault";
-    case FAILURE:
-      return "Failure";
-    case LAUNCH_FAILURE:
-      return "LaunchFailure";
-    case OTHER_WORKER:
-      return "OtherWorker";
-    case RETRY:
-      return "Retry";
-    case NO_ERRORS_NOT_DEFAULT:
-      return "NoErrorsNotDefault";
-    case NUM_ATTEMPT_RESULT_TYPES:
-      break;
-  }
-  NOTREACHED();
-  return "";
 }
 
 ///////////////////////////////////////////////////////////////////////////////

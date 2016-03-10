@@ -304,13 +304,6 @@ class DefaultWebClientWorker
   // client state.
   void UpdateUI(DefaultWebClientState state);
 
-  // Returns true if the duration of an attempt to set the default web client
-  // should be reported to UMA for |result|.
-  static bool ShouldReportDurationForResult(AttemptResult result);
-
-  // Returns a string based on |result|. This is used for UMA reports.
-  static const char* AttemptResultToString(AttemptResult result);
-
   // Called with the default state after the worker is done.
   DefaultWebClientWorkerCallback callback_;
 
@@ -318,9 +311,6 @@ class DefaultWebClientWorker
   // true, FinalizeSetAsDefault() will be called to clear what was
   // initialized.
   bool set_as_default_initialized_ = false;
-
-  // Records the time it takes to set the default browser.
-  base::TimeTicks start_time_;
 
   // Wait until Chrome has been confirmed as the default browser before
   // reporting a successful attempt.
