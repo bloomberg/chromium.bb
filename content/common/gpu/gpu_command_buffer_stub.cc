@@ -44,7 +44,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#include "content/public/common/sandbox_init.h"
 #endif
 
 #if defined(OS_ANDROID)

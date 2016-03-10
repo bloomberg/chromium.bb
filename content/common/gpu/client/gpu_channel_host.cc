@@ -23,10 +23,6 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#include "content/public/common/sandbox_init.h"
-#endif
-
 using base::AutoLock;
 
 namespace content {
