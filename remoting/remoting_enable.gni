@@ -9,13 +9,13 @@ import("//build/config/ui.gni")
 enable_remoting_host = false
 enable_me2me_host = false
 
-# TODO(GYP) Make remoting hosts work on Windows and Mac.
-#if (is_win || is_mac) {
+# TODO(GYP) Make remoting hosts work on Mac.
+#if (is_mac) {
 #  enable_remoting_host = true
 #  enable_me2me_host = true
 #}
 
-if (is_linux && !is_chromeos && use_x11) {
+if (is_win || (is_linux && !is_chromeos && use_x11)) {
   enable_remoting_host = true
   enable_me2me_host = true
 }
