@@ -185,6 +185,7 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
   base::AutoLock auto_lock(current_frame_lock_);
   ++total_frame_count_;
 
+  // With algorithm off, just let |current_frame_| hold the incoming |frame|.
   if (!rendering_frame_buffer_) {
     SetCurrentFrame(frame);
     return;
@@ -200,6 +201,9 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
     return;
   }
 
+  // If we detect a bad frame without |render_time|, we switch off algorithm,
+  // because without |render_time|, algorithm cannot work.
+  // In general, this should not happen.
   base::TimeTicks render_time;
   if (!frame->metadata()->GetTimeTicks(
           media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
@@ -211,20 +215,25 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
     return;
   }
 
-  timestamps_to_clock_times_[frame->timestamp()] = render_time;
-
-  rendering_frame_buffer_->EnqueueFrame(frame);
-
+  // The code below handles the case where UpdateCurrentFrame() callbacks stop.
+  // These callbacks can stop when the tab is hidden or the page area containing
+  // the video frame is scrolled out of view.
+  // Since some hardware decoders only have a limited number of output frames,
+  // we must aggressively release frames in this case.
   const base::TimeTicks now = base::TimeTicks::Now();
-  if (now <= last_deadline_max_)
-    return;
+  if (now > last_deadline_max_) {
+    // Note: the frame in |rendering_frame_buffer_| with lowest index is the
+    // same as |current_frame_|. Function SetCurrentFrame() handles whether
+    // to increase |dropped_frame_count_| for that frame, so here we should
+    // increase |dropped_frame_count_| by the count of all other frames.
+    dropped_frame_count_ += rendering_frame_buffer_->frames_queued() - 1;
+    rendering_frame_buffer_->Reset();
+    timestamps_to_clock_times_.clear();
+    SetCurrentFrame(frame);
+  }
 
-  // This shows vsyncs stops rendering frames. A probable cause is that the
-  // tab is not in the front. But we still have to let old frames go.
-  const base::TimeTicks deadline_max =
-      std::max(now, last_deadline_max_ + last_render_length_);
-
-  Render(deadline_max - last_render_length_, deadline_max);
+  timestamps_to_clock_times_[frame->timestamp()] = render_time;
+  rendering_frame_buffer_->EnqueueFrame(frame);
 }
 
 bool WebMediaPlayerMSCompositor::UpdateCurrentFrame(
