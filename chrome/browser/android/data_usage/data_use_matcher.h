@@ -18,7 +18,6 @@
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class TickClock;
 }
 
@@ -32,7 +31,7 @@ namespace chrome {
 
 namespace android {
 
-class ExternalDataUseObserver;
+class ExternalDataUseObserverBridge;
 
 // DataUseMatcher stores the matching URL patterns and package names along with
 // the labels. It also provides functionality to get the matching label for a
@@ -41,8 +40,7 @@ class DataUseMatcher {
  public:
   DataUseMatcher(
       const base::WeakPtr<DataUseTabModel>& data_use_tab_model,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const base::WeakPtr<ExternalDataUseObserver>& external_data_use_observer,
+      const ExternalDataUseObserverBridge* external_data_use_observer_bridge,
       const base::TimeDelta& default_matching_rule_expiration_duration);
 
   ~DataUseMatcher();
@@ -67,7 +65,7 @@ class DataUseMatcher {
                              std::string* label) const WARN_UNUSED_RESULT;
 
   // Fetches the matching rules asynchronously from
-  // |external_data_use_observer_|.
+  // |external_data_use_observer_bridge_|.
   void FetchMatchingRules();
 
   // Returns true if there is any valid matching rule.
@@ -137,12 +135,13 @@ class DataUseMatcher {
 
   // TickClock used for obtaining the current time.
   scoped_ptr<base::TickClock> tick_clock_;
-  // |io_task_runner_| is used to call ExternalDataUseObserver methods on
-  // IO thread.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // |external_data_use_observer_| is notified when matching rules are fetched.
-  base::WeakPtr<ExternalDataUseObserver> external_data_use_observer_;
+  // Pointer to the ExternalDataUseObserverBridge owned by
+  // ExternalDataUseObserver. DataUseTabModel (owner of |this|) and
+  // ExternalDataUseObserverBridge are owned by ExternalDataUseObserver, and are
+  // destroyed in that order. So |external_data_use_observer_bridge_| is
+  // guaranteed to be non-null.
+  const ExternalDataUseObserverBridge* external_data_use_observer_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseMatcher);
 };

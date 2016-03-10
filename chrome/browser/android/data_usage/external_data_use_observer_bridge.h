@@ -39,7 +39,7 @@ class ExternalDataUseObserver;
 class ExternalDataUseObserverBridge {
  public:
   ExternalDataUseObserverBridge();
-  ~ExternalDataUseObserverBridge();
+  virtual ~ExternalDataUseObserverBridge();
 
   // Initializes |this| on UI thread by constructing the
   // |j_external_data_use_observer_|, and fetches matching rules from
@@ -51,7 +51,7 @@ class ExternalDataUseObserverBridge {
   // Fetches matching rules from Java. Returns result asynchronously via
   // FetchMatchingRulesDone. FetchMatchingRules should not be called if a
   // fetch to matching rules is already in progress.
-  void FetchMatchingRules() const;
+  virtual void FetchMatchingRules() const;
 
   // Called by Java when new matching rules have been fetched.
   // |app_package_name| is the package name of the app that should be matched.
@@ -93,6 +93,10 @@ class ExternalDataUseObserverBridge {
                                       jobject obj,
                                       bool is_control_app_installed) const;
 
+  // Called by DataUseMatcher to notify |external_data_use_observer_| if it
+  // should register as a data use observer.
+  virtual void ShouldRegisterAsDataUseObserver(bool should_register) const;
+
  private:
   // Java listener that provides regular expressions to |this|. Data use
   // reports are submitted to |j_external_data_use_observer_|.
@@ -103,6 +107,7 @@ class ExternalDataUseObserverBridge {
   base::WeakPtr<ExternalDataUseObserver> external_data_use_observer_;
 
   // |data_use_tab_model_| is notified of the matching rules on UI thread.
+  // |data_use_tab_model_| may be null.
   base::WeakPtr<DataUseTabModel> data_use_tab_model_;
 
   // The construction time of |this|.

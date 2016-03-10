@@ -133,13 +133,13 @@ ExternalDataUseObserver::ExternalDataUseObserver(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : data_use_aggregator_(data_use_aggregator),
+      external_data_use_observer_bridge_(new ExternalDataUseObserverBridge()),
       data_use_tab_model_(new DataUseTabModel()),
       last_data_report_submitted_ticks_(base::TimeTicks()),
       pending_report_bytes_(0),
       ui_task_runner_(ui_task_runner),
       previous_report_time_(base::Time::Now()),
       last_matching_rules_fetch_time_(base::TimeTicks::Now()),
-      external_data_use_observer_bridge_(new ExternalDataUseObserverBridge()),
       total_bytes_buffered_(0),
       fetch_matching_rules_duration_(
           base::TimeDelta::FromSeconds(GetFetchMatchingRulesDurationSeconds())),
@@ -162,12 +162,11 @@ ExternalDataUseObserver::ExternalDataUseObserver(
   ui_task_runner_->PostTask(FROM_HERE,
                             base::Bind(&DataUseTabModel::InitOnUIThread,
                                        base::Unretained(data_use_tab_model_),
-                                       io_task_runner, GetWeakPtr()));
+                                       external_data_use_observer_bridge_));
 
-  // Initialize the ExternalDataUseObserverBridge object. Initialization will
-  // also trigger the fetching of matching rules. It is okay to use
-  // base::Unretained here since |external_data_use_observer_bridge_| is
-  // owned by |this|, and is destroyed on UI thread when |this| is destroyed.
+  // Initialize the ExternalDataUseObserverBridge object. It is okay to use
+  // base::Unretained here since |external_data_use_observer_bridge_| is owned
+  // by |this|, and is destroyed on UI thread when |this| is destroyed.
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ExternalDataUseObserverBridge::Init,
@@ -181,16 +180,17 @@ ExternalDataUseObserver::~ExternalDataUseObserver() {
   if (registered_as_data_use_observer_)
     data_use_aggregator_->RemoveObserver(this);
 
+  // Delete |data_use_tab_model_| on the UI thread. |data_use_tab_model_| should
+  // be deleted before |external_data_use_observer_bridge_|.
+  if (!ui_task_runner_->DeleteSoon(FROM_HERE, data_use_tab_model_)) {
+    NOTIMPLEMENTED() << " DataUseTabModel was not deleted successfully";
+  }
+
   // Delete |external_data_use_observer_bridge_| on the UI thread.
   if (!ui_task_runner_->DeleteSoon(FROM_HERE,
                                    external_data_use_observer_bridge_)) {
     NOTIMPLEMENTED()
         << " ExternalDataUseObserverBridge was not deleted successfully";
-  }
-
-  // Delete |data_use_tab_model_| on the UI thread.
-  if (!ui_task_runner_->DeleteSoon(FROM_HERE, data_use_tab_model_)) {
-    NOTIMPLEMENTED() << " DataUseTabModel was not deleted successfully";
   }
 }
 

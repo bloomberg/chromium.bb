@@ -149,16 +149,15 @@ base::WeakPtr<DataUseTabModel> DataUseTabModel::GetWeakPtr() {
 }
 
 void DataUseTabModel::InitOnUIThread(
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const base::WeakPtr<ExternalDataUseObserver>& external_data_use_observer) {
+    const ExternalDataUseObserverBridge* external_data_use_observer_bridge) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(io_task_runner);
+  DCHECK(external_data_use_observer_bridge);
 
   tick_clock_.reset(new base::DefaultTickClock());
-  data_use_matcher_.reset(new DataUseMatcher(
-      GetWeakPtr(), io_task_runner, external_data_use_observer,
-      GetDefaultMatchingRuleExpirationDuration()));
+  data_use_matcher_.reset(
+      new DataUseMatcher(GetWeakPtr(), external_data_use_observer_bridge,
+                         GetDefaultMatchingRuleExpirationDuration()));
 }
 
 void DataUseTabModel::OnNavigationEvent(SessionID::id_type tab_id,
@@ -265,6 +264,7 @@ void DataUseTabModel::OnControlAppInstallStateChange(
     bool is_control_app_installed) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(is_control_app_installed_, is_control_app_installed);
+  DCHECK(data_use_matcher_);
 
   is_control_app_installed_ = is_control_app_installed;
   std::vector<std::string> empty;

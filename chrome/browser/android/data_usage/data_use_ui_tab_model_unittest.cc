@@ -33,6 +33,8 @@ namespace {
 const char kFooLabel[] = "foo_label";
 const char kFooPackage[] = "com.foo";
 
+}  // namespace
+
 class TestDataUseTabModel : public DataUseTabModel {
  public:
   TestDataUseTabModel() {}
@@ -47,10 +49,6 @@ class DataUseUITabModelTest : public testing::Test {
   DataUseUITabModelTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
   DataUseUITabModel* data_use_ui_tab_model() { return &data_use_ui_tab_model_; }
-
-  ExternalDataUseObserver* external_data_use_observer() const {
-    return external_data_use_observer_.get();
-  }
 
   TestDataUseTabModel* data_use_tab_model() const {
     return data_use_tab_model_.get();
@@ -80,7 +78,7 @@ class DataUseUITabModelTest : public testing::Test {
 
     data_use_tab_model_.reset(new TestDataUseTabModel());
     data_use_tab_model_->InitOnUIThread(
-        io_task_runner_, external_data_use_observer_->GetWeakPtr());
+        external_data_use_observer_->external_data_use_observer_bridge_);
     data_use_ui_tab_model_.SetDataUseTabModel(data_use_tab_model_.get());
     data_use_tab_model_->OnControlAppInstallStateChange(true);
   }
@@ -94,8 +92,6 @@ class DataUseUITabModelTest : public testing::Test {
   scoped_ptr<ExternalDataUseObserver> external_data_use_observer_;
   scoped_ptr<TestDataUseTabModel> data_use_tab_model_;
 };
-
-}  // namespace
 
 // Tests that DataUseTabModel is notified of tab closure and navigation events,
 // and DataUseTabModel notifies DataUseUITabModel.

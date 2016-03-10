@@ -172,7 +172,19 @@ void ExternalDataUseObserverBridge::OnControlAppInstallStateChange(
     jobject obj,
     bool is_control_app_installed) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  data_use_tab_model_->OnControlAppInstallStateChange(is_control_app_installed);
+  if (data_use_tab_model_) {
+    data_use_tab_model_->OnControlAppInstallStateChange(
+        is_control_app_installed);
+  }
+}
+
+void ExternalDataUseObserverBridge::ShouldRegisterAsDataUseObserver(
+    bool should_register) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalDataUseObserver::ShouldRegisterAsDataUseObserver,
+                 external_data_use_observer_, should_register));
 }
 
 bool RegisterExternalDataUseObserver(JNIEnv* env) {

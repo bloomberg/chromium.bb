@@ -389,47 +389,57 @@ TEST_F(ExternalDataUseObserverTest, PeriodicFetchMatchingRules) {
 // control app is not installed  or if more than zero valid rules have been
 // fetched.
 TEST_F(ExternalDataUseObserverTest, MatchingRuleFetchOnControlAppInstall) {
-  // Matching rules not fetched on navigation if control app is not installed.
-  external_data_use_observer()->last_matching_rules_fetch_time_ =
-      base::TimeTicks();
-  external_data_use_observer()->data_use_tab_model_->is_control_app_installed_ =
-      false;
-  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
-      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-      std::string());
-  EXPECT_TRUE(
-      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+  {
+    // Matching rules not fetched on navigation if control app is not installed.
+    external_data_use_observer()->last_matching_rules_fetch_time_ =
+        base::TimeTicks();
+    external_data_use_observer()
+        ->data_use_tab_model_->is_control_app_installed_ = false;
+    base::HistogramTester histogram_tester;
+    external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
+        kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
+        std::string());
+    base::RunLoop().RunUntilIdle();
+    histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 0);
+  }
 
-  // Matching rules are fetched when control app is installed.
-  external_data_use_observer()
-      ->data_use_tab_model_->OnControlAppInstallStateChange(true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(
-      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+  {
+    // Matching rules are fetched when control app is installed.
+    base::HistogramTester histogram_tester;
+    external_data_use_observer()
+        ->data_use_tab_model_->OnControlAppInstallStateChange(true);
+    base::RunLoop().RunUntilIdle();
+    histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 1);
+  }
 
-  // Matching rules fetched on every navigation if control app is installed and
-  // zero rules are available.
-  external_data_use_observer()->last_matching_rules_fetch_time_ =
-      base::TimeTicks();
-  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
-      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-      std::string());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(
-      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+  {
+    // Matching rules fetched on every navigation if control app is installed
+    // and zero rules are available.
+    external_data_use_observer()->last_matching_rules_fetch_time_ =
+        base::TimeTicks();
+    base::HistogramTester histogram_tester;
+    external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
+        kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
+        std::string());
+    base::RunLoop().RunUntilIdle();
+    histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 1);
+  }
 
-  // Matching rules not fetched on navigation if control app is installed and
-  // more than zero rules are available.
-  AddDefaultMatchingRule();
-  external_data_use_observer()->last_matching_rules_fetch_time_ =
-      base::TimeTicks();
-  EXPECT_TRUE(
-      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
-  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
-      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-      std::string());
-  EXPECT_TRUE(
-      external_data_use_observer()->last_matching_rules_fetch_time_.is_null());
+  {
+    // Matching rules not fetched on navigation if control app is installed and
+    // more than zero rules are available.
+    AddDefaultMatchingRule();
+    external_data_use_observer()->last_matching_rules_fetch_time_ =
+        base::TimeTicks();
+    EXPECT_TRUE(external_data_use_observer()
+                    ->last_matching_rules_fetch_time_.is_null());
+    base::HistogramTester histogram_tester;
+    external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
+        kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
+        std::string());
+    base::RunLoop().RunUntilIdle();
+    histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 0);
+  }
 }
 
 // Tests if data use reports are sent only after the total bytes sent/received
@@ -594,6 +604,8 @@ TEST_F(ExternalDataUseObserverTest, DataUseReportTimedOut) {
 
   // Create another ExternalDataUseObserver object.
   ReplaceExternalDataUseObserver(variation_params);
+  histogram_tester.ExpectTotalCount(kUMAMatchingRuleFirstFetchDurationHistogram,
+                                    0);
 
   // Trigger the control app install, and matching rules will be fetched.
   external_data_use_observer()

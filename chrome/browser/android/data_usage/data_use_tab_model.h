@@ -13,7 +13,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -21,20 +20,19 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/tab_data_use_entry.h"
 #include "components/sessions/core/session_id.h"
+#include "url/gurl.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 class TickClock;
 }
 
-class GURL;
-
 namespace chrome {
 
 namespace android {
 
 class DataUseMatcher;
-class ExternalDataUseObserver;
+class ExternalDataUseObserverBridge;
 
 // Models tracking and labeling of data usage within each Tab. Within each tab,
 // the model tracks the data use of a sequence of navigations in a "tracking
@@ -85,11 +83,13 @@ class DataUseTabModel {
 
   DataUseTabModel();
 
-  // Initializes |this| on UI thread. |external_data_use_observer| is the weak
-  // pointer to ExternalDataUseObserver object that owns |this|.
+  // Initializes |this| on UI thread. |external_data_use_observer_bridge| is the
+  // pointer to ExternalDataUseObserverBridge object. DataUseTabModel and
+  // ExternalDataUseObserverBridge objects are owned by ExternalDataUseObserver
+  // and DataUseTabModel is destroyed first followed by
+  // ExternalDataUseObserverBridge.
   void InitOnUIThread(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-      const base::WeakPtr<ExternalDataUseObserver>& external_data_use_observer);
+      const ExternalDataUseObserverBridge* external_data_use_observer_bridge);
 
   virtual ~DataUseTabModel();
 

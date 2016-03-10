@@ -19,6 +19,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_matcher.h"
+#include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
 #include "chrome/browser/android/data_usage/tab_data_use_entry.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
@@ -67,27 +68,33 @@ class MockTabDataUseObserver
   MOCK_METHOD1(NotifyTrackingEnding, void(SessionID::id_type tab_id));
 };
 
+class TestExternalDataUseObserverBridge
+    : public chrome::android::ExternalDataUseObserverBridge {
+ public:
+  TestExternalDataUseObserverBridge() {}
+  void FetchMatchingRules() const override {}
+  void ShouldRegisterAsDataUseObserver(bool should_register) const override{};
+};
+
 }  // namespace
 
 namespace chrome {
 
 namespace android {
 
-class ExternalDataUseObserver;
-
 class DataUseTabModelTest : public testing::Test {
  public:
   DataUseTabModelTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        external_data_use_observer_bridge_(
+            new TestExternalDataUseObserverBridge()) {}
 
  protected:
   void SetUp() override {
     base::RunLoop().RunUntilIdle();
     data_use_tab_model_.reset(new DataUseTabModel());
     data_use_tab_model_->InitOnUIThread(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO),
-        base::WeakPtr<ExternalDataUseObserver>());
+        external_data_use_observer_bridge_.get());
 
     tick_clock_ = new base::SimpleTestTickClock();
 
@@ -189,6 +196,7 @@ class DataUseTabModelTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<ExternalDataUseObserverBridge> external_data_use_observer_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseTabModelTest);
 };

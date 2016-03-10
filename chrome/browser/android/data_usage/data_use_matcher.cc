@@ -15,7 +15,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/data_usage/external_data_use_observer.h"
+#include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -25,16 +25,14 @@ namespace android {
 
 DataUseMatcher::DataUseMatcher(
     const base::WeakPtr<DataUseTabModel>& data_use_tab_model,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const base::WeakPtr<ExternalDataUseObserver>& external_data_use_observer,
+    const ExternalDataUseObserverBridge* external_data_use_observer_bridge,
     const base::TimeDelta& default_matching_rule_expiration_duration)
     : data_use_tab_model_(data_use_tab_model),
       default_matching_rule_expiration_duration_(
           default_matching_rule_expiration_duration),
       tick_clock_(new base::DefaultTickClock()),
-      io_task_runner_(io_task_runner),
-      external_data_use_observer_(external_data_use_observer) {
-  DCHECK(io_task_runner_);
+      external_data_use_observer_bridge_(external_data_use_observer_bridge) {
+  DCHECK(external_data_use_observer_bridge_);
 }
 
 DataUseMatcher::~DataUseMatcher() {}
@@ -92,14 +90,8 @@ void DataUseMatcher::RegisterURLRegexes(
   UMA_HISTOGRAM_COUNTS_100("DataUsage.MatchingRulesCount.Invalid",
                            invalid_rules);
 
-  DCHECK(io_task_runner_);
-
-  // Notify |external_data_use_observer_| if it should register as a data use
-  // observer.
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ExternalDataUseObserver::ShouldRegisterAsDataUseObserver,
-                 external_data_use_observer_, !matching_rules_.empty()));
+  external_data_use_observer_bridge_->ShouldRegisterAsDataUseObserver(
+      !matching_rules_.empty());
 }
 
 bool DataUseMatcher::MatchesURL(const GURL& url, std::string* label) const {
@@ -149,12 +141,7 @@ bool DataUseMatcher::MatchesAppPackageName(const std::string& app_package_name,
 
 void DataUseMatcher::FetchMatchingRules() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(io_task_runner_);
-
-  // Notify |external_data_use_observer_| to fetch the rules.
-  io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ExternalDataUseObserver::FetchMatchingRules,
-                            external_data_use_observer_));
+  external_data_use_observer_bridge_->FetchMatchingRules();
 }
 
 bool DataUseMatcher::HasValidRules() const {
