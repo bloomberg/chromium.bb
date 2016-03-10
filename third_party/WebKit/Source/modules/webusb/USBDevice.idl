@@ -32,6 +32,7 @@ enum USBTransferStatus {
     readonly attribute DOMString? productName;
     readonly attribute DOMString? serialNumber;
     readonly attribute sequence<USBConfiguration> configurations;
+    readonly attribute boolean opened;
 
     [CallWith=ScriptState] Promise<void> open();
     [CallWith=ScriptState] Promise<void> close();

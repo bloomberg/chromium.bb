@@ -63,11 +63,11 @@ class DeviceArray {
 public:
     using WebType = OwnPtr<WebVector<WebUSBDevice*>>;
 
-    static HeapVector<Member<USBDevice>> take(ScriptPromiseResolver*, PassOwnPtr<WebVector<WebUSBDevice*>> webDevices)
+    static HeapVector<Member<USBDevice>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebVector<WebUSBDevice*>> webDevices)
     {
         HeapVector<Member<USBDevice>> devices;
         for (const auto webDevice : *webDevices)
-            devices.append(USBDevice::create(adoptPtr(webDevice)));
+            devices.append(USBDevice::create(adoptPtr(webDevice), resolver->getExecutionContext()));
         return devices;
     }
 };
@@ -145,12 +145,12 @@ void USB::willDetachFrameHost()
 
 void USB::onDeviceConnected(WebPassOwnPtr<WebUSBDevice> device)
 {
-    dispatchEvent(USBConnectionEvent::create(EventTypeNames::connect, USBDevice::create(device.release())));
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::connect, USBDevice::create(device.release(), getExecutionContext())));
 }
 
 void USB::onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice> device)
 {
-    dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, USBDevice::create(device.release())));
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, USBDevice::create(device.release(), getExecutionContext())));
 }
 
 DEFINE_TRACE(USB)

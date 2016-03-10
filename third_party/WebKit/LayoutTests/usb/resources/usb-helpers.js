@@ -134,20 +134,19 @@ function usbMocks(mojo) {
       }
 
       open() {
-        // TODO(reillyg): Check if the device is opened and return
-        // OpenDeviceError.ALREADY_OPEN.
+        assert_false(this.opened_);
         this.opened_ = true;
         return Promise.resolve({ error: device.OpenDeviceError.OK });
       }
 
       close() {
+        assert_true(this.opened_);
         this.opened_ = false;
-        return Promise.resolve({});
+        return Promise.resolve({ error: device.OpenDeviceError.OK });
       }
 
       setConfiguration(value) {
-        if (!this.opened_)
-          return Promise.resolve({ success: false });
+        assert_true(this.opened_);
 
         let selected_configuration = this.info_.configurations.find(
             configuration => configuration.configuration_value == value);
@@ -160,8 +159,7 @@ function usbMocks(mojo) {
       }
 
       claimInterface(interfaceNumber) {
-        if (!this.opened_)
-          return Promise.resolve({ success: false });
+        assert_true(this.opened_);
 
         if (this.currentConfiguration_ === undefined)
           return Promise.resolve({ success: false });
@@ -179,8 +177,7 @@ function usbMocks(mojo) {
       }
 
       releaseInterface(interfaceNumber) {
-        if (!this.opened_)
-          return Promise.resolve({ success: false });
+        assert_true(this.opened_);
 
         if (this.currentConfiguration_ === undefined)
           return Promise.resolve({ success: false });
@@ -194,7 +191,9 @@ function usbMocks(mojo) {
       }
 
       setInterfaceAlternateSetting(interfaceNumber, alternateSetting) {
-        if (!this.opened_ || this.currentConfiguration_ === undefined)
+        assert_true(this.opened_);
+
+        if (this.currentConfiguration_ === undefined)
           return Promise.resolve({ success: false });
 
         if (!this.claimedInterfaces_.has(interfaceNumber))
@@ -215,15 +214,18 @@ function usbMocks(mojo) {
       }
 
       reset() {
-        return Promise.resolve({ success: this.opened_ });
+        assert_true(this.opened_);
+        return Promise.resolve({ success: true });
       }
 
       clearHalt(endpoint) {
+        assert_true(this.opened_);
         // TODO(reillyg): Check that endpoint is valid.
-        return Promise.resolve({ success: this.opened_ });
+        return Promise.resolve({ success: true });
       }
 
       controlTransferIn(params, length, timeout) {
+        assert_true(this.opened_);
         return Promise.resolve({
           status: device.TransferStatus.OK,
           data: [length >> 8, length & 0xff, params.request, params.value >> 8,
@@ -232,6 +234,7 @@ function usbMocks(mojo) {
       }
 
       controlTransferOut(params, data, timeout) {
+        assert_true(this.opened_);
         return Promise.resolve({
           status: device.TransferStatus.OK,
           bytesWritten: data.byteLength
@@ -239,6 +242,7 @@ function usbMocks(mojo) {
       }
 
       genericTransferIn(endpointNumber, length, timeout) {
+        assert_true(this.opened_);
         // TODO(reillyg): Check that endpoint is valid.
         let data = new Array(length);
         for (let i = 0; i < length; ++i)
@@ -250,6 +254,7 @@ function usbMocks(mojo) {
       }
 
       genericTransferOut(endpointNumber, data, timeout) {
+        assert_true(this.opened_);
         // TODO(reillyg): Check that endpoint is valid.
         return Promise.resolve({
           status: device.TransferStatus.OK,
@@ -258,6 +263,7 @@ function usbMocks(mojo) {
       }
 
       isochronousTransferIn(endpointNumber, packetLengths, timeout) {
+        assert_true(this.opened_);
         // TODO(reillyg): Check that endpoint is valid.
         let data = new Array(packetLengths.reduce((a, b) => a + b, 0));
         let dataOffset = 0;
@@ -275,6 +281,7 @@ function usbMocks(mojo) {
       }
 
       isochronousTransferOut(endpointNumber, data, packetLengths, timeout) {
+        assert_true(this.opened_);
         // TODO(reillyg): Check that endpoint is valid.
         let packets = new Array(packetLengths.length);
         for (let i = 0; i < packetLengths.length; ++i) {

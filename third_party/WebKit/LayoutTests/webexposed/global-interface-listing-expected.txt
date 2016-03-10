@@ -5614,6 +5614,7 @@ interface USBDevice
     getter deviceVersionSubminor
     getter guid
     getter manufacturerName
+    getter opened
     getter productId
     getter productName
     getter serialNumber

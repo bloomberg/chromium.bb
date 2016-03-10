@@ -30,26 +30,27 @@ class USBDevice
 public:
     using WebType = OwnPtr<WebUSBDevice>;
 
-    static USBDevice* create(PassOwnPtr<WebUSBDevice> device)
+    static USBDevice* create(PassOwnPtr<WebUSBDevice> device, ExecutionContext* context)
     {
-        return new USBDevice(device);
+        return new USBDevice(device, context);
     }
 
-    static USBDevice* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBDevice> device)
-    {
-        return create(device);
-    }
+    static USBDevice* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBDevice>);
 
-    explicit USBDevice(PassOwnPtr<WebUSBDevice> device)
-        : ContextLifecycleObserver(nullptr)
+    explicit USBDevice(PassOwnPtr<WebUSBDevice> device, ExecutionContext* context)
+        : ContextLifecycleObserver(context)
         , m_device(device)
+        , m_opened(false)
+        , m_deviceStateChangeInProgress(false)
     {
     }
 
     virtual ~USBDevice() { }
 
     const WebUSBDeviceInfo& info() const { return m_device->info(); }
+    void onDeviceOpenedOrClosed(bool);
 
+    // IDL exposed interface:
     String guid() const { return info().guid; }
     uint8_t usbVersionMajor() { return info().usbVersionMajor; }
     uint8_t usbVersionMinor() { return info().usbVersionMinor; }
@@ -66,6 +67,7 @@ public:
     String productName() const { return info().productName; }
     String serialNumber() const { return info().serialNumber; }
     HeapVector<Member<USBConfiguration>> configurations() const;
+    bool opened() const { return m_opened; }
 
     ScriptPromise open(ScriptState*);
     ScriptPromise close(ScriptState*);
@@ -90,6 +92,8 @@ public:
 
 private:
     OwnPtr<WebUSBDevice> m_device;
+    bool m_opened;
+    bool m_deviceStateChangeInProgress;
 };
 
 } // namespace blink
