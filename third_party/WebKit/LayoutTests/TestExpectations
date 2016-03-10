@@ -1334,8 +1334,6 @@ crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ P
 
 crbug.com/588061 [ Debug ] inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Pass Failure ]
 
-crbug.com/248063 [ Win ] plugins/plugin-clip-subframe.html [ Pass Failure ]
-
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
 crbug.com/591821 fast/events/iframe-object-onload.html [ Failure Pass ]
