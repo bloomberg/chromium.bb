@@ -12,10 +12,10 @@
 #ifndef MOJO_PUBLIC_CPP_SYSTEM_DATA_PIPE_H_
 #define MOJO_PUBLIC_CPP_SYSTEM_DATA_PIPE_H_
 
-#include <assert.h>
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -64,8 +64,8 @@ inline MojoResult CreateDataPipe(
     const MojoCreateDataPipeOptions* options,
     ScopedDataPipeProducerHandle* data_pipe_producer,
     ScopedDataPipeConsumerHandle* data_pipe_consumer) {
-  assert(data_pipe_producer);
-  assert(data_pipe_consumer);
+  DCHECK(data_pipe_producer);
+  DCHECK(data_pipe_consumer);
   DataPipeProducerHandle producer_handle;
   DataPipeConsumerHandle consumer_handle;
   MojoResult rv = MojoCreateDataPipe(options,
@@ -146,14 +146,14 @@ inline DataPipe::DataPipe() {
   MojoResult result =
       CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
   ALLOW_UNUSED_LOCAL(result);
-  assert(result == MOJO_RESULT_OK);
+  DCHECK_EQ(MOJO_RESULT_OK, result);
 }
 
 inline DataPipe::DataPipe(const MojoCreateDataPipeOptions& options) {
   MojoResult result =
       CreateDataPipe(&options, &producer_handle, &consumer_handle);
   ALLOW_UNUSED_LOCAL(result);
-  assert(result == MOJO_RESULT_OK);
+  DCHECK_EQ(MOJO_RESULT_OK, result);
 }
 
 inline DataPipe::~DataPipe() {

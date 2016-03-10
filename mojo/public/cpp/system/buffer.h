@@ -12,10 +12,10 @@
 #ifndef MOJO_PUBLIC_CPP_SYSTEM_BUFFER_H_
 #define MOJO_PUBLIC_CPP_SYSTEM_BUFFER_H_
 
-#include <assert.h>
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -45,7 +45,7 @@ inline MojoResult CreateSharedBuffer(
     const MojoCreateSharedBufferOptions* options,
     uint64_t num_bytes,
     ScopedSharedBufferHandle* shared_buffer) {
-  assert(shared_buffer);
+  DCHECK(shared_buffer);
   SharedBufferHandle handle;
   MojoResult rv =
       MojoCreateSharedBuffer(options, num_bytes, handle.mutable_value());
@@ -71,7 +71,7 @@ inline MojoResult DuplicateBuffer(
     BufferHandleType buffer,
     const MojoDuplicateBufferHandleOptions* options,
     ScopedHandleBase<BufferHandleType>* new_buffer) {
-  assert(new_buffer);
+  DCHECK(new_buffer);
   BufferHandleType handle;
   MojoResult rv = MojoDuplicateBufferHandle(
       buffer.value(), options, handle.mutable_value());
@@ -89,14 +89,14 @@ inline MojoResult MapBuffer(BufferHandleType buffer,
                             uint64_t num_bytes,
                             void** pointer,
                             MojoMapBufferFlags flags) {
-  assert(buffer.is_valid());
+  DCHECK(buffer.is_valid());
   return MojoMapBuffer(buffer.value(), offset, num_bytes, pointer, flags);
 }
 
 // Unmaps a part of a buffer that was previously mapped with |MapBuffer()|.
 // See |MojoUnmapBuffer()| for complete documentation.
 inline MojoResult UnmapBuffer(void* pointer) {
-  assert(pointer);
+  DCHECK(pointer);
   return MojoUnmapBuffer(pointer);
 }
 
@@ -115,7 +115,7 @@ class SharedBuffer {
 inline SharedBuffer::SharedBuffer(uint64_t num_bytes) {
   MojoResult result = CreateSharedBuffer(nullptr, num_bytes, &handle);
   ALLOW_UNUSED_LOCAL(result);
-  assert(result == MOJO_RESULT_OK);
+  DCHECK_EQ(MOJO_RESULT_OK, result);
 }
 
 inline SharedBuffer::SharedBuffer(
@@ -123,7 +123,7 @@ inline SharedBuffer::SharedBuffer(
     const MojoCreateSharedBufferOptions& options) {
   MojoResult result = CreateSharedBuffer(&options, num_bytes, &handle);
   ALLOW_UNUSED_LOCAL(result);
-  assert(result == MOJO_RESULT_OK);
+  DCHECK_EQ(MOJO_RESULT_OK, result);
 }
 
 inline SharedBuffer::~SharedBuffer() {

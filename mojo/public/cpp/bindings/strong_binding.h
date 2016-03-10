@@ -5,9 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRONG_BINDING_H_
 
-#include <assert.h>
 #include <utility>
 
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -71,19 +71,19 @@ class StrongBinding {
   ~StrongBinding() {}
 
   void Bind(ScopedMessagePipeHandle handle) {
-    assert(!binding_.is_bound());
+    DCHECK(!binding_.is_bound());
     binding_.Bind(std::move(handle));
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
   void Bind(InterfacePtr<Interface>* ptr) {
-    assert(!binding_.is_bound());
+    DCHECK(!binding_.is_bound());
     binding_.Bind(ptr);
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
 
   void Bind(InterfaceRequest<Interface> request) {
-    assert(!binding_.is_bound());
+    DCHECK(!binding_.is_bound());
     binding_.Bind(std::move(request));
     binding_.set_connection_error_handler([this]() { OnConnectionError(); });
   }
@@ -97,7 +97,7 @@ class StrongBinding {
   // This method may only be called after this StrongBinding has been bound to a
   // message pipe.
   void set_connection_error_handler(const Closure& error_handler) {
-    assert(binding_.is_bound());
+    DCHECK(binding_.is_bound());
     connection_error_handler_ = error_handler;
   }
 

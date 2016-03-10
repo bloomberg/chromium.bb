@@ -5,11 +5,11 @@
 #ifndef MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_
 #define MOJO_PUBLIC_CPP_SYSTEM_HANDLE_H_
 
-#include <assert.h>
 #include <stdint.h>
 #include <limits>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/move.h"
 #include "mojo/public/c/system/functions.h"
@@ -127,7 +127,7 @@ class ScopedHandleBase {
       return;
     MojoResult result = MojoClose(handle_.value());
     ALLOW_UNUSED_LOCAL(result);
-    assert(result == MOJO_RESULT_OK);
+    DCHECK_EQ(MOJO_RESULT_OK, result);
   }
 
   HandleType handle_;
