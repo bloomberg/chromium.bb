@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -125,6 +126,11 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
 #endif
+}
+
+void CanvasRenderingContext2D::setCanvasGetContextResult(RenderingContext& result)
+{
+    result.setCanvasRenderingContext2D(PassRefPtrWillBeRawPtr<CanvasRenderingContext2D>(this));
 }
 
 void CanvasRenderingContext2D::unwindStateStack()

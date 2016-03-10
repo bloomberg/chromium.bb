@@ -53,6 +53,7 @@ public:
     unsigned version() const override { return 1; }
     String contextName() const override { return "WebGLRenderingContext"; }
     void registerContextExtensions() override;
+    void setCanvasGetContextResult(RenderingContext&) final;
 
     EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();

@@ -4,6 +4,7 @@
 
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/frame/ImageBitmap.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/StaticBitmapImage.h"
@@ -18,6 +19,11 @@ ImageBitmapRenderingContext::ImageBitmapRenderingContext(HTMLCanvasElement* canv
 { }
 
 ImageBitmapRenderingContext::~ImageBitmapRenderingContext() { }
+
+void ImageBitmapRenderingContext::setCanvasGetContextResult(RenderingContext& result)
+{
+    result.setImageBitmapRenderingContext(PassRefPtrWillBeRawPtr<ImageBitmapRenderingContext>(this));
+}
 
 void ImageBitmapRenderingContext::transferImageBitmap(ImageBitmap* imageBitmap)
 {

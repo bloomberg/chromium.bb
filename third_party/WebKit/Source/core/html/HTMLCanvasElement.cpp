@@ -208,15 +208,6 @@ void HTMLCanvasElement::registerRenderingContextFactory(PassOwnPtr<CanvasRenderi
     renderingContextFactories()[type] = renderingContextFactory;
 }
 
-ScriptValue HTMLCanvasElement::getContext(ScriptState* scriptState, const String& type, const CanvasContextCreationAttributes& attributes)
-{
-    CanvasRenderingContext* context = getCanvasRenderingContext(type, attributes);
-    if (!context) {
-        return ScriptValue::createNull(scriptState);
-    }
-    return ScriptValue(scriptState, toV8(context, scriptState->context()->Global(), scriptState->isolate()));
-}
-
 CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const String& type, const CanvasContextCreationAttributes& attributes)
 {
     CanvasRenderingContext::ContextType contextType = CanvasRenderingContext::contextTypeFromId(type);

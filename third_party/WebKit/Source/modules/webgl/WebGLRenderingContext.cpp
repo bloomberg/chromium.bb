@@ -25,6 +25,7 @@
 
 #include "modules/webgl/WebGLRenderingContext.h"
 
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBox.h"
@@ -102,6 +103,11 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
 
 WebGLRenderingContext::~WebGLRenderingContext()
 {
+}
+
+void WebGLRenderingContext::setCanvasGetContextResult(RenderingContext& result)
+{
+    result.setWebGLRenderingContext(PassRefPtrWillBeRawPtr<WebGLRenderingContext>(this));
 }
 
 void WebGLRenderingContext::registerContextExtensions()

@@ -83,6 +83,8 @@ public:
 
     ~CanvasRenderingContext2D() override;
 
+    void setCanvasGetContextResult(RenderingContext&) final;
+
     bool isContextLost() const override;
 
     void setShouldAntialias(bool) override;

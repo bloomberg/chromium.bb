@@ -4,6 +4,7 @@
 
 #include "modules/webgl/WebGL2RenderingContext.h"
 
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/loader/FrameLoader.h"
@@ -73,6 +74,11 @@ WebGL2RenderingContext::WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, 
 WebGL2RenderingContext::~WebGL2RenderingContext()
 {
 
+}
+
+void WebGL2RenderingContext::setCanvasGetContextResult(RenderingContext& result)
+{
+    result.setWebGL2RenderingContext(PassRefPtrWillBeRawPtr<WebGL2RenderingContext>(this));
 }
 
 void WebGL2RenderingContext::registerContextExtensions()
