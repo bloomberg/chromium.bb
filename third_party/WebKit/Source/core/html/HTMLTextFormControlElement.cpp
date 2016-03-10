@@ -38,6 +38,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/serializers/Serialization.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -635,7 +636,11 @@ void HTMLTextFormControlElement::setInnerEditorValue(const String& value)
     if (isHTMLBRElement(innerEditor->lastChild()))
         innerEditor->removeChild(innerEditor->lastChild(), ASSERT_NO_EXCEPTION);
 
-    innerEditor->setInnerText(value, ASSERT_NO_EXCEPTION);
+    // We don't use setTextContent.  It triggers unnecessary paint.
+    if (value.isEmpty())
+        innerEditor->removeChildren();
+    else
+        replaceChildrenWithText(innerEditor, value, ASSERT_NO_EXCEPTION);
 
     if (value.endsWith('\n') || value.endsWith('\r'))
         innerEditor->appendChild(HTMLBRElement::create(document()));

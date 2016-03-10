@@ -531,6 +531,16 @@ crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-ele
 crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
 
 crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
+crbug.com/593184 editing/input/reveal-caret-of-multiline-input.html [ NeedsRebaseline ]
+crbug.com/593184 fast/forms/textarea/basic-textareas-quirks.html [ NeedsRebaseline ]
+crbug.com/593184 fast/forms/textarea/textarea-scroll-height.html [ NeedsRebaseline ]
+crbug.com/593184 fast/forms/textarea/textarea-scrollbar.html [ NeedsRebaseline ]
+crbug.com/593184 fast/forms/textarea/textarea-scrolled-focus-ring.html [ NeedsRebaseline ]
+crbug.com/593184 fast/forms/textarea/textarea-scrolled-mask.html [ NeedsRebaseline ]
+crbug.com/593184 fast/forms/textarea/textarea-scrolled-type.html [ NeedsRebaseline ]
+crbug.com/593184 fast/forms/textarea/textarea-width.html [ NeedsRebaseline ]
+crbug.com/593184 fast/parser/open-comment-in-textarea.html [ NeedsRebaseline ]
+crbug.com/593184 fast/text/international/unicode-bidi-plaintext-in-textarea.html [ NeedsRebaseline ]
 
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]

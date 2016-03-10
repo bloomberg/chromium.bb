@@ -10,59 +10,44 @@ layer at (0,0) size 800x600
 layer at (8,8) size 200x200 clip at (9,9) size 183x198 scrollHeight 316
   LayoutTextControl {TEXTAREA} at (0,0) size 200x200 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 179x312
-      LayoutText {#text} at (0,0) size 82x13
+      LayoutText {#text} at (0,0) size 82x299
         text run at (0,0) width 82: "Lots of content."
-      LayoutBR {BR} at (81,11) size 1x0
-      LayoutText {#text} at (0,13) size 82x13
+        text run at (81,0) width 1: " "
         text run at (0,13) width 82: "Lots of content."
-      LayoutBR {BR} at (81,24) size 1x0
-      LayoutText {#text} at (0,26) size 82x13
+        text run at (81,13) width 1: " "
         text run at (0,26) width 82: "Lots of content."
-      LayoutBR {BR} at (81,37) size 1x0
-      LayoutText {#text} at (0,39) size 82x13
+        text run at (81,26) width 1: " "
         text run at (0,39) width 82: "Lots of content."
-      LayoutBR {BR} at (81,50) size 1x0
-      LayoutBR {BR} at (0,52) size 0x13
-      LayoutText {#text} at (0,65) size 82x13
+        text run at (81,39) width 1: " "
+        text run at (0,52) width 0: " "
         text run at (0,65) width 82: "Lots of content."
-      LayoutBR {BR} at (81,76) size 1x0
-      LayoutText {#text} at (0,78) size 82x13
+        text run at (81,65) width 1: " "
         text run at (0,78) width 82: "Lots of content."
-      LayoutBR {BR} at (81,89) size 1x0
-      LayoutBR {BR} at (0,91) size 0x13
-      LayoutText {#text} at (0,104) size 82x13
+        text run at (81,78) width 1: " "
+        text run at (0,91) width 0: " "
         text run at (0,104) width 82: "Lots of content."
-      LayoutBR {BR} at (81,115) size 1x0
-      LayoutText {#text} at (0,117) size 82x13
+        text run at (81,104) width 1: " "
         text run at (0,117) width 82: "Lots of content."
-      LayoutBR {BR} at (81,128) size 1x0
-      LayoutBR {BR} at (0,130) size 0x13
-      LayoutText {#text} at (0,143) size 82x13
+        text run at (81,117) width 1: " "
+        text run at (0,130) width 0: " "
         text run at (0,143) width 82: "Lots of content."
-      LayoutBR {BR} at (81,154) size 1x0
-      LayoutText {#text} at (0,156) size 82x13
+        text run at (81,143) width 1: " "
         text run at (0,156) width 82: "Lots of content."
-      LayoutBR {BR} at (81,167) size 1x0
-      LayoutBR {BR} at (0,169) size 0x13
-      LayoutText {#text} at (0,182) size 82x13
+        text run at (81,156) width 1: " "
+        text run at (0,169) width 0: " "
         text run at (0,182) width 82: "Lots of content."
-      LayoutBR {BR} at (81,193) size 1x0
-      LayoutText {#text} at (0,195) size 82x13
+        text run at (81,182) width 1: " "
         text run at (0,195) width 82: "Lots of content."
-      LayoutBR {BR} at (81,206) size 1x0
-      LayoutBR {BR} at (0,208) size 0x13
-      LayoutText {#text} at (0,221) size 82x13
+        text run at (81,195) width 1: " "
+        text run at (0,208) width 0: " "
         text run at (0,221) width 82: "Lots of content."
-      LayoutBR {BR} at (81,232) size 1x0
-      LayoutText {#text} at (0,234) size 82x13
+        text run at (81,221) width 1: " "
         text run at (0,234) width 82: "Lots of content."
-      LayoutBR {BR} at (81,245) size 1x0
-      LayoutBR {BR} at (0,247) size 0x13
-      LayoutText {#text} at (0,260) size 82x13
+        text run at (81,234) width 1: " "
+        text run at (0,247) width 0: " "
         text run at (0,260) width 82: "Lots of content."
-      LayoutBR {BR} at (81,271) size 1x0
-      LayoutText {#text} at (0,273) size 82x13
+        text run at (81,260) width 1: " "
         text run at (0,273) width 82: "Lots of content."
-      LayoutBR {BR} at (81,284) size 1x0
-      LayoutBR {BR} at (0,286) size 0x13
+        text run at (81,273) width 1: " "
+        text run at (0,286) width 0: " "
       LayoutBR {BR} at (0,299) size 0x13

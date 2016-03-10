@@ -16,5 +16,5 @@ layer at (8,62) size 549x246 clip at (9,63) size 547x244
       LayoutText {#text} at (0,0) size 540x24
         text run at (0,0) width 540: "1234567890abcdefghijABCDEFGHIJ1234567890abcdefghijABCDEFGHIJ12345X7890abcdefghijABCDEFGXIJ"
         text run at (0,12) width 180: "1234567890abcdefghijABCDEFGHIJ"
-      LayoutBR {BR} at (179,22) size 1x0
+        text run at (179,12) width 1: " "
       LayoutBR {BR} at (0,24) size 0x12
