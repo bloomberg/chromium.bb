@@ -14,7 +14,6 @@
       'variables': {
         'files': [
           '../build/android/pylib/',
-          '../build/android/devil/',
           '../testing/variations/',
           '../third_party/catapult/',
           '../tools/perf/',
