@@ -223,7 +223,7 @@ Global::~Global() {}
 
 bool Global::Initialize(wl_display* display) {
   global_.reset(wl_global_create(display, interface_, version_, this, &Bind));
-  return global_;
+  return global_ != nullptr;
 }
 
 // static
