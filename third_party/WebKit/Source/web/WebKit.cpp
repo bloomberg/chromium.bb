@@ -196,10 +196,6 @@ void shutdown()
         s_endOfTaskRunner = nullptr;
     }
 
-    // Shutdown V8-related background threads before V8 is ramped down. Note
-    // that this will wait the thread to stop its operations.
-    ScriptStreamerThread::shutdown();
-
     V8Initializer::shutdownMainThread();
 
     modulesInitializer().shutdown();

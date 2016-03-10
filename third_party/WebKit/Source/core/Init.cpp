@@ -145,6 +145,10 @@ void CoreInitializer::init()
 
 void CoreInitializer::shutdown()
 {
+    // Shutdown V8-related background threads before V8 is ramped down. Note
+    // that this will wait the thread to stop its operations.
+    ScriptStreamerThread::shutdown();
+
     // Make sure we stop the HTMLParserThread before Platform::current() is
     // cleared.
     ASSERT(Platform::current());
