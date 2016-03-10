@@ -36,6 +36,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/gpu_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
@@ -44,6 +45,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
@@ -105,13 +107,13 @@ static const char* const kSwitchNames[] = {
 #endif
   switches::kEnableHeapProfiling,
   switches::kEnableLogging,
-  switches::kEnableShareGroupAsyncTextureUpload,
 #if defined(OS_ANDROID)
   switches::kEnableUnifiedMediaPipeline,
 #endif
 #if defined(OS_CHROMEOS)
   switches::kDisableVaapiAcceleratedVideoEncode,
 #endif
+  switches::kGpuDriverBugWorkarounds,
   switches::kGpuStartupDialog,
   switches::kGpuSandboxAllowSysVShm,
   switches::kGpuSandboxFailuresFatal,
@@ -133,9 +135,6 @@ static const char* const kSwitchNames[] = {
   switches::kDisableMacOverlays,
   switches::kEnableSandboxLogging,
   switches::kShowMacOverlayBorders,
-#endif
-#if defined(USE_AURA)
-  switches::kUIPrioritizeInGpuProcess,
 #endif
 #if defined(USE_OZONE)
   switches::kOzonePlatform,
@@ -546,7 +545,8 @@ bool GpuProcessHost::Init() {
     DCHECK(g_gpu_main_thread_factory);
     in_process_gpu_thread_.reset(
         g_gpu_main_thread_factory(InProcessChildThreadParams(
-            channel_id, base::MessageLoop::current()->task_runner())));
+            channel_id, base::MessageLoop::current()->task_runner()),
+            GetGpuPreferencesFromCommandLine()));
     base::Thread::Options options;
 #if defined(OS_WIN)
     // WGL needs to create its own window and pump messages on it.
@@ -562,7 +562,7 @@ bool GpuProcessHost::Init() {
     return false;
   }
 
-  if (!Send(new GpuMsg_Initialize()))
+  if (!Send(new GpuMsg_Initialize(GetGpuPreferencesFromCommandLine())))
     return false;
 
   return true;
@@ -982,12 +982,12 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   if (kind_ == GPU_PROCESS_KIND_UNSANDBOXED)
     cmd_line->AppendSwitch(switches::kDisableGpuSandbox);
 
+  // TODO(penghuang): Replace all GPU related switches with GpuPreferences.
+  // https://crbug.com/590825
   // If you want a browser command-line switch passed to the GPU process
   // you need to add it to |kSwitchNames| at the beginning of this file.
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
-  cmd_line->CopySwitchesFrom(
-      browser_command_line, switches::kGpuSwitches, switches::kNumGpuSwitches);
   cmd_line->CopySwitchesFrom(
       browser_command_line, switches::kGLSwitchesCopiedFromGpuProcessHost,
       switches::kGLSwitchesCopiedFromGpuProcessHostNumSwitches);
