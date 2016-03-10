@@ -82538,13 +82538,23 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="TokenBinding.StoreEphemerality" type="int">
-  <int value="0" label="CID_EPHEMERAL_COOKIE_EPHEMERAL"/>
+  <int value="0" label="CID_EPHEMERAL_COOKIE_EPHEMERAL">
+    This value has been deprecated and replaced by EPHEMERAL_MATCH and
+    EPHEMERAL_MISMATCH.
+  </int>
   <int value="1" label="CID_EPHEMERAL_COOKIE_PERSISTENT"/>
   <int value="2" label="CID_PERSISTENT_COOKIE_EPHEMERAL"/>
-  <int value="3" label="CID_PERSISTENT_COOKIE_PERSISTENT"/>
+  <int value="3" label="CID_PERSISTENT_COOKIE_PERSISTENT">
+    This value has been deprecated and replaced by PERSISTENT_MATCH and
+    PERSISTENT_MISMATCH.
+  </int>
   <int value="4" label="NO_COOKIE_STORE"/>
   <int value="5" label="NO_CHANNEL_ID_STORE"/>
   <int value="6" label="KNOWN_MISMATCH"/>
+  <int value="7" label="EPHEMERAL_MATCH"/>
+  <int value="8" label="EPHEMERAL_MISMATCH"/>
+  <int value="9" label="PERSISTENT_MATCH"/>
+  <int value="10" label="PERSISTENT_MISMATCH"/>
 </enum>
 
 <enum name="TokenBinding.Support" type="int">

@@ -8,6 +8,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -37,6 +38,8 @@
 namespace net {
 
 namespace {
+
+base::StaticAtomicSequenceNumber g_next_id;
 
 // Used by the GetDomainBoundCertResult histogram to record the final
 // outcome of each GetChannelID or GetOrCreateChannelID call.
@@ -288,12 +291,12 @@ ChannelIDService::ChannelIDService(
     const scoped_refptr<base::TaskRunner>& task_runner)
     : channel_id_store_(channel_id_store),
       task_runner_(task_runner),
+      id_(g_next_id.GetNext()),
       requests_(0),
       key_store_hits_(0),
       inflight_joins_(0),
       workers_created_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 ChannelIDService::~ChannelIDService() {
   STLDeleteValues(&inflight_);

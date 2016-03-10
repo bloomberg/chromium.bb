@@ -129,6 +129,10 @@ class NET_EXPORT ChannelIDService
   // Returns the backing ChannelIDStore.
   ChannelIDStore* GetChannelIDStore();
 
+  // Returns an ID that is unique across all instances of ChannelIDService in
+  // this process. TODO(nharper): remove this once crbug.com/548423 is resolved.
+  int GetUniqueID() const { return id_; }
+
   // Public only for unit testing.
   int channel_id_count();
   uint64_t requests() const { return requests_; }
@@ -171,6 +175,7 @@ class NET_EXPORT ChannelIDService
 
   scoped_ptr<ChannelIDStore> channel_id_store_;
   scoped_refptr<base::TaskRunner> task_runner_;
+  const int id_;
 
   // inflight_ maps from a server to an active generation which is taking
   // place.

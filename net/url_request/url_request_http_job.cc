@@ -71,13 +71,17 @@ void LogChannelIDAndCookieStores(const net::URLRequestContext* context,
     return;
   // This enum is used for an UMA histogram - don't reuse or renumber entries.
   enum {
-    CID_EPHEMERAL_COOKIE_EPHEMERAL = 0,
+    // Value 0 was removed (CID_EPHEMERAL_COOKIE_EPHEMERAL)
     CID_EPHEMERAL_COOKIE_PERSISTENT = 1,
     CID_PERSISTENT_COOKIE_EPHEMERAL = 2,
-    CID_PERSISTENT_COOKIE_PERSISTENT = 3,
+    // Value 3 was removed (CID_PERSISTENT_COOKIE_PERSISTENT)
     NO_COOKIE_STORE = 4,
     NO_CHANNEL_ID_STORE = 5,
     KNOWN_MISMATCH = 6,
+    EPHEMERAL_MATCH = 7,
+    EPHEMERAL_MISMATCH = 8,
+    PERSISTENT_MATCH = 9,
+    PERSISTENT_MISMATCH = 10,
     EPHEMERALITY_MAX
   } ephemerality;
   const net::HttpNetworkSession::Params* params =
@@ -89,7 +93,13 @@ void LogChannelIDAndCookieStores(const net::URLRequestContext* context,
     ephemerality = NO_COOKIE_STORE;
   } else if (params->channel_id_service->GetChannelIDStore()->IsEphemeral()) {
     if (cookie_store->IsEphemeral()) {
-      ephemerality = CID_EPHEMERAL_COOKIE_EPHEMERAL;
+      if (context->channel_id_service() &&
+          params->channel_id_service->GetUniqueID() ==
+              context->channel_id_service()->GetUniqueID()) {
+        ephemerality = EPHEMERAL_MATCH;
+      } else {
+        ephemerality = EPHEMERAL_MISMATCH;
+      }
     } else if (context->has_known_mismatched_cookie_store()) {
       ephemerality = KNOWN_MISMATCH;
     } else {
@@ -97,8 +107,12 @@ void LogChannelIDAndCookieStores(const net::URLRequestContext* context,
     }
   } else if (cookie_store->IsEphemeral()) {
     ephemerality = CID_PERSISTENT_COOKIE_EPHEMERAL;
+  } else if (context->channel_id_service() &&
+             params->channel_id_service->GetUniqueID() ==
+                 context->channel_id_service()->GetUniqueID()) {
+    ephemerality = PERSISTENT_MATCH;
   } else {
-    ephemerality = CID_PERSISTENT_COOKIE_PERSISTENT;
+    ephemerality = PERSISTENT_MISMATCH;
   }
   UMA_HISTOGRAM_ENUMERATION("Net.TokenBinding.StoreEphemerality", ephemerality,
                             EPHEMERALITY_MAX);
