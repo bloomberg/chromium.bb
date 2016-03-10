@@ -10,14 +10,16 @@
 
 import unittest
 
-from devil.android import device_utils
-from devil.android.sdk import adb_wrapper
-from devil.constants import exit_codes
-from devil.utils import watchdog_timer
 from pylib.base import base_test_result
 from pylib.base import test_collection
 from pylib.base import test_dispatcher
 from pylib.constants import host_paths
+
+with host_paths.SysPath(host_paths.DEVIL_PATH):
+  from devil.android import device_utils
+  from devil.android.sdk import adb_wrapper
+  from devil.constants import exit_codes
+  from devil.utils import watchdog_timer
 
 with host_paths.SysPath(host_paths.PYMOCK_PATH):
   import mock # pylint: disable=import-error
