@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -190,6 +191,13 @@ Browser* TabDragControllerTest::CreateAnotherWindowBrowserAndRelayout() {
       work_area.x() + half_size.width(), work_area.y(),
       half_size.width(), half_size.height()));
   return browser2;
+}
+
+void TabDragControllerTest::SetWindowFinderForTabStrip(
+    TabStrip* tab_strip,
+    scoped_ptr<WindowFinder> window_finder) {
+  ASSERT_TRUE(tab_strip->drag_controller_.get());
+  tab_strip->drag_controller_->window_finder_ = std::move(window_finder);
 }
 
 namespace {
@@ -699,6 +707,59 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // mouse/touch was released.
   EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
   EXPECT_FALSE(tab_strip2->GetWidget()->HasCapture());
+}
+
+namespace {
+
+// WindowFinder that calls OnMouseCaptureLost() from
+// GetLocalProcessWindowAtPoint().
+class CaptureLoseWindowFinder : public WindowFinder {
+ public:
+  explicit CaptureLoseWindowFinder(TabStrip* tab_strip)
+      : tab_strip_(tab_strip) {}
+  ~CaptureLoseWindowFinder() override {}
+
+  // WindowFinder:
+  gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& screen_point,
+      const std::set<gfx::NativeWindow>& ignore) override {
+    static_cast<views::View*>(tab_strip_)->OnMouseCaptureLost();
+    return nullptr;
+  }
+
+ private:
+  TabStrip* tab_strip_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureLoseWindowFinder);
+};
+
+}  // namespace
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+// TODO(sky,sad): Disabled as it fails due to resize locks with a real
+// compositor. crbug.com/331924
+#define MAYBE_CaptureLostDuringDrag DISABLED_CaptureLostDuringDrag
+#else
+#define MAYBE_CaptureLostDuringDrag CaptureLostDuringDrag
+#endif
+// Calls OnMouseCaptureLost() from WindowFinder::GetLocalProcessWindowAtPoint()
+// and verifies we don't crash. This simulates a crash seen on windows.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       MAYBE_CaptureLostDuringDrag) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Add another tab to browser().
+  AddTabAndResetBrowser(browser());
+
+  // Press on first tab so drag is active. Reset WindowFinder to one that causes
+  // capture to be lost from within GetLocalProcessWindowAtPoint(), then
+  // continue drag. The capture lost should trigger the drag to cancel.
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+  ASSERT_TRUE(tab_strip->IsDragSessionActive());
+  SetWindowFinderForTabStrip(
+      tab_strip, make_scoped_ptr(new CaptureLoseWindowFinder(tab_strip)));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
 }
 
 namespace {

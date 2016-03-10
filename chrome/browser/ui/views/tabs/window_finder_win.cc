@@ -233,7 +233,7 @@ std::set<HWND> RemapIgnoreSet(const std::set<gfx::NativeView>& ignore) {
 
 }  // namespace
 
-gfx::NativeWindow GetLocalProcessWindowAtPoint(
+gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
   return LocalProcessWindowFinder::GetProcessWindowAtPoint(

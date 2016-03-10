@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "chrome/browser/ui/host_desktop.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace aura {
 class Window;
@@ -17,9 +17,17 @@ namespace gfx {
 class Point;
 }
 
-// Returns the Window at the specified point, ignoring the windows in |ignore|.
-gfx::NativeWindow GetLocalProcessWindowAtPoint(
-    const gfx::Point& screen_point,
-    const std::set<gfx::NativeWindow>& ignore);
+class WindowFinder {
+ public:
+  WindowFinder();
+  virtual ~WindowFinder();
+
+  virtual gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& screen_point,
+      const std::set<gfx::NativeWindow>& ignore);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowFinder);
+};
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_WINDOW_FINDER_H_

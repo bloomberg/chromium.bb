@@ -14,6 +14,7 @@ class Browser;
 class BrowserList;
 class TabStrip;
 class TabStripModel;
+class WindowFinder;
 
 namespace content {
 class WebContents;
@@ -44,6 +45,9 @@ class TabDragControllerTest : public InProcessBrowserTest {
   // Creates a new Browser and resizes |browser()| and the new browser to be
   // side by side.
   Browser* CreateAnotherWindowBrowserAndRelayout();
+
+  void SetWindowFinderForTabStrip(TabStrip* tab_strip,
+                                  scoped_ptr<WindowFinder> window_finder);
 
   const BrowserList* browser_list;
 

@@ -20,7 +20,7 @@ gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {
 
 }  // anonymous namespace
 
-gfx::NativeWindow GetLocalProcessWindowAtPoint(
+gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeWindow>& ignore) {
   // The X11 server is the canonical state of what the window stacking order

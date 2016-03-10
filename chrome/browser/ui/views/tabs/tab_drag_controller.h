@@ -34,9 +34,11 @@ class View;
 }
 class Browser;
 class Tab;
+class TabDragControllerTest;
 struct TabRendererData;
 class TabStrip;
 class TabStripModel;
+class WindowFinder;
 
 // TabDragController is responsible for managing the tab dragging session. When
 // the user presses the mouse on a tab a new TabDragController is created and
@@ -129,9 +131,16 @@ class TabDragController : public content::NotificationObserver,
   void EndDrag(EndDragReason reason);
 
  private:
+  friend class TabDragControllerTest;
+
   // Used to indicate the direction the mouse has moved when attached.
   static const int kMovedMouseLeft  = 1 << 0;
   static const int kMovedMouseRight = 1 << 1;
+
+  enum class Liveness {
+    ALIVE,
+    DELETED,
+  };
 
   // Enumeration of the ways a drag session can end.
   enum EndDragType {
@@ -246,7 +255,8 @@ class TabDragController : public content::NotificationObserver,
 
   // Invoked once a drag has started to determine the appropriate tabstrip to
   // drag to (which may be the currently attached one).
-  void ContinueDragging(const gfx::Point& point_in_screen);
+  Liveness ContinueDragging(const gfx::Point& point_in_screen)
+      WARN_UNUSED_RESULT;
 
   // Transitions dragging from |attached_tabstrip_| to |target_tabstrip|.
   // |target_tabstrip| is NULL if the mouse is not over a valid tab strip.  See
@@ -279,7 +289,8 @@ class TabDragController : public content::NotificationObserver,
 
   // Returns the compatible TabStrip to drag to at the specified point (screen
   // coordinates), or NULL if there is none.
-  TabStrip* GetTargetTabStripForPoint(const gfx::Point& point_in_screen);
+  Liveness GetTargetTabStripForPoint(const gfx::Point& point_in_screen,
+                                     TabStrip** tab_strip);
 
   // Returns true if |tabstrip| contains the specified point in screen
   // coordinates.
@@ -445,10 +456,11 @@ class TabDragController : public content::NotificationObserver,
     return (move_behavior_ == MOVE_VISIBILE_TABS) != 0;
   }
 
-  // Returns the NativeWindow at the specified point. If |exclude_dragged_view|
-  // is true, then the dragged view is not considered.
-  gfx::NativeWindow GetLocalProcessWindow(const gfx::Point& screen_point,
-                                          bool exclude_dragged_view);
+  // Returns the NativeWindow in |window| at the specified point. If
+  // |exclude_dragged_view| is true, then the dragged view is not considered.
+  Liveness GetLocalProcessWindow(const gfx::Point& screen_point,
+                                 bool exclude_dragged_view,
+                                 gfx::NativeWindow* window) WARN_UNUSED_RESULT;
 
   // Handles registering for notifications.
   content::NotificationRegistrar registrar_;
@@ -593,6 +605,8 @@ class TabDragController : public content::NotificationObserver,
   int attach_index_;
 
   scoped_ptr<ui::EventHandler> escape_tracker_;
+
+  scoped_ptr<WindowFinder> window_finder_;
 
   base::WeakPtrFactory<TabDragController> weak_factory_;
 

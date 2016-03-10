@@ -223,6 +223,7 @@ TabDragController::TabDragController()
       is_mutating_(false),
       attach_x_(-1),
       attach_index_(-1),
+      window_finder_(new WindowFinder),
       weak_factory_(this) {
   instance_ = this;
 }
@@ -387,7 +388,8 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     }
   }
 
-  ContinueDragging(point_in_screen);
+  if (ContinueDragging(point_in_screen) == Liveness::DELETED)
+    return;
 }
 
 void TabDragController::EndDrag(EndDragReason reason) {
@@ -528,14 +530,19 @@ bool TabDragController::CanStartDrag(const gfx::Point& point_in_screen) const {
               pow(static_cast<float>(y_offset), 2)) > kMinimumDragDistance;
 }
 
-void TabDragController::ContinueDragging(const gfx::Point& point_in_screen) {
+TabDragController::Liveness TabDragController::ContinueDragging(
+    const gfx::Point& point_in_screen) {
   TRACE_EVENT1("views", "TabDragController::ContinueDragging",
                "point_in_screen", point_in_screen.ToString());
 
   DCHECK(attached_tabstrip_);
 
-  TabStrip* target_tabstrip = detach_behavior_ == DETACHABLE ?
-      GetTargetTabStripForPoint(point_in_screen) : source_tabstrip_;
+  TabStrip* target_tabstrip = source_tabstrip_;
+  if (detach_behavior_ == DETACHABLE &&
+      GetTargetTabStripForPoint(point_in_screen, &target_tabstrip) ==
+          Liveness::DELETED) {
+    return Liveness::DELETED;
+  }
   bool tab_strip_changed = (target_tabstrip != attached_tabstrip_);
 
   if (attached_tabstrip_) {
@@ -552,7 +559,7 @@ void TabDragController::ContinueDragging(const gfx::Point& point_in_screen) {
     did_restore_window_ = false;
     if (DragBrowserToNewTabStrip(target_tabstrip, point_in_screen) ==
         DRAG_BROWSER_RESULT_STOP) {
-      return;
+      return Liveness::ALIVE;
     }
   }
   if (is_dragging_window_) {
@@ -574,6 +581,7 @@ void TabDragController::ContinueDragging(const gfx::Point& point_in_screen) {
       }
     }
   }
+  return Liveness::ALIVE;
 }
 
 TabDragController::DragBrowserResultType
@@ -817,8 +825,10 @@ TabDragController::DetachPosition TabDragController::GetDetachPosition(
   return DETACH_ABOVE_OR_BELOW;
 }
 
-TabStrip* TabDragController::GetTargetTabStripForPoint(
-    const gfx::Point& point_in_screen) {
+TabDragController::Liveness TabDragController::GetTargetTabStripForPoint(
+    const gfx::Point& point_in_screen,
+    TabStrip** tab_strip) {
+  *tab_strip = nullptr;
   TRACE_EVENT1("views", "TabDragController::GetTargetTabStripForPoint",
                "point_in_screen", point_in_screen.ToString());
 
@@ -828,20 +838,29 @@ TabStrip* TabDragController::GetTargetTabStripForPoint(
     gfx::Rect tabstrip_bounds = GetViewScreenBounds(attached_tabstrip_);
     if (DoesRectContainVerticalPointExpanded(tabstrip_bounds,
                                              kTouchVerticalDetachMagnetism,
-                                             point_in_screen.y()))
-      return attached_tabstrip_;
+                                             point_in_screen.y())) {
+      *tab_strip = attached_tabstrip_;
+      return Liveness::ALIVE;
+    }
   }
-  gfx::NativeWindow local_window =
-      GetLocalProcessWindow(point_in_screen, is_dragging_window_);
+  gfx::NativeWindow local_window;
+  const Liveness state = GetLocalProcessWindow(
+      point_in_screen, is_dragging_window_, &local_window);
+  if (state == Liveness::DELETED)
+    return Liveness::DELETED;
+
   // Do not allow dragging into a window with a modal dialog, it causes a weird
   // behavior.  See crbug.com/336691
   if (!GetModalTransient(local_window)) {
-    TabStrip* tab_strip = GetTabStripForWindow(local_window);
-    if (tab_strip && DoesTabStripContain(tab_strip, point_in_screen))
-      return tab_strip;
+    TabStrip* result = GetTabStripForWindow(local_window);
+    if (result && DoesTabStripContain(result, point_in_screen)) {
+      *tab_strip = result;
+      return Liveness::ALIVE;
+    }
   }
 
-  return is_dragging_window_ ? attached_tabstrip_ : NULL;
+  *tab_strip = is_dragging_window_ ? attached_tabstrip_ : nullptr;
+  return Liveness::ALIVE;
 }
 
 TabStrip* TabDragController::GetTabStripForWindow(gfx::NativeWindow window) {
@@ -1564,7 +1583,11 @@ gfx::Rect TabDragController::GetViewScreenBounds(
 
 void TabDragController::BringWindowUnderPointToFront(
     const gfx::Point& point_in_screen) {
-  gfx::NativeWindow window = GetLocalProcessWindow(point_in_screen, true);
+  gfx::NativeWindow window;
+  if (GetLocalProcessWindow(point_in_screen, true, &window) ==
+      Liveness::DELETED) {
+    return;
+  }
 
   // Only bring browser windows to front - only windows with a TabStrip can
   // be tab drag targets.
@@ -1791,9 +1814,10 @@ gfx::Vector2d TabDragController::GetWindowOffset(
   return point.OffsetFromOrigin();
 }
 
-gfx::NativeWindow TabDragController::GetLocalProcessWindow(
+TabDragController::Liveness TabDragController::GetLocalProcessWindow(
     const gfx::Point& screen_point,
-    bool exclude_dragged_view) {
+    bool exclude_dragged_view,
+    gfx::NativeWindow* window) {
   std::set<gfx::NativeWindow> exclude;
   if (exclude_dragged_view) {
     gfx::NativeWindow dragged_window =
@@ -1812,5 +1836,7 @@ gfx::NativeWindow TabDragController::GetLocalProcessWindow(
       exclude.insert(browser->window()->GetNativeWindow());
   }
 #endif
-  return GetLocalProcessWindowAtPoint(screen_point, exclude);
+  base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
+  *window = window_finder_->GetLocalProcessWindowAtPoint(screen_point, exclude);
+  return ref ? Liveness::ALIVE : Liveness::DELETED;
 }
