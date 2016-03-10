@@ -7,8 +7,8 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/Element.h"
+#include "core/dom/IdleRequestCallback.h"
 #include "core/dom/IntersectionObserver.h"
-#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 
@@ -17,16 +17,17 @@
 
 namespace blink {
 
-class IntersectionObserverController : public GarbageCollectedFinalized<IntersectionObserverController>, public ActiveDOMObject {
+class IntersectionObserverController : public IdleRequestCallback, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
 public:
     static IntersectionObserverController* create(Document*);
     ~IntersectionObserverController();
 
     void resume() override;
+    void handleEvent(IdleDeadline*) override;
 
     void scheduleIntersectionObserverForDelivery(IntersectionObserver&);
-    void deliverIntersectionObservations(Timer<IntersectionObserverController>*);
+    void deliverIntersectionObservations();
     void computeTrackedIntersectionObservations();
     void addTrackedObserver(IntersectionObserver&);
     void removeTrackedObserversForRoot(const Node&);
@@ -37,13 +38,13 @@ private:
     explicit IntersectionObserverController(Document*);
 
 private:
-    Timer<IntersectionObserverController> m_timer;
     // IntersectionObservers for which this is the tracking document.
     HeapHashSet<WeakMember<IntersectionObserver>> m_trackedIntersectionObservers;
     // IntersectionObservers for which this is the execution context of the callback.
     HeapHashSet<Member<IntersectionObserver>> m_pendingIntersectionObservers;
 
-    bool m_timerFiredWhileSuspended;
+    bool m_callbackIsScheduled;
+    bool m_callbackFiredWhileSuspended;
 };
 
 } // namespace blink

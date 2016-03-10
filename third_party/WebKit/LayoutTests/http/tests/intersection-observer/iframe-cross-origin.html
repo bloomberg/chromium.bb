@@ -61,7 +61,11 @@ function handleMessage(event) {
 }
 
 window.addEventListener("message", handleMessage);
+
 iframe.onload = function() {
-  iframe.contentWindow.postMessage("", "*")
-};
+  // See LayoutTests/intersection-observer/README for explanation of double RAF.
+  requestAnimationFrame(() => {
+      requestAnimationFrame(() => { iframe.contentWindow.postMessage("", "*") })
+  });
+}
 </script>
