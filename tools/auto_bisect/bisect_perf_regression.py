@@ -2145,6 +2145,23 @@ class BisectPerformanceMetrics(object):
 
     return (run_results_tot, run_results_reverted)
 
+  def PostBisectResults(self, bisect_results):
+    """Posts bisect results to Perf Dashboard."""
+    bisect_utils.OutputAnnotationStepStart('Post Results')
+
+    results = bisect_results_json.Get(
+        bisect_results, self.opts, self.depot_registry)
+    data = {'data': results}
+    request = urllib2.Request(PERF_DASH_RESULTS_URL)
+    request.add_header('Content-Type', 'application/json')
+    try:
+      urllib2.urlopen(request, json.dumps(data))
+    except urllib2.URLError as e:
+      print 'Failed to post bisect results. Error: %s.' % e
+      bisect_utils.OutputAnnotationStepWarning()
+
+    bisect_utils.OutputAnnotationStepClosed()
+
   def _RunTestWithAnnotations(
       self, step_text, error_text, head_revision,
       target_depot, command_to_run, metric, force_build):
@@ -2509,24 +2526,6 @@ def _IsPlatformSupported():
   return os.name in supported
 
 
-def _PostBisectResults(bisect_results, opts, src_cwd):
-  """Posts bisect results to Perf Dashboard."""
-  bisect_utils.OutputAnnotationStepStart('Post Results')
-
-  results = bisect_results_json.Get(
-      bisect_results, opts, DepotDirectoryRegistry(src_cwd))
-  data = {'data': results}
-  request = urllib2.Request(PERF_DASH_RESULTS_URL)
-  request.add_header('Content-Type', 'application/json')
-  try:
-    urllib2.urlopen(request, json.dumps(data))
-  except urllib2.URLError as e:
-    print 'Failed to post bisect results. Error: %s.' % e
-    bisect_utils.OutputAnnotationStepWarning()
-
-  bisect_utils.OutputAnnotationStepClosed()
-
-
 def RemoveBuildFiles(build_type):
   """Removes build files from previous runs."""
   out_dir = os.path.join('out', build_type)
@@ -2881,7 +2880,7 @@ def main():
       if results.error:
         raise RuntimeError(results.error)
       bisect_test.printer.FormatAndPrintResults(results)
-      _PostBisectResults(results, opts, os.getcwd())
+      bisect_test.PostBisectResults(results)
       return 0
     finally:
       bisect_test.PerformCleanup()

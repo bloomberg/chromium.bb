@@ -370,8 +370,9 @@ class BisectPerfRegressionTest(unittest.TestCase):
         'try_job_id': 1234,
     })
     opts = bisect_perf_regression.BisectOptions.FromDict(options_dict)
+    bisect_instance = _GetBisectPerformanceMetricsInstance(options_dict)
     results = _SampleBisecResult(opts)
-    bisect_perf_regression._PostBisectResults(results, opts, os.getcwd())
+    bisect_instance.PostBisectResults(results)
 
     call_args = _GetMockCallArg(mock_urlopen, 0)
     self.assertIsNotNone(call_args)
