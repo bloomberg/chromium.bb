@@ -41,7 +41,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
                          DisplayReason reason);
 
   // Closes the showing bubble (if one exists).
-  static void CloseBubble();
+  static void CloseCurrentBubble();
 
   // Returns the zoom bubble if the zoom bubble is showing. Returns NULL
   // otherwise.
@@ -81,7 +81,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   void OnMouseExited(const ui::MouseEvent& event) override;
   void Init() override;
   void WindowClosing() override;
-  void Close() override;
+  void CloseBubble() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

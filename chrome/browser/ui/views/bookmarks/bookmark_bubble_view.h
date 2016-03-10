@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "url/gurl.h"
@@ -32,7 +32,7 @@ class Textfield;
 // Bubble. BookmarkBubbleView provides views for unstarring and editing the
 // bookmark it is created with. Don't create a BookmarkBubbleView directly,
 // instead use the static Show method.
-class BookmarkBubbleView : public views::BubbleDelegateView,
+class BookmarkBubbleView : public LocationBarBubbleDelegateView,
                            public views::ButtonListener,
                            public views::ComboboxListener {
  public:

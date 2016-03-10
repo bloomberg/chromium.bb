@@ -31,7 +31,7 @@ class ZoomView : public BubbleIconView {
   // BubbleIconView:
   void OnExecuting(BubbleIconView::ExecuteSource source) override;
   void GetAccessibleState(ui::AXViewState* state) override;
-  views::BubbleDelegateView* GetBubble() const override;
+  views::BubbleDialogDelegateView* GetBubble() const override;
   gfx::VectorIconId GetVectorIcon() const override;
 
  private:

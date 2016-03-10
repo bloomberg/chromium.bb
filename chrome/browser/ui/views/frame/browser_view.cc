@@ -913,8 +913,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   // Update all the UI bits.
   UpdateTitleBar();
 
-  TranslateBubbleView::CloseBubble();
-  ZoomBubbleView::CloseBubble();
+  TranslateBubbleView::CloseCurrentBubble();
+  ZoomBubbleView::CloseCurrentBubble();
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {

@@ -147,7 +147,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
     bubble_ = new TranslateBubbleView(anchor_widget_->GetContentsView(),
                                       std::move(model),
                                       translate::TranslateErrors::NONE, NULL);
-    views::BubbleDelegateView::CreateBubble(bubble_)->Show();
+    views::BubbleDialogDelegateView::CreateBubble(bubble_)->Show();
   }
 
   void TearDown() override {

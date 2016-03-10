@@ -14,7 +14,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/animation/ink_drop_hover.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 
 BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
     : image_(new views::ImageView()),
@@ -35,7 +35,7 @@ BubbleIconView::~BubbleIconView() {
 bool BubbleIconView::IsBubbleShowing() const {
   // If the bubble is being destroyed, it's considered showing though it may be
   // already invisible currently.
-  return GetBubble() != NULL;
+  return GetBubble() != nullptr;
 }
 
 void BubbleIconView::SetImage(const gfx::ImageSkia* image_skia) {
@@ -173,7 +173,7 @@ bool BubbleIconView::SetRasterIcon() {
 }
 
 void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  views::BubbleDelegateView* bubble = GetBubble();
+  views::BubbleDialogDelegateView* bubble = GetBubble();
   if (bubble)
     bubble->OnAnchorBoundsChanged();
 }

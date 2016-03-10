@@ -120,17 +120,16 @@ views::Widget* TranslateBubbleView::ShowBubble(
       new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
   TranslateBubbleView* view = new TranslateBubbleView(
       anchor_view, std::move(model), error_type, web_contents);
-  views::Widget* bubble_widget = views::BubbleDelegateView::CreateBubble(view);
+  views::Widget* bubble_widget =
+      views::BubbleDialogDelegateView::CreateBubble(view);
   view->ShowForReason(reason);
   return bubble_widget;
 }
 
 // static
-void TranslateBubbleView::CloseBubble() {
-  if (!translate_bubble_view_)
-    return;
-
-  translate_bubble_view_->GetWidget()->Close();
+void TranslateBubbleView::CloseCurrentBubble() {
+  if (translate_bubble_view_)
+    translate_bubble_view_->CloseBubble();
 }
 
 // static
@@ -213,7 +212,7 @@ bool TranslateBubbleView::AcceleratorPressed(
       break;
     }
   }
-  return BubbleDelegateView::AcceleratorPressed(accelerator);
+  return BubbleDialogDelegateView::AcceleratorPressed(accelerator);
 }
 
 gfx::Size TranslateBubbleView::GetPreferredSize() const {

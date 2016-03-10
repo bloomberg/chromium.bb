@@ -103,8 +103,8 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
   // The zoom bubble should be anchored when it is shown in immersive fullscreen
   // and the top-of-window views are revealed.
   ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
-  ASSERT_TRUE(ZoomBubbleView::GetZoomBubble());
   zoom_bubble = ZoomBubbleView::GetZoomBubble();
+  ASSERT_TRUE(zoom_bubble);
   EXPECT_TRUE(zoom_bubble->GetAnchorView());
 
   // The top-of-window views should not hide till the zoom bubble hides. (It
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
   // the zoom bubble was still visible.)
   immersive_reveal_lock.reset();
   EXPECT_TRUE(immersive_controller->IsRevealed());
-  ZoomBubbleView::CloseBubble();
+  ZoomBubbleView::CloseCurrentBubble();
   // The zoom bubble is deleted on a task.
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(immersive_controller->IsRevealed());

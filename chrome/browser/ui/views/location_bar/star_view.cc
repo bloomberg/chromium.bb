@@ -62,7 +62,7 @@ void StarView::ExecuteCommand(ExecuteSource source) {
   }
 }
 
-views::BubbleDelegateView* StarView::GetBubble() const {
+views::BubbleDialogDelegateView* StarView::GetBubble() const {
   return BookmarkBubbleView::bookmark_bubble();
 }
 

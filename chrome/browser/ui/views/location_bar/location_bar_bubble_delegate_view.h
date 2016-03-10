@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 
 namespace content {
 class NotificationDetails;
@@ -19,7 +19,7 @@ class WebContents;
 // Base class for bubbles that are shown from location bar icons. The bubble
 // will automatically close when the browser transitions in or out of fullscreen
 // mode.
-class LocationBarBubbleDelegateView : public views::BubbleDelegateView,
+class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
                                       public content::NotificationObserver {
  public:
   enum DisplayReason {
@@ -40,6 +40,9 @@ class LocationBarBubbleDelegateView : public views::BubbleDelegateView,
   // Displays the bubble with appearance and behavior tailored for |reason|.
   void ShowForReason(DisplayReason reason);
 
+  // views::BubbleDialogDelegateView:
+  int GetDialogButtons() const override;
+
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -47,7 +50,7 @@ class LocationBarBubbleDelegateView : public views::BubbleDelegateView,
 
  protected:
   // Closes the bubble.
-  virtual void Close();
+  virtual void CloseBubble();
 
   // If the bubble is not anchored to a view, places the bubble in the top right
   // (left in RTL) of the |screen_bounds| that contain web contents's browser

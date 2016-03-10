@@ -83,6 +83,10 @@ Widget* BubbleDialogDelegateView::CreateBubble(
   return bubble_widget;
 }
 
+BubbleDialogDelegateView* BubbleDialogDelegateView::AsBubbleDialogDelegate() {
+  return this;
+}
+
 bool BubbleDialogDelegateView::ShouldShowCloseButton() const {
   return false;
 }
@@ -208,8 +212,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView()
 
 BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    BubbleBorder::Arrow arrow)
-    : close_on_esc_(true),
-      close_on_deactivate_(true),
+    : close_on_deactivate_(true),
       anchor_view_storage_id_(ViewStorage::GetInstance()->CreateStorageID()),
       anchor_widget_(NULL),
       arrow_(arrow),
@@ -226,7 +229,6 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       close_reason_(CloseReason::UNKNOWN) {
   if (anchor_view)
     SetAnchorView(anchor_view);
-  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   UpdateColorsFromTheme(GetNativeTheme());
 }
 
@@ -242,15 +244,6 @@ gfx::Rect BubbleDialogDelegateView::GetBubbleBounds() {
 const gfx::FontList& BubbleDialogDelegateView::GetTitleFontList() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetFontList(ui::ResourceBundle::MediumFont);
-}
-
-bool BubbleDialogDelegateView::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  if (!close_on_esc() || accelerator.key_code() != ui::VKEY_ESCAPE)
-    return false;
-  close_reason_ = CloseReason::ESCAPE;
-  GetWidget()->Close();
-  return true;
 }
 
 void BubbleDialogDelegateView::OnNativeThemeChanged(

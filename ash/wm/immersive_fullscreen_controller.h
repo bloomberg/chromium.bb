@@ -238,9 +238,9 @@ class ASH_EXPORT ImmersiveFullscreenController
   // is a bezel sensor above the top container.
   bool ShouldHandleGestureEvent(const gfx::Point& location) const;
 
-  // Recreate |bubble_manager_| and start observing any bubbles anchored to a
+  // Recreate |bubble_observer_| and start observing any bubbles anchored to a
   // child of |top_container_|.
-  void RecreateBubbleManager();
+  void RecreateBubbleObserver();
 
   // Not owned.
   Delegate* delegate_;
@@ -288,8 +288,8 @@ class ASH_EXPORT ImmersiveFullscreenController
   bool animations_disabled_for_test_;
 
   // Manages bubbles which are anchored to a child of |top_container_|.
-  class BubbleManager;
-  scoped_ptr<BubbleManager> bubble_manager_;
+  class BubbleObserver;
+  scoped_ptr<BubbleObserver> bubble_observer_;
 
   base::WeakPtrFactory<ImmersiveFullscreenController> weak_ptr_factory_;
 

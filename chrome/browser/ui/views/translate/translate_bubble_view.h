@@ -65,8 +65,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                                    translate::TranslateErrors::Type error_type,
                                    DisplayReason reason);
 
-  // Closes the current bubble if existing.
-  static void CloseBubble();
+  // Closes the current bubble if it exists.
+  static void CloseCurrentBubble();
 
   // Returns the bubble view currently shown. This may return NULL.
   static TranslateBubbleView* GetCurrentBubble();

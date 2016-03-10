@@ -983,7 +983,7 @@ bool LocationBarView::RefreshZoomView() {
   const bool was_visible = zoom_view_->visible();
   zoom_view_->Update(ui_zoom::ZoomController::FromWebContents(web_contents));
   if (!zoom_view_->visible())
-    ZoomBubbleView::CloseBubble();
+    ZoomBubbleView::CloseCurrentBubble();
   return was_visible != zoom_view_->visible();
 }
 
@@ -1018,7 +1018,7 @@ void LocationBarView::RefreshTranslateIcon() {
   command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled);
   translate_icon_view_->SetVisible(enabled);
   if (!enabled)
-    TranslateBubbleView::CloseBubble();
+    TranslateBubbleView::CloseCurrentBubble();
 }
 
 bool LocationBarView::RefreshManagePasswordsIconView() {

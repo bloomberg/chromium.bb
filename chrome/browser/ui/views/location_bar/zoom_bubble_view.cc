@@ -65,7 +65,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
 
   // If the bubble is already showing but in a different tab, the current
   // bubble must be closed and a new one created.
-  CloseBubble();
+  CloseCurrentBubble();
 
   zoom_bubble_ = new ZoomBubbleView(anchor_view, web_contents, reason,
                                     browser_view->immersive_mode_controller());
@@ -83,7 +83,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
     zoom_bubble_->set_parent_window(web_contents->GetNativeView());
 
   views::Widget* zoom_bubble_widget =
-      views::BubbleDelegateView::CreateBubble(zoom_bubble_);
+      views::BubbleDialogDelegateView::CreateBubble(zoom_bubble_);
   if (anchor_view)
     zoom_bubble_widget->AddObserver(anchor_view);
 
@@ -95,9 +95,9 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
 }
 
 // static
-void ZoomBubbleView::CloseBubble() {
+void ZoomBubbleView::CloseCurrentBubble() {
   if (zoom_bubble_)
-    zoom_bubble_->Close();
+    zoom_bubble_->CloseBubble();
 }
 
 // static
@@ -207,12 +207,12 @@ void ZoomBubbleView::WindowClosing() {
     zoom_bubble_ = NULL;
 }
 
-void ZoomBubbleView::Close() {
+void ZoomBubbleView::CloseBubble() {
   // Widget's Close() is async, but we don't want to use zoom_bubble_ after
   // this. Additionally web_contents_ may have been destroyed.
   zoom_bubble_ = NULL;
   web_contents_ = NULL;
-  LocationBarBubbleDelegateView::Close();
+  LocationBarBubbleDelegateView::CloseBubble();
 }
 
 void ZoomBubbleView::ButtonPressed(views::Button* sender,
@@ -307,11 +307,9 @@ void ZoomBubbleView::StartTimerIfNecessary() {
     // The number of milliseconds the bubble should stay on the screen if it
     // will close automatically.
     const int kBubbleCloseDelay = 1500;
-    timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kBubbleCloseDelay),
-        this,
-        &ZoomBubbleView::Close);
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromMilliseconds(kBubbleCloseDelay), this,
+                 &ZoomBubbleView::CloseBubble);
   }
 }
 

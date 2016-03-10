@@ -30,7 +30,7 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
                          DisplayReason reason);
 
   // Closes the existing bubble.
-  static void CloseBubble();
+  static void CloseCurrentBubble();
 
   // Makes the bubble the foreground window.
   static void ActivateBubble();
@@ -71,7 +71,7 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
   // LocationBarBubbleDelegateView:
   views::View* GetInitiallyFocusedView() override;
   void Init() override;
-  void Close() override;
+  void CloseBubble() override;
 
   // WidgetDelegate:
   base::string16 GetWindowTitle() const override;

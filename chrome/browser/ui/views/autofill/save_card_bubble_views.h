@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
 
@@ -18,7 +17,6 @@ class WebContents;
 }
 
 namespace views {
-class LabelButton;
 class Link;
 class StyledLabel;
 }
@@ -30,7 +28,6 @@ namespace autofill {
 // previously saved.
 class SaveCardBubbleViews : public SaveCardBubbleView,
                             public LocationBarBubbleDelegateView,
-                            public views::ButtonListener,
                             public views::LinkListener,
                             public views::StyledLabelListener {
  public:
@@ -44,19 +41,21 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // SaveCardBubbleView
   void Hide() override;
 
-  // views::BubbleDelegateView
+  // views::BubbleDialogDelegateView
+  views::View* CreateExtraView() override;
   views::View* CreateFootnoteView() override;
+  bool Accept() override;
+  bool Cancel() override;
+  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool ShouldDefaultButtonBeBlue() const override;
 
   // views::View
   gfx::Size GetPreferredSize() const override;
 
   // views::WidgetDelegate
-  views::View* GetInitiallyFocusedView() override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
-
-  // views::ButtonListener
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener
   void LinkClicked(views::Link* source, int event_flags) override;
@@ -75,11 +74,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   void Init() override;
 
   SaveCardBubbleController* controller_;  // Weak reference.
-
-  // Button for the user to confirm saving the credit card info.
-  views::LabelButton* save_button_;
-
-  views::LabelButton* cancel_button_;
 
   views::Link* learn_more_link_;
 

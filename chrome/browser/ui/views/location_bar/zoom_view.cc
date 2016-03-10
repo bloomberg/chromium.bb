@@ -29,7 +29,7 @@ void ZoomView::Update(ui_zoom::ZoomController* zoom_controller) {
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
       location_bar_delegate_->GetToolbarModel()->input_in_progress()) {
     SetVisible(false);
-    ZoomBubbleView::CloseBubble();
+    ZoomBubbleView::CloseCurrentBubble();
     return;
   }
 
@@ -57,7 +57,7 @@ void ZoomView::GetAccessibleState(ui::AXViewState* state) {
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_ZOOM);
 }
 
-views::BubbleDelegateView* ZoomView::GetBubble() const {
+views::BubbleDialogDelegateView* ZoomView::GetBubble() const {
   return ZoomBubbleView::GetZoomBubble();
 }
 

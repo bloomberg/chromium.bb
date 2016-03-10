@@ -29,11 +29,9 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegate:
 
-DialogDelegate::DialogDelegate() : supports_new_style_(true) {
-}
+DialogDelegate::DialogDelegate() : supports_new_style_(true) {}
 
-DialogDelegate::~DialogDelegate() {
-}
+DialogDelegate::~DialogDelegate() {}
 
 // static
 Widget* DialogDelegate::CreateDialogWidget(WidgetDelegate* delegate,

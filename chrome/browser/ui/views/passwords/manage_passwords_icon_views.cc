@@ -27,7 +27,7 @@ void ManagePasswordsIconViews::SetState(password_manager::ui::State state) {
   if (state_ == state)
     return;
   // If there is an opened bubble for the current icon it should go away.
-  ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseCurrentBubble();
   state_ = state;
   UpdateUiForState();
 }
@@ -56,7 +56,7 @@ void ManagePasswordsIconViews::OnExecuting(
 
 bool ManagePasswordsIconViews::OnMousePressed(const ui::MouseEvent& event) {
   bool result = BubbleIconView::OnMousePressed(event);
-  ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseCurrentBubble();
   return result;
 }
 
@@ -74,7 +74,7 @@ bool ManagePasswordsIconViews::OnKeyPressed(const ui::KeyEvent& event) {
   return BubbleIconView::OnKeyPressed(event);
 }
 
-views::BubbleDelegateView* ManagePasswordsIconViews::GetBubble() const {
+views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
   return ManagePasswordsBubbleView::manage_password_bubble();
 }
 

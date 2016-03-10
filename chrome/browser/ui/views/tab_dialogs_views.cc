@@ -57,7 +57,7 @@ void TabDialogsViews::ShowManagePasswordsBubble(bool user_action) {
   if (ManagePasswordsBubbleView::manage_password_bubble()) {
     // The bubble is currently shown for some other tab. We should close it now
     // and open for |web_contents_|.
-    ManagePasswordsBubbleView::CloseBubble();
+    ManagePasswordsBubbleView::CloseCurrentBubble();
   }
   ManagePasswordsBubbleView::ShowBubble(
       web_contents_, user_action ? ManagePasswordsBubbleView::USER_GESTURE
@@ -70,7 +70,7 @@ void TabDialogsViews::HideManagePasswordsBubble() {
   content::WebContents* bubble_web_contents =
       ManagePasswordsBubbleView::manage_password_bubble()->web_contents();
   if (web_contents_ == bubble_web_contents)
-    ManagePasswordsBubbleView::CloseBubble();
+    ManagePasswordsBubbleView::CloseCurrentBubble();
 }
 
 scoped_ptr<ValidationMessageBubble> TabDialogsViews::ShowValidationMessage(

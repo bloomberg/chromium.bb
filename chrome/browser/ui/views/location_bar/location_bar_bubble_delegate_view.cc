@@ -15,9 +15,9 @@
 LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
     views::View* anchor_view,
     content::WebContents* web_contents)
-    : BubbleDelegateView(anchor_view,
-                         anchor_view ? views::BubbleBorder::TOP_RIGHT
-                                     : views::BubbleBorder::NONE) {
+    : BubbleDialogDelegateView(anchor_view,
+                               anchor_view ? views::BubbleBorder::TOP_RIGHT
+                                           : views::BubbleBorder::NONE) {
   // Add observer to close the bubble if the fullscreen state changes.
   if (web_contents) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -42,19 +42,21 @@ void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason) {
   }
 }
 
+int LocationBarBubbleDelegateView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
+}
+
 void LocationBarBubbleDelegateView::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
   GetWidget()->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
-  Close();
+  CloseBubble();
 }
 
-void LocationBarBubbleDelegateView::Close() {
-  views::Widget* widget = GetWidget();
-  if (!widget->IsClosed())
-    widget->Close();
+void LocationBarBubbleDelegateView::CloseBubble() {
+  GetWidget()->Close();
 }
 
 void LocationBarBubbleDelegateView::AdjustForFullscreen(

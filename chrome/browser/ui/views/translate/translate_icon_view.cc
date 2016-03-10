@@ -26,7 +26,7 @@ TranslateIconView::~TranslateIconView() {}
 void TranslateIconView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {}
 
-views::BubbleDelegateView* TranslateIconView::GetBubble() const {
+views::BubbleDialogDelegateView* TranslateIconView::GetBubble() const {
   return TranslateBubbleView::GetCurrentBubble();
 }
 

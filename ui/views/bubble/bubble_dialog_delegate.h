@@ -30,7 +30,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   enum class CloseReason {
     DEACTIVATION,
-    ESCAPE,
     CLOSE_BUTTON,
     UNKNOWN,
   };
@@ -41,6 +40,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   static Widget* CreateBubble(BubbleDialogDelegateView* bubble_delegate);
 
   // WidgetDelegateView overrides:
+  BubbleDialogDelegateView* AsBubbleDialogDelegate() override;
   bool ShouldShowCloseButton() const override;
   ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
@@ -55,9 +55,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   void OnWidgetActivationChanged(Widget* widget, bool active) override;
   void OnWidgetBoundsChanged(Widget* widget,
                              const gfx::Rect& new_bounds) override;
-
-  bool close_on_esc() const { return close_on_esc_; }
-  void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
 
   bool close_on_deactivate() const { return close_on_deactivate_; }
   void set_close_on_deactivate(bool close) { close_on_deactivate_ = close; }
@@ -134,7 +131,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   virtual const gfx::FontList& GetTitleFontList() const;
 
   // View overrides:
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Perform view initialization on the contents for bubble sizing.
@@ -165,8 +161,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // Handles widget visibility changes.
   void HandleVisibilityChanged(Widget* widget, bool visible);
 
-  // Flags controlling bubble closure on the escape key and deactivation.
-  bool close_on_esc_;
+  // A flag controlling bubble closure on deactivation.
   bool close_on_deactivate_;
 
   // The view and widget to which this bubble is anchored. Since an anchor view

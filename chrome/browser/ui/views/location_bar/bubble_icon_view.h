@@ -20,7 +20,7 @@ enum class VectorIconId;
 }
 
 namespace views {
-class BubbleDelegateView;
+class BubbleDialogDelegateView;
 class InkDropDelegate;
 }
 
@@ -83,7 +83,7 @@ class BubbleIconView : public views::InkDropHostView,
   virtual void ExecuteCommand(ExecuteSource source);
 
   // Returns the bubble instance for the icon.
-  virtual views::BubbleDelegateView* GetBubble() const = 0;
+  virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
 
   // Gets the given vector icon in the correct color and size based on |active|
   // and whether Chrome's in material design mode.

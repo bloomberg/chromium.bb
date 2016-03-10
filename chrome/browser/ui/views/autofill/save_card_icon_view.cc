@@ -31,7 +31,7 @@ SaveCardIconView::~SaveCardIconView() {}
 void SaveCardIconView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {}
 
-views::BubbleDelegateView* SaveCardIconView::GetBubble() const {
+views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
   SaveCardBubbleControllerImpl* controller = GetController();
   if (!controller)
     return nullptr;

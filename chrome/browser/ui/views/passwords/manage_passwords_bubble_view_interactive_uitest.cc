@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
       ManagePasswordsBubbleView::manage_password_bubble();
   EXPECT_TRUE(bubble->initially_focused_view());
   EXPECT_FALSE(bubble->GetFocusManager()->GetFocusedView());
-  ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
 
   // And, just for grins, ensure that we can re-open the bubble.
@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
   EXPECT_TRUE(bubble->initially_focused_view());
   EXPECT_EQ(bubble->initially_focused_view(),
             bubble->GetFocusManager()->GetFocusedView());
-  ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
 }
 
@@ -115,13 +115,13 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CommandControlsBubble) {
   EXPECT_TRUE(bubble->initially_focused_view());
   EXPECT_EQ(bubble->initially_focused_view(),
             bubble->GetFocusManager()->GetFocusedView());
-  ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
 
   // And, just for grins, ensure that we can re-open the bubble.
   ExecuteManagePasswordsCommand();
   EXPECT_TRUE(IsBubbleShowing());
-  ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
 }
 
@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
   // Open once with pending password: automagical!
   SetupPendingPassword();
   EXPECT_TRUE(IsBubbleShowing());
-  ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseCurrentBubble();
   // This opening should be measured as manual.
   ExecuteManagePasswordsCommand();
   EXPECT_TRUE(IsBubbleShowing());
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                        CommandExecutionInAutomaticSaveState) {
   SetupAutomaticPassword();
   EXPECT_TRUE(IsBubbleShowing());
-  ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseCurrentBubble();
   content::RunAllPendingInMessageLoop();
   // Re-opening should count as manual.
   ExecuteManagePasswordsCommand();
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   SetupAutoSignin(std::move(local_credentials));
   EXPECT_TRUE(IsBubbleShowing());
 
-  ManagePasswordsBubbleView::CloseBubble();
+  ManagePasswordsBubbleView::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
   content::RunAllPendingInMessageLoop();
   content::WebContents* web_contents =

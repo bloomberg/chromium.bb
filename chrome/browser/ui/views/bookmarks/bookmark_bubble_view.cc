@@ -85,7 +85,7 @@ views::Widget* BookmarkBubbleView::ShowBubble(
     bookmark_bubble_->set_parent_window(parent_window);
   }
   views::Widget* bubble_widget =
-      views::BubbleDelegateView::CreateBubble(bookmark_bubble_);
+      views::BubbleDialogDelegateView::CreateBubble(bookmark_bubble_);
   bubble_widget->Show();
   // Select the entire title textfield contents when the bubble is first shown.
   bookmark_bubble_->title_tf_->SelectAll(true);
@@ -148,7 +148,7 @@ bool BookmarkBubbleView::AcceleratorPressed(
     apply_edits_ = false;
   }
 
-  return BubbleDelegateView::AcceleratorPressed(accelerator);
+  return LocationBarBubbleDelegateView::AcceleratorPressed(accelerator);
 }
 
 void BookmarkBubbleView::Init() {
@@ -222,6 +222,7 @@ void BookmarkBubbleView::Init() {
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 base::string16 BookmarkBubbleView::GetWindowTitle() const {
@@ -256,7 +257,7 @@ BookmarkBubbleView::BookmarkBubbleView(
     Profile* profile,
     const GURL& url,
     bool newly_bookmarked)
-    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    : LocationBarBubbleDelegateView(anchor_view, nullptr),
       observer_(observer),
       delegate_(std::move(delegate)),
       profile_(profile),
@@ -289,7 +290,7 @@ base::string16 BookmarkBubbleView::GetTitle() {
 }
 
 void BookmarkBubbleView::GetAccessibleState(ui::AXViewState* state) {
-  BubbleDelegateView::GetAccessibleState(state);
+  LocationBarBubbleDelegateView::GetAccessibleState(state);
   state->name =
       l10n_util::GetStringUTF16(
           newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :

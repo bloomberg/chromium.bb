@@ -264,7 +264,7 @@ void ManagePasswordsBubbleView::AutoSigninView::OnWidgetClosing(
 
 void ManagePasswordsBubbleView::AutoSigninView::OnTimer() {
   parent_->model()->OnAutoSignInToastTimeout();
-  parent_->Close();
+  parent_->CloseBubble();
 }
 
 // ManagePasswordsBubbleView::PendingView -------------------------------------
@@ -366,7 +366,7 @@ void ManagePasswordsBubbleView::PendingView::ButtonPressed(
   else
     NOTREACHED();
 
-  parent_->Close();
+  parent_->CloseBubble();
 }
 
 void ManagePasswordsBubbleView::PendingView::StyledLabelLinkClicked(
@@ -469,14 +469,14 @@ void ManagePasswordsBubbleView::ManageView::ButtonPressed(
     const ui::Event& event) {
   DCHECK(sender == done_button_);
   parent_->model()->OnDoneClicked();
-  parent_->Close();
+  parent_->CloseBubble();
 }
 
 void ManagePasswordsBubbleView::ManageView::LinkClicked(views::Link* source,
                                                         int event_flags) {
   DCHECK_EQ(source, manage_link_);
   parent_->model()->OnManageLinkClicked();
-  parent_->Close();
+  parent_->CloseBubble();
 }
 
 // ManagePasswordsBubbleView::SaveConfirmationView ----------------------------
@@ -545,14 +545,14 @@ void ManagePasswordsBubbleView::SaveConfirmationView::StyledLabelLinkClicked(
     int event_flags) {
   DCHECK_EQ(range, parent_->model()->save_confirmation_link_range());
   parent_->model()->OnManageLinkClicked();
-  parent_->Close();
+  parent_->CloseBubble();
 }
 
 void ManagePasswordsBubbleView::SaveConfirmationView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   DCHECK_EQ(sender, ok_button_);
   parent_->model()->OnOKClicked();
-  parent_->Close();
+  parent_->CloseBubble();
 }
 
 // ManagePasswordsBubbleView::WebContentMouseHandler --------------------------
@@ -590,19 +590,19 @@ void ManagePasswordsBubbleView::WebContentMouseHandler::OnKeyEvent(
   content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
   if ((event->key_code() == ui::VKEY_ESCAPE ||
        rvh->IsFocusedElementEditable()) && event->type() == ui::ET_KEY_PRESSED)
-    bubble_->Close();
+    bubble_->CloseBubble();
 }
 
 void ManagePasswordsBubbleView::WebContentMouseHandler::OnMouseEvent(
     ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
-    bubble_->Close();
+    bubble_->CloseBubble();
 }
 
 void ManagePasswordsBubbleView::WebContentMouseHandler::OnTouchEvent(
     ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED)
-    bubble_->Close();
+    bubble_->CloseBubble();
 }
 
 // ManagePasswordsBubbleView::UpdatePendingView -------------------------------
@@ -699,7 +699,7 @@ void ManagePasswordsBubbleView::UpdatePendingView::ButtonPressed(
   } else {
     parent_->model()->OnNopeUpdateClicked();
   }
-  parent_->Close();
+  parent_->CloseBubble();
 }
 
 void ManagePasswordsBubbleView::UpdatePendingView::StyledLabelLinkClicked(
@@ -739,7 +739,7 @@ void ManagePasswordsBubbleView::ShowBubble(
     manage_passwords_bubble_->set_parent_window(web_contents->GetNativeView());
 
   views::Widget* manage_passwords_bubble_widget =
-      views::BubbleDelegateView::CreateBubble(manage_passwords_bubble_);
+      views::BubbleDialogDelegateView::CreateBubble(manage_passwords_bubble_);
   if (anchor_view)
     manage_passwords_bubble_widget->AddObserver(anchor_view);
 
@@ -753,9 +753,9 @@ void ManagePasswordsBubbleView::ShowBubble(
 }
 
 // static
-void ManagePasswordsBubbleView::CloseBubble() {
+void ManagePasswordsBubbleView::CloseCurrentBubble() {
   if (manage_passwords_bubble_)
-    manage_passwords_bubble_->Close();
+    manage_passwords_bubble_->CloseBubble();
 }
 
 // static
@@ -800,9 +800,9 @@ void ManagePasswordsBubbleView::Init() {
   Refresh();
 }
 
-void ManagePasswordsBubbleView::Close() {
+void ManagePasswordsBubbleView::CloseBubble() {
   mouse_handler_.reset();
-  LocationBarBubbleDelegateView::Close();
+  LocationBarBubbleDelegateView::CloseBubble();
 }
 
 base::string16 ManagePasswordsBubbleView::GetWindowTitle() const {

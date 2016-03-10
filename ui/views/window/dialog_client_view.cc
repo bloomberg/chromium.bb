@@ -61,7 +61,11 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
       ok_button_(NULL),
       cancel_button_(NULL),
       extra_view_(NULL),
-      delegate_allowed_close_(false) {}
+      delegate_allowed_close_(false) {
+  // Doing this now ensures this accelerator will have lower priority than
+  // one set by the contents view.
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+}
 
 DialogClientView::~DialogClientView() {
 }
@@ -84,7 +88,6 @@ void DialogClientView::CancelWindow() {
 
 void DialogClientView::UpdateDialogButtons() {
   const int buttons = GetDialogDelegate()->GetDialogButtons();
-  ui::Accelerator escape(ui::VKEY_ESCAPE, ui::EF_NONE);
 
   if (buttons & ui::DIALOG_BUTTON_OK) {
     if (!ok_button_) {
@@ -101,7 +104,6 @@ void DialogClientView::UpdateDialogButtons() {
   if (buttons & ui::DIALOG_BUTTON_CANCEL) {
     if (!cancel_button_) {
       cancel_button_ = CreateDialogButton(ui::DIALOG_BUTTON_CANCEL);
-      cancel_button_->AddAccelerator(escape);
       AddChildView(cancel_button_);
     }
 
@@ -110,12 +112,6 @@ void DialogClientView::UpdateDialogButtons() {
     delete cancel_button_;
     cancel_button_ = NULL;
   }
-
-  // Use the escape key to close the window if there is no cancel button.
-  if (!cancel_button_)
-    AddAccelerator(escape);
-  else
-    ResetAccelerators();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -214,6 +210,11 @@ void DialogClientView::Layout() {
 
 bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
+
+  // If there's a cancel button, it handles escape.
+  if (cancel_button_)
+    return cancel_button_->AcceleratorPressed(accelerator);
+
   GetWidget()->Close();
   return true;
 }
