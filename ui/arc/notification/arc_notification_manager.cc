@@ -11,8 +11,17 @@ namespace arc {
 
 ArcNotificationManager::ArcNotificationManager(ArcBridgeService* bridge_service,
                                                const AccountId& main_profile_id)
+    : ArcNotificationManager(bridge_service,
+                             main_profile_id,
+                             message_center::MessageCenter::Get()) {}
+
+ArcNotificationManager::ArcNotificationManager(
+    ArcBridgeService* bridge_service,
+    const AccountId& main_profile_id,
+    message_center::MessageCenter* message_center)
     : ArcService(bridge_service),
       main_profile_id_(main_profile_id),
+      message_center_(message_center),
       binding_(this) {
   arc_bridge_service()->AddObserver(this);
 }
@@ -50,8 +59,8 @@ void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
   if (it == items_.end()) {
     // Show a notification on the primary loged-in user's desktop.
     // TODO(yoshiki): Reconsider when ARC supports multi-user.
-    ArcNotificationItem* item = new ArcNotificationItem(
-        this, message_center::MessageCenter::Get(), key, main_profile_id_);
+    ArcNotificationItem* item =
+        new ArcNotificationItem(this, message_center_, key, main_profile_id_);
     // TODO(yoshiki): Use emplacement for performance when it's available.
     auto result = items_.insert(std::make_pair(key, make_scoped_ptr(item)));
     DCHECK(result.second);

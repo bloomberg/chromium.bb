@@ -340,6 +340,7 @@ group("both_gn_and_gyp") {
   if (is_chromeos) {
     deps += [
       "//chromeos:chromeos_unittests",
+      "//ui/arc:ui_arc_unittests",
       "//ui/chromeos:ui_chromeos_unittests",
     ]
   }

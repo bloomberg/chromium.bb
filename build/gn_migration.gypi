@@ -389,6 +389,7 @@
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos_unittests',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_unittests',
+            '../ui/arc/arc.gyp:ui_arc_unittests',
           ]
         }],
         ['chromeos==1 or OS=="win" or OS=="mac"', {

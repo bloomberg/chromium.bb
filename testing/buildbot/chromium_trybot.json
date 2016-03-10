@@ -299,6 +299,17 @@
       ],
       "test": "ui_chromeos_unittests"
     },
+    {
+      "chromium_configs": [
+        "chromium_chromeos",
+        "chromium_chromeos_clang",
+        "chromium_chromeos_ozone"
+      ],
+      "platforms": [
+        "linux"
+      ],
+      "test": "ui_arc_unittests"
+    },
     "url_unittests",
     "skia_unittests",
     {

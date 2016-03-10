@@ -518,6 +518,11 @@
     "label": "//ui/chromeos:ui_chromeos_unittests",
     "type": "unknown",
   },
+  "ui_arc_unittests": {
+    "label": "//ui/arc:ui_arc_unittests",
+    "type": "raw",
+    "args": [],
+  },
   "ui_touch_selection_unittests": {
     "label": "//ui/touch_selection:ui_touch_selection_unittests",
     "type": "windowed_test_launcher",

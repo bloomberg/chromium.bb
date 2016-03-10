@@ -492,6 +492,9 @@
         "test": "sync_unit_tests"
       },
       {
+        "test": "ui_arc_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },

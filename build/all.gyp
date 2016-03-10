@@ -434,6 +434,7 @@
         ['chromeos==1', {
           'dependencies': [
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_unittests',
+            '../ui/arc/arc.gyp:ui_arc_unittests',
           ],
         }],
         ['OS=="linux"', {

@@ -86,6 +86,8 @@ static_library("arc_test_support") {
     "test/fake_arc_bridge_instance.h",
     "test/fake_arc_bridge_service.cc",
     "test/fake_arc_bridge_service.h",
+    "test/fake_notifications_instance.cc",
+    "test/fake_notifications_instance.h",
   ]
 
   deps = [
