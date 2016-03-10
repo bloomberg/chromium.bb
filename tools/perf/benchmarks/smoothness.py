@@ -491,6 +491,11 @@ class SmoothnessScrollingToughAdCases(_Smoothness):
   page_set = page_sets.ScrollingToughAdCasesPageSet
 
   @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/593152
+    return (possible_browser.browser_type == 'reference' and
+            possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+
+  @classmethod
   def Name(cls):
     return 'smoothness.scrolling_tough_ad_cases'
 

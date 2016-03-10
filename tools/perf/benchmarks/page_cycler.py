@@ -227,6 +227,11 @@ class PageCyclerTypical25(_PageCycler):
   options = {'pageset_repeat': 3}
 
   @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/593152
+    return (possible_browser.browser_type == 'reference' and
+            possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+
+  @classmethod
   def Name(cls):
     return 'page_cycler.typical_25'
 
