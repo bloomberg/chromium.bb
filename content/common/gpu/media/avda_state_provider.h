@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace gfx {
@@ -36,6 +37,8 @@ class AVDAStateProvider {
   virtual const gfx::Size& GetSize() const = 0;
   virtual const base::ThreadChecker& ThreadChecker() const = 0;
   virtual base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const = 0;
+  virtual gpu::gles2::TextureRef* GetTextureForPicture(
+      const media::PictureBuffer& picture_buffer) = 0;
 
   // Helper function to report an error condition and stop decoding.
   // This will post NotifyError(), and transition to the error state.

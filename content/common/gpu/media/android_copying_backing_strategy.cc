@@ -158,4 +158,32 @@ bool AndroidCopyingBackingStrategy::ArePicturesOverlayable() {
   return false;
 }
 
+void AndroidCopyingBackingStrategy::UpdatePictureBufferSize(
+    media::PictureBuffer* picture_buffer,
+    const gfx::Size& new_size) {
+  // This strategy uses 2D textures who's allocated memory is dependent on the
+  // size. To update size in all places, we must:
+  // 1) Update the PictureBuffer meta-data
+  picture_buffer->set_size(new_size);
+
+  // 2) Update the GL texture via glTexImage2D. This step assumes the caller
+  // has made our GL context current.
+  glBindTexture(GL_TEXTURE_2D, picture_buffer->texture_id());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, new_size.width(), new_size.height(),
+               0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  state_provider_->GetGlDecoder()->RestoreActiveTextureUnitBinding(
+      GL_TEXTURE_2D);
+
+  // 3) Update the CHROMIUM Texture's size.
+  gpu::gles2::TextureRef* texture_ref =
+      state_provider_->GetTextureForPicture(*picture_buffer);
+  RETURN_IF_NULL(texture_ref);
+  gpu::gles2::TextureManager* texture_manager =
+      state_provider_->GetGlDecoder()->GetContextGroup()->texture_manager();
+  RETURN_IF_NULL(texture_manager);
+  texture_manager->SetLevelInfo(texture_ref, GetTextureTarget(), 0, GL_RGBA,
+                                new_size.width(), new_size.height(), 1, 0,
+                                GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(new_size));
+}
+
 }  // namespace content

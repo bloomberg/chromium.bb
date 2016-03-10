@@ -44,6 +44,8 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
   void OnFrameAvailable() override;
   bool ArePicturesOverlayable() override;
+  void UpdatePictureBufferSize(media::PictureBuffer* picture_buffer,
+                               const gfx::Size& new_size) override;
 
  private:
   // Used for copy the texture from surface texture to picture buffers.

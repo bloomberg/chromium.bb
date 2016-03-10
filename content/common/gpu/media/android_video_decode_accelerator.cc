@@ -19,6 +19,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/android_copying_backing_strategy.h"
 #include "content/common/gpu/media/android_deferred_rendering_backing_strategy.h"
+#include "content/common/gpu/media/avda_return_on_failure.h"
 #include "content/common/gpu/media/shared_memory_region.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -599,25 +600,30 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         return false;
 
       case media::MEDIA_CODEC_OUTPUT_FORMAT_CHANGED: {
-        if (!output_picture_buffers_.empty()) {
-          // TODO(chcunningham): This will likely dismiss a handful of decoded
-          // frames that have not yet been drawn and returned to us for re-use.
-          // Consider a more complicated design that would wait for them to be
-          // drawn before dismissing.
-          DismissPictureBuffers();
-        }
-
         if (media_codec_->GetOutputSize(&size_) != media::MEDIA_CODEC_OK) {
           POST_ERROR(PLATFORM_FAILURE, "GetOutputSize failed.");
           return false;
         }
+        DVLOG(3) << __FUNCTION__
+                 << " OUTPUT_FORMAT_CHANGED, new size: " << size_.ToString();
 
-        picturebuffers_requested_ = true;
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&AndroidVideoDecodeAccelerator::RequestPictureBuffers,
-                       weak_this_factory_.GetWeakPtr()));
-        return false;
+        // Don't request picture buffers if we already have some. This avoids
+        // having to dismiss the existing buffers which may actively reference
+        // decoded images. Breaking their connection to the decoded image will
+        // cause rendering of black frames. Instead, we let the existing
+        // PictureBuffers live on and we simply update their size the next time
+        // they're attachted to an image of the new resolution. See the
+        // size update in |SendDecodedFrameToClient| and https://crbug/587994.
+        if (output_picture_buffers_.empty() && !picturebuffers_requested_) {
+          picturebuffers_requested_ = true;
+          base::MessageLoop::current()->PostTask(
+              FROM_HERE,
+              base::Bind(&AndroidVideoDecodeAccelerator::RequestPictureBuffers,
+                         weak_this_factory_.GetWeakPtr()));
+          return false;
+        }
+
+        return true;
       }
 
       case media::MEDIA_CODEC_OUTPUT_BUFFERS_CHANGED:
@@ -723,12 +729,19 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   free_picture_ids_.pop();
   TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
 
-  OutputBufferMap::const_iterator i =
-      output_picture_buffers_.find(picture_buffer_id);
+  const auto& i = output_picture_buffers_.find(picture_buffer_id);
   if (i == output_picture_buffers_.end()) {
     POST_ERROR(PLATFORM_FAILURE,
                "Can't find PictureBuffer id: " << picture_buffer_id);
     return;
+  }
+
+  bool size_changed = false;
+  if (i->second.size() != size_) {
+    // Size may have changed due to resolution change since the last time this
+    // PictureBuffer was used.
+    strategy_->UpdatePictureBufferSize(&i->second, size_);
+    size_changed = true;
   }
 
   // Connect the PictureBuffer to the decoded frame, via whatever
@@ -736,11 +749,14 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   strategy_->UseCodecBufferForPictureBuffer(codec_buffer_index, i->second);
 
   const bool allow_overlay = strategy_->ArePicturesOverlayable();
+
+  media::Picture picture(picture_buffer_id, bitstream_id, gfx::Rect(size_),
+                         allow_overlay);
+  picture.set_size_changed(size_changed);
+
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyPictureReady,
-                            weak_this_factory_.GetWeakPtr(),
-                            media::Picture(picture_buffer_id, bitstream_id,
-                                           gfx::Rect(size_), allow_overlay)));
+                            weak_this_factory_.GetWeakPtr(), picture));
 }
 
 void AndroidVideoDecodeAccelerator::Decode(
@@ -1018,6 +1034,25 @@ const base::ThreadChecker& AndroidVideoDecodeAccelerator::ThreadChecker()
 base::WeakPtr<gpu::gles2::GLES2Decoder>
 AndroidVideoDecodeAccelerator::GetGlDecoder() const {
   return gl_decoder_;
+}
+
+gpu::gles2::TextureRef* AndroidVideoDecodeAccelerator::GetTextureForPicture(
+    const media::PictureBuffer& picture_buffer) {
+  RETURN_ON_FAILURE(this, gl_decoder_, "Null gl_decoder_", ILLEGAL_STATE,
+                    nullptr);
+  RETURN_ON_FAILURE(this, gl_decoder_->GetContextGroup(),
+                    "Null gl_decoder_->GetContextGroup()", ILLEGAL_STATE,
+                    nullptr);
+  gpu::gles2::TextureManager* texture_manager =
+      gl_decoder_->GetContextGroup()->texture_manager();
+  RETURN_ON_FAILURE(this, texture_manager, "Null texture_manager",
+                    ILLEGAL_STATE, nullptr);
+  gpu::gles2::TextureRef* texture_ref =
+      texture_manager->GetTexture(picture_buffer.internal_texture_id());
+  RETURN_ON_FAILURE(this, texture_manager, "Null texture_ref", ILLEGAL_STATE,
+                    nullptr);
+
+  return texture_ref;
 }
 
 void AndroidVideoDecodeAccelerator::OnFrameAvailable() {

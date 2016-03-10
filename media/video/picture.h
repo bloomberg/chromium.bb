@@ -35,6 +35,7 @@ class MEDIA_EXPORT PictureBuffer {
   gfx::Size size() const {
     return size_;
   }
+  void set_size(const gfx::Size& size) { size_ = size; }
 
   // Returns the id of the texture.
   // NOTE: The texture id in the renderer process corresponds to a different
@@ -59,6 +60,8 @@ class MEDIA_EXPORT PictureBuffer {
 // This is the media-namespace equivalent of PP_Picture_Dev.
 class MEDIA_EXPORT Picture {
  public:
+  // Defaults |size_changed_| to false. Size changed is currently only used
+  // by AVDA and is set via set_size_changd().
   Picture(int32_t picture_buffer_id,
           int32_t bitstream_buffer_id,
           const gfx::Rect& visible_rect,
@@ -81,11 +84,20 @@ class MEDIA_EXPORT Picture {
 
   bool allow_overlay() const { return allow_overlay_; }
 
+  // Returns true when the VDA has adjusted the resolution of this Picture
+  // without requesting new PictureBuffers. GpuVideoDecoder should read this
+  // as a signal to update the size of the corresponding PicutreBuffer using
+  // visible_rect() upon receiving this Picture from a VDA.
+  bool size_changed() const { return size_changed_; };
+
+  void set_size_changed(bool size_changed) { size_changed_ = size_changed; }
+
  private:
   int32_t picture_buffer_id_;
   int32_t bitstream_buffer_id_;
   gfx::Rect visible_rect_;
   bool allow_overlay_;
+  bool size_changed_;
 };
 
 }  // namespace media

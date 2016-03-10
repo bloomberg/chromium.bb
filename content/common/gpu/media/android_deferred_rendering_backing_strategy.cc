@@ -112,23 +112,10 @@ uint32_t AndroidDeferredRenderingBackingStrategy::GetTextureTarget() const {
   return GL_TEXTURE_EXTERNAL_OES;
 }
 
-gpu::gles2::TextureRef*
-AndroidDeferredRenderingBackingStrategy::GetTextureForPicture(
-    const media::PictureBuffer& picture_buffer) {
-  RETURN_NULL_IF_NULL(state_provider_->GetGlDecoder());
-  gpu::gles2::TextureManager* texture_manager =
-      state_provider_->GetGlDecoder()->GetContextGroup()->texture_manager();
-  RETURN_NULL_IF_NULL(texture_manager);
-  gpu::gles2::TextureRef* texture_ref =
-      texture_manager->GetTexture(picture_buffer.internal_texture_id());
-  RETURN_NULL_IF_NULL(texture_ref);
-
-  return texture_ref;
-}
-
 AVDACodecImage* AndroidDeferredRenderingBackingStrategy::GetImageForPicture(
     const media::PictureBuffer& picture_buffer) {
-  gpu::gles2::TextureRef* texture_ref = GetTextureForPicture(picture_buffer);
+  gpu::gles2::TextureRef* texture_ref =
+      state_provider_->GetTextureForPicture(picture_buffer);
   RETURN_NULL_IF_NULL(texture_ref);
   gl::GLImage* image =
       texture_ref->texture()->GetLevelImage(GetTextureTarget(), 0);
@@ -138,7 +125,8 @@ AVDACodecImage* AndroidDeferredRenderingBackingStrategy::GetImageForPicture(
 void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
     const media::PictureBuffer& picture_buffer,
     const scoped_refptr<gpu::gles2::GLStreamTextureImage>& image) {
-  gpu::gles2::TextureRef* texture_ref = GetTextureForPicture(picture_buffer);
+  gpu::gles2::TextureRef* texture_ref =
+      state_provider_->GetTextureForPicture(picture_buffer);
   RETURN_IF_NULL(texture_ref);
 
   gpu::gles2::TextureManager* texture_manager =
@@ -266,6 +254,14 @@ bool AndroidDeferredRenderingBackingStrategy::ArePicturesOverlayable() {
   return !surface_texture_;
 }
 
+void AndroidDeferredRenderingBackingStrategy::UpdatePictureBufferSize(
+    media::PictureBuffer* picture_buffer,
+    const gfx::Size& new_size) {
+  // This strategy uses EGL images which manage the texture size for us.  We
+  // simply update the PictureBuffer meta-data and leave the texture as-is.
+  picture_buffer->set_size(new_size);
+}
+
 void AndroidDeferredRenderingBackingStrategy::CopySurfaceTextureToPictures(
     const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
   DVLOG(3) << __FUNCTION__;
@@ -328,7 +324,8 @@ void AndroidDeferredRenderingBackingStrategy::CopySurfaceTextureToPictures(
   }
 
   for (const std::pair<int, media::PictureBuffer>& entry : buffers) {
-    gpu::gles2::TextureRef* texture_ref = GetTextureForPicture(entry.second);
+    gpu::gles2::TextureRef* texture_ref =
+        state_provider_->GetTextureForPicture(entry.second);
     if (!texture_ref)
       continue;
     gfx::ScopedTextureBinder texture_binder(

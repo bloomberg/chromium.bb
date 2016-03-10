@@ -476,13 +476,24 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
-  const PictureBuffer& pb = it->second;
+  PictureBuffer& pb = it->second;
+  if (picture.size_changed()) {
+    // Update the PictureBuffer size to match that of the Picture. Some VDA's
+    // (e.g. Android) will handle resolution changes internally without
+    // requesting new PictureBuffers. Sending a Picture of unmatched size is
+    // the signal that we should update the size of our PictureBuffer.
+    DCHECK(pb.size() != picture.visible_rect().size());
+    DVLOG(3) << __FUNCTION__ << " Updating size of PictureBuffer[" << pb.id()
+             << "] from:" << pb.size().ToString()
+             << " to:" << picture.visible_rect().size().ToString();
+    pb.set_size(picture.visible_rect().size());
+  }
 
   // Update frame's timestamp.
   base::TimeDelta timestamp;
-  // Some of the VDAs like DXVA, AVDA, and VTVDA don't support and thus don't
-  // provide us with visible size in picture.size, passing (0, 0) instead, so
-  // for those cases drop it and use config information instead.
+  // Some of the VDAs like DXVA, and VTVDA don't support and thus don't provide
+  // us with visible size in picture.size, passing (0, 0) instead, so for those
+  // cases drop it and use config information instead.
   gfx::Rect visible_rect;
   gfx::Size natural_size;
   GetBufferData(picture.bitstream_buffer_id(), &timestamp, &visible_rect,

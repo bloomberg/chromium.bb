@@ -173,11 +173,12 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_DismissPictureBuffer,
                     int32_t) /* Picture buffer ID */
 
 // Decoder reports that a picture is ready.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderHostMsg_PictureReady,
+IPC_MESSAGE_ROUTED5(AcceleratedVideoDecoderHostMsg_PictureReady,
                     int32_t,   /* Picture buffer ID */
                     int32_t,   /* Bitstream buffer ID */
                     gfx::Rect, /* Visible rectangle */
-                    bool)      /* Buffer is HW overlay capable */
+                    bool,      /* Buffer is HW overlay capable */
+                    bool)      /* VDA updated picture size */
 
 // Confirm decoder has been flushed.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_FlushDone)

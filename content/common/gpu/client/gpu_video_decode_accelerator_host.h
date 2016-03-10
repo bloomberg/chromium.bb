@@ -71,7 +71,8 @@ class GpuVideoDecodeAcceleratorHost
   void OnPictureReady(int32_t picture_buffer_id,
                       int32_t bitstream_buffer_id,
                       const gfx::Rect& visible_rect,
-                      bool allow_overlay);
+                      bool allow_overlay,
+                      bool size_changed);
   void OnFlushDone();
   void OnResetDone();
   void OnNotifyError(uint32_t error);

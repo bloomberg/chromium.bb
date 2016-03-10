@@ -54,14 +54,13 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
   void OnFrameAvailable() override;
   bool ArePicturesOverlayable() override;
+  void UpdatePictureBufferSize(media::PictureBuffer* picture_buffer,
+                               const gfx::Size& new_size) override;
 
  private:
   // Release any codec buffer that is associated with the given picture buffer
   // back to the codec.  It is okay if there is no such buffer.
   void ReleaseCodecBufferForPicture(const media::PictureBuffer& picture_buffer);
-
-  // Return the TextureRef for a given PictureBuffer's texture.
-  gpu::gles2::TextureRef* GetTextureForPicture(const media::PictureBuffer&);
 
   // Return the AVDACodecImage for a given PictureBuffer's texture.
   AVDACodecImage* GetImageForPicture(const media::PictureBuffer&);

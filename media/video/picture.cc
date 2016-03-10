@@ -35,6 +35,7 @@ Picture::Picture(int32_t picture_buffer_id,
     : picture_buffer_id_(picture_buffer_id),
       bitstream_buffer_id_(bitstream_buffer_id),
       visible_rect_(visible_rect),
-      allow_overlay_(allow_overlay) {}
+      allow_overlay_(allow_overlay),
+      size_changed_(false) {}
 
 }  // namespace media

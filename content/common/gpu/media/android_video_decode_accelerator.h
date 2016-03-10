@@ -98,6 +98,14 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
     // Whether the pictures produced by this backing strategy are overlayable.
     virtual bool ArePicturesOverlayable() = 0;
+
+    // Size may have changed due to resolution change since the last time this
+    // PictureBuffer was used. Update the size of the picture buffer to
+    // |new_size| and also update any size-dependent state (e.g. size of
+    // associated texture). Callers should set the correct GL context prior to
+    // calling.
+    virtual void UpdatePictureBufferSize(media::PictureBuffer* picture_buffer,
+                                         const gfx::Size& new_size);
   };
 
   AndroidVideoDecodeAccelerator(
@@ -122,6 +130,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   const gfx::Size& GetSize() const override;
   const base::ThreadChecker& ThreadChecker() const override;
   base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const override;
+  gpu::gles2::TextureRef* GetTextureForPicture(
+      const media::PictureBuffer& picture_buffer) override;
   void PostError(const ::tracked_objects::Location& from_here,
                  media::VideoDecodeAccelerator::Error error) override;
 
