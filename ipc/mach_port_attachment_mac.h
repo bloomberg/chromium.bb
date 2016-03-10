@@ -51,6 +51,13 @@ class IPC_EXPORT MachPortAttachmentMac : public BrokerableAttachment {
   // IPC message.
   explicit MachPortAttachmentMac(mach_port_t mach_port);
 
+  enum FromWire {
+    FROM_WIRE,
+  };
+  // This constructor takes ownership of |mach_port|, but does not modify its
+  // ref count. Should only be called by the receiver of a Chrome IPC message.
+  MachPortAttachmentMac(mach_port_t mach_port, FromWire from_wire);
+
   // This constructor takes ownership of |wire_format.mach_port|, but does not
   // modify its ref count. Should only be called by the receiver of a Chrome IPC
   // message.

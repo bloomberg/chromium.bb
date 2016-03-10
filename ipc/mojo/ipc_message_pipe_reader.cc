@@ -21,8 +21,10 @@ namespace internal {
 MessagePipeReader::MessagePipeReader(
     mojom::ChannelAssociatedPtr sender,
     mojo::AssociatedInterfaceRequest<mojom::Channel> receiver,
+    base::ProcessId peer_pid,
     MessagePipeReader::Delegate* delegate)
     : delegate_(delegate),
+      peer_pid_(peer_pid),
       sender_(std::move(sender)),
       binding_(this, std::move(receiver)) {
   sender_.set_connection_error_handler(
@@ -78,6 +80,7 @@ void MessagePipeReader::Receive(mojom::MessagePtr ipc_message) {
                       ? ""
                       : reinterpret_cast<const char*>(&ipc_message->data[0]),
                   static_cast<uint32_t>(ipc_message->data.size()));
+  message.set_sender_pid(peer_pid_);
 
   DVLOG(4) << "Receive " << message.type() << ": " << message.size();
   MojoResult write_result = ChannelMojo::WriteToMessageAttachmentSet(

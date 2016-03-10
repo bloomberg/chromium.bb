@@ -4,9 +4,21 @@
 
 module IPC.mojom;
 
+struct SerializedHandle {
+  handle the_handle;
+
+  enum Type {
+    MOJO_HANDLE,
+    WIN_HANDLE,
+    MACH_PORT,
+  };
+
+  Type type;
+};
+
 struct Message {
   array<uint8> data;
-  array<handle>? handles;
+  array<SerializedHandle>? handles;
 };
 
 interface Channel {

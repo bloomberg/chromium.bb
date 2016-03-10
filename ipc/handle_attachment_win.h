@@ -58,6 +58,13 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
   // result. Should only be called by the sender of a Chrome IPC message.
   HandleAttachmentWin(const HANDLE& handle, HandleWin::Permissions permissions);
 
+  enum FromWire {
+    FROM_WIRE,
+  };
+  // This constructor takes ownership of |handle|. Should only be called by the
+  // receiver of a Chrome IPC message.
+  HandleAttachmentWin(const HANDLE& handle, FromWire from_wire);
+
   // This constructor takes ownership of |wire_format.handle| without making a
   // copy. Should only be called by the receiver of a Chrome IPC message.
   explicit HandleAttachmentWin(const WireFormat& wire_format);

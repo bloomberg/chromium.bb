@@ -38,9 +38,9 @@ class IPC_MOJO_EXPORT MojoBootstrap {
     virtual void OnBootstrapError() = 0;
   };
 
-  // Create the MojoBootstrap instance, using |token| to create the message
-  // pipe, in mode as specified by |mode|. The result is passed to |delegate|.
-  static scoped_ptr<MojoBootstrap> Create(const std::string& token,
+  // Create the MojoBootstrap instance, using |handle| as the message pipe, in
+  // mode as specified by |mode|. The result is passed to |delegate|.
+  static scoped_ptr<MojoBootstrap> Create(mojo::ScopedMessagePipeHandle handle,
                                           Channel::Mode mode,
                                           Delegate* delegate);
 
@@ -66,12 +66,12 @@ class IPC_MOJO_EXPORT MojoBootstrap {
   State state() const { return state_; }
   void set_state(State state) { state_ = state; }
 
-  const std::string& token() { return token_; }
+  mojo::ScopedMessagePipeHandle TakeHandle();
 
  private:
-  void Init(const std::string& token, Delegate* delegate);
+  void Init(mojo::ScopedMessagePipeHandle, Delegate* delegate);
 
-  std::string token_;
+  mojo::ScopedMessagePipeHandle handle_;
   Delegate* delegate_;
   State state_;
 

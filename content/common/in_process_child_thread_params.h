@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace content {
 
@@ -20,7 +21,8 @@ class CONTENT_EXPORT InProcessChildThreadParams {
  public:
   InProcessChildThreadParams(
       const std::string& channel_name,
-      scoped_refptr<base::SequencedTaskRunner> io_runner);
+      scoped_refptr<base::SequencedTaskRunner> io_runner,
+      mojo::MessagePipeHandle handle = mojo::MessagePipeHandle());
   InProcessChildThreadParams(const InProcessChildThreadParams& other);
   ~InProcessChildThreadParams();
 
@@ -28,10 +30,12 @@ class CONTENT_EXPORT InProcessChildThreadParams {
   scoped_refptr<base::SequencedTaskRunner> io_runner() const {
     return io_runner_;
   }
+  mojo::MessagePipeHandle handle() const { return handle_; }
 
  private:
   std::string channel_name_;
   scoped_refptr<base::SequencedTaskRunner> io_runner_;
+  mojo::MessagePipeHandle handle_;
 };
 
 }  // namespace content

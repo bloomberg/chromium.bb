@@ -45,8 +45,7 @@ MojoServerBootstrap::MojoServerBootstrap() = default;
 void MojoServerBootstrap::Connect() {
   DCHECK_EQ(state(), STATE_INITIALIZED);
 
-  bootstrap_.Bind(
-      mojom::BootstrapPtrInfo(mojo::edk::CreateParentMessagePipe(token()), 0));
+  bootstrap_.Bind(mojom::BootstrapPtrInfo(TakeHandle(), 0));
   bootstrap_.set_connection_error_handler(
       base::Bind(&MojoServerBootstrap::Fail, base::Unretained(this)));
 
@@ -105,7 +104,7 @@ class MojoClientBootstrap : public MojoBootstrap, public mojom::Bootstrap {
 MojoClientBootstrap::MojoClientBootstrap() : binding_(this) {}
 
 void MojoClientBootstrap::Connect() {
-  binding_.Bind(mojo::edk::CreateChildMessagePipe(token()));
+  binding_.Bind(TakeHandle());
   binding_.set_connection_error_handler(
       base::Bind(&MojoClientBootstrap::Fail, base::Unretained(this)));
 }
@@ -126,16 +125,17 @@ void MojoClientBootstrap::Init(mojom::ChannelAssociatedRequest receive_channel,
 // MojoBootstrap
 
 // static
-scoped_ptr<MojoBootstrap> MojoBootstrap::Create(const std::string& token,
-                                                Channel::Mode mode,
-                                                Delegate* delegate) {
+scoped_ptr<MojoBootstrap> MojoBootstrap::Create(
+    mojo::ScopedMessagePipeHandle handle,
+    Channel::Mode mode,
+    Delegate* delegate) {
   CHECK(mode == Channel::MODE_CLIENT || mode == Channel::MODE_SERVER);
   scoped_ptr<MojoBootstrap> self =
       mode == Channel::MODE_CLIENT
           ? scoped_ptr<MojoBootstrap>(new MojoClientBootstrap())
           : scoped_ptr<MojoBootstrap>(new MojoServerBootstrap());
 
-  self->Init(token, delegate);
+  self->Init(std::move(handle), delegate);
   return self;
 }
 
@@ -144,8 +144,9 @@ MojoBootstrap::MojoBootstrap() : delegate_(NULL), state_(STATE_INITIALIZED) {
 
 MojoBootstrap::~MojoBootstrap() {}
 
-void MojoBootstrap::Init(const std::string& token, Delegate* delegate) {
-  token_ = token;
+void MojoBootstrap::Init(mojo::ScopedMessagePipeHandle handle,
+                         Delegate* delegate) {
+  handle_ = std::move(handle);
   delegate_ = delegate;
 }
 
@@ -164,6 +165,10 @@ void MojoBootstrap::Fail() {
 
 bool MojoBootstrap::HasFailed() const {
   return state() == STATE_ERROR;
+}
+
+mojo::ScopedMessagePipeHandle MojoBootstrap::TakeHandle() {
+  return std::move(handle_);
 }
 
 }  // namespace IPC
