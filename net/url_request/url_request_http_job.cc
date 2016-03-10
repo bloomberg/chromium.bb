@@ -404,6 +404,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   // The ordering of these calls is not important.
   ProcessStrictTransportSecurityHeader();
   ProcessPublicKeyPinsHeader();
+  ProcessExpectCTHeader();
 
   // Handle the server notification of a new SDCH dictionary.
   SdchManager* sdch_manager(request()->context()->sdch_manager());
@@ -900,6 +901,28 @@ void URLRequestHttpJob::ProcessPublicKeyPinsHeader() {
   if (headers->EnumerateHeader(nullptr, "Public-Key-Pins-Report-Only",
                                &value)) {
     security_state->ProcessHPKPReportOnlyHeader(
+        value, HostPortPair::FromURL(request_info_.url), ssl_info);
+  }
+}
+
+void URLRequestHttpJob::ProcessExpectCTHeader() {
+  DCHECK(response_info_);
+  TransportSecurityState* security_state =
+      request_->context()->transport_security_state();
+  const SSLInfo& ssl_info = response_info_->ssl_info;
+
+  // Only accept Expect CT headers on HTTPS connections that have no
+  // certificate errors.
+  if (!ssl_info.is_valid() || IsCertStatusError(ssl_info.cert_status) ||
+      !security_state) {
+    return;
+  }
+
+  // Only process the first Expect-CT header value.
+  HttpResponseHeaders* headers = GetResponseHeaders();
+  std::string value;
+  if (headers->EnumerateHeader(nullptr, "Expect-CT", &value)) {
+    security_state->ProcessExpectCTHeader(
         value, HostPortPair::FromURL(request_info_.url), ssl_info);
   }
 }

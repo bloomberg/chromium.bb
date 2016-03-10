@@ -39,6 +39,7 @@
 class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
 class ChromeURLRequestContextGetter;
+class ChromeExpectCTReporter;
 class HostContentSettingsMap;
 class MediaDeviceIDSalt;
 class ProtocolHandlerRegistry;
@@ -545,6 +546,7 @@ class ProfileIOData {
   mutable scoped_ptr<net::ProxyService> proxy_service_;
   mutable scoped_ptr<net::TransportSecurityState> transport_security_state_;
   mutable scoped_ptr<net::CTVerifier> cert_transparency_verifier_;
+  mutable scoped_ptr<ChromeExpectCTReporter> expect_ct_reporter_;
   mutable scoped_ptr<net::HttpServerProperties>
       http_server_properties_;
 #if defined(OS_CHROMEOS)

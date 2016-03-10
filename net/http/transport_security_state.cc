@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/host_port_pair.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/dns_util.h"
@@ -689,6 +690,12 @@ void TransportSecurityState::SetReportSender(
   report_sender_ = report_sender;
 }
 
+void TransportSecurityState::SetExpectCTReporter(
+    ExpectCTReporter* expect_ct_reporter) {
+  DCHECK(CalledOnValidThread());
+  expect_ct_reporter_ = expect_ct_reporter;
+}
+
 void TransportSecurityState::AddHSTSInternal(
     const std::string& host,
     TransportSecurityState::STSState::UpgradeMode upgrade_mode,
@@ -818,6 +825,27 @@ bool TransportSecurityState::CheckPinsAndMaybeSendReport(
 
   report_sender_->Send(pkp_state.report_uri, serialized_report);
   return false;
+}
+
+bool TransportSecurityState::GetStaticExpectCTState(
+    const std::string& host,
+    ExpectCTState* expect_ct_state) const {
+  DCHECK(CalledOnValidThread());
+
+  if (!IsBuildTimely())
+    return false;
+
+  PreloadResult result;
+  if (!DecodeHSTSPreload(host, &result))
+    return false;
+
+  if (!enable_static_expect_ct_ || !result.expect_ct)
+    return false;
+
+  expect_ct_state->domain = host.substr(result.hostname_offset);
+  expect_ct_state->report_uri =
+      GURL(kExpectCTReportURIs[result.expect_ct_report_uri_id]);
+  return true;
 }
 
 bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
@@ -993,6 +1021,36 @@ bool TransportSecurityState::ProcessHPKPReportOnlyHeader(
   return true;
 }
 
+void TransportSecurityState::ProcessExpectCTHeader(
+    const std::string& value,
+    const HostPortPair& host_port_pair,
+    const SSLInfo& ssl_info) {
+  DCHECK(CalledOnValidThread());
+
+  if (!expect_ct_reporter_)
+    return;
+
+  if (value != "preload")
+    return;
+
+  if (!IsBuildTimely())
+    return;
+
+  if (!ssl_info.is_issued_by_known_root ||
+      !ssl_info.ct_compliance_details_available ||
+      ssl_info.ct_cert_policy_compliance ==
+          ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS) {
+    return;
+  }
+
+  ExpectCTState state;
+  if (!GetStaticExpectCTState(host_port_pair.host(), &state))
+    return;
+
+  expect_ct_reporter_->OnExpectCTFailed(host_port_pair, state.report_uri,
+                                        ssl_info);
+}
+
 // static
 void TransportSecurityState::ReportUMAOnPinFailure(const std::string& host) {
   PreloadResult result;
@@ -1108,27 +1166,6 @@ bool TransportSecurityState::IsGooglePinnedHost(const std::string& host) const {
     return false;
 
   return kPinsets[result.pinset_id].accepted_pins == kGoogleAcceptableCerts;
-}
-
-bool TransportSecurityState::GetStaticExpectCTState(
-    const std::string& host,
-    ExpectCTState* expect_ct_state) const {
-  DCHECK(CalledOnValidThread());
-
-  if (!IsBuildTimely())
-    return false;
-
-  PreloadResult result;
-  if (!DecodeHSTSPreload(host, &result))
-    return false;
-
-  if (!enable_static_expect_ct_ || !result.expect_ct)
-    return false;
-
-  expect_ct_state->domain = host.substr(result.hostname_offset);
-  expect_ct_state->report_uri =
-      GURL(kExpectCTReportURIs[result.expect_ct_report_uri_id]);
-  return true;
 }
 
 bool TransportSecurityState::GetDynamicSTSState(const std::string& host,

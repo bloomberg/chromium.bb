@@ -59,6 +59,9 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/base/url_util.h"
+#include "net/cert/ct_policy_status.h"
+#include "net/cert/ct_verifier.h"
+#include "net/cert/ct_verify_result.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
@@ -5888,6 +5891,7 @@ TEST_F(URLRequestTestHTTP, STSNotProcessedOnIP) {
 #endif
 
 namespace {
+const char kExpectCTStaticHostname[] = "preloaded-expect-ct.badssl.com";
 const char kHPKPReportUri[] = "https://hpkp-report.test";
 }  // namespace
 
@@ -6237,6 +6241,124 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP2) {
 
   EXPECT_TRUE(sts_state.include_subdomains);
   EXPECT_FALSE(pkp_state.include_subdomains);
+}
+
+// An ExpectCTReporter that records the number of times OnExpectCTFailed() was
+// called.
+class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
+ public:
+  MockExpectCTReporter() : num_failures_(0) {}
+  ~MockExpectCTReporter() override {}
+
+  void OnExpectCTFailed(const HostPortPair& host_port_pair,
+                        const GURL& report_uri,
+                        const net::SSLInfo& ssl_info) override {
+    num_failures_++;
+  }
+
+  uint32_t num_failures() { return num_failures_; }
+
+ private:
+  uint32_t num_failures_;
+};
+
+// A CTVerifier that returns net::OK for every certificate.
+class MockCTVerifier : public CTVerifier {
+ public:
+  MockCTVerifier() {}
+  ~MockCTVerifier() override {}
+
+  int Verify(X509Certificate* cert,
+             const std::string& stapled_ocsp_response,
+             const std::string& sct_list_from_tls_extension,
+             ct::CTVerifyResult* result,
+             const BoundNetLog& net_log) override {
+    return net::OK;
+  }
+
+  void SetObserver(Observer* observer) override {}
+};
+
+// A CTPolicyEnforcer that returns a default CertPolicyCompliance value
+// for every certificate.
+class MockCTPolicyEnforcer : public CTPolicyEnforcer {
+ public:
+  MockCTPolicyEnforcer()
+      : default_result_(
+            ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS) {}
+  ~MockCTPolicyEnforcer() override {}
+
+  ct::CertPolicyCompliance DoesConformToCertPolicy(
+      X509Certificate* cert,
+      const SCTList& verified_scts,
+      const BoundNetLog& net_log) override {
+    return default_result_;
+  }
+
+  void set_default_result(ct::CertPolicyCompliance default_result) {
+    default_result_ = default_result;
+  }
+
+ private:
+  ct::CertPolicyCompliance default_result_;
+};
+
+// Tests that Expect CT headers are processed correctly.
+TEST_F(URLRequestTestHTTP, ExpectCTHeader) {
+  EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.SetSSLConfig(
+      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  https_test_server.ServeFilesFromSourceDirectory(
+      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+
+  MockExpectCTReporter reporter;
+  TransportSecurityState transport_security_state;
+  transport_security_state.enable_static_expect_ct_ = true;
+  transport_security_state.SetExpectCTReporter(&reporter);
+
+  // Set up a MockCertVerifier to accept the certificate that the server sends.
+  scoped_refptr<X509Certificate> cert = https_test_server.GetCertificate();
+  ASSERT_TRUE(cert);
+  MockCertVerifier cert_verifier;
+  CertVerifyResult verify_result;
+  verify_result.verified_cert = cert;
+  verify_result.is_issued_by_known_root = true;
+  cert_verifier.AddResultForCert(cert.get(), verify_result, OK);
+
+  // Set up a MockCTVerifier and MockCTPolicyEnforcer to trigger an Expect CT
+  // violation.
+  MockCTVerifier ct_verifier;
+  MockCTPolicyEnforcer ct_policy_enforcer;
+  ct_policy_enforcer.set_default_result(
+      ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS);
+
+  TestNetworkDelegate network_delegate;
+  // Use a MockHostResolver (which by default maps all hosts to
+  // 127.0.0.1) so that the request can be sent to a site on the Expect
+  // CT preload list.
+  MockHostResolver host_resolver;
+  TestURLRequestContext context(true);
+  context.set_host_resolver(&host_resolver);
+  context.set_transport_security_state(&transport_security_state);
+  context.set_network_delegate(&network_delegate);
+  context.set_cert_verifier(&cert_verifier);
+  context.set_cert_transparency_verifier(&ct_verifier);
+  context.set_ct_policy_enforcer(&ct_policy_enforcer);
+  context.Init();
+
+  // Now send a request to trigger the violation.
+  TestDelegate d;
+  GURL url = https_test_server.GetURL("/expect-ct-header.html");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(kExpectCTStaticHostname);
+  url = url.ReplaceComponents(replace_host);
+  scoped_ptr<URLRequest> violating_request(
+      context.CreateRequest(url, DEFAULT_PRIORITY, &d));
+  violating_request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(1u, reporter.num_failures());
 }
 
 #endif  // !defined(OS_IOS)

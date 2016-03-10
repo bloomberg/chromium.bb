@@ -207,6 +207,22 @@ class NET_EXPORT TransportSecurityState
     virtual ~ReportSender() {}
   };
 
+  // An interface for building and asynchronously sending reports when a
+  // site expects valid Certificate Transparency information but it
+  // wasn't supplied.
+  class NET_EXPORT ExpectCTReporter {
+   public:
+    // Called when the host in |host_port_pair| has opted in to have
+    // reports about Expect CT policy violations sent to |report_uri|,
+    // and such a violation has occurred.
+    virtual void OnExpectCTFailed(const net::HostPortPair& host_port_pair,
+                                  const GURL& report_uri,
+                                  const net::SSLInfo& ssl_info) = 0;
+
+   protected:
+    virtual ~ExpectCTReporter() {}
+  };
+
   // Indicates whether or not a public key pin check should send a
   // report if a violation is detected.
   enum PublicKeyPinReportStatus { ENABLE_PIN_REPORTS, DISABLE_PIN_REPORTS };
@@ -237,6 +253,8 @@ class NET_EXPORT TransportSecurityState
   void SetDelegate(Delegate* delegate);
 
   void SetReportSender(ReportSender* report_sender);
+
+  void SetExpectCTReporter(ExpectCTReporter* expect_ct_reporter);
 
   // Clears all dynamic data (e.g. HSTS and HPKP data).
   //
@@ -289,11 +307,6 @@ class NET_EXPORT TransportSecurityState
   // deployed.
   bool IsGooglePinnedHost(const std::string& host) const;
 
-  // Returns true and updates |*expect_ct_result| iff there is a static
-  // (built-in) state for |host| with expect_ct=true.
-  bool GetStaticExpectCTState(const std::string& host,
-                              ExpectCTState* expect_ct_result) const;
-
   // Returns true and updates |*result| iff |host| has HSTS (respectively, HPKP)
   // state. If multiple HSTS (respectively, HPKP) entries match |host|,  the
   // most specific match determines the HSTS (respectively, HPKP) return value.
@@ -337,6 +350,18 @@ class NET_EXPORT TransportSecurityState
                                    const HostPortPair& host_port_pair,
                                    const SSLInfo& ssl_info);
 
+  // Parses |value| as a Expect CT header value and sends an Expect CT
+  // report for |host_port_pair| if the following conditions are true:
+  // 1. The header value is "preload", indicating that the site wants to
+  // be opted in to Expect CT.
+  // 2. The given host is present on the Expect CT preload list with a
+  // valid report-uri, and the build is timely (i.e. preload list is fresh).
+  // 3. |ssl_info| indicates that the connection violated the Expect CT policy.
+  // 4. An Expect CT reporter has been provided with SetExpectCTReporter().
+  void ProcessExpectCTHeader(const std::string& value,
+                             const HostPortPair& host_port_pair,
+                             const SSLInfo& ssl_info);
+
   // The maximum number of seconds for which we'll cache an HSTS request.
   static const long int kMaxHSTSAgeSecs;
 
@@ -345,6 +370,7 @@ class NET_EXPORT TransportSecurityState
   FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest, UpdateDynamicPKPOnly);
   FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0);
   FRIEND_TEST_ALL_PREFIXES(HttpSecurityHeadersTest, NoClobberPins);
+  FRIEND_TEST_ALL_PREFIXES(URLRequestTestHTTP, ExpectCTHeader);
 
   typedef std::map<std::string, STSState> STSStateMap;
   typedef std::map<std::string, PKPState> PKPStateMap;
@@ -414,6 +440,11 @@ class NET_EXPORT TransportSecurityState
       const TransportSecurityState::PublicKeyPinReportStatus report_status,
       std::string* failure_log);
 
+  // Returns true and updates |*expect_ct_result| iff there is a static
+  // (built-in) state for |host| with expect_ct=true.
+  bool GetStaticExpectCTState(const std::string& host,
+                              ExpectCTState* expect_ct_result) const;
+
   // The sets of hosts that have enabled TransportSecurity. |domain| will always
   // be empty for a STSState or PKPState in these maps; the domain
   // comes from the map keys instead. In addition, |upgrade_mode| in the
@@ -431,6 +462,8 @@ class NET_EXPORT TransportSecurityState
 
   // True if static expect-CT state should be used.
   bool enable_static_expect_ct_;
+
+  ExpectCTReporter* expect_ct_reporter_;
 
   // Keeps track of reports that have been sent recently for
   // rate-limiting.

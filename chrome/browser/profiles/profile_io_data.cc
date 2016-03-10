@@ -45,6 +45,7 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service.h"
 #include "chrome/browser/ui/search/new_tab_page_interceptor_service_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -663,6 +664,10 @@ ProfileIOData::~ProfileIOData() {
     transport_security_state_->SetReportSender(nullptr);
   certificate_report_sender_.reset();
 
+  if (transport_security_state_)
+    transport_security_state_->SetExpectCTReporter(nullptr);
+  expect_ct_reporter_.reset();
+
   // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
   // are already done in the URLRequestContext destructor.
   if (main_request_context_)
@@ -1068,6 +1073,10 @@ void ProfileIOData::Init(
       main_request_context_.get(),
       net::CertificateReportSender::DO_NOT_SEND_COOKIES));
   transport_security_state_->SetReportSender(certificate_report_sender_.get());
+
+  expect_ct_reporter_.reset(
+      new ChromeExpectCTReporter(main_request_context_.get()));
+  transport_security_state_->SetExpectCTReporter(expect_ct_reporter_.get());
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;

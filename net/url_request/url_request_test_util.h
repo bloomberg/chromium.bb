@@ -84,6 +84,11 @@ class TestURLRequestContext : public URLRequestContext {
     context_storage_.set_sdch_manager(std::move(sdch_manager));
   }
 
+  CTPolicyEnforcer* ct_policy_enforcer() { return ct_policy_enforcer_; }
+  void set_ct_policy_enforcer(CTPolicyEnforcer* ct_policy_enforcer) {
+    ct_policy_enforcer_ = ct_policy_enforcer;
+  }
+
  private:
   bool initialized_;
 
@@ -96,6 +101,8 @@ class TestURLRequestContext : public URLRequestContext {
   ClientSocketFactory* client_socket_factory_;
 
   ProxyDelegate* proxy_delegate_;
+
+  CTPolicyEnforcer* ct_policy_enforcer_;
 
  protected:
   URLRequestContextStorage context_storage_;
