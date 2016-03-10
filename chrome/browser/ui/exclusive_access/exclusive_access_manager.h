@@ -27,10 +27,6 @@ class WebContents;
 // the exit bubble to reflect the combined state.
 class ExclusiveAccessManager {
  public:
-  // A new user experience for transitioning into fullscreen and mouse pointer
-  // lock states.
-  static const base::Feature kSimplifiedUIFeature;
-
   explicit ExclusiveAccessManager(
       ExclusiveAccessContext* exclusive_access_context);
   ~ExclusiveAccessManager();

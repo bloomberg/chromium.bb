@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -90,14 +91,12 @@ class ParamaterizedFullscreenControllerInteractiveTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     switch (GetParam()) {
       case PROMPTING:
-        command_line->AppendSwitchASCII(
-            switches::kDisableFeatures,
-            ExclusiveAccessManager::kSimplifiedUIFeature.name);
+        command_line->AppendSwitchASCII(switches::kDisableFeatures,
+                                        features::kSimplifiedFullscreenUI.name);
         break;
       case SIMPLIFIED:
-        command_line->AppendSwitchASCII(
-            switches::kEnableFeatures,
-            ExclusiveAccessManager::kSimplifiedUIFeature.name);
+        command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                        features::kSimplifiedFullscreenUI.name);
         break;
       default:
         NOTREACHED();

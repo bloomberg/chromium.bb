@@ -18,6 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.FullscreenInfo;
 import org.chromium.chrome.browser.tab.Tab;
@@ -309,7 +310,9 @@ public class FullscreenHtmlApiHandler {
         mTabInFullscreen = tab;
         FullscreenInfo fullscreenInfo = new FullscreenInfo(tab.getUrl(), null, tab.isIncognito());
         ContentSetting fullscreenPermission = fullscreenInfo.getContentSetting();
-        if (fullscreenPermission != ContentSetting.ALLOW) {
+        // In simplified fullscreen mode, do not show the infobar (always allow). The toast will
+        // still be shown.
+        if (fullscreenPermission != ContentSetting.ALLOW && !isSimplifiedFullscreenUIEnabled()) {
             mFullscreenInfoBarDelegate = FullscreenInfoBarDelegate.create(this, tab);
         }
     }
@@ -378,5 +381,9 @@ public class FullscreenHtmlApiHandler {
             flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
         return flags;
+    }
+
+    private static boolean isSimplifiedFullscreenUIEnabled() {
+        return ChromeFeatureList.isEnabled("ViewsSimplifiedFullscreenUI");
     }
 }

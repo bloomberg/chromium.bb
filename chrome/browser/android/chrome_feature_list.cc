@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "chrome/common/chrome_features.h"
 #include "jni/ChromeFeatureList_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -27,6 +28,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPOfflinePagesFeature,
     &kNTPSnippetsFeature,
     &kPhysicalWebFeature,
+    &features::kSimplifiedFullscreenUI,
 };
 
 }  // namespace

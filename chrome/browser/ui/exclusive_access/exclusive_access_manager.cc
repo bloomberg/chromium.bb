@@ -12,20 +12,12 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using content::WebContents;
-
-const base::Feature ExclusiveAccessManager::kSimplifiedUIFeature = {
-    "ViewsSimplifiedFullscreenUI",
-#if defined(USE_AURA)
-    base::FEATURE_ENABLED_BY_DEFAULT,
-#else
-    base::FEATURE_DISABLED_BY_DEFAULT,
-#endif
-};
 
 ExclusiveAccessManager::ExclusiveAccessManager(
     ExclusiveAccessContext* exclusive_access_context)
@@ -100,7 +92,7 @@ GURL ExclusiveAccessManager::GetExclusiveAccessBubbleURL() const {
 
 // static
 bool ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() {
-  return base::FeatureList::IsEnabled(kSimplifiedUIFeature);
+  return base::FeatureList::IsEnabled(features::kSimplifiedFullscreenUI);
 }
 
 void ExclusiveAccessManager::OnTabDeactivated(WebContents* web_contents) {
