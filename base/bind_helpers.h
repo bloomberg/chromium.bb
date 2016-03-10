@@ -150,7 +150,6 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/template_util.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -262,21 +261,21 @@ class SupportsAddRefAndRelease {
 // Helpers to assert that arguments of a recounted type are bound with a
 // scoped_refptr.
 template <bool IsClasstype, typename T>
-struct UnsafeBindtoRefCountedArgHelper : false_type {
+struct UnsafeBindtoRefCountedArgHelper : std::false_type {
 };
 
 template <typename T>
 struct UnsafeBindtoRefCountedArgHelper<true, T>
-    : integral_constant<bool, SupportsAddRefAndRelease<T>::value> {
+    : std::integral_constant<bool, SupportsAddRefAndRelease<T>::value> {
 };
 
 template <typename T>
-struct UnsafeBindtoRefCountedArg : false_type {
+struct UnsafeBindtoRefCountedArg : std::false_type {
 };
 
 template <typename T>
 struct UnsafeBindtoRefCountedArg<T*>
-    : UnsafeBindtoRefCountedArgHelper<is_class<T>::value, T> {
+    : UnsafeBindtoRefCountedArgHelper<std::is_class<T>::value, T> {
 };
 
 template <typename T>
@@ -433,14 +432,14 @@ T Unwrap(PassedWrapper<T>& o) {
 // The first argument should be the type of the object that will be received by
 // the method.
 template <bool IsMethod, typename... Args>
-struct IsWeakMethod : public false_type {};
+struct IsWeakMethod : public std::false_type {};
 
 template <typename T, typename... Args>
-struct IsWeakMethod<true, WeakPtr<T>, Args...> : public true_type {};
+struct IsWeakMethod<true, WeakPtr<T>, Args...> : public std::true_type {};
 
 template <typename T, typename... Args>
 struct IsWeakMethod<true, ConstRefWrapper<WeakPtr<T>>, Args...>
-    : public true_type {};
+    : public std::true_type {};
 
 
 // Packs a list of types to hold them in a single type.

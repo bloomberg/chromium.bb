@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/template_util.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"

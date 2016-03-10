@@ -27,7 +27,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/template_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -443,5 +442,5 @@ extern "C" int WatcherMain(const base::char16* registry_path,
 }
 
 static_assert(
-    base::is_same<decltype(&WatcherMain), ChromeWatcherMainFunction>::value,
+    std::is_same<decltype(&WatcherMain), ChromeWatcherMainFunction>::value,
     "WatcherMain() has wrong type");

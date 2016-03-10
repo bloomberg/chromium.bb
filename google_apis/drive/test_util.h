@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/template_util.h"
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/task_util.h"
@@ -137,9 +136,9 @@ namespace internal {
 
 // Declare if the type is movable or not. Currently limited to scoped_ptr only.
 // We can add more types upon the usage.
-template<typename T> struct IsMovable : base::false_type {};
+template<typename T> struct IsMovable : std::false_type {};
 template<typename T, typename D>
-struct IsMovable<scoped_ptr<T, D> > : base::true_type {};
+struct IsMovable<scoped_ptr<T, D> > : std::true_type {};
 
 // InType is const T& if |UseConstRef| is true, otherwise |T|.
 template<bool UseConstRef, typename T> struct InTypeHelper {
@@ -169,7 +168,7 @@ struct CopyResultCallbackHelper
       //    |InType| is const T&.
       // 2) Otherwise, |T| as is.
     : InTypeHelper<
-          base::is_class<T>::value && !IsMovable<T>::value,  // UseConstRef
+          std::is_class<T>::value && !IsMovable<T>::value,  // UseConstRef
           T>,
       MoveHelper<IsMovable<T>::value, T> {
 };

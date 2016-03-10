@@ -8,7 +8,6 @@
 #include <type_traits>
 
 #include "base/macros.h"
-#include "base/template_util.h"
 #include "gin/converter.h"
 #include "gin/gin_export.h"
 #include "gin/public/wrapper_info.h"
@@ -107,7 +106,7 @@ class Wrappable : public WrappableBase {
 template <typename T>
 struct Converter<T*,
                  typename std::enable_if<
-                     base::is_convertible<T*, WrappableBase*>::value>::type> {
+                     std::is_convertible<T*, WrappableBase*>::value>::type> {
   static v8::Local<v8::Value> ToV8(v8::Isolate* isolate, T* val) {
     return val->GetWrapper(isolate);
   }

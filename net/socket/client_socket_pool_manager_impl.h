@@ -6,12 +6,13 @@
 #define NET_SOCKET_CLIENT_SOCKET_POOL_MANAGER_IMPL_H_
 
 #include <map>
+#include <type_traits>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "base/template_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/cert/cert_database.h"
 #include "net/http/http_network_session.h"
@@ -39,7 +40,7 @@ template <typename Key, typename Value>
 class OwnedPoolMap : public std::map<Key, Value> {
  public:
   OwnedPoolMap() {
-    static_assert(base::is_pointer<Value>::value, "value must be a pointer");
+    static_assert(std::is_pointer<Value>::value, "value must be a pointer");
   }
 
   ~OwnedPoolMap() {

@@ -70,7 +70,8 @@ void HidServiceWin::Connect(const HidDeviceId& device_id,
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(callback, new HidConnectionWin(device_info, std::move(file))));
+      base::Bind(callback, make_scoped_refptr(
+          new HidConnectionWin(device_info, std::move(file)))));
 }
 
 // static

@@ -11,7 +11,6 @@
 #include <map>
 
 #include "base/memory/linked_ptr.h"
-#include "base/template_util.h"
 
 namespace extensions {
 
@@ -71,8 +70,8 @@ class BaseSetOperators {
   BaseSetOperators() {
     // Ensure |T| is convertible to us, so we can safely downcast when calling
     // methods that must exist in |T|.
-    static_assert((base::is_convertible<T*, BaseSetOperators<T>*>::value),
-                   "U ptr must implicitly convert to T ptr");
+    static_assert(std::is_convertible<T*, BaseSetOperators<T>*>::value,
+                  "U ptr must implicitly convert to T ptr");
   }
 
   BaseSetOperators(const T& set) {

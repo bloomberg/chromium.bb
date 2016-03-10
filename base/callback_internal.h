@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/template_util.h"
 
 namespace base {
 namespace internal {
@@ -127,7 +126,13 @@ extern template class CallbackBase<CopyMode::Copyable>;
 // confuses template deduction in VS2013 with certain types such as
 // std::unique_ptr.
 // TODO(dcheng): Revisit this when Windows switches to VS2015 by default.
+
 template <typename T> struct IsMoveOnlyType {
+  // Types YesType and NoType are guaranteed such that sizeof(YesType) <
+  // sizeof(NoType).
+  using YesType = char;
+  struct NoType { YesType dummy[2]; };
+
   template <typename U>
   static YesType Test(const typename U::MoveOnlyTypeForCPP03*);
 
@@ -135,7 +140,7 @@ template <typename T> struct IsMoveOnlyType {
   static NoType Test(...);
 
   static const bool value = sizeof((Test<T>(0))) == sizeof(YesType) &&
-                            !is_const<T>::value;
+                            !std::is_const<T>::value;
 };
 
 // Specialization of IsMoveOnlyType so that std::unique_ptr is still considered

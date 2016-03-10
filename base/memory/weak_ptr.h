@@ -70,12 +70,13 @@
 #ifndef BASE_MEMORY_WEAK_PTR_H_
 #define BASE_MEMORY_WEAK_PTR_H_
 
+#include <type_traits>
+
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/template_util.h"
 
 namespace base {
 
@@ -160,8 +161,8 @@ class SupportsWeakPtrBase {
   // function that makes calling this easier.
   template<typename Derived>
   static WeakPtr<Derived> StaticAsWeakPtr(Derived* t) {
-    typedef
-        is_convertible<Derived, internal::SupportsWeakPtrBase&> convertible;
+    using convertible =
+        std::is_convertible<Derived*, internal::SupportsWeakPtrBase*>;
     static_assert(convertible::value,
                   "AsWeakPtr argument must inherit from SupportsWeakPtr");
     return AsWeakPtrImpl<Derived>(t, *t);

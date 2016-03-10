@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_piece.h"
-#include "base/template_util.h"
 #include "gin/converter.h"
 #include "gin/function_template.h"
 #include "gin/gin_export.h"
@@ -57,7 +56,7 @@ struct CallbackTraits<base::Callback<T> > {
 template <typename T>
 struct CallbackTraits<
     T,
-    typename std::enable_if<base::is_member_function_pointer<T>::value>::type> {
+    typename std::enable_if<std::is_member_function_pointer<T>::value>::type> {
   static v8::Local<v8::FunctionTemplate> CreateTemplate(v8::Isolate* isolate,
                                                          T callback) {
     return CreateFunctionTemplate(isolate, base::Bind(callback),

@@ -7,9 +7,10 @@
 
 #include <sys/types.h>
 
+#include <type_traits>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/template_util.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
@@ -17,7 +18,7 @@ namespace sandbox {
 // Utility functions for using Linux namepaces.
 class SANDBOX_EXPORT NamespaceUtils {
  public:
-  static_assert((base::is_same<uid_t, gid_t>::value),
+  static_assert(std::is_same<uid_t, gid_t>::value,
                 "uid_t and gid_t must be the same type");
   // generic_id_t can be used for either uid_t or gid_t.
   typedef uid_t generic_id_t;
