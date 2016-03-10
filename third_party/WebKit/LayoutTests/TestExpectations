@@ -1411,7 +1411,7 @@ crbug.com/591821 virtual/trustedeventsdefaultaction/fast/events/mouse-wheel-main
 crbug.com/591821 virtual/trustedeventsdefaultaction/fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/591821 virtual/trustedeventsdefaultaction/fast/events/updateLayoutForHitTest.html [ Failure Pass ]
 
-crbug.com/593888 [ Linux ] fast/dom/htmlcollection-reachable.html [ Timeout ]
+crbug.com/593888 [ Linux Debug ] fast/dom/htmlcollection-reachable.html [ Timeout ]
 
 crbug.com/593917 [ Win10 ] fast/writing-mode/japanese-rl-selection.html [ Failure ]
 crbug.com/593917 [ Win10 ] fast/text/emphasis-vertical.html [ Failure ]
