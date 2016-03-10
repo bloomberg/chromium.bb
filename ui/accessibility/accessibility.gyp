@@ -17,6 +17,7 @@
       'hard_dependency': 1,
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/base.gyp:base_i18n',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         'ax_gen',

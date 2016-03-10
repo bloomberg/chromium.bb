@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/ax_text_utils.h"
 
+#include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 
@@ -25,7 +26,16 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
       return start_offset + 1;
     else
       return start_offset;
-  } else if (boundary == LINE_BOUNDARY) {
+  }
+
+  base::i18n::BreakIterator word_iter(text,
+                                      base::i18n::BreakIterator::BREAK_WORD);
+  if (boundary == WORD_BOUNDARY) {
+    if (!word_iter.Init())
+      return start_offset;
+  }
+
+  if (boundary == LINE_BOUNDARY) {
     if (direction == FORWARDS_DIRECTION) {
       for (size_t j = 0; j < line_breaks.size(); ++j) {
           size_t line_break = line_breaks[j] >= 0 ? line_breaks[j] : 0;
@@ -62,8 +72,12 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
         NOTREACHED();  // These are handled above.
         break;
       case WORD_BOUNDARY:
-        if (base::IsUnicodeWhitespace(text[pos]))
-          return result;
+        if (word_iter.IsStartOfWord(result)) {
+          // If we are searching forward and we are still at the start offset,
+          // we need to find the next word.
+          if (direction == BACKWARDS_DIRECTION || result != start_offset)
+            return result;
+        }
         break;
       case PARAGRAPH_BOUNDARY:
         if (text[pos] == '\n')
@@ -89,4 +103,4 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   }
 }
 
-}  // Namespace ui
+}  // namespace ui

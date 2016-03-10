@@ -74,6 +74,7 @@ component("accessibility") {
   public_deps = [
     ":ax_gen",
     "//base",
+    "//base:i18n",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",

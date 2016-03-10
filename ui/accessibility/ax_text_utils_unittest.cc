@@ -10,6 +10,49 @@
 
 namespace ui {
 
+TEST(AXTextUtils, FindAccessibleTextBoundaryWord) {
+  const base::string16 text =
+      base::UTF8ToUTF16("Hello there.This/is\ntesting.");
+  const size_t text_length = text.length();
+  std::vector<int> line_start_offsets;
+  line_start_offsets.push_back(19);
+  size_t result;
+
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      0, FORWARDS_DIRECTION);
+  EXPECT_EQ(6UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      5, BACKWARDS_DIRECTION);
+  EXPECT_EQ(0UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      6, FORWARDS_DIRECTION);
+  EXPECT_EQ(12UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      11, BACKWARDS_DIRECTION);
+  EXPECT_EQ(6UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      12, BACKWARDS_DIRECTION);
+  EXPECT_EQ(12UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      15, FORWARDS_DIRECTION);
+  EXPECT_EQ(17UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      15, BACKWARDS_DIRECTION);
+  EXPECT_EQ(12UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      16, FORWARDS_DIRECTION);
+  EXPECT_EQ(17UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      17, FORWARDS_DIRECTION);
+  EXPECT_EQ(20UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      20, FORWARDS_DIRECTION);
+  EXPECT_EQ(text_length, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, WORD_BOUNDARY,
+                                      text_length, BACKWARDS_DIRECTION);
+  EXPECT_EQ(20UL, result);
+}
+
 TEST(AXTextUtils, FindAccessibleTextBoundaryLine) {
   const base::string16 text = base::UTF8ToUTF16("Line 1.\nLine 2\n\t");
   const size_t text_length = text.length();
@@ -17,7 +60,6 @@ TEST(AXTextUtils, FindAccessibleTextBoundaryLine) {
   line_start_offsets.push_back(8);
   line_start_offsets.push_back(15);
   size_t result;
-
 
   // Basic cases.
   result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
@@ -30,9 +72,7 @@ TEST(AXTextUtils, FindAccessibleTextBoundaryLine) {
                                        10, FORWARDS_DIRECTION);
   EXPECT_EQ(15UL, result);
 
-
   // Edge cases.
-
   result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
                                       text_length, BACKWARDS_DIRECTION);
   EXPECT_EQ(15UL, result);
@@ -68,4 +108,4 @@ TEST(AXTextUtils, FindAccessibleTextBoundaryLine) {
   EXPECT_EQ(text_length, result);
 }
 
-} // Namespace ui.
+}  // namespace ui
