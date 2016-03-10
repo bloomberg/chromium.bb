@@ -895,6 +895,21 @@ void bind_shell(wl_client* client, void* data, uint32_t version, uint32_t id) {
 ////////////////////////////////////////////////////////////////////////////////
 // wl_output_interface:
 
+wl_output_transform OutputTransform(gfx::Display::Rotation rotation) {
+  switch (rotation) {
+    case gfx::Display::ROTATE_0:
+      return WL_OUTPUT_TRANSFORM_NORMAL;
+    case gfx::Display::ROTATE_90:
+      return WL_OUTPUT_TRANSFORM_90;
+    case gfx::Display::ROTATE_180:
+      return WL_OUTPUT_TRANSFORM_180;
+    case gfx::Display::ROTATE_270:
+      return WL_OUTPUT_TRANSFORM_270;
+  }
+  NOTREACHED();
+  return WL_OUTPUT_TRANSFORM_NORMAL;
+}
+
 class WaylandDisplayObserver : public gfx::DisplayObserver {
  public:
   WaylandDisplayObserver(const gfx::Display& display,
@@ -916,7 +931,8 @@ class WaylandDisplayObserver : public gfx::DisplayObserver {
       return;
 
     if (changed_metrics &
-        (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR)) {
+        (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+         DISPLAY_METRIC_ROTATION)) {
       SendDisplayMetrics(display);
     }
   }
@@ -932,13 +948,12 @@ class WaylandDisplayObserver : public gfx::DisplayObserver {
     const char* kUnknownModel = "unknown";
 
     gfx::Rect bounds = info.bounds_in_native();
-    // TODO(reveman): Send the actual active device rotation.
     wl_output_send_geometry(
         output_resource_, bounds.x(), bounds.y(),
         static_cast<int>(kInchInMm * bounds.width() / info.device_dpi()),
         static_cast<int>(kInchInMm * bounds.height() / info.device_dpi()),
         WL_OUTPUT_SUBPIXEL_UNKNOWN, kUnknownMake, kUnknownModel,
-        WL_OUTPUT_TRANSFORM_NORMAL);
+        OutputTransform(display.rotation()));
 
     if (wl_resource_get_version(output_resource_) >=
         WL_OUTPUT_SCALE_SINCE_VERSION) {
