@@ -456,11 +456,6 @@ GpuProcessHost::~GpuProcessHost() {
   if (g_gpu_process_hosts[kind_] == this)
     g_gpu_process_hosts[kind_] = NULL;
 
-  // If there are any remaining offscreen contexts at the point the
-  // GPU process exits, assume something went wrong, and block their
-  // URLs from accessing client 3D APIs without prompting.
-  BlockLiveOffscreenContexts();
-
   UMA_HISTOGRAM_COUNTS_100("GPU.AtExitSurfaceCount",
                            GpuSurfaceTracker::Get()->GetSurfaceCount());
   UMA_HISTOGRAM_BOOLEAN("GPU.AtExitReceivedMemoryStats",
@@ -478,6 +473,7 @@ GpuProcessHost::~GpuProcessHost() {
   }
 
   std::string message;
+  bool block_offscreen_contexts = true;
   if (!in_process_) {
     int exit_code;
     base::TerminationStatus status = process_->GetTerminationStatus(
@@ -495,6 +491,10 @@ GpuProcessHost::~GpuProcessHost() {
 
     switch (status) {
       case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+        // Don't block offscreen contexts (and force page reload for webgl)
+        // if this was an intentional shutdown or the OOM killer on Android
+        // killed us while Chrome was in the background.
+        block_offscreen_contexts = false;
         message = "The GPU process exited normally. Everything is okay.";
         break;
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
@@ -520,6 +520,12 @@ GpuProcessHost::~GpuProcessHost() {
         break;
     }
   }
+
+  // If there are any remaining offscreen contexts at the point the
+  // GPU process exits, assume something went wrong, and block their
+  // URLs from accessing client 3D APIs without prompting.
+  if (block_offscreen_contexts)
+    BlockLiveOffscreenContexts();
 
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
