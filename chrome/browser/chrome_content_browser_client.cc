@@ -16,6 +16,7 @@
 #include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -379,6 +380,12 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
   "864288364E239573E777D3E0E36864E590E95C74"   // see crbug.com/238084
 };
 #endif
+
+enum AppLoadedInTabSource {
+  APP_LOADED_IN_TAB_SOURCE_APP = 0,
+  APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE,
+  APP_LOADED_IN_TAB_SOURCE_MAX
+};
 
 // Returns a copy of the given url with its host set to given host and path set
 // to given path. Other parts of the url will be the same.
@@ -2232,11 +2239,20 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     InfoMap* map = io_data->GetExtensionInfoMap();
     const Extension* extension =
         map->extensions().GetExtensionOrAppByURL(opener_url);
-    // Platform apps and their background pages should not be able to call
-    // window.open() to load v2 apps in regular tab.
-    // Simply disallow window.open() calls in this case.
-    if (extension && extension->is_platform_app())
-      return false;
+    // TODO(lazyboy): http://crbug.com/585570, if |extension| is a platform app,
+    // disallow loading it in a tab via window.open(). Currently there are apps
+    // that rely on this to be allowed to get Cast API to work, so we are
+    // allowing this temporarily. Once Media Router is available on stable, this
+    // exception should not be required.
+    if (extension && extension->is_platform_app()) {
+      AppLoadedInTabSource source =
+          opener_top_level_frame_url ==
+                  extensions::BackgroundInfo::GetBackgroundURL(extension)
+              ? APP_LOADED_IN_TAB_SOURCE_BACKGROUND_PAGE
+              : APP_LOADED_IN_TAB_SOURCE_APP;
+      UMA_HISTOGRAM_ENUMERATION("Extensions.AppLoadedInTab", source,
+                                APP_LOADED_IN_TAB_SOURCE_MAX);
+    }
   }
 #endif
 
