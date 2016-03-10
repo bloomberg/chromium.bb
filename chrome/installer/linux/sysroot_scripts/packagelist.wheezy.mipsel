@@ -58,8 +58,6 @@ main/k/krb5/libkrb5support0_1.10.1+dfsg-5+deb7u2_mipsel.deb
 main/libc/libcap2/libcap2_2.22-1.2_mipsel.deb
 main/libc/libcap2/libcap-dev_2.22-1.2_mipsel.deb
 main/libd/libdrm/libdrm2_2.4.40-1~deb7u2_mipsel.deb
-main/libe/libexif/libexif12_0.6.20-3_mipsel.deb
-main/libe/libexif/libexif-dev_0.6.20-3_mipsel.deb
 main/libf/libffi/libffi5_3.0.10-3_mipsel.deb
 main/libg/libgcrypt11/libgcrypt11_1.5.0-5+deb7u2_mipsel.deb
 main/libg/libgcrypt11/libgcrypt11-dev_1.5.0-5+deb7u2_mipsel.deb

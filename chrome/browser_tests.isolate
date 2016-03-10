@@ -259,7 +259,6 @@
           '<(PRODUCT_DIR)/chromevox_test_data/',
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/keyboard_resources.pak',
-          '<(PRODUCT_DIR)/libexif.so',
           '<(PRODUCT_DIR)/locales/',
           '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',

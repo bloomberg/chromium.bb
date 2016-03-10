@@ -68,8 +68,6 @@ main/libd/libdrm/libdrm2_2.4.58-2_mipsel.deb
 main/libd/libdrm/libdrm-dev_2.4.58-2_mipsel.deb
 main/libd/libdrm/libdrm-nouveau2_2.4.58-2_mipsel.deb
 main/libd/libdrm/libdrm-radeon1_2.4.58-2_mipsel.deb
-main/libe/libexif/libexif12_0.6.21-2_mipsel.deb
-main/libe/libexif/libexif-dev_0.6.21-2_mipsel.deb
 main/libf/libffi/libffi6_3.1-2+b2_mipsel.deb
 main/libf/libffi/libffi-dev_3.1-2+b2_mipsel.deb
 main/libg/libgcrypt20/libgcrypt20_1.6.3-2_mipsel.deb

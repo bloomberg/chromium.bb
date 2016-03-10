@@ -76,8 +76,6 @@ main/libd/libdrm/libdrm-dev_2.4.58-2_amd64.deb
 main/libd/libdrm/libdrm-intel1_2.4.58-2_amd64.deb
 main/libd/libdrm/libdrm-nouveau2_2.4.58-2_amd64.deb
 main/libd/libdrm/libdrm-radeon1_2.4.58-2_amd64.deb
-main/libe/libexif/libexif12_0.6.21-2_amd64.deb
-main/libe/libexif/libexif-dev_0.6.21-2_amd64.deb
 main/libf/libffi/libffi6_3.1-2+b2_amd64.deb
 main/libf/libffi/libffi-dev_3.1-2+b2_amd64.deb
 main/libg/libgcrypt20/libgcrypt20_1.6.3-2_amd64.deb

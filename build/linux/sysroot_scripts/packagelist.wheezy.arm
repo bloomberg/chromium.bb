@@ -65,8 +65,6 @@ main/libd/libdrm/libdrm-nouveau1a_2.4.40-1~deb7u2_armhf.deb
 main/libd/libdrm/libdrm-omap1_2.4.40-1~deb7u2_armhf.deb
 main/libd/libdrm/libdrm-radeon1_2.4.40-1~deb7u2_armhf.deb
 main/libd/libdrm/libkms1_2.4.40-1~deb7u2_armhf.deb
-main/libe/libexif/libexif12_0.6.20-3_armhf.deb
-main/libe/libexif/libexif-dev_0.6.20-3_armhf.deb
 main/libf/libffi/libffi5_3.0.10-3+b1_armhf.deb
 main/libf/libffi/libffi-dev_3.0.10-3+b1_armhf.deb
 main/libg/libgcrypt11/libgcrypt11_1.5.0-5+deb7u3_armhf.deb
