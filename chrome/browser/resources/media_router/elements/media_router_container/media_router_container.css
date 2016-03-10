@@ -191,7 +191,7 @@ paper-menu {
   --paper-input-container-label: {
     font-size: 12px;
   };
-  -webkit-padding-end: 31px;
+  -webkit-margin-end: 31px;
   box-sizing: border-box;
 }
 
