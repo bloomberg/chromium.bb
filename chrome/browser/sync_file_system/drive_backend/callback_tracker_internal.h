@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_TRACKER_INTERNAL_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_CALLBACK_TRACKER_INTERNAL_H_
 
+#include <utility>
+
 #include "base/callback.h"
-#include "base/callback_internal.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -44,7 +45,7 @@ struct InvokeAndInvalidateHelper<void(Args...)> {
                   Args... args) {
     scoped_ptr<AbortHelper> deleter = AbortHelper::TakeOwnership(abort_helper);
     if (deleter) {
-      callback.Run(base::internal::CallbackForward(args)...);
+      callback.Run(std::forward<Args>(args)...);
     }
   }
 };

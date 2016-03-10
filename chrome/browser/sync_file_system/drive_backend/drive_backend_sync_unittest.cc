@@ -55,7 +55,7 @@ template <typename T>
 void SetValueAndCallClosure(const base::Closure& closure,
                             T* arg_out,
                             T arg) {
-  *arg_out = base::internal::CallbackForward(arg);
+  *arg_out = std::forward<T>(arg);
   closure.Run();
 }
 

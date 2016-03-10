@@ -22,15 +22,12 @@ namespace drive_backend {
 namespace internal {
 
 template <typename T>
-typename std::enable_if<base::internal::IsMoveOnlyType<T>::value,
-                        base::internal::PassedWrapper<T>>::type
-RebindForward(T& t) {
+base::internal::PassedWrapper<scoped_ptr<T>> RebindForward(scoped_ptr<T>& t) {
   return base::Passed(&t);
 }
 
 template <typename T>
-typename std::enable_if<!base::internal::IsMoveOnlyType<T>::value, T&>::type
-RebindForward(T& t) {
+T& RebindForward(T& t) {
   return t;
 }
 
@@ -72,8 +69,7 @@ struct RelayToTaskRunnerHelper<void(Args...)> {
   static void Run(CallbackHolder<void(Args...)>* holder, Args... args) {
     holder->task_runner()->PostTask(
         holder->from_here(),
-        base::Bind(holder->callback(),
-                   RebindForward(args)...));
+        base::Bind(holder->callback(), RebindForward(args)...));
   }
 };
 

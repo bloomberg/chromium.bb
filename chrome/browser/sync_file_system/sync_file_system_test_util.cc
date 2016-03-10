@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
@@ -36,7 +38,7 @@ template <typename Arg, typename Param>
 void ReceiveResult1(bool* done, Arg* arg_out, Param arg) {
   EXPECT_FALSE(*done);
   *done = true;
-  *arg_out = base::internal::CallbackForward(arg);
+  *arg_out = std::forward<Param>(arg);
 }
 
 template <typename Arg>

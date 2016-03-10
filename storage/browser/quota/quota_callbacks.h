@@ -10,6 +10,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -51,12 +52,11 @@ class CallbackQueue {
   }
 
   // Runs the callbacks added to the queue and clears the queue.
-  void Run(
-      typename base::internal::CallbackParamTraits<Args>::ForwardType... args) {
+  void Run(Args... args) {
     std::vector<CallbackType> callbacks;
     callbacks.swap(callbacks_);
     for (const auto& callback : callbacks)
-      callback.Run(base::internal::CallbackForward(args)...);
+      callback.Run(args...);
   }
 
   void Swap(CallbackQueue<CallbackType, Args...>* other) {
@@ -97,15 +97,14 @@ class CallbackQueueMap {
 
   // Runs the callbacks added for the given |key| and clears the key
   // from the map.
-  void Run(
-      const Key& key,
-      typename base::internal::CallbackParamTraits<Args>::ForwardType... args) {
+  template <typename... RunArgs>
+  void Run(const Key& key, RunArgs&&... args) {
     if (!this->HasCallbacks(key))
       return;
     CallbackQueueType queue;
     queue.Swap(&callback_map_[key]);
     callback_map_.erase(key);
-    queue.Run(base::internal::CallbackForward(args)...);
+    queue.Run(std::forward<RunArgs>(args)...);
   }
 
  private:

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_TEST_UTIL_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -44,8 +45,8 @@ void ReceiveResult2(bool* done,
                     Param2 arg2) {
   EXPECT_FALSE(*done);
   *done = true;
-  *arg1_out = base::internal::CallbackForward(arg1);
-  *arg2_out = base::internal::CallbackForward(arg2);
+  *arg1_out = std::forward<Param1>(arg1);
+  *arg2_out = std::forward<Param2>(arg2);
 }
 
 template <typename R>
