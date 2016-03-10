@@ -82,7 +82,7 @@ function test()
             function step2(error, properties)
             {
                 for (var i = 0; i < properties.length; i++)
-                    InspectorTest.dump(properties[i], { objectId: "formatAsTypeName" });
+                    InspectorTest.dump(properties[i], { objectId: "formatAsTypeName", description: "formatAsDescription" });
 
                 next();
             }

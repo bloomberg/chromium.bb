@@ -7,14 +7,14 @@ Running: testGetterAndSetter
 {
     enumerable : true
     getter : {
-        description : "function get foo() { return 1; }"
+        description : "function () { return 1; }"
         objectId : <string>
         type : "function"
     }
     isOwn : true
     name : "foo"
     setter : {
-        description : "function set foo(value) { }"
+        description : "function (value) { }"
         objectId : <string>
         type : "function"
     }
@@ -27,7 +27,7 @@ Running: testGetterOnly
 {
     enumerable : true
     getter : {
-        description : "function get foo() { return 1; }"
+        description : "function () { return 1; }"
         objectId : <string>
         type : "function"
     }

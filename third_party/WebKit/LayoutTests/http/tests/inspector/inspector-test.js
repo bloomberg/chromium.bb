@@ -225,6 +225,13 @@ InspectorTest.formatters.formatAsURL = function(value)
     return ".../" + value.substr(lastIndex);
 }
 
+InspectorTest.formatters.formatAsDescription = function(value)
+{
+    if (!value)
+        return value;
+    return "\"" +  value.replace(/^function [gs]et /, "function ") + "\"";
+}
+
 InspectorTest.addObject = function(object, customFormatters, prefix, firstLinePrefix)
 {
     prefix = prefix || "";

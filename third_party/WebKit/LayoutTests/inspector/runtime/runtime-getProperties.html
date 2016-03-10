@@ -55,7 +55,7 @@ function test()
     {
         var value = propertyObject[fieldName];
         if (value)
-            propertyObject[fieldName] = { type: value.type, description: value.description.replace("function foo", "function "), objectId: value.objectId };
+            propertyObject[fieldName] = { type: value.type, description: value.description.replace(/^function [gs]et foo/, "function "), objectId: value.objectId };
     }
 
     function dumpProperty(property)
