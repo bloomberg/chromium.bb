@@ -4,19 +4,7 @@
 
 module mojo.shell.mojom;
 
-// Specifies a whitelist of applications and services an application can connect
-// to. Connections to applications not explicitly specified here as a key are
-// rejected. Connections to services not specified in an application's allowed
-// interfaces value are not made.
-// A "*" value as the only key in an otherwise empty map means the application
-// may connect to any other application.
-// A "*" value as the only string in an otherwise empty array of interface names
-// means the application may connect to any service in that application.
-// An empty interface name array means the application may not connect to any
-// services exposed by the application it is connecting to.
-struct CapabilityFilter {
-  map<string, array<string>> filter;
-};
+import "mojo/shell/public/interfaces/capabilities.mojom";
 
 // Implemented exclusively for the Mojo Shell's use in resolving mojo: names
 // and reading static manifest information.
@@ -46,6 +34,6 @@ interface ShellResolver {
   ResolveMojoName(string mojo_name) =>
       (string resolved_mojo_name,
        string qualifier,
-       CapabilityFilter? filter,
+       CapabilitySpec? capability_spec,
        string? mojo_file_url);
 };

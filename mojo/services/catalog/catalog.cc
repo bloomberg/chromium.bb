@@ -148,16 +148,10 @@ void Catalog::CompleteResolveMojoName(
         mojo::GetNamePath(resolved_name) + extension);
   }
 
-  mojo::shell::mojom::CapabilityFilterPtr filter(
-      mojo::shell::mojom::CapabilityFilter::New());
-  filter->filter = mojo::Map<mojo::String, mojo::Array<mojo::String>>();
-  for (const auto& entry : entry_iter->second.capabilities) {
-    mojo::Array<mojo::String> interfaces;
-    for (auto interface_name : entry.second)
-      interfaces.push_back(interface_name);
-    filter->filter.insert(entry.first, std::move(interfaces));
-  }
-  callback.Run(resolved_name, qualifier, std::move(filter),
+  mojo::shell::mojom::CapabilitySpecPtr capabilities_ptr =
+      mojo::shell::mojom::CapabilitySpec::From(entry_iter->second.capabilities);
+
+  callback.Run(resolved_name, qualifier, std::move(capabilities_ptr),
                file_url.spec());
 }
 
@@ -203,11 +197,8 @@ void Catalog::DeserializeCatalog() {
 
 void Catalog::SerializeCatalog() {
   scoped_ptr<base::ListValue> catalog(new base::ListValue);
-  for (const auto& entry : catalog_) {
-    base::DictionaryValue* dictionary = nullptr;
-    SerializeEntry(entry.second, &dictionary);
-    catalog->Append(make_scoped_ptr(dictionary));
-  }
+  for (const auto& entry : catalog_)
+    catalog->Append(SerializeEntry(entry.second));
   if (store_)
     store_->UpdateStore(std::move(catalog));
 }

@@ -7,6 +7,8 @@
 namespace catalog {
 
 // static
+const char Store::kManifestVersionKey[] = "manifest_version";
+// static
 const char Store::kNameKey[] = "name";
 // static
 const char Store::kQualifierKey[] = "process-group";
@@ -14,5 +16,13 @@ const char Store::kQualifierKey[] = "process-group";
 const char Store::kDisplayNameKey[] = "display_name";
 // static
 const char Store::kCapabilitiesKey[] = "capabilities";
+// static
+const char Store::kCapabilities_ProvidedKey[] = "provided";
+// static
+const char Store::kCapabilities_RequiredKey[] = "required";
+// static
+const char Store::kCapabilities_ClassesKey[] = "classes";
+// static
+const char Store::kCapabilities_InterfacesKey[] = "interfaces";
 
 }  // namespace catalog

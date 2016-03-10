@@ -126,6 +126,7 @@
         'mojom_files': [
           'services/catalog/public/interfaces/catalog.mojom',
           'services/catalog/public/interfaces/resolver.mojom',
+          'shell/public/interfaces/capabilities.mojom',
           'shell/public/interfaces/connector.mojom',
           'shell/public/interfaces/interface_provider.mojom',
           'shell/public/interfaces/shell.mojom',
@@ -142,6 +143,7 @@
       'type': 'static_library',
       'sources': [
         'shell/public/cpp/application_runner.h',
+        'shell/public/cpp/capabilities.h',
         'shell/public/cpp/connect.h',
         'shell/public/cpp/connection.h',
         'shell/public/cpp/connector.h',
@@ -153,6 +155,7 @@
         'shell/public/cpp/interface_factory_impl.h',
         'shell/public/cpp/interface_registry.h',
         'shell/public/cpp/lib/application_runner.cc',
+        'shell/public/cpp/lib/capabilities.cc',
         'shell/public/cpp/lib/connection_impl.cc',
         'shell/public/cpp/lib/connection_impl.h',
         'shell/public/cpp/lib/connector_impl.cc',

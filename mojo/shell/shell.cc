@@ -38,7 +38,7 @@ const char kCatalogName[] = "mojo:catalog";
 
 void EmptyResolverCallback(const String& resolved_name,
                            const String& resolved_instance,
-                           mojom::CapabilityFilterPtr base_filter,
+                           mojom::CapabilitySpecPtr capabilities,
                            const String& file_url) {}
 
 }
@@ -47,28 +47,28 @@ Identity CreateShellIdentity() {
   return Identity("mojo:shell", mojom::kRootUserID);
 }
 
-CapabilityFilter GetPermissiveCapabilityFilter() {
-  CapabilityFilter filter;
-  AllowedInterfaces interfaces;
-  interfaces.insert("*");
-  filter["*"] = interfaces;
-  return filter;
+CapabilitySpec GetPermissiveCapabilities() {
+  CapabilitySpec capabilities;
+  CapabilityRequest spec;
+  spec.interfaces.insert("*");
+  capabilities.required["*"] = spec;
+  return capabilities;
 }
 
-AllowedInterfaces GetAllowedInterfaces(const CapabilityFilter& filter,
-                                       const Identity& identity) {
-  // Start by looking for interfaces specific to the supplied identity.
-  auto it = filter.find(identity.name());
-  if (it != filter.end())
+CapabilityRequest GetCapabilityRequest(const CapabilitySpec& spec,
+                                             const Identity& identity) {
+  // Start by looking for specs specific to the supplied identity.
+  auto it = spec.required.find(identity.name());
+  if (it != spec.required.end())
     return it->second;
 
   // Fall back to looking for a wildcard rule.
-  it = filter.find("*");
-  if (filter.size() == 1 && it != filter.end())
+  it = spec.required.find("*");
+  if (spec.required.size() == 1 && it != spec.required.end())
     return it->second;
 
   // Finally, nothing is allowed.
-  return AllowedInterfaces();
+  return CapabilityRequest();
 }
 
 // Encapsulates a connection to an instance of an application, tracked by the
@@ -82,12 +82,13 @@ class Shell::Instance : public mojom::Connector,
   Instance(mojom::ShellClientPtr shell_client,
            mojo::shell::Shell* shell,
            const Identity& identity,
-           const CapabilityFilter& filter)
+           const CapabilitySpec& capabilities)
     : shell_(shell),
       id_(GenerateUniqueID()),
       identity_(identity),
-      filter_(filter),
-      allow_any_application_(filter.size() == 1 && filter.count("*") == 1),
+      capabilities_(capabilities),
+      allow_any_application_(capabilities.required.size() == 1 &&
+                             capabilities.required.count("*") == 1),
       shell_client_(std::move(shell_client)),
       pid_receiver_binding_(this),
       weak_factory_(this) {
@@ -112,17 +113,17 @@ class Shell::Instance : public mojom::Connector,
     params->connect_callback().Run(mojom::ConnectResult::SUCCEEDED,
                                    identity_.user_id(), id_);
     uint32_t source_id = mojom::kInvalidInstanceID;
-    AllowedInterfaces interfaces;
-    interfaces.insert("*");
+    CapabilityRequest spec;
+    spec.interfaces.insert("*");
     Instance* source = shell_->GetExistingInstance(params->source());
     if (source) {
-      interfaces = GetAllowedInterfaces(source->filter_, identity_);
+      spec = GetCapabilityRequest(source->capabilities_, identity_);
       source_id = source->id();
     }
     shell_client_->AcceptConnection(
         mojom::Identity::From(params->source()), source_id,
         params->TakeRemoteInterfaces(), params->TakeLocalInterfaces(),
-        Array<String>::From(interfaces), params->target().name());
+        mojom::CapabilityRequest::From(spec), params->target().name());
   }
 
   void StartWithClientProcessConnection(
@@ -185,7 +186,7 @@ class Shell::Instance : public mojom::Connector,
     // - a user id other than its own, kInheritUserID or kRootUserID.
     // - a non-empty instance name.
     // - a non-null client_process_connection.
-    if (!ValidateCapabilityFilter(target, callback))
+    if (!ValidateCapabilities(target, callback))
       return;
 
     scoped_ptr<ConnectParams> params(new ConnectParams);
@@ -263,13 +264,14 @@ class Shell::Instance : public mojom::Connector,
     return true;
   }
 
-  bool ValidateCapabilityFilter(const Identity& target,
-                                const ConnectCallback& callback) {
+  bool ValidateCapabilities(const Identity& target,
+                            const ConnectCallback& callback) {
     if (allow_any_application_ ||
-        filter_.find(target.name()) != filter_.end()) {
+        capabilities_.required.find(target.name()) !=
+            capabilities_.required.end()) {
       return true;
     }
-    LOG(ERROR) << "CapabilityFilter prevented connection from: " <<
+    LOG(ERROR) << "Capabilities prevented connection from: " <<
                   identity_.name() << " to: " << target.name();
     callback.Run(mojom::ConnectResult::ACCESS_DENIED,
                  mojom::kInheritUserID, mojom::kInvalidInstanceID);
@@ -294,7 +296,7 @@ class Shell::Instance : public mojom::Connector,
   // process is launched.
   const uint32_t id_;
   const Identity identity_;
-  const CapabilityFilter filter_;
+  const CapabilitySpec capabilities_;
   const bool allow_any_application_;
   mojom::ShellClientPtr shell_client_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;
@@ -330,8 +332,7 @@ Shell::Shell(scoped_ptr<NativeRunnerFactory> native_runner_factory,
       native_runner_factory_(std::move(native_runner_factory)),
       weak_ptr_factory_(this) {
   mojom::ShellClientRequest request;
-  CreateInstance(CreateShellIdentity(), GetPermissiveCapabilityFilter(),
-                 &request);
+  CreateInstance(CreateShellIdentity(), GetPermissiveCapabilities(), &request);
   shell_connection_.reset(new ShellConnection(this, std::move(request)));
 
   InitCatalog(std::move(catalog_store));
@@ -385,8 +386,8 @@ mojom::ShellClientRequest Shell::InitInstanceForEmbedder(
   DCHECK(!GetExistingInstance(target));
 
   mojom::ShellClientRequest request;
-  embedder_instance_ = CreateInstance(
-      target, GetPermissiveCapabilityFilter(), &request);
+  embedder_instance_ =
+      CreateInstance(target, GetPermissiveCapabilities(), &request);
   DCHECK(embedder_instance_);
 
   return request;
@@ -433,7 +434,7 @@ void Shell::InitCatalog(scoped_ptr<catalog::Store> store) {
   // TODO(beng): Does the catalog actually have to be run with a permissive
   //             filter?
   Identity identity(name, mojom::kRootUserID);
-  CreateInstance(identity, GetPermissiveCapabilityFilter(), &request);
+  CreateInstance(identity, GetPermissiveCapabilities(), &request);
   loader_raw->Load(name, std::move(request));
 
   ConnectToInterface(this, CreateShellIdentity(), name, &shell_resolver_);
@@ -495,13 +496,13 @@ bool Shell::ConnectToExistingInstance(scoped_ptr<ConnectParams>* params) {
 }
 
 Shell::Instance* Shell::CreateInstance(const Identity& target_id,
-                                       const CapabilityFilter& filter,
+                                       const CapabilitySpec& capabilities,
                                        mojom::ShellClientRequest* request) {
   CHECK(target_id.user_id() != mojom::kInheritUserID);
   mojom::ShellClientPtr shell_client;
   *request = GetProxy(&shell_client);
   Instance* instance =
-      new Instance(std::move(shell_client), this, target_id, filter);
+      new Instance(std::move(shell_client), this, target_id, capabilities);
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
   identity_to_instance_[target_id] = instance;
@@ -563,7 +564,7 @@ void Shell::OnShellClientFactoryLost(const Identity& which) {
 void Shell::OnGotResolvedName(scoped_ptr<ConnectParams> params,
                               const String& resolved_name,
                               const String& resolved_instance,
-                              mojom::CapabilityFilterPtr base_filter,
+                              mojom::CapabilitySpecPtr capabilities_ptr,
                               const String& file_url) {
   std::string instance_name = params->target().instance();
   if (instance_name == GetNamePath(params->target().name()) &&
@@ -581,22 +582,22 @@ void Shell::OnGotResolvedName(scoped_ptr<ConnectParams> params,
     return;
 
   Identity source = params->source();
-  // |base_filter| can be null when there is no manifest, e.g. for URL types
-  // not resolvable by the resolver.
-  CapabilityFilter filter = GetPermissiveCapabilityFilter();
-  if (!base_filter.is_null())
-    filter = base_filter->filter.To<CapabilityFilter>();
+  // |capabilities_ptr| can be null when there is no manifest, e.g. for URL
+  // types not resolvable by the resolver.
+  CapabilitySpec capabilities = GetPermissiveCapabilities();
+  if (!capabilities_ptr.is_null())
+    capabilities = capabilities_ptr.To<CapabilitySpec>();
 
   mojom::ClientProcessConnectionPtr client_process_connection =
       params->TakeClientProcessConnection();
   mojom::ShellClientRequest request;
-  Instance* instance = CreateInstance(target, filter, &request);
+  Instance* instance = CreateInstance(target, capabilities, &request);
   instance->ConnectToClient(std::move(params));
 
   if (LoadWithLoader(target, &request))
     return;
 
-  CHECK(!file_url.is_null() && !base_filter.is_null());
+  CHECK(!file_url.is_null() && !capabilities_ptr.is_null());
 
   if (target.name() != resolved_name) {
     // In cases where a package alias is resolved, we have to use the instance

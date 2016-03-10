@@ -17,6 +17,7 @@
 #include "mojo/shell/connect_params.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/native_runner.h"
+#include "mojo/shell/public/cpp/capabilities.h"
 #include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -36,24 +37,9 @@ namespace mojo {
 class ShellConnection;
 namespace shell {
 
-// A set of names of interfaces that may be exposed to an application.
-using AllowedInterfaces = std::set<std::string>;
-// A map of allowed applications to allowed interface sets. See shell.mojom for
-// more details.
-using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
-
 // Creates an identity for the Shell, used when the Shell connects to
 // applications.
 Identity CreateShellIdentity();
-
-// Returns a capability filter that allows an application to connect to any
-// other application and any service exposed by other applications.
-CapabilityFilter GetPermissiveCapabilityFilter();
-
-// Returns the set of interfaces that an application instance with |filter| is
-// allowed to see from an instance with |identity|.
-AllowedInterfaces GetAllowedInterfaces(const CapabilityFilter& filter,
-                                       const Identity& identity);
 
 class Shell : public ShellClient {
  public:
@@ -141,17 +127,9 @@ class Shell : public ShellClient {
   bool ConnectToExistingInstance(scoped_ptr<ConnectParams>* params);
 
   Instance* CreateInstance(const Identity& target_id,
-                           const CapabilityFilter& filter,
+                           const CapabilitySpec& capabilities,
                            mojom::ShellClientRequest* request);
 
-  // Called from the instance implementing mojom::Shell. |user_id| must be
-  // resolved by the instance (i.e. must not be mojom::kInheritUserID).
-  void CreateInstanceForFactory(
-      mojom::ShellClientFactoryPtr factory,
-      const std::string& name,
-      const std::string& user_id,
-      mojom::CapabilityFilterPtr filter,
-      mojom::PIDReceiverRequest pid_receiver);
   // Called from the instance implementing mojom::Shell.
   void AddInstanceListener(mojom::InstanceListenerPtr listener);
 
@@ -171,12 +149,12 @@ class Shell : public ShellClient {
   // |resolved_name| is the mojo: name identifying the physical package
   // application.
   // |file_url| is the resolved file:// URL of the physical package.
-  // |base_filter| is the CapabilityFilter the requested application should be
+  // |base_filter| is the CapabilitySpecPtr the requested application should be
   // run with, from its manifest.
   void OnGotResolvedName(scoped_ptr<ConnectParams> params,
                          const String& resolved_name,
                          const String& resolved_instance,
-                         mojom::CapabilityFilterPtr base_filter,
+                         mojom::CapabilitySpecPtr capabilities,
                          const String& file_url);
 
   // Tries to load |target| with an Loader. Returns true if one was registered

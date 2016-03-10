@@ -15,7 +15,7 @@ namespace catalog {
 
 Entry BuildEntry(const base::DictionaryValue& value);
 
-void SerializeEntry(const Entry& entry, base::DictionaryValue** value);
+scoped_ptr<base::DictionaryValue> SerializeEntry(const Entry& entry);
 
 }  // namespace catalog
 

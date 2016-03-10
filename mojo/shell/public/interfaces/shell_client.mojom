@@ -4,6 +4,7 @@
 
 module mojo.shell.mojom;
 
+import "mojo/shell/public/interfaces/capabilities.mojom";
 import "mojo/shell/public/interfaces/connector.mojom";
 import "mojo/shell/public/interfaces/interface_provider.mojom";
 
@@ -69,6 +70,6 @@ interface ShellClient {
                    uint32 source_id,
                    InterfaceProvider&? local_interfaces,
                    InterfaceProvider? remote_interfaces,
-                   array<string> allowed_interfaces,
+                   CapabilityRequest allowed_capabilities,
                    string resolved_name);
 };

@@ -1,7 +1,10 @@
 {
+  "manifest_version": 1,
   "name": "mojo:connect_test_app",
   "display_name": "Connect Test App",
   "capabilities": {
-    "mojo:connect_test_a": ["*"]
+    "required": {
+      "mojo:connect_test_a": { "interfaces": ["*"] }
+    }
   }
 }

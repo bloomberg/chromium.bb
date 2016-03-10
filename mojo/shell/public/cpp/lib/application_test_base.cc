@@ -57,7 +57,7 @@ class ShellGrabber : public shell::mojom::ShellClient {
       uint32_t source_id,
       shell::mojom::InterfaceProviderRequest local_interfaces,
       shell::mojom::InterfaceProviderPtr remote_interfaces,
-      Array<String> allowed_interfaces,
+      shell::mojom::CapabilityRequestPtr capability_spec,
       const String& name) override {
     CHECK(false);
   }

@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # GYP version: mojo/mojo_base.gyp:mojo_application_bindings
 mojom("interfaces") {
   sources = [
+    "capabilities.mojom",
     "connector.mojom",
     "interface_provider.mojom",
     "shell.mojom",

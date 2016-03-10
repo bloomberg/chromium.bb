@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/shell/public/cpp/capabilities.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/lib/connection_impl.h"
 #include "mojo/shell/public/cpp/lib/connector_impl.h"
@@ -49,12 +50,12 @@ void ShellConnection::AcceptConnection(
     uint32_t source_id,
     shell::mojom::InterfaceProviderRequest local_interfaces,
     shell::mojom::InterfaceProviderPtr remote_interfaces,
-    Array<String> allowed_interfaces,
+    shell::mojom::CapabilityRequestPtr allowed_capabilities,
     const String& name) {
   scoped_ptr<Connection> registry(new internal::ConnectionImpl(
       name, source.To<Identity>(), source_id, std::move(remote_interfaces),
       std::move(local_interfaces),
-      allowed_interfaces.To<std::set<std::string>>(),
+      allowed_capabilities->interfaces.To<std::set<std::string>>(),
       Connection::State::CONNECTED));
   if (!client_->AcceptConnection(registry.get()))
     return;

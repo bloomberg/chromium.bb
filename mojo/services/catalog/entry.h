@@ -5,17 +5,11 @@
 #ifndef MOJO_SERVICES_CATALOG_ENTRY_H_
 #define MOJO_SERVICES_CATALOG_ENTRY_H_
 
-#include <map>
-#include <set>
 #include <string>
 
-namespace catalog {
+#include "mojo/shell/public/cpp/capabilities.h"
 
-// A set of names of interfaces that may be exposed to an application.
-using AllowedInterfaces = std::set<std::string>;
-// A map of allowed applications to allowed interface sets. See shell.mojom for
-// more details.
-using CapabilityFilter = std::map<std::string, AllowedInterfaces>;
+namespace catalog {
 
 // Static information about an application package known to the Catalog.
 struct Entry {
@@ -23,10 +17,12 @@ struct Entry {
   Entry(const Entry& other);
   ~Entry();
 
+  bool operator==(const Entry& other) const;
+
   std::string name;
   std::string qualifier;
   std::string display_name;
-  CapabilityFilter capabilities;
+  mojo::CapabilitySpec capabilities;
 };
 
 }  // namespace catalog

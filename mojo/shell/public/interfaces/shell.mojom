@@ -5,7 +5,6 @@
 module mojo.shell.mojom;
 
 import "mojo/shell/public/interfaces/connector.mojom";
-import "mojo/shell/public/interfaces/shell_client_factory.mojom";
 
 struct InstanceInfo {
   uint32 id;

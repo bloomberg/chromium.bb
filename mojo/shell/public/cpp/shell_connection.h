@@ -66,7 +66,7 @@ class ShellConnection : public shell::mojom::ShellClient {
       uint32_t source_id,
       shell::mojom::InterfaceProviderRequest remote_interfaces,
       shell::mojom::InterfaceProviderPtr local_interfaces,
-      Array<String> allowed_interfaces,
+      shell::mojom::CapabilityRequestPtr allowed_capabilities,
       const String& name) override;
 
   void OnConnectionError();
