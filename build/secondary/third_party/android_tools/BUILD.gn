@@ -122,6 +122,21 @@ android_java_prebuilt("google_play_services_default_java") {
   jar_path = "$android_sdk_root/extras/google/google_play_services/libproject/google-play-services_lib/libs/google-play-services.jar"
 }
 
+android_resources("android_support_v17_leanback_resources") {
+  v14_skip = true
+  resource_dirs =
+      [ "$android_sdk_root/extras/android/support/v17/leanback/res" ]
+  custom_package = "android.support.v17.leanback"
+}
+
+android_java_prebuilt("android_support_v17_leanback_java") {
+  deps = [
+    ":android_support_v17_leanback_resources",
+    ":android_support_v7_recyclerview_java",
+  ]
+  jar_path = "$android_sdk_root/extras/android/support/v17/leanback/libs/android-support-v17-leanback.jar"
+}
+
 # TODO(jbudorick): Remove this once net_java_test_support no longer needs it.
 android_java_prebuilt("legacy_http_javalib") {
   jar_path = "$android_sdk/optional/org.apache.http.legacy.jar"
