@@ -668,7 +668,7 @@ TEST_P(HistogramTest, CustomHistogramSerializeInfo) {
   EXPECT_FALSE(iter.SkipBytes(1));
 }
 
-TEST_P(HistogramTest, BadConstruction) {
+TEST_P(HistogramTest, DISABLED_BadConstruction) {
   HistogramBase* histogram = Histogram::FactoryGet(
       "BadConstruction", 0, 100, 8, HistogramBase::kNoFlags);
   EXPECT_TRUE(histogram->HasConstructionArguments(1, 100, 8));
