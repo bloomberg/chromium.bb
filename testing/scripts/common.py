@@ -77,10 +77,10 @@ def run_runtest(cmd_args, runtest_args):
   else:
     cmd = [
       sys.executable,
-      os.path.join(cmd_args.paths['build'], 'scripts', 'tools', 'runit.py'),
+      cmd_args.paths['runit.py'],
       '--show-path',
       sys.executable,
-      os.path.join(cmd_args.paths['build'], 'scripts', 'slave', 'runtest.py'),
+      cmd_args.paths['runtest.py'],
     ]
   return run_command(cmd + [
       '--target', cmd_args.build_config_fs,
