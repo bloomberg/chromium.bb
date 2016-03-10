@@ -459,6 +459,31 @@ TEST(VectorTest, AppendFirst)
         vector.append(const_cast<const WTF::String&>(vector.first()));
 }
 
+// The test below is for the following issue:
+//
+// https://bugs.chromium.org/p/chromium/issues/detail?id=592767
+//
+// where deleted copy assignment operator made canMoveWithMemcpy true because of the implementation of
+// IsTriviallyMoveAssignable<T>.
+
+class MojoMoveOnlyType final {
+public:
+    MojoMoveOnlyType();
+    MojoMoveOnlyType(MojoMoveOnlyType&&);
+    MojoMoveOnlyType& operator=(MojoMoveOnlyType&&);
+    ~MojoMoveOnlyType();
+
+private:
+    MojoMoveOnlyType(const MojoMoveOnlyType&) = delete;
+    void operator=(const MojoMoveOnlyType&) = delete;
+};
+
+static_assert(!IsTriviallyMoveAssignable<MojoMoveOnlyType>::value, "MojoMoveOnlyType isn't trivially move assignable.");
+static_assert(!IsTriviallyCopyAssignable<MojoMoveOnlyType>::value, "MojoMoveOnlyType isn't trivially copy assignable.");
+
+static_assert(!VectorTraits<MojoMoveOnlyType>::canMoveWithMemcpy, "MojoMoveOnlyType can't be moved with memcpy.");
+static_assert(!VectorTraits<MojoMoveOnlyType>::canCopyWithMemcpy, "MojoMoveOnlyType can't be copied with memcpy.");
+
 } // anonymous namespace
 
 } // namespace WTF

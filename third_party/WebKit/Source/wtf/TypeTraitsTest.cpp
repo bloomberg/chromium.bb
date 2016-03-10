@@ -103,6 +103,67 @@ static_assert((IsSubclassOfTemplate<TestDerivedClass, TestBaseClass>::value), "D
 typedef int IntArray[];
 typedef int IntArraySized[4];
 
+#if !COMPILER(MSVC) || COMPILER(CLANG)
+
+class AssignmentDeleted final {
+private:
+    AssignmentDeleted& operator=(const AssignmentDeleted&) = delete;
+};
+
+static_assert(!IsCopyAssignable<AssignmentDeleted>::value, "AssignmentDeleted isn't copy assignable.");
+static_assert(!IsMoveAssignable<AssignmentDeleted>::value, "AssignmentDeleted isn't move assignable.");
+
+class AssignmentPrivate final {
+private:
+    AssignmentPrivate& operator=(const AssignmentPrivate&);
+};
+
+static_assert(!IsCopyAssignable<AssignmentPrivate>::value, "AssignmentPrivate isn't copy assignable.");
+static_assert(!IsMoveAssignable<AssignmentPrivate>::value, "AssignmentPrivate isn't move assignable.");
+
+class CopyAssignmentDeleted final {
+public:
+    CopyAssignmentDeleted& operator=(CopyAssignmentDeleted&&);
+private:
+    CopyAssignmentDeleted& operator=(const CopyAssignmentDeleted&) = delete;
+};
+
+static_assert(!IsCopyAssignable<CopyAssignmentDeleted>::value, "CopyAssignmentDeleted isn't copy assignable.");
+static_assert(IsMoveAssignable<CopyAssignmentDeleted>::value, "CopyAssignmentDeleted is move assignable.");
+
+class CopyAssignmentPrivate final {
+public:
+    CopyAssignmentPrivate& operator=(CopyAssignmentPrivate&&);
+private:
+    CopyAssignmentPrivate& operator=(const CopyAssignmentPrivate&);
+};
+
+static_assert(!IsCopyAssignable<CopyAssignmentPrivate>::value, "CopyAssignmentPrivate isn't copy assignable.");
+static_assert(IsMoveAssignable<CopyAssignmentPrivate>::value, "CopyAssignmentPrivate is move assignable.");
+
+class CopyAssignmentUndeclared final {
+public:
+    CopyAssignmentUndeclared& operator=(CopyAssignmentUndeclared&&);
+};
+
+static_assert(!IsCopyAssignable<CopyAssignmentUndeclared>::value, "CopyAssignmentUndeclared isn't copy assignable.");
+static_assert(IsMoveAssignable<CopyAssignmentUndeclared>::value, "CopyAssignmentUndeclared is move assignable.");
+
+class Assignable final {
+public:
+    Assignable& operator=(const Assignable&);
+};
+
+static_assert(IsCopyAssignable<Assignable>::value, "Assignable is copy assignable.");
+static_assert(IsMoveAssignable<Assignable>::value, "Assignable is move assignable.");
+
+class AssignableImplicit final { };
+
+static_assert(IsCopyAssignable<AssignableImplicit>::value, "AssignableImplicit is copy assignable.");
+static_assert(IsMoveAssignable<AssignableImplicit>::value, "AssignableImplicit is move assignable.");
+
+#endif // !COMPILER(MSVC) || COMPILER(CLANG)
+
 } // anonymous namespace
 
 } // namespace WTF
