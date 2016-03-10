@@ -108,7 +108,14 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(bool active) const {
   const ui::ThemeProvider* tp = frame_->GetThemeProvider();
   int frame_image_id = active ? IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE;
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
+  // |default_uses_color| means the default frame is painted with a solid color.
+  // When false, the default frame is painted with assets.
+#if defined(OS_CHROMEOS)
+  bool default_uses_color = true;
+#else
+  bool default_uses_color = ui::MaterialDesignController::IsModeMaterial();
+#endif
+  if (default_uses_color) {
     return ShouldPaintAsThemed() && (tp->HasCustomImage(frame_image_id) ||
                                      tp->HasCustomImage(IDR_THEME_FRAME))
                ? *tp->GetImageSkiaNamed(frame_image_id)
