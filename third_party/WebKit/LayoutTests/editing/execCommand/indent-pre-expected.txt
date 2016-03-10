@@ -102,7 +102,7 @@ function setSelection(node)
     var textNode = node.firstChild;
     if (textNode.nodeType != Node.TEXT_NODE)
         throw "Wrong node type: " + textNode;
-    execSetSelectionCommand(textNode, 0, 0);
+    execSetSelectionCommand(textNode, 0, textNode, 0);
 }
 
 function verifyTextSelection(startNode, startOffset, endNode, endOffset)
@@ -159,7 +159,7 @@ setSelection(pre);
 execMoveSelectionForwardByLineCommand();
 execExtendSelectionForwardByLineCommand();
 execExtendSelectionForwardByLineCommand();
-// FIXME: This is wrong.  The pre tags get copied when they shouldn't be. 
+// FIXME: This is wrong.  The pre tags get copied when they shouldn't be.
 // See https://bugs.webkit.org/show_bug.cgi?id=42009
 document.execCommand("indent");
 document.getElementById("results").innerText = "PASSED (did not crash)";
