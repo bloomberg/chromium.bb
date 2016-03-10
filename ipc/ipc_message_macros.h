@@ -249,7 +249,7 @@
 #define IPC_SYNC_MESSAGE_ROUTED(msg_class, in, out) \
   IPC_MESSAGE_DECL(msg_class, ROUTED, IPC_TUPLE in, IPC_TUPLE out)
 
-#define IPC_TUPLE(...) IPC::CheckedTuple<__VA_ARGS__>::Tuple
+#define IPC_TUPLE(...) std::tuple<__VA_ARGS__>
 
 #define IPC_MESSAGE_DECL(msg_name, kind, in_tuple, out_tuple)       \
   struct IPC_MESSAGE_EXPORT msg_name##_Meta {                       \

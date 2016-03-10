@@ -1,8 +1,7 @@
 set(plugin_sources
   ChromeClassTester.cpp
   FindBadConstructsAction.cpp
-  FindBadConstructsConsumer.cpp
-  CheckIPCVisitor.cpp)
+  FindBadConstructsConsumer.cpp)
 
 if(WIN32)
   # Clang doesn't support loadable modules on Windows. Unfortunately, building

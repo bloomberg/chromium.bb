@@ -103,10 +103,6 @@ bool IsPodOrTemplateType(const CXXRecordDecl& record) {
 FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
                                                      const Options& options)
     : ChromeClassTester(instance, options) {
-  if (options.check_ipc) {
-    ipc_visitor_.reset(new CheckIPCVisitor(instance));
-  }
-
   // Messages for virtual method specifiers.
   diag_method_requires_override_ =
       diagnostic().getCustomDiagID(getErrorLevel(), kMethodRequiresOverride);
@@ -140,39 +136,10 @@ FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
       DiagnosticsEngine::Note, kNoteProtectedNonVirtualDtor);
 }
 
-void FindBadConstructsConsumer::Traverse(ASTContext& context) {
-  if (ipc_visitor_) ipc_visitor_->set_context(&context);
-  RecursiveASTVisitor::TraverseDecl(context.getTranslationUnitDecl());
-  if (ipc_visitor_) ipc_visitor_->set_context(nullptr);
-}
-
-bool FindBadConstructsConsumer::shouldVisitTemplateInstantiations() const {
-  return RecursiveASTVisitor::shouldVisitTemplateInstantiations() ||
-      (ipc_visitor_ && ipc_visitor_->should_visit_template_instantiations());
-}
-
-bool FindBadConstructsConsumer::TraverseDecl(Decl* decl) {
-  if (ipc_visitor_) ipc_visitor_->BeginDecl(decl);
-  bool result = RecursiveASTVisitor::TraverseDecl(decl);
-  if (ipc_visitor_) ipc_visitor_->EndDecl();
-  return result;
-}
-
 bool FindBadConstructsConsumer::VisitDecl(clang::Decl* decl) {
   clang::TagDecl* tag_decl = dyn_cast<clang::TagDecl>(decl);
   if (tag_decl && tag_decl->isCompleteDefinition())
     CheckTag(tag_decl);
-  return true;
-}
-
-bool FindBadConstructsConsumer::VisitTemplateSpecializationType(
-    TemplateSpecializationType* spec) {
-  if (ipc_visitor_) ipc_visitor_->VisitTemplateSpecializationType(spec);
-  return true;
-}
-
-bool FindBadConstructsConsumer::VisitCallExpr(CallExpr* call_expr) {
-  if (ipc_visitor_) ipc_visitor_->VisitCallExpr(call_expr);
   return true;
 }
 
