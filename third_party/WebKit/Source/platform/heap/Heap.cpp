@@ -673,7 +673,6 @@ CallbackStack* Heap::s_postMarkingCallbackStack;
 CallbackStack* Heap::s_globalWeakCallbackStack;
 CallbackStack* Heap::s_ephemeronStack;
 HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
-bool Heap::s_shutdownCalled = false;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
 RegionTree* Heap::s_regionTree = nullptr;

@@ -315,7 +315,6 @@ private:
     static CallbackStack* s_globalWeakCallbackStack;
     static CallbackStack* s_ephemeronStack;
     static HeapDoesNotContainCache* s_heapDoesNotContainCache;
-    static bool s_shutdownCalled;
     static FreePagePool* s_freePagePool;
     static OrphanedPagePool* s_orphanedPagePool;
     static RegionTree* s_regionTree;

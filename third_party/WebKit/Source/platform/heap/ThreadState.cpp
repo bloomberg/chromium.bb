@@ -203,7 +203,6 @@ size_t ThreadState::threadStackSize()
 
 void ThreadState::attachMainThread()
 {
-    RELEASE_ASSERT(!Heap::s_shutdownCalled);
     MutexLocker locker(threadAttachMutex());
     ThreadState* state = new (s_mainThreadStateStorage) ThreadState();
     attachedThreads().add(state);
@@ -239,7 +238,6 @@ void ThreadState::detachMainThread()
 
 void ThreadState::attach()
 {
-    RELEASE_ASSERT(!Heap::s_shutdownCalled);
     MutexLocker locker(threadAttachMutex());
     ThreadState* state = new ThreadState();
     attachedThreads().add(state);
