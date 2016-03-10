@@ -1,0 +1,11 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+
+# TODO(GYP): make remoting hosts work on win and mac
+# enable_remoting_host = is_win || is_mac || is_chromeos || use_x11
+# enable_me2me_host = is_win || is_mac || (use_x11 && !is_chromeos)
+enable_remoting_host = is_chromeos || use_x11
+enable_me2me_host = use_x11 && !is_chromeos
