@@ -52,7 +52,7 @@ public:
     PassRefPtrWillBeRawPtr<Text> replaceWholeText(const String&);
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
-    bool textLayoutObjectIsNeeded(const ComputedStyle&, const LayoutObject& parent);
+    bool textLayoutObjectIsNeeded(const ComputedStyle&, const LayoutObject& parent) const;
     LayoutText* createTextLayoutObject(const ComputedStyle&);
     void updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 

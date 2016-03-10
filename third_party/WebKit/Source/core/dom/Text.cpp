@@ -239,7 +239,7 @@ PassRefPtrWillBeRawPtr<Node> Text::cloneNode(bool /*deep*/)
     return cloneWithData(data());
 }
 
-static inline bool canHaveWhitespaceChildren(const LayoutObject& parent, Text* text)
+static inline bool canHaveWhitespaceChildren(const LayoutObject& parent)
 {
     // <button> should allow whitespace even though LayoutFlexibleBox doesn't.
     if (parent.isLayoutButton())
@@ -257,7 +257,7 @@ static inline bool canHaveWhitespaceChildren(const LayoutObject& parent, Text* t
     return true;
 }
 
-bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style, const LayoutObject& parent)
+bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style, const LayoutObject& parent) const
 {
     if (!parent.canHaveChildren())
         return false;
@@ -274,7 +274,7 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style, const LayoutObje
     if (!containsOnlyWhitespace())
         return true;
 
-    if (!canHaveWhitespaceChildren(parent, this))
+    if (!canHaveWhitespaceChildren(parent))
         return false;
 
     // pre-wrap in SVG never makes layoutObject.
@@ -405,12 +405,12 @@ bool Text::needsWhitespaceLayoutObject()
 
 // Passing both |textNode| and its layout object because repeated calls to
 // |Node::layoutObject()| are discouraged.
-static bool shouldUpdateLayoutByReattaching(Text* textNode, LayoutText* textLayoutObject)
+static bool shouldUpdateLayoutByReattaching(const Text& textNode, LayoutText* textLayoutObject)
 {
-    ASSERT(textNode->layoutObject() == textLayoutObject);
+    ASSERT(textNode.layoutObject() == textLayoutObject);
     if (!textLayoutObject)
         return true;
-    if (!textNode->textLayoutObjectIsNeeded(*textLayoutObject->style(), *textLayoutObject->parent()))
+    if (!textNode.textLayoutObjectIsNeeded(*textLayoutObject->style(), *textLayoutObject->parent()))
         return true;
     if (textLayoutObject->isTextFragment()) {
         FirstLetterPseudoElement* pseudo = toLayoutTextFragment(textLayoutObject)->firstLetterPseudoElement();
@@ -425,7 +425,7 @@ void Text::updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned length
     if (!inActiveDocument())
         return;
     LayoutText* textLayoutObject = layoutObject();
-    if (shouldUpdateLayoutByReattaching(this, textLayoutObject)) {
+    if (shouldUpdateLayoutByReattaching(*this, textLayoutObject)) {
         lazyReattachIfAttached();
         // FIXME: Editing should be updated so this is not neccesary.
         if (recalcStyleBehavior == DeprecatedRecalcStyleImmediatlelyForEditing)
