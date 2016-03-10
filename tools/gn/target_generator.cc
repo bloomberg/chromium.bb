@@ -12,6 +12,7 @@
 #include "tools/gn/bundle_data_target_generator.h"
 #include "tools/gn/config.h"
 #include "tools/gn/copy_target_generator.h"
+#include "tools/gn/create_bundle_target_generator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/functions.h"
@@ -91,6 +92,10 @@ void TargetGenerator::GenerateTarget(Scope* scope,
   if (output_type == functions::kBundleData) {
     BundleDataTargetGenerator generator(
         target.get(), scope, function_call, err);
+    generator.Run();
+  } else if (output_type == functions::kCreateBundle) {
+    CreateBundleTargetGenerator generator(target.get(), scope, function_call,
+                                          err);
     generator.Run();
   } else if (output_type == functions::kCopy) {
     CopyTargetGenerator generator(target.get(), scope, function_call, err);

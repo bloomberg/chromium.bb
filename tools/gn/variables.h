@@ -91,6 +91,22 @@ extern const char kAssertNoDeps[];
 extern const char kAssertNoDeps_HelpShort[];
 extern const char kAssertNoDeps_Help[];
 
+extern const char kBundleRootDir[];
+extern const char kBundleRootDir_HelpShort[];
+extern const char kBundleRootDir_Help[];
+
+extern const char kBundleResourcesDir[];
+extern const char kBundleResourcesDir_HelpShort[];
+extern const char kBundleResourcesDir_Help[];
+
+extern const char kBundleExecutableDir[];
+extern const char kBundleExecutableDir_HelpShort[];
+extern const char kBundleExecutableDir_Help[];
+
+extern const char kBundlePlugInsDir[];
+extern const char kBundlePlugInsDir_HelpShort[];
+extern const char kBundlePlugInsDir_Help[];
+
 extern const char kCflags[];
 extern const char kCflags_HelpShort[];
 extern const char* kCflags_Help;

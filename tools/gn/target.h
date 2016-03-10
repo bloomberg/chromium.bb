@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "tools/gn/action_values.h"
+#include "tools/gn/bundle_data.h"
 #include "tools/gn/config_values.h"
 #include "tools/gn/inherited_libraries.h"
 #include "tools/gn/item.h"
@@ -45,6 +46,7 @@ class Target : public Item {
     ACTION,
     ACTION_FOREACH,
     BUNDLE_DATA,
+    CREATE_BUNDLE,
   };
 
   enum DepsIterationType {
@@ -136,12 +138,18 @@ class Target : public Item {
   const std::vector<std::string>& data() const { return data_; }
   std::vector<std::string>& data() { return data_; }
 
+  // Information about the bundle. Only valid for CREATE_BUNDLE target after
+  // they have been resolved.
+  const BundleData& bundle_data() const { return bundle_data_; }
+  BundleData& bundle_data() { return bundle_data_; }
+
   // Returns true if targets depending on this one should have an order
   // dependency.
   bool hard_dep() const {
     return output_type_ == ACTION ||
            output_type_ == ACTION_FOREACH ||
-           output_type_ == COPY_FILES;
+           output_type_ == COPY_FILES ||
+           output_type_ == CREATE_BUNDLE;
   }
 
   // Returns the iterator range which can be used in range-based for loops
@@ -284,6 +292,7 @@ class Target : public Item {
   void PullDependentTargetLibsFrom(const Target* dep, bool is_public);
   void PullDependentTargetLibs();
   void PullRecursiveHardDeps();
+  void PullRecursiveBundleData();
 
   // Fills the link and dependency output files when a target is resolved.
   void FillOutputFiles();
@@ -312,6 +321,7 @@ class Target : public Item {
   bool testonly_;
   FileList inputs_;
   std::vector<std::string> data_;
+  BundleData bundle_data_;
 
   LabelTargetVector private_deps_;
   LabelTargetVector public_deps_;

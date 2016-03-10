@@ -247,13 +247,57 @@ Value RunActionForEach(Scope* scope,
 
 const char kBundleData[] = "bundle_data";
 const char kBundleData_HelpShort[] =
-    "bundle_data: Declare a target without output.";
+    "bundle_data: [iOS/OS X] Declare a target without output.";
 const char kBundleData_Help[] =
-    "bundle_data: Declare a target without output.\n"
+    "bundle_data: [iOS/OS X] Declare a target without output.\n"
     "\n"
     "  This target type allows to declare data that is required at runtime.\n"
     "  It is used to inform \"create_bundle\" targets of the files to copy\n"
-    "  into generated bundle, see \"gn help create_bundle\" for help.\n";
+    "  into generated bundle, see \"gn help create_bundle\" for help.\n"
+    "\n"
+    "  The target must define a list of files as \"sources\" and a single\n"
+    "  \"outputs\". If there are multiple files, source expansions must be\n"
+    "  used to express the output. The output must reference a file inside\n"
+    "  of {{bundle_root_dir}}.\n"
+    "\n"
+    "  This target can be used on all platforms though it is designed only to\n"
+    "  generate iOS/OS X bundle. In cross-platform projects, it is advised to\n"
+    "  put it behind iOS/Mac conditionals.\n"
+    "\n"
+    "  See \"gn help create_bundle\" for more information.\n"
+    "\n"
+    "Variables\n"
+    "\n"
+    "  sources*, outputs*, deps, data_deps, public_deps, visibility\n"
+    "  * = required\n"
+    "\n"
+    "Examples\n"
+    "\n"
+    "  bundle_data(\"icudata\") {\n"
+    "    sources = [ \"sources/data/in/icudtl.dat\" ]\n"
+    "    outputs = [ \"{{bundle_resources_dir}}/{{source_file_part}}\" ]\n"
+    "  }\n"
+    "\n"
+    "  bundle_data(\"base_unittests_bundle_data]\") {\n"
+    "    sources = [ \"test/data\" ]\n"
+    "    outputs = [\n"
+    "      \"{{bundle_resources_dir}}/{{source_root_relative_dir}}/\" +\n"
+    "          \"{{source_file_part}}\"\n"
+    "    ]\n"
+    "  }\n"
+    "\n"
+    "  bundle_data(\"material_typography_bundle_data\") {\n"
+    "    sources = [\n"
+    "      \"src/MaterialTypography.bundle/Roboto-Bold.ttf\",\n"
+    "      \"src/MaterialTypography.bundle/Roboto-Italic.ttf\",\n"
+    "      \"src/MaterialTypography.bundle/Roboto-Regular.ttf\",\n"
+    "      \"src/MaterialTypography.bundle/Roboto-Thin.ttf\",\n"
+    "    ]\n"
+    "    outputs = [\n"
+    "      \"{{bundle_resources_dir}}/MaterialTypography.bundle/\"\n"
+    "          \"{{source_file_part}}\"\n"
+    "    ]\n"
+    "  }\n";
 
 Value RunBundleData(Scope* scope,
                     const FunctionCallNode* function,
@@ -261,6 +305,109 @@ Value RunBundleData(Scope* scope,
                     BlockNode* block,
                     Err* err) {
   return ExecuteGenericTarget(functions::kBundleData, scope, function, args,
+                              block, err);
+}
+
+// create_bundle ---------------------------------------------------------------
+
+const char kCreateBundle[] = "create_bundle";
+const char kCreateBundle_HelpShort[] =
+    "create_bundle: [iOS/OS X] Build an OS X / iOS bundle.";
+const char kCreateBundle_Help[] =
+    "create_bundle: [iOS/OS X] Build an OS X / iOS bundle.\n"
+    "\n"
+    "  This target generates an iOS/OS X bundle (which is a directory with a\n"
+    "  well-know structure). This target does not define any sources, instead\n"
+    "  they are computed from all \"bundle_data\" target this one depends on\n"
+    "  transitively (the recursion stops at \"create_bundle\" targets).\n"
+    "\n"
+    "  The \"bundle_*_dir\" properties must be defined. They will be used for\n"
+    "  the expansion of {{bundle_*_dir}} rules in \"bundle_data\" outputs.\n"
+    "\n"
+    "  This target can be used on all platforms though it is designed only to\n"
+    "  generate iOS/OS X bundle. In cross-platform projects, it is advised to\n"
+    "  put it behind iOS/Mac conditionals.\n"
+    "\n"
+    "Variables\n"
+    "\n"
+    "  bundle_root_dir*, bundle_resources_dir*, bundle_executable_dir*,\n"
+    "  bundle_plugins_dir*, deps, data_deps, public_deps, visibility\n"
+    "  * = required\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  # Defines a template to create an application. On most platform, this\n"
+    "  # is just an alias for an \"executable\" target, but on iOS/OS X, it\n"
+    "  # builds an application bundle.\n"
+    "  template(\"app\") {\n"
+    "    if (!is_ios && !is_mac) {\n"
+    "      executable(target_name) {\n"
+    "        forward_variables_from(invoker, \"*\")\n"
+    "      }\n"
+    "    } else {\n"
+    "      app_name = target_name\n"
+    "      gen_path = target_gen_dir\n"
+    "\n"
+    "      action(\"${app_name}_generate_info_plist\") {\n"
+    "        script = [ \"//build/ios/ios_gen_plist.py\" ]\n"
+    "        sources = [ \"templates/Info.plist\" ]\n"
+    "        outputs = [ \"$gen_path/Info.plist\" ]\n"
+    "        args = rebase_path(sources, root_build_dir) +\n"
+    "               rebase_path(outputs, root_build_dir)\n"
+    "      }\n"
+    "\n"
+    "      bundle_data(\"${app_name}_bundle_info_plist\") {\n"
+    "        deps = [ \":${app_name}_generate_info_plist\" ]\n"
+    "        sources = [ \"$gen_path/Info.plist\" ]\n"
+    "        outputs = [ \"{{bundle_root_dir}}/Info.plist\" ]\n"
+    "      }\n"
+    "\n"
+    "      executable(\"${app_name}_generate_executable\") {\n"
+    "        forward_variables_from(invoker, \"*\", [\n"
+    "                                                \"output_name\",\n"
+    "                                                \"visibility\",\n"
+    "                                               ])\n"
+    "        output_name =\n"
+    "            rebase_path(\"$gen_path/$app_name\", root_build_dir)\n"
+    "      }\n"
+    "\n"
+    "      bundle_data(\"${app_name}_bundle_executable\") {\n"
+    "        deps = [ \":${app_name}_generate_executable\" ]\n"
+    "        sources = [ \"$gen_path/$app_name\" ]\n"
+    "        outputs = [ \"{{bundle_executable_dir}}/$app_name\" ]\n"
+    "      }\n"
+    "\n"
+    "      create_bundle(\"${app_name}.app\") {\n"
+    "        deps = [\n"
+    "          \":${app_name}_bundle_executable\",\n"
+    "          \":${app_name}_bundle_info_plist\",\n"
+    "        ]\n"
+    "        if (is_ios) {\n"
+    "          bundle_root_dir = \"${root_build_dir}/$target_name\"\n"
+    "          bundle_resources_dir = bundle_root_dir\n"
+    "          bundle_executable_dir = bundle_root_dir\n"
+    "          bundle_plugins_dir = bundle_root_dir + \"/Plugins\"\n"
+    "        } else {\n"
+    "          bundle_root_dir = \"${root_build_dir}/target_name/Contents\"\n"
+    "          bundle_resources_dir = bundle_root_dir + \"/Resources\"\n"
+    "          bundle_executable_dir = bundle_root_dir + \"/MacOS\"\n"
+    "          bundle_plugins_dir = bundle_root_dir + \"/Plugins\"\n"
+    "        }\n"
+    "      }\n"
+    "\n"
+    "      group(target_name) {\n"
+    "        forward_variables_from(invoker, [\"visibility\"])\n"
+    "        deps = [ \":${app_name}.app\" ]\n"
+    "      }\n"
+    "    }\n"
+    "  }\n";
+
+Value RunCreateBundle(Scope* scope,
+                      const FunctionCallNode* function,
+                      const std::vector<Value>& args,
+                      BlockNode* block,
+                      Err* err) {
+  return ExecuteGenericTarget(functions::kCreateBundle, scope, function, args,
                               block, err);
 }
 

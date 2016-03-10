@@ -1056,6 +1056,65 @@
 
 
 ```
+## **bundle_data**: [iOS/OS X] Declare a target without output.
+
+```
+  This target type allows to declare data that is required at runtime.
+  It is used to inform "create_bundle" targets of the files to copy
+  into generated bundle, see "gn help create_bundle" for help.
+
+  The target must define a list of files as "sources" and a single
+  "outputs". If there are multiple files, source expansions must be
+  used to express the output. The output must reference a file inside
+  of {{bundle_root_dir}}.
+
+  This target can be used on all platforms though it is designed only to
+  generate iOS/OS X bundle. In cross-platform projects, it is advised to
+  put it behind iOS/Mac conditionals.
+
+  See "gn help create_bundle" for more information.
+
+```
+
+### **Variables**
+
+```
+  sources*, outputs*, deps, data_deps, public_deps, visibility
+  * = required
+
+```
+
+### **Examples**
+
+```
+  bundle_data("icudata") {
+    sources = [ "sources/data/in/icudtl.dat" ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+  }
+
+  bundle_data("base_unittests_bundle_data]") {
+    sources = [ "test/data" ]
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
+          "{{source_file_part}}"
+    ]
+  }
+
+  bundle_data("material_typography_bundle_data") {
+    sources = [
+      "src/MaterialTypography.bundle/Roboto-Bold.ttf",
+      "src/MaterialTypography.bundle/Roboto-Italic.ttf",
+      "src/MaterialTypography.bundle/Roboto-Regular.ttf",
+      "src/MaterialTypography.bundle/Roboto-Thin.ttf",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/MaterialTypography.bundle/"
+          "{{source_file_part}}"
+    ]
+  }
+
+
+```
 ## **config**: Defines a configuration object.
 
 ```
@@ -1150,6 +1209,103 @@
     # corresponding file names in the gen dir. This will just copy each
     # file.
     outputs = [ "$target_gen_dir/{{source_file_part}}" ]
+  }
+
+
+```
+## **create_bundle**: [iOS/OS X] Build an OS X / iOS bundle.
+
+```
+  This target generates an iOS/OS X bundle (which is a directory with a
+  well-know structure). This target does not define any sources, instead
+  they are computed from all "bundle_data" target this one depends on
+  transitively (the recursion stops at "create_bundle" targets).
+
+  The "bundle_*_dir" properties must be defined. They will be used for
+  the expansion of {{bundle_*_dir}} rules in "bundle_data" outputs.
+
+  This target can be used on all platforms though it is designed only to
+  generate iOS/OS X bundle. In cross-platform projects, it is advised to
+  put it behind iOS/Mac conditionals.
+
+```
+
+### **Variables**
+
+```
+  bundle_root_dir*, bundle_resources_dir*, bundle_executable_dir*,
+  bundle_plugins_dir*, deps, data_deps, public_deps, visibility
+  * = required
+
+```
+
+### **Example**
+
+```
+  # Defines a template to create an application. On most platform, this
+  # is just an alias for an "executable" target, but on iOS/OS X, it
+  # builds an application bundle.
+  template("app") {
+    if (!is_ios && !is_mac) {
+      executable(target_name) {
+        forward_variables_from(invoker, "*")
+      }
+    } else {
+      app_name = target_name
+      gen_path = target_gen_dir
+
+      action("${app_name}_generate_info_plist") {
+        script = [ "//build/ios/ios_gen_plist.py" ]
+        sources = [ "templates/Info.plist" ]
+        outputs = [ "$gen_path/Info.plist" ]
+        args = rebase_path(sources, root_build_dir) +
+               rebase_path(outputs, root_build_dir)
+      }
+
+      bundle_data("${app_name}_bundle_info_plist") {
+        deps = [ ":${app_name}_generate_info_plist" ]
+        sources = [ "$gen_path/Info.plist" ]
+        outputs = [ "{{bundle_root_dir}}/Info.plist" ]
+      }
+
+      executable("${app_name}_generate_executable") {
+        forward_variables_from(invoker, "*", [
+                                                "output_name",
+                                                "visibility",
+                                               ])
+        output_name =
+            rebase_path("$gen_path/$app_name", root_build_dir)
+      }
+
+      bundle_data("${app_name}_bundle_executable") {
+        deps = [ ":${app_name}_generate_executable" ]
+        sources = [ "$gen_path/$app_name" ]
+        outputs = [ "{{bundle_executable_dir}}/$app_name" ]
+      }
+
+      create_bundle("${app_name}.app") {
+        deps = [
+          ":${app_name}_bundle_executable",
+          ":${app_name}_bundle_info_plist",
+        ]
+        if (is_ios) {
+          bundle_root_dir = "${root_build_dir}/$target_name"
+          bundle_resources_dir = bundle_root_dir
+          bundle_executable_dir = bundle_root_dir
+          bundle_plugins_dir = bundle_root_dir + "/Plugins"
+        } else {
+          bundle_root_dir = "${root_build_dir}/target_name/Contents"
+          bundle_resources_dir = bundle_root_dir + "/Resources"
+          bundle_executable_dir = bundle_root_dir + "/MacOS"
+          bundle_plugins_dir = bundle_root_dir + "/Plugins"
+        }
+      }
+
+      group(target_name) {
+        forward_variables_from(invoker, ["visibility"])
+        deps = [ ":${app_name}.app" ]
+      }
+    }
   }
 
 
@@ -2444,6 +2600,10 @@
       "stamp": Tool for creating stamp files
       "copy": Tool to copy files.
 
+    Platform specific tools:
+      "copy_bundle_data": [iOS, OS X] Tool to copy files in a bundle.
+      "compile_xcassets": [iOS, OS X] Tool to compile asset catalogs.
+
 ```
 
 ### **Tool variables**
@@ -2758,6 +2918,18 @@
   The copy tool allows the common compiler/linker substitutions, plus
   {{source}} which is the source of the copy. The stamp tool allows
   only the common tool substitutions.
+
+  The copy_bundle_data and compile_xcassets tools only allows the common
+  tool substitutions. Both tools are required to create iOS/OS X bundles
+  and need only be defined on those platforms.
+
+  The copy_bundle_data tool will be called with one source and needs to
+  copy (optionally optimizing the data representation) to its output. It
+  may be called with a directory as input and it needs to be recursively
+  copied.
+
+  The compile_xcassets tool will be called with one or more source (each
+  an asset catalog) that needs to be compiled to a single output.
 
 ```
 
@@ -3449,6 +3621,74 @@
 
 
 ```
+## **bundle_executable_dir**: Expansion of {{bundle_executable_dir}} in create_bundle.
+
+```
+  A string corresponding to a path in $root_build_dir.
+
+  This string is used by the "create_bundle" target to expand the
+  {{bundle_executable_dir}} of the "bundle_data" target it depends on.
+  This must correspond to a path under "bundle_root_dir".
+
+  See "gn help bundle_root_dir" for examples.
+
+
+```
+## **bundle_plugins_dir**: Expansion of {{bundle_plugins_dir}} in create_bundle.
+
+```
+  A string corresponding to a path in $root_build_dir.
+
+  This string is used by the "create_bundle" target to expand the
+  {{bundle_plugins_dir}} of the "bundle_data" target it depends on.
+  This must correspond to a path under "bundle_root_dir".
+
+  See "gn help bundle_root_dir" for examples.
+
+
+```
+## **bundle_resources_dir**: Expansion of {{bundle_resources_dir}} in create_bundle.
+
+```
+  A string corresponding to a path in $root_build_dir.
+
+  This string is used by the "create_bundle" target to expand the
+  {{bundle_resources_dir}} of the "bundle_data" target it depends on.
+  This must correspond to a path under "bundle_root_dir".
+
+  See "gn help bundle_root_dir" for examples.
+
+
+```
+## **bundle_root_dir**: Expansion of {{bundle_root_dir}} in create_bundle.
+
+```
+  A string corresponding to a path in root_build_dir.
+
+  This string is used by the "create_bundle" target to expand the
+  {{bundle_root_dir}} of the "bundle_data" target it depends on.
+  This must correspond to a path under root_build_dir.
+
+```
+
+### **Example**
+
+```
+  bundle_data("info_plist") {
+    sources = [ "Info.plist" ]
+    outputs = [ "{{bundle_root_dir}}/Info.plist" ]
+  }
+
+  create_bundle("doom_melon.app") {
+    deps = [ ":info_plist" ]
+    bundle_root_dir = root_build_dir + "/doom_melon.app/Contents"
+    bundle_resources_dir = bundle_root_dir + "/Resources"
+    bundle_executable_dir = bundle_root_dir + "/MacOS"
+    bundle_plugins_dir = bundle_root_dir + "/PlugIns"
+  }
+
+
+```
 ## **cflags***: Flags passed to the C compiler.
 
 ```
@@ -4046,7 +4286,7 @@
 ```
   For action and action_foreach targets, inputs should be the inputs to
   script that don't vary. These should be all .py files that the script
-  uses via imports (the main script itself will be an implcit dependency
+  uses via imports (the main script itself will be an implicit dependency
   of the action so need not be listed).
 
   For action targets, inputs and sources are treated the same, but from
@@ -5254,7 +5494,7 @@
   {{source_name_part}}
       The filename part of the source file with no directory or
       extension. This will generally be used for specifying a
-      transformation from a soruce file to a destination file with the
+      transformation from a source file to a destination file with the
       same name but different extension.
         "//foo/bar/baz.txt" => "baz"
 

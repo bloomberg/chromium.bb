@@ -138,6 +138,18 @@ void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   SetCommandForTool("cp {{source}} {{output}}", copy_tool.get());
   toolchain->SetTool(Toolchain::TYPE_COPY, std::move(copy_tool));
 
+  // COPY_BUNDLE_DATA
+  scoped_ptr<Tool> copy_bundle_data_tool(new Tool);
+  SetCommandForTool("cp {{source}} {{output}}", copy_bundle_data_tool.get());
+  toolchain->SetTool(Toolchain::TYPE_COPY_BUNDLE_DATA,
+                     std::move(copy_bundle_data_tool));
+
+  // COMPILE_XCASSETS
+  scoped_ptr<Tool> compile_xcassets_tool(new Tool);
+  SetCommandForTool("touch {{output}}", compile_xcassets_tool.get());
+  toolchain->SetTool(Toolchain::TYPE_COMPILE_XCASSETS,
+                     std::move(compile_xcassets_tool));
+
   toolchain->ToolchainSetupComplete();
 }
 

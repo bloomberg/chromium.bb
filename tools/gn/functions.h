@@ -89,6 +89,15 @@ Value RunBundleData(Scope* scope,
                     BlockNode* block,
                     Err* err);
 
+extern const char kCreateBundle[];
+extern const char kCreateBundle_HelpShort[];
+extern const char kCreateBundle_Help[];
+Value RunCreateBundle(Scope* scope,
+                      const FunctionCallNode* function,
+                      const std::vector<Value>& args,
+                      BlockNode* block,
+                      Err* err);
+
 extern const char kConfig[];
 extern const char kConfig_HelpShort[];
 extern const char kConfig_Help[];

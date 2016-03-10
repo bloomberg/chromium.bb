@@ -208,6 +208,11 @@ bool IsValidCopySubstitution(SubstitutionType type) {
          type == SUBSTITUTION_SOURCE;
 }
 
+bool IsValidCompileXCassetsSubstitution(SubstitutionType type) {
+  return IsValidToolSubstitution(type) ||
+         type == SUBSTITUTION_LINKER_INPUTS;
+}
+
 bool EnsureValidSourcesSubstitutions(
     const std::vector<SubstitutionType>& types,
     const ParseNode* origin,

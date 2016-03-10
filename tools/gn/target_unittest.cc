@@ -763,3 +763,66 @@ TEST(Target, AssertNoDeps) {
   a2.assert_no_deps().push_back(disallow_a);
   ASSERT_TRUE(a2.OnResolved(&err));
 }
+
+TEST(Target, PullRecursiveBundleData) {
+  TestWithScope setup;
+  Err err;
+
+  // We have the following dependency graph:
+  // A (create_bundle) -> B (bundle_data)
+  //                  \-> C (create_bundle) -> D (bundle_data)
+  //                  \-> E (group) -> F (bundle_data)
+  //                               \-> B (bundle_data)
+  TestTarget a(setup, "//foo:a", Target::CREATE_BUNDLE);
+  TestTarget b(setup, "//foo:b", Target::BUNDLE_DATA);
+  TestTarget c(setup, "//foo:c", Target::CREATE_BUNDLE);
+  TestTarget d(setup, "//foo:d", Target::BUNDLE_DATA);
+  TestTarget e(setup, "//foo:e", Target::GROUP);
+  TestTarget f(setup, "//foo:f", Target::BUNDLE_DATA);
+  a.public_deps().push_back(LabelTargetPair(&b));
+  a.public_deps().push_back(LabelTargetPair(&c));
+  a.public_deps().push_back(LabelTargetPair(&e));
+  c.public_deps().push_back(LabelTargetPair(&d));
+  e.public_deps().push_back(LabelTargetPair(&f));
+  e.public_deps().push_back(LabelTargetPair(&b));
+
+  b.sources().push_back(SourceFile("//foo/b1.txt"));
+  b.sources().push_back(SourceFile("//foo/b2.txt"));
+  b.action_values().outputs() = SubstitutionList::MakeForTest(
+      "{{bundle_resources_dir}}/{{source_file_part}}");
+  ASSERT_TRUE(b.OnResolved(&err));
+
+  d.sources().push_back(SourceFile("//foo/d.txt"));
+  d.action_values().outputs() = SubstitutionList::MakeForTest(
+      "{{bundle_resources_dir}}/{{source_file_part}}");
+  ASSERT_TRUE(d.OnResolved(&err));
+
+  f.sources().push_back(SourceFile("//foo/f1.txt"));
+  f.sources().push_back(SourceFile("//foo/f2.txt"));
+  f.sources().push_back(SourceFile("//foo/f3.txt"));
+  f.sources().push_back(
+      SourceFile("//foo/Foo.xcassets/foo.imageset/Contents.json"));
+  f.sources().push_back(
+      SourceFile("//foo/Foo.xcassets/foo.imageset/FooEmpty-29.png"));
+  f.sources().push_back(
+      SourceFile("//foo/Foo.xcassets/foo.imageset/FooEmpty-29@2x.png"));
+  f.sources().push_back(
+      SourceFile("//foo/Foo.xcassets/foo.imageset/FooEmpty-29@3x.png"));
+  f.action_values().outputs() = SubstitutionList::MakeForTest(
+      "{{bundle_resources_dir}}/{{source_file_part}}");
+  ASSERT_TRUE(f.OnResolved(&err));
+
+  ASSERT_TRUE(e.OnResolved(&err));
+  ASSERT_TRUE(c.OnResolved(&err));
+  ASSERT_TRUE(a.OnResolved(&err));
+
+  // A gets its data from B and F.
+  ASSERT_EQ(a.bundle_data().file_rules().size(), 2u);
+  ASSERT_EQ(a.bundle_data().file_rules()[0].sources().size(), 2u);
+  ASSERT_EQ(a.bundle_data().file_rules()[1].sources().size(), 3u);
+  ASSERT_EQ(a.bundle_data().asset_catalog_sources().size(), 4u);
+
+  // C gets its data from D.
+  ASSERT_EQ(c.bundle_data().file_rules().size(), 1u);
+  ASSERT_EQ(c.bundle_data().file_rules()[0].sources().size(), 1u);
+}

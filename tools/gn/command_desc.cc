@@ -327,6 +327,11 @@ void PrintOutputs(const Target* target, bool display_header) {
     for (const auto& elem : target->action_values().outputs().list()) {
       OutputString("  " + elem.AsString() + "\n");
     }
+  } else if (target->output_type() == Target::CREATE_BUNDLE) {
+    std::vector<SourceFile> output_files;
+    target->bundle_data().GetOutputsAsSourceFiles(target->settings(),
+                                                  &output_files);
+    PrintFileList(output_files, "", true, false);
   } else {
     const SubstitutionList& outputs = target->action_values().outputs();
     if (!outputs.required_types().empty()) {
@@ -685,7 +690,8 @@ int RunDesc(const std::vector<std::string>& args) {
     target->output_type() != Target::COPY_FILES &&
     target->output_type() != Target::ACTION &&
     target->output_type() != Target::ACTION_FOREACH &&
-    target->output_type() != Target::BUNDLE_DATA;
+    target->output_type() != Target::BUNDLE_DATA &&
+    target->output_type() != Target::CREATE_BUNDLE;
 
   // Generally we only want to display toolchains on labels when the toolchain
   // is different than the default one for this target (which we always print
@@ -739,7 +745,8 @@ int RunDesc(const std::vector<std::string>& args) {
 
   if (target->output_type() == Target::ACTION ||
       target->output_type() == Target::ACTION_FOREACH ||
-      target->output_type() == Target::COPY_FILES) {
+      target->output_type() == Target::COPY_FILES ||
+      target->output_type() == Target::CREATE_BUNDLE) {
     PrintOutputs(target, true);
   }
 

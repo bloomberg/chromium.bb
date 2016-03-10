@@ -434,6 +434,81 @@ const char kAssertNoDeps_Help[] =
     "    ]\n"
     "  }\n";
 
+const char kBundleRootDir[] = "bundle_root_dir";
+const char kBundleRootDir_HelpShort[] =
+    "bundle_root_dir: Expansion of {{bundle_root_dir}} in create_bundle.";
+const char kBundleRootDir_Help[] =
+    "bundle_root_dir: Expansion of {{bundle_root_dir}} in create_bundle.\n"
+    "\n"
+    "  A string corresponding to a path in root_build_dir.\n"
+    "\n"
+    "  This string is used by the \"create_bundle\" target to expand the\n"
+    "  {{bundle_root_dir}} of the \"bundle_data\" target it depends on.\n"
+    "  This must correspond to a path under root_build_dir.\n"
+    "\n"
+    "Example\n"
+    "\n"
+    "  bundle_data(\"info_plist\") {\n"
+    "    sources = [ \"Info.plist\" ]\n"
+    "    outputs = [ \"{{bundle_root_dir}}/Info.plist\" ]\n"
+    "  }\n"
+    "\n"
+    "  create_bundle(\"doom_melon.app\") {\n"
+    "    deps = [ \":info_plist\" ]\n"
+    "    bundle_root_dir = root_build_dir + \"/doom_melon.app/Contents\"\n"
+    "    bundle_resources_dir = bundle_root_dir + \"/Resources\"\n"
+    "    bundle_executable_dir = bundle_root_dir + \"/MacOS\"\n"
+    "    bundle_plugins_dir = bundle_root_dir + \"/PlugIns\"\n"
+    "  }\n";
+
+const char kBundleResourcesDir[] = "bundle_resources_dir";
+const char kBundleResourcesDir_HelpShort[] =
+    "bundle_resources_dir: "
+        "Expansion of {{bundle_resources_dir}} in create_bundle.";
+const char kBundleResourcesDir_Help[] =
+    "bundle_resources_dir: "
+        "Expansion of {{bundle_resources_dir}} in create_bundle.\n"
+    "\n"
+    "  A string corresponding to a path in $root_build_dir.\n"
+    "\n"
+    "  This string is used by the \"create_bundle\" target to expand the\n"
+    "  {{bundle_resources_dir}} of the \"bundle_data\" target it depends on.\n"
+    "  This must correspond to a path under \"bundle_root_dir\".\n"
+    "\n"
+    "  See \"gn help bundle_root_dir\" for examples.\n";
+
+const char kBundleExecutableDir[] = "bundle_executable_dir";
+const char kBundleExecutableDir_HelpShort[] =
+    "bundle_executable_dir: "
+        "Expansion of {{bundle_executable_dir}} in create_bundle.";
+const char kBundleExecutableDir_Help[] =
+    "bundle_executable_dir: "
+        "Expansion of {{bundle_executable_dir}} in create_bundle.\n"
+    "\n"
+    "  A string corresponding to a path in $root_build_dir.\n"
+    "\n"
+    "  This string is used by the \"create_bundle\" target to expand the\n"
+    "  {{bundle_executable_dir}} of the \"bundle_data\" target it depends on.\n"
+    "  This must correspond to a path under \"bundle_root_dir\".\n"
+    "\n"
+    "  See \"gn help bundle_root_dir\" for examples.\n";
+
+const char kBundlePlugInsDir[] = "bundle_plugins_dir";
+const char kBundlePlugInsDir_HelpShort[] =
+    "bundle_plugins_dir: "
+        "Expansion of {{bundle_plugins_dir}} in create_bundle.";
+const char kBundlePlugInsDir_Help[] =
+    "bundle_plugins_dir: "
+        "Expansion of {{bundle_plugins_dir}} in create_bundle.\n"
+    "\n"
+    "  A string corresponding to a path in $root_build_dir.\n"
+    "\n"
+    "  This string is used by the \"create_bundle\" target to expand the\n"
+    "  {{bundle_plugins_dir}} of the \"bundle_data\" target it depends on.\n"
+    "  This must correspond to a path under \"bundle_root_dir\".\n"
+    "\n"
+    "  See \"gn help bundle_root_dir\" for examples.\n";
+
 const char kCflags[] = "cflags";
 const char kCflags_HelpShort[] =
     "cflags: [string list] Flags passed to all C compiler variants.";
@@ -1457,6 +1532,10 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Args)
     INSERT_VARIABLE(Asmflags)
     INSERT_VARIABLE(AssertNoDeps)
+    INSERT_VARIABLE(BundleRootDir)
+    INSERT_VARIABLE(BundleResourcesDir)
+    INSERT_VARIABLE(BundleExecutableDir)
+    INSERT_VARIABLE(BundlePlugInsDir)
     INSERT_VARIABLE(Cflags)
     INSERT_VARIABLE(CflagsC)
     INSERT_VARIABLE(CflagsCC)

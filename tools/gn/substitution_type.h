@@ -32,7 +32,7 @@ enum SubstitutionType {
   SUBSTITUTION_SOURCE_OUT_DIR,  // {{source_out_dir}}
 
   // Valid for all compiler and linker tools. These depend on the target and
-  // no not vary on a per-file basis.
+  // do not vary on a per-file basis.
   SUBSTITUTION_LABEL,  // {{label}}
   SUBSTITUTION_LABEL_NAME,  // {{label_name}}
   SUBSTITUTION_ROOT_GEN_DIR,  // {{root_gen_dir}}
@@ -117,6 +117,7 @@ bool IsValidCompilerOutputsSubstitution(SubstitutionType type);
 bool IsValidLinkerSubstitution(SubstitutionType type);
 bool IsValidLinkerOutputsSubstitution(SubstitutionType type);
 bool IsValidCopySubstitution(SubstitutionType type);
+bool IsValidCompileXCassetsSubstitution(SubstitutionType type);
 
 // Like the "IsValid..." version above but checks a list of types and sets a
 // an error blaming the given source if the test fails.
