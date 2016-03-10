@@ -141,6 +141,8 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
       osk_state_(OSK_ALLOWED),
+      last_focused_node_(nullptr),
+      last_focused_manager_(nullptr),
       ax_tree_id_(AXTreeIDRegistry::kNoAXTreeID),
       parent_node_id_from_parent_tree_(0) {
   tree_->SetDelegate(this);
