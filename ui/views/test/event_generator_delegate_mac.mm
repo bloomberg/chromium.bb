@@ -363,7 +363,7 @@ void EventGeneratorDelegateMac::OnKeyEvent(ui::KeyEvent* event) {
   NSUInteger modifiers = EventFlagsToModifiers(event->flags());
   NSEvent* ns_event = cocoa_test_event_utils::SynthesizeKeyEvent(
       window_, event->type() == ui::ET_KEY_PRESSED, event->key_code(),
-      modifiers);
+      modifiers, event->is_char() ? event->GetDomKey() : ui::DomKey::NONE);
   if (owner_->targeting_application()) {
     [NSApp sendEvent:ns_event];
     return;

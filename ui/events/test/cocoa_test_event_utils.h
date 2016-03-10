@@ -9,6 +9,7 @@
 
 #import <objc/objc-class.h>
 
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace cocoa_test_event_utils {
@@ -67,7 +68,8 @@ NSTimeInterval TimeIntervalSinceSystemStartup();
 NSEvent* SynthesizeKeyEvent(NSWindow* window,
                             bool keyDown,
                             ui::KeyboardCode keycode,
-                            NSUInteger flags);
+                            NSUInteger flags,
+                            ui::DomKey dom_key = ui::DomKey::NONE);
 
 }  // namespace cocoa_test_event_utils
 
