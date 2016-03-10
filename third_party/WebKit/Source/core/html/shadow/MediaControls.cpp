@@ -34,6 +34,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TextTrackContainer.h"
 #include "core/layout/LayoutTheme.h"
+#include "platform/EventDispatchForbiddenScope.h"
 
 namespace blink {
 
@@ -231,13 +232,14 @@ void MediaControls::initializeControls()
 
 void MediaControls::reset()
 {
+    EventDispatchForbiddenScope::AllowUserAgentEvents allowEventsInShadow;
     const bool useNewUi = RuntimeEnabledFeatures::newMediaPlaybackUiEnabled();
     BatchedControlUpdate batch(this);
 
     m_allowHiddenVolumeControls = useNewUi;
 
     const double duration = mediaElement().duration();
-    m_durationDisplay->setInnerText(LayoutTheme::theme().formatMediaControlsTime(duration), ASSERT_NO_EXCEPTION);
+    m_durationDisplay->setTextContent(LayoutTheme::theme().formatMediaControlsTime(duration));
     m_durationDisplay->setCurrentValue(duration);
 
     if (useNewUi) {

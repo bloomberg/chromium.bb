@@ -99,7 +99,7 @@ void BaseChooserOnlyDateAndTimeInputType::updateView()
         // Need to put something to keep text baseline.
         displayValue = " ";
     }
-    toHTMLElement(node)->setInnerText(displayValue, ASSERT_NO_EXCEPTION);
+    toHTMLElement(node)->setTextContent(displayValue);
 }
 
 void BaseChooserOnlyDateAndTimeInputType::setValue(const String& value, bool valueChanged, TextFieldEventBehavior eventBehavior)
