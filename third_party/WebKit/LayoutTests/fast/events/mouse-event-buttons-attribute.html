@@ -14,9 +14,9 @@
   top: 100px;
 }
 </style>
-
 <div id="target"></div>
 <img id="drag" src="resources/greenbox30.png" draggable>
+
 <script src="../../resources/js-test.js"></script>
 <script>
 
@@ -24,8 +24,6 @@ const L = 'leftButton';
 const R = 'rightButton';
 const M = 'middleButton';
 
-var targetDiv = document.getElementById('target');
-var dragImg = document.getElementById('drag');
 var seqNo = 0;
 var testSet = [
   { initialButtons: [],        action: doubleClickAction },
@@ -125,6 +123,8 @@ function printTestInfo(testItem)
 }
 
 function init() {
+  var targetDiv = document.getElementById('target');
+  var dragImg = document.getElementById('drag');
   var eventList = ['dblclick', 'click', 'mousedown', 'mouseup', 'mousemove', 'mouseenter', 'mouseleave', 'mouseover', 'mouseout', 'mousewheel', 'dragstart', 'dragend', 'dragenter', 'dragleave', 'dragover', 'drag', 'contextmenu'];
   eventList.forEach(function(eventName) {
     targetDiv.addEventListener(eventName, function(event) {
@@ -136,28 +136,29 @@ function init() {
   });
 }
 
-function runTests() {
-  for (var i = 0; i < testSet.length; i++) {
-    printTestInfo(testSet[i]);
+window.onload=function() {
+  init();
+  if(window.eventSender) {
+    for (var i = 0; i < testSet.length; i++) {
+      printTestInfo(testSet[i]);
 
-    // Reset the state for the new test
-    seqNo = 0;
-    eventSender.setMouseButtonState(-1, testSet[i].initialButtons);
-    internals.settings.setShowContextMenuOnMouseUp(testSet[i].showContextMenuOnMouseUp);
+      // Reset the state for the new test
+      seqNo = 0;
+      eventSender.setMouseButtonState(-1, testSet[i].initialButtons);
+      internals.settings.setShowContextMenuOnMouseUp(testSet[i].showContextMenuOnMouseUp);
 
-    testSet[i].action();
+      testSet[i].action();
 
-    // Reset the mouse position
-    eventSender.mouseMoveTo(-1, -1);
+      // Reset the mouse position
+      eventSender.mouseMoveTo(-1, -1);
 
-    debug('');
+      debug('');
+    }
   }
 }
 
-init();
-if (window.eventSender)
-  runTests();
-else
+if (!window.eventSender) {
   debug("This test requires eventSender");
+}
 
 </script>
