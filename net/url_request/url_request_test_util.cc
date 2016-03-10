@@ -55,6 +55,7 @@ TestURLRequestContext::TestURLRequestContext()
     : initialized_(false),
       client_socket_factory_(nullptr),
       proxy_delegate_(nullptr),
+      ct_policy_enforcer_(nullptr),
       context_storage_(this) {
   Init();
 }
