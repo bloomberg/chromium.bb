@@ -619,7 +619,7 @@ protected:
     IntRect adjustScrollbarRectForResizer(const IntRect&, Scrollbar&);
 
     // Called to update the scrollbars to accurately reflect the state of the view.
-    void updateScrollbars(const DoubleSize& desiredOffset);
+    void updateScrollbars();
 
     class InUpdateScrollbarsScope {
         STACK_ALLOCATED();

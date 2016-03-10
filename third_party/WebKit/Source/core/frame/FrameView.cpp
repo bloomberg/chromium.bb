@@ -398,7 +398,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
 
     Widget::setFrameRect(newRect);
 
-    updateScrollbars(scrollOffsetDouble());
+    updateScrollbars();
     frameRectsChanged();
 
     updateScrollableAreaSet();
@@ -506,7 +506,7 @@ void FrameView::setContentsSize(const IntSize& size)
         return;
 
     m_contentsSize = size;
-    updateScrollbars(scrollOffsetDouble());
+    updateScrollbars();
     ScrollableArea::contentsResized();
 
     Page* page = frame().page();
@@ -537,7 +537,7 @@ void FrameView::adjustViewSize()
         // updating scrollbars twice by skipping the call here when the content
         // size does not change.
         if (!m_frame->document()->printing() && size == contentsSize())
-            updateScrollbars(scrollOffsetDouble());
+            updateScrollbars();
     }
 
     setContentsSize(size);
@@ -1009,7 +1009,7 @@ void FrameView::layout()
             }
 
             if (needsScrollbarReconstruction() || scrollOriginChanged())
-                updateScrollbars(scrollOffsetDouble());
+                updateScrollbars();
 
             LayoutSize oldSize = m_size;
 
@@ -2257,7 +2257,7 @@ void FrameView::scrollbarStyleChanged()
         return;
     adjustScrollbarOpacity();
     contentsResized();
-    updateScrollbars(scrollOffsetDouble());
+    updateScrollbars();
     positionScrollbarLayers();
 }
 
@@ -3160,7 +3160,7 @@ void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode ve
     if (!needsUpdate)
         return;
 
-    updateScrollbars(scrollOffsetDouble());
+    updateScrollbars();
 
     if (!layerForScrolling())
         return;
@@ -3270,7 +3270,7 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
 
 void FrameView::windowResizerRectChanged()
 {
-    updateScrollbars(scrollOffsetDouble());
+    updateScrollbars();
 }
 
 bool FrameView::hasOverlayScrollbars() const
@@ -3441,7 +3441,7 @@ bool FrameView::shouldIgnoreOverflowHidden() const
     return m_frame->settings()->ignoreMainFrameOverflowHiddenQuirk() && m_frame->isMainFrame();
 }
 
-void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
+void FrameView::updateScrollbars()
 {
     if (m_frame->settings() && m_frame->settings()->rootLayerScrolls())
         return;
@@ -3450,7 +3450,7 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
     if (visualViewportSuppliesScrollbars()) {
         setHasHorizontalScrollbar(false);
         setHasVerticalScrollbar(false);
-        setScrollOffsetFromUpdateScrollbars(desiredOffset);
+        setScrollOffsetFromUpdateScrollbars(scrollOffsetDouble());
         return;
     }
 
@@ -3482,7 +3482,7 @@ void FrameView::updateScrollbars(const DoubleSize& desiredOffset)
         updateScrollCorner();
     }
 
-    setScrollOffsetFromUpdateScrollbars(desiredOffset);
+    setScrollOffsetFromUpdateScrollbars(scrollOffsetDouble());
 }
 
 void FrameView::setScrollOffsetFromUpdateScrollbars(const DoubleSize& offset)
