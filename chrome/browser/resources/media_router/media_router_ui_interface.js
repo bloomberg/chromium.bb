@@ -284,6 +284,15 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Reports the outcome of a create route response.
+   *
+   * @param {number} outcome
+   */
+  function reportRouteCreationOutcome(outcome) {
+    chrome.send('reportRouteCreationOutcome', [outcome]);
+  }
+
+  /**
    * Reports the cast mode that the user selected.
    *
    * @param {number} castModeType
@@ -353,8 +362,9 @@ cr.define('media_router.browserApi', function() {
     reportInitialAction: reportInitialAction,
     reportInitialState: reportInitialState,
     reportNavigateToView: reportNavigateToView,
-    reportSelectedCastMode: reportSelectedCastMode,
     reportRouteCreation: reportRouteCreation,
+    reportRouteCreationOutcome: reportRouteCreationOutcome,
+    reportSelectedCastMode: reportSelectedCastMode,
     reportSinkCount: reportSinkCount,
     reportTimeToClickSink: reportTimeToClickSink,
     reportTimeToInitialActionClose: reportTimeToInitialActionClose,

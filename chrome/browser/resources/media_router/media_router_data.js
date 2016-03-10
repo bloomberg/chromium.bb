@@ -30,6 +30,17 @@ media_router.CastModeType = {
 media_router.KEYCODE_ESC = 27;
 
 /**
+ * This corresponds to the C++ MediaRouterMetrics
+ * MediaRouterRouteCreationOutcome.
+ * @enum {number}
+ */
+media_router.MediaRouterRouteCreationOutcome = {
+  SUCCESS: 0,
+  FAILURE_NO_ROUTE: 1,
+  FAILURE_INVALID_SINK: 2,
+};
+
+/**
  * This corresponds to the C++ MediaRouterMetrics MediaRouterUserAction.
  * @enum {number}
  */

@@ -1236,14 +1236,26 @@ Polymer({
     // The provider will handle sending an issue for a failed route request.
     if (!route) {
       this.resetRouteCreationProperties_(false);
+      this.fire('report-resolved-route', {
+        outcome: media_router.MediaRouterRouteCreationOutcome.FAILURE_NO_ROUTE
+      });
       return;
     }
 
     // Check that |sinkId| exists and corresponds to |currentLaunchingSinkId_|.
-    // TODO(apacible): Add metrics for when |route| is resolved for an invalid
-    // |sinkId|. See http://crbug.com/584993
-    if (!this.sinkMap_[sinkId] || this.currentLaunchingSinkId_ != sinkId)
+    if (!this.sinkMap_[sinkId] || this.currentLaunchingSinkId_ != sinkId) {
+      this.fire('report-resolved-route', {
+        outcome:
+            media_router.MediaRouterRouteCreationOutcome.FAILURE_INVALID_SINK
+      });
       return;
+    }
+
+    // Regardless of whether the route is for display, it was resolved
+    // successfully.
+    this.fire('report-resolved-route', {
+      outcome: media_router.MediaRouterRouteCreationOutcome.SUCCESS
+    });
 
     if (isForDisplay) {
       this.showRouteDetails_(route);

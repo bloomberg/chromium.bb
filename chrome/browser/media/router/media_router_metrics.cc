@@ -53,4 +53,15 @@ void MediaRouterMetrics::RecordMediaRouterInitialUserAction(
       static_cast<int>(MediaRouterUserAction::TOTAL_COUNT));
 }
 
+// static
+void MediaRouterMetrics::RecordRouteCreationOutcome(
+    MediaRouterRouteCreationOutcome outcome) {
+  DCHECK_NE(static_cast<int>(outcome),
+            static_cast<int>(
+                MediaRouterRouteCreationOutcome::TOTAL_COUNT));
+  UMA_HISTOGRAM_ENUMERATION(
+    "MediaRouter.Route.CreationOutcome", static_cast<int>(outcome),
+    static_cast<int>(MediaRouterRouteCreationOutcome::TOTAL_COUNT));
+}
+
 }  // namespace media_router

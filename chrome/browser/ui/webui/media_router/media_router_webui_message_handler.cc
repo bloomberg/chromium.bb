@@ -52,6 +52,7 @@ const char kReportClickedSinkIndex[] = "reportClickedSinkIndex";
 const char kReportInitialAction[] = "reportInitialAction";
 const char kReportInitialState[] = "reportInitialState";
 const char kReportNavigateToView[] = "reportNavigateToView";
+const char kReportRouteCreationOutcome[] = "reportRouteCreationOutcome";
 const char kReportRouteCreation[] = "reportRouteCreation";
 const char kReportSelectedCastMode[] = "reportSelectedCastMode";
 const char kReportSinkCount[] = "reportSinkCount";
@@ -344,6 +345,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kReportRouteCreation,
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportRouteCreation,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kReportRouteCreationOutcome,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportRouteCreationOutcome,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportSelectedCastMode,
@@ -652,6 +657,19 @@ void MediaRouterWebUIMessageHandler::OnReportRouteCreation(
 
   UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StartLocalSessionSuccessful",
                         route_created_successfully);
+}
+
+void MediaRouterWebUIMessageHandler::OnReportRouteCreationOutcome(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnReportRouteCreationOutcome";
+  int outcome;
+  if (!args->GetInteger(0, &outcome)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+
+  media_router::MediaRouterMetrics::RecordRouteCreationOutcome(
+      static_cast<MediaRouterRouteCreationOutcome>(outcome));
 }
 
 void MediaRouterWebUIMessageHandler::OnReportSelectedCastMode(

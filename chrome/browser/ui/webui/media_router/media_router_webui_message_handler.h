@@ -74,6 +74,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnReportInitialState(const base::ListValue* args);
   void OnReportNavigateToView(const base::ListValue* args);
   void OnReportRouteCreation(const base::ListValue* args);
+  void OnReportRouteCreationOutcome(const base::ListValue* args);
   void OnReportSelectedCastMode(const base::ListValue* args);
   void OnReportSinkCount(const base::ListValue* args);
   void OnReportTimeToClickSink(const base::ListValue* args);

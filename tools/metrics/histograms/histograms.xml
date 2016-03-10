@@ -20901,6 +20901,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MediaRouter.Route.CreationOutcome"
+    units="MediaRouterCreateRouteOutcome">
+  <owner>apacible@chromium.org</owner>
+  <summary>
+    The number of times a Media Router create route response succeeds or fails.
+    This breaks down the different failure types in to separate buckets.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Ui.Action.CloseLatency" units="ms">
   <owner>apacible@chromium.org</owner>
   <summary>
@@ -73963,6 +73972,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="ConnectionError"/>
   <int value="13" label="RegisterMediaRouteProvider"/>
   <int value="14" label="ConnectRouteByRouteId"/>
+</enum>
+
+<enum name="MediaRouterCreateRouteOutcome" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure No Route"/>
+  <int value="2" label="Failure Invalid Sink"/>
 </enum>
 
 <enum name="MediaRouterDialogOpenOrigin" type="int">
