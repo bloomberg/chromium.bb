@@ -38,6 +38,7 @@ class MockSCM(object):
         self.added_paths = set()
         self._filesystem = filesystem or MockFileSystem()
         self._executive = executive or MockExecutive()
+        self._local_commits = []
 
     def add(self, destination_path, return_exit_code=False):
         self.add_list([destination_path], return_exit_code)
@@ -91,8 +92,14 @@ class MockSCM(object):
     def timestamp_of_revision(self, path, revision):
         return '2013-02-01 08:48:05 +0000'
 
-    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True):
+    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True, author=None):
+        self._local_commits.append([message, commit_all_working_directory_changes, author])
         pass
+
+    def local_commits(self):
+        """For testing purposes, returns the internal recording of commits made via commit_locally_with_message.
+        Format as [ message, commit_all_working_directory_changes, author ]."""
+        return self._local_commits
 
     def delete(self, path):
         return self.delete_list([path])

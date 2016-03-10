@@ -265,10 +265,12 @@ class Git(SCM):
             raise ScriptError(message="Can't find a branch to diff against. %s does not exist" % remote_master_ref)
         return remote_master_ref
 
-    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True):
+    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True, author=None):
         command = ['commit', '-F', '-']
         if commit_all_working_directory_changes:
             command.insert(1, '--all')
+        if author:
+            command.insert(1, "--author='%s'" % (author))
         self._run_git(command, input=message)
 
     # These methods are git specific and are meant to provide support for the Git oriented workflow

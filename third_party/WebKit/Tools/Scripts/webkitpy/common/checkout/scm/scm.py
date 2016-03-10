@@ -136,6 +136,6 @@ class SCM:
     def supports_local_commits():
         SCM._subclass_must_implement()
 
-    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True):
+    def commit_locally_with_message(self, message, commit_all_working_directory_changes=True, author=None):
         _log.error("Your source control manager does not support local commits.")
         sys.exit(1)

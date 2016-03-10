@@ -679,6 +679,8 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             # FIXME: Remove this option.
             self.results_directory_option,
             optparse.make_option("--auth-refresh-token-json", help="Rietveld auth refresh JSON token."),
+            optparse.make_option("--commit-author",
+                help='Optionally specify an explicit author for local commit. Format as "Name <email>".')
             ])
 
     def bot_revision_data(self):
@@ -877,7 +879,9 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             if test_prefix_list:
                 self._rebaseline(options, test_prefix_list)
 
-            tool.scm().commit_locally_with_message(self.commit_message(author, revision, commit, bugs))
+            tool.scm().commit_locally_with_message(
+                self.commit_message(author, revision, commit, bugs),
+                author=options.commit_author)
 
             # FIXME: It would be nice if we could dcommit the patch without uploading, but still
             # go through all the precommit hooks. For rebaselines with lots of files, uploading
