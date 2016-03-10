@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL TEXTAREA should not remove the last EOL on paste. assert_equals: expected "WH\n" but got "WH"
-Harness: the test ran to completion.
-

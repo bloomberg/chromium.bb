@@ -36,6 +36,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 
@@ -60,7 +61,7 @@ bool InsertLineBreakCommand::shouldUseBreakElement(const Position& insertionPos)
     // the input element, and in that case we need to check the input element's
     // parent's layoutObject.
     Position p(insertionPos.parentAnchoredEquivalent());
-    return p.anchorNode()->layoutObject() && !p.anchorNode()->layoutObject()->style()->preserveNewline();
+    return isRichlyEditablePosition(p) && p.anchorNode()->layoutObject() && !p.anchorNode()->layoutObject()->style()->preserveNewline();
 }
 
 void InsertLineBreakCommand::doApply(EditingState* editingState)
@@ -102,9 +103,16 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
             return;
 
         if (needExtraLineBreak) {
-            insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert, editingState);
+            RefPtrWillBeRawPtr<Node> extraNode;
+            // TODO(tkent): Can we remove HTMLTextFormControlElement dependency?
+            if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(nodeToInsert.get()))
+                extraNode = textControl->createPlaceholderBreakElement();
+            else
+                extraNode = nodeToInsert->cloneNode(false);
+            insertNodeAfter(extraNode.get(), nodeToInsert, editingState);
             if (editingState->isAborted())
                 return;
+            nodeToInsert = extraNode.release();
         }
 
         VisiblePosition endingPosition = createVisiblePosition(positionBeforeNode(nodeToInsert.get()));

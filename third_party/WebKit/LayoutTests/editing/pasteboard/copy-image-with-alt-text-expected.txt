@@ -4,10 +4,9 @@ Dump of markup 1:
 |   <shadow:root>
 |     <div>
 |       id="inner-editor"
-|       "Here is an emoticon [], some more text [], an empty alt tag [], no alt tag [] and two consecutive images []."
-|       "
-
+|       "Here is an emoticon [], some more text [], an empty alt tag [], no alt tag [] and two consecutive images [].
 "
+|       <br>
 
 Dump of markup 2:
 | <div>
@@ -20,10 +19,9 @@ Dump of markup 3:
 |   <shadow:root>
 |     <div>
 |       id="inner-editor"
-|       "Here is an emoticon [:)], some more text [sample text], an empty alt tag [], no alt tag [] and two consecutive images [firstsecond]."
-|       "
-
+|       "Here is an emoticon [:)], some more text [sample text], an empty alt tag [], no alt tag [] and two consecutive images [firstsecond].
 "
+|       <br>
 
 Dump of markup 4:
 | <div>

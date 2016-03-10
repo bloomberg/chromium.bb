@@ -273,6 +273,19 @@ void HTMLTextAreaElement::handleFocusEvent(Element*, WebFocusType)
 
 void HTMLTextAreaElement::subtreeHasChanged()
 {
+#if ENABLE(ASSERT)
+    // The innerEditor should have either Text nodes or a placeholder break
+    // element. If we see other nodes, it's a bug in editing code and we should
+    // fix it.
+    Element* innerEditor = innerEditorElement();
+    for (Node& node : NodeTraversal::descendantsOf(*innerEditor)) {
+        if (node.isTextNode())
+            continue;
+        ASSERT(isHTMLBRElement(node));
+        ASSERT(&node == innerEditor->lastChild());
+    }
+#endif
+    addPlaceholderBreakElementIfNecessary();
     setChangedSinceLastFormControlChangeEvent(true);
     m_valueIsUpToDate = false;
     setNeedsValidityCheck();

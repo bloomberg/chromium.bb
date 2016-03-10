@@ -97,6 +97,7 @@ public:
     bool lastChangeWasUserEdit() const;
     virtual void setInnerEditorValue(const String&);
     String innerEditorValue() const;
+    PassRefPtrWillBeRawPtr<Node> createPlaceholderBreakElement() const;
 
     String directionForFormData() const;
 
@@ -131,7 +132,7 @@ protected:
     virtual void subtreeHasChanged() = 0;
 
     void setLastChangeWasNotUserEdit() { m_lastChangeWasUserEdit = false; }
-
+    void addPlaceholderBreakElementIfNecessary();
     String valueWithHardLineBreaks() const;
 
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&);

@@ -620,6 +620,23 @@ bool HTMLTextFormControlElement::lastChangeWasUserEdit() const
     return m_lastChangeWasUserEdit;
 }
 
+PassRefPtrWillBeRawPtr<Node> HTMLTextFormControlElement::createPlaceholderBreakElement() const
+{
+    return HTMLBRElement::create(document());
+}
+
+void HTMLTextFormControlElement::addPlaceholderBreakElementIfNecessary()
+{
+    HTMLElement* innerEditor = innerEditorElement();
+    if (innerEditor->layoutObject() && !innerEditor->layoutObject()->style()->preserveNewline())
+        return;
+    Node* lastChild = innerEditor->lastChild();
+    if (!lastChild || !lastChild->isTextNode())
+        return;
+    if (toText(lastChild)->data().endsWith('\n') || toText(lastChild)->data().endsWith('\r'))
+        innerEditor->appendChild(createPlaceholderBreakElement());
+}
+
 void HTMLTextFormControlElement::setInnerEditorValue(const String& value)
 {
     ASSERT(!openShadowRoot());
@@ -642,22 +659,14 @@ void HTMLTextFormControlElement::setInnerEditorValue(const String& value)
     else
         replaceChildrenWithText(innerEditor, value, ASSERT_NO_EXCEPTION);
 
-    if (value.endsWith('\n') || value.endsWith('\r'))
-        innerEditor->appendChild(HTMLBRElement::create(document()));
+    // Add <br> so that we can put the caret at the next line of the last
+    // newline.
+    addPlaceholderBreakElementIfNecessary();
 
     if (textIsChanged && layoutObject()) {
         if (AXObjectCache* cache = document().existingAXObjectCache())
             cache->handleTextFormControlChanged(this);
     }
-}
-
-static String finishText(StringBuilder& result)
-{
-    // Remove one trailing newline; there's always one that's collapsed out by layoutObject.
-    size_t size = result.length();
-    if (size && result[size - 1] == '\n')
-        result.resize(--size);
-    return result.toString();
 }
 
 String HTMLTextFormControlElement::innerEditorValue() const
@@ -669,12 +678,15 @@ String HTMLTextFormControlElement::innerEditorValue() const
 
     StringBuilder result;
     for (Node& node : NodeTraversal::inclusiveDescendantsOf(*innerEditor)) {
-        if (isHTMLBRElement(node))
-            result.append(newlineCharacter);
-        else if (node.isTextNode())
+        if (isHTMLBRElement(node)) {
+            ASSERT(&node == innerEditor->lastChild());
+            if (&node != innerEditor->lastChild())
+                result.append(newlineCharacter);
+        } else if (node.isTextNode()) {
             result.append(toText(node).data());
+        }
     }
-    return finishText(result);
+    return result.toString();
 }
 
 static void getNextSoftBreak(RootInlineBox*& line, Node*& breakNode, unsigned& breakOffset)
@@ -717,7 +729,9 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
     StringBuilder result;
     for (Node& node : NodeTraversal::descendantsOf(*innerText)) {
         if (isHTMLBRElement(node)) {
-            result.append(newlineCharacter);
+            ASSERT(&node == innerText->lastChild());
+            if (&node != innerText->lastChild())
+                result.append(newlineCharacter);
         } else if (node.isTextNode()) {
             String data = toText(node).data();
             unsigned length = data.length();
@@ -735,7 +749,7 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
         while (breakNode == node)
             getNextSoftBreak(line, breakNode, breakOffset);
     }
-    return finishText(result);
+    return result.toString();
 }
 
 HTMLTextFormControlElement* enclosingTextFormControl(const Position& position)

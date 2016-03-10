@@ -191,7 +191,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
 
     Position endPosition;
 
-    if (m_text == "\t") {
+    if (m_text == "\t" && isRichlyEditablePosition(startPosition)) {
         endPosition = insertTab(startPosition, editingState);
         if (editingState->isAborted())
             return;

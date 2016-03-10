@@ -14,10 +14,28 @@ test(function() {
     assert_equals(textarea.value, 'H\nW');
     textarea.setSelectionRange(2, 3); // "W"
     document.execCommand('cut');
+    assert_equals(textarea.value, 'H\n');
     textarea.setSelectionRange(0, 0);
     document.execCommand('paste');
-    // TODO(tkent): The following assertion fails now. crbug.com/522144.
     assert_equals(textarea.value, 'WH\n');
 }, 'TEXTAREA should not remove the last EOL on paste.');
+
+test(function() {
+    var textarea1 = document.createElement('textarea');
+    document.body.appendChild(textarea1);
+    textarea1.focus();
+    textarea1.addEventListener('copy', function(event) {
+        event.clipboardData.setData('text', 'foo\n');
+        event.preventDefault();
+    });
+    document.execCommand('copy');
+
+    // Use another TEXAREA.  We need a clean one.
+    var textarea2 = document.createElement('textarea');
+    document.body.appendChild(textarea2);
+    textarea2.focus();
+    document.execCommand('paste');
+    assert_equals(textarea2.value, 'foo\n');
+}, 'Pasting text ending \\n should not add another \\n.');
 </script>
 </body>

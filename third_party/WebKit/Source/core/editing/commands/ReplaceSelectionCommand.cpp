@@ -1313,6 +1313,11 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                     if (editingState->isAborted())
                         return;
                     setEndingSelection(createVisiblePosition(firstPositionInNode(newListItem.get())));
+                } else if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(enclosingBlockElement)) {
+                    insertNodeAfter(textControl->createPlaceholderBreakElement(), insertedNodes.lastLeafInserted(), editingState);
+                    if (editingState->isAborted())
+                        return;
+                    setEndingSelection(createVisiblePosition(positionAfterNode(insertedNodes.lastLeafInserted())));
                 } else {
                     // Use a default paragraph element (a plain div) for the empty paragraph, using the last paragraph
                     // block's style seems to annoy users.
