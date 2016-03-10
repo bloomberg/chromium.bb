@@ -478,28 +478,6 @@ void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString,
     resume(errorString);
 }
 
-void V8DebuggerAgentImpl::getStepInPositions(ErrorString* errorString, const String16& callFrameId, Maybe<Array<protocol::Debugger::Location>>* positions)
-{
-    if (!isPaused() || m_currentCallStack.IsEmpty()) {
-        *errorString = "Attempt to access callframe when debugger is not on pause";
-        return;
-    }
-    OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(callFrameId);
-    if (!remoteId) {
-        *errorString = "Invalid call frame id";
-        return;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(remoteId.get());
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
-        return;
-    }
-
-    v8::HandleScope scope(m_isolate);
-    v8::Local<v8::Object> callStack = m_currentCallStack.Get(m_isolate);
-    injectedScript->getStepInPositions(errorString, callStack, callFrameId, positions);
-}
-
 void V8DebuggerAgentImpl::getBacktrace(ErrorString* errorString, OwnPtr<Array<CallFrame>>* callFrames, Maybe<StackTrace>* asyncStackTrace)
 {
     if (!assertPaused(errorString))

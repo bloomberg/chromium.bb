@@ -86,7 +86,6 @@ public:
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*);
     void restartFrame(ErrorString*, v8::Local<v8::Object> callFrames, const String16& callFrameId);
-    void getStepInPositions(ErrorString*, v8::Local<v8::Object> callFrames, const String16& callFrameId, Maybe<protocol::Array<protocol::Debugger::Location>>* positions);
     void setVariableValue(ErrorString*, v8::Local<v8::Object> callFrames, const Maybe<String16>& callFrameIdOpt, const Maybe<String16>& functionObjectIdOpt, int scopeNumber, const String16& variableName, const String16& newValueStr);
     void getFunctionDetails(ErrorString*, const String16& functionId, OwnPtr<protocol::Debugger::FunctionDetails>* result);
     void getGeneratorObjectDetails(ErrorString*, const String16& functionId, OwnPtr<protocol::Debugger::GeneratorObjectDetails>* result);

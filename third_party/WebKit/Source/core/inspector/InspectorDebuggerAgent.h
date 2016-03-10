@@ -71,7 +71,6 @@ public:
     void setPauseOnExceptions(ErrorString*, const String16& state) override;
     void evaluateOnCallFrame(ErrorString*, const String16& callFrameId, const String16& expression, const Maybe<String16>& objectGroup, const Maybe<bool>& includeCommandLineAPI, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<bool>& returnByValue, const Maybe<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void setVariableValue(ErrorString*, int scopeNumber, const String16& variableName, PassOwnPtr<protocol::Runtime::CallArgument> newValue, const Maybe<String16>& callFrameId, const Maybe<String16>& functionObjectId) override;
-    void getStepInPositions(ErrorString*, const String16& callFrameId, Maybe<protocol::Array<protocol::Debugger::Location>>* stepInPositions) override;
     void getBacktrace(ErrorString*, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<protocol::Runtime::StackTrace>* asyncStackTrace) override;
     void setAsyncCallStackDepth(ErrorString*, int maxDepth) override;
     void enablePromiseTracker(ErrorString*, const Maybe<bool>& captureStacks) override;

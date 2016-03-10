@@ -188,27 +188,6 @@ void InjectedScript::restartFrame(ErrorString* errorString, v8::Local<v8::Object
     *errorString = "Internal error";
 }
 
-void InjectedScript::getStepInPositions(ErrorString* errorString, v8::Local<v8::Object> callFrames, const String16& callFrameId, Maybe<Array<protocol::Debugger::Location>>* positions)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_client, context(), v8Value(), "getStepInPositions");
-    function.appendArgument(callFrames);
-    function.appendArgument(callFrameId);
-    OwnPtr<protocol::Value> resultValue = makeCall(function);
-    if (resultValue) {
-        if (resultValue->type() == protocol::Value::TypeString) {
-            resultValue->asString(errorString);
-            return;
-        }
-        if (resultValue->type() == protocol::Value::TypeArray) {
-            protocol::ErrorSupport errors(errorString);
-            *positions = Array<protocol::Debugger::Location>::parse(resultValue.get(), &errors);
-            return;
-        }
-    }
-    *errorString = "Internal error";
-}
-
 void InjectedScript::setVariableValue(ErrorString* errorString,
     v8::Local<v8::Object> callFrames,
     const protocol::Maybe<String16>& callFrameIdOpt,

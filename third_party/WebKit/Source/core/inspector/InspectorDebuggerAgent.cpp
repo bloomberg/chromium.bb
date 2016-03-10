@@ -248,13 +248,6 @@ void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int inSc
     m_v8DebuggerAgent->setVariableValue(errorString, inScopeNumber, inVariableName, inNewValue, inCallFrameId, inFunctionObjectId);
 }
 
-void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString,
-    const String16& inCallFrameId,
-    Maybe<Array<protocol::Debugger::Location>>* optOutStepInPositions)
-{
-    m_v8DebuggerAgent->getStepInPositions(errorString, inCallFrameId, optOutStepInPositions);
-}
-
 void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString,
     OwnPtr<Array<protocol::Debugger::CallFrame>>* outCallFrames,
     Maybe<protocol::Runtime::StackTrace>* optOutAsyncStackTrace)

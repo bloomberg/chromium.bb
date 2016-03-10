@@ -906,22 +906,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {!JavaScriptCallFrame} topCallFrame
-     * @param {string} callFrameId
-     * @return {*} a stepIn position array ready for protocol JSON or a string error
-     */
-    getStepInPositions: function(topCallFrame, callFrameId)
-    {
-        var callFrame = this._callFrameForId(topCallFrame, callFrameId);
-        if (!callFrame)
-            return "Could not find call frame with given id";
-        var stepInPositionsUnpacked = JSON.parse(callFrame.stepInPositions);
-        if (typeof stepInPositionsUnpacked !== "object")
-            return "Step in positions not available";
-        return stepInPositionsUnpacked;
-    },
-
-    /**
      * Either callFrameId or functionObjectId must be specified.
      * @param {!JavaScriptCallFrame} topCallFrame
      * @param {string|boolean} callFrameId or false

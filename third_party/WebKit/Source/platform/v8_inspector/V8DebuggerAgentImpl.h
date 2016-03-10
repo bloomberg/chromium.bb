@@ -82,9 +82,6 @@ public:
     void continueToLocation(ErrorString*,
         PassOwnPtr<protocol::Debugger::Location>,
         const Maybe<bool>& interstateLocationOpt) override;
-    void getStepInPositions(ErrorString*,
-        const String16& callFrameId,
-        Maybe<protocol::Array<protocol::Debugger::Location>>* positions) override;
     void getBacktrace(ErrorString*,
         OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>*,
         Maybe<protocol::Runtime::StackTrace>*) override;
