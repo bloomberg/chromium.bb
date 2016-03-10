@@ -18,8 +18,9 @@ from PRESUBMIT_test_mocks import MockInputApi, MockOutputApi, MockFile
 class ExternsCheckerTest(unittest.TestCase):
   API_PAIRS = {'a': '1', 'b': '2', 'c': '3'}
 
-  def _runChecks(self, files):
+  def _runChecks(self, files, exists=lambda f: True):
     input_api = MockInputApi()
+    input_api.os_path.exists = exists
     input_api.files = [MockFile(f, '') for f in files]
     output_api = MockOutputApi()
     checker = ExternsChecker(input_api, output_api, self.API_PAIRS)
@@ -57,6 +58,12 @@ class ExternsCheckerTest(unittest.TestCase):
     self.assertEquals(1, len(results))
     self.assertEquals(1, len(results[0].items))
     self.assertEquals('c', results[0].items[0])
+
+  def testApiFileDoesNotExist(self):
+    exists = lambda f: f in ['a', 'b', 'c', '1', '2']
+    with self.assertRaises(OSError) as e:
+      self._runChecks(['a'], exists)
+    self.assertEqual('Path Not Found: 3', str(e.exception))
 
 
 if __name__ == '__main__':
