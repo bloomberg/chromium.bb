@@ -66,6 +66,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void AddTransientWindow(Window* window, Id transient_window_id);
   void RemoveTransientWindowFromParent(Window* window);
 
+  void SetModal(Window* window);
+
   void Reorder(Window* window,
                Id relative_window_id,
                mojom::OrderDirection direction);

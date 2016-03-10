@@ -217,6 +217,13 @@ void WindowTreeClientImpl::RemoveTransientWindowFromParent(Window* window) {
   tree_->RemoveTransientWindowFromParent(change_id, window->id());
 }
 
+void WindowTreeClientImpl::SetModal(Window* window) {
+  DCHECK(tree_);
+  const uint32_t change_id = ScheduleInFlightChange(
+      make_scoped_ptr(new CrashInFlightChange(window, ChangeType::SET_MODAL)));
+  tree_->SetModal(change_id, window->id());
+}
+
 void WindowTreeClientImpl::Reorder(Window* window,
                                    Id relative_window_id,
                                    mojom::OrderDirection direction) {

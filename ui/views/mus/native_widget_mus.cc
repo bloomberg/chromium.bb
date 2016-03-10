@@ -481,7 +481,8 @@ void NativeWidgetMus::SetWindowIcons(const gfx::ImageSkia& window_icon,
 }
 
 void NativeWidgetMus::InitModalType(ui::ModalType modal_type) {
-  // NOTIMPLEMENTED();
+  if (modal_type != ui::MODAL_TYPE_NONE)
+    window_->SetModal();
 }
 
 gfx::Rect NativeWidgetMus::GetWindowBoundsInScreen() const {

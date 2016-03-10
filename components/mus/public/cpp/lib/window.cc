@@ -346,6 +346,15 @@ void Window::RemoveTransientWindow(Window* transient_window) {
     tree_client()->RemoveTransientWindowFromParent(transient_window);
 }
 
+void Window::SetModal() {
+  if (is_modal_)
+    return;
+
+  LocalSetModal();
+  if (connection_)
+    tree_client()->SetModal(this);
+}
+
 Window* Window::GetChildById(Id id) {
   if (id == id_)
     return this;
@@ -493,6 +502,7 @@ Window::Window(WindowTreeConnection* connection, Id id)
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),
+      is_modal_(false),
       input_event_handler_(nullptr),
       viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(false),
@@ -586,6 +596,10 @@ void Window::LocalRemoveTransientWindow(Window* transient_window) {
   DCHECK_EQ(this, transient_window->transient_parent());
   RemoveTransientWindowImpl(transient_window);
   // TODO(fsamuel): We might want a notification here.
+}
+
+void Window::LocalSetModal() {
+  is_modal_ = true;
 }
 
 bool Window::LocalReorder(Window* relative, mojom::OrderDirection direction) {

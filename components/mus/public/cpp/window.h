@@ -185,6 +185,9 @@ class Window {
   const Window* transient_parent() const { return transient_parent_; }
   const Children& transient_children() const { return transient_children_; }
 
+  void SetModal();
+  bool is_modal() const { return is_modal_; }
+
   Window* GetChildById(Id id);
 
   void SetTextInputState(mojo::TextInputStatePtr state);
@@ -243,6 +246,7 @@ class Window {
   void LocalRemoveChild(Window* child);
   void LocalAddTransientWindow(Window* transient_window);
   void LocalRemoveTransientWindow(Window* transient_window);
+  void LocalSetModal();
   // Returns true if the order actually changed.
   bool LocalReorder(Window* relative, mojom::OrderDirection direction);
   void LocalSetBounds(const gfx::Rect& old_bounds, const gfx::Rect& new_bounds);
@@ -296,6 +300,8 @@ class Window {
   Window* stacking_target_;
   Window* transient_parent_;
   Children transient_children_;
+
+  bool is_modal_;
 
   base::ObserverList<WindowObserver> observers_;
   InputEventHandler* input_event_handler_;
