@@ -597,6 +597,7 @@ TransportSecurityState::TransportSecurityState()
       report_sender_(nullptr),
       enable_static_pins_(true),
       enable_static_expect_ct_(true),
+      expect_ct_reporter_(nullptr),
       sent_reports_cache_(kMaxHPKPReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
