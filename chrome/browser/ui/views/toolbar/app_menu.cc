@@ -1291,7 +1291,7 @@ void AppMenu::CreateBookmarkMenu() {
                                 model->bookmark_bar_node(),
                                 0,
                                 BookmarkMenuDelegate::SHOW_PERMANENT_FOLDERS,
-                                BOOKMARK_LAUNCH_LOCATION_WRENCH_MENU);
+                                BOOKMARK_LAUNCH_LOCATION_APP_MENU);
 }
 
 int AppMenu::ModelIndexFromCommandId(int command_id) const {

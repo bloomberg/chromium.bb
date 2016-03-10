@@ -31,8 +31,8 @@ enum BookmarkLaunchLocation {
   BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER,
   BOOKMARK_LAUNCH_LOCATION_CONTEXT_MENU,
 
-  // Bookmarks menu within wrench menu.
-  BOOKMARK_LAUNCH_LOCATION_WRENCH_MENU,
+  // Bookmarks menu within app menu.
+  BOOKMARK_LAUNCH_LOCATION_APP_MENU,
   // Bookmark manager.
   BOOKMARK_LAUNCH_LOCATION_MANAGER,
   // Autocomplete suggestion.
