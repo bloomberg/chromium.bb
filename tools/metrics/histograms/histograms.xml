@@ -36998,6 +36998,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT.NavigationStartToFirstLayout" units="ms">
+  <obsolete>
+    Deprecated. Use PageLoad.Timing2.* instead.
+  </obsolete>
   <owner>bmcquade@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
@@ -37006,6 +37009,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PLT.PT.ResponseStartToFirstLayout" units="ms">
+  <obsolete>
+    Deprecated. Use PageLoad.Timing2.* instead.
+  </obsolete>
   <owner>bmcquade@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's response start to the time the
