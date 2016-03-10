@@ -18,8 +18,8 @@
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
 #include "content/shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
-#include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 
 namespace content {
@@ -89,6 +89,29 @@ void LayoutTestContentBrowserClient::AppendExtraCommandLineSwitches(
   command_line->AppendSwitch(switches::kRunLayoutTest);
   ShellContentBrowserClient::AppendExtraCommandLineSwitches(command_line,
                                                             child_process_id);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAlwaysUseComplexText)) {
+    command_line->AppendSwitch(switches::kAlwaysUseComplexText);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFontAntialiasing)) {
+    command_line->AppendSwitch(switches::kEnableFontAntialiasing);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExposeInternalsForTesting)) {
+    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStableReleaseMode)) {
+    command_line->AppendSwitch(switches::kStableReleaseMode);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLeakDetection)) {
+    command_line->AppendSwitchASCII(
+        switches::kEnableLeakDetection,
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kEnableLeakDetection));
+  }
 }
 
 BrowserMainParts* LayoutTestContentBrowserClient::CreateBrowserMainParts(

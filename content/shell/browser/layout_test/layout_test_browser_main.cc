@@ -24,6 +24,7 @@
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/layout_test/test_info_extractor.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "net/base/filename_util.h"

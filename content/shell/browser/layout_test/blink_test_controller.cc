@@ -44,8 +44,8 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
-#include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "ui/gfx/codec/png_codec.h"
 

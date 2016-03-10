@@ -197,6 +197,8 @@
         'shell/browser/shell_web_contents_view_delegate_win.cc',
         'shell/common/layout_test/layout_test_messages.cc',
         'shell/common/layout_test/layout_test_messages.h',
+        'shell/common/layout_test/layout_test_switches.cc',
+        'shell/common/layout_test/layout_test_switches.h',
         'shell/common/leak_detection_result.h',
         'shell/common/shell_content_client.cc',
         'shell/common/shell_content_client.h',

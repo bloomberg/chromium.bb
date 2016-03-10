@@ -95,8 +95,7 @@ ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {
 void ShellWebContentsViewDelegate::ShowContextMenu(
     RenderFrameHost* render_frame_host,
     const ContextMenuParams& params) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
+  if (switches::IsRunLayoutTestSwitchPresent())
     return;
 
   params_ = params;

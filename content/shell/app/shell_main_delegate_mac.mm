@@ -28,8 +28,7 @@ void EnsureCorrectResolutionSettings() {
       [[NSMutableDictionary alloc]
           initWithContentsOfFile:base::mac::FilePathToNSString(info_plist)]);
 
-  bool running_layout_tests = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kRunLayoutTest);
+  bool running_layout_tests = switches::IsRunLayoutTestSwitchPresent();
   bool not_high_resolution_capable =
       [info_dict objectForKey:kHighResolutionCapable] &&
       [[info_dict objectForKey:kHighResolutionCapable] isEqualToNumber:@(NO)];

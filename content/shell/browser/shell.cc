@@ -77,9 +77,7 @@ Shell::Shell(WebContents* web_contents)
       url_edit_view_(NULL),
 #endif
       headless_(false) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRunLayoutTest))
+  if (switches::IsRunLayoutTestSwitchPresent())
     headless_ = true;
   windows_.push_back(this);
 
@@ -122,13 +120,13 @@ Shell* Shell::CreateShell(WebContents* web_contents,
   // Note: Do not make RenderFrameHost or RenderViewHost specific state changes
   // here, because they will be forgotten after a cross-process navigation. Use
   // RenderFrameCreated or RenderViewCreated instead.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kRunLayoutTest)) {
+  if (switches::IsRunLayoutTestSwitchPresent()) {
     web_contents->GetMutableRendererPrefs()->use_custom_colors = false;
     web_contents->GetRenderViewHost()->SyncRendererPrefs();
   }
 
 #if defined(ENABLE_WEBRTC)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceWebRtcIPHandlingPolicy)) {
     web_contents->GetMutableRendererPrefs()->webrtc_ip_handling_policy =
         command_line->GetSwitchValueASCII(
@@ -253,8 +251,7 @@ void Shell::AddNewContents(WebContents* source,
                            bool user_gesture,
                            bool* was_blocked) {
   CreateShell(new_contents, AdjustWindowSize(initial_rect.size()));
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
+  if (switches::IsRunLayoutTestSwitchPresent())
     NotifyDoneForwarder::CreateForWebContents(new_contents);
 }
 
@@ -355,8 +352,7 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
 #if defined(OS_ANDROID)
   PlatformToggleFullscreenModeForTab(web_contents, enter_fullscreen);
 #endif
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
+  if (!switches::IsRunLayoutTestSwitchPresent())
     return;
   if (is_fullscreen_ != enter_fullscreen) {
     is_fullscreen_ = enter_fullscreen;
@@ -406,11 +402,9 @@ void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
     WebContents* source) {
   if (!dialog_manager_) {
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    dialog_manager_.reset(command_line.HasSwitch(switches::kRunLayoutTest)
-        ? new LayoutTestJavaScriptDialogManager
-        : new ShellJavaScriptDialogManager);
+    dialog_manager_.reset(switches::IsRunLayoutTestSwitchPresent()
+                              ? new LayoutTestJavaScriptDialogManager
+                              : new ShellJavaScriptDialogManager);
   }
   return dialog_manager_.get();
 }
@@ -418,9 +412,7 @@ JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
 scoped_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRunLayoutTest)) {
+  if (switches::IsRunLayoutTestSwitchPresent()) {
     return BlinkTestController::Get()->RunBluetoothChooser(frame,
                                                            event_handler);
   }
@@ -432,15 +424,12 @@ bool Shell::AddMessageToConsole(WebContents* source,
                                 const base::string16& message,
                                 int32_t line_no,
                                 const base::string16& source_id) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kRunLayoutTest);
+  return switches::IsRunLayoutTestSwitchPresent();
 }
 
 void Shell::RendererUnresponsive(WebContents* source) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest))
-    return;
-  BlinkTestController::Get()->RendererUnresponsive();
+  if (switches::IsRunLayoutTestSwitchPresent())
+    BlinkTestController::Get()->RendererUnresponsive();
 }
 
 void Shell::ActivateContents(WebContents* contents) {
@@ -471,8 +460,7 @@ gfx::Size Shell::GetShellDefaultSize() {
 
 void Shell::RenderViewCreated(RenderViewHost* render_view_host) {
   // All RenderViewHosts in layout tests should get Mojo bindings.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kRunLayoutTest))
+  if (switches::IsRunLayoutTestSwitchPresent())
     render_view_host->AllowBindings(BINDINGS_POLICY_MOJO);
 }
 

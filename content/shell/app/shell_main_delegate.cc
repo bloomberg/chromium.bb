@@ -26,6 +26,7 @@
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/shell_browser_main.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"

@@ -234,22 +234,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFontAntialiasing)) {
-    command_line->AppendSwitch(switches::kEnableFontAntialiasing);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAlwaysUseComplexText)) {
-    command_line->AppendSwitch(switches::kAlwaysUseComplexText);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExposeInternalsForTesting)) {
-    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStableReleaseMode)) {
-    command_line->AppendSwitch(switches::kStableReleaseMode);
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     command_line->AppendSwitch(switches::kEnableCrashReporter);
   }
@@ -259,13 +243,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
         switches::kCrashDumpsDir,
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir));
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLeakDetection)) {
-    command_line->AppendSwitchASCII(
-        switches::kEnableLeakDetection,
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kEnableLeakDetection));
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIsolateSitesForTesting)) {

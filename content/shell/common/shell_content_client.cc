@@ -36,8 +36,7 @@ std::string ShellContentClient::GetUserAgent() const {
 }
 
 base::string16 ShellContentClient::GetLocalizedString(int message_id) const {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest)) {
+  if (switches::IsRunLayoutTestSwitchPresent()) {
     switch (message_id) {
       case IDS_FORM_OTHER_DATE_LABEL:
         return base::ASCIIToUTF16("<<OtherDateLabel>>");
@@ -63,8 +62,7 @@ base::string16 ShellContentClient::GetLocalizedString(int message_id) const {
 base::StringPiece ShellContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest)) {
+  if (switches::IsRunLayoutTestSwitchPresent()) {
     switch (resource_id) {
       case IDR_BROKENIMAGE:
 #if defined(OS_MACOSX)
