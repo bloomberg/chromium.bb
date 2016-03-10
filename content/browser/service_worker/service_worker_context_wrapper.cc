@@ -130,6 +130,29 @@ void ServiceWorkerContextWrapper::Shutdown() {
       base::Bind(&ServiceWorkerContextWrapper::ShutdownOnIO, this));
 }
 
+void ServiceWorkerContextWrapper::InitializeResourceContext(
+    ResourceContext* resource_context,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  resource_context_ = resource_context;
+  request_context_getter_ = request_context_getter;
+  // Can be null in tests.
+  if (request_context_getter_)
+    request_context_getter_->AddObserver(this);
+}
+
+void ServiceWorkerContextWrapper::OnContextShuttingDown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  request_context_getter_->RemoveObserver(this);
+
+  // OnContextShuttingDown is called when the ProfileIOData (ResourceContext) is
+  // shutting down, so call ShutdownOnIO() to clear resource_context_.
+  // This doesn't seem to be called when using content_shell, so we still must
+  // also call ShutdownOnIO() in Shutdown(), which is called when the storage
+  // partition is destroyed.
+  ShutdownOnIO();
+}
+
 void ServiceWorkerContextWrapper::DeleteAndStartOver() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
@@ -156,12 +179,6 @@ void ServiceWorkerContextWrapper::set_storage_partition(
 ResourceContext* ServiceWorkerContextWrapper::resource_context() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return resource_context_;
-}
-
-void ServiceWorkerContextWrapper::set_resource_context(
-    ResourceContext* resource_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  resource_context_ = resource_context;
 }
 
 static void FinishRegistrationOnIO(
