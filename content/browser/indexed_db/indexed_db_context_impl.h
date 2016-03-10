@@ -74,8 +74,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void DeleteForOrigin(const GURL& origin_url) override;
   void CopyOriginData(const GURL& origin_url,
                       IndexedDBContext* dest_context) override;
-  base::FilePath GetFilePathForTesting(
-      const std::string& origin_id) const override;
+  base::FilePath GetFilePathForTesting(const GURL& origin_url) const override;
   void SetTaskRunnerForTesting(base::SequencedTaskRunner* task_runner) override;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
@@ -83,6 +82,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void ConnectionClosed(const GURL& origin_url, IndexedDBConnection* db);
   void TransactionComplete(const GURL& origin_url);
   void DatabaseDeleted(const GURL& origin_url);
+
+  static base::FilePath GetBlobStoreFileName(const GURL& origin_url);
+  static base::FilePath GetLevelDBFileName(const GURL& origin_url);
 
   // Will be null in unit tests.
   storage::QuotaManagerProxy* quota_manager_proxy() const {
@@ -127,9 +129,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   typedef std::map<GURL, int64_t> OriginToSizeMap;
   class IndexedDBGetUsageAndQuotaCallback;
 
-  base::FilePath GetBlobPath(const std::string& origin_id) const;
+  base::FilePath GetBlobStorePath(const GURL& origin_url) const;
   base::FilePath GetLevelDBPath(const GURL& origin_url) const;
-  base::FilePath GetLevelDBPath(const std::string& origin_id) const;
+
   int64_t ReadUsageFromDisk(const GURL& origin_url) const;
   void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
   void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);

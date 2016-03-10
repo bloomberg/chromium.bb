@@ -17,7 +17,6 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
-#include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 #include "third_party/leveldatabase/env_chromium.h"
 

@@ -23,7 +23,6 @@
 #include "content/public/test/test_browser_context.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -78,10 +77,8 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
                                  quota_manager_proxy_.get(),
                                  task_runner_.get());
 
-    normal_path = idb_context->GetFilePathForTesting(
-        storage::GetIdentifierFromOrigin(kNormalOrigin));
-    session_only_path = idb_context->GetFilePathForTesting(
-        storage::GetIdentifierFromOrigin(kSessionOnlyOrigin));
+    normal_path = idb_context->GetFilePathForTesting(kNormalOrigin);
+    session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
     ASSERT_TRUE(base::CreateDirectory(normal_path));
     ASSERT_TRUE(base::CreateDirectory(session_only_path));
     FlushIndexedDBTaskRunner();
@@ -116,10 +113,8 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
     // Save session state. This should bypass the destruction-time deletion.
     idb_context->SetForceKeepSessionState();
 
-    normal_path = idb_context->GetFilePathForTesting(
-        storage::GetIdentifierFromOrigin(kNormalOrigin));
-    session_only_path = idb_context->GetFilePathForTesting(
-        storage::GetIdentifierFromOrigin(kSessionOnlyOrigin));
+    normal_path = idb_context->GetFilePathForTesting(kNormalOrigin);
+    session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
     ASSERT_TRUE(base::CreateDirectory(normal_path));
     ASSERT_TRUE(base::CreateDirectory(session_only_path));
     message_loop_.RunUntilIdle();
@@ -192,8 +187,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
     IndexedDBFactory* factory = idb_context->GetIDBFactory();
 
-    test_path = idb_context->GetFilePathForTesting(
-        storage::GetIdentifierFromOrigin(kTestOrigin));
+    test_path = idb_context->GetFilePathForTesting(kTestOrigin);
 
     IndexedDBPendingConnection open_connection(open_callbacks,
                                                open_db_callbacks,
@@ -243,8 +237,7 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
       temp_dir.path(), special_storage_policy_.get(),
       quota_manager_proxy_.get(), task_runner_.get());
 
-  base::FilePath test_path = idb_context->GetFilePathForTesting(
-      storage::GetIdentifierFromOrigin(kTestOrigin));
+  base::FilePath test_path = idb_context->GetFilePathForTesting(kTestOrigin);
   ASSERT_TRUE(base::CreateDirectory(test_path));
 
   scoped_ptr<LevelDBLock> lock =

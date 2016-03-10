@@ -57,7 +57,6 @@
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/Histogram.h"
 #include "platform/network/ResourceRequest.h"
-#include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"

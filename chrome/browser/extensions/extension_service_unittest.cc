@@ -4337,7 +4337,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
                                       profile())->GetIndexedDBContext();
   idb_context->SetTaskRunnerForTesting(
       base::MessageLoop::current()->task_runner().get());
-  base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
+  base::FilePath idb_path = idb_context->GetFilePathForTesting(ext_url);
   EXPECT_TRUE(base::CreateDirectory(idb_path));
   EXPECT_TRUE(base::DirectoryExists(idb_path));
 
@@ -4458,7 +4458,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
                                       profile())->GetIndexedDBContext();
   idb_context->SetTaskRunnerForTesting(
       base::MessageLoop::current()->task_runner().get());
-  base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
+  base::FilePath idb_path = idb_context->GetFilePathForTesting(origin1);
   EXPECT_TRUE(base::CreateDirectory(idb_path));
   EXPECT_TRUE(base::DirectoryExists(idb_path));
 

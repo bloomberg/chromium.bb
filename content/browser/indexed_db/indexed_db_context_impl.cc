@@ -281,9 +281,8 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
 int IndexedDBContextImpl::GetOriginBlobFileCount(const GURL& origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   int count = 0;
-  base::FileEnumerator file_enumerator(
-      GetBlobPath(storage::GetIdentifierFromOrigin(origin_url)), true,
-      base::FileEnumerator::FILES);
+  base::FileEnumerator file_enumerator(GetBlobStorePath(origin_url), true,
+                                       base::FileEnumerator::FILES);
   for (base::FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     count++;
@@ -329,8 +328,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
     const bool kNonRecursive = false;
     base::DeleteFile(idb_directory, kNonRecursive);
   }
-  base::DeleteFile(GetBlobPath(storage::GetIdentifierFromOrigin(origin_url)),
-                   true /* recursive */);
+  base::DeleteFile(GetBlobStorePath(origin_url), true /* recursive */);
   QueryDiskAndUpdateQuotaUsage(origin_url);
   if (s.ok()) {
     RemoveFromOriginSet(origin_url);
@@ -349,7 +347,6 @@ void IndexedDBContextImpl::CopyOriginData(const GURL& origin_url,
       static_cast<IndexedDBContextImpl*>(dest_context);
 
   ForceClose(origin_url, FORCE_CLOSE_COPY_ORIGIN);
-  std::string origin_id = storage::GetIdentifierFromOrigin(origin_url);
 
   // Make sure we're not about to delete our own database.
   CHECK_NE(dest_context_impl->data_path().value(), data_path().value());
@@ -397,24 +394,17 @@ size_t IndexedDBContextImpl::GetConnectionCount(const GURL& origin_url) {
   return factory_->GetConnectionCount(origin_url);
 }
 
-base::FilePath IndexedDBContextImpl::GetLevelDBPath(
-    const GURL& origin_url) const {
-  std::string origin_id = storage::GetIdentifierFromOrigin(origin_url);
-  return GetLevelDBPath(origin_id);
-}
-
 std::vector<base::FilePath> IndexedDBContextImpl::GetStoragePaths(
     const GURL& origin_url) const {
-  std::string origin_id = storage::GetIdentifierFromOrigin(origin_url);
   std::vector<base::FilePath> paths;
-  paths.push_back(GetLevelDBPath(origin_id));
-  paths.push_back(GetBlobPath(origin_id));
+  paths.push_back(GetLevelDBPath(origin_url));
+  paths.push_back(GetBlobStorePath(origin_url));
   return paths;
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
-    const std::string& origin_id) const {
-  return GetLevelDBPath(origin_id);
+    const GURL& origin_url) const {
+  return GetLevelDBPath(origin_url);
 }
 
 void IndexedDBContextImpl::SetTaskRunnerForTesting(
@@ -484,18 +474,36 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
           &ClearSessionOnlyOrigins, data_path_, special_storage_policy_));
 }
 
-base::FilePath IndexedDBContextImpl::GetBlobPath(
-    const std::string& origin_id) const {
-  DCHECK(!data_path_.empty());
-  return data_path_.AppendASCII(origin_id).AddExtension(kIndexedDBExtension)
+// static
+base::FilePath IndexedDBContextImpl::GetBlobStoreFileName(
+    const GURL& origin_url) {
+  std::string origin_id = storage::GetIdentifierFromOrigin(origin_url);
+  return base::FilePath()
+      .AppendASCII(origin_id)
+      .AddExtension(kIndexedDBExtension)
       .AddExtension(kBlobExtension);
 }
 
-base::FilePath IndexedDBContextImpl::GetLevelDBPath(
-    const std::string& origin_id) const {
-  DCHECK(!data_path_.empty());
-  return data_path_.AppendASCII(origin_id).AddExtension(kIndexedDBExtension)
+// static
+base::FilePath IndexedDBContextImpl::GetLevelDBFileName(
+    const GURL& origin_url) {
+  std::string origin_id = storage::GetIdentifierFromOrigin(origin_url);
+  return base::FilePath()
+      .AppendASCII(origin_id)
+      .AddExtension(kIndexedDBExtension)
       .AddExtension(kLevelDBExtension);
+}
+
+base::FilePath IndexedDBContextImpl::GetBlobStorePath(
+    const GURL& origin_url) const {
+  DCHECK(!data_path_.empty());
+  return data_path_.Append(GetBlobStoreFileName(origin_url));
+}
+
+base::FilePath IndexedDBContextImpl::GetLevelDBPath(
+    const GURL& origin_url) const {
+  DCHECK(!data_path_.empty());
+  return data_path_.Append(GetLevelDBFileName(origin_url));
 }
 
 int64_t IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {

@@ -20,7 +20,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Declared to shorten the line lengths.
@@ -139,8 +138,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   void AddFakeIndexedDB(const GURL& origin, int size) {
-    base::FilePath file_path_origin = idb_context()->GetFilePathForTesting(
-        storage::GetIdentifierFromOrigin(origin));
+    base::FilePath file_path_origin =
+        idb_context()->GetFilePathForTesting(origin);
     if (!base::CreateDirectory(file_path_origin)) {
       LOG(ERROR) << "failed to base::CreateDirectory "
                  << file_path_origin.value();

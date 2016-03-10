@@ -42,7 +42,8 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
 
   // Get the file name of the local storage file for the given origin.
   virtual base::FilePath GetFilePathForTesting(
-      const std::string& origin_id) const = 0;
+      const GURL& origin_url) const = 0;
+
   // Set the task runner for tests if browser main loop is not initialized.
   virtual void SetTaskRunnerForTesting(
       base::SequencedTaskRunner* task_runner) = 0;

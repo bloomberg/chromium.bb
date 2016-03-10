@@ -23,6 +23,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
+#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
@@ -89,20 +90,8 @@ static std::string ComputeOriginIdentifier(const GURL& origin_url) {
   return storage::GetIdentifierFromOrigin(origin_url) + "@1";
 }
 
-static base::FilePath ComputeFileName(const GURL& origin_url) {
-  return base::FilePath()
-      .AppendASCII(storage::GetIdentifierFromOrigin(origin_url))
-      .AddExtension(FILE_PATH_LITERAL(".indexeddb.leveldb"));
-}
-
-static base::FilePath ComputeBlobPath(const GURL& origin_url) {
-  return base::FilePath()
-      .AppendASCII(storage::GetIdentifierFromOrigin(origin_url))
-      .AddExtension(FILE_PATH_LITERAL(".indexeddb.blob"));
-}
-
-static base::FilePath ComputeCorruptionFileName(const GURL& origin_url) {
-  return ComputeFileName(origin_url)
+static FilePath ComputeCorruptionFileName(const GURL& origin_url) {
+  return IndexedDBContextImpl::GetLevelDBFileName(origin_url)
       .Append(FILE_PATH_LITERAL("corruption_info.json"));
 }
 
@@ -910,7 +899,7 @@ leveldb::Status IndexedDBBackingStore::DestroyBackingStore(
     const base::FilePath& path_base,
     const GURL& origin_url) {
   const base::FilePath file_path =
-      path_base.Append(ComputeFileName(origin_url));
+      path_base.Append(IndexedDBContextImpl::GetLevelDBFileName(origin_url));
   DefaultLevelDBFactory leveldb_factory;
   return leveldb_factory.DestroyLevelDB(file_path);
 }
@@ -1014,10 +1003,10 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     return scoped_refptr<IndexedDBBackingStore>();
   }
 
-  const base::FilePath file_path =
-      path_base.Append(ComputeFileName(origin_url));
-  const base::FilePath blob_path =
-      path_base.Append(ComputeBlobPath(origin_url));
+  const FilePath file_path =
+      path_base.Append(IndexedDBContextImpl::GetLevelDBFileName(origin_url));
+  const FilePath blob_path =
+      path_base.Append(IndexedDBContextImpl::GetBlobStoreFileName(origin_url));
 
   if (IsPathTooLong(file_path)) {
     *status = leveldb::Status::IOError("File path too long");
