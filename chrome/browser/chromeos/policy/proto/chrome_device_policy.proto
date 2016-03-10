@@ -667,6 +667,21 @@ message LoginAuthenticationBehaviorProto {
   optional LoginBehavior login_authentication_behavior = 1 [default = GAIA];
 }
 
+// Identifiers of a USB device or device family.
+message UsbDeviceIdProto {
+  // USB Vendor Identifier (aka idVendor).
+  optional int32 vendor_id = 1;
+  // USB Product Identifier (aka idProduct).
+  optional int32 product_id = 2;
+}
+
+// This setting contains the list of USB devices to detach from the kernel
+// drivers in order to use them in web applications.
+// The list is used by the permission_broker daemon.
+message UsbDetachableWhitelistProto {
+  repeated UsbDeviceIdProto id = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -714,4 +729,5 @@ message ChromeDeviceSettingsProto {
   optional AllowKioskAppControlChromeVersionProto
       allow_kiosk_app_control_chrome_version = 40;
   optional LoginAuthenticationBehaviorProto login_authentication_behavior = 41;
+  optional UsbDetachableWhitelistProto usb_detachable_whitelist = 42;
 }

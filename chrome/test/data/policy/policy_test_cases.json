@@ -2675,6 +2675,9 @@
     ]
   },
 
+  "UsbDetachableWhitelist": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

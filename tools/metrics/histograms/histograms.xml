@@ -64452,6 +64452,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              ChromeOS version"/>
   <int value="320" label="Control use of the Web Bluetooth API"/>
   <int value="321" label="Configure the login authentication behavior"/>
+  <int value="322" label="Whitelist of USB detachable devices"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

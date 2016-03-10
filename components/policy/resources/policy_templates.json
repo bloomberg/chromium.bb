@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 321
+#   For your editing convenience: highest ID currently used: 322
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8302,6 +8302,42 @@
       If set to GAIA, login will be done via the normal GAIA authentication flow.
 
       If set to SAML_INTERSTITIAL, login will show an interstitial screen offering the user to go forward with authentication via the SAML IdP of the device's enrollment domain, or go back to the normal GAIA login flow.'''
+    },
+    {
+      'name': 'UsbDetachableWhitelist',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'id': 'UsbDeviceId',
+          'properties': {
+            'vendor_id': { 'type': 'integer' },
+            'product_id': { 'type': 'integer' },
+          },
+        },
+      },
+      'supported_on': ['chrome_os:51-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': [
+        {
+          'vendor_id' : 1027,
+          'product_id' : 24577,
+        },
+        {
+          'vendor_id' : 16700,
+          'product_id' : 8453,
+        }
+      ],
+      'id': 322,
+      'caption': '''Whitelist of USB detachable devices''',
+      'tags': ['system-security'],
+      'desc': '''Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware.
+
+      If this policy is not configured, the list of a detachable USB devices is considered as empty.''',
     },
   ],
   'messages': {

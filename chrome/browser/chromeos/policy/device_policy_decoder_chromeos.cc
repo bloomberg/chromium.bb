@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -849,6 +850,27 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
         POLICY_SOURCE_CLOUD,
         DecodeIntegerValue(container.display_rotation_default()).release(),
         nullptr);
+  }
+
+  if (policy.has_usb_detachable_whitelist()) {
+    const em::UsbDetachableWhitelistProto& container(
+        policy.usb_detachable_whitelist());
+    base::ListValue* whitelist = new base::ListValue();
+    RepeatedPtrField<em::UsbDeviceIdProto>::const_iterator entry;
+    for (entry = container.id().begin(); entry != container.id().end();
+         ++entry) {
+      base::DictionaryValue* ids = new base::DictionaryValue();
+      if (entry->has_vendor_id()) {
+        ids->SetString("vid", base::StringPrintf("%04X", entry->vendor_id()));
+      }
+      if (entry->has_product_id()) {
+        ids->SetString("pid", base::StringPrintf("%04X", entry->product_id()));
+      }
+      whitelist->Append(ids);
+    }
+    policies->Set(key::kUsbDetachableWhitelist, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, whitelist,
+                  nullptr);
   }
 }
 
