@@ -24,6 +24,8 @@ source_set("connect") {
   data_deps = [
     ":connect_test_app",
     ":connect_test_class_app",
+    ":connect_test_driver",
+    ":connect_test_exe",
     ":connect_test_package",
     ":manifest",
   ]
@@ -32,6 +34,9 @@ source_set("connect") {
 mojom("interfaces") {
   sources = [
     "connect_test.mojom",
+  ]
+  deps = [
+    "//mojo/shell/public/interfaces",
   ]
 }
 
@@ -116,4 +121,55 @@ mojo_native_application("connect_test_class_app") {
 mojo_application_manifest("connect_test_class_app_manifest") {
   application_name = "connect_test_class_app"
   source = "connect_test_class_app_manifest.json"
+}
+
+executable("connect_test_driver") {
+  testonly = true
+
+  sources = [
+    "connect_test_driver.cc",
+  ]
+
+  deps = [
+    ":interfaces",
+    "//base",
+    "//mojo/shell/public/cpp",
+    "//mojo/shell/runner/child:test_native_main",
+    "//mojo/shell/tests:util",
+  ]
+
+  data_deps = [
+    ":connect_test_driver_manifest",
+  ]
+}
+
+mojo_application_manifest("connect_test_driver_manifest") {
+  type = "exe"
+  application_name = "connect_test_driver"
+  source = "connect_test_driver_manifest.json"
+}
+
+executable("connect_test_exe") {
+  testonly = true
+
+  sources = [
+    "connect_test_exe.cc",
+  ]
+
+  deps = [
+    ":interfaces",
+    "//base",
+    "//mojo/shell/public/cpp",
+    "//mojo/shell/runner/child:test_native_main",
+  ]
+
+  data_deps = [
+    ":connect_test_exe_manifest",
+  ]
+}
+
+mojo_application_manifest("connect_test_exe_manifest") {
+  type = "exe"
+  application_name = "connect_test_exe"
+  source = "connect_test_exe_manifest.json"
 }

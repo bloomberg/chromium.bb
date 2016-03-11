@@ -1,5 +1,12 @@
 {
+  "manifest_version": 1,
   "name": "mojo:shell",
   "display_name": "Shell",
-  "capabilities": {}
+  "capabilities": {
+    "provided": {
+      "user_id": [ ],
+      "client_process": [ ],
+      "instance_name": [ ]
+    }
+  }
 }

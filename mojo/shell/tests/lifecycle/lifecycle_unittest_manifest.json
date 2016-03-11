@@ -1,5 +1,12 @@
 {
+  "manifest_version": 1,
   "name": "mojo:lifecycle_unittest",
   "display_name": "Lifecycle Unittest",
-  "capabilities": { "*":  ["*"] }
+  "capabilities": {
+    "required": {
+      "*": { "interfaces": [ "*" ] },
+      "mojo:shell": { "classes": [ "instance_name", "client_process" ], 
+                      "interfaces": [ "*" ] }
+    }
+  }
 }

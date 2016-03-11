@@ -1,11 +1,28 @@
 {
+  "manifest_version": 1,
   "name": "mojo:connect_unittests",
   "display_name": "Connect Unittests",
   "capabilities": {
-    "mojo:connect_test_package": ["*"],
-    "mojo:connect_test_app": ["mojo::shell::test::mojom::ConnectTestService",
-                              "mojo::shell::test::mojom::StandaloneApp"],
-    "mojo:connect_test_a": ["mojo::shell::test::mojom::ConnectTestService",
-                            "mojo::shell::test::mojom::StandaloneApp"]
+    "required": {
+      "mojo:connect_test_package": { "interfaces": [ "*" ] },
+      "mojo:connect_test_app": {
+        "interfaces": [
+          "mojo::shell::test::mojom::ConnectTestService",
+          "mojo::shell::test::mojom::StandaloneApp",
+          "mojo::shell::test::mojom::UserIdTest"
+        ]
+      },
+      "exe:connect_test_driver": { 
+        "interfaces":  [ "mojo::shell::test::mojom::ClientProcessTest" ]
+      },
+      "mojo:connect_test_a": {
+        "interfaces": [
+          "mojo::shell::test::mojom::ConnectTestService",
+          "mojo::shell::test::mojom::StandaloneApp",
+          "mojo::shell::test::mojom::UserIdTest"
+        ]
+      },
+      "mojo:shell": { "classes": [ "instance_name" ] }
+    }
   }
 }

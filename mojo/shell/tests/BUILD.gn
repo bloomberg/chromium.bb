@@ -22,7 +22,6 @@ test("mojo_shell_unittests") {
     ":interfaces",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//mojo/services/catalog:unittests",
@@ -44,5 +43,20 @@ test("mojo_shell_unittests") {
 mojom("interfaces") {
   sources = [
     "test.mojom",
+  ]
+}
+
+source_set("util") {
+  sources = [
+    "util.cc",
+    "util.h",
+  ]
+  deps = [
+    "//base",
+    "//base:base_static",
+    "//mojo/edk/system",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/interfaces",
+    "//mojo/shell/runner/common",
   ]
 }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -18,6 +19,10 @@
 namespace mojo {
 namespace shell {
 namespace {
+void QuitLoop(base::RunLoop* loop) {
+  loop->Quit();
+}
+
 void ReceiveString(std::string* string, base::RunLoop* loop,
                    const std::string& response) {
   *string = response;
@@ -31,9 +36,11 @@ class ConnectTestApp : public ShellClient,
                        public InterfaceFactory<test::mojom::ConnectTestService>,
                        public InterfaceFactory<test::mojom::StandaloneApp>,
                        public InterfaceFactory<test::mojom::BlockedInterface>,
+                       public InterfaceFactory<test::mojom::UserIdTest>,
                        public test::mojom::ConnectTestService,
                        public test::mojom::StandaloneApp,
-                       public test::mojom::BlockedInterface {
+                       public test::mojom::BlockedInterface,
+                       public test::mojom::UserIdTest {
  public:
   ConnectTestApp() {}
   ~ConnectTestApp() override {}
@@ -56,6 +63,7 @@ class ConnectTestApp : public ShellClient,
     connection->AddInterface<test::mojom::ConnectTestService>(this);
     connection->AddInterface<test::mojom::StandaloneApp>(this);
     connection->AddInterface<test::mojom::BlockedInterface>(this);
+    connection->AddInterface<test::mojom::UserIdTest>(this);
 
     uint32_t remote_id = connection->GetRemoteInstanceID();
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
@@ -94,6 +102,12 @@ class ConnectTestApp : public ShellClient,
   void Create(Connection* connection,
               test::mojom::BlockedInterfaceRequest request) override {
     blocked_bindings_.AddBinding(this, std::move(request));
+  }
+
+  // InterfaceFactory<test::mojom::UserIdTest>:
+  void Create(Connection* connection,
+              test::mojom::UserIdTestRequest request) override {
+    user_id_test_bindings_.AddBinding(this, std::move(request));
   }
 
   // test::mojom::ConnectTestService:
@@ -158,6 +172,23 @@ class ConnectTestApp : public ShellClient,
     callback.Run("Called Blocked Interface!");
   }
 
+  // test::mojom::UserIdTest:
+  void ConnectToClassAppAsDifferentUser(
+      mojom::IdentityPtr target,
+      const ConnectToClassAppAsDifferentUserCallback& callback) override {
+    Connector::ConnectParams params(target.To<Identity>());
+    scoped_ptr<Connection> connection = connector_->Connect(&params);
+    {
+      base::RunLoop loop;
+      connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
+      base::MessageLoop::ScopedNestableTaskAllower allow(
+          base::MessageLoop::current());
+      loop.Run();
+    }
+    callback.Run(static_cast<int32_t>(connection->GetResult()),
+                 mojom::Identity::From(connection->GetRemoteIdentity()));
+  }
+
   void OnConnectionBlocked(
       const ConnectToAllowedAppInBlockedPackageCallback& callback,
       base::RunLoop* run_loop) {
@@ -184,6 +215,7 @@ class ConnectTestApp : public ShellClient,
   BindingSet<test::mojom::ConnectTestService> bindings_;
   BindingSet<test::mojom::StandaloneApp> standalone_bindings_;
   BindingSet<test::mojom::BlockedInterface> blocked_bindings_;
+  BindingSet<test::mojom::UserIdTest> user_id_test_bindings_;
   test::mojom::ExposedInterfacePtr caller_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTestApp);

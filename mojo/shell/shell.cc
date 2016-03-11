@@ -36,6 +36,9 @@ namespace shell {
 namespace {
 const char kCatalogName[] = "mojo:catalog";
 const char kShellName[] = "mojo:shell";
+const char kCapabilityClass_UserID[] = "user_id";
+const char kCapabilityClass_ClientProcess[] = "client_process";
+const char kCapabilityClass_InstanceName[] = "instance_name";
 
 void EmptyResolverCallback(const String& resolved_name,
                            const String& resolved_instance,
@@ -65,7 +68,7 @@ CapabilityRequest GetCapabilityRequest(const CapabilitySpec& source_spec,
 
   // Fall back to looking for a wildcard rule.
   it = source_spec.required.find("*");
-  if (source_spec.required.size() == 1 && it != source_spec.required.end())
+  if (it != source_spec.required.end())
     return it->second;
 
   // Finally, nothing is allowed.
@@ -105,8 +108,7 @@ class Shell::Instance : public mojom::Connector,
       id_(GenerateUniqueID()),
       identity_(identity),
       capability_spec_(capability_spec),
-      allow_any_application_(capability_spec.required.size() == 1 &&
-                             capability_spec.required.count("*") == 1),
+      allow_any_application_(capability_spec.required.count("*") == 1),
       shell_client_(std::move(shell_client)),
       pid_receiver_binding_(this),
       weak_factory_(this) {
@@ -194,22 +196,17 @@ class Shell::Instance : public mojom::Connector,
                mojom::ClientProcessConnectionPtr client_process_connection,
                const ConnectCallback& callback) override {
     Identity target = target_ptr.To<Identity>();
+    if (target.user_id() == mojom::kInheritUserID)
+      target.set_user_id(identity_.user_id());
+
     if (!ValidateIdentity(target, callback))
       return;
     if (!ValidateClientProcessConnection(&client_process_connection, target,
                                          callback)) {
       return;
     }
-    // TODO(beng): Need to do the following additional policy validation of
-    // whether this instance is allowed to connect using:
-    // - a user id other than its own, kInheritUserID or kRootUserID.
-    // - a non-empty instance name.
-    // - a non-null client_process_connection.
     if (!ValidateCapabilities(target, callback))
       return;
-
-    if (target.user_id() == mojom::kInheritUserID)
-      target.set_user_id(identity_.user_id());
 
     scoped_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(identity_);
@@ -261,9 +258,19 @@ class Shell::Instance : public mojom::Connector,
 
   bool ValidateClientProcessConnection(
       mojom::ClientProcessConnectionPtr* client_process_connection,
-      const Identity& identity,
+      const Identity& target,
       const ConnectCallback& callback) {
     if (!client_process_connection->is_null()) {
+      if (!HasClass(kCapabilityClass_ClientProcess)) {
+        LOG(ERROR) << "Error: Instance: " << identity_.name() << " attempting "
+                   << "to register an instance for a process it created for "
+                   << "target: " << target.name() << " without the "
+                   << "mojo:shell{client_process} capability class.";
+        callback.Run(mojom::ConnectResult::ACCESS_DENIED,
+                     mojom::kInheritUserID, mojom::kInvalidInstanceID);
+        return false;
+      }
+
       if (!(*client_process_connection)->shell_client_factory.is_valid() ||
           !(*client_process_connection)->pid_receiver_request.is_valid()) {
         LOG(ERROR) << "Error: must supply both shell_client_factory AND "
@@ -273,11 +280,10 @@ class Shell::Instance : public mojom::Connector,
                      mojom::kInheritUserID, mojom::kInvalidInstanceID);
         return false;
       }
-      if (shell_->GetExistingOrRootInstance(identity)) {
+      if (shell_->GetExistingOrRootInstance(target)) {
         LOG(ERROR) << "Error: Cannot client process matching existing identity:"
-                   << "Name: " << identity.name() << " User: "
-                   << identity.user_id() << " Instance: "
-                   << identity.instance();
+                   << "Name: " << target.name() << " User: " << target.user_id()
+                   << " Instance: " << target.instance();
         callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
                      mojom::kInheritUserID, mojom::kInvalidInstanceID);
         return false;
@@ -288,6 +294,33 @@ class Shell::Instance : public mojom::Connector,
 
   bool ValidateCapabilities(const Identity& target,
                             const ConnectCallback& callback) {
+    // TODO(beng): Need to do the following additional policy validation of
+    // whether this instance is allowed to connect using:
+    // - a non-null client_process_connection.
+    if (target.user_id() != identity_.user_id() &&
+        target.user_id() != mojom::kRootUserID &&
+        !HasClass(kCapabilityClass_UserID)) {
+      LOG(ERROR) << "Instance: " << identity_.name() << " running as: "
+                  << identity_.user_id() << " attempting to connect to: "
+                  << target.name() << " as: " << target.user_id() << " without "
+                  << " the mojo:shell{user_id} capability class.";
+      callback.Run(mojom::ConnectResult::ACCESS_DENIED,
+                   mojom::kInheritUserID, mojom::kInvalidInstanceID);
+      return false;
+    }
+    if (!target.instance().empty() &&
+        target.instance() != GetNamePath(target.name()) &&
+        !HasClass(kCapabilityClass_InstanceName)) {
+      LOG(ERROR) << "Instance: " << identity_.name() << " attempting to "
+                  << "connect to " << target.name() << " using Instance name: "
+                  << target.instance() << " without the "
+                  << "mojo:shell{instance_name} capability class.";
+      callback.Run(mojom::ConnectResult::ACCESS_DENIED,
+                   mojom::kInheritUserID, mojom::kInvalidInstanceID);
+      return false;
+
+    }
+
     if (allow_any_application_ ||
         capability_spec_.required.find(target.name()) !=
             capability_spec_.required.end()) {
@@ -298,6 +331,13 @@ class Shell::Instance : public mojom::Connector,
     callback.Run(mojom::ConnectResult::ACCESS_DENIED,
                  mojom::kInheritUserID, mojom::kInvalidInstanceID);
     return false;
+  }
+
+  bool HasClass(const std::string& class_name) const {
+    auto it = capability_spec_.required.find(kShellName);
+    if (it == capability_spec_.required.end())
+      return false;
+    return it->second.classes.find(class_name) != it->second.classes.end();
   }
 
   uint32_t GenerateUniqueID() const {

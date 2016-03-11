@@ -1,5 +1,11 @@
 {
+  "manifest_version": 1,
   "name": "exe:shell_unittest_driver",
   "display_name": "Shell Unittest: Driver",
-  "capabilities": { "*": [ "*" ] }
+  "capabilities": {
+    "required": {
+      "*": { "interfaces": [ "*" ] },
+      "mojo:shell": { "classes":  ["client_process"] }
+    }
+  }
 }

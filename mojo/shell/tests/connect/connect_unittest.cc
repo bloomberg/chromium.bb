@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/test_suite.h"
@@ -28,6 +29,8 @@ const char kTestPackageName[] = "mojo:connect_test_package";
 const char kTestAppName[] = "mojo:connect_test_app";
 const char kTestAppAName[] = "mojo:connect_test_a";
 const char kTestAppBName[] = "mojo:connect_test_b";
+const char kTestClassAppName[] = "mojo:connect_test_class_app";
+const char kTestDriverName[] = "exe:connect_test_driver";
 
 void ReceiveOneString(std::string* out_string,
                       base::RunLoop* loop,
@@ -41,6 +44,16 @@ void ReceiveTwoStrings(std::string* out_string_1, std::string* out_string_2,
                        const String& in_string_1, const String& in_string_2) {
   *out_string_1 = in_string_1;
   *out_string_2 = in_string_2;
+  loop->Quit();
+}
+
+void ReceiveConnectionResult(mojom::ConnectResult* out_result,
+                             Identity* out_target,
+                             base::RunLoop* loop,
+                             int32_t in_result,
+                             mojom::IdentityPtr in_identity) {
+  *out_result = static_cast<shell::mojom::ConnectResult>(in_result);
+  *out_target = in_identity.To<Identity>();
   loop->Quit();
 }
 
@@ -284,6 +297,59 @@ TEST_F(ConnectTest, CapabilityClasses) {
   loop.Run();
   EXPECT_EQ("PONG", string1);
   EXPECT_EQ("CLASS APP", string2);
+}
+
+TEST_F(ConnectTest, ConnectAsDifferentUser_Allowed) {
+  scoped_ptr<Connection> connection = connector()->Connect(kTestAppName);
+  test::mojom::UserIdTestPtr user_id_test;
+  connection->GetInterface(&user_id_test);
+  shell::mojom::ConnectResult result;
+  Identity target(kTestClassAppName, base::GenerateGUID());
+  Identity result_identity;
+  {
+    base::RunLoop loop;
+    user_id_test->ConnectToClassAppAsDifferentUser(
+        mojom::Identity::From(target),
+        base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
+    loop.Run();
+  }
+  EXPECT_EQ(result, shell::mojom::ConnectResult::SUCCEEDED);
+  EXPECT_EQ(target, result_identity);
+}
+
+TEST_F(ConnectTest, ConnectAsDifferentUser_Blocked) {
+  scoped_ptr<Connection> connection = connector()->Connect(kTestAppAName);
+  test::mojom::UserIdTestPtr user_id_test;
+  connection->GetInterface(&user_id_test);
+  shell::mojom::ConnectResult result;
+  Identity target(kTestClassAppName, base::GenerateGUID());
+  Identity result_identity;
+  {
+    base::RunLoop loop;
+    user_id_test->ConnectToClassAppAsDifferentUser(
+        mojom::Identity::From(target),
+        base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
+    loop.Run();
+  }
+  EXPECT_EQ(shell::mojom::ConnectResult::ACCESS_DENIED, result);
+  EXPECT_FALSE(target == result_identity);
+}
+
+// There are various other tests (shell, lifecycle) that test valid client
+// process specifications. This is the only one for blocking.
+TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
+  scoped_ptr<Connection> connection = connector()->Connect(kTestDriverName);
+  test::mojom::ClientProcessTestPtr client_process_test;
+  connection->GetInterface(&client_process_test);
+  shell::mojom::ConnectResult result;
+  Identity result_identity;
+  {
+    base::RunLoop loop;
+    client_process_test->LaunchAndConnectToProcess(
+        base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
+    loop.Run();
+  }
+  EXPECT_EQ(shell::mojom::ConnectResult::ACCESS_DENIED, result);
 }
 
 // Tests that we can expose an interface to targets on outbound connections.

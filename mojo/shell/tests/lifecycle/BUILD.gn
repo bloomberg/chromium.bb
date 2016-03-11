@@ -16,11 +16,11 @@ source_set("lifecycle") {
     ":interfaces",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
     "//mojo/shell/public/cpp:shell_test_support",
     "//mojo/shell/public/cpp:sources",
     "//mojo/shell/public/interfaces",
     "//mojo/shell/runner/common",
+    "//mojo/shell/tests:util",
   ]
 
   data_deps = [
