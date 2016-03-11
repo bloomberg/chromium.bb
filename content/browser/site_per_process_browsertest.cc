@@ -4591,8 +4591,14 @@ void OnSyntheticGestureCompleted(scoped_refptr<MessageLoopRunner> runner,
 
 }  // namespace anonymous
 
+// Flaky under TSan. https://crbug.com/592320
+#if defined(THREAD_SANITIZER)
+#define MAYBE_SubframeGestureEventRouting DISABLED_SubframeGestureEventRouting
+#else
+#define MAYBE_SubframeGestureEventRouting SubframeGestureEventRouting
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       SubframeGestureEventRouting) {
+                       MAYBE_SubframeGestureEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
