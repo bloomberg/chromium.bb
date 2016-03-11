@@ -1131,13 +1131,17 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)shouldUseCustomAppKitFullscreenTransition:(BOOL)enterFullScreen {
-  // Custom fullscreen transitions should only be available in OSX 10.10+.
+  // Custom fullscreen transitions should only be available in OSX 10.9+.
   if (base::mac::IsOSMountainLionOrEarlier())
     return NO;
 
-  // Disable the custom exit animation in OSX 10.9:
-  // https://code.google.com/p/chromium/issues/detail?id=526327#c3.
+  // Disable the custom exit animation in OSX 10.9: http://crbug.com/526327#c3.
   if (base::mac::IsOSMavericks() && !enterFullScreen)
+    return NO;
+
+  // TODO(spqchan): Fix Flash fullscreen animation in popups.
+  // See http://crbug.com/566588.
+  if ([self isFullscreenForTabContent] && browser_->is_type_popup())
     return NO;
 
   NSView* root = [[self.window contentView] superview];
