@@ -382,7 +382,7 @@ class MockDemuxerAndroid : public DemuxerAndroid {
 
   // Conditions to wait for.
   bool IsInitialized() const { return client_; }
-  bool HasPendingConfigs() const { return pending_configs_; }
+  bool HasPendingConfigs() const { return !!pending_configs_; }
   bool ReceivedSeekRequest() const { return num_seeks_ > 0; }
   bool ReceivedBrowserSeekRequest() const { return num_browser_seeks_ > 0; }
 

@@ -225,7 +225,7 @@ void DevToolsServer::Stop() {
 }
 
 bool DevToolsServer::IsStarted() const {
-  return devtools_http_handler_;
+  return !!devtools_http_handler_;
 }
 
 bool RegisterDevToolsServer(JNIEnv* env) {

@@ -156,7 +156,7 @@ void AwDevToolsServer::Stop() {
 }
 
 bool AwDevToolsServer::IsStarted() const {
-  return devtools_http_handler_;
+  return !!devtools_http_handler_;
 }
 
 bool RegisterAwDevToolsServer(JNIEnv* env) {
