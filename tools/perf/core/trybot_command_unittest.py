@@ -41,6 +41,9 @@ class TrybotCommandTest(unittest.TestCase):
     self._urllib2_mock = self._urllib2_patcher.start()
     self._stubs = system_stub.Override(trybot_command,
                                        ['sys', 'open', 'os'])
+    # Always set git command to 'git' to simplify testing across platforms.
+    self._original_git_cmd = trybot_command._GIT_CMD
+    trybot_command._GIT_CMD = 'git'
 
   def tearDown(self):
     logging.getLogger().removeHandler(self.stream_handler)
@@ -50,6 +53,7 @@ class TrybotCommandTest(unittest.TestCase):
     self._urllib2_patcher.stop()
     # Reset the cached builders in trybot_command
     trybot_command.Trybot._builders = None
+    trybot_command._GIT_CMD = self._original_git_cmd
 
   def _ExpectProcesses(self, expected_args_list):
     counter = [-1]
