@@ -27,6 +27,27 @@ def GetAccountNameAndPassword(credential,
   c = credentials.get(credential)
   return c['username'], c['password']
 
+def InputWithSelector(action_runner, input_text, input_selector):
+  """Sets the text value of an input field in a form on the page.
+
+  Waits until the input element exists on the page. Then executes JS to populate
+  the value property of the element with |input_text|.
+
+  Args:
+    action_runner: ActionRunner instance to execute JS to populate form fields.
+    input_text: Text string to populate the input field with.
+    input_selector: The selector of the input element.
+
+
+  Raises:
+    exceptions.TimeoutException: If waiting to find the element times out.
+    exceptions.Error: See ExecuteJavaScript() for a detailed list of
+      possible exceptions.
+  """
+  action_runner.WaitForElement(selector=input_selector)
+  action_runner.ExecuteJavaScript(
+      'document.querySelector("%s").value = "%s";' %
+      (input_selector, input_text))
 
 def InputForm(action_runner, input_text, input_id, form_id=None):
   """Sets the text value of an input field in a form on the page.
@@ -51,7 +72,5 @@ def InputForm(action_runner, input_text, input_id, form_id=None):
     element_selector = '#%s' % (input_id)
   else:
     raise ValueError("Input ID can not be None or empty.")
-  action_runner.WaitForElement(selector=element_selector)
-  action_runner.ExecuteJavaScript(
-      'document.querySelector("%s").value = "%s";' %
-      (element_selector, input_text))
+  InputWithSelector(action_runner, input_text, element_selector)
+

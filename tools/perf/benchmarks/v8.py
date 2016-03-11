@@ -60,15 +60,9 @@ class V8DetachedContextAgeInGC(perf_benchmark.PerfBenchmark):
     return 'v8.detached_context_age_in_gc'
 
 
-# Disabled on reference builds because they don't support the new
-# Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
-@benchmark.Disabled('reference', 'android')  # crbug.com/579546
-@benchmark.Disabled('win')  # https://crbug.com/590747
-class V8InfiniteScroll(perf_benchmark.PerfBenchmark):
-  """Measures V8 GC metrics and memory usage while scrolling the top web pages.
-  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-
-  page_set = page_sets.InfiniteScrollPageSet
+class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
+  """ Base class for infinite scroll benchmarks.
+  """
 
   def SetExtraBrowserOptions(self, options):
     existing_js_flags = []
@@ -79,6 +73,8 @@ class V8InfiniteScroll(perf_benchmark.PerfBenchmark):
         # TODO(perezju): Temporary workaround to disable periodic memory dumps.
         # See: http://crbug.com/513692
         '--enable-memory-benchmarking',
+        # Disable push notifications for Facebook.
+        '--disable-notifications',
         # This overrides any existing --js-flags, hence we have to include the
         # previous flags as well.
         '--js-flags="--heap-growing-percent=10 %s"' %
@@ -104,11 +100,7 @@ class V8InfiniteScroll(perf_benchmark.PerfBenchmark):
     return options
 
   @classmethod
-  def Name(cls):
-    return 'v8.infinite_scroll'
-
-  @classmethod
-  def ValueCanBeAddedPredicate(cls, value, is_first_result):
+  def ValueCanBeAddedPredicate(cls, value, _):
     if value.tir_label in ['Load', 'Wait']:
       return (value.name.startswith('v8_') and not
               value.name.startswith('v8_gc'))
@@ -142,3 +134,31 @@ class V8TodoMVC(perf_benchmark.PerfBenchmark):
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
     return True
+
+
+# Disabled on reference builds because they don't support the new
+# Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
+@benchmark.Disabled('reference', 'android')  # crbug.com/579546
+@benchmark.Disabled('win')  # https://crbug.com/590747
+class V8InfiniteScroll(_InfiniteScrollBenchmark):
+  """Measures V8 GC metrics and memory usage while scrolling the top web pages.
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+
+  page_set = page_sets.InfiniteScrollPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'v8.infinite_scroll'
+
+
+@benchmark.Enabled('android')
+class V8MobileInfiniteScroll(_InfiniteScrollBenchmark):
+  """Measures V8 GC metrics and memory usage while scrolling the top mobile
+  web pages.
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+
+  page_set = page_sets.MobileInfiniteScrollPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'v8.mobile_infinite_scroll'
