@@ -5440,7 +5440,7 @@ Battery full
     Can't access network library
   </message>
   <message name="IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about layout switching">
-    Hit Shift-Alt to switch keyboard layout.
+    Hit Control-Shift-Space to switch keyboard layout.
   </message>
   <message name="IDS_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
     Caps Lock is on.
