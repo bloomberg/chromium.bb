@@ -166,7 +166,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     gpu::SyncPointManager* sync_point_manager,
     base::SingleThreadTaskRunner* task_runner,
     GpuCommandBufferStub* share_group,
-    const gfx::GLSurfaceHandle& handle,
+    gpu::SurfaceHandle surface_handle,
     gpu::gles2::MailboxManager* mailbox_manager,
     gpu::PreemptionFlag* preempt_by_flag,
     gpu::gles2::SubscriptionRefSet* subscription_ref_set,
@@ -184,7 +184,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       sync_point_manager_(sync_point_manager),
       task_runner_(task_runner),
       initialized_(false),
-      handle_(handle),
+      surface_handle_(surface_handle),
       initial_size_(size),
       disallowed_features_(disallowed_features),
       requested_attribs_(attribs),
@@ -461,7 +461,7 @@ void GpuCommandBufferStub::Destroy() {
 
   if (initialized_) {
     GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-    if (handle_.is_null() && !active_url_.is_empty())
+    if ((surface_handle_ == gpu::kNullSurfaceHandle) && !active_url_.is_empty())
       gpu_channel_manager->delegate()->DidDestroyOffscreenContext(active_url_);
   }
 
@@ -502,6 +502,20 @@ void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
   Send(reply_message);
 }
 
+scoped_refptr<gfx::GLSurface> GpuCommandBufferStub::CreateSurface() {
+  GpuChannelManager* manager = channel_->gpu_channel_manager();
+  scoped_refptr<gfx::GLSurface> surface;
+  if (surface_handle_ != gpu::kNullSurfaceHandle) {
+    surface = ImageTransportSurface::CreateNativeSurface(
+        manager, this, surface_handle_, surface_format_);
+    if (!surface || !surface->Initialize(surface_format_))
+      return nullptr;
+  } else {
+    surface = manager->GetDefaultOffscreenSurface();
+  }
+  return surface;
+}
+
 void GpuCommandBufferStub::OnInitialize(
     base::SharedMemoryHandle shared_state_handle,
     IPC::Message* reply_message) {
@@ -533,16 +547,7 @@ void GpuCommandBufferStub::OnInitialize(
 
   decoder_->set_engine(scheduler_.get());
 
-  if (!handle_.is_null()) {
-    surface_ = ImageTransportSurface::CreateSurface(
-        channel_->gpu_channel_manager(),
-        this,
-        handle_,
-        surface_format_);
-  } else {
-    surface_ = manager->GetDefaultOffscreenSurface();
-  }
-
+  surface_ = CreateSurface();
   if (!surface_.get()) {
     DLOG(ERROR) << "Failed to create surface.";
     OnInitializeFailed(reply_message);
@@ -661,7 +666,7 @@ void GpuCommandBufferStub::OnInitialize(
       reply_message, true, capabilities);
   Send(reply_message);
 
-  if (handle_.is_null() && !active_url_.is_empty())
+  if ((surface_handle_ == gpu::kNullSurfaceHandle) && !active_url_.is_empty())
     manager->delegate()->DidCreateOffscreenContext(active_url_);
 
   initialized_ = true;
@@ -726,7 +731,8 @@ void GpuCommandBufferStub::OnParseError() {
   // blocked from automatically running.
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
   gpu_channel_manager->delegate()->DidLoseContext(
-      handle_.is_null(), state.context_lost_reason, active_url_);
+      (surface_handle_ == gpu::kNullSurfaceHandle), state.context_lost_reason,
+      active_url_);
 
   CheckContextLost();
 }

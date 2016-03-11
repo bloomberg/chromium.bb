@@ -20,15 +20,17 @@ namespace content {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    const gfx::GLSurfaceHandle& handle,
+    gpu::SurfaceHandle surface_handle,
     gfx::GLSurface::Format format) {
   DCHECK(GpuSurfaceLookup::GetInstance());
-  DCHECK_EQ(handle.transport_type, gfx::NATIVE_DIRECT);
+  DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
+  // On Android, the surface_handle is the id of the surface in the
+  // GpuSurfaceTracker/GpuSurfaceLookup
   ANativeWindow* window =
-      GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(handle.handle);
+      GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(surface_handle);
   if (!window) {
     LOG(WARNING) << "Failed to acquire native widget.";
-    return scoped_refptr<gfx::GLSurface>();
+    return nullptr;
   }
   scoped_refptr<gfx::GLSurface> surface =
       new gfx::NativeViewGLSurfaceEGL(window);

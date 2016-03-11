@@ -54,7 +54,6 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/native_widget_types.h"
 
 #if defined(MOJO_RUNNER_CLIENT)
 #include "content/common/mojo/mojo_shell_connection_impl.h"
@@ -126,7 +125,7 @@ GpuProcessTransportFactory::CreateOffscreenCommandBufferContext() {
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(cause));
-  return CreateContextCommon(gpu_channel_host, 0);
+  return CreateContextCommon(gpu_channel_host, gpu::kNullSurfaceHandle);
 }
 
 scoped_ptr<cc::SoftwareOutputDevice>
@@ -282,17 +281,21 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     scoped_refptr<GpuChannelHost> gpu_channel_host =
         BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
     if (gpu_channel_host.get()) {
+      GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
+      gpu::SurfaceHandle surface_handle =
+          data->surface_id ? tracker->GetSurfaceHandle(data->surface_id)
+                           : gpu::kNullSurfaceHandle;
       context_provider = ContextProviderCommandBuffer::Create(
           GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
-                                                          data->surface_id),
+                                                          surface_handle),
           BROWSER_COMPOSITOR_ONSCREEN_CONTEXT);
       if (context_provider && !context_provider->BindToCurrentThread())
         context_provider = nullptr;
       if (!shared_worker_context_provider_ ||
           shared_worker_context_provider_lost) {
         shared_worker_context_provider_ = ContextProviderCommandBuffer::Create(
-            GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
-                                                            0),
+            GpuProcessTransportFactory::CreateContextCommon(
+                gpu_channel_host, gpu::kNullSurfaceHandle),
             BROWSER_WORKER_CONTEXT);
         if (shared_worker_context_provider_ &&
             !shared_worker_context_provider_->BindToCurrentThread())
@@ -588,24 +591,13 @@ GpuProcessTransportFactory::CreatePerCompositorData(
   DCHECK(!per_compositor_data_[compositor]);
 
   gfx::AcceleratedWidget widget = compositor->widget();
-  GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
 
   PerCompositorData* data = new PerCompositorData;
   if (compositor->widget() == gfx::kNullAcceleratedWidget) {
     data->surface_id = 0;
   } else {
+    GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
     data->surface_id = tracker->AddSurfaceForNativeWidget(widget);
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-    // On Mac and Android, we can't pass the AcceleratedWidget, which is
-    // process-local, so instead we pass the surface_id, so that we can look up
-    // the AcceleratedWidget on the GPU side or when we receive
-    // GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params.
-    gfx::PluginWindowHandle handle = data->surface_id;
-#else
-    gfx::PluginWindowHandle handle = widget;
-#endif
-    tracker->SetSurfaceHandle(data->surface_id,
-                              gfx::GLSurfaceHandle(handle, gfx::NATIVE_DIRECT));
   }
 
   per_compositor_data_[compositor] = data;
@@ -616,7 +608,7 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 GpuProcessTransportFactory::CreateContextCommon(
     scoped_refptr<GpuChannelHost> gpu_channel_host,
-    int surface_id) {
+    gpu::SurfaceHandle surface_handle) {
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   blink::WebGraphicsContext3D::Attributes attrs;
@@ -633,7 +625,7 @@ GpuProcessTransportFactory::CreateContextCommon(
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
-          surface_id,
+          surface_handle,
           url,
           gpu_channel_host.get(),
           attrs,

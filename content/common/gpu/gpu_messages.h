@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/events/latency_info.h"
@@ -53,8 +54,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuPreference,
                           gfx::GpuPreferenceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(content::GpuStreamPriority,
                           content::GpuStreamPriority::LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::SurfaceType,
-                          gfx::SURFACE_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::SwapResult, gfx::SwapResult::SWAP_RESULT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
                           gpu::MemoryAllocation::CUTOFF_LAST)
@@ -170,11 +169,6 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::MemoryAllocation)
   IPC_STRUCT_TRAITS_MEMBER(priority_cutoff_when_visible)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(gfx::GLSurfaceHandle)
-  IPC_STRUCT_TRAITS_MEMBER(handle)
-  IPC_STRUCT_TRAITS_MEMBER(transport_type)
-IPC_STRUCT_TRAITS_END()
-
 //------------------------------------------------------------------------------
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.
@@ -182,7 +176,7 @@ IPC_STRUCT_TRAITS_END()
 // Tells the GPU process to create a new command buffer that renders directly
 // to a native view. A corresponding GpuCommandBufferStub is created.
 IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateViewCommandBuffer,
-                            gfx::GLSurfaceHandle, /* compositing_surface */
+                            gpu::SurfaceHandle, /* surface_handle */
                             GPUCreateCommandBufferConfig, /* init_params */
                             int32_t /* route_id */,
                             bool /* succeeded */)

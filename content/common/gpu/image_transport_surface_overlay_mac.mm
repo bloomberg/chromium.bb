@@ -84,7 +84,7 @@ namespace content {
 scoped_refptr<gfx::GLSurface> ImageTransportSurfaceCreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::PluginWindowHandle handle) {
+    gpu::SurfaceHandle handle) {
   return new ImageTransportSurfaceOverlayMac(manager, stub, handle);
 }
 
@@ -118,7 +118,7 @@ class ImageTransportSurfaceOverlayMac::PendingSwap {
 ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::PluginWindowHandle handle)
+    gpu::SurfaceHandle handle)
     : manager_(manager),
       stub_(stub->AsWeakPtr()),
       handle_(handle),

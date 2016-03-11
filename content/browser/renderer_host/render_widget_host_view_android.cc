@@ -203,7 +203,7 @@ GLHelperHolder::CreateContext3D() {
   bool lose_context_when_out_of_memory = false;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
-          0,  // offscreen
+          gpu::kNullSurfaceHandle,  // offscreen
           url, gpu_channel_host.get(), attrs, lose_context_when_out_of_memory,
           limits, nullptr));
   context->SetContextType(BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);

@@ -26,11 +26,11 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
 struct GPUCreateCommandBufferConfig;
@@ -199,8 +199,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
 #if defined(OS_WIN)
   void OnAcceleratedSurfaceCreatedChildWindow(
-      const gfx::PluginWindowHandle& parent_handle,
-      const gfx::PluginWindowHandle& window_handle);
+      gpu::SurfaceHandle parent_handle,
+      gpu::SurfaceHandle window_handle);
 #endif
 
   void CreateChannelCache(int32_t client_id);

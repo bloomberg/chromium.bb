@@ -59,6 +59,13 @@ class GpuChannelTest : public GpuChannelTestCommon {
   }
 };
 
+#if defined(OS_WIN)
+const gpu::SurfaceHandle kFakeSurfaceHandle =
+    reinterpret_cast<gpu::SurfaceHandle>(1);
+#else
+const gpu::SurfaceHandle kFakeSurfaceHandle = 1;
+#endif
+
 TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   int32_t kClientId = 1;
   bool allow_view_command_buffers = true;
@@ -66,7 +73,9 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
       CreateChannel(kClientId, allow_view_command_buffers, false);
   ASSERT_TRUE(channel);
 
-  gfx::GLSurfaceHandle surface_handle;
+  gpu::SurfaceHandle surface_handle = kFakeSurfaceHandle;
+  DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
+
   int32_t kRouteId = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -76,10 +85,9 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool succeeded = false;
-  HandleMessage(channel, new GpuChannelMsg_CreateViewCommandBuffer(
-                             gfx::GLSurfaceHandle(gfx::kNullPluginWindow,
-                                                  gfx::NULL_TRANSPORT),
-                             init_params, kRouteId, &succeeded));
+  HandleMessage(channel,
+                new GpuChannelMsg_CreateViewCommandBuffer(
+                    surface_handle, init_params, kRouteId, &succeeded));
   EXPECT_TRUE(succeeded);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
@@ -93,7 +101,9 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
       CreateChannel(kClientId, allow_view_command_buffers, false);
   ASSERT_TRUE(channel);
 
-  gfx::GLSurfaceHandle surface_handle;
+  gpu::SurfaceHandle surface_handle = kFakeSurfaceHandle;
+  DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
+
   int32_t kRouteId = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -103,10 +113,9 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool succeeded = false;
-  HandleMessage(channel, new GpuChannelMsg_CreateViewCommandBuffer(
-                             gfx::GLSurfaceHandle(gfx::kNullPluginWindow,
-                                                  gfx::NULL_TRANSPORT),
-                             init_params, kRouteId, &succeeded));
+  HandleMessage(channel,
+                new GpuChannelMsg_CreateViewCommandBuffer(
+                    surface_handle, init_params, kRouteId, &succeeded));
   EXPECT_FALSE(succeeded);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
@@ -118,7 +127,6 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   GpuChannel* channel = CreateChannel(kClientId, true, false);
   ASSERT_TRUE(channel);
 
-  gfx::GLSurfaceHandle surface_handle;
   int32_t kRouteId = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;

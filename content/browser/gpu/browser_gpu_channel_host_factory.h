@@ -32,7 +32,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   bool IsMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
-  gfx::GLSurfaceHandle GetSurfaceHandle(int32_t surface_id) override;
 
   int GpuProcessHostId() { return gpu_host_id_; }
 #if !defined(OS_ANDROID)

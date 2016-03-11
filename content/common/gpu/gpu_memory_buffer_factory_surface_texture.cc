@@ -39,7 +39,7 @@ GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
-    gfx::PluginWindowHandle surface_handle) {
+    gpu::SurfaceHandle surface_handle) {
   // Note: this needs to be 0 as the surface texture implemenation will take
   // ownership of the texture and call glDeleteTextures when the GPU service
   // attaches the surface texture to a real texture id. glDeleteTextures

@@ -31,7 +31,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
  public:
   ImageTransportSurfaceOverlayMac(GpuChannelManager* manager,
                                   GpuCommandBufferStub* stub,
-                                  gfx::PluginWindowHandle handle);
+                                  gpu::SurfaceHandle handle);
 
   // GLSurface implementation
   bool Initialize(gfx::GLSurface::Format format) override;
@@ -106,7 +106,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   GpuChannelManager* manager_;
   base::WeakPtr<GpuCommandBufferStub> stub_;
-  gfx::PluginWindowHandle handle_;
+  gpu::SurfaceHandle handle_;
   std::vector<ui::LatencyInfo> latency_info_;
 
   bool use_remote_layer_api_;

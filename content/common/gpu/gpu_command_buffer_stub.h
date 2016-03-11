@@ -24,13 +24,13 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
@@ -80,7 +80,7 @@ class GpuCommandBufferStub
       gpu::SyncPointManager* sync_point_manager,
       base::SingleThreadTaskRunner* task_runner,
       GpuCommandBufferStub* share_group,
-      const gfx::GLSurfaceHandle& handle,
+      gpu::SurfaceHandle surface_handle,
       gpu::gles2::MailboxManager* mailbox_manager,
       gpu::PreemptionFlag* preempt_by_flag,
       gpu::gles2::SubscriptionRefSet* subscription_ref_set,
@@ -160,6 +160,8 @@ class GpuCommandBufferStub
 
   // Cleans up and sends reply if OnInitialize failed.
   void OnInitializeFailed(IPC::Message* reply_message);
+
+  scoped_refptr<gfx::GLSurface> CreateSurface();
 
   // Message handlers:
   void OnInitialize(base::SharedMemoryHandle shared_state_shm,
@@ -242,7 +244,7 @@ class GpuCommandBufferStub
   scoped_refptr<gpu::gles2::ContextGroup> context_group_;
 
   bool initialized_;
-  gfx::GLSurfaceHandle handle_;
+  const gpu::SurfaceHandle surface_handle_;
   gfx::Size initial_size_;
   gpu::gles2::DisallowedFeatures disallowed_features_;
   std::vector<int32_t> requested_attribs_;

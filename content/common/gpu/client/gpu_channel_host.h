@@ -23,6 +23,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/gpu/gpu_stream_constants.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
@@ -31,15 +32,11 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gpu_preference.h"
 
 class GURL;
-class TransportTextureService;
-struct GPUCreateCommandBufferConfig;
 
 namespace base {
-class MessageLoop;
 class WaitableEvent;
 }
 
@@ -49,8 +46,6 @@ class SyncMessageFilter;
 
 namespace media {
 class JpegDecodeAccelerator;
-class VideoDecodeAccelerator;
-class VideoEncodeAccelerator;
 }
 
 namespace gpu {
@@ -69,7 +64,6 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetIOThreadTaskRunner() = 0;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;
-  virtual gfx::GLSurfaceHandle GetSurfaceHandle(int32_t surface_id) = 0;
 };
 
 // Encapsulates an IPC channel between the client and one GPU process.
@@ -120,7 +114,7 @@ class GpuChannelHost : public IPC::Sender,
 
   // Create and connect to a command buffer in the GPU process.
   scoped_ptr<CommandBufferProxyImpl> CreateViewCommandBuffer(
-      int32_t surface_id,
+      gpu::SurfaceHandle surface_handle,
       CommandBufferProxyImpl* share_group,
       int32_t stream_id,
       GpuStreamPriority stream_priority,

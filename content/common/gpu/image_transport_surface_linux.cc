@@ -12,16 +12,15 @@ namespace content {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    const gfx::GLSurfaceHandle& handle,
+    gpu::SurfaceHandle surface_handle,
     gfx::GLSurface::Format format) {
-  DCHECK(handle.handle);
-  DCHECK(handle.transport_type == gfx::NATIVE_DIRECT);
+  DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
   scoped_refptr<gfx::GLSurface> surface;
 #if defined(USE_OZONE)
-  surface = gfx::GLSurface::CreateSurfacelessViewGLSurface(handle.handle);
+  surface = gfx::GLSurface::CreateSurfacelessViewGLSurface(surface_handle);
 #endif
   if (!surface)
-    surface = gfx::GLSurface::CreateViewGLSurface(handle.handle);
+    surface = gfx::GLSurface::CreateViewGLSurface(surface_handle);
   if (!surface)
     return surface;
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(

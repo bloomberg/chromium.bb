@@ -20,9 +20,9 @@
 #include "content/common/gpu/client/command_buffer_metrics.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
 
@@ -108,7 +108,7 @@ class WebGraphicsContext3DCommandBufferImpl
   };
 
   WebGraphicsContext3DCommandBufferImpl(
-      int surface_id,
+      gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
       GpuChannelHost* host,
       const Attributes& attributes,
@@ -166,7 +166,7 @@ class WebGraphicsContext3DCommandBufferImpl
   // thread).
   bool MaybeInitializeGL();
 
-  bool InitializeCommandBuffer(bool onscreen,
+  bool InitializeCommandBuffer(
       WebGraphicsContext3DCommandBufferImpl* share_context);
 
   void Destroy();
@@ -178,13 +178,13 @@ class WebGraphicsContext3DCommandBufferImpl
   //
   // NOTE: on Mac OS X, this entry point is only used to set up the
   // accelerated compositor's output. On this platform, we actually pass
-  // a gfx::PluginWindowHandle in place of the gfx::NativeViewId,
+  // a gpu::SurfaceHandle in place of the gfx::NativeViewId,
   // because the facility to allocate a fake PluginWindowHandle is
   // already in place. We could add more entry points and messages to
   // allocate both fake PluginWindowHandles and NativeViewIds and map
   // from fake NativeViewIds to PluginWindowHandles, but this seems like
   // unnecessary complexity at the moment.
-  bool CreateContext(bool onscreen);
+  bool CreateContext();
 
   virtual void OnContextLost();
 
@@ -195,7 +195,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   // State needed by MaybeInitializeGL.
   scoped_refptr<GpuChannelHost> host_;
-  int32_t surface_id_;
+  gpu::SurfaceHandle surface_handle_;
   GURL active_url_;
   CommandBufferContextType context_type_;
 

@@ -27,25 +27,24 @@ namespace content {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    const gfx::GLSurfaceHandle& handle,
+    gpu::SurfaceHandle surface_handle,
     gfx::GLSurface::Format format) {
-  DCHECK(handle.handle);
-  DCHECK_EQ(handle.transport_type, gfx::NATIVE_DIRECT);
+  DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
 
   scoped_refptr<gfx::GLSurface> surface;
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
       gfx::GLSurfaceEGL::IsDirectCompositionSupported()) {
     scoped_refptr<ChildWindowSurfaceWin> egl_surface(
-        new ChildWindowSurfaceWin(manager, handle.handle));
+        new ChildWindowSurfaceWin(manager, surface_handle));
     surface = egl_surface;
 
     // TODO(jbauman): Get frame statistics from DirectComposition
     scoped_ptr<gfx::VSyncProvider> vsync_provider(
-        new gfx::VSyncProviderWin(handle.handle));
+        new gfx::VSyncProviderWin(surface_handle));
     if (!egl_surface->Initialize(std::move(vsync_provider)))
       return nullptr;
   } else {
-    surface = gfx::GLSurface::CreateViewGLSurface(handle.handle);
+    surface = gfx::GLSurface::CreateViewGLSurface(surface_handle);
     if (!surface)
       return nullptr;
   }

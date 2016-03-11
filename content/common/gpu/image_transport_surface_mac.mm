@@ -14,7 +14,7 @@ namespace content {
 scoped_refptr<gfx::GLSurface> ImageTransportSurfaceCreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    gfx::PluginWindowHandle handle);
+    gpu::SurfaceHandle handle);
 
 namespace {
 
@@ -46,24 +46,23 @@ bool g_allow_os_mesa = false;
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    const gfx::GLSurfaceHandle& surface_handle,
+    gpu::SurfaceHandle surface_handle,
     gfx::GLSurface::Format format) {
-  DCHECK(surface_handle.transport_type == gfx::NATIVE_DIRECT ||
-         surface_handle.transport_type == gfx::NULL_TRANSPORT);
+  DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
 
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationDesktopGL:
     case gfx::kGLImplementationDesktopGLCoreProfile:
     case gfx::kGLImplementationAppleGL:
       return ImageTransportSurfaceCreateNativeSurface(manager, stub,
-                                                      surface_handle.handle);
+                                                      surface_handle);
     default:
       // Content shell in DRT mode spins up a gpu process which needs an
       // image transport surface, but that surface isn't used to read pixel
       // baselines. So this is mostly a dummy surface.
       if (!g_allow_os_mesa) {
         NOTREACHED();
-        return scoped_refptr<gfx::GLSurface>();
+        return nullptr;
       }
       scoped_refptr<gfx::GLSurface> surface(new DRTSurfaceOSMesa());
       if (!surface.get() || !surface->Initialize(format))

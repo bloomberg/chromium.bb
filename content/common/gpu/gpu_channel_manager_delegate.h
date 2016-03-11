@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_DELEGATE_H_
 
 #include "gpu/command_buffer/common/constants.h"
-#include "ui/gfx/native_widget_types.h"
+#include "gpu/ipc/common/surface_handle.h"
 
 class GURL;
 
@@ -66,8 +66,8 @@ class GpuChannelManagerDelegate {
 
 #if defined(OS_WIN)
   virtual void SendAcceleratedSurfaceCreatedChildWindow(
-      const gfx::PluginWindowHandle& parent_window,
-      const gfx::PluginWindowHandle& child_window) = 0;
+      gpu::SurfaceHandle parent_window,
+      gpu::SurfaceHandle child_window) = 0;
 #endif
 
  protected:

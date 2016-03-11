@@ -11,9 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
 class ImageFactory;
@@ -40,7 +40,7 @@ class CONTENT_EXPORT GpuMemoryBufferFactory {
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int client_id,
-      gfx::PluginWindowHandle surface_handle) = 0;
+      gpu::SurfaceHandle surface_handle) = 0;
 
   // Creates a new GPU memory buffer instance from an existing handle. A valid
   // handle is returned on success. It can be called on any thread.

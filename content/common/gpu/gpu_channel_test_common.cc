@@ -53,8 +53,8 @@ void TestGpuChannelManagerDelegate::SendAcceleratedSurfaceBuffersSwapped(
 
 #if defined(OS_WIN)
 void TestGpuChannelManagerDelegate::SendAcceleratedSurfaceCreatedChildWindow(
-    const gfx::PluginWindowHandle& parent_window,
-    const gfx::PluginWindowHandle& child_window) {}
+    gpu::SurfaceHandle parent_window,
+    gpu::SurfaceHandle child_window) {}
 #endif
 
 TestGpuChannelManager::TestGpuChannelManager(

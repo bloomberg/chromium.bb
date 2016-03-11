@@ -210,7 +210,7 @@ class CONTENT_EXPORT GpuChannel
 
   // Message handlers for control messages.
   void OnCreateViewCommandBuffer(
-      const gfx::GLSurfaceHandle& window,
+      gpu::SurfaceHandle surface_handle,
       const GPUCreateCommandBufferConfig& init_params,
       int32_t route_id,
       bool* succeeded);
@@ -221,7 +221,7 @@ class CONTENT_EXPORT GpuChannel
       bool* succeeded);
   void OnDestroyCommandBuffer(int32_t route_id);
 
-  bool CreateCommandBuffer(const gfx::GLSurfaceHandle& window,
+  bool CreateCommandBuffer(gpu::SurfaceHandle surface_handle,
                            const gfx::Size& size,
                            const GPUCreateCommandBufferConfig& init_params,
                            int32_t route_id);

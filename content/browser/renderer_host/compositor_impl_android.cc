@@ -319,9 +319,6 @@ void CompositorImpl::SetSurface(jobject surface) {
     window_ = window;
     ANativeWindow_acquire(window);
     surface_id_ = tracker->AddSurfaceForNativeWidget(window);
-    tracker->SetSurfaceHandle(
-        surface_id_,
-        gfx::GLSurfaceHandle(surface_id_, gfx::NATIVE_DIRECT));
     // Register first, SetVisible() might create an OutputSurface.
     RegisterViewSurface(surface_id_, j_surface.obj());
     SetVisible(true);
@@ -433,8 +430,10 @@ CreateGpuProcessViewContext(
       3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
   limits.mapped_memory_reclaim_limit = 2 * 1024 * 1024;
   bool lose_context_when_out_of_memory = true;
+  GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
+  gpu::SurfaceHandle surface_handle = tracker->GetSurfaceHandle(surface_id);
   return make_scoped_ptr(
-      new WebGraphicsContext3DCommandBufferImpl(surface_id,
+      new WebGraphicsContext3DCommandBufferImpl(surface_handle,
                                                 url,
                                                 gpu_channel_host.get(),
                                                 attributes,

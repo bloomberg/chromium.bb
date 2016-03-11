@@ -190,16 +190,17 @@ void GpuChannelHost::InternalFlush(StreamFlushInfo* flush_info) {
 }
 
 scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
-    int32_t surface_id,
+    gpu::SurfaceHandle surface_handle,
     CommandBufferProxyImpl* share_group,
     int32_t stream_id,
     GpuStreamPriority stream_priority,
     const std::vector<int32_t>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
+  DCHECK_NE(gpu::kNullSurfaceHandle, surface_handle);
   DCHECK(!share_group || (stream_id == share_group->stream_id()));
-  TRACE_EVENT1("gpu", "GpuChannelHost::CreateViewCommandBuffer", "surface_id",
-               surface_id);
+  TRACE_EVENT1("gpu", "GpuChannelHost::CreateViewCommandBuffer",
+               "surface_handle", surface_handle);
 
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id =
@@ -211,9 +212,6 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
   init_params.gpu_preference = gpu_preference;
 
   int32_t route_id = GenerateRouteID();
-
-  gfx::GLSurfaceHandle surface_handle = factory_->GetSurfaceHandle(surface_id);
-  DCHECK(!surface_handle.is_null());
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
   tracked_objects::ScopedTracker tracking_profile(

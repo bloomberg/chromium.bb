@@ -84,7 +84,7 @@ WebGraphicsContext3DCommandBufferImpl::ShareGroup::~ShareGroup() {
 }
 
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
-    int surface_id,
+    gpu::SurfaceHandle surface_handle,
     const GURL& active_url,
     GpuChannelHost* host,
     const Attributes& attributes,
@@ -95,7 +95,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       attributes_(attributes),
       visible_(false),
       host_(host),
-      surface_id_(surface_id),
+      surface_handle_(surface_handle),
       active_url_(active_url),
       context_type_(CONTEXT_TYPE_UNKNOWN),
       gpu_preference_(attributes.preferDiscreteGPU ? gfx::PreferDiscreteGpu
@@ -138,7 +138,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "125248 WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL"));
 
-  if (!CreateContext(surface_id_ != 0)) {
+  if (!CreateContext()) {
     Destroy();
 
     initialize_failed_ = true;
@@ -163,7 +163,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
-    bool onscreen, WebGraphicsContext3DCommandBufferImpl* share_context) {
+    WebGraphicsContext3DCommandBufferImpl* share_context) {
   if (!host_.get())
     return false;
 
@@ -182,12 +182,12 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   attribs_for_gles2.Serialize(&attribs);
 
   // Create a proxy to a command buffer in the GPU process.
-  if (onscreen) {
-    command_buffer_ =
-        host_->CreateViewCommandBuffer(surface_id_, share_group_command_buffer,
-                                       GpuChannelHost::kDefaultStreamId,
-                                       GpuChannelHost::kDefaultStreamPriority,
-                                       attribs, active_url_, gpu_preference_);
+  if (surface_handle_ != gpu::kNullSurfaceHandle) {
+    command_buffer_ = host_->CreateViewCommandBuffer(
+        surface_handle_, share_group_command_buffer,
+        GpuChannelHost::kDefaultStreamId,
+        GpuChannelHost::kDefaultStreamPriority, attribs, active_url_,
+        gpu_preference_);
   } else {
     command_buffer_ = host_->CreateOffscreenCommandBuffer(
         gfx::Size(1, 1), share_group_command_buffer,
@@ -213,7 +213,7 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   return result;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
+bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::CreateContext");
   scoped_refptr<gpu::gles2::ShareGroup> gles2_share_group;
 
@@ -225,7 +225,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
     share_group_lock.reset(new base::AutoLock(share_group_->lock()));
     share_context = share_group_->GetAnyContextLocked();
 
-    if (!InitializeCommandBuffer(onscreen, share_context)) {
+    if (!InitializeCommandBuffer(share_context)) {
       LOG(ERROR) << "Failed to initialize command buffer.";
       return false;
     }
@@ -349,7 +349,7 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     return NULL;
 
   return new WebGraphicsContext3DCommandBufferImpl(
-      0,
+      gpu::kNullSurfaceHandle,
       active_url,
       host,
       attributes,

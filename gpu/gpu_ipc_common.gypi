@@ -17,6 +17,7 @@
     'ipc/common/id_type_traits.h',
     'ipc/common/memory_stats.cc',
     'ipc/common/memory_stats.h',
+    'ipc/common/surface_handle.h',
   ],
   'conditions': [
     # This section applies to gpu_ipc_win64, used by the NaCl Win64 helper

@@ -2148,8 +2148,8 @@ RenderWidget::CreateGraphicsContext3D(GpuChannelHost* gpu_channel_host) {
   limits.min_transfer_buffer_size = 64 * 1024;
 
   return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
-          0, GetURLForGraphicsContext3D(), gpu_channel_host, attributes,
-          lose_context_when_out_of_memory, limits, NULL));
+      gpu::kNullSurfaceHandle, GetURLForGraphicsContext3D(), gpu_channel_host,
+      attributes, lose_context_when_out_of_memory, limits, NULL));
 }
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {

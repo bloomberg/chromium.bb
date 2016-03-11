@@ -17,12 +17,12 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/memory_stats.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
-#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 
@@ -63,7 +63,7 @@ IPC_STRUCT_BEGIN(GpuMsg_CreateGpuMemoryBuffer_Params)
   IPC_STRUCT_MEMBER(gfx::BufferFormat, format)
   IPC_STRUCT_MEMBER(gfx::BufferUsage, usage)
   IPC_STRUCT_MEMBER(int32_t, client_id)
-  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, surface_handle)
+  IPC_STRUCT_MEMBER(gpu::SurfaceHandle, surface_handle)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuMsg_CreateGpuMemoryBufferFromHandle_Params)
@@ -269,8 +269,8 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
 
 #if defined(OS_WIN)
 IPC_MESSAGE_CONTROL2(GpuHostMsg_AcceleratedSurfaceCreatedChildWindow,
-                     gfx::PluginWindowHandle /* parent_window */,
-                     gfx::PluginWindowHandle /* child_window */)
+                     gpu::SurfaceHandle /* parent_window */,
+                     gpu::SurfaceHandle /* child_window */)
 #endif
 
 IPC_MESSAGE_CONTROL1(GpuHostMsg_DidCreateOffscreenContext, GURL /* url */)

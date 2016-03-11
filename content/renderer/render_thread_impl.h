@@ -475,7 +475,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
-  gfx::GLSurfaceHandle GetSurfaceHandle(int32_t surface_id) override;
 
   void Init();
 

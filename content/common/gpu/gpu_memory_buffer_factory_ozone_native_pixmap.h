@@ -36,7 +36,7 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryOzoneNativePixmap
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int client_id,
-      gfx::PluginWindowHandle surface_handle) override;
+      gpu::SurfaceHandle surface_handle) override;
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       gfx::GpuMemoryBufferId id,

@@ -94,8 +94,8 @@ class GpuChildThread : public ChildThreadImpl,
 #endif
 #if defined(OS_WIN)
   void SendAcceleratedSurfaceCreatedChildWindow(
-      const gfx::PluginWindowHandle& parent_window,
-      const gfx::PluginWindowHandle& child_window) override;
+      gpu::SurfaceHandle parent_window,
+      gpu::SurfaceHandle child_window) override;
 #endif
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,

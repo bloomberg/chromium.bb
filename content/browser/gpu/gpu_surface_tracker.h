@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -44,13 +45,9 @@ class CONTENT_EXPORT GpuSurfaceTracker : public GpuSurfaceLookup {
   // Removes a given existing surface.
   void RemoveSurface(int surface_id);
 
-  // Sets the native handle for the given surface.
-  // Note: This is an O(log N) lookup.
-  void SetSurfaceHandle(int surface_id, const gfx::GLSurfaceHandle& handle);
-
   // Gets the native handle for the given surface.
   // Note: This is an O(log N) lookup.
-  gfx::GLSurfaceHandle GetSurfaceHandle(int surface_id);
+  gpu::SurfaceHandle GetSurfaceHandle(int surface_id);
 
   // Returns the number of surfaces currently registered with the tracker.
   std::size_t GetSurfaceCount();
@@ -60,15 +57,7 @@ class CONTENT_EXPORT GpuSurfaceTracker : public GpuSurfaceLookup {
   static GpuSurfaceTracker* GetInstance();
 
  private:
-  struct SurfaceInfo {
-    SurfaceInfo();
-    SurfaceInfo(const gfx::AcceleratedWidget& native_widget,
-                const gfx::GLSurfaceHandle& handle);
-    ~SurfaceInfo();
-    gfx::AcceleratedWidget native_widget;
-    gfx::GLSurfaceHandle handle;
-  };
-  typedef std::map<int, SurfaceInfo> SurfaceMap;
+  typedef std::map<int, gfx::AcceleratedWidget> SurfaceMap;
 
   friend struct base::DefaultSingletonTraits<GpuSurfaceTracker>;
 

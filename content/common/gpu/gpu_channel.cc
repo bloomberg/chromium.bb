@@ -905,16 +905,17 @@ const GpuCommandBufferStub* GpuChannel::GetOneStub() const {
 #endif
 
 void GpuChannel::OnCreateViewCommandBuffer(
-    const gfx::GLSurfaceHandle& window,
+    gpu::SurfaceHandle surface_handle,
     const GPUCreateCommandBufferConfig& init_params,
     int32_t route_id,
     bool* succeeded) {
   TRACE_EVENT1("gpu", "GpuChannel::CreateViewCommandBuffer", "route_id",
                route_id);
   *succeeded = false;
-  if (allow_view_command_buffers_ && !window.is_null()) {
+  if (allow_view_command_buffers_ &&
+      surface_handle != gpu::kNullSurfaceHandle) {
     *succeeded =
-        CreateCommandBuffer(window, gfx::Size(), init_params, route_id);
+        CreateCommandBuffer(surface_handle, gfx::Size(), init_params, route_id);
   }
 }
 
@@ -926,11 +927,11 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
   TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer", "route_id",
                route_id);
   *succeeded =
-      CreateCommandBuffer(gfx::GLSurfaceHandle(), size, init_params, route_id);
+      CreateCommandBuffer(gpu::kNullSurfaceHandle, size, init_params, route_id);
 }
 
 bool GpuChannel::CreateCommandBuffer(
-    const gfx::GLSurfaceHandle& window,
+    gpu::SurfaceHandle surface_handle,
     const gfx::Size& size,
     const GPUCreateCommandBufferConfig& init_params,
     int32_t route_id) {
@@ -957,10 +958,10 @@ bool GpuChannel::CreateCommandBuffer(
     return false;
   }
 
-  bool offscreen = window.is_null();
+  bool offscreen = (surface_handle == gpu::kNullSurfaceHandle);
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, sync_point_manager_, task_runner_.get(), share_group, window,
-      mailbox_manager_.get(), preempted_flag_.get(),
+      this, sync_point_manager_, task_runner_.get(), share_group,
+      surface_handle, mailbox_manager_.get(), preempted_flag_.get(),
       subscription_ref_set_.get(), pending_valuebuffer_state_.get(), size,
       disallowed_features_, init_params.attribs, init_params.gpu_preference,
       init_params.stream_id, route_id, offscreen, watchdog_,

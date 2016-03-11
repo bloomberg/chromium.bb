@@ -642,8 +642,8 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 
 #if defined(OS_WIN)
 void GpuProcessHost::OnAcceleratedSurfaceCreatedChildWindow(
-    const gfx::PluginWindowHandle& parent_handle,
-    const gfx::PluginWindowHandle& window_handle) {
+    gpu::SurfaceHandle parent_handle,
+    gpu::SurfaceHandle window_handle) {
   if (!in_process_) {
     DCHECK(process_);
     {
@@ -744,7 +744,9 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
   params.usage = usage;
   params.client_id = client_id;
   params.surface_handle =
-      GpuSurfaceTracker::GetInstance()->GetSurfaceHandle(surface_id).handle;
+      surface_id
+          ? GpuSurfaceTracker::GetInstance()->GetSurfaceHandle(surface_id)
+          : gpu::kNullSurfaceHandle;
   if (Send(new GpuMsg_CreateGpuMemoryBuffer(params))) {
     create_gpu_memory_buffer_requests_.push(callback);
   } else {

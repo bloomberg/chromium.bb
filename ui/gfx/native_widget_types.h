@@ -213,29 +213,6 @@ typedef intptr_t NativeViewId;
   const PluginWindowHandle kNullPluginWindow = 0;
 #endif
 
-enum SurfaceType {
-  EMPTY,
-  NATIVE_DIRECT,
-  NULL_TRANSPORT,
-  SURFACE_TYPE_LAST = NULL_TRANSPORT
-};
-
-struct GLSurfaceHandle {
-  GLSurfaceHandle() : handle(kNullPluginWindow), transport_type(EMPTY) {}
-  GLSurfaceHandle(PluginWindowHandle handle_, SurfaceType transport_)
-      : handle(handle_), transport_type(transport_) {
-    DCHECK(!is_null() || handle == kNullPluginWindow);
-    DCHECK(transport_type != NULL_TRANSPORT ||
-           handle == kNullPluginWindow);
-  }
-  bool is_null() const { return transport_type == EMPTY; }
-  bool is_transport() const {
-    return transport_type == NULL_TRANSPORT;
-  }
-  PluginWindowHandle handle;
-  SurfaceType transport_type;
-};
-
 // AcceleratedWidget provides a surface to compositors to paint pixels.
 #if defined(OS_WIN)
 typedef HWND AcceleratedWidget;

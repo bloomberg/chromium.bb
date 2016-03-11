@@ -18,7 +18,6 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -275,11 +274,6 @@ BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
   if (!shm->CreateAnonymous(size))
     return scoped_ptr<base::SharedMemory>();
   return shm;
-}
-
-gfx::GLSurfaceHandle BrowserGpuChannelHostFactory::GetSurfaceHandle(
-    int32_t surface_id) {
-  return GpuSurfaceTracker::Get()->GetSurfaceHandle(surface_id);
 }
 
 // Blocking the UI thread to open a GPU channel is not supported on Android.

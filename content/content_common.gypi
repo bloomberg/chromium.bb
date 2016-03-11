@@ -401,7 +401,6 @@
       'common/gpu/gpu_surface_lookup.cc',
       'common/gpu/gpu_surface_lookup.h',
       'common/gpu/gpu_watchdog.h',
-      'common/gpu/image_transport_surface.cc',
       'common/gpu/image_transport_surface.h',
       'common/gpu/image_transport_surface_android.cc',
       'common/gpu/image_transport_surface_linux.cc',

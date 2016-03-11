@@ -1745,11 +1745,6 @@ scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
   return HostAllocateSharedMemoryBuffer(size);
 }
 
-gfx::GLSurfaceHandle RenderThreadImpl::GetSurfaceHandle(int32_t surface_id) {
-  NOTREACHED();
-  return gfx::GLSurfaceHandle();
-}
-
 void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
   notify_webkit_of_modal_loop_ = false;
 }

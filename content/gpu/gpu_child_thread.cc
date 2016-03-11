@@ -339,8 +339,8 @@ void GpuChildThread::SendAcceleratedSurfaceBuffersSwapped(
 
 #if defined(OS_WIN)
 void GpuChildThread::SendAcceleratedSurfaceCreatedChildWindow(
-    const gfx::PluginWindowHandle& parent_window,
-    const gfx::PluginWindowHandle& child_window) {
+    gpu::SurfaceHandle parent_window,
+    gpu::SurfaceHandle child_window) {
   Send(new GpuHostMsg_AcceleratedSurfaceCreatedChildWindow(parent_window,
                                                            child_window));
 }

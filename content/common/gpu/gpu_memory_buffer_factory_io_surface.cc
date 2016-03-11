@@ -47,7 +47,7 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
-    gfx::PluginWindowHandle surface_handle) {
+    gpu::SurfaceHandle surface_handle) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       gfx::CreateIOSurface(size, format));
   if (!io_surface)
