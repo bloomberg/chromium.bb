@@ -590,14 +590,18 @@ void SyncTest::InitializeInvalidations(int index) {
 bool SyncTest::SetupSync() {
   // Create sync profiles and clients if they haven't already been created.
   if (profiles_.empty()) {
-    if (!SetupClients())
+    if (!SetupClients()) {
       LOG(FATAL) << "SetupClients() failed.";
+      return false;
+    }
   }
 
   // Sync each of the profiles.
   for (int i = 0; i < num_clients_; ++i) {
-    if (!GetClient(i)->SetupSync())
+    if (!GetClient(i)->SetupSync()) {
       LOG(FATAL) << "SetupSync() failed.";
+      return false;
+    }
   }
 
   // Because clients may modify sync data as part of startup (for example local
@@ -608,7 +612,10 @@ bool SyncTest::SetupSync() {
   // have to find their own way of waiting for an initial state if they really
   // need such guarantees.
   if (TestUsesSelfNotifications()) {
-    AwaitQuiescence();
+    if (!AwaitQuiescence()) {
+      LOG(FATAL) << "AwaitQuiescence() failed.";
+      return false;
+    }
   }
 
   // SyncRefresher is used instead of invalidations to notify other profiles to

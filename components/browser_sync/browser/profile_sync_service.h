@@ -165,14 +165,8 @@ class EncryptedData;
 //   up sync at least once on their account. SetSetupInProgress(true) should be
 //   called while the user is actively configuring their account, and then
 //   SetSetupInProgress(false) should be called when configuration is complete.
-//   When SetFirstSetupComplete() == false, but SetSetupInProgress(true) has
-//   been called, then the sync engine knows not to download any user data.
-//
-//   When initial sync is complete, the UI code should call
-//   SetFirstSetupComplete() followed by SetSetupInProgress(false) - this will
-//   tell the sync engine that setup is completed and it can begin downloading
-//   data from the sync server.
-//
+//   Once both these conditions have been met, CanConfigureDataTypes() will
+//   return true and datatype configuration can begin.
 class ProfileSyncService : public sync_driver::SyncService,
                            public sync_driver::SyncFrontend,
                            public sync_driver::SyncPrefObserver,
@@ -508,9 +502,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   SigninManagerBase* signin() const;
 
-  // Used by tests.
-  bool auto_start_enabled() const;
-
   SyncErrorController* sync_error_controller() {
     return sync_error_controller_.get();
   }
@@ -781,6 +772,9 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Restarts sync clearing directory in the process.
   void OnClearServerDataDone();
+
+  // True if setup has been completed at least once and is not in progress.
+  bool CanConfigureDataTypes() const;
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.

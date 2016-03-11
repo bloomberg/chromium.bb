@@ -35,8 +35,7 @@ enum ProfileSyncServiceStartBehavior {
 // to as "the backend").
 class StartupController {
  public:
-  StartupController(ProfileSyncServiceStartBehavior start_behavior,
-                    const ProfileOAuth2TokenService* token_service,
+  StartupController(const ProfileOAuth2TokenService* token_service,
                     const sync_driver::SyncPrefs* sync_prefs,
                     const SigninManagerWrapper* signin,
                     base::Closure start_backend);
@@ -64,7 +63,6 @@ class StartupController {
 
   void set_setup_in_progress(bool in_progress);
   bool IsSetupInProgress() const { return setup_in_progress_; }
-  bool auto_start_enabled() const { return auto_start_enabled_; }
   base::Time start_backend_time() const { return start_backend_time_; }
   std::string GetBackendInitializationStateString() const;
 
@@ -98,12 +96,6 @@ class StartupController {
   // due to explicit requests to do so via set_setup_in_progress.
   bool setup_in_progress_;
 
-  // If true, we want to automatically start sync signin whenever we have
-  // credentials (user doesn't need to go through the startup flow). This is
-  // typically enabled on platforms (like ChromeOS) that have their own
-  // distinct signin flow.
-  const bool auto_start_enabled_;
-
   const sync_driver::SyncPrefs* sync_prefs_;
 
   const ProfileOAuth2TokenService* token_service_;
@@ -121,9 +113,6 @@ class StartupController {
 
   // Used to compute preferred_types from SyncPrefs as-needed.
   syncer::ModelTypeSet registered_types_;
-
-  // True before calling |start_backend_| for the first time. False after that.
-  bool first_start_;
 
   base::WeakPtrFactory<StartupController> weak_factory_;
 };

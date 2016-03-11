@@ -250,7 +250,7 @@ void ProfileSyncService::Initialize() {
   sync_client_->Initialize();
 
   startup_controller_.reset(new browser_sync::StartupController(
-      start_behavior_, oauth2_token_service_, &sync_prefs_, signin_.get(),
+      oauth2_token_service_, &sync_prefs_, signin_.get(),
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
                  startup_controller_weak_factory_.GetWeakPtr())));
   scoped_ptr<browser_sync::LocalSessionEventRouter> router(
@@ -815,6 +815,9 @@ bool ProfileSyncService::IsFirstSetupComplete() const {
 
 void ProfileSyncService::SetFirstSetupComplete() {
   sync_prefs_.SetFirstSetupComplete();
+  if (IsBackendInitialized()) {
+    ReconfigureDatatypeManager();
+  }
 }
 
 void ProfileSyncService::UpdateLastSyncedTime() {
@@ -932,20 +935,12 @@ void ProfileSyncService::PostBackendInitialization() {
     UpdateLastSyncedTime();
   }
 
-  if (startup_controller_->auto_start_enabled() && !IsFirstSetupInProgress()) {
-    // Backend is initialized but we're not in sync setup, so this must be an
-    // autostart - mark our sync setup as completed and we'll start syncing
-    // below.
+  // Auto-start means IsFirstSetupComplete gets set automatically.
+  if (start_behavior_ == browser_sync::AUTO_START && !IsFirstSetupComplete()) {
+    // This will trigger a configure if it completes setup.
     SetFirstSetupComplete();
-  }
-
-  // Check IsFirstSetupComplete() before NotifyObservers() to avoid spurious
-  // data type configuration because observer may flag setup as complete and
-  // trigger data type configuration.
-  if (IsFirstSetupComplete()) {
+  } else if (CanConfigureDataTypes()) {
     ConfigureDataTypeManager();
-  } else {
-    DCHECK(IsFirstSetupInProgress());
   }
 
   NotifyObservers();
@@ -1237,15 +1232,11 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
                                   syncer::STOP_SOURCE_LIMIT);
       }
       RequestStop(CLEAR_DATA);
-#if !defined(OS_CHROMEOS)
-      // On desktop Chrome, sign out the user after a dashboard clear.
-      // Skip sign out on ChromeOS/Android.
-      if (!startup_controller_->auto_start_enabled()) {
-        SigninManager* signin_manager =
-            static_cast<SigninManager*>(signin_->GetOriginal());
-        signin_manager->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
-                                signin_metrics::SignoutDelete::IGNORE_METRIC);
-      }
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+      // On desktop and iOS, sign out the user after a dashboard clear.
+      static_cast<SigninManager*>(signin_->GetOriginal())
+          ->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
+                    signin_metrics::SignoutDelete::IGNORE_METRIC);
 #endif
       break;
     case syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT:
@@ -1455,10 +1446,6 @@ std::string ProfileSyncService::GetBackendInitializationStateString() const {
   return startup_controller_->GetBackendInitializationStateString();
 }
 
-bool ProfileSyncService::auto_start_enabled() const {
-  return startup_controller_->auto_start_enabled();
-}
-
 bool ProfileSyncService::IsSetupInProgress() const {
   return startup_controller_->IsSetupInProgress();
 }
@@ -1478,6 +1465,10 @@ bool ProfileSyncService::QueryDetailedSyncStatus(
 
 const AuthError& ProfileSyncService::GetAuthError() const {
   return last_auth_error_;
+}
+
+bool ProfileSyncService::CanConfigureDataTypes() const {
+  return IsFirstSetupComplete() && !IsSetupInProgress();
 }
 
 bool ProfileSyncService::IsFirstSetupInProgress() const {
@@ -1738,7 +1729,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   // start syncing data until the user is done configuring encryption options,
   // etc. ReconfigureDatatypeManager() will get called again once the UI calls
   // SetSetupInProgress(false).
-  if (startup_controller_->IsSetupInProgress())
+  if (!CanConfigureDataTypes())
     return;
 
   bool restart = false;

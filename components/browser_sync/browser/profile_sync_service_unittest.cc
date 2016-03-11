@@ -92,14 +92,15 @@ using testing::_;
 class TestSyncServiceObserver : public sync_driver::SyncServiceObserver {
  public:
   explicit TestSyncServiceObserver(ProfileSyncService* service)
-      : service_(service), first_setup_in_progress_(false) {}
+      : service_(service), setup_in_progress_(false) {}
   void OnStateChanged() override {
-    first_setup_in_progress_ = service_->IsFirstSetupInProgress();
+    setup_in_progress_ = service_->IsSetupInProgress();
   }
-  bool first_setup_in_progress() const { return first_setup_in_progress_; }
+  bool setup_in_progress() const { return setup_in_progress_; }
+
  private:
   ProfileSyncService* service_;
-  bool first_setup_in_progress_;
+  bool setup_in_progress_;
 };
 
 // A variant of the SyncBackendHostMock that won't automatically
@@ -265,8 +266,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
   void InitializeForNthSync() {
     // Set first sync time before initialize to simulate a complete sync setup.
-    sync_driver::SyncPrefs sync_prefs(
-        service_->GetSyncClient()->GetPrefService());
+    sync_driver::SyncPrefs sync_prefs(prefs());
     sync_prefs.SetFirstSyncTime(base::Time::Now());
     sync_prefs.SetFirstSetupComplete();
     sync_prefs.SetKeepEverythingSynced(true);
@@ -423,9 +423,9 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
   service()->AddObserver(&observer);
 
   service()->SetSetupInProgress(true);
-  EXPECT_TRUE(observer.first_setup_in_progress());
+  EXPECT_TRUE(observer.setup_in_progress());
   service()->SetSetupInProgress(false);
-  EXPECT_FALSE(observer.first_setup_in_progress());
+  EXPECT_FALSE(observer.setup_in_progress());
 
   service()->RemoveObserver(&observer);
 }
@@ -477,23 +477,21 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 TEST_F(ProfileSyncServiceTest, EarlyRequestStop) {
   CreateService(browser_sync::AUTO_START);
   IssueTestTokens();
-
-  service()->RequestStop(ProfileSyncService::KEEP_DATA);
-  EXPECT_TRUE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
-
-  // Because of suppression, this should fail.
-  sync_driver::SyncPrefs sync_prefs(
-      service()->GetSyncClient()->GetPrefService());
-  sync_prefs.SetFirstSyncTime(base::Time::Now());
-  service()->Initialize();
-  EXPECT_FALSE(service()->IsSyncActive());
-
-  // Request start.  This should be enough to allow init to happen.
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
   ExpectSyncBackendHostCreation(1);
+
+  service()->RequestStop(ProfileSyncService::KEEP_DATA);
+  EXPECT_FALSE(service()->IsSyncRequested());
+
+  // Because sync is not requested, this should fail.
+  InitializeForNthSync();
+  EXPECT_FALSE(service()->IsSyncRequested());
+  EXPECT_FALSE(service()->IsSyncActive());
+
+  // Request start. This should be enough to allow init to happen.
   service()->RequestStart();
+  EXPECT_TRUE(service()->IsSyncRequested());
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_FALSE(prefs()->GetBoolean(sync_driver::prefs::kSyncSuppressStart));
 }
 
 // Test RequestStop() after we've initialized the backend.

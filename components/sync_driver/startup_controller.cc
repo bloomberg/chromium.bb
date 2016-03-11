@@ -39,21 +39,18 @@ enum DeferredInitTrigger {
 }  // namespace
 
 StartupController::StartupController(
-    ProfileSyncServiceStartBehavior start_behavior,
     const ProfileOAuth2TokenService* token_service,
     const sync_driver::SyncPrefs* sync_prefs,
     const SigninManagerWrapper* signin,
     base::Closure start_backend)
     : received_start_request_(false),
       setup_in_progress_(false),
-      auto_start_enabled_(start_behavior == AUTO_START),
       sync_prefs_(sync_prefs),
       token_service_(token_service),
       signin_(signin),
       start_backend_(start_backend),
       fallback_timeout_(
           base::TimeDelta::FromSeconds(kDeferredInitFallbackSeconds)),
-      first_start_(true),
       weak_factory_(this) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDeferredStartupTimeoutSeconds)) {
@@ -108,7 +105,6 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
   if (start_backend_time_.is_null()) {
     start_backend_time_ = base::Time::Now();
     start_backend_.Run();
-    first_start_ = false;
   }
 
   return true;
@@ -143,34 +139,18 @@ bool StartupController::TryStart() {
   // PSS will show error to user asking to reauthenticate.
   UMA_HISTOGRAM_BOOLEAN("Sync.RefreshTokenAvailable", true);
 
-  // If sync setup has completed we always start the backend. If the user is in
-  // the process of setting up now, we should start the backend to download
-  // account control state / encryption information). If autostart is enabled,
-  // but we haven't completed sync setup, we try to start sync anyway, since
-  // it's possible we crashed/shutdown after logging in but before the backend
-  // finished initializing the last time.
+  // For performance reasons, defer the heavy lifting for sync init unless:
   //
-  // However, the only time we actually need to start sync _immediately_ is if
-  // we haven't completed sync setup and the user is in the process of setting
-  // up - either they just signed in (for the first time) on an auto-start
-  // platform or they explicitly kicked off sync setup, and e.g we need to
-  // fetch account details like encryption state to populate UI. Otherwise,
-  // for performance reasons and maximizing parallelism at chrome startup, we
-  // defer the heavy lifting for sync init until things have calmed down.
-  if (sync_prefs_->IsFirstSetupComplete()) {
-    // For first time, defer start if data type hasn't requested sync to avoid
-    // stressing browser start.
-    if (!received_start_request_ && first_start_)
-      return StartUp(STARTUP_BACKEND_DEFERRED);
-    else
-      return StartUp(STARTUP_IMMEDIATE);
-  } else if (setup_in_progress_ || auto_start_enabled_) {
-    // We haven't completed sync setup. Start immediately if the user explicitly
-    // kicked this off or we're supposed to automatically start syncing.
+  // - a datatype has requested an immediate start of sync, or
+  // - sync needs to start up the backend immediately to provide control state
+  //   and encryption information to the UI, or
+  // - this is the first time sync is ever starting up.
+  if (received_start_request_ || setup_in_progress_ ||
+      !sync_prefs_->IsFirstSetupComplete()) {
     return StartUp(STARTUP_IMMEDIATE);
+  } else {
+    return StartUp(STARTUP_BACKEND_DEFERRED);
   }
-
-  return false;
 }
 
 void StartupController::RecordTimeDeferred() {

@@ -208,6 +208,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Simulate the UI telling sync it has finished setting up.
   sync_service_->SetSetupInProgress(false);
+  sync_service_->SetFirstSetupComplete();
   EXPECT_TRUE(sync_service_->IsSyncActive());
 }
 
@@ -411,26 +412,32 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   IssueTestTokens(account_id);
   sync_service_->Initialize();
+  EXPECT_TRUE(sync_service_->IsBackendInitialized());
+  EXPECT_TRUE(sync_service_->IsSyncActive());
 
   // The service should stop when switching to managed mode.
   Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   pref_service()->SetBoolean(sync_driver::prefs::kSyncManaged, true);
+  EXPECT_FALSE(sync_service_->IsBackendInitialized());
+  // Note that PSS no longer references |data_type_manager| after stopping.
 
-  // When switching back to unmanaged, the state should change, but the service
-  // should not start up automatically (kSyncFirstSetupComplete will be
-  // false).
-  Mock::VerifyAndClearExpectations(data_type_manager);
+  // When switching back to unmanaged, the state should change and sync should
+  // start but not become active because IsFirstSetupComplete() will be false.
+  SetUpSyncBackendHost();
+  // A new DataTypeManager should not be created.
   EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
       .Times(0);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   pref_service()->ClearPref(sync_driver::prefs::kSyncManaged);
+  EXPECT_TRUE(sync_service_->IsBackendInitialized());
+  EXPECT_FALSE(sync_service_->IsSyncActive());
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
