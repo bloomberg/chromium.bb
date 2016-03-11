@@ -1160,7 +1160,6 @@
         '<@(capture_unittests_sources)',
         'base/android/access_unit_queue_unittest.cc',
         'base/android/media_codec_decoder_unittest.cc',
-        'base/android/media_codec_player_unittest.cc',
         'base/android/media_drm_bridge_unittest.cc',
         'base/android/media_player_bridge_unittest.cc',
         'base/android/media_source_player_unittest.cc',
@@ -1331,12 +1330,6 @@
             'filters/ffmpeg_video_decoder_unittest.cc',
             'test/pipeline_integration_test.cc',
             'test/pipeline_integration_test_base.cc',
-
-            # These tests are confused by Android always having proprietary
-            # codecs enabled, but ffmpeg_branding=Chromium. These should be
-            # fixed, see http://crbug.com/570762.
-            'filters/audio_file_reader_unittest.cc',
-            'filters/ffmpeg_demuxer_unittest.cc',
           ],
         }],
         ['OS=="android"', {
@@ -1370,6 +1363,7 @@
         }],
         ['proprietary_codecs==1', {
           'sources': [
+            'base/android/media_codec_player_unittest.cc',
             'cdm/cenc_utils_unittest.cc',
             'filters/ffmpeg_aac_bitstream_converter_unittest.cc',
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc',

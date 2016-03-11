@@ -503,7 +503,6 @@ INSTANTIATE_TEST_CASE_P(OpusAudioDecoderBehavioralTest,
                         testing::ValuesIn(kOpusBehavioralTest));
 
 #if defined(OS_ANDROID)
-
 const DecoderTestData kMediaCodecTests[] = {
     {MEDIA_CODEC, kCodecOpus, "bear-opus.ogg", kBearOpusExpectations, 24, 48000,
      CHANNEL_LAYOUT_STEREO},
@@ -512,10 +511,7 @@ const DecoderTestData kMediaCodecTests[] = {
 INSTANTIATE_TEST_CASE_P(MediaCodecAudioDecoderTest,
                         AudioDecoderTest,
                         testing::ValuesIn(kMediaCodecTests));
-
-#else  // !defined(OS_ANDROID)
-
-// Disable all FFmpeg decoder tests on Android. http://crbug.com/570762.
+#endif  // defined(OS_ANDROID)
 
 #if defined(USE_PROPRIETARY_CODECS)
 const DecodedBufferExpectations kSfxMp3Expectations[] = {
@@ -597,7 +593,5 @@ INSTANTIATE_TEST_CASE_P(FFmpegAudioDecoderTest,
 INSTANTIATE_TEST_CASE_P(FFmpegAudioDecoderBehavioralTest,
                         FFmpegAudioDecoderBehavioralTest,
                         testing::ValuesIn(kFFmpegBehavioralTest));
-
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace media
