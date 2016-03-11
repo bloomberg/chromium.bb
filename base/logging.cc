@@ -862,7 +862,7 @@ void CloseLogFile() {
 }
 
 void RawLog(int level, const char* message) {
-  if (level >= g_min_log_level) {
+  if (level >= g_min_log_level && message) {
     size_t bytes_written = 0;
     const size_t message_len = strlen(message);
     int rv;
@@ -915,5 +915,5 @@ BASE_EXPORT void LogErrorNotReached(const char* file, int line) {
 }  // namespace logging
 
 std::ostream& std::operator<<(std::ostream& out, const wchar_t* wstr) {
-  return out << base::WideToUTF8(wstr);
+  return out << (wstr ? base::WideToUTF8(wstr) : std::string());
 }
