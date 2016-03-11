@@ -37,7 +37,8 @@ const int kNoCallbackId = -1;
 
 AvPipelineImpl::AvPipelineImpl(MediaPipelineBackend::Decoder* decoder,
                                const AvPipelineClient& client)
-    : decoder_(decoder),
+    : bytes_decoded_since_last_update_(0),
+      decoder_(decoder),
       client_(client),
       state_(kUninitialized),
       buffered_time_(::media::kNoTimestamp()),

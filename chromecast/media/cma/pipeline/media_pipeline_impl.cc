@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "chromecast/media/cma/base/buffering_controller.h"
@@ -52,6 +51,24 @@ const base::TimeDelta kTimeUpdateInterval(
 // kTimeUpdateInterval * kStatisticsUpdatePeriod.
 const int kStatisticsUpdatePeriod = 4;
 
+void LogEstimatedBitrate(int decoded_bytes,
+                         base::TimeDelta elapsed_time,
+                         const char* tag,
+                         const char* metric) {
+  int estimated_bitrate_in_kbps =
+      8 * decoded_bytes / elapsed_time.InMilliseconds();
+
+  if (estimated_bitrate_in_kbps <= 0)
+    return;
+
+  CMALOG(kLogControl) << "Estimated " << tag << " bitrate is "
+                      << estimated_bitrate_in_kbps << " kbps";
+  metrics::CastMetricsHelper* metrics_helper =
+      metrics::CastMetricsHelper::GetInstance();
+  metrics_helper->RecordSimpleActionWithValue(metric,
+                                              estimated_bitrate_in_kbps);
+}
+
 }  // namespace
 
 struct MediaPipelineImpl::FlushTask {
@@ -68,6 +85,8 @@ MediaPipelineImpl::MediaPipelineImpl()
       video_decoder_(nullptr),
       pending_time_update_task_(false),
       statistics_rolling_counter_(0),
+      audio_bytes_for_bitrate_estimation_(0),
+      video_bytes_for_bitrate_estimation_(0),
       weak_factory_(this) {
   CMALOG(kLogControl) << __FUNCTION__;
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -204,6 +223,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
     return;
   }
   backend_state_ = BACKEND_STATE_PLAYING;
+  ResetBitrateState();
   metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
       "Cast.Platform.Playing");
 
@@ -318,6 +338,7 @@ void MediaPipelineImpl::SetPlaybackRate(double rate) {
     if (backend_state_ == BACKEND_STATE_PAUSED) {
       media_pipeline_backend_->Resume();
       backend_state_ = BACKEND_STATE_PLAYING;
+      ResetBitrateState();
       metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
           "Cast.Platform.Playing");
     }
@@ -415,7 +436,31 @@ void MediaPipelineImpl::UpdateMediaTime() {
       audio_pipeline_->UpdateStatistics();
     if (video_pipeline_)
       video_pipeline_->UpdateStatistics();
+
+    if (backend_state_ == BACKEND_STATE_PLAYING) {
+      base::TimeTicks current_time = base::TimeTicks::Now();
+      if (audio_pipeline_)
+        audio_bytes_for_bitrate_estimation_ +=
+            audio_pipeline_->bytes_decoded_since_last_update();
+      if (video_pipeline_)
+        video_bytes_for_bitrate_estimation_ +=
+            video_pipeline_->bytes_decoded_since_last_update();
+      elapsed_time_delta_ += current_time - last_sample_time_;
+      if (elapsed_time_delta_.InMilliseconds() > 5000) {
+        if (audio_pipeline_)
+          LogEstimatedBitrate(audio_bytes_for_bitrate_estimation_,
+                              elapsed_time_delta_, "audio",
+                              "Cast.Platform.AudioBitrate");
+        if (video_pipeline_)
+          LogEstimatedBitrate(video_bytes_for_bitrate_estimation_,
+                              elapsed_time_delta_, "video",
+                              "Cast.Platform.VideoBitrate");
+        ResetBitrateState();
+      }
+      last_sample_time_ = current_time;
+    }
   }
+
   statistics_rolling_counter_ =
       (statistics_rolling_counter_ + 1) % kStatisticsUpdatePeriod;
 
@@ -466,6 +511,13 @@ void MediaPipelineImpl::OnError(::media::PipelineStatus error) {
 
   if (!client_.error_cb.is_null())
     client_.error_cb.Run(error);
+}
+
+void MediaPipelineImpl::ResetBitrateState() {
+  elapsed_time_delta_ = base::TimeDelta::FromSeconds(0);
+  audio_bytes_for_bitrate_estimation_ = 0;
+  video_bytes_for_bitrate_estimation_ = 0;
+  last_sample_time_ = base::TimeTicks::Now();
 }
 
 }  // namespace media

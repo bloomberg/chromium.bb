@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -82,6 +83,8 @@ class MediaPipelineImpl {
 
   void OnError(::media::PipelineStatus error);
 
+  void ResetBitrateState();
+
   base::ThreadChecker thread_checker_;
   MediaPipelineClient client_;
   scoped_ptr<BufferingController> buffering_controller_;
@@ -108,6 +111,10 @@ class MediaPipelineImpl {
   // Used to make the statistics update period a multiplier of the time update
   // period.
   int statistics_rolling_counter_;
+  base::TimeTicks last_sample_time_;
+  base::TimeDelta elapsed_time_delta_;
+  int audio_bytes_for_bitrate_estimation_;
+  int video_bytes_for_bitrate_estimation_;
 
   base::WeakPtr<MediaPipelineImpl> weak_this_;
   base::WeakPtrFactory<MediaPipelineImpl> weak_factory_;

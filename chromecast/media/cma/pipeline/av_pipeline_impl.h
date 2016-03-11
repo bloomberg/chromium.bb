@@ -54,6 +54,10 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
 
   virtual void UpdateStatistics() = 0;
 
+  int bytes_decoded_since_last_update() const {
+    return bytes_decoded_since_last_update_;
+  }
+
  protected:
   // Pipeline states.
   enum State {
@@ -80,6 +84,7 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
                              size_t max_frame_size);
 
   ::media::PipelineStatistics previous_stats_;
+  int bytes_decoded_since_last_update_;
 
  private:
   void OnFlushDone();

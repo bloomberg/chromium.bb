@@ -117,6 +117,7 @@ void VideoPipelineImpl::UpdateStatistics() {
   delta_stats.video_frames_dropped =
       current_stats.video_frames_dropped - previous_stats_.video_frames_dropped;
 
+  bytes_decoded_since_last_update_ = delta_stats.video_bytes_decoded;
   previous_stats_ = current_stats;
 
   client().statistics_cb.Run(delta_stats);

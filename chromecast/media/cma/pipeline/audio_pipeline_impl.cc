@@ -84,6 +84,7 @@ void AudioPipelineImpl::UpdateStatistics() {
   delta_stats.audio_bytes_decoded =
       current_stats.audio_bytes_decoded - previous_stats_.audio_bytes_decoded;
 
+  bytes_decoded_since_last_update_ = delta_stats.audio_bytes_decoded;
   previous_stats_ = current_stats;
 
   client().statistics_cb.Run(delta_stats);
