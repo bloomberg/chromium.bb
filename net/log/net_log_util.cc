@@ -274,10 +274,21 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
 
   // Information about how the "time ticks" values we have given it relate to
   // actual system times.  Time ticks are used throughout since they are stable
-  // across system clock changes.
+  // across system clock changes. Note: |timeTickOffset| is only comparable to
+  // TimeTicks values in milliseconds.
+  // TODO(csharrison): This is an imprecise way to convert TimeTicks to unix
+  // time. In fact, there isn't really a good way to do this unless we log Time
+  // and TimeTicks values side by side for every event. crbug.com/593157 tracks
+  // a change where the user will be notified if a timing anomaly occured that
+  // would skew the conversion (i.e. the machine entered suspend mode while
+  // logging).
   {
+    base::TimeDelta time_since_epoch =
+        base::Time::Now() - base::Time::UnixEpoch();
+    base::TimeDelta reference_time_ticks =
+        base::TimeTicks::Now() - base::TimeTicks();
     int64_t tick_to_unix_time_ms =
-        (base::TimeTicks() - base::TimeTicks::UnixEpoch()).InMilliseconds();
+        (time_since_epoch - reference_time_ticks).InMilliseconds();
 
     // Pass it as a string, since it may be too large to fit in an integer.
     constants_dict->SetString("timeTickOffset",
