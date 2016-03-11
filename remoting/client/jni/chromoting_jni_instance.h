@@ -147,8 +147,9 @@ class ChromotingJniInstance
   ChromotingJniRuntime* jni_runtime_;
 
   // ID of the host we are connecting to.
-  std::string host_id_;
   std::string host_jid_;
+
+  protocol::ClientAuthenticationConfig client_auth_config_;
 
   std::string flags_;
 
@@ -157,7 +158,6 @@ class ChromotingJniInstance
   scoped_ptr<protocol::PerformanceTracker> perf_tracker_;
   scoped_ptr<JniFrameConsumer> view_;
   scoped_ptr<protocol::VideoRenderer> video_renderer_;
-  scoped_ptr<protocol::Authenticator> authenticator_;
   scoped_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   scoped_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
@@ -172,7 +172,7 @@ class ChromotingJniInstance
   // modified in ProvideSecret(), but thereafter to be used only from the
   // network thread. (This is safe because ProvideSecret() is invoked at most
   // once per run, and always before any reference to this flag.)
-  bool create_pairing_;
+  bool create_pairing_ = false;
 
   // The device name to appear in the paired-clients list. Accessed on the
   // network thread.
@@ -180,7 +180,7 @@ class ChromotingJniInstance
 
   // If this is true, performance statistics will be periodically written to
   // the Android log. Used on the network thread.
-  bool stats_logging_enabled_;
+  bool stats_logging_enabled_ = false;
 
   // The set of capabilities supported by the client. Accessed on the network
   // thread. Once SetCapabilities() is called, this will contain the negotiated

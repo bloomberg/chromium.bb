@@ -21,20 +21,15 @@
 namespace remoting {
 namespace protocol {
 
+ClientAuthenticationConfig::ClientAuthenticationConfig() {}
+ClientAuthenticationConfig::~ClientAuthenticationConfig() {}
+
 NegotiatingClientAuthenticator::NegotiatingClientAuthenticator(
-    const std::string& client_pairing_id,
-    const std::string& shared_secret,
-    const std::string& authentication_tag,
-    const FetchSecretCallback& fetch_secret_callback,
-    const FetchThirdPartyTokenCallback& fetch_third_party_token_callback)
+    const ClientAuthenticationConfig& config)
     : NegotiatingAuthenticatorBase(MESSAGE_READY),
-      client_pairing_id_(client_pairing_id),
-      shared_secret_(shared_secret),
-      authentication_tag_(authentication_tag),
-      fetch_secret_callback_(fetch_secret_callback),
-      fetch_third_party_token_callback_(fetch_third_party_token_callback),
+      config_(config),
       weak_factory_(this) {
-  if (!fetch_third_party_token_callback.is_null())
+  if (!config_.fetch_third_party_token_callback.is_null())
     AddMethod(Method::THIRD_PARTY);
   AddMethod(Method::SPAKE2_PAIR);
   AddMethod(Method::SPAKE2_SHARED_SECRET_HMAC);
@@ -115,7 +110,7 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
   if (current_method_ == Method::THIRD_PARTY) {
     current_authenticator_.reset(new ThirdPartyClientAuthenticator(
         base::Bind(&V2Authenticator::CreateForClient),
-        fetch_third_party_token_callback_));
+        config_.fetch_third_party_token_callback));
     resume_callback.Run();
   } else {
     DCHECK(current_method_ == Method::SPAKE2_SHARED_SECRET_PLAIN ||
@@ -125,20 +120,20 @@ void NegotiatingClientAuthenticator::CreateAuthenticatorForCurrentMethod(
     SecretFetchedCallback callback = base::Bind(
         &NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret,
         weak_factory_.GetWeakPtr(), preferred_initial_state, resume_callback);
-    fetch_secret_callback_.Run(pairing_supported, callback);
+    config_.fetch_secret_callback.Run(pairing_supported, callback);
   }
 }
 
 void NegotiatingClientAuthenticator::CreatePreferredAuthenticator() {
-  if (!client_pairing_id_.empty() && !shared_secret_.empty() &&
+  if (!config_.pairing_client_id.empty() && !config_.pairing_secret.empty() &&
       std::find(methods_.begin(), methods_.end(), Method::SPAKE2_PAIR) !=
           methods_.end()) {
     // If the client specified a pairing id and shared secret, then create a
     // PairingAuthenticator.
     current_authenticator_.reset(new PairingClientAuthenticator(
-        client_pairing_id_, shared_secret_,
-        base::Bind(&V2Authenticator::CreateForClient), fetch_secret_callback_,
-        authentication_tag_));
+        config_.pairing_client_id, config_.pairing_secret,
+        base::Bind(&V2Authenticator::CreateForClient),
+        config_.fetch_secret_callback, config_.host_id));
     current_method_ = Method::SPAKE2_PAIR;
   }
 }
@@ -150,7 +145,7 @@ void NegotiatingClientAuthenticator::CreateV2AuthenticatorWithSecret(
   current_authenticator_ = V2Authenticator::CreateForClient(
       (current_method_ == Method::SPAKE2_SHARED_SECRET_PLAIN)
           ? shared_secret
-          : GetSharedSecretHash(authentication_tag_, shared_secret),
+          : GetSharedSecretHash(config_.host_id, shared_secret),
       initial_state);
   resume_callback.Run();
 }

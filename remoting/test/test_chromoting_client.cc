@@ -126,25 +126,23 @@ void TestChromotingClient::StartConnection(
               new ChromiumUrlRequestFactory(request_context_getter)),
           network_settings, protocol::TransportRole::CLIENT));
 
-  protocol::FetchSecretCallback fetch_secret_callback;
+  protocol::ClientAuthenticationConfig client_auth_config;
+  client_auth_config.host_id = connection_setup_info.host_id;
+  client_auth_config.pairing_client_id = connection_setup_info.pairing_id;
+  client_auth_config.pairing_secret = connection_setup_info.shared_secret;
+
   if (!connection_setup_info.pin.empty()) {
-    fetch_secret_callback = base::Bind(&FetchSecret, connection_setup_info.pin);
+    client_auth_config.fetch_secret_callback =
+        base::Bind(&FetchSecret, connection_setup_info.pin);
   }
 
-  protocol::FetchThirdPartyTokenCallback fetch_third_party_token_callback =
-      base::Bind(&FetchThirdPartyToken,
-                 connection_setup_info.authorization_code,
-                 connection_setup_info.shared_secret);
+  client_auth_config.fetch_third_party_token_callback = base::Bind(
+      &FetchThirdPartyToken, connection_setup_info.authorization_code,
+      connection_setup_info.shared_secret);
 
-  scoped_ptr<protocol::Authenticator> authenticator(
-      new protocol::NegotiatingClientAuthenticator(
-          connection_setup_info.pairing_id, connection_setup_info.shared_secret,
-          connection_setup_info.host_id, fetch_secret_callback,
-          fetch_third_party_token_callback));
-
-  chromoting_client_->Start(
-      signal_strategy_.get(), std::move(authenticator), transport_context,
-      connection_setup_info.host_jid, connection_setup_info.capabilities);
+  chromoting_client_->Start(signal_strategy_.get(), client_auth_config,
+                            transport_context, connection_setup_info.host_jid,
+                            connection_setup_info.capabilities);
 }
 
 void TestChromotingClient::EndConnection() {

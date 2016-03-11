@@ -449,11 +449,11 @@ remoting.ClientPluginImpl.prototype.connectWithExperiments_ = function(
   this.plugin_.postMessage(JSON.stringify({
     method: 'connect',
     data: {
+      hostId: host.hostId,
       hostJid: host.jabberId,
       hostPublicKey: host.publicKey,
       localJid: localJid,
       sharedSecret: '',
-      authenticationTag: host.hostId,
       capabilities: this.capabilities_.join(" "),
       clientPairingId: credentialsProvider.getPairingInfo().clientId,
       clientPairedSecret: credentialsProvider.getPairingInfo().sharedSecret,
