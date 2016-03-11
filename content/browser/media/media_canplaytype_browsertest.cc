@@ -42,8 +42,8 @@ const char* kOggVideoMaybe = kNot;
 const char* kTheoraProbably = kNot;
 const char* kOggOpusProbably = kNot;
 const char* kMpeg2AacProbably = kNot;  // https://crbug.com/544268.
-const char* kHlsProbably = kPropProbably;
-const char* kHlsMaybe = kPropMaybe;
+const char* kHlsProbably = kProbably;
+const char* kHlsMaybe = kMaybe;
 #endif  // !OS_ANDROID
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)

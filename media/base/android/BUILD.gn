@@ -83,6 +83,7 @@ source_set("unittests") {
   sources = [
     "access_unit_queue_unittest.cc",
     "media_codec_decoder_unittest.cc",
+    "media_codec_player_unittest.cc",
     "media_drm_bridge_unittest.cc",
     "media_player_bridge_unittest.cc",
     "media_source_player_unittest.cc",
@@ -91,11 +92,6 @@ source_set("unittests") {
     "test_data_factory.h",
     "test_statistics.h",
   ]
-
-  if (proprietary_codecs) {
-    sources += [ "media_codec_player_unittest.cc" ]
-  }
-
   deps = [
     ":android",
     "//media/base:test_support",

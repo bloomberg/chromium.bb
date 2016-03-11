@@ -131,7 +131,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("video/ogg"));
 #endif  // OS_ANDROID
 
-#if defined(OS_ANDROID) && defined(USE_PROPRIETARY_CODECS)
+#if defined(OS_ANDROID)
   // HLS is supported on Android API level 14 and higher and Chrome supports
   // API levels 15 and higher, so these are expected to be supported.
   bool kHlsSupported = true;

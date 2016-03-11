@@ -833,9 +833,10 @@
           'use_browser_spellchecker%': 1,
         }],
 
-        # Enables proprietary codecs and demuxers; e.g. H264, AAC, MP3, and MP4.
-        # We always build Google Chrome and Chromecast with proprietary codecs.
-        ['branding=="Chrome" or chromecast==1', {
+        # Android OS includes support for proprietary codecs regardless of
+        # building Chromium or Google Chrome. We also ship Google Chrome and
+        # Chromecast with proprietary codecs.
+        ['OS=="android" or branding=="Chrome" or chromecast==1', {
           'proprietary_codecs%': 1,
         }, {
           'proprietary_codecs%': 0,

@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.AwContents;
@@ -67,16 +66,12 @@ public class KeySystemTest extends AwTestBase {
                 + "  navigator.requestMediaKeySystemAccess(keySystem, [{}]).then("
                 + "      success, failure);"
                 + "}"
-                + "function areProprietaryCodecsSupported() {"
-                + "  var video = document.createElement('video');"
-                + "  return video.canPlayType('video/mp4; codecs=\"avc1\"');"
-                + "}"
                 + "</script> </html>";
     }
 
     private String isKeySystemSupported(String keySystem) throws Exception {
-        executeJavaScriptAndWaitForResult(
-                mAwContents, mContentsClient, "isKeySystemSupported('" + keySystem + "')");
+        executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,
+                  "isKeySystemSupported('" + keySystem + "')");
 
         poll(new Callable<Boolean>() {
             @Override
@@ -86,12 +81,6 @@ public class KeySystemTest extends AwTestBase {
         });
 
         return getResultFromJS();
-    }
-
-    private boolean areProprietaryCodecsSupported() throws Exception {
-        String result = executeJavaScriptAndWaitForResult(
-                mAwContents, mContentsClient, "areProprietaryCodecsSupported()");
-        return !result.isEmpty();
     }
 
     private String getResultFromJS() {
@@ -105,18 +94,6 @@ public class KeySystemTest extends AwTestBase {
         return result;
     }
 
-    private String getPlatformKeySystemExpectations() throws Exception {
-        // Android key systems only support non-proprietary codecs on Lollipop+.
-        // When neither is true isKeySystemSupported() will return an error for
-        // all key systems except ClearKey (which is handled by Chrome itself).
-        if (!areProprietaryCodecsSupported()
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return "\"NotSupportedError\"";
-        }
-
-        return "\"supported\"";
-    }
-
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testSupportClearKeySystem() throws Throwable {
@@ -126,8 +103,7 @@ public class KeySystemTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testSupportWidevineKeySystem() throws Throwable {
-        assertEquals(
-                getPlatformKeySystemExpectations(), isKeySystemSupported("com.widevine.alpha"));
+        assertEquals("\"supported\"", isKeySystemSupported("com.widevine.alpha"));
     }
 
     @Feature({"AndroidWebView"})
@@ -139,8 +115,7 @@ public class KeySystemTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testSupportPlatformKeySystem() throws Throwable {
-        assertEquals(getPlatformKeySystemExpectations(),
-                isKeySystemSupported("x-com.oem.test-keysystem"));
+        assertEquals("\"supported\"", isKeySystemSupported("x-com.oem.test-keysystem"));
     }
 
     @Feature({"AndroidWebView"})
