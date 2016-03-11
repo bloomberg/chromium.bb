@@ -297,17 +297,11 @@ void Resource::error(Resource::Status status)
     markClientsFinished();
 }
 
-void Resource::finishOnePart()
-{
-    setLoading(false);
-    checkNotify();
-}
-
 void Resource::finish()
 {
     ASSERT(m_revalidatingRequest.isNull());
-    ASSERT(!errorOccurred());
-    finishOnePart();
+    setLoading(false);
+    checkNotify();
     markClientsFinished();
     if (!errorOccurred())
         m_status = Cached;
@@ -457,7 +451,6 @@ void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<Web
         }
         revalidationFailed();
     }
-
     setResponse(response);
     String encoding = response.textEncodingName();
     if (!encoding.isNull())

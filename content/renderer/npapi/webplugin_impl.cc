@@ -21,7 +21,6 @@
 #include "cc/layers/io_surface_layer.h"
 #include "cc/layers/layer_settings.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
-#include "content/child/multipart_response_delegate.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/webplugin_delegate_impl.h"

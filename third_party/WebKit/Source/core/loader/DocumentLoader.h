@@ -144,8 +144,6 @@ public:
 
     String suboriginName() const { return m_suboriginName; }
 
-    bool loadingMultipartContent() const;
-
     Resource* startPreload(Resource::Type, FetchRequest&);
 
     DECLARE_VIRTUAL_TRACE();

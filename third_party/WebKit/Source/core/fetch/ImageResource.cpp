@@ -99,8 +99,10 @@ ImageResource::~ImageResource()
 
 DEFINE_TRACE(ImageResource)
 {
+    visitor->trace(m_multipartParser);
     Resource::trace(visitor);
     ImageObserver::trace(visitor);
+    MultipartImageResourceParser::Client::trace(visitor);
 }
 
 void ImageResource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
@@ -159,7 +161,19 @@ void ImageResource::allClientsRemoved()
 {
     if (m_image && !errorOccurred())
         m_image->resetAnimation();
+    if (m_multipartParser)
+        m_multipartParser->cancel();
     Resource::allClientsRemoved();
+}
+
+void ImageResource::appendData(const char* data, size_t length)
+{
+    if (m_multipartParser) {
+        m_multipartParser->appendData(data, length);
+    } else {
+        Resource::appendData(data, length);
+        updateImage(false);
+    }
 }
 
 std::pair<blink::Image*, float> ImageResource::brokenImage(float deviceScaleFactor)
@@ -287,13 +301,6 @@ inline void ImageResource::clearImage()
     m_image.clear();
 }
 
-void ImageResource::appendData(const char* data, size_t length)
-{
-    Resource::appendData(data, length);
-    if (!loadingMultipartContent())
-        updateImage(false);
-}
-
 void ImageResource::updateImage(bool allDataReceived)
 {
     TRACE_EVENT0("blink", "ImageResource::updateImage");
@@ -327,18 +334,25 @@ void ImageResource::updateImage(bool allDataReceived)
     }
 }
 
-void ImageResource::finishOnePart()
+void ImageResource::finish()
 {
-    if (loadingMultipartContent())
-        clear();
-    updateImage(true);
-    if (loadingMultipartContent())
-        m_data.clear();
-    Resource::finishOnePart();
+    if (m_multipartParser) {
+        m_multipartParser->finish();
+        if (m_data) {
+            clearImage();
+            updateImage(true);
+            m_data.clear();
+        }
+    } else {
+        updateImage(true);
+    }
+    Resource::finish();
 }
 
 void ImageResource::error(Resource::Status status)
 {
+    if (m_multipartParser)
+        m_multipartParser->cancel();
     clear();
     Resource::error(status);
     notifyObservers();
@@ -346,8 +360,11 @@ void ImageResource::error(Resource::Status status)
 
 void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
-    if (loadingMultipartContent() && m_data)
-        finishOnePart();
+    ASSERT(!handle);
+    ASSERT(!m_multipartParser);
+    // If there's no boundary, just handle the request normally.
+    if (response.isMultipart() && !response.multipartBoundary().isEmpty())
+        m_multipartParser = new MultipartImageResourceParser(response, response.multipartBoundary(), this);
     Resource::responseReceived(response, handle);
     if (RuntimeEnabledFeatures::clientHintsEnabled()) {
         m_devicePixelRatioHeaderValue = m_response.httpHeaderField(HTTPNames::Content_DPR).toFloat(&m_hasDevicePixelRatioHeaderValue);
@@ -448,6 +465,27 @@ void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect
     notifyObservers(&rect);
 }
 
+void ImageResource::onePartInMultipartReceived(const ResourceResponse& response, bool isFirstPart)
+{
+    ASSERT(m_multipartParser);
+    m_response = response;
+    if (m_data) {
+        clear();
+        updateImage(true);
+        m_data.clear();
+        setLoading(false);
+        checkNotify();
+    }
+    if (!isFirstPart && m_loader)
+        m_loader->didFinishLoadingOnePart(0, WebURLLoaderClient::kUnknownEncodedDataLength);
+}
+
+void ImageResource::multipartDataReceived(const char* bytes, size_t size)
+{
+    ASSERT(m_multipartParser);
+    Resource::appendData(bytes, size);
+}
+
 bool ImageResource::isAccessAllowed(SecurityOrigin* securityOrigin)
 {
     if (response().wasFetchedViaServiceWorker())
@@ -457,11 +495,6 @@ bool ImageResource::isAccessAllowed(SecurityOrigin* securityOrigin)
     if (passesAccessControlCheck(securityOrigin))
         return true;
     return !securityOrigin->taintsCanvas(response().url());
-}
-
-bool ImageResource::loadingMultipartContent() const
-{
-    return m_loader && m_loader->loadingMultipartContent();
 }
 
 } // namespace blink

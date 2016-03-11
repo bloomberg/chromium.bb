@@ -214,8 +214,12 @@ public:
     const KURL& originalURLViaServiceWorker() const { return m_originalURLViaServiceWorker; }
     void setOriginalURLViaServiceWorker(const KURL& url) { m_originalURLViaServiceWorker = url; }
 
-    bool isMultipartPayload() const { return m_isMultipartPayload; }
-    void setIsMultipartPayload(bool value) { m_isMultipartPayload = value; }
+    const Vector<char>& multipartBoundary() const { return m_multipartBoundary; }
+    void setMultipartBoundary(const char* bytes, size_t size)
+    {
+        m_multipartBoundary.clear();
+        m_multipartBoundary.append(bytes, size);
+    }
 
     int64_t responseTime() const { return m_responseTime; }
     void setResponseTime(int64_t responseTime) { m_responseTime = responseTime; }
@@ -305,8 +309,8 @@ private:
     // Note: only valid for main resource responses.
     KURL m_appCacheManifestURL;
 
-    // Set to true if this is part of a multipart response.
-    bool m_isMultipartPayload;
+    // The multipart boundary of this response.
+    Vector<char> m_multipartBoundary;
 
     // Was the resource fetched over SPDY.  See http://dev.chromium.org/spdy
     bool m_wasFetchedViaSPDY;
@@ -379,7 +383,7 @@ public:
     ResourceResponse::HTTPVersion m_httpVersion;
     long long m_appCacheID;
     KURL m_appCacheManifestURL;
-    bool m_isMultipartPayload;
+    Vector<char> m_multipartBoundary;
     bool m_wasFetchedViaSPDY;
     bool m_wasNpnNegotiated;
     bool m_wasAlternateProtocolAvailable;

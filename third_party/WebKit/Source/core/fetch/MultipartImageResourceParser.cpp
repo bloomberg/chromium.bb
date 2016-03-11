@@ -25,6 +25,7 @@ MultipartImageResourceParser::MultipartImageResourceParser(const ResourceRespons
 
 void MultipartImageResourceParser::appendData(const char* bytes, size_t size)
 {
+    ASSERT(!isCancelled());
     // m_sawLastBoundary means that we've already received the final boundary
     // token. The server should stop sending us data at this point, but if it
     // does, we just throw it away.
@@ -103,6 +104,8 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size)
             m_isParsingHeaders = true;
             break;
         }
+        if (isCancelled())
+            return;
     }
 
     // At this point, we should send over any data we have, but keep enough data
@@ -121,9 +124,11 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size)
 void MultipartImageResourceParser::finish()
 {
     ASSERT(!isCancelled());
+    if (m_sawLastBoundary)
+        return;
     // If we have any pending data and we're not in a header, go ahead and send
     // it to the client.
-    if (!m_isParsingHeaders && !m_data.isEmpty() && !m_sawLastBoundary)
+    if (!m_isParsingHeaders && !m_data.isEmpty())
         m_client->multipartDataReceived(m_data.data(), m_data.size());
     m_data.clear();
     m_sawLastBoundary = true;
@@ -158,14 +163,10 @@ bool MultipartImageResourceParser::parseHeaders()
         return false;
     m_data.remove(0, end);
 
-    // To avoid recording every multipart load as a separate visit in
-    // the history database, we want to keep track of whether the response
-    // is part of a multipart payload.  We do want to record the first visit,
-    // so we only set isMultipartPayload to true after the first visit.
-    response.setIsMultipartPayload(!m_isFirstPart);
+    bool isFirstPart = m_isFirstPart;
     m_isFirstPart = false;
     // Send the response!
-    m_client->onePartInMultipartReceived(response.toResourceResponse());
+    m_client->onePartInMultipartReceived(response.toResourceResponse(), isFirstPart);
 
     return true;
 }

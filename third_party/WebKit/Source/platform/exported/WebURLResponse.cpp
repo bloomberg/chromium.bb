@@ -440,14 +440,9 @@ void WebURLResponse::setOriginalURLViaServiceWorker(const WebURL& url)
     m_private->m_resourceResponse->setOriginalURLViaServiceWorker(url);
 }
 
-bool WebURLResponse::isMultipartPayload() const
+void WebURLResponse::setMultipartBoundary(const char* bytes, size_t size)
 {
-    return m_private->m_resourceResponse->isMultipartPayload();
-}
-
-void WebURLResponse::setIsMultipartPayload(bool value)
-{
-    m_private->m_resourceResponse->setIsMultipartPayload(value);
+    m_private->m_resourceResponse->setMultipartBoundary(bytes, size);
 }
 
 WebString WebURLResponse::downloadFilePath() const

@@ -22,7 +22,6 @@
 #include "components/scheduler/child/web_task_runner_impl.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
-#include "content/child/multipart_response_delegate.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
@@ -356,7 +355,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   scoped_ptr<blink::WebTaskRunner> web_task_runner_;
   WebReferrerPolicy referrer_policy_;
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
-  scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
   scoped_ptr<StreamOverrideParameters> stream_override_;
   scoped_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
@@ -415,11 +413,8 @@ void WebURLLoaderImpl::Context::Cancel() {
   if (body_stream_writer_)
     body_stream_writer_->Fail();
 
-  // Ensure that we do not notify the multipart delegate anymore as it has
+  // Ensure that we do not notify the delegate anymore as it has
   // its own pointer to the client.
-  if (multipart_delegate_)
-    multipart_delegate_->Cancel();
-  // Ditto for the ftp delegate.
   if (ftp_listing_delegate_)
     ftp_listing_delegate_->Cancel();
 
@@ -645,6 +640,19 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       response.setMIMEType("text/html");
     }
   }
+  if (info.headers.get() && info.mime_type == "multipart/x-mixed-replace") {
+    std::string content_type;
+    info.headers->EnumerateHeader(NULL, "content-type", &content_type);
+
+    std::string mime_type;
+    std::string charset;
+    bool had_charset = false;
+    std::string boundary;
+    net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
+                                    &had_charset, &boundary);
+    base::TrimString(boundary, " \"", &boundary);
+    response.setMultipartBoundary(boundary.data(), boundary.size());
+  }
 
   if (request_.useStreamOnResponse()) {
     SharedMemoryDataConsumerHandle::BackpressureMode mode =
@@ -678,27 +686,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     return;
 
   DCHECK(!ftp_listing_delegate_.get());
-  DCHECK(!multipart_delegate_.get());
-  if (info.headers.get() && info.mime_type == "multipart/x-mixed-replace") {
-    std::string content_type;
-    info.headers->EnumerateHeader(NULL, "content-type", &content_type);
-
-    std::string mime_type;
-    std::string charset;
-    bool had_charset = false;
-    std::string boundary;
-    net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
-                                    &had_charset, &boundary);
-    base::TrimString(boundary, " \"", &boundary);
-
-    // If there's no boundary, just handle the request normally.  In the gecko
-    // code, nsMultiMixedConv::OnStartRequest throws an exception.
-    if (!boundary.empty()) {
-      multipart_delegate_.reset(
-          new MultipartResponseDelegate(client_, loader_, response, boundary));
-    }
-  } else if (info.mime_type == "text/vnd.chromium.ftp-dir" &&
-             !show_raw_listing) {
+  if (info.mime_type == "text/vnd.chromium.ftp-dir" && !show_raw_listing) {
     ftp_listing_delegate_.reset(
         new FtpDirectoryListingResponseDelegate(client_, loader_, response));
   }
@@ -721,20 +709,14 @@ void WebURLLoaderImpl::Context::OnReceivedData(scoped_ptr<ReceivedData> data) {
     // The FTP listing delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.
     ftp_listing_delegate_->OnReceivedData(payload, data_length);
-  } else if (multipart_delegate_) {
-    // The multipart delegate will make the appropriate calls to
-    // client_->didReceiveData and client_->didReceiveResponse.
-    multipart_delegate_->OnReceivedData(payload, data_length,
-                                        encoded_data_length);
   } else {
     // We dispatch the data even when |useStreamOnResponse()| is set, in order
     // to make Devtools work.
     client_->didReceiveData(loader_, payload, data_length, encoded_data_length);
 
     if (request_.useStreamOnResponse()) {
-      // We don't support ftp_listening_delegate_ and multipart_delegate_ for
-      // now.
-      // TODO(yhirano): Support ftp listening and multipart.
+      // We don't support ftp_listening_delegate_ for now.
+      // TODO(yhirano): Support ftp listening.
       body_stream_writer_->AddData(std::move(data));
     }
   }
@@ -756,9 +738,6 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   if (ftp_listing_delegate_) {
     ftp_listing_delegate_->OnCompletedRequest();
     ftp_listing_delegate_.reset(NULL);
-  } else if (multipart_delegate_) {
-    multipart_delegate_->OnCompletedRequest();
-    multipart_delegate_.reset(NULL);
   }
 
   if (body_stream_writer_ && error_code != net::OK)
@@ -791,9 +770,6 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   if (ftp_listing_delegate_) {
     ftp_listing_delegate_->OnCompletedRequest();
     ftp_listing_delegate_.reset(NULL);
-  } else if (multipart_delegate_) {
-    multipart_delegate_->OnCompletedRequest();
-    multipart_delegate_.reset(NULL);
   }
 
   if (body_stream_writer_) {

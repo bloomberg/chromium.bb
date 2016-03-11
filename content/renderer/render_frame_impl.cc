@@ -4491,8 +4491,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     params.base_url = frame->document().baseURL();
 
   GetRedirectChain(ds, &params.redirects);
-  params.should_update_history = !ds->hasUnreachableURL() &&
-      !response.isMultipartPayload() && (response.httpStatusCode() != 404);
+  params.should_update_history =
+      !ds->hasUnreachableURL() && response.httpStatusCode() != 404;
 
   params.searchable_form_url = internal_data->searchable_form_url();
   params.searchable_form_encoding = internal_data->searchable_form_encoding();

@@ -225,9 +225,8 @@ public:
     BLINK_PLATFORM_EXPORT WebURL originalURLViaServiceWorker() const;
     BLINK_PLATFORM_EXPORT void setOriginalURLViaServiceWorker(const WebURL&);
 
-    // Flag whether this request is part of a multipart response.
-    BLINK_PLATFORM_EXPORT bool isMultipartPayload() const;
-    BLINK_PLATFORM_EXPORT void setIsMultipartPayload(bool);
+    // The boundary of the response. Set only when this is a multipart response.
+    BLINK_PLATFORM_EXPORT void setMultipartBoundary(const char* bytes, size_t /* size */);
 
     // This indicates the location of a downloaded response if the
     // WebURLRequest had the downloadToFile flag set to true. This file path

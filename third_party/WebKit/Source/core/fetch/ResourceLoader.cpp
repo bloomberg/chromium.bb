@@ -55,7 +55,6 @@ ResourceLoader* ResourceLoader::create(ResourceFetcher* fetcher, Resource* resou
 ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource)
     : m_fetcher(fetcher)
     , m_notifiedLoadComplete(false)
-    , m_loadingMultipartContent(false)
     , m_resource(resource)
     , m_state(ConnectionStateNew)
 {
@@ -129,8 +128,13 @@ void ResourceLoader::didDownloadData(WebURLLoader*, int length, int encodedDataL
 
 void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength)
 {
-    // If load has been cancelled after finishing (which could happen with a
-    // JavaScript that changes the window location), do nothing.
+    ASSERT(m_state != ConnectionStateReleased);
+    if (!isFinishing()) {
+        // When loading a multipart resource, make the loader non-block when
+        // finishing loading the first part.
+        m_fetcher->subresourceLoaderFinishedLoadingOnePart(this);
+    }
+
     if (m_state == ConnectionStateReleased)
         return;
 
@@ -225,10 +229,8 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
     // |rawHandle|'s ownership is transferred to the callee.
     OwnPtr<WebDataConsumerHandle> handle = adoptPtr(rawHandle);
 
-    bool isMultipartPayload = response.isMultipartPayload();
     bool isValidStateTransition = (m_state == ConnectionStateStarted || m_state == ConnectionStateReceivedResponse);
-    // In the case of multipart loads, calls to didReceiveData & didReceiveResponse can be interleaved.
-    RELEASE_ASSERT(isMultipartPayload || isValidStateTransition);
+    RELEASE_ASSERT(isValidStateTransition);
     m_state = ConnectionStateReceivedResponse;
 
     const ResourceResponse& resourceResponse = response.toResourceResponse();
@@ -263,23 +265,6 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
         return;
 
     m_fetcher->didReceiveResponse(m_resource.get(), resourceResponse);
-    if (m_state == ConnectionStateReleased)
-        return;
-
-    if (response.toResourceResponse().isMultipart()) {
-        // We only support multipart for images, though the image may be loaded
-        // as a main resource that we end up displaying through an ImageDocument.
-        if (!m_resource->isImage() && m_resource->getType() != Resource::MainResource) {
-            cancel(ResourceError::cancelledError(resourceResponse.url()));
-            return;
-        }
-        m_loadingMultipartContent = true;
-    } else if (isMultipartPayload) {
-        // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
-        // After the first multipart section is complete, signal to delegates that this load is "finished"
-        m_fetcher->subresourceLoaderFinishedLoadingOnePart(this);
-        didFinishLoadingOnePart(0, WebURLLoaderClient::kUnknownEncodedDataLength);
-    }
     if (m_state == ConnectionStateReleased)
         return;
 

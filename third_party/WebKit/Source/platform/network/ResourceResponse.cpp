@@ -51,7 +51,6 @@ ResourceResponse::ResourceResponse()
     , m_securityStyle(SecurityStyleUnknown)
     , m_httpVersion(HTTPVersionUnknown)
     , m_appCacheID(0)
-    , m_isMultipartPayload(false)
     , m_wasFetchedViaSPDY(false)
     , m_wasNpnNegotiated(false)
     , m_wasAlternateProtocolAvailable(false)
@@ -88,7 +87,6 @@ ResourceResponse::ResourceResponse(const KURL& url, const AtomicString& mimeType
     , m_securityStyle(SecurityStyleUnknown)
     , m_httpVersion(HTTPVersionUnknown)
     , m_appCacheID(0)
-    , m_isMultipartPayload(false)
     , m_wasFetchedViaSPDY(false)
     , m_wasNpnNegotiated(false)
     , m_wasAlternateProtocolAvailable(false)
@@ -130,7 +128,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     m_httpVersion = data->m_httpVersion;
     m_appCacheID = data->m_appCacheID;
     m_appCacheManifestURL = data->m_appCacheManifestURL.copy();
-    m_isMultipartPayload = data->m_isMultipartPayload;
+    m_multipartBoundary = data->m_multipartBoundary;
     m_wasFetchedViaSPDY = data->m_wasFetchedViaSPDY;
     m_wasNpnNegotiated = data->m_wasNpnNegotiated;
     m_wasAlternateProtocolAvailable = data->m_wasAlternateProtocolAvailable;
@@ -177,7 +175,7 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     data->m_httpVersion = m_httpVersion;
     data->m_appCacheID = m_appCacheID;
     data->m_appCacheManifestURL = m_appCacheManifestURL.copy();
-    data->m_isMultipartPayload = m_isMultipartPayload;
+    data->m_multipartBoundary = m_multipartBoundary;
     data->m_wasFetchedViaSPDY = m_wasFetchedViaSPDY;
     data->m_wasNpnNegotiated = m_wasNpnNegotiated;
     data->m_wasAlternateProtocolAvailable = m_wasAlternateProtocolAvailable;

@@ -234,7 +234,8 @@ PassRefPtrWillBeRawPtr<Document> DOMImplementation::createDocument(const String&
     // We do not want QuickTime to take over all image types, obviously.
     if ((type == "application/pdf" || type == "text/pdf") && pluginData && pluginData->supportsMimeType(type))
         return PluginDocument::create(init);
-    if (Image::supportsType(type))
+    // multipart/x-mixed-replace is only supported for images.
+    if (Image::supportsType(type) || type == "multipart/x-mixed-replace")
         return ImageDocument::create(init);
 
     // Check to see if the type can be played by our media player, if so create a MediaDocument

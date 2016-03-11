@@ -75,15 +75,13 @@ public:
     void didFail(WebURLLoader*, const WebURLError&) override;
     void didDownloadData(WebURLLoader*, int, int) override;
 
-    bool loadingMultipartContent() const { return m_loadingMultipartContent; }
+    void didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength);
 
 private:
     // Assumes ResourceFetcher and Resource are non-null.
     ResourceLoader(ResourceFetcher*, Resource*);
 
     void requestSynchronously(ResourceRequest&);
-
-    void didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength);
 
     bool responseNeedsAccessControlCheck() const;
 
@@ -95,8 +93,6 @@ private:
     Member<ResourceFetcher> m_fetcher;
 
     bool m_notifiedLoadComplete;
-
-    bool m_loadingMultipartContent;
 
     enum ConnectionState {
         ConnectionStateNew,

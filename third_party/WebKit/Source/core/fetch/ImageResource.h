@@ -24,6 +24,7 @@
 #define ImageResource_h
 
 #include "core/CoreExport.h"
+#include "core/fetch/MultipartImageResourceParser.h"
 #include "core/fetch/Resource.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSizeHash.h"
@@ -42,7 +43,7 @@ class Length;
 class MemoryCache;
 class SecurityOrigin;
 
-class CORE_EXPORT ImageResource final : public Resource, public ImageObserver {
+class CORE_EXPORT ImageResource final : public Resource, public ImageObserver, public MultipartImageResourceParser::Client {
     friend class MemoryCache;
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageResource);
 public:
@@ -100,7 +101,7 @@ public:
     void appendData(const char*, size_t) override;
     void error(Resource::Status) override;
     void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-    void finishOnePart() override;
+    void finish() override;
 
     // For compatibility, images keep loading even if there are HTTP errors.
     bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
@@ -115,6 +116,10 @@ public:
     bool shouldPauseAnimation(const blink::Image*) override;
     void animationAdvanced(const blink::Image*) override;
     void changedInRect(const blink::Image*, const IntRect&) override;
+
+    // MultipartImageResourceParser::Client
+    void onePartInMultipartReceived(const ResourceResponse&, bool isFirstPart) final;
+    void multipartDataReceived(const char*, size_t) final;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -147,10 +152,10 @@ private:
     void clearImage();
     // If not null, changeRect is the changed part of the image.
     void notifyObservers(const IntRect* changeRect = nullptr);
-    bool loadingMultipartContent() const;
 
     float m_devicePixelRatioHeaderValue;
 
+    PersistentWillBeMember<MultipartImageResourceParser> m_multipartParser;
     RefPtr<blink::Image> m_image;
     bool m_hasDevicePixelRatioHeaderValue;
 };

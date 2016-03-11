@@ -53,21 +53,6 @@ const char kFtpDirListing[] =
     "drwxr-xr-x    3 ftp      ftp          4096 May 15 18:11 goat\n"
     "drwxr-xr-x    3 ftp      ftp          4096 May 15 18:11 hat";
 
-const char kMultipartResponseMimeType[] = "multipart/x-mixed-replace";
-const char kMultipartResponseHeaders[] =
-    "HTTP/1.0 200 Peachy\r\n"
-    "Content-Type: multipart/x-mixed-replace; boundary=boundary\r\n\r\n";
-// Simple multipart response.  Imporant details for the tests are that it
-// contains multiple chunks, and that it doesn't end with a boundary, so will
-// send data in OnResponseComplete.  Also, it will resolve to kTestData.
-const char kMultipartResponse[] =
-    "--boundary\n"
-    "Content-type: text/html\n\n"
-    "bl"
-    "--boundary\n"
-    "Content-type: text/html\n\n"
-    "ah!";
-
 class TestResourceDispatcher : public ResourceDispatcher {
  public:
   TestResourceDispatcher() :
@@ -117,7 +102,6 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       : loader_(new WebURLLoaderImpl(
             dispatcher,
             make_scoped_ptr(new scheduler::WebTaskRunnerImpl(task_runner)))),
-        expect_multipart_response_(false),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),
         delete_on_receive_data_(false),
@@ -156,9 +140,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       const blink::WebURLResponse& response) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
-
-    // Only multipart requests may receive multiple response headers.
-    EXPECT_TRUE(expect_multipart_response_ || !did_receive_response_);
+    EXPECT_FALSE(did_receive_response_);
 
     did_receive_response_ = true;
     response_ = response;
@@ -226,8 +208,6 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
     loader_.reset();
   }
 
-  void set_expect_multipart_response() { expect_multipart_response_ = true; }
-
   void set_delete_on_receive_redirect() { delete_on_receive_redirect_ = true; }
   void set_delete_on_receive_response() { delete_on_receive_response_ = true; }
   void set_delete_on_receive_data() { delete_on_receive_data_ = true; }
@@ -243,8 +223,6 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
  private:
   scoped_ptr<WebURLLoaderImpl> loader_;
-
-  bool expect_multipart_response_;
 
   bool delete_on_receive_redirect_;
   bool delete_on_receive_response_;
@@ -342,25 +320,6 @@ class WebURLLoaderImplTest : public testing::Test {
         kFtpDirListing, strlen(kFtpDirListing), strlen(kFtpDirListing))));
     // The FTP delegate should modify the data the client sees.
     EXPECT_NE(kFtpDirListing, client()->received_data());
-  }
-
-  void DoReceiveResponseMultipart() {
-    EXPECT_FALSE(client()->did_receive_response());
-    content::ResourceResponseInfo response_info;
-    response_info.headers = new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(kMultipartResponseHeaders,
-                                          strlen(kMultipartResponseHeaders)));
-    response_info.mime_type = kMultipartResponseMimeType;
-    peer()->OnReceivedResponse(response_info);
-    EXPECT_TRUE(client()->did_receive_response());
-  }
-
-  void DoReceiveDataMultipart() {
-    peer()->OnReceivedData(make_scoped_ptr(
-        new FixedReceivedData(kMultipartResponse, strlen(kMultipartResponse),
-                              strlen(kMultipartResponse))));
-    // Multipart delegate should modify the data the client sees.
-    EXPECT_NE(kMultipartResponse, client()->received_data());
   }
 
   TestWebURLLoaderClient* client() { return client_.get(); }
@@ -593,78 +552,6 @@ TEST_F(WebURLLoaderImplTest, FtpDeleteOnFail) {
   DoStartAsyncRequest();
   DoReceiveResponseFtp();
   DoReceiveDataFtp();
-  DoFailRequest();
-}
-
-// Multipart integration tests.  These are focused more on safe deletion than
-// correct parsing of Multipart responses.
-
-TEST_F(WebURLLoaderImplTest, Multipart) {
-  client()->set_expect_multipart_response();
-  DoStartAsyncRequest();
-  DoReceiveResponseMultipart();
-  DoReceiveDataMultipart();
-  DoCompleteRequest();
-  EXPECT_EQ(kTestData, client()->received_data());
-  EXPECT_FALSE(dispatcher()->canceled());
-}
-
-TEST_F(WebURLLoaderImplTest, MultipartDeleteOnReceiveFirstResponse) {
-  client()->set_expect_multipart_response();
-  client()->set_delete_on_receive_response();
-  DoStartAsyncRequest();
-  DoReceiveResponseMultipart();
-  EXPECT_EQ("", client()->received_data());
-}
-
-TEST_F(WebURLLoaderImplTest, MultipartDeleteOnReceiveSecondResponse) {
-  client()->set_expect_multipart_response();
-  DoStartAsyncRequest();
-  DoReceiveResponseMultipart();
-  client()->set_delete_on_receive_response();
-  DoReceiveDataMultipart();
-  EXPECT_EQ("", client()->received_data());
-}
-
-TEST_F(WebURLLoaderImplTest, MultipartDeleteOnReceiveFirstData) {
-  client()->set_expect_multipart_response();
-  client()->set_delete_on_receive_data();
-  DoStartAsyncRequest();
-  DoReceiveResponseMultipart();
-  DoReceiveDataMultipart();
-  EXPECT_EQ("bl", client()->received_data());
-}
-
-TEST_F(WebURLLoaderImplTest, MultipartDeleteOnReceiveMoreData) {
-  client()->set_expect_multipart_response();
-  DoStartAsyncRequest();
-  DoReceiveResponseMultipart();
-  DoReceiveDataMultipart();
-  // For multipart responses, the delegate may send some data when notified
-  // of a request completing.
-  client()->set_delete_on_receive_data();
-  peer()->OnCompletedRequest(net::OK, false, false, "", base::TimeTicks(),
-                              strlen(kTestData));
-  EXPECT_FALSE(client()->did_finish());
-  EXPECT_EQ(kTestData, client()->received_data());
-}
-
-TEST_F(WebURLLoaderImplTest, MultipartDeleteFinish) {
-  client()->set_expect_multipart_response();
-  client()->set_delete_on_finish();
-  DoStartAsyncRequest();
-  DoReceiveResponseMultipart();
-  DoReceiveDataMultipart();
-  DoCompleteRequest();
-  EXPECT_EQ(kTestData, client()->received_data());
-}
-
-TEST_F(WebURLLoaderImplTest, MultipartDeleteFail) {
-  client()->set_expect_multipart_response();
-  client()->set_delete_on_fail();
-  DoStartAsyncRequest();
-  DoReceiveResponseMultipart();
-  DoReceiveDataMultipart();
   DoFailRequest();
 }
 

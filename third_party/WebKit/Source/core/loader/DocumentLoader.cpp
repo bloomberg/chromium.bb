@@ -587,11 +587,6 @@ void DocumentLoader::appendRedirect(const KURL& url)
     m_redirectChain.append(url);
 }
 
-bool DocumentLoader::loadingMultipartContent() const
-{
-    return mainResourceLoader() ? mainResourceLoader()->loadingMultipartContent() : false;
-}
-
 void DocumentLoader::detachFromFrame()
 {
     ASSERT(m_frame);

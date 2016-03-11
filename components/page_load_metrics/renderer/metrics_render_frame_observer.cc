@@ -87,9 +87,6 @@ bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
     return false;
 
   const blink::WebURLResponse& url_response = frame->dataSource()->response();
-  // Ignore multipart responses (e.g. MHTML).
-  if (url_response.isMultipartPayload())
-    return false;
 
   // Ignore non-HTML documents (e.g. SVG). Note that images are treated by
   // Blink as HTML documents, so to exclude images, we must perform

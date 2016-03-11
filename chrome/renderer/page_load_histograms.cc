@@ -881,10 +881,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     return;
   }
 
-  // Ignore multipart requests.
-  if (frame->dataSource()->response().isMultipartPayload())
-    return;
-
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
 

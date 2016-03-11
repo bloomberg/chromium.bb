@@ -100,26 +100,30 @@ TEST(ImageResourceTest, MultipartImage)
     // Note that the response must be routed through ResourceLoader to
     // ensure the load is flagged as multipart.
     ResourceResponse multipartResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String());
+    multipartResponse.setMultipartBoundary("boundary", strlen("boundary"));
     cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(multipartResponse), nullptr);
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);
     ASSERT_FALSE(client.notifyFinishedCalled());
+    EXPECT_EQ("multipart/x-mixed-replace", cachedImage->response().mimeType());
 
+    const char firstPart[] =
+        "--boundary\n"
+        "Content-Type: image/svg+xml\n\n";
+    cachedImage->appendData(firstPart, strlen(firstPart));
     // Send the response for the first real part. No image or data buffer is created.
-    const char* svgData = "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect width='1' height='1' fill='green'/></svg>";
-    unsigned svgDataLength = strlen(svgData);
-    ResourceResponse payloadResponse(KURL(), "image/svg+xml", svgDataLength, nullAtom, String());
-    cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(payloadResponse), nullptr);
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);
     ASSERT_FALSE(client.notifyFinishedCalled());
+    EXPECT_EQ("image/svg+xml", cachedImage->response().mimeType());
 
+    const char secondPart[] = "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect width='1' height='1' fill='green'/></svg>\n";
     // The first bytes arrive. The data buffer is created, but no image is created.
-    cachedImage->appendData(svgData, svgDataLength);
+    cachedImage->appendData(secondPart, strlen(secondPart));
     ASSERT_TRUE(cachedImage->resourceBuffer());
-    ASSERT_EQ(cachedImage->resourceBuffer()->size(), svgDataLength);
+    ASSERT_EQ(cachedImage->resourceBuffer()->size(), strlen(secondPart));
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);
     ASSERT_FALSE(client.notifyFinishedCalled());

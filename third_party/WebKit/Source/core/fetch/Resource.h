@@ -170,7 +170,7 @@ public:
     // Computes the status of an object after loading.
     // Updates the expire date on the cache entry file
     void setLoadFinishTime(double finishTime) { m_loadFinishTime = finishTime; }
-    void finish();
+    virtual void finish();
 
     // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
     bool passesAccessControlCheck(SecurityOrigin*) const;
@@ -258,7 +258,6 @@ protected:
     Resource(const ResourceRequest&, Type);
 
     virtual void checkNotify();
-    virtual void finishOnePart();
 
     virtual void destroyDecodedDataForFailedRevalidation() { }
 
