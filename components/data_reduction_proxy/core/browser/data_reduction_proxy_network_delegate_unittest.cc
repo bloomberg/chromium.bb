@@ -91,7 +91,9 @@ class TestLoFiDecider : public LoFiDecider {
 
   bool MaybeAddLoFiDirectiveToHeaders(
       const net::URLRequest& request,
-      net::HttpRequestHeaders* headers) const override {
+      net::HttpRequestHeaders* headers,
+      const net::ProxyServer& proxy_server,
+      DataReductionProxyConfig* config) const override {
     if (should_request_lofi_resource_) {
       const char kChromeProxyHeader[] = "Chrome-Proxy";
       std::string header_value;

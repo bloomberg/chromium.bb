@@ -159,11 +159,15 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     net::HttpRequestHeaders* headers) {
   DCHECK(data_reduction_proxy_config_);
 
+  if (proxy_info.is_empty())
+    return;
+
   if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->lofi_decider() && request) {
     LoFiDecider* lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
-    bool is_using_lofi_mode =
-        lofi_decider->MaybeAddLoFiDirectiveToHeaders(*request, headers);
+    bool is_using_lofi_mode = lofi_decider->MaybeAddLoFiDirectiveToHeaders(
+        *request, headers, proxy_info.proxy_server(),
+        data_reduction_proxy_config_);
 
     if ((request->load_flags() & net::LOAD_MAIN_FRAME)) {
       // TODO(megjablon): Need to switch to per page.

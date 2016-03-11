@@ -6,13 +6,16 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_LOFI_DECIDER_H_
 
 #include "base/macros.h"
-#include "net/url_request/url_request.h"
 
 namespace net {
 class HttpRequestHeaders;
+class ProxyServer;
+class URLRequest;
 }
 
 namespace data_reduction_proxy {
+
+class DataReductionProxyConfig;
 
 // Interface to determine if a request should be made for a low fidelity version
 // of the resource.
@@ -28,10 +31,14 @@ class LoFiDecider {
   // |request| is using Lo-Fi mode, adds the "q=low" directive to the |headers|.
   // If the |request| is using Lo-Fi preview mode, and it is a main frame
   // request adds the "q=preview" and it is a main frame request directive to
-  // the |headers|.
+  // the |headers|. Only adds this header if the provided |proxy_server| is a
+  // data reduction proxy as identified by the given |config|.
+
   virtual bool MaybeAddLoFiDirectiveToHeaders(
       const net::URLRequest& request,
-      net::HttpRequestHeaders* headers) const = 0;
+      net::HttpRequestHeaders* headers,
+      const net::ProxyServer& proxy_server,
+      DataReductionProxyConfig* config) const = 0;
 };
 
 }  // namespace data_reduction_proxy
