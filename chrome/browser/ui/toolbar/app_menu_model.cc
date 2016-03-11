@@ -480,6 +480,12 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       LogMenuAction(MENU_ACTION_PRINT);
       break;
 
+    case IDC_ROUTE_MEDIA:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Cast", delta);
+      LogMenuAction(MENU_ACTION_CAST);
+      break;
+
     // Edit menu.
     case IDC_CUT:
       if (!uma_action_recorded_)

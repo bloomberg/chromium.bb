@@ -84260,6 +84260,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="42" label="Open a bookmark"/>
   <int value="43" label="Exit"/>
   <int value="44" label="Upgrade browser"/>
+  <int value="45" label="Cast"/>
 </enum>
 
 <enum name="XMLHttpRequestHeaderValueCategoryInRFC7230" type="int">
@@ -89827,6 +89828,7 @@ To add a new entry, add it with any value and run test to compute valid value.
       instead.
     </obsolete>
   </suffix>
+  <suffix name="Cast"/>
   <affected-histogram name="WrenchMenu.TimeToAction"/>
 </histogram_suffixes>
 
