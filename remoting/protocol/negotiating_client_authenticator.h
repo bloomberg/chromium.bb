@@ -18,30 +18,18 @@
 namespace remoting {
 namespace protocol {
 
-struct ClientAuthenticationConfig {
-  ClientAuthenticationConfig();
-  ~ClientAuthenticationConfig();
-
-  // Used for all authenticators.
-  std::string host_id;
-
-  // Used for pairing authenticators
-  std::string pairing_client_id;
-  std::string pairing_secret;
-
-  // Used for shared secret authenticators.
-  FetchSecretCallback fetch_secret_callback;
-
-  // Used for third party authenticators.
-  FetchThirdPartyTokenCallback fetch_third_party_token_callback;
-};
-
 // Client-side implementation of NegotiatingAuthenticatorBase.
 // See comments in negotiating_authenticator_base.h for a general explanation.
 class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
  public:
-  explicit NegotiatingClientAuthenticator(
-      const ClientAuthenticationConfig& config);
+  // TODO(jamiewalch): Pass ClientConfig instead of separate parameters.
+  NegotiatingClientAuthenticator(
+      const std::string& client_pairing_id,
+      const std::string& shared_secret,
+      const std::string& authentication_tag,
+      const FetchSecretCallback& fetch_secret_callback,
+      const FetchThirdPartyTokenCallback& fetch_third_party_token_callback);
+
   ~NegotiatingClientAuthenticator() override;
 
   // Overriden from Authenticator.
@@ -76,7 +64,18 @@ class NegotiatingClientAuthenticator : public NegotiatingAuthenticatorBase {
       const base::Closure& resume_callback,
       const std::string& shared_secret);
 
-  ClientAuthenticationConfig config_;
+  // Used for pairing authenticators
+  std::string client_pairing_id_;
+  std::string shared_secret_;
+
+  // Used for all authenticators.
+  std::string authentication_tag_;
+
+  // Used for shared secret authenticators.
+  FetchSecretCallback fetch_secret_callback_;
+
+  // Used for third party authenticators.
+  FetchThirdPartyTokenCallback fetch_third_party_token_callback_;
 
   // Internal NegotiatingClientAuthenticator data.
   bool method_set_by_host_ = false;

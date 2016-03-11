@@ -579,24 +579,26 @@ void ChromotingInstance::SetCursorShape(
 }
 
 void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
-  protocol::ClientAuthenticationConfig client_auth_config;
-
   std::string local_jid;
   std::string host_jid;
   std::string host_public_key;
+  std::string authentication_tag;
   if (!data.GetString("hostJid", &host_jid) ||
       !data.GetString("hostPublicKey", &host_public_key) ||
       !data.GetString("localJid", &local_jid) ||
-      !data.GetString("hostId", &client_auth_config.host_id)) {
+      !data.GetString("authenticationTag", &authentication_tag)) {
     LOG(ERROR) << "Invalid connect() data.";
     return;
   }
 
-  data.GetString("clientPairingId", &client_auth_config.pairing_client_id);
-  data.GetString("clientPairedSecret", &client_auth_config.pairing_secret);
+  std::string client_pairing_id;
+  data.GetString("clientPairingId", &client_pairing_id);
+  std::string client_paired_secret;
+  data.GetString("clientPairedSecret", &client_paired_secret);
 
+  protocol::FetchSecretCallback fetch_secret_callback;
   if (use_async_pin_dialog_) {
-    client_auth_config.fetch_secret_callback = base::Bind(
+    fetch_secret_callback = base::Bind(
         &ChromotingInstance::FetchSecretFromDialog, weak_factory_.GetWeakPtr());
   } else {
     std::string shared_secret;
@@ -604,13 +606,9 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       LOG(ERROR) << "sharedSecret not specified in connect().";
       return;
     }
-    client_auth_config.fetch_secret_callback =
+    fetch_secret_callback =
         base::Bind(&ChromotingInstance::FetchSecretFromString, shared_secret);
   }
-
-  client_auth_config.fetch_third_party_token_callback =
-      base::Bind(&ChromotingInstance::FetchThirdPartyToken,
-                 weak_factory_.GetWeakPtr(), host_public_key);
 
   // Read the list of capabilities, if any.
   std::string capabilities;
@@ -697,6 +695,16 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT));
 
+  // Create Authenticator.
+  protocol::FetchThirdPartyTokenCallback fetch_third_party_token_callback =
+      base::Bind(&ChromotingInstance::FetchThirdPartyToken,
+                 weak_factory_.GetWeakPtr(), host_public_key);
+
+  scoped_ptr<protocol::Authenticator> authenticator(
+      new protocol::NegotiatingClientAuthenticator(
+          client_pairing_id, client_paired_secret, authentication_tag,
+          fetch_secret_callback, fetch_third_party_token_callback));
+
   scoped_ptr<protocol::CandidateSessionConfig> config =
       protocol::CandidateSessionConfig::CreateDefault();
   if (std::find(experiments_list.begin(), experiments_list.end(), "vp9") !=
@@ -706,8 +714,8 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   client_->set_protocol_config(std::move(config));
 
   // Kick off the connection.
-  client_->Start(signal_strategy_.get(), client_auth_config, transport_context,
-                 host_jid, capabilities);
+  client_->Start(signal_strategy_.get(), std::move(authenticator),
+                 transport_context, host_jid, capabilities);
 
   // Connect the input pipeline to the protocol stub.
   mouse_input_filter_.set_input_stub(client_->input_stub());

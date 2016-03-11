@@ -388,15 +388,17 @@ class ProtocolPerfTest
             host_signaling_.get(), std::move(port_allocator_factory), nullptr,
             network_settings, protocol::TransportRole::CLIENT));
 
-    protocol::ClientAuthenticationConfig client_auth_config;
-    client_auth_config.host_id = kHostId;
-    client_auth_config.fetch_secret_callback =
-        base::Bind(&ProtocolPerfTest::FetchPin, base::Unretained(this));
-
+    scoped_ptr<protocol::Authenticator> client_authenticator(
+        new protocol::NegotiatingClientAuthenticator(
+            std::string(),  // client_pairing_id
+            std::string(),  // client_pairing_secret
+            kHostId,
+            base::Bind(&ProtocolPerfTest::FetchPin, base::Unretained(this)),
+            protocol::FetchThirdPartyTokenCallback()));
     client_.reset(
         new ChromotingClient(client_context_.get(), this, this, nullptr));
     client_->set_protocol_config(protocol_config_->Clone());
-    client_->Start(client_signaling_.get(), client_auth_config,
+    client_->Start(client_signaling_.get(), std::move(client_authenticator),
                    transport_context, kHostJid, std::string());
   }
 

@@ -16,7 +16,6 @@
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_stub.h"
@@ -64,7 +63,7 @@ class ChromotingClient : public SignalStrategy::Listener,
   // Start the client. Must be called on the main thread. |signal_strategy|
   // must outlive the client.
   void Start(SignalStrategy* signal_strategy,
-             const protocol::ClientAuthenticationConfig& client_auth_config,
+             scoped_ptr<protocol::Authenticator> authenticator,
              scoped_refptr<protocol::TransportContext> transport_context,
              const std::string& host_jid,
              const std::string& capabilities);
@@ -122,7 +121,7 @@ class ChromotingClient : public SignalStrategy::Listener,
   SignalStrategy* signal_strategy_ = nullptr;
 
   std::string host_jid_;
-  protocol::ClientAuthenticationConfig client_auth_config_;
+  scoped_ptr<protocol::Authenticator> authenticator_;
   scoped_refptr<protocol::TransportContext> transport_context_;
 
   scoped_ptr<protocol::SessionManager> session_manager_;

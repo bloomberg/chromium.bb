@@ -65,17 +65,14 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
           host_cert_, key_pair_, host_secret_hash, pairing_registry_);
     }
 
-
-    protocol::ClientAuthenticationConfig client_auth_config;
-    client_auth_config.host_id = kTestHostId;
-    client_auth_config.pairing_client_id = client_id;
-    client_auth_config.pairing_secret= client_paired_secret;
     bool pairing_expected = pairing_registry_.get() != nullptr;
-    client_auth_config.fetch_secret_callback =
+    FetchSecretCallback fetch_secret_callback =
         base::Bind(&NegotiatingAuthenticatorTest::FetchSecret,
-                   client_interactive_pin, pairing_expected);
-    client_as_negotiating_authenticator_ =
-        new NegotiatingClientAuthenticator(client_auth_config);
+                   client_interactive_pin,
+                   pairing_expected);
+    client_as_negotiating_authenticator_ = new NegotiatingClientAuthenticator(
+        client_id, client_paired_secret, kTestHostId, fetch_secret_callback,
+        FetchThirdPartyTokenCallback());
     client_.reset(client_as_negotiating_authenticator_);
   }
 
