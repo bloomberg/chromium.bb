@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_MD_SETTINGS_UI_H_
 
 #include <string>
-#include <vector>
+#include <unordered_set>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -24,8 +24,12 @@ class SettingsPageUIHandler : public content::WebUIMessageHandler {
   SettingsPageUIHandler();
   ~SettingsPageUIHandler() override;
 
-  // WebUIMessageHandler implementation.
+  // WebUIMessageHandler:
   void RegisterMessages() override {}
+
+  // Called when a navigation re-uses a renderer process (i.e. reload).
+  // TODO(dbeam): move to WebUIMessageHandler?
+  virtual void RenderViewReused() {}
 
  protected:
   // Helper method for responding to JS requests initiated with
@@ -51,7 +55,10 @@ class MdSettingsUI : public content::WebUIController,
   explicit MdSettingsUI(content::WebUI* web_ui);
   ~MdSettingsUI() override;
 
-  // Overridden from content::WebContentsObserver:
+  // content::WebUIController:
+  void RenderViewReused(content::RenderViewHost* render_view_host) override;
+
+  // content::WebContentsObserver:
   void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
@@ -62,7 +69,10 @@ class MdSettingsUI : public content::WebUIController,
   void DocumentOnLoadCompletedInMainFrame() override;
 
  private:
-  void AddSettingsPageUIHandler(content::WebUIMessageHandler* handler);
+  void AddSettingsPageUIHandler(SettingsPageUIHandler* handler);
+
+  // Weak references; all |handlers_| are owned by |web_ui()|.
+  std::unordered_set<SettingsPageUIHandler*> handlers_;
 
   base::Time load_start_time_;
 

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
-#include "content/public/browser/web_ui_message_handler.h"
+#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 
 namespace content {
 class WebUIDataSource;
@@ -18,7 +18,7 @@ class Profile;
 namespace chromeos {
 namespace settings {
 
-class EasyUnlockSettingsHandler : public content::WebUIMessageHandler,
+class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler,
                                   public EasyUnlockServiceObserver {
  public:
   // Returns nullptr if EasyUnlock is not allowed for this device.
@@ -28,10 +28,10 @@ class EasyUnlockSettingsHandler : public content::WebUIMessageHandler,
 
   ~EasyUnlockSettingsHandler() override;
 
-  // WebUIMessageHandler
+  // SettingsPageUIHandler:
   void RegisterMessages() override;
 
-  // EasyUnlockServiceObserver
+  // EasyUnlockServiceObserver:
   void OnTurnOffOperationStatusChanged() override;
 
  protected:

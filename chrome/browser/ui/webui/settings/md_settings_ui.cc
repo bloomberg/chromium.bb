@@ -125,12 +125,16 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 MdSettingsUI::~MdSettingsUI() {
 }
 
-void MdSettingsUI::AddSettingsPageUIHandler(
-    content::WebUIMessageHandler* handler_raw) {
-  scoped_ptr<content::WebUIMessageHandler> handler(handler_raw);
-  DCHECK(handler.get());
+void MdSettingsUI::RenderViewReused(
+    content::RenderViewHost* /*render_view_host*/) {
+  for (SettingsPageUIHandler* handler : handlers_)
+    handler->RenderViewReused();
+}
 
-  web_ui()->AddMessageHandler(handler.release());
+void MdSettingsUI::AddSettingsPageUIHandler(SettingsPageUIHandler* handler) {
+  DCHECK(handler);
+  handlers_.insert(handler);
+  web_ui()->AddMessageHandler(handler);  // |handler| is owned by |web_ui()|.
 }
 
 void MdSettingsUI::DidStartProvisionalLoadForFrame(

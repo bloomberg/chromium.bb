@@ -28,8 +28,9 @@ class StartupPagesHandler : public SettingsPageUIHandler,
   explicit StartupPagesHandler(content::WebUI* webui);
   ~StartupPagesHandler() override;
 
-  // OptionsPageUIHandler:
+  // SettingsPageUIHandler:
   void RegisterMessages() override;
+  void RenderViewReused() override;
 
   // ui::TableModelObserver:
   void OnModelChanged() override;

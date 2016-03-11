@@ -40,6 +40,11 @@ void StartupPagesHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void StartupPagesHandler::RenderViewReused() {
+  startup_custom_pages_table_model_.SetObserver(nullptr);
+  pref_change_registrar_.RemoveAll();
+}
+
 void StartupPagesHandler::OnModelChanged() {
   base::ListValue startup_pages;
   int page_count = startup_custom_pages_table_model_.RowCount();

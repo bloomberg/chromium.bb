@@ -14,11 +14,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
+#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_driver/sync_service_observer.h"
-#include "content/public/browser/web_ui_message_handler.h"
 
 #if defined(OS_CHROMEOS)
 #include "content/public/browser/notification_observer.h"
@@ -40,7 +40,7 @@ enum class AccessPoint;
 
 namespace settings {
 
-class PeopleHandler : public content::WebUIMessageHandler,
+class PeopleHandler : public SettingsPageUIHandler,
                       public SigninManagerBase::Observer,
                       public SyncStartupTracker::Observer,
                       public LoginUIService::LoginUI,
@@ -53,7 +53,7 @@ class PeopleHandler : public content::WebUIMessageHandler,
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
 
-  // content::WebUIMessageHandler implementation.
+  // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
 
   // SyncStartupTracker::Observer implementation.
