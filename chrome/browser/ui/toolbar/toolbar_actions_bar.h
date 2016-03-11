@@ -186,8 +186,11 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
       const;
 
   // Pops out a given |action|, ensuring it is visible.
+  // |is_sticky| refers to whether or not the action will stay popped out if
+  // the overflow menu is opened.
   // |closure| will be called once any animation is complete.
   void PopOutAction(ToolbarActionViewController* action,
+                    bool is_sticky,
                     const base::Closure& closure);
 
   // Undoes the current "pop out"; i.e., moves the popped out action back into
@@ -324,6 +327,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // The action, if any, which is currently "popped out" of the overflow in
   // order to show a popup.
   ToolbarActionViewController* popped_out_action_;
+
+  // True if the popped out action is "sticky", meaning it will stay popped
+  // out even if another menu is opened.
+  bool is_popped_out_sticky_;
 
   // The task to alert the |popped_out_action_| that animation has finished, and
   // it is fully popped out.

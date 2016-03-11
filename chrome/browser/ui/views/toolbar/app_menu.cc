@@ -1153,11 +1153,6 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
         scoped_ptr<ExtensionToolbarMenuView> extension_toolbar(
             new ExtensionToolbarMenuView(browser_, this, item));
-        if (!extension_toolbar->ShouldShow()) {
-          item->SetVisible(false);
-          extension_toolbar_ = nullptr;
-          break;
-        }
         if (ui::MaterialDesignController::IsModeMaterial()) {
           for (int i = 0; i < extension_toolbar->contents()->child_count();
                ++i) {

@@ -595,3 +595,64 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, TestStartAndEndIndexes) {
   EXPECT_EQ(3u, overflow_bar()->GetEndIndexInBounds());
   EXPECT_FALSE(toolbar_actions_bar()->NeedsOverflow());
 }
+
+// Tests the logic for determining if the container needs an overflow menu item.
+TEST_P(ToolbarActionsBarRedesignUnitTest, TestNeedsOverflow) {
+  CreateAndAddExtension(
+      "extension 1",
+      extensions::extension_action_test_util::BROWSER_ACTION);
+  // One extension on the main bar, none overflowed. Overflow not needed.
+  EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_EQ(0u, overflow_bar()->GetIconCount());
+  EXPECT_FALSE(toolbar_actions_bar()->NeedsOverflow());
+
+  // Set one extension in the overflow menu, none on the main bar. Overflow
+  // needed.
+  toolbar_model()->SetVisibleIconCount(0u);
+  EXPECT_EQ(0u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_EQ(1u, overflow_bar()->GetIconCount());
+  EXPECT_TRUE(toolbar_actions_bar()->NeedsOverflow());
+
+  // Pop out an extension for a non-sticky popup. Even though the extension is
+  // on the main bar, overflow is still needed because it will pop back in
+  // when the menu is opened.
+  ToolbarActionViewController* action = toolbar_actions_bar()->GetActions()[0];
+  {
+    base::RunLoop run_loop;
+    toolbar_actions_bar()->PopOutAction(action, false, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+  EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_TRUE(toolbar_actions_bar()->NeedsOverflow());
+
+  // Back to one in overflow, none on the main bar.
+  toolbar_actions_bar()->UndoPopOut();
+  EXPECT_EQ(0u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_EQ(1u, overflow_bar()->GetIconCount());
+  EXPECT_TRUE(toolbar_actions_bar()->NeedsOverflow());
+
+  // Pop out an extension for a sticky popup. Overflow shouldn't be needed now
+  // because the extension will remain popped out even when the menu opens.
+  {
+    base::RunLoop run_loop;
+    toolbar_actions_bar()->PopOutAction(action, true, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+  EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_FALSE(toolbar_actions_bar()->NeedsOverflow());
+
+  // Add another extension and verify that if one is still in overflow when
+  // another is popped out, we still need overflow.
+  toolbar_actions_bar()->UndoPopOut();
+  CreateAndAddExtension(
+      "extension 2",
+      extensions::extension_action_test_util::BROWSER_ACTION);
+  toolbar_model()->SetVisibleIconCount(0u);
+  {
+    base::RunLoop run_loop;
+    toolbar_actions_bar()->PopOutAction(action, true, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+  EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_TRUE(toolbar_actions_bar()->NeedsOverflow());
+}

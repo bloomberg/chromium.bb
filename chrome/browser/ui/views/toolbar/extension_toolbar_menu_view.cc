@@ -41,9 +41,6 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
   container_ = new BrowserActionsContainer(browser_, main);
   container_->Init();
   SetContents(container_);
-  // We Layout() the container here so that we know the number of actions
-  // that will be visible in ShouldShow().
-  container_->Layout();
 
   // Listen for the drop to finish so we can close the app menu, if necessary.
   toolbar_actions_bar_observer_.Add(main->toolbar_actions_bar());
@@ -58,11 +55,6 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
 }
 
 ExtensionToolbarMenuView::~ExtensionToolbarMenuView() {
-}
-
-bool ExtensionToolbarMenuView::ShouldShow() {
-  return app_menu_->for_drop() ||
-         container_->VisibleBrowserActionsAfterAnimation();
 }
 
 gfx::Size ExtensionToolbarMenuView::GetPreferredSize() const {

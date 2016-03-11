@@ -226,6 +226,7 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionContextMenu) {
                           IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR);
   base::RunLoop run_loop;
   toolbar_actions_bar()->PopOutAction(toolbar_actions_bar()->GetActions()[0],
+                                      false,
                                       run_loop.QuitClosure());
   run_loop.Run();
   check_visibility_string(toolbar_actions_bar()->GetActions()[0],

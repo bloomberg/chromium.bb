@@ -132,6 +132,7 @@ void ToolbarActionViewDelegateBridge::ShowContextMenu() {
 
   [controller_ toolbarActionsBar]->PopOutAction(
       viewController_,
+      false,
       base::Bind(&ToolbarActionViewDelegateBridge::DoShowContextMenu,
                  weakFactory_.GetWeakPtr()));
 }

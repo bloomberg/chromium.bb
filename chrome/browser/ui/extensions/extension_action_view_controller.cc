@@ -332,6 +332,7 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
     platform_delegate_->CloseOverflowMenu();
     toolbar_actions_bar_->PopOutAction(
         this,
+        show_action == SHOW_POPUP_AND_INSPECT,
         base::Bind(&ExtensionActionViewController::ShowPopup,
                    weak_factory_.GetWeakPtr(), base::Passed(std::move(host)),
                    grant_tab_permissions, show_action));

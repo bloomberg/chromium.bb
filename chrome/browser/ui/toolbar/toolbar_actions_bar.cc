@@ -124,6 +124,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       checked_extension_bubble_(false),
       is_drag_in_progress_(false),
       popped_out_action_(nullptr),
+      is_popped_out_sticky_(false),
       weak_ptr_factory_(this) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
@@ -283,10 +284,13 @@ size_t ToolbarActionsBar::GetEndIndexInBounds() const {
 bool ToolbarActionsBar::NeedsOverflow() const {
   DCHECK(!in_overflow_mode());
   // We need an overflow view if either the end index is less than the number of
-  // icons, or if a drag is in progress with the redesign turned on (since the
-  // user can drag an icon into the app menu).
+  // icons, if a drag is in progress with the redesign turned on (since the
+  // user can drag an icon into the app menu), or if there is a non-sticky
+  // popped out action (because the action will pop back into overflow when the
+  // menu opens).
   return GetEndIndexInBounds() != toolbar_actions_.size() ||
-         (is_drag_in_progress_ && !platform_settings_.chevron_enabled);
+         (is_drag_in_progress_ && !platform_settings_.chevron_enabled) ||
+         (popped_out_action_ && !is_popped_out_sticky_);
 }
 
 gfx::Rect ToolbarActionsBar::GetFrameForIndex(
@@ -507,11 +511,13 @@ bool ToolbarActionsBar::IsActionVisibleOnMainBar(
 }
 
 void ToolbarActionsBar::PopOutAction(ToolbarActionViewController* controller,
+                                     bool is_sticky,
                                      const base::Closure& closure) {
   DCHECK(!in_overflow_mode()) << "Only the main bar can pop out actions.";
   DCHECK(!popped_out_action_) << "Only one action can be popped out at a time!";
   bool needs_redraw = !IsActionVisibleOnMainBar(controller);
   popped_out_action_ = controller;
+  is_popped_out_sticky_ = is_sticky;
   if (needs_redraw) {
     // We suppress animation for this draw, because we need the action to get
     // into position immediately, since it's about to show its popup.
@@ -533,6 +539,7 @@ void ToolbarActionsBar::UndoPopOut() {
   DCHECK(popped_out_action_);
   ToolbarActionViewController* controller = popped_out_action_;
   popped_out_action_ = nullptr;
+  is_popped_out_sticky_ = false;
   popped_out_closure_.Reset();
   if (!IsActionVisibleOnMainBar(controller))
     delegate_->Redraw(true);

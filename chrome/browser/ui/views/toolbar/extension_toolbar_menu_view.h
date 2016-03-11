@@ -33,11 +33,6 @@ class ExtensionToolbarMenuView : public views::ScrollView,
                            views::MenuItemView* menu_item);
   ~ExtensionToolbarMenuView() override;
 
-  // Returns whether the app menu should show this view. This is true when
-  // either |container_| has icons to display or the menu was opened for a drag-
-  // and-drop operation.
-  bool ShouldShow();
-
   // views::View:
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int width) const override;
