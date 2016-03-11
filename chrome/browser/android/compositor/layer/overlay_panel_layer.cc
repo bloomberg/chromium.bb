@@ -5,6 +5,7 @@
 #include "chrome/browser/android/compositor/layer/overlay_panel_layer.h"
 
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
@@ -260,24 +261,24 @@ void OverlayPanelLayer::SetProperties(
 OverlayPanelLayer::OverlayPanelLayer(
     ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
-      layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+      layer_(cc::Layer::Create(cc::LayerSettings())),
       panel_shadow_(
-          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+          cc::NinePatchLayer::Create(cc::LayerSettings())),
       bar_background_(
-          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+          cc::SolidColorLayer::Create(cc::LayerSettings())),
       bar_text_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+          cc::UIResourceLayer::Create(cc::LayerSettings())),
       bar_shadow_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+          cc::UIResourceLayer::Create(cc::LayerSettings())),
       panel_icon_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+          cc::UIResourceLayer::Create(cc::LayerSettings())),
       close_icon_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+          cc::UIResourceLayer::Create(cc::LayerSettings())),
       content_view_container_(
-          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
-      text_container_(cc::Layer::Create(content::Compositor::LayerSettings())),
+          cc::SolidColorLayer::Create(cc::LayerSettings())),
+      text_container_(cc::Layer::Create(cc::LayerSettings())),
       bar_border_(
-          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())) {
+          cc::SolidColorLayer::Create(cc::LayerSettings())) {
   layer_->SetMasksToBounds(false);
   layer_->SetIsDrawable(true);
 

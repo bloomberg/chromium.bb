@@ -47,7 +47,6 @@
         'view_android.h',
         'window_android.cc',
         'window_android.h',
-        'window_android_compositor.cc',
         'window_android_compositor.h',
         'window_android_observer.h',
       ],

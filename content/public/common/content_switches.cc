@@ -916,11 +916,6 @@ const char kWebRtcMaxCaptureFramerate[]     = "max-gum-fps";
 #endif
 
 #if defined(OS_ANDROID)
-// Disable external animation system for Android compositor.
-// See also kDisableCompositorAnimationTimelines for renderer compositors.
-const char kDisableAndroidCompositorAnimationTimelines[] =
-    "disable-android-compositor-animation-timelines";
-
 // Disable overscroll edge effects like those found in Android views.
 const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
 

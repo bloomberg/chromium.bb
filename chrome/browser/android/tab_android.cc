@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
@@ -121,7 +122,7 @@ void TabAndroid::AttachTabHelpers(content::WebContents* web_contents) {
 
 TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
     : weak_java_tab_(env, obj),
-      content_layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+      content_layer_(cc::Layer::Create(cc::LayerSettings())),
       tab_content_manager_(NULL),
       synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
   Java_Tab_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));

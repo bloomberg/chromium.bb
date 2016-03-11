@@ -29,6 +29,7 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
@@ -221,16 +222,6 @@ void Compositor::Initialize() {
 }
 
 // static
-const cc::LayerSettings& Compositor::LayerSettings() {
-  return ui::WindowAndroidCompositor::LayerSettings();
-}
-
-// static
-void Compositor::SetLayerSettings(const cc::LayerSettings& settings) {
-  ui::WindowAndroidCompositor::SetLayerSettings(settings);
-}
-
-// static
 bool CompositorImpl::IsInitialized() {
   return g_initialized;
 }
@@ -252,7 +243,7 @@ scoped_ptr<cc::SurfaceIdAllocator> CompositorImpl::CreateSurfaceIdAllocator() {
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
-    : root_layer_(cc::Layer::Create(Compositor::LayerSettings())),
+    : root_layer_(cc::Layer::Create(cc::LayerSettings())),
       resource_manager_(root_window),
       surface_id_allocator_(CreateSurfaceIdAllocator()),
       has_transparent_background_(false),
@@ -354,9 +345,6 @@ void CompositorImpl::CreateLayerTreeHost() {
   settings.initial_debug_state.show_fps_counter =
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   settings.single_thread_proxy_scheduler = true;
-
-  settings.use_compositor_animation_timelines = !command_line->HasSwitch(
-      switches::kDisableAndroidCompositorAnimationTimelines);
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;

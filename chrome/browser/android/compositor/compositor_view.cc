@@ -19,6 +19,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_lists.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "chrome/browser/android/compositor/layer/toolbar_layer.h"
@@ -83,7 +84,7 @@ CompositorView::CompositorView(JNIEnv* env,
     : layer_title_cache_(layer_title_cache),
       tab_content_manager_(tab_content_manager),
       root_layer_(
-          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+          cc::SolidColorLayer::Create(cc::LayerSettings())),
       scene_layer_(nullptr),
       current_surface_format_(0),
       content_width_(0),

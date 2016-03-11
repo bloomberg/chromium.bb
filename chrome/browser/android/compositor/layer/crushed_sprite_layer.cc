@@ -5,6 +5,7 @@
 #include "chrome/browser/android/compositor/layer/crushed_sprite_layer.h"
 
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/crushed_sprite_resource.h"
@@ -116,7 +117,7 @@ void CrushedSpriteLayer::DrawRectanglesForFrame(
 
 CrushedSpriteLayer::CrushedSpriteLayer()
     : layer_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+          cc::UIResourceLayer::Create(cc::LayerSettings())),
       frame_count_(-1),
       previous_frame_(-1) {
   layer_->SetIsDrawable(true);

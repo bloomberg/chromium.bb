@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
 #include "content/public/browser/android/compositor.h"
@@ -51,7 +52,7 @@ scoped_refptr<cc::Layer> ThumbnailLayer::layer() {
 
 ThumbnailLayer::ThumbnailLayer()
     : layer_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())) {
+          cc::UIResourceLayer::Create(cc::LayerSettings())) {
   layer_->SetIsDrawable(true);
 }
 

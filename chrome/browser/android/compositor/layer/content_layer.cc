@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_lists.h"
+#include "cc/layers/layer_settings.h"
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "content/public/browser/android/compositor.h"
@@ -145,7 +146,7 @@ scoped_refptr<cc::Layer> ContentLayer::layer() {
 }
 
 ContentLayer::ContentLayer(TabContentManager* tab_content_manager)
-    : layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
+    : layer_(cc::Layer::Create(cc::LayerSettings())),
       content_attached_(false),
       static_attached_(false),
       tab_content_manager_(tab_content_manager) {

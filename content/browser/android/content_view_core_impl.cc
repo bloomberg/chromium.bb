@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/viewport_selection_bound.h"
@@ -214,7 +215,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      root_layer_(cc::SolidColorLayer::Create(Compositor::LayerSettings())),
+      root_layer_(cc::SolidColorLayer::Create(cc::LayerSettings())),
       page_scale_(1),
       dpi_scale_(ui::GetScaleFactorForNativeView(this)),
       window_android_(window_android),

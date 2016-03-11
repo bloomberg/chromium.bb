@@ -5,6 +5,7 @@
 #include "chrome/browser/android/compositor/scene_layer/tab_list_scene_layer.h"
 
 #include "base/android/jni_android.h"
+#include "cc/layers/layer_settings.h"
 #include "chrome/browser/android/compositor/layer/content_layer.h"
 #include "chrome/browser/android/compositor/layer/tab_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
@@ -24,7 +25,7 @@ TabListSceneLayer::TabListSceneLayer(JNIEnv* env, jobject jobj)
       layer_title_cache_(nullptr),
       tab_content_manager_(nullptr),
       background_color_(SK_ColorWHITE),
-      own_tree_(cc::Layer::Create(content::Compositor::LayerSettings())) {
+      own_tree_(cc::Layer::Create(cc::LayerSettings())) {
   layer()->AddChild(own_tree_);
 }
 

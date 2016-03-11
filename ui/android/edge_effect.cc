@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "ui/android/animation_utils.h"
 #include "ui/android/resources/resource_manager.h"
@@ -65,8 +66,7 @@ class EdgeEffect::EffectLayer {
  public:
   EffectLayer(ui::SystemUIResourceType resource_type,
               ui::ResourceManager* resource_manager)
-      : ui_resource_layer_(cc::UIResourceLayer::Create(
-            WindowAndroidCompositor::LayerSettings())),
+      : ui_resource_layer_(cc::UIResourceLayer::Create(cc::LayerSettings())),
         resource_type_(resource_type),
         resource_manager_(resource_manager) {}
 

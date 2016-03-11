@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_settings.h"
 #include "ui/android/edge_effect_base.h"
 #include "ui/android/window_android_compositor.h"
 
@@ -194,7 +195,7 @@ bool OverscrollGlow::InitializeIfNecessary() {
     return true;
 
   DCHECK(!root_layer_.get());
-  root_layer_ = cc::Layer::Create(WindowAndroidCompositor::LayerSettings());
+  root_layer_ = cc::Layer::Create(cc::LayerSettings());
   for (size_t i = 0; i < EDGE_COUNT; ++i) {
     edge_effects_[i] = client_->CreateEdgeEffect();
     DCHECK(edge_effects_[i]);

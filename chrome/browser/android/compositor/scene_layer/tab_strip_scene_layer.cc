@@ -5,6 +5,7 @@
 #include "chrome/browser/android/compositor/scene_layer/tab_strip_scene_layer.h"
 
 #include "base/android/jni_android.h"
+#include "cc/layers/layer_settings.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "chrome/browser/android/compositor/layer/tab_handle_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
@@ -18,11 +19,11 @@ namespace android {
 TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env, jobject jobj)
     : SceneLayer(env, jobj),
       tab_strip_layer_(
-          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+          cc::SolidColorLayer::Create(cc::LayerSettings())),
       new_tab_button_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+          cc::UIResourceLayer::Create(cc::LayerSettings())),
       model_selector_button_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+          cc::UIResourceLayer::Create(cc::LayerSettings())),
       background_tab_brightness_(1.f),
       brightness_(1.f),
       write_index_(0),
