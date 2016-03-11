@@ -494,6 +494,8 @@
       'animation/test/test_ink_drop_animation_observer.h',
       'animation/test/test_ink_drop_host.cc',
       'animation/test/test_ink_drop_host.h',
+      'animation/test/test_ink_drop_delegate.cc',
+      'animation/test/test_ink_drop_delegate.h',
       'controls/textfield/textfield_test_api.cc',
       'controls/textfield/textfield_test_api.h',
       'test/capture_tracking_view.cc',

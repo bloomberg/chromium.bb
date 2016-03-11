@@ -40,7 +40,6 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
       toolbar_view_(toolbar_view),
       allow_extension_dragging_(
           extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
-      destroyed_(nullptr),
       margin_trailing_(0),
       ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)),
       weak_factory_(this) {
@@ -49,10 +48,7 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
     icon_painter_.reset(new AppMenuIconPainter(this));
 }
 
-AppMenuButton::~AppMenuButton() {
-  if (destroyed_)
-    *destroyed_ = true;
-}
+AppMenuButton::~AppMenuButton() {}
 
 void AppMenuButton::SetSeverity(AppMenuIconPainter::Severity severity,
                                 bool animate) {
@@ -87,16 +83,6 @@ void AppMenuButton::ShowMenu(bool for_drop) {
 
   FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());
 
-  // Because running the menu below spins a nested message loop, |this| can be
-  // deleted by the time RunMenu() returns. To detect this, we set |destroyed_|
-  // (which is normally null) to point to a local. If our destructor runs during
-  // RunMenu(), then this local will be set to true on return, and we'll know
-  // it's not safe to access any member variables.
-  bool destroyed = false;
-  destroyed_ = &destroyed;
-
-  ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
-
   base::TimeTicks menu_open_time = base::TimeTicks::Now();
   menu_->RunMenu(this);
 
@@ -106,11 +92,6 @@ void AppMenuButton::ShowMenu(bool for_drop) {
     // the message loop.
     UMA_HISTOGRAM_TIMES("Toolbar.AppMenuTimeToAction",
                         base::TimeTicks::Now() - menu_open_time);
-  }
-
-  if (!destroyed) {
-    ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
-    destroyed_ = nullptr;
   }
 }
 

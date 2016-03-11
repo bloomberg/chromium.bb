@@ -106,9 +106,6 @@ class AppMenuButton : public views::MenuButton,
   scoped_ptr<AppMenuModel> menu_model_;
   scoped_ptr<AppMenu> menu_;
 
-  // Used by ShowMenu() to detect when |this| has been deleted; see comments
-  // there.
-  bool* destroyed_;
 
   // Any trailing margin to be applied. Used when the browser is in
   // a maximized state to extend to the full window width.

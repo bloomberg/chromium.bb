@@ -137,6 +137,9 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // The current number of "pressed" locks this button has.
   int pressed_lock_count_;
 
+  // Used to let Activate() know if IncrementPressedLocked() was called.
+  bool* increment_pressed_lock_called_;
+
   // True if the button was in a disabled state when a menu was run, and should
   // return to it once the press is complete. This can happen if, e.g., we
   // programmatically show a menu on a disabled button.

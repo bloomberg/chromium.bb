@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/animation/test/test_ink_drop_delegate.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/test/views_test_base.h"
@@ -23,6 +24,28 @@
 using base::ASCIIToUTF16;
 
 namespace views {
+class InkDropDelegate;
+
+namespace test {
+
+// A MenuButton subclass that provides access to some MenuButton internals.
+class TestMenuButton : public MenuButton {
+ public:
+  explicit TestMenuButton(MenuButtonListener* menu_button_listener)
+      : MenuButton(base::string16(ASCIIToUTF16("button")),
+                   menu_button_listener,
+                   false) {}
+
+  ~TestMenuButton() override {}
+
+  // Accessors to protected MenuButton methods.
+  void set_ink_drop_delegate(InkDropDelegate* ink_drop_delegate) {
+    MenuButton::set_ink_drop_delegate(ink_drop_delegate);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestMenuButton);
+};
 
 class MenuButtonTest : public ViewsTestBase {
  public:
@@ -38,7 +61,7 @@ class MenuButtonTest : public ViewsTestBase {
   }
 
   Widget* widget() { return widget_; }
-  MenuButton* button() { return button_; }
+  TestMenuButton* button() { return button_; }
   ui::test::EventGenerator* generator() { return generator_.get(); }
 
  protected:
@@ -62,8 +85,7 @@ class MenuButtonTest : public ViewsTestBase {
     // are about to create initializes its hover state in a consistent manner.
     generator_->set_current_location(gfx::Point(10, 10));
 
-    const base::string16 label(ASCIIToUTF16("button"));
-    button_ = new MenuButton(label, menu_button_listener, false);
+    button_ = new TestMenuButton(menu_button_listener);
     button_->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
     widget_->SetContentsView(button_);
 
@@ -81,7 +103,7 @@ class MenuButtonTest : public ViewsTestBase {
   }
 
   Widget* widget_;
-  MenuButton* button_;
+  TestMenuButton* button_;
   scoped_ptr<ui::test::EventGenerator> generator_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuButtonTest);
@@ -138,6 +160,36 @@ class TestMenuButtonListener : public MenuButtonListener {
   Button::ButtonState last_source_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMenuButtonListener);
+};
+
+// A MenuButtonListener that will acquire a PressedLock in the
+// OnMenuButtonClicked() method and optionally release it as well.
+class PressStateMenuButtonListener : public MenuButtonListener {
+ public:
+  explicit PressStateMenuButtonListener(bool release_lock)
+      : menu_button_(nullptr), release_lock_(release_lock) {}
+
+  ~PressStateMenuButtonListener() override {}
+
+  void set_menu_button(MenuButton* menu_button) { menu_button_ = menu_button; }
+
+  void OnMenuButtonClicked(MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override {
+    pressed_lock_.reset(new MenuButton::PressedLock(menu_button_));
+    if (release_lock_)
+      pressed_lock_.reset();
+  }
+
+ private:
+  MenuButton* menu_button_;
+
+  scoped_ptr<MenuButton::PressedLock> pressed_lock_;
+
+  // The |pressed_lock_| will be released when true.
+  bool release_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(PressStateMenuButtonListener);
 };
 
 // Basic implementation of a DragController, to test input behaviour for
@@ -289,7 +341,7 @@ TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
 }
 
 // Test that the MenuButton stays pressed while there are any PressedLocks.
-TEST_F(MenuButtonTest, MenuButtonPressedLock) {
+TEST_F(MenuButtonTest, ButtonStateForMenuButtonsWithPressedLocks) {
   CreateMenuButtonWithNoListener();
 
   // Move the mouse over the button; the button should be in a hovered state.
@@ -377,6 +429,111 @@ TEST_F(MenuButtonTest, DraggableMenuButtonActivatesOnRelease) {
   EXPECT_EQ(Button::STATE_HOVERED, menu_button_listener.last_source_state());
 }
 
+TEST_F(MenuButtonTest, InkDropStateForMenuButtonActivationsWithoutListener) {
+  CreateMenuButtonWithNoListener();
+  TestInkDropDelegate ink_drop_delegate;
+  ink_drop_delegate.OnAction(InkDropState::ACTION_PENDING);
+  button()->set_ink_drop_delegate(&ink_drop_delegate);
+  button()->Activate(nullptr);
+
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate.state());
+}
+
+TEST_F(MenuButtonTest,
+       InkDropStateForMenuButtonActivationsWithListenerThatDoesntAcquireALock) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  TestInkDropDelegate ink_drop_delegate;
+  button()->set_ink_drop_delegate(&ink_drop_delegate);
+  button()->Activate(nullptr);
+
+  EXPECT_EQ(InkDropState::QUICK_ACTION, ink_drop_delegate.state());
+}
+
+TEST_F(
+    MenuButtonTest,
+    InkDropStateForMenuButtonActivationsWithListenerThatDontReleaseAllLocks) {
+  PressStateMenuButtonListener menu_button_listener(false);
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  menu_button_listener.set_menu_button(button());
+  TestInkDropDelegate ink_drop_delegate;
+  button()->set_ink_drop_delegate(&ink_drop_delegate);
+  button()->Activate(nullptr);
+
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+
+  // Prevent the button from accessing invalid memory during clean up.
+  button()->set_ink_drop_delegate(nullptr);
+}
+
+TEST_F(MenuButtonTest,
+       InkDropStateForMenuButtonActivationsWithListenerThatReleaseAllLocks) {
+  PressStateMenuButtonListener menu_button_listener(true);
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  menu_button_listener.set_menu_button(button());
+  TestInkDropDelegate ink_drop_delegate;
+  button()->set_ink_drop_delegate(&ink_drop_delegate);
+  button()->Activate(nullptr);
+
+  EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop_delegate.state());
+}
+
+TEST_F(MenuButtonTest, InkDropStateForMenuButtonsWithPressedLocks) {
+  CreateMenuButtonWithNoListener();
+  TestInkDropDelegate ink_drop_delegate;
+  button()->set_ink_drop_delegate(&ink_drop_delegate);
+
+  scoped_ptr<MenuButton::PressedLock> pressed_lock1(
+      new MenuButton::PressedLock(button()));
+
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+
+  scoped_ptr<MenuButton::PressedLock> pressed_lock2(
+      new MenuButton::PressedLock(button()));
+
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+
+  pressed_lock1.reset();
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+
+  pressed_lock2.reset();
+  EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop_delegate.state());
+}
+
+// Verifies only one ink drop animation is triggered when multiple PressedLocks
+// are attached to a MenuButton.
+TEST_F(MenuButtonTest, OneInkDropAnimationForReentrantPressedLocks) {
+  CreateMenuButtonWithNoListener();
+  TestInkDropDelegate ink_drop_delegate;
+  button()->set_ink_drop_delegate(&ink_drop_delegate);
+
+  scoped_ptr<MenuButton::PressedLock> pressed_lock1(
+      new MenuButton::PressedLock(button()));
+
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+  ink_drop_delegate.OnAction(InkDropState::ACTION_PENDING);
+
+  scoped_ptr<MenuButton::PressedLock> pressed_lock2(
+      new MenuButton::PressedLock(button()));
+
+  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop_delegate.state());
+}
+
+// Verifies the InkDropState is left as ACTIVATED if a PressedLock is active
+// before another Activation occurs.
+TEST_F(MenuButtonTest,
+       InkDropStateForMenuButtonWithPressedLockBeforeActivation) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+  TestInkDropDelegate ink_drop_delegate;
+  button()->set_ink_drop_delegate(&ink_drop_delegate);
+  MenuButton::PressedLock lock(button());
+
+  button()->Activate(nullptr);
+
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+}
+
 #if defined(USE_AURA)
 
 // Tests that the MenuButton does not become pressed if it can be dragged, and a
@@ -452,3 +609,4 @@ TEST_F(MenuButtonTest, TouchFeedbackDuringTapCancel) {
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 
 }  // namespace views
+}  // namespace test

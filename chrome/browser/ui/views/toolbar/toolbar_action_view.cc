@@ -84,6 +84,9 @@ ToolbarActionView::ToolbarActionView(
 }
 
 ToolbarActionView::~ToolbarActionView() {
+  // Avoid access to a destroyed InkDropDelegate when the |pressed_lock_| is
+  // destroyed.
+  set_ink_drop_delegate(nullptr);
   view_controller_->SetDelegate(nullptr);
 }
 
@@ -116,8 +119,10 @@ SkColor ToolbarActionView::GetInkDropBaseColor() const {
         ui::NativeTheme::kColorId_HoverMenuItemBackgroundColor);
   }
 
-  return GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  return GetThemeProvider()
+             ? GetThemeProvider()->GetColor(
+                   ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
+             : CustomButton::GetInkDropBaseColor();
 }
 
 bool ToolbarActionView::ShouldShowInkDropHover() const {
@@ -176,7 +181,6 @@ void ToolbarActionView::OnMenuClosed() {
   menu_ = nullptr;
   view_controller_->OnContextMenuClosed();
   menu_adapter_.reset();
-  ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
 }
 
 gfx::ImageSkia ToolbarActionView::GetIconForTest() {
@@ -195,7 +199,7 @@ gfx::Size ToolbarActionView::GetPreferredSize() const {
 
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
   // views::MenuButton actions are only triggered by left mouse clicks.
-  if (event.IsOnlyLeftMouseButton()) {
+  if (event.IsOnlyLeftMouseButton() && !pressed_lock_) {
     // TODO(bruthig): The ACTION_PENDING triggering logic should be in
     // MenuButton::OnPressed() however there is a bug with the pressed state
     // logic in MenuButton. See http://crbug.com/567252.
@@ -298,7 +302,6 @@ void ToolbarActionView::DoShowContextMenu(
       delegate_->GetOverflowReferenceView()->GetWidget() :
       GetWidget();
 
-  ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
   // Unretained() is safe here as ToolbarActionView will always outlive the
   // menu. Any action that would lead to the deletion of |this| first triggers
   // the closing of the menu through lost capture.

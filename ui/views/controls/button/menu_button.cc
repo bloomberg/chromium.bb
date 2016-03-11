@@ -72,8 +72,9 @@ MenuButton::MenuButton(const base::string16& text,
       menu_marker_(ui::ResourceBundle::GetSharedInstance()
                        .GetImageNamed(IDR_MENU_DROPARROW)
                        .ToImageSkia()),
-      destroyed_flag_(NULL),
+      destroyed_flag_(nullptr),
       pressed_lock_count_(0),
+      increment_pressed_lock_called_(nullptr),
       should_disable_after_press_(false),
       weak_factory_(this) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -117,17 +118,20 @@ bool MenuButton::Activate(const ui::Event* event) {
     // matter where the user pressed. To force RootView to recalculate the
     // mouse target during the mouse press we explicitly set the mouse handler
     // to NULL.
-    static_cast<internal::RootView*>(GetWidget()->GetRootView())->
-        SetMouseHandler(NULL);
+    static_cast<internal::RootView*>(GetWidget()->GetRootView())
+        ->SetMouseHandler(nullptr);
 
     bool destroyed = false;
     destroyed_flag_ = &destroyed;
 
+    DCHECK(increment_pressed_lock_called_ == nullptr);
+    // Observe if IncrementPressedLocked() was called so we can trigger the
+    // correct ink drop animations.
+    bool increment_pressed_lock_called = false;
+    increment_pressed_lock_called_ = &increment_pressed_lock_called;
+
     // We don't set our state here. It's handled in the MenuController code or
     // by our click listener.
-
-    if (ink_drop_delegate())
-      ink_drop_delegate()->OnAction(InkDropState::QUICK_ACTION);
     listener_->OnMenuButtonClicked(this, menu_position, event);
 
     if (destroyed) {
@@ -135,15 +139,24 @@ bool MenuButton::Activate(const ui::Event* event) {
       return false;
     }
 
-    destroyed_flag_ = NULL;
+    increment_pressed_lock_called_ = nullptr;
+    destroyed_flag_ = nullptr;
 
     menu_closed_time_ = TimeTicks::Now();
+
+    if (ink_drop_delegate() && !increment_pressed_lock_called &&
+        pressed_lock_count_ == 0) {
+      ink_drop_delegate()->OnAction(InkDropState::QUICK_ACTION);
+    }
 
     // We must return false here so that the RootView does not get stuck
     // sending all mouse pressed events to us instead of the appropriate
     // target.
     return false;
   }
+
+  if (ink_drop_delegate())
+    ink_drop_delegate()->OnAction(InkDropState::HIDDEN);
   return true;
 }
 
@@ -200,8 +213,6 @@ bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
       IsTriggerableEventType(event)) {
     if (IsTriggerableEvent(event))
       return Activate(&event);
-    if (ink_drop_delegate())
-      ink_drop_delegate()->OnAction(InkDropState::ACTION_PENDING);
   }
   return true;
 }
@@ -359,7 +370,11 @@ void MenuButton::NotifyClick(const ui::Event& event) {
 
 void MenuButton::IncrementPressedLocked() {
   ++pressed_lock_count_;
+  if (increment_pressed_lock_called_)
+    *increment_pressed_lock_called_ = true;
   should_disable_after_press_ = state() == STATE_DISABLED;
+  if (state() != STATE_PRESSED && ink_drop_delegate())
+    ink_drop_delegate()->OnAction(InkDropState::ACTIVATED);
   SetState(STATE_PRESSED);
 }
 
@@ -377,6 +392,8 @@ void MenuButton::DecrementPressedLocked() {
       desired_state = STATE_HOVERED;
     }
     SetState(desired_state);
+    if (ink_drop_delegate() && state() != STATE_PRESSED)
+      ink_drop_delegate()->OnAction(InkDropState::DEACTIVATED);
   }
 }
 
