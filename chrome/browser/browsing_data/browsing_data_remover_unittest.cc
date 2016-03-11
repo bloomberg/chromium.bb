@@ -76,6 +76,10 @@
 #include "ui/gfx/favicon_size.h"
 #include "url/origin.h"
 
+#if BUILDFLAG(ANDROID_JAVA_UI)
+#include "chrome/browser/android/webapps/webapp_registry.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -259,6 +263,19 @@ class TestStoragePartition : public StoragePartition {
 
   DISALLOW_COPY_AND_ASSIGN(TestStoragePartition);
 };
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+class TestWebappRegistry : public WebappRegistry {
+ public:
+  TestWebappRegistry() : WebappRegistry() { }
+
+  void UnregisterWebapps(const base::Closure& callback) override {
+    // Mocks out a JNI call and runs the callback as a delayed task.
+    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, callback,
+                                   base::TimeDelta::FromMilliseconds(10));
+  }
+};
+#endif
 
 // Custom matcher to test the equivalence of two URL filters. Since those are
 // blackbox predicates, we can only approximate the equivalence by testing
@@ -942,6 +959,13 @@ class BrowsingDataRemoverTest : public testing::Test {
         BrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
             base::Bind(&BrowsingDataRemoverTest::NotifyWithDetails,
                        base::Unretained(this)));
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+    BrowsingDataRemover* remover =
+        BrowsingDataRemoverFactory::GetForBrowserContext(profile_.get());
+    remover->OverrideWebappRegistryForTesting(
+        scoped_ptr<WebappRegistry>(new TestWebappRegistry()));
+#endif
   }
 
   ~BrowsingDataRemoverTest() override {}

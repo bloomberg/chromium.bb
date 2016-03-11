@@ -301,6 +301,9 @@ BrowsingDataRemover::BrowsingDataRemover(
       is_removing_(false),
       main_context_getter_(browser_context->GetRequestContext()),
       media_context_getter_(browser_context->GetMediaRequestContext()),
+#if BUILDFLAG(ANDROID_JAVA_UI)
+      webapp_registry_(new WebappRegistry()),
+#endif
       weak_ptr_factory_(this) {
   DCHECK(browser_context);
 }
@@ -927,7 +930,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
 #if BUILDFLAG(ANDROID_JAVA_UI)
   if (remove_mask & REMOVE_WEBAPP_DATA) {
     waiting_for_clear_webapp_data_ = true;
-    WebappRegistry::UnregisterWebapps(
+    webapp_registry_->UnregisterWebapps(
         base::Bind(&BrowsingDataRemover::OnClearedWebappData,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -968,6 +971,13 @@ void BrowsingDataRemover::OverrideStoragePartitionForTesting(
     content::StoragePartition* storage_partition) {
   storage_partition_for_testing_ = storage_partition;
 }
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+void BrowsingDataRemover::OverrideWebappRegistryForTesting(
+    scoped_ptr<WebappRegistry> webapp_registry) {
+  webapp_registry_.reset(webapp_registry.release());
+}
+#endif
 
 base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
     TimePeriod time_period) {

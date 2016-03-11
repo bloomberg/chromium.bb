@@ -12,18 +12,22 @@
 
 // WebappRegistry is the C++ counterpart of
 // org.chromium.chrome.browser.webapp's WebappRegistry in Java.
+// All methods in this class which make JNI calls should be declared virtual and
+// mocked out in C++ unit tests. The JNI call cannot be made in this environment
+// as the Java side will not be initialised.
 class WebappRegistry {
  public:
+  WebappRegistry() { }
+  virtual ~WebappRegistry() { }
+
   // Registers JNI hooks.
   static bool RegisterWebappRegistry(JNIEnv* env);
 
   // Cleans up data stored by web apps.
-  static void UnregisterWebapps(const base::Closure& callback);
+  virtual void UnregisterWebapps(const base::Closure& callback);
 
  private:
-  ~WebappRegistry() = delete;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(WebappRegistry);
+  DISALLOW_COPY_AND_ASSIGN(WebappRegistry);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_WEBAPPS_WEBAPP_REGISTRY_H_

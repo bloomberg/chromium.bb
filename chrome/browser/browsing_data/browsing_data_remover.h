@@ -52,6 +52,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+#if BUILDFLAG(ANDROID_JAVA_UI)
+class WebappRegistry;
+#endif
+
 // BrowsingDataRemover is responsible for removing data related to browsing:
 // visits in url database, downloads, cookies ...
 class BrowsingDataRemover : public KeyedService
@@ -252,6 +256,11 @@ class BrowsingDataRemover : public KeyedService
   // Used for testing.
   void OverrideStoragePartitionForTesting(
       content::StoragePartition* storage_partition);
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  void OverrideWebappRegistryForTesting(
+      scoped_ptr<WebappRegistry> webapp_registry);
+#endif
 
  private:
   // The clear API needs to be able to toggle removing_ in order to test that
@@ -471,6 +480,12 @@ class BrowsingDataRemover : public KeyedService
 
   // We do not own this.
   content::StoragePartition* storage_partition_for_testing_ = nullptr;
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  // WebappRegistry makes calls across the JNI. In unit tests, the Java side is
+  // not initialised, so the registry must be mocked out.
+  scoped_ptr<WebappRegistry> webapp_registry_;
+#endif
 
   base::WeakPtrFactory<BrowsingDataRemover> weak_ptr_factory_;
 
