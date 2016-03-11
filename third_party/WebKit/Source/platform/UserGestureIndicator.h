@@ -33,8 +33,6 @@
 
 namespace blink {
 
-class UserGestureIndicator;
-
 enum ProcessingUserGestureState {
     DefinitelyProcessingNewUserGesture,
     DefinitelyProcessingUserGesture,
