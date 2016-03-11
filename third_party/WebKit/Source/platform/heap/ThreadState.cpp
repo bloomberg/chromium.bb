@@ -213,6 +213,18 @@ void ThreadState::cleanupMainThread()
 {
     ASSERT(isMainThread());
 
+#if defined(LEAK_SANITIZER)
+    // If LSan is about to perform leak detection, release all the registered
+    // static Persistent<> root references to global caches that Blink keeps,
+    // followed by GCs to clear out all they referred to.
+    //
+    // This is not needed for caches over non-Oilpan objects, as they're
+    // not scanned by LSan due to being held in non-global storage
+    // ("static" references inside functions/methods.)
+    releaseStaticPersistentNodes();
+    Heap::collectAllGarbage();
+#endif
+
     // Finish sweeping before shutting down V8. Otherwise, some destructor
     // may access V8 and cause crashes.
     completeSweep();
