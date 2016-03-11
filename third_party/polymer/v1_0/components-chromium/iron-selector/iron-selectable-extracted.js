@@ -122,7 +122,8 @@
     },
 
     observers: [
-      '_updateSelected(attrForSelected, selected)'
+      '_updateAttrForSelected(attrForSelected)',
+      '_updateSelected(selected)'
     ],
 
     created: function() {
@@ -134,7 +135,7 @@
       this._observer = this._observeItems(this);
       this._updateItems();
       if (!this._shouldUpdateSelection) {
-        this._updateSelected(this.attrForSelected,this.selected)
+        this._updateSelected();
       }
       this._addListener(this.activateEvent);
     },
@@ -227,6 +228,12 @@
       this._setItems(nodes);
     },
 
+    _updateAttrForSelected: function() {
+      if (this._shouldUpdateSelection) {
+        this.selected = this._indexToValue(this.indexOf(this.selectedItem));        
+      }
+    },
+
     _updateSelected: function() {
       this._selectSelected(this.selected);
     },
@@ -296,7 +303,7 @@
         }
 
         // Let other interested parties know about the change so that
-        // we don't have to recreate mutation observers everywher.
+        // we don't have to recreate mutation observers everywhere.
         this.fire('iron-items-changed', mutations, {
           bubbles: false,
           cancelable: false

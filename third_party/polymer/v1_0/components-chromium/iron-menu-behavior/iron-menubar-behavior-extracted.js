@@ -28,20 +28,22 @@
       return window.getComputedStyle(this)['direction'] === 'rtl';
     },
 
-    _onLeftKey: function() {
+    _onLeftKey: function(event) {
       if (this._isRTL) {
         this._focusNext();
       } else {
         this._focusPrevious();
       }
+      event.detail.keyboardEvent.preventDefault();
     },
 
-    _onRightKey: function() {
+    _onRightKey: function(event) {
       if (this._isRTL) {
         this._focusPrevious();
       } else {
         this._focusNext();
       }
+      event.detail.keyboardEvent.preventDefault();
     },
 
     _onKeydown: function(event) {

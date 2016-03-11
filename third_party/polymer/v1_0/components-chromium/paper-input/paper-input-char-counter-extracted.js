@@ -30,12 +30,12 @@ Polymer({
 
       state.value = state.value || '';
 
-      // Account for the textarea's new lines.
-      var str = state.value.replace(/(\r\n|\n|\r)/g, '--').length.toString();
+      var counter = state.value.length.toString();
 
       if (state.inputElement.hasAttribute('maxlength')) {
-        str += '/' + state.inputElement.getAttribute('maxlength');
+        counter += '/' + state.inputElement.getAttribute('maxlength');
       }
-      this._charCounterStr = str;
+
+      this._charCounterStr = counter;
     }
   });

@@ -32,7 +32,7 @@
     },
 
     observers: [
-      '_updateSelected(attrForSelected, selectedValues)'
+      '_updateSelected(selectedValues)'
     ],
 
     /**
@@ -63,6 +63,18 @@
         (this.selectedValues != null && this.selectedValues.length);
     },
 
+    _updateAttrForSelected: function() {
+      if (!this.multi) {
+        Polymer.IronSelectableBehavior._updateAttrForSelected.apply(this);
+      } else if (this._shouldUpdateSelection) {
+        this.selectedValues = this.selectedItems.map(function(selectedItem) {
+          return this._indexToValue(this.indexOf(selectedItem));        
+        }, this).filter(function(unfilteredValue) {
+          return unfilteredValue != null;
+        }, this);
+      }
+    },
+
     _updateSelected: function() {
       if (this.multi) {
         this._selectMulti(this.selectedValues);
@@ -72,11 +84,16 @@
     },
 
     _selectMulti: function(values) {
-      this._selection.clear();
       if (values) {
-        for (var i = 0; i < values.length; i++) {
-          this._selection.setItemSelected(this._valueToItem(values[i]), true);
+        var selectedItems = this._valuesToItems(values);
+        // clear all but the current selected items
+        this._selection.clear(selectedItems);
+        // select only those not selected yet
+        for (var i = 0; i < selectedItems.length; i++) {
+          this._selection.setItemSelected(selectedItems[i], true);
         }
+      } else {
+        this._selection.clear();
       }
     },
 
@@ -99,6 +116,12 @@
         this.splice('selectedValues',i,1);
       }
       this._selection.setItemSelected(this._valueToItem(value), unselected);
+    },
+
+    _valuesToItems: function(values) {
+      return (values == null) ? null : values.map(function(value) {
+        return this._valueToItem(value);
+      }, this);
     }
   };
 

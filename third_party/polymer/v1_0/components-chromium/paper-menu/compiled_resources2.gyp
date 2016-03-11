@@ -6,14 +6,14 @@
 {
   'targets': [
     {
-      'target_name': 'paper-menu-shared-styles-extracted',
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'paper-menu-extracted',
       'dependencies': [
         '../iron-menu-behavior/compiled_resources2.gyp:iron-menu-behavior-extracted',
       ],
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'paper-menu-shared-styles-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {

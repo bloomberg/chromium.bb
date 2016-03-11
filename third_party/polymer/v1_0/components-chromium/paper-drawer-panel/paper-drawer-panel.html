@@ -228,6 +228,8 @@ Custom property | Description | Default
       }
 
       .left-drawer.narrow-layout > #drawer:not(.iron-selected) {
+        visibility: hidden;
+
         -webkit-transform: translateX(-100%);
         transform: translateX(-100%);
       }
@@ -240,8 +242,10 @@ Custom property | Description | Default
         transform: translateX(100%);
       }
 
-      .right-drawer.narrow-layout.dragging > #drawer:not(.iron-selected),
-      .right-drawer.narrow-layout.peeking > #drawer:not(.iron-selected) {
+      .left-drawer.dragging > #drawer:not(.iron-selected),
+      .left-drawer.peeking > #drawer:not(.iron-selected),
+      .right-drawer.dragging > #drawer:not(.iron-selected),
+      .right-drawer.peeking > #drawer:not(.iron-selected) {
         visibility: visible;
       }
 
@@ -270,7 +274,7 @@ Custom property | Description | Default
         box-sizing: border-box;
       }
 
-      iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
+      iron-selector:not(.narrow-layout) ::content [paper-drawer-toggle] {
         display: none;
       }
     </style>
@@ -280,13 +284,13 @@ Custom property | Description | Default
 
     <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, _transition, dragging, rightDrawer, peeking)]]" activate-event="" selected="[[selected]]">
 
-      <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]" on-transitionend="_onMainTransitionEnd">
+      <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]">
         <content select="[main]"></content>
         <div id="scrim" on-tap="closeDrawer"></div>
       </div>
 
       <div id="drawer" style$="[[_computeDrawerStyle(drawerWidth)]]">
-        <content select="[drawer]"></content>
+        <content id="drawerContent" select="[drawer]"></content>
       </div>
 
     </iron-selector>

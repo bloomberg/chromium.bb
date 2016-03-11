@@ -2,7 +2,8 @@ Polymer({
     is: 'paper-textarea',
 
     behaviors: [
-      Polymer.PaperInputBehavior
+      Polymer.PaperInputBehavior,
+      Polymer.IronFormElementBehavior
     ],
 
     properties: {

@@ -56,24 +56,26 @@ element in `paper-tab`.
 
 Example:
 
-    <style is="custom-style">
-      .link {
-        @apply(--layout-horizontal);
-        @apply(--layout-center-center);
-      }
-    </style>
+<pre><code>
+&lt;style is="custom-style">
+  .link {
+    &#64;apply(--layout-horizontal);
+    &#64;apply(--layout-center-center);
+  }
+&lt;/style>
 
-    <paper-tabs selected="0">
-      <paper-tab link>
-        <a href="#link1" class="link">TAB ONE</a>
-      </paper-tab>
-      <paper-tab link>
-        <a href="#link2" class="link">TAB TWO</a>
-      </paper-tab>
-      <paper-tab link>
-        <a href="#link3" class="link">TAB THREE</a>
-      </paper-tab>
-    </paper-tabs>
+&lt;paper-tabs selected="0">
+  &lt;paper-tab link>
+    &lt;a href="#link1" class="link">TAB ONE&lt;/a>
+  &lt;/paper-tab>
+  &lt;paper-tab link>
+    &lt;a href="#link2" class="link">TAB TWO&lt;/a>
+  &lt;/paper-tab>
+  &lt;paper-tab link>
+    &lt;a href="#link3" class="link">TAB THREE&lt;/a>
+  &lt;/paper-tab>
+&lt;/paper-tabs>
+</code></pre>
 
 ### Styling
 
@@ -82,6 +84,7 @@ The following custom properties and mixins are available for styling:
 Custom property | Description | Default
 ----------------|-------------|----------
 `--paper-tabs-selection-bar-color` | Color for the selection bar | `--paper-yellow-a100`
+`--paper-tabs-selection-bar` | Mixin applied to the selection bar | {}
 `--paper-tabs` | Mixin applied to the tabs | `{}`
 
 @hero hero.svg
@@ -103,7 +106,10 @@ Custom property | Description | Default
           -ms-user-select: none;
           -webkit-user-select: none;
         user-select: none;
-        -webkit-tap-highlight-color: rgba(0,0,0,0);
+
+        /* NOTE: Both values are needed, since some phones require the value to be `transparent`. */
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-tap-highlight-color: transparent;
 
         @apply(--paper-tabs);
       }
@@ -193,8 +199,8 @@ Custom property | Description | Default
 
     <div id="tabsContainer" on-track="_scroll" on-down="_down">
       <div id="tabsContent" class$="[[_computeTabsContentClass(scrollable)]]">
-        <content select="*"></content>
         <div id="selectionBar" class$="[[_computeSelectionBarClass(noBar, alignBottom)]]" on-transitionend="_onBarTransitionEnd"></div>
+        <content select="*"></content>
       </div>
     </div>
 

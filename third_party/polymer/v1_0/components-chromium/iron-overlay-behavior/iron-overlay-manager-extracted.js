@@ -4,6 +4,9 @@
    */
   Polymer.IronOverlayManagerClass = function() {
     this._overlays = [];
+    // Used to keep track of the last focused node before an overlay gets opened.
+    this._lastFocusedNodes = [];
+
     /**
      * iframes have a default z-index of 100, so this default should be at least
      * that.
@@ -12,7 +15,52 @@
     this._minimumZ = 101;
 
     this._backdrops = [];
-  }
+
+    this._backdropElement = null;
+    Object.defineProperty(this, 'backdropElement', {
+      get: function() {
+        if (!this._backdropElement) {
+          this._backdropElement = document.createElement('iron-overlay-backdrop');
+        }
+        return this._backdropElement;
+      }.bind(this)
+    });
+
+    /**
+     * The deepest active element.
+     * returns {?Node} element the active element
+     */
+    this.deepActiveElement = null;
+    Object.defineProperty(this, 'deepActiveElement', {
+      get: function() {
+        var active = document.activeElement;
+        // document.activeElement can be null
+        // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement
+        while (active && active.root && Polymer.dom(active.root).activeElement) {
+          active = Polymer.dom(active.root).activeElement;
+        }
+        return active;
+      }.bind(this)
+    });
+  };
+
+  /**
+   * If a node is contained in an overlay.
+   * @private
+   * @param {Node} node
+   * @returns {Boolean}
+   */
+  Polymer.IronOverlayManagerClass.prototype._isChildOfOverlay = function(node) {
+    while (node && node !== document.body) {
+      // Use logical parentNode, or native ShadowRoot host.
+      node = Polymer.dom(node).parentNode || node.host;
+      // Check if it is an overlay.
+      if (node && node.behaviors && node.behaviors.indexOf(Polymer.IronOverlayBehaviorImpl) !== -1) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   Polymer.IronOverlayManagerClass.prototype._applyOverlayZ = function(overlay, aboveZ) {
     this._setZ(overlay, aboveZ + 2);
@@ -32,6 +80,12 @@
     if (newZ <= minimumZ) {
       this._applyOverlayZ(overlay, minimumZ);
     }
+    var element = this.deepActiveElement;
+    // If already in other overlay, don't reset focus there.
+    if (this._isChildOfOverlay(element)) {
+      element = null;
+    }
+    this._lastFocusedNodes.push(element);
   };
 
   Polymer.IronOverlayManagerClass.prototype.removeOverlay = function(overlay) {
@@ -39,6 +93,13 @@
     if (i >= 0) {
       this._overlays.splice(i, 1);
       this._setZ(overlay, '');
+
+      var node = this._lastFocusedNodes[i];
+      // Focus only if still contained in document.body
+      if (overlay.restoreFocusOnClose && node && Polymer.dom(document.body).deepContains(node)) {
+        node.focus();
+      }
+      this._lastFocusedNodes.splice(i, 1);
     }
   };
 
@@ -92,15 +153,6 @@
       this._backdrops.splice(index, 1);
     }
   };
-
-  Object.defineProperty(Polymer.IronOverlayManagerClass.prototype, "backdropElement", {
-    get: function() {
-      if (!this._backdropElement) {
-        this._backdropElement = document.createElement('iron-overlay-backdrop');
-      }
-      return this._backdropElement;
-    }
-  });
 
   Polymer.IronOverlayManagerClass.prototype.getBackdrops = function() {
     return this._backdrops;

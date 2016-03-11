@@ -7,6 +7,9 @@
   'targets': [
     {
       'target_name': 'iron-flex-layout-extracted',
+      'dependencies': [
+        'iron-shadow-flex-layout-extracted',
+      ],
       'includes': ['../../../../../closure_compiler/compile_js2.gypi'],
     },
     {

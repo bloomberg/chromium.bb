@@ -30,9 +30,7 @@ Polymer({
         }
       },
 
-      // create the element ripple inside the `radioContainer`
-      _createRipple: function() {
+      ready: function() {
         this._rippleContainer = this.$.radioContainer;
-        return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
       }
     });

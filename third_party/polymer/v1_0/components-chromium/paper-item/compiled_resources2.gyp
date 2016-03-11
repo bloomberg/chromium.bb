@@ -34,14 +34,14 @@
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'paper-item-shared-styles-extracted',
-      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'paper-item-extracted',
       'dependencies': [
         'paper-item-behavior-extracted',
       ],
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'paper-item-shared-styles-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
   ],

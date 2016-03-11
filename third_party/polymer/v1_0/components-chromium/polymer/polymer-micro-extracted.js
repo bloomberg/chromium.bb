@@ -27,6 +27,7 @@ var useShadow = wantShadow && hasShadow;
 var hasNativeImports = Boolean('import' in document.createElement('link'));
 var useNativeImports = hasNativeImports;
 var useNativeCustomElements = !window.CustomElements || window.CustomElements.useNative;
+var usePolyfillProto = !useNativeCustomElements && !Object.__proto__;
 return {
 wantShadow: wantShadow,
 hasShadow: hasShadow,
@@ -34,7 +35,8 @@ nativeShadow: nativeShadow,
 useShadow: useShadow,
 useNativeShadow: useShadow && nativeShadow,
 useNativeImports: useNativeImports,
-useNativeCustomElements: useNativeCustomElements
+useNativeCustomElements: useNativeCustomElements,
+usePolyfillProto: usePolyfillProto
 };
 }()
 };
@@ -66,7 +68,6 @@ prototype = Polymer.Base.chainObject(prototype, base);
 prototype.registerCallback();
 return prototype.constructor;
 };
-window.Polymer = Polymer;
 if (userPolymer) {
 for (var i in userPolymer) {
 Polymer[i] = userPolymer[i];
@@ -152,7 +153,6 @@ for (var i = 0, h; i < callbacks.length; i++) {
 h = callbacks[i];
 h[1].apply(h[0], h[2] || Polymer.nar);
 }
-;
 }
 };
 if (window.HTMLImports) {
@@ -275,7 +275,7 @@ createdCallback: function () {
 this.register();
 },
 register: function (id) {
-var id = id || this.id || this.getAttribute('name') || this.getAttribute('is');
+id = id || this.id || this.getAttribute('name') || this.getAttribute('is');
 if (id) {
 this.id = id;
 modules[id] = this;
@@ -335,11 +335,16 @@ this.behaviors = this._desugarSomeBehaviors(this.behaviors);
 }
 },
 _desugarSomeBehaviors: function (behaviors) {
+var behaviorSet = [];
 behaviors = this._flattenBehaviorsList(behaviors);
 for (var i = behaviors.length - 1; i >= 0; i--) {
-this._mixinBehavior(behaviors[i]);
+var b = behaviors[i];
+if (behaviorSet.indexOf(b) === -1) {
+this._mixinBehavior(b);
+behaviorSet.unshift(b);
 }
-return behaviors;
+}
+return behaviorSet;
 },
 _flattenBehaviorsList: function (behaviors) {
 var flat = [];
@@ -461,7 +466,6 @@ if (info) {
 return info;
 }
 }
-;
 }
 return info || Polymer.nob;
 },
@@ -477,7 +481,7 @@ return p;
 },
 _prepPropertyInfo: function () {
 this._propertyInfo = {};
-for (var i = 0, p; i < this.behaviors.length; i++) {
+for (var i = 0; i < this.behaviors.length; i++) {
 this._addPropertyInfo(this._propertyInfo, this.behaviors[i].properties);
 }
 this._addPropertyInfo(this._propertyInfo, this.properties);
@@ -512,26 +516,17 @@ t.readOnly = s.readOnly;
 });
 Polymer.CaseMap = {
 _caseMap: {},
+_rx: {
+dashToCamel: /-[a-z]/g,
+camelToDash: /([A-Z])/g
+},
 dashToCamelCase: function (dash) {
-var mapped = Polymer.CaseMap._caseMap[dash];
-if (mapped) {
-return mapped;
-}
-if (dash.indexOf('-') < 0) {
-return Polymer.CaseMap._caseMap[dash] = dash;
-}
-return Polymer.CaseMap._caseMap[dash] = dash.replace(/-([a-z])/g, function (m) {
+return this._caseMap[dash] || (this._caseMap[dash] = dash.indexOf('-') < 0 ? dash : dash.replace(this._rx.dashToCamel, function (m) {
 return m[1].toUpperCase();
-});
+}));
 },
 camelToDashCase: function (camel) {
-var mapped = Polymer.CaseMap._caseMap[camel];
-if (mapped) {
-return mapped;
-}
-return Polymer.CaseMap._caseMap[camel] = camel.replace(/([a-z][A-Z])/g, function (g) {
-return g[0] + '-' + g[1].toLowerCase();
-});
+return this._caseMap[camel] || (this._caseMap[camel] = camel.replace(this._rx.camelToDash, '-$1').toLowerCase());
 }
 };
 Polymer.Base._addFeature({
@@ -571,7 +566,7 @@ this._setAttributeToProperty(model, info.attribute, i, info);
 },
 _setAttributeToProperty: function (model, attribute, property, info) {
 if (!this._serializing) {
-var property = property || Polymer.CaseMap.dashToCamelCase(attribute);
+property = property || Polymer.CaseMap.dashToCamelCase(attribute);
 info = info || this._propertyInfo && this._propertyInfo[property];
 if (info && !info.readOnly) {
 var v = this.getAttribute(attribute);
@@ -601,7 +596,7 @@ case Number:
 value = Number(value);
 break;
 case Boolean:
-value = value !== null;
+value = value != null;
 break;
 case Object:
 try {
@@ -632,7 +627,7 @@ case 'boolean':
 return value ? '' : undefined;
 case 'object':
 if (value instanceof Date) {
-return value;
+return value.toString();
 } else if (value) {
 try {
 return JSON.stringify(value);
@@ -645,7 +640,7 @@ return value != null ? value : undefined;
 }
 }
 });
-Polymer.version = '1.2.4';
+Polymer.version = '1.3.1';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();

@@ -49,7 +49,7 @@ The following custom properties and mixins are available for styling:
 | `--paper-checkbox-checkmark-color` | Checkmark color | `white` |
 | `--paper-checkbox-label-color` | Label color | `--primary-text-color` |
 | `--paper-checkbox-label-spacing` | Spacing between the label and the checkbox | `8px` |
-| `--paper-checkbox-error-color` | Checkbox color when invalid | `--google-red-500` |
+| `--paper-checkbox-error-color` | Checkbox color when invalid | `--error-color` |
 | `--paper-checkbox-size` | Size of the checkbox | `18px` |
 
 This element applies the mixin `--paper-font-common-base` but does not import `paper-styles/typography.html`.

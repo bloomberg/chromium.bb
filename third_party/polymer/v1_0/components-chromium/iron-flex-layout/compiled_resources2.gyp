@@ -6,6 +6,10 @@
 {
   'targets': [
     {
+      'target_name': 'iron-flex-layout-classes-extracted',
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'iron-flex-layout-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

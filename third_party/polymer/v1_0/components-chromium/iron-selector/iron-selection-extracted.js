@@ -55,16 +55,19 @@
      */
     setItemSelected: function(item, isSelected) {
       if (item != null) {
-        if (isSelected) {
-          this.selection.push(item);
-        } else {
-          var i = this.selection.indexOf(item);
-          if (i >= 0) {
-            this.selection.splice(i, 1);
+        if (isSelected !== this.isSelected(item)) {
+          // proceed to update selection only if requested state differs from current
+          if (isSelected) {
+            this.selection.push(item);
+          } else {
+            var i = this.selection.indexOf(item);
+            if (i >= 0) {
+              this.selection.splice(i, 1);
+            }
           }
-        }
-        if (this.selectCallback) {
-          this.selectCallback(item, isSelected);
+          if (this.selectCallback) {
+            this.selectCallback(item, isSelected);
+          }
         }
       }
     },

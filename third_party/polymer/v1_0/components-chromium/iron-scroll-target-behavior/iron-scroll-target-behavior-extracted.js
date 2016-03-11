@@ -62,9 +62,9 @@
         // Support element id references
         if (typeof scrollTarget === 'string') {
 
-          var ownerRoot = Polymer.dom(this).getOwnerRoot();
-          this.scrollTarget = (ownerRoot && ownerRoot.$) ?
-              ownerRoot.$[scrollTarget] : Polymer.dom(this.ownerDocument).querySelector('#' + scrollTarget);
+          var host = this.domHost;
+          this.scrollTarget = host && host.$ ? host.$[scrollTarget] : 
+              Polymer.dom(this.ownerDocument).querySelector('#' + scrollTarget);
 
         } else if (this._scrollHandler) {
 
@@ -163,15 +163,15 @@
      * Scrolls the content to a particular place.
      *
      * @method scroll
-     * @param {number} top The top position
      * @param {number} left The left position
+     * @param {number} top The top position
      */
-    scroll: function(top, left) {
+    scroll: function(left, top) {
        if (this.scrollTarget === this._doc) {
-        window.scrollTo(top, left);
+        window.scrollTo(left, top);
       } else if (this._isValidScrollTarget()) {
-        this.scrollTarget.scrollTop = top;
         this.scrollTarget.scrollLeft = left;
+        this.scrollTarget.scrollTop = top;
       }
     },
 

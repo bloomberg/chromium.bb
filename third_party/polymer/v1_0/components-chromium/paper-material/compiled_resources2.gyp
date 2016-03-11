@@ -6,11 +6,11 @@
 {
   'targets': [
     {
-      'target_name': 'paper-material-shared-styles-extracted',
+      'target_name': 'paper-material-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'paper-material-extracted',
+      'target_name': 'paper-material-shared-styles-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
   ],

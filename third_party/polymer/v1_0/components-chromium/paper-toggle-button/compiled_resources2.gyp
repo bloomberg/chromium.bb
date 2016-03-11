@@ -9,7 +9,6 @@
       'target_name': 'paper-toggle-button-extracted',
       'dependencies': [
         '../paper-behaviors/compiled_resources2.gyp:paper-checked-element-behavior-extracted',
-        '../paper-ripple/compiled_resources2.gyp:paper-ripple-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

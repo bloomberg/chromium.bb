@@ -66,14 +66,6 @@ Polymer({
           value: false
         },
 
-        /**
-         * Gets or sets the selected element. The default is to use the index of the item.
-         */
-        selected: {
-          type: String,
-          notify: true
-        },
-
         selectable: {
           type: String,
           value: 'paper-tab'
@@ -275,7 +267,13 @@ Polymer({
         // bar animation: expand
         this.$.selectionBar.classList.add('expand');
 
-        if (oldIndex < index) {
+        var moveRight = oldIndex < index;
+        var isRTL = this._isRTL;
+        if (isRTL) {
+          moveRight = !moveRight;
+        }
+
+        if (moveRight) {
           this._positionBar(this._calcPercent(tabRect.left + tabRect.width - oldRect.left, w) - m,
               this._left);
         } else {

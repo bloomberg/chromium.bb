@@ -21,6 +21,15 @@ Polymer({
         },
 
         /**
+         * Set this to true if you want to manually control when the tooltip
+         * is shown or hidden.
+         */
+        manualMode: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
          * Positions the tooltip to the top, right, bottom, left of its content.
          */
         position: {
@@ -122,6 +131,9 @@ Polymer({
       attached: function() {
         this._target = this.target;
 
+        if (this.manualMode)
+          return;
+
         this.listen(this._target, 'mouseenter', 'show');
         this.listen(this._target, 'focus', 'show');
         this.listen(this._target, 'mouseleave', 'hide');
@@ -130,7 +142,7 @@ Polymer({
       },
 
       detached: function() {
-        if (this._target) {
+        if (this._target && !this.manualMode) {
           this.unlisten(this._target, 'mouseenter', 'show');
           this.unlisten(this._target, 'focus', 'show');
           this.unlisten(this._target, 'mouseleave', 'hide');
@@ -183,7 +195,7 @@ Polymer({
       },
 
       updatePosition: function() {
-        if (!this._target)
+        if (!this._target || !this.offsetParent)
           return;
 
         var offset = this.offset;

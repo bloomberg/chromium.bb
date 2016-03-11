@@ -36,7 +36,8 @@ Polymer({
          * @type {!Polymer.IronMeta}
          */
         _meta: {
-          value: Polymer.Base.create('iron-meta', {type: 'iconset'})
+          value: Polymer.Base.create('iron-meta', {type: 'iconset'}),
+          observer: '_updateIcon'
         }
 
       },
@@ -61,7 +62,14 @@ Polymer({
       /** @suppress {visibility} */
       _updateIcon: function() {
         if (this._usesIconset()) {
-          if (this._iconsetName) {
+          if (this._img && this._img.parentNode) {
+            Polymer.dom(this.root).removeChild(this._img);
+          }
+          if (this._iconName === "") {
+            if (this._iconset) {
+              this._iconset.removeIcon(this);
+            }
+          } else if (this._iconsetName && this._meta) {
             this._iconset = /** @type {?Polymer.Iconset} */ (
               this._meta.byKey(this._iconsetName));
             if (this._iconset) {
@@ -72,6 +80,9 @@ Polymer({
             }
           }
         } else {
+          if (this._iconset) {
+            this._iconset.removeIcon(this);
+          }
           if (!this._img) {
             this._img = document.createElement('img');
             this._img.style.width = '100%';

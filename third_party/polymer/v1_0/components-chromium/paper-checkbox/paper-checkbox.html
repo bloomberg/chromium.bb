@@ -8,7 +8,6 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-styles/default-theme.html">
-<link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-behaviors/paper-checked-element-behavior.html">
 
 <!--
@@ -40,7 +39,7 @@ Custom property | Description | Default
 `--paper-checkbox-checkmark-color` | Checkmark color | `white`
 `--paper-checkbox-label-color` | Label color | `--primary-text-color`
 `--paper-checkbox-label-spacing` | Spacing between the label and the checkbox | `8px`
-`--paper-checkbox-error-color` | Checkbox color when invalid | `--google-red-500`
+`--paper-checkbox-error-color` | Checkbox color when invalid | `--error-color`
 `--paper-checkbox-size` | Size of the checkbox | `18px`
 
 This element applies the mixin `--paper-font-common-base` but does not import `paper-styles/typography.html`.
@@ -58,6 +57,7 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         cursor: pointer;
         --calculated-paper-checkbox-size: var(--paper-checkbox-size, 18px);
         @apply(--paper-font-common-base);
+        line-height: 0;
       }
 
       :host(:focus) {
@@ -169,7 +169,7 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         vertical-align: middle;
         padding-left: var(--paper-checkbox-label-spacing, 8px);
         white-space: normal;
-        pointer-events: none;
+        line-height: normal;
         color: var(--paper-checkbox-label-color, --primary-text-color);
       }
 
@@ -183,9 +183,6 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
       }
 
       /* disabled state */
-      :host([disabled]) {
-        pointer-events: none;
-      }
 
       :host([disabled]) #checkbox {
         opacity: 0.5;
@@ -203,7 +200,7 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
 
       /* invalid state */
       #checkbox.invalid:not(.checked) {
-        border-color: var(--paper-checkbox-error-color, --google-red-500);
+        border-color: var(--paper-checkbox-error-color, --error-color);
       }
     </style>
 

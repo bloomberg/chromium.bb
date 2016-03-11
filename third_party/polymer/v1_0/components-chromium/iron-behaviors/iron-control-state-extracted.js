@@ -75,6 +75,7 @@
         this._oldTabIndex = this.tabIndex;
         this.focused = false;
         this.tabIndex = -1;
+        this.blur();
       } else if (this._oldTabIndex !== undefined) {
         this.tabIndex = this._oldTabIndex;
       }

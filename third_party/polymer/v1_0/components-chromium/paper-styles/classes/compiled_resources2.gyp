@@ -10,11 +10,11 @@
       'includes': ['../../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'shadow-layout-extracted',
+      'target_name': 'shadow-extracted',
       'includes': ['../../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'shadow-extracted',
+      'target_name': 'shadow-layout-extracted',
       'includes': ['../../../../../closure_compiler/compile_js2.gypi'],
     },
     {

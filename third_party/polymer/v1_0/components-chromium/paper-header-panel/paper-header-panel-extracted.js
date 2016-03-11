@@ -103,7 +103,8 @@
             type: Boolean,
             value: true,
             notify: true,
-            readOnly: true
+            readOnly: true,
+            reflectToAttribute: true
           }
         },
 

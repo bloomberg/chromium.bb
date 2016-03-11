@@ -1,6 +1,6 @@
 {
   "name": "iron-scroll-target-behavior",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Allows to define a scroller target",
   "private": true,
   "license": "http://polymer.github.io/LICENSE.txt",
@@ -28,11 +28,11 @@
     "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "1.0.3",
+  "_release": "1.0.4",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.3",
-    "commit": "7ce943d4bc9daf9704174f58a6c5104fe3097986"
+    "tag": "v1.0.4",
+    "commit": "77870593ace034696a83e0190914861633196e6d"
   },
   "_source": "git://github.com/PolymerElements/iron-scroll-target-behavior.git",
   "_target": "^1.0.0",

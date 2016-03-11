@@ -12,7 +12,9 @@ thing! https://github.com/PolymerLabs/tedium/issues
 
 -->
 
-_[Demo and API Docs](https://elements.polymer-project.org/elements/iron-scroll-target-behavior)_
+[![Build status](https://travis-ci.org/PolymerElements/iron-scroll-target-behavior.svg?branch=master)](https://travis-ci.org/PolymerElements/iron-scroll-target-behavior)
+
+_[Demo and API docs](https://elements.polymer-project.org/elements/iron-scroll-target-behavior)_
 
 
 ##Polymer.IronScrollTargetBehavior

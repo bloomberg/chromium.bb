@@ -59,6 +59,7 @@
       'target_name': 'paper-textarea-extracted',
       'dependencies': [
         '../iron-autogrow-textarea/compiled_resources2.gyp:iron-autogrow-textarea-extracted',
+        '../iron-form-element-behavior/compiled_resources2.gyp:iron-form-element-behavior-extracted',
         'paper-input-behavior-extracted',
         'paper-input-char-counter-extracted',
         'paper-input-container-extracted',

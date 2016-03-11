@@ -10,6 +10,11 @@
 (function(global) {
   'use strict';
 
+  /*
+   * Forces distribution of light children, and lifecycle callbacks on the
+   * Custom Elements polyfill. Used when testing elements that rely on their
+   * distributed children.
+   */
   global.flushAsynchronousOperations = function() {
     // force distribution
     Polymer.dom.flush();
@@ -17,6 +22,11 @@
     window.CustomElements && window.CustomElements.takeRecords();
   };
 
+  /*
+   * Stamps and renders a `dom-if` template.
+   *
+   * @param {HTMLElement} node The node containing the template,
+   */
   global.forceXIfStamp = function(node) {
     var templates = Polymer.dom(node.root).querySelectorAll('template[is=dom-if]');
     for (var tmpl, i = 0; tmpl = templates[i]; i++) {
@@ -26,6 +36,13 @@
     global.flushAsynchronousOperations();
   };
 
+  /*
+   * Fires a custom event on a specific node. This event bubbles and is cancellable.
+   *
+   * @param {String} type The type of event.
+   * @param {Object} props Any custom properties the event contains.
+   * @param {HTMLElement} node The node to fire the event on.
+   */
   global.fireEvent = function(type, props, node) {
     var event = new CustomEvent(type, {
       bubbles: true,
@@ -36,6 +53,19 @@
     }
     node.dispatchEvent(event);
   };
+
+  /*
+   * Skips a test unless a condition is met. Sample use:
+   *    function isNotIE() {
+   *      return !navigator.userAgent.match(/MSIE/i);
+   *    }
+   *    test('runs on non IE browsers', skipUnless(isNotIE, function() {
+   *      ...
+   *    });
+   *
+   * @param {String} condition The name of a Boolean function determining if the test should be run.
+   * @param {Function} test The test to be run.
+   */
 
   global.skipUnless = function(condition, test) {
     var isAsyncTest = !!test.length;

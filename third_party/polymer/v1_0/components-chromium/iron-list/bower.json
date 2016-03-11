@@ -7,7 +7,7 @@
     "list",
     "virtual-list"
   ],
-  "version": "1.2.3",
+  "version": "1.2.7",
   "homepage": "https://github.com/PolymerElements/iron-list",
   "authors": [
     "The Polymer Authors"
@@ -33,6 +33,7 @@
     "iron-icon": "polymerelements/iron-icon#^1.0.0",
     "iron-icons": "polymerelements/iron-icons#^1.0.0",
     "iron-scroll-threshold": "polymerelements/iron-scroll-threshold#^1.0.0",
+    "iron-image": "polymerelements/iron-image#^1.0.0",
     "paper-menu": "polymerelements/paper-menu#^1.0.0",
     "paper-item": "polymerelements/paper-item#^1.0.0",
     "paper-icon-button": "polymerelements/paper-icon-button#^1.0.0",

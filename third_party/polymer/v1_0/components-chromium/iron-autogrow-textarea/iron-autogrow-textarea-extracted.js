@@ -12,8 +12,8 @@ Polymer({
 
       /**
        * Use this property instead of `value` for two-way data binding.
-       *
-       * @type {string|number|undefined|null}
+       * This property will be deprecated in the future. Use `value` instead.
+       * @type {string|number}
        */
       bindValue: {
         observer: '_bindValueChanged',
@@ -71,22 +71,6 @@ Polymer({
       },
 
       /**
-       * Bound to the textarea's `name` attribute.
-       */
-      name: {
-        type: String
-      },
-
-      /**
-       * The value for this input, same as `bindValue`
-       */
-      value: {
-        notify: true,
-        type: String,
-        computed: '_computeValue(bindValue)'
-      },
-
-      /**
        * Bound to the textarea's `placeholder` attribute.
        */
       placeholder: {
@@ -119,6 +103,10 @@ Polymer({
     listeners: {
       'input': '_onInput'
     },
+
+    observers: [
+      '_onValueChanged(value)'
+    ],
 
     /**
      * Returns the underlying textarea.
@@ -196,6 +184,7 @@ Polymer({
         textarea.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
       }
 
+      this.value = this.bindValue;
       this.$.mirror.innerHTML = this._valueForMirror();
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
@@ -234,7 +223,7 @@ Polymer({
       this.$.mirror.innerHTML = this._constrain(this.tokens);
     },
 
-    _computeValue: function() {
-      return this.bindValue;
+    _onValueChanged: function() {
+      this.bindValue = this.value;
     }
   });

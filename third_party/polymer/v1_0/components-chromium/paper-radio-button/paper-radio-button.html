@@ -8,7 +8,6 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-behaviors/paper-checked-element-behavior.html">
-<link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-styles/default-theme.html">
 
 <!--
@@ -35,10 +34,13 @@ Custom property | Description | Default
 `--paper-radio-button-unchecked-background-color` | Radio button background color when the input is not checked | `transparent`
 `--paper-radio-button-unchecked-color` | Radio button color when the input is not checked | `--primary-text-color`
 `--paper-radio-button-unchecked-ink-color` | Selected/focus ripple color when the input is not checked | `--primary-text-color`
-`--paper-radio-button-checked-color` | Radio button color when the input is checked | `--default-primary-color`
-`--paper-radio-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--default-primary-color`
+`--paper-radio-button-checked-color` | Radio button color when the input is checked | `--primary-color`
+`--paper-radio-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--primary-color`
 `--paper-radio-button-label-color` | Label color | `--primary-text-color`
 `--paper-radio-button-label-spacing` | Spacing between the label and the button | `10px`
+
+This element applies the mixin `--paper-font-common-base` but does not import `paper-styles/typography.html`.
+In order to apply the `Roboto` font to this element, make sure you've imported `paper-styles/typography.html`.
 
 @group Paper Elements
 @element paper-radio-button
@@ -53,6 +55,7 @@ Custom property | Description | Default
         display: inline-block;
         white-space: nowrap;
         cursor: pointer;
+        @apply(--paper-font-common-base);
       }
 
       :host(:focus) {
@@ -84,7 +87,7 @@ Custom property | Description | Default
       }
 
       #ink[checked] {
-        color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
+        color: var(--paper-radio-button-checked-ink-color, --primary-color);
       }
 
       #offRadio {
@@ -111,7 +114,7 @@ Custom property | Description | Default
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background-color: var(--paper-radio-button-checked-color, --default-primary-color);
+        background-color: var(--paper-radio-button-checked-color, --primary-color);
         -webkit-transform: scale(0);
         transform: scale(0);
         transition: -webkit-transform ease 0.28s;
@@ -119,7 +122,7 @@ Custom property | Description | Default
       }
 
       :host([checked]) #offRadio {
-        border-color: var(--paper-radio-button-checked-color, --default-primary-color);
+        border-color: var(--paper-radio-button-checked-color, --primary-color);
       }
 
       :host([checked]) #onRadio {
@@ -133,7 +136,6 @@ Custom property | Description | Default
         vertical-align: middle;
         margin-left: var(--paper-radio-button-label-spacing, 10px);
         white-space: normal;
-        pointer-events: none;
         color: var(--paper-radio-button-label-color, --primary-text-color);
       }
 
@@ -147,9 +149,6 @@ Custom property | Description | Default
       }
 
       /* disabled state */
-      :host([disabled]) {
-        pointer-events: none;
-      }
 
       :host([disabled]) #offRadio {
         border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
