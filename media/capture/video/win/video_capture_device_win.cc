@@ -453,7 +453,7 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
                                           int length,
                                           base::TimeTicks timestamp) {
   client_->OnIncomingCapturedData(buffer, length, capture_format_, 0,
-                                  base::TimeTicks::Now());
+                                  timestamp);
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {
