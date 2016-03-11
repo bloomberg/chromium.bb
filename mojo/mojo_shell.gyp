@@ -41,6 +41,9 @@
       '<(DEPTH)/net/net.gyp:net',
       '<(DEPTH)/url/url.gyp:url_lib',
     ],
+    'export_dependent_settings': [
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
+    ],
   }, {
     'target_name': 'mojo_shell_unittests',
     'type': 'executable',
@@ -86,6 +89,9 @@
       '<(DEPTH)/mojo/mojo_platform_handle.gyp:platform_handle',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_message_pump_lib',
     ],
+    'export_dependent_settings': [
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
+    ],
   }, {
     'target_name': 'mojo_runner_common_lib',
     'type': 'static_library',
@@ -125,6 +131,9 @@
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/mojo/mojo_platform_handle.gyp:platform_handle',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_message_pump_lib',
+    ],
+    'export_dependent_settings': [
+      '<(DEPTH)/mojo/mojo_base.gyp:mojo_application_bindings',
     ],
     'conditions': [
       ['OS=="linux"', {
