@@ -297,6 +297,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       kUnknownExtensionStatus
   };
 
+  enum Dimension {
+      k2D,
+      k3D,
+  };
+
+
   // Base class for mapped resources.
   struct MappedResource {
     MappedResource(GLenum _access, int _shm_id, void* mem, unsigned int offset)
@@ -692,6 +698,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                         const void* indices, const char* func_name);
   void UpdateCachedExtensionsIfNeeded();
   void InvalidateCachedExtensions();
+
+  PixelStoreParams GetUnpackParameters(Dimension dimension);
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;

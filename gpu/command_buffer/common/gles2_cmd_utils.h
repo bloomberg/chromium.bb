@@ -155,6 +155,8 @@ class GLES2_UTILS_EXPORT GLES2Util {
   // For example, GL_FLOAT_MAT3 returns 9.
   static uint32_t GetElementCountForUniformType(int type);
 
+  static size_t GetGLTypeSizeForTextures(uint32_t type);
+
   static size_t GetGLTypeSizeForBuffers(uint32_t type);
 
   static size_t GetGroupSizeForBufferType(uint32_t count, uint32_t type);

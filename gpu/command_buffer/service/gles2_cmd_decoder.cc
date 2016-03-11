@@ -11275,19 +11275,49 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
   GLenum type = static_cast<GLenum>(c.type);
   uint32_t pixels_shm_id = static_cast<uint32_t>(c.pixels_shm_id);
   uint32_t pixels_shm_offset = static_cast<uint32_t>(c.pixels_shm_offset);
+
+  if (width < 0 || height < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexImage2D", "dimensions < 0");
+    return error::kNoError;
+  }
+
+  PixelStoreParams params;
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    if (pixels_shm_id)
+      return error::kInvalidArguments;
+    params = state_.GetUnpackParams(ContextState::k2D);
+  } else {
+    if (!pixels_shm_id && pixels_shm_offset)
+      return error::kInvalidArguments;
+    // When reading from client buffer, the command buffer client side took
+    // the responsibility to take the pixels from the client buffer and
+    // unpack them according to the full ES3 pack parameters as source, all
+    // parameters for 0 (except for alignment) as destination mem for the
+    // service side.
+    params.alignment = state_.unpack_alignment;
+  }
   uint32_t pixels_size;
-  if (!GLES2Util::ComputeImageDataSizes(
-      width, height, 1, format, type, state_.unpack_alignment, &pixels_size,
-      NULL, NULL)) {
+  uint32_t skip_size;
+  if (!GLES2Util::ComputeImageDataSizesES3(width, height, 1,
+                                           format, type,
+                                           params,
+                                           &pixels_size,
+                                           nullptr,
+                                           nullptr,
+                                           &skip_size,
+                                           nullptr)) {
     return error::kOutOfBounds;
   }
-  const void* pixels = NULL;
-  if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
+  DCHECK_EQ(0u, skip_size);
+
+  const void* pixels;
+  if (pixels_shm_id) {
     pixels = GetSharedMemoryAs<const void*>(
         pixels_shm_id, pixels_shm_offset, pixels_size);
-    if (!pixels) {
+    if (!pixels)
       return error::kOutOfBounds;
-    }
+  } else {
+    pixels = reinterpret_cast<const void*>(pixels_shm_offset);
   }
 
   // For testing only. Allows us to stress the ability to respond to OOM errors.
@@ -11333,19 +11363,49 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
   GLenum type = static_cast<GLenum>(c.type);
   uint32_t pixels_shm_id = static_cast<uint32_t>(c.pixels_shm_id);
   uint32_t pixels_shm_offset = static_cast<uint32_t>(c.pixels_shm_offset);
+
+  if (width < 0 || height < 0 || depth < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexImage3D", "dimensions < 0");
+    return error::kNoError;
+  }
+
+  PixelStoreParams params;
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    if (pixels_shm_id)
+      return error::kInvalidArguments;
+    params = state_.GetUnpackParams(ContextState::k3D);
+  } else {
+    if (!pixels_shm_id && pixels_shm_offset)
+      return error::kInvalidArguments;
+    // When reading from client buffer, the command buffer client side took
+    // the responsibility to take the pixels from the client buffer and
+    // unpack them according to the full ES3 pack parameters as source, all
+    // parameters for 0 (except for alignment) as destination mem for the
+    // service side.
+    params.alignment = state_.unpack_alignment;
+  }
   uint32_t pixels_size;
-  if (!GLES2Util::ComputeImageDataSizes(
-      width, height, depth, format, type, state_.unpack_alignment, &pixels_size,
-      NULL, NULL)) {
+  uint32_t skip_size;
+  if (!GLES2Util::ComputeImageDataSizesES3(width, height, depth,
+                                           format, type,
+                                           params,
+                                           &pixels_size,
+                                           nullptr,
+                                           nullptr,
+                                           &skip_size,
+                                           nullptr)) {
     return error::kOutOfBounds;
   }
-  const void* pixels = NULL;
-  if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
+  DCHECK_EQ(0u, skip_size);
+
+  const void* pixels;
+  if (pixels_shm_id) {
     pixels = GetSharedMemoryAs<const void*>(
         pixels_shm_id, pixels_shm_offset, pixels_size);
-    if (!pixels) {
+    if (!pixels)
       return error::kOutOfBounds;
-    }
+  } else {
+    pixels = reinterpret_cast<const void*>(pixels_shm_offset);
   }
 
   // For testing only. Allows us to stress the ability to respond to OOM errors.
@@ -11727,21 +11787,54 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32_t immediate_data_size,
   GLsizei height = static_cast<GLsizei>(c.height);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeImageDataSizes(
-      width, height, 1, format, type, state_.unpack_alignment, &data_size,
-      NULL, NULL)) {
-    return error::kOutOfBounds;
+  uint32_t pixels_shm_id = static_cast<uint32_t>(c.pixels_shm_id);
+  uint32_t pixels_shm_offset = static_cast<uint32_t>(c.pixels_shm_offset);
+
+  if (width < 0 || height < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexSubImage2D", "dimensions < 0");
+    return error::kNoError;
   }
 
-  const void* pixels = GetSharedMemoryAs<const void*>(
-      c.pixels_shm_id, c.pixels_shm_offset, data_size);
-  if (!pixels)
+  PixelStoreParams params;
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    if (pixels_shm_id)
+      return error::kInvalidArguments;
+    params = state_.GetUnpackParams(ContextState::k2D);
+  } else {
+    // When reading from client buffer, the command buffer client side took
+    // the responsibility to take the pixels from the client buffer and
+    // unpack them according to the full ES3 pack parameters as source, all
+    // parameters for 0 (except for alignment) as destination mem for the
+    // service side.
+    params.alignment = state_.unpack_alignment;
+  }
+  uint32_t pixels_size;
+  uint32_t skip_size;
+  if (!GLES2Util::ComputeImageDataSizesES3(width, height, 1,
+                                           format, type,
+                                           params,
+                                           &pixels_size,
+                                           nullptr,
+                                           nullptr,
+                                           &skip_size,
+                                           nullptr)) {
     return error::kOutOfBounds;
+  }
+  DCHECK_EQ(0u, skip_size);
+
+  const void* pixels;
+  if (pixels_shm_id) {
+    pixels = GetSharedMemoryAs<const void*>(
+        pixels_shm_id, pixels_shm_offset, pixels_size);
+    if (!pixels)
+      return error::kOutOfBounds;
+  } else {
+    pixels = reinterpret_cast<const void*>(pixels_shm_offset);
+  }
 
   TextureManager::DoTexSubImageArguments args = {
       target, level, xoffset, yoffset, 0, width, height, 1,
-      format, type, pixels, data_size,
+      format, type, pixels, pixels_size,
       TextureManager::DoTexSubImageArguments::kTexSubImage2D};
   texture_manager()->ValidateAndDoTexSubImage(this, &texture_state_, &state_,
                                               &framebuffer_state_,
@@ -11776,21 +11869,54 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32_t immediate_data_size,
   GLsizei depth = static_cast<GLsizei>(c.depth);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeImageDataSizes(
-      width, height, depth, format, type, state_.unpack_alignment, &data_size,
-      NULL, NULL)) {
-    return error::kOutOfBounds;
+  uint32_t pixels_shm_id = static_cast<uint32_t>(c.pixels_shm_id);
+  uint32_t pixels_shm_offset = static_cast<uint32_t>(c.pixels_shm_offset);
+
+  if (width < 0 || height < 0 || depth < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexSubImage3D", "dimensions < 0");
+    return error::kNoError;
   }
 
-  const void* pixels = GetSharedMemoryAs<const void*>(
-      c.pixels_shm_id, c.pixels_shm_offset, data_size);
-  if (!pixels)
+  PixelStoreParams params;
+  if (state_.bound_pixel_unpack_buffer.get()) {
+    if (pixels_shm_id)
+      return error::kInvalidArguments;
+    params = state_.GetUnpackParams(ContextState::k3D);
+  } else {
+    // When reading from client buffer, the command buffer client side took
+    // the responsibility to take the pixels from the client buffer and
+    // unpack them according to the full ES3 pack parameters as source, all
+    // parameters for 0 (except for alignment) as destination mem for the
+    // service side.
+    params.alignment = state_.unpack_alignment;
+  }
+  uint32_t pixels_size;
+  uint32_t skip_size;
+  if (!GLES2Util::ComputeImageDataSizesES3(width, height, depth,
+                                           format, type,
+                                           params,
+                                           &pixels_size,
+                                           nullptr,
+                                           nullptr,
+                                           &skip_size,
+                                           nullptr)) {
     return error::kOutOfBounds;
+  }
+  DCHECK_EQ(0u, skip_size);
+
+  const void* pixels;
+  if (pixels_shm_id) {
+    pixels = GetSharedMemoryAs<const void*>(
+        pixels_shm_id, pixels_shm_offset, pixels_size);
+    if (!pixels)
+      return error::kOutOfBounds;
+  } else {
+    pixels = reinterpret_cast<const void*>(pixels_shm_offset);
+  }
 
   TextureManager::DoTexSubImageArguments args = {
       target, level, xoffset, yoffset, zoffset, width, height, depth,
-      format, type, pixels, data_size,
+      format, type, pixels, pixels_size,
       TextureManager::DoTexSubImageArguments::kTexSubImage3D};
   texture_manager()->ValidateAndDoTexSubImage(this, &texture_state_, &state_,
                                               &framebuffer_state_,

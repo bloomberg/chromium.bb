@@ -1052,7 +1052,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
 
   void DoTexImage(
     DecoderTextureState* texture_state,
-    ErrorState* error_state,
+    ContextState* state,
     DecoderFramebufferState* framebuffer_state,
     const char* function_name,
     TextureRef* texture_ref,

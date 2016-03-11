@@ -795,6 +795,10 @@ uint32_t GLES2Util::GetElementCountForUniformType(int type) {
   }
 }
 
+size_t GLES2Util::GetGLTypeSizeForTextures(uint32_t type) {
+  return static_cast<size_t>(BytesPerElement(type));
+}
+
 size_t GLES2Util::GetGLTypeSizeForBuffers(uint32_t type) {
   switch (type) {
     case GL_BYTE:

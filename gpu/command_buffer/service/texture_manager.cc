@@ -302,6 +302,11 @@ GLenum GetSwizzleForChannel(GLenum channel,
   }
 }
 
+// A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
+GLuint ToGLuint(const void* ptr) {
+  return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
+}
+
 base::LazyInstance<const FormatTypeValidator>::Leaky g_format_type_validator =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -2221,6 +2226,40 @@ bool TextureManager::ValidateTexImage(
     return false;
   }
 
+  Buffer* buffer = state->bound_pixel_unpack_buffer.get();
+  if (buffer) {
+    if (buffer->GetMappedRange()) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          "pixel unpack buffer should not be mapped to client memory");
+      return error::kNoError;
+    }
+    base::CheckedNumeric<uint32_t> size = args.pixels_size;
+    GLuint offset = ToGLuint(args.pixels);
+    size += offset;
+    if (!size.IsValid()) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_VALUE, function_name,
+          "size + offset overflow");
+      return error::kNoError;
+    }
+    uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
+    if (buffer_size < size.ValueOrDefault(0)) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          "pixel unpack buffer is not large enough");
+      return error::kNoError;
+    }
+    size_t type_size = GLES2Util::GetGLTypeSizeForTextures(args.type);
+    DCHECK_LT(0u, type_size);
+    if (offset % type_size != 0) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          "offset is not evenly divisible by elements");
+      return error::kNoError;
+    }
+  }
+
   if (!memory_type_tracker_->EnsureGPUMemoryAvailable(args.pixels_size)) {
     ERRORSTATE_SET_GL_ERROR(error_state, GL_OUT_OF_MEMORY, function_name,
                             "out of memory");
@@ -2285,13 +2324,13 @@ void TextureManager::ValidateAndDoTexImage(
     for (GLenum face : undefined_faces) {
       new_args.target = face;
       new_args.pixels = zero.get();
-      DoTexImage(texture_state, state->GetErrorState(), framebuffer_state,
+      DoTexImage(texture_state, state, framebuffer_state,
                  function_name, texture_ref, new_args);
       texture->MarkLevelAsInternalWorkaround(face, args.level);
     }
   }
 
-  DoTexImage(texture_state, state->GetErrorState(), framebuffer_state,
+  DoTexImage(texture_state, state, framebuffer_state,
              function_name, texture_ref, args);
 }
 
@@ -2310,21 +2349,7 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
                                          args.target, "target");
     return false;
   }
-  if (args.width < 0) {
-    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, function_name,
-                            "width < 0");
-    return false;
-  }
-  if (args.height < 0) {
-    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, function_name,
-                            "height < 0");
-    return false;
-  }
-  if (args.depth < 0) {
-    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, function_name,
-                            "depth < 0");
-    return false;
-  }
+  DCHECK(args.width >= 0 && args.height >= 0 && args.depth >= 0);
   TextureRef* local_texture_ref = GetTextureInfoForTarget(state, args.target);
   if (!local_texture_ref) {
     ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, function_name,
@@ -2366,7 +2391,40 @@ bool TextureManager::ValidateTexSubImage(ContextState* state,
         "can not supply data for depth or stencil textures");
     return false;
   }
-  DCHECK(args.pixels);
+
+  Buffer* buffer = state->bound_pixel_unpack_buffer.get();
+  if (buffer) {
+    if (buffer->GetMappedRange()) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          "pixel unpack buffer should not be mapped to client memory");
+      return error::kNoError;
+    }
+    base::CheckedNumeric<uint32_t> size = args.pixels_size;
+    GLuint offset = ToGLuint(args.pixels);
+    size += offset;
+    if (!size.IsValid()) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_VALUE, function_name,
+          "size + offset overflow");
+      return error::kNoError;
+    }
+    uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
+    if (buffer_size < size.ValueOrDefault(0)) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          "pixel unpack buffer is not large enough");
+      return error::kNoError;
+    }
+    size_t type_size = GLES2Util::GetGLTypeSizeForTextures(args.type);
+    DCHECK_LT(0u, type_size);
+    if (offset % type_size != 0) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          "offset is not evenly divisible by elements");
+      return error::kNoError;
+    }
+  }
   *texture_ref = local_texture_ref;
   return true;
 }
@@ -2489,11 +2547,12 @@ GLenum TextureManager::AdjustTexFormat(GLenum format) const {
 
 void TextureManager::DoTexImage(
     DecoderTextureState* texture_state,
-    ErrorState* error_state,
+    ContextState* state,
     DecoderFramebufferState* framebuffer_state,
     const char* function_name,
     TextureRef* texture_ref,
     const DoTexImageArguments& args) {
+  ErrorState* error_state = state->GetErrorState();
   Texture* texture = texture_ref->texture();
   GLsizei tex_width = 0;
   GLsizei tex_height = 0;
@@ -2509,7 +2568,10 @@ void TextureManager::DoTexImage(
           args.target, args.level, &tex_type, &tex_internal_format) &&
       args.type == tex_type && args.internal_format == tex_internal_format;
 
-  if (level_is_same && !args.pixels) {
+  bool unpack_buffer_bound =
+      (state->bound_pixel_unpack_buffer.get() != nullptr);
+
+  if (level_is_same && !args.pixels && !unpack_buffer_bound) {
     // Just set the level texture but mark the texture as uncleared.
     SetLevelInfo(
         texture_ref, args.target, args.level, args.internal_format, args.width,
@@ -2524,7 +2586,7 @@ void TextureManager::DoTexImage(
   }
 
   if (texture_state->texsubimage_faster_than_teximage &&
-      level_is_same && args.pixels) {
+      level_is_same && args.pixels && !unpack_buffer_bound) {
     {
       ScopedTextureUploadTimer timer(texture_state);
       if (args.command_type == DoTexImageArguments::kTexImage3D) {
@@ -2566,7 +2628,7 @@ void TextureManager::DoTexImage(
         GetAllGLErrors());
   }
   if (error == GL_NO_ERROR) {
-    bool set_as_cleared = (args.pixels != nullptr);
+    bool set_as_cleared = (args.pixels != nullptr || unpack_buffer_bound);
     SetLevelInfo(
         texture_ref, args.target, args.level, args.internal_format, args.width,
         args.height, args.depth, args.border, args.format, args.type,
