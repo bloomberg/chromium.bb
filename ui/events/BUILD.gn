@@ -203,10 +203,15 @@ component("events") {
     sources += [
       "android/events_jni_registrar.cc",
       "android/events_jni_registrar.h",
+      "android/key_event_utils.cc",
+      "android/key_event_utils.h",
       "android/motion_event_android.cc",
       "android/motion_event_android.h",
     ]
-    deps += [ ":motionevent_jni_headers" ]
+    deps += [
+      ":keyevent_jni_headers",
+      ":motionevent_jni_headers",
+    ]
   }
 }
 
@@ -457,5 +462,10 @@ if (is_android) {
   generate_jar_jni("motionevent_jni_headers") {
     jni_package = "ui"
     classes = [ "android/view/MotionEvent.class" ]
+  }
+
+  generate_jar_jni("keyevent_jni_headers") {
+    jni_package = "ui"
+    classes = [ "android/view/KeyEvent.class" ]
   }
 }

@@ -29,25 +29,46 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent()
       skip_in_browser(false) {
 }
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(
-    blink::WebInputEvent::Type type,
-    int modifiers, double time_secs, int keycode, int scancode,
-    int unicode_character, bool is_system_key)
-    : WebKeyboardEvent(WebKeyboardEventBuilder::Build(
-        type, modifiers, time_secs, keycode, scancode, unicode_character,
-        is_system_key)) {
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
+                                               int modifiers,
+                                               double time_secs,
+                                               int keycode,
+                                               int scancode,
+                                               int unicode_character,
+                                               bool is_system_key)
+    : WebKeyboardEvent(WebKeyboardEventBuilder::Build(nullptr,
+                                                      nullptr,
+                                                      type,
+                                                      modifiers,
+                                                      time_secs,
+                                                      keycode,
+                                                      scancode,
+                                                      unicode_character,
+                                                      is_system_key)) {
   os_event = NULL;
   skip_in_browser = false;
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
-    jobject android_key_event, blink::WebInputEvent::Type type,
-    int modifiers, double time_secs, int keycode, int scancode,
-    int unicode_character, bool is_system_key)
-    : WebKeyboardEvent(WebKeyboardEventBuilder::Build(
-        type, modifiers, time_secs, keycode, scancode, unicode_character,
-        is_system_key)) {
-  os_event = NewGlobalRefForKeyEvent(android_key_event);
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& android_key_event,
+    blink::WebInputEvent::Type type,
+    int modifiers,
+    double time_secs,
+    int keycode,
+    int scancode,
+    int unicode_character,
+    bool is_system_key)
+    : WebKeyboardEvent(WebKeyboardEventBuilder::Build(env,
+                                                      android_key_event,
+                                                      type,
+                                                      modifiers,
+                                                      time_secs,
+                                                      keycode,
+                                                      scancode,
+                                                      unicode_character,
+                                                      is_system_key)) {
+  os_event = NewGlobalRefForKeyEvent(android_key_event.obj());
   skip_in_browser = false;
 }
 

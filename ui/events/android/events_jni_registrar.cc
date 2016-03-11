@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/macros.h"
+#include "ui/events/android/key_event_utils.h"
 #include "ui/events/android/motion_event_android.h"
 
 namespace ui {
@@ -15,6 +16,7 @@ namespace android {
 
 static base::android::RegistrationMethod kAndroidRegisteredMethods[] = {
     {"MotionEventAndroid", ui::MotionEventAndroid::RegisterMotionEventAndroid},
+    {"KeyEventUtils", RegisterKeyEvent},
 };
 
 bool RegisterJni(JNIEnv* env) {

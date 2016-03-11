@@ -12,6 +12,10 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
+
 namespace ui {
 class KeyEvent;
 }
@@ -34,14 +38,16 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
                          int unicode_character,
                          bool is_system_key);
   // Takes ownership of android_key_event.
-  NativeWebKeyboardEvent(jobject android_key_event,
-                         blink::WebInputEvent::Type type,
-                         int modifiers,
-                         double time_secs,
-                         int keycode,
-                         int scancode,
-                         int unicode_character,
-                         bool is_system_key);
+  NativeWebKeyboardEvent(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& android_key_event,
+      blink::WebInputEvent::Type type,
+      int modifiers,
+      double time_secs,
+      int keycode,
+      int scancode,
+      int unicode_character,
+      bool is_system_key);
 #else
   explicit NativeWebKeyboardEvent(const ui::KeyEvent& key_event);
 #if defined(USE_AURA)

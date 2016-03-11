@@ -48,7 +48,7 @@ namespace {
 // as a key press of character \r.
 NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
     JNIEnv* env,
-    jobject java_key_event,
+    const base::android::JavaRef<jobject>& java_key_event,
     int action,
     int modifiers,
     long time_ms,
@@ -63,8 +63,9 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
     type = blink::WebInputEvent::KeyUp;
   else
     NOTREACHED() << "Invalid Android key event action: " << action;
-  return NativeWebKeyboardEvent(java_key_event, type, modifiers,
-      time_ms / 1000.0, key_code, scan_code, unicode_char, is_system_key);
+  return NativeWebKeyboardEvent(env, java_key_event, type, modifiers,
+                                time_ms / 1000.0, key_code, scan_code,
+                                unicode_char, is_system_key);
 }
 
 }  // anonymous namespace

@@ -208,9 +208,12 @@
             'android/events_jni_registrar.h',
             'android/motion_event_android.cc',
             'android/motion_event_android.h',
+            'android/key_event_utils.cc',
+            'android/key_event_utils.h',
           ],
           'dependencies': [
             'motionevent_jni_headers',
+            'keyevent_jni_headers',
           ],
         }],
       ],
@@ -383,6 +386,15 @@
           'variables': {
             'jni_gen_package': 'ui',
             'input_java_class': 'android/view/MotionEvent.class',
+          },
+          'includes': [ '../../build/jar_file_jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'keyevent_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_package': 'ui',
+            'input_java_class': 'android/view/KeyEvent.class',
           },
           'includes': [ '../../build/jar_file_jni_generator.gypi' ],
         },

@@ -4,8 +4,11 @@
 
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 
+#include <android/input.h>
+
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
+#include "ui/events/android/key_event_utils.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -26,7 +29,37 @@ namespace content {
 
 namespace {
 
-ui::DomKey GetDomKeyFromEvent(int keycode, int unicode_character) {
+int WebInputEventToAndroidModifier(int web_modifier) {
+  int android_modifier = 0;
+  // Currently only Shift, CapsLock are used, add other modifiers if required.
+  if (web_modifier & WebInputEvent::ShiftKey)
+    android_modifier |= AMETA_SHIFT_ON;
+  if (web_modifier & WebInputEvent::CapsLockOn)
+    android_modifier |= AMETA_CAPS_LOCK_ON;
+  return android_modifier;
+}
+
+ui::DomKey GetDomKeyFromEvent(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& android_key_event,
+    int keycode,
+    int modifiers,
+    int unicode_character) {
+  if (!unicode_character && env) {
+    // According to spec |kAllowedModifiers| should be Shift and AltGr, however
+    // Android doesn't have AltGr key and ImeAdapter::getModifiers won't pass it
+    // either.
+    // According to discussion we want to honor CapsLock and possibly NumLock as
+    // well. https://github.com/w3c/uievents/issues/70
+    const int kAllowedModifiers =
+        WebInputEvent::ShiftKey | WebInputEvent::CapsLockOn;
+    int fallback_modifiers =
+        WebInputEventToAndroidModifier(modifiers & kAllowedModifiers);
+
+    unicode_character = ui::events::android::GetKeyEventUnicodeChar(
+        env, android_key_event, fallback_modifiers);
+  }
+
   ui::DomKey key = ui::GetDomKeyFromAndroidEvent(keycode, unicode_character);
   if (key != ui::DomKey::NONE)
     return key;
@@ -35,13 +68,16 @@ ui::DomKey GetDomKeyFromEvent(int keycode, int unicode_character) {
 
 }  // namespace
 
-WebKeyboardEvent WebKeyboardEventBuilder::Build(WebInputEvent::Type type,
-                                                int modifiers,
-                                                double time_sec,
-                                                int keycode,
-                                                int scancode,
-                                                int unicode_character,
-                                                bool is_system_key) {
+WebKeyboardEvent WebKeyboardEventBuilder::Build(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& android_key_event,
+    WebInputEvent::Type type,
+    int modifiers,
+    double time_sec,
+    int keycode,
+    int scancode,
+    int unicode_character,
+    bool is_system_key) {
   DCHECK(WebInputEvent::isKeyboardEventType(type));
   WebKeyboardEvent result;
 
@@ -56,7 +92,8 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(WebInputEvent::Type type,
   result.modifiers |= DomCodeToWebInputEventModifiers(dom_code);
   result.nativeKeyCode = keycode;
   result.domCode = static_cast<int>(dom_code);
-  result.domKey = GetDomKeyFromEvent(keycode, unicode_character);
+  result.domKey = GetDomKeyFromEvent(env, android_key_event, keycode, modifiers,
+                                     unicode_character);
   result.unmodifiedText[0] = unicode_character;
   if (result.windowsKeyCode == ui::VKEY_RETURN) {
     // This is the same behavior as GTK:
