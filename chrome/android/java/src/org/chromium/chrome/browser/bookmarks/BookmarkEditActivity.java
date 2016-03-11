@@ -274,6 +274,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                 saveRemoveVisitButton.setVisibility(View.GONE);
             }
         }
+        saveRemoveVisitButton.setEnabled(true);
     }
 
     private void updateButtonToDeleteOfflinePage(final Button button) {
@@ -283,6 +284,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
             @Override
             public void onClick(View v) {
                 recordOfflineButtonAction(true);
+                button.setEnabled(false);
                 ClientId clientId = ClientId.createClientIdForBookmarkId(mBookmarkId);
                 mModel.getOfflinePageBridge().deletePage(clientId, new DeletePageCallback() {
                     @Override
@@ -292,7 +294,6 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                         updateOfflineSection();
                     }
                 });
-                button.setClickable(false);
             }
         });
     }
@@ -305,6 +306,7 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
             public void onClick(View v) {
                 recordOfflineButtonAction(true);
                 ClientId clientId = ClientId.createClientIdForBookmarkId(mBookmarkId);
+                button.setEnabled(false);
                 mModel.getOfflinePageBridge().savePage(
                         mWebContents, clientId, new SavePageCallback() {
                             @Override
@@ -315,7 +317,6 @@ public class BookmarkEditActivity extends BookmarkActivityBase {
                                 updateOfflineSection();
                             }
                         });
-                button.setClickable(false);
             }
         });
     }

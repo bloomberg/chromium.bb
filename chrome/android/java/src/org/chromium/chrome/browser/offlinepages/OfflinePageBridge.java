@@ -291,7 +291,8 @@ public final class OfflinePageBridge {
      *
      * @param webContents Contents of the page to save.
      * @param ClientId of the bookmark related to the offline page.
-     * @param callback Interface that contains a callback.
+     * @param callback Interface that contains a callback. This may be called synchronously, e.g.
+     * if the web contents is already destroyed.
      * @see SavePageCallback
      */
     public void savePage(final WebContents webContents, final ClientId clientId,
