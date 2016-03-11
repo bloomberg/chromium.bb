@@ -29,18 +29,10 @@ const char kTestAppName[] = "mojo:connect_test_app";
 const char kTestAppAName[] = "mojo:connect_test_a";
 const char kTestAppBName[] = "mojo:connect_test_b";
 
-void ReceiveOneString(std::string* out_string,
-                      base::RunLoop* loop,
-                      const String& in_string) {
-  *out_string = in_string;
-  loop->Quit();
-}
-
-void ReceiveTwoStrings(std::string* out_string_1, std::string* out_string_2,
-                       base::RunLoop* loop,
-                       const String& in_string_1, const String& in_string_2) {
-  *out_string_1 = in_string_1;
-  *out_string_2 = in_string_2;
+void ReceiveTitle(std::string* out_name,
+                 base::RunLoop* loop,
+                 const String& name) {
+  *out_name = name;
   loop->Quit();
 }
 
@@ -101,8 +93,7 @@ class ConnectTest : public mojo::test::ShellTest,
     connection->GetInterface(&root_service);
     base::RunLoop run_loop;
     std::string root_name;
-    root_service->GetTitle(
-        base::Bind(&ReceiveOneString, &root_name, &run_loop));
+    root_service->GetTitle(base::Bind(&ReceiveTitle, &root_name, &run_loop));
     run_loop.Run();
   }
 
@@ -132,7 +123,7 @@ TEST_F(ConnectTest, Connect) {
   connection->GetInterface(&service);
   base::RunLoop run_loop;
   std::string title;
-  service->GetTitle(base::Bind(&ReceiveOneString, &title, &run_loop));
+  service->GetTitle(base::Bind(&ReceiveTitle, &title, &run_loop));
   run_loop.Run();
   EXPECT_EQ("APP", title);
   EXPECT_FALSE(connection->IsPending());
@@ -150,14 +141,14 @@ TEST_F(ConnectTest, Instances) {
   {
     connection_a1->GetInterface(&service_a1);
     base::RunLoop loop;
-    service_a1->GetInstance(base::Bind(&ReceiveOneString, &instance_a1, &loop));
+    service_a1->GetInstance(base::Bind(&ReceiveTitle, &instance_a1, &loop));
     loop.Run();
   }
   test::mojom::ConnectTestServicePtr service_a2;
   {
     connection_a2->GetInterface(&service_a2);
     base::RunLoop loop;
-    service_a2->GetInstance(base::Bind(&ReceiveOneString, &instance_a2, &loop));
+    service_a2->GetInstance(base::Bind(&ReceiveTitle, &instance_a2, &loop));
     loop.Run();
   }
   EXPECT_EQ(instance_a1, instance_a2);
@@ -170,7 +161,7 @@ TEST_F(ConnectTest, Instances) {
   {
     connection_b->GetInterface(&service_b);
     base::RunLoop loop;
-    service_b->GetInstance(base::Bind(&ReceiveOneString, &instance_b, &loop));
+    service_b->GetInstance(base::Bind(&ReceiveTitle, &instance_b, &loop));
     loop.Run();
   }
 
@@ -197,7 +188,7 @@ TEST_F(ConnectTest, PreferUnresolvedDefaultInstanceName) {
     test::mojom::ConnectTestServicePtr service;
     connection->GetInterface(&service);
     base::RunLoop loop;
-    service->GetInstance(base::Bind(&ReceiveOneString, &instance, &loop));
+    service->GetInstance(base::Bind(&ReceiveTitle, &instance, &loop));
     loop.Run();
   }
   EXPECT_EQ(GetNamePath(kTestAppName), instance);
@@ -212,7 +203,7 @@ TEST_F(ConnectTest, BlockedInterface) {
   connection->GetInterface(&blocked);
   blocked.set_connection_error_handler(base::Bind(&QuitLoop, &run_loop));
   std::string title = "unchanged";
-  blocked->GetTitleBlocked(base::Bind(&ReceiveOneString, &title, &run_loop));
+  blocked->GetTitleBlocked(base::Bind(&ReceiveTitle, &title, &run_loop));
   run_loop.Run();
   EXPECT_EQ("unchanged", title);
 }
@@ -224,7 +215,7 @@ TEST_F(ConnectTest, PackagedApp) {
   connection->GetInterface(&service_a);
   base::RunLoop run_loop;
   std::string a_name;
-  service_a->GetTitle(base::Bind(&ReceiveOneString, &a_name, &run_loop));
+  service_a->GetTitle(base::Bind(&ReceiveTitle, &a_name, &run_loop));
   run_loop.Run();
   EXPECT_EQ("A", a_name);
   EXPECT_FALSE(connection->IsPending());
@@ -243,7 +234,7 @@ TEST_F(ConnectTest, BlockedPackage) {
   base::RunLoop run_loop;
   std::string title;
   standalone_app->ConnectToAllowedAppInBlockedPackage(
-      base::Bind(&ReceiveOneString, &title, &run_loop));
+      base::Bind(&ReceiveTitle, &title, &run_loop));
   run_loop.Run();
   EXPECT_EQ("uninitialized", title);
 }
@@ -271,19 +262,6 @@ TEST_F(ConnectTest, BlockedPackagedApplication) {
   EXPECT_FALSE(connection->IsPending());
   EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, connection->GetResult());
   EXPECT_EQ(mojom::kInvalidInstanceID, connection->GetRemoteInstanceID());
-}
-
-TEST_F(ConnectTest, CapabilityClasses) {
-  scoped_ptr<Connection> connection = connector()->Connect(kTestAppName);
-  test::mojom::StandaloneAppPtr standalone_app;
-  connection->GetInterface(&standalone_app);
-  std::string string1, string2;
-  base::RunLoop loop;
-  standalone_app->ConnectToClassInterface(
-      base::Bind(&ReceiveTwoStrings, &string1, &string2, &loop));
-  loop.Run();
-  EXPECT_EQ("PONG", string1);
-  EXPECT_EQ("CLASS APP", string2);
 }
 
 // Tests that we can expose an interface to targets on outbound connections.

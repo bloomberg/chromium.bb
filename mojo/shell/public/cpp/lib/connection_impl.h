@@ -11,7 +11,6 @@
 #include <string>
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/capabilities.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/identity.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
@@ -34,7 +33,7 @@ class ConnectionImpl : public Connection {
                  uint32_t remote_id,
                  shell::mojom::InterfaceProviderPtr remote_interfaces,
                  shell::mojom::InterfaceProviderRequest local_interfaces,
-                 const CapabilityRequest& capability_request,
+                 const std::set<std::string>& allowed_interfaces,
                  State initial_state);
   ~ConnectionImpl() override;
 
@@ -42,7 +41,6 @@ class ConnectionImpl : public Connection {
 
  private:
   // Connection:
-  bool HasCapabilityClass(const std::string& class_name) const override;
   const std::string& GetConnectionName() override;
   const Identity& GetRemoteIdentity() const override;
   void SetConnectionLostClosure(const Closure& handler) override;
@@ -70,7 +68,7 @@ class ConnectionImpl : public Connection {
   InterfaceRegistry local_registry_;
   shell::mojom::InterfaceProviderPtr remote_interfaces_;
 
-  const CapabilityRequest capability_request_;
+  const std::set<std::string> allowed_interfaces_;
   const bool allow_all_interfaces_;
 
   base::WeakPtrFactory<ConnectionImpl> weak_factory_;

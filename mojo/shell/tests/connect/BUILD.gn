@@ -23,7 +23,6 @@ source_set("connect") {
 
   data_deps = [
     ":connect_test_app",
-    ":connect_test_class_app",
     ":connect_test_package",
     ":manifest",
   ]
@@ -96,24 +95,4 @@ mojo_native_application("connect_test_app") {
 mojo_application_manifest("connect_test_app_manifest") {
   application_name = "connect_test_app"
   source = "connect_test_app_manifest.json"
-}
-
-mojo_native_application("connect_test_class_app") {
-  testonly = true
-  sources = [
-    "connect_test_class_app.cc",
-  ]
-  deps = [
-    ":connect_test_class_app_manifest",
-    ":interfaces",
-    "//base",
-    "//mojo/common:common_base",
-    "//mojo/shell/public/cpp:sources",
-    "//mojo/shell/public/interfaces",
-  ]
-}
-
-mojo_application_manifest("connect_test_class_app_manifest") {
-  application_name = "connect_test_class_app"
-  source = "connect_test_class_app_manifest.json"
 }

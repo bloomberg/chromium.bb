@@ -82,11 +82,6 @@ class Connection {
     mojo::GetInterface(GetRemoteInterfaces(), ptr);
   }
 
-  // Returns true if the remote application has the specified capability class
-  // specified in its manifest. Only valid for inbound connections. Will return
-  // false for outbound connections.
-  virtual bool HasCapabilityClass(const std::string& class_name) const = 0;
-
   // Returns the name that was used by the source application to establish a
   // connection to the destination application.
   //
