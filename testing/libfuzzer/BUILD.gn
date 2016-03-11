@@ -42,3 +42,7 @@ static_library("libfuzzer_main") {
 # building an archive for clusterfuzz.
 config("no_clusterfuzz") {
 }
+
+# noop to tag seed corpus rules.
+source_set("seed_corpus") {
+}

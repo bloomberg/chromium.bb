@@ -71,6 +71,9 @@ template("fuzzer_test") {
         outputs = [
           out,
         ]
+        deps = [
+          "//testing/libfuzzer:seed_corpus",
+        ]
       }
 
       test_deps += [ ":" + target_name + "_seed_corpus" ]
