@@ -213,9 +213,6 @@
       ],
       'xcode_settings': {
         'CLANG_ENABLE_OBJC_ARC': 'YES',
-        # TODO(crbug.com/589097): remove this once OCHamcrest source has been
-        # fixed by removing the semicolon in HCGenericTestFailureReporter.m.
-       'WARNING_CFLAGS': [ '-Wno-semicolon-before-method-body' ]
       },
       'link_settings': {
         'libraries': [

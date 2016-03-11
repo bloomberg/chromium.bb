@@ -183,10 +183,6 @@ config("ochamcrest_config") {
 
 config("ochamcrest_private_config") {
   visibility = [ ":ochamcrest" ]
-
-  # TODO(crbug.com/589097): remove this once OCHamcrest source has been fixed
-  # by removing the semicolon in HCGenericTestFailureReporter.m.
-  cflags = [ "-Wno-semicolon-before-method-body" ]
   cflags_objc = [ "-fobjc-arc" ]
 }
 
