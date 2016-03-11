@@ -21,7 +21,7 @@ EXTERN_C_BEGIN
 
 /* List of features supported by x86 CPUs. */
 typedef enum {
-#define NACL_X86_CPU_FEATURE(id, reg, idx, fix, ven, str)       \
+#define NACL_X86_CPU_FEATURE(id, reg, idx, ven, str)       \
   NACL_CONCAT(NaClCPUFeatureX86_, id),
 #include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86_features.h"
 #undef NACL_X86_CPU_FEATURE
@@ -89,7 +89,6 @@ char *GetCPUIDString(NaClCPUData* data);
  */
 void NaClSetAllCPUFeaturesX86(NaClCPUFeatures *features);
 void NaClGetCurrentCPUFeaturesX86(NaClCPUFeatures *cpu_features);
-int NaClFixCPUFeaturesX86(NaClCPUFeatures *cpu_features);
 
 /*
  * Platform-dependent getter/setter.

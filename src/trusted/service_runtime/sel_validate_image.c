@@ -57,14 +57,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     cache = NULL;
   }
 
-  /* As fixed feature mode implies the text should be readonly, and
-   * stubout mode implies updating the text, disallow their use together.
-   */
-  if (nap->validator_stub_out_mode && nap->fixed_feature_cpu_mode) {
-    NaClLog(LOG_FATAL,
-            "stub_out_mode and fixed_feature_cpu_mode are incompatible\n");
-    return LOAD_VALIDATION_FAILED;
-  }
   if (nap->validator_stub_out_mode) {
     /* Validation caching is currently incompatible with stubout. */
     metadata = NULL;
@@ -81,12 +73,10 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                  cache);
   }
   if (status == NaClValidationSucceeded) {
-    /* Fixed feature CPU mode implies read-only. */
-    int readonly_text = nap->fixed_feature_cpu_mode;
     status = validator->Validate(guest_addr, data, size,
                                  FALSE, /* do not stub out */
                                  flags,
-                                 readonly_text,
+                                 FALSE /* readonly_text */,
                                  nap->cpu_features,
                                  metadata,
                                  cache);
@@ -98,7 +88,6 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 uint8_t *data_old, uint8_t *data_new,
                                 size_t size) {
   if (nap->validator_stub_out_mode) return LOAD_BAD_FILE;
-  if (nap->fixed_feature_cpu_mode) return LOAD_BAD_FILE;
 
   if ((guest_addr % nap->bundle_size) != 0 ||
       (size % nap->bundle_size) != 0) {
@@ -113,14 +102,6 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
   int status;
-  /* Fixed-feature mode disables any code copying for now. Currently
-   * the only use of NaClCodeCopy() seems to be for dynamic code
-   * modification, which should fail in NaClValidateCodeReplacement()
-   * before reaching this.
-   */
-  if (nap->fixed_feature_cpu_mode) {
-    return LOAD_BAD_FILE;
-  }
   status = NaClValidateStatus(nap->validator->CopyCode(
                               guest_addr, data_old, data_new, size,
                               nap->cpu_features,

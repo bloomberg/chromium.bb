@@ -33,7 +33,6 @@ typedef struct cpu_feature_struct_mips {
  */
 void NaClSetAllCPUFeaturesMips(NaClCPUFeatures *features);
 void NaClGetCurrentCPUFeaturesMips(NaClCPUFeatures *features);
-int NaClFixCPUFeaturesMips(NaClCPUFeatures *features);
 
 /*
  * Platform-dependent getter/setter.

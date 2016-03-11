@@ -162,7 +162,6 @@ static void PrintUsage(void) {
           " -Q disable platform qualification (dangerous!)\n"
           " -s safely stub out non-validating instructions\n"
           " -S enable signal handling.  Not supported on Windows.\n"
-          " -Z use fixed feature x86 CPU mode\n"
           "\n"
           " (For full effect, put -l and -q at the beginning.)\n"
           );  /* easier to add new flags/lines */
@@ -256,7 +255,7 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
 #if NACL_LINUX
                        "+D:z:"
 #endif
-                       "aB:cdeE:f:Fgh:i:l:m:pqQr:RsSvw:X:Z")) != -1) {
+                       "aB:cdeE:f:Fgh:i:l:m:pqQr:RsSvw:X:")) != -1) {
     switch (opt) {
       case 'a':
         if (!options->quiet)
@@ -386,21 +385,6 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
         NaClHandleReservedAtZero(optarg);
         break;
 #endif
-      case 'Z':
-        if (nap->validator->readonly_text_implemented) {
-          NaClLog(LOG_WARNING, "Enabling Fixed-Feature CPU Mode\n");
-          nap->fixed_feature_cpu_mode = 1;
-          if (!nap->validator->FixCPUFeatures(nap->cpu_features)) {
-            NaClLog(LOG_ERROR,
-                    "This CPU lacks features required by "
-                    "fixed-function CPU mode.\n");
-            exit(1);
-          }
-        } else {
-           NaClLog(LOG_ERROR, "fixed_feature_cpu_mode is not supported\n");
-           exit(1);
-        }
-        break;
       default:
         fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
         PrintUsage();

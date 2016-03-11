@@ -3165,7 +3165,6 @@ irt_variant_tests = [
     'tests/exception_test/nacl.scons',
     'tests/fdopen_test/nacl.scons',
     'tests/file/nacl.scons',
-    'tests/fixedfeaturecpu/nacl.scons',
     'tests/futexes/nacl.scons',
     'tests/gc_instrumentation/nacl.scons',
     'tests/gdb/nacl.scons',

@@ -81,14 +81,12 @@ int NaClAppWithEmptySyscallTableCtor(struct NaClApp *nap) {
   nap->validator = NaClCreateValidator();
 
   /* Get the set of features that the CPU we're running on supports. */
-  /* These may be adjusted later in sel_main.c for fixed-feature CPU mode. */
   nap->cpu_features = (NaClCPUFeatures *) malloc(
       nap->validator->CPUFeatureSize);
   if (NULL == nap->cpu_features) {
     goto cleanup_none;
   }
   nap->validator->GetCurrentCPUFeatures(nap->cpu_features);
-  nap->fixed_feature_cpu_mode = 0;
 
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 

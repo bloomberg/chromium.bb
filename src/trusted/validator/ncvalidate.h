@@ -133,7 +133,6 @@ typedef NaClValidationStatus (*NaClValidateCodeReplacementFunc)(
     const NaClCPUFeatures *cpu_features);
 
 typedef void (*NaClCPUFeaturesAllFunc)(NaClCPUFeatures *f);
-typedef int (*NaClCPUFeaturesFixFunc)(NaClCPUFeatures *f);
 
 /* Function type for checking if an address is on the boundary of
  * a single instruction or pseudo-instruction. If it's within a
@@ -177,11 +176,6 @@ struct NaClValidatorInterface {
   NaClCPUFeaturesAllFunc SetAllCPUFeatures;
   /* Get the features for the CPU this code is running on. */
   NaClCPUFeaturesAllFunc GetCurrentCPUFeatures;
-  /* Update cpu_features to only include features in the fixed architectural
-   * model. Returns 1 if cpu_features includes all features required by the
-   * model. Otherwise returns 0.
-   */
-  NaClCPUFeaturesFixFunc FixCPUFeatures;
   NaClIsOnInstBoundaryFunc IsOnInstBoundary;
 };
 

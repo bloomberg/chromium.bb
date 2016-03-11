@@ -28,36 +28,6 @@ void NaClGetCurrentCPUFeaturesMips(NaClCPUFeatures *f) {
   features->data[NaClCPUFeatureMips_BOGUS] = 0;
 }
 
-/* This array defines the CPU feature model for fixed-feature CPU mode. */
-static const int kFixedFeatureMipsCPUModel[NaClCPUFeatureMips_Max] = {
-  0 /* NaClCPUFeatureMips_BOGUS */
-};
-
-int NaClFixCPUFeaturesMips(NaClCPUFeatures *f) {
-  /* TODO(jfb) Use a safe cast in this interface. */
-  NaClCPUFeaturesMips *features = (NaClCPUFeaturesMips *) f;
-  NaClCPUFeatureMipsID fid;
-  int rvalue = 1;
-
-  for (fid = 0; fid < NaClCPUFeatureMips_Max; fid++) {
-    if (kFixedFeatureMipsCPUModel[fid]) {
-      if (!NaClGetCPUFeatureMips(features, fid)) {
-        /* This CPU is missing a required feature. */
-        NaClLog(LOG_ERROR,
-                "This CPU is missing a feature required by fixed-mode: %s\n",
-                NaClGetCPUFeatureMipsName(fid));
-        rvalue = 0;  /* set return value to indicate failure */
-      }
-    } else {
-      /* Feature is not in the fixed model.
-       * Ensure cpu_features does not have it either.
-       */
-      NaClSetCPUFeatureMips(features, fid, 0);
-    }
-  }
-  return rvalue;
-}
-
 void NaClSetCPUFeatureMips(NaClCPUFeaturesMips *f, NaClCPUFeatureMipsID id,
                            int state) {
   f->data[id] = (char) state;

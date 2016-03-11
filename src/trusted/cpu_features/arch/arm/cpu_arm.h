@@ -33,7 +33,6 @@ typedef struct cpu_feature_struct_arm {
  */
 void NaClSetAllCPUFeaturesArm(NaClCPUFeatures *features);
 void NaClGetCurrentCPUFeaturesArm(NaClCPUFeatures *features);
-int NaClFixCPUFeaturesArm(NaClCPUFeatures *features);
 
 /*
  * Platform-dependent getter/setter.

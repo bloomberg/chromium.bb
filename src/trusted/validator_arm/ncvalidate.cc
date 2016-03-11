@@ -265,7 +265,6 @@ static struct NaClValidatorInterface validator = {
   sizeof(NaClCPUFeaturesArm),
   NaClSetAllCPUFeaturesArm,
   NaClGetCurrentCPUFeaturesArm,
-  NaClFixCPUFeaturesArm,
   IsOnInstBoundaryArm,
 };
 

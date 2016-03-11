@@ -369,7 +369,6 @@ static const struct NaClValidatorInterface validator = {
   sizeof(NaClCPUFeaturesX86),
   NaClSetAllCPUFeaturesX86,
   NaClGetCurrentCPUFeaturesX86,
-  NaClFixCPUFeaturesX86,
   IsOnInstBoundary_x86_32,
 };
 

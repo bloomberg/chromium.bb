@@ -184,23 +184,16 @@ typedef enum {
   CFReg_NONE      /* bogus value */
 } CPUFeatureReg;
 
-enum {
-  kFeatureFixedOff,
-  kFeatureFixedOn
-};
-
 typedef struct cpufeature {
   uint8_t reg;
-  uint8_t fixedFeature;
   uint32_t mask;
   const char *name;
 } CPUFeature;
 
 static const CPUFeature CPUFeatureDescriptions[(int)NaClCPUFeatureX86_Max] = {
-#define NACL_X86_CPU_FEATURE(id, reg, idx, fix, ven, str)       \
+#define NACL_X86_CPU_FEATURE(id, reg, idx, ven, str)            \
   {                                                             \
     NACL_CONCAT(CFReg_, reg),                                   \
-    NACL_CONCAT(kFeature, fix),                                 \
     NACL_CONCAT(CPUID_, idx),                                   \
     str,                                                        \
   },
@@ -522,37 +515,6 @@ void NaClGetCurrentCPUFeaturesX86(NaClCPUFeatures *f) {
   NaClCPUData cpu_data;
   NaClCPUDataGet(&cpu_data);
   GetCPUFeatures(&cpu_data, features);
-}
-
-/* The CPUFeaturesDescriptions struct defines the CPU feature model for
- * fixed-feature CPU mode. We currently require the same set of features
- * for both 32- and 64-bit x86 CPUs, intended to be supported by
- * most/all post-Pentium III CPUs. This set may be something we need to
- * revisit in the future.
- */
-int NaClFixCPUFeaturesX86(NaClCPUFeatures *f) {
-  /* TODO(jfb) Use a safe cast in this interface. */
-  NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) f;
-  NaClCPUFeatureX86ID fid;
-  int rvalue = 1;
-
-  for (fid = 0; fid < NaClCPUFeatureX86_Max; fid++) {
-    if (CPUFeatureDescriptions[fid].fixedFeature) {
-      if (!NaClGetCPUFeatureX86(features, fid)) {
-        /* This CPU is missing a required feature. */
-        NaClLog(LOG_ERROR,
-                "This CPU is missing a feature required by fixed-mode: %s\n",
-                NaClGetCPUFeatureX86Name(fid));
-        rvalue = 0;  /* set return value to indicate failure */
-      }
-    } else {
-      /* Feature is not in the fixed model.
-       * Ensure features does not have it either.
-       */
-      NaClSetCPUFeatureX86(features, fid, 0);
-    }
-  }
-  return rvalue;
 }
 
 const char* NaClGetCPUFeatureX86Name(NaClCPUFeatureX86ID id) {
