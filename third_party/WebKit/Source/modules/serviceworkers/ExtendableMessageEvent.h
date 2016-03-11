@@ -20,6 +20,8 @@ public:
     static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer);
     static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
     static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver*);
+    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorkerClient* source, WaitUntilObserver*);
+    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorker* source, WaitUntilObserver*);
 
     SerializedScriptValue* serializedData() const { return m_serializedData.get(); }
     void setSerializedData(PassRefPtr<SerializedScriptValue> serializedData) { m_serializedData = serializedData; }

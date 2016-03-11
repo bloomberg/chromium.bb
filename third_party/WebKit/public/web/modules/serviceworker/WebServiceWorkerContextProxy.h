@@ -35,15 +35,17 @@
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/modules/navigator_services/WebServicePortCallbacks.h"
+#include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
 namespace blink {
 
+class WebServiceWorkerRequest;
+class WebString;
 struct WebCircularGeofencingRegion;
 struct WebCrossOriginServiceWorkerClient;
 struct WebNotificationData;
-class WebServiceWorkerRequest;
-class WebString;
+struct WebServiceWorkerClientInfo;
 struct WebSyncRegistration;
 
 // A proxy interface to talk to the worker's GlobalScope implementation.
@@ -55,7 +57,8 @@ public:
     virtual void setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle>) = 0;
 
     virtual void dispatchActivateEvent(int eventID) = 0;
-    virtual void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebMessagePortChannelArray&) = 0;
+    virtual void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray&, const WebServiceWorkerClientInfo&) = 0;
+    virtual void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray&, WebPassOwnPtr<WebServiceWorker::Handle>) = 0;
     virtual void dispatchInstallEvent(int eventID) = 0;
     virtual void dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;
     virtual void dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;

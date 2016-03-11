@@ -21,6 +21,10 @@
 class GURL;
 struct EmbeddedWorkerHostMsg_ReportConsoleMessage_Params;
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class MessagePortMessageFilter;
@@ -136,7 +140,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnDecrementRegistrationRefCount(int registration_handle_id);
   void OnPostMessageToWorker(
       int handle_id,
+      int provider_id,
       const base::string16& message,
+      const url::Origin& source_origin,
       const std::vector<TransferredMessagePort>& sent_message_ports);
 
   // TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by

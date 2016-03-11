@@ -676,7 +676,9 @@ void ServiceWorkerDispatcherHost::OnGetRegistrationForReady(
 
 void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     int handle_id,
+    int provider_id,
     const base::string16& message,
+    const url::Origin& source_origin,
     const std::vector<TransferredMessagePort>& sent_message_ports) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnPostMessageToWorker");
@@ -689,8 +691,15 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     return;
   }
 
+  ServiceWorkerProviderHost* sender_provider_host =
+      GetContext()->GetProviderHost(render_process_id_, provider_id);
+  if (!sender_provider_host) {
+    bad_message::ReceivedBadMessage(this, bad_message::SWDH_POST_MESSAGE);
+    return;
+  }
+
   handle->version()->DispatchExtendableMessageEvent(
-      message, sent_message_ports,
+      sender_provider_host, message, source_origin, sent_message_ports,
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 

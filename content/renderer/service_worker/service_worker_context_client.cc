@@ -18,6 +18,7 @@
 #include "content/child/notifications/notification_data_conversions.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
+#include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
@@ -737,15 +738,33 @@ void ServiceWorkerContextClient::OnActivateEvent(int request_id) {
 
 void ServiceWorkerContextClient::OnExtendableMessageEvent(
     int request_id,
-    const base::string16& message,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
-    const std::vector<int>& new_routing_ids) {
+    const ServiceWorkerMsg_ExtendableMessageEvent_Params& params) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnExtendableMessageEvent");
   blink::WebMessagePortChannelArray ports =
-      WebMessagePortChannelImpl::CreatePorts(
-          sent_message_ports, new_routing_ids, main_thread_task_runner_);
-  proxy_->dispatchExtendableMessageEvent(request_id, message, ports);
+      WebMessagePortChannelImpl::CreatePorts(params.message_ports,
+                                             params.new_routing_ids,
+                                             main_thread_task_runner_);
+  if (params.source.client_info.IsValid()) {
+    blink::WebServiceWorkerClientInfo web_client =
+        ToWebServiceWorkerClientInfo(params.source.client_info);
+    proxy_->dispatchExtendableMessageEvent(
+        request_id, params.message, params.source_origin, ports, web_client);
+    return;
+  }
+
+  DCHECK(params.source.service_worker_info.IsValid());
+  scoped_ptr<ServiceWorkerHandleReference> handle =
+      ServiceWorkerHandleReference::Adopt(params.source.service_worker_info,
+                                          sender_.get());
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+          sender_.get(), main_thread_task_runner_.get());
+  scoped_refptr<WebServiceWorkerImpl> worker =
+      dispatcher->GetOrCreateServiceWorker(std::move(handle));
+  proxy_->dispatchExtendableMessageEvent(
+      request_id, params.message, params.source_origin, ports,
+      WebServiceWorkerImpl::CreateHandle(worker));
 }
 
 void ServiceWorkerContextClient::OnInstallEvent(int request_id) {

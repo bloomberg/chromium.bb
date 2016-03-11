@@ -255,7 +255,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // of crbug.com/570820 after ExtendableMessageEvent is implemented
   // (crbug.com/543198).
   void DispatchExtendableMessageEvent(
+      ServiceWorkerProviderHost* sender_provider_host,
       const base::string16& message,
+      const url::Origin& source_origin,
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const StatusCallback& callback);
 
@@ -516,9 +518,18 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnStartSentAndScriptEvaluated(ServiceWorkerStatusCode status);
 
+  template <typename SourceInfo>
+  void DispatchExtendableMessageEventInternal(
+      const base::string16& message,
+      const url::Origin& source_origin,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const StatusCallback& callback,
+      const SourceInfo& source_info);
   void DispatchExtendableMessageEventAfterStartWorker(
       const base::string16& message,
+      const url::Origin& source_origin,
       const std::vector<TransferredMessagePort>& sent_message_ports,
+      const ExtendableMessageEventSource& source,
       const StatusCallback& callback);
 
   void DispatchMessageEventInternal(

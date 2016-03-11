@@ -30,6 +30,8 @@
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 #include "v8/include/v8.h"
 
+struct ServiceWorkerMsg_ExtendableMessageEvent_Params;
+
 namespace base {
 class SingleThreadTaskRunner;
 class TaskRunner;
@@ -196,9 +198,7 @@ class ServiceWorkerContextClient
   void OnActivateEvent(int request_id);
   void OnExtendableMessageEvent(
       int request_id,
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const std::vector<int>& new_routing_ids);
+      const ServiceWorkerMsg_ExtendableMessageEvent_Params& params);
   void OnInstallEvent(int request_id);
   void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
   void OnNotificationClickEvent(

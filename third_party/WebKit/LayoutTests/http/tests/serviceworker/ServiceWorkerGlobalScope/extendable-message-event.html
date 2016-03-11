@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<title>ServiceWorkerGlobalScope: ExtendableMessageEvent</title>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+<script src='../resources/test-helpers.js'></script>
+<script>
+
+promise_test(function(t) {
+    var script = 'resources/extendable-message-event-worker.js';
+    var scope = 'resources/scope/extendable-message-event-from-toplevel';
+    var registration;
+
+    return service_worker_unregister_and_register(t, script, scope)
+      .then(function(r) {
+          registration = r;
+          add_completion_callback(function() { registration.unregister(); });
+          return wait_for_state(t, registration.installing, 'activated');
+        })
+      .then(function() {
+          var saw_message = new Promise(function(resolve) {
+              navigator.serviceWorker.onmessage =
+                  function(event) { resolve(event.data); }
+            });
+          registration.active.postMessage('start');
+          return saw_message;
+        })
+      .then(function(results) {
+          var expected_results = [
+              'Client message: [object ExtendableMessageEvent]',
+              '  event.origin: ' + location.origin,
+              '  event.lastEventId: ',
+              '  event.source: [object WindowClient]',
+              '  event.source.url: ' + location.href,
+              '  event.source.frameType: top-level',
+              '  event.source.visibilityState: visible',
+              '  event.source.focused: true',
+              '  event.ports: null',
+          ];
+          assert_array_equals(results, expected_results);
+        });
+  }, 'Post an extendable message from a top-level client');
+
+promise_test(function(t) {
+    var script = 'resources/extendable-message-event-worker.js';
+    var scope = 'resources/scope/extendable-message-event-from-nested';
+    var frame;
+
+    return service_worker_unregister_and_register(t, script, scope)
+      .then(function(registration) {
+          add_completion_callback(function() { registration.unregister(); });
+          return wait_for_state(t, registration.installing, 'activated');
+        })
+      .then(function() { return with_iframe(scope); })
+      .then(function(f) {
+          frame = f;
+          add_completion_callback(function() { frame.remove(); });
+          var saw_message = new Promise(function(resolve) {
+              frame.contentWindow.navigator.serviceWorker.onmessage =
+                  function(event) { resolve(event.data); }
+            });
+          f.contentWindow.navigator.serviceWorker.controller.postMessage('');
+          return saw_message;
+        })
+      .then(function(results) {
+          var expected_results = [
+              'Client message: [object ExtendableMessageEvent]',
+              '  event.origin: ' + frame.contentWindow.location.origin,
+              '  event.lastEventId: ',
+              '  event.source: [object WindowClient]',
+              '  event.source.url: ' + frame.contentWindow.location.href,
+              '  event.source.frameType: nested',
+              '  event.source.visibilityState: visible',
+              '  event.source.focused: false',
+              '  event.ports: null',
+          ];
+          assert_array_equals(results, expected_results);
+        });
+  }, 'Post an extendable message from a nested client');
+
+promise_test(function(t) {
+    var script = 'resources/extendable-message-event-worker.js';
+    var scope = 'resources/extendable-message-event-sandboxed-iframe.html';
+
+    return service_worker_unregister_and_register(t, script, scope)
+      .then(function(registration) {
+          add_completion_callback(function() { registration.unregister(); });
+          return wait_for_state(t, registration.installing, 'activated');
+        })
+      .then(function() { return with_iframe(scope); })
+      .then(function(frame) {
+          add_completion_callback(function() { frame.remove(); });
+          var saw_message = new Promise(function(resolve) {
+              onmessage = function(event) {
+                resolve(event.data);
+              }
+            });
+          frame.contentWindow.postMessage('', '*');
+          return saw_message;
+        })
+      .then(function(results) {
+          // 'origin' and 'url' should be hided.
+          var expected_results = [
+              'Client message: [object ExtendableMessageEvent]',
+              '  event.origin: ',
+              '  event.lastEventId: ',
+              '  event.source: [object WindowClient]',
+              '  event.source.url: ',
+              '  event.source.frameType: nested',
+              '  event.source.visibilityState: visible',
+              '  event.source.focused: false',
+              '  event.ports: null',
+          ];
+          assert_array_equals(results, expected_results);
+        });
+  }, 'Post an extendable message from a sandboxed client');
+
+// TODO(nhiroki): Add tests to post an extendable message from a client whose
+// execution context is already stopped (http://crbug.com/543198).
+
+promise_test(function(t) {
+    var script = 'resources/extendable-message-event-loopback-worker.js';
+    var scope = 'resources/scope/extendable-message-event-loopback';
+    var registration;
+
+    return service_worker_unregister_and_register(t, script, scope)
+      .then(function(r) {
+          registration = r;
+          add_completion_callback(function() { registration.unregister(); });
+          return wait_for_state(t, registration.installing, 'activated');
+        })
+      .then(function() {
+          var results = [];
+          var saw_message = new Promise(function(resolve) {
+              navigator.serviceWorker.onmessage = function(event) {
+                switch (event.data.type) {
+                  case 'record':
+                    Array.prototype.push.apply(results, event.data.results);
+                    break;
+                  case 'finish':
+                    resolve(results);
+                    break;
+                }
+              };
+            });
+          registration.active.postMessage({type: 'start'});
+          return saw_message;
+        })
+      .then(function(results) {
+          var expected_results = [
+              '1st loopback: [object ExtendableMessageEvent]',
+              '  event.origin: ' + location.origin,
+              '  event.lastEventId: ',
+              '  event.source: [object ServiceWorker]',
+              '  event.source.scriptURL: ' + normalizeURL(script),
+              '  event.source.state: activated',
+              '  event.ports: null',
+              '2nd loopback: [object ExtendableMessageEvent]',
+              '  event.origin: ' + location.origin,
+              '  event.lastEventId: ',
+              '  event.source: [object ServiceWorker]',
+              '  event.source.scriptURL: ' + normalizeURL(script),
+              '  event.source.state: activated',
+              '  event.ports: null',
+          ];
+          assert_array_equals(results, expected_results);
+        });
+  }, 'Post loopback extendable messages');
+
+promise_test(function(t) {
+    var script1 = 'resources/extendable-message-event-ping-worker.js';
+    var script2 = 'resources/extendable-message-event-pong-worker.js';
+    var scope = 'resources/scope/extendable-message-event-pingpong';
+    var registration;
+
+    return service_worker_unregister_and_register(t, script1, scope)
+      .then(function(r) {
+          registration = r;
+          add_completion_callback(function() { registration.unregister(); });
+          return wait_for_state(t, registration.installing, 'activated');
+        })
+      .then(function() {
+          // A controlled frame is necessary for keeping a waiting worker.
+          return with_iframe(scope);
+        })
+      .then(function(frame) {
+          add_completion_callback(function() { frame.remove(); });
+          return navigator.serviceWorker.register(script2, {scope: scope});
+        })
+      .then(function(r) {
+          return wait_for_state(t, r.installing, 'installed');
+        })
+      .then(function() {
+          var results = [];
+          var saw_message = new Promise(function(resolve) {
+              navigator.serviceWorker.onmessage = function(event) {
+                switch (event.data.type) {
+                  case 'record':
+                    Array.prototype.push.apply(results, event.data.results);
+                    break;
+                  case 'finish':
+                    resolve(results);
+                    break;
+                }
+              };
+            });
+          registration.active.postMessage({type: 'start'});
+          return saw_message;
+        })
+      .then(function(results) {
+          var expected_results = [
+              'Ping message: [object ExtendableMessageEvent]',
+              '  event.origin: ' + location.origin,
+              '  event.lastEventId: ',
+              '  event.source: [object ServiceWorker]',
+              '  event.source.scriptURL: ' + normalizeURL(script1),
+              '  event.source.state: activated',
+              '  event.ports: null',
+              'Pong message: [object ExtendableMessageEvent]',
+              '  event.origin: ' + location.origin,
+              '  event.lastEventId: ',
+              '  event.source: [object ServiceWorker]',
+              '  event.source.scriptURL: ' + normalizeURL(script2),
+              '  event.source.state: installed',
+              '  event.ports: null',
+          ];
+          assert_array_equals(results, expected_results);
+        });
+  }, 'Post extendable messages among service workers');
+
+</script>

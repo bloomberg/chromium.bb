@@ -26,6 +26,20 @@ PassRefPtrWillBeRawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create(Pa
     return adoptRefWillBeNoop(new ExtendableMessageEvent(data, origin, ports, observer));
 }
 
+PassRefPtrWillBeRawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorkerClient* source, WaitUntilObserver* observer)
+{
+    RefPtrWillBeRawPtr<ExtendableMessageEvent> event = adoptRefWillBeNoop(new ExtendableMessageEvent(data, origin, ports, observer));
+    event->m_sourceAsClient = source;
+    return event.release();
+}
+
+PassRefPtrWillBeRawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorker* source, WaitUntilObserver* observer)
+{
+    RefPtrWillBeRawPtr<ExtendableMessageEvent> event = adoptRefWillBeNoop(new ExtendableMessageEvent(data, origin, ports, observer));
+    event->m_sourceAsServiceWorker = source;
+    return event.release();
+}
+
 MessagePortArray ExtendableMessageEvent::ports(bool& isNull) const
 {
     // TODO(bashi): Currently we return a copied array because the binding

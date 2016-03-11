@@ -56,7 +56,9 @@
 #include "modules/serviceworkers/ExtendableMessageEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
 #include "modules/serviceworkers/InstallEvent.h"
+#include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
+#include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebCrossOriginServiceWorkerClient.h"
@@ -102,18 +104,39 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebMessagePortChannelArray& webChannels)
+void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, const WebServiceWorkerClientInfo& client)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
 
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
     MessagePortArray* ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
-    // TODO(nhiroki): Support |origin| and |source| attributes.
-    // (http://crbug.com/543198)
-
+    String origin;
+    if (!sourceOrigin.isUnique())
+        origin = sourceOrigin.toString();
+    ServiceWorkerClient* source = nullptr;
+    if (client.clientType == WebServiceWorkerClientTypeWindow)
+        source = ServiceWorkerWindowClient::create(client);
+    else
+        source = ServiceWorkerClient::create(client);
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
 
-    RefPtrWillBeRawPtr<Event> event(ExtendableMessageEvent::create(value, String(), ports, observer));
+    RefPtrWillBeRawPtr<Event> event(ExtendableMessageEvent::create(value, origin, ports, source, observer));
+    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, WebPassOwnPtr<WebServiceWorker::Handle> handle)
+{
+    ASSERT(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
+
+    WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
+    MessagePortArray* ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
+    String origin;
+    if (!sourceOrigin.isUnique())
+        origin = sourceOrigin.toString();
+    ServiceWorker* source = ServiceWorker::from(m_workerGlobalScope->getExecutionContext(), handle.release());
+    WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
+
+    RefPtrWillBeRawPtr<Event> event(ExtendableMessageEvent::create(value, origin, ports, source, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 

@@ -48,7 +48,9 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   blink::WebServiceWorkerProxy* proxy() override;
   blink::WebURL url() const override;
   blink::WebServiceWorkerState state() const override;
-  void postMessage(const blink::WebString& message,
+  void postMessage(blink::WebServiceWorkerProvider* provider,
+                   const blink::WebString& message,
+                   const blink::WebSecurityOrigin& source_origin,
                    blink::WebMessagePortChannelArray* channels) override;
   void terminate() override;
 

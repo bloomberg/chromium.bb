@@ -94,6 +94,11 @@ ServiceWorkerObjectInfo::ServiceWorkerObjectInfo()
       state(blink::WebServiceWorkerStateUnknown),
       version_id(kInvalidServiceWorkerVersionId) {}
 
+bool ServiceWorkerObjectInfo::IsValid() const {
+  return handle_id != kInvalidServiceWorkerHandleId &&
+         version_id != kInvalidServiceWorkerVersionId;
+}
+
 ServiceWorkerRegistrationObjectInfo::ServiceWorkerRegistrationObjectInfo()
     : handle_id(kInvalidServiceWorkerRegistrationHandleId),
       registration_id(kInvalidServiceWorkerRegistrationId) {
@@ -103,5 +108,15 @@ ServiceWorkerClientQueryOptions::ServiceWorkerClientQueryOptions()
     : client_type(blink::WebServiceWorkerClientTypeWindow),
       include_uncontrolled(false) {
 }
+
+ExtendableMessageEventSource::ExtendableMessageEventSource() {}
+
+ExtendableMessageEventSource::ExtendableMessageEventSource(
+    const ServiceWorkerClientInfo& client_info)
+    : client_info(client_info) {}
+
+ExtendableMessageEventSource::ExtendableMessageEventSource(
+    const ServiceWorkerObjectInfo& service_worker_info)
+    : service_worker_info(service_worker_info) {}
 
 }  // namespace content

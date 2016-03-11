@@ -17,13 +17,13 @@ promise_test(function(t) {
           return with_iframe(scope);
         })
       .then(function(frame) {
+          add_completion_callback(function() { frame.remove(); });
           var channel = new MessageChannel();
           var saw_message = new Promise(function(resolve) {
               channel.port1.onmessage = function(e) { resolve(e.data); }
             });
           var worker = frame.contentWindow.navigator.serviceWorker.controller;
 
-          frame.remove();
           worker.postMessage({port: channel.port2}, [channel.port2]);
           return saw_message;
         })

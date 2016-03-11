@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_client_info.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
@@ -181,6 +182,11 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
 // Represents initialization info for a WebServiceWorker object.
 struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   ServiceWorkerObjectInfo();
+
+  // Returns whether the instance is valid. A valid instance has valid
+  // |handle_id| and |version_id|.
+  bool IsValid() const;
+
   int handle_id;
   GURL url;
   blink::WebServiceWorkerState state;
@@ -228,6 +234,18 @@ struct ServiceWorkerClientQueryOptions {
   ServiceWorkerClientQueryOptions();
   blink::WebServiceWorkerClientType client_type;
   bool include_uncontrolled;
+};
+
+struct ExtendableMessageEventSource {
+  ExtendableMessageEventSource();
+  explicit ExtendableMessageEventSource(
+      const ServiceWorkerClientInfo& client_info);
+  explicit ExtendableMessageEventSource(
+      const ServiceWorkerObjectInfo& service_worker_info);
+
+  // Exactly one of these infos should be valid.
+  ServiceWorkerClientInfo client_info;
+  ServiceWorkerObjectInfo service_worker_info;
 };
 
 }  // namespace content

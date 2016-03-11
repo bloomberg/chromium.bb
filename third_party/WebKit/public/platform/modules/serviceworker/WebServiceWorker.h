@@ -40,6 +40,8 @@
 
 namespace blink {
 
+class WebSecurityOrigin;
+class WebServiceWorkerProvider;
 class WebServiceWorkerProxy;
 typedef WebVector<class WebMessagePortChannel*> WebMessagePortChannelArray;
 
@@ -69,7 +71,7 @@ public:
 
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
-    virtual void postMessage(const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void postMessage(WebServiceWorkerProvider*, const WebString&, const WebSecurityOrigin&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
 
     virtual void terminate() { }
 };

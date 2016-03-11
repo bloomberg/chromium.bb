@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script>
+onmessage = function(event) {
+  navigator.serviceWorker.onmessage = function(e) {
+      event.source.postMessage(e.data, '*');
+    };
+  var worker = navigator.serviceWorker.controller;
+
+  // Remove 'allow-same-origin' permission.
+  var meta = document.createElement('meta');
+  meta.setAttribute('http-equiv', 'Content-Security-Policy');
+  meta.setAttribute('content', 'sandbox allow-scripts');
+  document.head.appendChild(meta);
+
+  worker.postMessage('');
+}
+</script>
