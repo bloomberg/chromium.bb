@@ -62,11 +62,17 @@ const struct {
     {"https://another.org", "https://example.com:8001/login#form?value=3", true,
      PasswordTittleType::SAVE_PASSWORD, "https://example.com:8001", 12, 29},
 
-    // Update bubble.
+    // Update bubble, same domains.
     {"http://example.com/landing", "http://example.com/login#form?value=3",
      false, PasswordTittleType::UPDATE_PASSWORD, "this site", 0, 0},
     {"http://example.com/landing", "http://example.com/login#form?value=3",
      true, PasswordTittleType::UPDATE_PASSWORD, "this site", 12, 29},
+
+    // Update bubble, different domains.
+    {"https://another.org", "http://example.com/login#form?value=3", false,
+     PasswordTittleType::UPDATE_PASSWORD, "http://example.com", 0, 0},
+    {"https://another.org", "http://example.com/login#form?value=3", true,
+     PasswordTittleType::UPDATE_PASSWORD, "http://example.com", 12, 29},
 
     // Same domains, federated credential.
     {"http://example.com/landing", "http://example.com/login#form?value=3",

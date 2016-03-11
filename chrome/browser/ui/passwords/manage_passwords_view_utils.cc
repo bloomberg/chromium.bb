@@ -98,7 +98,9 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
   // the one seen in the omnibox) and the password form post-submit navigation
   // URL differs or not.
   if (!SameDomainOrHost(user_visible_url, form_origin_url)) {
-    title_id = IDS_SAVE_PASSWORD_TITLE;
+    title_id = dialog_type == PasswordTittleType::UPDATE_PASSWORD
+                   ? IDS_UPDATE_PASSWORD_DIFFERENT_DOMAINS_TITLE
+                   : IDS_SAVE_PASSWORD_DIFFERENT_DOMAINS_TITLE;
     // TODO(palmer): Look into passing real language prefs here, not "".
     // crbug.com/498069.
     replacements.push_back(url_formatter::FormatUrlForSecurityDisplay(
