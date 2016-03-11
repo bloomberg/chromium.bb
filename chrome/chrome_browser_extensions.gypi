@@ -435,8 +435,6 @@
       'browser/extensions/api/preferences_private/preferences_private_api.h',
       'browser/extensions/api/principals_private/principals_private_api.cc',
       'browser/extensions/api/principals_private/principals_private_api.h',
-      'browser/extensions/api/processes/processes_api.cc',
-      'browser/extensions/api/processes/processes_api.h',
       'browser/extensions/api/proxy/proxy_api.cc',
       'browser/extensions/api/proxy/proxy_api.h',
       'browser/extensions/api/proxy/proxy_api_constants.cc',
@@ -895,6 +893,10 @@
       'browser/web_applications/web_app_win.cc',
       'browser/web_applications/web_app_win.h',
     ],
+    'chrome_browser_extensions_task_manager_enabled_sources': [
+      'browser/extensions/api/processes/processes_api.cc',
+      'browser/extensions/api/processes/processes_api.h',
+    ],
     'chrome_browser_extensions_app_list_sources': [
       'browser/apps/drive/drive_app_converter.cc',
       'browser/apps/drive/drive_app_converter.h',
@@ -1017,6 +1019,11 @@
         '<@(chrome_browser_extensions_enabled_sources)',
       ],
       'conditions': [
+        ['enable_task_manager==1', {
+          'sources': [
+            '<@(chrome_browser_extensions_task_manager_enabled_sources)',
+          ],
+        }],
         ['chromeos==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',

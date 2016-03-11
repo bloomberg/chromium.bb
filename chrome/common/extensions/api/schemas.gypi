@@ -66,7 +66,6 @@
       'passwords_private.idl',
       'permissions.json',
       'preferences_private.json',
-      'processes.idl',
       'resources_private.idl',
       'screenlock_private.idl',
       'sessions.json',
@@ -145,6 +144,10 @@
       'cast_streaming_session.idl',
       'cast_streaming_udp_transport.idl',
     ],
+    
+    'task_manager_dependent_schema_files': [
+      'processes.idl',
+    ],
 
     # Input IME schema.
     'input_ime_schema_file': [
@@ -168,6 +171,11 @@
     # Disable schema compiler to generate model extension API code.
     # Only register the extension functions in extension system.
     'conditions': [
+      ['enable_task_manager==1', {
+        'schema_files': [
+          '<@(task_manager_dependent_schema_files)',
+        ],
+      }],
       ['chromeos==1', {
         'schema_files': [
           '<@(chromeos_schema_files)',

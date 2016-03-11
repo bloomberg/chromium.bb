@@ -14,6 +14,9 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 
 # Common sources that are both bundled and compiled.
 sources = gypi_values.main_schema_files
+if (enable_task_manager) {
+  sources += gypi_values.task_manager_dependent_schema_files
+}
 if (is_chromeos) {
   sources += gypi_values.chromeos_schema_files
 } else if (is_linux || is_win) {

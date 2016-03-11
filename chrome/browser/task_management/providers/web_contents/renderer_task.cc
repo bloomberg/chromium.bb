@@ -13,6 +13,7 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_process_host.h"
@@ -73,7 +74,9 @@ RendererTask::RendererTask(const base::string16& title,
       v8_memory_allocated_(0),
       v8_memory_used_(0),
       webcache_stats_(),
-      profile_name_(GetRendererProfileName(render_process_host_)) {
+      profile_name_(GetRendererProfileName(render_process_host_)),
+      termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
+      termination_error_code_(0) {
   // All renderer tasks are capable of reporting network usage, so the default
   // invalid value of -1 doesn't apply here.
   OnNetworkBytesRead(0);
@@ -129,8 +132,21 @@ int RendererTask::GetChildProcessUniqueID() const {
   return render_process_id_;
 }
 
+void RendererTask::GetTerminationStatus(base::TerminationStatus* out_status,
+                                        int* out_error_code) const {
+  DCHECK(out_status);
+  DCHECK(out_error_code);
+
+  *out_status = termination_status_;
+  *out_error_code = termination_error_code_;
+}
+
 base::string16 RendererTask::GetProfileName() const {
   return profile_name_;
+}
+
+int RendererTask::GetTabId() const {
+  return SessionTabHelper::IdForTab(web_contents_);
 }
 
 int64_t RendererTask::GetV8MemoryAllocated() const {

@@ -86,6 +86,22 @@ class TaskManagerObserver {
   // IDs themselves.
   virtual void OnTasksRefreshed(const TaskIdList& task_ids) = 0;
 
+  // Notifies the observer that the task manager has just finished a refresh
+  // cycle that calculated all the resource usage of all tasks whose IDs are in
+  // |task_ids| including the resource usages that are calculated in the
+  // background such CPU and memory (If those refresh types are enabled).
+  // This event can take longer to be fired, and can miss some changes that may
+  // happen to non-background calculations in-between two successive
+  // invocations. Listen to this ONLY if you must know when all the background
+  // resource calculations to be valid for all the available processes.
+  // |task_ids| will be sorted as specified in OnTasksRefreshed() above.
+  virtual void OnTasksRefreshedWithBackgroundCalculations(
+      const TaskIdList& task_ids) {}
+
+  // Notifies the observer that the task with |id| is running on a renderer that
+  // has become unresponsive.
+  virtual void OnTaskUnresponsive(TaskId id) {}
+
   const base::TimeDelta& desired_refresh_time() const {
     return desired_refresh_time_;
   }
@@ -100,6 +116,7 @@ class TaskManagerObserver {
   // Add or Remove a refresh |type|.
   void AddRefreshType(RefreshType type);
   void RemoveRefreshType(RefreshType type);
+  void SetRefreshTypesFlags(int64_t flags);
 
  private:
   friend class TaskManagerInterface;

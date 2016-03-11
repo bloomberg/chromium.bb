@@ -5,35 +5,22 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_H__
 #define CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_H__
 
-#include <set>
-#include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/task_manager/task_manager.h"
-#include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_widget_host.h"
+#include "chrome/browser/task_management/task_manager_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
+#include "extensions/browser/extension_function.h"
 
-namespace base {
-class ListValue;
-}
-
-namespace content {
-class BrowserContext;
-}
+class ProcessesApiTest;
 
 namespace extensions {
 
 // Observes the Task Manager and routes the notifications as events to the
 // extension system.
-class ProcessesEventRouter : public TaskManagerModelObserver,
-                             public content::NotificationObserver {
+class ProcessesEventRouter : public task_management::TaskManagerObserver {
  public:
   explicit ProcessesEventRouter(content::BrowserContext* context);
   ~ProcessesEventRouter() override;
@@ -44,58 +31,44 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
   // Called when an extension process with a listener exits or removes it.
   void ListenerRemoved();
 
-  // Called on the first invocation of extension API function. This will call
-  // out to the Task Manager to start listening for notifications. Returns
-  // true if this was the first call and false if this has already been called.
-  void StartTaskManagerListening();
-
-  bool is_task_manager_listening() { return task_manager_listening_; }
+  // task_management::TaskManagerObserver:
+  void OnTaskAdded(task_management::TaskId id) override;
+  void OnTaskToBeRemoved(task_management::TaskId id) override;
+  void OnTasksRefreshed(const task_management::TaskIdList& task_ids) override {}
+  void OnTasksRefreshedWithBackgroundCalculations(
+      const task_management::TaskIdList& task_ids) override;
+  void OnTaskUnresponsive(task_management::TaskId id) override;
 
  private:
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  // TaskManagerModelObserver methods.
-  void OnItemsAdded(int start, int length) override;
-  void OnModelChanged() override {}
-  void OnItemsChanged(int start, int length) override;
-  void OnItemsRemoved(int start, int length) override {}
-  void OnItemsToBeRemoved(int start, int length) override;
-
-  // Internal helpers for processing notifications.
-  void ProcessHangEvent(content::RenderWidgetHost* widget);
-  void ProcessClosedEvent(
-      content::RenderProcessHost* rph,
-      content::RenderProcessHost::RendererClosedDetails* details);
+  friend class ::ProcessesApiTest;
 
   void DispatchEvent(events::HistogramValue histogram_value,
                      const std::string& event_name,
-                     scoped_ptr<base::ListValue> event_args);
+                     scoped_ptr<base::ListValue> event_args) const;
 
   // Determines whether there is a registered listener for the specified event.
-  // It helps to avoid collecing data if no one is interested in it.
-  bool HasEventListeners(const std::string& event_name);
+  // It helps to avoid collecting data if no one is interested in it.
+  bool HasEventListeners(const std::string& event_name) const;
 
-  // Used for tracking registrations to process related notifications.
-  content::NotificationRegistrar registrar_;
+  // Returns true if the task with the given |id| should be reported as created
+  // or removed. |out_child_process_host_id| will be filled with the valid ID of
+  // the process to report in the event.
+  bool ShouldReportOnCreatedOrOnExited(task_management::TaskId id,
+                                       int* out_child_process_host_id) const;
+
+  // Updates the requested task manager refresh types flags depending on what
+  // events are being listened to by extensions.
+  void UpdateRefreshTypesFlagsBasedOnListeners();
 
   content::BrowserContext* browser_context_;
-
-  // TaskManager to observe for updates.
-  TaskManagerModel* model_;
 
   // Count of listeners, so we avoid sending updates if no one is interested.
   int listeners_;
 
-  // Indicator whether we've initialized the Task Manager listeners. This is
-  // done once for the lifetime of this object.
-  bool task_manager_listening_;
-
   DISALLOW_COPY_AND_ASSIGN(ProcessesEventRouter);
 };
 
+////////////////////////////////////////////////////////////////////////////////
 // The profile-keyed service that manages the processes extension API.
 class ProcessesAPI : public BrowserContextKeyedAPI,
                      public EventRouter::Observer {
@@ -103,35 +76,35 @@ class ProcessesAPI : public BrowserContextKeyedAPI,
   explicit ProcessesAPI(content::BrowserContext* context);
   ~ProcessesAPI() override;
 
-  // KeyedService implementation.
-  void Shutdown() override;
-
-  // BrowserContextKeyedAPI implementation.
+  // BrowserContextKeyedAPI:
   static BrowserContextKeyedAPIFactory<ProcessesAPI>* GetFactoryInstance();
 
   // Convenience method to get the ProcessesAPI for a profile.
   static ProcessesAPI* Get(content::BrowserContext* context);
 
-  ProcessesEventRouter* processes_event_router();
+  // KeyedService:
+  void Shutdown() override;
 
-  // EventRouter::Observer implementation.
+  // EventRouter::Observer:
   void OnListenerAdded(const EventListenerInfo& details) override;
   void OnListenerRemoved(const EventListenerInfo& details) override;
+
+  ProcessesEventRouter* processes_event_router();
 
  private:
   friend class BrowserContextKeyedAPIFactory<ProcessesAPI>;
 
-  content::BrowserContext* browser_context_;
-
-  // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "ProcessesAPI";
-  }
+  // BrowserContextKeyedAPI:
+  static const char* service_name() { return "ProcessesAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
+  content::BrowserContext* browser_context_;
+
   // Created lazily on first access.
   scoped_ptr<ProcessesEventRouter> processes_event_router_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessesAPI);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -139,21 +112,14 @@ class ProcessesAPI : public BrowserContextKeyedAPI,
 // currently in use by the specified Tab.
 class ProcessesGetProcessIdForTabFunction : public UIThreadExtensionFunction {
  public:
-  ProcessesGetProcessIdForTabFunction();
-
   // UIThreadExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
 
+  DECLARE_EXTENSION_FUNCTION("processes.getProcessIdForTab",
+                             PROCESSES_GETPROCESSIDFORTAB);
+
  private:
   ~ProcessesGetProcessIdForTabFunction() override {}
-
-  void GetProcessIdForTab();
-
-  // Storage for the tab ID parameter.
-  int tab_id_;
-
-  DECLARE_EXTENSION_FUNCTION("processes.getProcessIdForTab",
-                             PROCESSES_GETPROCESSIDFORTAB)
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,46 +130,65 @@ class ProcessesGetProcessIdForTabFunction : public UIThreadExtensionFunction {
 // * guards against killing non-Chrome processes.
 class ProcessesTerminateFunction : public UIThreadExtensionFunction {
  public:
-  ProcessesTerminateFunction();
-
   // UIThreadExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
+
+  DECLARE_EXTENSION_FUNCTION("processes.terminate", PROCESSES_TERMINATE);
 
  private:
   ~ProcessesTerminateFunction() override {}
 
-  void TerminateProcess();
+  // Functions to get the process handle on the IO thread and post it back to
+  // the UI thread from processing.
+  base::ProcessHandle GetProcessHandleOnIO(int child_process_host_id) const;
+  void OnProcessHandleOnUI(base::ProcessHandle handle);
 
-  // Storage for the process ID parameter.
-  int process_id_;
+  // Terminates the process with |handle| if it's valid and is allowed to be
+  // terminated. Returns the response value of this extension function to be
+  // sent.
+  ExtensionFunction::ResponseValue TerminateIfAllowed(
+      base::ProcessHandle handle);
 
-  DECLARE_EXTENSION_FUNCTION("processes.terminate",
-                             PROCESSES_TERMINATE)
+  // Caches the parameter of this function. To be accessed only on the UI
+  // thread.
+  int child_process_host_id_ = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension function which returns a set of Process objects, containing the
 // details corresponding to the process IDs supplied as input.
-class ProcessesGetProcessInfoFunction : public UIThreadExtensionFunction {
+class ProcessesGetProcessInfoFunction :
+    public UIThreadExtensionFunction,
+    public task_management::TaskManagerObserver {
  public:
   ProcessesGetProcessInfoFunction();
 
   // UIThreadExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
 
+  // task_management::TaskManagerObserver:
+  void OnTaskAdded(task_management::TaskId id) override {}
+  void OnTaskToBeRemoved(task_management::TaskId id) override {}
+  void OnTasksRefreshed(const task_management::TaskIdList& task_ids) override;
+  void OnTasksRefreshedWithBackgroundCalculations(
+      const task_management::TaskIdList& task_ids) override;
+
+  DECLARE_EXTENSION_FUNCTION("processes.getProcessInfo",
+                             PROCESSES_GETPROCESSINFO);
+
  private:
   ~ProcessesGetProcessInfoFunction() override;
 
-  void GatherProcessInfo();
+  // Since we don't report optional process data like CPU usage in the results
+  // of this function, the only background calculations we want to watch is
+  // memory usage (which will be requested only when |include_memory_| is true).
+  // This function will be called by either OnTasksRefreshed() or
+  // OnTasksRefreshedWithBackgroundCalculations() depending on whether memory is
+  // requested.
+  void GatherDataAndRespond(const task_management::TaskIdList& task_ids);
 
-  // Member variables to store the function parameters
-  std::vector<int> process_ids_;
-#if defined(ENABLE_TASK_MANAGER)
-  bool memory_;
-#endif
-
-  DECLARE_EXTENSION_FUNCTION("processes.getProcessInfo",
-                             PROCESSES_GETPROCESSINFO)
+  std::vector<int> process_host_ids_;
+  bool include_memory_ = false;
 };
 
 }  // namespace extensions

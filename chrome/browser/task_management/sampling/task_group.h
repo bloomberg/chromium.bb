@@ -32,6 +32,7 @@ class TaskGroup {
   TaskGroup(
       base::ProcessHandle proc_handle,
       base::ProcessId proc_id,
+      const base::Closure& on_background_calculations_done,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner);
   ~TaskGroup();
 
@@ -49,6 +50,15 @@ class TaskGroup {
   void AppendSortedTaskIds(TaskIdList* out_list) const;
 
   Task* GetTaskById(TaskId task_id) const;
+
+  // This is to be called after the task manager had informed its observers with
+  // OnTasksRefreshedWithBackgroundCalculations() to begin another cycle for
+  // this notification type.
+  void ClearCurrentBackgroundCalculationsFlags();
+
+  // True if all enabled background operations calculating resource usage of the
+  // process represented by this TaskGroup have completed.
+  bool AreBackgroundCalculationsDone() const;
 
   const base::ProcessHandle& process_handle() const { return process_handle_; }
   const base::ProcessId& process_id() const { return process_id_; }
@@ -104,15 +114,26 @@ class TaskGroup {
 
   void OnProcessPriorityDone(bool is_backgrounded);
 
+  void OnBackgroundRefreshTypeFinished(int64_t finished_refresh_type);
+
   // The process' handle and ID.
   base::ProcessHandle process_handle_;
   base::ProcessId process_id_;
+
+  // This is a callback into the TaskManagerImpl to inform it that the
+  // background calculations for this TaskGroup has finished.
+  const base::Closure on_background_calculations_done_;
 
   scoped_refptr<TaskGroupSampler> worker_thread_sampler_;
 
   // Maps the Tasks by their IDs.
   // Tasks are not owned by the TaskGroup. They're owned by the TaskProviders.
   std::map<TaskId, Task*> tasks_;
+
+  // Flags will be used to determine when the background calculations has
+  // completed for the enabled refresh types for this TaskGroup.
+  int64_t expected_on_bg_done_flags_;
+  int64_t current_on_bg_done_flags_;
 
   // The per process resources usages.
   double cpu_usage_;

@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_bridge_service.h"
+#include "content/public/common/child_process_host.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace task_management {
@@ -42,7 +43,7 @@ Task::Type ArcProcessTask::GetType() const {
 
 int ArcProcessTask::GetChildProcessUniqueID() const {
   // ARC process is not a child process of the browser.
-  return 0;
+  return content::ChildProcessHost::kInvalidUniqueID;
 }
 
 void ArcProcessTask::Kill() {

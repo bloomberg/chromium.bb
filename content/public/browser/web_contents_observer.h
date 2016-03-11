@@ -27,6 +27,7 @@ class NavigationEntry;
 class NavigationHandle;
 class RenderFrameHost;
 class RenderViewHost;
+class RenderWidgetHost;
 class WebContents;
 class WebContentsImpl;
 struct AXEventNotificationDetails;
@@ -120,6 +121,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // down.
   virtual void RenderViewHostChanged(RenderViewHost* old_host,
                                      RenderViewHost* new_host) {}
+
+  // This method is invoked when the process for the current main
+  // RenderFrameHost becomes unresponsive.
+  virtual void OnRendererUnresponsive(RenderWidgetHost* render_widget_host) {}
 
   // Navigation related events ------------------------------------------------
 

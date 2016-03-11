@@ -290,6 +290,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool IsCrashed() const override;
   void SetIsCrashed(base::TerminationStatus status, int error_code) override;
   base::TerminationStatus GetCrashedStatus() const override;
+  int GetCrashedErrorCode() const override;
   bool IsBeingDestroyed() const override;
   void NotifyNavigationStateChanged(InvalidateTypes changed_flags) override;
   base::TimeTicks GetLastActiveTime() const override;

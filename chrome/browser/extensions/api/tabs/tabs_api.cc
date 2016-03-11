@@ -72,7 +72,6 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "extensions/browser/extension_function_util.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_zoom_request_client.h"
 #include "extensions/browser/file_reader.h"

@@ -17,6 +17,8 @@ TaskManagerObserver::TaskManagerObserver(base::TimeDelta refresh_time,
       desired_resources_flags_(resources_flags) {}
 
 TaskManagerObserver::~TaskManagerObserver() {
+  if (observed_task_manager())
+    observed_task_manager()->RemoveObserver(this);
 }
 
 void TaskManagerObserver::AddRefreshType(RefreshType type) {
@@ -33,5 +35,11 @@ void TaskManagerObserver::RemoveRefreshType(RefreshType type) {
     observed_task_manager_->RecalculateRefreshFlags();
 }
 
+void TaskManagerObserver::SetRefreshTypesFlags(int64_t flags) {
+  desired_resources_flags_ = flags;
+
+  if (observed_task_manager_)
+    observed_task_manager_->RecalculateRefreshFlags();
+}
 
 }  // namespace task_management

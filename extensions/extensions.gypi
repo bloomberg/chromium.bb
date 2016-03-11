@@ -582,8 +582,6 @@
       'browser/extension_function_dispatcher.h',
       'browser/extension_function_registry.cc',
       'browser/extension_function_registry.h',
-      'browser/extension_function_util.cc',
-      'browser/extension_function_util.h',
       'browser/extension_host.cc',
       'browser/extension_host.h',
       'browser/extension_host_delegate.h',

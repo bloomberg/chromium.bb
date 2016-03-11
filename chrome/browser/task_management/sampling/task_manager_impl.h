@@ -60,6 +60,11 @@ class TaskManagerImpl :
   const base::ProcessHandle& GetProcessHandle(TaskId task_id) const override;
   const base::ProcessId& GetProcessId(TaskId task_id) const override;
   Task::Type GetType(TaskId task_id) const override;
+  int GetTabId(TaskId task_id) const override;
+  int GetChildProcessUniqueId(TaskId task_id) const override;
+  void GetTerminationStatus(TaskId task_id,
+                            base::TerminationStatus* out_status,
+                            int* out_error_code) const override;
   int64_t GetNetworkUsage(TaskId task_id) const override;
   int64_t GetProcessTotalNetworkUsage(TaskId task_id) const override;
   int64_t GetSqliteMemoryUsed(TaskId task_id) const override;
@@ -70,11 +75,13 @@ class TaskManagerImpl :
       TaskId task_id,
       blink::WebCache::ResourceTypeStats* stats) const override;
   const TaskIdList& GetTaskIdsList() const override;
+  TaskIdList GetIdsOfTasksSharingSameProcess(TaskId task_id) const override;
   size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const override;
 
   // task_management::TaskProviderObserver:
   void TaskAdded(Task* task) override;
   void TaskRemoved(Task* task) override;
+  void TaskUnresponsive(Task* task) override;
 
   // content::GpuDataManagerObserver:
   void OnVideoMemoryUsageStatsUpdate(
@@ -103,6 +110,12 @@ class TaskManagerImpl :
 
   TaskGroup* GetTaskGroupByTaskId(TaskId task_id) const;
   Task* GetTaskByTaskId(TaskId task_id) const;
+
+  // Called back by a TaskGroup when the resource calculations done on the
+  // background thread has completed.
+  void OnTaskGroupBackgroundCalculationsDone();
+
+  const base::Closure on_background_data_ready_callback_;
 
   // Map TaskGroups by the IDs of the processes they represent.
   // Keys and values are unique (no duplicates).

@@ -45,10 +45,11 @@ class TaskProvider {
 
  protected:
   // Used by concrete task providers to notify the observer of tasks addition/
-  // removal. These methods should only be called after StartUpdating() has been
-  // called and before StopUpdating() is called.
+  // removal/renderer unresponsive. These methods should only be called after
+  // StartUpdating() has been called and before StopUpdating() is called.
   void NotifyObserverTaskAdded(Task* task) const;
   void NotifyObserverTaskRemoved(Task* task) const;
+  void NotifyObserverTaskUnresponsive(Task* task) const;
 
  private:
   // This will be called once an observer is set for this provider. When it is

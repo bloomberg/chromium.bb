@@ -3,51 +3,68 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+#include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 
-using ProcessesApiTest = ExtensionApiTest;
+class ProcessesApiTest : public ExtensionApiTest {
+ public:
+  ProcessesApiTest() {}
+  ~ProcessesApiTest() override {}
 
-// Fails on some MSan bots crbug.com/591581.
-IN_PROC_BROWSER_TEST_F(ProcessesApiTest, DISABLED_Processes) {
+  int GetListenersCount() {
+    return extensions::ProcessesAPI::Get(profile())->
+        processes_event_router()->listeners_;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProcessesApiTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ProcessesApiTest, Processes) {
   ASSERT_TRUE(RunExtensionTest("processes/api")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ProcessesApiTest, ProcessesVsTaskManager) {
-  // This test is for the old implementation of the task manager. We must
-  // explicitly disable the new one.
-  task_manager::browsertest_util::EnableOldTaskManager();
+IN_PROC_BROWSER_TEST_F(ProcessesApiTest, ProcessesApiListeners) {
+  EXPECT_EQ(0, GetListenersCount());
 
-  // Ensure task manager is not yet updating
-  TaskManagerModel* model = TaskManager::GetInstance()->model();
-  EXPECT_EQ(0, model->update_requests_);
-  EXPECT_EQ(TaskManagerModel::IDLE, model->update_state_);
+  // Load extension that adds a listener in background page
+  ExtensionTestMessageListener listener1("ready", false /* will_reply */);
+  const extensions::Extension* extension1 = LoadExtension(
+      test_data_dir_.AppendASCII("processes").AppendASCII("onupdated"));
+  ASSERT_TRUE(extension1);
+  ASSERT_TRUE(listener1.WaitUntilSatisfied());
 
-  // Load extension that adds listener in background page
-  ExtensionTestMessageListener listener("ready", false);
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("processes").AppendASCII("onupdated")));
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
+  // The memory refresh type of the task manager may or may not be enabled by
+  // now depending on the presence of other task manager observers.
+  // Ensure the listeners count has changed.
+  EXPECT_EQ(1, GetListenersCount());
 
-  // Ensure the task manager has started updating
-  EXPECT_EQ(1, model->update_requests_);
-  EXPECT_EQ(TaskManagerModel::TASK_PENDING, model->update_state_);
+  // Load another extension that listen to the onUpdatedWithMemory.
+  ExtensionTestMessageListener listener2("ready", false /* will_reply */);
+  const extensions::Extension* extension2 = LoadExtension(
+      test_data_dir_.AppendASCII("processes").AppendASCII(
+          "onupdated_with_memory"));
+  ASSERT_TRUE(extension2);
+  ASSERT_TRUE(listener2.WaitUntilSatisfied());
 
-  // Now show the task manager and wait for it to be ready
-  chrome::ShowTaskManager(browser());
+  // The memory refresh type must be enabled now.
+  const task_management::TaskManagerInterface* task_manager =
+      task_management::TaskManagerInterface::GetTaskManager();
+  EXPECT_EQ(2, GetListenersCount());
+  EXPECT_TRUE(task_manager->IsResourceRefreshEnabled(
+      task_management::REFRESH_TYPE_MEMORY));
 
-  EXPECT_EQ(2, model->update_requests_);
-  EXPECT_EQ(TaskManagerModel::TASK_PENDING, model->update_state_);
-
-  // Unload the extension and check that listener count decreases
-  UnloadExtension(last_loaded_extension_id());
-  EXPECT_EQ(1, model->update_requests_);
+  // Unload the extensions and make sure the listeners count is updated.
+  UnloadExtension(extension2->id());
+  EXPECT_EQ(1, GetListenersCount());
+  UnloadExtension(extension1->id());
+  EXPECT_EQ(0, GetListenersCount());
 }
 
 IN_PROC_BROWSER_TEST_F(ProcessesApiTest, CannotTerminateBrowserProcess) {

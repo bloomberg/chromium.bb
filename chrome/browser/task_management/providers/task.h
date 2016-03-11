@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -85,8 +86,18 @@ class Task {
   // value is whatever unique IDs of their hosts in the browser process.
   virtual int GetChildProcessUniqueID() const = 0;
 
+  // If the process, in which this task is running, is terminated, this gets the
+  // termination status. Currently implemented only for Renderer processes.
+  virtual void GetTerminationStatus(base::TerminationStatus* out_status,
+                                    int* out_error_code) const;
+
   // The name of the profile owning this task.
   virtual base::string16 GetProfileName() const;
+
+  // Returns the unique ID of the tab if this task represents a renderer
+  // WebContents used for a tab. Returns -1 if this task does not represent
+  // a renderer, or a contents of a tab.
+  virtual int GetTabId() const;
 
   // Getting the Sqlite used memory (in bytes). Not all tasks reports Sqlite
   // memory, in this case a default invalid value of -1 will be returned.

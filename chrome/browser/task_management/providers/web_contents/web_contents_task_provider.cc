@@ -11,10 +11,12 @@
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
 using content::RenderFrameHost;
+using content::RenderWidgetHost;
 using content::SiteInstance;
 using content::WebContents;
 
@@ -52,6 +54,7 @@ class WebContentsEntry : public content::WebContentsObserver {
   void RenderViewReady() override;
   void WebContentsDestroyed() override;
   void RenderProcessGone(base::TerminationStatus status) override;
+  void OnRendererUnresponsive(RenderWidgetHost* render_widget_host) override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
@@ -113,6 +116,10 @@ void WebContentsEntry::ClearAllTasks(bool notify_observer) {
     FramesList& frames_list = pair.second;
     DCHECK(!frames_list.empty());
     RendererTask* task = tasks_by_frames_[frames_list[0]];
+
+    task->set_termination_status(web_contents()->GetCrashedStatus());
+    task->set_termination_error_code(web_contents()->GetCrashedErrorCode());
+
     if (notify_observer)
       provider_->NotifyObserverTaskRemoved(task);
     delete task;
@@ -154,6 +161,18 @@ void WebContentsEntry::WebContentsDestroyed() {
 
 void WebContentsEntry::RenderProcessGone(base::TerminationStatus status) {
   ClearAllTasks(true);
+}
+
+void WebContentsEntry::OnRendererUnresponsive(
+    RenderWidgetHost* render_widget_host) {
+  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
+  if (itr == tasks_by_frames_.end())
+    return;
+
+  DCHECK_EQ(render_widget_host->GetProcess(),
+            web_contents()->GetMainFrame()->GetProcess());
+
+  provider_->NotifyObserverTaskUnresponsive(itr->second);
 }
 
 void WebContentsEntry::DidNavigateMainFrame(

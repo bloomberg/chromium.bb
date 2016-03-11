@@ -24,6 +24,10 @@ class TaskProviderObserver {
   // the observer and references to it must not be kept.
   virtual void TaskRemoved(Task* task) = 0;
 
+  // This notifies of the event that |task| has become unresponsive. This event
+  // is only for tasks representing renderer processes.
+  virtual void TaskUnresponsive(Task* task) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskProviderObserver);
 };

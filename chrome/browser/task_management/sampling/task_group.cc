@@ -17,6 +17,16 @@ namespace task_management {
 
 namespace {
 
+// A mask for the refresh types that are done in the background thread.
+const int kBackgroundRefreshTypesMask =
+    REFRESH_TYPE_CPU |
+    REFRESH_TYPE_MEMORY |
+    REFRESH_TYPE_IDLE_WAKEUPS |
+#if defined(OS_LINUX)
+    REFRESH_TYPE_FD_COUNT |
+#endif  // defined(OS_LINUX)
+    REFRESH_TYPE_PRIORITY;
+
 inline bool IsResourceRefreshEnabled(RefreshType refresh_type,
                                      int refresh_flags) {
   return (refresh_flags & refresh_type) != 0;
@@ -57,11 +67,14 @@ void GetWindowsHandles(base::ProcessHandle handle,
 TaskGroup::TaskGroup(
     base::ProcessHandle proc_handle,
     base::ProcessId proc_id,
+    const base::Closure& on_background_calculations_done,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner)
     : process_handle_(proc_handle),
       process_id_(proc_id),
+      on_background_calculations_done_(on_background_calculations_done),
       worker_thread_sampler_(nullptr),
-      tasks_(),
+      expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
+      current_on_bg_done_flags_(0),
       cpu_usage_(0.0),
       memory_usage_(),
       gpu_memory_(-1),
@@ -123,6 +136,10 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
                         int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  expected_on_bg_done_flags_ = refresh_flags & kBackgroundRefreshTypesMask;
+  // If a refresh type was recently disabled, we need to account for that too.
+  current_on_bg_done_flags_ &= expected_on_bg_done_flags_;
+
   // First refresh the enabled non-expensive resources usages on the UI thread.
   // 1- Refresh all the tasks as well as the total network usage (if enabled).
   const bool network_usage_refresh_enabled =
@@ -132,9 +149,8 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
     Task* task = task_pair.second;
     task->Refresh(update_interval, refresh_flags);
 
-    if (network_usage_refresh_enabled && task->ReportsNetworkUsage()) {
+    if (network_usage_refresh_enabled && task->ReportsNetworkUsage())
       per_process_network_usage_ += task->network_usage();
-    }
   }
 
   // 2- Refresh GPU memory (if enabled).
@@ -179,6 +195,14 @@ Task* TaskGroup::GetTaskById(TaskId task_id) const {
   return tasks_.at(task_id);
 }
 
+void TaskGroup::ClearCurrentBackgroundCalculationsFlags() {
+  current_on_bg_done_flags_ = 0;
+}
+
+bool TaskGroup::AreBackgroundCalculationsDone() const {
+  return expected_on_bg_done_flags_ == current_on_bg_done_flags_;
+}
+
 void TaskGroup::RefreshGpuMemory(
     const gpu::VideoMemoryUsageStats& gpu_memory_stats) {
   auto itr = gpu_memory_stats.process_map.find(process_id_);
@@ -214,18 +238,21 @@ void TaskGroup::OnCpuRefreshDone(double cpu_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   cpu_usage_ = cpu_usage;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_CPU);
 }
 
 void TaskGroup::OnMemoryUsageRefreshDone(MemoryUsageStats memory_usage) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   memory_usage_ = memory_usage;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_MEMORY);
 }
 
 void TaskGroup::OnIdleWakeupsRefreshDone(int idle_wakeups_per_second) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   idle_wakeups_per_second_ = idle_wakeups_per_second;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_IDLE_WAKEUPS);
 }
 
 #if defined(OS_LINUX)
@@ -233,6 +260,7 @@ void TaskGroup::OnOpenFdCountRefreshDone(int open_fd_count) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   open_fd_count_ = open_fd_count;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_FD_COUNT);
 }
 #endif  // defined(OS_LINUX)
 
@@ -240,6 +268,15 @@ void TaskGroup::OnProcessPriorityDone(bool is_backgrounded) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   is_backgrounded_ = is_backgrounded;
+  OnBackgroundRefreshTypeFinished(REFRESH_TYPE_PRIORITY);
+}
+
+void TaskGroup::OnBackgroundRefreshTypeFinished(int64_t finished_refresh_type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  current_on_bg_done_flags_ |= finished_refresh_type;
+  if (AreBackgroundCalculationsDone())
+    on_background_calculations_done_.Run();
 }
 
 }  // namespace task_management

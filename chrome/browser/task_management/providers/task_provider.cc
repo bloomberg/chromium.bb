@@ -36,4 +36,9 @@ void TaskProvider::NotifyObserverTaskRemoved(Task* task) const {
   observer_->TaskRemoved(task);
 }
 
+void TaskProvider::NotifyObserverTaskUnresponsive(Task* task) const {
+  DCHECK(observer_);
+  observer_->TaskUnresponsive(task);
+}
+
 }  // namespace task_management

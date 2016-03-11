@@ -42,7 +42,10 @@ base::LazyInstance<TaskManagerImpl> lazy_task_manager_instance =
 }  // namespace
 
 TaskManagerImpl::TaskManagerImpl()
-    : blocking_pool_runner_(GetBlockingPoolRunner()),
+    : on_background_data_ready_callback_(base::Bind(
+          &TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone,
+          base::Unretained(this))),
+      blocking_pool_runner_(GetBlockingPoolRunner()),
       is_running_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -183,6 +186,20 @@ Task::Type TaskManagerImpl::GetType(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->GetType();
 }
 
+int TaskManagerImpl::GetTabId(TaskId task_id) const {
+  return GetTaskByTaskId(task_id)->GetTabId();
+}
+
+int TaskManagerImpl::GetChildProcessUniqueId(TaskId task_id) const {
+  return GetTaskByTaskId(task_id)->GetChildProcessUniqueID();
+}
+
+void TaskManagerImpl::GetTerminationStatus(TaskId task_id,
+                                           base::TerminationStatus* out_status,
+                                           int* out_error_code) const {
+  GetTaskByTaskId(task_id)->GetTerminationStatus(out_status, out_error_code);
+}
+
 int64_t TaskManagerImpl::GetNetworkUsage(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->network_usage();
 }
@@ -244,6 +261,16 @@ const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
   return sorted_task_ids_;
 }
 
+TaskIdList TaskManagerImpl::GetIdsOfTasksSharingSameProcess(
+    TaskId task_id) const {
+  DCHECK(is_running_) << "Task manager is not running. You must observe the "
+      "task manager for it to start running";
+
+  TaskIdList result;
+  GetTaskGroupByTaskId(task_id)->AppendSortedTaskIds(&result);
+  return result;
+}
+
 size_t TaskManagerImpl::GetNumberOfTasksOnSameProcess(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->num_tasks();
 }
@@ -259,6 +286,7 @@ void TaskManagerImpl::TaskAdded(Task* task) {
   if (itr == task_groups_by_proc_id_.end()) {
     task_group = new TaskGroup(task->process_handle(),
                                proc_id,
+                               on_background_data_ready_callback_,
                                blocking_pool_runner_);
     task_groups_by_proc_id_[proc_id] = task_group;
   } else {
@@ -298,6 +326,11 @@ void TaskManagerImpl::TaskRemoved(Task* task) {
     task_groups_by_proc_id_.erase(proc_id);
     delete task_group;
   }
+}
+
+void TaskManagerImpl::TaskUnresponsive(Task* task) {
+  DCHECK(task);
+  NotifyObserversOnTaskUnresponsive(task->task_id());
 }
 
 void TaskManagerImpl::OnVideoMemoryUsageStatsUpdate(
@@ -397,6 +430,20 @@ TaskGroup* TaskManagerImpl::GetTaskGroupByTaskId(TaskId task_id) const {
 
 Task* TaskManagerImpl::GetTaskByTaskId(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->GetTaskById(task_id);
+}
+
+void TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone() {
+  // TODO(afakhry): There should be a better way for doing this!
+  bool are_all_processes_data_ready = true;
+  for (auto& groups_itr : task_groups_by_proc_id_) {
+    are_all_processes_data_ready &=
+        groups_itr.second->AreBackgroundCalculationsDone();
+  }
+  if (are_all_processes_data_ready) {
+    NotifyObserversOnRefreshWithBackgroundCalculations(GetTaskIdsList());
+    for (auto& groups_itr : task_groups_by_proc_id_)
+      groups_itr.second->ClearCurrentBackgroundCalculationsFlags();
+  }
 }
 
 }  // namespace task_management

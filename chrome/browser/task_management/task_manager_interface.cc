@@ -87,7 +87,7 @@ void TaskManagerInterface::RecalculateRefreshFlags() {
   SetEnabledResourceFlags(flags);
 }
 
-bool TaskManagerInterface::IsResourceRefreshEnabled(RefreshType type) {
+bool TaskManagerInterface::IsResourceRefreshEnabled(RefreshType type) const {
   return (enabled_resources_flags_ & type) != 0;
 }
 
@@ -113,6 +113,17 @@ void TaskManagerInterface::NotifyObserversOnRefresh(
   FOR_EACH_OBSERVER(TaskManagerObserver,
                     observers_,
                     OnTasksRefreshed(task_ids));
+}
+
+void TaskManagerInterface::NotifyObserversOnRefreshWithBackgroundCalculations(
+      const TaskIdList& task_ids) {
+  FOR_EACH_OBSERVER(TaskManagerObserver,
+                    observers_,
+                    OnTasksRefreshedWithBackgroundCalculations(task_ids));
+}
+
+void TaskManagerInterface::NotifyObserversOnTaskUnresponsive(TaskId id) {
+  FOR_EACH_OBSERVER(TaskManagerObserver, observers_, OnTaskUnresponsive(id));
 }
 
 base::TimeDelta TaskManagerInterface::GetCurrentRefreshTime() const {

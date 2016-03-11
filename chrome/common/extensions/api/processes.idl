@@ -18,6 +18,16 @@ namespace processes {
     gpu,
     other
   };
+
+  // An object that represents a Chrome task running on a process. Several tasks
+  // can share the same process.
+  dictionary TaskInfo {
+    // The title of the task.
+    DOMString title;
+    // Optional tab ID, if this task represents a tab running on a renderer
+    // process.
+    long? tabId;
+  };
   
   // The Cache object contains information about the size and utilization of a 
   // cache used by the browser.
@@ -34,8 +44,6 @@ namespace processes {
     long id;
     // The ID of the process, as provided by the OS.
     long osProcessId;
-    // The title of the process as seen in the task manager.
-    DOMString title;
     // The type of process.
     ProcessType type;
     // The profile which the process is associated with.
@@ -43,9 +51,8 @@ namespace processes {
     // The debugging port for Native Client processes. Zero for other process 
     // types and for NaCl processes that do not have debugging enabled.
     long naclDebugPort;
-    // Array of Tab IDs that have a page rendered by this process. The list will
-    // be non-empty for renderer processes only.
-    long[] tabs;
+    // Array of TaskInfos representing the tasks running on this process.
+    TaskInfo[] tasks;
     // The most recent measurement of the process CPU usage, between 0 and 100.
     // Only available when receiving the object as part of a callback from 
     // onUpdated or onUpdatedWithMemory.
@@ -83,7 +90,7 @@ namespace processes {
     // or onUpdatedWithMemory.
     Cache? cssCache;
   };
-  
+
   // A callback to report the status of the termination. 
   // |didTerminate|: True if terminating the process was successful, and false
   // otherwise.

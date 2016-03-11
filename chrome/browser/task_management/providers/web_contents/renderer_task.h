@@ -54,7 +54,10 @@ class RendererTask : public Task,
                int64_t refresh_flags) override;
   Type GetType() const override;
   int GetChildProcessUniqueID() const override;
+  void GetTerminationStatus(base::TerminationStatus* out_status,
+                            int* out_error_code) const override;
   base::string16 GetProfileName() const override;
+  int GetTabId() const override;
   int64_t GetV8MemoryAllocated() const override;
   int64_t GetV8MemoryUsed() const override;
   bool ReportsWebCacheStats() const override;
@@ -66,6 +69,14 @@ class RendererTask : public Task,
                         const GURL& icon_url,
                         bool icon_url_changed,
                         const gfx::Image& image) override;
+
+  void set_termination_status(base::TerminationStatus status) {
+    termination_status_ = status;
+  }
+
+  void set_termination_error_code(int error_code) {
+    termination_error_code_ = error_code;
+  }
 
  protected:
   // Returns the title of the given |web_contents|.
@@ -113,6 +124,9 @@ class RendererTask : public Task,
   // The profile name associated with the browser context of the render view
   // host.
   const base::string16 profile_name_;
+
+  base::TerminationStatus termination_status_;
+  int termination_error_code_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererTask);
 };

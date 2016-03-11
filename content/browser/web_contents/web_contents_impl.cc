@@ -1163,6 +1163,10 @@ base::TerminationStatus WebContentsImpl::GetCrashedStatus() const {
   return crashed_status_;
 }
 
+int WebContentsImpl::GetCrashedErrorCode() const {
+  return crashed_error_code_;
+}
+
 bool WebContentsImpl::IsBeingDestroyed() const {
   return is_being_destroyed_;
 }
@@ -4409,6 +4413,9 @@ void WebContentsImpl::OnIgnoredUIEvent() {
 
 void WebContentsImpl::RendererUnresponsive(
     RenderWidgetHostImpl* render_widget_host) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    OnRendererUnresponsive(render_widget_host));
+
   // Don't show hung renderer dialog for a swapped out RVH.
   if (render_widget_host != GetRenderViewHost()->GetWidget())
     return;

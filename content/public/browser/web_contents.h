@@ -368,6 +368,7 @@ class WebContents : public PageNavigator,
   virtual void SetIsCrashed(base::TerminationStatus status, int error_code) = 0;
 
   virtual base::TerminationStatus GetCrashedStatus() const = 0;
+  virtual int GetCrashedErrorCode() const = 0;
 
   // Whether the tab is in the process of being destroyed.
   virtual bool IsBeingDestroyed() const = 0;

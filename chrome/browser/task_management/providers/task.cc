@@ -86,8 +86,21 @@ void Task::OnNetworkBytesRead(int64_t bytes_read) {
   current_byte_count_ += bytes_read;
 }
 
+void Task::GetTerminationStatus(base::TerminationStatus* out_status,
+                                int* out_error_code) const {
+  DCHECK(out_status);
+  DCHECK(out_error_code);
+
+  *out_status = base::TERMINATION_STATUS_STILL_RUNNING;
+  *out_error_code = 0;
+}
+
 base::string16 Task::GetProfileName() const {
   return base::string16();
+}
+
+int Task::GetTabId() const {
+  return -1;
 }
 
 bool Task::ReportsSqliteMemory() const {

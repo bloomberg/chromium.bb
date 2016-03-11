@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -118,6 +119,28 @@ class TaskManagerInterface {
   // Returns the type of the task with |task_id|.
   virtual Task::Type GetType(TaskId task_id) const = 0;
 
+  // Gets the unique ID of the tab if the task with |task_id| represents a
+  // WebContents of a tab. Returns -1 otherwise.
+  virtual int GetTabId(TaskId task_id) const = 0;
+
+  // Returns the unique ID of the BrowserChildProcessHost/RenderProcessHost on
+  // which the task with |task_id| is running. It is not the PID nor the handle
+  // of the process.
+  // For a task that represents the browser process, the return value is 0.
+  // For a task that doesn't have a host on the browser process, the return
+  // value is also 0. For other tasks that represent renderers and other child
+  // processes, the return value is whatever unique IDs of their hosts in the
+  // browser process.
+  virtual int GetChildProcessUniqueId(TaskId task_id) const = 0;
+
+  // If the process, in which the task with |task_id| is running, is terminated
+  // this gets the termination status. Currently implemented only for Renderer
+  // processes. The values will only be valid if the process has actually
+  // terminated.
+  virtual void GetTerminationStatus(TaskId task_id,
+                                    base::TerminationStatus* out_status,
+                                    int* out_error_code) const = 0;
+
   // Returns the network usage (in bytes per second) during the current refresh
   // cycle for the task with |task_id|. A value of -1 means no valid value is
   // currently available or that task has never been notified of any network
@@ -154,6 +177,10 @@ class TaskManagerInterface {
   // IDs on which the tasks are running, then by the task IDs themselves.
   virtual const TaskIdList& GetTaskIdsList() const = 0;
 
+  // Gets the list of task IDs of the tasks that run on the same process as the
+  // task with |task_id|. The returned list will at least include |task_id|.
+  virtual TaskIdList GetIdsOfTasksSharingSameProcess(TaskId task_id) const = 0;
+
   // Gets the number of task-manager tasks running on the same process on which
   // the Task with |task_id| is running.
   virtual size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const = 0;
@@ -161,7 +188,7 @@ class TaskManagerInterface {
   // Returns true if the resource |type| usage calculation is enabled and
   // the implementation should refresh its value (this means that at least one
   // of the observers require this value). False otherwise.
-  bool IsResourceRefreshEnabled(RefreshType type);
+  bool IsResourceRefreshEnabled(RefreshType type) const;
 
  protected:
   TaskManagerInterface();
@@ -171,6 +198,9 @@ class TaskManagerInterface {
   void NotifyObserversOnTaskAdded(TaskId id);
   void NotifyObserversOnTaskToBeRemoved(TaskId id);
   void NotifyObserversOnRefresh(const TaskIdList& task_ids);
+  void NotifyObserversOnRefreshWithBackgroundCalculations(
+      const TaskIdList& task_ids);
+  void NotifyObserversOnTaskUnresponsive(TaskId id);
 
   // Refresh all the enabled resources usage of all the available tasks.
   virtual void Refresh() = 0;

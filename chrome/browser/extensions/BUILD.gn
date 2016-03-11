@@ -85,6 +85,13 @@ source_set("extensions") {
     "//url",
   ]
 
+  if (enable_task_manager) {
+    sources += rebase_path(
+            gypi_values.chrome_browser_extensions_task_manager_enabled_sources,
+            ".",
+            "//chrome")
+  }
+
   if (is_chromeos) {
     sources +=
         rebase_path(gypi_values.chrome_browser_extensions_chromeos_sources,
