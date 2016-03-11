@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
+#include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,10 +43,11 @@ class TestPersonalDataManager : public PersonalDataManager {
 
 }  // namespace
 
-class AutofillCCInfobarDelegateTest : public ChromeRenderViewHostTestHarness {
+class AutofillSaveCardInfoBarDelegateMobileTest
+    : public ChromeRenderViewHostTestHarness {
  public:
-  AutofillCCInfobarDelegateTest();
-  ~AutofillCCInfobarDelegateTest() override;
+  AutofillSaveCardInfoBarDelegateMobileTest();
+  ~AutofillSaveCardInfoBarDelegateMobileTest() override;
 
   void SetUp() override;
   void TearDown() override;
@@ -56,19 +58,17 @@ class AutofillCCInfobarDelegateTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<TestPersonalDataManager> personal_data_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillCCInfobarDelegateTest);
+  DISALLOW_COPY_AND_ASSIGN(AutofillSaveCardInfoBarDelegateMobileTest);
 };
 
-AutofillCCInfobarDelegateTest::AutofillCCInfobarDelegateTest() {
-}
+AutofillSaveCardInfoBarDelegateMobileTest::
+    AutofillSaveCardInfoBarDelegateMobileTest() {}
 
-AutofillCCInfobarDelegateTest::~AutofillCCInfobarDelegateTest() {}
+AutofillSaveCardInfoBarDelegateMobileTest::
+    ~AutofillSaveCardInfoBarDelegateMobileTest() {}
 
-void AutofillCCInfobarDelegateTest::SetUp() {
+void AutofillSaveCardInfoBarDelegateMobileTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-
-  // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
-  test::DisableSystemServices(profile()->GetPrefs());
 
   PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile(), NULL);
 
@@ -81,26 +81,29 @@ void AutofillCCInfobarDelegateTest::SetUp() {
   personal_data_->SetPrefService(profile()->GetPrefs());
 }
 
-void AutofillCCInfobarDelegateTest::TearDown() {
+void AutofillSaveCardInfoBarDelegateMobileTest::TearDown() {
   personal_data_.reset();
   ChromeRenderViewHostTestHarness::TearDown();
 }
 
 scoped_ptr<ConfirmInfoBarDelegate>
-AutofillCCInfobarDelegateTest::CreateDelegate() {
+AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegate() {
   base::HistogramTester histogram_tester;
   CreditCard credit_card;
-  scoped_ptr<ConfirmInfoBarDelegate> delegate(AutofillCCInfoBarDelegate::Create(
-      base::Bind(
-          base::IgnoreResult(&TestPersonalDataManager::SaveImportedCreditCard),
-          base::Unretained(personal_data_.get()), credit_card)));
+  scoped_ptr<base::DictionaryValue> legal_message;
+  scoped_ptr<ConfirmInfoBarDelegate> delegate(
+      new AutofillSaveCardInfoBarDelegateMobile(
+          false, credit_card, std::move(legal_message),
+          base::Bind(base::IgnoreResult(
+                         &TestPersonalDataManager::SaveImportedCreditCard),
+                     base::Unretained(personal_data_.get()), credit_card)));
   histogram_tester.ExpectUniqueSample("Autofill.CreditCardInfoBar",
                                       AutofillMetrics::INFOBAR_SHOWN, 1);
   return delegate;
 }
 
 // Test that credit card infobar metrics are logged correctly.
-TEST_F(AutofillCCInfobarDelegateTest, Metrics) {
+TEST_F(AutofillSaveCardInfoBarDelegateMobileTest, Metrics) {
   ::testing::InSequence dummy;
 
   // Accept the infobar.

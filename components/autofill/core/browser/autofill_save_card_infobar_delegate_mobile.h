@@ -9,8 +9,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/legal_message_line.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
 
 namespace base {
 class DictionaryValue;
@@ -20,8 +21,9 @@ namespace autofill {
 
 class CreditCard;
 
-// An InfoBarDelegate for saving credit cards on mobile devices.
-class AutofillSaveCardInfoBarDelegateMobile : public AutofillCCInfoBarDelegate {
+// An InfoBarDelegate that enables the user to allow or deny storing credit
+// card information gathered from a form submission. Only used on mobile.
+class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
  public:
   AutofillSaveCardInfoBarDelegateMobile(
       bool upload,
@@ -39,7 +41,31 @@ class AutofillSaveCardInfoBarDelegateMobile : public AutofillCCInfoBarDelegate {
   // Called when a link in the legal message text was clicked.
   void OnLegalMessageLinkClicked(GURL url);
 
+  // ConfirmInfoBarDelegate:
+  int GetIconId() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetLinkText() const override;
+  Type GetInfoBarType() const override;
+  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  bool ShouldExpire(const NavigationDetails& details) const override;
+  void InfoBarDismissed() override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
+  bool Cancel() override;
+  GURL GetLinkURL() const override;
+
  private:
+  void LogUserAction(AutofillMetrics::InfoBarMetric user_action);
+
+  // Whether the action is an upload or a local save.
+  bool upload_;
+
+  // The callback to save credit card if the user accepts the infobar.
+  base::Closure save_card_callback_;
+
+  // Did the user ever explicitly accept or dismiss this infobar?
+  bool had_user_interaction_;
+
   // The resource ID for the icon that identifies the issuer of the card.
   int issuer_icon_id_;
 

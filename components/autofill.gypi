@@ -108,8 +108,6 @@
         'autofill/core/browser/autocomplete_history_manager.cc',
         'autofill/core/browser/autocomplete_history_manager.h',
         'autofill/core/browser/autofill-inl.h',
-        'autofill/core/browser/autofill_cc_infobar_delegate.cc',
-        'autofill/core/browser/autofill_cc_infobar_delegate.h',
         'autofill/core/browser/autofill_client.h',
         'autofill/core/browser/autofill_country.cc',
         'autofill/core/browser/autofill_country.h',

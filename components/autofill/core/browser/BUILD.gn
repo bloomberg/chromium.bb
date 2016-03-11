@@ -25,8 +25,6 @@ source_set("browser") {
     "autocomplete_history_manager.cc",
     "autocomplete_history_manager.h",
     "autofill-inl.h",
-    "autofill_cc_infobar_delegate.cc",
-    "autofill_cc_infobar_delegate.h",
     "autofill_client.h",
     "autofill_country.cc",
     "autofill_country.h",

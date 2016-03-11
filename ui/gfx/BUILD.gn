@@ -446,7 +446,6 @@ action("aggregate_vector_icons") {
     "vector_icons/account_box.icon",
     "vector_icons/account_child_invert.icon",
     "vector_icons/apps.icon",
-    "vector_icons/autofill.icon",
     "vector_icons/autologin.icon",
     "vector_icons/bar_close.1x.icon",
     "vector_icons/bar_close.icon",
