@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
-#include "content/test/gpu_memory_buffer_factory_test_template.h"
+#include "content/common/gpu/gpu_memory_buffer_factory_test_template.h"
 
 namespace content {
 namespace {
