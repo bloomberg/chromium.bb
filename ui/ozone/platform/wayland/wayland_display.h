@@ -11,6 +11,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
+#include "ui/ozone/platform/wayland/wayland_pointer.h"
 
 namespace ui {
 
@@ -39,6 +40,7 @@ class WaylandDisplay : public PlatformEventSource,
 
  private:
   void Flush();
+  void DispatchUiEvent(Event* event);
 
   // PlatformEventSource
   void OnDispatcherListChanged() override;
@@ -55,6 +57,10 @@ class WaylandDisplay : public PlatformEventSource,
                      uint32_t version);
   static void GlobalRemove(void* data, wl_registry* registry, uint32_t name);
 
+  // wl_seat_listener
+  static void Capabilities(void* data, wl_seat* seat, uint32_t capabilities);
+  static void Name(void* data, wl_seat* seat, const char* name);
+
   // xdg_shell_listener
   static void Ping(void* data, xdg_shell* shell, uint32_t serial);
 
@@ -63,8 +69,11 @@ class WaylandDisplay : public PlatformEventSource,
   wl::Object<wl_display> display_;
   wl::Object<wl_registry> registry_;
   wl::Object<wl_compositor> compositor_;
+  wl::Object<wl_seat> seat_;
   wl::Object<wl_shm> shm_;
   wl::Object<xdg_shell> shell_;
+
+  scoped_ptr<WaylandPointer> pointer_;
 
   bool scheduled_flush_ = false;
   bool watching_ = false;

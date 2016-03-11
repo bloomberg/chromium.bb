@@ -14,6 +14,8 @@ source_set("wayland") {
     "wayland_display.h",
     "wayland_object.cc",
     "wayland_object.h",
+    "wayland_pointer.cc",
+    "wayland_pointer.h",
     "wayland_surface_factory.cc",
     "wayland_surface_factory.h",
     "wayland_window.cc",
@@ -25,6 +27,7 @@ source_set("wayland") {
     "//skia",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:xdg_shell_protocol",
+    "//ui/events",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -44,6 +47,7 @@ source_set("wayland_unittests") {
     "fake_server.h",
     "mock_platform_window_delegate.cc",
     "wayland_display_unittest.cc",
+    "wayland_pointer_unittest.cc",
     "wayland_surface_factory_unittest.cc",
     "wayland_test.cc",
     "wayland_test.h",
@@ -59,4 +63,6 @@ source_set("wayland_unittests") {
     "//ui/gfx:test_support",
     "//ui/ozone:platform",
   ]
+
+  defines = [ "WL_HIDE_DEPRECATED" ]
 }

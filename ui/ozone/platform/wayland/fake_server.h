@@ -71,6 +71,15 @@ class MockSurface : public ServerObject {
   DISALLOW_COPY_AND_ASSIGN(MockSurface);
 };
 
+class MockPointer : public ServerObject {
+ public:
+  MockPointer(wl_resource* resource);
+  ~MockPointer() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPointer);
+};
+
 struct GlobalDeleter {
   void operator()(wl_global* global);
 };
@@ -118,6 +127,17 @@ class MockCompositor : public Global {
   DISALLOW_COPY_AND_ASSIGN(MockCompositor);
 };
 
+class MockSeat : public Global {
+ public:
+  MockSeat();
+  ~MockSeat() override;
+
+  scoped_ptr<MockPointer> pointer;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSeat);
+};
+
 class MockXdgShell : public Global {
  public:
   MockXdgShell();
@@ -158,6 +178,7 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
     return resource ? T::FromResource(resource) : nullptr;
   }
 
+  MockSeat* seat() { return &seat_; }
   MockXdgShell* xdg_shell() { return &xdg_shell_; }
 
  private:
@@ -178,6 +199,7 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
   bool paused_ = false;
 
   MockCompositor compositor_;
+  MockSeat seat_;
   MockXdgShell xdg_shell_;
 
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;

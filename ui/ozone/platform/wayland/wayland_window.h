@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_WINDOW_H_
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_WINDOW_H_
 
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
@@ -14,12 +15,14 @@ namespace ui {
 
 class WaylandDisplay;
 
-class WaylandWindow : public PlatformWindow {
+class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
   WaylandWindow(PlatformWindowDelegate* delegate,
                 WaylandDisplay* display,
                 const gfx::Rect& bounds);
   ~WaylandWindow() override;
+
+  static WaylandWindow* FromSurface(wl_surface* surface);
 
   bool Initialize();
 
@@ -28,6 +31,9 @@ class WaylandWindow : public PlatformWindow {
   // Apply the bounds specified in the most recent configure event. This should
   // be called after processing all pending events in the wayland connection.
   void ApplyPendingBounds();
+
+  // Set whether this window has pointer focus and should dispatch mouse events.
+  void set_pointer_focus(bool focus) { has_pointer_focus_ = focus; }
 
   // PlatformWindow
   void Show() override;
@@ -46,6 +52,10 @@ class WaylandWindow : public PlatformWindow {
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   PlatformImeController* GetPlatformImeController() override;
+
+  // PlatformEventDispatcher
+  bool CanDispatchEvent(const PlatformEvent& event) override;
+  uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   // xdg_surface_listener
   static void Configure(void* data,
@@ -66,6 +76,7 @@ class WaylandWindow : public PlatformWindow {
   gfx::Rect bounds_;
   gfx::Rect pending_bounds_;
   uint32_t pending_configure_serial_;
+  bool has_pointer_focus_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindow);
 };

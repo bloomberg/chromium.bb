@@ -17,6 +17,7 @@ static_assert(XDG_SHELL_VERSION_CURRENT == 5, "Unsupported xdg-shell version");
 namespace ui {
 namespace {
 const uint32_t kMaxCompositorVersion = 4;
+const uint32_t kMaxSeatVersion = 4;
 const uint32_t kMaxShmVersion = 1;
 const uint32_t kMaxXdgShellVersion = 1;
 }  // namespace
@@ -51,6 +52,10 @@ bool WaylandDisplay::Initialize() {
   }
   if (!shm_) {
     LOG(ERROR) << "No wl_shm object";
+    return false;
+  }
+  if (!seat_) {
+    LOG(ERROR) << "No wl_seat object";
     return false;
   }
   if (!shell_) {
@@ -109,6 +114,10 @@ void WaylandDisplay::Flush() {
   scheduled_flush_ = false;
 }
 
+void WaylandDisplay::DispatchUiEvent(Event* event) {
+  PlatformEventSource::DispatchEvent(event);
+}
+
 void WaylandDisplay::OnFileCanReadWithoutBlocking(int fd) {
   wl_display_dispatch(display_.get());
   for (const auto& window : window_map_)
@@ -123,6 +132,9 @@ void WaylandDisplay::Global(void* data,
                             uint32_t name,
                             const char* interface,
                             uint32_t version) {
+  static const wl_seat_listener seat_listener = {
+      &WaylandDisplay::Capabilities, &WaylandDisplay::Name,
+  };
   static const xdg_shell_listener shell_listener = {
       &WaylandDisplay::Ping,
   };
@@ -138,6 +150,14 @@ void WaylandDisplay::Global(void* data,
         wl::Bind<wl_shm>(registry, name, std::min(version, kMaxShmVersion));
     if (!display->shm_)
       LOG(ERROR) << "Failed to bind to wl_shm global";
+  } else if (!display->seat_ && strcmp(interface, "wl_seat") == 0) {
+    display->seat_ =
+        wl::Bind<wl_seat>(registry, name, std::min(version, kMaxSeatVersion));
+    if (!display->seat_) {
+      LOG(ERROR) << "Failed to bind to wl_seat global";
+      return;
+    }
+    wl_seat_add_listener(display->seat_.get(), &seat_listener, display);
   } else if (!display->shell_ && strcmp(interface, "xdg_shell") == 0) {
     display->shell_ = wl::Bind<xdg_shell>(
         registry, name, std::min(version, kMaxXdgShellVersion));
@@ -159,6 +179,31 @@ void WaylandDisplay::GlobalRemove(void* data,
                                   uint32_t name) {
   NOTIMPLEMENTED();
 }
+
+// static
+void WaylandDisplay::Capabilities(void* data,
+                                  wl_seat* seat,
+                                  uint32_t capabilities) {
+  WaylandDisplay* display = static_cast<WaylandDisplay*>(data);
+  if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
+    if (!display->pointer_) {
+      wl_pointer* pointer = wl_seat_get_pointer(display->seat_.get());
+      if (!pointer) {
+        LOG(ERROR) << "Failed to get wl_pointer from seat";
+        return;
+      }
+      display->pointer_ = make_scoped_ptr(new WaylandPointer(
+          pointer, base::Bind(&WaylandDisplay::DispatchUiEvent,
+                              base::Unretained(display))));
+    }
+  } else if (display->pointer_) {
+    display->pointer_.reset();
+  }
+  display->ScheduleFlush();
+}
+
+// static
+void WaylandDisplay::Name(void* data, wl_seat* seat, const char* name) {}
 
 // static
 void WaylandDisplay::Ping(void* data, xdg_shell* shell, uint32_t serial) {

@@ -8,6 +8,23 @@
 #include <xdg-shell-unstable-v5-client-protocol.h>
 
 namespace wl {
+namespace {
+
+void delete_pointer(wl_pointer* pointer) {
+  if (wl_pointer_get_version(pointer) >= WL_POINTER_RELEASE_SINCE_VERSION)
+    wl_pointer_release(pointer);
+  else
+    wl_pointer_destroy(pointer);
+}
+
+void delete_seat(wl_seat* seat) {
+  if (wl_seat_get_version(seat) >= WL_SEAT_RELEASE_SINCE_VERSION)
+    wl_seat_release(seat);
+  else
+    wl_seat_destroy(seat);
+}
+
+}  // namespace
 
 const wl_interface* ObjectTraits<wl_buffer>::interface = &wl_buffer_interface;
 void (*ObjectTraits<wl_buffer>::deleter)(wl_buffer*) = &wl_buffer_destroy;
@@ -20,9 +37,15 @@ void (*ObjectTraits<wl_compositor>::deleter)(wl_compositor*) =
 const wl_interface* ObjectTraits<wl_display>::interface = &wl_display_interface;
 void (*ObjectTraits<wl_display>::deleter)(wl_display*) = &wl_display_disconnect;
 
+const wl_interface* ObjectTraits<wl_pointer>::interface = &wl_pointer_interface;
+void (*ObjectTraits<wl_pointer>::deleter)(wl_pointer*) = &delete_pointer;
+
 const wl_interface* ObjectTraits<wl_registry>::interface =
     &wl_registry_interface;
 void (*ObjectTraits<wl_registry>::deleter)(wl_registry*) = &wl_registry_destroy;
+
+const wl_interface* ObjectTraits<wl_seat>::interface = &wl_seat_interface;
+void (*ObjectTraits<wl_seat>::deleter)(wl_seat*) = &delete_seat;
 
 const wl_interface* ObjectTraits<wl_shm>::interface = &wl_shm_interface;
 void (*ObjectTraits<wl_shm>::deleter)(wl_shm*) = &wl_shm_destroy;

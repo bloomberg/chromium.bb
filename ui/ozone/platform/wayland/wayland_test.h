@@ -27,10 +27,10 @@ class WaylandTest : public testing::Test {
 
  private:
   bool initialized = false;
-  wl::FakeServer server;
   base::MessageLoopForUI message_loop;
 
  protected:
+  wl::FakeServer server;
   wl::MockSurface* surface;
 
   WaylandDisplay display;

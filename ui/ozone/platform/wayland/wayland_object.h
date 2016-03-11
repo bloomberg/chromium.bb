@@ -11,7 +11,9 @@
 
 struct wl_buffer;
 struct wl_compositor;
+struct wl_pointer;
 struct wl_registry;
+struct wl_seat;
 struct wl_shm;
 struct wl_shm_pool;
 struct wl_surface;
@@ -42,9 +44,21 @@ struct ObjectTraits<wl_display> {
 };
 
 template <>
+struct ObjectTraits<wl_pointer> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_pointer*);
+};
+
+template <>
 struct ObjectTraits<wl_registry> {
   static const wl_interface* interface;
   static void (*deleter)(wl_registry*);
+};
+
+template <>
+struct ObjectTraits<wl_seat> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_seat*);
 };
 
 template <>

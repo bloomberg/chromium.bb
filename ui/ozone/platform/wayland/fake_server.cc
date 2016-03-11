@@ -17,6 +17,7 @@ namespace wl {
 namespace {
 
 const uint32_t kCompositorVersion = 4;
+const uint32_t kSeatVersion = 4;
 const uint32_t kXdgShellVersion = 1;
 
 void DestroyResource(wl_client* client, wl_resource* resource) {
@@ -121,6 +122,33 @@ const struct xdg_shell_interface xdg_shell_impl = {
     &Pong,                // pong
 };
 
+// wl_seat
+
+void GetPointer(wl_client* client, wl_resource* resource, uint32_t id) {
+  auto seat = static_cast<MockSeat*>(wl_resource_get_user_data(resource));
+  wl_resource* pointer_resource = wl_resource_create(
+      client, &wl_pointer_interface, wl_resource_get_version(resource), id);
+  if (!pointer_resource) {
+    wl_client_post_no_memory(client);
+    return;
+  }
+  seat->pointer.reset(new MockPointer(pointer_resource));
+}
+
+const struct wl_seat_interface seat_impl = {
+    &GetPointer,       // get_pointer
+    nullptr,           // get_keyboard
+    nullptr,           // get_touch,
+    &DestroyResource,  // release
+};
+
+// wl_pointer
+
+const struct wl_pointer_interface pointer_impl = {
+    nullptr,           // set_cursor
+    &DestroyResource,  // release
+};
+
 // xdg_surface
 
 void SetTitle(wl_client* client, wl_resource* resource, const char* title) {
@@ -208,6 +236,13 @@ MockSurface* MockSurface::FromResource(wl_resource* resource) {
   return static_cast<MockSurface*>(wl_resource_get_user_data(resource));
 }
 
+MockPointer::MockPointer(wl_resource* resource) : ServerObject(resource) {
+  wl_resource_set_implementation(resource, &pointer_impl, this,
+                                 &ServerObject::OnResourceDestroyed);
+}
+
+MockPointer::~MockPointer() {}
+
 void GlobalDeleter::operator()(wl_global* global) {
   wl_global_destroy(global);
 }
@@ -260,6 +295,10 @@ void MockCompositor::AddSurface(scoped_ptr<MockSurface> surface) {
   surfaces_.push_back(std::move(surface));
 }
 
+MockSeat::MockSeat() : Global(&wl_seat_interface, &seat_impl, kSeatVersion) {}
+
+MockSeat::~MockSeat() {}
+
 MockXdgShell::MockXdgShell()
     : Global(&xdg_shell_interface, &xdg_shell_impl, kXdgShellVersion) {}
 
@@ -294,6 +333,8 @@ bool FakeServer::Start() {
   if (wl_display_init_shm(display_.get()) < 0)
     return false;
   if (!compositor_.Initialize(display_.get()))
+    return false;
+  if (!seat_.Initialize(display_.get()))
     return false;
   if (!xdg_shell_.Initialize(display_.get()))
     return false;

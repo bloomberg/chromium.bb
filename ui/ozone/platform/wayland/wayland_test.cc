@@ -19,7 +19,6 @@ WaylandTest::~WaylandTest() {}
 void WaylandTest::SetUp() {
   ASSERT_TRUE(server.Start());
   ASSERT_TRUE(display.Initialize());
-  display.StartProcessingEvents();
   EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_, _))
       .WillOnce(SaveArg<0>(&widget));
   ASSERT_TRUE(window.Initialize());
