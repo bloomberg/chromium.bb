@@ -144,4 +144,12 @@ size_t MojoSharedBufferVideoFrame::PlaneOffset(size_t plane) const {
   return offsets_[plane];
 }
 
+const mojo::SharedBufferHandle& MojoSharedBufferVideoFrame::Handle() const {
+  return shared_buffer_handle_.get();
+}
+
+size_t MojoSharedBufferVideoFrame::MappedSize() const {
+  return shared_buffer_size_;
+}
+
 }  // namespace media

@@ -20,8 +20,10 @@
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/public/cpp/system/buffer.h"
 
 namespace mojo {
 
@@ -292,54 +294,6 @@ ASSERT_CDM_KEY_STATUS(KEY_STATUS_PENDING);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_REQUEST);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_RENEWAL);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_RELEASE);
-
-namespace {
-
-// Copy the data for plane |plane| from |input| into the vector |dest|. This
-// function only copies the actual frame data. Any padding data is skipped.
-void CopyPlaneDataToVector(const scoped_refptr<media::VideoFrame>& input,
-                           size_t plane,
-                           std::vector<uint8_t>* dest) {
-  DCHECK(dest->empty());
-  uint8_t* source = input->data(plane);
-  size_t num_rows = input->rows(plane);
-  size_t stride = input->stride(plane);
-  size_t row_bytes = input->row_bytes(plane);
-  DCHECK_GE(stride, row_bytes);
-
-  // Copy |row_bytes| for each row, but increment by |stride| to point at the
-  // subsequent row.
-  dest->reserve(num_rows * row_bytes);
-  for (size_t i = 0; i < num_rows; ++i) {
-    dest->insert(dest->end(), source, source + row_bytes);
-    source += stride;
-  }
-}
-
-// Copy the data from |input| into the plane |plane| of |frame|. If there is
-// padding in |frame|, it is unchanged.
-void CopyPlaneData(const std::vector<uint8_t>& input,
-                   size_t plane,
-                   const scoped_refptr<media::VideoFrame>& frame) {
-  const uint8_t* source = input.data();
-  uint8_t* dest = frame->data(plane);
-  size_t num_rows = frame->rows(plane);
-  size_t stride = frame->stride(plane);
-  size_t row_bytes = frame->row_bytes(plane);
-  DCHECK_GE(stride, row_bytes);
-  DCHECK_EQ(input.size(), num_rows * row_bytes);
-
-  // Copy |row_bytes| for each row. |input| contains only the data bytes, so
-  // |source| is only incremented by |row_bytes|. |dest| may contain padding,
-  // so increment by |stride| to point at the subsequent row.
-  for (size_t i = 0; i < num_rows; ++i) {
-    memcpy(dest, source, row_bytes);
-    source += row_bytes;
-    dest += stride;
-  }
-}
-
-}  // namespace
 
 // static
 media::interfaces::SubsampleEntryPtr TypeConverter<
@@ -643,36 +597,38 @@ media::interfaces::VideoFramePtr
 TypeConverter<media::interfaces::VideoFramePtr,
               scoped_refptr<media::VideoFrame>>::
     Convert(const scoped_refptr<media::VideoFrame>& input) {
-  media::interfaces::VideoFramePtr buffer(media::interfaces::VideoFrame::New());
-  buffer->end_of_stream =
+  media::interfaces::VideoFramePtr frame(media::interfaces::VideoFrame::New());
+  frame->end_of_stream =
       input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM);
-  if (buffer->end_of_stream)
-    return buffer;
+  if (frame->end_of_stream)
+    return frame;
 
-  // handle non EOS buffer.
-  buffer->format = static_cast<media::interfaces::VideoFormat>(input->format());
-  buffer->coded_size = Size::From(input->coded_size());
-  buffer->visible_rect = Rect::From(input->visible_rect());
-  buffer->natural_size = Size::From(input->natural_size());
-  buffer->timestamp_usec = input->timestamp().InMicroseconds();
+  // Handle non EOS frame. It must be a MojoSharedBufferVideoFrame.
+  // TODO(jrummell): Support other types of VideoFrame.
+  CHECK_EQ(media::VideoFrame::STORAGE_MOJO_SHARED_BUFFER,
+           input->storage_type());
+  media::MojoSharedBufferVideoFrame* input_frame =
+      static_cast<media::MojoSharedBufferVideoFrame*>(input.get());
+  mojo::ScopedSharedBufferHandle duplicated_handle;
+  const MojoResult result =
+      DuplicateBuffer(input_frame->Handle(), nullptr, &duplicated_handle);
+  CHECK_EQ(MOJO_RESULT_OK, result);
+  CHECK(duplicated_handle.is_valid());
 
-  if (!input->coded_size().IsEmpty()) {
-    // TODO(jrummell): Use a shared buffer rather than copying the data for
-    // each plane.
-    std::vector<uint8_t> y_data;
-    CopyPlaneDataToVector(input, media::VideoFrame::kYPlane, &y_data);
-    buffer->y_data.Swap(&y_data);
-
-    std::vector<uint8_t> u_data;
-    CopyPlaneDataToVector(input, media::VideoFrame::kUPlane, &u_data);
-    buffer->u_data.Swap(&u_data);
-
-    std::vector<uint8_t> v_data;
-    CopyPlaneDataToVector(input, media::VideoFrame::kVPlane, &v_data);
-    buffer->v_data.Swap(&v_data);
-  }
-
-  return buffer;
+  frame->format = static_cast<media::interfaces::VideoFormat>(input->format());
+  frame->coded_size = Size::From(input->coded_size());
+  frame->visible_rect = Rect::From(input->visible_rect());
+  frame->natural_size = Size::From(input->natural_size());
+  frame->timestamp_usec = input->timestamp().InMicroseconds();
+  frame->frame_data = std::move(duplicated_handle);
+  frame->frame_data_size = input_frame->MappedSize();
+  frame->y_stride = input_frame->stride(media::VideoFrame::kYPlane);
+  frame->u_stride = input_frame->stride(media::VideoFrame::kUPlane);
+  frame->v_stride = input_frame->stride(media::VideoFrame::kVPlane);
+  frame->y_offset = input_frame->PlaneOffset(media::VideoFrame::kYPlane);
+  frame->u_offset = input_frame->PlaneOffset(media::VideoFrame::kUPlane);
+  frame->v_offset = input_frame->PlaneOffset(media::VideoFrame::kVPlane);
+  return frame;
 }
 
 // static
@@ -683,16 +639,16 @@ TypeConverter<scoped_refptr<media::VideoFrame>,
   if (input->end_of_stream)
     return media::VideoFrame::CreateEOSFrame();
 
-  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::CreateFrame(
+  return media::MojoSharedBufferVideoFrame::Create(
       static_cast<media::VideoPixelFormat>(input->format),
       input->coded_size.To<gfx::Size>(), input->visible_rect.To<gfx::Rect>(),
-      input->natural_size.To<gfx::Size>(),
+      input->natural_size.To<gfx::Size>(), std::move(input->frame_data),
+      base::saturated_cast<size_t>(input->frame_data_size),
+      base::saturated_cast<size_t>(input->y_offset),
+      base::saturated_cast<size_t>(input->u_offset),
+      base::saturated_cast<size_t>(input->v_offset), input->y_stride,
+      input->u_stride, input->v_stride,
       base::TimeDelta::FromMicroseconds(input->timestamp_usec));
-  CopyPlaneData(input->y_data.storage(), media::VideoFrame::kYPlane, frame);
-  CopyPlaneData(input->u_data.storage(), media::VideoFrame::kUPlane, frame);
-  CopyPlaneData(input->v_data.storage(), media::VideoFrame::kVPlane, frame);
-
-  return frame;
 }
 
 }  // namespace mojo
