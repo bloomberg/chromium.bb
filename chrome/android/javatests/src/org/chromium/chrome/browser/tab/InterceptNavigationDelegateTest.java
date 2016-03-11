@@ -17,6 +17,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -66,15 +67,14 @@ public class InterceptNavigationDelegateTest extends ChromeActivityTestCaseBase<
         startMainActivityOnBlankPage();
     }
 
-    private void waitTillExpectedCallsComplete(final int count, long timeout) {
+    private void waitTillExpectedCallsComplete(int count, long timeout) {
         try {
-            CriteriaHelper.pollForCriteria(new Criteria(
-                    "Failed while waiting for all calls to complete.") {
+            CriteriaHelper.pollForCriteria(Criteria.equals(count, new Callable<Integer>() {
                 @Override
-                public boolean isSatisfied() {
-                    return mHistory.size() == count;
+                public Integer call() {
+                    return mHistory.size();
                 }
-            }, timeout, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+            }), timeout, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         } catch (InterruptedException e) {
             fail("Failed while waiting for all calls to complete." + e);
         }

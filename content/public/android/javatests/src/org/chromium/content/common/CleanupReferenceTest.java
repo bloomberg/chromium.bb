@@ -12,6 +12,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** Test suite for {@link CleanupReference}. */
@@ -66,12 +67,12 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         // Ensure compiler / instrumentation does not strip out the assignment.
         assertTrue(instance == null);
         collectGarbage();
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return sObjectCount.get() == 0;
+            public Integer call() {
+                return sObjectCount.get();
             }
-        });
+        }));
     }
 
     @SuppressFBWarnings("UC_USELESS_OBJECT")
@@ -95,12 +96,12 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         // to be GC'ed only when building using GN.
         assertTrue(sObjectCount.get() != -1);
         collectGarbage();
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return sObjectCount.get() == 0;
+            public Integer call() {
+                return sObjectCount.get();
             }
-        });
+        }));
     }
 
 }

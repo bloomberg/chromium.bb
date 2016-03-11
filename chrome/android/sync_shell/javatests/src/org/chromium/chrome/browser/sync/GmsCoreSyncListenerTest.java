@@ -13,6 +13,8 @@ import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.concurrent.Callable;
+
 /**
  * Test suite for the GmsCoreSyncListener.
  */
@@ -117,13 +119,12 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
         });
     }
 
-    private void waitForCallCount(final int count) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    private void waitForCallCount(int count) throws InterruptedException {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(count, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return mListener.callCount() == count;
+            public Integer call() {
+                return mListener.callCount();
             }
-        });
-        assertEquals(count, mListener.callCount());
+        }));
     }
 }

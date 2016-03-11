@@ -22,6 +22,8 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 
+import java.util.concurrent.Callable;
+
 /**
  * Tests that Document mode handles referrers correctly.
  */
@@ -85,12 +87,12 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         IntentHandler.addTrustedIntentExtras(intent, mContext);
         mContext.startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(URL_1, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                return URL_1.equals(mUrl);
+            public String call() {
+                return mUrl;
             }
-        });
+        }));
 
         assertEquals(URL_2, mReferrer);
     }
@@ -138,12 +140,12 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(androidAppReferrer));
         mContext.startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(URL_1, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                return URL_1.equals(mUrl);
+            public String call() {
+                return mUrl;
             }
-        });
+        }));
 
         assertEquals(androidAppReferrer, mReferrer);
     }
@@ -191,12 +193,12 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(nonAppExtra));
         mContext.startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(URL_1, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                return URL_1.equals(mUrl);
+            public String call() {
+                return mUrl;
             }
-        });
+        }));
 
         // Check that referrer is not carried over
         assertNull(mReferrer);
@@ -246,12 +248,12 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         IntentHandler.setPendingReferrer(intent, "http://www.google.com");
         mContext.startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(URL_1, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                return URL_1.equals(mUrl);
+            public String call() {
+                return mUrl;
             }
-        });
+        }));
 
         // Check that referrer is not carried over
         assertEquals("http://www.google.com", mReferrer);

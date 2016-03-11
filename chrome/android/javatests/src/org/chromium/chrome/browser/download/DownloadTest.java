@@ -28,6 +28,7 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
+import java.util.concurrent.Callable;
 
 /**
  * Tests Chrome download feature by attempting to download some files.
@@ -127,12 +128,13 @@ public class DownloadTest extends DownloadTestBase {
         assertEquals(mTestServer.getURL("/chrome/test/data/android/download/test.gzip"),
                 callbackHelper.getDownloadInfo().getUrl());
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getCurrentTabModel().getCount() == initialTabCount;
-            }
-        });
+        CriteriaHelper.pollForUIThreadCriteria(
+                Criteria.equals(initialTabCount, new Callable<Integer>() {
+                    @Override
+                    public Integer call() {
+                        return getActivity().getCurrentTabModel().getCount();
+                    }
+                }));
     }
 
     @MediumTest

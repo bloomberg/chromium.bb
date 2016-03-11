@@ -36,6 +36,7 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -148,18 +149,18 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
         });
     }
 
-    private void waitForCheckedState(final Preferences preferenceActivity, final boolean isChecked)
+    private void waitForCheckedState(final Preferences preferenceActivity, boolean isChecked)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(isChecked, new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
+            public Boolean call() {
                 // The underlying switch view in the preference can change, so we need to fetch
                 // it each time to ensure we are checking the activity view.
                 SwitchCompat homepageSwitch =
                         (SwitchCompat) preferenceActivity.findViewById(R.id.switch_widget);
-                return homepageSwitch.isChecked() == isChecked;
+                return homepageSwitch.isChecked();
             }
-        });
+        }));
     }
 
     /**

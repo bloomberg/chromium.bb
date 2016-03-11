@@ -27,6 +27,8 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.concurrent.Callable;
+
 /**
  * Tests AppMenu popup
  */
@@ -92,12 +94,12 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mAppMenu.getPopup().getListView().setSelection(0);
             }
         });
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return getCurrentFocusedRow() == 0;
+            public Integer call() {
+                return getCurrentFocusedRow();
             }
-        });
+        }));
         getInstrumentation().waitForIdleSync();
     }
 
@@ -244,23 +246,23 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             pressKey(towardsTop ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN);
             final int expectedPosition = index + increment;
             CriteriaHelper.pollForCriteria(
-                    new Criteria("Focus did not move to the next menu item") {
+                    Criteria.equals(expectedPosition, new Callable<Integer>() {
                         @Override
-                        public boolean isSatisfied() {
-                            return getCurrentFocusedRow() == expectedPosition;
+                        public Integer call() {
+                            return getCurrentFocusedRow();
                         }
-                    });
+                    }));
         }
 
         // Try moving past it by one.
         if (movePast) {
             pressKey(towardsTop ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN);
-            CriteriaHelper.pollForCriteria(new Criteria("Focus moved past the edge menu item") {
+            CriteriaHelper.pollForCriteria(Criteria.equals(end, new Callable<Integer>() {
                 @Override
-                public boolean isSatisfied() {
-                    return getCurrentFocusedRow() == end;
+                public Integer call() {
+                    return getCurrentFocusedRow();
                 }
-            });
+            }));
         }
 
         // The menu should stay open.

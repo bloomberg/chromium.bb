@@ -16,6 +16,8 @@ import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.concurrent.Callable;
+
 /**
  * Tests for launching Chrome.
  */
@@ -41,13 +43,13 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
         mContext.startActivity(intent);
 
         // Check that Chrome launched successfully
-        CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int state = ApplicationStatus.getStateForApplication();
-                return state == ApplicationState.HAS_RUNNING_ACTIVITIES;
-            }
-        });
+        CriteriaHelper.pollForCriteria(
+                Criteria.equals(ApplicationState.HAS_RUNNING_ACTIVITIES, new Callable<Integer>() {
+                    @Override
+                    public Integer call() {
+                        return ApplicationStatus.getStateForApplication();
+                    }
+                }));
     }
 
     @Override

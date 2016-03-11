@@ -198,14 +198,14 @@ public class ContentShellTestBase
      * Waits till the ContentViewCore receives the expected page scale factor
      * from the compositor and asserts that this happens.
      */
-    protected void assertWaitForPageScaleFactorMatch(final float expectedScale)
+    protected void assertWaitForPageScaleFactorMatch(float expectedScale)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(expectedScale, new Callable<Float>() {
             @Override
-            public boolean isSatisfied() {
-                return getContentViewCore().getScale() == expectedScale;
+            public Float call() {
+                return getContentViewCore().getScale();
             }
-        });
+        }));
     }
 
     /**

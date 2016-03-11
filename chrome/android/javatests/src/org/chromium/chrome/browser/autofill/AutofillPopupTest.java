@@ -27,6 +27,7 @@ import org.chromium.ui.autofill.AutofillPopup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -305,12 +306,12 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
     private void waitForKeyboardShowRequest(final TestInputMethodManagerWrapper immw,
             final int count) throws InterruptedException {
         CriteriaHelper.pollForUIThreadCriteria(
-                new Criteria("Keyboard was never requested to be shown.") {
+                Criteria.equals(count, new Callable<Integer>() {
                     @Override
-                    public boolean isSatisfied() {
-                        return immw.getShowSoftInputCounter() == count;
+                    public Integer call() {
+                        return immw.getShowSoftInputCounter();
                     }
-                });
+                }));
     }
 
     private void waitForAnchorViewAdd(final ViewGroup view) throws InterruptedException {

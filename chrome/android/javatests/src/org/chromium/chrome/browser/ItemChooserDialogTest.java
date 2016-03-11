@@ -80,8 +80,8 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         return dialog;
     }
 
-    private void selectItem(Dialog dialog, int position, final String expectedItemId,
-            final boolean expectedEnabledState) throws InterruptedException {
+    private void selectItem(Dialog dialog, int position, String expectedItemId,
+            boolean expectedEnabledState) throws InterruptedException {
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
@@ -95,23 +95,25 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         // Verify first item selected gets selected.
         TouchCommon.singleClickView(items.getChildAt(position - 1));
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return button.isEnabled() == expectedEnabledState;
-            }
-        });
+        CriteriaHelper.pollForUIThreadCriteria(
+                Criteria.equals(expectedEnabledState, new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() {
+                        return button.isEnabled();
+                    }
+                }));
 
         if (!expectedEnabledState) return;
 
         TouchCommon.singleClickView(button);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mLastSelectedId.equals(expectedItemId);
-            }
-        });
+        CriteriaHelper.pollForUIThreadCriteria(
+                Criteria.equals(expectedItemId, new Callable<String>() {
+                    @Override
+                    public String call() {
+                        return mLastSelectedId;
+                    }
+                }));
     }
 
     @SmallTest

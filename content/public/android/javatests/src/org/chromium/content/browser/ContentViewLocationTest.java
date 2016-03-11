@@ -15,6 +15,8 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEval
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
+import java.util.concurrent.Callable;
+
 /**
  * Test suite for ensureing that Geolocation interacts as expected
  * with ContentView APIs - e.g. that it's started and stopped as the
@@ -71,12 +73,12 @@ public class ContentViewLocationTest extends ContentShellTestBase {
     }
 
     private void ensureGeolocationRunning(final boolean running) throws Exception {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(running, new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
-                return mMockLocationProvider.isRunning() == running;
+            public Boolean call() {
+                return mMockLocationProvider.isRunning();
             }
-        });
+        }));
     }
 
     @Override

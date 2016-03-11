@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.omaha.OmahaClient;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.concurrent.Callable;
+
 /**
  * Methods used for testing Chrome at the Application-level.
  */
@@ -106,13 +108,13 @@ public class ApplicationTestUtils {
 
     /** Waits until Chrome is in the foreground. */
     public static void waitUntilChromeInForeground() throws Exception {
-        CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int state = ApplicationStatus.getStateForApplication();
-                return state == ApplicationState.HAS_RUNNING_ACTIVITIES;
-            }
-        });
+        CriteriaHelper.pollForCriteria(
+                Criteria.equals(ApplicationState.HAS_RUNNING_ACTIVITIES, new Callable<Integer>() {
+                    @Override
+                    public Integer call() {
+                        return ApplicationStatus.getStateForApplication();
+                    }
+                }));
     }
 
     /** Finishes all tasks Chrome has listed in Android's Overview. */
@@ -125,12 +127,12 @@ public class ApplicationTestUtils {
             task.finishAndRemoveTask();
         }
 
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return getNumChromeTasks(context) == 0;
+            public Integer call() {
+                return getNumChromeTasks(context);
             }
-        });
+        }));
     }
 
     /** Counts how many tasks Chrome has listed in Android's Overview. */

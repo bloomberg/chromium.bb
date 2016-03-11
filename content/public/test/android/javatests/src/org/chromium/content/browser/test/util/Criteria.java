@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser.test.util;
 
+import java.util.concurrent.Callable;
+
 /**
  * Provides a means for validating whether some condition/criteria has been met.
  * <p>
@@ -50,6 +52,34 @@ public abstract class Criteria {
      */
     public void updateFailureReason(String reason) {
         mFailureReason = reason;
+    }
+
+    /**
+     * Constructs a Criteria that will determine the equality of two items.
+     *
+     * <p>
+     * <pre>
+     * Sample Usage:
+     * <code>
+     * public void waitForTabTitle(final Tab tab, String title) {
+     *     CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(title, new Callable<String>() {
+     *         {@literal @}Override
+     *         public String call() {
+     *             return tab.getTitle();
+     *         }
+     *     }));
+     * }
+     * </code>
+     * </pre>
+     *
+     * @param <T> The type of value whose equality will be tested.
+     * @param expectedValue The value that is expected to determine the success of the criteria.
+     * @param actualValueCallable A {@link Callable} that provides a way of getting the current
+     *                            actual value.
+     * @return A Criteria that will check the equality of the passed in data.
+     */
+    public static <T> Criteria equals(T expectedValue, Callable<T> actualValueCallable) {
+        return new EqualityCriteria<T>(expectedValue, actualValueCallable);
     }
 
 }

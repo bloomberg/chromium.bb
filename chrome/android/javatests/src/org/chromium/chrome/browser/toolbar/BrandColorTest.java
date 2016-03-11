@@ -26,6 +26,8 @@ import org.chromium.content.browser.InterstitialPageDelegateAndroid;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.util.concurrent.Callable;
+
 /**
  * Contains tests for the brand color feature.
  */
@@ -74,26 +76,25 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                             == mToolbar.getBackgroundDrawable().getColor();
                 }
             });
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria(
-                    "The overlay drawable doesn't contain the right color") {
-                @Override
-                public boolean isSatisfied() {
-                    return mToolbar.getOverlayDrawable().getColor() == brandColor;
-                }
-            });
+            CriteriaHelper.pollForUIThreadCriteria(
+                    Criteria.equals(brandColor, new Callable<Integer>() {
+                        @Override
+                        public Integer call() {
+                            return mToolbar.getOverlayDrawable().getColor();
+                        }
+                    }));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                     && !SysUtils.isLowEndDevice()) {
                 final int expectedStatusBarColor = brandColor == mDefaultColor
                         ? Color.BLACK
                         : ColorUtils.getDarkenedColorForStatusBar(brandColor);
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria(
-                        "The status bar is not set to the right color") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return expectedStatusBarColor
-                                == getActivity().getWindow().getStatusBarColor();
-                    }
-                });
+                CriteriaHelper.pollForUIThreadCriteria(
+                        Criteria.equals(expectedStatusBarColor, new Callable<Integer>() {
+                            @Override
+                            public Integer call() {
+                                return getActivity().getWindow().getStatusBarColor();
+                            }
+                        }));
             }
 
         } catch (InterruptedException e) {

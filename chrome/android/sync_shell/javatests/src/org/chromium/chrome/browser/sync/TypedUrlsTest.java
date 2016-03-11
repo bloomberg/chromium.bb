@@ -23,6 +23,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Test suite for the typed URLs sync data type.
@@ -140,18 +141,13 @@ public class TypedUrlsTest extends SyncTestBase {
                         count, ModelType.TYPED_URLS, name));
     }
 
-    private void waitForClientTypedUrlCount(final int count) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria(
-                "Expected " + count + " local typed URL entities.") {
+    private void waitForClientTypedUrlCount(int count) throws InterruptedException {
+        CriteriaHelper.pollForCriteria(Criteria.equals(count, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                try {
-                    return SyncTestUtil.getLocalData(mContext, TYPED_URLS_TYPE).size() == count;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+            public Integer call() throws Exception {
+                return SyncTestUtil.getLocalData(mContext, TYPED_URLS_TYPE).size();
             }
-        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+        }), SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     private void waitForServerTypedUrlCountWithName(final int count, final String name)

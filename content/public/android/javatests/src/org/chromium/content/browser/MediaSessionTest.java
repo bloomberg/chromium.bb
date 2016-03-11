@@ -17,6 +17,8 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
+import java.util.concurrent.Callable;
+
 /**
  * Tests for MediaSession.
  */
@@ -65,13 +67,13 @@ public class MediaSessionTest extends ContentShellTestBase {
             mAudioFocusState = AudioManager.AUDIOFOCUS_LOSS;
         }
 
-        public void waitForFocusStateChange(final int focusType) throws InterruptedException {
-            CriteriaHelper.pollForCriteria(new Criteria() {
+        public void waitForFocusStateChange(int focusType) throws InterruptedException {
+            CriteriaHelper.pollForCriteria(Criteria.equals(focusType, new Callable<Integer>() {
                 @Override
-                public boolean isSatisfied() {
-                    return getAudioFocusState() == focusType;
+                public Integer call() {
+                    return getAudioFocusState();
                 }
-            });
+            }));
         }
     }
 

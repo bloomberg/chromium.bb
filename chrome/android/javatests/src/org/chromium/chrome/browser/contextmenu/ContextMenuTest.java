@@ -10,7 +10,6 @@ import android.content.Context;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
-import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 
@@ -33,6 +32,7 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -157,14 +157,12 @@ public class ContextMenuTest extends DownloadTestBase {
 
         // Only check for the URL matching as the tab will not be fully created in svelte mode.
         final String expectedUrl = mTestServer.getURL(expectedPath);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(expectedUrl, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                String actualUrl = newTab.get().getUrl();
-                updateFailureReason("Expected URL: " + expectedUrl + ", actual: " + actualUrl);
-                return TextUtils.equals(actualUrl, expectedUrl);
+            public String call() {
+                return newTab.get().getUrl();
             }
-        });
+        }));
     }
 
     @MediumTest

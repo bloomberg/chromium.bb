@@ -299,14 +299,14 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private void waitForUrlFocusAnimationsDisabledState(final boolean disabled)
+    private void waitForUrlFocusAnimationsDisabledState(boolean disabled)
             throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(disabled, new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
-                return getUrlFocusAnimatonsDisabled() == disabled;
+            public Boolean call() {
+                return getUrlFocusAnimatonsDisabled();
             }
-        });
+        }));
     }
 
     private void waitForTabLoading() throws InterruptedException {
@@ -322,14 +322,14 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         waitForUrlFocusPercent(ntp, 1f);
     }
 
-    private void waitForUrlFocusPercent(final NewTabPage ntp, final float percent)
+    private void waitForUrlFocusPercent(final NewTabPage ntp, float percent)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(percent, new Callable<Float>() {
             @Override
-            public boolean isSatisfied() {
-                return ntp.getNewTabPageView().getUrlFocusChangeAnimationPercent() == percent;
+            public Float call() {
+                return ntp.getNewTabPageView().getUrlFocusChangeAnimationPercent();
             }
-        });
+        }));
     }
 
     private void clickFakebox() {
@@ -355,13 +355,13 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     /**
      * Waits until the top of the fakebox reaches the given position.
      */
-    private void waitForFakeboxTopPosition(final NewTabPage ntp, final int position)
+    private void waitForFakeboxTopPosition(final NewTabPage ntp, int position)
             throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(position, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return getFakeboxTop(ntp) == position;
+            public Integer call() {
+                return getFakeboxTop(ntp);
             }
-        });
+        }));
     }
 }

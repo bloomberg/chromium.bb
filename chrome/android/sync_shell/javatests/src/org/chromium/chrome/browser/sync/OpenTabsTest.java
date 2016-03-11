@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * Test suite for the open tabs (sessions) sync data type.
@@ -241,17 +242,12 @@ public class OpenTabsTest extends SyncTestBase {
             throws InterruptedException {
         final List<String> urlList = new ArrayList<String>(urls.length);
         for (String url : urls) urlList.add(url);
-        pollForCriteria(new Criteria("Expected local open tabs for client " + clientName + ": "
-                        + Arrays.toString(urls)) {
+        pollForCriteria(Criteria.equals(urlList, new Callable<List<String>>() {
             @Override
-            public boolean isSatisfied() {
-                try {
-                    return getLocalTabsForClient(clientName).urls.equals(urlList);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+            public List<String> call() throws Exception {
+                return getLocalTabsForClient(clientName).urls;
             }
-        });
+        }));
     }
 
     private void waitForServerTabs(final String... urls)
@@ -269,16 +265,12 @@ public class OpenTabsTest extends SyncTestBase {
     }
 
     private String getClientName() throws Exception {
-        pollForCriteria(new Criteria("Expected 2 entities when getting the client name.") {
+        pollForCriteria(Criteria.equals(2, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                try {
-                    return SyncTestUtil.getLocalData(mContext, OPEN_TABS_TYPE).size() == 2;
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
+            public Integer call() throws Exception {
+                return SyncTestUtil.getLocalData(mContext, OPEN_TABS_TYPE).size();
             }
-        });
+        }));
         List<Pair<String, JSONObject>> tabEntities = SyncTestUtil.getLocalData(
                 mContext, OPEN_TABS_TYPE);
         for (Pair<String, JSONObject> tabEntity : tabEntities) {

@@ -19,6 +19,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Test suite for the autofill profile sync data type.
@@ -181,18 +182,13 @@ public class AutofillTest extends SyncTestBase {
                         count, ModelType.AUTOFILL_PROFILE, name));
     }
 
-    private void waitForClientAutofillProfileCount(final int count) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria(
-                "Expected " + count + " local autofill profiles.") {
+    private void waitForClientAutofillProfileCount(int count) throws InterruptedException {
+        CriteriaHelper.pollForCriteria(Criteria.equals(count, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                try {
-                    return SyncTestUtil.getLocalData(mContext, AUTOFILL_TYPE).size() == count;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+            public Integer call() throws Exception {
+                return SyncTestUtil.getLocalData(mContext, AUTOFILL_TYPE).size();
             }
-        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+        }), SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     private void waitForServerAutofillProfileCountWithName(final int count, final String name)

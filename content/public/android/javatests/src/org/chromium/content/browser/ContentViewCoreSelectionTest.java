@@ -468,12 +468,13 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertEquals(mContentViewCore.getSelectedText(), "SampleTextArea");
         hideSelectActionMode();
         waitForSelectActionBarVisible(false);
-        CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return "SampleTextArea".equals(getTextBeforeCursor(50, 0));
-            }
-        });
+        CriteriaHelper.pollForCriteria(
+                Criteria.equals("SampleTextArea", new Callable<CharSequence>() {
+                    @Override
+                    public CharSequence call() {
+                        return getTextBeforeCursor(50, 0);
+                    }
+                }));
     }
 
     @SmallTest
@@ -659,12 +660,12 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     private void waitForSelectActionBarVisible(
             final boolean visible) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(visible, new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
-                return visible == mContentViewCore.isSelectActionBarShowing();
+            public Boolean call() {
+                return mContentViewCore.isSelectActionBarShowing();
             }
-        });
+        }));
     }
 
     private void setVisibileOnUiThread(final boolean show) {
@@ -714,11 +715,11 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
     }
 
     private void waitForPastePopupStatus(final boolean show) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(show, new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
-                return show == mContentViewCore.isPastePopupShowing();
+            public Boolean call() {
+                return mContentViewCore.isPastePopupShowing();
             }
-        });
+        }));
     }
 }

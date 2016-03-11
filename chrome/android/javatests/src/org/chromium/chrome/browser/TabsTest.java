@@ -70,6 +70,7 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Locale;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -156,12 +157,12 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria("Tab never spawned in normal model.") {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(2, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return getActivity().getTabModelSelector().getModel(false).getCount() == 2;
+            public Integer call() {
+                return getActivity().getTabModelSelector().getModel(false).getCount();
             }
-        });
+        }));
     }
 
     @MediumTest

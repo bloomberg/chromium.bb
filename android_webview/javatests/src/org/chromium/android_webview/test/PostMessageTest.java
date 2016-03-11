@@ -4,12 +4,11 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.os.Handler;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.webkit.JavascriptInterface;
-
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-import static org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwMessagePort;
@@ -21,6 +20,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.Callable;
@@ -156,15 +156,13 @@ public class PostMessageTest extends AwTestBase {
             + "</body></html>";
 
     // Call on non-UI thread.
-    private void expectTitle(final String title) throws Throwable {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+    private void expectTitle(String title) throws Throwable {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(title, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                updateFailureReason(
-                        "Received title " + mAwContents.getTitle() + " while expecting " + title);
-                return mAwContents.getTitle().equals(title);
+            public String call() {
+                return mAwContents.getTitle();
             }
-        });
+        }));
     }
 
     private void loadPage(String page) throws Throwable {

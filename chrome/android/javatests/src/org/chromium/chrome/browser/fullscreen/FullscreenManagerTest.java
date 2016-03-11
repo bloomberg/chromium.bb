@@ -40,6 +40,7 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -380,17 +381,14 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         waitForTopControlsPosition(expectedPosition);
     }
 
-    private void waitForTopControlsPosition(final float position)
-            throws InterruptedException {
+    private void waitForTopControlsPosition(float position) throws InterruptedException {
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(position, new Callable<Float>() {
             @Override
-            public boolean isSatisfied() {
-                updateFailureReason("Top controls did not reach expected position.  Expected: "
-                        + position + ", Actual: " + fullscreenManager.getControlOffset());
-                return position == fullscreenManager.getControlOffset();
+            public Float call() {
+                return fullscreenManager.getControlOffset();
             }
-        });
+        }));
     }
 
     private void waitForNoBrowserTopControlsOffset() throws InterruptedException {

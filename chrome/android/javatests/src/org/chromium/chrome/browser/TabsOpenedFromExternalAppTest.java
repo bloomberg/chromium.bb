@@ -557,12 +557,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
                 TabModelUtils.closeTabByIndex(getActivity().getCurrentTabModel(), 0);
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(0, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return getActivity().getTabModelSelector().getTotalTabCount() == 0;
+            public Integer call() {
+                return getActivity().getTabModelSelector().getTotalTabCount();
             }
-        });
+        }));
 
         // Open a tab via an external application.
         final Intent intent = new Intent(
@@ -573,12 +573,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getInstrumentation().getTargetContext().startActivity(intent);
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(1, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return getActivity().getTabModelSelector().getTotalTabCount() == 1;
+            public Integer call() {
+                return getActivity().getTabModelSelector().getTotalTabCount();
             }
-        });
+        }));
         ApplicationTestUtils.assertWaitForPageScaleFactorMatch(getActivity(), 0.5f, false);
 
         // Long press the center of the page, which should bring up the context menu.
@@ -610,12 +610,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         });
 
         // The second tab should open in the background.
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(2, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return getActivity().getTabModelSelector().getTotalTabCount() == 2;
+            public Integer call() {
+                return getActivity().getTabModelSelector().getTotalTabCount();
             }
-        });
+        }));
 
         // Hitting "back" should close the tab, minimize Chrome, and select the background tab.
         // Confirm that the number of tabs is correct and that closing the tab didn't cause a crash.
@@ -625,12 +625,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
                 getActivity().onBackPressed();
             }
         });
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(1, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return getActivity().getTabModelSelector().getTotalTabCount() == 1;
+            public Integer call() {
+                return getActivity().getTabModelSelector().getTotalTabCount();
             }
-        });
+        }));
     }
 
     /**

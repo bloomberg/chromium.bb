@@ -251,12 +251,12 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
                 mTestServer.getURL("/chrome/test/data/android/redirect/one.html");
         typeInOmniboxAndNavigate(initialUrl, null);
 
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(redirectedUrl, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                return getActivity().getActivityTab().getUrl().equals(redirectedUrl);
+            public String call() {
+                return getActivity().getActivityTab().getUrl();
             }
-        });
+        }));
     }
 
     /**
@@ -283,12 +283,12 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         typeInOmniboxAndNavigate(initialUrl, null);
 
         // Now intent fallback should be triggered assuming 'non_existent' scheme cannot be handled.
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(targetUrl, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                return getActivity().getActivityTab().getUrl().equals(targetUrl);
+            public String call() {
+                return getActivity().getActivityTab().getUrl();
             }
-        });
+        }));
 
         // Check if Java redirections were removed from the history.
         // Note that if we try to go back in the test: NavigateToEntry() is called, but
@@ -411,12 +411,12 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
             // Wait for the url to change.
             final Tab tab = TabModelUtils.getCurrentTab(model);
             assertWaitForPageScaleFactorMatch(0.75f);
-            CriteriaHelper.pollForCriteria(new Criteria("Page url didn't change") {
+            CriteriaHelper.pollForCriteria(Criteria.equals(mockedUrl, new Callable<String>() {
                 @Override
-                public boolean isSatisfied() {
-                    return mockedUrl.equals(getTabUrlOnUIThread(tab));
+                public String call() {
+                    return getTabUrlOnUIThread(tab);
                 }
-            }, 5000, 50);
+            }), 5000, 50);
 
             // Make sure that we're showing new content now.
             assertEquals("Still showing spoofed data", "\"Real\"", getTabBodyText(tab));

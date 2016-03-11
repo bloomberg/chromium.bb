@@ -272,14 +272,12 @@ public class ImeTest extends ContentShellTestBase {
     private void waitForKeyboardStates(int show, int hide, int restart, Integer[] history)
             throws InterruptedException {
         final String expected = stringifyKeyboardStates(show, hide, restart, history);
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(expected, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                updateFailureReason(
-                        "Expected: {" + expected + "}, Actual: {" + getKeyboardStates() + "}");
-                return expected.equals(getKeyboardStates());
+            public String call() {
+                return getKeyboardStates();
             }
-        });
+        }));
     }
 
     private void resetAllStates() {
@@ -392,12 +390,12 @@ public class ImeTest extends ContentShellTestBase {
         // hide status of IME, so we will just check whether showIme() has been triggered.
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         final int newCount = showCount + 2;
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(newCount, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return newCount == mInputMethodManagerWrapper.getShowSoftInputCounter();
+            public Integer call() {
+                return mInputMethodManagerWrapper.getShowSoftInputCounter();
             }
-        });
+        }));
     }
 
     private void attachPhysicalKeyboard() {
@@ -939,14 +937,12 @@ public class ImeTest extends ContentShellTestBase {
 
     private void waitUntilGetCharacterBeforeCursorBecomes(final String expectedText)
             throws InterruptedException {
-        pollForCriteriaOnThread(new Criteria() {
+        pollForCriteriaOnThread(Criteria.equals(expectedText, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                String actualText = (String) mConnection.getTextBeforeCursor(1, 0);
-                updateFailureReason("actualText: " + actualText);
-                return expectedText.equals(actualText);
+            public String call() {
+                return (String) mConnection.getTextBeforeCursor(1, 0);
             }
-        });
+        }));
     }
 
     private void pollForCriteriaOnThread(final Criteria criteria) throws InterruptedException {
@@ -1105,12 +1101,12 @@ public class ImeTest extends ContentShellTestBase {
 
     private void assertWaitForSelectActionBarStatus(
             final boolean show) throws InterruptedException {
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(show, new Callable<Boolean>() {
             @Override
-            public boolean isSatisfied() {
-                return show == mContentViewCore.isSelectActionBarShowing();
+            public Boolean call() {
+                return mContentViewCore.isSelectActionBarShowing();
             }
-        });
+        }));
     }
 
     private void waitAndVerifyUpdateSelection(final int index, final int selectionStart,
@@ -1350,16 +1346,12 @@ public class ImeTest extends ContentShellTestBase {
             throws InterruptedException, TimeoutException {
         DOMUtils.focusNode(mWebContents, id);
         assertWaitForKeyboardStatus(shouldShowKeyboard);
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(id, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                try {
-                    return id.equals(DOMUtils.getFocusedNode(mWebContents));
-                } catch (Exception e) {
-                    return false;
-                }
+            public String call() throws Exception {
+                return DOMUtils.getFocusedNode(mWebContents);
             }
-        });
+        }));
         // When we focus another element, the connection may be recreated.
         mConnection = getInputConnection();
     }

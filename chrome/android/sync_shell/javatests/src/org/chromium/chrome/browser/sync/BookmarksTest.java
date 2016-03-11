@@ -470,17 +470,13 @@ public class BookmarksTest extends SyncTestBase {
                             count, ModelType.BOOKMARKS, name));
     }
 
-    private void waitForClientBookmarkCount(final int n) throws InterruptedException {
-        pollForCriteria(new Criteria("There should be " + n + " local bookmarks.") {
+    private void waitForClientBookmarkCount(int n) throws InterruptedException {
+        pollForCriteria(Criteria.equals(n, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                try {
-                    return SyncTestUtil.getLocalData(mContext, BOOKMARKS_TYPE_STRING).size() == n;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+            public Integer call() throws Exception {
+                return SyncTestUtil.getLocalData(mContext, BOOKMARKS_TYPE_STRING).size();
             }
-        });
+        }));
     }
 
     private void waitForServerBookmarkCountWithName(final int count, final String name)

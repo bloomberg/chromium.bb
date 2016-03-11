@@ -26,13 +26,16 @@ import java.util.concurrent.Callable;
  * <pre>
  * Sample Usage:
  * <code>
- * public void waitForTabTitle(final Tab tab, final String title) {
+ * public void waitForTabFullyLoaded(final Tab tab) {
  *     CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
  *         {@literal @}Override
  *         public boolean isSatisified() {
- *             updateFailureReason("Tab title did not match -- expected: " + title
- *                     + ", actual: " + tab.getTitle());
- *             return TextUtils.equals(tab.getTitle(), title);
+ *             if (tab.getWebContents() == null) {
+ *                 updateFailureReason("Tab has no web contents");
+ *                 return false;
+ *             }
+ *             updateFailureReason("Tab not fully loaded");
+ *             return tab.isLoading();
  *         }
  *     });
  * }

@@ -103,22 +103,22 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-        CriteriaHelper.pollForCriteria(new Criteria("Soft input mode failed to switch on focus") {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getWindow().getAttributes().softInputMode
-                        == WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
-            }
-        });
+        CriteriaHelper.pollForCriteria(Criteria.equals(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN, new Callable<Integer>() {
+                    @Override
+                    public Integer call() {
+                        return getActivity().getWindow().getAttributes().softInputMode;
+                    }
+                }));
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, false);
-        CriteriaHelper.pollForCriteria(new Criteria("Soft input mode failed to switch on unfocus") {
-            @Override
-            public boolean isSatisfied() {
-                return getActivity().getWindow().getAttributes().softInputMode
-                        == WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
-            }
-        });
+        CriteriaHelper.pollForCriteria(Criteria.equals(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, new Callable<Integer>() {
+                    @Override
+                    public Integer call() {
+                        return getActivity().getWindow().getAttributes().softInputMode;
+                    }
+                }));
     }
 
     /**
@@ -145,13 +145,12 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
 
-        CriteriaHelper.pollForCriteria(new Criteria(
-                "Should have requested zero suggest on focusing") {
+        CriteriaHelper.pollForCriteria(Criteria.equals(1, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return controller.numZeroSuggestRequests() == 1;
+            public Integer call() {
+                return controller.numZeroSuggestRequests();
             }
-        });
+        }));
     }
 
     /**
@@ -201,13 +200,12 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         singleClickView(deleteButton);
 
-        CriteriaHelper.pollForCriteria(new Criteria(
-                "Should have requested zero suggest results on url bar empty") {
+        CriteriaHelper.pollForCriteria(Criteria.equals(1, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return controller.numZeroSuggestRequests() == 1;
+            public Integer call() {
+                return controller.numZeroSuggestRequests();
             }
-        });
+        }));
     }
 
     @MediumTest
@@ -242,13 +240,12 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         assertEquals("No calls to zero suggest yet", 0, controller.numZeroSuggestRequests());
         KeyUtils.singleKeyEventView(getInstrumentation(), urlBar, KeyEvent.KEYCODE_DEL);
-        CriteriaHelper.pollForCriteria(new Criteria(
-                "Should have requested zero suggest results on url bar empty") {
+        CriteriaHelper.pollForCriteria(Criteria.equals(1, new Callable<Integer>() {
             @Override
-            public boolean isSatisfied() {
-                return controller.numZeroSuggestRequests() == 1;
+            public Integer call() {
+                return controller.numZeroSuggestRequests();
             }
-        });
+        }));
     }
 
     // Sanity check that no text is displayed in the omnibox when on the NTP page and that the hint

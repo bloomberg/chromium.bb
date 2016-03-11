@@ -569,12 +569,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                                         (new CustomTabsTestUtils.DummyCallback()).asBinder()));
                     }
                 }));
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(mTestPage, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                return mActivity.getActivityTab().getUrl().equals(mTestPage);
+            public String call() {
+                return mActivity.getActivityTab().getUrl();
             }
-        });
+        }));
         assertTrue("CustomTabContentHandler can't handle intent with same session",
                 ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
                     @Override
@@ -597,12 +597,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         } catch (TimeoutException e) {
             fail();
         }
-        CriteriaHelper.pollForCriteria(new Criteria() {
+        CriteriaHelper.pollForCriteria(Criteria.equals(mTestPage2, new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                return mActivity.getActivityTab().getUrl().equals(mTestPage2);
+            public String call() {
+                return mActivity.getActivityTab().getUrl();
             }
-        });
+        }));
     }
 
     @SmallTest

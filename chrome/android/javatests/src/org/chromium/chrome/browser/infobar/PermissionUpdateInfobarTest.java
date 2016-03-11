@@ -126,12 +126,12 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
                 }
             });
 
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(1, new Callable<Integer>() {
                 @Override
-                public boolean isSatisfied() {
-                    return getActivity().getTabModelSelector().getModel(false).getCount() == 1;
+                public Integer call() {
+                    return getActivity().getTabModelSelector().getModel(false).getCount();
                 }
-            });
+            }));
         } finally {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
@@ -198,12 +198,12 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
             assertFalse(webContents.isDestroyed());
 
             runJavaScriptCodeInCurrentTab("document.querySelector('iframe').src = '';");
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(0, new Callable<Integer>() {
                 @Override
-                public boolean isSatisfied() {
-                    return getInfoBars().size() == 0;
+                public Integer call() {
+                    return getInfoBars().size();
                 }
-            });
+            }));
 
             ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());
             CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
@@ -213,12 +213,12 @@ public class PermissionUpdateInfobarTest extends ChromeTabbedActivityTestBase {
                 }
             });
 
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            CriteriaHelper.pollForUIThreadCriteria(Criteria.equals(1, new Callable<Integer>() {
                 @Override
-                public boolean isSatisfied() {
-                    return getActivity().getTabModelSelector().getModel(false).getCount() == 1;
+                public Integer call() {
+                    return getActivity().getTabModelSelector().getModel(false).getCount();
                 }
-            });
+            }));
         } finally {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override

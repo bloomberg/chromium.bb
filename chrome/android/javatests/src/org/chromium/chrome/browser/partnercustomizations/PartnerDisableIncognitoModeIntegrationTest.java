@@ -162,13 +162,12 @@ public class PartnerDisableIncognitoModeIntegrationTest extends
             toggleActivityForegroundState();
             waitForParentalControlsEnabledState(true);
 
-            CriteriaHelper.pollForCriteria(
-                    new Criteria("Incognito tabs did not close as expected") {
-                        @Override
-                        public boolean isSatisfied() {
-                            return incognitoTabsCount() == 0;
-                        }
-                    });
+            CriteriaHelper.pollForCriteria(Criteria.equals(0, new Callable<Integer>() {
+                @Override
+                public Integer call() {
+                    return incognitoTabsCount();
+                }
+            }));
         } finally {
             testServer.stopAndDestroyServer();
         }

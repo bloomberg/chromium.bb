@@ -40,6 +40,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Tests the app banners.
@@ -449,12 +450,13 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mNativeAppUrl);
 
             final Integer iteration = Integer.valueOf(i);
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mDetailsDelegate.mNumRetrieved == iteration;
-                }
-            });
+            CriteriaHelper.pollForUIThreadCriteria(
+                    Criteria.equals(iteration, new Callable<Integer>() {
+                        @Override
+                        public Integer call() {
+                            return mDetailsDelegate.mNumRetrieved;
+                        }
+                    }));
         }
     }
 

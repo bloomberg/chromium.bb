@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.view.inputmethod.BaseInputConnection;
 
 import org.chromium.base.ThreadUtils;
@@ -365,13 +364,12 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
 
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+        CriteriaHelper.pollForUIThreadCriteria(Criteria.equals("testy", new Callable<String>() {
             @Override
-            public boolean isSatisfied() {
-                return TextUtils.equals("testy", requestedAutocompleteText.get());
+            public String call() {
+                return requestedAutocompleteText.get();
             }
-        });
-        assertEquals("Autocomplete sent incorrectly.", "testy", requestedAutocompleteText.get());
+        }));
     }
 
     @SmallTest
