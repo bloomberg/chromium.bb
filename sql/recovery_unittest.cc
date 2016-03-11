@@ -172,9 +172,6 @@ TEST_F(SQLRecoveryTest, RecoverBasic) {
             ExecuteWithResults(&db(), kXSql, "|", "\n"));
 }
 
-// The recovery virtual table is only supported for Chromium's SQLite.
-#if !defined(USE_SYSTEM_SQLITE)
-
 // Test operation of the virtual table used by sql::Recovery.
 TEST_F(SQLRecoveryTest, VirtualTable) {
   const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
@@ -737,7 +734,6 @@ TEST_F(SQLRecoveryTest, Bug387868) {
     EXPECT_TRUE(sql::Recovery::Recovered(std::move(recovery)));
   }
 }
-#endif  // !defined(USE_SYSTEM_SQLITE)
 
 // Memory-mapped I/O interacts poorly with I/O errors.  Make sure the recovery
 // database doesn't accidentally enable it.

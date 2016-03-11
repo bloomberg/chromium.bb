@@ -224,6 +224,9 @@ if (use_system_sqlite) {
   source_set("sqlite") {
     public_configs = [ ":sqlite_config" ]
     if (is_ios) {
+      public_deps = [
+        ":sqlite_recover",
+      ]
       deps = [
         ":sqlite_regexp",
       ]
@@ -231,6 +234,15 @@ if (use_system_sqlite) {
   }
 
   if (is_ios) {
+    source_set("sqlite_recover") {
+      sources = [
+        # TODO(shess): Move out of the SQLite source tree, perhaps to ext/.
+        "src/src/recover.c",
+        "src/src/recover.h",
+        "src/src/recover_varint.c",
+      ]
+    }
+
     source_set("sqlite_regexp") {
       defines = [
         # Necessary to statically compile the extension.
