@@ -12,19 +12,21 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences.DialogOption;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
- * Performs integration tests with ClearBrowsingDataPreferences.
+ * Integration tests for ClearBrowsingDataPreferences.
  */
 public class ClearBrowsingDataPreferencesTest
         extends ChromeActivityTestCaseBase<ChromeActivity> {
@@ -61,8 +63,9 @@ public class ClearBrowsingDataPreferencesTest
         });
         mCallbackCalled = false;
 
+        setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_COOKIES_AND_SITE_DATA));
         final Preferences preferences =
-                startPreferences(CookiesClearBrowsingDataPreferences.class.getName());
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -105,8 +108,10 @@ public class ClearBrowsingDataPreferencesTest
      */
     @MediumTest
     public void testClearingEverything() throws Exception {
+        setDataTypesToClear(Arrays.asList(DialogOption.values()));
+
         final Preferences preferences =
-                startPreferences(ClearEverythingBrowsingDataPreferences.class.getName());
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -141,46 +146,16 @@ public class ClearBrowsingDataPreferencesTest
         });
     }
 
-    /**
-     * A testing version of ClearBrowsingDataPreferences that preselects the cookies option.
-     * Must be public, as ChromeActivityTestCaseBase.startPreferences references it by name.
-     */
-    public static class CookiesClearBrowsingDataPreferences extends ClearBrowsingDataPreferences {
-        private static final EnumSet<DialogOption> DEFAULT_OPTIONS = EnumSet.of(
-                ClearBrowsingDataPreferences.DialogOption.CLEAR_COOKIES_AND_SITE_DATA);
-
-        @Override
-        protected boolean isOptionSelectedByDefault(DialogOption option) {
-            return DEFAULT_OPTIONS.contains(option);
-        }
-    }
-
-    /**
-     * A testing version of ClearBrowsingDataPreferences that includes all possible options,
-     * and preselects all of them. Must be public, as ChromeActivityTestCaseBase.startPreferences
-     * references it by name.
-     */
-    public static class ClearEverythingBrowsingDataPreferences
-            extends ClearBrowsingDataPreferences {
-        @Override
-        protected void onOptionSelected() {
-            // All options should be selected.
-            EnumSet<DialogOption> options = getSelectedOptions();
-            assertEquals(EnumSet.allOf(DialogOption.class), options);
-
-            // Bookmarks currently must be handled on the Java side, and not passed to C++.
-            options.remove(DialogOption.CLEAR_BOOKMARKS_DATA);
-            clearBrowsingData(options);
-        }
-
-        @Override
-        protected DialogOption[] getDialogOptions() {
-            return DialogOption.values();
-        }
-
-        @Override
-        protected boolean isOptionSelectedByDefault(DialogOption option) {
-            return true;
-        }
+    private void setDataTypesToClear(final List<DialogOption> typesToClear) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                for (DialogOption option : DialogOption.values()) {
+                    boolean enabled = typesToClear.contains(option);
+                    PrefServiceBridge.getInstance().setBrowsingDataDeletionPreference(
+                            option.getDataType(), enabled);
+                }
+            }
+        });
     }
 }

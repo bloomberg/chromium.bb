@@ -14,6 +14,7 @@ import android.widget.ListView;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BrowsingDataType;
+import org.chromium.chrome.browser.TimePeriod;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -25,8 +26,9 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 /**
- * Modal dialog with options for selection the type of browsing data
- * to clear (history, cookies), triggered from a preference.
+ * Preference screen that allows the user to clear browsing data.
+ * The user can choose which types of data to clear (history, cookies, etc), and the time range
+ * from which to clear data.
  */
 public class ClearBrowsingDataPreferences extends PreferenceFragment
         implements PrefServiceBridge.OnClearBrowsingDataListener,
@@ -106,7 +108,6 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     private static final String PREF_CACHE = "clear_cache_checkbox";
     private static final String PREF_PASSWORDS = "clear_passwords_checkbox";
     private static final String PREF_FORM_DATA = "clear_form_data_checkbox";
-    private static final String PREF_BOOKMARKS = "clear_bookmarks_checkbox";
 
     private static final String PREF_SUMMARY = "summary";
     private static final String PREF_TIME_RANGE = "time_period_spinner";
@@ -118,16 +119,14 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     public static final String TAG = "ClearBrowsingDataPreferences";
 
     /**
-     * Enum for Dialog options to be displayed in the dialog.
+     * The various data types that can be cleared via this screen.
      */
     public enum DialogOption {
         CLEAR_HISTORY(BrowsingDataType.HISTORY, PREF_HISTORY),
         CLEAR_COOKIES_AND_SITE_DATA(BrowsingDataType.COOKIES, PREF_COOKIES),
         CLEAR_CACHE(BrowsingDataType.CACHE, PREF_CACHE),
         CLEAR_PASSWORDS(BrowsingDataType.PASSWORDS, PREF_PASSWORDS),
-        CLEAR_FORM_DATA(BrowsingDataType.FORM_DATA, PREF_FORM_DATA),
-        // Clear bookmarks is only used by ClearSyncData dialog.
-        CLEAR_BOOKMARKS_DATA(BrowsingDataType.BOOKMARKS, PREF_BOOKMARKS);
+        CLEAR_FORM_DATA(BrowsingDataType.FORM_DATA, PREF_FORM_DATA);
 
         private final int mDataType;
         private final String mPreferenceKey;
@@ -159,7 +158,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         /**
          * Constructs this time period spinner option.
          * @param timePeriod The time period represented as an int from the shared enum
-         *     {@link org.chromium.chrome.browser.TimePeriod}.
+         *     {@link TimePeriod}.
          * @param title The text that will be used to represent this item in the spinner.
          */
         public TimePeriodSpinnerOption(int timePeriod, String title) {
@@ -168,8 +167,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         }
 
         /**
-         * @return The time period represented as an int from the shared enum
-         *     {@link org.chromium.chrome.browser.TimePeriod}
+         * @return The time period represented as an int from the shared enum {@link TimePeriod}
          */
         public int getTimePeriod() {
             return mTimePeriod;
@@ -182,10 +180,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     private ProgressDialog mProgressDialog;
-    private boolean mCanDeleteBrowsingHistory;
     private Item[] mItems;
 
-    protected final EnumSet<DialogOption> getSelectedOptions() {
+    private final EnumSet<DialogOption> getSelectedOptions() {
         EnumSet<DialogOption> selected = EnumSet.noneOf(DialogOption.class);
         for (Item item : mItems) {
             if (item.isSelected()) selected.add(item.getOption());
@@ -197,9 +194,10 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      * Requests the browsing data corresponding to the given dialog options to be deleted.
      * @param options The dialog options whose corresponding data should be deleted.
      */
-    protected final void clearBrowsingData(EnumSet<DialogOption> options) {
-        int[] dataTypes = new int[options.size()];
+    private final void clearBrowsingData(EnumSet<DialogOption> options) {
+        showProgressDialog();
 
+        int[] dataTypes = new int[options.size()];
         int i = 0;
         for (DialogOption option : options) {
             dataTypes[i] = option.getDataType();
@@ -209,10 +207,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         PrefServiceBridge.getInstance().clearBrowsingData(this, dataTypes);
     }
 
-    protected void dismissProgressDialog() {
-        android.util.Log.i(TAG, "in dismissProgressDialog");
+    private void dismissProgressDialog() {
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            android.util.Log.i(TAG, "progress dialog dismissed");
             mProgressDialog.dismiss();
         }
         mProgressDialog = null;
@@ -222,7 +218,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      * Returns the Array of dialog options. Options are displayed in the same
      * order as they appear in the array.
      */
-    protected DialogOption[] getDialogOptions() {
+    private DialogOption[] getDialogOptions() {
         return new DialogOption[] {
             DialogOption.CLEAR_HISTORY,
             DialogOption.CLEAR_COOKIES_AND_SITE_DATA,
@@ -239,15 +235,15 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         Activity activity = getActivity();
 
         TimePeriodSpinnerOption[] options = new TimePeriodSpinnerOption[] {
-                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.LAST_HOUR,
+                new TimePeriodSpinnerOption(TimePeriod.LAST_HOUR,
                         activity.getString(R.string.clear_browsing_data_period_hour)),
-                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.LAST_DAY,
+                new TimePeriodSpinnerOption(TimePeriod.LAST_DAY,
                         activity.getString(R.string.clear_browsing_data_period_day)),
-                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.LAST_WEEK,
+                new TimePeriodSpinnerOption(TimePeriod.LAST_WEEK,
                         activity.getString(R.string.clear_browsing_data_period_week)),
-                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.FOUR_WEEKS,
+                new TimePeriodSpinnerOption(TimePeriod.FOUR_WEEKS,
                         activity.getString(R.string.clear_browsing_data_period_four_weeks)),
-                new TimePeriodSpinnerOption(org.chromium.chrome.browser.TimePeriod.EVERYTHING,
+                new TimePeriodSpinnerOption(TimePeriod.EVERYTHING,
                         activity.getString(R.string.clear_browsing_data_period_everything))};
 
         return options;
@@ -258,7 +254,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
      * @param option The option in question.
      * @return boolean Whether the given option should be preselected.
      */
-    protected boolean isOptionSelectedByDefault(DialogOption option) {
+    private boolean isOptionSelectedByDefault(DialogOption option) {
         return PrefServiceBridge.getInstance().getBrowsingDataDeletionPreference(
             option.getDataType());
     }
@@ -276,8 +272,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceClick(Preference preference) {
         if (preference.getKey().equals(PREF_CLEAR_BUTTON)) {
-            dismissProgressDialog();
-            onOptionSelected();
+            clearBrowsingData(getSelectedOptions());
             return true;
         }
         return false;
@@ -393,18 +388,9 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         }
     }
 
-    /**
-     * Called when PositiveButton is clicked for the dialog.
-     */
-    protected void onOptionSelected() {
-        showProgressDialog();
-        clearBrowsingData(getSelectedOptions());
-    }
-
-    protected final void showProgressDialog() {
+    private final void showProgressDialog() {
         if (getActivity() == null) return;
 
-        android.util.Log.i(TAG, "progress dialog shown");
         mProgressDialog = ProgressDialog.show(getActivity(),
                 getActivity().getString(R.string.clear_browsing_data_progress_title),
                 getActivity().getString(R.string.clear_browsing_data_progress_message), true,
