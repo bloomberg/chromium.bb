@@ -27037,6 +27037,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.GoAwayReceivedForConnectionMigration"
+    enum="BooleanReceived">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    Whether QuicGoAwayFrame is received from server for connection migration due
+    to client's port change. Logged when a QuicGoAwayFrame with error code
+    QUIC_ERROR_MIGRATING_PORT is received.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.HandshakeConfirmedTime" units="Milliseconds">
   <owner>rch@chromium.org</owner>
   <summary>

@@ -22,6 +22,7 @@
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_address_mismatch.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_socket_address_coder.h"
 #include "net/quic/quic_time.h"
 
@@ -613,6 +614,9 @@ void QuicConnectionLogger::OnBlockedFrame(const QuicBlockedFrame& frame) {
 }
 
 void QuicConnectionLogger::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.GoAwayReceivedForConnectionMigration",
+                        frame.error_code == QUIC_ERROR_MIGRATING_PORT);
+
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_GOAWAY_FRAME_RECEIVED,
                     base::Bind(&NetLogQuicGoAwayFrameCallback, &frame));
 }
