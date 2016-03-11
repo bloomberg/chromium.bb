@@ -50,7 +50,6 @@ CSSPropertyParser::CSSPropertyParser(const CSSParserTokenRange& range,
     , m_parsedProperties(parsedProperties)
     , m_inParseShorthand(0)
     , m_currentShorthand(CSSPropertyInvalid)
-    , m_implicitShorthand(false)
 {
     m_range.consumeWhitespace();
 }
@@ -4342,7 +4341,6 @@ bool CSSPropertyParser::consumeShorthandGreedily(const StylePropertyShorthand& s
             return false;
     } while (!m_range.atEnd());
 
-    ImplicitScope implicitScope(this);
     for (size_t i = 0; i < shorthand.length(); ++i) {
         if (longhands[i])
             addProperty(shorthandProperties[i], longhands[i].release(), important);
@@ -4479,7 +4477,6 @@ bool CSSPropertyParser::consumeBorderImage(CSSPropertyID property, bool importan
     RefPtrWillBeRawPtr<CSSValue> outset = nullptr;
     RefPtrWillBeRawPtr<CSSValue> repeat = nullptr;
     if (consumeBorderImageComponents(property, m_range, m_context, source, slice, width, outset, repeat)) {
-        ImplicitScope implicitScope(this);
         switch (property) {
         case CSSPropertyWebkitMaskBoxImage:
             addProperty(CSSPropertyWebkitMaskBoxImageSource, source ? source : cssValuePool().createImplicitInitialValue(), important);
@@ -4799,7 +4796,6 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     case CSSPropertyWebkitTextStroke:
         return consumeShorthandGreedily(webkitTextStrokeShorthand(), important);
     case CSSPropertyMarker: {
-        ImplicitScope implicitScope(this);
         RefPtrWillBeRawPtr<CSSValue> marker = parseSingleValue(CSSPropertyMarkerStart);
         if (!marker || !m_range.atEnd())
             return false;

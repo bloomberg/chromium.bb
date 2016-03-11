@@ -154,25 +154,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
     PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createPrimitiveCustomIdentValue(CSSParserValue*);
 
-    class ImplicitScope {
-        STACK_ALLOCATED();
-        WTF_MAKE_NONCOPYABLE(ImplicitScope);
-    public:
-        ImplicitScope(CSSPropertyParser* parser)
-            : m_parser(parser)
-        {
-            m_parser->m_implicitShorthand = true;
-        }
-
-        ~ImplicitScope()
-        {
-            m_parser->m_implicitShorthand = false;
-        }
-
-    private:
-        CSSPropertyParser* m_parser;
-    };
-
     class ShorthandScope {
         STACK_ALLOCATED();
     public:
@@ -220,7 +201,6 @@ private:
     // Locals during parsing:
     int m_inParseShorthand;
     CSSPropertyID m_currentShorthand;
-    bool m_implicitShorthand;
     RefPtrWillBeMember<CSSCalcValue> m_parsedCalculation;
 };
 

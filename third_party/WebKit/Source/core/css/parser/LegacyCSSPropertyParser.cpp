@@ -54,7 +54,7 @@ void CSSPropertyParser::addProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr
             shorthandIndex = indexOfShorthandForLonghand(m_currentShorthand, shorthands);
     }
 
-    m_parsedProperties->append(CSSProperty(propId, value, important, setFromShorthand, shorthandIndex, m_implicitShorthand || implicit));
+    m_parsedProperties->append(CSSProperty(propId, value, important, setFromShorthand, shorthandIndex, implicit));
 }
 
 bool CSSPropertyParser::validCalculationUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc)
