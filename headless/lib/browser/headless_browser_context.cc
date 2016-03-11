@@ -74,6 +74,7 @@ HeadlessBrowserContext::~HeadlessBrowserContext() {
 void HeadlessBrowserContext::InitWhileIOAllowed() {
   // TODO(skyostil): Allow the embedder to override this.
   PathService::Get(base::DIR_EXE, &path_);
+  BrowserContext::Initialize(this, path_);
 }
 
 scoped_ptr<content::ZoomLevelDelegate>
