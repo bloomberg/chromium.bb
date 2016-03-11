@@ -4,4 +4,8 @@
 
 namespace blink {
 void genThing();
+
+class GenClass {
+  virtual void genMethod() {}
+};
 }

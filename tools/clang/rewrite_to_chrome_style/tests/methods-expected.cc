@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gen/thing.h"
+
 namespace v8 {
 
 class InterfaceOutsideOfBlink {
@@ -91,6 +93,25 @@ class Testable {
 
  private:
   int ptr_;
+};
+
+namespace subname {
+
+class SubnameParent {
+  virtual void SubnameMethod() {}
+};
+
+}  // namespace subname
+
+class SubnameChild : public subname::SubnameParent {
+  // This subclasses from blink::subname::SubnameParent and should be renamed.
+  void SubnameMethod() override {}
+};
+
+class GenChild : public blink::GenClass {
+  // This subclasses from the blink namespace but in the gen directory so it
+  // should not be renamed.
+  void genMethod() override {}
 };
 
 }  // namespace blink

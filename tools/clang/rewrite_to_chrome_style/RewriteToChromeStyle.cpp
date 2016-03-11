@@ -62,6 +62,7 @@ AST_MATCHER(clang::FunctionDecl, isDefaulted) {
 
 const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
+const char kGeneratedFileRegex[] = "^gen/|/gen/";
 
 AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
   return Node.isOverloadedOperator();
@@ -86,54 +87,61 @@ AST_MATCHER_P(clang::CXXCtorInitializer,
           InnerMatcher.matches(*NodeAsDecl, Finder, Builder));
 }
 
-bool IsDeclContextInBlinkOrWTF(const clang::DeclContext* decl_context,
-                               bool blink,
-                               bool wtf) {
-  assert(blink || wtf);  // Else, what's the point?
+bool IsDeclContextInWTF(const clang::DeclContext* decl_context) {
   auto* namespace_decl = clang::dyn_cast_or_null<clang::NamespaceDecl>(
       decl_context->getEnclosingNamespaceContext());
-  return namespace_decl && namespace_decl->getParent()->isTranslationUnit() &&
-         ((blink && namespace_decl->getName() == "blink") ||
-          (wtf && namespace_decl->getName() == "WTF"));
+  if (!namespace_decl)
+    return false;
+  if (namespace_decl->getParent()->isTranslationUnit() &&
+      namespace_decl->getName() == "WTF")
+    return true;
+  return IsDeclContextInWTF(namespace_decl->getParent());
 }
 
-// A method is from Blink if it is from the Blink namespace or overrides a
-// method from the Blink namespace.
-bool IsBlinkOrWTFMethod(const clang::CXXMethodDecl& decl) {
-  bool overrides_blink = false;
-  bool overrides_non_blink = false;
+template <typename T>
+bool MatchAllOverriddenMethods(
+    const clang::CXXMethodDecl& decl,
+    T&& inner_matcher,
+    clang::ast_matchers::internal::ASTMatchFinder* finder,
+    clang::ast_matchers::internal::BoundNodesTreeBuilder* builder) {
+  bool override_matches = false;
+  bool override_not_matches = false;
 
   for (auto it = decl.begin_overridden_methods();
        it != decl.end_overridden_methods(); ++it) {
-    if (IsBlinkOrWTFMethod(**it))
-      overrides_blink = true;
+    if (MatchAllOverriddenMethods(**it, inner_matcher, finder, builder))
+      override_matches = true;
     else
-      overrides_non_blink = true;
+      override_not_matches = true;
   }
 
-  // If this fires we have a class overriding a method from a class in blink,
-  // and also overriding a method of the same name from a class not in blink,
-  // without a common base class. The blink method will be renamed but the
-  // non-blink method will not, meaning no matter what we do here we stop
-  // overriding one of the two which creates a behaviour change. So assert and
-  // demand the user to fix the code first. T_T
-  if (overrides_blink || overrides_non_blink)
-    assert(overrides_blink != overrides_non_blink);
+  // If this fires we have a class overriding a method that matches, and a
+  // method that does not match the inner matcher. In that case we will match
+  // one ancestor method but not the other. If we rename one of the and not the
+  // other it will break what this class overrides, disconnecting it from the
+  // one we did not rename which creates a behaviour change. So assert and
+  // demand the user to fix the code first (or add the method to our
+  // blacklist T_T).
+  if (override_matches || override_not_matches)
+    assert(override_matches != override_not_matches);
 
-  // If the method overrides something from outside blink then it's not a blink
-  // method.
-  if (overrides_non_blink)
+  // If the method overrides something that doesn't match, so the method itself
+  // doesn't match.
+  if (override_not_matches)
     return false;
-  // If the method overrides something from inside blink, then it is also a
-  // blink method.
-  if (overrides_blink)
+  // If the method overrides something that matches, so the method ifself
+  // matches.
+  if (override_matches)
     return true;
-  // Otherwise decide for itself.
-  return IsDeclContextInBlinkOrWTF(decl.getDeclContext(), true, true);
+
+  return inner_matcher.matches(decl, finder, builder);
 }
 
-AST_MATCHER(clang::CXXMethodDecl, isBlinkOrWTFMethod) {
-  return IsBlinkOrWTFMethod(Node);
+AST_MATCHER_P(clang::CXXMethodDecl,
+              includeAllOverriddenMethods,
+              clang::ast_matchers::internal::Matcher<clang::CXXMethodDecl>,
+              InnerMatcher) {
+  return MatchAllOverriddenMethods(Node, InnerMatcher, Finder, Builder);
 }
 
 // Helper to convert from a camelCaseName to camel_case_name. It uses some
@@ -332,7 +340,7 @@ bool GetNameForDecl(const clang::VarDecl& decl,
     // Struct consts in WTF do not become kFoo cuz stuff like type traits
     // should stay as lowercase.
     const clang::DeclContext* decl_context = decl.getDeclContext();
-    bool is_in_wtf = IsDeclContextInBlinkOrWTF(decl_context, false, true);
+    bool is_in_wtf = IsDeclContextInWTF(decl_context);
     const clang::CXXRecordDecl* parent =
         clang::dyn_cast_or_null<clang::CXXRecordDecl>(decl_context);
     if (is_in_wtf && parent && parent->isStruct())
@@ -530,10 +538,8 @@ int main(int argc, const char* argv[]) {
 
   auto in_blink_namespace =
       decl(hasAncestor(namespaceDecl(anyOf(hasName("blink"), hasName("WTF")),
-                                     hasParent(translationUnitDecl()))));
-  // The ^gen/ rule is used for production code, but the /gen/ one exists here
-  // too for making testing easier.
-  auto is_generated = decl(isExpansionInFileMatching("^gen/|/gen/"));
+                                     hasParent(translationUnitDecl()))),
+           unless(isExpansionInFileMatching(kGeneratedFileRegex)));
 
   // Field, variable, and enum declarations ========
   // Given
@@ -543,12 +549,10 @@ int main(int argc, const char* argv[]) {
   //     enum { VALUE };
   //   };
   // matches |x|, |y|, and |VALUE|.
-  auto field_decl_matcher =
-      id("decl", fieldDecl(in_blink_namespace, unless(is_generated)));
-  auto var_decl_matcher =
-      id("decl", varDecl(in_blink_namespace, unless(is_generated)));
+  auto field_decl_matcher = id("decl", fieldDecl(in_blink_namespace));
+  auto var_decl_matcher = id("decl", varDecl(in_blink_namespace));
   auto enum_member_decl_matcher =
-      id("decl", enumConstantDecl(in_blink_namespace, unless(is_generated)));
+      id("decl", enumConstantDecl(in_blink_namespace));
 
   FieldDeclRewriter field_decl_rewriter(&replacements);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
@@ -618,7 +622,7 @@ int main(int argc, const char* argv[]) {
               // Out-of-line overloaded operators have special names and should
               // never be renamed.
               isOverloadedOperator())),
-          in_blink_namespace, unless(is_generated)));
+          in_blink_namespace));
   FunctionDeclRewriter function_decl_rewriter(&replacements);
   match_finder.addMatcher(function_decl_matcher, &function_decl_rewriter);
 
@@ -638,21 +642,20 @@ int main(int argc, const char* argv[]) {
   //     void g();
   //   };
   // matches |g|.
-  auto method_decl_matcher =
-      id("decl",
-         cxxMethodDecl(unless(anyOf(is_generated,
-                                    // Overloaded operators have special names
-                                    // and should never be renamed.
-                                    isOverloadedOperator(),
-                                    // Similarly, constructors, destructors, and
-                                    // conversion functions should not be
-                                    // considered for renaming.
-                                    cxxConstructorDecl(), cxxDestructorDecl(),
-                                    cxxConversionDecl())),
-                       // Check this last after excluding things, to avoid
-                       // asserts about overriding non-blink and blink for the
-                       // same method.
-                       isBlinkOrWTFMethod()));
+  auto method_decl_matcher = id(
+      "decl",
+      cxxMethodDecl(
+          unless(anyOf(  // Overloaded operators have special names
+              // and should never be renamed.
+              isOverloadedOperator(),
+              // Similarly, constructors, destructors, and
+              // conversion functions should not be
+              // considered for renaming.
+              cxxConstructorDecl(), cxxDestructorDecl(), cxxConversionDecl())),
+          // Check this last after excluding things, to avoid
+          // asserts about overriding non-blink and blink for the
+          // same method.
+          includeAllOverriddenMethods(in_blink_namespace)));
   MethodDeclRewriter method_decl_rewriter(&replacements);
   match_finder.addMatcher(method_decl_matcher, &method_decl_rewriter);
 
@@ -701,10 +704,9 @@ int main(int argc, const char* argv[]) {
   //   using blink::X;
   // matches |using blink::X|.
   auto function_template_decl_matcher =
-      id("decl",
-         functionTemplateDecl(
-             templatedDecl(anyOf(function_decl_matcher, method_decl_matcher)),
-             in_blink_namespace, unless(is_generated)));
+      id("decl", functionTemplateDecl(templatedDecl(anyOf(function_decl_matcher,
+                                                          method_decl_matcher)),
+                                      in_blink_namespace));
   UsingDeclRewriter using_decl_rewriter(&replacements);
   match_finder.addMatcher(
       id("decl",
