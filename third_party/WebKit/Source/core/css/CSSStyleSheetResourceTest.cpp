@@ -118,5 +118,37 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
     memoryCache()->pruneAll();
 }
 
+TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached)
+{
+    const char url[] = "https://localhost/style.css";
+    KURL imageURL(KURL(), url);
+    KURL cssURL(KURL(), url);
+
+    // Emulate using <img> to do async stylesheet preloads.
+
+    RefPtrWillBeRawPtr<Resource> imageResource = ImageResource::create(ResourceRequest(imageURL), nullptr);
+    ASSERT_TRUE(imageResource);
+    memoryCache()->add(imageResource.get());
+    ASSERT_TRUE(memoryCache()->contains(imageResource.get()));
+
+    RefPtrWillBeRawPtr<CSSStyleSheetResource> cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
+    cssResource->responseReceived(ResourceResponse(cssURL, "style/css", 0, nullAtom, String()), nullptr);
+    cssResource->finish();
+
+    RefPtrWillBeRawPtr<StyleSheetContents> contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+    RefPtrWillBeRawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(contents, document());
+    EXPECT_TRUE(sheet);
+
+    contents->checkLoaded();
+    cssResource->saveParsedStyleSheet(contents);
+
+    // Verify that the cache will have a mapping for |imageResource| at |url|.
+    // The underlying |contents| for the stylesheet resource must have a
+    // matching cache status.
+    ASSERT_TRUE(memoryCache()->contains(imageResource.get()));
+    ASSERT_FALSE(memoryCache()->contains(cssResource.get()));
+    ASSERT_FALSE(contents->isInMemoryCache());
+}
+
 } // namespace
 } // namespace blink

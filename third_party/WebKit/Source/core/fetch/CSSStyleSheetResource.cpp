@@ -28,6 +28,7 @@
 
 #include "core/css/StyleSheetContents.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/StyleSheetResourceClient.h"
@@ -60,8 +61,6 @@ CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequ
 
 CSSStyleSheetResource::~CSSStyleSheetResource()
 {
-    // Make sure dispose() was cllaed before destruction.
-    ASSERT(!m_parsedStyleSheetCache);
 }
 
 void CSSStyleSheetResource::removedFromMemoryCache()
@@ -180,9 +179,13 @@ void CSSStyleSheetResource::saveParsedStyleSheet(PassRefPtrWillBeRawPtr<StyleShe
     if (m_parsedStyleSheetCache)
         m_parsedStyleSheetCache->removedFromMemoryCache();
     m_parsedStyleSheetCache = sheet;
-    m_parsedStyleSheetCache->addedToMemoryCache();
 
     setDecodedSize(m_parsedStyleSheetCache->estimatedSizeInBytes());
+
+    // Check if this stylesheet resource didn't conflict with
+    // another resource and has indeed been added to the cache.
+    if (memoryCache()->contains(this))
+        m_parsedStyleSheetCache->addedToMemoryCache();
 }
 
 } // namespace blink

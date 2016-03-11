@@ -579,7 +579,6 @@ void StyleSheetContents::addedToMemoryCache()
 
 void StyleSheetContents::removedFromMemoryCache()
 {
-    ASSERT(m_isInMemoryCache);
     ASSERT(isCacheable());
     m_isInMemoryCache = false;
 }
