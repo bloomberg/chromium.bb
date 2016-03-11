@@ -28,6 +28,7 @@ MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
 
 MediaPipelineBackend::AudioDecoder*
 MediaPipelineBackendWrapper::CreateAudioDecoder() {
+  DCHECK(!is_initialized_);
   if (audio_decoder_wrapper_)
     return nullptr;
 
@@ -38,12 +39,14 @@ MediaPipelineBackendWrapper::CreateAudioDecoder() {
 
 MediaPipelineBackend::VideoDecoder*
 MediaPipelineBackendWrapper::CreateVideoDecoder() {
+  DCHECK(!is_initialized_);
   return backend_->CreateVideoDecoder();
 }
 
 bool MediaPipelineBackendWrapper::Initialize() {
+  DCHECK(!is_initialized_);
   is_initialized_ = backend_->Initialize();
-  if (is_initialized_)
+  if (is_initialized_ && audio_decoder_wrapper_)
     audio_decoder_wrapper_->SetStreamTypeVolume(stream_type_volume_);
 
   return is_initialized_;
