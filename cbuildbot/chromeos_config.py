@@ -2436,9 +2436,9 @@ def GetConfig():
       description='Cheets release builders',
       hw_tests=[
           config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                  blocking=True, num=1, timeout=120*60),
+                                  num=1, timeout=120*60),
           config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                  blocking=True, num=1, timeout=120*60),
+                                  num=1, timeout=120*60),
           config_lib.HWTestConfig(constants.HWTEST_AU_SUITE, blocking=True,
                                   warn_only=True, num=1)],
   )
