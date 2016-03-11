@@ -128,7 +128,7 @@ void ValidateHistograms(const RecordedHistogram* recorded,
 
 }  // anonymous namespace
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Metrics) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
   base::UserActionTester user_action_tester;
 
   base::FieldTrialList::CreateFieldTrial("apitestfieldtrial2", "group1");
