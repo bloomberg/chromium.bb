@@ -177,11 +177,13 @@ scoped_refptr<cc::Layer> createClipLayer(const ClipPaintPropertyNode* node)
     // necessarily true, and this should be fixed.
     gfx::Transform transform = transformToTransformSpace(localTransformSpace(node), localTransformSpace(node->parent()));
     gfx::Vector2dF offset = clipRect.OffsetFromOrigin();
+    transform.Translate(offset.x(), offset.y());
     if (node->parent()) {
         FloatPoint offsetDueToParentClipOffset = node->parent()->clipRect().rect().location();
-        offset -= gfx::Vector2dF(offsetDueToParentClipOffset.x(), offsetDueToParentClipOffset.y());
+        gfx::Transform undoClipOffset;
+        undoClipOffset.Translate(-offsetDueToParentClipOffset.x(), -offsetDueToParentClipOffset.y());
+        transform.PreconcatTransform(undoClipOffset);
     }
-    transform.Translate(offset.x(), offset.y());
 
     scoped_refptr<cc::Layer> layer = cc::Layer::Create(cc::LayerSettings());
     layer->SetIsDrawable(false);
@@ -293,13 +295,16 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
     // this layer's transform space (whereas layer position applies in its
     // parent's transform space).
     gfx::Vector2dF offset = gfx::PointF(combinedBounds.origin()).OffsetFromOrigin();
-    if (const auto* clip = paintChunk.properties.clip.get()) {
-        // If a clip was applied, its origin needs to be cancelled out in
-        // this transform.
-        FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
-        offset -= gfx::Vector2dF(offsetDueToClipOffset.x(), offsetDueToClipOffset.y());
-    }
     transform.Translate(offset.x(), offset.y());
+
+    // If a clip was applied, its origin needs to be cancelled out in
+    // this transform.
+    if (const auto* clip = paintChunk.properties.clip.get()) {
+        FloatPoint offsetDueToClipOffset = clip->clipRect().rect().location();
+        gfx::Transform undoClipOffset;
+        undoClipOffset.Translate(-offsetDueToClipOffset.x(), -offsetDueToClipOffset.y());
+        transform.PreconcatTransform(undoClipOffset);
+    }
 
     scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(cc::LayerSettings(), contentLayerClient.get());
     layer->SetBounds(combinedBounds.size());
