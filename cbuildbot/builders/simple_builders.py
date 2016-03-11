@@ -86,26 +86,31 @@ class SimpleBuilder(generic_builders.Builder):
     """
     parallel_stages = []
 
-    # We can not run hw tests without archiving the payloads.
-    if builder_run.options.archive:
-      for suite_config in builder_run.config.hw_tests:
-        stage_class = None
-        if suite_config.async:
-          stage_class = test_stages.ASyncHWTestStage
-        elif suite_config.suite == constants.HWTEST_AU_SUITE:
-          stage_class = test_stages.AUTestStage
-        else:
-          stage_class = test_stages.HWTestStage
-        if suite_config.blocking:
-          self._RunStage(stage_class, board, suite_config,
-                         builder_run=builder_run)
-        else:
-          new_stage = self._GetStageInstance(stage_class, board,
-                                             suite_config,
-                                             builder_run=builder_run)
-          parallel_stages.append(new_stage)
+    if not builder_run.options.archive:
+      logging.warning("HWTests were requested but could not be run because "
+                      "artifacts weren't uploaded. Please ensure the archive "
+                      "option in the builder config is set to True.")
+      return
 
-    self._RunParallelStages(parallel_stages)
+    for suite_config in builder_run.config.hw_tests:
+      stage_class = None
+      if suite_config.async:
+        stage_class = test_stages.ASyncHWTestStage
+      elif suite_config.suite == constants.HWTEST_AU_SUITE:
+        stage_class = test_stages.AUTestStage
+      else:
+        stage_class = test_stages.HWTestStage
+
+      new_stage = self._GetStageInstance(stage_class, board,
+                                         suite_config,
+                                         builder_run=builder_run)
+      parallel_stages.append(new_stage)
+      # Please see docstring for blocking in the HWTestConfig for more
+      # information on this behavior.
+      if suite_config.blocking:
+        self._RunParallelStages(parallel_stages)
+        parallel_stages = []
+
 
   def _RunBackgroundStagesForBoardAndMarkAsSuccessful(self, builder_run, board):
     """Run background board-specific stages for the specified board.

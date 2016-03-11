@@ -253,9 +253,16 @@ class HWTestConfig(object):
     timeout: Number of seconds to wait before timing out waiting for
              results.
     pool: Pool to use for hw testing.
-    blocking: Suites that set this true run sequentially; each must pass
-              before the next begins.  Tests that set this false run in
-              parallel after all blocking tests have passed.
+    blocking: Setting this to true requires that this suite must PASS for suites
+              scheduled after it to run. This also means any suites that are
+              scheduled before a blocking one are also blocking ones scheduled
+              after. This should be used when you want some suites to block
+              whether or not others should run e.g. only run longer-running
+              suites if some core ones pass first.
+
+              Note, if you want multiple suites to block other suites but run
+              in parallel, you should only mark the last one scheduled as
+              blocking (it effectively serves as a thread/process join).
     async: Fire-and-forget suite.
     warn_only: Failure on HW tests warns only (does not generate error).
     critical: Usually we consider structural failures here as OK.
