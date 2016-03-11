@@ -39,6 +39,7 @@
 @property (nonatomic, readonly) NSNumber* phyMode;
 @property (nonatomic, readonly) NSNumber* channel;
 @property (nonatomic, readonly) NSNumber* rssi;
+@property (nonatomic, readonly) NSInteger rssiValue;
 @property (nonatomic, readonly) NSNumber* noise;
 @property (nonatomic, readonly) NSData* ieData;
 @property (nonatomic, readonly) BOOL isIBSS;
@@ -158,7 +159,7 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
         continue;  // crbug.com/545501
       access_point_data.mac_address =
           MacAddressAsString16(static_cast<const uint8_t*>([mac bytes]));
-      access_point_data.radio_signal_strength = [[network rssi] intValue];
+      access_point_data.radio_signal_strength = [network rssiValue];
       access_point_data.channel = [[network channel] intValue];
       access_point_data.signal_to_noise =
           access_point_data.radio_signal_strength - [[network noise] intValue];

@@ -552,34 +552,6 @@ BASE_EXPORT extern "C" void NSAccessibilityPostNotificationWithUserInfo(
 #endif  // MAC_OS_X_VERSION_10_10
 
 // ----------------------------------------------------------------------------
-// Chrome uses -[CWNetwork securityMode] and -[CWNetwork rssi] on OSX 10.6. The
-// former method relies on the enum CWSecurityMode which was removed in the OSX
-// 10.9 SDK. In order for Chrome to compile against an OSX 10.9+ SDK, Chrome
-// must define this enum. Chrome must also declare these methods.
-//
-// These declarations and definitions will not be necessary once Chrome no
-// longer runs on OSX 10.6.
-// ----------------------------------------------------------------------------
-#if defined(MAC_OS_X_VERSION_10_9) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_6
-typedef enum {
-  kCWSecurityModeOpen = 0,
-  kCWSecurityModeWEP,
-  kCWSecurityModeWPA_PSK,
-  kCWSecurityModeWPA2_PSK,
-  kCWSecurityModeWPA_Enterprise,
-  kCWSecurityModeWPA2_Enterprise,
-  kCWSecurityModeWPS,
-  kCWSecurityModeDynamicWEP
-} CWSecurityMode;
-
-@interface CWNetwork (SnowLeopardSDK)
-@property(readonly) NSNumber* rssi;
-@property(readonly) NSNumber* securityMode;
-@end
-#endif
-
-// ----------------------------------------------------------------------------
 // The symbol for kCWSSIDDidChangeNotification is available in the
 // CoreWLAN.framework for OSX versions 10.6 through 10.10. The symbol is not
 // declared in the OSX 10.9+ SDK, so when compiling against an OSX 10.9+ SDK,

@@ -101,9 +101,6 @@ class WiFiServiceMac : public WiFiService {
   void NetworkPropertiesFromCWNetwork(const CWNetwork* network,
                                       NetworkProperties* properties) const;
 
-  // Converts |CWSecurityMode| into onc::wifi::k{WPA|WEP}* security constant.
-  std::string SecurityFromCWSecurityMode(CWSecurityMode security) const;
-
   // Returns onc::wifi::k{WPA|WEP}* security constant supported by the
   // |CWNetwork|.
   std::string SecurityFromCWNetwork(const CWNetwork* network) const;
@@ -521,46 +518,8 @@ void WiFiServiceMac::NetworkPropertiesFromCWNetwork(
       static_cast<CWChannelBand>([[network wlanChannel] channelBand]));
   properties->frequency_set.insert(properties->frequency);
 
-  // -[CWNetwork supportsSecurity:] is available from 10.7 SDK while
-  // -[CWNetwork securityMode] is deprecated and hidden as private since
-  // 10.9 SDK. The latter is kept for now to support running on 10.6. It
-  // should be removed when 10.6 support is dropped.
-  if ([network respondsToSelector:@selector(supportsSecurity:)]) {
-    properties->security = SecurityFromCWNetwork(network);
-  } else {
-    properties->security = SecurityFromCWSecurityMode(
-        static_cast<CWSecurityMode>([[network securityMode] intValue]));
-  }
-
-  // rssiValue property of CWNetwork is available from 10.7 SDK while
-  // -[CWNetwork rssi] is deprecated and hidden as private since 10.9 SDK.
-  // The latter is kept for now to support running on 10.6. It should be
-  // removed when 10.6 support is dropped.
-  if ([network respondsToSelector:@selector(rssiValue)])
-    properties->signal_strength = [network rssiValue];
-  else
-    properties->signal_strength = [[network rssi] intValue];
-}
-
-std::string WiFiServiceMac::SecurityFromCWSecurityMode(
-    CWSecurityMode security) const {
-  switch (security) {
-    case kCWSecurityModeWPA_Enterprise:
-    case kCWSecurityModeWPA2_Enterprise:
-      return onc::wifi::kWPA_EAP;
-    case kCWSecurityModeWPA_PSK:
-    case kCWSecurityModeWPA2_PSK:
-      return onc::wifi::kWPA_PSK;
-    case kCWSecurityModeWEP:
-      return onc::wifi::kWEP_PSK;
-    case kCWSecurityModeOpen:
-      return onc::wifi::kSecurityNone;
-    // TODO(mef): Figure out correct mapping.
-    case kCWSecurityModeWPS:
-    case kCWSecurityModeDynamicWEP:
-      return onc::wifi::kWPA_EAP;
-  }
-  return onc::wifi::kWPA_EAP;
+  properties->security = SecurityFromCWNetwork(network);
+  properties->signal_strength = [network rssiValue];
 }
 
 std::string WiFiServiceMac::SecurityFromCWNetwork(
