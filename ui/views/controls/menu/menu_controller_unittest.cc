@@ -22,6 +22,7 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_message_loop.h"
+#include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -407,8 +408,9 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_->SetSelectionOnPointerDown(source, event);
   }
 
-  void ProcessMouseMoved(SubmenuView* source,
-                         const ui::MouseEvent& event) {
+  // Note that coordinates of events passed to MenuController must be in that of
+  // the MenuScrollViewContainer.
+  void ProcessMouseMoved(SubmenuView* source, const ui::MouseEvent& event) {
     menu_controller_->OnMouseMoved(source, event);
   }
 
@@ -764,10 +766,11 @@ TEST_F(MenuControllerTest, SelectChildButtonView) {
   EXPECT_TRUE(button3->IsHotTracked());
 
   // Move a mouse to hot track the |button1|.
+  SubmenuView* sub_menu = menu_item()->GetSubmenu();
   gfx::Point location(button1->GetBoundsInScreen().CenterPoint());
+  View::ConvertPointFromScreen(sub_menu->GetScrollViewContainer(), &location);
   ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
                        ui::EventTimeForNow(), 0, 0);
-  SubmenuView* sub_menu = menu_item()->GetSubmenu();
   ProcessMouseMoved(sub_menu, event);
 
   // Incrementing selection should move hot tracking to the second button (next
