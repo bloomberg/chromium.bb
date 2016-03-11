@@ -280,7 +280,7 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
     decoded_images_.Erase(image_it);
   }
 
-  scoped_refptr<DecodedImage> decoded_image;
+  scoped_ptr<DecodedImage> decoded_image;
   {
     base::AutoUnlock unlock(lock_);
     decoded_image = DecodeImageInternal(key, image);
@@ -321,7 +321,7 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
   SanityCheckState(__LINE__, true);
 }
 
-scoped_refptr<SoftwareImageDecodeController::DecodedImage>
+scoped_ptr<SoftwareImageDecodeController::DecodedImage>
 SoftwareImageDecodeController::DecodeImageInternal(
     const ImageKey& key,
     const DrawImage& draw_image) {
@@ -360,7 +360,7 @@ SoftwareImageDecodeController::DecodeImageInternal(
       }
     }
 
-    return make_scoped_refptr(new DecodedImage(
+    return make_scoped_ptr(new DecodedImage(
         decoded_info, std::move(decoded_pixels), SkSize::Make(0, 0)));
   }
 
@@ -433,7 +433,7 @@ SoftwareImageDecodeController::DecodeImageInternal(
   // deleted automatically when we return.
   DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
 
-  return make_scoped_refptr(
+  return make_scoped_ptr(
       new DecodedImage(scaled_info, std::move(scaled_pixels),
                        SkSize::Make(-key.src_rect().x(), -key.src_rect().y())));
 }
@@ -464,9 +464,10 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
   auto decoded_images_it = decoded_images_.Get(key);
   // If we found the image and it's locked, then return it. If it's not locked,
   // erase it from the cache since it might be put into the at-raster cache.
-  scoped_refptr<DecodedImage> decoded_image;
+  scoped_ptr<DecodedImage> scoped_decoded_image;
+  DecodedImage* decoded_image = nullptr;
   if (decoded_images_it != decoded_images_.end()) {
-    decoded_image = decoded_images_it->second;
+    decoded_image = decoded_images_it->second.get();
     if (decoded_image->is_locked()) {
       RefImage(key);
       SanityCheckState(__LINE__, true);
@@ -474,6 +475,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
           decoded_image->image(), decoded_image->src_rect_offset(),
           GetScaleAdjustment(key), GetDecodedFilterQuality(key));
     } else {
+      scoped_decoded_image = std::move(decoded_images_it->second);
       decoded_images_.Erase(decoded_images_it);
     }
   }
@@ -485,8 +487,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
     DCHECK(at_raster_images_it->second->is_locked());
     RefAtRasterImage(key);
     SanityCheckState(__LINE__, true);
-    const scoped_refptr<DecodedImage>& at_raster_decoded_image =
-        at_raster_images_it->second;
+    DecodedImage* at_raster_decoded_image = at_raster_images_it->second.get();
     auto decoded_draw_image =
         DecodedDrawImage(at_raster_decoded_image->image(),
                          at_raster_decoded_image->src_rect_offset(),
@@ -505,7 +506,8 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
     // on the compositor thread. This means holding on to the lock might stall
     // the compositor thread for the duration of the decode!
     base::AutoUnlock unlock(lock_);
-    decoded_image = DecodeImageInternal(key, draw_image);
+    scoped_decoded_image = DecodeImageInternal(key, draw_image);
+    decoded_image = scoped_decoded_image.get();
 
     // Skip the image if we couldn't decode it.
     if (!decoded_image)
@@ -513,25 +515,26 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
     check_at_raster_cache = true;
   }
 
+  DCHECK(decoded_image == scoped_decoded_image.get());
+
   // While we unlocked the lock, it could be the case that another thread
   // already decoded this already and put it in the at-raster cache. Look it up
   // first.
-  bool need_to_add_image_to_cache = true;
   if (check_at_raster_cache) {
     at_raster_images_it = at_raster_decoded_images_.Get(key);
     if (at_raster_images_it != at_raster_decoded_images_.end()) {
       // We have to drop our decode, since the one in the cache is being used by
       // another thread.
       decoded_image->Unlock();
-      decoded_image = at_raster_images_it->second;
-      need_to_add_image_to_cache = false;
+      decoded_image = at_raster_images_it->second.get();
+      scoped_decoded_image = nullptr;
     }
   }
 
   // If we really are the first ones, or if the other thread already unlocked
   // the image, then put our work into at-raster time cache.
-  if (need_to_add_image_to_cache)
-    at_raster_decoded_images_.Put(key, decoded_image);
+  if (scoped_decoded_image)
+    at_raster_decoded_images_.Put(key, std::move(scoped_decoded_image));
 
   DCHECK(decoded_image);
   DCHECK(decoded_image->is_locked());
@@ -604,7 +607,7 @@ void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
           decoded_images_ref_counts_.end()) {
         at_raster_image_it->second->Unlock();
       }
-      decoded_images_.Put(key, at_raster_image_it->second);
+      decoded_images_.Put(key, std::move(at_raster_image_it->second));
     } else if (image_it->second->is_locked()) {
       at_raster_image_it->second->Unlock();
     } else {
@@ -612,7 +615,7 @@ void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
              decoded_images_ref_counts_.end());
       at_raster_image_it->second->Unlock();
       decoded_images_.Erase(image_it);
-      decoded_images_.Put(key, at_raster_image_it->second);
+      decoded_images_.Put(key, std::move(at_raster_image_it->second));
     }
     at_raster_decoded_images_.Erase(at_raster_image_it);
   }

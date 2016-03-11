@@ -118,12 +118,12 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
  private:
   // DecodedImage is a convenience storage for discardable memory. It can also
   // construct an image out of SkImageInfo and stored discardable memory.
-  // TODO(vmpstr): Make this scoped_ptr.
-  class DecodedImage : public base::RefCounted<DecodedImage> {
+  class DecodedImage {
    public:
     DecodedImage(const SkImageInfo& info,
                  scoped_ptr<base::DiscardableMemory> memory,
                  const SkSize& src_rect_offset);
+    ~DecodedImage();
 
     SkImage* image() const {
       DCHECK(locked_);
@@ -137,10 +137,6 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
     void Unlock();
 
    private:
-    friend class base::RefCounted<DecodedImage>;
-
-    ~DecodedImage();
-
     bool locked_;
     SkImageInfo image_info_;
     scoped_ptr<base::DiscardableMemory> memory_;
@@ -175,8 +171,8 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
   // Actually decode the image. Note that this function can (and should) be
   // called with no lock acquired, since it can do a lot of work. Note that it
   // can also return nullptr to indicate the decode failed.
-  scoped_refptr<DecodedImage> DecodeImageInternal(const ImageKey& key,
-                                                  const DrawImage& draw_image);
+  scoped_ptr<DecodedImage> DecodeImageInternal(const ImageKey& key,
+                                               const DrawImage& draw_image);
 
   // Get the decoded draw image for the given key and draw_image. Note that this
   // function has to be called with no lock acquired, since it will acquire its
@@ -207,9 +203,8 @@ class CC_EXPORT SoftwareImageDecodeController : public ImageDecodeController {
   // ensure that they are safe to access on multiple threads.
   base::Lock lock_;
 
-  using ImageMRUCache = base::HashingMRUCache<ImageKey,
-                                              scoped_refptr<DecodedImage>,
-                                              ImageKeyHash>;
+  using ImageMRUCache =
+      base::HashingMRUCache<ImageKey, scoped_ptr<DecodedImage>, ImageKeyHash>;
 
   // Decoded images and ref counts (predecode path).
   ImageMRUCache decoded_images_;
