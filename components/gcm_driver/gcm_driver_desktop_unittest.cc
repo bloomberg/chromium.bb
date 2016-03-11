@@ -1177,6 +1177,10 @@ class GCMDriverInstanceIDTest : public GCMDriverTest {
                    const std::string& authorized_entity,
                    const std::string& scope,
                    WaitToFinish wait_to_finish);
+  void AddInstanceIDData(const std::string& app_id,
+                         const std::string& instance_id,
+                         const std::string& extra_data);
+  void RemoveInstanceIDData(const std::string& app_id);
 
   std::string instance_id() const { return instance_id_; }
   std::string extra_data() const { return extra_data_; }
@@ -1205,9 +1209,9 @@ void GCMDriverInstanceIDTest::GetInstanceID(const std::string& app_id,
                                             WaitToFinish wait_to_finish) {
   base::RunLoop run_loop;
   set_async_operation_completed_callback(run_loop.QuitClosure());
-  driver()->GetInstanceIDData(app_id,
-      base::Bind(&GCMDriverInstanceIDTest::GetInstanceIDDataCompleted,
-                 base::Unretained(this)));
+  driver()->GetInstanceIDHandlerInternal()->GetInstanceIDData(
+      app_id, base::Bind(&GCMDriverInstanceIDTest::GetInstanceIDDataCompleted,
+                         base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -1227,12 +1231,9 @@ void GCMDriverInstanceIDTest::GetToken(const std::string& app_id,
   base::RunLoop run_loop;
   set_async_operation_completed_callback(run_loop.QuitClosure());
   std::map<std::string, std::string> options;
-  driver()->GetToken(app_id,
-                     authorized_entity,
-                     scope,
-                     options,
-                     base::Bind(&GCMDriverTest::RegisterCompleted,
-                                base::Unretained(this)));
+  driver()->GetInstanceIDHandlerInternal()->GetToken(
+      app_id, authorized_entity, scope, options,
+      base::Bind(&GCMDriverTest::RegisterCompleted, base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
 }
@@ -1243,25 +1244,34 @@ void GCMDriverInstanceIDTest::DeleteToken(const std::string& app_id,
                                           WaitToFinish wait_to_finish) {
   base::RunLoop run_loop;
   set_async_operation_completed_callback(run_loop.QuitClosure());
-  driver()->DeleteToken(app_id,
-                        authorized_entity,
-                        scope,
-                        base::Bind(&GCMDriverTest::UnregisterCompleted,
-                                   base::Unretained(this)));
+  driver()->GetInstanceIDHandlerInternal()->DeleteToken(
+      app_id, authorized_entity, scope,
+      base::Bind(&GCMDriverTest::UnregisterCompleted, base::Unretained(this)));
   if (wait_to_finish == WAIT)
     run_loop.Run();
+}
+
+void GCMDriverInstanceIDTest::AddInstanceIDData(const std::string& app_id,
+                                                const std::string& instance_id,
+                                                const std::string& extra_data) {
+  driver()->GetInstanceIDHandlerInternal()->AddInstanceIDData(
+      app_id, instance_id, extra_data);
+}
+
+void GCMDriverInstanceIDTest::RemoveInstanceIDData(const std::string& app_id) {
+  driver()->GetInstanceIDHandlerInternal()->RemoveInstanceIDData(app_id);
 }
 
 TEST_F(GCMDriverInstanceIDTest, InstanceIDData) {
   GetReady();
 
-  driver()->AddInstanceIDData(kTestAppID1, kInstanceID1, "Foo");
+  AddInstanceIDData(kTestAppID1, kInstanceID1, "Foo");
   GetInstanceID(kTestAppID1, GCMDriverTest::WAIT);
 
   EXPECT_EQ(kInstanceID1, instance_id());
   EXPECT_EQ("Foo", extra_data());
 
-  driver()->RemoveInstanceIDData(kTestAppID1);
+  RemoveInstanceIDData(kTestAppID1);
   GetInstanceID(kTestAppID1, GCMDriverTest::WAIT);
 
   EXPECT_TRUE(instance_id().empty());
@@ -1280,9 +1290,9 @@ TEST_F(GCMDriverInstanceIDTest, GCMClientNotReadyBeforeInstanceIDData) {
   AddAppHandlers();
 
   // All operations are on hold until GCMClient is ready.
-  driver()->AddInstanceIDData(kTestAppID1, kInstanceID1, "Foo");
-  driver()->AddInstanceIDData(kTestAppID2, kInstanceID2, "Bar");
-  driver()->RemoveInstanceIDData(kTestAppID1);
+  AddInstanceIDData(kTestAppID1, kInstanceID1, "Foo");
+  AddInstanceIDData(kTestAppID2, kInstanceID2, "Bar");
+  RemoveInstanceIDData(kTestAppID1);
   GetInstanceID(kTestAppID2, GCMDriverTest::DO_NOT_WAIT);
   PumpIOLoop();
   PumpUILoop();

@@ -212,8 +212,8 @@ class GCMDriver {
   // to send a heartbeat message.
   virtual void WakeFromSuspendForHeartbeat(bool wake) = 0;
 
-  // Supports InstanceID handling.
-  virtual InstanceIDHandler* GetInstanceIDHandler() = 0;
+  // Supports InstanceID handling. Must only be used by the InstanceID system.
+  virtual InstanceIDHandler* GetInstanceIDHandlerInternal() = 0;
 
   // Adds or removes a custom client requested heartbeat interval. If multiple
   // components set that setting, the lowest setting will be used. If the

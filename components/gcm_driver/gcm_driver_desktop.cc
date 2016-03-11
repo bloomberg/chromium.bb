@@ -820,7 +820,7 @@ void GCMDriverDesktop::SetLastTokenFetchTime(const base::Time& time) {
                  time));
 }
 
-InstanceIDHandler* GCMDriverDesktop::GetInstanceIDHandler() {
+InstanceIDHandler* GCMDriverDesktop::GetInstanceIDHandlerInternal() {
   return this;
 }
 

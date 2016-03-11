@@ -61,7 +61,7 @@ class GCMDriverDesktop : public GCMDriver,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
   ~GCMDriverDesktop() override;
 
-  // GCMDriver overrides:
+  // GCMDriver implementation:
   void Shutdown() override;
   void OnSignedIn() override;
   void OnSignedOut() override;
@@ -86,26 +86,9 @@ class GCMDriverDesktop : public GCMDriver,
   base::Time GetLastTokenFetchTime() override;
   void SetLastTokenFetchTime(const base::Time& time) override;
   void WakeFromSuspendForHeartbeat(bool wake) override;
-  InstanceIDHandler* GetInstanceIDHandler() override;
+  InstanceIDHandler* GetInstanceIDHandlerInternal() override;
   void AddHeartbeatInterval(const std::string& scope, int interval_ms) override;
   void RemoveHeartbeatInterval(const std::string& scope) override;
-
-  // InstanceIDHandler overrides:
-  void GetToken(const std::string& app_id,
-                const std::string& authorized_entity,
-                const std::string& scope,
-                const std::map<std::string, std::string>& options,
-                const GetTokenCallback& callback) override;
-  void DeleteToken(const std::string& app_id,
-                   const std::string& authorized_entity,
-                   const std::string& scope,
-                   const DeleteTokenCallback& callback) override;
-  void AddInstanceIDData(const std::string& app_id,
-                         const std::string& instance_id,
-                         const std::string& extra_data) override;
-  void RemoveInstanceIDData(const std::string& app_id) override;
-  void GetInstanceIDData(const std::string& app_id,
-                         const GetInstanceIDDataCallback& callback) override;
 
   // Exposed for testing purpose.
   bool gcm_enabled() const { return gcm_enabled_; }
@@ -125,6 +108,23 @@ class GCMDriverDesktop : public GCMDriver,
   void RecordDecryptionFailure(const std::string& app_id,
                                GCMEncryptionProvider::DecryptionResult result)
       override;
+
+  // InstanceIDHandler implementation:
+  void GetToken(const std::string& app_id,
+                const std::string& authorized_entity,
+                const std::string& scope,
+                const std::map<std::string, std::string>& options,
+                const GetTokenCallback& callback) override;
+  void DeleteToken(const std::string& app_id,
+                   const std::string& authorized_entity,
+                   const std::string& scope,
+                   const DeleteTokenCallback& callback) override;
+  void AddInstanceIDData(const std::string& app_id,
+                         const std::string& instance_id,
+                         const std::string& extra_data) override;
+  void RemoveInstanceIDData(const std::string& app_id) override;
+  void GetInstanceIDData(const std::string& app_id,
+                         const GetInstanceIDDataCallback& callback) override;
 
  private:
   class IOWorker;

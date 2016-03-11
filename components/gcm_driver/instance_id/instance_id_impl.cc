@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/gcm_driver/gcm_driver_desktop.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "crypto/random.h"
 
 namespace instance_id {
@@ -48,19 +48,16 @@ InstanceID::Result GCMClientResultToInstanceIDResult(
 
 // static
 scoped_ptr<InstanceID> InstanceID::Create(const std::string& app_id,
-                                          gcm::GCMDriver* gcm_driver) {
-  return make_scoped_ptr(new InstanceIDImpl(app_id, gcm_driver));
+                                          gcm::InstanceIDHandler* handler) {
+  return make_scoped_ptr(new InstanceIDImpl(app_id, handler));
 }
 
 InstanceIDImpl::InstanceIDImpl(const std::string& app_id,
-                               gcm::GCMDriver* gcm_driver)
-    : InstanceID(app_id),
-      gcm_driver_(gcm_driver),
-      weak_ptr_factory_(this) {
-  GetInstanceIDHandler()->GetInstanceIDData(
-      app_id,
-      base::Bind(&InstanceIDImpl::GetInstanceIDDataCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+                               gcm::InstanceIDHandler* handler)
+    : InstanceID(app_id, handler), weak_ptr_factory_(this) {
+  handler->GetInstanceIDData(
+      app_id, base::Bind(&InstanceIDImpl::GetInstanceIDDataCompleted,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 InstanceIDImpl::~InstanceIDImpl() {
@@ -129,14 +126,9 @@ void InstanceIDImpl::DoGetToken(
     const GetTokenCallback& callback) {
   EnsureIDGenerated();
 
-  GetInstanceIDHandler()->GetToken(
-      app_id(),
-      authorized_entity,
-      scope,
-      options,
-      base::Bind(&InstanceIDImpl::OnGetTokenCompleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  handler()->GetToken(app_id(), authorized_entity, scope, options,
+                      base::Bind(&InstanceIDImpl::OnGetTokenCompleted,
+                                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void InstanceIDImpl::DeleteToken(const std::string& authorized_entity,
@@ -168,13 +160,9 @@ void InstanceIDImpl::DoDeleteToken(
     return;
   }
 
-  GetInstanceIDHandler()->DeleteToken(
-      app_id(),
-      authorized_entity,
-      scope,
-      base::Bind(&InstanceIDImpl::OnDeleteTokenCompleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  handler()->DeleteToken(app_id(), authorized_entity, scope,
+                         base::Bind(&InstanceIDImpl::OnDeleteTokenCompleted,
+                                    weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void InstanceIDImpl::DeleteID(const DeleteIDCallback& callback) {
@@ -196,13 +184,11 @@ void InstanceIDImpl::DoDeleteID(const DeleteIDCallback& callback) {
     return;
   }
 
-  GetInstanceIDHandler()->DeleteAllTokensForApp(
-      app_id(),
-      base::Bind(&InstanceIDImpl::OnDeleteIDCompleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  handler()->DeleteAllTokensForApp(
+      app_id(), base::Bind(&InstanceIDImpl::OnDeleteIDCompleted,
+                           weak_ptr_factory_.GetWeakPtr(), callback));
 
-  GetInstanceIDHandler()->RemoveInstanceIDData(app_id());
+  handler()->RemoveInstanceIDData(app_id());
 
   id_.clear();
   creation_time_ = base::Time();
@@ -245,12 +231,6 @@ void InstanceIDImpl::GetInstanceIDDataCompleted(
   delayed_task_controller_.SetReady();
 }
 
-gcm::InstanceIDHandler* InstanceIDImpl::GetInstanceIDHandler() const {
-  gcm::InstanceIDHandler* handler = gcm_driver_->GetInstanceIDHandler();
-  DCHECK(handler);
-  return handler;
-}
-
 void InstanceIDImpl::EnsureIDGenerated() {
   if (!id_.empty())
     return;
@@ -281,10 +261,8 @@ void InstanceIDImpl::EnsureIDGenerated() {
   creation_time_ = base::Time::Now();
 
   // Save to the persistent store.
-  GetInstanceIDHandler()->AddInstanceIDData(
-      app_id(),
-      id_,
-      base::Int64ToString(creation_time_.ToInternalValue()));
+  handler()->AddInstanceIDData(
+      app_id(), id_, base::Int64ToString(creation_time_.ToInternalValue()));
 }
 
 }  // namespace instance_id

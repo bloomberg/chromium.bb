@@ -100,7 +100,7 @@ void FakeGCMDriver::SetLastTokenFetchTime(const base::Time& time) {
 void FakeGCMDriver::WakeFromSuspendForHeartbeat(bool wake) {
 }
 
-InstanceIDHandler* FakeGCMDriver::GetInstanceIDHandler() {
+InstanceIDHandler* FakeGCMDriver::GetInstanceIDHandlerInternal() {
   return NULL;
 }
 

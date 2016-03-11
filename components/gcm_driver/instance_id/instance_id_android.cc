@@ -11,13 +11,13 @@ namespace instance_id {
 
 // static
 scoped_ptr<InstanceID> InstanceID::Create(const std::string& app_id,
-                                          gcm::GCMDriver* gcm_driver) {
-  return make_scoped_ptr(new InstanceIDAndroid(app_id));
+                                          gcm::InstanceIDHandler* handler) {
+  return make_scoped_ptr(new InstanceIDAndroid(app_id, handler));
 }
 
-InstanceIDAndroid::InstanceIDAndroid(const std::string& app_id)
-    : InstanceID(app_id) {
-}
+InstanceIDAndroid::InstanceIDAndroid(const std::string& app_id,
+                                     gcm::InstanceIDHandler* handler)
+    : InstanceID(app_id, handler) {}
 
 InstanceIDAndroid::~InstanceIDAndroid() {
 }

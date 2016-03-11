@@ -6,8 +6,10 @@
 
 namespace instance_id {
 
-InstanceID::InstanceID(const std::string& app_id)
-    : app_id_(app_id) {
+InstanceID::InstanceID(const std::string& app_id,
+                       gcm::InstanceIDHandler* handler)
+    : handler_(handler), app_id_(app_id) {
+  DCHECK(handler_);
 }
 
 InstanceID::~InstanceID() {

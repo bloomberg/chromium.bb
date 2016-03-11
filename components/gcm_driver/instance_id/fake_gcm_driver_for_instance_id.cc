@@ -20,7 +20,8 @@ FakeGCMDriverForInstanceID::FakeGCMDriverForInstanceID() {
 FakeGCMDriverForInstanceID::~FakeGCMDriverForInstanceID() {
 }
 
-gcm::InstanceIDHandler* FakeGCMDriverForInstanceID::GetInstanceIDHandler() {
+gcm::InstanceIDHandler*
+FakeGCMDriverForInstanceID::GetInstanceIDHandlerInternal() {
   return this;
 }
 

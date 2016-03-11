@@ -18,7 +18,6 @@
 #include "components/gcm_driver/instance_id/instance_id.h"
 
 namespace gcm {
-class GCMDriver;
 class InstanceIDHandler;
 }  // namespace gcm
 
@@ -27,7 +26,7 @@ namespace instance_id {
 // InstanceID implementation for desktop and iOS.
 class InstanceIDImpl : public InstanceID {
  public:
-  InstanceIDImpl(const std::string& app_id, gcm::GCMDriver* gcm_driver);
+  InstanceIDImpl(const std::string& app_id, gcm::InstanceIDHandler* handler);
   ~InstanceIDImpl() override;
 
   // InstanceID:
@@ -43,8 +42,6 @@ class InstanceIDImpl : public InstanceID {
   void DeleteID(const DeleteIDCallback& callback) override;
 
  private:
-  gcm::InstanceIDHandler* GetInstanceIDHandler() const;
-
   void EnsureIDGenerated();
 
   void OnGetTokenCompleted(const GetTokenCallback& callback,
@@ -68,8 +65,6 @@ class InstanceIDImpl : public InstanceID {
                      const std::string& scope,
                      const DeleteTokenCallback& callback);
   void DoDeleteID(const DeleteIDCallback& callback);
-
-  gcm::GCMDriver* gcm_driver_;  // Not owned.
 
   gcm::GCMDelayedTaskController delayed_task_controller_;
 

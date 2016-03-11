@@ -42,7 +42,10 @@ class InstanceIDDriver {
   bool ExistsInstanceID(const std::string& app_id) const;
 
  private:
-  gcm::GCMDriver* gcm_driver_;  // Not owned.
+  // Owned by GCMProfileServiceFactory, which is a dependency of
+  // InstanceIDProfileServiceFactory, which owns this.
+  gcm::GCMDriver* gcm_driver_;
+
   std::map<std::string, scoped_ptr<InstanceID>> instance_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(InstanceIDDriver);

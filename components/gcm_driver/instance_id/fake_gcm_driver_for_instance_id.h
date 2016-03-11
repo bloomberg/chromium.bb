@@ -22,7 +22,7 @@ class FakeGCMDriverForInstanceID : public gcm::FakeGCMDriver,
   ~FakeGCMDriverForInstanceID() override;
 
   // FakeGCMDriver overrides:
-  gcm::InstanceIDHandler* GetInstanceIDHandler() override;
+  gcm::InstanceIDHandler* GetInstanceIDHandlerInternal() override;
 
   // InstanceIDHandler overrides:
   void GetToken(const std::string& app_id,

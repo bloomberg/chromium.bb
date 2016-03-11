@@ -199,7 +199,7 @@ void GCMDriverAndroid::SetLastTokenFetchTime(const base::Time& time) {
 void GCMDriverAndroid::WakeFromSuspendForHeartbeat(bool wake) {
 }
 
-InstanceIDHandler* GCMDriverAndroid::GetInstanceIDHandler() {
+InstanceIDHandler* GCMDriverAndroid::GetInstanceIDHandlerInternal() {
   // Not supported for Android.
   return NULL;
 }

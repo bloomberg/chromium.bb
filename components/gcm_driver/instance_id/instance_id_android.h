@@ -19,7 +19,7 @@ namespace instance_id {
 // InstanceID implementation for Android.
 class InstanceIDAndroid : public InstanceID {
  public:
-  InstanceIDAndroid(const std::string& app_id);
+  InstanceIDAndroid(const std::string& app_id, gcm::InstanceIDHandler* handler);
   ~InstanceIDAndroid() override;
 
   // InstanceID:
