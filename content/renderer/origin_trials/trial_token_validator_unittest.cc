@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -84,7 +85,10 @@ class TestContentRendererClient : public content::ContentRendererClient {
 
 class TrialTokenValidatorTest : public testing::Test {
  public:
-  TrialTokenValidatorTest() {
+  TrialTokenValidatorTest()
+      : appropriate_origin_(GURL(kAppropriateOrigin)),
+        inappropriate_origin_(GURL(kInappropriateOrigin)),
+        insecure_origin_(GURL(kInsecureOrigin)) {
     SetPublicKey(kTestPublicKey);
     SetRendererClientForTesting(&test_content_renderer_client_);
   }
@@ -94,6 +98,9 @@ class TrialTokenValidatorTest : public testing::Test {
   }
 
   TrialTokenValidator trial_token_validator_;
+  const url::Origin appropriate_origin_;
+  const url::Origin inappropriate_origin_;
+  const url::Origin insecure_origin_;
 
  private:
   TestContentRendererClient test_content_renderer_client_;
@@ -101,40 +108,40 @@ class TrialTokenValidatorTest : public testing::Test {
 
 TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
   EXPECT_TRUE(trial_token_validator_.validateToken(
-      kSampleToken, kAppropriateOrigin, kAppropriateFeatureName));
+      kSampleToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateOrigin) {
   EXPECT_FALSE(TrialTokenValidator().validateToken(
-      kSampleToken, kInappropriateOrigin, kAppropriateFeatureName));
+      kSampleToken, inappropriate_origin_, kAppropriateFeatureName));
   EXPECT_FALSE(TrialTokenValidator().validateToken(
-      kSampleToken, kInsecureOrigin, kAppropriateFeatureName));
+      kSampleToken, insecure_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateFeature) {
   EXPECT_FALSE(TrialTokenValidator().validateToken(
-      kSampleToken, kAppropriateOrigin, kInappropriateFeatureName));
+      kSampleToken, appropriate_origin_, kInappropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInvalidSignature) {
   EXPECT_FALSE(TrialTokenValidator().validateToken(
-      kInvalidSignatureToken, kAppropriateOrigin, kAppropriateFeatureName));
+      kInvalidSignatureToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateUnparsableToken) {
   EXPECT_FALSE(TrialTokenValidator().validateToken(
-      kUnparsableToken, kAppropriateOrigin, kAppropriateFeatureName));
+      kUnparsableToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
   EXPECT_FALSE(TrialTokenValidator().validateToken(
-      kExpiredToken, kAppropriateOrigin, kAppropriateFeatureName));
+      kExpiredToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
   SetPublicKey(kTestPublicKey2);
   EXPECT_FALSE(TrialTokenValidator().validateToken(
-      kSampleToken, kAppropriateOrigin, kAppropriateFeatureName));
+      kSampleToken, appropriate_origin_, kAppropriateFeatureName));
 }
 
 }  // namespace content

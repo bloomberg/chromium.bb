@@ -15,7 +15,7 @@ TrialTokenValidator::TrialTokenValidator() {}
 TrialTokenValidator::~TrialTokenValidator() {}
 
 bool TrialTokenValidator::validateToken(const blink::WebString& token,
-                                        const blink::WebString& origin,
+                                        const blink::WebSecurityOrigin& origin,
                                         const blink::WebString& featureName) {
   scoped_ptr<TrialToken> trial_token = TrialToken::Parse(token.utf8());
 
@@ -26,7 +26,7 @@ bool TrialTokenValidator::validateToken(const blink::WebString& token,
       content_client->renderer()->GetOriginTrialPublicKey();
 
   return !public_key.empty() && trial_token &&
-         trial_token->IsAppropriate(origin.utf8(), featureName.utf8()) &&
+         trial_token->IsAppropriate(origin, featureName.utf8()) &&
          trial_token->IsValid(base::Time::Now(), public_key);
 }
 

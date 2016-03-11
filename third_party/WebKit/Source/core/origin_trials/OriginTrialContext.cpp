@@ -11,16 +11,12 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebTrialTokenValidator.h"
 
 namespace blink {
 
 namespace {
-
-String getCurrentOrigin(ExecutionContext* executionContext)
-{
-    return executionContext->getSecurityOrigin()->toString();
-}
 
 String getDisabledMessage(const String& featureName)
 {
@@ -74,7 +70,7 @@ bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* err
 
 bool OriginTrialContext::hasValidToken(Vector<String> tokens, const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
-    String origin = getCurrentOrigin(getExecutionContext());
+    WebSecurityOrigin origin(getExecutionContext()->getSecurityOrigin());
 
     for (const String& token : tokens) {
         // Check with the validator service to verify the signature.

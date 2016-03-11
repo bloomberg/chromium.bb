@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
@@ -77,64 +78,50 @@ scoped_ptr<TrialToken> TrialToken::Parse(const std::string& token_text) {
   }
 
   // Ensure that the origin is a valid (non-unique) origin URL
-  GURL origin_url(origin_string);
-  if (url::Origin(origin_url).unique()) {
+  url::Origin origin = url::Origin(GURL(origin_string));
+  if (origin.unique()) {
     return nullptr;
   }
 
   // Signed data is (origin + "|" + feature_name + "|" + expiry).
   std::string data = token_contents.substr(signature.length() + 1);
 
-  return make_scoped_ptr(new TrialToken(version, signature, data, origin_url,
+  return make_scoped_ptr(new TrialToken(version, signature, data, origin,
                                         feature_name, expiry_timestamp));
 }
 
-TrialToken::TrialToken(uint8_t version,
-                       const std::string& signature,
-                       const std::string& data,
-                       const GURL& origin,
-                       const std::string& feature_name,
-                       uint64_t expiry_timestamp)
-    : version_(version),
-      signature_(signature),
-      data_(data),
-      origin_(origin),
-      feature_name_(feature_name),
-      expiry_timestamp_(expiry_timestamp) {}
-
-bool TrialToken::IsAppropriate(const std::string& origin,
-                               const std::string& feature_name) const {
+bool TrialToken::IsAppropriate(const url::Origin& origin,
+                               base::StringPiece feature_name) const {
   return ValidateOrigin(origin) && ValidateFeatureName(feature_name);
 }
 
 bool TrialToken::IsValid(const base::Time& now,
-                         const base::StringPiece& public_key) const {
+                         base::StringPiece public_key) const {
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220
   return ValidateDate(now) && ValidateSignature(public_key);
 }
 
-bool TrialToken::ValidateOrigin(const std::string& origin) const {
-  return GURL(origin) == origin_;
+bool TrialToken::ValidateOrigin(const url::Origin& origin) const {
+  return origin == origin_;
 }
 
-bool TrialToken::ValidateFeatureName(const std::string& feature_name) const {
+bool TrialToken::ValidateFeatureName(base::StringPiece feature_name) const {
   return feature_name == feature_name_;
 }
 
 bool TrialToken::ValidateDate(const base::Time& now) const {
-  base::Time expiry_time = base::Time::FromDoubleT((double)expiry_timestamp_);
-  return expiry_time > now;
+  return expiry_time_ > now;
 }
 
-bool TrialToken::ValidateSignature(const base::StringPiece& public_key) const {
+bool TrialToken::ValidateSignature(base::StringPiece public_key) const {
   return ValidateSignature(signature_, data_, public_key);
 }
 
 // static
 bool TrialToken::ValidateSignature(const std::string& signature_text,
                                    const std::string& data,
-                                   const base::StringPiece& public_key) {
+                                   base::StringPiece public_key) {
   // Public key must be 32 bytes long for Ed25519.
   CHECK_EQ(public_key.length(), 32UL);
 
@@ -155,5 +142,18 @@ bool TrialToken::ValidateSignature(const std::string& signature_text,
       reinterpret_cast<const uint8_t*>(public_key.data()));
   return (result != 0);
 }
+
+TrialToken::TrialToken(uint8_t version,
+                       const std::string& signature,
+                       const std::string& data,
+                       const url::Origin& origin,
+                       const std::string& feature_name,
+                       uint64_t expiry_timestamp)
+    : version_(version),
+      signature_(signature),
+      data_(data),
+      origin_(origin),
+      feature_name_(feature_name),
+      expiry_time_(base::Time::FromDoubleT(expiry_timestamp)) {}
 
 }  // namespace content

@@ -11,7 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -40,37 +40,36 @@ class CONTENT_EXPORT TrialToken {
   // Returns true if this feature is appropriate for use by the given origin,
   // for the given feature name. This does not check whether the signature is
   // valid, or whether the token itself has expired.
-  bool IsAppropriate(const std::string& origin,
-                     const std::string& featureName) const;
+  bool IsAppropriate(const url::Origin& origin,
+                     base::StringPiece feature_name) const;
 
   // Returns true if this token has a valid signature, and has not expired.
-  bool IsValid(const base::Time& now,
-               const base::StringPiece& public_key) const;
+  bool IsValid(const base::Time& now, base::StringPiece public_key) const;
 
   uint8_t version() { return version_; }
   std::string signature() { return signature_; }
   std::string data() { return data_; }
-  GURL origin() { return origin_; }
+  url::Origin origin() { return origin_; }
   std::string feature_name() { return feature_name_; }
-  uint64_t expiry_timestamp() { return expiry_timestamp_; }
+  base::Time expiry_time() { return expiry_time_; }
 
  protected:
   friend class TrialTokenTest;
 
-  bool ValidateOrigin(const std::string& origin) const;
-  bool ValidateFeatureName(const std::string& feature_name) const;
+  bool ValidateOrigin(const url::Origin& origin) const;
+  bool ValidateFeatureName(base::StringPiece feature_name) const;
   bool ValidateDate(const base::Time& now) const;
-  bool ValidateSignature(const base::StringPiece& public_key) const;
+  bool ValidateSignature(base::StringPiece public_key) const;
 
   static bool ValidateSignature(const std::string& signature_text,
                                 const std::string& data,
-                                const base::StringPiece& public_key);
+                                base::StringPiece public_key);
 
  private:
   TrialToken(uint8_t version,
              const std::string& signature,
              const std::string& data,
-             const GURL& origin,
+             const url::Origin& origin,
              const std::string& feature_name,
              uint64_t expiry_timestamp);
 
@@ -96,14 +95,13 @@ class CONTENT_EXPORT TrialToken {
   std::string data_;
 
   // The origin for which this token is valid. Must be a secure origin.
-  GURL origin_;
+  url::Origin origin_;
 
   // The name of the experimental feature which this token enables.
   std::string feature_name_;
 
-  // The time until which this token should be considered valid, in UTC, as
-  // seconds since the Unix epoch.
-  uint64_t expiry_timestamp_;
+  // The time until which this token should be considered valid.
+  base::Time expiry_time_;
 };
 
 }  // namespace content

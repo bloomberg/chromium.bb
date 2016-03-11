@@ -40,7 +40,7 @@ public:
     ~MockTokenValidator() override {}
 
     // blink::WebTrialTokenValidator implementation
-    bool validateToken(const blink::WebString& token, const blink::WebString& origin, const blink::WebString& featureName) override
+    bool validateToken(const blink::WebString& token, const blink::WebSecurityOrigin& origin, const blink::WebString& featureName) override
     {
         m_callCount++;
         return m_response;

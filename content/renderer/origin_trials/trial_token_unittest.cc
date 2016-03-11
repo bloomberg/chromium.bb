@@ -11,6 +11,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -113,7 +114,10 @@ const size_t kNumInvalidTokens = arraysize(kInvalidTokens);
 class TrialTokenTest : public testing::Test {
  public:
   TrialTokenTest()
-      : correct_public_key_(
+      : expected_origin_(GURL(kExpectedOrigin)),
+        invalid_origin_(GURL(kInvalidOrigin)),
+        insecure_origin_(GURL(kInsecureOrigin)),
+        correct_public_key_(
             base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
                               arraysize(kTestPublicKey))),
         incorrect_public_key_(
@@ -121,7 +125,7 @@ class TrialTokenTest : public testing::Test {
                               arraysize(kTestPublicKey2))) {}
 
  protected:
-  bool ValidateOrigin(TrialToken* token, const char* origin) {
+  bool ValidateOrigin(TrialToken* token, const url::Origin origin) {
     return token->ValidateOrigin(origin);
   }
 
@@ -138,10 +142,12 @@ class TrialTokenTest : public testing::Test {
     return token->ValidateSignature(public_key);
   }
 
-  const base::StringPiece& correct_public_key() { return correct_public_key_; }
-  const base::StringPiece& incorrect_public_key() {
-    return incorrect_public_key_;
-  }
+  base::StringPiece correct_public_key() { return correct_public_key_; }
+  base::StringPiece incorrect_public_key() { return incorrect_public_key_; }
+
+  const url::Origin expected_origin_;
+  const url::Origin invalid_origin_;
+  const url::Origin insecure_origin_;
 
  private:
   base::StringPiece correct_public_key_;
@@ -168,16 +174,16 @@ TEST_F(TrialTokenTest, ParseValidToken) {
   EXPECT_EQ(kExpectedFeatureName, token->feature_name());
   EXPECT_EQ(kExpectedSignature, token->signature());
   EXPECT_EQ(kExpectedData, token->data());
-  EXPECT_EQ(GURL(kExpectedOrigin), token->origin());
-  EXPECT_EQ(kExpectedExpiry, token->expiry_timestamp());
+  EXPECT_EQ(expected_origin_, token->origin());
+  EXPECT_EQ(base::Time::FromDoubleT(kExpectedExpiry), token->expiry_time());
 }
 
 TEST_F(TrialTokenTest, ValidateValidToken) {
   scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
-  EXPECT_TRUE(ValidateOrigin(token.get(), kExpectedOrigin));
-  EXPECT_FALSE(ValidateOrigin(token.get(), kInvalidOrigin));
-  EXPECT_FALSE(ValidateOrigin(token.get(), kInsecureOrigin));
+  EXPECT_TRUE(ValidateOrigin(token.get(), expected_origin_));
+  EXPECT_FALSE(ValidateOrigin(token.get(), invalid_origin_));
+  EXPECT_FALSE(ValidateOrigin(token.get(), insecure_origin_));
   EXPECT_TRUE(ValidateFeatureName(token.get(), kExpectedFeatureName));
   EXPECT_FALSE(ValidateFeatureName(token.get(), kInvalidFeatureName));
   EXPECT_FALSE(ValidateFeatureName(
@@ -193,14 +199,14 @@ TEST_F(TrialTokenTest, ValidateValidToken) {
 TEST_F(TrialTokenTest, TokenIsAppropriateForOriginAndFeature) {
   scoped_ptr<TrialToken> token = TrialToken::Parse(kSampleToken);
   ASSERT_TRUE(token);
-  EXPECT_TRUE(token->IsAppropriate(kExpectedOrigin, kExpectedFeatureName));
-  EXPECT_FALSE(token->IsAppropriate(kExpectedOrigin,
+  EXPECT_TRUE(token->IsAppropriate(expected_origin_, kExpectedFeatureName));
+  EXPECT_FALSE(token->IsAppropriate(expected_origin_,
                                     base::ToUpperASCII(kExpectedFeatureName)));
-  EXPECT_FALSE(token->IsAppropriate(kExpectedOrigin,
+  EXPECT_FALSE(token->IsAppropriate(expected_origin_,
                                     base::ToLowerASCII(kExpectedFeatureName)));
-  EXPECT_FALSE(token->IsAppropriate(kInvalidOrigin, kExpectedFeatureName));
-  EXPECT_FALSE(token->IsAppropriate(kInsecureOrigin, kExpectedFeatureName));
-  EXPECT_FALSE(token->IsAppropriate(kExpectedOrigin, kInvalidFeatureName));
+  EXPECT_FALSE(token->IsAppropriate(invalid_origin_, kExpectedFeatureName));
+  EXPECT_FALSE(token->IsAppropriate(insecure_origin_, kExpectedFeatureName));
+  EXPECT_FALSE(token->IsAppropriate(expected_origin_, kInvalidFeatureName));
 }
 
 TEST_F(TrialTokenTest, ValidateValidSignature) {

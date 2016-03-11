@@ -23,7 +23,7 @@ class CONTENT_EXPORT TrialTokenValidator
 
   // blink::WebTrialTokenValidator implementation
   bool validateToken(const blink::WebString& token,
-                     const blink::WebString& origin,
+                     const blink::WebSecurityOrigin& origin,
                      const blink::WebString& featureName) override;
 
  private:

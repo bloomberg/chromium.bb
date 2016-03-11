@@ -6,6 +6,7 @@
 #define WebTrialTokenValidator_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
@@ -24,7 +25,7 @@ public:
 
     // Returns true if the given token is valid for the specified origin and
     // feature name.
-    virtual bool validateToken(const WebString& token, const WebString& origin, const WebString& featureName) = 0;
+    virtual bool validateToken(const WebString& token, const WebSecurityOrigin&, const WebString& featureName) = 0;
 };
 
 } // namespace blink
