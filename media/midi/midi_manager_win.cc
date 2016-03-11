@@ -135,10 +135,12 @@ void SendLongMidiMessageInternal(HMIDIOUT midi_out_handle,
   // From an observation on Windows 7/8.1 with a USB-MIDI keyboard,
   // midiOutLongMsg() will be always blocked. Sending 64 bytes or less data
   // takes roughly 300 usecs. Sending 2048 bytes or more data takes roughly
-  // |message.size() / (75 * 1024)| secs in practice. Here we put 60 KB size
+  // |message.size() / (75 * 1024)| secs in practice. Here we put 256 KB size
   // limit on SysEx message, with hoping that midiOutLongMsg will be blocked at
-  // most 1 sec or so with a typical USB-MIDI device.
-  const size_t kSysExSizeLimit = 60 * 1024;
+  // most 4 sec or so with a typical USB-MIDI device.
+  // TODO(crbug.com/383578): This restriction should be removed once Web MIDI
+  // defines a standardized way to handle large sysex messages.
+  const size_t kSysExSizeLimit = 256 * 1024;
   if (message.size() >= kSysExSizeLimit) {
     DVLOG(1) << "Ingnoreing SysEx message due to the size limit"
              << ", size = " << message.size();
