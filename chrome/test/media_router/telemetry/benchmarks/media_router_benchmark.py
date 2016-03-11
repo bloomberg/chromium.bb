@@ -24,7 +24,7 @@ class _BaseCastBenchmark(perf_benchmark.PerfBenchmark):
     # TODO: find a better way to find extension location.
     options.AppendExtraBrowserArgs([
         '--load-extension=' + os.path.join(path_util.GetChromiumSrcDir(), 'out',
-                                 'Release', 'mr_extension'),
+                                 'Release', 'mr_extension', 'release'),
         '--whitelisted-extension-id=enhhojjnijigcajfphajepfemndkmdlo',
         '--media-router=1',
         '--enable-stats-collection-bindings'

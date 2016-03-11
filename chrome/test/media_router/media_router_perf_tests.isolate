@@ -15,7 +15,7 @@
           '--output-dir=${ISOLATED_OUTDIR}',
         ],
         'files': [
-          '<(PRODUCT_DIR)/mr_extension/',
+          '<(PRODUCT_DIR)/mr_extension/release/',
           '../../../third_party/catapult/',
           '../../../tools/perf/',
           '../../../tools/variations/fieldtrial_util.py',
