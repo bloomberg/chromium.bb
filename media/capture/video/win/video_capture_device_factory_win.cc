@@ -370,16 +370,11 @@ bool VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() {
   return g_dlls_available;
 }
 
-VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin() {
-  // Use Media Foundation for Metro processes (after and including Win8) and
-  // DirectShow for any other versions, unless forced via flag. Media Foundation
-  // can also be forced if appropriate flag is set and we are in Windows 7 or
-  // 8 in non-Metro mode.
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  use_media_foundation_ =
-      base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      cmd_line->HasSwitch(switches::kForceMediaFoundationVideoCapture);
-}
+VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
+    : use_media_foundation_(base::win::GetVersion() >=
+                                base::win::VERSION_WIN7 &&
+                            base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                switches::kForceMediaFoundationVideoCapture)) {}
 
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
     const Name& device_name) {

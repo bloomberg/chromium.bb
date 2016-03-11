@@ -23,7 +23,7 @@ static const char kMainWebrtcTestHtmlPage[] =
 
 static const char* kTestConfigFlags[] = {
 #if defined(OS_WIN)
-  switches::kForceDirectShowVideoCapture,
+  NULL,
   // Media Foundation is only available in Windows versions >= 7, below that the
   // following flag has no effect; the test would run twice using DirectShow.
   switches::kForceMediaFoundationVideoCapture

@@ -67,12 +67,6 @@ const char kForceQTKit[] = "force-qtkit";
 // for details.
 const char kEnableExclusiveAudio[] = "enable-exclusive-audio";
 
-// Used to troubleshoot problems with different video capture implementations
-// on Windows.  By default we use the Media Foundation API on Windows 7 and up,
-// but specifying this switch will force use of DirectShow always.
-// See bug: http://crbug.com/268412
-const char kForceDirectShowVideoCapture[] = "force-directshow";
-
 // Force the use of MediaFoundation for video capture. This is only supported in
 // Windows 7 and above. Used, like |kForceDirectShowVideoCapture|, to
 // troubleshoot problems in Windows platforms.
