@@ -610,13 +610,11 @@ AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
 AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     const AudioParameters& params,
     const std::string& device_id) {
-  AudioDeviceID device = GetAudioDeviceIdByUId(false, device_id);
-  if (device == kAudioObjectUnknown) {
-    DLOG(ERROR) << "Failed to open output device: " << device_id;
-    return NULL;
-  }
-
-  // Lazily create the audio device listener on the first stream creation.
+  bool device_listener_first_init = false;
+  // Lazily create the audio device listener on the first stream creation,
+  // even if getting an audio device fails. Otherwise, if we have 0 audio
+  // devices, the listener will never be initialized, and new valid devices
+  // will never be detected.
   if (!output_device_listener_) {
     // NOTE: Use BindToCurrentLoop() to ensure the callback is always PostTask'd
     // even if OSX calls us on the right thread.  Some CoreAudio drivers will
@@ -625,6 +623,18 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     output_device_listener_.reset(
         new AudioDeviceListenerMac(BindToCurrentLoop(base::Bind(
             &AudioManagerMac::HandleDeviceChanges, base::Unretained(this)))));
+    device_listener_first_init = true;
+  }
+
+  AudioDeviceID device = GetAudioDeviceIdByUId(false, device_id);
+  if (device == kAudioObjectUnknown) {
+    DLOG(ERROR) << "Failed to open output device: " << device_id;
+    return NULL;
+  }
+
+  // Only set the device and sample rate if we just initialized the device
+  // listener.
+  if (device_listener_first_init) {
     // Only set the current output device for the default device.
     if (device_id == AudioManagerBase::kDefaultDeviceId || device_id.empty())
       current_output_device_ = device;
