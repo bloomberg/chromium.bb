@@ -6,7 +6,8 @@
     '<(DEPTH)/ios/chrome/ios_today_extension_resources.gyp:ios_today_extension_packed_resources',
   ],
   'mac_bundle_resources': [
-    '<!@pymod_do_main(ios_repack_today_extension_locales -o -s <(SHARED_INTERMEDIATE_DIR) '
+    '<!@pymod_do_main(ios_repack_extension_locales -n today_extension -o '
+      '-s <(SHARED_INTERMEDIATE_DIR) '
       '-x <(SHARED_INTERMEDIATE_DIR)/repack_today_extension <(locales))',
   ],
 }

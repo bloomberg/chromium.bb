@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Helper script to repack paks for a list of locales for today extension.
+"""Helper script to repack paks for a list of locales for extensions.
 
 Gyp doesn't have any built-in looping capability, so this just provides a way to
 loop over a list of locales when repacking pak files, thus avoiding a
@@ -42,9 +42,11 @@ def calc_inputs(options, locale):
   """Determine the files that need processing for the given locale."""
   inputs = []
 
-  #e.g. 'out/Debug/gen/ios/today_extension/ios_today_extension_strings_da.pak'
-  inputs.append(os.path.join(options.share_int_dir, 'ios', 'today_extension',
-                'ios_today_extension_strings_%s.pak' % (locale)))
+  #e.g.
+  #'out/Debug/gen/ios/%(extension_name)/ios_%(extension_name)_strings_da.pak'
+  inputs.append(os.path.join(options.share_int_dir, 'ios',
+                options.extension_name,
+                'ios_%s_strings_%s.pak' % (options.extension_name, locale)))
 
   # Add any extra input files.
   for extra_file in options.extra_input:
@@ -109,6 +111,9 @@ def DoMain(argv):
       "-b", action="store", dest="branding",
       help="Branding type of this build.")
   parser.add_option(
+      "-n", action="store", dest="extension_name",
+      help="Name of the extension.")
+  parser.add_option(
       "-e", action="append", dest="extra_input", default=[],
       help="Full path to an extra input pak file without the "
            "locale suffix and \".pak\" extension.")
@@ -119,6 +124,9 @@ def DoMain(argv):
 
   if not locales:
     parser.error('Please specificy at least one locale to process.\n')
+
+  if not options.extension_name:
+    parser.error('Please specificy extension name.\n')
 
   if not (options.out_dir and options.share_int_dir):
     parser.error('Please specify all of "-x" and "-s".\n')

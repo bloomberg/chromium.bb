@@ -6,25 +6,25 @@
   'variables': {
     'chromium_code': 1,
     'grit_base_dir': '<(SHARED_INTERMEDIATE_DIR)',
-    'grit_out_dir': '<(grit_base_dir)/ios/today_extension',
+    'grit_out_dir': '<(grit_base_dir)/ios/share_extension',
   },
   'targets': [
     {
-      'target_name': 'ios_today_extension_resources',
+      'target_name': 'ios_share_extension_resources',
       'type': 'none',
       'dependencies': [
-        'ios_today_extension_strings_gen',
+        'ios_share_extension_strings_gen',
       ],
     },
     {
-      'target_name': 'ios_today_extension_strings_gen',
+      'target_name': 'ios_share_extension_strings_gen',
       'type': 'none',
       'hard_dependency': 1,
       'actions': [
         {
-          'action_name': 'generate_ios_today_extension_strings',
+          'action_name': 'generate_ios_share_extension_strings',
           'variables': {
-            'grit_grd_file': 'today_extension/strings/ios_today_extension_strings.grd',
+            'grit_grd_file': 'share_extension/strings/ios_share_extension_strings.grd',
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
@@ -43,38 +43,38 @@
       }
     },
     {
-      'target_name': 'ios_today_extension_packed_resources',
+      'target_name': 'ios_share_extension_packed_resources',
       'type': 'none',
       'dependencies': [
-        'ios_today_extension_resources',
+        'ios_share_extension_resources',
       ],
       'actions': [
         {
-          'action_name': 'repack_ios_today_extension_locales',
+          'action_name': 'repack_ios_share_extension_locales',
           'variables': {
             'repack_locales_path': 'tools/build/ios_repack_extension_locales.py',
           },
           'inputs': [
             'tools/build/ios_repack_extension_locales.py',
             '<!@pymod_do_main(ios_repack_extension_locales -i '
-              '-n today_extension '
+              '-n share_extension '
               '-s <(SHARED_INTERMEDIATE_DIR) '
-              '-x <(SHARED_INTERMEDIATE_DIR)/repack_today_extension '
+              '-x <(SHARED_INTERMEDIATE_DIR)/repack_share_extension '
               '-b <(branding_path_component) '
               '<(locales))'
           ],
           'outputs': [
             '<!@pymod_do_main(ios_repack_extension_locales -o '
-              '-n today_extension '
+              '-n share_extension '
               '-s <(SHARED_INTERMEDIATE_DIR) '
-              '-x <(SHARED_INTERMEDIATE_DIR)/repack_today_extension '
+              '-x <(SHARED_INTERMEDIATE_DIR)/repack_share_extension '
               '<(locales))'
           ],
           'action': [
             'python',
             'tools/build/ios_repack_extension_locales.py',
-            '-n', 'today_extension',
-            '-x', '<(SHARED_INTERMEDIATE_DIR)/repack_today_extension',
+            '-n', 'share_extension',
+            '-x', '<(SHARED_INTERMEDIATE_DIR)/repack_share_extension',
             '-s', '<(SHARED_INTERMEDIATE_DIR)',
             '-b', '<(branding_path_component)',
             '<@(locales)',

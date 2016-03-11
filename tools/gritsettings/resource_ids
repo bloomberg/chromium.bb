@@ -203,6 +203,9 @@
   "ios/chrome/app/theme/ios_theme_resources.grd": {
     "structures": [25870],
   },
+  "ios/chrome/share_extension/strings/ios_share_extension_strings.grd": {
+    "messages": [26325],
+  },
   "ios/chrome/today_extension/strings/ios_today_extension_strings.grd": {
     "messages": [26335],
   },
