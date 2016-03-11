@@ -2,61 +2,69 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 <link rel="import" href="chrome://md-settings/controls/settings_dropdown_menu.html">
+<link rel="import" href="chrome://md-settings/settings_dialog.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-clear-browsing-data-page">
   <link rel="import" type="css" href="clear_browsing_data_page.css">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box block">
-      <span i18n-content="clearFollowingItemsFrom"></span>
-      <settings-dropdown-menu id="clearFrom"
-          pref="{{prefs.browser.clear_data.time_period}}"
-          menu-options="[[clearFromOptions_]]">
-      </settings-dropdown-menu>
-      <settings-checkbox id="browsingCheckbox"
-          pref="{{prefs.browser.clear_data.browsing_history}}"
-          i18n-values="label:clearBrowsingHistory">
-      </settings-checkbox>
-      <settings-checkbox id="downloadCheckbox"
-          pref="{{prefs.browser.clear_data.download_history}}"
-          i18n-values="label:clearDownloadHistory">
-      </settings-checkbox>
-      <settings-checkbox
-          pref="{{prefs.browser.clear_data.cache}}"
-          i18n-values="label:clearCache">
-      </settings-checkbox>
-      <settings-checkbox
-          pref="{{prefs.browser.clear_data.cookies}}"
-          i18n-values="label:clearCookies">
-      </settings-checkbox>
-      <settings-checkbox
-          pref="{{prefs.browser.clear_data.passwords}}"
-          i18n-values="label:clearPasswords">
-      </settings-checkbox>
-      <settings-checkbox
-          pref="{{prefs.browser.clear_data.form_data}}"
-          i18n-values="label:clearFormData">
-      </settings-checkbox>
-      <settings-checkbox
-          pref="{{prefs.browser.clear_data.hosted_apps_data}}"
-          i18n-values="label:clearHostedAppData">
-      </settings-checkbox>
-      <settings-checkbox
-          pref="{{prefs.browser.clear_data.content_licenses}}"
-          i18n-values="label:clearDeauthorizeContentLicenses">
-      </settings-checkbox>
-    <!-- TODO(dbeam): <setting-box> is not a real thing. Fix this. -->
-    </settings-box>
-      <span i18n-content="warnAboutNonClearedData"></span>
-      <span i18n-content="clearsSyncedData"></span>
-    </settings-box>
-    <settings-box>
-      <paper-button id="clearDataButton" class="action-button"
-          on-tap="onPerformClearBrowsingDataTap_"
-          i18n-content="clearBrowsingData">
-      </paper-button>
-    </div>
+    <settings-dialog id="clearBrowsingDataDialog"
+        on-iron-overlay-closed="onDialogClosed_">
+      <div class="title" i18n-content="clearBrowsingData"></div>
+      <div class="body">
+        <div class="row">
+          <span class="start" i18n-content="clearFollowingItemsFrom"></span>
+          <settings-dropdown-menu id="clearFrom"
+              pref="{{prefs.browser.clear_data.time_period}}"
+              menu-options="[[clearFromOptions_]]" no-label-float>
+          </settings-dropdown-menu>
+        </div>
+        <settings-checkbox id="browsingCheckbox"
+            pref="{{prefs.browser.clear_data.browsing_history}}"
+            i18n-values="label:clearBrowsingHistory">
+        </settings-checkbox>
+        <settings-checkbox id="downloadCheckbox"
+            pref="{{prefs.browser.clear_data.download_history}}"
+            i18n-values="label:clearDownloadHistory">
+        </settings-checkbox>
+        <settings-checkbox
+            pref="{{prefs.browser.clear_data.cache}}"
+            i18n-values="label:clearCache">
+        </settings-checkbox>
+        <settings-checkbox
+            pref="{{prefs.browser.clear_data.cookies}}"
+            i18n-values="label:clearCookies">
+        </settings-checkbox>
+        <settings-checkbox
+            pref="{{prefs.browser.clear_data.passwords}}"
+            i18n-values="label:clearPasswords">
+        </settings-checkbox>
+        <settings-checkbox
+            pref="{{prefs.browser.clear_data.form_data}}"
+            i18n-values="label:clearFormData">
+        </settings-checkbox>
+        <settings-checkbox
+            pref="{{prefs.browser.clear_data.hosted_apps_data}}"
+            i18n-values="label:clearHostedAppData">
+        </settings-checkbox>
+        <settings-checkbox
+            pref="{{prefs.browser.clear_data.content_licenses}}"
+            i18n-values="label:clearDeauthorizeContentLicenses">
+        </settings-checkbox>
+      </div>
+      <div class="button-container">
+        <paper-button class="cancel-button" i18n-content="cancel"
+            dialog-dismiss></paper-button>
+        <paper-button class="action-button" id="clearDataButton"
+            i18n-content="clearBrowsingData" dialog-confirm>
+        </paper-button>
+      </div>
+      <div class="footer">
+        <span i18n-content="warnAboutNonClearedData"></span>
+        <span i18n-content="clearsSyncedData"></span>
+      </div>
+    </settings-dialog>
   </template>
   <script src="clear_browsing_data_page.js"></script>
 </dom-module>

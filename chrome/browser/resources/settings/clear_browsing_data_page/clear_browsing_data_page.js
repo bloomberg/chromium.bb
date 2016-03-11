@@ -72,8 +72,7 @@ Polymer({
 
   /** @private */
   doneClearing_: function() {
-    if (this.$)
-      this.$.clearDataButton.disabled = false;
+    // TODO(dschuyler): inform the user on whether clearing data was successful.
   },
 
   /**
@@ -92,9 +91,16 @@ Polymer({
     }
   },
 
-  /** @private */
-  onPerformClearBrowsingDataTap_: function() {
-    this.$.clearDataButton.disabled = true;
-    chrome.send('performClearBrowserData');
+  showClearBrowsingDataDialog: function() {
+    this.$.clearBrowsingDataDialog.open();
+  },
+
+  /**
+   * @param {!Event} event Tells us whether to perform an action or cancel.
+   * @private
+   */
+  onDialogClosed_: function(event) {
+    if (event.detail.confirmed)
+      chrome.send('performClearBrowserData');
   },
 });

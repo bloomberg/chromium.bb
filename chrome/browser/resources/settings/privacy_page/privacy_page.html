@@ -19,6 +19,8 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="privacy">
       <neon-animatable id="main">
+        <settings-clear-browsing-data-page prefs="{{prefs}}">
+        </settings-clear-browsing-data-page>
         <div class="settings-box block first">
           <p class="privacy-explanation"
               i18n-values=".innerHTML:improveBrowsingExperience">
@@ -210,12 +212,6 @@
             current-route="{{currentRoute}}"
             category-selected="{{categorySelected}}">
         </site-details>
-      </neon-animatable>
-      <neon-animatable id="clear-browsing-data">
-        <settings-subheader i18n-values="page-title:clearBrowsingData">
-        </settings-subheader>
-        <settings-clear-browsing-data-page prefs="{{prefs}}">
-        </settings-clear-browsing-data-page>
       </neon-animatable>
     </settings-animated-pages>
   </template>
