@@ -136,19 +136,19 @@ def DownloadAndUnpack(url, output_dir):
       tarfile.open(mode='r:gz', fileobj=f).extractall(path=output_dir)
 
 
-def ReadStampFile():
+def ReadStampFile(path=STAMP_FILE):
   """Return the contents of the stamp file, or '' if it doesn't exist."""
   try:
-    with open(STAMP_FILE, 'r') as f:
+    with open(path, 'r') as f:
       return f.read().rstrip()
   except IOError:
     return ''
 
 
-def WriteStampFile(s):
+def WriteStampFile(s, path=STAMP_FILE):
   """Write s to the stamp file."""
-  EnsureDirExists(os.path.dirname(STAMP_FILE))
-  with open(STAMP_FILE, 'w') as f:
+  EnsureDirExists(os.path.dirname(path))
+  with open(path, 'w') as f:
     f.write(s)
     f.write('\n')
 
@@ -305,6 +305,24 @@ def AddCMakeToPath():
   os.environ['PATH'] = cmake_dir + os.pathsep + os.environ.get('PATH', '')
 
 
+def AddGnuWinToPath():
+  """Download some GNU win tools and add them to PATH."""
+  if sys.platform != 'win32':
+    return
+
+  gnuwin_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gnuwin')
+  GNUWIN_VERSION = '1'
+  GNUWIN_STAMP = os.path.join(gnuwin_dir, 'stamp')
+  if ReadStampFile(GNUWIN_STAMP) == GNUWIN_VERSION:
+    print 'GNU Win tools already up to date.'
+  else:
+    zip_name = 'gnuwin-%s.zip' % GNUWIN_VERSION
+    DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
+    WriteStampFile(GNUWIN_VERSION, GNUWIN_STAMP)
+
+  os.environ['PATH'] = gnuwin_dir + os.pathsep + os.environ.get('PATH', '')
+
+
 vs_version = None
 def GetVSVersion():
   global vs_version
@@ -381,6 +399,7 @@ def UpdateClang(args):
 
   DownloadHostGcc(args)
   AddCMakeToPath()
+  AddGnuWinToPath()
 
   DeleteChromeToolsShim()
 

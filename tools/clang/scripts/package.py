@@ -110,13 +110,6 @@ def MaybeUpload(args, archive_name, platform):
 
 
 def main():
-  if sys.platform == 'win32':
-    try:
-      subprocess.check_output(['grep', '--help'], shell=True)
-    except subprocess.CalledProcessError:
-      print 'Add gnuwin32 to your PATH, then try again.'
-      return 1
-
   parser = argparse.ArgumentParser(description='build and package clang')
   parser.add_argument('--upload', action='store_true',
                       help='Upload the target archive to Google Cloud Storage.')
