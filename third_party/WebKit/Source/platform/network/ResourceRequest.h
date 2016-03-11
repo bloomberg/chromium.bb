@@ -206,7 +206,7 @@ public:
     void setShouldResetAppCache(bool shouldResetAppCache) { m_shouldResetAppCache = shouldResetAppCache; }
 
     // Extra data associated with this request.
-    ExtraData* extraData() const { return m_extraData.get(); }
+    ExtraData* getExtraData() const { return m_extraData.get(); }
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
 
     WebURLRequest::RequestContext requestContext() const { return m_requestContext; }

@@ -25,12 +25,12 @@ CompositingRecorder::~CompositingRecorder()
 
 void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext, const DisplayItemClient& client, const SkXfermode::Mode xferMode, const float opacity, const FloatRect* bounds, ColorFilter colorFilter)
 {
-    graphicsContext.paintController().createAndAppend<BeginCompositingDisplayItem>(client, xferMode, opacity, bounds, colorFilter);
+    graphicsContext.getPaintController().createAndAppend<BeginCompositingDisplayItem>(client, xferMode, opacity, bounds, colorFilter);
 }
 
 void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const DisplayItemClient& client)
 {
-    graphicsContext.paintController().endItem<EndCompositingDisplayItem>(client);
+    graphicsContext.getPaintController().endItem<EndCompositingDisplayItem>(client);
 }
 
 } // namespace blink

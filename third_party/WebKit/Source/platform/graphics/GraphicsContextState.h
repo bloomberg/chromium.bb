@@ -75,7 +75,7 @@ public:
     Gradient* strokeGradient() const { return m_strokeGradient.get(); }
     void setStrokeGradient(const PassRefPtr<Gradient>, float);
 
-    const StrokeData& strokeData() const { return m_strokeData; }
+    const StrokeData& getStrokeData() const { return m_strokeData; }
     void setStrokeStyle(StrokeStyle);
     void setStrokeThickness(float);
     void setLineCap(LineCap);

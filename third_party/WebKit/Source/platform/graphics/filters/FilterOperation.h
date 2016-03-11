@@ -125,7 +125,7 @@ public:
     const String& url() const { return m_url; }
     const AtomicString& fragment() const { return m_fragment; }
 
-    Filter* filter() const { return m_filter.get(); }
+    Filter* getFilter() const { return m_filter.get(); }
     void setFilter(PassRefPtrWillBeRawPtr<Filter> filter) { m_filter = filter; }
 
     DECLARE_VIRTUAL_TRACE();

@@ -108,7 +108,7 @@ static TransformationMatrix totalTransform(const TransformPaintPropertyNode* cur
 void paintArtifactToSkCanvas(const PaintArtifact& artifact, SkCanvas* canvas)
 {
     SkAutoCanvasRestore restore(canvas, true);
-    const DisplayItemList& displayItems = artifact.displayItemList();
+    const DisplayItemList& displayItems = artifact.getDisplayItemList();
     const EffectPaintPropertyNode* previousEffect = nullptr;
     for (const PaintChunk& chunk : artifact.paintChunks()) {
         // Setup the canvas clip state first because it clobbers matrix state.

@@ -130,7 +130,7 @@ public:
     // set these directly on the ComputedStyle w/o telling us. Presumably we'll
     // want to design a better wrapper around ComputedStyle for tracking these mutations
     // and separate it from StyleResolverState.
-    const FontDescription& parentFontDescription() const { return m_parentStyle->fontDescription(); }
+    const FontDescription& parentFontDescription() const { return m_parentStyle->getFontDescription(); }
 
     void setZoom(float f)
     {

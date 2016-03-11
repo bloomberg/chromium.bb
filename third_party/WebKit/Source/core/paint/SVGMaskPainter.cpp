@@ -26,7 +26,7 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext& 
     if (paintInvalidationRect.isEmpty() || !m_mask.element()->hasChildren())
         return false;
 
-    context.paintController().createAndAppend<BeginCompositingDisplayItem>(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
+    context.getPaintController().createAndAppend<BeginCompositingDisplayItem>(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
     return true;
 }
 
@@ -43,7 +43,7 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext& c
         drawMaskForLayoutObject(context, object, object.objectBoundingBox(), paintInvalidationRect);
     }
 
-    context.paintController().endItem<EndCompositingDisplayItem>(object);
+    context.getPaintController().endItem<EndCompositingDisplayItem>(object);
 }
 
 void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext& context, const LayoutObject& layoutObject, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect)

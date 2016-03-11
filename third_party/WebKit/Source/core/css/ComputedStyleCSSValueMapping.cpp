@@ -465,7 +465,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForLineHeight(const Comput
     if (length.isNegative())
         return cssValuePool().createIdentifierValue(CSSValueNormal);
 
-    return zoomAdjustedPixelValue(floatValueForLength(length, style.fontDescription().computedSize()), style);
+    return zoomAdjustedPixelValue(floatValueForLength(length, style.getFontDescription().computedSize()), style);
 }
 
 static CSSValueID identifierForFamily(const AtomicString& family)
@@ -494,7 +494,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForFamily(const AtomicString& famil
 
 static PassRefPtrWillBeRawPtr<CSSValueList> valueForFontFamily(const ComputedStyle& style)
 {
-    const FontFamily& firstFamily = style.fontDescription().family();
+    const FontFamily& firstFamily = style.getFontDescription().family();
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
     for (const FontFamily* family = &firstFamily; family; family = family->next())
         list->append(valueForFamily(family->family()));
@@ -503,27 +503,27 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForFontFamily(const ComputedSty
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontSize(const ComputedStyle& style)
 {
-    return zoomAdjustedPixelValue(style.fontDescription().computedSize(), style);
+    return zoomAdjustedPixelValue(style.getFontDescription().computedSize(), style);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStretch(const ComputedStyle& style)
 {
-    return cssValuePool().createValue(style.fontDescription().stretch());
+    return cssValuePool().createValue(style.getFontDescription().stretch());
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStyle(const ComputedStyle& style)
 {
-    return cssValuePool().createValue(style.fontDescription().style());
+    return cssValuePool().createValue(style.getFontDescription().style());
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontVariant(const ComputedStyle& style)
 {
-    return cssValuePool().createValue(style.fontDescription().variant());
+    return cssValuePool().createValue(style.getFontDescription().variant());
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontWeight(const ComputedStyle& style)
 {
-    return cssValuePool().createValue(style.fontDescription().weight());
+    return cssValuePool().createValue(style.getFontDescription().weight());
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const ComputedStyle& style)
@@ -1661,7 +1661,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyFontWeight:
         return valueForFontWeight(style);
     case CSSPropertyFontFeatureSettings: {
-        const FontFeatureSettings* featureSettings = style.fontDescription().featureSettings();
+        const FontFeatureSettings* featureSettings = style.getFontDescription().featureSettings();
         if (!featureSettings || !featureSettings->size())
             return cssValuePool().createIdentifierValue(CSSValueNormal);
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
@@ -2015,7 +2015,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyTextShadow:
         return valueForShadowList(style.textShadow(), style, false);
     case CSSPropertyTextRendering:
-        return cssValuePool().createValue(style.fontDescription().textRendering());
+        return cssValuePool().createValue(style.getFontDescription().textRendering());
     case CSSPropertyTextOverflow:
         if (style.getTextOverflow())
             return cssValuePool().createIdentifierValue(CSSValueEllipsis);
@@ -2087,14 +2087,14 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyResize:
         return cssValuePool().createValue(style.resize());
     case CSSPropertyFontKerning:
-        return cssValuePool().createValue(style.fontDescription().getKerning());
+        return cssValuePool().createValue(style.getFontDescription().getKerning());
     case CSSPropertyWebkitFontSmoothing:
-        return cssValuePool().createValue(style.fontDescription().fontSmoothing());
+        return cssValuePool().createValue(style.getFontDescription().fontSmoothing());
     case CSSPropertyFontVariantLigatures: {
-        FontDescription::LigaturesState commonLigaturesState = style.fontDescription().commonLigaturesState();
-        FontDescription::LigaturesState discretionaryLigaturesState = style.fontDescription().discretionaryLigaturesState();
-        FontDescription::LigaturesState historicalLigaturesState = style.fontDescription().historicalLigaturesState();
-        FontDescription::LigaturesState contextualLigaturesState = style.fontDescription().contextualLigaturesState();
+        FontDescription::LigaturesState commonLigaturesState = style.getFontDescription().commonLigaturesState();
+        FontDescription::LigaturesState discretionaryLigaturesState = style.getFontDescription().discretionaryLigaturesState();
+        FontDescription::LigaturesState historicalLigaturesState = style.getFontDescription().historicalLigaturesState();
+        FontDescription::LigaturesState contextualLigaturesState = style.getFontDescription().contextualLigaturesState();
         if (commonLigaturesState == FontDescription::NormalLigaturesState && discretionaryLigaturesState == FontDescription::NormalLigaturesState
             && historicalLigaturesState == FontDescription::NormalLigaturesState && contextualLigaturesState == FontDescription::NormalLigaturesState)
             return cssValuePool().createIdentifierValue(CSSValueNormal);

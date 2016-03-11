@@ -376,7 +376,7 @@ LayoutUnit LayoutMultiColumnSet::columnGap() const
 {
     LayoutBlockFlow* parentBlock = multiColumnBlockFlow();
     if (parentBlock->style()->hasNormalColumnGap())
-        return LayoutUnit(parentBlock->style()->fontDescription().computedPixelSize()); // "1em" is recommended as the normal gap setting. Matches <p> margins.
+        return LayoutUnit(parentBlock->style()->getFontDescription().computedPixelSize()); // "1em" is recommended as the normal gap setting. Matches <p> margins.
     return LayoutUnit(parentBlock->style()->columnGap());
 }
 

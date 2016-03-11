@@ -150,7 +150,7 @@ FloatRect FilterEffect::applyEffectBoundaries(const FloatRect& rect) const
 
 FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlags flags)
 {
-    Filter* filter = this->filter();
+    Filter* filter = this->getFilter();
     ASSERT(filter);
 
     // FETile, FETurbulence, FEFlood don't have input effects, take the filter region as unite rect.
@@ -219,14 +219,14 @@ SkImageFilter::CropRect FilterEffect::getCropRect() const
 {
     FloatRect rect;
     uint32_t flags = 0;
-    if (!hasConnectedInput() && !filter()->filterRegion().isEmpty()) {
-        rect = filter()->filterRegion();
+    if (!hasConnectedInput() && !getFilter()->filterRegion().isEmpty()) {
+        rect = getFilter()->filterRegion();
         flags = SkImageFilter::CropRect::kHasAll_CropEdge;
     }
 
     rect = applyEffectBoundaries(rect);
 
-    rect.scale(filter()->scale());
+    rect.scale(getFilter()->scale());
 
     flags |= hasX() ? SkImageFilter::CropRect::kHasLeft_CropEdge : 0;
     flags |= hasY() ? SkImageFilter::CropRect::kHasTop_CropEdge : 0;

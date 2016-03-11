@@ -43,7 +43,7 @@ InterpolationValue maybeConvertKeyword(CSSValueID valueID, const StyleResolverSt
 {
     if (FontSize::isValidValueID(valueID)) {
         // TODO(alancutter): Be responsive to changes in isMonospace().
-        return convertFontSize(state.fontBuilder().fontSizeForKeyword(FontSize::keywordSize(valueID), state.style()->fontDescription().isMonospace()));
+        return convertFontSize(state.fontBuilder().fontSizeForKeyword(FontSize::keywordSize(valueID), state.style()->getFontDescription().isMonospace()));
     }
 
     if (valueID != CSSValueSmaller && valueID != CSSValueLarger)

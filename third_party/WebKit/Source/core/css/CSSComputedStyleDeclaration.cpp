@@ -424,11 +424,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValu
     if (!style)
         return nullptr;
 
-    if (int keywordSize = style->fontDescription().keywordSize())
+    if (int keywordSize = style->getFontDescription().keywordSize())
         return cssValuePool().createIdentifierValue(cssIdentifierForFontSizeKeyword(keywordSize));
 
 
-    return zoomAdjustedPixelValue(style->fontDescription().computedPixelSize(), *style);
+    return zoomAdjustedPixelValue(style->getFontDescription().computedPixelSize(), *style);
 }
 
 bool CSSComputedStyleDeclaration::isMonospaceFont() const
@@ -440,7 +440,7 @@ bool CSSComputedStyleDeclaration::isMonospaceFont() const
     if (!style)
         return false;
 
-    return style->fontDescription().isMonospace();
+    return style->getFontDescription().isMonospace();
 }
 
 static void logUnimplementedPropertyID(CSSPropertyID propertyID)
@@ -612,8 +612,8 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, c
     if (propertyID == CSSPropertyFontSize && propertyValue->isPrimitiveValue() && m_node) {
         m_node->document().updateLayoutIgnorePendingStylesheets();
         const ComputedStyle* style = m_node->ensureComputedStyle(m_pseudoElementSpecifier);
-        if (style && style->fontDescription().keywordSize()) {
-            CSSValueID sizeValue = cssIdentifierForFontSizeKeyword(style->fontDescription().keywordSize());
+        if (style && style->getFontDescription().keywordSize()) {
+            CSSValueID sizeValue = cssIdentifierForFontSizeKeyword(style->getFontDescription().keywordSize());
             const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(propertyValue);
             if (primitiveValue->isValueID() && primitiveValue->getValueID() == sizeValue)
                 return true;

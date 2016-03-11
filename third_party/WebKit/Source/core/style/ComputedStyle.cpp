@@ -1137,7 +1137,7 @@ FloatRoundedRect ComputedStyle::getRoundedInnerBorderFor(const LayoutRect& borde
     FloatRoundedRect roundedRect(pixelSnappedIntRect(innerRect));
 
     if (hasBorderRadius()) {
-        FloatRoundedRect::Radii radii = getRoundedBorderFor(borderRect).radii();
+        FloatRoundedRect::Radii radii = getRoundedBorderFor(borderRect).getRadii();
         // Insets use negative values.
         radii.shrink(
             -insets.top().toFloat(),
@@ -1282,15 +1282,15 @@ CSSTransitionData& ComputedStyle::accessTransitions()
 }
 
 const Font& ComputedStyle::font() const { return inherited->font; }
-const FontMetrics& ComputedStyle::fontMetrics() const { return inherited->font.fontMetrics(); }
-const FontDescription& ComputedStyle::fontDescription() const { return inherited->font.fontDescription(); }
-float ComputedStyle::specifiedFontSize() const { return fontDescription().specifiedSize(); }
-float ComputedStyle::computedFontSize() const { return fontDescription().computedSize(); }
-int ComputedStyle::fontSize() const { return fontDescription().computedPixelSize(); }
-float ComputedStyle::fontSizeAdjust() const { return fontDescription().sizeAdjust(); }
-bool ComputedStyle::hasFontSizeAdjust() const { return fontDescription().hasSizeAdjust(); }
-FontWeight ComputedStyle::fontWeight() const { return fontDescription().weight(); }
-FontStretch ComputedStyle::fontStretch() const { return fontDescription().stretch(); }
+const FontMetrics& ComputedStyle::getFontMetrics() const { return inherited->font.getFontMetrics(); }
+const FontDescription& ComputedStyle::getFontDescription() const { return inherited->font.getFontDescription(); }
+float ComputedStyle::specifiedFontSize() const { return getFontDescription().specifiedSize(); }
+float ComputedStyle::computedFontSize() const { return getFontDescription().computedSize(); }
+int ComputedStyle::fontSize() const { return getFontDescription().computedPixelSize(); }
+float ComputedStyle::fontSizeAdjust() const { return getFontDescription().sizeAdjust(); }
+bool ComputedStyle::hasFontSizeAdjust() const { return getFontDescription().hasSizeAdjust(); }
+FontWeight ComputedStyle::fontWeight() const { return getFontDescription().weight(); }
+FontStretch ComputedStyle::fontStretch() const { return getFontDescription().stretch(); }
 
 TextDecoration ComputedStyle::textDecorationsInEffect() const
 {
@@ -1344,12 +1344,12 @@ void ComputedStyle::removeVariable(const AtomicString& name)
     variables->removeVariable(name);
 }
 
-float ComputedStyle::wordSpacing() const { return fontDescription().wordSpacing(); }
-float ComputedStyle::letterSpacing() const { return fontDescription().letterSpacing(); }
+float ComputedStyle::wordSpacing() const { return getFontDescription().wordSpacing(); }
+float ComputedStyle::letterSpacing() const { return getFontDescription().letterSpacing(); }
 
 bool ComputedStyle::setFontDescription(const FontDescription& v)
 {
-    if (inherited->font.fontDescription() != v) {
+    if (inherited->font.getFontDescription() != v) {
         inherited.access()->font = Font(v);
         return true;
     }
@@ -1365,7 +1365,7 @@ const Length& ComputedStyle::specifiedLineHeight() const { return inherited->lin
 Length ComputedStyle::lineHeight() const
 {
     const Length& lh = inherited->line_height;
-    // Unlike fontDescription().computedSize() and hence fontSize(), this is
+    // Unlike getFontDescription().computedSize() and hence fontSize(), this is
     // recalculated on demand as we only store the specified line height.
     // FIXME: Should consider scaling the fixed part of any calc expressions
     // too, though this involves messily poking into CalcExpressionLength.
@@ -1385,7 +1385,7 @@ int ComputedStyle::computedLineHeight() const
     // Negative value means the line height is not set. Use the font's built-in
     // spacing, if avalible.
     if (lh.isNegative() && font().primaryFont())
-        return fontMetrics().lineSpacing();
+        return getFontMetrics().lineSpacing();
 
     if (lh.hasPercent())
         return minimumValueForLength(lh, LayoutUnit(computedFontSize()));
@@ -1395,8 +1395,8 @@ int ComputedStyle::computedLineHeight() const
 
 void ComputedStyle::setWordSpacing(float wordSpacing)
 {
-    FontSelector* currentFontSelector = font().fontSelector();
-    FontDescription desc(fontDescription());
+    FontSelector* currentFontSelector = font().getFontSelector();
+    FontDescription desc(getFontDescription());
     desc.setWordSpacing(wordSpacing);
     setFontDescription(desc);
     font().update(currentFontSelector);
@@ -1404,8 +1404,8 @@ void ComputedStyle::setWordSpacing(float wordSpacing)
 
 void ComputedStyle::setLetterSpacing(float letterSpacing)
 {
-    FontSelector* currentFontSelector = font().fontSelector();
-    FontDescription desc(fontDescription());
+    FontSelector* currentFontSelector = font().getFontSelector();
+    FontDescription desc(getFontDescription());
     desc.setLetterSpacing(letterSpacing);
     setFontDescription(desc);
     font().update(currentFontSelector);
@@ -1423,8 +1423,8 @@ void ComputedStyle::setTextAutosizingMultiplier(float multiplier)
     else
         size = std::min(maximumAllowedFontSize, size);
 
-    FontSelector* currentFontSelector = font().fontSelector();
-    FontDescription desc(fontDescription());
+    FontSelector* currentFontSelector = font().getFontSelector();
+    FontDescription desc(getFontDescription());
     desc.setSpecifiedSize(size);
     desc.setComputedSize(size);
 

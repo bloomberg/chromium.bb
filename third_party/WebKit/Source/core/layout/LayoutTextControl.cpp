@@ -227,13 +227,13 @@ float LayoutTextControl::scaleEmToUnits(int x) const
 {
     // This matches the unitsPerEm value for MS Shell Dlg and Courier New from the "head" font table.
     float unitsPerEm = 2048.0f;
-    return roundf(style()->font().fontDescription().computedSize() * x / unitsPerEm);
+    return roundf(style()->font().getFontDescription().computedSize() * x / unitsPerEm);
 }
 
 void LayoutTextControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     // Use average character width. Matches IE.
-    AtomicString family = style()->font().fontDescription().family().family();
+    AtomicString family = style()->font().getFontDescription().family().family();
     maxLogicalWidth = preferredContentLogicalWidth(const_cast<LayoutTextControl*>(this)->getAvgCharWidth(family));
     if (LayoutBox* innerEditorLayoutBox = innerEditorElement()->layoutBox())
         maxLogicalWidth += innerEditorLayoutBox->paddingStart() + innerEditorLayoutBox->paddingEnd();

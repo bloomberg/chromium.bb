@@ -157,7 +157,7 @@ public:
 
     bool hasSelfPaintingLayer() const;
     PaintLayer* layer() const { return m_layer.get(); }
-    PaintLayerScrollableArea* scrollableArea() const;
+    PaintLayerScrollableArea* getScrollableArea() const;
 
     virtual void updateFromStyle();
 

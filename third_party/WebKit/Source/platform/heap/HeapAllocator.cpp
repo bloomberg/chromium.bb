@@ -19,7 +19,7 @@ void HeapAllocator::backingFree(void* address)
     // Don't promptly free large objects because their page is never reused.
     // Don't free backings allocated on other threads.
     BasePage* page = pageFromObject(address);
-    if (page->isLargeObjectPage() || page->arena()->threadState() != state)
+    if (page->isLargeObjectPage() || page->arena()->getThreadState() != state)
         return;
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
@@ -58,7 +58,7 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
     // FIXME: Support expand for large objects.
     // Don't expand backings allocated on other threads.
     BasePage* page = pageFromObject(address);
-    if (page->isLargeObjectPage() || page->arena()->threadState() != state)
+    if (page->isLargeObjectPage() || page->arena()->getThreadState() != state)
         return false;
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
@@ -101,7 +101,7 @@ bool HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
     // FIXME: Support shrink for large objects.
     // Don't shrink backings allocated on other threads.
     BasePage* page = pageFromObject(address);
-    if (page->isLargeObjectPage() || page->arena()->threadState() != state)
+    if (page->isLargeObjectPage() || page->arena()->getThreadState() != state)
         return false;
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);

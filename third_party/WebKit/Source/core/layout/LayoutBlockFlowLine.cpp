@@ -440,12 +440,12 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     float measuredWidth = 0;
     FloatRect glyphBounds;
 
-    bool kerningIsEnabled = font.fontDescription().getTypesettingFeatures() & Kerning;
+    bool kerningIsEnabled = font.getFontDescription().getTypesettingFeatures() & Kerning;
 
 #if OS(MACOSX)
     // FIXME: Having any font feature settings enabled can lead to selection gaps on
     // Chromium-mac. https://bugs.webkit.org/show_bug.cgi?id=113418
-    bool canUseCachedWordMeasurements = font.canShapeWordByWord() && !font.fontDescription().featureSettings();
+    bool canUseCachedWordMeasurements = font.canShapeWordByWord() && !font.getFontDescription().featureSettings();
 #else
     bool canUseCachedWordMeasurements = font.canShapeWordByWord();
 #endif
@@ -498,7 +498,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
         measuredWidth = 0;
     }
 
-    glyphOverflow.setFromBounds(glyphBounds, font.fontMetrics().floatAscent(), font.fontMetrics().floatDescent(), measuredWidth);
+    glyphOverflow.setFromBounds(glyphBounds, font.getFontMetrics().floatAscent(), font.getFontMetrics().floatDescent(), measuredWidth);
 
     run->m_box->setLogicalWidth(LayoutUnit(measuredWidth) + hyphenWidth);
     if (!fallbackFonts.isEmpty()) {
@@ -634,7 +634,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
 
             if (rt.textLength()) {
                 if (!r->m_start && needsWordSpacing && isSpaceOrNewline(rt.characterAt(r->m_start)))
-                    totalLogicalWidth += rt.style(lineInfo.isFirstLine())->font().fontDescription().wordSpacing();
+                    totalLogicalWidth += rt.style(lineInfo.isFirstLine())->font().getFontDescription().wordSpacing();
                 needsWordSpacing = !isSpaceOrNewline(rt.characterAt(r->m_stop - 1));
             }
 
@@ -1186,7 +1186,7 @@ static inline void stripTrailingSpace(LayoutUnit& inlineMax, LayoutUnit& inlineM
         TextRun run = constructTextRun(font, &trailingWhitespaceChar, 1,
             text->styleRef(), text->style()->direction());
         float spaceWidth = font.width(run);
-        inlineMax -= LayoutUnit::fromFloatCeil(spaceWidth + font.fontDescription().wordSpacing());
+        inlineMax -= LayoutUnit::fromFloatCeil(spaceWidth + font.getFontDescription().wordSpacing());
         if (inlineMin > inlineMax)
             inlineMin = inlineMax;
     }

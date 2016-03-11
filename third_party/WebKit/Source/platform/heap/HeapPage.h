@@ -687,7 +687,7 @@ public:
     bool lazySweepWithDeadline(double deadlineSeconds);
     void completeSweep();
 
-    ThreadState* threadState() { return m_threadState; }
+    ThreadState* getThreadState() { return m_threadState; }
     int arenaIndex() const { return m_index; }
 
 protected:

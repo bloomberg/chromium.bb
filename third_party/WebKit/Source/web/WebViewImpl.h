@@ -495,7 +495,7 @@ public:
 
     // Exposed for tests.
     unsigned numLinkHighlights() { return m_linkHighlights.size(); }
-    LinkHighlightImpl* linkHighlight(int i) { return m_linkHighlights[i].get(); }
+    LinkHighlightImpl* getLinkHighlight(int i) { return m_linkHighlights[i].get(); }
 
     WebSettingsImpl* settingsImpl();
 
@@ -532,7 +532,7 @@ public:
     void detachPaintArtifactCompositor();
 
     // Use in Slimming Paint v2 to update the layer tree for the content.
-    PaintArtifactCompositor& paintArtifactCompositor() { return m_paintArtifactCompositor; }
+    PaintArtifactCompositor& getPaintArtifactCompositor() { return m_paintArtifactCompositor; }
 
     bool isTransparent() const;
     void setIsTransparent(bool value);

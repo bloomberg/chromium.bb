@@ -98,12 +98,12 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
         IntRect(-m_image->width(), -m_image->height(), m_image->width(), m_image->height()),
         &(imageElement->document()), defaultOptions);
 
-    ASSERT_EQ(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->image()->imageForCurrentFrame());
-    ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->image()->imageForCurrentFrame());
-    ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->image()->imageForCurrentFrame());
+    ASSERT_EQ(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+    ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
+    ASSERT_NE(imageBitmapExteriorCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
 
     StaticBitmapImage* emptyImage = imageBitmapOutsideCrop->bitmapImage();
-    ASSERT_NE(emptyImage->imageForCurrentFrame(), imageElement->cachedImage()->image()->imageForCurrentFrame());
+    ASSERT_NE(emptyImage->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
 }
 
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a reference to the original Image if the HTMLImageElement src is changed.
@@ -118,7 +118,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(),
         IntRect(0, 0, m_image->width(), m_image->height()),
         &(image->document()), defaultOptions);
-    ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->image()->imageForCurrentFrame());
+    ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->getImage()->imageForCurrentFrame());
 
     RefPtrWillBeRawPtr<ImageResource> newImageResource = ImageResource::create(
         StaticBitmapImage::create(m_image2).get());
@@ -126,19 +126,19 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
 
     // The ImageBitmap should contain the same data as the original cached image
     {
-        ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->image()->imageForCurrentFrame());
+        ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->getImage()->imageForCurrentFrame());
         SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
         ASSERT_NE(image1, nullptr);
-        SkImage* image2 = originalImageResource->image()->imageForCurrentFrame().get();
+        SkImage* image2 = originalImageResource->getImage()->imageForCurrentFrame().get();
         ASSERT_NE(image2, nullptr);
         ASSERT_EQ(image1, image2);
     }
 
     {
-        ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(), newImageResource->image()->imageForCurrentFrame());
+        ASSERT_NE(imageBitmap->bitmapImage()->imageForCurrentFrame(), newImageResource->getImage()->imageForCurrentFrame());
         SkImage* image1 = imageBitmap->bitmapImage()->imageForCurrentFrame().get();
         ASSERT_NE(image1, nullptr);
-        SkImage* image2 = newImageResource->image()->imageForCurrentFrame().get();
+        SkImage* image2 = newImageResource->getImage()->imageForCurrentFrame().get();
         ASSERT_NE(image2, nullptr);
         ASSERT_NE(image1, image2);
     }

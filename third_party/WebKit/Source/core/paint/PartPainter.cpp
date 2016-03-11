@@ -92,7 +92,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     if (m_layoutPart.canResize())
-        ScrollableAreaPainter(*m_layoutPart.layer()->scrollableArea()).paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.cullRect());
+        ScrollableAreaPainter(*m_layoutPart.layer()->getScrollableArea()).paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.cullRect());
 }
 
 void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

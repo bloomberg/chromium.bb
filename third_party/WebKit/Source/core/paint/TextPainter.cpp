@@ -47,10 +47,10 @@ void TextPainter::setEmphasisMark(const AtomicString& emphasisMark, TextEmphasis
     if (emphasisMark.isNull()) {
         m_emphasisMarkOffset = 0;
     } else if (position == TextEmphasisPositionOver) {
-        m_emphasisMarkOffset = -m_font.fontMetrics().ascent() - m_font.emphasisMarkDescent(emphasisMark);
+        m_emphasisMarkOffset = -m_font.getFontMetrics().ascent() - m_font.emphasisMarkDescent(emphasisMark);
     } else {
         ASSERT(position == TextEmphasisPositionUnder);
-        m_emphasisMarkOffset = m_font.fontMetrics().descent() + m_font.emphasisMarkAscent(emphasisMark);
+        m_emphasisMarkOffset = m_font.getFontMetrics().descent() + m_font.emphasisMarkAscent(emphasisMark);
     }
 }
 
@@ -221,7 +221,7 @@ void TextPainter::paintEmphasisMarkForCombinedText()
 {
     ASSERT(m_combinedText);
     TextRun placeholderTextRun(&ideographicFullStopCharacter, 1);
-    FloatPoint emphasisMarkTextOrigin(m_textBounds.x().toFloat(), m_textBounds.y().toFloat() + m_font.fontMetrics().ascent() + m_emphasisMarkOffset);
+    FloatPoint emphasisMarkTextOrigin(m_textBounds.x().toFloat(), m_textBounds.y().toFloat() + m_font.getFontMetrics().ascent() + m_emphasisMarkOffset);
     TextRunPaintInfo textRunPaintInfo(placeholderTextRun);
     textRunPaintInfo.bounds = FloatRect(m_textBounds);
     m_graphicsContext.concatCTM(rotation(m_textBounds, Clockwise));

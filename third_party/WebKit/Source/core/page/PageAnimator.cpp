@@ -48,7 +48,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
         if (document->view()) {
             if (document->view()->shouldThrottleRendering())
                 continue;
-            document->view()->scrollableArea()->serviceScrollAnimations(monotonicAnimationStartTime);
+            document->view()->getScrollableArea()->serviceScrollAnimations(monotonicAnimationStartTime);
 
             if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = document->view()->animatingScrollableAreas()) {
                 // Iterate over a copy, since ScrollableAreas may deregister

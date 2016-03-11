@@ -231,7 +231,7 @@ void TextFieldInputType::forwardEvent(Event* event)
             if (LayoutBox* innerEditorLayoutObject = element().innerEditorElement()->layoutBox()) {
                 // FIXME: This class has no need to know about PaintLayer!
                 if (PaintLayer* innerLayer = innerEditorLayoutObject->layer()) {
-                    if (PaintLayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
+                    if (PaintLayerScrollableArea* innerScrollableArea = innerLayer->getScrollableArea()) {
                         IntSize scrollOffset(!layoutTextControl->style()->isLeftToRightDirection() ? innerScrollableArea->scrollWidth().toInt() : 0, 0);
                         innerScrollableArea->scrollToOffset(scrollOffset, ScrollOffsetClamped);
                     }

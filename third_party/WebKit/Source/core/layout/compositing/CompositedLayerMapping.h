@@ -254,9 +254,9 @@ private:
     bool updateBackgroundLayer(bool needsBackgroundLayer);
     bool updateMaskLayer(bool needsMaskLayer);
     void updateChildClippingMaskLayer(bool needsChildClippingMaskLayer);
-    bool requiresHorizontalScrollbarLayer() const { return m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->horizontalScrollbar(); }
-    bool requiresVerticalScrollbarLayer() const { return m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->verticalScrollbar(); }
-    bool requiresScrollCornerLayer() const { return m_owningLayer.scrollableArea() && !m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().isEmpty(); }
+    bool requiresHorizontalScrollbarLayer() const { return m_owningLayer.getScrollableArea() && m_owningLayer.getScrollableArea()->horizontalScrollbar(); }
+    bool requiresVerticalScrollbarLayer() const { return m_owningLayer.getScrollableArea() && m_owningLayer.getScrollableArea()->verticalScrollbar(); }
+    bool requiresScrollCornerLayer() const { return m_owningLayer.getScrollableArea() && !m_owningLayer.getScrollableArea()->scrollCornerAndResizerRect().isEmpty(); }
     bool updateScrollingLayers(bool scrollingLayers);
     void updateScrollParent(const PaintLayer*);
     void updateClipParent(const PaintLayer* scrollParent);

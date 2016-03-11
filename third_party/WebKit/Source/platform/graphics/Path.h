@@ -140,7 +140,7 @@ public:
 
     void translate(const FloatSize&);
 
-    const SkPath& skPath() const { return m_path; }
+    const SkPath& getSkPath() const { return m_path; }
 
     void apply(void* info, PathApplierFunction) const;
     void transform(const AffineTransform&);

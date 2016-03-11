@@ -270,7 +270,7 @@ static PassRefPtr<TransformPaintPropertyNode> createScrollTranslationIfNeeded(co
 
     PaintLayer* layer = toLayoutBoxModelObject(object).layer();
     ASSERT(layer);
-    DoubleSize scrollOffset = layer->scrollableArea()->scrollOffset();
+    DoubleSize scrollOffset = layer->getScrollableArea()->scrollOffset();
     if (scrollOffset.isZero() && !layer->scrollsOverflow())
         return nullptr;
 

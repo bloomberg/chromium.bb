@@ -157,7 +157,7 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& po
         return createPositionWithAffinity(0);
 
     ASSERT(m_scalingFactor);
-    float baseline = m_scaledFont.fontMetrics().floatAscent() / m_scalingFactor;
+    float baseline = m_scaledFont.getFontMetrics().floatAscent() / m_scalingFactor;
 
     LayoutBlock* containingBlock = this->containingBlock();
     ASSERT(containingBlock);
@@ -218,10 +218,10 @@ void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* layoutObjec
         return;
     }
 
-    if (style->fontDescription().textRendering() == GeometricPrecision)
+    if (style->getFontDescription().textRendering() == GeometricPrecision)
         scalingFactor = 1;
 
-    FontDescription fontDescription(style->fontDescription());
+    FontDescription fontDescription(style->getFontDescription());
 
     Document& document = layoutObject->document();
     // FIXME: We need to better handle the case when we compute very small fonts below (below 1pt).

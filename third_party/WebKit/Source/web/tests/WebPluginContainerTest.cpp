@@ -567,7 +567,7 @@ public:
     {
     }
 
-    WebLayer* webLayer() const { return m_layer.get(); }
+    WebLayer* getWebLayer() const { return m_layer.get(); }
 
     // WebPlugin
 
@@ -622,12 +622,12 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2)
     container->paint(graphicsContext, CullRect(IntRect(10, 10, 400, 300)));
     paintController->commitNewDisplayItems();
 
-    const auto& displayItems = paintController->paintArtifact().displayItemList();
+    const auto& displayItems = paintController->paintArtifact().getDisplayItemList();
     ASSERT_EQ(1u, displayItems.size());
     EXPECT_EQ(element->layoutObject(), &displayItems[0].client());
     ASSERT_EQ(DisplayItem::ForeignLayerPlugin, displayItems[0].getType());
     const auto& foreignLayerDisplayItem = static_cast<const ForeignLayerDisplayItem&>(displayItems[0]);
-    EXPECT_EQ(plugin->webLayer()->ccLayer(), foreignLayerDisplayItem.layer());
+    EXPECT_EQ(plugin->getWebLayer()->ccLayer(), foreignLayerDisplayItem.layer());
 }
 
 } // namespace blink

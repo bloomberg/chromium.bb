@@ -40,7 +40,7 @@ protected:
         m_featuresBackup.restore();
     }
 
-    PaintArtifactCompositor& paintArtifactCompositor() { return *m_paintArtifactCompositor; }
+    PaintArtifactCompositor& getPaintArtifactCompositor() { return *m_paintArtifactCompositor; }
     cc::Layer* rootLayer() { return m_paintArtifactCompositor->rootLayer(); }
     void update(const PaintArtifact& artifact) { m_paintArtifactCompositor->update(artifact); }
 

@@ -171,7 +171,7 @@ public:
 
     // Build RGBA table using the data stream.
     void buildTable(blink::FastSharedBufferReader*);
-    const Table& table() const { return m_table; }
+    const Table& getTable() const { return m_table; }
 
 private:
     bool m_isDefined;

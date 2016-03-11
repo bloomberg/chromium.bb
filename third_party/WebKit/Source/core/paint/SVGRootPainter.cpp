@@ -54,7 +54,7 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !m_layoutSVGRoot.hasLayer()) {
         const auto* objectProperties = m_layoutSVGRoot.objectPaintProperties();
         if (objectProperties && objectProperties->paintOffsetTranslation()) {
-            auto& paintController = paintInfoBeforeFiltering.context.paintController();
+            auto& paintController = paintInfoBeforeFiltering.context.getPaintController();
             PaintChunkProperties properties(paintController.currentPaintChunkProperties());
             properties.transform = objectProperties->paintOffsetTranslation();
             paintOffsetTranslationPropertyScope.emplace(paintController, properties);

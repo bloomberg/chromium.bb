@@ -185,7 +185,7 @@ inline bool requiresLineBoxForContent(LineLayoutInline flow, const LineInfo& lin
     if (flow.document().inNoQuirksMode()
         && (flow.style(lineInfo.isFirstLine())->lineHeight() != parent.style(lineInfo.isFirstLine())->lineHeight()
         || flow.style()->verticalAlign() != parent.style()->verticalAlign()
-        || !parent.style()->font().fontMetrics().hasIdenticalAscentDescentAndLineGap(flow.style()->font().fontMetrics())))
+        || !parent.style()->font().getFontMetrics().hasIdenticalAscentDescentAndLineGap(flow.style()->font().getFontMetrics())))
         return true;
     return false;
 }
@@ -602,7 +602,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     // Non-zero only when kerning is enabled, in which case we measure
     // words with their trailing space, then subtract its width.
-    float wordTrailingSpaceWidth = (font.fontDescription().getTypesettingFeatures() & Kerning) ?
+    float wordTrailingSpaceWidth = (font.getFontDescription().getTypesettingFeatures() & Kerning) ?
         font.width(constructTextRun(font, &spaceCharacter, 1, style, style.direction())) + wordSpacing
         : 0;
 

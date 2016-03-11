@@ -573,7 +573,7 @@ void RootInlineBox::ascentAndDescentForBox(InlineBox* box, GlyphOverflowAndFallb
     if (usedFonts && !usedFonts->isEmpty() && (box->getLineLayoutItem().style(isFirstLineStyle())->lineHeight().isNegative() && includeLeading)) {
         usedFonts->append(box->getLineLayoutItem().style(isFirstLineStyle())->font().primaryFont());
         for (size_t i = 0; i < usedFonts->size(); ++i) {
-            const FontMetrics& fontMetrics = usedFonts->at(i)->fontMetrics();
+            const FontMetrics& fontMetrics = usedFonts->at(i)->getFontMetrics();
             int usedFontAscent = fontMetrics.ascent(baselineType());
             int usedFontDescent = fontMetrics.descent(baselineType());
             int halfLeading = (fontMetrics.lineSpacing() - fontMetrics.height()) / 2;
@@ -639,8 +639,8 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
 
     if (verticalAlign != VerticalAlignBaseline) {
         const Font& font = parent.style(firstLine)->font();
-        const FontMetrics& fontMetrics = font.fontMetrics();
-        int fontSize = font.fontDescription().computedPixelSize();
+        const FontMetrics& fontMetrics = font.getFontMetrics();
+        int fontSize = font.getFontDescription().computedPixelSize();
 
         LineDirectionMode lineDirection = parent.isHorizontalWritingMode() ? HorizontalLine : VerticalLine;
 

@@ -290,12 +290,12 @@ void ThreadState::cleanup()
         // Do thread local GC's as long as the count of thread local Persistents
         // changes and is above zero.
         int oldCount = -1;
-        int currentCount = persistentRegion()->numberOfPersistents();
+        int currentCount = getPersistentRegion()->numberOfPersistents();
         ASSERT(currentCount >= 0);
         while (currentCount != oldCount) {
             Heap::collectGarbageForTerminatingThread(this);
             oldCount = currentCount;
-            currentCount = persistentRegion()->numberOfPersistents();
+            currentCount = getPersistentRegion()->numberOfPersistents();
         }
         // We should not have any persistents left when getting to this point,
         // if we have it is probably a bug so adding a debug ASSERT to catch this.
@@ -1368,7 +1368,7 @@ void ThreadState::registerStaticPersistentNode(PersistentNode* node)
 void ThreadState::releaseStaticPersistentNodes()
 {
     for (PersistentNode* node : m_staticPersistents)
-        persistentRegion()->freePersistentNode(node);
+        getPersistentRegion()->freePersistentNode(node);
 
     m_staticPersistents.clear();
 }

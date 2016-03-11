@@ -113,7 +113,7 @@ class WebServiceWorkerNetworkProviderImpl
   ServiceWorkerNetworkProvider* GetNetworkProviderFromDataSource(
       const blink::WebDataSource* data_source) {
     return ServiceWorkerNetworkProvider::FromDocumentState(
-        static_cast<DataSourceExtraData*>(data_source->extraData()));
+        static_cast<DataSourceExtraData*>(data_source->getExtraData()));
   }
 };
 

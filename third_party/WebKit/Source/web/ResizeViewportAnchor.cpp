@@ -14,13 +14,13 @@ namespace blink {
 
 ResizeViewportAnchor::ResizeViewportAnchor(FrameView& rootFrameView, VisualViewport& visualViewport)
     : ViewportAnchor(rootFrameView, visualViewport)
-    , m_visualViewportInDocument(rootFrameView.scrollableArea()->visibleContentRectDouble().location())
+    , m_visualViewportInDocument(rootFrameView.getScrollableArea()->visibleContentRectDouble().location())
 {
 }
 
 ResizeViewportAnchor::~ResizeViewportAnchor()
 {
-    m_rootFrameView->scrollableArea()->setScrollPosition(m_visualViewportInDocument, ProgrammaticScroll);
+    m_rootFrameView->getScrollableArea()->setScrollPosition(m_visualViewportInDocument, ProgrammaticScroll);
 }
 
 } // namespace blink

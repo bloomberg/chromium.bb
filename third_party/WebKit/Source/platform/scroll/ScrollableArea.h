@@ -84,7 +84,7 @@ public:
 
     // The window that hosts the ScrollableArea. The ScrollableArea will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
-    virtual HostWindow* hostWindow() const { return 0; }
+    virtual HostWindow* getHostWindow() const { return 0; }
 
     virtual ScrollResult userScroll(ScrollGranularity, const FloatSize&);
 
@@ -273,7 +273,7 @@ public:
     IntSize excludeScrollbars(const IntSize&) const;
 
     // Returns the widget associated with this ScrollableArea.
-    virtual Widget* widget() { return nullptr; }
+    virtual Widget* getWidget() { return nullptr; }
 
     virtual bool isFrameView() const { return false; }
     virtual bool isPaintLayerScrollableArea() const { return false; }

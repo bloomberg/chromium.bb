@@ -60,7 +60,7 @@ float LayoutTextCombine::width(unsigned from, unsigned length, const Font& font,
         return 0;
 
     if (m_isCombined)
-        return font.fontDescription().computedSize();
+        return font.getFontDescription().computedSize();
 
     return LayoutText::width(from, length, font, xPosition, direction, fallbackFonts, glyphBounds);
 }
@@ -132,7 +132,7 @@ void LayoutTextCombine::updateFont()
 
     unsigned offset = 0;
     TextRun run = constructTextRun(originalFont(), this, offset, textLength(), styleRef(), style()->direction());
-    FontDescription description = originalFont().fontDescription();
+    FontDescription description = originalFont().getFontDescription();
     float emWidth = description.computedSize();
     if (!(style()->textDecorationsInEffect() & (TextDecorationUnderline | TextDecorationOverline)))
         emWidth *= textCombineMargin;
@@ -140,7 +140,7 @@ void LayoutTextCombine::updateFont()
     description.setOrientation(FontOrientation::Horizontal); // We are going to draw combined text horizontally.
     m_combinedTextWidth = originalFont().width(run);
 
-    FontSelector* fontSelector = style()->font().fontSelector();
+    FontSelector* fontSelector = style()->font().getFontSelector();
 
     bool shouldUpdateFont = mutableStyleRef().setFontDescription(description); // Need to change font orientation to horizontal.
 

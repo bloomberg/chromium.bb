@@ -134,7 +134,7 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
 {
     // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.
     RefPtrWillBeRawPtr<Filter> parentFilter = Filter::create(1.0f);
-    RefPtrWillBeRawPtr<FilterEffect> previousEffect = parentFilter->sourceGraphic();
+    RefPtrWillBeRawPtr<FilterEffect> previousEffect = parentFilter->getSourceGraphic();
     for (size_t i = 0; i < operations.operations().size(); ++i) {
         RefPtrWillBeRawPtr<FilterEffect> effect = nullptr;
         FilterOperation* filterOperation = operations.operations().at(i).get();

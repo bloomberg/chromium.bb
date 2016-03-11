@@ -169,7 +169,7 @@ float DevToolsHost::zoomFactor()
     float zoomFactor = m_frontendFrame->pageZoomFactor();
     // Cancel the device scale factor applied to the zoom factor in
     // use-zoom-for-dsf mode.
-    const HostWindow* hostWindow = m_frontendFrame->view()->hostWindow();
+    const HostWindow* hostWindow = m_frontendFrame->view()->getHostWindow();
     float windowToViewportRatio = hostWindow->windowToViewportScalar(1.0f);
     return zoomFactor / windowToViewportRatio;
 }

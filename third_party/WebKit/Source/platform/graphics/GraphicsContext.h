@@ -77,7 +77,7 @@ public:
     SkCanvas* canvas() { return m_canvas; }
     const SkCanvas* canvas() const { return m_canvas; }
 
-    PaintController& paintController() { return m_paintController; }
+    PaintController& getPaintController() { return m_paintController; }
 
     bool contextDisabled() const { return m_disabledState; }
 
@@ -89,10 +89,10 @@ public:
     unsigned saveCount() const;
 #endif
 
-    float strokeThickness() const { return immutableState()->strokeData().thickness(); }
+    float strokeThickness() const { return immutableState()->getStrokeData().thickness(); }
     void setStrokeThickness(float thickness) { mutableState()->setStrokeThickness(thickness); }
 
-    StrokeStyle getStrokeStyle() const { return immutableState()->strokeData().style(); }
+    StrokeStyle getStrokeStyle() const { return immutableState()->getStrokeData().style(); }
     void setStrokeStyle(StrokeStyle style) { mutableState()->setStrokeStyle(style); }
 
     Color strokeColor() const { return immutableState()->strokeColor(); }

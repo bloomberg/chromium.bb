@@ -204,7 +204,7 @@ static ScrollableArea* scrollableAreaForNode(Node* node)
     if (!layoutObject || !layoutObject->isBox())
         return nullptr;
 
-    return toLayoutBox(layoutObject)->scrollableArea();
+    return toLayoutBox(layoutObject)->getScrollableArea();
 }
 
 const char* Internals::internalsId = "internals";
@@ -531,7 +531,7 @@ void Internals::advanceTimeForImage(Element* image, double deltaTimeInSeconds, E
         return;
     }
 
-    Image* imageData = resource->image();
+    Image* imageData = resource->getImage();
     if (!imageData->isBitmapImage()) {
         exceptionState.throwDOMException(InvalidAccessError, "The image resource is not a BitmapImage type.");
         return;
@@ -559,7 +559,7 @@ void Internals::advanceImageAnimation(Element* image, ExceptionState& exceptionS
         return;
     }
 
-    Image* imageData = resource->image();
+    Image* imageData = resource->getImage();
     imageData->advanceAnimationForTesting();
 }
 
@@ -1308,7 +1308,7 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot, GraphicsLay
 
     // If the |graphicsLayer| is a scroller's scrollingContent layer,
     // consider this is a scrolling layer.
-    GraphicsLayer* layerForScrolling = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForScrolling() : 0;
+    GraphicsLayer* layerForScrolling = searchRoot->getScrollableArea() ? searchRoot->getScrollableArea()->layerForScrolling() : 0;
     if (graphicsLayer == layerForScrolling) {
         *layerType = "scrolling";
         return searchRoot;
@@ -1325,19 +1325,19 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot, GraphicsLay
         }
     }
 
-    GraphicsLayer* layerForHorizontalScrollbar = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForHorizontalScrollbar() : 0;
+    GraphicsLayer* layerForHorizontalScrollbar = searchRoot->getScrollableArea() ? searchRoot->getScrollableArea()->layerForHorizontalScrollbar() : 0;
     if (graphicsLayer == layerForHorizontalScrollbar) {
         *layerType = "horizontalScrollbar";
         return searchRoot;
     }
 
-    GraphicsLayer* layerForVerticalScrollbar = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForVerticalScrollbar() : 0;
+    GraphicsLayer* layerForVerticalScrollbar = searchRoot->getScrollableArea() ? searchRoot->getScrollableArea()->layerForVerticalScrollbar() : 0;
     if (graphicsLayer == layerForVerticalScrollbar) {
         *layerType = "verticalScrollbar";
         return searchRoot;
     }
 
-    GraphicsLayer* layerForScrollCorner = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForScrollCorner() : 0;
+    GraphicsLayer* layerForScrollCorner = searchRoot->getScrollableArea() ? searchRoot->getScrollableArea()->layerForScrollCorner() : 0;
     if (graphicsLayer == layerForScrollCorner) {
         *layerType = "scrollCorner";
         return searchRoot;
@@ -1995,7 +1995,7 @@ void Internals::startTrackingPaintInvalidationObjects()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     GraphicsLayer* graphicsLayer = toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking();
     if (graphicsLayer->drawsContent())
-        graphicsLayer->paintController().startTrackingPaintInvalidationObjects();
+        graphicsLayer->getPaintController().startTrackingPaintInvalidationObjects();
 }
 
 void Internals::stopTrackingPaintInvalidationObjects()
@@ -2003,7 +2003,7 @@ void Internals::stopTrackingPaintInvalidationObjects()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
     GraphicsLayer* graphicsLayer = toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking();
     if (graphicsLayer->drawsContent())
-        graphicsLayer->paintController().stopTrackingPaintInvalidationObjects();
+        graphicsLayer->getPaintController().stopTrackingPaintInvalidationObjects();
 }
 
 Vector<String> Internals::trackedPaintInvalidationObjects()
@@ -2012,7 +2012,7 @@ Vector<String> Internals::trackedPaintInvalidationObjects()
     GraphicsLayer* graphicsLayer = toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking();
     if (!graphicsLayer->drawsContent())
         return Vector<String>();
-    return graphicsLayer->paintController().trackedPaintInvalidationObjects();
+    return graphicsLayer->getPaintController().trackedPaintInvalidationObjects();
 }
 
 ClientRectList* Internals::draggableRegions(Document* document, ExceptionState& exceptionState)
@@ -2109,8 +2109,8 @@ String Internals::getCurrentCursorInfo()
     result.appendNumber(cursor.hotSpot().x());
     result.append(',');
     result.appendNumber(cursor.hotSpot().y());
-    if (cursor.image()) {
-        IntSize size = cursor.image()->size();
+    if (cursor.getImage()) {
+        IntSize size = cursor.getImage()->size();
         result.appendLiteral(" image=");
         result.appendNumber(size.width());
         result.append('x');
@@ -2212,7 +2212,7 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
     if (itemIndex < 0 || static_cast<size_t>(itemIndex) >= select.listItems().size())
         return false;
     const ComputedStyle* itemStyle = select.itemComputedStyle(*select.listItems()[itemIndex]);
-    return itemStyle ? itemStyle->font().fontMetrics().height() : 0;
+    return itemStyle ? itemStyle->font().getFontMetrics().height() : 0;
 }
 
 void Internals::resetTypeAheadSession(HTMLSelectElement* select)
@@ -2471,12 +2471,12 @@ int Internals::visualViewportWidth()
 
 double Internals::visualViewportScrollX()
 {
-    return frame()->view()->scrollableArea()->scrollPositionDouble().x();
+    return frame()->view()->getScrollableArea()->scrollPositionDouble().x();
 }
 
 double Internals::visualViewportScrollY()
 {
-    return frame()->view()->scrollableArea()->scrollPositionDouble().y();
+    return frame()->view()->getScrollableArea()->scrollPositionDouble().y();
 }
 
 ValueIterable<int>::IterationSource* Internals::startIteration(ScriptState*, ExceptionState&)

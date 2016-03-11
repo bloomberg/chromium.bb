@@ -406,7 +406,7 @@ void FrameSerializer::addImageToResources(ImageResource* image, const KURL& url)
     if (!image || !image->hasImage() || image->errorOccurred() || !shouldAddURL(url))
         return;
 
-    RefPtr<SharedBuffer> data = image->image()->data();
+    RefPtr<SharedBuffer> data = image->getImage()->data();
     addToResources(image, data, url);
 }
 

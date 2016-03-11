@@ -83,7 +83,7 @@ public:
     BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
 
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
-    BLINK_PLATFORM_EXPORT const ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT const ExtraData* getExtraData() const;
 
     BLINK_PLATFORM_EXPORT void didStartPrerender();
     BLINK_PLATFORM_EXPORT void didStopPrerender();

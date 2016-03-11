@@ -300,7 +300,7 @@ void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const Co
 
     fontDescription.setSpecifiedSize(specifiedSize);
 
-    checkForGenericFamilyChange(style.fontDescription(), fontDescription);
+    checkForGenericFamilyChange(style.getFontDescription(), fontDescription);
 }
 
 void FontBuilder::updateAdjustedSize(FontDescription& fontDescription, const ComputedStyle& style, FontSelector* fontSelector)
@@ -316,11 +316,11 @@ void FontBuilder::updateAdjustedSize(FontDescription& fontDescription, const Com
 
     Font font(fontDescription);
     font.update(fontSelector);
-    if (!font.fontMetrics().hasXHeight())
+    if (!font.getFontMetrics().hasXHeight())
         return;
 
     const float sizeAdjust = fontDescription.sizeAdjust();
-    float aspectValue = font.fontMetrics().xHeight() / specifiedSize;
+    float aspectValue = font.getFontMetrics().xHeight() / specifiedSize;
     float adjustedSize = (sizeAdjust / aspectValue) * specifiedSize;
     adjustedSize = getComputedSizeFromSpecifiedSize(fontDescription, style.effectiveZoom(), adjustedSize);
 
@@ -344,7 +344,7 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
     if (!m_flags)
         return;
 
-    FontDescription description = style.fontDescription();
+    FontDescription description = style.getFontDescription();
 
     if (isSet(PropertySetFlag::Family)) {
         description.setGenericFamily(m_fontDescription.genericFamily());

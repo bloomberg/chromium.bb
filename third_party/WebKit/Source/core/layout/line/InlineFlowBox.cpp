@@ -123,7 +123,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
             shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
         } else if (child->isText()) {
             if (child->getLineLayoutItem().isBR() || (child->getLineLayoutItem().parent() != getLineLayoutItem())) {
-                if (!parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
+                if (!parentStyle.font().getFontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().getFontMetrics())
                     || parentStyle.lineHeight() != childStyle.lineHeight()
                     || (parentStyle.verticalAlign() != VerticalAlignBaseline && !isRootInlineBox()) || childStyle.verticalAlign() != VerticalAlignBaseline)
                     shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
@@ -140,7 +140,7 @@ void InlineFlowBox::addToLine(InlineBox* child)
                 InlineFlowBox* childFlowBox = toInlineFlowBox(child);
                 // Check the child's bit, and then also check for differences in font, line-height, vertical-align
                 if (!childFlowBox->descendantsHaveSameLineHeightAndBaseline()
-                    || !parentStyle.font().fontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().fontMetrics())
+                    || !parentStyle.font().getFontMetrics().hasIdenticalAscentDescentAndLineGap(childStyle.font().getFontMetrics())
                     || parentStyle.lineHeight() != childStyle.lineHeight()
                     || (parentStyle.verticalAlign() != VerticalAlignBaseline && !isRootInlineBox()) || childStyle.verticalAlign() != VerticalAlignBaseline
                     || childStyle.hasBorder() || childStyle.hasPadding() || childStyle.hasTextCombine())
@@ -389,7 +389,7 @@ void InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, Inline
             LayoutUnit space;
             if (rt.textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt.characterAt(text->start())))
-                    space = LayoutUnit(rt.style(isFirstLineStyle())->font().fontDescription().wordSpacing());
+                    space = LayoutUnit(rt.style(isFirstLineStyle())->font().getFontDescription().wordSpacing());
                 needsWordSpacing = !isSpaceOrNewline(rt.characterAt(text->end()));
             }
             if (isLeftToRightDirection()) {
@@ -458,7 +458,7 @@ FontBaseline InlineFlowBox::dominantBaseline() const
 {
     // Use "central" (Ideographic) baseline if writing-mode is vertical-* and text-orientation is not sideways-*.
     // http://dev.w3.org/csswg/css-writing-modes-3/#text-baselines
-    if (!isHorizontal() && getLineLayoutItem().style(isFirstLineStyle())->fontDescription().isVerticalAnyUpright())
+    if (!isHorizontal() && getLineLayoutItem().style(isFirstLineStyle())->getFontDescription().isVerticalAnyUpright())
         return IdeographicBaseline;
     return AlphabeticBaseline;
 }
@@ -583,7 +583,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
 {
     bool isRootBox = isRootInlineBox();
     if (isRootBox) {
-        const FontMetrics& fontMetrics = getLineLayoutItem().style(isFirstLineStyle())->fontMetrics();
+        const FontMetrics& fontMetrics = getLineLayoutItem().style(isFirstLineStyle())->getFontMetrics();
         // RootInlineBoxes are always placed at pixel boundaries in their logical y direction. Not doing
         // so results in incorrect layout of text decorations, most notably underlines.
         setLogicalTop(LayoutUnit(roundToInt(top + maxAscent - fontMetrics.ascent(baselineType))));
@@ -625,7 +625,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
         LayoutUnit boxHeightIncludingMargins = boxHeight;
         LayoutUnit borderPaddingHeight;
         if (curr->isText() || curr->isInlineFlowBox()) {
-            const FontMetrics& fontMetrics = curr->getLineLayoutItem().style(isFirstLineStyle())->fontMetrics();
+            const FontMetrics& fontMetrics = curr->getLineLayoutItem().style(isFirstLineStyle())->getFontMetrics();
             newLogicalTop += curr->baselinePosition(baselineType) - fontMetrics.ascent(baselineType);
             if (curr->isInlineFlowBox()) {
                 LineLayoutBoxModel boxObject = LineLayoutBoxModel(curr->getLineLayoutItem());
@@ -843,7 +843,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
 
     // If letter-spacing is negative, we should factor that into right layout overflow. Even in RTL, letter-spacing is
     // applied to the right, so this is not an issue with left overflow.
-    rightGlyphOverflow -= std::min(0.0f, style.font().fontDescription().letterSpacing());
+    rightGlyphOverflow -= std::min(0.0f, style.font().getFontDescription().letterSpacing());
 
     LayoutRectOutsets textShadowLogicalOutsets;
     if (ShadowList* textShadow = style.textShadow())

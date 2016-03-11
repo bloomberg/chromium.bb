@@ -600,7 +600,7 @@ static void write(TextStream& ts, PaintLayer& layer,
         if (reportFrameScrollInfo)
             scrollableArea = toLayoutView(layer.layoutObject())->frameView();
         else
-            scrollableArea = layer.scrollableArea();
+            scrollableArea = layer.getScrollableArea();
 
         DoublePoint adjustedScrollOffset = scrollableArea->scrollPositionDouble() + toDoubleSize(scrollableArea->scrollOrigin());
         if (adjustedScrollOffset.x())

@@ -96,7 +96,7 @@ unsigned LayoutListBox::size() const
 
 LayoutUnit LayoutListBox::defaultItemHeight() const
 {
-    return LayoutUnit(style()->fontMetrics().height() + defaultPaddingBottom);
+    return LayoutUnit(style()->getFontMetrics().height() + defaultPaddingBottom);
 }
 
 LayoutUnit LayoutListBox::itemHeight() const
@@ -147,8 +147,8 @@ void LayoutListBox::scrollToRect(const LayoutRect& rect)
 {
     if (hasOverflowClip()) {
         ASSERT(layer());
-        ASSERT(layer()->scrollableArea());
-        layer()->scrollableArea()->scrollIntoView(rect, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
+        ASSERT(layer()->getScrollableArea());
+        layer()->getScrollableArea()->scrollIntoView(rect, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
     }
 }
 

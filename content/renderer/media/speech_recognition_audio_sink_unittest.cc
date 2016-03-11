@@ -243,7 +243,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
 
     // Get the native track from the blink track and initialize.
     native_track_ =
-        static_cast<WebRtcLocalAudioTrack*>(blink_track.extraData());
+        static_cast<WebRtcLocalAudioTrack*>(blink_track.getExtraData());
     native_track_->OnSetFormat(source_params_);
 
     // Create and initialize the consumer.

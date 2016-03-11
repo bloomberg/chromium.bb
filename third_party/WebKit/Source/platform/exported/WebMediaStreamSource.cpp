@@ -47,7 +47,7 @@ class ExtraDataContainer : public MediaStreamSource::ExtraData {
 public:
     ExtraDataContainer(PassOwnPtr<WebMediaStreamSource::ExtraData> extraData) : m_extraData(std::move(extraData)) { }
 
-    WebMediaStreamSource::ExtraData* extraData() { return m_extraData.get(); }
+    WebMediaStreamSource::ExtraData* getExtraData() { return m_extraData.get(); }
 
 private:
     OwnPtr<WebMediaStreamSource::ExtraData> m_extraData;
@@ -142,10 +142,10 @@ WebMediaStreamSource::ReadyState WebMediaStreamSource::getReadyState() const
 WebMediaStreamSource::ExtraData* WebMediaStreamSource::getExtraData() const
 {
     ASSERT(!m_private.isNull());
-    MediaStreamSource::ExtraData* data = m_private->extraData();
+    MediaStreamSource::ExtraData* data = m_private->getExtraData();
     if (!data)
         return 0;
-    return static_cast<ExtraDataContainer*>(data)->extraData();
+    return static_cast<ExtraDataContainer*>(data)->getExtraData();
 }
 
 void WebMediaStreamSource::setExtraData(ExtraData* extraData)

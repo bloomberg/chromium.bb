@@ -110,7 +110,7 @@ public:
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
 
     V8DebuggerImpl* debugger() { return m_debugger; }
-    InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager.get(); }
+    InjectedScriptManager* getInjectedScriptManager() { return m_injectedScriptManager.get(); }
 
     void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) override;
     void setInspectObjectCallback(PassOwnPtr<InspectCallback>) override;

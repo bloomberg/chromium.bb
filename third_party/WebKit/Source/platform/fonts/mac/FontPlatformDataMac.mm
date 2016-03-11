@@ -107,7 +107,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, float, const Font* font) const
     bool shouldAntialias = true;
 
     if (font) {
-        switch (font->fontDescription().fontSmoothing()) {
+        switch (font->getFontDescription().fontSmoothing()) {
         case Antialiased:
             shouldSmoothFonts = false;
             break;
@@ -141,7 +141,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, float, const Font* font) const
     // When rendering using CoreGraphics, disable hinting when webkit-font-smoothing:antialiased or
     // text-rendering:geometricPrecision is used.
     // See crbug.com/152304
-    if (font && (font->fontDescription().fontSmoothing() == Antialiased || font->fontDescription().textRendering() == GeometricPrecision))
+    if (font && (font->getFontDescription().fontSmoothing() == Antialiased || font->getFontDescription().textRendering() == GeometricPrecision))
         paint->setHinting(SkPaint::kNo_Hinting);
 }
 

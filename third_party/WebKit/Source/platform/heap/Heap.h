@@ -166,7 +166,7 @@ public:
         BasePage* page = pageFromObject(objectPointer);
         if (page->hasBeenSwept())
             return false;
-        ASSERT(page->arena()->threadState()->isSweepingInProgress());
+        ASSERT(page->arena()->getThreadState()->isSweepingInProgress());
 
         return !Heap::isHeapObjectAlive(const_cast<T*>(objectPointer));
     }
@@ -252,8 +252,8 @@ public:
 
     static void flushHeapDoesNotContainCache();
 
-    static FreePagePool* freePagePool() { return s_freePagePool; }
-    static OrphanedPagePool* orphanedPagePool() { return s_orphanedPagePool; }
+    static FreePagePool* getFreePagePool() { return s_freePagePool; }
+    static OrphanedPagePool* getOrphanedPagePool() { return s_orphanedPagePool; }
 
     // This look-up uses the region search tree and a negative contains cache to
     // provide an efficient mapping from arbitrary addresses to the containing

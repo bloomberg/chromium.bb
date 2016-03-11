@@ -373,7 +373,7 @@ bool FrameView::didFirstLayout() const
 void FrameView::invalidateRect(const IntRect& rect)
 {
     if (!parent()) {
-        if (HostWindow* window = hostWindow())
+        if (HostWindow* window = getHostWindow())
             window->invalidateRect(rect);
         return;
     }
@@ -1449,7 +1449,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
         }
     }
 
-    hostWindow()->invalidateRect(updateRect);
+    getHostWindow()->invalidateRect(updateRect);
 }
 
 void FrameView::restoreScrollbar()
@@ -1675,7 +1675,7 @@ void FrameView::updateCompositedSelectionIfNeeded()
     page->chromeClient().updateCompositedSelection(selection);
 }
 
-HostWindow* FrameView::hostWindow() const
+HostWindow* FrameView::getHostWindow() const
 {
     Page* page = frame().page();
     if (!page)
@@ -2551,7 +2551,7 @@ void FrameView::pushPaintArtifactToCompositor()
     GraphicsLayer* rootGraphicsLayer = layer->compositedLayerMapping()->mainGraphicsLayer();
     if (!rootGraphicsLayer->drawsContent())
         return;
-    const PaintArtifact& paintArtifact = rootGraphicsLayer->paintController().paintArtifact();
+    const PaintArtifact& paintArtifact = rootGraphicsLayer->getPaintController().paintArtifact();
 
     Page* page = frame().page();
     if (!page)
@@ -3520,7 +3520,7 @@ void FrameView::scrollContentsIfNeeded()
 
 void FrameView::scrollContents(const IntSize& scrollDelta)
 {
-    HostWindow* window = hostWindow();
+    HostWindow* window = getHostWindow();
     if (!window)
         return;
 
@@ -3621,7 +3621,7 @@ IntPoint FrameView::contentsToViewport(const IntPoint& pointInContents) const
 
 IntRect FrameView::contentsToScreen(const IntRect& rect) const
 {
-    HostWindow* window = hostWindow();
+    HostWindow* window = getHostWindow();
     if (!window)
         return IntRect();
     return window->viewportToScreen(contentsToViewport(rect));
@@ -3732,7 +3732,7 @@ bool FrameView::shouldPlaceVerticalScrollbarOnLeft() const
     return false;
 }
 
-Widget* FrameView::widget()
+Widget* FrameView::getWidget()
 {
     return this;
 }
@@ -3915,7 +3915,7 @@ int FrameView::viewportWidth() const
     return adjustForAbsoluteZoom(viewportWidth, layoutView());
 }
 
-ScrollableArea* FrameView::scrollableArea()
+ScrollableArea* FrameView::getScrollableArea()
 {
     if (m_viewportScrollableArea)
         return m_viewportScrollableArea.get();
@@ -3930,7 +3930,7 @@ ScrollableArea* FrameView::layoutViewportScrollableArea()
         return this;
 
     LayoutView* layoutView = this->layoutView();
-    return layoutView ? layoutView->scrollableArea() : nullptr;
+    return layoutView ? layoutView->getScrollableArea() : nullptr;
 }
 
 LayoutObject* FrameView::viewportLayoutObject()

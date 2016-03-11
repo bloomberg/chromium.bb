@@ -35,7 +35,7 @@ public:
 
     void updateFont();
     bool isCombined() const { return m_isCombined; }
-    float combinedTextWidth(const Font& font) const { return font.fontDescription().computedSize(); }
+    float combinedTextWidth(const Font& font) const { return font.getFontDescription().computedSize(); }
     const Font& originalFont() const { return parent()->style()->font(); }
     void transformToInlineCoordinates(GraphicsContext&, const LayoutRect& boxRect, bool clip = false) const;
     LayoutUnit inlineWidthForLayout() const;

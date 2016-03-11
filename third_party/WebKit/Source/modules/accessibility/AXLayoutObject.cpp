@@ -247,7 +247,7 @@ ScrollableArea* AXLayoutObject::getScrollableAreaIfScrollable() const
     if (!box->canBeScrolledAndHasScrollableArea())
         return 0;
 
-    return box->scrollableArea();
+    return box->getScrollableArea();
 }
 
 static bool isImageOrAltText(LayoutBoxModelObject* box, Node* node)
@@ -952,7 +952,7 @@ TextStyle AXLayoutObject::getTextStyle() const
     unsigned textStyle = TextStyleNone;
     if (style->fontWeight() == FontWeightBold)
         textStyle |= TextStyleBold;
-    if (style->fontDescription().style() == FontStyleItalic)
+    if (style->getFontDescription().style() == FontStyleItalic)
         textStyle |= TextStyleItalic;
     if (style->getTextDecoration() == TextDecorationUnderline)
         textStyle |= TextStyleUnderline;
@@ -1393,7 +1393,7 @@ void AXLayoutObject::checkCachedElementRect() const
         dirty = true;
 
     if (box->canBeScrolledAndHasScrollableArea()) {
-        ScrollableArea* scrollableArea = box->scrollableArea();
+        ScrollableArea* scrollableArea = box->getScrollableArea();
         if (scrollableArea && scrollableArea->scrollPosition() != m_cachedScrollPosition)
             dirty = true;
     }
@@ -1417,7 +1417,7 @@ void AXLayoutObject::updateCachedElementRect() const
     m_cachedFrameRect = box->frameRect();
 
     if (box->canBeScrolledAndHasScrollableArea()) {
-        ScrollableArea* scrollableArea = box->scrollableArea();
+        ScrollableArea* scrollableArea = box->getScrollableArea();
         if (scrollableArea)
             m_cachedScrollPosition = scrollableArea->scrollPosition();
     }

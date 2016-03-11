@@ -1105,7 +1105,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     if (!validateTexture3DBinding("texSubImage3D", target))
         return;
 
-    RefPtr<Image> imageForRender = image->cachedImage()->image();
+    RefPtr<Image> imageForRender = image->cachedImage()->getImage();
     if (imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height(), "texSubImage3D");
 

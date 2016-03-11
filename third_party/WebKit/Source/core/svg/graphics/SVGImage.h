@@ -134,7 +134,7 @@ public:
     ImageObserverDisabler(Image* image)
         : m_image(image)
     {
-        m_observer = m_image->imageObserver();
+        m_observer = m_image->getImageObserver();
         m_image->setImageObserver(0);
     }
 

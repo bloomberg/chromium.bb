@@ -66,7 +66,7 @@ void recordForeignLayer(GraphicsContext& context,
     const DisplayItemClient& client, DisplayItem::Type type,
     WebLayer* webLayer, const FloatPoint& location, const IntSize& bounds)
 {
-    PaintController& paintController = context.paintController();
+    PaintController& paintController = context.getPaintController();
     if (paintController.displayItemConstructionIsDisabled())
         return;
 

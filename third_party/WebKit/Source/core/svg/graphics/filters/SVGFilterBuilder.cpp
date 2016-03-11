@@ -37,7 +37,7 @@ namespace {
 
 class FilterInputKeywords {
 public:
-    static const AtomicString& sourceGraphic()
+    static const AtomicString& getSourceGraphic()
     {
         DEFINE_STATIC_LOCAL(const AtomicString, s_sourceGraphicName, ("SourceGraphic", AtomicString::ConstructFromLiteral));
         return s_sourceGraphicName;
@@ -121,12 +121,12 @@ SVGFilterBuilder::SVGFilterBuilder(
     : m_nodeMap(nodeMap)
 {
     RefPtrWillBeRawPtr<FilterEffect> sourceGraphicRef = sourceGraphic;
-    m_builtinEffects.add(FilterInputKeywords::sourceGraphic(), sourceGraphicRef);
+    m_builtinEffects.add(FilterInputKeywords::getSourceGraphic(), sourceGraphicRef);
     m_builtinEffects.add(FilterInputKeywords::sourceAlpha(), SourceAlpha::create(sourceGraphicRef.get()));
     if (fillPaint)
-        m_builtinEffects.add(FilterInputKeywords::fillPaint(), PaintFilterEffect::create(sourceGraphicRef->filter(), *fillPaint));
+        m_builtinEffects.add(FilterInputKeywords::fillPaint(), PaintFilterEffect::create(sourceGraphicRef->getFilter(), *fillPaint));
     if (strokePaint)
-        m_builtinEffects.add(FilterInputKeywords::strokePaint(), PaintFilterEffect::create(sourceGraphicRef->filter(), *strokePaint));
+        m_builtinEffects.add(FilterInputKeywords::strokePaint(), PaintFilterEffect::create(sourceGraphicRef->getFilter(), *strokePaint));
     addBuiltinEffects();
 }
 
@@ -210,7 +210,7 @@ FilterEffect* SVGFilterBuilder::getEffectById(const AtomicString& id) const
     if (m_lastEffect)
         return m_lastEffect.get();
 
-    return m_builtinEffects.get(FilterInputKeywords::sourceGraphic());
+    return m_builtinEffects.get(FilterInputKeywords::getSourceGraphic());
 }
 
 } // namespace blink

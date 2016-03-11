@@ -378,7 +378,7 @@ void GraphicsContext::drawFocusRing(const Path& focusRingPath, int width, int of
     if (contextDisabled())
         return;
 
-    drawFocusRingPath(focusRingPath.skPath(), color, width);
+    drawFocusRingPath(focusRingPath.getSkPath(), color, width);
 }
 
 void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int offset, const Color& color)
@@ -457,7 +457,7 @@ void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color&
     Color fillColor(shadowColor.red(), shadowColor.green(), shadowColor.blue(), 255);
 
     FloatRect outerRect = areaCastingShadowInHole(rect.rect(), shadowBlur, shadowSpread, shadowOffset);
-    FloatRoundedRect roundedHole(holeRect, rect.radii());
+    FloatRoundedRect roundedHole(holeRect, rect.getRadii());
 
     GraphicsContextStateSaver stateSaver(*this);
     if (rect.isRounded()) {
@@ -707,7 +707,7 @@ void GraphicsContext::drawRect(const IntRect& rect)
     if (fillcolorNotTransparent)
         drawRect(skRect, immutableState()->fillPaint());
 
-    if (immutableState()->strokeData().style() != NoStroke
+    if (immutableState()->getStrokeData().style() != NoStroke
         && immutableState()->strokeColor().alpha()) {
         // Stroke a width: 1 inset border
         SkPaint paint(immutableState()->fillPaint());
@@ -901,7 +901,7 @@ void GraphicsContext::fillPath(const Path& pathToFill)
     if (contextDisabled() || pathToFill.isEmpty())
         return;
 
-    drawPath(pathToFill.skPath(), immutableState()->fillPaint());
+    drawPath(pathToFill.getSkPath(), immutableState()->fillPaint());
 }
 
 void GraphicsContext::fillRect(const FloatRect& rect)
@@ -959,8 +959,8 @@ bool isSimpleDRRect(const FloatRoundedRect& outer, const FloatRoundedRect& inner
 
     // and
     //   2) the inner radii are not constrained
-    const FloatRoundedRect::Radii& oRadii = outer.radii();
-    const FloatRoundedRect::Radii& iRadii = inner.radii();
+    const FloatRoundedRect::Radii& oRadii = outer.getRadii();
+    const FloatRoundedRect::Radii& iRadii = inner.getRadii();
     if (!WebCoreFloatNearlyEqual(oRadii.topLeft().width() - strokeSize.width(), iRadii.topLeft().width())
         || !WebCoreFloatNearlyEqual(oRadii.topLeft().height() - strokeSize.height(), iRadii.topLeft().height())
         || !WebCoreFloatNearlyEqual(oRadii.topRight().width() - strokeSize.width(), iRadii.topRight().width())
@@ -1029,7 +1029,7 @@ void GraphicsContext::strokePath(const Path& pathToStroke)
     if (contextDisabled() || pathToStroke.isEmpty())
         return;
 
-    drawPath(pathToStroke.skPath(), immutableState()->strokePaint());
+    drawPath(pathToStroke.getSkPath(), immutableState()->strokePaint());
 }
 
 void GraphicsContext::strokeRect(const FloatRect& rect, float lineWidth)
@@ -1040,7 +1040,7 @@ void GraphicsContext::strokeRect(const FloatRect& rect, float lineWidth)
     SkPaint paint(immutableState()->strokePaint());
     paint.setStrokeWidth(WebCoreFloatToSkScalar(lineWidth));
     // Reset the dash effect to account for the width
-    immutableState()->strokeData().setupPaintDashPathEffect(&paint, 0);
+    immutableState()->getStrokeData().setupPaintDashPathEffect(&paint, 0);
     // strokerect has special rules for CSS when the rect is degenerate:
     // if width==0 && height==0, do nothing
     // if width==0 || height==0, then just draw line for the other dimension
@@ -1087,7 +1087,7 @@ void GraphicsContext::clipOut(const Path& pathToClip)
         return;
 
     // Use const_cast and temporarily toggle the inverse fill type instead of copying the path.
-    SkPath& path = const_cast<SkPath&>(pathToClip.skPath());
+    SkPath& path = const_cast<SkPath&>(pathToClip.getSkPath());
     path.toggleInverseFillType();
     clipPath(path, AntiAliased);
     path.toggleInverseFillType();

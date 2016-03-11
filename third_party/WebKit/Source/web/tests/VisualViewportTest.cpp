@@ -265,18 +265,18 @@ TEST_P(ParameterizedVisualViewportTest, TestResizeAtFullyScrolledPreservesViewpo
     ASSERT_POINT_EQ(FloatPoint(400, 300), visualViewport.location());
     ASSERT_POINT_EQ(DoublePoint(200, 1400), frameView.layoutViewportScrollableArea()->scrollPositionDouble());
 
-    DoublePoint expectedLocation = frameView.scrollableArea()->visibleContentRectDouble().location();
+    DoublePoint expectedLocation = frameView.getScrollableArea()->visibleContentRectDouble().location();
 
     // Shrink the WebView, this should cause both viewports to shrink and
     // WebView should do whatever it needs to do to preserve the visible
     // location.
     webViewImpl()->resize(IntSize(700, 550));
 
-    EXPECT_POINT_EQ(expectedLocation, frameView.scrollableArea()->visibleContentRectDouble().location());
+    EXPECT_POINT_EQ(expectedLocation, frameView.getScrollableArea()->visibleContentRectDouble().location());
 
     webViewImpl()->resize(IntSize(800, 600));
 
-    EXPECT_POINT_EQ(expectedLocation, frameView.scrollableArea()->visibleContentRectDouble().location());
+    EXPECT_POINT_EQ(expectedLocation, frameView.getScrollableArea()->visibleContentRectDouble().location());
 }
 
 

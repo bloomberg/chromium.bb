@@ -318,7 +318,7 @@ Image* HitTestResult::image() const
     if (layoutObject && layoutObject->isImage()) {
         LayoutImage* image = toLayoutImage(layoutObject);
         if (image->cachedImage() && !image->cachedImage()->errorOccurred())
-            return image->cachedImage()->image();
+            return image->cachedImage()->getImage();
     }
 
     return nullptr;

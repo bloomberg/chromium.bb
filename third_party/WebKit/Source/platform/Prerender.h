@@ -69,7 +69,7 @@ public:
     ReferrerPolicy getReferrerPolicy() const { return m_referrer.referrerPolicy; }
 
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
-    ExtraData* extraData() { return m_extraData.get(); }
+    ExtraData* getExtraData() { return m_extraData.get(); }
 
     void didStartPrerender();
     void didStopPrerender();

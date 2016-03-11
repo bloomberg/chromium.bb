@@ -11,7 +11,7 @@
 namespace blink {
 
 ScopeRecorder::ScopeRecorder(GraphicsContext& context)
-    : m_paintController(context.paintController())
+    : m_paintController(context.getPaintController())
 {
     m_paintController.beginScope();
 }

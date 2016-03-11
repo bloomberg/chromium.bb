@@ -230,7 +230,7 @@ FloatRoundedRect BoxPainter::getBackgroundRoundedRect(const LayoutObject& obj, c
     if (box && (box->nextLineBox() || box->prevLineBox())) {
         FloatRoundedRect segmentBorder = obj.style()->getRoundedBorderFor(LayoutRect(0, 0, inlineBoxWidth, inlineBoxHeight),
             includeLogicalLeftEdge, includeLogicalRightEdge);
-        border.setRadii(segmentBorder.radii());
+        border.setRadii(segmentBorder.getRadii());
     }
     return border;
 }
@@ -267,7 +267,7 @@ FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(cons
             includeLogicalLeftEdge, includeLogicalRightEdge);
         FloatRect insetRect(backgroundRoundedRect.rect());
         insetRect.expand(insets);
-        FloatRoundedRect::Radii insetRadii(backgroundRoundedRect.radii());
+        FloatRoundedRect::Radii insetRadii(backgroundRoundedRect.getRadii());
         insetRadii.shrink(-insets.top(), -insets.bottom(), -insets.left(), -insets.right());
         return FloatRoundedRect(insetRect, insetRadii);
     }
@@ -651,7 +651,7 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
             context.setShadow(shadowOffset, shadowBlur, shadowColor, DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha, DrawShadowOnly);
 
             if (hasBorderRadius) {
-                FloatRoundedRect influenceRect(pixelSnappedIntRect(LayoutRect(shadowRect)), border.radii());
+                FloatRoundedRect influenceRect(pixelSnappedIntRect(LayoutRect(shadowRect)), border.getRadii());
                 float changeAmount = 2 * shadowBlur + shadowSpread;
                 if (changeAmount >= 0)
                     influenceRect.expandRadii(changeAmount);

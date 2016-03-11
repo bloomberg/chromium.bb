@@ -39,7 +39,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
     PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
@@ -69,7 +69,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
     if (needsCommit)
         commit();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
@@ -118,7 +118,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     // Container2 is partly (including its stacking chidren) in the interest rect;
     // Content2b is out of the interest rect and output nothing;
     // Container3 is partly in the interest rect.
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 15,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 15,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
@@ -160,7 +160,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
     if (needsCommit)
         commit();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 14,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 14,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
@@ -198,7 +198,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
     PaintLayer& container2Layer = *toLayoutBoxModelObject(container2).layer();
     LayoutObject& content2 = *document().getElementById("content2")->layoutObject();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
@@ -228,7 +228,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
     if (needsCommit)
         commit();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 11,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
         TestDisplayItem(container1Layer, DisplayItem::Subsequence),
@@ -273,7 +273,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline)
     document().view()->updateAllLifecyclePhases();
     EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantOutlines());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantOutlines());
-    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), selfPaintingLayerObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), selfPaintingLayerObject, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
 
     // needsPaintPhaseDescendantOutlines should be set when any descendant on the same layer has outline.
     toHTMLElement(outlineDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithOutline);
@@ -281,7 +281,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline)
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseDescendantOutlines());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantOutlines());
     paint();
-    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), outlineDiv, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), outlineDiv, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
@@ -316,7 +316,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseFloat());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
     paint();
-    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), floatDiv, DisplayItem::BoxDecorationBackground));
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), floatDiv, DisplayItem::BoxDecorationBackground));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
@@ -350,7 +350,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
     document().view()->updateAllLifecyclePhases();
     EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
-    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), selfPaintingLayerObject, DisplayItem::BoxDecorationBackground));
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), selfPaintingLayerObject, DisplayItem::BoxDecorationBackground));
 
     // needsPaintPhaseDescendantBlockBackgrounds should be set when any descendant on the same layer has Background.
     toHTMLElement(backgroundDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithBackground);
@@ -358,7 +358,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
     EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
     paint();
-    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), backgroundDiv, DisplayItem::BoxDecorationBackground));
+    EXPECT_TRUE(displayItemListContains(rootPaintController().getDisplayItemList(), backgroundDiv, DisplayItem::BoxDecorationBackground));
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerRemoval)

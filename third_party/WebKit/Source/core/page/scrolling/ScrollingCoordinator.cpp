@@ -675,7 +675,7 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
     if (WebLayer* scrollLayer = toWebLayer(layer)) {
         m_lastMainThreadScrollingReasons = mainThreadScrollingReasons;
         if (mainThreadScrollingReasons) {
-            if (ScrollAnimatorBase* scrollAnimator = layer->scrollableArea()->existingScrollAnimator())
+            if (ScrollAnimatorBase* scrollAnimator = layer->getScrollableArea()->existingScrollAnimator())
                 scrollAnimator->takeoverCompositorAnimation();
             scrollLayer->addMainThreadScrollingReasons(mainThreadScrollingReasons);
         } else {
@@ -754,7 +754,7 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     if (const FrameView::ResizerAreaSet* resizerAreas = frameView->resizerAreas()) {
         for (const LayoutBox* box : *resizerAreas) {
             IntRect bounds = box->absoluteBoundingBoxRect();
-            IntRect corner = box->layer()->scrollableArea()->touchResizerCornerRect(bounds);
+            IntRect corner = box->layer()->getScrollableArea()->touchResizerCornerRect(bounds);
             corner.moveBy(offset);
             shouldHandleScrollGestureOnMainThreadRegion.unite(corner);
         }
@@ -895,7 +895,7 @@ bool ScrollingCoordinator::isForRootLayer(ScrollableArea* scrollableArea) const
 
     // FIXME(305811): Refactor for OOPI.
     LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->view()->layoutView();
-    return layoutView ? scrollableArea == layoutView->layer()->scrollableArea() : false;
+    return layoutView ? scrollableArea == layoutView->layer()->getScrollableArea() : false;
 }
 
 bool ScrollingCoordinator::isForMainFrame(ScrollableArea* scrollableArea) const

@@ -835,7 +835,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
         const ComputedStyle* style = r->style();
         if (style) {
             int bottomMargin = toLayoutBox(r)->collapsedMarginAfter();
-            int fontSize = style->fontDescription().computedPixelSize();
+            int fontSize = style->getFontDescription().computedPixelSize();
             if (bottomMargin * 2 >= fontSize)
                 return true;
         }

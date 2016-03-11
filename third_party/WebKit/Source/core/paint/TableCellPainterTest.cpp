@@ -31,7 +31,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     IntRect interestRect(0, 0, 200, 200);
     paint(&interestRect);
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
         TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
         TestDisplayItem(cell1, DisplayItem::TableCellBackgroundFromRow));
 
@@ -39,7 +39,7 @@ TEST_F(TableCellPainterTest, TableCellBackgroundInterestRect)
     interestRect = IntRect(0, 300, 200, 1000);
     paint(&interestRect);
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
         TestDisplayItem(layoutView, DisplayItem::DocumentBackground),
         TestDisplayItem(cell2, DisplayItem::TableCellBackgroundFromRow));
 }

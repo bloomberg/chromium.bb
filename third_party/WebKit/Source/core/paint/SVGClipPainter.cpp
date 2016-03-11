@@ -56,7 +56,7 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target, const FloatRect& 
     Path clipPath;
     if (m_clip.asPath(animatedLocalTransform, targetBoundingBox, clipPath)) {
         clipperState = ClipperAppliedPath;
-        context.paintController().createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
+        context.getPaintController().createAndAppend<BeginClipPathDisplayItem>(target, clipPath);
         return true;
     }
 
@@ -95,7 +95,7 @@ void SVGClipPainter::finishEffect(const LayoutObject& target, GraphicsContext& c
     switch (clipperState) {
     case ClipperAppliedPath:
         // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
-        context.paintController().endItem<EndClipPathDisplayItem>(target);
+        context.getPaintController().endItem<EndClipPathDisplayItem>(target);
         break;
     case ClipperAppliedMask:
         // Transfer content -> clip mask (SrcIn)

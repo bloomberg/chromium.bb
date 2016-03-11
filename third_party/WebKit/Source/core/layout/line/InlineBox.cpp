@@ -144,13 +144,13 @@ LayoutUnit InlineBox::logicalHeight() const
         return virtualLogicalHeight();
 
     if (getLineLayoutItem().isText())
-        return m_bitfields.isText() ? LayoutUnit(getLineLayoutItem().style(isFirstLineStyle())->fontMetrics().height()) : LayoutUnit();
+        return m_bitfields.isText() ? LayoutUnit(getLineLayoutItem().style(isFirstLineStyle())->getFontMetrics().height()) : LayoutUnit();
     if (getLineLayoutItem().isBox() && parent())
         return isHorizontal() ? toLayoutBox(layoutObject()).size().height() : toLayoutBox(layoutObject()).size().width();
 
     ASSERT(isInlineFlowBox());
     LineLayoutBoxModel flowObject = boxModelObject();
-    const FontMetrics& fontMetrics = getLineLayoutItem().style(isFirstLineStyle())->fontMetrics();
+    const FontMetrics& fontMetrics = getLineLayoutItem().style(isFirstLineStyle())->getFontMetrics();
     LayoutUnit result(fontMetrics.height());
     if (parent())
         result += flowObject.borderAndPaddingLogicalHeight();

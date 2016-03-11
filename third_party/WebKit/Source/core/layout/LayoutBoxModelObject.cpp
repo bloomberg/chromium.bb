@@ -115,7 +115,7 @@ LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
 
 bool LayoutBoxModelObject::usesCompositedScrolling() const
 {
-    return hasOverflowClip() && hasLayer() && layer()->scrollableArea()->usesCompositedScrolling();
+    return hasOverflowClip() && hasLayer() && layer()->getScrollableArea()->usesCompositedScrolling();
 }
 
 LayoutBoxModelObject::~LayoutBoxModelObject()
@@ -322,9 +322,9 @@ bool LayoutBoxModelObject::hasSelfPaintingLayer() const
     return m_layer && m_layer->isSelfPaintingLayer();
 }
 
-PaintLayerScrollableArea* LayoutBoxModelObject::scrollableArea() const
+PaintLayerScrollableArea* LayoutBoxModelObject::getScrollableArea() const
 {
-    return m_layer ? m_layer->scrollableArea() : 0;
+    return m_layer ? m_layer->getScrollableArea() : 0;
 }
 
 void LayoutBoxModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const PaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
@@ -839,7 +839,7 @@ LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     }
     x = std::min(x, (maxX - caretWidth()).clampNegativeToZero());
 
-    LayoutUnit height = LayoutUnit(style()->fontMetrics().height());
+    LayoutUnit height = LayoutUnit(style()->getFontMetrics().height());
     LayoutUnit verticalSpace = lineHeight(true, currentStyle.isHorizontalWritingMode() ? HorizontalLine : VerticalLine,  PositionOfInteriorLineBoxes) - height;
     LayoutUnit y = paddingTop() + borderTop() + (verticalSpace / 2);
     return currentStyle.isHorizontalWritingMode() ? LayoutRect(x, y, caretWidth(), height) : LayoutRect(y, x, height, caretWidth());

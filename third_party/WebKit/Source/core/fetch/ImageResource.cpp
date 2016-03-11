@@ -192,7 +192,7 @@ bool ImageResource::willPaintBrokenImage() const
     return errorOccurred();
 }
 
-blink::Image* ImageResource::image()
+blink::Image* ImageResource::getImage()
 {
     ASSERT(!isPurgeable());
 
@@ -490,7 +490,7 @@ bool ImageResource::isAccessAllowed(SecurityOrigin* securityOrigin)
 {
     if (response().wasFetchedViaServiceWorker())
         return response().serviceWorkerResponseType() != WebServiceWorkerResponseTypeOpaque;
-    if (!image()->currentFrameHasSingleSecurityOrigin())
+    if (!getImage()->currentFrameHasSingleSecurityOrigin())
         return false;
     if (passesAccessControlCheck(securityOrigin))
         return true;

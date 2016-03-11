@@ -97,7 +97,7 @@ class WebServiceWorkerNetworkProviderImpl
                        blink::WebURLRequest& request) override {
     ServiceWorkerNetworkProvider* provider =
         ServiceWorkerNetworkProvider::FromDocumentState(
-            static_cast<DataSourceExtraData*>(data_source->extraData()));
+            static_cast<DataSourceExtraData*>(data_source->getExtraData()));
     scoped_ptr<RequestExtraData> extra_data(new RequestExtraData);
     extra_data->set_service_worker_provider_id(provider->provider_id());
     extra_data->set_originated_from_service_worker(true);

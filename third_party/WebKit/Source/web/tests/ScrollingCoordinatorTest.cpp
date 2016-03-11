@@ -415,7 +415,7 @@ TEST_F(ScrollingCoordinatorTest, overflowScrolling)
     ASSERT(compositedLayerMapping->scrollingContentsLayer());
 
     GraphicsLayer* graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
-    ASSERT_EQ(box->layer()->scrollableArea(), graphicsLayer->scrollableArea());
+    ASSERT_EQ(box->layer()->getScrollableArea(), graphicsLayer->getScrollableArea());
 
     WebLayer* webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
@@ -455,7 +455,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden)
     ASSERT(compositedLayerMapping->scrollingContentsLayer());
 
     GraphicsLayer* graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
-    ASSERT_EQ(box->layer()->scrollableArea(), graphicsLayer->scrollableArea());
+    ASSERT_EQ(box->layer()->getScrollableArea(), graphicsLayer->getScrollableArea());
 
     WebLayer* webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
@@ -470,7 +470,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden)
     ASSERT_TRUE(layoutObject->hasLayer());
 
     box = toLayoutBox(layoutObject);
-    ASSERT_TRUE(box->scrollableArea()->usesCompositedScrolling());
+    ASSERT_TRUE(box->getScrollableArea()->usesCompositedScrolling());
     ASSERT_EQ(PaintsIntoOwnBacking, box->layer()->compositingState());
 
     compositedLayerMapping = box->layer()->compositedLayerMapping();
@@ -478,7 +478,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden)
     ASSERT(compositedLayerMapping->scrollingContentsLayer());
 
     graphicsLayer = compositedLayerMapping->scrollingContentsLayer();
-    ASSERT_EQ(box->layer()->scrollableArea(), graphicsLayer->scrollableArea());
+    ASSERT_EQ(box->layer()->getScrollableArea(), graphicsLayer->getScrollableArea());
 
     webScrollLayer = compositedLayerMapping->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
@@ -516,7 +516,7 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling)
     ASSERT_TRUE(innerCompositor->scrollLayer());
 
     GraphicsLayer* scrollLayer = innerCompositor->scrollLayer();
-    ASSERT_EQ(innerFrameView, scrollLayer->scrollableArea());
+    ASSERT_EQ(innerFrameView, scrollLayer->getScrollableArea());
 
     WebLayer* webScrollLayer = scrollLayer->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
@@ -560,7 +560,7 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe)
     ASSERT_TRUE(innerCompositor->scrollLayer());
 
     GraphicsLayer* scrollLayer = innerCompositor->scrollLayer();
-    ASSERT_EQ(innerFrameView, scrollLayer->scrollableArea());
+    ASSERT_EQ(innerFrameView, scrollLayer->getScrollableArea());
 
     WebLayer* webScrollLayer = scrollLayer->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());

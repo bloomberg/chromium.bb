@@ -25,14 +25,14 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, FullDocumentPaintingWith
     LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
     InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(textInlineBox, foregroundType));
 
     div.focus();
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(textInlineBox, foregroundType),
         TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
@@ -46,7 +46,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)
     LayoutText& text = *toLayoutText(divBlock.firstChild());
     InlineTextBox& firstTextBox = *text.firstTextBox();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(firstTextBox, foregroundType));
 
@@ -57,7 +57,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout)
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 3,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 3,
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(newFirstTextBox, foregroundType),
         TestDisplayItem(secondTextBox, foregroundType));

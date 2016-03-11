@@ -42,7 +42,7 @@ public:
     // DocumentLifecycle::LifecycleState::CompositingClean state.
     virtual void takeoverCompositorAnimation();
 
-    virtual ScrollableArea* scrollableArea() const = 0;
+    virtual ScrollableArea* getScrollableArea() const = 0;
     virtual void tickAnimation(double monotonicTime) = 0;
     virtual void updateCompositorAnimations() = 0;
     virtual void notifyCompositorAnimationFinished(int groupId) = 0;

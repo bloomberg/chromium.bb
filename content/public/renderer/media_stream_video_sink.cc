@@ -16,7 +16,7 @@ void MediaStreamVideoSink::AddToVideoTrack(
     const blink::WebMediaStreamTrack& track) {
   DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, track.source().getType());
   MediaStreamVideoTrack* const video_track =
-      static_cast<MediaStreamVideoTrack*>(track.extraData());
+      static_cast<MediaStreamVideoTrack*>(track.getExtraData());
   video_track->AddSink(sink, callback);
 }
 
@@ -25,7 +25,7 @@ void MediaStreamVideoSink::RemoveFromVideoTrack(
     const blink::WebMediaStreamTrack& track) {
   DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, track.source().getType());
   MediaStreamVideoTrack* const video_track =
-      static_cast<MediaStreamVideoTrack*>(track.extraData());
+      static_cast<MediaStreamVideoTrack*>(track.getExtraData());
   video_track->RemoveSink(sink);
 }
 

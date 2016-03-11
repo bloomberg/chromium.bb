@@ -489,7 +489,7 @@ const String& HTMLImageElement::currentSrc() const
     // The currentSrc IDL attribute must return the img element's current request's current URL.
     // Initially, the pending request turns into current request when it is either available or broken.
     // We use the image's dimensions as a proxy to it being in any of these states.
-    if (!imageLoader().image() || !imageLoader().image()->image() || !imageLoader().image()->image()->width())
+    if (!imageLoader().image() || !imageLoader().image()->getImage() || !imageLoader().image()->getImage()->width())
         return emptyAtom;
 
     return imageLoader().image()->url().getString();
@@ -595,7 +595,7 @@ Image* HTMLImageElement::imageContents()
     if (!imageLoader().imageComplete())
         return nullptr;
 
-    return imageLoader().image()->image();
+    return imageLoader().image()->getImage();
 }
 
 bool HTMLImageElement::isInteractiveContent() const
@@ -616,13 +616,13 @@ PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageStatus* s
     }
 
     RefPtr<Image> sourceImage;
-    if (cachedImage()->image()->isSVGImage()) {
-        SVGImage* svgImage = toSVGImage(cachedImage()->image());
+    if (cachedImage()->getImage()->isSVGImage()) {
+        SVGImage* svgImage = toSVGImage(cachedImage()->getImage());
         IntSize imageSize = roundedIntSize(svgImage->concreteObjectSize(defaultObjectSize));
         sourceImage = SVGImageForContainer::create(svgImage,
             imageSize, 1, document().completeURL(imageSourceURL()));
     } else {
-        sourceImage = cachedImage()->image();
+        sourceImage = cachedImage()->getImage();
     }
 
     *status = NormalSourceImageStatus;
@@ -631,7 +631,7 @@ PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageStatus* s
 
 bool HTMLImageElement::isSVGSource() const
 {
-    return cachedImage() && cachedImage()->image()->isSVGImage();
+    return cachedImage() && cachedImage()->getImage()->isSVGImage();
 }
 
 bool HTMLImageElement::wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const
@@ -648,8 +648,8 @@ FloatSize HTMLImageElement::elementSize(const FloatSize& defaultObjectSize) cons
     if (!image)
         return FloatSize();
 
-    if (image->image() && image->image()->isSVGImage())
-        return toSVGImage(cachedImage()->image())->concreteObjectSize(defaultObjectSize);
+    if (image->getImage() && image->getImage()->isSVGImage())
+        return toSVGImage(cachedImage()->getImage())->concreteObjectSize(defaultObjectSize);
 
     return FloatSize(image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), 1.0f));
 }
@@ -660,12 +660,12 @@ FloatSize HTMLImageElement::defaultDestinationSize(const FloatSize& defaultObjec
     if (!image)
         return FloatSize();
 
-    if (image->image() && image->image()->isSVGImage())
-        return toSVGImage(cachedImage()->image())->concreteObjectSize(defaultObjectSize);
+    if (image->getImage() && image->getImage()->isSVGImage())
+        return toSVGImage(cachedImage()->getImage())->concreteObjectSize(defaultObjectSize);
 
     LayoutSize size;
     size = image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), 1.0f);
-    if (layoutObject() && layoutObject()->isLayoutImage() && image->image() && !image->image()->hasRelativeSize())
+    if (layoutObject() && layoutObject()->isLayoutImage() && image->getImage() && !image->getImage()->hasRelativeSize())
         size.scale(toLayoutImage(layoutObject())->imageDevicePixelRatio());
     return FloatSize(size);
 }
@@ -711,7 +711,7 @@ ScriptPromise HTMLImageElement::createImageBitmap(ScriptState* scriptState, Even
         exceptionState.throwDOMException(InvalidStateError, "No image can be retrieved from the provided element.");
         return ScriptPromise();
     }
-    if (cachedImage()->image()->isSVGImage()) {
+    if (cachedImage()->getImage()->isSVGImage()) {
         exceptionState.throwDOMException(InvalidStateError, "The image element contains an SVG image, which is unsupported.");
         return ScriptPromise();
     }

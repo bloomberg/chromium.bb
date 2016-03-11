@@ -287,7 +287,7 @@ public:
     // deleted when the last resource request is destroyed. Setting the extra
     // data pointer will cause the underlying resource request to be
     // dissociated from any existing non-null extra data pointer.
-    BLINK_PLATFORM_EXPORT ExtraData* extraData() const;
+    BLINK_PLATFORM_EXPORT ExtraData* getExtraData() const;
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
     BLINK_PLATFORM_EXPORT Priority getPriority() const;

@@ -332,9 +332,9 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
     IntRect interestRect(IntPoint(0, 0), size);
     layer->paint(&interestRect);
 
-    GraphicsContext context(layer->paintController());
+    GraphicsContext context(layer->getPaintController());
     context.beginRecording(interestRect);
-    layer->paintController().paintArtifact().replay(context);
+    layer->getPaintController().paintArtifact().replay(context);
     RefPtr<PictureSnapshot> snapshot = adoptRef(new PictureSnapshot(context.endRecording()));
 
     *snapshotId = String::number(++s_lastSnapshotId);

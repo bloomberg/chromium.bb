@@ -376,8 +376,8 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
         canvas->drawPicture(recording.get());
     }
 
-    if (imageObserver())
-        imageObserver()->didDraw(this);
+    if (getImageObserver())
+        getImageObserver()->didDraw(this);
 
     // Start any (SMIL) animations if needed. This will restart or continue
     // animations if preceded by calls to resetAnimation or stopAnimation
@@ -445,7 +445,7 @@ void SVGImage::advanceAnimationForTesting()
         // TODO(pdr): Actually advance the document timeline so CSS animations
         // can be properly tested.
         rootElement->document().page()->animator().serviceScriptedAnimations(rootElement->getCurrentTime());
-        imageObserver()->animationAdvanced(this);
+        getImageObserver()->animationAdvanced(this);
     }
 }
 

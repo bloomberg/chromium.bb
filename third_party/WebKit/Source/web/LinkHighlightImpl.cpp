@@ -271,7 +271,7 @@ void LinkHighlightImpl::paintContents(WebDisplayItemList* webDisplayItemList, We
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
     paint.setColor(m_node->layoutObject()->style()->tapHighlightColor().rgb());
-    canvas->drawPath(m_path.skPath(), paint);
+    canvas->drawPath(m_path.getSkPath(), paint);
 
     RefPtr<const SkPicture> picture = adoptRef(recorder.endRecording());
     webDisplayItemList->appendDrawingItem(WebRect(visualRect.x(), visualRect.y(), visualRect.width(), visualRect.height()), picture.get());

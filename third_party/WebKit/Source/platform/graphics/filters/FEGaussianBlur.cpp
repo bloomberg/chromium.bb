@@ -80,7 +80,7 @@ IntSize FEGaussianBlur::calculateKernelSize(Filter* filter, const FloatPoint& st
 FloatRect FEGaussianBlur::mapRect(const FloatRect& rect, bool)
 {
     FloatRect result = rect;
-    IntSize kernelSize = calculateKernelSize(filter(), FloatPoint(m_stdX, m_stdY));
+    IntSize kernelSize = calculateKernelSize(getFilter(), FloatPoint(m_stdX, m_stdY));
 
     // We take the half kernel size and multiply it with three, because we run box blur three times.
     result.inflateX(3 * kernelSize.width() * 0.5f);
@@ -111,8 +111,8 @@ FloatRect FEGaussianBlur::determineAbsolutePaintRect(const FloatRect& originalRe
 PassRefPtr<SkImageFilter> FEGaussianBlur::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
-    float stdX = filter()->applyHorizontalScale(m_stdX);
-    float stdY = filter()->applyVerticalScale(m_stdY);
+    float stdX = getFilter()->applyHorizontalScale(m_stdX);
+    float stdY = getFilter()->applyVerticalScale(m_stdY);
     SkImageFilter::CropRect rect = getCropRect();
     return adoptRef(SkBlurImageFilter::Create(SkFloatToScalar(stdX), SkFloatToScalar(stdY), input.get(), &rect));
 }

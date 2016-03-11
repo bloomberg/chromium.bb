@@ -877,7 +877,7 @@ bool LayoutBlock::finishDelayUpdateScrollInfo(SubtreeLayoutScope* layoutScope)
 
         for (auto* block : *infoSet) {
             if (block->hasOverflowClip()) {
-                childrenMarkedForRelayout |= block->layer()->scrollableArea()->updateAfterLayout(layoutScope);
+                childrenMarkedForRelayout |= block->layer()->getScrollableArea()->updateAfterLayout(layoutScope);
             }
         }
     }
@@ -892,14 +892,14 @@ void LayoutBlock::updateScrollInfoAfterLayout()
             // Workaround for now. We cannot delay the scroll info for overflow
             // for items with opposite writing directions, as the contents needs
             // to overflow in that direction
-            layer()->scrollableArea()->updateAfterLayout();
+            layer()->getScrollableArea()->updateAfterLayout();
             return;
         }
 
         if (gDelayUpdateScrollInfo)
             gDelayedUpdateScrollInfoSet->add(this);
         else
-            layer()->scrollableArea()->updateAfterLayout();
+            layer()->getScrollableArea()->updateAfterLayout();
     }
 }
 
@@ -909,7 +909,7 @@ void LayoutBlock::layout()
 
     bool needsScrollAnchoring = RuntimeEnabledFeatures::scrollAnchoringEnabled() && hasOverflowClip();
     if (needsScrollAnchoring)
-        scrollableArea()->scrollAnchor().save();
+        getScrollableArea()->scrollAnchor().save();
 
     // Table cells call layoutBlock directly, so don't add any logic here.  Put code into
     // layoutBlock().
@@ -923,7 +923,7 @@ void LayoutBlock::layout()
     invalidateBackgroundObscurationStatus();
 
     if (needsScrollAnchoring)
-        scrollableArea()->scrollAnchor().restore();
+        getScrollableArea()->scrollAnchor().restore();
 
     m_heightAvailableToChildrenChanged = false;
 }
@@ -1603,7 +1603,7 @@ bool LayoutBlock::isPointInOverflowControl(HitTestResult& result, const LayoutPo
     if (!scrollsOverflow())
         return false;
 
-    return layer()->scrollableArea()->hitTestOverflowControls(result, roundedIntPoint(locationInContainer - toLayoutSize(accumulatedOffset)));
+    return layer()->getScrollableArea()->hitTestOverflowControls(result, roundedIntPoint(locationInContainer - toLayoutSize(accumulatedOffset)));
 }
 
 Node* LayoutBlock::nodeForHitTest() const
@@ -1925,7 +1925,7 @@ void LayoutBlock::offsetForContents(LayoutPoint& offset) const
 int LayoutBlock::columnGap() const
 {
     if (style()->hasNormalColumnGap())
-        return style()->fontDescription().computedPixelSize(); // "1em" is recommended as the normal gap setting. Matches <p> margins.
+        return style()->getFontDescription().computedPixelSize(); // "1em" is recommended as the normal gap setting. Matches <p> margins.
     return static_cast<int>(style()->columnGap());
 }
 
@@ -2183,7 +2183,7 @@ int LayoutBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
     // Note that inline-block counts as replaced here.
     ASSERT(linePositionMode == PositionOfInteriorLineBoxes);
 
-    const FontMetrics& fontMetrics = style(firstLine)->fontMetrics();
+    const FontMetrics& fontMetrics = style(firstLine)->getFontMetrics();
     return fontMetrics.ascent(baselineType) + (lineHeight(firstLine, direction, linePositionMode) - fontMetrics.height()) / 2;
 }
 
@@ -2202,7 +2202,7 @@ int LayoutBlock::firstLineBoxBaseline() const
 
     if (childrenInline()) {
         if (firstLineBox())
-            return firstLineBox()->logicalTop() + style(true)->fontMetrics().ascent(firstRootBox()->baselineType());
+            return firstLineBox()->logicalTop() + style(true)->getFontMetrics().ascent(firstRootBox()->baselineType());
         return -1;
     }
     for (LayoutBox* curr = firstChildBox(); curr; curr = curr->nextSiblingBox()) {
@@ -2236,13 +2236,13 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
 
     if (childrenInline()) {
         if (!firstLineBox() && hasLineIfEmpty()) {
-            const FontMetrics& fontMetrics = firstLineStyle()->fontMetrics();
+            const FontMetrics& fontMetrics = firstLineStyle()->getFontMetrics();
             return fontMetrics.ascent()
                 + (lineHeight(true, lineDirection, PositionOfInteriorLineBoxes) - fontMetrics.height()) / 2
                 + (lineDirection == HorizontalLine ? borderTop() + paddingTop() : borderRight() + paddingRight());
         }
         if (lastLineBox())
-            return lastLineBox()->logicalTop() + style(lastLineBox() == firstLineBox())->fontMetrics().ascent(lastRootBox()->baselineType());
+            return lastLineBox()->logicalTop() + style(lastLineBox() == firstLineBox())->getFontMetrics().ascent(lastRootBox()->baselineType());
         return -1;
     }
 
@@ -2256,7 +2256,7 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
         }
     }
     if (!haveNormalFlowChild && hasLineIfEmpty()) {
-        const FontMetrics& fontMetrics = firstLineStyle()->fontMetrics();
+        const FontMetrics& fontMetrics = firstLineStyle()->getFontMetrics();
         return fontMetrics.ascent()
             + (lineHeight(true, lineDirection, PositionOfInteriorLineBoxes) - fontMetrics.height()) / 2
             + (lineDirection == HorizontalLine ? borderTop() + paddingTop() : borderRight() + paddingRight());
@@ -2804,7 +2804,7 @@ bool LayoutBlock::recalcOverflowAfterStyleChange()
     computeOverflow(oldClientAfterEdge, true);
 
     if (hasOverflowClip())
-        layer()->scrollableArea()->updateAfterOverflowRecalc();
+        layer()->getScrollableArea()->updateAfterOverflowRecalc();
 
     return !hasOverflowClip();
 }

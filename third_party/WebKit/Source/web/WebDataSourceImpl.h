@@ -63,7 +63,7 @@ public:
     bool isClientRedirect() const override;
     bool replacesCurrentHistoryItem() const override;
     WebNavigationType navigationType() const override;
-    ExtraData* extraData() const override;
+    ExtraData* getExtraData() const override;
     void setExtraData(ExtraData*) override;
     void setNavigationStartTime(double) override;
 

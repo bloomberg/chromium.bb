@@ -17,7 +17,7 @@ class PLATFORM_EXPORT BeginClipPathDisplayItem final : public PairedBeginDisplay
 public:
     BeginClipPathDisplayItem(const DisplayItemClient& client, const Path& clipPath)
         : PairedBeginDisplayItem(client, BeginClipPath, sizeof(*this))
-        , m_clipPath(clipPath.skPath()) { }
+        , m_clipPath(clipPath.getSkPath()) { }
 
     void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;

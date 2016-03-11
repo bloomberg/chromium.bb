@@ -385,8 +385,8 @@ ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontStri
 
     FontFaceCache* fontFaceCache = document()->styleEngine().fontSelector()->fontFaceCache();
     FontFaceArray faces;
-    for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
-        CSSSegmentedFontFace* segmentedFontFace = fontFaceCache->get(font.fontDescription(), f->family());
+    for (const FontFamily* f = &font.getFontDescription().family(); f; f = f->next()) {
+        CSSSegmentedFontFace* segmentedFontFace = fontFaceCache->get(font.getFontDescription(), f->family());
         if (segmentedFontFace)
             segmentedFontFace->match(text, faces);
     }
@@ -412,8 +412,8 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
     FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
 
     bool hasLoadedFaces = false;
-    for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
-        CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
+    for (const FontFamily* f = &font.getFontDescription().family(); f; f = f->next()) {
+        CSSSegmentedFontFace* face = fontFaceCache->get(font.getFontDescription(), f->family());
         if (face) {
             if (!face->checkFont(text))
                 return false;
@@ -422,8 +422,8 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
     }
     if (hasLoadedFaces)
         return true;
-    for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
-        if (fontSelector->isPlatformFontAvailable(font.fontDescription(), f->family()))
+    for (const FontFamily* f = &font.getFontDescription().family(); f; f = f->next()) {
+        if (fontSelector->isPlatformFontAvailable(font.getFontDescription(), f->family()))
             return true;
     }
     return false;
@@ -456,7 +456,7 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
 
     style->setFontDescription(defaultFontDescription);
 
-    style->font().update(style->font().fontSelector());
+    style->font().update(style->font().getFontSelector());
 
     document()->ensureStyleResolver().computeFont(style.get(), *parsedStyle);
 

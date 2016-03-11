@@ -122,8 +122,8 @@ static void computeGlyphOverflow(SVGInlineTextBox* textBox, SVGTextFragment& tex
     FloatRect glyphOverflowBounds;
 
     float width = scaledFont.width(run, nullptr, &glyphOverflowBounds);
-    float ascent = scaledFont.fontMetrics().floatAscent();
-    float descent = scaledFont.fontMetrics().floatDescent();
+    float ascent = scaledFont.getFontMetrics().floatAscent();
+    float descent = scaledFont.getFontMetrics().floatDescent();
     textFragment.glyphOverflow.setFromBounds(glyphOverflowBounds, ascent, descent, width);
     textFragment.glyphOverflow.top /= scalingFactor;
     textFragment.glyphOverflow.left /= scalingFactor;
@@ -403,7 +403,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Line
         // Font::width() calculates the resolved FontOrientation for each character,
         // but is not exposed today to avoid the API complexity.
         UChar32 currentCharacter = textLineLayout.codepointAt(m_visualMetricsIterator.characterOffset());
-        FontOrientation fontOrientation = font.fontDescription().orientation();
+        FontOrientation fontOrientation = font.getFontDescription().orientation();
         fontOrientation = adjustOrientationForCharacterInMixedVertical(fontOrientation, currentCharacter);
 
         // Calculate glyph advance.

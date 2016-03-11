@@ -232,7 +232,7 @@ void PaintLayerCompositor::updateIfNeededRecursive()
 
     DocumentAnimations::updateCompositorAnimations(m_layoutView.document());
 
-    m_layoutView.frameView()->scrollableArea()->updateCompositorScrollAnimations();
+    m_layoutView.frameView()->getScrollableArea()->updateCompositorScrollAnimations();
     if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = m_layoutView.frameView()->animatingScrollableAreas()) {
         for (ScrollableArea* scrollableArea : *animatingScrollableAreas)
             scrollableArea->updateCompositorScrollAnimations();
@@ -623,7 +623,7 @@ void PaintLayerCompositor::rootFixedBackgroundsChanged()
 bool PaintLayerCompositor::scrollingLayerDidChange(PaintLayer* layer)
 {
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        return scrollingCoordinator->scrollableAreaScrollLayerDidChange(layer->scrollableArea());
+        return scrollingCoordinator->scrollableAreaScrollLayerDidChange(layer->getScrollableArea());
     return false;
 }
 
@@ -707,7 +707,7 @@ GraphicsLayer* PaintLayerCompositor::frameScrollLayer() const
 
 GraphicsLayer* PaintLayerCompositor::scrollLayer() const
 {
-    if (ScrollableArea* scrollableArea = m_layoutView.frameView()->scrollableArea())
+    if (ScrollableArea* scrollableArea = m_layoutView.frameView()->getScrollableArea())
         return scrollableArea->layerForScrolling();
     return nullptr;
 }

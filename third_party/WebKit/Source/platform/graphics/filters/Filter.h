@@ -65,7 +65,7 @@ public:
     void setLastEffect(PassRefPtrWillBeRawPtr<FilterEffect>);
     FilterEffect* lastEffect() const { return m_lastEffect.get(); }
 
-    SourceGraphic* sourceGraphic() const { return m_sourceGraphic.get(); }
+    SourceGraphic* getSourceGraphic() const { return m_sourceGraphic.get(); }
 
 private:
     Filter(const FloatRect& referenceBox, const FloatRect& filterRegion, float scale, UnitScaling);

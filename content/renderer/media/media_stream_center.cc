@@ -53,7 +53,7 @@ void CreateNativeAudioMediaStreamTrack(
 
 void CreateNativeVideoMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  DCHECK(track.extraData() == NULL);
+  DCHECK(track.getExtraData() == NULL);
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeVideo);
   MediaStreamVideoSource* native_source =
@@ -76,7 +76,7 @@ void CreateNativeVideoMediaStreamTrack(
 
 void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,
                                   PeerConnectionDependencyFactory* factory) {
-  DCHECK(!track.isNull() && !track.extraData());
+  DCHECK(!track.isNull() && !track.getExtraData());
   DCHECK(!track.source().isNull());
 
   switch (track.source().getType()) {
@@ -132,7 +132,7 @@ MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack";
   MediaStreamTrack* media_stream_track =
-      static_cast<MediaStreamTrack*>(track.extraData());
+      static_cast<MediaStreamTrack*>(track.getExtraData());
   if (!media_stream_track) {
     DLOG(ERROR) << "Native track missing for webaudio source.";
     return nullptr;

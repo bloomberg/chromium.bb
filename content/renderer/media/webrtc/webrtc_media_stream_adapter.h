@@ -34,7 +34,7 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
   ~WebRtcMediaStreamAdapter() override;
 
   bool IsEqual(const blink::WebMediaStream& web_stream) {
-    return web_stream_.extraData() == web_stream.extraData();
+    return web_stream_.getExtraData() == web_stream.getExtraData();
   }
 
   webrtc::MediaStreamInterface* webrtc_media_stream() {

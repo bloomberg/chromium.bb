@@ -63,8 +63,8 @@ DEFINE_TRACE(SVGFEImageElement)
 
 bool SVGFEImageElement::currentFrameHasSingleSecurityOrigin() const
 {
-    if (m_cachedImage && m_cachedImage->image())
-        return m_cachedImage->image()->currentFrameHasSingleSecurityOrigin();
+    if (m_cachedImage && m_cachedImage->getImage())
+        return m_cachedImage->getImage()->currentFrameHasSingleSecurityOrigin();
 
     return true;
 }
@@ -161,7 +161,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*,
     if (m_cachedImage) {
         // Don't use the broken image icon on image loading errors.
         RefPtr<Image> image = m_cachedImage->errorOccurred() ?
-            nullptr : m_cachedImage->image();
+            nullptr : m_cachedImage->getImage();
         return FEImage::createWithImage(filter, image, m_preserveAspectRatio->currentValue());
     }
 

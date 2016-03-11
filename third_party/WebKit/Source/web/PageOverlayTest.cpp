@@ -127,7 +127,7 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing)
     IntRect intRect = rect;
     graphicsLayer->paint(&intRect);
 
-    PaintController& paintController = graphicsLayer->paintController();
+    PaintController& paintController = graphicsLayer->getPaintController();
     GraphicsContext graphicsContext(paintController);
     graphicsContext.beginRecording(intRect);
     paintController.paintArtifact().replay(graphicsContext);

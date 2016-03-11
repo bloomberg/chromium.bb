@@ -223,9 +223,9 @@ DisplayItemList::iterator PaintController::findOutOfOrderCachedItem(const Displa
 {
     ASSERT(clientCacheIsValid(id.client));
 
-    size_t foundIndex = findMatchingItemFromIndex(id, context.displayItemIndicesByClient, m_currentPaintArtifact.displayItemList());
+    size_t foundIndex = findMatchingItemFromIndex(id, context.displayItemIndicesByClient, m_currentPaintArtifact.getDisplayItemList());
     if (foundIndex != kNotFound)
-        return m_currentPaintArtifact.displayItemList().begin() + foundIndex;
+        return m_currentPaintArtifact.getDisplayItemList().begin() + foundIndex;
 
     return findOutOfOrderCachedItemForward(id, context);
 }
@@ -233,7 +233,7 @@ DisplayItemList::iterator PaintController::findOutOfOrderCachedItem(const Displa
 // Find forward for the item and index all skipped indexable items.
 DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
 {
-    DisplayItemList::iterator currentEnd = m_currentPaintArtifact.displayItemList().end();
+    DisplayItemList::iterator currentEnd = m_currentPaintArtifact.getDisplayItemList().end();
     for (; context.nextItemToIndex != currentEnd; ++context.nextItemToIndex) {
         const DisplayItem& item = *context.nextItemToIndex;
         ASSERT(item.hasValidClient());
@@ -241,7 +241,7 @@ DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const
             if (id.matches(item))
                 return context.nextItemToIndex++;
 
-            addItemToIndexIfNeeded(item, context.nextItemToIndex - m_currentPaintArtifact.displayItemList().begin(), context.displayItemIndicesByClient);
+            addItemToIndexIfNeeded(item, context.nextItemToIndex - m_currentPaintArtifact.getDisplayItemList().begin(), context.displayItemIndicesByClient);
         }
     }
     return currentEnd;
@@ -254,9 +254,9 @@ void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, 
     DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::EndSubsequence, 0);
     do {
         // We should always find the EndSubsequence display item.
-        ASSERT(currentIt != m_currentPaintArtifact.displayItemList().end());
+        ASSERT(currentIt != m_currentPaintArtifact.getDisplayItemList().end());
         ASSERT(currentIt->hasValidClient());
-        updatedList.appendByMoving(*currentIt, currentList.visualRect(currentIt - m_currentPaintArtifact.displayItemList().begin()));
+        updatedList.appendByMoving(*currentIt, currentList.visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()));
         ++currentIt;
     } while (!endSubsequenceId.matches(updatedList.last()));
 }
@@ -268,7 +268,7 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
 #endif
     commitNewDisplayItemsInternal(offsetFromLayoutObject);
 #if ENABLE(ASSERT)
-    m_currentPaintArtifact.displayItemList().assertDisplayItemClientsAreAlive();
+    m_currentPaintArtifact.getDisplayItemList().assertDisplayItemClientsAreAlive();
 #endif
 }
 
@@ -293,7 +293,7 @@ static IntRect visualRectForDisplayItem(const DisplayItem& displayItem, const La
 void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFromLayoutObject)
 {
     TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
-        "current_display_list_size", (int)m_currentPaintArtifact.displayItemList().size(),
+        "current_display_list_size", (int)m_currentPaintArtifact.getDisplayItemList().size(),
         "num_non_cached_new_items", (int)m_newDisplayItemList.size() - m_numCachedNewItems);
     m_numCachedNewItems = 0;
 
@@ -332,13 +332,13 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
     // by later out-of-order CachedDisplayItems in m_newDisplayItemList. This ensures that when
     // out-of-order CachedDisplayItems occur, we only traverse at most once over m_currentDisplayItems
     // looking for potential matches. Thus we can ensure that the algorithm runs in linear time.
-    OutOfOrderIndexContext outOfOrderIndexContext(m_currentPaintArtifact.displayItemList().begin());
+    OutOfOrderIndexContext outOfOrderIndexContext(m_currentPaintArtifact.getDisplayItemList().begin());
 
     // TODO(jbroman): Consider revisiting this heuristic.
-    DisplayItemList updatedList(std::max(m_currentPaintArtifact.displayItemList().usedCapacityInBytes(), m_newDisplayItemList.usedCapacityInBytes()));
+    DisplayItemList updatedList(std::max(m_currentPaintArtifact.getDisplayItemList().usedCapacityInBytes(), m_newDisplayItemList.usedCapacityInBytes()));
     Vector<PaintChunk> updatedPaintChunks;
-    DisplayItemList::iterator currentIt = m_currentPaintArtifact.displayItemList().begin();
-    DisplayItemList::iterator currentEnd = m_currentPaintArtifact.displayItemList().end();
+    DisplayItemList::iterator currentIt = m_currentPaintArtifact.getDisplayItemList().begin();
+    DisplayItemList::iterator currentEnd = m_currentPaintArtifact.getDisplayItemList().end();
     for (DisplayItemList::iterator newIt = m_newDisplayItemList.begin(); newIt != m_newDisplayItemList.end(); ++newIt) {
         const DisplayItem& newDisplayItem = *newIt;
         const DisplayItem::Id newDisplayItemId = newDisplayItem.nonCachedId();
@@ -371,11 +371,11 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
             }
 #endif
             if (newDisplayItem.isCachedDrawing()) {
-                updatedList.appendByMoving(*currentIt, m_currentPaintArtifact.displayItemList().visualRect(currentIt - m_currentPaintArtifact.displayItemList().begin()));
+                updatedList.appendByMoving(*currentIt, m_currentPaintArtifact.getDisplayItemList().visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()));
                 ++currentIt;
             } else {
                 ASSERT(newDisplayItem.getType() == DisplayItem::CachedSubsequence);
-                copyCachedSubsequence(m_currentPaintArtifact.displayItemList(), currentIt, updatedList);
+                copyCachedSubsequence(m_currentPaintArtifact.getDisplayItemList(), currentIt, updatedList);
                 ASSERT(updatedList.last().getType() == DisplayItem::EndSubsequence);
             }
         } else {
@@ -441,7 +441,7 @@ void PaintController::updateValidlyCachedClientsIfNeeded() const
     m_validlyCachedClientsDirty = false;
 
     const DisplayItemClient* lastAddedClient = nullptr;
-    for (const DisplayItem& displayItem : m_currentPaintArtifact.displayItemList()) {
+    for (const DisplayItem& displayItem : m_currentPaintArtifact.getDisplayItemList()) {
         if (&displayItem.client() == lastAddedClient)
             continue;
         if (displayItem.isCacheable()) {
@@ -542,7 +542,7 @@ void PaintController::checkNoRemainingCachedDisplayItems()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
 
-    for (const auto& displayItem : m_currentPaintArtifact.displayItemList()) {
+    for (const auto& displayItem : m_currentPaintArtifact.getDisplayItemList()) {
         if (!displayItem.hasValidClient() || !displayItem.isCacheable() || !clientCacheIsValid(displayItem.client()))
             continue;
         showUnderInvalidationError("", "May be under-invalidation: no new display item", nullptr, &displayItem);
@@ -572,7 +572,7 @@ WTF::String PaintController::displayItemListAsDebugString(const DisplayItemList&
 
 void PaintController::showDebugData() const
 {
-    WTFLogAlways("current display item list: [%s]\n", displayItemListAsDebugString(m_currentPaintArtifact.displayItemList()).utf8().data());
+    WTFLogAlways("current display item list: [%s]\n", displayItemListAsDebugString(m_currentPaintArtifact.getDisplayItemList()).utf8().data());
     WTFLogAlways("new display item list: [%s]\n", displayItemListAsDebugString(m_newDisplayItemList).utf8().data());
 }
 

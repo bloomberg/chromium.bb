@@ -31,7 +31,7 @@ MediaStreamAudioTrack* MediaStreamAudioTrack::From(
       track.source().getType() != blink::WebMediaStreamSource::TypeAudio) {
     return nullptr;
   }
-  return static_cast<MediaStreamAudioTrack*>(track.extraData());
+  return static_cast<MediaStreamAudioTrack*>(track.getExtraData());
 }
 
 void MediaStreamAudioTrack::Start(const base::Closure& stop_callback) {

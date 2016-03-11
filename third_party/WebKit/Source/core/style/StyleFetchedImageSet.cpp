@@ -80,7 +80,7 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImageSet::computedCSSValue() const
 
 bool StyleFetchedImageSet::canRender() const
 {
-    return !m_bestFitImage->errorOccurred() && !m_bestFitImage->image()->isNull();
+    return !m_bestFitImage->errorOccurred() && !m_bestFitImage->getImage()->isNull();
 }
 
 bool StyleFetchedImageSet::isLoaded() const
@@ -95,8 +95,8 @@ bool StyleFetchedImageSet::errorOccurred() const
 
 LayoutSize StyleFetchedImageSet::imageSize(const LayoutObject*, float multiplier, const LayoutSize& defaultObjectSize) const
 {
-    if (m_bestFitImage->image() && m_bestFitImage->image()->isSVGImage())
-        return imageSizeForSVGImage(toSVGImage(m_bestFitImage->image()), multiplier, defaultObjectSize);
+    if (m_bestFitImage->getImage() && m_bestFitImage->getImage()->isSVGImage())
+        return imageSizeForSVGImage(toSVGImage(m_bestFitImage->getImage()), multiplier, defaultObjectSize);
 
     // Image orientation should only be respected for content images,
     // not decorative ones such as StyleImage (backgrounds,
@@ -130,16 +130,16 @@ void StyleFetchedImageSet::removeClient(LayoutObject* layoutObject)
 
 PassRefPtr<Image> StyleFetchedImageSet::image(const LayoutObject*, const IntSize& containerSize, float zoom) const
 {
-    if (!m_bestFitImage->image()->isSVGImage())
-        return m_bestFitImage->image();
+    if (!m_bestFitImage->getImage()->isSVGImage())
+        return m_bestFitImage->getImage();
 
-    return SVGImageForContainer::create(toSVGImage(m_bestFitImage->image()), containerSize, zoom, m_url);
+    return SVGImageForContainer::create(toSVGImage(m_bestFitImage->getImage()), containerSize, zoom, m_url);
 }
 
 bool StyleFetchedImageSet::knownToBeOpaque(const LayoutObject* layoutObject) const
 {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(layoutObject, *m_bestFitImage.get()));
-    return m_bestFitImage->image()->currentFrameKnownToBeOpaque(Image::PreCacheMetadata);
+    return m_bestFitImage->getImage()->currentFrameKnownToBeOpaque(Image::PreCacheMetadata);
 }
 
 DEFINE_TRACE(StyleFetchedImageSet)

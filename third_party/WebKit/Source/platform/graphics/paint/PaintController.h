@@ -118,7 +118,7 @@ public:
 
     // Get the artifact generated after the last commit.
     const PaintArtifact& paintArtifact() const;
-    const DisplayItemList& displayItemList() const { return paintArtifact().displayItemList(); }
+    const DisplayItemList& getDisplayItemList() const { return paintArtifact().getDisplayItemList(); }
     const Vector<PaintChunk>& paintChunks() const { return paintArtifact().paintChunks(); }
 
     bool clientCacheIsValid(const DisplayItemClient&) const;

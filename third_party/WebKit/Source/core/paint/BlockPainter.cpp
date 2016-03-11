@@ -82,7 +82,7 @@ void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, con
             clipRect.moveBy(paintOffset);
             clipRecorder.emplace(paintInfo.context, m_layoutBlock, DisplayItem::ClipScrollbarsToBoxBounds, clipRect);
         }
-        ScrollableAreaPainter(*m_layoutBlock.layer()->scrollableArea()).paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.cullRect(), false /* paintingOverlayControls */);
+        ScrollableAreaPainter(*m_layoutBlock.layer()->getScrollableArea()).paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.cullRect(), false /* paintingOverlayControls */);
     }
 }
 
@@ -162,9 +162,9 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
             const auto* objectProperties = m_layoutBlock.objectPaintProperties();
             if (auto* scrollTranslation = objectProperties ? objectProperties->scrollTranslation() : nullptr) {
-                PaintChunkProperties properties(paintInfo.context.paintController().currentPaintChunkProperties());
+                PaintChunkProperties properties(paintInfo.context.getPaintController().currentPaintChunkProperties());
                 properties.transform = scrollTranslation;
-                m_scopedScrollProperty.emplace(paintInfo.context.paintController(), properties);
+                m_scopedScrollProperty.emplace(paintInfo.context.getPaintController(), properties);
                 scrolledPaintInfo.emplace(paintInfo);
                 scrolledPaintInfo->updateCullRect(scrollTranslation->matrix().toAffineTransform());
             }

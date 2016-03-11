@@ -199,7 +199,7 @@ void ScrollAnimator::tickAnimation(double monotonicTime)
     if (isFinished)
         m_runState = RunState::PostAnimationCleanup;
     else
-        scrollableArea()->scheduleAnimation();
+        getScrollableArea()->scheduleAnimation();
 
     TRACE_EVENT0("blink", "ScrollAnimator::notifyPositionChanged");
     notifyPositionChanged();
@@ -320,7 +320,7 @@ void ScrollAnimator::updateCompositorAnimations()
 
 void ScrollAnimator::addMainThreadScrollingReason()
 {
-    if (WebLayer* scrollLayer = toWebLayer(scrollableArea()->layerForScrolling())) {
+    if (WebLayer* scrollLayer = toWebLayer(getScrollableArea()->layerForScrolling())) {
         scrollLayer->addMainThreadScrollingReasons(
             MainThreadScrollingReason::kAnimatingScrollOnMainThread);
     }
@@ -328,7 +328,7 @@ void ScrollAnimator::addMainThreadScrollingReason()
 
 void ScrollAnimator::removeMainThreadScrollingReason()
 {
-    if (WebLayer* scrollLayer = toWebLayer(scrollableArea()->layerForScrolling())) {
+    if (WebLayer* scrollLayer = toWebLayer(getScrollableArea()->layerForScrolling())) {
         scrollLayer->clearMainThreadScrollingReasons(
             MainThreadScrollingReason::kAnimatingScrollOnMainThread);
     }
@@ -391,7 +391,7 @@ void ScrollAnimator::layerForCompositedScrollingDidChange(
 
 bool ScrollAnimator::registerAndScheduleAnimation()
 {
-    scrollableArea()->registerForAnimation();
+    getScrollableArea()->registerForAnimation();
     if (!m_scrollableArea->scheduleAnimation()) {
         scrollToOffsetWithoutAnimation(m_targetOffset);
         resetAnimationState();

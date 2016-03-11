@@ -984,7 +984,7 @@ double LocalDOMWindow::scrollX() const
 
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
-    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->scrollableArea();
+    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
     double viewportX = viewport->scrollPositionDouble().x();
     return adjustScrollForAbsoluteZoom(viewportX, frame()->pageZoomFactor());
 }
@@ -1004,7 +1004,7 @@ double LocalDOMWindow::scrollY() const
 
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
-    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->scrollableArea();
+    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
     double viewportY = viewport->scrollPositionDouble().y();
     return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
 }
@@ -1120,7 +1120,7 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     x = ScrollableArea::normalizeNonFiniteScroll(x);
     y = ScrollableArea::normalizeNonFiniteScroll(y);
 
-    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->scrollableArea();
+    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
 
     DoublePoint currentOffset = viewport->scrollPositionDouble();
     DoubleSize scaledDelta(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
@@ -1163,7 +1163,7 @@ void LocalDOMWindow::scrollTo(double x, double y) const
         document()->updateLayoutIgnorePendingStylesheets();
 
     DoublePoint layoutPos(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
-    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->scrollableArea();
+    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
     viewport->setScrollPosition(layoutPos, ProgrammaticScroll, ScrollBehaviorAuto);
 }
 
@@ -1192,7 +1192,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
     double scaledX = 0.0;
     double scaledY = 0.0;
 
-    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->scrollableArea();
+    ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
 
     DoublePoint currentOffset = viewport->scrollPositionDouble();
     scaledX = currentOffset.x();

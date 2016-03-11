@@ -136,8 +136,8 @@ void BitmapImage::destroyDecodedDataIfNecessary()
 
 void BitmapImage::notifyMemoryChanged(int delta)
 {
-    if (delta && imageObserver())
-        imageObserver()->decodedSizeChanged(this, delta);
+    if (delta && getImageObserver())
+        getImageObserver()->decodedSizeChanged(this, delta);
 }
 
 int BitmapImage::totalFrameBytes()
@@ -300,7 +300,7 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
     if (currentFrameIsLazyDecoded())
         PlatformInstrumentation::didDrawLazyPixelRef(image->uniqueID());
 
-    if (ImageObserver* observer = imageObserver())
+    if (ImageObserver* observer = getImageObserver())
         observer->didDraw(this);
 
     startAnimation();
@@ -453,7 +453,7 @@ int BitmapImage::repetitionCount(bool imageKnownToBeComplete)
 
 bool BitmapImage::shouldAnimate()
 {
-    bool animated = repetitionCount(false) != cAnimationNone && !m_animationFinished && imageObserver();
+    bool animated = repetitionCount(false) != cAnimationNone && !m_animationFinished && getImageObserver();
     if (animated && m_animationPolicy == ImageAnimationPolicyNoAnimation)
         animated = false;
     return animated;
@@ -609,7 +609,7 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
 
     // See if anyone is still paying attention to this animation.  If not, we don't
     // advance and will remain suspended at the current frame until the animation is resumed.
-    if (!skippingFrames && imageObserver()->shouldPauseAnimation(this))
+    if (!skippingFrames && getImageObserver()->shouldPauseAnimation(this))
         return false;
 
     ++m_currentFrame;
@@ -636,7 +636,7 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
     // We need to draw this frame if we advanced to it while not skipping, or if
     // while trying to skip frames we hit the last frame and thus had to stop.
     if (skippingFrames != advancedAnimation)
-        imageObserver()->animationAdvanced(this);
+        getImageObserver()->animationAdvanced(this);
     return advancedAnimation;
 }
 

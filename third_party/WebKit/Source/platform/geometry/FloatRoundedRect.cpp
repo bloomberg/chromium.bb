@@ -318,7 +318,7 @@ float calcBorderRadiiConstraintScaleFor(const FloatRect& rect, const FloatRounde
 
 void FloatRoundedRect::constrainRadii()
 {
-    m_radii.scaleAndFloor(calcBorderRadiiConstraintScaleFor(rect(), radii()));
+    m_radii.scaleAndFloor(calcBorderRadiiConstraintScaleFor(rect(), getRadii()));
 }
 
 void FloatRoundedRect::includeLogicalEdges(const Radii& edges, bool isHorizontal, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)

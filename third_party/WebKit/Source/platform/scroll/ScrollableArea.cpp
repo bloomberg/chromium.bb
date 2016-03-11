@@ -482,8 +482,8 @@ void ScrollableArea::layerForScrollingDidChange(CompositorAnimationTimeline* tim
 
 bool ScrollableArea::scheduleAnimation()
 {
-    if (HostWindow* window = hostWindow()) {
-        window->scheduleAnimation(widget());
+    if (HostWindow* window = getHostWindow()) {
+        window->scheduleAnimation(getWidget());
         return true;
     }
     return false;
@@ -577,7 +577,7 @@ DoublePoint ScrollableArea::clampScrollPosition(const DoublePoint& scrollPositio
 
 int ScrollableArea::lineStep(ScrollbarOrientation) const
 {
-    return pixelsPerLineStep(hostWindow());
+    return pixelsPerLineStep(getHostWindow());
 }
 
 int ScrollableArea::pageStep(ScrollbarOrientation orientation) const

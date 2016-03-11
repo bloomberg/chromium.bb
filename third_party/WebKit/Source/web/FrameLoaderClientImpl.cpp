@@ -594,7 +594,7 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const Resource
     WebFrameClient::NavigationPolicyInfo navigationInfo(wrappedResourceRequest);
     navigationInfo.navigationType = static_cast<WebNavigationType>(type);
     navigationInfo.defaultPolicy = static_cast<WebNavigationPolicy>(policy);
-    navigationInfo.extraData = ds ? ds->extraData() : nullptr;
+    navigationInfo.extraData = ds ? ds->getExtraData() : nullptr;
     navigationInfo.replacesCurrentHistoryItem = replacesCurrentHistoryItem;
     navigationInfo.isHistoryNavigationInNewChildFrame = isHistoryNavigationInNewChildFrame;
     navigationInfo.isClientRedirect = isClientRedirect;

@@ -51,7 +51,7 @@ public:
 
     ~ExtraDataContainer() override {}
 
-    WebURLResponse::ExtraData* extraData() const { return m_extraData.get(); }
+    WebURLResponse::ExtraData* getExtraData() const { return m_extraData.get(); }
 
 private:
     explicit ExtraDataContainer(WebURLResponse::ExtraData* extraData)
@@ -475,12 +475,12 @@ void WebURLResponse::setRemotePort(unsigned short remotePort)
     m_private->m_resourceResponse->setRemotePort(remotePort);
 }
 
-WebURLResponse::ExtraData* WebURLResponse::extraData() const
+WebURLResponse::ExtraData* WebURLResponse::getExtraData() const
 {
-    RefPtr<ResourceResponse::ExtraData> data = m_private->m_resourceResponse->extraData();
+    RefPtr<ResourceResponse::ExtraData> data = m_private->m_resourceResponse->getExtraData();
     if (!data)
         return 0;
-    return static_cast<ExtraDataContainer*>(data.get())->extraData();
+    return static_cast<ExtraDataContainer*>(data.get())->getExtraData();
 }
 
 void WebURLResponse::setExtraData(WebURLResponse::ExtraData* extraData)

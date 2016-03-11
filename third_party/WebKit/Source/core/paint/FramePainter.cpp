@@ -49,12 +49,12 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
             TransformPaintPropertyNode* transform = m_frameView->scrollTranslation() ? m_frameView->scrollTranslation() : m_frameView->preTranslation();
             ClipPaintPropertyNode* clip = m_frameView->contentClip();
             if (transform || clip) {
-                PaintChunkProperties properties(context.paintController().currentPaintChunkProperties());
+                PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
                 if (transform)
                     properties.transform = transform;
                 if (clip)
                     properties.clip = clip;
-                scopedPaintChunkProperties.emplace(context.paintController(), properties);
+                scopedPaintChunkProperties.emplace(context.getPaintController(), properties);
             }
         }
 
@@ -76,9 +76,9 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
         Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
             if (TransformPaintPropertyNode* transform = m_frameView->preTranslation()) {
-                PaintChunkProperties properties(context.paintController().currentPaintChunkProperties());
+                PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
                 properties.transform = transform;
-                scopedPaintChunkProperties.emplace(context.paintController(), properties);
+                scopedPaintChunkProperties.emplace(context.getPaintController(), properties);
             }
         }
 

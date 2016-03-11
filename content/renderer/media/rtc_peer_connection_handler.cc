@@ -768,7 +768,7 @@ class RTCPeerConnectionHandler::Observer
   }
 
   void OnAddStreamImpl(scoped_ptr<RemoteMediaStreamImpl> stream) {
-    DCHECK(stream->webkit_stream().extraData()) << "Initialization not done";
+    DCHECK(stream->webkit_stream().getExtraData()) << "Initialization not done";
     if (handler_)
       handler_->OnAddStream(std::move(stream));
   }
@@ -1498,7 +1498,7 @@ void RTCPeerConnectionHandler::OnAddStream(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(remote_streams_.find(stream->webrtc_stream().get()) ==
          remote_streams_.end());
-  DCHECK(stream->webkit_stream().extraData()) << "Initialization not done";
+  DCHECK(stream->webkit_stream().getExtraData()) << "Initialization not done";
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnAddStreamImpl");
 
   // Ownership is with remote_streams_ now.

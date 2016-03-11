@@ -71,7 +71,7 @@ public:
     AudioSourceProvider* getAudioSourceProvider() { return &m_sourceProvider; }
     void setSourceProvider(WebAudioSourceProvider* provider) { m_sourceProvider.wrap(provider); }
 
-    ExtraData* extraData() const { return m_extraData.get(); }
+    ExtraData* getExtraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = std::move(extraData); }
 
     DECLARE_TRACE();

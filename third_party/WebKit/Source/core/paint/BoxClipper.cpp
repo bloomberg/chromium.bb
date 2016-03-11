@@ -28,9 +28,9 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         const auto* objectProperties = m_box.objectPaintProperties();
         if (objectProperties && objectProperties->overflowClip()) {
-            PaintChunkProperties properties(paintInfo.context.paintController().currentPaintChunkProperties());
+            PaintChunkProperties properties(paintInfo.context.getPaintController().currentPaintChunkProperties());
             properties.clip = objectProperties->overflowClip();
-            m_scopedClipProperty.emplace(paintInfo.context.paintController(), properties);
+            m_scopedClipProperty.emplace(paintInfo.context.getPaintController(), properties);
         }
         return;
     }
@@ -63,12 +63,12 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
             return;
     }
 
-    if (!m_paintInfo.context.paintController().displayItemConstructionIsDisabled()) {
+    if (!m_paintInfo.context.getPaintController().displayItemConstructionIsDisabled()) {
         m_clipType = m_paintInfo.displayItemTypeForClipping();
         Vector<FloatRoundedRect> roundedRects;
         if (hasBorderRadius)
             roundedRects.append(clipRoundedRect);
-        m_paintInfo.context.paintController().createAndAppend<ClipDisplayItem>(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
+        m_paintInfo.context.getPaintController().createAndAppend<ClipDisplayItem>(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
     }
 }
 
@@ -78,7 +78,7 @@ BoxClipper::~BoxClipper()
         return;
 
     ASSERT(m_box.hasControlClip() || (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer()) || m_box.style()->containsPaint());
-    m_paintInfo.context.paintController().endItem<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
+    m_paintInfo.context.getPaintController().endItem<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
 }
 
 } // namespace blink

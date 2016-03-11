@@ -212,7 +212,7 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 // static
 MediaStreamVideoTrack* MediaStreamVideoTrack::GetVideoTrack(
      const blink::WebMediaStreamTrack& track) {
-  return static_cast<MediaStreamVideoTrack*>(track.extraData());
+  return static_cast<MediaStreamVideoTrack*>(track.getExtraData());
 }
 
 MediaStreamVideoTrack::MediaStreamVideoTrack(

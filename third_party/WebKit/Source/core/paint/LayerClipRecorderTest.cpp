@@ -24,7 +24,7 @@ public:
 
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
-    PaintController& rootPaintController() { return layoutView().layer()->graphicsLayerBacking()->paintController(); }
+    PaintController& rootPaintController() { return layoutView().layer()->graphicsLayerBacking()->getPaintController(); }
 
 private:
     void SetUp() override
@@ -62,25 +62,25 @@ TEST_F(LayerClipRecorderTest, Single)
     rootPaintController().invalidateAll();
     GraphicsContext context(rootPaintController());
     LayoutRect bound = layoutView().viewRect();
-    EXPECT_EQ((size_t)0, rootPaintController().displayItemList().size());
+    EXPECT_EQ((size_t)0, rootPaintController().getDisplayItemList().size());
 
     drawRectInClip(context, layoutView(), PaintPhaseForeground, bound);
     rootPaintController().commitNewDisplayItems();
-    EXPECT_EQ((size_t)3, rootPaintController().displayItemList().size());
-    EXPECT_TRUE(DisplayItem::isClipType(rootPaintController().displayItemList()[0].getType()));
-    EXPECT_TRUE(DisplayItem::isDrawingType(rootPaintController().displayItemList()[1].getType()));
-    EXPECT_TRUE(DisplayItem::isEndClipType(rootPaintController().displayItemList()[2].getType()));
+    EXPECT_EQ((size_t)3, rootPaintController().getDisplayItemList().size());
+    EXPECT_TRUE(DisplayItem::isClipType(rootPaintController().getDisplayItemList()[0].getType()));
+    EXPECT_TRUE(DisplayItem::isDrawingType(rootPaintController().getDisplayItemList()[1].getType()));
+    EXPECT_TRUE(DisplayItem::isEndClipType(rootPaintController().getDisplayItemList()[2].getType()));
 }
 
 TEST_F(LayerClipRecorderTest, Empty)
 {
     rootPaintController().invalidateAll();
     GraphicsContext context(rootPaintController());
-    EXPECT_EQ((size_t)0, rootPaintController().displayItemList().size());
+    EXPECT_EQ((size_t)0, rootPaintController().getDisplayItemList().size());
 
     drawEmptyClip(context, layoutView(), PaintPhaseForeground);
     rootPaintController().commitNewDisplayItems();
-    EXPECT_EQ((size_t)0, rootPaintController().displayItemList().size());
+    EXPECT_EQ((size_t)0, rootPaintController().getDisplayItemList().size());
 }
 
 } // namespace

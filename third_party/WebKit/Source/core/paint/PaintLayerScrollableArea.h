@@ -172,7 +172,7 @@ public:
     Scrollbar* horizontalScrollbar() const override { return m_scrollbarManager.horizontalScrollbar(); }
     Scrollbar* verticalScrollbar() const override { return m_scrollbarManager.verticalScrollbar(); }
 
-    HostWindow* hostWindow() const override;
+    HostWindow* getHostWindow() const override;
 
     // For composited scrolling, we allocate an extra GraphicsLayer to hold
     // onto the scrolling content. The layer can be shifted on the GPU and
@@ -332,7 +332,7 @@ public:
     IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
 
-    Widget* widget() override;
+    Widget* getWidget() override;
     ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
     bool isPaintLayerScrollableArea() const override { return true; }
 

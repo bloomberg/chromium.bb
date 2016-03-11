@@ -1211,7 +1211,7 @@ static void invalidatePaintRectangleOnWindow(const LayoutBoxModelObject& paintIn
     if (paintRect.isEmpty())
         return;
 
-    if (HostWindow* window = frameView->hostWindow())
+    if (HostWindow* window = frameView->getHostWindow())
         window->invalidateRect(frameView->contentsToRootFrame(paintRect));
 }
 
@@ -2769,7 +2769,7 @@ static bool findReferencingScrollAnchors(LayoutObject* layoutObject, FindReferen
 
     // Walk up the layer tree to clear any scroll anchors that reference us.
     while (layer) {
-        if (PaintLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+        if (PaintLayerScrollableArea* scrollableArea = layer->getScrollableArea()) {
             ScrollAnchor& anchor = scrollableArea->scrollAnchor();
             if (anchor.anchorObject() == layoutObject) {
                 found = true;

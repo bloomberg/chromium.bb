@@ -120,7 +120,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
 class PathWithTemporaryWindingRule {
 public:
     PathWithTemporaryWindingRule(Path& path, SkPath::FillType fillType)
-        : m_path(const_cast<SkPath&>(path.skPath()))
+        : m_path(const_cast<SkPath&>(path.getSkPath()))
     {
         m_savedFillType = m_path.getFillType();
         m_path.setFillType(fillType);
@@ -130,7 +130,7 @@ public:
         m_path.setFillType(m_savedFillType);
     }
 
-    const SkPath& skPath() const { return m_path; }
+    const SkPath& getSkPath() const { return m_path; }
 
 private:
     SkPath& m_path;
@@ -148,7 +148,7 @@ void SVGShapePainter::fillShape(GraphicsContext& context, const SkPaint& paint, 
         break;
     default: {
         PathWithTemporaryWindingRule pathWithWinding(m_layoutSVGShape.path(), fillType);
-        context.drawPath(pathWithWinding.skPath(), paint);
+        context.drawPath(pathWithWinding.getSkPath(), paint);
     }
     }
 }
@@ -170,7 +170,7 @@ void SVGShapePainter::strokeShape(GraphicsContext& context, const SkPaint& paint
         Path* usePath = &m_layoutSVGShape.path();
         if (m_layoutSVGShape.hasNonScalingStroke())
             usePath = m_layoutSVGShape.nonScalingStrokePath(usePath, m_layoutSVGShape.nonScalingStrokeTransform());
-        context.drawPath(usePath->skPath(), paint);
+        context.drawPath(usePath->getSkPath(), paint);
     }
 }
 

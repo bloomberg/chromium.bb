@@ -205,7 +205,7 @@ public:
     // Do not use baseStyle() for background-color, use backgroundColor()
     // instead.
     const ComputedStyle& baseStyle() { return m_isInGroup ? *m_groupStyle : m_baseStyle; }
-    const FontDescription& baseFont() { return m_isInGroup ? m_groupStyle->fontDescription() : m_baseStyle.fontDescription(); }
+    const FontDescription& baseFont() { return m_isInGroup ? m_groupStyle->getFontDescription() : m_baseStyle.getFontDescription(); }
     void startGroupChildren(const ComputedStyle& groupStyle)
     {
         ASSERT(!m_isInGroup);
@@ -325,7 +325,7 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& 
     if (context.backgroundColor() != backgroundColor && backgroundColor != Color::transparent)
         addProperty("backgroundColor", backgroundColor.serialized(), data);
     const FontDescription& baseFont = context.baseFont();
-    const FontDescription& fontDescription = style->font().fontDescription();
+    const FontDescription& fontDescription = style->font().getFontDescription();
     if (baseFont.computedPixelSize() != fontDescription.computedPixelSize()) {
         // We don't use FontDescription::specifiedSize() because this element
         // might have its own zoom level.

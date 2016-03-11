@@ -112,7 +112,7 @@ PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element
     Filter::UnitScaling unitScaling = primitiveBoundingBoxMode ? Filter::BoundingBox : Filter::UserSpace;
     RefPtrWillBeRawPtr<Filter> result(Filter::create(referenceBox, filterRegion, zoom, unitScaling));
     if (!previousEffect)
-        previousEffect = result->sourceGraphic();
+        previousEffect = result->getSourceGraphic();
 
     SVGFilterBuilder builder(previousEffect, nullptr, fillPaint, strokePaint);
     builder.buildGraph(result.get(), filterElement, referenceBox);

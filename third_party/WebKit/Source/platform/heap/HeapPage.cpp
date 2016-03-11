@@ -128,7 +128,7 @@ void BaseArena::cleanupPages()
     // Add the BaseArena's pages to the orphanedPagePool.
     for (BasePage* page = m_firstPage; page; page = page->next()) {
         Heap::decreaseAllocatedSpace(page->size());
-        Heap::orphanedPagePool()->addOrphanedPage(arenaIndex(), page);
+        Heap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
     }
     m_firstPage = nullptr;
 }
@@ -245,7 +245,7 @@ void BaseArena::prepareHeapForTermination()
 
 void BaseArena::prepareForSweep()
 {
-    ASSERT(threadState()->isInGC());
+    ASSERT(getThreadState()->isInGC());
     ASSERT(!m_firstUnsweptPage);
 
     // Move all pages to a list of unswept pages.
@@ -285,22 +285,22 @@ Address BaseArena::lazySweep(size_t allocationSize, size_t gcInfoIndex)
     if (!m_firstUnsweptPage)
         return nullptr;
 
-    RELEASE_ASSERT(threadState()->isSweepingInProgress());
+    RELEASE_ASSERT(getThreadState()->isSweepingInProgress());
 
     // lazySweepPages() can be called recursively if finalizers invoked in
     // page->sweep() allocate memory and the allocation triggers
     // lazySweepPages(). This check prevents the sweeping from being executed
     // recursively.
-    if (threadState()->sweepForbidden())
+    if (getThreadState()->sweepForbidden())
         return nullptr;
 
     TRACE_EVENT0("blink_gc", "BaseArena::lazySweepPages");
-    ThreadState::SweepForbiddenScope sweepForbidden(threadState());
+    ThreadState::SweepForbiddenScope sweepForbidden(getThreadState());
     ScriptForbiddenIfMainThreadScope scriptForbidden;
 
     double startTime = WTF::currentTimeMS();
     Address result = lazySweepPages(allocationSize, gcInfoIndex);
-    threadState()->accumulateSweepingTime(WTF::currentTimeMS() - startTime);
+    getThreadState()->accumulateSweepingTime(WTF::currentTimeMS() - startTime);
     Heap::reportMemoryUsageForTracing();
 
     return result;
@@ -329,9 +329,9 @@ bool BaseArena::lazySweepWithDeadline(double deadlineSeconds)
     // the deadline per 10 pages.
     static const int deadlineCheckInterval = 10;
 
-    RELEASE_ASSERT(threadState()->isSweepingInProgress());
-    ASSERT(threadState()->sweepForbidden());
-    ASSERT(!threadState()->isMainThread() || ScriptForbiddenScope::isScriptForbidden());
+    RELEASE_ASSERT(getThreadState()->isSweepingInProgress());
+    ASSERT(getThreadState()->sweepForbidden());
+    ASSERT(!getThreadState()->isMainThread() || ScriptForbiddenScope::isScriptForbidden());
 
     int pageCount = 1;
     while (m_firstUnsweptPage) {
@@ -351,9 +351,9 @@ bool BaseArena::lazySweepWithDeadline(double deadlineSeconds)
 
 void BaseArena::completeSweep()
 {
-    RELEASE_ASSERT(threadState()->isSweepingInProgress());
-    ASSERT(threadState()->sweepForbidden());
-    ASSERT(!threadState()->isMainThread() || ScriptForbiddenScope::isScriptForbidden());
+    RELEASE_ASSERT(getThreadState()->isSweepingInProgress());
+    ASSERT(getThreadState()->sweepForbidden());
+    ASSERT(!getThreadState()->isMainThread() || ScriptForbiddenScope::isScriptForbidden());
 
     while (m_firstUnsweptPage) {
         sweepUnsweptPage();
@@ -416,8 +416,8 @@ void NormalPageArena::takeFreelistSnapshot(const String& dumpName)
 
 void NormalPageArena::allocatePage()
 {
-    threadState()->shouldFlushHeapDoesNotContainCache();
-    PageMemory* pageMemory = Heap::freePagePool()->takeFreePage(arenaIndex());
+    getThreadState()->shouldFlushHeapDoesNotContainCache();
+    PageMemory* pageMemory = Heap::getFreePagePool()->takeFreePage(arenaIndex());
 
     if (!pageMemory) {
         // Allocate a memory region for blinkPagesPerRegion pages that
@@ -440,7 +440,7 @@ void NormalPageArena::allocatePage()
                 RELEASE_ASSERT(result);
                 pageMemory = memory;
             } else {
-                Heap::freePagePool()->addFreePage(arenaIndex(), memory);
+                Heap::getFreePagePool()->addFreePage(arenaIndex(), memory);
             }
         }
     }
@@ -474,11 +474,11 @@ void NormalPageArena::freePage(NormalPage* page)
         // ensures that tracing the dangling pointer in the next global GC just
         // crashes instead of causing use-after-frees.  After the next global
         // GC, the orphaned pages are removed.
-        Heap::orphanedPagePool()->addOrphanedPage(arenaIndex(), page);
+        Heap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
     } else {
         PageMemory* memory = page->storage();
         page->~NormalPage();
-        Heap::freePagePool()->addFreePage(arenaIndex(), memory);
+        Heap::getFreePagePool()->addFreePage(arenaIndex(), memory);
     }
 }
 
@@ -493,7 +493,7 @@ bool NormalPageArena::coalesce()
     if (m_promptlyFreedSize < 1024 * 1024)
         return false;
 
-    if (threadState()->sweepForbidden())
+    if (getThreadState()->sweepForbidden())
         return false;
 
     ASSERT(!hasCurrentAllocationArea());
@@ -543,7 +543,7 @@ bool NormalPageArena::coalesce()
         if (startOfGap != page->payloadEnd())
             addToFreeList(startOfGap, page->payloadEnd() - startOfGap);
     }
-    threadState()->decreaseAllocatedObjectSize(freedSize);
+    getThreadState()->decreaseAllocatedObjectSize(freedSize);
     ASSERT(m_promptlyFreedSize == freedSize);
     m_promptlyFreedSize = 0;
     return true;
@@ -551,7 +551,7 @@ bool NormalPageArena::coalesce()
 
 void NormalPageArena::promptlyFreeObject(HeapObjectHeader* header)
 {
-    ASSERT(!threadState()->sweepForbidden());
+    ASSERT(!getThreadState()->sweepForbidden());
     ASSERT(header->checkHeader());
     Address address = reinterpret_cast<Address>(header);
     Address payload = header->payload();
@@ -561,7 +561,7 @@ void NormalPageArena::promptlyFreeObject(HeapObjectHeader* header)
     ASSERT(pageFromObject(address) == findPageFromAddress(address));
 
     {
-        ThreadState::SweepForbiddenScope forbiddenScope(threadState());
+        ThreadState::SweepForbiddenScope forbiddenScope(getThreadState());
         header->finalize(payload, payloadSize);
         if (address + size == m_currentAllocationPoint) {
             m_currentAllocationPoint = address;
@@ -661,16 +661,16 @@ void NormalPageArena::setRemainingAllocationSize(size_t newRemainingAllocationSi
     //  - if previous alloc checkpoint is larger, allocation size has increased.
     //  - if smaller, a net reduction in size since last call to updateRemainingAllocationSize().
     if (m_lastRemainingAllocationSize > m_remainingAllocationSize)
-        threadState()->increaseAllocatedObjectSize(m_lastRemainingAllocationSize - m_remainingAllocationSize);
+        getThreadState()->increaseAllocatedObjectSize(m_lastRemainingAllocationSize - m_remainingAllocationSize);
     else if (m_lastRemainingAllocationSize != m_remainingAllocationSize)
-        threadState()->decreaseAllocatedObjectSize(m_remainingAllocationSize - m_lastRemainingAllocationSize);
+        getThreadState()->decreaseAllocatedObjectSize(m_remainingAllocationSize - m_lastRemainingAllocationSize);
     m_lastRemainingAllocationSize = m_remainingAllocationSize;
 }
 
 void NormalPageArena::updateRemainingAllocationSize()
 {
     if (m_lastRemainingAllocationSize > remainingAllocationSize()) {
-        threadState()->increaseAllocatedObjectSize(m_lastRemainingAllocationSize - remainingAllocationSize());
+        getThreadState()->increaseAllocatedObjectSize(m_lastRemainingAllocationSize - remainingAllocationSize());
         m_lastRemainingAllocationSize = remainingAllocationSize();
     }
     ASSERT(m_lastRemainingAllocationSize == remainingAllocationSize());
@@ -703,7 +703,7 @@ Address NormalPageArena::outOfLineAllocate(size_t allocationSize, size_t gcInfoI
     if (allocationSize >= largeObjectSizeThreshold) {
         // TODO(sof): support eagerly finalized large objects, if ever needed.
         RELEASE_ASSERT(arenaIndex() != BlinkGC::EagerSweepArenaIndex);
-        LargeObjectArena* largeObjectArena = static_cast<LargeObjectArena*>(threadState()->arena(BlinkGC::LargeObjectArenaIndex));
+        LargeObjectArena* largeObjectArena = static_cast<LargeObjectArena*>(getThreadState()->arena(BlinkGC::LargeObjectArenaIndex));
         Address largeObject = largeObjectArena->allocateLargeObjectPage(allocationSize, gcInfoIndex);
         ASAN_MARK_LARGE_VECTOR_CONTAINER(this, largeObject);
         return largeObject;
@@ -733,10 +733,10 @@ Address NormalPageArena::outOfLineAllocate(size_t allocationSize, size_t gcInfoI
     }
 
     // 6. Complete sweeping.
-    threadState()->completeSweep();
+    getThreadState()->completeSweep();
 
     // 7. Check if we should trigger a GC.
-    threadState()->scheduleGCIfNeeded();
+    getThreadState()->scheduleGCIfNeeded();
 
     // 8. Add a new page to this heap.
     allocatePage();
@@ -797,10 +797,10 @@ Address LargeObjectArena::allocateLargeObjectPage(size_t allocationSize, size_t 
 
     // 2. If we have failed in sweeping allocationSize bytes,
     // we complete sweeping before allocating this large object.
-    threadState()->completeSweep();
+    getThreadState()->completeSweep();
 
     // 3. Check if we should trigger a GC.
-    threadState()->scheduleGCIfNeeded();
+    getThreadState()->scheduleGCIfNeeded();
 
     return doAllocateLargeObjectPage(allocationSize, gcInfoIndex);
 }
@@ -814,7 +814,7 @@ Address LargeObjectArena::doAllocateLargeObjectPage(size_t allocationSize, size_
     largeObjectSize += allocationGranularity;
 #endif
 
-    threadState()->shouldFlushHeapDoesNotContainCache();
+    getThreadState()->shouldFlushHeapDoesNotContainCache();
     PageMemory* pageMemory = PageMemory::allocate(largeObjectSize);
     Address largeObjectAddress = pageMemory->writableStart();
     Address headerAddress = largeObjectAddress + LargeObjectPage::pageHeaderSize();
@@ -837,7 +837,7 @@ Address LargeObjectArena::doAllocateLargeObjectPage(size_t allocationSize, size_
     largeObject->link(&m_firstPage);
 
     Heap::increaseAllocatedSpace(largeObject->size());
-    threadState()->increaseAllocatedObjectSize(largeObject->size());
+    getThreadState()->increaseAllocatedObjectSize(largeObject->size());
     return result;
 }
 
@@ -862,7 +862,7 @@ void LargeObjectArena::freeLargeObjectPage(LargeObjectPage* object)
         // ensures that tracing the dangling pointer in the next global GC just
         // crashes instead of causing use-after-frees.  After the next global
         // GC, the orphaned pages are removed.
-        Heap::orphanedPagePool()->addOrphanedPage(arenaIndex(), object);
+        Heap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), object);
     } else {
         ASSERT(!ThreadState::current()->isTerminating());
         PageMemory* memory = object->storage();
@@ -1177,7 +1177,7 @@ void NormalPage::sweep()
     }
 
     if (markedObjectSize)
-        pageArena->threadState()->increaseMarkedObjectSize(markedObjectSize);
+        pageArena->getThreadState()->increaseMarkedObjectSize(markedObjectSize);
 }
 
 void NormalPage::makeConsistentForGC()
@@ -1202,7 +1202,7 @@ void NormalPage::makeConsistentForGC()
         headerAddress += header->size();
     }
     if (markedObjectSize)
-        arenaForNormalPage()->threadState()->increaseMarkedObjectSize(markedObjectSize);
+        arenaForNormalPage()->getThreadState()->increaseMarkedObjectSize(markedObjectSize);
 }
 
 void NormalPage::makeConsistentForMutator()
@@ -1466,7 +1466,7 @@ void LargeObjectPage::removeFromHeap()
 void LargeObjectPage::sweep()
 {
     heapObjectHeader()->unmark();
-    arena()->threadState()->increaseMarkedObjectSize(size());
+    arena()->getThreadState()->increaseMarkedObjectSize(size());
 }
 
 void LargeObjectPage::makeConsistentForGC()
@@ -1474,7 +1474,7 @@ void LargeObjectPage::makeConsistentForGC()
     HeapObjectHeader* header = heapObjectHeader();
     if (header->isMarked()) {
         header->unmark();
-        arena()->threadState()->increaseMarkedObjectSize(size());
+        arena()->getThreadState()->increaseMarkedObjectSize(size());
     } else {
         header->markDead();
     }

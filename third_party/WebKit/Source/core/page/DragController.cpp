@@ -699,7 +699,7 @@ static Image* getImage(Element* element)
     ASSERT(element);
     ImageResource* cachedImage = getImageResource(element);
     return (cachedImage && !cachedImage->errorOccurred()) ?
-        cachedImage->image() : nullptr;
+        cachedImage->getImage() : nullptr;
 }
 
 static void prepareDataTransferForImageDrag(LocalFrame* source, DataTransfer* dataTransfer, Element* node, const KURL& linkURL, const KURL& imageURL, const String& label)

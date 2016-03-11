@@ -19,7 +19,7 @@ TransformRecorder::TransformRecorder(GraphicsContext& context, const DisplayItem
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    m_context.paintController().createAndAppend<BeginTransformDisplayItem>(m_client, transform);
+    m_context.getPaintController().createAndAppend<BeginTransformDisplayItem>(m_client, transform);
 }
 
 TransformRecorder::~TransformRecorder()
@@ -27,7 +27,7 @@ TransformRecorder::~TransformRecorder()
     if (m_skipRecordingForIdentityTransform)
         return;
 
-    m_context.paintController().endItem<EndTransformDisplayItem>(m_client);
+    m_context.getPaintController().endItem<EndTransformDisplayItem>(m_client);
 }
 
 } // namespace blink

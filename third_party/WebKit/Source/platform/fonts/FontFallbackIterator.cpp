@@ -66,7 +66,7 @@ bool FontFallbackIterator::rangeContributesForHint(const Vector<UChar32> hintLis
 
 void FontFallbackIterator::willUseRange(const AtomicString& family, const FontDataRange& range)
 {
-    FontSelector* selector = m_fontFallbackList->fontSelector();
+    FontSelector* selector = m_fontFallbackList->getFontSelector();
     if (!selector)
         return;
 

@@ -73,7 +73,7 @@ void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, c
         hideValidationMessage(*m_currentAnchor);
     m_currentAnchor = &anchor;
     IntRect anchorInViewport = currentView()->contentsToViewport(anchor.pixelSnappedBoundingBox());
-    m_lastAnchorRectInScreen = currentView()->hostWindow()->viewportToScreen(anchorInViewport);
+    m_lastAnchorRectInScreen = currentView()->getHostWindow()->viewportToScreen(anchorInViewport);
     m_lastPageScaleFactor = m_webView.pageScaleFactor();
     m_message = message;
     const double minimumSecondToShowValidationMessage = 5.0;
@@ -132,7 +132,7 @@ void ValidationMessageClientImpl::checkAnchorStatus(Timer<ValidationMessageClien
         return;
     }
 
-    IntRect newAnchorRectInViewportInScreen = currentView()->hostWindow()->viewportToScreen(newAnchorRectInViewport);
+    IntRect newAnchorRectInViewportInScreen = currentView()->getHostWindow()->viewportToScreen(newAnchorRectInViewport);
     if (newAnchorRectInViewportInScreen == m_lastAnchorRectInScreen && m_webView.pageScaleFactor() == m_lastPageScaleFactor)
         return;
     m_lastAnchorRectInScreen = newAnchorRectInViewportInScreen;

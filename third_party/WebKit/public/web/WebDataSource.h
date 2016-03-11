@@ -93,7 +93,7 @@ public:
     // data pointer will be deleted when the datasource is destroyed.
     // Setting the extra data pointer will cause any existing non-null
     // extra data pointer to be deleted.
-    virtual ExtraData* extraData() const = 0;
+    virtual ExtraData* getExtraData() const = 0;
     virtual void setExtraData(ExtraData*) = 0;
 
     // Sets the navigation start time for this datasource. Ordinarily,

@@ -252,7 +252,7 @@ PassOwnPtr<DragImage> DataTransfer::createDragImage(IntPoint& loc, LocalFrame* f
     }
     if (m_dragImage) {
         loc = m_dragLoc;
-        return DragImage::create(m_dragImage->image());
+        return DragImage::create(m_dragImage->getImage());
     }
     return nullptr;
 }
@@ -276,14 +276,14 @@ static void writeImageToDataObject(DataObject* dataObject, Element* element, con
 {
     // Shove image data into a DataObject for use as a file
     ImageResource* cachedImage = getImageResource(element);
-    if (!cachedImage || !cachedImage->image() || !cachedImage->isLoaded())
+    if (!cachedImage || !cachedImage->getImage() || !cachedImage->isLoaded())
         return;
 
-    SharedBuffer* imageBuffer = cachedImage->image()->data();
+    SharedBuffer* imageBuffer = cachedImage->getImage()->data();
     if (!imageBuffer || !imageBuffer->size())
         return;
 
-    String imageExtension = cachedImage->image()->filenameExtension();
+    String imageExtension = cachedImage->getImage()->filenameExtension();
     ASSERT(!imageExtension.isEmpty());
 
     // Determine the filename for the file contents of the image.

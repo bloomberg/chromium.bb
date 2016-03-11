@@ -80,7 +80,7 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         switch (op.type()) {
         case FilterOperation::REFERENCE: {
             RefPtr<SkImageFilter> filter;
-            Filter* referenceFilter = toReferenceFilterOperation(op).filter();
+            Filter* referenceFilter = toReferenceFilterOperation(op).getFilter();
             if (referenceFilter && referenceFilter->lastEffect()) {
                 FilterEffect* filterEffect = referenceFilter->lastEffect();
                 // Prepopulate SourceGraphic with two image filters: one with a null image
@@ -91,7 +91,7 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
                 // these for the PM-validated options.
                 RefPtr<SkImageFilter> deviceFilter = transformColorSpace(nullFilter, currentColorSpace, ColorSpaceDeviceRGB);
                 RefPtr<SkImageFilter> linearFilter = transformColorSpace(nullFilter, currentColorSpace, ColorSpaceLinearRGB);
-                FilterEffect* sourceGraphic = referenceFilter->sourceGraphic();
+                FilterEffect* sourceGraphic = referenceFilter->getSourceGraphic();
                 sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, false, deviceFilter.get());
                 sourceGraphic->setImageFilter(ColorSpaceLinearRGB, false, linearFilter.get());
                 sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, true, deviceFilter.get());

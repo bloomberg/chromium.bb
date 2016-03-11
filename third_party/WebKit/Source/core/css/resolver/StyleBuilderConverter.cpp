@@ -254,9 +254,9 @@ FontWeight StyleBuilderConverter::convertFontWeight(StyleResolverState& state, c
     const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
     switch (primitiveValue.getValueID()) {
     case CSSValueBolder:
-        return FontDescription::bolderWeight(state.parentStyle()->fontDescription().weight());
+        return FontDescription::bolderWeight(state.parentStyle()->getFontDescription().weight());
     case CSSValueLighter:
-        return FontDescription::lighterWeight(state.parentStyle()->fontDescription().weight());
+        return FontDescription::lighterWeight(state.parentStyle()->getFontDescription().weight());
     default:
         return primitiveValue.convertTo<FontWeight>();
     }

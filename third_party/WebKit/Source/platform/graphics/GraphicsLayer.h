@@ -219,10 +219,10 @@ public:
     void removeLinkHighlight(LinkHighlight*);
     // Exposed for tests
     unsigned numLinkHighlights() { return m_linkHighlights.size(); }
-    LinkHighlight* linkHighlight(int i) { return m_linkHighlights[i]; }
+    LinkHighlight* getLinkHighlight(int i) { return m_linkHighlights[i]; }
 
     void setScrollableArea(ScrollableArea*, bool isViewport);
-    ScrollableArea* scrollableArea() const { return m_scrollableArea; }
+    ScrollableArea* getScrollableArea() const { return m_scrollableArea; }
 
     WebContentLayer* contentLayer() const { return m_layer.get(); }
 
@@ -238,7 +238,7 @@ public:
     // cc::LayerClient implementation.
     scoped_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(cc::Layer*) override;
 
-    PaintController& paintController();
+    PaintController& getPaintController();
 
     // Exposed for tests.
     WebLayer* contentsLayer() const { return m_contentsLayer; }

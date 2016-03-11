@@ -139,9 +139,9 @@ FilterOutsets FilterOperations::outsets() const
         }
         case FilterOperation::REFERENCE: {
             ReferenceFilterOperation* referenceOperation = toReferenceFilterOperation(filterOperation);
-            if (referenceOperation->filter() && referenceOperation->filter()->lastEffect()) {
+            if (referenceOperation->getFilter() && referenceOperation->getFilter()->lastEffect()) {
                 FloatRect outsetRect(0, 0, 1, 1);
-                outsetRect = referenceOperation->filter()->lastEffect()->mapRectRecursive(outsetRect);
+                outsetRect = referenceOperation->getFilter()->lastEffect()->mapRectRecursive(outsetRect);
                 FilterOutsets outsets(
                     std::max(0.0f, -outsetRect.y()),
                     std::max(0.0f, outsetRect.x() + outsetRect.width() - 1),

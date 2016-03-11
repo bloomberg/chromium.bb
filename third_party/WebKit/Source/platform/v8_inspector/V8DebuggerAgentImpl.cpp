@@ -148,7 +148,7 @@ static String16 calculateHash(const String16& str)
 PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(V8RuntimeAgent* runtimeAgent, int contextGroupId)
 {
     V8RuntimeAgentImpl* runtimeAgentImpl = static_cast<V8RuntimeAgentImpl*>(runtimeAgent);
-    return adoptPtr(new V8DebuggerAgentImpl(runtimeAgentImpl->injectedScriptManager(), runtimeAgentImpl->debugger(), contextGroupId));
+    return adoptPtr(new V8DebuggerAgentImpl(runtimeAgentImpl->getInjectedScriptManager(), runtimeAgentImpl->debugger(), contextGroupId));
 }
 
 V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger, int contextGroupId)

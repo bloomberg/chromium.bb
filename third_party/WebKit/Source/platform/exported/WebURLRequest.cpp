@@ -49,7 +49,7 @@ public:
 
     ~ExtraDataContainer() override {}
 
-    WebURLRequest::ExtraData* extraData() const { return m_extraData.get(); }
+    WebURLRequest::ExtraData* getExtraData() const { return m_extraData.get(); }
 
 private:
     explicit ExtraDataContainer(WebURLRequest::ExtraData* extraData)
@@ -386,12 +386,12 @@ void WebURLRequest::setLoFiState(WebURLRequest::LoFiState loFiState)
     return m_private->m_resourceRequest->setLoFiState(loFiState);
 }
 
-WebURLRequest::ExtraData* WebURLRequest::extraData() const
+WebURLRequest::ExtraData* WebURLRequest::getExtraData() const
 {
-    RefPtr<ResourceRequest::ExtraData> data = m_private->m_resourceRequest->extraData();
+    RefPtr<ResourceRequest::ExtraData> data = m_private->m_resourceRequest->getExtraData();
     if (!data)
         return 0;
-    return static_cast<ExtraDataContainer*>(data.get())->extraData();
+    return static_cast<ExtraDataContainer*>(data.get())->getExtraData();
 }
 
 void WebURLRequest::setExtraData(WebURLRequest::ExtraData* extraData)

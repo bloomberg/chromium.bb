@@ -44,9 +44,9 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
     LayoutRect bound = layoutView().viewRect();
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
     rootPaintController().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 1,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
-    EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(rootPaintController().displayItemList()[0]).picture());
+    EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(rootPaintController().getDisplayItemList()[0]).picture());
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
@@ -56,7 +56,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
     LayoutRect bound = layoutView().viewRect();
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootPaintController().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 1,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
@@ -69,7 +69,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfBlockBackgroundOnly)),
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
@@ -82,7 +82,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
 
     rootPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 2,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfBlockBackgroundOnly)),
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
@@ -98,7 +98,7 @@ FloatRect drawAndGetCullRect(PaintController& controller, const LayoutObject& la
         context.drawRect(enclosedIntRect(FloatRect(bounds)));
     }
     controller.commitNewDisplayItems();
-    const auto& drawing = static_cast<const DrawingDisplayItem&>(controller.displayItemList()[0]);
+    const auto& drawing = static_cast<const DrawingDisplayItem&>(controller.getDisplayItemList()[0]);
     return drawing.picture()->cullRect();
 }
 
@@ -135,7 +135,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
     }
 
     rootPaintController().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 1,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Ensure we cannot use the cache with a new paint offset.
@@ -150,7 +150,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
     }
 
     rootPaintController().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 1,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     // Ensure the old paint offset cannot be used.
@@ -159,7 +159,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
     // Ensure the new paint offset can be used.
     EXPECT_TRUE(LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView(), PaintPhaseForeground));
     rootPaintController().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 1,
+    EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 1,
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 #endif

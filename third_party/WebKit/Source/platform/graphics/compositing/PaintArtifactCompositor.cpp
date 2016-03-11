@@ -100,7 +100,7 @@ static scoped_refptr<cc::DisplayItemList> recordPaintChunk(const PaintArtifact& 
     // TODO(jbroman, wkorman): What visual rectangle is wanted here?
     list->CreateAndAppendItem<cc::TransformDisplayItem>(gfx::Rect(), translation);
 
-    const DisplayItemList& displayItems = artifact.displayItemList();
+    const DisplayItemList& displayItems = artifact.getDisplayItemList();
     for (const auto& displayItem : displayItems.itemsInPaintChunk(chunk))
         appendDisplayItemToCcDisplayItemList(displayItem, list.get());
 
@@ -243,7 +243,7 @@ scoped_refptr<cc::Layer> foreignLayerForPaintChunk(const PaintArtifact& paintArt
     if (paintChunk.size() != 1)
         return nullptr;
 
-    const auto& displayItem = paintArtifact.displayItemList()[paintChunk.beginIndex];
+    const auto& displayItem = paintArtifact.getDisplayItemList()[paintChunk.beginIndex];
     if (!displayItem.isForeignLayer())
         return nullptr;
 

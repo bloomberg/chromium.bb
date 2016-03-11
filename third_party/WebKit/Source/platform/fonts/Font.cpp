@@ -87,8 +87,8 @@ Font& Font::operator=(const Font& other)
 
 bool Font::operator==(const Font& other) const
 {
-    FontSelector* first = m_fontFallbackList ? m_fontFallbackList->fontSelector() : 0;
-    FontSelector* second = other.m_fontFallbackList ? other.m_fontFallbackList->fontSelector() : 0;
+    FontSelector* first = m_fontFallbackList ? m_fontFallbackList->getFontSelector() : 0;
+    FontSelector* second = other.m_fontFallbackList ? other.m_fontFallbackList->getFontSelector() : 0;
 
     return first == second
         && m_fontDescription == other.m_fontDescription
@@ -318,8 +318,8 @@ private:
         } else {
             ASSERT(m_hasVerticalOffsets);
 
-            const float verticalBaselineXOffset = fontData->fontMetrics().floatAscent()
-                - fontData->fontMetrics().floatAscent(IdeographicBaseline);
+            const float verticalBaselineXOffset = fontData->getFontMetrics().floatAscent()
+                - fontData->getFontMetrics().floatAscent(IdeographicBaseline);
 
             // TODO(fmalita): why don't we apply this adjustment when building the glyph buffer?
             for (unsigned i = 0; i < 2 * count; i += 2) {
@@ -402,7 +402,7 @@ int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyp
 {
     FontCachePurgePreventer purgePreventer;
 
-    if (codePath(TextRunPaintInfo(run)) != ComplexPath && !fontDescription().getTypesettingFeatures())
+    if (codePath(TextRunPaintInfo(run)) != ComplexPath && !getFontDescription().getTypesettingFeatures())
         return offsetForPositionForSimpleText(run, x, includePartialGlyphs);
 
     return offsetForPositionForComplexText(run, x, includePartialGlyphs);
@@ -421,7 +421,7 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
 
     const TextRun& run = runInfo.run;
 
-    if (fontDescription().getTypesettingFeatures() && (runInfo.from || runInfo.to != run.length()))
+    if (getFontDescription().getTypesettingFeatures() && (runInfo.from || runInfo.to != run.length()))
         return ComplexPath;
 
     if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0)
@@ -433,13 +433,13 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
     if (m_fontDescription.widthVariant() != RegularWidth)
         return ComplexPath;
 
-    if (run.length() > 1 && fontDescription().getTypesettingFeatures())
+    if (run.length() > 1 && getFontDescription().getTypesettingFeatures())
         return ComplexPath;
 
     // FIXME: This really shouldn't be needed but for some reason the
     // TextRendering setting doesn't propagate to typesettingFeatures in time
     // for the prefs width calculation.
-    if (fontDescription().textRendering() == OptimizeLegibility || fontDescription().textRendering() == GeometricPrecision)
+    if (getFontDescription().textRendering() == OptimizeLegibility || getFontDescription().textRendering() == GeometricPrecision)
         return ComplexPath;
 
     if (run.is8Bit())
@@ -460,19 +460,19 @@ bool Font::canShapeWordByWord() const
 
 bool Font::computeCanShapeWordByWord() const
 {
-    if (!fontDescription().getTypesettingFeatures())
+    if (!getFontDescription().getTypesettingFeatures())
         return true;
 
     const FontPlatformData& platformData = primaryFont()->platformData();
-    TypesettingFeatures features = fontDescription().getTypesettingFeatures();
+    TypesettingFeatures features = getFontDescription().getTypesettingFeatures();
     return !platformData.hasSpaceInLigaturesOrKerning(features);
 };
 
 void Font::willUseFontData(UChar32 character) const
 {
-    const FontFamily& family = fontDescription().family();
-    if (m_fontFallbackList && m_fontFallbackList->fontSelector() && !family.familyIsEmpty())
-        m_fontFallbackList->fontSelector()->willUseFontData(fontDescription(), family.family(), character);
+    const FontFamily& family = getFontDescription().family();
+    if (m_fontFallbackList && m_fontFallbackList->getFontSelector() && !family.familyIsEmpty())
+        m_fontFallbackList->getFontSelector()->willUseFontData(getFontDescription(), family.family(), character);
 }
 
 static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(UChar32 character, bool isUpright, GlyphData& data, unsigned pageNumber)
@@ -693,7 +693,7 @@ int Font::emphasisMarkAscent(const AtomicString& mark) const
     if (!markFontData)
         return 0;
 
-    return markFontData->fontMetrics().ascent();
+    return markFontData->getFontMetrics().ascent();
 }
 
 int Font::emphasisMarkDescent(const AtomicString& mark) const
@@ -709,7 +709,7 @@ int Font::emphasisMarkDescent(const AtomicString& mark) const
     if (!markFontData)
         return 0;
 
-    return markFontData->fontMetrics().descent();
+    return markFontData->getFontMetrics().descent();
 }
 
 int Font::emphasisMarkHeight(const AtomicString& mark) const
@@ -725,7 +725,7 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const
     if (!markFontData)
         return 0;
 
-    return markFontData->fontMetrics().height();
+    return markFontData->getFontMetrics().height();
 }
 
 float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const

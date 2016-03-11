@@ -22,33 +22,33 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(const LayoutObject& layoutObjec
         roundedRectClips.append(clipRect);
     } else {
         // We create a rounded rect for each of the corners and clip it, while making sure we clip opposing corners together.
-        if (!clipRect.radii().topLeft().isEmpty() || !clipRect.radii().bottomRight().isEmpty()) {
+        if (!clipRect.getRadii().topLeft().isEmpty() || !clipRect.getRadii().bottomRight().isEmpty()) {
             FloatRect topCorner(clipRect.rect().x(), clipRect.rect().y(), rect.maxX() - clipRect.rect().x(), rect.maxY() - clipRect.rect().y());
             FloatRoundedRect::Radii topCornerRadii;
-            topCornerRadii.setTopLeft(clipRect.radii().topLeft());
+            topCornerRadii.setTopLeft(clipRect.getRadii().topLeft());
             roundedRectClips.append(FloatRoundedRect(topCorner, topCornerRadii));
 
             FloatRect bottomCorner(rect.x().toFloat(), rect.y().toFloat(), clipRect.rect().maxX() - rect.x().toFloat(), clipRect.rect().maxY() - rect.y().toFloat());
             FloatRoundedRect::Radii bottomCornerRadii;
-            bottomCornerRadii.setBottomRight(clipRect.radii().bottomRight());
+            bottomCornerRadii.setBottomRight(clipRect.getRadii().bottomRight());
             roundedRectClips.append(FloatRoundedRect(bottomCorner, bottomCornerRadii));
         }
 
-        if (!clipRect.radii().topRight().isEmpty() || !clipRect.radii().bottomLeft().isEmpty()) {
+        if (!clipRect.getRadii().topRight().isEmpty() || !clipRect.getRadii().bottomLeft().isEmpty()) {
             FloatRect topCorner(rect.x().toFloat(), clipRect.rect().y(), clipRect.rect().maxX() - rect.x().toFloat(), rect.maxY() - clipRect.rect().y());
             FloatRoundedRect::Radii topCornerRadii;
-            topCornerRadii.setTopRight(clipRect.radii().topRight());
+            topCornerRadii.setTopRight(clipRect.getRadii().topRight());
             roundedRectClips.append(FloatRoundedRect(topCorner, topCornerRadii));
 
             FloatRect bottomCorner(clipRect.rect().x(), rect.y().toFloat(), rect.maxX() - clipRect.rect().x(), clipRect.rect().maxY() - rect.y().toFloat());
             FloatRoundedRect::Radii bottomCornerRadii;
-            bottomCornerRadii.setBottomLeft(clipRect.radii().bottomLeft());
+            bottomCornerRadii.setBottomLeft(clipRect.getRadii().bottomLeft());
             roundedRectClips.append(FloatRoundedRect(bottomCorner, bottomCornerRadii));
         }
     }
 
     if (m_usePaintController) {
-        m_paintInfo.context.paintController().createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, LayoutRect::infiniteIntRect(), roundedRectClips);
+        m_paintInfo.context.getPaintController().createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, LayoutRect::infiniteIntRect(), roundedRectClips);
     } else {
         ClipDisplayItem clipDisplayItem(layoutObject, m_clipType, LayoutRect::infiniteIntRect(), roundedRectClips);
         clipDisplayItem.replay(paintInfo.context);
@@ -59,7 +59,7 @@ RoundedInnerRectClipper::~RoundedInnerRectClipper()
 {
     DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
     if (m_usePaintController) {
-        m_paintInfo.context.paintController().endItem<EndClipDisplayItem>(m_layoutObject, endType);
+        m_paintInfo.context.getPaintController().endItem<EndClipDisplayItem>(m_layoutObject, endType);
     } else {
         EndClipDisplayItem endClipDisplayItem(m_layoutObject, endType);
         endClipDisplayItem.replay(m_paintInfo.context);

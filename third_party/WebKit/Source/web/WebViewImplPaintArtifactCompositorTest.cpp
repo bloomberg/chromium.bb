@@ -57,7 +57,7 @@ protected:
 
     MockWebLayerTreeView& webLayerTreeView() { return m_webLayerTreeView; }
     WebViewImpl& webViewImpl() { return *m_helper.webViewImpl(); }
-    PaintArtifactCompositor& paintArtifactCompositor() { return webViewImpl().paintArtifactCompositor(); }
+    PaintArtifactCompositor& getPaintArtifactCompositor() { return webViewImpl().getPaintArtifactCompositor(); }
 
 private:
     RuntimeEnabledFeatures::Backup m_featuresBackup;
@@ -68,7 +68,7 @@ private:
 
 TEST_F(WebViewImplPaintArtifactCompositorTest, AttachAndDetach)
 {
-    cc::Layer* rootLayer = paintArtifactCompositor().rootLayer();
+    cc::Layer* rootLayer = getPaintArtifactCompositor().rootLayer();
     ASSERT_TRUE(rootLayer);
 
     EXPECT_CALL(webLayerTreeView(), setRootLayer(Property(&WebLayer::ccLayer, rootLayer)));

@@ -29,7 +29,7 @@ static inline bool textShouldBePainted(const LayoutSVGInlineText& textLayoutObje
 {
     // Font::pixelSize(), returns FontDescription::computedPixelSize(), which returns "int(x + 0.5)".
     // If the absolute font size on screen is below x=0.5, don't render anything.
-    return textLayoutObject.scaledFont().fontDescription().computedPixelSize();
+    return textLayoutObject.scaledFont().getFontDescription().computedPixelSize();
 }
 
 bool SVGInlineTextBoxPainter::shouldPaintSelection(const PaintInfo& paintInfo) const
@@ -218,7 +218,7 @@ static inline float thicknessForDecoration(TextDecoration, const Font& font)
 {
     // FIXME: For SVG Fonts we need to use the attributes defined in the <font-face> if specified.
     // Compatible with Batik/Presto
-    return font.fontDescription().computedSize() / 20.0f;
+    return font.getFontDescription().computedSize() / 20.0f;
 }
 
 void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDecoration decoration, const SVGTextFragment& fragment)
@@ -245,7 +245,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
     if (thickness <= 0)
         return;
 
-    float decorationOffset = baselineOffsetForDecoration(decoration, scaledFont.fontMetrics(), thickness);
+    float decorationOffset = baselineOffsetForDecoration(decoration, scaledFont.getFontMetrics(), thickness);
     FloatPoint decorationOrigin(fragment.x, fragment.y - decorationOffset / scalingFactor);
 
     Path path;
@@ -261,7 +261,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
                 if (!SVGPaintContext::paintForLayoutObject(paintInfo, decorationStyle, *decorationLayoutObject, ApplyToFillMode, fillPaint))
                     break;
                 fillPaint.setAntiAlias(true);
-                paintInfo.context.drawPath(path.skPath(), fillPaint);
+                paintInfo.context.drawPath(path.getSkPath(), fillPaint);
             }
             break;
         case PT_STROKE:
@@ -275,7 +275,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
                 if (svgDecorationStyle.vectorEffect() == VE_NON_SCALING_STROKE)
                     strokeData.setThickness(strokeData.thickness() / scalingFactor);
                 strokeData.setupPaint(&strokePaint);
-                paintInfo.context.drawPath(path.skPath(), strokePaint);
+                paintInfo.context.drawPath(path.getSkPath(), strokePaint);
             }
             break;
         case PT_MARKERS:
@@ -352,7 +352,7 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, TextRun& tex
     textRunPaintInfo.from = startPosition;
     textRunPaintInfo.to = endPosition;
 
-    float baseline = scaledFont.fontMetrics().floatAscent();
+    float baseline = scaledFont.getFontMetrics().floatAscent();
     textRunPaintInfo.bounds = FloatRect(textOrigin.x(), textOrigin.y() - baseline,
         textSize.width(), textSize.height());
 

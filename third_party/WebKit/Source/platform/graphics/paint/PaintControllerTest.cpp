@@ -24,11 +24,11 @@ public:
 
     IntRect visualRect(const PaintArtifact& paintArtifact, unsigned index)
     {
-        return paintArtifact.displayItemList().visualRect(index);
+        return paintArtifact.getDisplayItemList().visualRect(index);
     }
 
 protected:
-    PaintController& paintController() { return *m_paintController; }
+    PaintController& getPaintController() { return *m_paintController; }
 
 private:
     void TearDown() override
@@ -104,14 +104,14 @@ void drawClippedRect(GraphicsContext& context, const TestDisplayItemClient& clie
 
 TEST_F(PaintControllerTest, NestedRecorders)
 {
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     TestDisplayItemClient client("client");
 
     drawClippedRect(context, client, clipType, backgroundDrawingType, FloatRect(100, 100, 200, 200));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
         TestDisplayItem(client, clipType),
         TestDisplayItem(client, backgroundDrawingType),
         TestDisplayItem(client, DisplayItem::clipTypeToEndClipType(clipType)));
@@ -121,24 +121,24 @@ TEST_F(PaintControllerTest, UpdateBasic)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 200, 200));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 
-    paintController().invalidate(second);
+    getPaintController().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 }
@@ -148,25 +148,25 @@ TEST_F(PaintControllerTest, UpdateSwapOrder)
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
     TestDisplayItemClient unaffected("unaffected");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(unaffected, backgroundDrawingType));
 
-    paintController().invalidate(second);
+    getPaintController().invalidate(second);
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(unaffected, backgroundDrawingType));
@@ -177,22 +177,22 @@ TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
     TestDisplayItemClient third("third");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, third, backgroundDrawingType, FloatRect(125, 100, 200, 50));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
@@ -203,7 +203,7 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
     TestDisplayItemClient third("third");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -211,9 +211,9 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, foregroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, third, foregroundDrawingType, FloatRect(300, 100, 50, 50));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 6,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 6,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType),
@@ -221,16 +221,16 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
         TestDisplayItem(second, foregroundDrawingType),
         TestDisplayItem(third, foregroundDrawingType));
 
-    paintController().invalidate(second);
+    getPaintController().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, third, backgroundDrawingType, FloatRect(300, 100, 50, 50));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, foregroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, third, foregroundDrawingType, FloatRect(300, 100, 50, 50));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 6,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 6,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType),
@@ -243,36 +243,36 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
-    paintController().invalidate(first);
-    paintController().invalidate(second);
+    getPaintController().invalidate(first);
+    getPaintController().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 4,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 4,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
-    paintController().invalidate(first);
+    getPaintController().invalidate(first);
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 }
@@ -281,37 +281,37 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 
-    paintController().invalidate(first);
-    paintController().invalidate(second);
+    getPaintController().invalidate(first);
+    getPaintController().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 4,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 4,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
-    paintController().invalidate(first);
-    paintController().invalidate(second);
+    getPaintController().invalidate(first);
+    getPaintController().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 }
@@ -320,39 +320,39 @@ TEST_F(PaintControllerTest, UpdateClip)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     {
         ClipRecorder clipRecorder(context, first, clipType, LayoutRect(1, 1, 2, 2));
         drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
         drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     }
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 4,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 4,
         TestDisplayItem(first, clipType),
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, DisplayItem::clipTypeToEndClipType(clipType)));
 
-    paintController().invalidate(first);
+    getPaintController().invalidate(first);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
 
-    paintController().invalidate(second);
+    getPaintController().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     {
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
         drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     }
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 4,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 4,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, clipType),
         TestDisplayItem(second, backgroundDrawingType),
@@ -363,41 +363,41 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
-    EXPECT_TRUE(paintController().clientCacheIsValid(first));
-    EXPECT_TRUE(paintController().clientCacheIsValid(second));
-    const SkPicture* firstPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[0]).picture();
-    const SkPicture* secondPicture = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture();
+    EXPECT_TRUE(getPaintController().clientCacheIsValid(first));
+    EXPECT_TRUE(getPaintController().clientCacheIsValid(second));
+    const SkPicture* firstPicture = static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[0]).picture();
+    const SkPicture* secondPicture = static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[1]).picture();
 
-    paintController().invalidate(first);
-    EXPECT_FALSE(paintController().clientCacheIsValid(first));
-    EXPECT_TRUE(paintController().clientCacheIsValid(second));
+    getPaintController().invalidate(first);
+    EXPECT_FALSE(getPaintController().clientCacheIsValid(first));
+    EXPECT_TRUE(getPaintController().clientCacheIsValid(second));
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
     // The first display item should be updated.
-    EXPECT_NE(firstPicture, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[0]).picture());
+    EXPECT_NE(firstPicture, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[0]).picture());
     // The second display item should be cached.
-    EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture());
-    EXPECT_TRUE(paintController().clientCacheIsValid(first));
-    EXPECT_TRUE(paintController().clientCacheIsValid(second));
+    EXPECT_EQ(secondPicture, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[1]).picture());
+    EXPECT_TRUE(getPaintController().clientCacheIsValid(first));
+    EXPECT_TRUE(getPaintController().clientCacheIsValid(second));
 
-    paintController().invalidateAll();
-    EXPECT_FALSE(paintController().clientCacheIsValid(first));
-    EXPECT_FALSE(paintController().clientCacheIsValid(second));
+    getPaintController().invalidateAll();
+    EXPECT_FALSE(getPaintController().clientCacheIsValid(first));
+    EXPECT_FALSE(getPaintController().clientCacheIsValid(second));
 }
 
 TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
@@ -406,7 +406,7 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");
     TestDisplayItemClient content2("content2");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -416,9 +416,9 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
     drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
     drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
     drawRect(context, container2, foregroundDrawingType, FloatRect(100, 200, 100, 100));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 8,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 8,
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
@@ -429,7 +429,7 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
         TestDisplayItem(container2, foregroundDrawingType));
 
     // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
-    paintController().invalidate(container1);
+    getPaintController().invalidate(container1);
     drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
     drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
     drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
@@ -438,9 +438,9 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
     drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 8,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 8,
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
         TestDisplayItem(content2, foregroundDrawingType),
@@ -457,7 +457,7 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");
     TestDisplayItemClient content2("content2");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     {
         SubsequenceRecorder r(context, container1);
@@ -473,9 +473,9 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
         drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
         drawRect(context, container2, foregroundDrawingType, FloatRect(100, 200, 100, 100));
     }
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 12,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 12,
         TestDisplayItem(container1, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
@@ -494,13 +494,13 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
 
-    EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().newDisplayItemList(), 2,
         TestDisplayItem(container2, DisplayItem::CachedSubsequence),
         TestDisplayItem(container1, DisplayItem::CachedSubsequence));
 
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 12,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 12,
         TestDisplayItem(container2, DisplayItem::Subsequence),
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
@@ -519,7 +519,7 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
 TEST_F(PaintControllerTest, OutOfOrderNoCrash)
 {
     TestDisplayItemClient client("client");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     const DisplayItem::Type type1 = DisplayItem::DrawingFirst;
     const DisplayItem::Type type2 = static_cast<DisplayItem::Type>(DisplayItem::DrawingFirst + 1);
@@ -531,14 +531,14 @@ TEST_F(PaintControllerTest, OutOfOrderNoCrash)
     drawRect(context, client, type3, FloatRect(100, 100, 50, 200));
     drawRect(context, client, type4, FloatRect(100, 100, 100, 100));
 
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
     drawRect(context, client, type2, FloatRect(100, 100, 50, 200));
     drawRect(context, client, type3, FloatRect(100, 100, 50, 200));
     drawRect(context, client, type1, FloatRect(100, 100, 100, 100));
     drawRect(context, client, type4, FloatRect(100, 100, 100, 100));
 
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 }
 
 TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
@@ -547,7 +547,7 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");
     TestDisplayItemClient content2("content2");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     {
         SubsequenceRecorder r(context, container1);
@@ -567,9 +567,9 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
             drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
         }
     }
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 14,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 14,
         TestDisplayItem(container1, DisplayItem::Subsequence),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, DisplayItem::Subsequence),
@@ -587,13 +587,13 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
         TestDisplayItem(container2, DisplayItem::EndSubsequence));
 
     // Invalidate container1 but not content1.
-    paintController().invalidate(container1);
+    getPaintController().invalidate(container1);
 
     // Container2 itself now becomes empty (but still has the 'content2' child),
     // and chooses not to output subsequence info.
 
-    paintController().invalidate(container2);
-    paintController().invalidate(content2);
+    getPaintController().invalidate(container2);
+    getPaintController().invalidate(content2);
     EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
     EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content2));
     // Content2 now outputs foreground only.
@@ -609,7 +609,7 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
         EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1));
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
-    EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 7,
+    EXPECT_DISPLAY_LIST(getPaintController().newDisplayItemList(), 7,
         TestDisplayItem(content2, DisplayItem::Subsequence),
         TestDisplayItem(content2, foregroundDrawingType),
         TestDisplayItem(content2, DisplayItem::EndSubsequence),
@@ -618,9 +618,9 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
         TestDisplayItem(container1, foregroundDrawingType),
         TestDisplayItem(container1, DisplayItem::EndSubsequence));
 
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 10,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 10,
         TestDisplayItem(content2, DisplayItem::Subsequence),
         TestDisplayItem(content2, foregroundDrawingType),
         TestDisplayItem(content2, DisplayItem::EndSubsequence),
@@ -638,7 +638,7 @@ TEST_F(PaintControllerTest, Scope)
 {
     TestDisplayItemClient multicol("multicol");
     TestDisplayItemClient content("content");
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
 
     FloatRect rect1(100, 100, 50, 50);
     FloatRect rect2(150, 100, 50, 50);
@@ -646,74 +646,74 @@ TEST_F(PaintControllerTest, Scope)
 
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 200, 100, 100));
 
-    paintController().beginScope();
+    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect1);
-    paintController().endScope();
+    getPaintController().endScope();
 
-    paintController().beginScope();
+    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect2);
-    paintController().endScope();
-    paintController().commitNewDisplayItems();
+    getPaintController().endScope();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    RefPtr<const SkPicture> picture1 = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture();
-    RefPtr<const SkPicture> picture2 = static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[2]).picture();
+    RefPtr<const SkPicture> picture1 = static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[1]).picture();
+    RefPtr<const SkPicture> picture2 = static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[2]).picture();
     EXPECT_NE(picture1, picture2);
 
     // Draw again with nothing invalidated.
-    EXPECT_TRUE(paintController().clientCacheIsValid(multicol));
+    EXPECT_TRUE(getPaintController().clientCacheIsValid(multicol));
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 200, 100, 100));
-    paintController().beginScope();
+    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect1);
-    paintController().endScope();
+    getPaintController().endScope();
 
-    paintController().beginScope();
+    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect2);
-    paintController().endScope();
+    getPaintController().endScope();
 
-    EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().newDisplayItemList(), 3,
         TestDisplayItem(multicol, DisplayItem::drawingTypeToCachedDrawingType(backgroundDrawingType)),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
 
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[1]).picture());
-    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(paintController().displayItemList()[2]).picture());
+    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[1]).picture());
+    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(getPaintController().getDisplayItemList()[2]).picture());
 
     // Now the multicol becomes 3 columns and repaints.
-    paintController().invalidate(multicol);
+    getPaintController().invalidate(multicol);
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 100, 100, 100));
 
-    paintController().beginScope();
+    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect1);
-    paintController().endScope();
+    getPaintController().endScope();
 
-    paintController().beginScope();
+    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect2);
-    paintController().endScope();
+    getPaintController().endScope();
 
-    paintController().beginScope();
+    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect3);
-    paintController().endScope();
+    getPaintController().endScope();
 
     // We should repaint everything on invalidation of the scope container.
-    EXPECT_DISPLAY_LIST(paintController().newDisplayItemList(), 4,
+    EXPECT_DISPLAY_LIST(getPaintController().newDisplayItemList(), 4,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(paintController().newDisplayItemList()[1]).picture());
-    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(paintController().newDisplayItemList()[2]).picture());
+    EXPECT_NE(picture1, static_cast<const DrawingDisplayItem&>(getPaintController().newDisplayItemList()[1]).picture());
+    EXPECT_NE(picture2, static_cast<const DrawingDisplayItem&>(getPaintController().newDisplayItemList()[2]).picture());
 
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 }
 
 TEST_F(PaintControllerTest, OptimizeNoopPairs)
@@ -722,7 +722,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
     TestDisplayItemClient second("second");
     TestDisplayItemClient third("third");
 
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
         ClipPathRecorder clipRecorder(context, second, Path());
@@ -730,29 +730,29 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
     }
     drawRect(context, third, backgroundDrawingType, FloatRect(0, 0, 100, 100));
 
-    paintController().commitNewDisplayItems();
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 5,
+    getPaintController().commitNewDisplayItems();
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 5,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, DisplayItem::BeginClipPath),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, DisplayItem::EndClipPath),
         TestDisplayItem(third, backgroundDrawingType));
 
-    paintController().invalidate(second);
+    getPaintController().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
         // Do not draw anything for second.
     }
     drawRect(context, third, backgroundDrawingType, FloatRect(0, 0, 100, 100));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
     // Empty clips should have been optimized out.
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType));
 
-    paintController().invalidate(second);
+    getPaintController().invalidate(second);
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
     {
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
@@ -762,10 +762,10 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
         }
     }
     drawRect(context, third, backgroundDrawingType, FloatRect(0, 0, 100, 100));
-    paintController().commitNewDisplayItems();
+    getPaintController().commitNewDisplayItems();
 
     // Empty clips should have been optimized out.
-    EXPECT_DISPLAY_LIST(paintController().displayItemList(), 2,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType));
 }
@@ -775,11 +775,11 @@ TEST_F(PaintControllerTest, SmallPaintControllerHasOnePaintChunk)
     RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
     TestDisplayItemClient client("test client");
 
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
     drawRect(context, client, backgroundDrawingType, FloatRect(0, 0, 100, 100));
 
-    paintController().commitNewDisplayItems();
-    const auto& paintChunks = paintController().paintChunks();
+    getPaintController().commitNewDisplayItems();
+    const auto& paintChunks = getPaintController().paintChunks();
     ASSERT_EQ(1u, paintChunks.size());
     EXPECT_EQ(0u, paintChunks[0].beginIndex);
     EXPECT_EQ(1u, paintChunks[0].endIndex);
@@ -798,12 +798,12 @@ TEST_F(PaintControllerTest, PaintArtifactWithVisualRects)
 {
     TestDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
 
-    GraphicsContext context(paintController());
+    GraphicsContext context(getPaintController());
     drawRect(context, client, backgroundDrawingType, FloatRect(0, 0, 100, 100));
 
-    paintController().commitNewDisplayItems(LayoutSize(20, 30));
-    const auto& paintArtifact = paintController().paintArtifact();
-    ASSERT_EQ(1u, paintArtifact.displayItemList().size());
+    getPaintController().commitNewDisplayItems(LayoutSize(20, 30));
+    const auto& paintArtifact = getPaintController().paintArtifact();
+    ASSERT_EQ(1u, paintArtifact.getDisplayItemList().size());
     EXPECT_RECT_EQ(IntRect(-20, -30, 200, 100), visualRect(paintArtifact, 0));
 }
 

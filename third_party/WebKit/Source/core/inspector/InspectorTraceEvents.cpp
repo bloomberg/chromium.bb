@@ -266,7 +266,7 @@ PassOwnPtr<TracedValue> InspectorStyleRecalcInvalidationTrackingEvent::data(Node
     value->setString("frame", toHexString(node->document().frame()));
     setNodeInfo(value.get(), node, "nodeId", "nodeName");
     value->setString("reason", reason.reasonString());
-    value->setString("extraData", reason.extraData());
+    value->setString("extraData", reason.getExtraData());
     if (RefPtr<ScriptCallStack> stackTrace = ScriptCallStack::capture(1))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();

@@ -55,7 +55,7 @@ void StaticBitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const Float
     canvas->drawImageRect(m_image.get(), srcSkRect, dstRect, &paint,
         WebCoreClampingModeToSkiaRectConstraint(clampMode));
 
-    if (ImageObserver* observer = imageObserver())
+    if (ImageObserver* observer = getImageObserver())
         observer->didDraw(this);
 }
 

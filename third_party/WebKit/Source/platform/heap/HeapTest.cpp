@@ -1415,7 +1415,7 @@ public:
     {
         RefPtrWillBeRawPtr<SuperClass> target = targetPass;
         conservativelyCollectGarbage();
-        EXPECT_EQ(pointsBack, target->pointsBack());
+        EXPECT_EQ(pointsBack, target->getPointsBack());
         EXPECT_EQ(superClassCount, SuperClass::s_aliveCount);
     }
 
@@ -1424,7 +1424,7 @@ public:
         visitor->trace(m_pointsBack);
     }
 
-    PointsBack* pointsBack() const { return m_pointsBack.get(); }
+    PointsBack* getPointsBack() const { return m_pointsBack.get(); }
 
     static int s_aliveCount;
 protected:
@@ -5153,7 +5153,7 @@ public:
     }
 
     typedef HeapHashMap<WeakMember<IntWrapper>, Member<EphemeronWrapper>> Map;
-    Map& map() { return m_map; }
+    Map& getMap() { return m_map; }
 
 private:
     Map m_map;
@@ -5169,21 +5169,21 @@ TEST(HeapTest, EphemeronsPointToEphemerons)
         EphemeronWrapper* oldHead = chain;
         chain = new EphemeronWrapper();
         if (i == 50)
-            chain->map().add(key2, oldHead);
+            chain->getMap().add(key2, oldHead);
         else
-            chain->map().add(key, oldHead);
-        chain->map().add(IntWrapper::create(103), new EphemeronWrapper());
+            chain->getMap().add(key, oldHead);
+        chain->getMap().add(IntWrapper::create(103), new EphemeronWrapper());
     }
 
     preciselyCollectGarbage();
 
     EphemeronWrapper* wrapper = chain;
     for (int i = 0; i< 100; i++) {
-        EXPECT_EQ(1u, wrapper->map().size());
+        EXPECT_EQ(1u, wrapper->getMap().size());
         if (i == 49)
-            wrapper = wrapper->map().get(key2);
+            wrapper = wrapper->getMap().get(key2);
         else
-            wrapper = wrapper->map().get(key);
+            wrapper = wrapper->getMap().get(key);
     }
     EXPECT_EQ(nullptr, wrapper);
 
@@ -5192,14 +5192,14 @@ TEST(HeapTest, EphemeronsPointToEphemerons)
 
     wrapper = chain;
     for (int i = 0; i < 50; i++) {
-        EXPECT_EQ(i == 49 ? 0u : 1u, wrapper->map().size());
-        wrapper = wrapper->map().get(key);
+        EXPECT_EQ(i == 49 ? 0u : 1u, wrapper->getMap().size());
+        wrapper = wrapper->getMap().get(key);
     }
     EXPECT_EQ(nullptr, wrapper);
 
     key.clear();
     preciselyCollectGarbage();
-    EXPECT_EQ(0u, chain->map().size());
+    EXPECT_EQ(0u, chain->getMap().size());
 }
 
 TEST(HeapTest, Ephemeron)

@@ -37,13 +37,13 @@ float SVGTextLayoutEngineSpacing::calculateCSSSpacing(UChar currentCharacter)
     UChar lastCharacter = m_lastCharacter;
     m_lastCharacter = currentCharacter;
 
-    if (!m_font.fontDescription().letterSpacing() && !m_font.fontDescription().wordSpacing())
+    if (!m_font.getFontDescription().letterSpacing() && !m_font.getFontDescription().wordSpacing())
         return 0;
 
-    float spacing = m_font.fontDescription().letterSpacing();
-    if (currentCharacter && lastCharacter && m_font.fontDescription().wordSpacing()) {
+    float spacing = m_font.getFontDescription().letterSpacing();
+    if (currentCharacter && lastCharacter && m_font.getFontDescription().wordSpacing()) {
         if (Character::treatAsSpace(currentCharacter) && !Character::treatAsSpace(lastCharacter))
-            spacing += m_font.fontDescription().wordSpacing();
+            spacing += m_font.getFontDescription().wordSpacing();
     }
 
     if (m_effectiveZoom != 1)

@@ -86,7 +86,7 @@ static NSAttributedString* attributedSubstringFromRange(const EphemeralRange& ra
         // to use the font.
         // TODO(shuchen): Support scaling the font as necessary according to CSS transforms.
         if (!font || floor(fontPlatformData.size()) != floor([[font fontDescriptor] pointSize]))
-            font = [NSFont systemFontOfSize:style->font().fontDescription().computedSize()];
+            font = [NSFont systemFontOfSize:style->font().getFontDescription().computedSize()];
         [attrs setObject:font forKey:NSFontAttributeName];
 
         if (style->visitedDependentColor(CSSPropertyColor).alpha())

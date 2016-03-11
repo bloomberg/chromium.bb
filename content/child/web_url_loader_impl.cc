@@ -454,9 +454,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                                       SyncLoadResponse* sync_load_response) {
   DCHECK(request_id_ == -1);
   request_ = request;  // Save the request.
-  if (request.extraData()) {
+  if (request.getExtraData()) {
     RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.extraData());
+        static_cast<RequestExtraData*>(request.getExtraData());
     stream_override_ = extra_data->TakeStreamOverrideOwnership();
   }
 
@@ -535,7 +535,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       GetRequestContextTypeForWebURLRequest(request);
   request_info.fetch_frame_type =
       GetRequestContextFrameTypeForWebURLRequest(request);
-  request_info.extra_data = request.extraData();
+  request_info.extra_data = request.getExtraData();
   request_info.report_raw_headers = request.reportRawHeaders();
   request_info.loading_web_task_runner.reset(web_task_runner_->clone());
 

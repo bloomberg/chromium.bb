@@ -794,7 +794,7 @@ void LayoutText::trimmedPrefWidths(LayoutUnit leadWidthLayoutUnit,
             float spaceWidth = font.width(run);
             floatMaxWidth -= spaceWidth;
         } else {
-            floatMaxWidth += font.fontDescription().wordSpacing();
+            floatMaxWidth += font.getFontDescription().wordSpacing();
         }
     }
 
@@ -1006,7 +1006,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             // Non-zero only when kerning is enabled, in which case we measure words with their trailing
             // space, then subtract its width.
             float wordTrailingSpaceWidth = 0;
-            if (isSpace && (f.fontDescription().getTypesettingFeatures() & Kerning)) {
+            if (isSpace && (f.getFontDescription().getTypesettingFeatures() & Kerning)) {
                 ASSERT(textDirection >=0 && textDirection <= 1);
                 if (!cachedWordTrailingSpaceWidth[textDirection])
                     cachedWordTrailingSpaceWidth[textDirection] = f.width(constructTextRun(f, &spaceCharacter, 1, styleToUse, textDirection)) + wordSpacing;
@@ -1110,7 +1110,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     }
 
     GlyphOverflow glyphOverflow;
-    glyphOverflow.setFromBounds(glyphBounds, f.fontMetrics().floatAscent(), f.fontMetrics().floatDescent(), m_maxWidth);
+    glyphOverflow.setFromBounds(glyphBounds, f.getFontMetrics().floatAscent(), f.getFontMetrics().floatDescent(), m_maxWidth);
     // We shouldn't change our mind once we "know".
     ASSERT(!m_knownToHaveNoOverflowAndNoFallbackFonts || (fallbackFonts.isEmpty() && glyphOverflow.isApproximatelyZero()));
     m_knownToHaveNoOverflowAndNoFallbackFonts = fallbackFonts.isEmpty() && glyphOverflow.isApproximatelyZero();
@@ -1500,7 +1500,7 @@ float LayoutText::width(unsigned from, unsigned len, const Font& f, LayoutUnit x
                 if (preferredLogicalWidthsDirty() || !m_knownToHaveNoOverflowAndNoFallbackFonts)
                     const_cast<LayoutText*>(this)->computePreferredLogicalWidths(0, *fallbackFonts, *glyphBounds);
                 else
-                    *glyphBounds = FloatRect(0, -f.fontMetrics().floatAscent(), m_maxWidth, f.fontMetrics().floatHeight());
+                    *glyphBounds = FloatRect(0, -f.getFontMetrics().floatAscent(), m_maxWidth, f.getFontMetrics().floatHeight());
                 w = m_maxWidth;
             } else {
                 w = maxLogicalWidth();

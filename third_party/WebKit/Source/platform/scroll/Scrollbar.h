@@ -101,7 +101,7 @@ public:
     void offsetDidChange();
 
     void disconnectFromScrollableArea();
-    ScrollableArea* scrollableArea() const { return m_scrollableArea; }
+    ScrollableArea* getScrollableArea() const { return m_scrollableArea; }
 
     int pressedPos() const { return m_pressedPos; }
 

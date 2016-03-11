@@ -764,7 +764,7 @@ void ChromeClientImpl::didPaint(const PaintArtifact& paintArtifact)
 {
     // TODO(jbroman): This doesn't handle OOPIF correctly. We probably need a
     // branch for WebFrameWidget, like attachRootGraphicsLayer.
-    m_webView->paintArtifactCompositor().update(paintArtifact);
+    m_webView->getPaintArtifactCompositor().update(paintArtifact);
 }
 
 void ChromeClientImpl::attachCompositorAnimationTimeline(CompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)

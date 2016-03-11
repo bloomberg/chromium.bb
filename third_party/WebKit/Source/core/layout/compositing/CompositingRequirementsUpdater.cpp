@@ -248,7 +248,7 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
             // both opaque and may only have an integer translation as its
             // transform. Both opacity and screen space transform are inherited
             // properties, so this cannot be determined from local information.
-            layer->scrollableArea()->updateNeedsCompositedScrolling(PaintLayerScrollableArea::IgnoreLCDText);
+            layer->getScrollableArea()->updateNeedsCompositedScrolling(PaintLayerScrollableArea::IgnoreLCDText);
             if (layer->needsCompositedScrolling())
                 reasonsToComposite |= CompositingReasonOverflowScrollingTouch;
         }

@@ -115,7 +115,7 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded()
 
         // Second clip shape => start using the builder.
         if (!usingBuilder) {
-            clipPathBuilder.add(m_clipContentPath.skPath(), kUnion_SkPathOp);
+            clipPathBuilder.add(m_clipContentPath.getSkPath(), kUnion_SkPathOp);
             usingBuilder = true;
         }
 
@@ -125,7 +125,7 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded()
         else if (isSVGUseElement(childElement))
             toSVGUseElement(childElement)->toClipPath(subPath);
 
-        clipPathBuilder.add(subPath.skPath(), kUnion_SkPathOp);
+        clipPathBuilder.add(subPath.getSkPath(), kUnion_SkPathOp);
     }
 
     if (usingBuilder) {

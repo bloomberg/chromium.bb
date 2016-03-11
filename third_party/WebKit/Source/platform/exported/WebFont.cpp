@@ -33,7 +33,7 @@ public:
         m_font.update(nullptr);
     }
 
-    const Font& font() const { return m_font; }
+    const Font& getFont() const { return m_font; }
     String debugName() const final { return "WebFont::Impl"; }
     LayoutRect visualRect() const final
     {
@@ -55,34 +55,34 @@ WebFont::~WebFont()
     m_private.reset(0);
 }
 
-WebFontDescription WebFont::fontDescription() const
+WebFontDescription WebFont::getFontDescription() const
 {
-    return WebFontDescription(m_private->font().fontDescription());
+    return WebFontDescription(m_private->getFont().getFontDescription());
 }
 
 int WebFont::ascent() const
 {
-    return m_private->font().fontMetrics().ascent();
+    return m_private->getFont().getFontMetrics().ascent();
 }
 
 int WebFont::descent() const
 {
-    return m_private->font().fontMetrics().descent();
+    return m_private->getFont().getFontMetrics().descent();
 }
 
 int WebFont::height() const
 {
-    return m_private->font().fontMetrics().height();
+    return m_private->getFont().getFontMetrics().height();
 }
 
 int WebFont::lineSpacing() const
 {
-    return m_private->font().fontMetrics().lineSpacing();
+    return m_private->getFont().getFontMetrics().lineSpacing();
 }
 
 float WebFont::xHeight() const
 {
-    return m_private->font().fontMetrics().xHeight();
+    return m_private->getFont().getFontMetrics().xHeight();
 }
 
 void WebFont::drawText(WebCanvas* canvas, const WebTextRun& run,
@@ -104,7 +104,7 @@ void WebFont::drawText(WebCanvas* canvas, const WebTextRun& run,
         context.save();
         context.setFillColor(color);
         context.clip(textClipRect);
-        context.drawText(m_private->font(), runInfo, leftBaseline);
+        context.drawText(m_private->getFont(), runInfo, leftBaseline);
         context.restore();
     }
 
@@ -113,17 +113,17 @@ void WebFont::drawText(WebCanvas* canvas, const WebTextRun& run,
 
 int WebFont::calculateWidth(const WebTextRun& run) const
 {
-    return m_private->font().width(run, 0);
+    return m_private->getFont().width(run, 0);
 }
 
 int WebFont::offsetForPosition(const WebTextRun& run, float position) const
 {
-    return m_private->font().offsetForPosition(run, position, true);
+    return m_private->getFont().offsetForPosition(run, position, true);
 }
 
 WebFloatRect WebFont::selectionRectForText(const WebTextRun& run, const WebFloatPoint& leftBaseline, int height, int from, int to) const
 {
-    return m_private->font().selectionRectForText(run, leftBaseline, height, from, to);
+    return m_private->getFont().selectionRectForText(run, leftBaseline, height, from, to);
 }
 
 } // namespace blink

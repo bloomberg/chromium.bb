@@ -77,16 +77,16 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect
     SVGFELightElement* lightElement = SVGFELightElement::findLightElement(*this);
     ASSERT(lightSource);
     ASSERT(lightElement);
-    ASSERT(effect->filter());
+    ASSERT(effect->getFilter());
 
     if (attrName == SVGNames::azimuthAttr)
         return lightSource->setAzimuth(lightElement->azimuth()->currentValue()->value());
     if (attrName == SVGNames::elevationAttr)
         return lightSource->setElevation(lightElement->elevation()->currentValue()->value());
     if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr || attrName == SVGNames::zAttr)
-        return lightSource->setPosition(effect->filter()->resolve3dPoint(lightElement->position()));
+        return lightSource->setPosition(effect->getFilter()->resolve3dPoint(lightElement->position()));
     if (attrName == SVGNames::pointsAtXAttr || attrName == SVGNames::pointsAtYAttr || attrName == SVGNames::pointsAtZAttr)
-        return lightSource->setPointsAt(effect->filter()->resolve3dPoint(lightElement->pointsAt()));
+        return lightSource->setPointsAt(effect->getFilter()->resolve3dPoint(lightElement->pointsAt()));
     if (attrName == SVGNames::specularExponentAttr)
         return lightSource->setSpecularExponent(lightElement->specularExponent()->currentValue()->value());
     if (attrName == SVGNames::limitingConeAngleAttr)

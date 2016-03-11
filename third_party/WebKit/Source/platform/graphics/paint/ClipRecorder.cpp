@@ -15,12 +15,12 @@ ClipRecorder::ClipRecorder(GraphicsContext& context, const DisplayItemClient& cl
     , m_context(context)
     , m_type(type)
 {
-    m_context.paintController().createAndAppend<ClipDisplayItem>(m_client, type, pixelSnappedIntRect(clipRect));
+    m_context.getPaintController().createAndAppend<ClipDisplayItem>(m_client, type, pixelSnappedIntRect(clipRect));
 }
 
 ClipRecorder::~ClipRecorder()
 {
-    m_context.paintController().endItem<EndClipDisplayItem>(m_client, DisplayItem::clipTypeToEndClipType(m_type));
+    m_context.getPaintController().endItem<EndClipDisplayItem>(m_client, DisplayItem::clipTypeToEndClipType(m_type));
 }
 
 } // namespace blink

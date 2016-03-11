@@ -88,16 +88,16 @@ bool FEMorphology::setRadiusY(float radiusY)
 FloatRect FEMorphology::mapRect(const FloatRect& rect, bool)
 {
     FloatRect result = rect;
-    result.inflateX(filter()->applyHorizontalScale(m_radiusX));
-    result.inflateY(filter()->applyVerticalScale(m_radiusY));
+    result.inflateX(getFilter()->applyHorizontalScale(m_radiusX));
+    result.inflateY(getFilter()->applyVerticalScale(m_radiusY));
     return result;
 }
 
 PassRefPtr<SkImageFilter> FEMorphology::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
-    SkScalar radiusX = SkFloatToScalar(filter()->applyHorizontalScale(m_radiusX));
-    SkScalar radiusY = SkFloatToScalar(filter()->applyVerticalScale(m_radiusY));
+    SkScalar radiusX = SkFloatToScalar(getFilter()->applyHorizontalScale(m_radiusX));
+    SkScalar radiusY = SkFloatToScalar(getFilter()->applyVerticalScale(m_radiusY));
     SkImageFilter::CropRect rect = getCropRect();
     if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
         return adoptRef(SkDilateImageFilter::Create(radiusX, radiusY, input.get(), &rect));

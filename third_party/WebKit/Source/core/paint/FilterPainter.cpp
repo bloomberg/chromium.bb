@@ -60,7 +60,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
     }
 
     ASSERT(m_layoutObject);
-    if (!context.paintController().displayItemConstructionIsDisabled()) {
+    if (!context.getPaintController().displayItemConstructionIsDisabled()) {
         FilterOperations filterOperations(layer.computeFilterOperations(m_layoutObject->styleRef()));
         OwnPtr<CompositorFilterOperations> compositorFilterOperations = adoptPtr(CompositorFactory::current().createFilterOperations());
         builder.buildFilterOperations(filterOperations, compositorFilterOperations.get());
@@ -76,7 +76,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
             visualBounds.moveBy(-offsetFromRoot);
             layer.convertFromFlowThreadToVisualBoundingBoxInAncestor(paintingInfo.rootLayer, visualBounds);
         }
-        context.paintController().createAndAppend<BeginFilterDisplayItem>(*m_layoutObject, imageFilter, FloatRect(visualBounds), compositorFilterOperations.release());
+        context.getPaintController().createAndAppend<BeginFilterDisplayItem>(*m_layoutObject, imageFilter, FloatRect(visualBounds), compositorFilterOperations.release());
     }
 
     m_filterInProgress = true;
@@ -87,7 +87,7 @@ FilterPainter::~FilterPainter()
     if (!m_filterInProgress)
         return;
 
-    m_context.paintController().endItem<EndFilterDisplayItem>(*m_layoutObject);
+    m_context.getPaintController().endItem<EndFilterDisplayItem>(*m_layoutObject);
 }
 
 } // namespace blink

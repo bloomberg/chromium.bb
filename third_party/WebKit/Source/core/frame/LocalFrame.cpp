@@ -115,7 +115,7 @@ public:
         AffineTransform transform;
         transform.scale(deviceScaleFactor, deviceScaleFactor);
         transform.translate(-m_bounds.x(), -m_bounds.y());
-        context().paintController().createAndAppend<BeginTransformDisplayItem>(*m_localFrame, transform);
+        context().getPaintController().createAndAppend<BeginTransformDisplayItem>(*m_localFrame, transform);
     }
 
     GraphicsContext& context() { return m_pictureBuilder->context(); }
@@ -124,7 +124,7 @@ public:
     {
         if (m_draggedNode && m_draggedNode->layoutObject())
             m_draggedNode->layoutObject()->updateDragState(false);
-        context().paintController().endItem<EndTransformDisplayItem>(*m_localFrame);
+        context().getPaintController().endItem<EndTransformDisplayItem>(*m_localFrame);
         RefPtr<const SkPicture> recording = m_pictureBuilder->endRecording();
         RefPtr<SkImage> skImage = adoptRef(SkImage::NewFromPicture(recording.get(),
             SkISize::Make(m_bounds.width(), m_bounds.height()), nullptr, nullptr));
@@ -778,7 +778,7 @@ ScrollResult LocalFrame::applyScrollDelta(ScrollGranularity granularity, const F
     if (remainingDelta.isZero())
         return ScrollResult(delta.width(), delta.height(), 0.0f, 0.0f);
 
-    ScrollResult result = view()->scrollableArea()->userScroll(granularity, remainingDelta);
+    ScrollResult result = view()->getScrollableArea()->userScroll(granularity, remainingDelta);
     result.didScrollX = result.didScrollX || (remainingDelta.width() != delta.width());
     result.didScrollY = result.didScrollY || (remainingDelta.height() != delta.height());
 

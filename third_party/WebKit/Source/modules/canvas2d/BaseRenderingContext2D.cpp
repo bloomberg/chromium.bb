@@ -557,7 +557,7 @@ bool BaseRenderingContext2D::isFullCanvasCompositeMode(SkXfermode::Mode op)
 
 static bool isPathExpensive(const Path& path)
 {
-    const SkPath& skPath = path.skPath();
+    const SkPath& skPath = path.getSkPath();
     if (ExpensiveCanvasHeuristicParameters::ConcavePathsAreExpensive && !skPath.isConvex())
         return true;
 
@@ -572,7 +572,7 @@ void BaseRenderingContext2D::drawPathInternal(const Path& path, CanvasRenderingC
     if (path.isEmpty())
         return;
 
-    SkPath skPath = path.skPath();
+    SkPath skPath = path.getSkPath();
     FloatRect bounds = path.boundingRect();
     skPath.setFillType(fillType);
 
@@ -697,7 +697,7 @@ void BaseRenderingContext2D::clipInternal(const Path& path, const String& windin
         return;
     }
 
-    SkPath skPath = path.skPath();
+    SkPath skPath = path.getSkPath();
     skPath.setFillType(parseWinding(windingRuleString));
     modifiableState().clipPath(skPath, m_clipAntialiasing);
     c->clipPath(skPath, SkRegion::kIntersect_Op, m_clipAntialiasing == AntiAliased);

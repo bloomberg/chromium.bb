@@ -64,12 +64,12 @@ public:
     GraphicsLayer* layerForVerticalScrollbar() const override;
     ScrollResult userScroll(ScrollGranularity, const FloatSize&) override;
     bool scrollAnimatorEnabled() const override;
-    HostWindow* hostWindow() const override;
+    HostWindow* getHostWindow() const override;
     void serviceScrollAnimations(double) override;
     void updateCompositorScrollAnimations() override;
     void cancelProgrammaticScrollAnimation() override;
     ScrollBehavior scrollBehaviorStyle() const override;
-    Widget* widget() override;
+    Widget* getWidget() override;
     void clearScrollAnimators() override;
 
 private:

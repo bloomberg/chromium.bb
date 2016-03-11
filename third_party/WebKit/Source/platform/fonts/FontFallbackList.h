@@ -74,7 +74,7 @@ public:
     bool loadingCustomFonts() const;
     bool shouldSkipDrawing() const;
 
-    FontSelector* fontSelector() const { return m_fontSelector.get(); }
+    FontSelector* getFontSelector() const { return m_fontSelector.get(); }
     // FIXME: It should be possible to combine fontSelectorVersion and generation.
     unsigned fontSelectorVersion() const { return m_fontSelectorVersion; }
     unsigned generation() const { return m_generation; }
@@ -86,8 +86,8 @@ public:
             m_shapeCache = FontCache::fontCache()->getShapeCache(key)->weakPtr();
         }
         ASSERT(m_shapeCache);
-        if (fontSelector())
-            m_shapeCache->clearIfVersionChanged(fontSelector()->version());
+        if (getFontSelector())
+            m_shapeCache->clearIfVersionChanged(getFontSelector()->version());
         return m_shapeCache.get();
     }
 

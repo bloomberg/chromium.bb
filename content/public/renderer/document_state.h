@@ -45,7 +45,7 @@ class CONTENT_EXPORT DocumentState
   ~DocumentState() override;
 
   static DocumentState* FromDataSource(blink::WebDataSource* ds) {
-    return static_cast<DocumentState*>(ds->extraData());
+    return static_cast<DocumentState*>(ds->getExtraData());
   }
 
   // The time that this navigation was requested.

@@ -159,7 +159,7 @@ bool hasOffscreenRect(Node* node, WebFocusType type)
     // exposed after we scroll. Adjust the viewport to post-scrolling position.
     // If the container has overflow:hidden, we cannot scroll, so we do not pass direction
     // and we do not adjust for scrolling.
-    int pixelsPerLineStep = ScrollableArea::pixelsPerLineStep(frameView->hostWindow());
+    int pixelsPerLineStep = ScrollableArea::pixelsPerLineStep(frameView->getHostWindow());
     switch (type) {
     case WebFocusTypeLeft:
         containerViewportRect.setX(containerViewportRect.x() - pixelsPerLineStep);
@@ -197,7 +197,7 @@ bool scrollInDirection(LocalFrame* frame, WebFocusType type)
     if (frame && canScrollInDirection(frame->document(), type)) {
         int dx = 0;
         int dy = 0;
-        int pixelsPerLineStep = ScrollableArea::pixelsPerLineStep(frame->view()->hostWindow());
+        int pixelsPerLineStep = ScrollableArea::pixelsPerLineStep(frame->view()->getHostWindow());
         switch (type) {
         case WebFocusTypeLeft:
             dx = - pixelsPerLineStep;
@@ -236,7 +236,7 @@ bool scrollInDirection(Node* container, WebFocusType type)
         int dy = 0;
         // TODO(leviw): Why are these values truncated (toInt) instead of rounding?
         FrameView* frameView = container->document().view();
-        int pixelsPerLineStep = ScrollableArea::pixelsPerLineStep(frameView ? frameView->hostWindow() : nullptr);
+        int pixelsPerLineStep = ScrollableArea::pixelsPerLineStep(frameView ? frameView->getHostWindow() : nullptr);
         switch (type) {
         case WebFocusTypeLeft:
             dx = - std::min(pixelsPerLineStep, container->layoutBox()->scrollLeft().toInt());

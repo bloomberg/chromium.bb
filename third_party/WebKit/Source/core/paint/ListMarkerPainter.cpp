@@ -113,7 +113,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
 
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.bounds = marker;
-    IntPoint textOrigin = IntPoint(marker.x(), marker.y() + m_layoutListMarker.style()->fontMetrics().ascent());
+    IntPoint textOrigin = IntPoint(marker.x(), marker.y() + m_layoutListMarker.style()->getFontMetrics().ascent());
 
     // Text is not arbitrary. We can judge whether it's RTL from the first character,
     // and we only need to handle the direction RightToLeft for now.

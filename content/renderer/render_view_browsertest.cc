@@ -2063,7 +2063,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
       DocumentState::FromDataSource(GetMainFrame()->dataSource()));
   ASSERT_TRUE(provider);
   extra_data = static_cast<RequestExtraData*>(
-      GetMainFrame()->dataSource()->request().extraData());
+      GetMainFrame()->dataSource()->request().getExtraData());
   ASSERT_TRUE(extra_data);
   EXPECT_EQ(extra_data->service_worker_provider_id(),
             provider->provider_id());
@@ -2076,7 +2076,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   ASSERT_TRUE(provider);
   EXPECT_NE(provider1_id, provider->provider_id());
   extra_data = static_cast<RequestExtraData*>(
-      GetMainFrame()->dataSource()->request().extraData());
+      GetMainFrame()->dataSource()->request().getExtraData());
   ASSERT_TRUE(extra_data);
   EXPECT_EQ(extra_data->service_worker_provider_id(),
             provider->provider_id());
@@ -2087,7 +2087,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   request.setRequestContext(blink::WebURLRequest::RequestContextSubresource);
   blink::WebURLResponse redirect_response;
   frame()->willSendRequest(GetMainFrame(), 0, request, redirect_response);
-  extra_data = static_cast<RequestExtraData*>(request.extraData());
+  extra_data = static_cast<RequestExtraData*>(request.getExtraData());
   ASSERT_TRUE(extra_data);
   EXPECT_EQ(extra_data->service_worker_provider_id(),
             provider->provider_id());

@@ -48,7 +48,7 @@ public:
         int contextId = V8Debugger::contextId(object->CreationContext());
         if (!contextId)
             return "";
-        InjectedScript* injectedScript = m_runtimeAgent->injectedScriptManager()->findInjectedScript(contextId);
+        InjectedScript* injectedScript = m_runtimeAgent->getInjectedScriptManager()->findInjectedScript(contextId);
         if (!injectedScript)
             return "";
         String16 name = injectedScript->origin().latin1Data();

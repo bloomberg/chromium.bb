@@ -151,7 +151,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     // Set our font.
     const Font& font = styleToUse.font();
 
-    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
+    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.getFontMetrics().ascent());
 
     // 1. Paint backgrounds behind text if needed. Examples of such backgrounds include selection
     // and composition highlights.
@@ -422,7 +422,7 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context, const L
     // So, we generally place the underline at the bottom of the text, but in larger fonts that's not so good so
     // we pin to two pixels under the baseline.
     int lineThickness = misspellingLineThickness;
-    int baseline = m_inlineTextBox.getLineLayoutItem().style(m_inlineTextBox.isFirstLineStyle())->fontMetrics().ascent();
+    int baseline = m_inlineTextBox.getLineLayoutItem().style(m_inlineTextBox.isFirstLineStyle())->getFontMetrics().ascent();
     int descent = m_inlineTextBox.logicalHeight() - baseline;
     int underlineOffset;
     if (descent <= (lineThickness + 2)) {
@@ -753,14 +753,14 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
     bool isPrinting = paintInfo.isPrinting();
 
     const ComputedStyle& styleToUse = textBoxLayoutObject.styleRef(m_inlineTextBox.isFirstLineStyle());
-    float baseline = styleToUse.fontMetrics().ascent();
+    float baseline = styleToUse.getFontMetrics().ascent();
 
     // Set the thick of the line to be 10% (or something else ?)of the computed font size and not less than 1px.
     // Using computedFontSize should take care of zoom as well.
 
     // Update Underline thickness, in case we have Faulty Font Metrics calculating underline thickness by old method.
-    float textDecorationThickness = styleToUse.fontMetrics().underlineThickness();
-    int fontHeightInt  = (int)(styleToUse.fontMetrics().floatHeight() + 0.5);
+    float textDecorationThickness = styleToUse.getFontMetrics().underlineThickness();
+    int fontHeightInt  = (int)(styleToUse.getFontMetrics().floatHeight() + 0.5);
     if ((textDecorationThickness == 0.f) || (textDecorationThickness >= (fontHeightInt >> 1)))
         textDecorationThickness = std::max(1.f, styleToUse.computedFontSize() / 10.f);
 
@@ -772,7 +772,7 @@ void InlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, const Lay
     float doubleOffset = textDecorationThickness + 1.f;
 
     if (deco & TextDecorationUnderline) {
-        const int underlineOffset = computeUnderlineOffset(styleToUse.getTextUnderlinePosition(), styleToUse.fontMetrics(), &m_inlineTextBox, textDecorationThickness);
+        const int underlineOffset = computeUnderlineOffset(styleToUse.getTextUnderlinePosition(), styleToUse.getFontMetrics(), &m_inlineTextBox, textDecorationThickness);
         paintAppliedDecoration(context, FloatPoint(localOrigin) + FloatPoint(0, underlineOffset), width.toFloat(), doubleOffset, 1, underline, textDecorationThickness, antialiasDecoration, isPrinting);
     }
     if (deco & TextDecorationOverline) {
@@ -813,7 +813,7 @@ void InlineTextBoxPainter::paintCompositionUnderline(GraphicsContext& context, c
     // All other marked text underlines are 1px thick.
     // If there's not enough space the underline will touch or overlap characters.
     int lineThickness = 1;
-    int baseline = m_inlineTextBox.getLineLayoutItem().style(m_inlineTextBox.isFirstLineStyle())->fontMetrics().ascent();
+    int baseline = m_inlineTextBox.getLineLayoutItem().style(m_inlineTextBox.isFirstLineStyle())->getFontMetrics().ascent();
     if (underline.thick && m_inlineTextBox.logicalHeight() - baseline >= 2)
         lineThickness = 2;
 
@@ -846,7 +846,7 @@ void InlineTextBoxPainter::paintTextMatchMarkerForeground(const PaintInfo& paint
     textStyle.shadow = 0;
 
     LayoutRect boxRect(boxOrigin, LayoutSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
-    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
+    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.getFontMetrics().ascent());
     TextPainter textPainter(paintInfo.context, font, run, textOrigin, boxRect, m_inlineTextBox.isHorizontal());
 
     textPainter.paint(sPos, ePos, m_inlineTextBox.len(), textStyle, 0);

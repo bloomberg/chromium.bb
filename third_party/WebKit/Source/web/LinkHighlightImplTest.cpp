@@ -86,14 +86,14 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration)
     // Shouldn't crash.
     webViewImpl->enableTapHighlightAtPoint(getTargetedEvent(webViewImpl, touchEvent));
 
-    EXPECT_TRUE(webViewImpl->linkHighlight(0));
-    EXPECT_TRUE(webViewImpl->linkHighlight(0)->contentLayer());
-    EXPECT_TRUE(webViewImpl->linkHighlight(0)->clipLayer());
+    EXPECT_TRUE(webViewImpl->getLinkHighlight(0));
+    EXPECT_TRUE(webViewImpl->getLinkHighlight(0)->contentLayer());
+    EXPECT_TRUE(webViewImpl->getLinkHighlight(0)->clipLayer());
 
     // Find a target inside a scrollable div
     touchEvent.y = 100;
     webViewImpl->enableTapHighlightAtPoint(getTargetedEvent(webViewImpl, touchEvent));
-    ASSERT_TRUE(webViewImpl->linkHighlight(0));
+    ASSERT_TRUE(webViewImpl->getLinkHighlight(0));
 
     // Don't highlight if no "hand cursor"
     touchEvent.y = 220; // An A-link with cross-hair cursor.
@@ -151,11 +151,11 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval)
     ASSERT_TRUE(touchNode);
 
     webViewImpl->enableTapHighlightAtPoint(targetedEvent);
-    ASSERT_TRUE(webViewImpl->linkHighlight(0));
+    ASSERT_TRUE(webViewImpl->getLinkHighlight(0));
 
-    GraphicsLayer* highlightLayer = webViewImpl->linkHighlight(0)->currentGraphicsLayerForTesting();
+    GraphicsLayer* highlightLayer = webViewImpl->getLinkHighlight(0)->currentGraphicsLayerForTesting();
     ASSERT_TRUE(highlightLayer);
-    EXPECT_TRUE(highlightLayer->linkHighlight(0));
+    EXPECT_TRUE(highlightLayer->getLinkHighlight(0));
 
     touchNode->remove(IGNORE_EXCEPTION);
     webViewImpl->updateAllLifecyclePhases();
@@ -192,11 +192,11 @@ TEST(LinkHighlightImplTest, resetLayerTreeView)
     ASSERT_TRUE(touchNode);
 
     webViewImpl->enableTapHighlightAtPoint(targetedEvent);
-    ASSERT_TRUE(webViewImpl->linkHighlight(0));
+    ASSERT_TRUE(webViewImpl->getLinkHighlight(0));
 
-    GraphicsLayer* highlightLayer = webViewImpl->linkHighlight(0)->currentGraphicsLayerForTesting();
+    GraphicsLayer* highlightLayer = webViewImpl->getLinkHighlight(0)->currentGraphicsLayerForTesting();
     ASSERT_TRUE(highlightLayer);
-    EXPECT_TRUE(highlightLayer->linkHighlight(0));
+    EXPECT_TRUE(highlightLayer->getLinkHighlight(0));
 
     // Mimic the logic from RenderWidget::Close:
     webViewImpl->willCloseLayerTreeView();

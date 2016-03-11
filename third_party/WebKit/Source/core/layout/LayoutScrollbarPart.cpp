@@ -212,7 +212,7 @@ void LayoutScrollbarPart::setNeedsPaintInvalidation()
     }
 
     // This LayoutScrollbarPart belongs to a PaintLayerScrollableArea.
-    toLayoutBox(parent())->scrollableArea()->setScrollCornerNeedsPaintInvalidation();
+    toLayoutBox(parent())->getScrollableArea()->setScrollCornerNeedsPaintInvalidation();
 }
 
 } // namespace blink

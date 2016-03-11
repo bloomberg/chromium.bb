@@ -116,8 +116,8 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
 HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run)
     : Shaper(font, run)
     , m_normalizedBufferLength(0)
-    , m_wordSpacingAdjustment(font->fontDescription().wordSpacing())
-    , m_letterSpacing(font->fontDescription().letterSpacing())
+    , m_wordSpacingAdjustment(font->getFontDescription().wordSpacing())
+    , m_letterSpacing(font->getFontDescription().letterSpacing())
     , m_expansionOpportunityCount(0)
 {
     m_normalizedBuffer = adoptArrayPtr(new UChar[m_textRun.length() + 1]);
@@ -171,7 +171,7 @@ static inline hb_feature_t createFeature(uint8_t c1, uint8_t c2, uint8_t c3, uin
 
 void HarfBuzzShaper::setFontFeatures()
 {
-    const FontDescription& description = m_font->fontDescription();
+    const FontDescription& description = m_font->getFontDescription();
 
     static hb_feature_t noKern = createFeature('k', 'e', 'r', 'n');
     static hb_feature_t noVkrn = createFeature('v', 'k', 'r', 'n');
@@ -332,10 +332,10 @@ inline bool HarfBuzzShaper::shapeRange(hb_buffer_t* harfBuzzBuffer,
     hb_buffer_set_language(harfBuzzBuffer, language);
     hb_buffer_set_script(harfBuzzBuffer, ICUScriptToHBScript(currentRunScript));
     hb_buffer_set_direction(harfBuzzBuffer, TextDirectionToHBDirection(m_textRun.direction(),
-        m_font->fontDescription().orientation(), currentFont));
+        m_font->getFontDescription().orientation(), currentFont));
 
     addToHarfBuzzBufferInternal(harfBuzzBuffer,
-        m_font->fontDescription(), m_normalizedBuffer.get(), m_normalizedBufferLength,
+        m_font->getFontDescription(), m_normalizedBuffer.get(), m_normalizedBufferLength,
         startIndex, numCharacters);
 
     HarfBuzzScopedPtr<hb_font_t> harfBuzzFont(face->createFont(currentFontRangeFrom, currentFontRangeTo), hb_font_destroy);
@@ -459,7 +459,7 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
             // Here we need to specify glyph positions.
             OwnPtr<ShapeResult::RunInfo> run = adoptPtr(new ShapeResult::RunInfo(currentFont,
                 TextDirectionToHBDirection(m_textRun.direction(),
-                m_font->fontDescription().orientation(), currentFont),
+                m_font->getFontDescription().orientation(), currentFont),
                 ICUScriptToHBScript(currentRunScript),
                 startIndex,
                 numGlyphsToInsert, numCharacters));
@@ -523,7 +523,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
         m_normalizedBufferLength, m_textRun.direction());
     HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(), hb_buffer_destroy);
 
-    const FontDescription& fontDescription = m_font->fontDescription();
+    const FontDescription& fontDescription = m_font->getFontDescription();
     const String& localeString = fontDescription.locale();
     CString locale = localeString.latin1();
     const hb_language_t language = hb_language_from_string(locale.data(), locale.length());
@@ -538,7 +538,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
     RunSegmenter runSegmenter(
         m_normalizedBuffer.get(),
         m_normalizedBufferLength,
-        m_font->fontDescription().orientation(),
+        m_font->getFontDescription().orientation(),
         fontDescription.variant());
 
     Vector<UChar32> fallbackCharsHint;
@@ -599,7 +599,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
             // TODO: crbug.com/506224 This should go away in favor of storing that information elsewhere, for example in
             // ShapeResult.
             const SimpleFontData* directionAndSmallCapsAdjustedFont = fontDataAdjustedForOrientation(smallcapsAdjustedFont,
-                m_font->fontDescription().orientation(),
+                m_font->getFontDescription().orientation(),
                 segmentRange.renderOrientation);
 
             if (!shapeRange(harfBuzzBuffer.get(),
@@ -645,7 +645,7 @@ void HarfBuzzShaper::insertRunIntoShapeResult(ShapeResult* result,
     float totalAdvance = 0.0f;
     FloatPoint glyphOrigin;
     float offsetX, offsetY;
-    float* directionOffset = m_font->fontDescription().isVerticalAnyUpright() ? &offsetY : &offsetX;
+    float* directionOffset = m_font->getFontDescription().isVerticalAnyUpright() ? &offsetY : &offsetX;
     bool hasVerticalOffsets = !HB_DIRECTION_IS_HORIZONTAL(run->m_direction);
 
     // HarfBuzz returns result in visual order, no need to flip for RTL.

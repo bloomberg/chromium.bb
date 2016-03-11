@@ -47,11 +47,11 @@ TEST(FloatRoundedRectTest, zeroRadii)
     FloatRoundedRect r = FloatRoundedRect(1, 2, 3, 4);
 
     EXPECT_EQ(FloatRect(1, 2, 3, 4), r.rect());
-    EXPECT_EQ(FloatSize(), r.radii().topLeft());
-    EXPECT_EQ(FloatSize(), r.radii().topRight());
-    EXPECT_EQ(FloatSize(), r.radii().bottomLeft());
-    EXPECT_EQ(FloatSize(), r.radii().bottomRight());
-    EXPECT_TRUE(r.radii().isZero());
+    EXPECT_EQ(FloatSize(), r.getRadii().topLeft());
+    EXPECT_EQ(FloatSize(), r.getRadii().topRight());
+    EXPECT_EQ(FloatSize(), r.getRadii().bottomLeft());
+    EXPECT_EQ(FloatSize(), r.getRadii().bottomRight());
+    EXPECT_TRUE(r.getRadii().isZero());
     EXPECT_FALSE(r.isRounded());
     EXPECT_FALSE(r.isEmpty());
 
@@ -74,7 +74,7 @@ TEST(FloatRoundedRectTest, zeroRadii)
     // are <= zero. Same as RoundedRect::expandRadii().
     r.expandRadii(20);
     r.shrinkRadii(10);
-    EXPECT_TRUE(r.radii().isZero());
+    EXPECT_TRUE(r.getRadii().isZero());
 }
 
 TEST(FloatRoundedRectTest, circle)
@@ -83,11 +83,11 @@ TEST(FloatRoundedRectTest, circle)
     FloatRoundedRect r(FloatRect(0, 0, 100, 100), cornerRadii, cornerRadii, cornerRadii, cornerRadii);
 
     EXPECT_EQ(FloatRect(0, 0, 100, 100), r.rect());
-    EXPECT_EQ(cornerRadii, r.radii().topLeft());
-    EXPECT_EQ(cornerRadii, r.radii().topRight());
-    EXPECT_EQ(cornerRadii, r.radii().bottomLeft());
-    EXPECT_EQ(cornerRadii, r.radii().bottomRight());
-    EXPECT_FALSE(r.radii().isZero());
+    EXPECT_EQ(cornerRadii, r.getRadii().topLeft());
+    EXPECT_EQ(cornerRadii, r.getRadii().topRight());
+    EXPECT_EQ(cornerRadii, r.getRadii().bottomLeft());
+    EXPECT_EQ(cornerRadii, r.getRadii().bottomRight());
+    EXPECT_FALSE(r.getRadii().isZero());
     EXPECT_TRUE(r.isRounded());
     EXPECT_FALSE(r.isEmpty());
 
@@ -133,7 +133,7 @@ TEST(FloatRoundedRectTest, ellipticalCorners)
 
     FloatRoundedRect r(FloatRect(0, 0, 100, 100), cornerRadii);
 
-    EXPECT_EQ(r.radii(), FloatRoundedRect::Radii(FloatSize(10, 15), FloatSize(10, 20), FloatSize(25, 15), FloatSize(20, 30)));
+    EXPECT_EQ(r.getRadii(), FloatRoundedRect::Radii(FloatSize(10, 15), FloatSize(10, 20), FloatSize(25, 15), FloatSize(20, 30)));
     EXPECT_EQ(r, FloatRoundedRect(FloatRect(0, 0, 100, 100), cornerRadii));
 
     EXPECT_EQ(FloatRect(0, 0, 10, 15), r.topLeftCorner());

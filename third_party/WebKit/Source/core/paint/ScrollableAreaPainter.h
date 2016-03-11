@@ -29,7 +29,7 @@ private:
     void drawPlatformResizerImage(GraphicsContext&, IntRect resizerCornerRect);
     bool overflowControlsIntersectRect(const CullRect&) const;
 
-    PaintLayerScrollableArea& scrollableArea() const;
+    PaintLayerScrollableArea& getScrollableArea() const;
 
     RawPtrWillBeMember<PaintLayerScrollableArea> m_scrollableArea;
 };

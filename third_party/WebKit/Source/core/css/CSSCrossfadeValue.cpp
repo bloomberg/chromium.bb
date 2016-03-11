@@ -88,10 +88,10 @@ static Image* renderableImageForCSSValue(CSSValue* value, const LayoutObject* la
 {
     ImageResource* cachedImage = cachedImageForCSSValue(value, &layoutObject->document());
 
-    if (!cachedImage || cachedImage->errorOccurred() || cachedImage->image()->isNull())
+    if (!cachedImage || cachedImage->errorOccurred() || cachedImage->getImage()->isNull())
         return nullptr;
 
-    return cachedImage->image();
+    return cachedImage->getImage();
 }
 
 static KURL urlForCSSValue(const CSSValue* value)

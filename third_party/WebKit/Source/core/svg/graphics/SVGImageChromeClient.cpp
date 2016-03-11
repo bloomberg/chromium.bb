@@ -62,8 +62,8 @@ void SVGImageChromeClient::chromeDestroyed()
 void SVGImageChromeClient::invalidateRect(const IntRect& r)
 {
     // If m_image->m_page is null, we're being destructed, don't fire changedInRect() in that case.
-    if (m_image && m_image->imageObserver() && m_image->m_page)
-        m_image->imageObserver()->changedInRect(m_image, r);
+    if (m_image && m_image->getImageObserver() && m_image->m_page)
+        m_image->getImageObserver()->changedInRect(m_image, r);
 }
 
 void SVGImageChromeClient::scheduleAnimation(Widget*)
@@ -95,7 +95,7 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     //
     // TODO(Oilpan): move (SVG)Image to the Oilpan heap, and avoid
     // this explicit lifetime check.
-    if (Heap::willObjectBeLazilySwept(m_image->imageObserver()))
+    if (Heap::willObjectBeLazilySwept(m_image->getImageObserver()))
         return;
 #endif
 
@@ -106,7 +106,7 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     // The calls below may trigger GCs, so set up the required persistent
     // reference on the ImageResource which owns this SVGImage. By transitivity,
     // that will keep this SVGImageChromeClient object alive.
-    RawPtrWillBePersistent<ImageObserver> protect(m_image->imageObserver());
+    RawPtrWillBePersistent<ImageObserver> protect(m_image->getImageObserver());
     m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
     m_image->frameView()->updateAllLifecyclePhases();
 }

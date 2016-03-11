@@ -465,7 +465,7 @@ static inline void calculateGlyphBoundaries(const QueryData* queryData, const SV
     ASSERT(scalingFactor);
 
     FloatPoint glyphPosition = calculateGlyphPositionWithoutTransform(queryData, fragment, startPosition);
-    glyphPosition.move(0, -queryData->textLineLayout.scaledFont().fontMetrics().floatAscent() / scalingFactor);
+    glyphPosition.move(0, -queryData->textLineLayout.scaledFont().getFontMetrics().floatAscent() / scalingFactor);
     extent.setLocation(glyphPosition);
 
     // Use the SVGTextMetrics computed by SVGTextMetricsBuilder (which spends
@@ -497,7 +497,7 @@ static inline FloatRect calculateFragmentBoundaries(LineLayoutSVGInlineText text
 {
     float scalingFactor = textLineLayout.scalingFactor();
     ASSERT(scalingFactor);
-    float baseline = textLineLayout.scaledFont().fontMetrics().floatAscent() / scalingFactor;
+    float baseline = textLineLayout.scaledFont().getFontMetrics().floatAscent() / scalingFactor;
     return fragment.boundingBox(baseline);
 }
 

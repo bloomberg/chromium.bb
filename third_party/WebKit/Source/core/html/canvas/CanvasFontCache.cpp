@@ -35,7 +35,7 @@ CanvasFontCache::CanvasFontCache(Document& document)
     defaultFontDescription.setComputedSize(defaultFontSize);
     m_defaultFontStyle = ComputedStyle::create();
     m_defaultFontStyle->setFontDescription(defaultFontDescription);
-    m_defaultFontStyle->font().update(m_defaultFontStyle->font().fontSelector());
+    m_defaultFontStyle->font().update(m_defaultFontStyle->font().getFontSelector());
 }
 
 CanvasFontCache::~CanvasFontCache()

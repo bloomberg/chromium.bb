@@ -247,7 +247,7 @@ bool LayoutImage::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
         return false;
     // Check for image with alpha.
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(this, *m_imageResource->cachedImage()));
-    return m_imageResource->cachedImage()->image()->currentFrameKnownToBeOpaque(Image::PreCacheMetadata);
+    return m_imageResource->cachedImage()->getImage()->currentFrameKnownToBeOpaque(Image::PreCacheMetadata);
 }
 
 bool LayoutImage::computeBackgroundIsKnownToBeObscured() const
@@ -318,8 +318,8 @@ LayoutBox* LayoutImage::embeddedContentBox() const
         return nullptr;
 
     ImageResource* cachedImage = m_imageResource->cachedImage();
-    if (cachedImage && cachedImage->image() && cachedImage->image()->isSVGImage())
-        return toSVGImage(cachedImage->image())->embeddedContentBox();
+    if (cachedImage && cachedImage->getImage() && cachedImage->getImage()->isSVGImage())
+        return toSVGImage(cachedImage->getImage())->embeddedContentBox();
 
     return nullptr;
 }

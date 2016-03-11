@@ -23,7 +23,7 @@ public:
     BLINK_PLATFORM_EXPORT static WebFont* create(const WebFontDescription&);
     BLINK_PLATFORM_EXPORT ~WebFont();
 
-    BLINK_PLATFORM_EXPORT WebFontDescription fontDescription() const;
+    BLINK_PLATFORM_EXPORT WebFontDescription getFontDescription() const;
     BLINK_PLATFORM_EXPORT int ascent() const;
     BLINK_PLATFORM_EXPORT int descent() const;
     BLINK_PLATFORM_EXPORT int height() const;

@@ -256,7 +256,7 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
     // If our zoom factor changes and we have a defined scrollLeft/Top, we need to adjust that value into the
     // new zoomed coordinate space.
     if (hasOverflowClip() && oldStyle && oldStyle->effectiveZoom() != newStyle.effectiveZoom()) {
-        PaintLayerScrollableArea* scrollableArea = this->scrollableArea();
+        PaintLayerScrollableArea* scrollableArea = this->getScrollableArea();
         ASSERT(scrollableArea);
         if (int left = scrollableArea->scrollXOffset()) {
             left = (left / oldStyle->effectiveZoom()) * newStyle.effectiveZoom();
@@ -281,7 +281,7 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
         document().view()->recalculateScrollbarOverlayStyle(document().view()->documentBackgroundColor());
         document().view()->recalculateCustomScrollbarStyle();
         if (LayoutView* layoutView = view()) {
-            if (PaintLayerScrollableArea* scrollableArea = layoutView->scrollableArea()) {
+            if (PaintLayerScrollableArea* scrollableArea = layoutView->getScrollableArea()) {
                 if (scrollableArea->horizontalScrollbar() && scrollableArea->horizontalScrollbar()->isCustomScrollbar())
                     scrollableArea->horizontalScrollbar()->styleChanged();
                 if (scrollableArea->verticalScrollbar() && scrollableArea->verticalScrollbar()->isCustomScrollbar())
@@ -439,7 +439,7 @@ int LayoutBox::pixelSnappedOffsetHeight() const
 LayoutUnit LayoutBox::scrollWidth() const
 {
     if (hasOverflowClip())
-        return scrollableArea()->scrollWidth();
+        return getScrollableArea()->scrollWidth();
     // For objects with visible overflow, this matches IE.
     // FIXME: Need to work right with writing modes.
     if (style()->isLeftToRightDirection())
@@ -450,7 +450,7 @@ LayoutUnit LayoutBox::scrollWidth() const
 LayoutUnit LayoutBox::scrollHeight() const
 {
     if (hasOverflowClip())
-        return scrollableArea()->scrollHeight();
+        return getScrollableArea()->scrollHeight();
     // For objects with visible overflow, this matches IE.
     // FIXME: Need to work right with writing modes.
     return std::max(clientHeight(), layoutOverflowRect().maxY() - borderTop());
@@ -458,12 +458,12 @@ LayoutUnit LayoutBox::scrollHeight() const
 
 LayoutUnit LayoutBox::scrollLeft() const
 {
-    return hasOverflowClip() ? LayoutUnit(scrollableArea()->scrollXOffset()) : LayoutUnit();
+    return hasOverflowClip() ? LayoutUnit(getScrollableArea()->scrollXOffset()) : LayoutUnit();
 }
 
 LayoutUnit LayoutBox::scrollTop() const
 {
-    return hasOverflowClip() ? LayoutUnit(scrollableArea()->scrollYOffset()) : LayoutUnit();
+    return hasOverflowClip() ? LayoutUnit(getScrollableArea()->scrollYOffset()) : LayoutUnit();
 }
 
 int LayoutBox::pixelSnappedScrollWidth() const
@@ -474,7 +474,7 @@ int LayoutBox::pixelSnappedScrollWidth() const
 int LayoutBox::pixelSnappedScrollHeight() const
 {
     if (hasOverflowClip())
-        return snapSizeToPixel(scrollableArea()->scrollHeight(), location().y() + clientTop());
+        return snapSizeToPixel(getScrollableArea()->scrollHeight(), location().y() + clientTop());
     // For objects with visible overflow, this matches IE.
     // FIXME: Need to work right with writing modes.
     return snapSizeToPixel(scrollHeight(), location().y() + clientTop());
@@ -487,7 +487,7 @@ void LayoutBox::setScrollLeft(LayoutUnit newLeft)
     DisableCompositingQueryAsserts disabler;
 
     if (hasOverflowClip())
-        scrollableArea()->scrollToXOffset(newLeft, ScrollOffsetClamped, ScrollBehaviorAuto);
+        getScrollableArea()->scrollToXOffset(newLeft, ScrollOffsetClamped, ScrollBehaviorAuto);
 }
 
 void LayoutBox::setScrollTop(LayoutUnit newTop)
@@ -496,7 +496,7 @@ void LayoutBox::setScrollTop(LayoutUnit newTop)
     DisableCompositingQueryAsserts disabler;
 
     if (hasOverflowClip())
-        scrollableArea()->scrollToYOffset(newTop, ScrollOffsetClamped, ScrollBehaviorAuto);
+        getScrollableArea()->scrollToYOffset(newTop, ScrollOffsetClamped, ScrollBehaviorAuto);
 }
 
 void LayoutBox::scrollToOffset(const DoubleSize& offset, ScrollBehavior scrollBehavior)
@@ -506,7 +506,7 @@ void LayoutBox::scrollToOffset(const DoubleSize& offset, ScrollBehavior scrollBe
     DisableCompositingQueryAsserts disabler;
 
     if (hasOverflowClip())
-        scrollableArea()->scrollToOffset(offset, ScrollOffsetClamped, scrollBehavior);
+        getScrollableArea()->scrollToOffset(offset, ScrollOffsetClamped, scrollBehavior);
 }
 
 // Returns true iff we are attempting an autoscroll inside an iframe with scrolling="no".
@@ -540,13 +540,13 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
     if (hasOverflowClip() && !restrictedByLineClamp) {
         // Don't scroll to reveal an overflow layer that is restricted by the -webkit-line-clamp property.
         // This will prevent us from revealing text hidden by the slider in Safari RSS.
-        newRect = scrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
+        newRect = getScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
     } else if (!parentBox && canBeProgramaticallyScrolled()) {
         if (FrameView* frameView = this->frameView()) {
             HTMLFrameOwnerElement* ownerElement = document().ownerElement();
             if (!isDisallowedAutoscroll(ownerElement, frameView)) {
                 if (makeVisibleInVisualViewport) {
-                    frameView->scrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
+                    frameView->getScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
                 } else {
                     frameView->layoutViewportScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
                 }
@@ -644,7 +644,7 @@ void LayoutBox::setLocationAndUpdateOverflowControlsIfNeeded(const LayoutPoint& 
         IntSize oldPixelSnappedBorderRectSize = pixelSnappedBorderBoxRect().size();
         setLocation(location);
         if (pixelSnappedBorderBoxRect().size() != oldPixelSnappedBorderRectSize)
-            scrollableArea()->updateAfterLayout();
+            getScrollableArea()->updateAfterLayout();
         return;
     }
 
@@ -737,7 +737,7 @@ int LayoutBox::verticalScrollbarWidth() const
     if (!hasOverflowClip() || style()->overflowY() == OverflowOverlay)
         return 0;
 
-    return scrollableArea()->verticalScrollbarWidth();
+    return getScrollableArea()->verticalScrollbarWidth();
 }
 
 int LayoutBox::horizontalScrollbarHeight() const
@@ -745,7 +745,7 @@ int LayoutBox::horizontalScrollbarHeight() const
     if (!hasOverflowClip() || style()->overflowX() == OverflowOverlay)
         return 0;
 
-    return scrollableArea()->horizontalScrollbarHeight();
+    return getScrollableArea()->horizontalScrollbarHeight();
 }
 
 int LayoutBox::intrinsicScrollbarLogicalWidth() const
@@ -753,16 +753,16 @@ int LayoutBox::intrinsicScrollbarLogicalWidth() const
     if (!hasOverflowClip())
         return 0;
 
-    ASSERT(scrollableArea());
+    ASSERT(getScrollableArea());
 
     if (isHorizontalWritingMode() && style()->overflowY() == OverflowScroll) {
         // Even with OverflowScroll, the scrollbar may not exist (crbug.com/415031).
-        return scrollableArea()->hasVerticalScrollbar() ? verticalScrollbarWidth() : 0;
+        return getScrollableArea()->hasVerticalScrollbar() ? verticalScrollbarWidth() : 0;
     }
 
     if (!isHorizontalWritingMode() && style()->overflowX() == OverflowScroll) {
         // Even with OverflowScroll, the scrollbar may not exist (crbug.com/415031).
-        return scrollableArea()->hasHorizontalScrollbar() ? horizontalScrollbarHeight() : 0;
+        return getScrollableArea()->hasHorizontalScrollbar() ? horizontalScrollbarHeight() : 0;
     }
 
     return 0;
@@ -773,10 +773,10 @@ ScrollResult LayoutBox::scroll(ScrollGranularity granularity, const FloatSize& d
     // Presumably the same issue as in setScrollTop. See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
-    if (!scrollableArea())
+    if (!getScrollableArea())
         return ScrollResult();
 
-    return scrollableArea()->userScroll(granularity, delta);
+    return getScrollableArea()->userScroll(granularity, delta);
 }
 
 bool LayoutBox::canBeScrolledAndHasScrollableArea() const
@@ -920,7 +920,7 @@ void LayoutBox::scrollByRecursively(const DoubleSize& delta, ScrollOffsetClampin
         restrictedByLineClamp = !parent()->style()->lineClamp().isNone();
 
     if (hasOverflowClip() && !restrictedByLineClamp) {
-        PaintLayerScrollableArea* scrollableArea = this->scrollableArea();
+        PaintLayerScrollableArea* scrollableArea = this->getScrollableArea();
         ASSERT(scrollableArea);
 
         DoubleSize newScrollOffset = scrollableArea->adjustedScrollOffset() + delta;
@@ -957,7 +957,7 @@ IntSize LayoutBox::scrolledContentOffset() const
     ASSERT(hasOverflowClip());
     ASSERT(hasLayer());
     // FIXME: Return DoubleSize here. crbug.com/414283.
-    return flooredIntSize(scrollableArea()->scrollOffset());
+    return flooredIntSize(getScrollableArea()->scrollOffset());
 }
 
 void LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect) const
@@ -1456,7 +1456,7 @@ bool LayoutBox::invalidatePaintOfLayerRectsForImage(WrappedImagePtr image, const
         return false;
     for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
         if (curLayer->image() && image == curLayer->image()->data()) {
-            bool maybeAnimated = curLayer->image()->cachedImage() && curLayer->image()->cachedImage()->image() && curLayer->image()->cachedImage()->image()->maybeAnimated();
+            bool maybeAnimated = curLayer->image()->cachedImage() && curLayer->image()->cachedImage()->getImage() && curLayer->image()->cachedImage()->getImage()->maybeAnimated();
             if (maybeAnimated && drawingBackground)
                 setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
             else
@@ -1477,7 +1477,7 @@ bool LayoutBox::intersectsVisibleViewport()
     while (layoutView->frame()->ownerLayoutObject())
         layoutView = layoutView->frame()->ownerLayoutObject()->view();
     mapToVisibleRectInAncestorSpace(layoutView, rect, nullptr);
-    return rect.intersects(LayoutRect(layoutView->frameView()->scrollableArea()->visibleContentRectDouble()));
+    return rect.intersects(LayoutRect(layoutView->frameView()->getScrollableArea()->visibleContentRectDouble()));
 }
 
 PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
@@ -1487,7 +1487,7 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
 
     if (hasBoxDecorationBackground()
         // We also paint overflow controls in background phase.
-        || (hasOverflowClip() && scrollableArea()->hasOverflowControls())) {
+        || (hasOverflowClip() && getScrollableArea()->hasOverflowControls())) {
         PaintLayer& layer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
         if (layer.layoutObject() != this)
             layer.setNeedsPaintPhaseDescendantBlockBackgrounds();
@@ -1510,7 +1510,7 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
     if (!view()->doingFullPaintInvalidation() && !isFullPaintInvalidationReason(reason))
         invalidatePaintForOverflowIfNeeded();
 
-    if (PaintLayerScrollableArea* area = scrollableArea())
+    if (PaintLayerScrollableArea* area = getScrollableArea())
         area->invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState, paintInvalidationContainer);
 
     // This is for the next invalidatePaintIfNeeded so must be at the end.
@@ -1543,7 +1543,7 @@ LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrol
 
 void LayoutBox::excludeScrollbars(LayoutRect& rect, OverlayScrollbarSizeRelevancy relevancy) const
 {
-    if (PaintLayerScrollableArea* scrollableArea = this->scrollableArea()) {
+    if (PaintLayerScrollableArea* scrollableArea = this->getScrollableArea()) {
         if (shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
             rect.move(scrollableArea->verticalScrollbarWidth(relevancy), 0);
         rect.contract(scrollableArea->verticalScrollbarWidth(relevancy), scrollableArea->horizontalScrollbarHeight(relevancy));
@@ -3628,7 +3628,7 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit
     // <rdar://problem/3777804> Deleting all content in a document can result in giant tall-as-window insertion point
     //
     // FIXME: ignoring :first-line, missing good reason to take care of
-    LayoutUnit fontHeight = LayoutUnit(style()->fontMetrics().height());
+    LayoutUnit fontHeight = LayoutUnit(style()->getFontMetrics().height());
     if (fontHeight > rect.height() || (!isAtomicInlineLevel() && !isTable()))
         rect.setHeight(fontHeight);
 
@@ -3759,7 +3759,7 @@ bool LayoutBox::avoidsFloats() const
 
 bool LayoutBox::hasNonCompositedScrollbars() const
 {
-    if (PaintLayerScrollableArea* scrollableArea = this->scrollableArea()) {
+    if (PaintLayerScrollableArea* scrollableArea = this->getScrollableArea()) {
         if (scrollableArea->hasHorizontalScrollbar() && !scrollableArea->layerForHorizontalScrollbar())
             return true;
         if (scrollableArea->hasVerticalScrollbar() && !scrollableArea->layerForVerticalScrollbar())
@@ -3840,7 +3840,7 @@ PaintInvalidationReason LayoutBox::getPaintInvalidationReason(const LayoutBoxMod
         // we need to fully invalidate to cover the changed radius.
         FloatRoundedRect oldRoundedRect = style()->getRoundedBorderFor(LayoutRect(LayoutPoint(0, 0), oldBorderBoxSize));
         FloatRoundedRect newRoundedRect = style()->getRoundedBorderFor(LayoutRect(LayoutPoint(0, 0), newBorderBoxSize));
-        if (oldRoundedRect.radii() != newRoundedRect.radii())
+        if (oldRoundedRect.getRadii() != newRoundedRect.getRadii())
             return PaintInvalidationBorderBoxChange;
     }
 
@@ -4646,7 +4646,7 @@ ShapeOutsideInfo* LayoutBox::shapeOutsideInfo() const
 void LayoutBox::clearPreviousPaintInvalidationRects()
 {
     LayoutBoxModelObject::clearPreviousPaintInvalidationRects();
-    if (PaintLayerScrollableArea* scrollableArea = this->scrollableArea())
+    if (PaintLayerScrollableArea* scrollableArea = this->getScrollableArea())
         scrollableArea->clearPreviousPaintInvalidationRects();
 }
 

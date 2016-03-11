@@ -117,7 +117,7 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
         case ButtonPart: {
             // Border
             LengthBox borderBox(style.borderTopWidth(), style.borderRightWidth(), style.borderBottomWidth(), style.borderLeftWidth());
-            borderBox = m_platformTheme->controlBorder(part, style.font().fontDescription(), borderBox, style.effectiveZoom());
+            borderBox = m_platformTheme->controlBorder(part, style.font().getFontDescription(), borderBox, style.effectiveZoom());
             if (borderBox.top().value() != static_cast<int>(style.borderTopWidth())) {
                 if (borderBox.top().value())
                     style.setBorderTopWidth(borderBox.top().value());
@@ -146,7 +146,7 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
             }
 
             // Padding
-            LengthBox paddingBox = m_platformTheme->controlPadding(part, style.font().fontDescription(), style.paddingBox(), style.effectiveZoom());
+            LengthBox paddingBox = m_platformTheme->controlPadding(part, style.font().getFontDescription(), style.paddingBox(), style.effectiveZoom());
             if (paddingBox != style.paddingBox())
                 style.setPaddingBox(paddingBox);
 
@@ -157,22 +157,22 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
             // Width / Height
             // The width and height here are affected by the zoom.
             // FIXME: Check is flawed, since it doesn't take min-width/max-width into account.
-            LengthSize controlSize = m_platformTheme->controlSize(part, style.font().fontDescription(), LengthSize(style.width(), style.height()), style.effectiveZoom());
+            LengthSize controlSize = m_platformTheme->controlSize(part, style.font().getFontDescription(), LengthSize(style.width(), style.height()), style.effectiveZoom());
             if (controlSize.width() != style.width())
                 style.setWidth(controlSize.width());
             if (controlSize.height() != style.height())
                 style.setHeight(controlSize.height());
 
             // Min-Width / Min-Height
-            LengthSize minControlSize = m_platformTheme->minimumControlSize(part, style.font().fontDescription(), style.effectiveZoom());
+            LengthSize minControlSize = m_platformTheme->minimumControlSize(part, style.font().getFontDescription(), style.effectiveZoom());
             if (minControlSize.width() != style.minWidth())
                 style.setMinWidth(minControlSize.width());
             if (minControlSize.height() != style.minHeight())
                 style.setMinHeight(minControlSize.height());
 
             // Font
-            FontDescription controlFont = m_platformTheme->controlFont(part, style.font().fontDescription(), style.effectiveZoom());
-            if (controlFont != style.font().fontDescription()) {
+            FontDescription controlFont = m_platformTheme->controlFont(part, style.font().getFontDescription(), style.effectiveZoom());
+            if (controlFont != style.font().getFontDescription()) {
                 // Reset our line-height
                 style.setLineHeight(ComputedStyle::initialLineHeight());
 

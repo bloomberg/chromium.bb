@@ -43,8 +43,8 @@ public:
 
     bool isEmpty() const { return m_displayItemList.isEmpty(); }
 
-    DisplayItemList& displayItemList() { return m_displayItemList; }
-    const DisplayItemList& displayItemList() const { return m_displayItemList; }
+    DisplayItemList& getDisplayItemList() { return m_displayItemList; }
+    const DisplayItemList& getDisplayItemList() const { return m_displayItemList; }
 
     Vector<PaintChunk>& paintChunks() { return m_paintChunks; }
     const Vector<PaintChunk>& paintChunks() const { return m_paintChunks; }

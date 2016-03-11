@@ -166,7 +166,7 @@ public:
     IntPoint rootFrameToViewport(const IntPoint&) const;
 
     // ScrollableArea implementation
-    HostWindow* hostWindow() const override;
+    HostWindow* getHostWindow() const override;
     DoubleRect visibleContentRectDouble(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     IntRect visibleContentRect(IncludeScrollbarsInRect = ExcludeScrollbars) const override;
     bool shouldUseIntegerScrollOffset() const override;
@@ -193,7 +193,7 @@ public:
     GraphicsLayer* layerForScrolling() const override;
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;
-    Widget* widget() override;
+    Widget* getWidget() override;
 
     // Used for gathering data on user pinch-zoom statistics.
     void userDidChangeScale();

@@ -87,7 +87,7 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
 {
     // Account for letter-spacing.
     if (width)
-        width += m_font->fontDescription().letterSpacing();
+        width += m_font->getFontDescription().letterSpacing();
 
     bool isExpansionOpportunity = Character::treatAsSpace(charData.character) || (m_textRun.getTextJustify() == TextJustifyDistribute);
     if (isExpansionOpportunity || (m_textRun.getTextJustify() == TextJustifyAuto && Character::isCJKIdeographOrSymbol(charData.character))) {
@@ -113,8 +113,8 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
         // We apply additional space between "words" by adding width to the space character.
         if (isExpansionOpportunity && (charData.character != tabulationCharacter || !m_textRun.allowTabs())
             && (charData.characterOffset || charData.character == noBreakSpaceCharacter)
-            && m_font->fontDescription().wordSpacing()) {
-            width += m_font->fontDescription().wordSpacing();
+            && m_font->getFontDescription().wordSpacing()) {
+            width += m_font->getFontDescription().wordSpacing();
         }
     } else {
         m_isAfterExpansion = false;
@@ -126,7 +126,7 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
 template <typename TextIterator>
 unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* glyphBuffer)
 {
-    bool hasExtraSpacing = (m_font->fontDescription().letterSpacing() || m_font->fontDescription().wordSpacing() || m_expansion)
+    bool hasExtraSpacing = (m_font->getFontDescription().letterSpacing() || m_font->getFontDescription().wordSpacing() || m_expansion)
         && !m_textRun.spacingDisabled();
 
     const SimpleFontData* lastFontData = m_font->primaryFont();

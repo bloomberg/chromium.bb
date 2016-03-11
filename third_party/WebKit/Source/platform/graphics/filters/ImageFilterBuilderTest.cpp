@@ -43,7 +43,7 @@ protected:
         RefPtrWillBeRawPtr<Filter> referenceFilter = Filter::create(1.0f);
 
         // Add a dummy source graphic input
-        RefPtrWillBeRawPtr<FilterEffect> sourceEffect = referenceFilter->sourceGraphic();
+        RefPtrWillBeRawPtr<FilterEffect> sourceEffect = referenceFilter->getSourceGraphic();
         sourceEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
 
         // Add a blur effect (with input : source)

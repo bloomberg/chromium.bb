@@ -46,7 +46,7 @@ public:
         , m_widthSoFar(0), m_startIndex(0)
     {
         ASSERT(font);
-        const FontDescription& fontDescription = font->fontDescription();
+        const FontDescription& fontDescription = font->getFontDescription();
 
         // Word and letter spacing can change the width of a word, as can tabs
         // as we segment solely based on on space characters.

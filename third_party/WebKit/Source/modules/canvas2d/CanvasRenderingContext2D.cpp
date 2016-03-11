@@ -415,7 +415,7 @@ String CanvasRenderingContext2D::font() const
 
     canvas()->document().canvasFontCache()->willUseCurrentFont();
     StringBuilder serializedFont;
-    const FontDescription& fontDescription = state().font().fontDescription();
+    const FontDescription& fontDescription = state().font().getFontDescription();
 
     if (fontDescription.style() == FontStyleItalic)
         serializedFont.appendLiteral("italic ");
@@ -479,11 +479,11 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
             if (!parsedStyle)
                 return;
             fontStyle = ComputedStyle::create();
-            FontDescription elementFontDescription(computedStyle->fontDescription());
+            FontDescription elementFontDescription(computedStyle->getFontDescription());
             // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
             elementFontDescription.setComputedSize(elementFontDescription.specifiedSize());
             fontStyle->setFontDescription(elementFontDescription);
-            fontStyle->font().update(fontStyle->font().fontSelector());
+            fontStyle->font().update(fontStyle->font().getFontSelector());
             canvas()->document().ensureStyleResolver().computeFont(fontStyle.get(), *parsedStyle);
             m_fontsResolvedUsingCurrentStyle.add(newFont, fontStyle->font());
             ASSERT(!m_fontLRUList.contains(newFont));
@@ -694,7 +694,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text)
         direction = toTextDirection(state().getDirection(), canvas());
     TextRun textRun(text, 0, 0, TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, direction, false);
     textRun.setNormalizeSpace(true);
-    FloatRect textBounds = font.selectionRectForText(textRun, FloatPoint(), font.fontDescription().computedSize(), 0, -1, true);
+    FloatRect textBounds = font.selectionRectForText(textRun, FloatPoint(), font.getFontDescription().computedSize(), 0, -1, true);
 
     // x direction
     metrics->setWidth(font.width(textRun));
@@ -702,7 +702,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text)
     metrics->setActualBoundingBoxRight(textBounds.maxX());
 
     // y direction
-    const FontMetrics& fontMetrics = font.fontMetrics();
+    const FontMetrics& fontMetrics = font.getFontMetrics();
     const float ascent = fontMetrics.floatAscent();
     const float descent = fontMetrics.floatDescent();
     const float baselineY = getFontBaseline(fontMetrics);
@@ -754,7 +754,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, do
     if (!font.primaryFont())
         return;
 
-    const FontMetrics& fontMetrics = font.fontMetrics();
+    const FontMetrics& fontMetrics = font.getFontMetrics();
 
     // FIXME: Need to turn off font smoothing.
 
@@ -921,7 +921,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     SkColor color = LayoutTheme::theme().focusRingColor().rgb();
     const int focusRingWidth = 5;
 
-    drawPlatformFocusRing(path.skPath(), drawingCanvas(), color, focusRingWidth);
+    drawPlatformFocusRing(path.getSkPath(), drawingCanvas(), color, focusRingWidth);
 
     // We need to add focusRingWidth to dirtyRect.
     StrokeData strokeData;

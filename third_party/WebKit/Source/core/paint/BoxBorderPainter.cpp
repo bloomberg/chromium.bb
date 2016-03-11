@@ -167,7 +167,7 @@ FloatRoundedRect calculateAdjustedInnerBorder(const FloatRoundedRect& innerBorde
     // Expand the inner border as necessary to make it a rounded rect (i.e. radii contained within each edge).
     // This function relies on the fact we only get radii not contained within each edge if one of the radii
     // for an edge is zero, so we can shift the arc towards the zero radius corner.
-    FloatRoundedRect::Radii newRadii = innerBorder.radii();
+    FloatRoundedRect::Radii newRadii = innerBorder.getRadii();
     FloatRect newRect = innerBorder.rect();
 
     float overshoot;
@@ -729,7 +729,7 @@ void BoxBorderPainter::paintSide(GraphicsContext& context, const ComplexBorderIn
     switch (side) {
     case BSTop: {
         bool usePath = m_isRounded && (borderStyleHasInnerDetail(edge.borderStyle())
-            || borderWillArcInnerEdge(m_inner.radii().topLeft(), m_inner.radii().topRight()));
+            || borderWillArcInnerEdge(m_inner.getRadii().topLeft(), m_inner.getRadii().topRight()));
         if (usePath)
             path = &borderInfo.roundedBorderPath;
         else
@@ -741,7 +741,7 @@ void BoxBorderPainter::paintSide(GraphicsContext& context, const ComplexBorderIn
     }
     case BSBottom: {
         bool usePath = m_isRounded && (borderStyleHasInnerDetail(edge.borderStyle())
-            || borderWillArcInnerEdge(m_inner.radii().bottomLeft(), m_inner.radii().bottomRight()));
+            || borderWillArcInnerEdge(m_inner.getRadii().bottomLeft(), m_inner.getRadii().bottomRight()));
         if (usePath)
             path = &borderInfo.roundedBorderPath;
         else
@@ -753,7 +753,7 @@ void BoxBorderPainter::paintSide(GraphicsContext& context, const ComplexBorderIn
     }
     case BSLeft: {
         bool usePath = m_isRounded && (borderStyleHasInnerDetail(edge.borderStyle())
-            || borderWillArcInnerEdge(m_inner.radii().bottomLeft(), m_inner.radii().topLeft()));
+            || borderWillArcInnerEdge(m_inner.getRadii().bottomLeft(), m_inner.getRadii().topLeft()));
         if (usePath)
             path = &borderInfo.roundedBorderPath;
         else
@@ -765,7 +765,7 @@ void BoxBorderPainter::paintSide(GraphicsContext& context, const ComplexBorderIn
     }
     case BSRight: {
         bool usePath = m_isRounded && (borderStyleHasInnerDetail(edge.borderStyle())
-            || borderWillArcInnerEdge(m_inner.radii().bottomRight(), m_inner.radii().topRight()));
+            || borderWillArcInnerEdge(m_inner.getRadii().bottomRight(), m_inner.getRadii().topRight()));
         if (usePath)
             path = &borderInfo.roundedBorderPath;
         else
@@ -1042,25 +1042,25 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext, B
         quad[2] = FloatPoint(innerRect.maxXMinYCorner());
         quad[3] = FloatPoint(outerRect.maxXMinYCorner());
 
-        if (!m_inner.radii().topLeft().isZero()) {
+        if (!m_inner.getRadii().topLeft().isZero()) {
             findIntersection(quad[0], quad[1],
                 FloatPoint(
-                    quad[1].x() + m_inner.radii().topLeft().width(),
+                    quad[1].x() + m_inner.getRadii().topLeft().width(),
                     quad[1].y()),
                 FloatPoint(
                     quad[1].x(),
-                    quad[1].y() + m_inner.radii().topLeft().height()),
+                    quad[1].y() + m_inner.getRadii().topLeft().height()),
                 quad[1]);
         }
 
-        if (!m_inner.radii().topRight().isZero()) {
+        if (!m_inner.getRadii().topRight().isZero()) {
             findIntersection(quad[3], quad[2],
                 FloatPoint(
-                    quad[2].x() - m_inner.radii().topRight().width(),
+                    quad[2].x() - m_inner.getRadii().topRight().width(),
                     quad[2].y()),
                 FloatPoint(
                     quad[2].x(),
-                    quad[2].y() + m_inner.radii().topRight().height()),
+                    quad[2].y() + m_inner.getRadii().topRight().height()),
                 quad[2]);
         }
         break;
@@ -1071,25 +1071,25 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext, B
         quad[2] = FloatPoint(innerRect.minXMaxYCorner());
         quad[3] = FloatPoint(outerRect.minXMaxYCorner());
 
-        if (!m_inner.radii().topLeft().isZero()) {
+        if (!m_inner.getRadii().topLeft().isZero()) {
             findIntersection(quad[0], quad[1],
                 FloatPoint(
-                    quad[1].x() + m_inner.radii().topLeft().width(),
+                    quad[1].x() + m_inner.getRadii().topLeft().width(),
                     quad[1].y()),
                 FloatPoint(
                     quad[1].x(),
-                    quad[1].y() + m_inner.radii().topLeft().height()),
+                    quad[1].y() + m_inner.getRadii().topLeft().height()),
                 quad[1]);
         }
 
-        if (!m_inner.radii().bottomLeft().isZero()) {
+        if (!m_inner.getRadii().bottomLeft().isZero()) {
             findIntersection(quad[3], quad[2],
                 FloatPoint(
-                    quad[2].x() + m_inner.radii().bottomLeft().width(),
+                    quad[2].x() + m_inner.getRadii().bottomLeft().width(),
                     quad[2].y()),
                 FloatPoint(
                     quad[2].x(),
-                    quad[2].y() - m_inner.radii().bottomLeft().height()),
+                    quad[2].y() - m_inner.getRadii().bottomLeft().height()),
                 quad[2]);
         }
         break;
@@ -1100,25 +1100,25 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext, B
         quad[2] = FloatPoint(innerRect.maxXMaxYCorner());
         quad[3] = FloatPoint(outerRect.maxXMaxYCorner());
 
-        if (!m_inner.radii().bottomLeft().isZero()) {
+        if (!m_inner.getRadii().bottomLeft().isZero()) {
             findIntersection(quad[0], quad[1],
                 FloatPoint(
-                    quad[1].x() + m_inner.radii().bottomLeft().width(),
+                    quad[1].x() + m_inner.getRadii().bottomLeft().width(),
                     quad[1].y()),
                 FloatPoint(
                     quad[1].x(),
-                    quad[1].y() - m_inner.radii().bottomLeft().height()),
+                    quad[1].y() - m_inner.getRadii().bottomLeft().height()),
                 quad[1]);
         }
 
-        if (!m_inner.radii().bottomRight().isZero()) {
+        if (!m_inner.getRadii().bottomRight().isZero()) {
             findIntersection(quad[3], quad[2],
                 FloatPoint(
-                    quad[2].x() - m_inner.radii().bottomRight().width(),
+                    quad[2].x() - m_inner.getRadii().bottomRight().width(),
                     quad[2].y()),
                 FloatPoint(
                     quad[2].x(),
-                    quad[2].y() - m_inner.radii().bottomRight().height()),
+                    quad[2].y() - m_inner.getRadii().bottomRight().height()),
                 quad[2]);
         }
         break;
@@ -1129,25 +1129,25 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext, B
         quad[2] = FloatPoint(innerRect.maxXMaxYCorner());
         quad[3] = FloatPoint(outerRect.maxXMaxYCorner());
 
-        if (!m_inner.radii().topRight().isZero()) {
+        if (!m_inner.getRadii().topRight().isZero()) {
             findIntersection(quad[0], quad[1],
                 FloatPoint(
-                    quad[1].x() - m_inner.radii().topRight().width(),
+                    quad[1].x() - m_inner.getRadii().topRight().width(),
                     quad[1].y()),
                 FloatPoint(
                     quad[1].x(),
-                    quad[1].y() + m_inner.radii().topRight().height()),
+                    quad[1].y() + m_inner.getRadii().topRight().height()),
                 quad[1]);
         }
 
-        if (!m_inner.radii().bottomRight().isZero()) {
+        if (!m_inner.getRadii().bottomRight().isZero()) {
             findIntersection(quad[3], quad[2],
                 FloatPoint(
-                    quad[2].x() - m_inner.radii().bottomRight().width(),
+                    quad[2].x() - m_inner.getRadii().bottomRight().width(),
                     quad[2].y()),
                 FloatPoint(
                     quad[2].x(),
-                    quad[2].y() - m_inner.radii().bottomRight().height()),
+                    quad[2].y() - m_inner.getRadii().bottomRight().height()),
                 quad[2]);
         }
         break;

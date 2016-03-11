@@ -37,7 +37,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::RecordingContent);
 
-    SourceGraphic* sourceGraphic = filterData->filter->sourceGraphic();
+    SourceGraphic* sourceGraphic = filterData->filter->getSourceGraphic();
     ASSERT(sourceGraphic);
 
     GraphicsContext* context = &paintingContext();
@@ -62,7 +62,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
 static void paintFilteredContent(const LayoutObject& object, GraphicsContext& context, FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::ReadyToPaint);
-    ASSERT(filterData->filter->sourceGraphic());
+    ASSERT(filterData->filter->getSourceGraphic());
 
     filterData->m_state = FilterData::PaintingFilter;
 
@@ -133,10 +133,10 @@ GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVG
     filterData->nodeMap = SVGFilterGraphNodeMap::create();
 
     IntRect sourceRegion = enclosingIntRect(intersection(filterRegion, object.strokeBoundingBox()));
-    filterData->filter->sourceGraphic()->setSourceRect(sourceRegion);
+    filterData->filter->getSourceGraphic()->setSourceRect(sourceRegion);
 
     // Create all relevant filter primitives.
-    SVGFilterBuilder builder(filterData->filter->sourceGraphic(), filterData->nodeMap.get());
+    SVGFilterBuilder builder(filterData->filter->getSourceGraphic(), filterData->nodeMap.get());
     builder.buildGraph(filterData->filter.get(), *filterElement, referenceBox);
 
     FilterEffect* lastEffect = builder.lastEffect();

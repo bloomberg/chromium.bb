@@ -217,7 +217,7 @@ void Heap::pushTraceCallback(void* object, TraceCallback callback)
     ASSERT(ThreadState::current()->isInGC());
 
     // Trace should never reach an orphaned page.
-    ASSERT(!Heap::orphanedPagePool()->contains(object));
+    ASSERT(!Heap::getOrphanedPagePool()->contains(object));
     CallbackStack::Item* slot = s_markingStack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
 }
@@ -236,7 +236,7 @@ void Heap::pushPostMarkingCallback(void* object, TraceCallback callback)
     ASSERT(ThreadState::current()->isInGC());
 
     // Trace should never reach an orphaned page.
-    ASSERT(!Heap::orphanedPagePool()->contains(object));
+    ASSERT(!Heap::getOrphanedPagePool()->contains(object));
     CallbackStack::Item* slot = s_postMarkingCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
 }
@@ -255,7 +255,7 @@ void Heap::pushGlobalWeakCallback(void** cell, WeakCallback callback)
     ASSERT(ThreadState::current()->isInGC());
 
     // Trace should never reach an orphaned page.
-    ASSERT(!Heap::orphanedPagePool()->contains(cell));
+    ASSERT(!Heap::getOrphanedPagePool()->contains(cell));
     CallbackStack::Item* slot = s_globalWeakCallbackStack->allocateEntry();
     *slot = CallbackStack::Item(cell, callback);
 }
@@ -265,8 +265,8 @@ void Heap::pushThreadLocalWeakCallback(void* closure, void* object, WeakCallback
     ASSERT(ThreadState::current()->isInGC());
 
     // Trace should never reach an orphaned page.
-    ASSERT(!Heap::orphanedPagePool()->contains(object));
-    ThreadState* state = pageFromObject(object)->arena()->threadState();
+    ASSERT(!Heap::getOrphanedPagePool()->contains(object));
+    ThreadState* state = pageFromObject(object)->arena()->getThreadState();
     state->pushThreadLocalWeakCallback(closure, callback);
 }
 
@@ -284,7 +284,7 @@ void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, E
     ASSERT(ThreadState::current()->isInGC());
 
     // Trace should never reach an orphaned page.
-    ASSERT(!Heap::orphanedPagePool()->contains(table));
+    ASSERT(!Heap::getOrphanedPagePool()->contains(table));
     CallbackStack::Item* slot = s_ephemeronStack->allocateEntry();
     *slot = CallbackStack::Item(table, iterationCallback);
 
@@ -403,7 +403,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     // Now we can delete all orphaned pages because there are no dangling
     // pointers to the orphaned pages.  (If we have such dangling pointers,
     // we should have crashed during marking before getting here.)
-    orphanedPagePool()->decommitOrphanedPages();
+    getOrphanedPagePool()->decommitOrphanedPages();
 
     double markingTimeInMilliseconds = WTF::currentTimeMS() - startTime;
     s_estimatedMarkingTimePerByte = totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0;

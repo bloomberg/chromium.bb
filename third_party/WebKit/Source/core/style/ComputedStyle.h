@@ -594,8 +594,8 @@ public:
     bool isFixedTableLayout() const { return tableLayout() == TableLayoutFixed && !logicalWidth().isAuto(); }
 
     const Font& font() const;
-    const FontMetrics& fontMetrics() const;
-    const FontDescription& fontDescription() const;
+    const FontMetrics& getFontMetrics() const;
+    const FontDescription& getFontDescription() const;
     float specifiedFontSize() const;
     float computedFontSize() const;
     int fontSize() const;
@@ -865,7 +865,7 @@ public:
     LineBreak getLineBreak() const { return static_cast<LineBreak>(rareInheritedData->lineBreak); }
     const AtomicString& highlight() const { return rareInheritedData->highlight; }
     const AtomicString& hyphenationString() const { return rareInheritedData->hyphenationString; }
-    const AtomicString& locale() const { return fontDescription().locale(false); }
+    const AtomicString& locale() const { return getFontDescription().locale(false); }
     EResize resize() const { return static_cast<EResize>(rareNonInheritedData->m_resize); }
     bool hasInlinePaginationAxis() const
     {

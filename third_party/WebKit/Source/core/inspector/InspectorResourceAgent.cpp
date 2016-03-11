@@ -389,7 +389,7 @@ static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(co
     if (response.getSecurityStyle() != ResourceResponse::SecurityStyleUnknown
         && response.getSecurityStyle() != ResourceResponse::SecurityStyleUnauthenticated) {
 
-        const ResourceResponse::SecurityDetails* responseSecurityDetails = response.securityDetails();
+        const ResourceResponse::SecurityDetails* responseSecurityDetails = response.getSecurityDetails();
 
         int numUnknownSCTs = safeCast<int>(responseSecurityDetails->numUnknownSCTs);
         int numInvalidSCTs = safeCast<int>(responseSecurityDetails->numInvalidSCTs);

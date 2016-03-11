@@ -510,7 +510,7 @@ void EditingStyle::setProperty(CSSPropertyID propertyID, const String& value, bo
 void EditingStyle::replaceFontSizeByKeywordIfPossible(const ComputedStyle* computedStyle, CSSComputedStyleDeclaration* cssComputedStyle)
 {
     ASSERT(computedStyle);
-    if (computedStyle->fontDescription().keywordSize())
+    if (computedStyle->getFontDescription().keywordSize())
         m_mutableStyle->setProperty(CSSPropertyFontSize, cssComputedStyle->getFontSizeCSSValuePreferringKeyword()->cssText());
 }
 

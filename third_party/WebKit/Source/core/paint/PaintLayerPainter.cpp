@@ -348,13 +348,13 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
             ObjectPaintProperties* objectPaintProperties = m_paintLayer.layoutObject()->objectPaintProperties();
             ASSERT(objectPaintProperties && objectPaintProperties->localBorderBoxProperties());
-            PaintChunkProperties properties(context.paintController().currentPaintChunkProperties());
+            PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
             auto& localBorderBoxProperties = *objectPaintProperties->localBorderBoxProperties();
             properties.transform = localBorderBoxProperties.transform;
             properties.clip = localBorderBoxProperties.clip;
             properties.effect = localBorderBoxProperties.effect;
             properties.backfaceHidden = m_paintLayer.layoutObject()->hasHiddenBackface();
-            scopedPaintChunkProperties.emplace(context.paintController(), properties);
+            scopedPaintChunkProperties.emplace(context.getPaintController(), properties);
         }
 
         bool shouldPaintBackground = isPaintingCompositedBackground && shouldPaintContent && !selectionOnly;
@@ -588,7 +588,7 @@ bool PaintLayerPainter::shouldPaintLayerInSoftwareMode(const GlobalPaintFlags gl
 
 void PaintLayerPainter::paintOverflowControlsForFragments(const PaintLayerFragments& layerFragments, GraphicsContext& context, const PaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags)
 {
-    PaintLayerScrollableArea* scrollableArea = m_paintLayer.scrollableArea();
+    PaintLayerScrollableArea* scrollableArea = m_paintLayer.getScrollableArea();
     if (!scrollableArea)
         return;
 

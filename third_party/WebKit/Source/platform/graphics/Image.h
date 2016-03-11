@@ -129,7 +129,7 @@ public:
     virtual void advanceAnimationForTesting() { }
 
     // Typically the ImageResource that owns us.
-    ImageObserver* imageObserver() const { return m_imageObserver; }
+    ImageObserver* getImageObserver() const { return m_imageObserver; }
     void setImageObserver(ImageObserver* observer) { m_imageObserver = observer; }
 
     enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };

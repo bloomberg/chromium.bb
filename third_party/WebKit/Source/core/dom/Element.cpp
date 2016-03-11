@@ -901,7 +901,7 @@ void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions)
     LocalFrame* frame = document().frame();
     if (!frame)
         return;
-    ScrollableArea* viewport = frame->view() ? frame->view()->scrollableArea() : 0;
+    ScrollableArea* viewport = frame->view() ? frame->view()->getScrollableArea() : 0;
     if (!viewport)
         return;
 
@@ -917,7 +917,7 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
     LocalFrame* frame = document().frame();
     if (!frame)
         return;
-    ScrollableArea* viewport = frame->view() ? frame->view()->scrollableArea() : 0;
+    ScrollableArea* viewport = frame->view() ? frame->view()->getScrollableArea() : 0;
     if (!viewport)
         return;
 

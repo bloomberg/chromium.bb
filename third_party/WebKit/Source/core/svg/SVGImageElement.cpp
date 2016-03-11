@@ -64,7 +64,7 @@ bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const
 {
     if (LayoutSVGImage* layoutSVGImage = toLayoutSVGImage(layoutObject())) {
         if (layoutSVGImage->imageResource()->hasImage()) {
-            if (Image* image = layoutSVGImage->imageResource()->cachedImage()->image())
+            if (Image* image = layoutSVGImage->imageResource()->cachedImage()->getImage())
                 return image->currentFrameHasSingleSecurityOrigin();
         }
     }

@@ -47,7 +47,7 @@ public:
 
     // Wraps rootLayer(), so that it can be attached as a child of another
     // WebLayer.
-    WebLayer* webLayer() const { return m_webLayer.get(); }
+    WebLayer* getWebLayer() const { return m_webLayer.get(); }
 
 private:
     class ContentLayerClientImpl;

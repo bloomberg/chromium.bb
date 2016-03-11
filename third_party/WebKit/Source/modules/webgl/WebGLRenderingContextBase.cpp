@@ -4020,7 +4020,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
     if (!validateTexture2DBinding("texImage2D", target))
         return;
 
-    RefPtr<Image> imageForRender = image->cachedImage()->image();
+    RefPtr<Image> imageForRender = image->cachedImage()->getImage();
     if (imageForRender && imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.release(), image->width(), image->height(), "texImage2D");
 
@@ -4394,7 +4394,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     if (!validateTexture2DBinding("texSubImage2D", target))
         return;
 
-    RefPtr<Image> imageForRender = image->cachedImage()->image();
+    RefPtr<Image> imageForRender = image->cachedImage()->getImage();
     if (imageForRender && imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.release(), image->width(), image->height(), "texSubImage2D");
 

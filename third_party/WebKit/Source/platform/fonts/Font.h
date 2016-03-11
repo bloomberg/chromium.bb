@@ -71,7 +71,7 @@ public:
     bool operator==(const Font& other) const;
     bool operator!=(const Font& other) const { return !(*this == other); }
 
-    const FontDescription& fontDescription() const { return m_fontDescription; }
+    const FontDescription& getFontDescription() const { return m_fontDescription; }
 
     void update(PassRefPtrWillBeRawPtr<FontSelector>) const;
 
@@ -88,12 +88,12 @@ public:
     FloatRect selectionRectForText(const TextRun&, const FloatPoint&, int h, int from = 0, int to = -1, bool accountForGlyphBounds = false) const;
 
     // Metrics that we query the FontFallbackList for.
-    const FontMetrics& fontMetrics() const
+    const FontMetrics& getFontMetrics() const
     {
         RELEASE_ASSERT(primaryFont());
-        return primaryFont()->fontMetrics();
+        return primaryFont()->getFontMetrics();
     }
-    float spaceWidth() const { return primaryFont()->spaceWidth() + fontDescription().letterSpacing(); }
+    float spaceWidth() const { return primaryFont()->spaceWidth() + getFontDescription().letterSpacing(); }
     float tabWidth(const SimpleFontData&, const TabSize&, float position) const;
     float tabWidth(const TabSize& tabSize, float position) const { return tabWidth(*primaryFont(), tabSize, position); }
 
@@ -139,7 +139,7 @@ private:
     friend struct SimpleShaper;
 
 public:
-    FontSelector* fontSelector() const;
+    FontSelector* getFontSelector() const;
     PassRefPtr<FontFallbackIterator> createFontFallbackIterator(
         FontFallbackPriority) const;
 
@@ -179,21 +179,21 @@ inline const FontData* Font::fontDataAt(unsigned index) const
     return m_fontFallbackList->fontDataAt(m_fontDescription, index);
 }
 
-inline FontSelector* Font::fontSelector() const
+inline FontSelector* Font::getFontSelector() const
 {
-    return m_fontFallbackList ? m_fontFallbackList->fontSelector() : 0;
+    return m_fontFallbackList ? m_fontFallbackList->getFontSelector() : 0;
 }
 
 inline float Font::tabWidth(const SimpleFontData& fontData, const TabSize& tabSize, float position) const
 {
     float baseTabWidth = tabSize.getPixelSize(fontData.spaceWidth());
     if (!baseTabWidth)
-        return fontDescription().letterSpacing();
+        return getFontDescription().letterSpacing();
     float distanceToTabStop = baseTabWidth - fmodf(position, baseTabWidth);
 
     // The smallest allowable tab space is letterSpacing() (but must be at least one layout unit).
     // if the distance to the next tab stop is less than that, advance an additional tab stop.
-    if (distanceToTabStop < std::max(fontDescription().letterSpacing(), LayoutUnit::epsilon()))
+    if (distanceToTabStop < std::max(getFontDescription().letterSpacing(), LayoutUnit::epsilon()))
         distanceToTabStop += baseTabWidth;
 
     return distanceToTabStop;

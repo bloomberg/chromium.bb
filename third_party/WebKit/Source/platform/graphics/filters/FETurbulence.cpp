@@ -135,8 +135,8 @@ SkShader* FETurbulence::createShader()
     // and not the target bounding box scale (as SVGFilter::apply*Scale()
     // would do). Note also that we divide by the scale since this is
     // a frequency, not a period.
-    float baseFrequencyX = m_baseFrequencyX / filter()->scale();
-    float baseFrequencyY = m_baseFrequencyY / filter()->scale();
+    float baseFrequencyX = m_baseFrequencyX / getFilter()->scale();
+    float baseFrequencyY = m_baseFrequencyY / getFilter()->scale();
     return (type() == FETURBULENCE_TYPE_FRACTALNOISE) ?
         SkPerlinNoiseShader::CreateFractalNoise(SkFloatToScalar(baseFrequencyX),
             SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),

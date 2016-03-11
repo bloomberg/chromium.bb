@@ -104,7 +104,7 @@ public:
     FloatRoundedRect(const FloatRect&, const FloatSize& topLeft, const FloatSize& topRight, const FloatSize& bottomLeft, const FloatSize& bottomRight);
 
     const FloatRect& rect() const { return m_rect; }
-    const Radii& radii() const { return m_radii; }
+    const Radii& getRadii() const { return m_radii; }
     bool isRounded() const { return !m_radii.isZero(); }
     bool isEmpty() const { return m_rect.isEmpty(); }
 
@@ -204,7 +204,7 @@ inline bool operator!=(const FloatRoundedRect::Radii& a, const FloatRoundedRect:
 
 inline bool operator==(const FloatRoundedRect& a, const FloatRoundedRect& b)
 {
-    return a.rect() == b.rect() && a.radii() == b.radii();
+    return a.rect() == b.rect() && a.getRadii() == b.getRadii();
 }
 
 // Redeclared here to avoid ODR issues.

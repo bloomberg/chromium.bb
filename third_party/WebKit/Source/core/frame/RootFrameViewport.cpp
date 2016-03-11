@@ -303,9 +303,9 @@ bool RootFrameViewport::scrollAnimatorEnabled() const
     return layoutViewport().scrollAnimatorEnabled();
 }
 
-HostWindow* RootFrameViewport::hostWindow() const
+HostWindow* RootFrameViewport::getHostWindow() const
 {
-    return layoutViewport().hostWindow();
+    return layoutViewport().getHostWindow();
 }
 
 void RootFrameViewport::serviceScrollAnimations(double monotonicTime)
@@ -329,9 +329,9 @@ void RootFrameViewport::cancelProgrammaticScrollAnimation()
     visualViewport().cancelProgrammaticScrollAnimation();
 }
 
-Widget* RootFrameViewport::widget()
+Widget* RootFrameViewport::getWidget()
 {
-    return visualViewport().widget();
+    return visualViewport().getWidget();
 }
 
 void RootFrameViewport::clearScrollAnimators()

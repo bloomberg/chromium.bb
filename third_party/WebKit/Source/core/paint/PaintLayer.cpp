@@ -2599,7 +2599,7 @@ void PaintLayer::styleChanged(StyleDifference diff, const ComputedStyle* oldStyl
 
 bool PaintLayer::scrollsOverflow() const
 {
-    if (PaintLayerScrollableArea* scrollableArea = this->scrollableArea())
+    if (PaintLayerScrollableArea* scrollableArea = this->getScrollableArea())
         return scrollableArea->scrollsOverflow();
 
     return false;

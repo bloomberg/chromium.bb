@@ -245,7 +245,7 @@ private:
         } else {
             ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
             ASSERT(state->checkThread());
-            m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, traceCallback);
+            m_persistentNode = state->getPersistentRegion()->allocatePersistentNode(this, traceCallback);
 #if ENABLE(ASSERT)
             m_state = state;
 #endif
@@ -264,7 +264,7 @@ private:
             ASSERT(state->checkThread());
             // Persistent handle must be created and destructed in the same thread.
             ASSERT(m_state == state);
-            state->persistentRegion()->freePersistentNode(m_persistentNode);
+            state->getPersistentRegion()->freePersistentNode(m_persistentNode);
         }
         m_persistentNode = nullptr;
     }
@@ -601,7 +601,7 @@ private:
         // FIXME: Derive affinity based on the collection.
         ThreadState* state = ThreadState::current();
         ASSERT(state->checkThread());
-        m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline);
+        m_persistentNode = state->getPersistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline);
 #if ENABLE(ASSERT)
         m_state = state;
 #endif
@@ -613,7 +613,7 @@ private:
         ASSERT(state->checkThread());
         // Persistent handle must be created and destructed in the same thread.
         ASSERT(m_state == state);
-        state->persistentRegion()->freePersistentNode(m_persistentNode);
+        state->getPersistentRegion()->freePersistentNode(m_persistentNode);
     }
 
     PersistentNode* m_persistentNode;

@@ -964,8 +964,8 @@ bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool u
             setPageScaleFactor(newScale);
 
             FrameView* view = mainFrameImpl()->frameView();
-            if (view && view->scrollableArea())
-                view->scrollableArea()->setScrollPosition(DoublePoint(clampedPoint.x, clampedPoint.y), ProgrammaticScroll);
+            if (view && view->getScrollableArea())
+                view->getScrollableArea()->setScrollPosition(DoublePoint(clampedPoint.x, clampedPoint.y), ProgrammaticScroll);
 
             return false;
         }
@@ -4553,7 +4553,7 @@ void WebViewImpl::attachPaintArtifactCompositor()
     // TODO(jbroman): This should probably have hookups for overlays, visual
     // viewport, etc.
 
-    WebLayer* rootLayer = m_paintArtifactCompositor.webLayer();
+    WebLayer* rootLayer = m_paintArtifactCompositor.getWebLayer();
     ASSERT(rootLayer);
     m_layerTreeView->setRootLayer(*rootLayer);
 

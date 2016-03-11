@@ -114,7 +114,7 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
         m_runState = RunState::WaitingToCancelOnCompositor;
 
         // Get serviced the next time compositor updates are allowed.
-        scrollableArea()->registerForAnimation();
+        getScrollableArea()->registerForAnimation();
     }
 }
 
@@ -138,7 +138,7 @@ void ScrollAnimatorCompositorCoordinator::takeoverCompositorAnimation()
         m_runState = RunState::RunningOnCompositorButNeedsTakeover;
 
         // Get serviced the next time compositor updates are allowed.
-        scrollableArea()->registerForAnimation();
+        getScrollableArea()->registerForAnimation();
     }
 }
 
@@ -165,8 +165,8 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
     case RunState::WaitingToCancelOnCompositor:
         m_runState = RunState::PostAnimationCleanup;
         // Get serviced the next time compositor updates are allowed.
-        if (scrollableArea())
-            scrollableArea()->registerForAnimation();
+        if (getScrollableArea())
+            getScrollableArea()->registerForAnimation();
         else
             resetAnimationState();
     }
@@ -177,8 +177,8 @@ bool ScrollAnimatorCompositorCoordinator::reattachCompositorPlayerIfNeeded(
 {
     bool reattached = false;
     int compositorAnimationAttachedToLayerId = 0;
-    if (scrollableArea()->layerForScrolling())
-        compositorAnimationAttachedToLayerId = scrollableArea()->layerForScrolling()->platformLayer()->id();
+    if (getScrollableArea()->layerForScrolling())
+        compositorAnimationAttachedToLayerId = getScrollableArea()->layerForScrolling()->platformLayer()->id();
 
     if (compositorAnimationAttachedToLayerId != m_compositorAnimationAttachedToLayerId) {
         if (m_compositorPlayer && timeline) {
@@ -193,7 +193,7 @@ bool ScrollAnimatorCompositorCoordinator::reattachCompositorPlayerIfNeeded(
                 ASSERT(!m_compositorPlayer->isLayerAttached());
                 timeline->playerAttached(*this);
                 m_compositorPlayer->attachLayer(
-                    scrollableArea()->layerForScrolling()->platformLayer());
+                    getScrollableArea()->layerForScrolling()->platformLayer());
                 reattached = true;
             }
             m_compositorAnimationAttachedToLayerId = compositorAnimationAttachedToLayerId;
@@ -229,13 +229,13 @@ CompositorAnimationPlayer* ScrollAnimatorCompositorCoordinator::compositorPlayer
 
 FloatPoint ScrollAnimatorCompositorCoordinator::compositorOffsetFromBlinkOffset(FloatPoint offset)
 {
-    offset.moveBy(scrollableArea()->scrollOrigin());
+    offset.moveBy(getScrollableArea()->scrollOrigin());
     return offset;
 }
 
 FloatPoint ScrollAnimatorCompositorCoordinator::blinkOffsetFromCompositorOffset(FloatPoint offset)
 {
-    offset.moveBy(-scrollableArea()->scrollOrigin());
+    offset.moveBy(-getScrollableArea()->scrollOrigin());
     return offset;
 }
 

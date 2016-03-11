@@ -27,7 +27,7 @@ InternalDocumentStateData::InternalDocumentStateData()
 // static
 InternalDocumentStateData* InternalDocumentStateData::FromDataSource(
     blink::WebDataSource* ds) {
-  return FromDocumentState(static_cast<DocumentState*>(ds->extraData()));
+  return FromDocumentState(static_cast<DocumentState*>(ds->getExtraData()));
 }
 
 // static

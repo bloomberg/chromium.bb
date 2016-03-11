@@ -47,7 +47,7 @@ PassRefPtr<SkImageFilter> FETile::createImageFilter(SkiaImageFilterBuilder& buil
 {
     RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     FloatRect srcRect = inputEffect(0)->filterPrimitiveSubregion();
-    FloatRect dstRect = applyEffectBoundaries(filter()->filterRegion());
+    FloatRect dstRect = applyEffectBoundaries(getFilter()->filterRegion());
     return adoptRef(SkTileImageFilter::Create(srcRect, dstRect, input.get()));
 }
 

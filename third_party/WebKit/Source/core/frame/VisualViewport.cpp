@@ -151,7 +151,7 @@ FloatRect VisualViewport::visibleRectInDocument() const
     if (!mainFrame() || !mainFrame()->view())
         return FloatRect();
 
-    FloatPoint viewLocation = FloatPoint(mainFrame()->view()->scrollableArea()->scrollPositionDouble());
+    FloatPoint viewLocation = FloatPoint(mainFrame()->view()->getScrollableArea()->scrollPositionDouble());
     return FloatRect(viewLocation, visibleSize());
 }
 
@@ -431,7 +431,7 @@ void VisualViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) con
     layerTreeView->clearViewportLayers();
 }
 
-HostWindow* VisualViewport::hostWindow() const
+HostWindow* VisualViewport::getHostWindow() const
 {
     return &frameHost().chromeClient();
 }
@@ -583,7 +583,7 @@ LocalFrame* VisualViewport::mainFrame() const
     return frameHost().page().mainFrame() && frameHost().page().mainFrame()->isLocalFrame() ? frameHost().page().deprecatedLocalMainFrame() : 0;
 }
 
-Widget* VisualViewport::widget()
+Widget* VisualViewport::getWidget()
 {
     return mainFrame()->view();
 }

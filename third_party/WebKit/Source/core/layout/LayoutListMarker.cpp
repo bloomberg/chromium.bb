@@ -71,7 +71,7 @@ LayoutSize LayoutListMarker::imageBulletSize() const
     // FIXME: This is a somewhat arbitrary default width. Generated images for markers really won't
     // become particularly useful until we support the CSS3 marker pseudoclass to allow control over
     // the width and height of the marker box.
-    LayoutUnit bulletWidth = style()->fontMetrics().ascent() / LayoutUnit(2);
+    LayoutUnit bulletWidth = style()->getFontMetrics().ascent() / LayoutUnit(2);
     return m_image->imageSize(this, style()->effectiveZoom(), LayoutSize(bulletWidth, bulletWidth));
 }
 
@@ -140,7 +140,7 @@ void LayoutListMarker::layout()
         setHeight(imageSize.height());
     } else {
         setLogicalWidth(minPreferredLogicalWidth());
-        setLogicalHeight(LayoutUnit(style()->fontMetrics().height()));
+        setLogicalHeight(LayoutUnit(style()->getFontMetrics().height()));
     }
 
     setMarginStart(LayoutUnit());
@@ -233,7 +233,7 @@ void LayoutListMarker::computePreferredLogicalWidths()
     case ListStyleCategory::None:
         break;
     case ListStyleCategory::Symbol:
-        logicalWidth = LayoutUnit((font.fontMetrics().ascent() * 2 / 3 + 1) / 2 + 2);
+        logicalWidth = LayoutUnit((font.getFontMetrics().ascent() * 2 / 3 + 1) / 2 + 2);
         break;
     case ListStyleCategory::Language:
         logicalWidth = getWidthOfTextWithSuffix();
@@ -250,7 +250,7 @@ void LayoutListMarker::computePreferredLogicalWidths()
 
 void LayoutListMarker::updateMargins()
 {
-    const FontMetrics& fontMetrics = style()->fontMetrics();
+    const FontMetrics& fontMetrics = style()->getFontMetrics();
 
     LayoutUnit marginStart;
     LayoutUnit marginEnd;
@@ -411,14 +411,14 @@ IntRect LayoutListMarker::getRelativeMarkerRect() const
     case ListStyleCategory::Symbol: {
         // TODO(wkorman): Review and clean up/document the calculations below.
         // http://crbug.com/543193
-        const FontMetrics& fontMetrics = style()->fontMetrics();
+        const FontMetrics& fontMetrics = style()->getFontMetrics();
         int ascent = fontMetrics.ascent();
         int bulletWidth = (ascent * 2 / 3 + 1) / 2;
         relativeRect = IntRect(1, 3 * (ascent - ascent * 2 / 3) / 2, bulletWidth, bulletWidth);
         }
         break;
     case ListStyleCategory::Language:
-        relativeRect = IntRect(0, 0, getWidthOfTextWithSuffix(), style()->font().fontMetrics().height());
+        relativeRect = IntRect(0, 0, getWidthOfTextWithSuffix(), style()->font().getFontMetrics().height());
         break;
     }
 

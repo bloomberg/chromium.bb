@@ -469,8 +469,8 @@ void ImageLoader::notifyFinished(Resource* resource)
 
     updateLayoutObject();
 
-    if (m_image && m_image->image() && m_image->image()->isSVGImage())
-        toSVGImage(m_image->image())->updateUseCounters(element()->document());
+    if (m_image && m_image->getImage() && m_image->getImage()->isSVGImage())
+        toSVGImage(m_image->getImage())->updateUseCounters(element()->document());
 
     if (!m_hasPendingLoadEvent)
         return;

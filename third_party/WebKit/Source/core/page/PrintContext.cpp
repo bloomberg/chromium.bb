@@ -275,9 +275,9 @@ String PrintContext::pageProperty(LocalFrame* frame, const char* propertyName, i
     if (!strcmp(propertyName, "line-height"))
         return String::number(style->lineHeight().value());
     if (!strcmp(propertyName, "font-size"))
-        return String::number(style->fontDescription().computedPixelSize());
+        return String::number(style->getFontDescription().computedPixelSize());
     if (!strcmp(propertyName, "font-family"))
-        return style->fontDescription().family().family().string();
+        return style->getFontDescription().family().family().string();
     if (!strcmp(propertyName, "size"))
         return String::number(style->pageSize().width()) + ' ' + String::number(style->pageSize().height());
 

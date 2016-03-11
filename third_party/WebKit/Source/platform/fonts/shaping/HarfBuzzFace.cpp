@@ -253,7 +253,7 @@ static hb_position_t harfBuzzGetGlyphVerticalAdvance(hb_font_t* hbFont, void* fo
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
     const OpenTypeVerticalData* verticalData = hbFontData->m_simpleFontData->verticalData();
     if (!verticalData)
-        return SkiaScalarToHarfBuzzPosition(hbFontData->m_simpleFontData->fontMetrics().height());
+        return SkiaScalarToHarfBuzzPosition(hbFontData->m_simpleFontData->getFontMetrics().height());
 
     Glyph theGlyph = glyph;
     float advanceHeight = -verticalData->advanceHeight(hbFontData->m_simpleFontData.get(), theGlyph);

@@ -117,7 +117,7 @@ bool GIFImageDecoder::haveDecodedRow(size_t frameIndex, GIFRow::const_iterator r
     if (!width || (xBegin < 0) || (yBegin < 0) || (xEnd <= xBegin) || (yEnd <= yBegin))
         return true;
 
-    const GIFColorMap::Table& colorTable = frameContext->localColorMap().isDefined() ? frameContext->localColorMap().table() : m_reader->globalColorMap().table();
+    const GIFColorMap::Table& colorTable = frameContext->localColorMap().isDefined() ? frameContext->localColorMap().getTable() : m_reader->globalColorMap().getTable();
 
     if (colorTable.isEmpty())
         return true;

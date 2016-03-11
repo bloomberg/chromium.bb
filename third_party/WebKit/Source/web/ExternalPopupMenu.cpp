@@ -260,8 +260,8 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, HTMLSelectEleme
     }
 
     const ComputedStyle& menuStyle = ownerElement.computedStyle() ? *ownerElement.computedStyle() : *ownerElement.ensureComputedStyle();
-    info.itemHeight = menuStyle.font().fontMetrics().height();
-    info.itemFontSize = static_cast<int>(menuStyle.font().fontDescription().computedSize());
+    info.itemHeight = menuStyle.font().getFontMetrics().height();
+    info.itemFontSize = static_cast<int>(menuStyle.font().getFontDescription().computedSize());
     info.selectedIndex = toExternalPopupMenuItemIndex(ownerElement.optionToListIndex(ownerElement.selectedIndex()), ownerElement);
     info.rightAligned = menuStyle.direction() == RTL;
     info.allowMultipleSelection = ownerElement.multiple();

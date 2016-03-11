@@ -95,7 +95,7 @@ WebNavigationType WebDataSourceImpl::navigationType() const
     return toWebNavigationType(DocumentLoader::getNavigationType());
 }
 
-WebDataSource::ExtraData* WebDataSourceImpl::extraData() const
+WebDataSource::ExtraData* WebDataSourceImpl::getExtraData() const
 {
     return m_extraData.get();
 }

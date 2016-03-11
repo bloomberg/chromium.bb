@@ -50,7 +50,7 @@ SVGTextMetrics::SVGTextMetrics(LineLayoutSVGInlineText textLayoutItem, const Tex
 
     // Calculate width/height using the scaled font, divide this result by the scalingFactor afterwards.
     m_width = scaledFont.width(run) / scalingFactor;
-    m_height = scaledFont.fontMetrics().floatHeight() / scalingFactor;
+    m_height = scaledFont.getFontMetrics().floatHeight() / scalingFactor;
 
     ASSERT(run.length() >= 0);
     m_length = static_cast<unsigned>(run.length());
@@ -98,7 +98,7 @@ SVGTextMetrics::SVGTextMetrics(LineLayoutSVGInlineText textLayoutItem, unsigned 
     ASSERT(scalingFactor);
 
     m_width = width / scalingFactor;
-    m_height = textLayoutItem.scaledFont().fontMetrics().floatHeight() / scalingFactor;
+    m_height = textLayoutItem.scaledFont().getFontMetrics().floatHeight() / scalingFactor;
 
     m_length = length;
 }

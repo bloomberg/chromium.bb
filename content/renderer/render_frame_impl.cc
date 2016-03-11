@@ -325,7 +325,7 @@ int64_t ExtractPostId(const WebHistoryItem& item) {
 
 WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
     const WebURLResponse& response) {
-  return static_cast<WebURLResponseExtraDataImpl*>(response.extraData());
+  return static_cast<WebURLResponseExtraDataImpl*>(response.getExtraData());
 }
 
 void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
@@ -599,7 +599,7 @@ CommonNavigationParams MakeCommonNavigationParams(
           request->inputPerfMetricReportPolicy());
 
   const RequestExtraData* extra_data =
-      static_cast<RequestExtraData*>(request->extraData());
+      static_cast<RequestExtraData*>(request->getExtraData());
   DCHECK(extra_data);
   return CommonNavigationParams(
       request->url(), referrer, extra_data->transition_type(),
@@ -3760,9 +3760,9 @@ void RenderFrameImpl::willSendRequest(
   WebString custom_user_agent;
   WebString requested_with;
   scoped_ptr<StreamOverrideParameters> stream_override;
-  if (request.extraData()) {
+  if (request.getExtraData()) {
     RequestExtraData* old_extra_data =
-        static_cast<RequestExtraData*>(request.extraData());
+        static_cast<RequestExtraData*>(request.getExtraData());
 
     custom_user_agent = old_extra_data->custom_user_agent();
     if (!custom_user_agent.isNull()) {
@@ -5735,11 +5735,11 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,
   willSendRequest(frame_, 0, *request, blink::WebURLResponse());
 
   // Update the transition type of the request for client side redirects.
-  if (!request->extraData())
+  if (!request->getExtraData())
     request->setExtraData(new RequestExtraData());
   if (is_client_redirect) {
     RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request->extraData());
+        static_cast<RequestExtraData*>(request->getExtraData());
     extra_data->set_transition_type(ui::PageTransitionFromInt(
         extra_data->transition_type() | ui::PAGE_TRANSITION_CLIENT_REDIRECT));
   }

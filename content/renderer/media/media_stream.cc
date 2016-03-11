@@ -14,7 +14,7 @@ namespace content {
 // static
 MediaStream* MediaStream::GetMediaStream(
     const blink::WebMediaStream& stream) {
-  return static_cast<MediaStream*>(stream.extraData());
+  return static_cast<MediaStream*>(stream.getExtraData());
 }
 
 MediaStream::MediaStream() {

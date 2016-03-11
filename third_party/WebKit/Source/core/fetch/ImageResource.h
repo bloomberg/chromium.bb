@@ -66,7 +66,7 @@ public:
 
     void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
 
-    blink::Image* image(); // Returns the nullImage() if the image is not available yet.
+    blink::Image* getImage(); // Returns the nullImage() if the image is not available yet.
     bool hasImage() const { return m_image.get(); }
 
     static std::pair<blink::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.

@@ -314,7 +314,7 @@ IntRect GraphicsLayer::interestRect()
 void GraphicsLayer::paint(const IntRect* interestRect, GraphicsContext::DisabledMode disabledMode)
 {
     if (paintWithoutCommit(interestRect, disabledMode))
-        paintController().commitNewDisplayItems(offsetFromLayoutObjectWithSubpixelAccumulation());
+        getPaintController().commitNewDisplayItems(offsetFromLayoutObjectWithSubpixelAccumulation());
 }
 
 bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsContext::DisabledMode disabledMode)
@@ -333,15 +333,15 @@ bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsCont
         interestRect = &newInterestRect;
     }
 
-    if (!paintController().subsequenceCachingIsDisabled()
+    if (!getPaintController().subsequenceCachingIsDisabled()
         && !m_client->needsRepaint()
-        && !paintController().cacheIsEmpty()
+        && !getPaintController().cacheIsEmpty()
         && m_previousInterestRect == *interestRect) {
-        ASSERT(!paintController().hasInvalidations());
+        ASSERT(!getPaintController().hasInvalidations());
         return false;
     }
 
-    GraphicsContext context(paintController(), disabledMode);
+    GraphicsContext context(getPaintController(), disabledMode);
 
 #ifndef NDEBUG
     if (contentsOpaque() && s_drawDebugRedFill) {
@@ -1054,7 +1054,7 @@ void GraphicsLayer::setNeedsDisplay()
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->invalidate();
 
-    paintController().invalidateAll();
+    getPaintController().invalidateAll();
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject("##ALL##");
 }
@@ -1078,7 +1078,7 @@ void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClient& display
     if (!drawsContent())
         return;
 
-    paintController().invalidate(displayItemClient);
+    getPaintController().invalidate(displayItemClient);
     if (isTrackingPaintInvalidations())
         trackPaintInvalidationObject(displayItemClient.debugName());
 }
@@ -1203,7 +1203,7 @@ scoped_ptr<base::trace_event::ConvertableToTraceFormat> GraphicsLayer::TakeDebug
     return std::move(tracedValue);
 }
 
-PaintController& GraphicsLayer::paintController()
+PaintController& GraphicsLayer::getPaintController()
 {
     RELEASE_ASSERT(drawsContent());
     if (!m_paintController)

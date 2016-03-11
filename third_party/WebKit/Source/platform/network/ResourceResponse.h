@@ -175,7 +175,7 @@ public:
     SecurityStyle getSecurityStyle() const { return m_securityStyle; }
     void setSecurityStyle(SecurityStyle securityStyle) { m_securityStyle = securityStyle; }
 
-    const SecurityDetails* securityDetails() const { return &m_securityDetails; }
+    const SecurityDetails* getSecurityDetails() const { return &m_securityDetails; }
     void setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId, size_t numUnknownScts, size_t numInvalidScts, size_t numValidScts);
 
     long long appCacheID() const { return m_appCacheID; }
@@ -234,7 +234,7 @@ public:
     void setDownloadedFilePath(const String&);
 
     // Extra data associated with this response.
-    ExtraData* extraData() const { return m_extraData.get(); }
+    ExtraData* getExtraData() const { return m_extraData.get(); }
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
 
     // The ResourceResponse subclass may "shadow" this method to provide platform-specific memory usage information

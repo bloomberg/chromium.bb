@@ -243,7 +243,7 @@ PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const 
 PassOwnPtr<Shape> Shape::createLayoutBoxShape(const FloatRoundedRect& roundedRect, WritingMode writingMode, float margin)
 {
     FloatRect rect(0, 0, roundedRect.rect().width(), roundedRect.rect().height());
-    FloatRoundedRect bounds(rect, roundedRect.radii());
+    FloatRoundedRect bounds(rect, roundedRect.getRadii());
     OwnPtr<Shape> shape = createInsetShape(bounds);
     shape->m_writingMode = writingMode;
     shape->m_margin = margin;

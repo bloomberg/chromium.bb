@@ -35,7 +35,7 @@ PassRefPtrWillBeRawPtr<SourceAlpha> SourceAlpha::create(FilterEffect* sourceEffe
 }
 
 SourceAlpha::SourceAlpha(FilterEffect* sourceEffect)
-    : FilterEffect(sourceEffect->filter())
+    : FilterEffect(sourceEffect->getFilter())
 {
     setOperatingColorSpace(sourceEffect->operatingColorSpace());
     inputEffects().append(sourceEffect);

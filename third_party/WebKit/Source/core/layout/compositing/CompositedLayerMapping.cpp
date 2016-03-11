@@ -737,8 +737,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compo
     updateScrollingLayerGeometry(localCompositingBounds);
     updateChildClippingMaskLayerGeometry();
 
-    if (m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->scrollsOverflow())
-        m_owningLayer.scrollableArea()->positionOverflowControls();
+    if (m_owningLayer.getScrollableArea() && m_owningLayer.getScrollableArea()->scrollsOverflow())
+        m_owningLayer.getScrollableArea()->positionOverflowControls();
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
         updateLayerBlendMode(layoutObject()->styleRef());
@@ -804,7 +804,7 @@ void CompositedLayerMapping::computeGraphicsLayerParentLocation(const PaintLayer
     if (compositingContainer && compositingContainer->needsCompositedScrolling()) {
         LayoutBox* layoutBox = toLayoutBox(compositingContainer->layoutObject());
         IntSize scrollOffset = layoutBox->scrolledContentOffset();
-        IntPoint scrollOrigin = compositingContainer->scrollableArea()->scrollOrigin();
+        IntPoint scrollOrigin = compositingContainer->getScrollableArea()->scrollOrigin();
         scrollOrigin.move(-layoutBox->borderLeft(), -layoutBox->borderTop());
         graphicsLayerParentLocation = -(scrollOrigin + scrollOffset);
     }
@@ -857,7 +857,7 @@ void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(const Paint
             m_owningLayer.layoutObject()->mapLocalToAncestor(compositingStackingContext->layoutObject(), transformState, ApplyContainerFlip);
             transformState.flatten();
             hostLayerPosition = LayoutPoint(transformState.lastPlanarPoint());
-            if (PaintLayerScrollableArea* scrollableArea = compositingStackingContext->scrollableArea())
+            if (PaintLayerScrollableArea* scrollableArea = compositingStackingContext->getScrollableArea())
                 hostLayerPosition.move(LayoutSize(scrollableArea->adjustedScrollOffset()));
         }
     }
@@ -965,7 +965,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
     ASSERT(m_scrollingContentsLayer);
     LayoutBox* layoutBox = toLayoutBox(layoutObject());
     IntRect overflowClipRect = enclosingIntRect(layoutBox->overflowClipRect(LayoutPoint()));
-    DoubleSize adjustedScrollOffset = m_owningLayer.scrollableArea()->adjustedScrollOffset();
+    DoubleSize adjustedScrollOffset = m_owningLayer.getScrollableArea()->adjustedScrollOffset();
     m_scrollingLayer->setPosition(FloatPoint(overflowClipRect.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
     m_scrollingLayer->setSize(FloatSize(overflowClipRect.size()));
 
@@ -1309,7 +1309,7 @@ bool CompositedLayerMapping::toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&
         return false;
     layer = needsLayer ? createGraphicsLayer(reason) : nullptr;
 
-    if (PaintLayerScrollableArea* scrollableArea = m_owningLayer.scrollableArea()) {
+    if (PaintLayerScrollableArea* scrollableArea = m_owningLayer.getScrollableArea()) {
         if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
             if (reason == CompositingReasonLayerForHorizontalScrollbar)
                 scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(scrollableArea, HorizontalScrollbar);
@@ -1322,7 +1322,7 @@ bool CompositedLayerMapping::toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&
 
 bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer, bool needsAncestorClip)
 {
-    if (PaintLayerScrollableArea* scrollableArea = m_owningLayer.scrollableArea()) {
+    if (PaintLayerScrollableArea* scrollableArea = m_owningLayer.getScrollableArea()) {
         // If the scrollable area is marked as needing a new scrollbar layer,
         // destroy the layer now so that it will be created again below.
         if (m_layerForHorizontalScrollbar && needsHorizontalScrollbarLayer && scrollableArea->shouldRebuildHorizontalScrollbarLayer())
@@ -1353,7 +1353,7 @@ bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalSc
 void CompositedLayerMapping::positionOverflowControlsLayers()
 {
     if (GraphicsLayer* layer = layerForHorizontalScrollbar()) {
-        Scrollbar* hBar = m_owningLayer.scrollableArea()->horizontalScrollbar();
+        Scrollbar* hBar = m_owningLayer.getScrollableArea()->horizontalScrollbar();
         if (hBar) {
             layer->setPosition(hBar->frameRect().location());
             layer->setSize(FloatSize(hBar->frameRect().size()));
@@ -1364,7 +1364,7 @@ void CompositedLayerMapping::positionOverflowControlsLayers()
     }
 
     if (GraphicsLayer* layer = layerForVerticalScrollbar()) {
-        Scrollbar* vBar = m_owningLayer.scrollableArea()->verticalScrollbar();
+        Scrollbar* vBar = m_owningLayer.getScrollableArea()->verticalScrollbar();
         if (vBar) {
             layer->setPosition(vBar->frameRect().location());
             layer->setSize(FloatSize(vBar->frameRect().size()));
@@ -1375,7 +1375,7 @@ void CompositedLayerMapping::positionOverflowControlsLayers()
     }
 
     if (GraphicsLayer* layer = layerForScrollCorner()) {
-        const IntRect& scrollCornerAndResizer = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect();
+        const IntRect& scrollCornerAndResizer = m_owningLayer.getScrollableArea()->scrollCornerAndResizerRect();
         layer->setPosition(FloatPoint(scrollCornerAndResizer.location()));
         layer->setSize(FloatSize(scrollCornerAndResizer.size()));
         layer->setDrawsContent(!scrollCornerAndResizer.isEmpty());
@@ -1614,7 +1614,7 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
 
             layerChanged = true;
             if (scrollingCoordinator) {
-                scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer.scrollableArea());
+                scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer.getScrollableArea());
                 scrollingCoordinator->scrollableAreasDidChange();
             }
         }
@@ -1623,7 +1623,7 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
         m_scrollingContentsLayer = nullptr;
         layerChanged = true;
         if (scrollingCoordinator) {
-            scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer.scrollableArea());
+            scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer.getScrollableArea());
             scrollingCoordinator->scrollableAreasDidChange();
         }
     }
@@ -1885,7 +1885,7 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
         if (!cachedImage->hasImage())
             return false;
 
-        Image* image = cachedImage->image();
+        Image* image = cachedImage->getImage();
         if (!image->isBitmapImage())
             return false;
 
@@ -1917,7 +1917,7 @@ void CompositedLayerMapping::updateImageContents()
     if (!cachedImage)
         return;
 
-    Image* image = cachedImage->image();
+    Image* image = cachedImage->getImage();
     if (!image)
         return;
 
@@ -1964,9 +1964,9 @@ LayoutRect CompositedLayerMapping::contentsBox() const
 
 bool CompositedLayerMapping::needsToReparentOverflowControls() const
 {
-    return m_owningLayer.scrollableArea()
-        && m_owningLayer.scrollableArea()->hasOverlayScrollbars()
-        && m_owningLayer.scrollableArea()->topmostScrollChild();
+    return m_owningLayer.getScrollableArea()
+        && m_owningLayer.getScrollableArea()->hasOverlayScrollbars()
+        && m_owningLayer.getScrollableArea()->topmostScrollChild();
 }
 
 GraphicsLayer* CompositedLayerMapping::detachLayerForOverflowControls(const PaintLayer& enclosingLayer)
@@ -2171,10 +2171,10 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         // FIXME: Is it correct to clip to dirtyRect in slimming paint mode?
         // FIXME: Combine similar code here and LayerClipRecorder.
         dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
-        context.paintController().createAndAppend<ClipDisplayItem>(graphicsLayer, DisplayItem::ClipLayerOverflowControls, dirtyRect);
+        context.getPaintController().createAndAppend<ClipDisplayItem>(graphicsLayer, DisplayItem::ClipLayerOverflowControls, dirtyRect);
 
         PaintLayerPainter(*paintInfo.paintLayer).paintLayer(context, paintingInfo, paintLayerFlags);
-        context.paintController().endItem<EndClipDisplayItem>(graphicsLayer, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
+        context.getPaintController().endItem<EndClipDisplayItem>(graphicsLayer, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
     }
 }
 
@@ -2365,14 +2365,14 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         for (size_t i = 0; i < m_squashedLayers.size(); ++i)
             doPaintTask(m_squashedLayers[i], *graphicsLayer, paintLayerFlags, context, interestRect);
     } else if (graphicsLayer == layerForHorizontalScrollbar()) {
-        paintScrollbar(m_owningLayer.scrollableArea()->horizontalScrollbar(), context, interestRect);
+        paintScrollbar(m_owningLayer.getScrollableArea()->horizontalScrollbar(), context, interestRect);
     } else if (graphicsLayer == layerForVerticalScrollbar()) {
-        paintScrollbar(m_owningLayer.scrollableArea()->verticalScrollbar(), context, interestRect);
+        paintScrollbar(m_owningLayer.getScrollableArea()->verticalScrollbar(), context, interestRect);
     } else if (graphicsLayer == layerForScrollCorner()) {
-        IntPoint scrollCornerAndResizerLocation = m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().location();
+        IntPoint scrollCornerAndResizerLocation = m_owningLayer.getScrollableArea()->scrollCornerAndResizerRect().location();
         CullRect cullRect(enclosingIntRect(interestRect));
-        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(context, -scrollCornerAndResizerLocation, cullRect);
-        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(context, -scrollCornerAndResizerLocation, cullRect);
+        ScrollableAreaPainter(*m_owningLayer.getScrollableArea()).paintScrollCorner(context, -scrollCornerAndResizerLocation, cullRect);
+        ScrollableAreaPainter(*m_owningLayer.getScrollableArea()).paintResizer(context, -scrollCornerAndResizerLocation, cullRect);
     }
     InspectorInstrumentation::didPaint(m_owningLayer.layoutObject(), graphicsLayer, context, LayoutRect(interestRect));
 #if ENABLE(ASSERT)

@@ -838,7 +838,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
             // Get hotspot and convert from logical pixels to physical pixels.
             IntPoint hotSpot = (*cursors)[i].hotSpot();
             hotSpot.scale(scale, scale);
-            IntSize size = cachedImage->image()->size();
+            IntSize size = cachedImage->getImage()->size();
             if (cachedImage->errorOccurred())
                 continue;
             // Limit the size of cursors (in UI pixels) so that they cannot be
@@ -847,7 +847,7 @@ OptionalCursor EventHandler::selectCursor(const HitTestResult& result)
             if (size.width() > maximumCursorSize || size.height() > maximumCursorSize)
                 continue;
 
-            Image* image = cachedImage->image();
+            Image* image = cachedImage->getImage();
             // Ensure no overflow possible in calculations above.
             if (scale < minimumCursorScale)
                 continue;
@@ -946,7 +946,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
     LayoutObject* layoutObject = node ? node->layoutObject() : nullptr;
     if (layoutObject && m_frame->view()) {
         PaintLayer* layer = layoutObject->enclosingLayer();
-        inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
+        inResizer = layer->getScrollableArea() && layer->getScrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
     }
 
     // During selection, use an I-beam no matter what we're over.
@@ -1051,8 +1051,8 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
         FrameView* view = m_frame->view();
         PaintLayer* layer = mev.innerNode()->layoutObject() ? mev.innerNode()->layoutObject()->enclosingLayer() : nullptr;
         IntPoint p = view->rootFrameToContents(mouseEvent.position());
-        if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
-            m_resizeScrollableArea = layer->scrollableArea();
+        if (layer && layer->getScrollableArea() && layer->getScrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
+            m_resizeScrollableArea = layer->getScrollableArea();
             m_resizeScrollableArea->setInResizeMode(true);
             m_offsetFromResizeCorner = LayoutSize(m_resizeScrollableArea->offsetFromResizeCorner(p));
             return WebInputEventResult::HandledSystem;
@@ -1125,7 +1125,7 @@ static PaintLayer* layerForNode(Node* node)
 
 ScrollableArea* EventHandler::associatedScrollableArea(const PaintLayer* layer) const
 {
-    if (PaintLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+    if (PaintLayerScrollableArea* scrollableArea = layer->getScrollableArea()) {
         if (scrollableArea->scrollsOverflow())
             return scrollableArea;
     }
@@ -1691,7 +1691,7 @@ WebInputEventResult EventHandler::handleMouseFocus(const MouseEventWithHitTestRe
 {
     // If clicking on a frame scrollbar, do not mess up with content focus.
     if (targetedEvent.hitTestResult().scrollbar() && m_frame->contentLayoutObject()) {
-        if (targetedEvent.hitTestResult().scrollbar()->scrollableArea() == m_frame->contentLayoutObject()->scrollableArea())
+        if (targetedEvent.hitTestResult().scrollbar()->getScrollableArea() == m_frame->contentLayoutObject()->getScrollableArea())
             return WebInputEventResult::NotHandled;
     }
 
@@ -2225,8 +2225,8 @@ bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const Platfor
     if (gestureEvent.type() == PlatformEvent::GestureScrollBegin) {
         PaintLayer* layer = eventTarget->layoutObject() ? eventTarget->layoutObject()->enclosingLayer() : nullptr;
         IntPoint p = m_frame->view()->rootFrameToContents(gestureEvent.position());
-        if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForTouch)) {
-            m_resizeScrollableArea = layer->scrollableArea();
+        if (layer && layer->getScrollableArea() && layer->getScrollableArea()->isPointInResizeControl(p, ResizerForTouch)) {
+            m_resizeScrollableArea = layer->getScrollableArea();
             m_resizeScrollableArea->setInResizeMode(true);
             m_offsetFromResizeCorner = LayoutSize(m_resizeScrollableArea->offsetFromResizeCorner(p));
             return true;
@@ -2846,7 +2846,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
 
     m_frame->view()->setCursor(pointerCursor());
     IntPoint locationInViewport = visualViewport.rootFrameToViewport(locationInRootFrame);
-    IntPoint globalPosition = view->hostWindow()->viewportToScreen(IntRect(locationInViewport, IntSize())).location();
+    IntPoint globalPosition = view->getHostWindow()->viewportToScreen(IntRect(locationInViewport, IntSize())).location();
 
     Node* targetNode = overrideTargetElement ? overrideTargetElement : doc->focusedElement();
     if (!targetNode)

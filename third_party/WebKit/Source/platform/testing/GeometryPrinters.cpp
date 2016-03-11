@@ -93,7 +93,7 @@ void PrintTo(const FloatRoundedRect& roundedRect, std::ostream* os)
     *os << "FloatRoundedRect(";
     PrintTo(roundedRect.rect(), os);
     *os << ", ";
-    PrintTo(roundedRect.radii(), os);
+    PrintTo(roundedRect.getRadii(), os);
     *os << ")";
 }
 

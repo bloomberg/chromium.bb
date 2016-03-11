@@ -63,10 +63,10 @@ FtpDirectoryListingResponseDelegate::FtpDirectoryListingResponseDelegate(
     const WebURLResponse& response)
     : client_(client),
       loader_(loader) {
-  if (response.extraData()) {
+  if (response.getExtraData()) {
     // extraData can be NULL during tests.
     WebURLResponseExtraDataImpl* extra_data =
-        static_cast<WebURLResponseExtraDataImpl*>(response.extraData());
+        static_cast<WebURLResponseExtraDataImpl*>(response.getExtraData());
     extra_data->set_is_ftp_directory_listing(true);
   }
   Init(response.url());

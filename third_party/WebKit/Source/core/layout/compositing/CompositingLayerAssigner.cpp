@@ -299,10 +299,10 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(PaintLayer* layer,
     }
 
     if (layer->scrollParent())
-        layer->scrollParent()->scrollableArea()->setTopmostScrollChild(layer);
+        layer->scrollParent()->getScrollableArea()->setTopmostScrollChild(layer);
 
     if (layer->needsCompositedScrolling())
-        layer->scrollableArea()->setTopmostScrollChild(nullptr);
+        layer->getScrollableArea()->setTopmostScrollChild(nullptr);
 
     PaintLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
     while (PaintLayerStackingNode* curNode = iterator.next())

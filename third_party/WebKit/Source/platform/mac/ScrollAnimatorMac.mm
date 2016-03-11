@@ -496,7 +496,7 @@ private:
 
 - (ScrollAnimatorMac&)scrollAnimator
 {
-    return static_cast<ScrollAnimatorMac&>(_scrollbar->scrollableArea()->scrollAnimator());
+    return static_cast<ScrollAnimatorMac&>(_scrollbar->getScrollableArea()->scrollAnimator());
 }
 
 - (NSRect)convertRectToBacking:(NSRect)aRect
@@ -516,7 +516,7 @@ private:
 
     ASSERT_UNUSED(scrollerImp, scrollerImp == scrollbarPainterForScrollbar(*_scrollbar));
 
-    return _scrollbar->convertFromContainingWidget(_scrollbar->scrollableArea()->lastKnownMousePosition());
+    return _scrollbar->convertFromContainingWidget(_scrollbar->getScrollableArea()->lastKnownMousePosition());
 }
 
 - (void)setUpAlphaAnimation:(RetainPtr<BlinkScrollbarPartAnimation>&)scrollbarPartAnimation scrollerPainter:(ScrollbarPainter)scrollerPainter part:(blink::ScrollbarPart)part animateAlphaTo:(CGFloat)newAlpha duration:(NSTimeInterval)duration
@@ -528,7 +528,7 @@ private:
     if ([self scrollAnimator].scrollbarPaintTimerIsActive() && !mustAnimate)
         return;
 
-    if (_scrollbar->scrollableArea()->shouldSuspendScrollAnimations() && !mustAnimate) {
+    if (_scrollbar->getScrollableArea()->shouldSuspendScrollAnimations() && !mustAnimate) {
         [self scrollAnimator].startScrollbarPaintTimer();
         return;
     }
@@ -779,7 +779,7 @@ void ScrollAnimatorMac::immediateScrollTo(const FloatPoint& newPosition)
     FloatPoint adjustedPosition = adjustScrollPositionIfNecessary(newPosition);
 
     bool positionChanged = adjustedPosition != m_currentPos;
-    if (!positionChanged && !scrollableArea()->scrollOriginChanged())
+    if (!positionChanged && !getScrollableArea()->scrollOriginChanged())
         return;
 
     FloatSize delta = adjustedPosition - m_currentPos;
@@ -797,35 +797,35 @@ void ScrollAnimatorMac::immediateScrollToPointForScrollAnimation(const FloatPoin
 
 void ScrollAnimatorMac::contentAreaWillPaint() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() contentAreaWillDraw];
 }
 
 void ScrollAnimatorMac::mouseEnteredContentArea() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() mouseEnteredContentArea];
 }
 
 void ScrollAnimatorMac::mouseExitedContentArea() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() mouseExitedContentArea];
 }
 
 void ScrollAnimatorMac::mouseMovedInContentArea() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() mouseMovedInContentArea];
 }
 
 void ScrollAnimatorMac::mouseEnteredScrollbar(Scrollbar& scrollbar) const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
 
     if (!supportsUIStateTransitionProgress())
@@ -836,7 +836,7 @@ void ScrollAnimatorMac::mouseEnteredScrollbar(Scrollbar& scrollbar) const
 
 void ScrollAnimatorMac::mouseExitedScrollbar(Scrollbar& scrollbar) const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
 
     if (!supportsUIStateTransitionProgress())
@@ -847,42 +847,42 @@ void ScrollAnimatorMac::mouseExitedScrollbar(Scrollbar& scrollbar) const
 
 void ScrollAnimatorMac::contentsResized() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() contentAreaDidResize];
 }
 
 void ScrollAnimatorMac::contentAreaDidShow() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() windowOrderedIn];
 }
 
 void ScrollAnimatorMac::contentAreaDidHide() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() windowOrderedOut];
 }
 
 void ScrollAnimatorMac::didBeginScrollGesture() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() beginScrollGesture];
 }
 
 void ScrollAnimatorMac::didEndScrollGesture() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() endScrollGesture];
 }
 
 void ScrollAnimatorMac::mayBeginScrollGesture() const
 {
-    if (!scrollableArea()->scrollbarsCanBeActive())
+    if (!getScrollableArea()->scrollbarsCanBeActive())
         return;
     [m_scrollbarPainterController.get() beginScrollGesture];
     [m_scrollbarPainterController.get() contentAreaScrolled];
@@ -965,7 +965,7 @@ void ScrollAnimatorMac::notifyContentAreaScrolled(const FloatSize& delta)
     // This function is called when a page is going into the page cache, but the page
     // isn't really scrolling in that case. We should only pass the message on to the
     // ScrollbarPainterController when we're really scrolling on an active page.
-    if (scrollableArea()->scrollbarsCanBeActive())
+    if (getScrollableArea()->scrollbarsCanBeActive())
         sendContentAreaScrolledSoon(delta);
 }
 
@@ -1003,7 +1003,7 @@ void ScrollAnimatorMac::handleWheelEventPhase(PlatformWheelEventPhase phase)
 
 void ScrollAnimatorMac::updateScrollerStyle()
 {
-    if (!scrollableArea()->scrollbarsCanBeActive()) {
+    if (!getScrollableArea()->scrollbarsCanBeActive()) {
         m_needsScrollerStyleUpdate = true;
         return;
     }
@@ -1016,7 +1016,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
 
     NSScrollerStyle newStyle = [m_scrollbarPainterController.get() scrollerStyle];
 
-    if (Scrollbar* verticalScrollbar = scrollableArea()->verticalScrollbar()) {
+    if (Scrollbar* verticalScrollbar = getScrollableArea()->verticalScrollbar()) {
         verticalScrollbar->setNeedsPaintInvalidation(AllParts);
 
         ScrollbarPainter oldVerticalPainter = [m_scrollbarPainterController.get() verticalScrollerImp];
@@ -1034,7 +1034,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
         verticalScrollbar->setFrameRect(IntRect(0, 0, thickness, thickness));
     }
 
-    if (Scrollbar* horizontalScrollbar = scrollableArea()->horizontalScrollbar()) {
+    if (Scrollbar* horizontalScrollbar = getScrollableArea()->horizontalScrollbar()) {
         horizontalScrollbar->setNeedsPaintInvalidation(AllParts);
 
         ScrollbarPainter oldHorizontalPainter = [m_scrollbarPainterController.get() horizontalScrollerImp];
@@ -1055,7 +1055,7 @@ void ScrollAnimatorMac::updateScrollerStyle()
     // If m_needsScrollerStyleUpdate is true, then the page is restoring from the page cache, and
     // a relayout will happen on its own. Otherwise, we must initiate a re-layout ourselves.
     if (!m_needsScrollerStyleUpdate)
-        scrollableArea()->scrollbarStyleChanged();
+        getScrollableArea()->scrollbarStyleChanged();
 
     m_needsScrollerStyleUpdate = false;
 }

@@ -231,7 +231,7 @@ LayoutUnit LayoutTextControlSingleLine::preferredContentLogicalWidth(float charW
     LayoutUnit result = LayoutUnit::fromFloatCeil(charWidth * factor);
 
     float maxCharWidth = 0.f;
-    AtomicString family = styleRef().font().fontDescription().family().family();
+    AtomicString family = styleRef().font().getFontDescription().family().family();
     // Match the default system font to the width of MS Shell Dlg, the default
     // font for textareas in Firefox, Safari Win and IE for some encodings (in
     // IE, the default font is encoding specific). 4027 is the (xMax - xMin)

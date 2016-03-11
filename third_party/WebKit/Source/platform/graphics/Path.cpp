@@ -242,8 +242,8 @@ void Path::pointAndNormalAtLength(float length, FloatPoint& point, float& normal
 }
 
 Path::PositionCalculator::PositionCalculator(const Path& path)
-    : m_path(path.skPath())
-    , m_pathMeasure(path.skPath(), false)
+    : m_path(path.getSkPath())
+    , m_pathMeasure(path.getSkPath(), false)
     , m_accumulatedLength(0)
 {
 }
@@ -433,7 +433,7 @@ void Path::addEllipse(const FloatRect& rect)
 
 void Path::addRoundedRect(const FloatRoundedRect& r)
 {
-    addRoundedRect(r.rect(), r.radii().topLeft(), r.radii().topRight(), r.radii().bottomLeft(), r.radii().bottomRight());
+    addRoundedRect(r.rect(), r.getRadii().topLeft(), r.getRadii().topRight(), r.getRadii().bottomLeft(), r.getRadii().bottomRight());
 }
 
 void Path::addRoundedRect(const FloatRect& rect, const FloatSize& roundingRadii)
@@ -495,7 +495,7 @@ void Path::addPathForRoundedRect(const FloatRect& rect, const FloatSize& topLeft
 
 void Path::addPath(const Path& src, const AffineTransform& transform)
 {
-    m_path.addPath(src.skPath(), affineTransformToSkMatrix(transform));
+    m_path.addPath(src.getSkPath(), affineTransformToSkMatrix(transform));
 }
 
 void Path::translate(const FloatSize& size)

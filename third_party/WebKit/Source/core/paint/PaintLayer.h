@@ -500,7 +500,7 @@ public:
     void computeSelfHitTestRects(LayerHitTestRects&) const;
 
     // FIXME: This should probably return a ScrollableArea but a lot of internal methods are mistakenly exposed.
-    PaintLayerScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
+    PaintLayerScrollableArea* getScrollableArea() const { return m_scrollableArea.get(); }
 
     PaintLayerClipper clipper() const { return PaintLayerClipper(*this); }
 

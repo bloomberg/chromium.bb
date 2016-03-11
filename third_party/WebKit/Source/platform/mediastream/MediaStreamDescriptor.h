@@ -89,7 +89,7 @@ public:
     bool ended() const { return m_ended; }
     void setEnded() { m_ended = true; }
 
-    ExtraData* extraData() const { return m_extraData.get(); }
+    ExtraData* getExtraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = std::move(extraData); }
 
     // |m_extraData| may hold pointers to GC objects, and it may touch them in destruction.

@@ -373,7 +373,7 @@ public:
     bool isScrollCornerVisible() const override;
     bool userInputScrollable(ScrollbarOrientation) const override;
     bool shouldPlaceVerticalScrollbarOnLeft() const override;
-    Widget* widget() override;
+    Widget* getWidget() override;
 
     LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,
@@ -383,7 +383,7 @@ public:
 
     // The window that hosts the FrameView. The FrameView will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
-    HostWindow* hostWindow() const;
+    HostWindow* getHostWindow() const;
 
     // Returns a clip rect in host window coordinates. Used to clip the blit on a scroll.
     IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
@@ -548,11 +548,11 @@ public:
     // be the RootFrameViewport, which adds pinch-zoom semantics to scrolling.
     // For non-root frames, this will be the the ScrollableArea used by the
     // FrameView, depending on whether root-layer-scrolls is enabled.
-    ScrollableArea* scrollableArea();
+    ScrollableArea* getScrollableArea();
 
     // Used to get at the underlying layoutViewport in the rare instances where
     // we actually want to scroll *just* the layout viewport (e.g. when sending
-    // deltas from CC). For typical scrolling cases, use scrollableArea().
+    // deltas from CC). For typical scrolling cases, use getScrollableArea().
     ScrollableArea* layoutViewportScrollableArea();
 
     int viewportWidth() const;

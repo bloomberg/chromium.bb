@@ -386,7 +386,7 @@ void InspectorOverlay::rebuildOverlayPage()
     if (!view)
         return;
 
-    IntRect visibleRectInDocument = view->scrollableArea()->visibleContentRect();
+    IntRect visibleRectInDocument = view->getScrollableArea()->visibleContentRect();
     IntSize viewportSize = m_webViewImpl->page()->frameHost().visualViewport().size();
     toLocalFrame(overlayPage()->mainFrame())->view()->resize(viewportSize);
     overlayPage()->frameHost().visualViewport().setSize(viewportSize);

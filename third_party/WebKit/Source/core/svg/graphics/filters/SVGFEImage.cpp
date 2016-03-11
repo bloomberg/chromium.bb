@@ -100,7 +100,7 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
     if (clipsToBounds())
         requestedRect.intersect(maxEffectRect());
 
-    FloatRect destRect = filter()->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
+    FloatRect destRect = getFilter()->mapLocalRectToAbsoluteRect(filterPrimitiveSubregion());
     FloatRect srcRect;
     if (layoutObject) {
         srcRect = getLayoutObjectRepaintRect(layoutObject);
@@ -114,7 +114,7 @@ FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequested
                 srcRect = makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), destRect).mapRect(srcRect);
             }
         } else {
-            srcRect = filter()->mapLocalRectToAbsoluteRect(srcRect);
+            srcRect = getFilter()->mapLocalRectToAbsoluteRect(srcRect);
             srcRect.move(destRect.x(), destRect.y());
         }
         destRect.intersect(srcRect);

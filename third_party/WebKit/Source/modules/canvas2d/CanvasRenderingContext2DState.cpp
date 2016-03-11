@@ -107,20 +107,20 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(const CanvasRenderi
         m_clipList = other.m_clipList;
     }
     if (m_realizedFont)
-        static_cast<CSSFontSelector*>(m_font.fontSelector())->registerForInvalidationCallbacks(this);
+        static_cast<CSSFontSelector*>(m_font.getFontSelector())->registerForInvalidationCallbacks(this);
 }
 
 CanvasRenderingContext2DState::~CanvasRenderingContext2DState()
 {
 #if !ENABLE(OILPAN)
     if (m_realizedFont)
-        static_cast<CSSFontSelector*>(m_font.fontSelector())->unregisterForInvalidationCallbacks(this);
+        static_cast<CSSFontSelector*>(m_font.getFontSelector())->unregisterForInvalidationCallbacks(this);
 #endif
 }
 
 void CanvasRenderingContext2DState::fontsNeedUpdate(CSSFontSelector* fontSelector)
 {
-    ASSERT_ARG(fontSelector, fontSelector == m_font.fontSelector());
+    ASSERT_ARG(fontSelector, fontSelector == m_font.getFontSelector());
     ASSERT(m_realizedFont);
 
     m_font.update(fontSelector);
@@ -264,7 +264,7 @@ void CanvasRenderingContext2DState::setFont(const Font& font, CSSFontSelector* s
 {
 #if !ENABLE(OILPAN)
     if (m_realizedFont)
-        static_cast<CSSFontSelector*>(m_font.fontSelector())->unregisterForInvalidationCallbacks(this);
+        static_cast<CSSFontSelector*>(m_font.getFontSelector())->unregisterForInvalidationCallbacks(this);
 #endif
     m_font = font;
     m_font.update(selector);

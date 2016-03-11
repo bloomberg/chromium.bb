@@ -128,7 +128,7 @@ public:
 
 #if !OS(MACOSX)
     // The returned styles are all actual styles without FontRenderStyle::NoPreference.
-    const FontRenderStyle& fontRenderStyle() const { return m_style; }
+    const FontRenderStyle& getFontRenderStyle() const { return m_style; }
 #endif
     void setupPaint(SkPaint*, float deviceScaleFactor = 1, const Font* = 0) const;
 

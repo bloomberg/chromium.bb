@@ -9,8 +9,8 @@ namespace content {
 // static
 MediaStreamTrack* MediaStreamTrack::GetTrack(
     const blink::WebMediaStreamTrack& track) {
-  return track.isNull() ?
-      nullptr : static_cast<MediaStreamTrack*>(track.extraData());
+  return track.isNull() ? nullptr
+                        : static_cast<MediaStreamTrack*>(track.getExtraData());
 }
 
 MediaStreamTrack::MediaStreamTrack(bool is_local_track)

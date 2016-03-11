@@ -101,13 +101,13 @@ void RotationViewportAnchor::setAnchor()
     // FIXME: Scroll offsets are now fractional (DoublePoint and FloatPoint for the FrameView and VisualViewport
     //        respectively. This path should be rewritten without pixel snapping.
     IntRect outerViewRect = m_rootFrameView->layoutViewportScrollableArea()->visibleContentRect(IncludeScrollbars);
-    IntRect innerViewRect = enclosedIntRect(m_rootFrameView->scrollableArea()->visibleContentRectDouble());
+    IntRect innerViewRect = enclosedIntRect(m_rootFrameView->getScrollableArea()->visibleContentRectDouble());
 
     m_oldPageScaleFactor = m_visualViewport->scale();
     m_oldMinimumPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().minimumScale;
 
     // Save the absolute location in case we won't find the anchor node, we'll fall back to that.
-    m_visualViewportInDocument = FloatPoint(m_rootFrameView->scrollableArea()->visibleContentRectDouble().location());
+    m_visualViewportInDocument = FloatPoint(m_rootFrameView->getScrollableArea()->visibleContentRectDouble().location());
 
     m_anchorNode.clear();
     m_anchorNodeBounds = LayoutRect();

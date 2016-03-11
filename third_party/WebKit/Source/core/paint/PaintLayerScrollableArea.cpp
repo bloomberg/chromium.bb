@@ -175,7 +175,7 @@ DEFINE_TRACE(PaintLayerScrollableArea)
     ScrollableArea::trace(visitor);
 }
 
-HostWindow* PaintLayerScrollableArea::hostWindow() const
+HostWindow* PaintLayerScrollableArea::getHostWindow() const
 {
     if (Page* page = box().frame()->page())
         return &page->chromeClient();
@@ -1453,7 +1453,7 @@ bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const
     return frame->settings()->viewportMetaEnabled();
 }
 
-Widget* PaintLayerScrollableArea::widget()
+Widget* PaintLayerScrollableArea::getWidget()
 {
     return box().frame()->view();
 }

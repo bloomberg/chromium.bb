@@ -165,7 +165,7 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Docum
     bool flipY;
     parseOptions(options, flipY);
 
-    m_image = cropImage(image->cachedImage()->image(), cropRect, flipY, m_isPremultiplied, PremultiplyAlpha);
+    m_image = cropImage(image->cachedImage()->getImage(), cropRect, flipY, m_isPremultiplied, PremultiplyAlpha);
     if (!m_image)
         return;
     m_image->setOriginClean(!image->wouldTaintOrigin(document->getSecurityOrigin()));

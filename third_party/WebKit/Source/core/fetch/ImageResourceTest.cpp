@@ -133,9 +133,9 @@ TEST(ImageResourceTest, MultipartImage)
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->image()->isNull());
-    ASSERT_EQ(cachedImage->image()->width(), 1);
-    ASSERT_EQ(cachedImage->image()->height(), 1);
+    ASSERT_FALSE(cachedImage->getImage()->isNull());
+    ASSERT_EQ(cachedImage->getImage()->width(), 1);
+    ASSERT_EQ(cachedImage->getImage()->height(), 1);
     ASSERT_EQ(client.imageChangedCount(), 1);
     ASSERT_TRUE(client.notifyFinishedCalled());
 }
@@ -186,21 +186,21 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     cachedImage->finish();
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->image()->isNull());
+    ASSERT_FALSE(cachedImage->getImage()->isNull());
     ASSERT_TRUE(client.notifyFinishedCalled());
 
     // The prune comes when the ImageResource still has clients. The image should not be deleted.
     cachedImage->prune();
     ASSERT_TRUE(cachedImage->hasClients());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->image()->isNull());
+    ASSERT_FALSE(cachedImage->getImage()->isNull());
 
     // The ImageResource no longer has clients. The image should be deleted by prune.
     client.removeAsClient();
     cachedImage->prune();
     ASSERT_FALSE(cachedImage->hasClients());
     ASSERT_FALSE(cachedImage->hasImage());
-    ASSERT_TRUE(cachedImage->image()->isNull());
+    ASSERT_TRUE(cachedImage->getImage()->isNull());
 }
 
 TEST(ImageResourceTest, UpdateBitmapImages)
@@ -217,10 +217,10 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     cachedImage->finish();
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->image()->isNull());
+    ASSERT_FALSE(cachedImage->getImage()->isNull());
     ASSERT_EQ(client.imageChangedCount(), 2);
     ASSERT_TRUE(client.notifyFinishedCalled());
-    ASSERT_TRUE(cachedImage->image()->isBitmapImage());
+    ASSERT_TRUE(cachedImage->getImage()->isBitmapImage());
 }
 
 TEST(ImageResourceTest, ReloadIfLoFi)
@@ -243,10 +243,10 @@ TEST(ImageResourceTest, ReloadIfLoFi)
     cachedImage->finish();
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->image()->isNull());
+    ASSERT_FALSE(cachedImage->getImage()->isNull());
     ASSERT_EQ(client.imageChangedCount(), 2);
     ASSERT_TRUE(client.notifyFinishedCalled());
-    ASSERT_TRUE(cachedImage->image()->isBitmapImage());
+    ASSERT_TRUE(cachedImage->getImage()->isBitmapImage());
 
     cachedImage->reloadIfLoFi(fetcher);
     ASSERT_FALSE(cachedImage->errorOccurred());
@@ -259,9 +259,9 @@ TEST(ImageResourceTest, ReloadIfLoFi)
     cachedImage->finish();
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_FALSE(cachedImage->image()->isNull());
+    ASSERT_FALSE(cachedImage->getImage()->isNull());
     ASSERT_TRUE(client.notifyFinishedCalled());
-    ASSERT_TRUE(cachedImage->image()->isBitmapImage());
+    ASSERT_TRUE(cachedImage->getImage()->isBitmapImage());
 }
 
 } // namespace blink

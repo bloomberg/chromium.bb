@@ -43,7 +43,7 @@ public:
 
     ~ExtraDataContainer() override {}
 
-    WebPrerender::ExtraData* extraData() const { return m_extraData.get(); }
+    WebPrerender::ExtraData* getExtraData() const { return m_extraData.get(); }
 
 private:
     explicit ExtraDataContainer(WebPrerender::ExtraData* extraData)
@@ -106,12 +106,12 @@ void WebPrerender::setExtraData(WebPrerender::ExtraData* extraData)
     m_private->setExtraData(ExtraDataContainer::create(extraData));
 }
 
-const WebPrerender::ExtraData* WebPrerender::extraData() const
+const WebPrerender::ExtraData* WebPrerender::getExtraData() const
 {
-    RefPtr<Prerender::ExtraData> webcoreExtraData = m_private->extraData();
+    RefPtr<Prerender::ExtraData> webcoreExtraData = m_private->getExtraData();
     if (!webcoreExtraData)
         return 0;
-    return static_cast<ExtraDataContainer*>(webcoreExtraData.get())->extraData();
+    return static_cast<ExtraDataContainer*>(webcoreExtraData.get())->getExtraData();
 }
 
 void WebPrerender::didStartPrerender()

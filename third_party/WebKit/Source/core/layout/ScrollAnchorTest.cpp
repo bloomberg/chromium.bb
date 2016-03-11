@@ -31,7 +31,7 @@ protected:
 
     ScrollableArea* scrollerForElement(Element* element)
     {
-        return toLayoutBox(element->layoutObject())->scrollableArea();
+        return toLayoutBox(element->layoutObject())->getScrollableArea();
     }
 
     ScrollAnchor& scrollAnchor(ScrollableArea* scroller)

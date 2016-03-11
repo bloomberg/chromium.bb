@@ -555,7 +555,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
     RefPtr<ComputedStyle> documentStyle = ComputedStyle::create();
     documentStyle->setRTLOrdering(document.visuallyOrdered() ? VisualOrder : LogicalOrder);
     documentStyle->setZoom(frame && !document.printing() ? frame->pageZoomFactor() : 1);
-    FontDescription documentFontDescription = documentStyle->fontDescription();
+    FontDescription documentFontDescription = documentStyle->getFontDescription();
     documentFontDescription.setLocale(document.contentLanguage());
     documentStyle->setFontDescription(documentFontDescription);
     documentStyle->setZIndex(0);
@@ -1467,7 +1467,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     updateFont(state);
 
     // Many properties depend on the font. If it changes we just apply all properties.
-    if (cachedMatchedProperties && cachedMatchedProperties->computedStyle->fontDescription() != state.style()->fontDescription())
+    if (cachedMatchedProperties && cachedMatchedProperties->computedStyle->getFontDescription() != state.style()->getFontDescription())
         applyInheritedOnly = false;
 
     // Now do the normal priority UA properties.

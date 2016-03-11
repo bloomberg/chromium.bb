@@ -216,14 +216,14 @@ float OpenTypeVerticalData::advanceHeight(const SimpleFontData* font, Glyph glyp
     }
 
     // No vertical info in the font file; use height as advance.
-    return font->fontMetrics().height();
+    return font->getFontMetrics().height();
 }
 
 void OpenTypeVerticalData::getVerticalTranslationsForGlyphs(const SimpleFontData* font, const Glyph* glyphs, size_t count, float* outXYArray) const
 {
     size_t countWidths = m_advanceWidths.size();
     ASSERT(countWidths > 0);
-    const FontMetrics& metrics = font->fontMetrics();
+    const FontMetrics& metrics = font->getFontMetrics();
     float sizePerUnit = font->sizePerUnit();
     float ascent = metrics.ascent();
     bool useVORG = hasVORG();

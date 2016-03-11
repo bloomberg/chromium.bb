@@ -2306,7 +2306,7 @@ bool WebGLImageConversion::packImageData(
 
     if (!packPixels(reinterpret_cast<const uint8_t*>(pixels), sourceFormat, width, height, sourceUnpackAlignment, format, type, alphaOp, data.data(), flipY))
         return false;
-    if (ImageObserver *observer = image->imageObserver())
+    if (ImageObserver *observer = image->getImageObserver())
         observer->didDraw(image);
     return true;
 }

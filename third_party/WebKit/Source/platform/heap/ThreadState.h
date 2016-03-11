@@ -368,7 +368,7 @@ public:
 #endif
 
     // A region of PersistentNodes allocated on the given thread.
-    PersistentRegion* persistentRegion() const { return m_persistentRegion.get(); }
+    PersistentRegion* getPersistentRegion() const { return m_persistentRegion.get(); }
     // A region of PersistentNodes not owned by any particular thread.
 
     // Visit local thread stack and trace all pointers conservatively.

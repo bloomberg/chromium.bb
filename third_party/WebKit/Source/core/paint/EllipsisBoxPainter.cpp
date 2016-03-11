@@ -59,7 +59,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
         textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.getLineLayoutItem(), true, paintInfo, textStyle);
 
     TextRun textRun = constructTextRun(font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
-    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
+    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.getFontMetrics().ascent());
     TextPainter textPainter(context, font, textRun, textOrigin, boxRect, m_ellipsisBox.isHorizontal());
     textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(), m_ellipsisBox.ellipsisStr().length(), textStyle);
 }

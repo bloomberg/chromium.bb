@@ -88,7 +88,7 @@ public:
     }
 
     String reasonString() const { return String(m_reason); }
-    const AtomicString& extraData() const { return m_extraData; }
+    const AtomicString& getExtraData() const { return m_extraData; }
 
 private:
     StyleChangeReasonForTracing(StyleChangeReasonString reasonString, const AtomicString& extraData)

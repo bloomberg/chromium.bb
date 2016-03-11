@@ -141,7 +141,7 @@ void SimpleFontData::platformInit()
         // of the glyph may be truncated when displayed in a 'overflow: hidden' container.
         // To avoid that, borrow 1 unit from the ascent when possible.
         // FIXME: This can be removed if sub-pixel ascent/descent is supported.
-        if (platformData().fontRenderStyle().useSubpixelPositioning && descent < SkScalarToFloat(metrics.fDescent) && ascent >= 1) {
+        if (platformData().getFontRenderStyle().useSubpixelPositioning && descent < SkScalarToFloat(metrics.fDescent) && ascent >= 1) {
             ++descent;
             --ascent;
         }

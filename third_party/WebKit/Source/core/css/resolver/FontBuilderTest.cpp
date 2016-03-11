@@ -54,7 +54,7 @@ TEST_F(FontBuilderInitTest, InitialFontSizeNotScaled)
     builder.setInitial(1.0f); // FIXME: Remove unused param.
     builder.createFont(document().styleEngine().fontSelector(), *initial);
 
-    EXPECT_EQ(16.0f, initial->fontDescription().computedSize());
+    EXPECT_EQ(16.0f, initial->getFontDescription().computedSize());
 }
 
 TEST_F(FontBuilderInitTest, NotDirty)
@@ -79,7 +79,7 @@ TEST_P(FontBuilderAdditiveTest, OnlySetValueIsModified)
     funcs.setValue(fontBuilder);
     fontBuilder.createFont(document().styleEngine().fontSelector(), *style);
 
-    FontDescription outputDescription = style->fontDescription();
+    FontDescription outputDescription = style->getFontDescription();
 
     // FontBuilder should have overwritten our base value set in the parent,
     // hence the descriptions should not be equal.
