@@ -9,6 +9,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/output/output_surface.h"
 #include "components/mus/public/cpp/window_surface.h"
+#include "content/common/content_export.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/mus/compositor_mus_connection.h"
 
@@ -17,7 +18,8 @@ namespace content {
 class InputHandlerManager;
 
 // Use on main thread.
-class RenderWidgetMusConnection : public RenderWidgetInputHandlerDelegate {
+class CONTENT_EXPORT RenderWidgetMusConnection
+    : public RenderWidgetInputHandlerDelegate {
  public:
   // Bind to a WindowTreeClient request.
   void Bind(mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request);

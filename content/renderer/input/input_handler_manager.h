@@ -8,6 +8,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/renderer/render_view_impl.h"
 
@@ -37,7 +38,7 @@ struct DidOverscrollParams;
 
 // InputHandlerManager class manages InputHandlerProxy instances for
 // the WebViews in this renderer.
-class InputHandlerManager {
+class CONTENT_EXPORT InputHandlerManager {
  public:
   // |task_runner| is the SingleThreadTaskRunner of the compositor thread. The
   // underlying MessageLoop and supplied |client| and the |renderer_scheduler|

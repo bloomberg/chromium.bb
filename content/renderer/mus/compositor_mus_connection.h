@@ -6,11 +6,13 @@
 #define CONTENT_RENDERER_MUS_COMPOSITOR_MUS_CONNECTION_H_
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
@@ -23,9 +25,9 @@ class InputHandlerManager;
 // threads. CompositorMusConnection is constructed on the main thread. By
 // default all other methods are assumed to run on the compositor thread unless
 // explicited suffixed with OnMainThread.
-class CompositorMusConnection
-    : public mus::WindowTreeDelegate,
-      public mus::InputEventHandler,
+class CONTENT_EXPORT CompositorMusConnection
+    : NON_EXPORTED_BASE(public mus::WindowTreeDelegate),
+      NON_EXPORTED_BASE(public mus::InputEventHandler),
       public base::RefCountedThreadSafe<CompositorMusConnection> {
  public:
   // Created on main thread.
