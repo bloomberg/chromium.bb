@@ -26,16 +26,16 @@ const int kPrecacheHistoryExpiryPeriodDays = 60;
 
 namespace precache {
 
-PrecacheDatabase::PrecacheDatabase() : is_flush_posted_(false) {
+PrecacheDatabase::PrecacheDatabase()
+    : is_flush_posted_(false), weak_factory_(this) {
   // A PrecacheDatabase can be constructed on any thread.
   thread_checker_.DetachFromThread();
 }
 
 PrecacheDatabase::~PrecacheDatabase() {
-  // Since the PrecacheDatabase is refcounted, it will only be deleted if there
-  // are no references remaining to it, meaning that it is not in use. Thus, it
-  // is safe to delete it, regardless of what thread we are on.
-  thread_checker_.DetachFromThread();
+  // The destructor must not run on the UI thread, as it may trigger IO
+  // operations via sql::Connection's destructor.
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 bool PrecacheDatabase::Init(const base::FilePath& db_path) {
@@ -254,7 +254,7 @@ void PrecacheDatabase::MaybePostFlush() {
   // transaction.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&PrecacheDatabase::PostedFlush,
-                            scoped_refptr<PrecacheDatabase>(this)),
+                            weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(1));
   is_flush_posted_ = true;
 }

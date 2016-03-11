@@ -13,8 +13,8 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/precache/core/precache_url_table.h"
 
@@ -31,13 +31,15 @@ class Connection;
 
 namespace precache {
 
-// Class that tracks information related to precaching. This class can be
-// constructed or destroyed on any threads, but all other methods must be called
-// on the same thread (e.g. the DB thread).
-class PrecacheDatabase : public base::RefCountedThreadSafe<PrecacheDatabase> {
+// Class that tracks information related to precaching. This class may be
+// constructed on any thread, but all calls to, and destruction of this class
+// must be done on the the DB thread.
+class PrecacheDatabase {
  public:
   // A PrecacheDatabase can be constructed on any thread.
   PrecacheDatabase();
+
+  ~PrecacheDatabase();
 
   // Initializes the precache database, using the specified database file path.
   // Init must be called before any other methods.
@@ -70,10 +72,7 @@ class PrecacheDatabase : public base::RefCountedThreadSafe<PrecacheDatabase> {
                             bool is_connection_cellular);
 
  private:
-  friend class base::RefCountedThreadSafe<PrecacheDatabase>;
   friend class PrecacheDatabaseTest;
-
-  ~PrecacheDatabase();
 
   bool IsDatabaseAccessible() const;
 
@@ -112,6 +111,8 @@ class PrecacheDatabase : public base::RefCountedThreadSafe<PrecacheDatabase> {
   // ThreadChecker used to ensure that all methods other than the constructor
   // or destructor are called on the same thread.
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<PrecacheDatabase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrecacheDatabase);
 };

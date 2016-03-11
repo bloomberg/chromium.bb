@@ -11,6 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_base.h"
 #include "base/test/histogram_tester.h"
@@ -50,7 +51,7 @@ class PrecacheDatabaseTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    precache_database_ = new PrecacheDatabase();
+    precache_database_.reset(new PrecacheDatabase());
 
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     base::FilePath db_path = scoped_temp_dir_.path().Append(
@@ -107,7 +108,7 @@ class PrecacheDatabaseTest : public testing::Test {
   // to be set properly.
   base::MessageLoopForUI loop_;
 
-  scoped_refptr<PrecacheDatabase> precache_database_;
+  scoped_ptr<PrecacheDatabase> precache_database_;
   base::HistogramTester histograms_;
   base::HistogramTester::CountsMap expected_histogram_counts_;
 

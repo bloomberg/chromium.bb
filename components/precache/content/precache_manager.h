@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/history/core/browser/history_types.h"
@@ -158,7 +157,7 @@ class PrecacheManager : public KeyedService,
 
   // The PrecacheDatabase for tracking precache metrics. Should only be used on
   // the DB thread.
-  const scoped_refptr<PrecacheDatabase> precache_database_;
+  scoped_ptr<PrecacheDatabase> precache_database_;
 
   // Flag indicating whether or not precaching is currently in progress.
   bool is_precaching_;
