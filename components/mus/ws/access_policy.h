@@ -14,6 +14,7 @@
 namespace mus {
 namespace ws {
 
+class AccessPolicyDelegate;
 class ServerWindow;
 
 // AccessPolicy is used by WindowTree to determine what the WindowTree is
@@ -21,6 +22,9 @@ class ServerWindow;
 class AccessPolicy {
  public:
   virtual ~AccessPolicy() {}
+
+  virtual void Init(ConnectionSpecificId connection_id,
+                    AccessPolicyDelegate* delegate) = 0;
 
   // Unless otherwise mentioned all arguments have been validated. That is the
   // |window| arguments are non-null unless otherwise stated (eg CanSetWindow()

@@ -16,6 +16,7 @@
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/connection_manager.h"
 #include "components/mus/ws/connection_manager_delegate.h"
+#include "components/mus/ws/default_access_policy.h"
 #include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/platform_display.h"
@@ -25,6 +26,7 @@
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/test_change_tracker.h"
 #include "components/mus/ws/test_utils.h"
+#include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -107,7 +109,8 @@ class TestDisplayBinding : public DisplayBinding {
   WindowTree* CreateWindowTree(ServerWindow* root) override {
     return connection_manager_->EmbedAtWindow(
         root, mojo::shell::mojom::kRootUserID,
-        mus::mojom::WindowTreeClientPtr());
+        mus::mojom::WindowTreeClientPtr(),
+        make_scoped_ptr(new WindowManagerAccessPolicy));
   }
 
   Display* display_;
@@ -224,7 +227,8 @@ class WindowTreeTest : public testing::Test {
   WindowTree* CreateNewTree(const UserId& user_id,
                             TestWindowTreeBinding** binding) {
     WindowTree* tree =
-        new WindowTree(connection_manager_.get(), user_id, nullptr);
+        new WindowTree(connection_manager_.get(), user_id, nullptr,
+                       make_scoped_ptr(new DefaultAccessPolicy));
     *binding = new TestWindowTreeBinding;
     connection_manager_->AddTree(make_scoped_ptr(tree),
                                  make_scoped_ptr(*binding), nullptr);

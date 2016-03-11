@@ -5,6 +5,7 @@
 #include "components/mus/ws/window_tree_factory.h"
 
 #include "components/mus/ws/connection_manager.h"
+#include "components/mus/ws/default_access_policy.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 
@@ -26,7 +27,8 @@ void WindowTreeFactory::CreateWindowTree(
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     mojom::WindowTreeClientPtr client) {
   scoped_ptr<ws::WindowTree> service(
-      new ws::WindowTree(connection_manager_, user_id_, nullptr));
+      new ws::WindowTree(connection_manager_, user_id_, nullptr,
+                         make_scoped_ptr(new DefaultAccessPolicy)));
   scoped_ptr<ws::DefaultWindowTreeBinding> binding(
       new ws::DefaultWindowTreeBinding(service.get(), connection_manager_,
                                        std::move(tree_request),

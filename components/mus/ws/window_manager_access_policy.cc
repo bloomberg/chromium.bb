@@ -10,15 +10,15 @@
 namespace mus {
 namespace ws {
 
-// TODO(sky): document why this differs from default for each case. Maybe want
-// to subclass DefaultAccessPolicy.
-
-WindowManagerAccessPolicy::WindowManagerAccessPolicy(
-    ConnectionSpecificId connection_id,
-    AccessPolicyDelegate* delegate)
-    : connection_id_(connection_id), delegate_(delegate) {}
+WindowManagerAccessPolicy::WindowManagerAccessPolicy() {}
 
 WindowManagerAccessPolicy::~WindowManagerAccessPolicy() {}
+
+void WindowManagerAccessPolicy::Init(ConnectionSpecificId connection_id,
+                                     AccessPolicyDelegate* delegate) {
+  connection_id_ = connection_id;
+  delegate_ = delegate;
+}
 
 bool WindowManagerAccessPolicy::CanRemoveWindowFromParent(
     const ServerWindow* window) const {

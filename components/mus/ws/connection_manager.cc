@@ -13,6 +13,7 @@
 #include "components/mus/ws/operation.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
+#include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_tree.h"
@@ -69,8 +70,10 @@ ConnectionSpecificId ConnectionManager::GetAndAdvanceNextConnectionId() {
 WindowTree* ConnectionManager::EmbedAtWindow(
     ServerWindow* root,
     const UserId& user_id,
-    mojom::WindowTreeClientPtr client) {
-  scoped_ptr<WindowTree> tree_ptr(new WindowTree(this, user_id, root));
+    mojom::WindowTreeClientPtr client,
+    scoped_ptr<AccessPolicy> access_policy) {
+  scoped_ptr<WindowTree> tree_ptr(
+      new WindowTree(this, user_id, root, std::move(access_policy)));
   WindowTree* tree = tree_ptr.get();
 
   mojom::WindowTreePtr window_tree_ptr;
@@ -101,7 +104,8 @@ WindowTree* ConnectionManager::CreateTreeForWindowManager(
   mojom::DisplayPtr display_ptr = display->ToMojomDisplay();
   mojom::WindowTreeClientPtr tree_client;
   factory->CreateWindowManager(std::move(display_ptr), GetProxy(&tree_client));
-  scoped_ptr<WindowTree> tree_ptr(new WindowTree(this, user_id, root));
+  scoped_ptr<WindowTree> tree_ptr(new WindowTree(
+      this, user_id, root, make_scoped_ptr(new WindowManagerAccessPolicy)));
   WindowTree* tree = tree_ptr.get();
   scoped_ptr<DefaultWindowTreeBinding> binding(new DefaultWindowTreeBinding(
       tree_ptr.get(), this, std::move(tree_client)));

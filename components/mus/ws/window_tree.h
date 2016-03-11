@@ -64,7 +64,8 @@ class WindowTree : public mojom::WindowTree,
  public:
   WindowTree(ConnectionManager* connection_manager,
              const UserId& user_id,
-             ServerWindow* root);
+             ServerWindow* root,
+             scoped_ptr<AccessPolicy> access_policy);
   ~WindowTree() override;
 
   void Init(scoped_ptr<WindowTreeBinding> binding, mojom::WindowTreePtr tree);

@@ -31,6 +31,7 @@
 namespace mus {
 namespace ws {
 
+class AccessPolicy;
 class ConnectionManagerDelegate;
 class DisplayManager;
 class ServerWindow;
@@ -71,7 +72,8 @@ class ConnectionManager : public ServerWindowDelegate,
   // |transport_window_id| is valid.
   WindowTree* EmbedAtWindow(ServerWindow* root,
                             const UserId& user_id,
-                            mojom::WindowTreeClientPtr client);
+                            mojom::WindowTreeClientPtr client,
+                            scoped_ptr<AccessPolicy> access_policy);
 
   // Adds |tree_impl_ptr| to the set of known trees. Use DestroyTree() to
   // destroy the tree.

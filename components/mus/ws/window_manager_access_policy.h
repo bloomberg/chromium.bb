@@ -17,11 +17,12 @@ class AccessPolicyDelegate;
 
 class WindowManagerAccessPolicy : public AccessPolicy {
  public:
-  WindowManagerAccessPolicy(ConnectionSpecificId connection_id,
-                            AccessPolicyDelegate* delegate);
+  WindowManagerAccessPolicy();
   ~WindowManagerAccessPolicy() override;
 
   // AccessPolicy:
+  void Init(ConnectionSpecificId connection_id,
+            AccessPolicyDelegate* delegate) override;
   bool CanRemoveWindowFromParent(const ServerWindow* window) const override;
   bool CanAddWindow(const ServerWindow* parent,
                     const ServerWindow* child) const override;
@@ -60,8 +61,8 @@ class WindowManagerAccessPolicy : public AccessPolicy {
  private:
   bool IsWindowKnown(const ServerWindow* window) const;
 
-  const ConnectionSpecificId connection_id_;
-  AccessPolicyDelegate* delegate_;
+  ConnectionSpecificId connection_id_ = 0u;
+  AccessPolicyDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerAccessPolicy);
 };

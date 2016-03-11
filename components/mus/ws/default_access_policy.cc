@@ -10,11 +10,15 @@
 namespace mus {
 namespace ws {
 
-DefaultAccessPolicy::DefaultAccessPolicy(ConnectionSpecificId connection_id,
-                                         AccessPolicyDelegate* delegate)
-    : connection_id_(connection_id), delegate_(delegate) {}
+DefaultAccessPolicy::DefaultAccessPolicy() {}
 
 DefaultAccessPolicy::~DefaultAccessPolicy() {}
+
+void DefaultAccessPolicy::Init(ConnectionSpecificId connection_id,
+                               AccessPolicyDelegate* delegate) {
+  connection_id_ = connection_id;
+  delegate_ = delegate;
+}
 
 bool DefaultAccessPolicy::CanRemoveWindowFromParent(
     const ServerWindow* window) const {

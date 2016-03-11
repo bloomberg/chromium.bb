@@ -18,11 +18,12 @@ class AccessPolicyDelegate;
 // AccessPolicy for all connections, except the window manager.
 class DefaultAccessPolicy : public AccessPolicy {
  public:
-  DefaultAccessPolicy(ConnectionSpecificId connection_id,
-                      AccessPolicyDelegate* delegate);
+  DefaultAccessPolicy();
   ~DefaultAccessPolicy() override;
 
   // AccessPolicy:
+  void Init(ConnectionSpecificId connection_id,
+            AccessPolicyDelegate* delegate) override;
   bool CanRemoveWindowFromParent(const ServerWindow* window) const override;
   bool CanAddWindow(const ServerWindow* parent,
                     const ServerWindow* child) const override;
@@ -61,8 +62,8 @@ class DefaultAccessPolicy : public AccessPolicy {
  private:
   bool WasCreatedByThisConnection(const ServerWindow* window) const;
 
-  const ConnectionSpecificId connection_id_;
-  AccessPolicyDelegate* delegate_;
+  ConnectionSpecificId connection_id_ = 0u;
+  AccessPolicyDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessPolicy);
 };

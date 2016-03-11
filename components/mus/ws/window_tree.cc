@@ -19,7 +19,6 @@
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_observer.h"
-#include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_manager_state.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -67,20 +66,18 @@ class TargetedEvent : public ServerWindowObserver {
 
 WindowTree::WindowTree(ConnectionManager* connection_manager,
                        const UserId& user_id,
-                       ServerWindow* root)
+                       ServerWindow* root,
+                       scoped_ptr<AccessPolicy> access_policy)
     : connection_manager_(connection_manager),
       user_id_(user_id),
       id_(connection_manager_->GetAndAdvanceNextConnectionId()),
       next_window_id_(1),
+      access_policy_(std::move(access_policy)),
       event_ack_id_(0),
       window_manager_internal_(nullptr) {
   if (root)
     roots_.insert(root);
-  // TODO(sky): pass in type rather than inferring it.
-  if (root && root->id().connection_id == kInvalidConnectionId)
-    access_policy_.reset(new WindowManagerAccessPolicy(id_, this));
-  else
-    access_policy_.reset(new DefaultAccessPolicy(id_, this));
+  access_policy_->Init(id_, this);
 }
 
 WindowTree::~WindowTree() {
@@ -279,8 +276,8 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
   PrepareForEmbed(window);
   // When embedding we don't know the user id of where the TreeClient came
   // from. Use an invalid id, which limits what the client is able to do.
-  connection_manager_->EmbedAtWindow(window, InvalidUserId(),
-                                     std::move(client));
+  connection_manager_->EmbedAtWindow(window, InvalidUserId(), std::move(client),
+                                     make_scoped_ptr(new DefaultAccessPolicy));
   return true;
 }
 
