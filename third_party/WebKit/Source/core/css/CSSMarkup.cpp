@@ -69,46 +69,6 @@ static bool isCSSTokenizerIdentifier(const String& string)
 }
 
 template <typename CharacterType>
-static inline bool isCSSTokenizerURL(const CharacterType* characters, unsigned length)
-{
-    const CharacterType* end = characters + length;
-
-    for (; characters != end; ++characters) {
-        CharacterType c = characters[0];
-        switch (c) {
-        case '!':
-        case '#':
-        case '$':
-        case '%':
-        case '&':
-            break;
-        default:
-            if (c < '*')
-                return false;
-            if (c <= '~')
-                break;
-            if (c < 128)
-                return false;
-        }
-    }
-
-    return true;
-}
-
-// "url" from the CSS tokenizer, minus backslash-escape sequences
-static bool isCSSTokenizerURL(const String& string)
-{
-    unsigned length = string.length();
-
-    if (!length)
-        return true;
-
-    if (string.is8Bit())
-        return isCSSTokenizerURL(string.characters8(), length);
-    return isCSSTokenizerURL(string.characters16(), length);
-}
-
-template <typename CharacterType>
 static inline String quoteCSSStringInternal(const CharacterType* characters, unsigned length)
 {
     // For efficiency, we first pre-calculate the length of the quoted string, then we build the actual one.
@@ -179,11 +139,6 @@ static String quoteCSSString(const String& string)
 String quoteCSSStringIfNeeded(const String& string)
 {
     return isCSSTokenizerIdentifier(string) ? string : quoteCSSString(string);
-}
-
-String quoteCSSURLIfNeeded(const String& string)
-{
-    return isCSSTokenizerURL(string) ? string : quoteCSSString(string);
 }
 
 static void serializeCharacter(UChar32 c, StringBuilder& appendTo)

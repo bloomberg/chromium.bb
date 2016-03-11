@@ -21,10 +21,10 @@ function testComputedFilterRule(description, rule, expectedValue)
     stylesheet.deleteRule(0);
 }
 
-testComputedFilterRule("Basic reference", "url('#a')");
-testComputedFilterRule("Bare unquoted reference converting to quoted form", "url(#a)", "url('#a')");
-testComputedFilterRule("Multiple references", "url('#a') url('#b')");
-testComputedFilterRule("Reference as 2nd value", "grayscale(1) url('#a')");
+testComputedFilterRule("Basic reference", "url('#a')", 'url("#a")');
+testComputedFilterRule("Bare unquoted reference converting to quoted form", "url(#a)", 'url("#a")');
+testComputedFilterRule("Multiple references", "url('#a') url('#b')", 'url("#a") url("#b")');
+testComputedFilterRule("Reference as 2nd value", "grayscale(1) url('#a')", 'grayscale(1) url("#a")');
 testComputedFilterRule("Integer value", "grayscale(1)");
 testComputedFilterRule("Float value converts to integer", "grayscale(1.0)", "grayscale(1)");
 testComputedFilterRule("Zero value", "grayscale(0)");

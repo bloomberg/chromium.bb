@@ -1213,7 +1213,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForFilter(co
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE:
             filterValue = CSSFunctionValue::create(CSSValueUrl);
-            filterValue->append(CSSCustomIdentValue::create(toReferenceFilterOperation(filterOperation)->url()));
+            filterValue->append(CSSStringValue::create(toReferenceFilterOperation(filterOperation)->url()));
             break;
         case FilterOperation::GRAYSCALE:
             filterValue = CSSFunctionValue::create(CSSValueGrayscale);
