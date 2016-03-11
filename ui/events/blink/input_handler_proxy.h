@@ -89,6 +89,10 @@ class InputHandlerProxy
     return gesture_scroll_on_impl_thread_;
   }
 
+ protected:
+  void RecordMainThreadScrollingReasons(blink::WebInputEvent::Type type,
+                                        uint32_t reasons);
+
  private:
   friend class test::InputHandlerProxyTest;
 

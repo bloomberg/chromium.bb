@@ -384,8 +384,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
   return DID_NOT_HANDLE;
 }
 
-void RecordMainThreadScrollingReasons(WebInputEvent::Type type,
-                                      uint32_t reasons) {
+void InputHandlerProxy::RecordMainThreadScrollingReasons(
+    WebInputEvent::Type type,
+    uint32_t reasons) {
   static const char* kGestureHistogramName =
       "Renderer4.MainThreadGestureScrollReason";
   static const char* kWheelHistogramName =

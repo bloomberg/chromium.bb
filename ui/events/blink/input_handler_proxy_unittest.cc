@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/histogram_tester.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -259,6 +260,17 @@ const cc::InputHandler::ScrollStatus kScrollIgnoredScrollState(
     cc::InputHandler::SCROLL_IGNORED,
     cc::MainThreadScrollingReason::kNotScrollable);
 
+class TestInputHandlerProxy : public InputHandlerProxy {
+ public:
+  TestInputHandlerProxy(cc::InputHandler* input_handler,
+                        InputHandlerProxyClient* client)
+      : InputHandlerProxy(input_handler, client) {}
+  void RecordMainThreadScrollingReasonsForTest(blink::WebInputEvent::Type type,
+                                               uint32_t reasons) {
+    RecordMainThreadScrollingReasons(type, reasons);
+  }
+};
+
 }  // namespace
 
 class InputHandlerProxyTest
@@ -272,7 +284,7 @@ class InputHandlerProxyTest
             GetParam() == CHILD_SCROLL_SYNCHRONOUS_HANDLER),
         expected_disposition_(InputHandlerProxy::DID_HANDLE) {
     input_handler_.reset(
-        new ui::InputHandlerProxy(
+        new TestInputHandlerProxy(
             &mock_input_handler_, &mock_client_));
     scroll_result_did_scroll_.did_scroll = true;
     scroll_result_did_not_scroll_.did_scroll = false;
@@ -381,7 +393,7 @@ class InputHandlerProxyTest
   testing::StrictMock<MockInputHandler> mock_input_handler_;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler_;
-  scoped_ptr<ui::InputHandlerProxy> input_handler_;
+  scoped_ptr<TestInputHandlerProxy> input_handler_;
   testing::StrictMock<MockInputHandlerProxyClient> mock_client_;
   WebGestureEvent gesture_;
   InputHandlerProxy::EventDisposition expected_disposition_;
@@ -2690,7 +2702,7 @@ TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
   testing::StrictMock<MockInputHandlerProxyClientWithDidAnimateForInput>
       mock_client;
   input_handler_.reset(
-        new ui::InputHandlerProxy(
+        new TestInputHandlerProxy(
             &mock_input_handler_, &mock_client));
   if (install_synchronous_handler_) {
     EXPECT_CALL(mock_input_handler_, RequestUpdateForSynchronousInputHandler())
@@ -2788,6 +2800,22 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
   testing::Mock::VerifyAndClearExpectations(&mock_client);
   testing::Mock::VerifyAndClearExpectations(&mock_synchronous_input_handler);
 }
+
+TEST_P(InputHandlerProxyTest, MainThreadScrollingMouseWheelHistograms) {
+  base::HistogramTester histogram_tester;
+  input_handler_->RecordMainThreadScrollingReasonsForTest(
+      WebInputEvent::MouseWheel,
+      cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects |
+          cc::MainThreadScrollingReason::kThreadedScrollingDisabled |
+          cc::MainThreadScrollingReason::kPageOverlay |
+          cc::MainThreadScrollingReason::kAnimatingScrollOnMainThread);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Renderer4.MainThreadWheelScrollReason"),
+      testing::ElementsAre(base::Bucket(1, 1), base::Bucket(3, 1),
+                           base::Bucket(5, 1), base::Bucket(14, 1)));
+}
+
 
 INSTANTIATE_TEST_CASE_P(AnimateInput,
                         InputHandlerProxyTest,

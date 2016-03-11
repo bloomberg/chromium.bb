@@ -371,6 +371,7 @@ test("events_unittests") {
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//ipc:test_support",
     "//skia",
     "//testing/gmock",
