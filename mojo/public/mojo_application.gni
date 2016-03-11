@@ -25,6 +25,8 @@ template("mojo_native_application") {
     mojo_deps += invoker.deps
   }
 
+  mojo_data_deps = []
+
   if (defined(invoker.resources)) {
     copy_step_name = "${base_target_name}__copy_resources"
     copy(copy_step_name) {
@@ -37,7 +39,7 @@ template("mojo_native_application") {
       }
       deps = mojo_deps
     }
-    mojo_deps += [ ":$copy_step_name" ]
+    mojo_data_deps += [ ":$copy_step_name" ]
   }
 
   output = base_target_name + ".mojo"
@@ -85,6 +87,7 @@ template("mojo_native_application") {
     if (defined(invoker.data_deps)) {
       data_deps += invoker.data_deps
     }
+    data_deps += mojo_data_deps
 
     deps = [
       "//mojo/platform_handle:for_shared_library",
@@ -183,7 +186,7 @@ if (is_android) {
       base_target_name = invoker.output_name
     }
 
-    mojo_deps = []
+    mojo_data_deps = []
     if (defined(invoker.resources)) {
       copy_step_name = "${base_target_name}__copy_resources"
       copy(copy_step_name) {
@@ -198,7 +201,7 @@ if (is_android) {
           deps = invoker.deps
         }
       }
-      mojo_deps += [ ":$copy_step_name" ]
+      mojo_data_deps += [ ":$copy_step_name" ]
     }
 
     zip_action_name = "${target_name}_zip"
@@ -242,7 +245,7 @@ if (is_android) {
         "--line=#!mojo mojo:android_handler",
       ]
 
-      deps = mojo_deps
+      data_deps = mojo_data_deps
 
       public_deps = [
         ":$zip_action_name",
