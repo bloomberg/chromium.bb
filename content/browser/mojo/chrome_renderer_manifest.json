@@ -1,5 +1,5 @@
 {
   "name": "exe:chrome_renderer",
   "display_name": "Chrome Renderer",
-  "capabilities": { "mojo:mus": [ "mus.mojom.Gpu" ] }
+  "capabilities": { "mojo:mus": [ "mus::mojom::Gpu" ] }
 }

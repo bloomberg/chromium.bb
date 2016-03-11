@@ -59,7 +59,7 @@ public static final {{manager_class(interface, True)}} MANAGER =
         new {{manager_class(interface, True)}}() {
 
     public String getName() {
-        return "{{namespace}}.{{interface.name}}";
+        return "{{namespace|replace(".","::")}}::{{interface.name}}";
     }
 
     public int getVersion() {

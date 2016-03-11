@@ -161,7 +161,7 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
   }
 
   var {{interface.name}} = {
-    name: '{{namespace}}.{{interface.name}}',
+    name: '{{namespace|replace(".","::")}}::{{interface.name}}',
     proxyClass: {{interface.name}}Proxy,
     stubClass: {{interface.name}}Stub,
     validateRequest: validate{{interface.name}}Request,
