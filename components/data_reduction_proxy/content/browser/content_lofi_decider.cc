@@ -85,7 +85,6 @@ bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
       headers->RemoveHeader(chrome_proxy_header());
       header_value += ", ";
     }
-    header_value += chrome_proxy_lo_fi_experiment_directive();
     headers->SetHeader(chrome_proxy_header(), header_value);
   }
 

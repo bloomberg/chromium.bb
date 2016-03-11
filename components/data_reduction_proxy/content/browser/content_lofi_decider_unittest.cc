@@ -139,17 +139,6 @@ class ContentLoFiDeciderTest : public testing::Test {
                   std::string::npos);
   }
 
-  static void VerifyLoFiExperimentHeader(
-      bool expected_lofi_experiment_used,
-      const net::HttpRequestHeaders& headers) {
-    EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
-    std::string header_value;
-    headers.GetHeader(chrome_proxy_header(), &header_value);
-    EXPECT_EQ(expected_lofi_experiment_used,
-              header_value.find(chrome_proxy_lo_fi_experiment_directive()) !=
-                  std::string::npos);
-  }
-
  protected:
   base::MessageLoopForIO message_loop_;
   net::MockClientSocketFactory mock_socket_factory_;
@@ -317,8 +306,6 @@ TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
     // trial and network is prohibitively slow.
     bool expect_lofi_header =
         tests[i].auto_lofi_enabled_group && tests[i].network_prohibitively_slow;
-    bool expect_lofi_experiment_header =
-        tests[i].auto_lofi_control_group && tests[i].network_prohibitively_slow;
 
     base::FieldTrialList field_trial_list(nullptr);
     if (tests[i].auto_lofi_enabled_group) {
@@ -340,7 +327,6 @@ TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
     NotifyBeforeSendProxyHeaders(&headers, request.get());
 
     VerifyLoFiHeader(expect_lofi_header, headers);
-    VerifyLoFiExperimentHeader(expect_lofi_experiment_header, headers);
   }
 }
 
