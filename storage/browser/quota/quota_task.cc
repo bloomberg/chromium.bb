@@ -58,9 +58,8 @@ void QuotaTask::DeleteSoon() {
 // QuotaTaskObserver -------------------------------------------------------
 
 QuotaTaskObserver::~QuotaTaskObserver() {
-  std::for_each(running_quota_tasks_.begin(),
-                running_quota_tasks_.end(),
-                std::mem_fun(&QuotaTask::Abort));
+  for (auto* task : running_quota_tasks_)
+    task->Abort();
 }
 
 QuotaTaskObserver::QuotaTaskObserver() {

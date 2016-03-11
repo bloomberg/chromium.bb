@@ -306,9 +306,8 @@ void SearchProviderInstallData::NotifyLoaded() {
   std::vector<base::Closure> closure_queue;
   closure_queue.swap(closure_queue_);
 
-  std::for_each(closure_queue.begin(),
-                closure_queue.end(),
-                std::mem_fun_ref(&base::Closure::Run));
+  for (auto& closure : closure_queue)
+    closure.Run();
 
   // Since we expect this request to be rare, clear out the information. This
   // also keeps the responses current as the search providers change.

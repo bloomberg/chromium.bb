@@ -1282,8 +1282,8 @@ void QuotaManager::RemoveStorageObserverForFilter(
 
 QuotaManager::~QuotaManager() {
   proxy_->manager_ = NULL;
-  std::for_each(clients_.begin(), clients_.end(),
-                std::mem_fun(&QuotaClient::OnQuotaManagerDestroyed));
+  for (auto* client : clients_)
+    client->OnQuotaManagerDestroyed();
   if (database_)
     db_thread_->DeleteSoon(FROM_HERE, database_.release());
 }

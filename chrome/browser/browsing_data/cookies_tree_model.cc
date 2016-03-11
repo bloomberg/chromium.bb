@@ -290,9 +290,8 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitFlashLSO(
 // CookieTreeNode, public:
 
 void CookieTreeNode::DeleteStoredObjects() {
-  std::for_each(children().begin(),
-                children().end(),
-                std::mem_fun(&CookieTreeNode::DeleteStoredObjects));
+  for (auto* child : children())
+    child->DeleteStoredObjects();
 }
 
 CookiesTreeModel* CookieTreeNode::GetModel() const {

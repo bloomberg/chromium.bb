@@ -1039,16 +1039,14 @@ void PrerenderManager::PeriodicCleanup() {
 
   // Grab a copy of the current PrerenderContents pointers, so that we
   // will not interfere with potential deletions of the list.
-  std::vector<PrerenderContents*>
-      prerender_contents(active_prerenders_.size());
-  std::transform(active_prerenders_.begin(), active_prerenders_.end(),
-                 prerender_contents.begin(),
-                 std::mem_fun(&PrerenderData::contents));
+  std::vector<PrerenderContents*> prerender_contents;
+  prerender_contents.reserve(active_prerenders_.size());
+  for (auto* prerender : active_prerenders_)
+    prerender_contents.push_back(prerender->contents());
 
   // And now check for prerenders using too much memory.
-  std::for_each(prerender_contents.begin(), prerender_contents.end(),
-                std::mem_fun(
-                    &PrerenderContents::DestroyWhenUsingTooManyResources));
+  for (auto* contents : prerender_contents)
+    contents->DestroyWhenUsingTooManyResources();
 
   // Measure how long the resource checks took. http://crbug.com/305419.
   UMA_HISTOGRAM_TIMES("Prerender.PeriodicCleanupResourceCheckTime",

@@ -1419,12 +1419,10 @@ AppCacheStorageImpl::AppCacheStorageImpl(AppCacheServiceImpl* service)
 }
 
 AppCacheStorageImpl::~AppCacheStorageImpl() {
-  std::for_each(pending_quota_queries_.begin(),
-                pending_quota_queries_.end(),
-                std::mem_fun(&DatabaseTask::CancelCompletion));
-  std::for_each(scheduled_database_tasks_.begin(),
-                scheduled_database_tasks_.end(),
-                std::mem_fun(&DatabaseTask::CancelCompletion));
+  for (auto* task : pending_quota_queries_)
+    task->CancelCompletion();
+  for (auto* task : scheduled_database_tasks_)
+    task->CancelCompletion();
 
   if (database_ &&
       !db_thread_->PostTask(

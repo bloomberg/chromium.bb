@@ -349,8 +349,8 @@ MultiUserWindowManagerChromeOSTest::GetOwnersOfVisibleWindowsAsString() {
   multi_user_window_manager_->GetOwnersOfVisibleWindows(&owners);
 
   std::vector<std::string> owner_list;
-  std::transform(owners.begin(), owners.end(), std::back_inserter(owner_list),
-                 std::mem_fun_ref(&AccountId::GetUserEmail));
+  for (auto& owner : owners)
+    owner_list.push_back(owner.GetUserEmail());
   return base::JoinString(owner_list, " ");
 }
 

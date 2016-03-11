@@ -295,8 +295,8 @@ void SimpleBackendImpl::OnDoomComplete(uint64_t entry_hash) {
   to_run_closures.swap(it->second);
   entries_pending_doom_.erase(it);
 
-  std::for_each(to_run_closures.begin(), to_run_closures.end(),
-                std::mem_fun_ref(&Closure::Run));
+  for (auto& closure : to_run_closures)
+    closure.Run();
 }
 
 void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,

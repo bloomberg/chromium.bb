@@ -412,9 +412,8 @@ AppCacheServiceImpl::AppCacheServiceImpl(
 
 AppCacheServiceImpl::~AppCacheServiceImpl() {
   DCHECK(backends_.empty());
-  std::for_each(pending_helpers_.begin(),
-                pending_helpers_.end(),
-                std::mem_fun(&AsyncHelper::Cancel));
+  for (auto* helper : pending_helpers_)
+    helper->Cancel();
   STLDeleteElements(&pending_helpers_);
   if (quota_client_)
     quota_client_->NotifyAppCacheDestroyed();
