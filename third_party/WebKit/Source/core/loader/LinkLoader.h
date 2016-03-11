@@ -75,7 +75,7 @@ public:
     void released();
     bool loadLink(const LinkRelAttribute&, CrossOriginAttributeValue, const String& type, const String& as, const KURL&, Document&, const NetworkHintsInterface&);
     enum CanLoadResources { OnlyLoadResources, DoNotLoadResources, LoadResourcesAndPreconnect };
-    static bool loadLinkFromHeader(const String& headerValue, const KURL& baseURL, Document*, const NetworkHintsInterface&, CanLoadResources);
+    static void loadLinksFromHeader(const String& headerValue, const KURL& baseURL, Document*, const NetworkHintsInterface&, CanLoadResources);
     static bool getResourceTypeFromAsAttribute(const String& as, Resource::Type&);
 
     DECLARE_TRACE();

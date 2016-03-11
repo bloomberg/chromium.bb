@@ -287,14 +287,14 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
     return document.loader()->startPreload(resourceType, linkRequest);
 }
 
-bool LinkLoader::loadLinkFromHeader(const String& headerValue, const KURL& baseURL, Document* document, const NetworkHintsInterface& networkHintsInterface, CanLoadResources canLoadResources)
+void LinkLoader::loadLinksFromHeader(const String& headerValue, const KURL& baseURL, Document* document, const NetworkHintsInterface& networkHintsInterface, CanLoadResources canLoadResources)
 {
     if (!document)
-        return false;
+        return;
     LinkHeaderSet headerSet(headerValue);
     for (auto& header : headerSet) {
         if (!header.valid() || header.url().isEmpty() || header.rel().isEmpty())
-            return false;
+            continue;
 
         LinkRelAttribute relAttribute(header.rel());
         KURL url(baseURL, header.url());
@@ -312,7 +312,6 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, const KURL& baseU
         }
         // TODO(yoav): Add more supported headers as needed.
     }
-    return true;
 }
 
 bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, CrossOriginAttributeValue crossOrigin, const String& type, const String& as, const KURL& href, Document& document, const NetworkHintsInterface& networkHintsInterface)
