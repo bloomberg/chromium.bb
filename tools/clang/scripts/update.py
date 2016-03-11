@@ -339,7 +339,8 @@ def GetVSVersion():
   # or a system-wide installation otherwise.
   sys.path.append(os.path.join(CHROMIUM_DIR, 'tools', 'gyp', 'pylib'))
   import gyp.MSVSVersion
-  vs_version = gyp.MSVSVersion.SelectVisualStudioVersion('2013')
+  vs_version = gyp.MSVSVersion.SelectVisualStudioVersion(
+      vs_toolchain.GetVisualStudioVersion())
   return vs_version
 
 
