@@ -38,6 +38,7 @@ extern struct gbm_driver gbm_driver_rockchip;
 extern struct gbm_driver gbm_driver_tegra;
 #endif
 extern struct gbm_driver gbm_driver_udl;
+extern struct gbm_driver gbm_driver_virtio_gpu;
 
 static struct gbm_driver *gbm_get_driver(int fd)
 {
@@ -72,6 +73,7 @@ static struct gbm_driver *gbm_get_driver(int fd)
 		&gbm_driver_tegra,
 #endif
 		&gbm_driver_udl,
+		&gbm_driver_virtio_gpu,
 	};
 
 	for(i = 0; i < ARRAY_SIZE(driver_list); i++)
