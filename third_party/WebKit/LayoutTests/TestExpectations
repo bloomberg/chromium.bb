@@ -52,7 +52,6 @@ crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
 
 # See also crbug.com/521730 for the these two text/emphasis tests (non-Oilpan) Win10 failures.
 crbug.com/574660 [ Win7 ] fast/text/emphasis-combined-text.html [ Pass Failure ]
-crbug.com/574660 [ Win7 ] fast/text/emphasis-vertical.html [ Pass Failure ]
 
 crbug.com/581974 fast/text/justify-ideograph-vertical.html [ Pass Failure ]
 crbug.com/584211 [ Mac Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ Pass Failure ]
@@ -1452,9 +1451,9 @@ crbug.com/591821 virtual/trustedeventsdefaultaction/fast/events/updateLayoutForH
 
 crbug.com/593888 [ Linux Debug ] fast/dom/htmlcollection-reachable.html [ Timeout ]
 
-crbug.com/593917 [ Win10 ] fast/writing-mode/japanese-rl-selection.html [ Failure ]
-crbug.com/593917 [ Win10 ] fast/text/emphasis-vertical.html [ Failure ]
-crbug.com/593917 [ Win10 ] fast/writing-mode/japanese-lr-selection.html [ Failure ]
+crbug.com/593917 fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline ]
+crbug.com/593917 fast/text/emphasis-vertical.html [ NeedsRebaseline ]
+crbug.com/593917 fast/writing-mode/japanese-lr-selection.html [ NeedsRebaseline ]
 
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ] 
 
