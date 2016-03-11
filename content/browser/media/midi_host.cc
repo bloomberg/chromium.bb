@@ -251,7 +251,7 @@ bool MidiHost::IsValidWebMIDIData(const std::vector<uint8_t>& data) {
       if (data[i] == kEndOfSysExByte) {
         in_sysex = false;
         UMA_HISTOGRAM_COUNTS("Media.Midi.SysExMessageSizeUpTo1MB",
-                             sysex_start_offset - i + 1);
+                             i - sysex_start_offset + 1);
       } else if (!IsDataByte(current)) {
         return false;  // Error: |current| should have been data byte.
       }
