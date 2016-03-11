@@ -31,6 +31,7 @@
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSGridAutoRepeatValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSPathValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
@@ -451,7 +452,20 @@ GridTrackSize StyleBuilderConverter::convertGridTrackSize(StyleResolverState& st
     return GridTrackSize(minTrackBreadth, maxTrackBreadth);
 }
 
-void StyleBuilderConverter::convertGridTrackList(const CSSValue& value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, StyleResolverState& state)
+static void convertGridLineNamesList(const CSSValue& value, size_t currentNamedGridLine, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines)
+{
+    ASSERT(value.isGridLineNamesValue());
+
+    for (auto& namedGridLineValue : toCSSValueList(value)) {
+        String namedGridLine = toCSSCustomIdentValue(*namedGridLineValue).value();
+        NamedGridLinesMap::AddResult result = namedGridLines.add(namedGridLine, Vector<size_t>());
+        result.storedValue->value.append(currentNamedGridLine);
+        OrderedNamedGridLines::AddResult orderedInsertionResult = orderedNamedGridLines.add(currentNamedGridLine, Vector<String>());
+        orderedInsertionResult.storedValue->value.append(namedGridLine);
+    }
+}
+
+void StyleBuilderConverter::convertGridTrackList(const CSSValue& value, Vector<GridTrackSize>& trackSizes, NamedGridLinesMap& namedGridLines, OrderedNamedGridLines& orderedNamedGridLines, Vector<GridTrackSize>& autoRepeatTrackSizes, NamedGridLinesMap& autoRepeatNamedGridLines, OrderedNamedGridLines& autoRepeatOrderedNamedGridLines, size_t& autoRepeatInsertionPoint, AutoRepeatType &autoRepeatType, StyleResolverState& state)
 {
     if (value.isPrimitiveValue()) {
         ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNone);
@@ -459,15 +473,27 @@ void StyleBuilderConverter::convertGridTrackList(const CSSValue& value, Vector<G
     }
 
     size_t currentNamedGridLine = 0;
-    for (auto& currValue : toCSSValueList(value)) {
+    for (auto currValue : toCSSValueList(value)) {
         if (currValue->isGridLineNamesValue()) {
-            for (auto& namedGridLineValue : toCSSGridLineNamesValue(*currValue)) {
-                String namedGridLine = toCSSCustomIdentValue(*namedGridLineValue).value();
-                NamedGridLinesMap::AddResult result = namedGridLines.add(namedGridLine, Vector<size_t>());
-                result.storedValue->value.append(currentNamedGridLine);
-                OrderedNamedGridLines::AddResult orderedInsertionResult = orderedNamedGridLines.add(currentNamedGridLine, Vector<String>());
-                orderedInsertionResult.storedValue->value.append(namedGridLine);
+            convertGridLineNamesList(*currValue, currentNamedGridLine, namedGridLines, orderedNamedGridLines);
+            continue;
+        }
+
+        if (currValue->isGridAutoRepeatValue()) {
+            ASSERT(autoRepeatTrackSizes.isEmpty());
+            size_t autoRepeatIndex = 0;
+            CSSValueID autoRepeatID = toCSSGridAutoRepeatValue(currValue)->autoRepeatID();
+            ASSERT(autoRepeatID == CSSValueAutoFill || autoRepeatID == CSSValueAutoFit);
+            autoRepeatType = autoRepeatID == CSSValueAutoFill ? AutoFill : AutoFit;
+            for (auto autoRepeatValue : toCSSValueList(*currValue)) {
+                if (autoRepeatValue->isGridLineNamesValue()) {
+                    convertGridLineNamesList(*autoRepeatValue, autoRepeatIndex, autoRepeatNamedGridLines, autoRepeatOrderedNamedGridLines);
+                    continue;
+                }
+                ++autoRepeatIndex;
+                autoRepeatTrackSizes.append(convertGridTrackSize(state, *autoRepeatValue));
             }
+            autoRepeatInsertionPoint = currentNamedGridLine++;
             continue;
         }
 
@@ -477,7 +503,7 @@ void StyleBuilderConverter::convertGridTrackList(const CSSValue& value, Vector<G
 
     // The parser should have rejected any <track-list> without any <track-size> as
     // this is not conformant to the syntax.
-    ASSERT(!trackSizes.isEmpty());
+    ASSERT(!trackSizes.isEmpty() || !autoRepeatTrackSizes.isEmpty());
 }
 
 void StyleBuilderConverter::convertOrderedNamedGridLinesMapToNamedGridLinesMap(const OrderedNamedGridLines& orderedNamedGridLines, NamedGridLinesMap& namedGridLines)
