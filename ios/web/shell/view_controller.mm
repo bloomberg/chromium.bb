@@ -336,10 +336,6 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 }
 - (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {
 }
-- (void)webWillGoDelta:(int)delta {
-}
-- (void)webDidPrepareForGoBack {
-}
 - (int)downloadImageAtUrl:(const GURL&)url
             maxBitmapSize:(uint32_t)maxBitmapSize
                  callback:

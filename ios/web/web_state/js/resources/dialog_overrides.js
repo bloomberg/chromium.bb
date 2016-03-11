@@ -31,9 +31,6 @@ __gCrWeb.dialogOverrides = {};
     var makeDialogWrapper = function(originalDialogGetter) {
       return function() {
         if (!suppressDialogs) {
-          if (notifyAboutDialogs) {
-            __gCrWeb.message.invokeOnHost({'command': 'dialog.willShow'});
-          }
           return originalDialogGetter().apply(null, arguments);
         } else if (notifyAboutDialogs) {
           __gCrWeb.message.invokeOnHost({'command': 'dialog.suppressed'});

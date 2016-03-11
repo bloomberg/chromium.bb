@@ -34,9 +34,6 @@ enum LoadPhase {
 enum PageDialogOpenPolicy {
   // Default policy. Dialogs are allowed, clients are not notified on display.
   DIALOG_POLICY_ALLOW = 0,
-  // Dialogs are allowed, clients are notified when dialog will display with
-  // -[WebDelegate webControllerWillShowDialog:] delegate method call.
-  DIALOG_POLICY_NOTIFY_FIRST,
   // Dialogs are not allowed, client are notified when dialog did block with
   // -[WebDelegate webControllerDidSuppressDialog:] delegate method call.
   DIALOG_POLICY_SUPPRESS
@@ -297,12 +294,6 @@ class WebStateImpl;
 // from the native provider. Call |loadNativeViewWithSuccess:NO| to load the
 // native controller.
 - (void)loadErrorInNativeView:(NSError*)error;
-
-// Resets the state of a page where a load was rejected. This method must
-// be called if an embedder rejected the page load (e.g. by returning NO from
-// |-[WebDelegate shouldOpenURL:linkClicked:]|) but wants to continue working
-// with CRWWebController.
-- (void)restoreStateAfterURLRejection;
 
 // Helper method called at the end of history navigation methods goBack,
 // goForward, and goDelta.  Loads a new URL if the current entry is not from a

@@ -148,9 +148,6 @@ typedef void (^SSLErrorCallback)(BOOL);
                         wasInitialNavigation:(BOOL)initialNavigation;
 // Called from finishHistoryNavigationFromEntry.
 - (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry;
-// Called when a page navigates backwards or forwards.
-- (void)webWillGoDelta:(int)delta;
-- (void)webDidPrepareForGoBack;
 // ---------------------------------------------------------------------
 
 @optional
@@ -201,14 +198,6 @@ typedef void (^SSLErrorCallback)(BOOL);
 // |blockedPopupInfo.ShowPopup()| instead of attempting to open a new window.
 - (void)webController:(CRWWebController*)webController
         didBlockPopup:(const web::BlockedPopupInfo&)blockedPopupInfo;
-
-// TODO(jimblackler): Create a DialogController and move dialog-related delegate
-// methods to CRWWebControllerObserver.
-
-// Called when CRWWebController will present a dialog (only if
-// kNotifyBeforeOpeningDialogs policy is set via
-// -[CRWWebController setPageDialogsOpenPolicy:] method).
-- (void)webControllerWillShowDialog:(CRWWebController*)webController;
 
 // Called when CRWWebController did suppress a dialog (only if kSuppressDialogs
 // policy is set via -[CRWWebController setPageDialogsOpenPolicy:] method).

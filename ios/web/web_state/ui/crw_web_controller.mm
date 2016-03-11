@@ -436,9 +436,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handles 'dialog.suppressed' message.
 - (BOOL)handleDialogSuppressedMessage:(base::DictionaryValue*)message
                               context:(NSDictionary*)context;
-// Handles 'dialog.willShow' message.
-- (BOOL)handleDialogWillShowMessage:(base::DictionaryValue*)message
-                            context:(NSDictionary*)context;
 // Handles 'document.favicons' message.
 - (BOOL)handleDocumentFaviconsMessage:(base::DictionaryValue*)message
                               context:(NSDictionary*)context;
@@ -1667,10 +1664,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   bool wasShowingInterstitial = _webStateImpl->IsShowingWebInterstitial();
 
-  // Call into the delegate before |recordStateInHistory|.
-  // TODO(rohitrao): Can this be reordered after |recordStateInHistory|?
-  [_delegate webDidPrepareForGoBack];
-
   // Before changing the current session history entry, record the tab state.
   if (!wasShowingInterstitial) {
     [self recordStateInHistory];
@@ -1703,8 +1696,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // Before changing the current session history entry, record the tab state.
     [self recordStateInHistory];
   }
-
-  [_delegate webWillGoDelta:delta];
 
   CRWSessionController* sessionController =
       _webStateImpl->GetNavigationManagerImpl().GetSessionController();
@@ -2025,8 +2016,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     (*handlers)["console"] = @selector(handleConsoleMessage:context:);
     (*handlers)["dialog.suppressed"] =
         @selector(handleDialogSuppressedMessage:context:);
-    (*handlers)["dialog.willShow"] =
-        @selector(handleDialogWillShowMessage:context:);
     (*handlers)["document.favicons"] =
         @selector(handleDocumentFaviconsMessage:context:);
     (*handlers)["document.retitled"] =
@@ -2140,14 +2129,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if ([_delegate
           respondsToSelector:@selector(webControllerDidSuppressDialog:)]) {
     [_delegate webControllerDidSuppressDialog:self];
-  }
-  return YES;
-}
-
-- (BOOL)handleDialogWillShowMessage:(base::DictionaryValue*)message
-                            context:(NSDictionary*)context {
-  if ([_delegate respondsToSelector:@selector(webControllerWillShowDialog:)]) {
-    [_delegate webControllerWillShowDialog:self];
   }
   return YES;
 }
@@ -2807,18 +2788,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return YES;
 }
 
-- (void)restoreStateAfterURLRejection {
-  [[self sessionController] discardNonCommittedEntries];
-
-  // Reset |_lastRegisteredRequestURL| so that it reflects the URL from before
-  // the load was rejected. This value may be out of sync because
-  // |_lastRegisteredRequestURL| may have already been updated before the load
-  // was rejected.
-  _lastRegisteredRequestURL = [self currentURL];
-  _loadPhase = web::PAGE_LOADING;
-  [self didFinishNavigation];
-}
-
 - (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame {
   if ([error code] == NSURLErrorUnsupportedURL)
     return;
@@ -3229,9 +3198,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   switch (policy) {
     case web::DIALOG_POLICY_ALLOW:
       [self setSuppressDialogs:NO notify:NO];
-      return;
-    case web::DIALOG_POLICY_NOTIFY_FIRST:
-      [self setSuppressDialogs:NO notify:YES];
       return;
     case web::DIALOG_POLICY_SUPPRESS:
       [self setSuppressDialogs:YES notify:YES];
