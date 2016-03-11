@@ -114,6 +114,11 @@ public:
         return m_layoutObject->isSlider();
     }
 
+    bool isLayoutView() const
+    {
+        return m_layoutObject->isLayoutView();
+    }
+
     bool needsLayout()
     {
         return m_layoutObject->needsLayout();

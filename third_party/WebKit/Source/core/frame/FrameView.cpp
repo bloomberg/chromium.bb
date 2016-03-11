@@ -66,6 +66,7 @@
 #include "core/layout/TracedLayoutObject.h"
 #include "core/layout/api/LayoutBoxModel.h"
 #include "core/layout/api/LayoutItem.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/CompositedSelection.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -521,13 +522,13 @@ void FrameView::setContentsSize(const IntSize& size)
 
 void FrameView::adjustViewSize()
 {
-    LayoutView* layoutView = this->layoutView();
-    if (!layoutView)
+    LayoutViewItem layoutViewItem = LayoutViewItem(this->layoutView());
+    if (layoutViewItem.isNull())
         return;
 
     ASSERT(m_frame->view() == this);
 
-    const IntRect rect = layoutView->documentRect();
+    const IntRect rect = layoutViewItem.documentRect();
     const IntSize& size = rect.size();
 
     const IntPoint origin(-rect.x(), -rect.y());
