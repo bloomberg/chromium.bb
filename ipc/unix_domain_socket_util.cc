@@ -24,9 +24,10 @@ static_assert(sizeof(((sockaddr_un*)0)->sun_path) >= kMaxSocketNameLength,
 
 namespace {
 
-// Returns true on success, false otherwise. If successful, fills in
-// |unix_addr| with the appropriate data for the socket, and sets
-// |unix_addr_len| to the length of the data therein.
+// This function fills in |unix_addr| with the appropriate data for the socket,
+// and sets |unix_addr_len| to the length of the data therein.
+// Returns true on success, or false on failure (typically because |socket_name|
+// violated the naming rules).
 bool MakeUnixAddrForPath(const std::string& socket_name,
                          struct sockaddr_un* unix_addr,
                          size_t* unix_addr_len) {
@@ -53,7 +54,8 @@ bool MakeUnixAddrForPath(const std::string& socket_name,
   return true;
 }
 
-// Returns a valid socket on success.
+// This functions creates a unix domain socket, and set it as non-blocking.
+// Returns a valid socket descriptor on success, or an invalid one otherwise.
 base::ScopedFD CreateUnixDomainSocket() {
   // Create socket.
   base::ScopedFD fd(socket(AF_UNIX, SOCK_STREAM, 0));
