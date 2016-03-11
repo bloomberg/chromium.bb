@@ -66,7 +66,7 @@ echo "Generating the self-signed roots"
 for i in D E
 do
   echo "Generating CSR ${i}"
-  CA_COMMON_NAME="${i} Root CA" \
+  CA_COMMON_NAME="${i} Root CA - Multi-root" \
   CERTIFICATE="${i}" \
   openssl req \
     -config redundant-ca.cnf \
@@ -75,7 +75,7 @@ do
     -out "out/${i}.csr"
 
   echo "Generating self-signed ${i}"
-  CA_COMMON_NAME="${i} Root CA" \
+  CA_COMMON_NAME="${i} Root CA - Multi-root" \
   CERTIFICATE="${i}" \
   openssl ca \
     -config redundant-ca.cnf \
@@ -93,7 +93,7 @@ echo "Generating intermediate CSRs"
 for i in B C F
 do
   echo "Generating CSR ${i}"
-  CA_COMMON_NAME="${i} CA" \
+  CA_COMMON_NAME="${i} CA - Multi-root" \
   CERTIFICATE="${i}" \
   openssl req \
     -config redundant-ca.cnf \
@@ -103,7 +103,7 @@ do
 done
 
 echo D signs C
-CA_COMMON_NAME="D CA" \
+CA_COMMON_NAME="D CA - Multi-root" \
 CERTIFICATE=D \
 openssl ca \
   -config redundant-ca.cnf \
@@ -116,7 +116,7 @@ openssl ca \
   -out out/C.pem
 
 echo C signs B
-CA_COMMON_NAME="C CA" \
+CA_COMMON_NAME="C CA - Multi-root" \
 CERTIFICATE=C \
 openssl ca \
   -config redundant-ca.cnf \
@@ -129,7 +129,7 @@ openssl ca \
   -out out/B.pem
 
 echo E signs C2
-CA_COMMON_NAME="E CA" \
+CA_COMMON_NAME="E CA - Multi-root" \
 CERTIFICATE=E \
 openssl ca \
   -config redundant-ca.cnf \
@@ -142,7 +142,7 @@ openssl ca \
   -out out/C2.pem
 
 echo E signs F
-CA_COMMON_NAME="E CA" \
+CA_COMMON_NAME="E CA - Multi-root" \
 CERTIFICATE=E \
 openssl ca \
   -config redundant-ca.cnf \
@@ -158,7 +158,7 @@ openssl ca \
 # B-by-F more preferable, the startdate is chosen to be GREATER (later) than
 # B-by-C.
 echo F signs B2
-CA_COMMON_NAME="F CA" \
+CA_COMMON_NAME="F CA - Multi-root" \
 CERTIFICATE=F \
 openssl ca \
   -config redundant-ca.cnf \
@@ -182,7 +182,7 @@ do
 done
 
 echo "Signing leaves"
-CA_COMMON_NAME="B CA" \
+CA_COMMON_NAME="B CA - Multi-root" \
 CERTIFICATE=B \
 openssl ca \
   -config redundant-ca.cnf \
@@ -208,20 +208,53 @@ cp out/D.pem ../certificates/multi-root-D-by-D.pem
 cp out/E.pem ../certificates/multi-root-E-by-E.pem
 
 echo "Generating CRLSets"
-# Block C-by-E (serial number 0x1001) by way of serial number.
-python crlsetutil.py -o ../certificates/multi-root-crlset-C-by-E.raw \
-<<CRLSETBYSERIAL
+# Block D and E by SPKI; invalidates all paths.
+python crlsetutil.py -o ../certificates/multi-root-crlset-D-and-E.raw \
+<<CRLSETDOCBLOCK
+{
+  "BlockedBySPKI": [
+    "out/D.pem",
+    "out/E.pem"
+  ]
+}
+CRLSETDOCBLOCK
+
+# Block E by SPKI.
+python crlsetutil.py -o ../certificates/multi-root-crlset-E.raw \
+<<CRLSETDOCBLOCK
+{
+  "BlockedBySPKI": [
+    "out/E.pem"
+  ]
+}
+CRLSETDOCBLOCK
+
+# Block C-by-D (serial number 0x1001) and F-by-E (serial number 0x1002) by
+# way of serial number.
+python crlsetutil.py -o ../certificates/multi-root-crlset-CD-and-FE.raw \
+<<CRLSETDOCBLOCK
 {
   "BlockedByHash": {
-    "out/E.pem": [4097]
+    "out/D.pem": [4097],
+    "out/E.pem": [4098]
   }
 }
-CRLSETBYSERIAL
+CRLSETDOCBLOCK
 
-# Block F (all versions) by way of SPKI
-python crlsetutil.py -o ../certificates/multi-root-crlset-F.raw \
-<<CRLSETBYSPKI
+# Block C (all versions) by way of SPKI
+python crlsetutil.py -o ../certificates/multi-root-crlset-C.raw \
+<<CRLSETDOCBLOCK
 {
-  "BlockedBySPKI": [ "out/F.pem" ]
+  "BlockedBySPKI": [ "out/C.pem" ]
 }
-CRLSETBYSPKI
+CRLSETDOCBLOCK
+
+# Block an unrelated/unissued serial (0x0FFF) to enable all paths.
+python crlsetutil.py -o ../certificates/multi-root-crlset-unrelated.raw \
+<<CRLSETDOCBLOCK
+{
+  "BlockedByHash": {
+    "out/E.pem": [4095]
+  }
+}
+CRLSETDOCBLOCK
