@@ -849,6 +849,7 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Pass Crash ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash ]
+crbug.com/522396 web-animations-api/animation-state-changes-negative-playback-rate.html [ Skip ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
