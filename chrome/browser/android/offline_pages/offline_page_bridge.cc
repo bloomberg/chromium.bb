@@ -291,6 +291,16 @@ ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflineUrlForOnlineUrl(
   return ConvertUTF8ToJavaString(env, offline_url.spec());
 }
 
+void OfflinePageBridge::RecordStorageHistograms(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jlong total_space_bytes,
+    jlong free_space_bytes,
+    jboolean reporting_after_delete) {
+  offline_page_model_->RecordStorageHistograms(
+      total_space_bytes, free_space_bytes, reporting_after_delete);
+}
+
 void OfflinePageBridge::NotifyIfDoneLoading() const {
   if (!offline_page_model_->is_loaded())
     return;

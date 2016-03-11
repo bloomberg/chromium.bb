@@ -393,6 +393,38 @@ void OfflinePageModel::CheckForExternalFileDeletion() {
                  base::Owned(ids_of_pages_missing_archive_file)));
 }
 
+void OfflinePageModel::RecordStorageHistograms(int64_t total_space_bytes,
+                                               int64_t free_space_bytes,
+                                               bool reporting_after_delete) {
+  // Total space taken by offline pages.
+  int64_t total_page_size = 0;
+  for (const auto& id_page_pair : offline_pages_) {
+    if (!id_page_pair.second.IsMarkedForDeletion())
+      continue;
+    total_page_size += id_page_pair.second.file_size;
+  }
+
+  int total_page_size_mb = static_cast<int>(total_page_size / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("OfflinePages.TotalPageSize", total_page_size_mb);
+
+  // How much of the total space the offline pages take.
+  int total_page_size_percentage =
+      static_cast<int>(1.0 * total_page_size / total_space_bytes * 100);
+  UMA_HISTOGRAM_PERCENTAGE("OfflinePages.TotalPageSizePercentage",
+                           total_page_size_percentage);
+
+  // If the user is deleting the pages, perhaps they are running out of free
+  // space. Report the size before the operation, where a base for calculation
+  // of total free space includes space taken by offline pages.
+  if (reporting_after_delete && free_space_bytes > 0) {
+    int percentage_of_free = static_cast<int>(
+        1.0 * total_page_size / (total_page_size + free_space_bytes) * 100);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "OfflinePages.DeletePage.TotalPageSizeAsPercentageOfFreeSpace",
+        percentage_of_free);
+  }
+}
+
 OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
   return store_.get();
 }

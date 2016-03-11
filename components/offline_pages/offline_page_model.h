@@ -220,6 +220,17 @@ class OfflinePageModel : public KeyedService,
   // observers.
   void CheckForExternalFileDeletion();
 
+  // Reports the storage histograms related to total size of all stored offline
+  // pages. Method is to be called after a page was saved or some pages are
+  // deleted. In the latter case |reporting_after_delete| is set to true.
+  // Caller is supposed to provide the current |total_space_bytes| on drive
+  // where the pages are stored, as well as |free_space_bytes| after the
+  // operation was taken. The method will report total size of all pages, and
+  // percentage of size of pages as compared to total space and free space.
+  void RecordStorageHistograms(int64_t total_space_bytes,
+                               int64_t free_space_bytes,
+                               bool reporting_after_delete);
+
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
 

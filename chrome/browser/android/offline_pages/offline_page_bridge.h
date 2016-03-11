@@ -98,6 +98,12 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_online_url);
 
+  void RecordStorageHistograms(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj,
+                               jlong total_space_bytes,
+                               jlong free_space_bytes,
+                               jboolean reporting_after_delete);
+
   base::android::ScopedJavaGlobalRef<jobject> java_ref() { return java_ref_; }
 
  private:

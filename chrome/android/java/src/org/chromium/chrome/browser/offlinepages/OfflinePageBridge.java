@@ -132,35 +132,23 @@ public final class OfflinePageBridge {
      * Records histograms related to the cost of storage. It is meant to be used after user
      * takes an action: save, delete or delete in bulk.
      *
-     * @param totalPageSizeBefore Total size of the pages before the action was taken.
-     * @param totalPageSizeAfter Total size of the pages after the action was taken.
+     * @param reportingAfterDelete Indicates that reporting has been requested after deleting an
+     *   offline copy.
      */
-    private static void recordStorageHistograms(
-            final long totalPageSizeBefore, final long totalPageSizeAfter) {
-        new AsyncTask<Void, Void, Void>() {
+    private void recordStorageHistograms(final boolean reportingAfterDelete) {
+        new AsyncTask<Void, Void, long[]>() {
             @Override
-            protected Void doInBackground(Void... params) {
-                // Total space taken by offline pages.
-                int totalPageSizeInMB = (int) (totalPageSizeAfter / (1024 * 1024));
-                RecordHistogram.recordCustomCountHistogram(
-                        "OfflinePages.TotalPageSize", totalPageSizeInMB, 1, 10000, 50);
+            protected long[] doInBackground(Void... params) {
+                // Getting the storage numbers violates strict mode when done on UI thread.
+                return new long[] { OfflinePageUtils.getTotalSpaceInBytes(),
+                        OfflinePageUtils.getFreeSpaceInBytes() };
+            }
 
-                // How much of the total space the offline pages take.
-                int totalPageSizePercentage = (int) (1.0 * totalPageSizeAfter
-                        / OfflinePageUtils.getTotalSpaceInBytes() * 100);
-                RecordHistogram.recordPercentageHistogram(
-                        "OfflinePages.TotalPageSizePercentage", totalPageSizePercentage);
-                if (totalPageSizeBefore > 0) {
-                    // If the user is deleting the pages, perhaps they are running out of free
-                    // space. Report the size before the operation, where a base for calculation
-                    // of total free space includes space taken by offline pages.
-                    int percentageOfFree = (int) (1.0 * totalPageSizeBefore
-                            / (totalPageSizeBefore + OfflinePageUtils.getFreeSpaceInBytes()) * 100);
-                    RecordHistogram.recordPercentageHistogram(
-                            "OfflinePages.DeletePage.TotalPageSizeAsPercentageOfFreeSpace",
-                            percentageOfFree);
-                }
-                return null;
+            @Override
+            protected void onPostExecute(long[] result) {
+                if (result == null || result.length != 2) return;
+                nativeRecordStorageHistograms(
+                        mNativeOfflinePageBridge, result[0], result[1], reportingAfterDelete);
             }
         }.execute();
     }
@@ -310,11 +298,8 @@ public final class OfflinePageBridge {
         SavePageCallback callbackWrapper = new SavePageCallback() {
             @Override
             public void onSavePageDone(int savePageResult, String url, long offlineId) {
-                // TODO(fgorski): Eliminate call to getAllPages() here.
-                // See http://crbug.com/566939
                 if (savePageResult == SavePageResult.SUCCESS && isOfflinePageModelLoaded()) {
-                    long totalPageSizeAfter = getTotalSize(getAllPages());
-                    recordStorageHistograms(0, totalPageSizeAfter);
+                    recordStorageHistograms(false /* reporting after delete */);
                 }
                 callback.onSavePageDone(savePageResult, url, offlineId);
             }
@@ -463,15 +448,11 @@ public final class OfflinePageBridge {
 
     private DeletePageCallback wrapCallbackWithHistogramReporting(
             final DeletePageCallback callback) {
-        final long totalPageSizeBefore = getTotalSize(getAllPages());
         return new DeletePageCallback() {
             @Override
             public void onDeletePageDone(int deletePageResult) {
-                // TODO(fgorski): Eliminate call to getAllPages() here.
-                // See http://crbug.com/566939
                 if (deletePageResult == DeletePageResult.SUCCESS && isOfflinePageModelLoaded()) {
-                    long totalPageSizeAfter = getTotalSize(getAllPages());
-                    recordStorageHistograms(totalPageSizeBefore, totalPageSizeAfter);
+                    recordStorageHistograms(true /* reporting after delete */);
                 }
                 callback.onDeletePageDone(deletePageResult);
             }
@@ -559,4 +540,6 @@ public final class OfflinePageBridge {
     private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
     private native String nativeGetOfflineUrlForOnlineUrl(
             long nativeOfflinePageBridge, String onlineUrl);
+    private native void nativeRecordStorageHistograms(long nativeOfflinePageBridge,
+            long totalSpaceInBytes, long freeSpaceInBytes, boolean reportingAfterDelete);
 }
