@@ -564,6 +564,11 @@ TEST_F(FrameFetchContextTest, EnableDataSaver)
     ResourceRequest resourceRequest("http://www.example.com");
     fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
     EXPECT_STREQ("on", resourceRequest.httpHeaderField("Save-Data").utf8().data());
+
+    // Subsequent call to addAdditionalRequestHeaders should not append to the
+    // save-data header.
+    fetchContext->addAdditionalRequestHeaders(resourceRequest, FetchMainResource);
+    EXPECT_STREQ("on", resourceRequest.httpHeaderField("Save-Data").utf8().data());
 }
 
 TEST_F(FrameFetchContextTest, DisabledDataSaver)

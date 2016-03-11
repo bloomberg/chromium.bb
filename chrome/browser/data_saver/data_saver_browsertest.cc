@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -14,6 +15,8 @@
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 class DataSaverBrowserTest : public InProcessBrowserTest {
  protected:
@@ -44,4 +47,60 @@ IN_PROC_BROWSER_TEST_F(DataSaverBrowserTest, DataSaverDisabled) {
   ASSERT_TRUE(embedded_test_server()->Start());
   EnableDataSaver(false);
   VerifySaveDataHeader("None");
+}
+
+class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
+ protected:
+  void Init() {
+    test_server_.reset(new net::EmbeddedTestServer());
+    test_server_->RegisterRequestHandler(
+        base::Bind(&DataSaverWithServerBrowserTest::VerifySaveDataHeader,
+                   base::Unretained(this)));
+    test_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+  }
+  void EnableDataSaver(bool enabled) {
+    PrefService* prefs = browser()->profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
+  }
+
+  scoped_ptr<net::test_server::HttpResponse> VerifySaveDataHeader(
+      const net::test_server::HttpRequest& request) {
+    auto save_data_header_it = request.headers.find("save-data");
+
+    if (!expected_save_data_header_.empty()) {
+      EXPECT_TRUE(save_data_header_it != request.headers.end());
+      EXPECT_EQ(expected_save_data_header_, save_data_header_it->second);
+    } else {
+      EXPECT_TRUE(save_data_header_it == request.headers.end());
+    }
+    return scoped_ptr<net::test_server::HttpResponse>();
+  }
+
+  scoped_ptr<net::EmbeddedTestServer> test_server_;
+  std::string expected_save_data_header_;
+};
+
+IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, ReloadPage) {
+  Init();
+  ASSERT_TRUE(test_server_->Start());
+  EnableDataSaver(true);
+
+  expected_save_data_header_ = "on";
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server_->GetURL("/google/google.html"));
+
+  // Reload the webpage and expect the main and the subresources will get the
+  // correct save-data header.
+  expected_save_data_header_ = "on";
+  chrome::Reload(browser(), CURRENT_TAB);
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
+
+  // Reload the webpage with data saver disabled, and expect all the resources
+  // will get no save-data header.
+  EnableDataSaver(false);
+  expected_save_data_header_ = "";
+  chrome::Reload(browser(), CURRENT_TAB);
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
 }
