@@ -28704,6 +28704,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.TokenBinding.HeaderCreationTime" units="ms">
+  <owner>nharper@chromium.org</owner>
+  <summary>Time spent creating a Token-Binding header.</summary>
+</histogram>
+
 <histogram name="Net.TokenBinding.KeyMatch" enum="TokenBinding.KeyMatch">
   <owner>nharper@chromium.org</owner>
   <summary>

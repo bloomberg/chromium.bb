@@ -1065,6 +1065,7 @@ int HttpNetworkTransaction::BuildRequestHeaders(
 }
 
 int HttpNetworkTransaction::BuildTokenBindingHeader(std::string* out) {
+  base::TimeTicks start = base::TimeTicks::Now();
   std::vector<uint8_t> signed_ekm;
   int rv = stream_->GetSignedEKMForTokenBinding(token_binding_key_.get(),
                                                 &signed_ekm);
@@ -1083,6 +1084,11 @@ int HttpNetworkTransaction::BuildTokenBindingHeader(std::string* out) {
     return rv;
   base::Base64UrlEncode(header, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         out);
+  base::TimeDelta header_creation_time = base::TimeTicks::Now() - start;
+  UMA_HISTOGRAM_CUSTOM_TIMES("Net.TokenBinding.HeaderCreationTime",
+                             header_creation_time,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromMinutes(1), 50);
   return OK;
 }
 
