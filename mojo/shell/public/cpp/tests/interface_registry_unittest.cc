@@ -5,6 +5,7 @@
 #include "mojo/shell/public/cpp/interface_registry.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/shell/public/cpp/interface_binder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,12 +26,12 @@ class TestBinder : public InterfaceBinder {
 };
 
 TEST(InterfaceRegistryTest, Ownership) {
+  base::MessageLoop message_loop_;
   int delete_count = 0;
 
   // Destruction.
   {
-    shell::mojom::InterfaceProviderRequest ir;
-    InterfaceRegistry registry(std::move(ir), nullptr);
+    InterfaceRegistry registry(nullptr);
     InterfaceRegistry::TestApi test_api(&registry);
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
   }
@@ -38,9 +39,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Removal.
   {
-    shell::mojom::InterfaceProviderRequest ir;
-    scoped_ptr<InterfaceRegistry> registry(
-        new InterfaceRegistry(std::move(ir), nullptr));
+    scoped_ptr<InterfaceRegistry> registry(new InterfaceRegistry(nullptr));
     InterfaceBinder* b = new TestBinder(&delete_count);
     InterfaceRegistry::TestApi test_api(registry.get());
     test_api.SetInterfaceBinderForName(b, "TC1");
@@ -51,8 +50,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Multiple.
   {
-    shell::mojom::InterfaceProviderRequest ir;
-    InterfaceRegistry registry(std::move(ir), nullptr);
+    InterfaceRegistry registry(nullptr);
     InterfaceRegistry::TestApi test_api(&registry);
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC2");
@@ -61,8 +59,7 @@ TEST(InterfaceRegistryTest, Ownership) {
 
   // Re-addition.
   {
-    shell::mojom::InterfaceProviderRequest ir;
-    InterfaceRegistry registry(std::move(ir), nullptr);
+    InterfaceRegistry registry(nullptr);
     InterfaceRegistry::TestApi test_api(&registry);
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
     test_api.SetInterfaceBinderForName(new TestBinder(&delete_count), "TC1");
