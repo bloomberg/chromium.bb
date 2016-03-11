@@ -605,12 +605,6 @@ enum ScrollSnapType {
     ScrollSnapTypeProximity
 };
 
-enum AutoRepeatType {
-    NoAutoRepeat,
-    AutoFill,
-    AutoFit
-};
-
 } // namespace blink
 
 #endif // ComputedStyleConstants_h

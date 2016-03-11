@@ -39,7 +39,6 @@
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
-#include "core/css/CSSGridAutoRepeatValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSImageSetValue.h"
@@ -138,8 +137,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSInitialValue>(*this, other);
         case UnsetClass:
             return compareCSSValues<CSSUnsetValue>(*this, other);
-        case GridAutoRepeatClass:
-            return compareCSSValues<CSSGridAutoRepeatValue>(*this, other);
         case GridLineNamesClass:
             return compareCSSValues<CSSGridLineNamesValue>(*this, other);
         case GridTemplateAreasClass:
@@ -226,8 +223,6 @@ String CSSValue::cssText() const
         return toCSSUnsetValue(this)->customCSSText();
     case InitialClass:
         return toCSSInitialValue(this)->customCSSText();
-    case GridAutoRepeatClass:
-        return toCSSGridAutoRepeatValue(this)->customCSSText();
     case GridLineNamesClass:
         return toCSSGridLineNamesValue(this)->customCSSText();
     case GridTemplateAreasClass:
@@ -330,9 +325,6 @@ void CSSValue::destroy()
         return;
     case UnsetClass:
         delete toCSSUnsetValue(this);
-        return;
-    case GridAutoRepeatClass:
-        delete toCSSGridAutoRepeatValue(this);
         return;
     case GridLineNamesClass:
         delete toCSSGridLineNamesValue(this);
@@ -455,9 +447,6 @@ void CSSValue::finalizeGarbageCollectedObject()
     case UnsetClass:
         toCSSUnsetValue(this)->~CSSUnsetValue();
         return;
-    case GridAutoRepeatClass:
-        toCSSGridAutoRepeatValue(this)->~CSSGridAutoRepeatValue();
-        return;
     case GridLineNamesClass:
         toCSSGridLineNamesValue(this)->~CSSGridLineNamesValue();
         return;
@@ -578,9 +567,6 @@ DEFINE_TRACE(CSSValue)
         return;
     case UnsetClass:
         toCSSUnsetValue(this)->traceAfterDispatch(visitor);
-        return;
-    case GridAutoRepeatClass:
-        toCSSGridAutoRepeatValue(this)->traceAfterDispatch(visitor);
         return;
     case GridLineNamesClass:
         toCSSGridLineNamesValue(this)->traceAfterDispatch(visitor);

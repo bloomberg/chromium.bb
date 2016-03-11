@@ -50,14 +50,9 @@ public:
         && m_gridAutoFlow == o.m_gridAutoFlow && m_gridAutoRows == o.m_gridAutoRows && m_gridAutoColumns == o.m_gridAutoColumns
         && m_namedGridColumnLines == o.m_namedGridColumnLines && m_namedGridRowLines == o.m_namedGridRowLines
         && m_orderedNamedGridColumnLines == o.m_orderedNamedGridColumnLines && m_orderedNamedGridRowLines == o.m_orderedNamedGridRowLines
-        && m_autoRepeatNamedGridColumnLines == o.m_autoRepeatNamedGridColumnLines && m_autoRepeatNamedGridRowLines == o.m_autoRepeatNamedGridRowLines
-        && m_autoRepeatOrderedNamedGridColumnLines == o.m_autoRepeatOrderedNamedGridColumnLines && m_autoRepeatOrderedNamedGridRowLines == o.m_autoRepeatOrderedNamedGridRowLines
         && m_namedGridArea == o.m_namedGridArea && m_namedGridArea == o.m_namedGridArea
         && m_namedGridAreaRowCount == o.m_namedGridAreaRowCount && m_namedGridAreaColumnCount == o.m_namedGridAreaColumnCount
-        && m_gridColumnGap == o.m_gridColumnGap && m_gridRowGap == o.m_gridRowGap
-        && m_gridAutoRepeatColumns == o.m_gridAutoRepeatColumns && m_gridAutoRepeatRows == o.m_gridAutoRepeatRows
-        && m_autoRepeatColumnsInsertionPoint == o.m_autoRepeatColumnsInsertionPoint && m_autoRepeatRowsInsertionPoint == o.m_autoRepeatRowsInsertionPoint
-        && m_autoRepeatType == o.m_autoRepeatType;
+        && m_gridColumnGap == o.m_gridColumnGap && m_gridRowGap == o.m_gridRowGap;
     }
 
     bool operator!=(const StyleGridData& o) const
@@ -76,11 +71,6 @@ public:
     OrderedNamedGridLines m_orderedNamedGridColumnLines;
     OrderedNamedGridLines m_orderedNamedGridRowLines;
 
-    NamedGridLinesMap m_autoRepeatNamedGridColumnLines;
-    NamedGridLinesMap m_autoRepeatNamedGridRowLines;
-    OrderedNamedGridLines m_autoRepeatOrderedNamedGridColumnLines;
-    OrderedNamedGridLines m_autoRepeatOrderedNamedGridRowLines;
-
     unsigned m_gridAutoFlow : GridAutoFlowBits;
 
     GridTrackSize m_gridAutoRows;
@@ -95,13 +85,6 @@ public:
     Length m_gridColumnGap;
     Length m_gridRowGap;
 
-    Vector<GridTrackSize> m_gridAutoRepeatColumns;
-    Vector<GridTrackSize> m_gridAutoRepeatRows;
-
-    size_t m_autoRepeatColumnsInsertionPoint;
-    size_t m_autoRepeatRowsInsertionPoint;
-
-    AutoRepeatType m_autoRepeatType;
 private:
     StyleGridData();
     StyleGridData(const StyleGridData&);

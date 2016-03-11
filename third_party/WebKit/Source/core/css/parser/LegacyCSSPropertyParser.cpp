@@ -29,7 +29,6 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSGridAutoRepeatValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSValuePair.h"
@@ -774,28 +773,6 @@ bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSVal
     return true;
 }
 
-static bool allTracksAreFixedSized(CSSValueList& valueList)
-{
-    for (auto value : valueList) {
-        if (value->isGridLineNamesValue())
-            continue;
-        // The auto-repeat value holds a <fixed-size> = <fixed-breadth> | minmax( <fixed-breadth>, <track-breadth> )
-        if (value->isGridAutoRepeatValue()) {
-            if (!allTracksAreFixedSized(toCSSValueList(*value)))
-                return false;
-            continue;
-        }
-        ASSERT(value->isPrimitiveValue() || (value->isFunctionValue() && toCSSFunctionValue(*value).item(0)));
-        const CSSPrimitiveValue& primitiveValue = value->isPrimitiveValue()
-            ? toCSSPrimitiveValue(*value)
-            : toCSSPrimitiveValue(*toCSSFunctionValue(*value).item(0));
-        CSSValueID valueID = primitiveValue.getValueID();
-        if (valueID == CSSValueMinContent || valueID == CSSValueMaxContent || valueID == CSSValueAuto || primitiveValue.isFlex())
-            return false;
-    }
-    return true;
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
 {
     ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
@@ -842,8 +819,19 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
 
     // <auto-repeat> requires definite minimum track sizes in order to compute the number of repetitions.
     // The above while loop detects those appearances after the <auto-repeat> but not the ones before.
-    if (seenAutoRepeat && !allTracksAreFixedSized(*values))
-        return nullptr;
+    if (seenAutoRepeat) {
+        for (auto value : *values) {
+            if (value->isGridLineNamesValue())
+                continue;
+            ASSERT(value->isPrimitiveValue() || (value->isFunctionValue() && toCSSFunctionValue(*value).item(0)));
+            const CSSPrimitiveValue& primitiveValue = value->isPrimitiveValue()
+                ? toCSSPrimitiveValue(*value)
+                : toCSSPrimitiveValue(*toCSSFunctionValue(*value).item(0));
+            CSSValueID valueID = primitiveValue.getValueID();
+            if (valueID == CSSValueMinContent || valueID == CSSValueMaxContent || valueID == CSSValueAuto || primitiveValue.isFlex())
+                return nullptr;
+        }
+    }
 
     return values;
 }
@@ -863,7 +851,7 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list, bool& i
     // because it will be computed later, let's set it to 1.
     size_t repetitions = isAutoRepeat ? 1 : clampTo<size_t>(currentValue->fValue, 0, kGridMaxTracks);
 
-    RefPtrWillBeRawPtr<CSSValueList> repeatedValues = isAutoRepeat ? CSSGridAutoRepeatValue::create(currentValue->id) : CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> repeatedValues = CSSValueList::createSpaceSeparated();
     arguments->next(); // Skip the repetition count.
     arguments->next(); // Skip the comma.
 
@@ -893,17 +881,13 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list, bool& i
     if (!numberOfTracks)
         return false;
 
-    if (isAutoRepeat) {
-        list.append(repeatedValues.release());
-    } else {
-        // We clamp the number of repetitions to a multiple of the repeat() track list's size, while staying below the max
-        // grid size.
-        repetitions = std::min(repetitions, kGridMaxTracks / numberOfTracks);
+    // We clamp the number of repetitions to a multiple of the repeat() track list's size, while staying below the max
+    // grid size.
+    repetitions = std::min(repetitions, kGridMaxTracks / numberOfTracks);
 
-        for (size_t i = 0; i < repetitions; ++i) {
-            for (size_t j = 0; j < repeatedValues->length(); ++j)
-                list.append(repeatedValues->item(j));
-        }
+    for (size_t i = 0; i < repetitions; ++i) {
+        for (size_t j = 0; j < repeatedValues->length(); ++j)
+            list.append(repeatedValues->item(j));
     }
 
     // parseGridTrackSize iterated over the repeat arguments, move to the next value.
