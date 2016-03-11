@@ -161,6 +161,7 @@ test("mus_ws_unittests") {
     "window_coordinate_conversions_unittest.cc",
     "window_finder_unittest.cc",
     "window_manager_client_unittest.cc",
+    "window_tree_client_unittest.cc",
     "window_tree_unittest.cc",
   ]
 
