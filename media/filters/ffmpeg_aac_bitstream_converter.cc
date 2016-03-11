@@ -66,6 +66,7 @@ bool GenerateAdtsHeader(int codec,
     case FF_PROFILE_AAC_MAIN:
       break;
     case FF_PROFILE_AAC_HE:
+    case FF_PROFILE_AAC_HE_V2:
     case FF_PROFILE_AAC_LOW:
       hdr[2] |= (1 << 6);
       break;
