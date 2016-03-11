@@ -1202,6 +1202,7 @@
       'text/DateTimeFormatTest.cpp',
       'text/LocaleToScriptMappingTest.cpp',
       'text/SegmentedStringTest.cpp',
+      'text/TextBreakIteratorTest.cpp',
       'text/UnicodeUtilitiesTest.cpp',
       'transforms/TransformOperationsTest.cpp',
       'transforms/TransformTestHelper.h',
