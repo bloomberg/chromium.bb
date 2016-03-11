@@ -10,6 +10,8 @@ if (is_android) {
 static_library("offline_pages") {
   sources = [
     "offline_page_archiver.h",
+    "offline_page_bookmark_bridge.cc",
+    "offline_page_bookmark_bridge.h",
     "offline_page_item.cc",
     "offline_page_item.h",
     "offline_page_metadata_store.cc",

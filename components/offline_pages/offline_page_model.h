@@ -19,9 +19,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
-#include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
@@ -31,9 +29,6 @@ namespace base {
 class SequencedTaskRunner;
 class Time;
 class TimeDelta;
-}
-namespace bookmarks {
-class BookmarkModel;
 }
 
 namespace offline_pages {
@@ -63,9 +58,7 @@ class OfflinePageMetadataStore;
 //
 // TODO(fgorski): Things to describe:
 // * how to cancel requests and what to expect
-class OfflinePageModel : public KeyedService,
-                         public base::SupportsUserData,
-                         public bookmarks::BaseBookmarkModelObserver {
+class OfflinePageModel : public KeyedService, public base::SupportsUserData {
  public:
   // Result of saving a page offline.
   // A Java counterpart will be generated for this enum.
@@ -145,15 +138,6 @@ class OfflinePageModel : public KeyedService,
                    const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~OfflinePageModel() override;
 
-  // Starts the OfflinePageModel and registers it as a BookmarkModelObserver.
-  // Calling this method is optional, but offline pages will not be deleted
-  // when the bookmark is deleted, i.e. due to sync, until this method is
-  // called.
-  void Start(bookmarks::BookmarkModel* model);
-
-  // KeyedService implementation.
-  void Shutdown() override;
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -175,15 +159,18 @@ class OfflinePageModel : public KeyedService,
   void MarkPageForDeletion(int64_t offline_id,
                            const DeletePageCallback& callback);
 
-  // Deletes an offline page related to the passed |offline_id|. Requires that
-  // the model is loaded.
+  // Deletes an offline page related to the passed |offline_id|.
   void DeletePageByOfflineId(int64_t offline_id,
                              const DeletePageCallback& callback);
 
-  // Deletes offline pages related to the passed |offline_ids|. Requires that
-  // the model is loaded.
+  // Deletes offline pages related to the passed |offline_ids|.
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                               const DeletePageCallback& callback);
+
+  // Marks pages for deletion. Actual delete is asynchronous.
+  // Works even if the model isn't loaded.
+  void MarkPagesForDeletion(const std::vector<int64_t>& offline_ids,
+                            const DeletePageCallback& callback);
 
   // Wipes out all the data by deleting all saved files and clearing the store.
   void ClearAll(const base::Closure& callback);
@@ -199,8 +186,11 @@ class OfflinePageModel : public KeyedService,
   const std::vector<OfflinePageItem> GetPagesToCleanUp() const;
 
   // Gets all offline ids where the offline page has the matching client id
+  // If |include_deleted| is true, include pages that are marked for deletion
+  // but not actually deleted yet.  Default is false.
   const std::vector<int64_t> GetOfflineIdsForClientId(
-      const ClientId& cid) const;
+      const ClientId& client_id,
+      bool include_deleted = false) const;
 
   // Returns an offline page associated with a specified |offline_id|. nullptr
   // is returned if not found.
@@ -231,6 +221,10 @@ class OfflinePageModel : public KeyedService,
                                int64_t free_space_bytes,
                                bool reporting_after_delete);
 
+  // Undo a deletion of a page.  Pages that are marked for deletion can
+  // be restored prior to when they are actually deleted.
+  void UndoPageDeletion(int64_t offline_id);
+
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
 
@@ -238,22 +232,8 @@ class OfflinePageModel : public KeyedService,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OfflinePageModelTest, MarkPageForDeletion);
-  FRIEND_TEST_ALL_PREFIXES(OfflinePageModelTest, BookmarkNodeChangesUrl);
 
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
-
-  // BaseBookmarkModelObserver:
-  void BookmarkModelChanged() override;
-  void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                         const bookmarks::BookmarkNode* parent,
-                         int index) override;
-  void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
-                           const bookmarks::BookmarkNode* parent,
-                           int old_index,
-                           const bookmarks::BookmarkNode* node,
-                           const std::set<GURL>& removed_urls) override;
-  void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
-                           const bookmarks::BookmarkNode* node) override;
 
   // Callback for ensuring archive directory is created.
   void OnEnsureArchivesDirCreatedDone();
@@ -302,7 +282,6 @@ class OfflinePageModel : public KeyedService,
   void FinalizePageDeletion();
 
   // Steps for undoing an offline page deletion.
-  void UndoPageDeletion(int64_t offline_id);
   void OnUndoOfflinePageDone(const OfflinePageItem& offline_page, bool success);
 
   // Callbacks for checking if offline pages are missing archive files.
@@ -322,6 +301,10 @@ class OfflinePageModel : public KeyedService,
       const std::vector<OfflinePageItem>& offline_pages);
 
   void CacheLoadedData(const std::vector<OfflinePageItem>& offline_pages);
+
+  // Actually does the work of deleting, requires the model is loaded.
+  void DoDeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
+                                const DeletePageCallback& callback);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
@@ -344,9 +327,6 @@ class OfflinePageModel : public KeyedService,
 
   // Delayed tasks that should be invoked after the loading is done.
   std::vector<base::Closure> delayed_tasks_;
-
-  ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
-      scoped_observer_;
 
   base::WeakPtrFactory<OfflinePageModel> weak_ptr_factory_;
 

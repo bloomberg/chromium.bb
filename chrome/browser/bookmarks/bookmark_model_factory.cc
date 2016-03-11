@@ -28,6 +28,7 @@
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "components/offline_pages/offline_page_bookmark_bridge.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_model.h"
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
@@ -91,8 +92,10 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   if (offline_pages::IsOfflinePagesEnabled()) {
-    offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile)->
-        Start(bookmark_model);
+    // This observer will delete itself when BookmarkModelDeleted is called.
+    bookmark_model->AddObserver(new offline_pages::OfflinePageBookmarkBridge(
+        offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile),
+        bookmark_model));
   }
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 

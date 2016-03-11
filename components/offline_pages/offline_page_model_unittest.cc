@@ -27,6 +27,7 @@
 #include "components/bookmarks/browser/bookmark_undo_delegate.h"
 #include "components/bookmarks/browser/bookmark_undo_provider.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/offline_pages/offline_page_bookmark_bridge.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_switches.h"
@@ -830,7 +831,8 @@ OfflinePageModelBookmarkChangeTest::~OfflinePageModelBookmarkChangeTest() {
 
 void OfflinePageModelBookmarkChangeTest::SetUp() {
   OfflinePageModelTest::SetUp();
-  model()->Start(bookmark_model_.get());
+  bookmark_model_->AddObserver(
+      new OfflinePageBookmarkBridge(model(), bookmark_model()));
 }
 
 void OfflinePageModelBookmarkChangeTest::TearDown() {

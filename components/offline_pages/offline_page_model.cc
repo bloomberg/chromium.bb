@@ -89,9 +89,6 @@ void DeleteArchiveFiles(const std::vector<base::FilePath>& paths_to_delete,
   }
 }
 
-void EmptyDeleteCallback(OfflinePageModel::DeletePageResult /* result */) {
-}
-
 void FindPagesMissingArchiveFile(
     const std::vector<std::pair<int64_t, base::FilePath>>& id_path_pairs,
     std::vector<int64_t>* ids_of_pages_missing_archive_file) {
@@ -129,7 +126,6 @@ OfflinePageModel::OfflinePageModel(
       archives_dir_(archives_dir),
       is_loaded_(false),
       task_runner_(task_runner),
-      scoped_observer_(this),
       weak_ptr_factory_(this) {
   task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(EnsureArchivesDirCreated, archives_dir_),
@@ -138,14 +134,6 @@ OfflinePageModel::OfflinePageModel(
 }
 
 OfflinePageModel::~OfflinePageModel() {
-}
-
-void OfflinePageModel::Start(bookmarks::BookmarkModel* model) {
-  scoped_observer_.Add(model);
-}
-
-void OfflinePageModel::Shutdown() {
-  scoped_observer_.RemoveAll();
 }
 
 void OfflinePageModel::AddObserver(Observer* observer) {
@@ -250,6 +238,19 @@ void OfflinePageModel::DeletePageByOfflineId(
 void OfflinePageModel::DeletePagesByOfflineId(
     const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback) {
+  if (!is_loaded_) {
+    delayed_tasks_.push_back(
+        base::Bind(&OfflinePageModel::DoDeletePagesByOfflineId,
+                   weak_ptr_factory_.GetWeakPtr(), offline_ids, callback));
+
+    return;
+  }
+  DoDeletePagesByOfflineId(offline_ids, callback);
+}
+
+void OfflinePageModel::DoDeletePagesByOfflineId(
+    const std::vector<int64_t>& offline_ids,
+    const DeletePageCallback& callback) {
   DCHECK(is_loaded_);
 
   std::vector<base::FilePath> paths_to_delete;
@@ -328,16 +329,17 @@ const std::vector<OfflinePageItem> OfflinePageModel::GetPagesToCleanUp() const {
 }
 
 const std::vector<int64_t> OfflinePageModel::GetOfflineIdsForClientId(
-    const ClientId& cid) const {
+    const ClientId& client_id,
+    bool include_deleted) const {
   std::vector<int64_t> results;
 
+  // We want only all pages, including those marked for deletion.
   // TODO(bburns): actually use an index rather than linear scan.
-  const std::vector<OfflinePageItem> offline_pages = GetAllPages();
-
-  for (size_t i = 0; i < offline_pages.size(); i++) {
-    if (offline_pages[i].client_id.name_space == cid.name_space &&
-        offline_pages[i].client_id.id == cid.id) {
-      results.push_back(offline_pages[i].offline_id);
+  for (const auto& id_page_pair : offline_pages_) {
+    if (id_page_pair.second.client_id == client_id) {
+      if (include_deleted || !id_page_pair.second.IsMarkedForDeletion()) {
+        results.push_back(id_page_pair.second.offline_id);
+      }
     }
   }
   return results;
@@ -559,68 +561,6 @@ void OfflinePageModel::UndoPageDeletion(int64_t offline_id) {
                  weak_ptr_factory_.GetWeakPtr(), offline_page_item));
 }
 
-void OfflinePageModel::BookmarkModelChanged() {
-}
-
-void OfflinePageModel::BookmarkNodeAdded(bookmarks::BookmarkModel* model,
-                                         const bookmarks::BookmarkNode* parent,
-                                         int index) {
-  const bookmarks::BookmarkNode* node = parent->GetChild(index);
-  DCHECK(node);
-  ClientId client_id(BOOKMARK_NAMESPACE, base::Int64ToString(node->id()));
-  std::vector<int64_t> ids;
-  // In this case we want only all pages, including those marked for deletion.
-  for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.client_id == client_id) {
-      ids.push_back(id_page_pair.second.offline_id);
-    }
-  }
-
-  for (size_t i = 0; i < ids.size(); i++) {
-    UndoPageDeletion(ids[i]);
-  }
-}
-
-void OfflinePageModel::BookmarkNodeRemoved(
-    bookmarks::BookmarkModel* model,
-    const bookmarks::BookmarkNode* parent,
-    int old_index,
-    const bookmarks::BookmarkNode* node,
-    const std::set<GURL>& removed_urls) {
-  ClientId cid;
-  cid.name_space = BOOKMARK_NAMESPACE;
-  cid.id = base::Int64ToString(node->id());
-  std::vector<int64_t> ids = GetOfflineIdsForClientId(cid);
-  if (!is_loaded_) {
-    for (size_t i = 0; i < ids.size(); i++) {
-      delayed_tasks_.push_back(
-          base::Bind(&OfflinePageModel::MarkPageForDeletion,
-                     weak_ptr_factory_.GetWeakPtr(), ids[i],
-                     base::Bind(&EmptyDeleteCallback)));
-    }
-    return;
-  }
-  for (size_t i = 0; i < ids.size(); i++) {
-    MarkPageForDeletion(ids[i], base::Bind(&EmptyDeleteCallback));
-  }
-}
-
-void OfflinePageModel::BookmarkNodeChanged(
-    bookmarks::BookmarkModel* model,
-    const bookmarks::BookmarkNode* node) {
-  // BookmarkNodeChanged could be triggered if title or URL gets changed. If
-  // the latter, we need to invalidate the offline copy.
-  ClientId cid;
-  cid.name_space = BOOKMARK_NAMESPACE;
-  cid.id = base::Int64ToString(node->id());
-  std::vector<int64_t> ids = GetOfflineIdsForClientId(cid);
-  for (size_t i = 0; i < ids.size(); i++) {
-    auto iter = offline_pages_.find(ids[i]);
-    if (iter != offline_pages_.end() && iter->second.url != node->url())
-      DeletePageByOfflineId(ids[i], DeletePageCallback());
-  }
-}
-
 void OfflinePageModel::OnEnsureArchivesDirCreatedDone() {
   store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -824,4 +764,19 @@ int64_t OfflinePageModel::GenerateOfflineId() {
   return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 }
 
+void OfflinePageModel::MarkPagesForDeletion(
+    const std::vector<int64_t>& offline_ids,
+    const DeletePageCallback& callback) {
+  if (!is_loaded_) {
+    for (size_t i = 0; i < offline_ids.size(); i++) {
+      delayed_tasks_.push_back(
+          base::Bind(&OfflinePageModel::MarkPageForDeletion,
+                     weak_ptr_factory_.GetWeakPtr(), offline_ids[i], callback));
+    }
+    return;
+  }
+  for (const auto& id : offline_ids) {
+    MarkPageForDeletion(id, callback);
+  }
+}
 }  // namespace offline_pages
