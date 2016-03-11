@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+declare_args() {
+  # Overrides os name in uma metrics log to "Blimp".
+  metrics_use_blimp = false
+}
+
 # GYP version: components/metrics.gypi:metrics
 source_set("metrics") {
   sources = [
@@ -346,6 +351,15 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     deps += [ ":leak_detector_unit_tests" ]
+  }
+
+  # These are only used by the blimp team, which has entirely migrated to gn,
+  # so this logic is not replicated in the gyp file.
+  if (metrics_use_blimp) {
+    defines = [
+      "OVERRIDE_OS_NAME_TO_BLIMP",
+      "ENABLE_REPORTING_BLIMP",
+    ]
   }
 }
 # TODO(GYP): metrics_chromeos

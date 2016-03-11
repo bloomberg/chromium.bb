@@ -9,6 +9,7 @@
 
 use_aura = true
 use_ozone = true
+metrics_use_blimp = true
 
 # Not available within docker container.
 use_alsa = false
