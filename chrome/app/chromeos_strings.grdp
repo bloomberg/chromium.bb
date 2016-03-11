@@ -5666,12 +5666,6 @@ Battery full
   <message name="IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE" desc="The label to describe what the dialog wants to confirm.">
     <ph name="DOMAIN">$1<ex>example.com</ex></ph> wants your device's identity to be verified, by Google, to determine eligibility for enhanced playback of protected media. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>.
   </message>
-  <message name="IDS_PLATFORM_VERIFICATION_DIALOG_ALLOW" desc="The button label to allow access of HD playback.">
-    OK, I got it
-  </message>
-  <message name="IDS_PLATFORM_VERIFICATION_DIALOG_DENY" desc="The button label to deny access of HD playback.">
-    Disable on <ph name="DOMAIN">$1<ex>example.com</ex></ph>
-  </message>
 
   <!-- Multi-profiles mode -->
   <message name="IDS_MULTIPROFILES_INTRO_HEADLINE" desc="Describes which feature multi-profiles intro dialog presents.">

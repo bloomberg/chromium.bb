@@ -111,10 +111,9 @@ base::string16 PlatformVerificationDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
-      return l10n_util::GetStringUTF16(IDS_PLATFORM_VERIFICATION_DIALOG_ALLOW);
+      return l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
     case ui::DIALOG_BUTTON_CANCEL:
-      return l10n_util::GetStringFUTF16(
-          IDS_PLATFORM_VERIFICATION_DIALOG_DENY, domain_);
+      return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
     default:
       NOTREACHED();
   }
