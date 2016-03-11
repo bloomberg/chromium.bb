@@ -662,7 +662,7 @@ bool CompositeEditCommand::shouldRebalanceLeadingWhitespaceFor(const String& tex
 bool CompositeEditCommand::canRebalance(const Position& position) const
 {
     Node* node = position.computeContainerNode();
-    if (!position.isOffsetInAnchor() || !node || !node->isTextNode())
+    if (!position.isOffsetInAnchor() || !node || !node->isTextNode() || !node->layoutObjectIsRichlyEditable())
         return false;
 
     Text* textNode = toText(node);
@@ -733,6 +733,8 @@ void CompositeEditCommand::rebalanceWhitespaceOnTextSubstring(PassRefPtrWillBeRa
 
 void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& position)
 {
+    if (!isRichlyEditablePosition(position))
+        return;
     Node* node = position.anchorNode();
     if (!node || !node->isTextNode())
         return;

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL TEXTAREA with white-space:pre-line should not produce nbsp by Enter key assert_equals: expected "P1\n\nP2\n\n\n\nP3\n" but got "P1\n\nP2\n\n  P3\n"
-Harness: the test ran to completion.
-

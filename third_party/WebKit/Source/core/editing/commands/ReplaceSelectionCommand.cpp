@@ -176,6 +176,30 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
         return;
     }
 
+    if (!editableRoot->layoutObjectIsRichlyEditable()) {
+        bool isPlainText = true;
+        for (Node& node : NodeTraversal::childrenOf(*m_fragment)) {
+            if (isInterchangeHTMLBRElement(&node) && &node == m_fragment->lastChild())
+                continue;
+            if (!node.isTextNode()) {
+                isPlainText = false;
+                break;
+            }
+        }
+        // We don't need TestRendering for plain-text editing + plain-text insertion.
+        if (isPlainText) {
+            removeInterchangeNodes(m_fragment.get());
+            String originalText = m_fragment->textContent();
+            RefPtrWillBeRawPtr<BeforeTextInsertedEvent> event = BeforeTextInsertedEvent::create(originalText);
+            editableRoot->dispatchEvent(event);
+            if (originalText != event->text()) {
+                m_fragment = createFragmentFromText(selection.toNormalizedEphemeralRange(), event->text());
+                removeInterchangeNodes(m_fragment.get());
+            }
+            return;
+        }
+    }
+
     RefPtrWillBeRawPtr<HTMLElement> holder = insertFragmentForTestRendering(editableRoot.get());
     if (!holder) {
         removeInterchangeNodes(m_fragment.get());

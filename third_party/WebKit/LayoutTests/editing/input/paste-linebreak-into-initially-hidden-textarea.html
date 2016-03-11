@@ -18,7 +18,7 @@ textarea.focus();
 textarea.selectionStart = textarea.selectionEnd = 0;
 document.execCommand('insertHTML', false, 'hello\nworld\n');
 
-var expected = 'hello\nworld\nwebkit';
+var expected = 'hello\nworld\n\nwebkit';
 if (textarea.value == expected)
     document.getElementById('log').innerText = 'PASS';
 else

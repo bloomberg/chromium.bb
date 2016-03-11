@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL TEXTAREA with white-space:nowrap should not increase the number of EOLs assert_equals: expected "a\n\n   b\n" but got "a b "
-Harness: the test ran to completion.
-

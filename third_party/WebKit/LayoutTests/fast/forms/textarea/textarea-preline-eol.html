@@ -17,7 +17,6 @@ test(function() {
     eventSender.keyDown('\n');
     eventSender.keyDown('upArrow');
     eventSender.keyDown('\n');
-    // TODO(tkent): The following assertion fails now. crbug.com/410417
     assert_equals(textarea.value, 'P1\n\nP2\n\n\n\nP3\n');
 }, 'TEXTAREA with white-space:pre-line should not produce nbsp by Enter key');
 </script>
