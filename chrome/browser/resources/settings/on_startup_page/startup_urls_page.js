@@ -60,6 +60,10 @@ Polymer({
     chrome.send('onStartupPrefsPageLoad');
   },
 
+  getIconSet_: function(url) {
+    return getFaviconImageSet(url);
+  },
+
   /** @private */
   updateStartupPages_: function(startupPages) {
     this.startupPages_ = startupPages;

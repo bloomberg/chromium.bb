@@ -1,17 +1,26 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/js/util.js">
 <link rel="import" href="chrome://md-settings/settings_dialog.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-startup-urls-page">
   <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      .favicon-image {
+        background-size: contain;
+        background-repeat: no-repeat;
+        height: 16px;
+        width: 16px;
+      }
+    </style>
     <div class="list-frame vertical-list">
       <template is="dom-repeat" items="[[startupPages_]]">
         <div class="list-item">
-          <iron-icon class="secondary" icon="image:brightness-1"
-              item-icon></iron-icon>
+          <div class="favicon-image"
+              style="background-image: [[getIconSet_(item.url)]]">
+          </div>
           <div class="middle">
             <div class="text-elide">[[item.title]]</div>
             <div class="text-elide secondary">[[item.url]]</div>
