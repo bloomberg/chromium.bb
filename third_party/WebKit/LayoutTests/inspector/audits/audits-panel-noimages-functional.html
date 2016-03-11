@@ -22,7 +22,7 @@ JSON = {};
 var test = function()
 {
     InspectorTest.reloadPage();
-    InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_styleSheetAdded", onStyleSheetAdded, true);
+    InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_styleSheetAdded", onStyleSheetAdded, true);
 
     var pendingStyleSheetsCount = 5;
     function onStyleSheetAdded()

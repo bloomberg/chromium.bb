@@ -122,13 +122,13 @@ function test()
         InspectorTest.addResult("Creating stylesheet resource.");
         createResourceMock(WebInspector.resourceTypes.Stylesheet, "<stylesheet resource content>");
 
-        WebInspector.CSSStyleModel.fromTarget(target)._styleSheetAdded(mockStyleSheetHeader);
+        WebInspector.CSSModel.fromTarget(target)._styleSheetAdded(mockStyleSheetHeader);
 
         function uiSourceCodeAdded(uiSourceCode)
         {
             InspectorTest.addResult("Added uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
             InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent(uiSourceCodeRemoved);
-            WebInspector.CSSStyleModel.fromTarget(target)._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
+            WebInspector.CSSModel.fromTarget(target)._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
         }
 
         function uiSourceCodeRemoved(uiSourceCode)

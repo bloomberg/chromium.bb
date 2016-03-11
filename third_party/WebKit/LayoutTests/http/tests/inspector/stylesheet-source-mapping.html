@@ -10,7 +10,7 @@ function test()
     var contentReceived;
     var finalMappedLocation;
     var target = InspectorTest.createWorkspaceWithTarget();
-    var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+    var cssModel = WebInspector.CSSModel.fromTarget(target);
     WebInspector.cssWorkspaceBinding = InspectorTest.testCSSWorkspaceBinding;
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);

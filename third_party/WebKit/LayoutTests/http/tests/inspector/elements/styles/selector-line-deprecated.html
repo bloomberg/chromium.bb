@@ -20,7 +20,7 @@ function addStylesheet()
 
 function test()
 {
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, step1, this);
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, step1, this);
     InspectorTest.evaluateInPage("addStylesheet()");
 
     function step1()

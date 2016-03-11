@@ -36,7 +36,7 @@ InspectorTest.waitForStyleSheetChangedEvent = function(reply)
 {
     var originalSetTimeout = WebInspector.Throttler.prototype._setTimeout;
     WebInspector.Throttler.prototype._setTimeout = innerSetTimeout;
-    InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_fireStyleSheetChanged", onStyleSheetChanged);
+    InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_fireStyleSheetChanged", onStyleSheetChanged);
 
     function onStyleSheetChanged()
     {

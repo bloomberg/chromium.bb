@@ -24,7 +24,7 @@ function test()
     function fileSystemCreated()
     {
         InspectorTest.addResult("Loading raw css with mapping...");
-        InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);
+        InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
         InspectorTest.evaluateInPage("loadCSS()");
     }
 

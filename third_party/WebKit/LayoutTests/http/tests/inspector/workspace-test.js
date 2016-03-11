@@ -49,7 +49,7 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor)
         this.resourceTreeModel._cachedResourcesProcessed = true;
         this.resourceTreeModel._frameAttached("42", 0);
         this.domModel = new WebInspector.DOMModel(this);
-        this.cssModel = new WebInspector.CSSStyleModel(this);
+        this.cssModel = new WebInspector.CSSModel(this);
         this.runtimeModel = new WebInspector.RuntimeModel(this);
         this.consoleModel = new WebInspector.ConsoleModel(this);
     }

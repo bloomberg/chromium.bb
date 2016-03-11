@@ -185,7 +185,7 @@ function blinkFilePaths()
         "./Source/devtools/front_end/CSSNamedFlowCollectionsView.pl",
         "./Source/devtools/front_end/CSSNamedFlowView.pl",
         "./Source/devtools/front_end/CSSSelectorProfileView.pl",
-        "./Source/devtools/front_end/CSSStyleModel.pl",
+        "./Source/devtools/front_end/CSSModel.pl",
         "./Source/devtools/front_end/CSSStyleSheetMapping.pl",
         "./Source/devtools/front_end/CallStackSidebarPane.pl",
         "./Source/devtools/front_end/CanvasProfileView.pl",

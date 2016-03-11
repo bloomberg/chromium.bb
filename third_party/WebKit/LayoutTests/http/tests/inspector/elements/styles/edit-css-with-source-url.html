@@ -50,7 +50,7 @@ function test()
             {
                 dumpUISourceCodeContents();
                 InspectorTest.addResult("Loading stylesheet with sourceURL:");
-                InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
+                InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, stylesheetLoaded);
                 InspectorTest.evaluateInPage("loadStylesheet()");
             }
   
@@ -58,7 +58,7 @@ function test()
             {
                 if (!event.data.sourceURL.includes("foo.css"))
                     return;
-                InspectorTest.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
+                InspectorTest.cssModel.removeEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, stylesheetLoaded);
                 InspectorTest.addResult("Stylesheet loaded.");
                 InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);
             }
