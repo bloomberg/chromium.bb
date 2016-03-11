@@ -27,16 +27,16 @@ void StartupPagesHandler::RegisterMessages() {
     return;
 
   web_ui()->RegisterMessageCallback("addStartupPage",
-      base::Bind(&StartupPagesHandler::AddStartupPage,
+      base::Bind(&StartupPagesHandler::HandleAddStartupPage,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("onStartupPrefsPageLoad",
-      base::Bind(&StartupPagesHandler::OnStartupPrefsPageLoad,
+      base::Bind(&StartupPagesHandler::HandleOnStartupPrefsPageLoad,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("removeStartupPage",
-      base::Bind(&StartupPagesHandler::RemoveStartupPage,
+      base::Bind(&StartupPagesHandler::HandleRemoveStartupPage,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("setStartupPagesToCurrentPages",
-      base::Bind(&StartupPagesHandler::SetStartupPagesToCurrentPages,
+      base::Bind(&StartupPagesHandler::HandleSetStartupPagesToCurrentPages,
                  base::Unretained(this)));
 }
 
@@ -75,7 +75,7 @@ void StartupPagesHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-void StartupPagesHandler::AddStartupPage(const base::ListValue* args) {
+void StartupPagesHandler::HandleAddStartupPage(const base::ListValue* args) {
   std::string url_string;
   if (!args->GetString(0, &url_string)) {
     DLOG(ERROR) << "Missing URL string parameter";
@@ -97,7 +97,8 @@ void StartupPagesHandler::AddStartupPage(const base::ListValue* args) {
   SaveStartupPagesPref();
 }
 
-void StartupPagesHandler::OnStartupPrefsPageLoad(const base::ListValue* args) {
+void StartupPagesHandler::HandleOnStartupPrefsPageLoad(
+    const base::ListValue* args) {
   startup_custom_pages_table_model_.SetObserver(this);
 
   PrefService* prefService = Profile::FromWebUI(web_ui())->GetPrefs();
@@ -119,7 +120,7 @@ void StartupPagesHandler::OnStartupPrefsPageLoad(const base::ListValue* args) {
   startup_custom_pages_table_model_.SetURLs(startup_pref.urls);
 }
 
-void StartupPagesHandler::RemoveStartupPage(const base::ListValue* args) {
+void StartupPagesHandler::HandleRemoveStartupPage(const base::ListValue* args) {
   int selected_index;
   if (!args->GetInteger(0, &selected_index)) {
     DLOG(ERROR) << "Missing index parameter";
@@ -136,6 +137,12 @@ void StartupPagesHandler::RemoveStartupPage(const base::ListValue* args) {
   SaveStartupPagesPref();
 }
 
+void StartupPagesHandler::HandleSetStartupPagesToCurrentPages(
+    const base::ListValue* args) {
+  startup_custom_pages_table_model_.SetToCurrentlyOpenPages();
+  SaveStartupPagesPref();
+}
+
 void StartupPagesHandler::SaveStartupPagesPref() {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
 
@@ -146,12 +153,6 @@ void StartupPagesHandler::SaveStartupPagesPref() {
     pref.type = SessionStartupPref::DEFAULT;
 
   SessionStartupPref::SetStartupPref(prefs, pref);
-}
-
-void StartupPagesHandler::SetStartupPagesToCurrentPages(
-    const base::ListValue* args) {
-  startup_custom_pages_table_model_.SetToCurrentlyOpenPages();
-  SaveStartupPagesPref();
 }
 
 void StartupPagesHandler::UpdateStartupPages() {
