@@ -370,8 +370,7 @@ TEST_F(HTMLPreloadScannerTest, testLinkRelPreload)
         {"http://example.test", "<link rel=preload href=bla as=style>", "bla", "http://example.test/", Resource::CSSStyleSheet, 0},
         {"http://example.test", "<link rel=preload href=bla as=image>", "bla", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<link rel=preload href=bla as=font>", "bla", "http://example.test/", Resource::Font, 0},
-        {"http://example.test", "<link rel=preload href=bla as=audio>", "bla", "http://example.test/", Resource::Media, 0},
-        {"http://example.test", "<link rel=preload href=bla as=video>", "bla", "http://example.test/", Resource::Media, 0},
+        {"http://example.test", "<link rel=preload href=bla as=media>", "bla", "http://example.test/", Resource::Media, 0},
         {"http://example.test", "<link rel=preload href=bla as=track>", "bla", "http://example.test/", Resource::TextTrack, 0},
     };
 

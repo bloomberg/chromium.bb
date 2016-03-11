@@ -171,17 +171,18 @@ static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL&
 
 bool LinkLoader::getResourceTypeFromAsAttribute(const String& as, Resource::Type& type)
 {
-    if (equalIgnoringCase(as, "image")) {
+    ASSERT(as.lower() == as);
+    if (as == "image") {
         type = Resource::Image;
-    } else if (equalIgnoringCase(as, "script")) {
+    } else if (as == "script") {
         type = Resource::Script;
-    } else if (equalIgnoringCase(as, "style")) {
+    } else if (as == "style") {
         type = Resource::CSSStyleSheet;
-    } else if (equalIgnoringCase(as, "audio") || equalIgnoringCase(as, "video")) {
+    } else if (as == "media") {
         type = Resource::Media;
-    } else if (equalIgnoringCase(as, "font")) {
+    } else if (as == "font") {
         type = Resource::Font;
-    } else if (equalIgnoringCase(as, "track")) {
+    } else if (as == "track") {
         type = Resource::TextTrack;
     } else {
         type = Resource::LinkPreload;
