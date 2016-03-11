@@ -20,7 +20,7 @@ public:
     explicit LineLayoutRubyRun(const LineLayoutItem& item)
         : LineLayoutBlockFlow(item)
     {
-        ASSERT(!item || item.isRubyRun());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isRubyRun());
     }
 
     explicit LineLayoutRubyRun(std::nullptr_t) : LineLayoutBlockFlow(nullptr) { }

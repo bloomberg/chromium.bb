@@ -20,7 +20,7 @@ public:
     explicit LineLayoutTextCombine(const LineLayoutItem& item)
         : LineLayoutText(item)
     {
-        ASSERT(!item || item.isCombineText());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isCombineText());
     }
 
     explicit LineLayoutTextCombine(std::nullptr_t) : LineLayoutText(nullptr) { }

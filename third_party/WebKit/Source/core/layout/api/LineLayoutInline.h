@@ -25,7 +25,7 @@ public:
     explicit LineLayoutInline(const LineLayoutItem& item)
         : LineLayoutBoxModel(item)
     {
-        ASSERT(!item || item.isLayoutInline());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutInline());
     }
 
     explicit LineLayoutInline(std::nullptr_t) : LineLayoutBoxModel(nullptr) { }

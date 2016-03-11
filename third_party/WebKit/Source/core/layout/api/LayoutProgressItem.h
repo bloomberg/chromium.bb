@@ -21,7 +21,7 @@ public:
     explicit LayoutProgressItem(const LayoutBlockItem& item)
         : LayoutBlockItem(item)
     {
-        ASSERT(!item || item.isProgress());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isProgress());
     }
 
     explicit LayoutProgressItem(std::nullptr_t) : LayoutBlockItem(nullptr) { }

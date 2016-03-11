@@ -20,7 +20,7 @@ public:
     explicit LineLayoutSVGInlineText(const LineLayoutItem& item)
         : LineLayoutText(item)
     {
-        ASSERT(!item || item.isSVGInlineText());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isSVGInlineText());
     }
 
     explicit LineLayoutSVGInlineText(std::nullptr_t) : LineLayoutText(nullptr) { }

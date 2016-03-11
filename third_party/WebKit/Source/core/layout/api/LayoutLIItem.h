@@ -20,7 +20,7 @@ public:
     explicit LayoutLIItem(const LayoutItem& item)
         : LayoutBoxItem(item)
     {
-        ASSERT(!item || item.isListItem());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isListItem());
     }
 
     explicit LayoutLIItem(std::nullptr_t) : LayoutBoxItem(nullptr) { }

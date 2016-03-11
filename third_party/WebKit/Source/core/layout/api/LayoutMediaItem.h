@@ -20,7 +20,7 @@ public:
     explicit LayoutMediaItem(const LayoutItem& item)
         : LayoutImageItem(item)
     {
-        ASSERT(!item || item.isMedia());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isMedia());
     }
 
     explicit LayoutMediaItem(std::nullptr_t) : LayoutImageItem(nullptr) { }

@@ -21,7 +21,7 @@ public:
     explicit LayoutSliderItem(const LayoutBlockItem& item)
         : LayoutBlockItem(item)
     {
-        ASSERT(!item || item.isSlider());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isSlider());
     }
 
     explicit LayoutSliderItem(std::nullptr_t) : LayoutBlockItem(nullptr) { }

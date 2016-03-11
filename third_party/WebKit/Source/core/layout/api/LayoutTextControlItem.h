@@ -21,7 +21,7 @@ public:
     explicit LayoutTextControlItem(const LayoutItem& item)
         : LayoutBoxModel(item)
     {
-        ASSERT(!item || item.isTextControl());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isTextControl());
     }
 
     explicit LayoutTextControlItem(std::nullptr_t) : LayoutBoxModel(nullptr) { }

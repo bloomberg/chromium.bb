@@ -22,7 +22,7 @@ public:
     explicit LineLayoutText(const LineLayoutItem& item)
         : LineLayoutItem(item)
     {
-        ASSERT(!item || item.isText());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isText());
     }
 
     explicit LineLayoutText(std::nullptr_t) : LineLayoutItem(nullptr) { }

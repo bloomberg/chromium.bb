@@ -20,7 +20,7 @@ public:
     explicit LayoutImageItem(const LayoutItem& item)
         : LayoutBoxItem(item)
     {
-        ASSERT(!item || item.isImage());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isImage());
     }
 
     explicit LayoutImageItem(std::nullptr_t) : LayoutBoxItem(nullptr) { }

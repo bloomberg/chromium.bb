@@ -23,7 +23,7 @@ public:
     explicit LayoutTextItem(const LayoutItem& item)
         : LayoutItem(item)
     {
-        ASSERT(!item || item.isText());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isText());
     }
 
     explicit LayoutTextItem(std::nullptr_t) : LayoutItem(nullptr) { }

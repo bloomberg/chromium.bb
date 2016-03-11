@@ -20,7 +20,7 @@ public:
     explicit LayoutEmbeddedItem(const LayoutItem& item)
         : LayoutPartItem(item)
     {
-        ASSERT(!item || item.isEmbeddedObject());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isEmbeddedObject());
     }
 
     explicit LayoutEmbeddedItem(std::nullptr_t) : LayoutPartItem(nullptr) { }

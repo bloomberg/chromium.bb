@@ -23,7 +23,7 @@ public:
     explicit LayoutTextFragmentItem(const LayoutTextItem& item)
         : LayoutTextItem(item)
     {
-        ASSERT(!item || item.isTextFragment());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isTextFragment());
     }
 
     explicit LayoutTextFragmentItem(std::nullptr_t) : LayoutTextItem(nullptr) { }

@@ -20,7 +20,7 @@ public:
     explicit LineLayoutSVGTextPath(const LineLayoutItem& item)
         : LineLayoutSVGInline(item)
     {
-        ASSERT(!item || item.isSVGTextPath());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isSVGTextPath());
     }
 
     explicit LineLayoutSVGTextPath(std::nullptr_t) : LineLayoutSVGInline(nullptr) { }

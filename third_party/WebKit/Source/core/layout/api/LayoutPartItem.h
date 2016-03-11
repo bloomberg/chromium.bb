@@ -20,7 +20,7 @@ public:
     explicit LayoutPartItem(const LayoutItem& item)
         : LayoutBoxItem(item)
     {
-        ASSERT(!item || item.isLayoutPart());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutPart());
     }
 
     explicit LayoutPartItem(std::nullptr_t) : LayoutBoxItem(nullptr) { }

@@ -20,7 +20,7 @@ public:
     explicit LineLayoutListMarker(const LineLayoutItem& item)
         : LineLayoutBox(item)
     {
-        ASSERT(!item || item.isListMarker());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isListMarker());
     }
 
     explicit LineLayoutListMarker(std::nullptr_t) : LineLayoutBox(nullptr) { }

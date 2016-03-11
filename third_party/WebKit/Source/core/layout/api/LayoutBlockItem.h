@@ -21,7 +21,7 @@ public:
     explicit LayoutBlockItem(const LayoutBoxItem& item)
         : LayoutBoxItem(item)
     {
-        ASSERT(!item || item.isLayoutBlock());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isLayoutBlock());
     }
 
     explicit LayoutBlockItem(std::nullptr_t) : LayoutBoxItem(nullptr) { }

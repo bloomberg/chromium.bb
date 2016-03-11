@@ -20,7 +20,7 @@ public:
     explicit LineLayoutBR(const LineLayoutItem& item)
         : LineLayoutText(item)
     {
-        ASSERT(!item || item.isBR());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isBR());
     }
 
     explicit LineLayoutBR(std::nullptr_t) : LineLayoutText(nullptr) { }

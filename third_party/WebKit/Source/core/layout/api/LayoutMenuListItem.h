@@ -21,7 +21,7 @@ public:
     explicit LayoutMenuListItem(const LayoutBlockItem& item)
         : LayoutBlockItem(item)
     {
-        ASSERT(!item || item.isMenuList());
+        ASSERT_WITH_SECURITY_IMPLICATION(!item || item.isMenuList());
     }
 
     explicit LayoutMenuListItem(std::nullptr_t) : LayoutBlockItem(nullptr) { }
