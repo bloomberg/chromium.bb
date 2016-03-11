@@ -4,25 +4,27 @@
 
 #include "chrome/browser/profiles/profile_list_desktop.h"
 
+#include <string>
+
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
-ProfileListDesktop::ProfileListDesktop(ProfileInfoInterface* profile_cache)
-    : profile_info_(profile_cache),
-      omitted_item_count_(0) {
+ProfileListDesktop::ProfileListDesktop(
+    ProfileAttributesStorage* profile_storage)
+    : profile_storage_(profile_storage) {
 }
 
 ProfileListDesktop::~ProfileListDesktop() {
-  ClearMenu();
 }
 
 // static
-ProfileList* ProfileList::Create(ProfileInfoInterface* profile_cache) {
-  return new ProfileListDesktop(profile_cache);
+ProfileList* ProfileList::Create(ProfileAttributesStorage* profile_storage) {
+  return new ProfileListDesktop(profile_storage);
 }
 
 size_t ProfileListDesktop::GetNumberOfItems() const {
@@ -35,54 +37,40 @@ const AvatarMenu::Item& ProfileListDesktop::GetItemAt(size_t index) const {
 }
 
 void ProfileListDesktop::RebuildMenu() {
-  ClearMenu();
+  std::vector<ProfileAttributesEntry*> entries =
+      profile_storage_->GetAllProfilesAttributesSortedByName();
 
-  const size_t count = profile_info_->GetNumberOfProfiles();
-  for (size_t i = 0; i < count; ++i) {
-    if (profile_info_->IsOmittedProfileAtIndex(i)) {
-      omitted_item_count_++;
+  items_.clear();
+  for (ProfileAttributesEntry* entry : entries) {
+    if (entry->IsOmitted())
       continue;
-    }
 
-    gfx::Image icon = profile_info_->GetAvatarIconOfProfileAtIndex(i);
-    AvatarMenu::Item* item = new AvatarMenu::Item(i - omitted_item_count_,
-                                                  i,
-                                                  icon);
-    item->name = profile_info_->GetNameOfProfileAtIndex(i);
-    item->username = profile_info_->GetUserNameOfProfileAtIndex(i);
-    item->profile_path = profile_info_->GetPathOfProfileAtIndex(i);
-    item->legacy_supervised =
-        profile_info_->ProfileIsLegacySupervisedAtIndex(i);
-    item->child_account = profile_info_->ProfileIsChildAtIndex(i);
-    item->signed_in = profile_info_->ProfileIsAuthenticatedAtIndex(i);
+    gfx::Image icon = entry->GetAvatarIcon();
+    scoped_ptr<AvatarMenu::Item> item(
+        new AvatarMenu::Item(items_.size(), entry->GetPath(), icon));
+    item->name = entry->GetName();
+    item->username = entry->GetUserName();
+    item->legacy_supervised = entry->IsLegacySupervised();
+    item->child_account = entry->IsChild();
+    item->signed_in = entry->IsAuthenticated();
     if (!item->signed_in) {
       item->username = l10n_util::GetStringUTF16(
           item->legacy_supervised ? IDS_LEGACY_SUPERVISED_USER_AVATAR_LABEL :
                                     IDS_PROFILES_LOCAL_PROFILE_STATE);
     }
-    item->active = profile_info_->GetPathOfProfileAtIndex(i) ==
-        active_profile_path_;
-    item->signin_required = profile_info_->ProfileIsSigninRequiredAtIndex(i);
-    items_.push_back(item);
+    item->active = item->profile_path == active_profile_path_;
+    item->signin_required = entry->IsSigninRequired();
+    items_.push_back(std::move(item));
   }
-  // One omitted item is expected when a supervised-user profile is in the
-  // process of being registered, but there shouldn't be more than one.
-  VLOG_IF(2, (omitted_item_count_ > 1)) << omitted_item_count_
-                                        << " profiles omitted fom list.";
 }
 
-size_t ProfileListDesktop::MenuIndexFromProfileIndex(size_t index) {
+size_t ProfileListDesktop::MenuIndexFromProfilePath(const base::FilePath& path)
+    const {
   const size_t menu_count = GetNumberOfItems();
-  DCHECK_LT(index, menu_count + omitted_item_count_);
-
-  // In the common case, valid profile-cache indices correspond to indices in
-  // the menu.
-  if (!omitted_item_count_)
-    return index;
 
   for (size_t i = 0; i < menu_count; ++i) {
     const AvatarMenu::Item item = GetItemAt(i);
-    if (item.profile_index == index)
+    if (item.profile_path == path)
       return i;
   }
 
@@ -91,11 +79,7 @@ size_t ProfileListDesktop::MenuIndexFromProfileIndex(size_t index) {
   return 0;
 }
 
-void ProfileListDesktop::ActiveProfilePathChanged(base::FilePath& path) {
-  active_profile_path_ = path;
-}
-
-void ProfileListDesktop::ClearMenu() {
-  STLDeleteElements(&items_);
-  omitted_item_count_ = 0;
+void ProfileListDesktop::ActiveProfilePathChanged(
+    const base::FilePath& active_profile_path) {
+  active_profile_path_ = active_profile_path;
 }

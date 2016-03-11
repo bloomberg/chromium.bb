@@ -1898,7 +1898,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           profiles::GetPlaceholderAvatarIconResourceID());
   AvatarMenu::Item guestItem(std::string::npos, /* menu_index, not used */
-                             std::string::npos, /* profile_index, not used */
+                             base::FilePath(), /* profile_path, not used */
                              guestIcon);
   guestItem.active = true;
   guestItem.name = base::SysNSStringToUTF16(

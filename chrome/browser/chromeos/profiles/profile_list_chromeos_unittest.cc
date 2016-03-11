@@ -15,11 +15,13 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -71,7 +73,7 @@ class ProfileListChromeOSTest : public testing::Test {
         user_manager::UserManager::Get());
   }
 
-  void AddProfile(base::string16 name, bool log_in) {
+  TestingProfile* AddProfile(base::string16 name, bool log_in) {
     std::string email_string = base::UTF16ToASCII(name) + "@example.com";
     const AccountId account_id(AccountId::FromUserEmail(email_string));
 
@@ -81,7 +83,7 @@ class ProfileListChromeOSTest : public testing::Test {
       GetFakeChromeUserManager()->LoginUser(account_id);
 
     // Create a profile for the user.
-    manager()->CreateTestingProfile(account_id.GetUserEmail());
+    return manager()->CreateTestingProfile(account_id.GetUserEmail());
   }
 
   AvatarMenu* GetAvatarMenu() {
@@ -163,10 +165,10 @@ TEST_F(ProfileListChromeOSTest, DontShowSupervisedUsers) {
   AddProfile(name1, true);
 
   // Add a managed user profile.
-  ProfileInfoCache* cache = manager()->profile_info_cache();
-  manager()->profile_info_cache()->AddProfileToCache(
-      cache->GetUserDataDir().AppendASCII("p2"), supervised_name, std::string(),
-      base::string16(), 0, "TEST_ID");
+  ProfileAttributesStorage* storage = manager()->profile_attributes_storage();
+  storage->AddProfile(manager()->profiles_dir().AppendASCII("p2"),
+                      supervised_name, std::string(), base::string16(), 0U,
+                      "TEST_ID");
 
   GetFakeChromeUserManager()->AddUser(
       AccountId::FromUserEmail(base::UTF16ToASCII(supervised_name)));
@@ -174,7 +176,7 @@ TEST_F(ProfileListChromeOSTest, DontShowSupervisedUsers) {
   AvatarMenu* menu = GetAvatarMenu();
   ASSERT_EQ(1U, menu->GetNumberOfItems());
 
-  const AvatarMenu::Item& item1 = menu->GetItemAt(0);
+  const AvatarMenu::Item& item1 = menu->GetItemAt(0U);
   EXPECT_EQ(0U, item1.menu_index);
   EXPECT_EQ(name1, item1.name);
 }
@@ -227,7 +229,7 @@ TEST_F(ProfileListChromeOSTest, ModifyingNameResortsCorrectly) {
   base::string16 name2(ASCIIToUTF16("Beta"));
   base::string16 newname1(ASCIIToUTF16("Gamma"));
 
-  AddProfile(name1, true);
+  TestingProfile* profile1 = AddProfile(name1, true);
   AddProfile(name2, true);
 
   AvatarMenu* menu = GetAvatarMenu();
@@ -242,14 +244,19 @@ TEST_F(ProfileListChromeOSTest, ModifyingNameResortsCorrectly) {
   EXPECT_EQ(1U, item2.menu_index);
   EXPECT_EQ(name2, item2.name);
 
-  // Change name of the first profile, to trigger resorting of the profiles:
-  // now the first menu item should be named "beta", and the second be "gamma".
+  // Change the name of the first profile, and this triggers the resorting of
+  // the avatar menu.
   GetFakeChromeUserManager()->SaveUserDisplayName(
       AccountId::FromUserEmail(base::UTF16ToASCII(name1) + "@example.com"),
       newname1);
-  manager()->profile_info_cache()->SetNameOfProfileAtIndex(0, newname1);
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(
+      manager()->profile_attributes_storage()->GetProfileAttributesWithPath(
+          profile1->GetPath(), &entry));
+  entry->SetName(newname1);
   EXPECT_EQ(1, change_count());
 
+  // Now the first menu item should be named "beta", and the second be "gamma".
   const AvatarMenu::Item& item1next = menu->GetItemAt(0);
   EXPECT_EQ(0U, item1next.menu_index);
   EXPECT_EQ(name2, item1next.name);

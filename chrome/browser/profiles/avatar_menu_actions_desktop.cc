@@ -48,7 +48,7 @@ void AvatarMenuActionsDesktop::AddNewProfile(ProfileMetrics::ProfileAdd type) {
   ProfileMetrics::LogProfileAddNewUser(type);
 }
 
-void AvatarMenuActionsDesktop::EditProfile(Profile* profile, size_t index) {
+void AvatarMenuActionsDesktop::EditProfile(Profile* profile) {
   Browser* settings_browser = browser_;
   if (!settings_browser) {
     settings_browser = new Browser(Browser::CreateParams(profile));

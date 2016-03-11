@@ -12,36 +12,35 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
-class ProfileInfoInterface;
+class ProfileAttributesStorage;
 
 namespace chromeos {
 
 // This model represents profiles corresponding to logged-in ChromeOS users.
 class ProfileListChromeOS : public ProfileList {
  public:
-  explicit ProfileListChromeOS(ProfileInfoInterface* profile_cache);
+  explicit ProfileListChromeOS(ProfileAttributesStorage* profile_storage);
   ~ProfileListChromeOS() override;
 
+ private:
   // ProfileList overrides:
   size_t GetNumberOfItems() const override;
   const AvatarMenu::Item& GetItemAt(size_t index) const override;
   void RebuildMenu() override;
-  size_t MenuIndexFromProfileIndex(size_t index) override;
-  void ActiveProfilePathChanged(base::FilePath& path) override;
+  size_t MenuIndexFromProfilePath(const base::FilePath& path) const override;
+  void ActiveProfilePathChanged(
+      const base::FilePath& active_profile_path) override;
 
- private:
-  void ClearMenu();
-  void SortMenu();
-
-  // The cache that provides the profile information. Weak.
-  ProfileInfoInterface* profile_info_;
+  // The storage that provides the profile attributes. Not owned.
+  ProfileAttributesStorage* profile_storage_;
 
   // The path of the currently active profile.
   base::FilePath active_profile_path_;
 
   // List of built "menu items."
-  std::vector<AvatarMenu::Item*> items_;
+  std::vector<scoped_ptr<AvatarMenu::Item>> items_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListChromeOS);
 };

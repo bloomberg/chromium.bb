@@ -32,7 +32,7 @@ void AvatarMenuActionsChromeOS::AddNewProfile(ProfileMetrics::ProfileAdd type) {
   ash::Shell::GetInstance()->system_tray_delegate()->ShowUserLogin();
 }
 
-void AvatarMenuActionsChromeOS::EditProfile(Profile* profile, size_t index) {
+void AvatarMenuActionsChromeOS::EditProfile(Profile* profile) {
   NOTIMPLEMENTED();
 }
 

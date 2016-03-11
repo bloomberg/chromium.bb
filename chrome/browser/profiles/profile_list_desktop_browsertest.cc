@@ -63,26 +63,27 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SignOut) {
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* current_profile = browser()->profile();
-  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
-  size_t index = cache.GetIndexOfProfileWithPath(current_profile->GetPath());
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(storage.GetProfileAttributesWithPath(current_profile->GetPath(),
+                                                   &entry));
 
   scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&storage);
   menu->RebuildMenu();
 
   BrowserList* browser_list = BrowserList::GetInstance();
-  EXPECT_EQ(1U, browser_list->size());
+  EXPECT_EQ(1u, browser_list->size());
   content::WindowedNotificationObserver window_close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser()));
 
-  EXPECT_FALSE(cache.ProfileIsSigninRequiredAtIndex(index));
+  EXPECT_FALSE(entry->IsSigninRequired());
   profiles::LockProfile(current_profile);
   window_close_observer.Wait();  // rely on test time-out for failure indication
 
-  EXPECT_TRUE(cache.ProfileIsSigninRequiredAtIndex(index));
-  EXPECT_EQ(0U, browser_list->size());
+  EXPECT_TRUE(entry->IsSigninRequired());
+  EXPECT_EQ(0u, browser_list->size());
 
   // Signing out brings up the User Manager which we should close before exit.
   UserManager::Hide();
@@ -99,23 +100,21 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
+          switches::kAshBrowserTests)) {
     return;
+  }
 #endif
 
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* current_profile = browser()->profile();
-  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
-  base::FilePath path_profile1 = current_profile->GetPath();
-  base::FilePath user_dir = cache.GetUserDataDir();
+  base::FilePath path_profile1 = browser()->profile()->GetPath();
 
   // Create an additional profile.
-  base::FilePath path_profile2 = user_dir.Append(
+  base::FilePath path_profile2 = profile_manager->user_data_dir().Append(
       FILE_PATH_LITERAL("New Profile 2"));
   profile_manager->CreateProfileAsync(path_profile2,
                                       base::Bind(&OnUnblockOnProfileCreation),
@@ -125,29 +124,29 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.
   content::RunMessageLoop();
-  ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
+  ASSERT_EQ(2u, storage.GetNumberOfProfiles());
 
   scoped_ptr<AvatarMenu> menu = CreateAvatarMenu(&storage);
   menu->RebuildMenu();
   BrowserList* browser_list = BrowserList::GetInstance();
-  EXPECT_EQ(1U, browser_list->size());
+  EXPECT_EQ(1u, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
   // Open a browser window for the first profile.
-  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1),
+  menu->SwitchToProfile(menu->GetIndexOfItemWithProfilePath(path_profile1),
                         false, ProfileMetrics::SWITCH_PROFILE_ICON);
-  EXPECT_EQ(1U, browser_list->size());
+  EXPECT_EQ(1u, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
   // Open a browser window for the second profile.
-  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile2),
+  menu->SwitchToProfile(menu->GetIndexOfItemWithProfilePath(path_profile2),
                         false, ProfileMetrics::SWITCH_PROFILE_ICON);
-  EXPECT_EQ(2U, browser_list->size());
+  EXPECT_EQ(2u, browser_list->size());
 
   // Switch to the first profile without opening a new window.
-  menu->SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1),
+  menu->SwitchToProfile(menu->GetIndexOfItemWithProfilePath(path_profile1),
                         false, ProfileMetrics::SWITCH_PROFILE_ICON);
-  EXPECT_EQ(2U, browser_list->size());
+  EXPECT_EQ(2u, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
 }

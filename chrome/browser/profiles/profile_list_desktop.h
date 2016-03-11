@@ -10,43 +10,40 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_list.h"
 
 class Browser;
-class ProfileInfoInterface;
+class ProfileAttributesStorage;
 
 // This model represents the profiles added to desktop Chrome (as opposed to
 // Chrome OS). Profiles marked not to appear in the list will be omitted
 // throughout.
 class ProfileListDesktop : public ProfileList {
  public:
-  explicit ProfileListDesktop(ProfileInfoInterface* profile_cache);
+  explicit ProfileListDesktop(ProfileAttributesStorage* profile_storage);
   ~ProfileListDesktop() override;
 
+ private:
   // ProfileList overrides:
   size_t GetNumberOfItems() const override;
   const AvatarMenu::Item& GetItemAt(size_t index) const override;
   void RebuildMenu() override;
-  // Returns the menu index of the profile at |index| in the ProfileInfoCache.
-  // The profile index must exist, and it may not be marked as omitted from the
-  // menu.
-  size_t MenuIndexFromProfileIndex(size_t index) override;
-  void ActiveProfilePathChanged(base::FilePath& path) override;
+  // Returns the menu index of the profile with |path| in the
+  // ProfileAttributesStorage. The profile with the |path| must exist, and it
+  // may not be marked as omitted from the menu.
+  size_t MenuIndexFromProfilePath(const base::FilePath& path) const override;
+  void ActiveProfilePathChanged(
+      const base::FilePath& active_profile_path) override;
 
- private:
-  void ClearMenu();
-
-  // The cache that provides the profile information. Weak.
-  ProfileInfoInterface* profile_info_;
+  // The storage that provides the profile attributes. Not owned.
+  ProfileAttributesStorage* profile_storage_;
 
   // The path of the currently active profile.
   base::FilePath active_profile_path_;
 
   // List of built "menu items."
-  std::vector<AvatarMenu::Item*> items_;
-
-  // The number of profiles that were omitted from the list when it was built.
-  size_t omitted_item_count_;
+  std::vector<scoped_ptr<AvatarMenu::Item>> items_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktop);
 };

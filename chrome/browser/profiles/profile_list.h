@@ -7,16 +7,17 @@
 
 #include <stddef.h>
 
+#include "base/files/file_path.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 
-class ProfileInfoInterface;
+class ProfileAttributesStorage;
 
 // This model represents the profiles added to Chrome.
 class ProfileList {
  public:
   virtual ~ProfileList() {}
 
-  static ProfileList* Create(ProfileInfoInterface* profile_cache);
+  static ProfileList* Create(ProfileAttributesStorage* profile_storage);
 
   // Returns the number of profiles in the model.
   virtual size_t GetNumberOfItems() const = 0;
@@ -28,10 +29,11 @@ class ProfileList {
   virtual void RebuildMenu() = 0;
 
   // Returns the index in the menu of the specified profile.
-  virtual size_t MenuIndexFromProfileIndex(size_t index) = 0;
+  virtual size_t MenuIndexFromProfilePath(const base::FilePath& path) const = 0;
 
   // Updates the path of the active browser's profile.
-  virtual void ActiveProfilePathChanged(base::FilePath& path) = 0;
+  virtual void ActiveProfilePathChanged(
+      const base::FilePath& active_profile_path) = 0;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_LIST_H_

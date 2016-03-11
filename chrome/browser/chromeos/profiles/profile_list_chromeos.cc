@@ -4,11 +4,14 @@
 
 #include "chrome/browser/chromeos/profiles/profile_list_chromeos.h"
 
-#include <algorithm>
+#include <unordered_map>
+#include <utility>
 
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -16,18 +19,17 @@
 #include "components/user_manager/user_manager.h"
 
 // static
-ProfileList* ProfileList::Create(ProfileInfoInterface* profile_cache) {
-  return new chromeos::ProfileListChromeOS(profile_cache);
+ProfileList* ProfileList::Create(ProfileAttributesStorage* profile_storage) {
+  return new chromeos::ProfileListChromeOS(profile_storage);
 }
 
 namespace chromeos {
 
-ProfileListChromeOS::ProfileListChromeOS(ProfileInfoInterface* profile_cache)
-    : profile_info_(profile_cache) {
-}
+ProfileListChromeOS::ProfileListChromeOS(
+    ProfileAttributesStorage* profile_storage)
+    : profile_storage_(profile_storage) {}
 
 ProfileListChromeOS::~ProfileListChromeOS() {
-  ClearMenu();
 }
 
 size_t ProfileListChromeOS::GetNumberOfItems() const {
@@ -40,72 +42,70 @@ const AvatarMenu::Item& ProfileListChromeOS::GetItemAt(size_t index) const {
 }
 
 void ProfileListChromeOS::RebuildMenu() {
-  ClearMenu();
+  items_.clear();
 
-  // Filter for profiles associated with logged-in users.
+  // Only the profiles associated with logged-in users are added to the menu.
   user_manager::UserList users =
       user_manager::UserManager::Get()->GetLoggedInUsers();
 
-  // Add corresponding profiles.
-  for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end();
-       ++it) {
-    size_t i = profile_info_->GetIndexOfProfileWithPath(
-        ProfileHelper::GetProfilePathByUserIdHash((*it)->username_hash()));
+  // Create a mapping from profile path to the corresponding entries in |users|.
+  std::unordered_map<base::FilePath::StringType, size_t> user_indices_by_path;
+  for (size_t i = 0; i < users.size(); ++i) {
+    user_indices_by_path.insert(std::make_pair(
+        ProfileHelper::GetProfilePathByUserIdHash(users[i]->username_hash())
+            .value(),
+        i));
+  }
+  DCHECK_EQ(user_indices_by_path.size(), users.size());
 
-    gfx::Image icon = gfx::Image((*it)->GetImage());
+  std::vector<ProfileAttributesEntry*> entries =
+      profile_storage_->GetAllProfilesAttributesSortedByName();
+
+  // Add the profiles.
+  for (ProfileAttributesEntry* entry : entries) {
+    auto user_index_it = user_indices_by_path.find(entry->GetPath().value());
+    if (user_index_it == user_indices_by_path.end())
+      continue;
+    user_manager::User* user = users[user_index_it->second];
+
+    gfx::Image icon = gfx::Image(user->GetImage());
     if (!switches::IsNewProfileManagement() && !icon.IsEmpty()) {
       // old avatar menu uses resized-small images
       icon = profiles::GetAvatarIconForMenu(icon, true);
     }
 
-    AvatarMenu::Item* item = new AvatarMenu::Item(i, i, icon);
-    item->name = (*it)->GetDisplayName();
-    item->username = profile_info_->GetUserNameOfProfileAtIndex(i);
-    item->profile_path = profile_info_->GetPathOfProfileAtIndex(i);
-    DCHECK(!profile_info_->ProfileIsLegacySupervisedAtIndex(i));
+    scoped_ptr<AvatarMenu::Item> item(
+        new AvatarMenu::Item(items_.size(), entry->GetPath(), icon));
+    item->name = user->GetDisplayName();
+    item->username = entry->GetUserName();
+    DCHECK(!entry->IsLegacySupervised());
     item->legacy_supervised = false;
-    item->child_account = profile_info_->ProfileIsChildAtIndex(i);
+    item->child_account = entry->IsChild();
     item->signed_in = true;
-    item->active = profile_info_->GetPathOfProfileAtIndex(i) ==
-        active_profile_path_;
-    item->signin_required = profile_info_->ProfileIsSigninRequiredAtIndex(i);
-    items_.push_back(item);
+    item->active = item->profile_path == active_profile_path_;
+    item->signin_required = entry->IsSigninRequired();
+    items_.push_back(std::move(item));
   }
-
-  SortMenu();
-
-  // After sorting, assign items their actual indices.
-  for (size_t i = 0; i < items_.size(); ++i)
-    items_[i]->menu_index = i;
 }
 
-size_t ProfileListChromeOS::MenuIndexFromProfileIndex(size_t index) {
+size_t ProfileListChromeOS::MenuIndexFromProfilePath(
+    const base::FilePath& path) const {
+  const size_t menu_count = GetNumberOfItems();
+
+  for (size_t i = 0; i < menu_count; ++i) {
+    const AvatarMenu::Item item = GetItemAt(i);
+    if (item.profile_path == path)
+      return i;
+  }
+
   // On ChromeOS, the active profile might be Default, which does not show
   // up in the model as a logged-in user. In that case, we return 0.
-  size_t menu_index = 0;
-
-  for (size_t i = 0; i < GetNumberOfItems(); ++i) {
-    if (items_[i]->profile_index == index) {
-      menu_index = i;
-      break;
-    }
-  }
-
-  return menu_index;
+  return 0;
 }
 
-void ProfileListChromeOS::ActiveProfilePathChanged(base::FilePath& path) {
-  active_profile_path_ = path;
-}
-
-void ProfileListChromeOS::ClearMenu() {
-  STLDeleteElements(&items_);
-}
-
-void ProfileListChromeOS::SortMenu() {
-  // Sort list of items by name.
-  std::sort(items_.begin(), items_.end(), &AvatarMenu::CompareItems);
+void ProfileListChromeOS::ActiveProfilePathChanged(
+    const base::FilePath& active_profile_path) {
+  active_profile_path_ = active_profile_path;
 }
 
 }  // namespace chromeos

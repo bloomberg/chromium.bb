@@ -23,7 +23,7 @@ class AvatarMenuActionsDesktop : public AvatarMenuActions {
 
   // AvatarMenuActions overrides:
   void AddNewProfile(ProfileMetrics::ProfileAdd type) override;
-  void EditProfile(Profile* profile, size_t index) override;
+  void EditProfile(Profile* profile) override;
   bool ShouldShowAddNewProfileLink() const override;
   bool ShouldShowEditProfileLink() const override;
   void ActiveBrowserChanged(Browser* browser) override;

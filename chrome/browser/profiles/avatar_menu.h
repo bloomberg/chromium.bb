@@ -11,10 +11,11 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/web_contents.h"
@@ -30,7 +31,6 @@ class AvatarMenuObserver;
 class Browser;
 class Profile;
 class ProfileAttributesStorage;
-class ProfileInfoInterface;
 class ProfileList;
 class SupervisedUserService;
 
@@ -43,11 +43,12 @@ class AvatarMenu :
 #if defined(ENABLE_SUPERVISED_USERS)
     public SupervisedUserServiceObserver,
 #endif
-    public ProfileInfoCacheObserver {
+    public ProfileAttributesStorage::Observer {
  public:
   // Represents an item in the menu.
   struct Item {
-    Item(size_t menu_index, size_t profile_index, const gfx::Image& icon);
+    Item(size_t menu_index, const base::FilePath& profile_path,
+         const gfx::Image& icon);
     Item(const Item& other);
     ~Item();
 
@@ -83,9 +84,6 @@ class AvatarMenu :
     // profiles.
     size_t menu_index;
 
-    // The index in the |profile_cache| for this profile.
-    size_t profile_index;
-
     // The path of this profile.
     base::FilePath profile_path;
   };
@@ -106,9 +104,6 @@ class AvatarMenu :
   static void GetImageForMenuButton(const base::FilePath& profile_path,
                                     gfx::Image* image,
                                     bool* is_rectangle);
-
-  // Compare items by name.
-  static bool CompareItems(const Item* item1, const Item* item2);
 
   // Opens a Browser with the specified profile in response to the user
   // selecting an item. If |always_create| is true then a new window is created
@@ -133,6 +128,9 @@ class AvatarMenu :
   // Gets the Item at the specified index.
   const Item& GetItemAt(size_t index) const;
 
+  // Gets the index in this menu for which profile_path is equal to |path|.
+  size_t GetIndexOfItemWithProfilePath(const base::FilePath& path);
+
   // Returns the index of the active profile.
   size_t GetActiveProfileIndex();
 
@@ -152,7 +150,7 @@ class AvatarMenu :
   bool ShouldShowEditProfileLink() const;
 
  private:
-  // ProfileInfoCacheObserver:
+  // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
       const base::string16& profile_name) override;
@@ -186,8 +184,8 @@ class AvatarMenu :
       supervised_user_observer_;
 #endif
 
-  // The cache that provides the profile information. Weak.
-  ProfileInfoInterface* profile_info_;
+  // The storage that provides the profile attributes. Weak.
+  ProfileAttributesStorage* profile_storage_;
 
   // The observer of this model, which is notified of changes. Weak.
   AvatarMenuObserver* observer_;
