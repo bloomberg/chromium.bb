@@ -741,7 +741,7 @@ int NaClSelLdrMain(int argc, char **argv) {
    */
   fflush((FILE *) NULL);
 
-  NaClAppStartModule(nap, NULL, NULL);
+  NaClAppStartModule(nap);
 
   /*
    * For restricted file access, change directory to the root of the restricted

@@ -26,7 +26,7 @@ NaClErrorCode NaClAppLoadFileFromFilename(struct NaClApp *nap,
     return LOAD_OPEN_ERROR;
   }
 
-  NaClAppLoadModule(nap, nd, NULL, NULL);
+  NaClAppLoadModule(nap, nd);
   err = NaClGetLoadStatus(nap);
   NaClDescUnref(nd);
   nd = NULL;

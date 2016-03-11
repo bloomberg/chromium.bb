@@ -775,11 +775,7 @@ NaClErrorCode NaClGetLoadStatus(struct NaClApp *nap) {
   return status;
 }
 
-void NaClAppLoadModule(struct NaClApp   *nap,
-                       struct NaClDesc  *nexe,
-                       void             (*load_cb)(void *instance_data,
-                                                   NaClErrorCode status),
-                       void             *instance_data) {
+void NaClAppLoadModule(struct NaClApp *nap, struct NaClDesc *nexe) {
   NaClErrorCode status = LOAD_OK;
   int is_double_init = NaClGetInitState(nap) != NACL_MODULE_UNINITIALIZED;
 
@@ -787,16 +783,6 @@ void NaClAppLoadModule(struct NaClApp   *nap,
           ("Entered NaClAppLoadModule: nap 0x%"NACL_PRIxPTR","
            " nexe 0x%"NACL_PRIxPTR"\n"),
           (uintptr_t) nap, (uintptr_t) nexe);
-
-  if (NULL != load_cb) {
-    NaClErrorCode cb_status;
-    if (is_double_init) {
-      cb_status = LOAD_DUP_LOAD_MODULE;
-    } else {
-      cb_status = LOAD_OK;
-    }
-    (*load_cb)(instance_data, cb_status);
-  }
 
   if (is_double_init) {
     NaClLog(LOG_ERROR, "NaClAppLoadModule: repeated invocation\n");
@@ -851,16 +837,8 @@ void NaClAppLoadModule(struct NaClApp   *nap,
   NaClGdbHook(nap);
 }
 
-void NaClAppStartModule(struct NaClApp  *nap,
-                        void            (*start_cb)(void *instance_data,
-                                                    NaClErrorCode status),
-                        void            *instance_data) {
+void NaClAppStartModule(struct NaClApp *nap) {
   NaClErrorCode status;
-
-  NaClLog(4,
-          ("Entered NaClAppStartModule, nap 0x%"NACL_PRIxPTR","
-           " start_cb 0x%"NACL_PRIxPTR", instance_data 0x%"NACL_PRIxPTR"\n"),
-          (uintptr_t) nap, (uintptr_t) start_cb, (uintptr_t) instance_data);
 
   /*
    * When module is loading, we have to block and wait till it is
@@ -884,9 +862,6 @@ void NaClAppStartModule(struct NaClApp  *nap,
       status = LOAD_INTERNAL;
     }
     NaClXMutexUnlock(&nap->mu);
-    if (NULL != start_cb) {
-      (*start_cb)(instance_data, status);
-    }
     return;
   }
   NaClXMutexUnlock(&nap->mu);
@@ -894,19 +869,6 @@ void NaClAppStartModule(struct NaClApp  *nap,
   NaClSetInitState(nap, NACL_MODULE_STARTING);
 
   NaClLog(4, "NaClSecureChannelStartModule: load status %d\n", status);
-
-  /*
-   * We need to invoke the callback now, before we signal the main thread
-   * to possibly start by setting the state to NACL_MODULE_STARTED, since
-   * in the case of failure the main thread may quickly exit; if the main
-   * thread does this before we sent the reply, than the plugin (or any
-   * other runtime host interface) will be left without an aswer. The
-   * NACL_MODULE_STARTING state is used as an intermediate state to prevent
-   * double invocations violating the protocol.
-   */
-  if (NULL != start_cb) {
-    (*start_cb)(instance_data, status);
-  }
 
   NaClSetInitState(nap, NACL_MODULE_STARTED);
 }

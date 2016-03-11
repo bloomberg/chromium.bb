@@ -604,23 +604,13 @@ void NaClAppInitialDescriptorHookup(struct NaClApp  *nap);
 
 /*
  * Loads the |nexe| as a NaCl app module.
- * The |load_cb| callback is invoked before the the |nexe| is loaded to allow
- * validation being run in parallel.
  */
-void NaClAppLoadModule(struct NaClApp      *self,
-                       struct NaClDesc     *nexe,
-                       void                (*load_cb)(void *instance_data,
-                                                      NaClErrorCode status),
-                       void                *instance_data);
+void NaClAppLoadModule(struct NaClApp *self, struct NaClDesc *nexe);
 
 /*
- * Starts the NaCl app, the |start_cb| callback is invoked before the
- * application is actually started.
+ * Starts the NaCl app.
  */
-void NaClAppStartModule(struct NaClApp  *self,
-                        void            (*start_cb)(void *instance_data,
-                                                    NaClErrorCode status),
-                        void            *instance_data);
+void NaClAppStartModule(struct NaClApp *self);
 
 NaClErrorCode NaClGetLoadStatus(struct NaClApp *nap) NACL_WUR;
 

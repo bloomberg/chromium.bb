@@ -272,7 +272,7 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   NaClGdbHook(nap);
 
   CHECK(args->nexe_desc != NULL);
-  NaClAppLoadModule(nap, args->nexe_desc, NULL, NULL);
+  NaClAppLoadModule(nap, args->nexe_desc);
   NaClDescUnref(args->nexe_desc);
   args->nexe_desc = NULL;
 
