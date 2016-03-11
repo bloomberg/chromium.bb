@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
@@ -71,6 +72,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -992,6 +994,15 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     // Kills the process.
     bad_message::ReceivedBadMessage(process,
                                     bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
+    return;
+  }
+
+  // Verify that the origin passed from the renderer process is valid and can
+  // be allowed to commit in this RenderFrameHost.
+  if (!CanCommitOrigin(validated_params.origin, validated_params.url)) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_INVALID_ORIGIN_ON_COMMIT);
+    return;
   }
 
   // Without this check, an evil renderer can trick the browser into creating
@@ -1928,6 +1939,42 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
 
   // Give the client a chance to disallow URLs from committing.
   return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
+}
+
+bool RenderFrameHostImpl::CanCommitOrigin(
+    const url::Origin& origin,
+    const GURL& url) {
+  // If the --disable-web-security flag is specified, all bets are off and the
+  // renderer process can send any origin it wishes.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebSecurity)) {
+    return true;
+  }
+
+  // file: URLs can be allowed to access any other origin, based on settings.
+  if (origin.scheme() == url::kFileScheme) {
+    WebPreferences prefs = render_view_host_->GetWebkitPreferences();
+    if (prefs.allow_universal_access_from_file_urls)
+      return true;
+  }
+
+  // It is safe to commit into a unique origin, regardless of the URL, as it is
+  // restricted from accessing other origins.
+  if (origin.unique())
+    return true;
+
+  // Standard URLs must match the reported origin.
+  if (url.IsStandard() && !origin.IsSameOriginWith(url::Origin(url)))
+    return false;
+
+  // A non-unique origin must be a valid URL, which allows us to safely do a
+  // conversion to GURL.
+  GURL origin_url(origin.Serialize());
+
+  // Verify that the origin is allowed to commit in this process.
+  // Note: This also handles non-standard cases for |url|, such as
+  // about:blank, data, and blob URLs.
+  return CanCommitURL(origin_url);
 }
 
 void RenderFrameHostImpl::Navigate(

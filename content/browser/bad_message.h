@@ -135,6 +135,7 @@ enum BadMessageReason {
   WSH_SEND_FRAME_DURING_BLOB_SEND = 111,
   RFH_UNEXPECTED_LOAD_START = 112,
   NMF_INVALID_ARGUMENT = 113,
+  RFH_INVALID_ORIGIN_ON_COMMIT = 114,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

@@ -682,6 +682,13 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // it will be used to kill processes that commit unauthorized URLs.
   bool CanCommitURL(const GURL& url);
 
+  // Returns whether the given origin is allowed to commit in the current
+  // RenderFrameHost. The |url| is used to ensure it matches the origin in cases
+  // where it is applicable. This is a more conservative check than
+  // RenderProcessHost::FilterURL, since it will be used to kill processes that
+  // commit unauthorized origins.
+  bool CanCommitOrigin(const url::Origin& origin, const GURL& url);
+
   // Asserts that the given RenderFrameHostImpl is part of the same browser
   // context (and crashes if not), then returns whether the given frame is
   // part of the same site instance.

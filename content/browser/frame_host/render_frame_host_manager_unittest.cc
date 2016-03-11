@@ -2972,6 +2972,67 @@ TEST_F(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
   BaseSimultaneousNavigationWithTwoWebUIs(commit_new_frame_host);
 }
 
+TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
+  const GURL kUrl("http://a.com/");
+  const GURL kUrlBar("http://a.com/bar");
+
+  NavigateActiveAndCommit(kUrl);
+
+  controller().LoadURL(
+      kUrlBar, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  main_test_rfh()->PrepareForCommit();
+
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  params.page_id = 0;
+  params.nav_entry_id = 0;
+  params.did_create_new_entry = false;
+  params.transition = ui::PAGE_TRANSITION_LINK;
+  params.should_update_history = false;
+  params.gesture = NavigationGestureAuto;
+  params.was_within_same_page = false;
+  params.is_post = false;
+  params.page_state = PageState::CreateFromURL(kUrlBar);
+
+  struct TestCase {
+    const char* const url;
+    const char* const origin;
+    bool mismatch;
+  } cases[] = {
+    // Positive case where the two match.
+    { "http://a.com/foo.html", "http://a.com", false },
+
+    // Host mismatches.
+    { "http://a.com/", "http://b.com", true },
+    { "http://b.com/", "http://a.com", true },
+
+    // Scheme mismatches.
+    { "file://", "http://a.com", true },
+    { "https://a.com/", "http://a.com", true },
+
+    // about:blank URLs inherit the origin of the context that navigated them.
+    { "about:blank", "http://a.com", false },
+
+    // Unique origin.
+    { "http://a.com", "null", false },
+  };
+
+  for (const auto& test_case : cases) {
+    params.url = GURL(test_case.url);
+    params.origin = url::Origin(GURL(test_case.origin));
+
+    int expected_bad_msg_count = process()->bad_msg_count();
+    if (test_case.mismatch)
+      expected_bad_msg_count++;
+
+    main_test_rfh()->SendNavigateWithParams(&params);
+
+    EXPECT_EQ(expected_bad_msg_count, process()->bad_msg_count())
+      << " url:" << test_case.url
+      << " origin:" << test_case.origin
+      << " mismatch:" << test_case.mismatch;
+  }
+}
+
 // RenderFrameHostManagerTest extension for PlzNavigate enabled tests.
 class RenderFrameHostManagerTestWithBrowserSideNavigation
     : public RenderFrameHostManagerTest {
