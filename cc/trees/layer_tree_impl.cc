@@ -1193,10 +1193,6 @@ void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->SetNeedsRedraw();
 }
 
-AnimationRegistrar* LayerTreeImpl::GetAnimationRegistrar() const {
-  return layer_tree_host_impl_->animation_registrar();
-}
-
 void LayerTreeImpl::GetAllPrioritizedTilesForTracing(
     std::vector<PrioritizedTile>* prioritized_tiles) const {
   LayerIterator end = LayerIterator::End(&render_surface_layer_list_);
@@ -1867,13 +1863,6 @@ void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
         device_scale_factor(), property_trees_.transform_tree,
         property_trees_.clip_tree);
   }
-}
-
-void LayerTreeImpl::InputScrollAnimationFinished() {
-  // TODO(majidvp): We should pass in the original starting scroll position here
-  ScrollStateData scroll_state_data;
-  ScrollState scroll_state(scroll_state_data);
-  layer_tree_host_impl_->ScrollEnd(&scroll_state);
 }
 
 bool LayerTreeImpl::SmoothnessTakesPriority() const {

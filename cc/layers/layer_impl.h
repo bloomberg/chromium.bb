@@ -17,10 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "cc/animation/animation_delegate.h"
-#include "cc/animation/layer_animation_controller.h"
-#include "cc/animation/layer_animation_value_observer.h"
-#include "cc/animation/layer_animation_value_provider.h"
+#include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/synced_property.h"
@@ -79,9 +76,7 @@ enum DrawMode {
   DRAW_MODE_RESOURCELESS_SOFTWARE
 };
 
-class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
-                            public LayerAnimationValueProvider,
-                            public AnimationDelegate {
+class CC_EXPORT LayerImpl {
  public:
   typedef LayerImplList RenderSurfaceListType;
   typedef LayerImplList LayerListType;
@@ -93,36 +88,18 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return make_scoped_ptr(new LayerImpl(tree_impl, id));
   }
 
-  ~LayerImpl() override;
+  virtual ~LayerImpl();
 
   int id() const { return layer_id_; }
 
-  // LayerAnimationValueProvider implementation.
-  gfx::ScrollOffset ScrollOffsetForAnimation() const override;
-
-  // LayerAnimationValueObserver implementation.
-  void OnFilterAnimated(const FilterOperations& filters) override;
-  void OnOpacityAnimated(float opacity) override;
-  void OnTransformAnimated(const gfx::Transform& transform) override;
-  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
-  void OnAnimationWaitingForDeletion() override;
-  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override;
-  bool IsActive() const override;
-
-  // AnimationDelegate implementation.
-  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              TargetProperty::Type target_property,
-                              int group) override{};
-  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               TargetProperty::Type target_property,
-                               int group) override;
-  void NotifyAnimationAborted(base::TimeTicks monotonic_time,
-                              TargetProperty::Type target_property,
-                              int group) override{};
-  void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
-                               TargetProperty::Type target_property,
-                               double animation_start_time,
-                               scoped_ptr<AnimationCurve> curve) override {}
+  // Interactions with attached animations.
+  gfx::ScrollOffset ScrollOffsetForAnimation() const;
+  void OnFilterAnimated(const FilterOperations& filters);
+  void OnOpacityAnimated(float opacity);
+  void OnTransformAnimated(const gfx::Transform& transform);
+  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
+  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating);
+  bool IsActive() const;
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }
@@ -549,14 +526,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void ResetAllChangeTrackingForSubtree();
 
-  LayerAnimationController* layer_animation_controller() {
-    return layer_animation_controller_.get();
-  }
-
-  const LayerAnimationController* layer_animation_controller() const {
-    return layer_animation_controller_.get();
-  }
-
   virtual SimpleEnclosedRegion VisibleOpaqueRegion() const;
 
   virtual void DidBecomeActive() {}
@@ -805,9 +774,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Denotes an area that is damaged and needs redraw. This is in the layer's
   // space.
   gfx::Rect damage_rect_;
-
-  // Manages animations for this layer.
-  scoped_refptr<LayerAnimationController> layer_animation_controller_;
 
   std::vector<scoped_ptr<CopyOutputRequest>> copy_requests_;
 

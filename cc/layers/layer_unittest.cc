@@ -2049,49 +2049,6 @@ TEST_F(LayerLayerTreeHostTest, DestroyHostWithNonNullRootLayer) {
   layer_tree_host->SetRootLayer(root);
 }
 
-static bool AddTestAnimation(Layer* layer) {
-  scoped_ptr<KeyframedFloatAnimationCurve> curve =
-      KeyframedFloatAnimationCurve::Create();
-  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), 0.3f, nullptr));
-  curve->AddKeyframe(
-      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 0.7f, nullptr));
-  scoped_ptr<Animation> animation =
-      Animation::Create(std::move(curve), 0, 0, TargetProperty::OPACITY);
-
-  return layer->AddAnimation(std::move(animation));
-}
-
-TEST_F(LayerLayerTreeHostTest, ShouldNotAddAnimationWithoutAnimationRegistrar) {
-  // This tests isn't needed in new use_compositor_animation_timelines mode.
-  if (layer_settings_.use_compositor_animation_timelines)
-    return;
-
-  scoped_refptr<Layer> layer = Layer::Create(layer_settings_);
-
-  // Case 1: without a LayerTreeHost and without an AnimationRegistrar, the
-  // animation should not be accepted.
-  EXPECT_FALSE(AddTestAnimation(layer.get()));
-
-  scoped_ptr<AnimationRegistrar> registrar = AnimationRegistrar::Create();
-  layer->RegisterForAnimations(registrar.get());
-
-  // Case 2: with an AnimationRegistrar, the animation should be accepted.
-  EXPECT_TRUE(AddTestAnimation(layer.get()));
-
-  LayerTreeSettings settings;
-  settings.accelerated_animation_enabled = false;
-  settings.use_compositor_animation_timelines =
-      layer_settings_.use_compositor_animation_timelines;
-  LayerTreeHostFactory factory;
-  scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create(settings);
-  layer_tree_host->SetRootLayer(layer);
-  AssertLayerTreeHostMatchesForSubtree(layer.get(), layer_tree_host.get());
-
-  // Case 3: with a LayerTreeHost where accelerated animation is disabled, the
-  // animation should be rejected.
-  EXPECT_FALSE(AddTestAnimation(layer.get()));
-}
-
 TEST_F(LayerTest, SafeOpaqueBackgroundColor) {
   LayerTreeHostFactory factory;
   scoped_ptr<LayerTreeHost> layer_tree_host = factory.Create();

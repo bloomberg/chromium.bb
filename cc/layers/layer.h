@@ -17,9 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "cc/animation/layer_animation_controller.h"
-#include "cc/animation/layer_animation_value_observer.h"
-#include "cc/animation/layer_animation_value_provider.h"
+#include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/debug/frame_timing_request.h"
@@ -53,9 +51,6 @@ class ConvertableToTraceFormat;
 
 namespace cc {
 
-class Animation;
-class AnimationDelegate;
-struct AnimationEvent;
 class CopyOutputRequest;
 class LayerAnimationEventObserver;
 class LayerClient;
@@ -69,7 +64,6 @@ class RenderingStatsInstrumentation;
 class ResourceUpdateQueue;
 class ScrollbarLayerInterface;
 class SimpleEnclosedRegion;
-struct AnimationEvent;
 
 namespace proto {
 class LayerNode;
@@ -79,9 +73,7 @@ class LayerUpdate;
 
 // Base class for composited layers. Special layer types are derived from
 // this class.
-class CC_EXPORT Layer : public base::RefCounted<Layer>,
-                        public LayerAnimationValueObserver,
-                        public LayerAnimationValueProvider {
+class CC_EXPORT Layer : public base::RefCounted<Layer> {
  public:
   using LayerListType = LayerList;
   using LayerIdMap = std::unordered_map<int, scoped_refptr<Layer>>;
@@ -414,28 +406,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
-  bool AddAnimation(scoped_ptr<Animation> animation);
-  void PauseAnimation(int animation_id, double time_offset);
-  void RemoveAnimation(int animation_id);
-  void AbortAnimation(int animation_id);
-  LayerAnimationController* layer_animation_controller() const {
-    return layer_animation_controller_.get();
-  }
-  void SetLayerAnimationControllerForTest(
-      scoped_refptr<LayerAnimationController> controller);
-
-  void set_layer_animation_delegate(AnimationDelegate* delegate) {
-    DCHECK(layer_animation_controller_);
-    layer_animation_controller_->set_layer_animation_delegate(delegate);
-  }
-
   bool HasActiveAnimation() const;
-  void RegisterForAnimations(AnimationRegistrar* registrar);
-
-  void AddLayerAnimationEventObserver(
-      LayerAnimationEventObserver* animation_observer);
-  void RemoveLayerAnimationEventObserver(
-      LayerAnimationEventObserver* animation_observer);
 
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
 
@@ -550,22 +521,19 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void set_sorted_for_recursion(bool sorted_for_recursion);
   bool sorted_for_recursion();
 
-  // LayerAnimationValueProvider implementation.
-  gfx::ScrollOffset ScrollOffsetForAnimation() const override;
-
-  // LayerAnimationValueObserver implementation.
-  void OnFilterAnimated(const FilterOperations& filters) override;
-  void OnOpacityAnimated(float opacity) override;
-  void OnTransformAnimated(const gfx::Transform& transform) override;
-  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) override;
-  void OnAnimationWaitingForDeletion() override;
-  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating) override;
-  bool IsActive() const override;
+  // Interactions with attached animations.
+  gfx::ScrollOffset ScrollOffsetForAnimation() const;
+  void OnFilterAnimated(const FilterOperations& filters);
+  void OnOpacityAnimated(float opacity);
+  void OnTransformAnimated(const gfx::Transform& transform);
+  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
+  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating);
+  bool IsActive() const;
 
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
-  ~Layer() override;
+  virtual ~Layer();
 
   explicit Layer(const LayerSettings& settings);
 
@@ -684,8 +652,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // This pointer value is nil when a Layer is not in a tree and is
   // updated via SetLayerTreeHost() if a layer moves between trees.
   LayerTreeHost* layer_tree_host_;
-
-  scoped_refptr<LayerAnimationController> layer_animation_controller_;
 
   // Layer properties.
   gfx::Size bounds_;

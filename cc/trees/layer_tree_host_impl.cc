@@ -24,8 +24,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/animation_id_provider.h"
-#include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
@@ -224,7 +222,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       texture_mailbox_deleter_(new TextureMailboxDeleter(GetTaskRunner())),
       max_memory_needed_bytes_(0),
       resourceless_software_draw_(false),
-      animation_registrar_(),
+      animation_host_(),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       shared_bitmap_manager_(shared_bitmap_manager),
@@ -234,16 +232,10 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
       frame_timing_tracker_(FrameTimingTracker::Create(this)) {
-  if (settings.use_compositor_animation_timelines) {
-    if (settings.accelerated_animation_enabled) {
-      animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
-      animation_host_->SetMutatorHostClient(this);
-      animation_host_->SetSupportsScrollAnimations(SupportsImplScrolling());
-    }
-  } else {
-    animation_registrar_ = AnimationRegistrar::Create();
-    animation_registrar_->set_supports_scroll_animations(
-        SupportsImplScrolling());
+  if (settings.accelerated_animation_enabled) {
+    animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
+    animation_host_->SetMutatorHostClient(this);
+    animation_host_->SetSupportsScrollAnimations(SupportsImplScrolling());
   }
 
   DCHECK(task_runner_provider_->IsImplThread());
@@ -1661,9 +1653,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     bool disable_picture_quad_image_filtering =
-        IsActivelyScrolling() ||
-        (animation_host_ ? animation_host_->NeedsAnimateLayers()
-                         : animation_registrar_->needs_animate_layers());
+        IsActivelyScrolling() || animation_host_->NeedsAnimateLayers();
 
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_.renderer_settings,
@@ -3363,13 +3353,8 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
     return false;
 
   bool animated = false;
-  if (animation_host_) {
-    if (animation_host_->AnimateLayers(monotonic_time))
-      animated = true;
-  } else {
-    if (animation_registrar_->AnimateLayers(monotonic_time))
-      animated = true;
-  }
+  if (animation_host_->AnimateLayers(monotonic_time))
+    animated = true;
 
   // TODO(crbug.com/551134): Only do this if the animations are on the active
   // tree, or if they are on the pending tree waiting for some future time to
@@ -3392,15 +3377,9 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
   bool has_active_animations = false;
   scoped_ptr<AnimationEvents> events;
 
-  if (animation_host_) {
-    events = animation_host_->CreateEvents();
-    has_active_animations = animation_host_->UpdateAnimationState(
-        start_ready_animations, events.get());
-  } else {
-    events = animation_registrar_->CreateEvents();
-    has_active_animations = animation_registrar_->UpdateAnimationState(
-        start_ready_animations, events.get());
-  }
+  events = animation_host_->CreateEvents();
+  has_active_animations = animation_host_->UpdateAnimationState(
+      start_ready_animations, events.get());
 
   if (!events->events_.empty())
     client_->PostAnimationEventsToMainThreadOnImplThread(std::move(events));
@@ -3413,15 +3392,7 @@ void LayerTreeHostImpl::ActivateAnimations() {
   if (!settings_.accelerated_animation_enabled)
     return;
 
-  bool activated = false;
-  if (animation_host_) {
-    if (animation_host_->ActivateAnimations())
-      activated = true;
-  } else {
-    if (animation_registrar_->ActivateAnimations())
-      activated = true;
-  }
-
+  const bool activated = animation_host_->ActivateAnimations();
   if (activated) {
     // Activating an animation changes layer draw properties, such as
     // screen_space_transform_is_animating. So when we see a new animation get
@@ -3737,71 +3708,25 @@ void LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler() {
 }
 
 void LayerTreeHostImpl::ScrollAnimationAbort(LayerImpl* layer_impl) {
-  if (animation_host_)
-    return animation_host_->ScrollAnimationAbort(false /* needs_completion */);
-
-  layer_impl->layer_animation_controller()->AbortAnimations(
-      TargetProperty::SCROLL_OFFSET);
+  return animation_host_->ScrollAnimationAbort(false /* needs_completion */);
 }
 
 void LayerTreeHostImpl::ScrollAnimationCreate(
     ScrollNode* scroll_node,
     const gfx::ScrollOffset& target_offset,
     const gfx::ScrollOffset& current_offset) {
-  if (animation_host_)
-    return animation_host_->ImplOnlyScrollAnimationCreate(
-        scroll_node->owner_id, target_offset, current_offset);
-
-  LayerImpl* layer_impl = active_tree_->LayerById(scroll_node->owner_id);
-
-  scoped_ptr<ScrollOffsetAnimationCurve> curve =
-      ScrollOffsetAnimationCurve::Create(
-          target_offset, EaseInOutTimingFunction::Create(),
-          ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA);
-  curve->SetInitialValue(current_offset);
-
-  scoped_ptr<Animation> animation = Animation::Create(
-      std::move(curve), AnimationIdProvider::NextAnimationId(),
-      AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
-  animation->set_is_impl_only(true);
-
-  layer_impl->layer_animation_controller()->AddAnimation(std::move(animation));
+  return animation_host_->ImplOnlyScrollAnimationCreate(
+      scroll_node->owner_id, target_offset, current_offset);
 }
 
 bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     ScrollNode* scroll_node,
     const gfx::Vector2dF& scroll_delta) {
-  if (animation_host_)
-    return animation_host_->ImplOnlyScrollAnimationUpdateTarget(
-        scroll_node->owner_id, scroll_delta,
-        active_tree_->property_trees()->scroll_tree.MaxScrollOffset(
-            scroll_node->id),
-        CurrentBeginFrameArgs().frame_time);
-
-  LayerImpl* layer_impl = active_tree_->LayerById(scroll_node->owner_id);
-
-  Animation* animation =
-      layer_impl->layer_animation_controller()
-          ? layer_impl->layer_animation_controller()->GetAnimation(
-                TargetProperty::SCROLL_OFFSET)
-          : nullptr;
-  if (!animation)
-    return false;
-
-  ScrollOffsetAnimationCurve* curve =
-      animation->curve()->ToScrollOffsetAnimationCurve();
-
-  gfx::ScrollOffset new_target =
-      gfx::ScrollOffsetWithDelta(curve->target_value(), scroll_delta);
-  new_target.SetToMax(gfx::ScrollOffset());
-  new_target.SetToMin(layer_impl->MaxScrollOffset());
-
-  curve->UpdateTarget(
-      animation->TrimTimeToCurrentIteration(CurrentBeginFrameArgs().frame_time)
-          .InSecondsF(),
-      new_target);
-
-  return true;
+  return animation_host_->ImplOnlyScrollAnimationUpdateTarget(
+      scroll_node->owner_id, scroll_delta,
+      active_tree_->property_trees()->scroll_tree.MaxScrollOffset(
+          scroll_node->id),
+      CurrentBeginFrameArgs().frame_time);
 }
 
 bool LayerTreeHostImpl::IsLayerInTree(int layer_id,
@@ -3830,7 +3755,7 @@ void LayerTreeHostImpl::SetTreeLayerFilterMutated(
   if (!tree)
     return;
 
-  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  LayerImpl* layer = tree->LayerById(layer_id);
   if (layer)
     layer->OnFilterAnimated(filters);
 }
@@ -3841,7 +3766,7 @@ void LayerTreeHostImpl::SetTreeLayerOpacityMutated(int layer_id,
   if (!tree)
     return;
 
-  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  LayerImpl* layer = tree->LayerById(layer_id);
   if (layer)
     layer->OnOpacityAnimated(opacity);
 }
@@ -3853,7 +3778,7 @@ void LayerTreeHostImpl::SetTreeLayerTransformMutated(
   if (!tree)
     return;
 
-  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  LayerImpl* layer = tree->LayerById(layer_id);
   if (layer)
     layer->OnTransformAnimated(transform);
 }
@@ -3865,7 +3790,7 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
   if (!tree)
     return;
 
-  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  LayerImpl* layer = tree->LayerById(layer_id);
   if (layer)
     layer->OnScrollOffsetAnimated(scroll_offset);
 }
@@ -3877,7 +3802,7 @@ void LayerTreeHostImpl::TreeLayerTransformIsPotentiallyAnimatingChanged(
   if (!tree)
     return;
 
-  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  LayerImpl* layer = tree->LayerById(layer_id);
   if (layer)
     layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
 }
@@ -3958,7 +3883,7 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
 gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(
     int layer_id) const {
   if (active_tree()) {
-    LayerAnimationValueProvider* layer = active_tree()->LayerById(layer_id);
+    LayerImpl* layer = active_tree()->LayerById(layer_id);
     if (layer)
       return layer->ScrollOffsetForAnimation();
   }

@@ -209,11 +209,9 @@ class LayerTreeHostImplTest : public testing::Test,
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
     host_impl_->DidFinishImplFrame();
 
-    if (host_impl_->settings().use_compositor_animation_timelines) {
-      timeline_ =
-          AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
-      host_impl_->animation_host()->AddAnimationTimeline(timeline_);
-    }
+    timeline_ =
+        AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+    host_impl_->animation_host()->AddAnimationTimeline(timeline_);
 
     return init;
   }
@@ -1227,11 +1225,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingPendingTree) {
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
-  if (host_impl_->settings().use_compositor_animation_timelines) {
-    AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 10.0, 3, 0);
-  } else {
-    AddAnimatedTransformToLayer(child, 10.0, 3, 0);
-  }
+  AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 10.0, 3, 0);
 
   EXPECT_FALSE(did_request_next_frame_);
   EXPECT_FALSE(did_request_redraw_);
@@ -1287,12 +1281,8 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingActiveTree) {
   start.AppendTranslate(6.f, 7.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(8.f, 9.f, 0.f);
-  if (host_impl_->settings().use_compositor_animation_timelines) {
-    AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 4.0, start,
-                                          end);
-  } else {
-    AddAnimatedTransformToLayer(child, 4.0, start, end);
-  }
+  AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 4.0, start,
+                                        end);
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(
@@ -1349,11 +1339,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
   child->SetBounds(gfx::Size(10, 10));
   child->draw_properties().visible_layer_rect = gfx::Rect(10, 10);
   child->SetDrawsContent(true);
-  if (host_impl_->settings().use_compositor_animation_timelines) {
-    AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 10.0, 3, 0);
-  } else {
-    AddAnimatedTransformToLayer(child, 10.0, 3, 0);
-  }
+  AddAnimatedTransformToLayerWithPlayer(child->id(), timeline(), 10.0, 3, 0);
 
   // Set up the property trees so that UpdateDrawProperties will work in
   // CommitComplete below.
@@ -1420,13 +1406,8 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
   start.AppendTranslate(6.f, 7.f, 0.f);
   TransformOperations end;
   end.AppendTranslate(8.f, 9.f, 0.f);
-  int animation_id;
-  if (host_impl_->settings().use_compositor_animation_timelines) {
-    animation_id = AddAnimatedTransformToLayerWithPlayer(
-        child->id(), timeline(), 4.0, start, end);
-  } else {
-    animation_id = AddAnimatedTransformToLayer(child, 4.0, start, end);
-  }
+  int animation_id = AddAnimatedTransformToLayerWithPlayer(
+      child->id(), timeline(), 4.0, start, end);
 
   base::TimeTicks now = base::TimeTicks::Now();
   host_impl_->WillBeginImplFrame(
@@ -1457,12 +1438,8 @@ TEST_F(LayerTreeHostImplTest, AnimationMarksLayerNotReady) {
 
   // Remove the animation.
   child->set_has_missing_tiles(true);
-  if (host_impl_->settings().use_compositor_animation_timelines) {
-    RemoveAnimationFromLayerWithExistingPlayer(child->id(), timeline(),
-                                               animation_id);
-  } else {
-    child->layer_animation_controller()->RemoveAnimation(animation_id);
-  }
+  RemoveAnimationFromLayerWithExistingPlayer(child->id(), timeline(),
+                                             animation_id);
   child->draw_properties().screen_space_transform_is_animating = false;
 
   // Child layer doesn't have an animation, but was never ready since the last
@@ -3458,13 +3435,8 @@ class MissingTextureAnimatingLayer : public DidDrawCheckLayer {
       : DidDrawCheckLayer(tree_impl, id),
         tile_missing_(tile_missing),
         had_incomplete_tile_(had_incomplete_tile) {
-    if (animating) {
-      if (tree_impl->settings().use_compositor_animation_timelines) {
-        AddAnimatedTransformToLayerWithPlayer(this->id(), timeline, 10.0, 3, 0);
-      } else {
-        AddAnimatedTransformToLayer(this, 10.0, 3, 0);
-      }
-    }
+    if (animating)
+      AddAnimatedTransformToLayerWithPlayer(this->id(), timeline, 10.0, 3, 0);
   }
 
   bool tile_missing_;
@@ -3580,8 +3552,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
       to_remove.push_back(child.get());
     for (auto* child : to_remove)
       root->RemoveChild(child);
-    if (host_impl_->settings().use_compositor_animation_timelines)
-      timeline()->ClearPlayers();
+    timeline()->ClearPlayers();
 
     std::ostringstream scope;
     scope << "Test case: " << i;

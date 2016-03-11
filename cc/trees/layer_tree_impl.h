@@ -108,7 +108,6 @@ class CC_EXPORT LayerTreeImpl {
   scoped_ptr<ScrollbarAnimationController> CreateScrollbarAnimationController(
       int scroll_layer_id);
   void DidAnimateScrollOffset();
-  void InputScrollAnimationFinished();
   bool use_gpu_rasterization() const;
   GpuRasterizationStatus GetGpuRasterizationStatus() const;
   bool create_low_res_tiling() const;
@@ -309,8 +308,6 @@ class CC_EXPORT LayerTreeImpl {
   void UnregisterLayer(LayerImpl* layer);
 
   size_t NumLayers();
-
-  AnimationRegistrar* GetAnimationRegistrar() const;
 
   void DidBecomeActive();
 

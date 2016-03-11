@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "cc/animation/animation_registrar.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
 #include "cc/debug/frame_timing_tracker.h"
@@ -490,9 +489,6 @@ class CC_EXPORT LayerTreeHostImpl
     return task_runner_provider_;
   }
 
-  AnimationRegistrar* animation_registrar() const {
-    return animation_registrar_.get();
-  }
   AnimationHost* animation_host() const { return animation_host_.get(); }
 
   void SetDebugState(const LayerTreeDebugState& new_debug_state);
@@ -812,7 +808,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   gfx::Rect viewport_damage_rect_;
 
-  scoped_ptr<AnimationRegistrar> animation_registrar_;
   scoped_ptr<AnimationHost> animation_host_;
   std::set<VideoFrameController*> video_frame_controllers_;
 

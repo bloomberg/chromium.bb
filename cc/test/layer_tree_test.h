@@ -77,9 +77,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   virtual void EndTest();
   void EndTestAfterDelayMs(int delay_milliseconds);
 
-  void PostAddAnimationToMainThread(Layer* layer_to_receive_animation);
-  void PostAddInstantAnimationToMainThread(Layer* layer_to_receive_animation);
-  void PostAddLongAnimationToMainThread(Layer* layer_to_receive_animation);
   void PostAddAnimationToMainThreadPlayer(
       AnimationPlayer* player_to_receive_animation);
   void PostAddInstantAnimationToMainThreadPlayer(
@@ -109,8 +106,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   void RealEndTest();
 
-  virtual void DispatchAddAnimation(Layer* layer_to_receive_animation,
-                                    double animation_duration);
   virtual void DispatchAddAnimationToPlayer(
       AnimationPlayer* player_to_receive_animation,
       double animation_duration);

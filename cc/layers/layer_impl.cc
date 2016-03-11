@@ -15,7 +15,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/animation_registrar.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
@@ -95,20 +94,9 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       layer_or_descendant_has_touch_handler_(false),
       sorted_for_recursion_(false) {
   DCHECK_GT(layer_id_, 0);
+
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
-
-  if (!layer_tree_impl_->settings().use_compositor_animation_timelines) {
-    AnimationRegistrar* registrar = layer_tree_impl_->GetAnimationRegistrar();
-    layer_animation_controller_ =
-        registrar->GetAnimationControllerForId(layer_id_);
-    layer_animation_controller_->AddValueObserver(this);
-    if (IsActive()) {
-      layer_animation_controller_->set_value_provider(this);
-      layer_animation_controller_->set_layer_animation_delegate(this);
-    }
-  }
-
   layer_tree_impl_->AddToElementMap(this);
 
   SetNeedsPushProperties();
@@ -116,12 +104,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
 
 LayerImpl::~LayerImpl() {
   DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
-
-  if (layer_animation_controller_) {
-    layer_animation_controller_->RemoveValueObserver(this);
-    layer_animation_controller_->remove_value_provider(this);
-    layer_animation_controller_->remove_layer_animation_delegate(this);
-  }
 
   if (!copy_requests_.empty() && layer_tree_impl_->IsActiveTree())
     layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
@@ -503,9 +485,6 @@ void LayerImpl::set_main_thread_scrolling_reasons(
     if (layer_tree_impl()->ScrollOffsetIsAnimatingOnImplOnly(this)) {
       layer_tree_impl()->animation_host()->ScrollAnimationAbort(
           true /* needs_completion */);
-    } else if (layer_animation_controller()) {
-      layer_animation_controller()->AbortAnimations(
-          TargetProperty::SCROLL_OFFSET);
     }
   }
 
@@ -960,8 +939,6 @@ void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
   layer_tree_impl_->DidAnimateScrollOffset();
 }
 
-void LayerImpl::OnAnimationWaitingForDeletion() {}
-
 void LayerImpl::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
   UpdatePropertyTreeTransformIsAnimated(is_animating);
   was_ever_ready_since_last_transform_animation_ = false;
@@ -1126,32 +1103,15 @@ void LayerImpl::SetFilters(const FilterOperations& filters) {
 }
 
 bool LayerImpl::FilterIsAnimating() const {
-  LayerAnimationController::ObserverType observer_type =
-      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
-                 : LayerAnimationController::ObserverType::PENDING;
-  return layer_animation_controller_
-             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   TargetProperty::FILTER, observer_type)
-             : layer_tree_impl_->IsAnimatingFilterProperty(this);
+  return layer_tree_impl_->IsAnimatingFilterProperty(this);
 }
 
 bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
-  LayerAnimationController::ObserverType observer_type =
-      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
-                 : LayerAnimationController::ObserverType::PENDING;
-  return layer_animation_controller_
-             ? layer_animation_controller_->IsPotentiallyAnimatingProperty(
-                   TargetProperty::FILTER, observer_type)
-             : layer_tree_impl_->HasPotentiallyRunningFilterAnimation(this);
+  return layer_tree_impl_->HasPotentiallyRunningFilterAnimation(this);
 }
 
 bool LayerImpl::FilterIsAnimatingOnImplOnly() const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->FilterIsAnimatingOnImplOnly(this);
-
-  Animation* filter_animation =
-      layer_animation_controller_->GetAnimation(TargetProperty::FILTER);
-  return filter_animation && filter_animation->is_impl_only();
+  return layer_tree_impl_->FilterIsAnimatingOnImplOnly(this);
 }
 
 void LayerImpl::SetBackgroundFilters(
@@ -1189,32 +1149,15 @@ float LayerImpl::EffectiveOpacity() const {
 }
 
 bool LayerImpl::OpacityIsAnimating() const {
-  LayerAnimationController::ObserverType observer_type =
-      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
-                 : LayerAnimationController::ObserverType::PENDING;
-  return layer_animation_controller_
-             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   TargetProperty::OPACITY, observer_type)
-             : layer_tree_impl_->IsAnimatingOpacityProperty(this);
+  return layer_tree_impl_->IsAnimatingOpacityProperty(this);
 }
 
 bool LayerImpl::HasPotentiallyRunningOpacityAnimation() const {
-  LayerAnimationController::ObserverType observer_type =
-      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
-                 : LayerAnimationController::ObserverType::PENDING;
-  return layer_animation_controller_
-             ? layer_animation_controller_->IsPotentiallyAnimatingProperty(
-                   TargetProperty::OPACITY, observer_type)
-             : layer_tree_impl_->HasPotentiallyRunningOpacityAnimation(this);
+  return layer_tree_impl_->HasPotentiallyRunningOpacityAnimation(this);
 }
 
 bool LayerImpl::OpacityIsAnimatingOnImplOnly() const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->OpacityIsAnimatingOnImplOnly(this);
-
-  Animation* opacity_animation =
-      layer_animation_controller_->GetAnimation(TargetProperty::OPACITY);
-  return opacity_animation && opacity_animation->is_impl_only();
+  return layer_tree_impl_->OpacityIsAnimatingOnImplOnly(this);
 }
 
 void LayerImpl::SetElementId(uint64_t element_id) {
@@ -1320,117 +1263,58 @@ void LayerImpl::SetTransformAndInvertibility(const gfx::Transform& transform,
 }
 
 bool LayerImpl::TransformIsAnimating() const {
-  LayerAnimationController::ObserverType observer_type =
-      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
-                 : LayerAnimationController::ObserverType::PENDING;
-  return layer_animation_controller_
-             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   TargetProperty::TRANSFORM, observer_type)
-             : layer_tree_impl_->IsAnimatingTransformProperty(this);
+  return layer_tree_impl_->IsAnimatingTransformProperty(this);
 }
 
 bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
-  LayerAnimationController::ObserverType observer_type =
-      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
-                 : LayerAnimationController::ObserverType::PENDING;
-  return layer_animation_controller_
-             ? layer_animation_controller_->IsPotentiallyAnimatingProperty(
-                   TargetProperty::TRANSFORM, observer_type)
-             : layer_tree_impl_->HasPotentiallyRunningTransformAnimation(this);
+  return layer_tree_impl_->HasPotentiallyRunningTransformAnimation(this);
 }
 
 bool LayerImpl::TransformIsAnimatingOnImplOnly() const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->TransformIsAnimatingOnImplOnly(this);
-
-  Animation* transform_animation =
-      layer_animation_controller_->GetAnimation(TargetProperty::TRANSFORM);
-  return transform_animation && transform_animation->is_impl_only();
+  return layer_tree_impl_->TransformIsAnimatingOnImplOnly(this);
 }
 
 bool LayerImpl::HasOnlyTranslationTransforms() const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->HasOnlyTranslationTransforms(this);
-
-  LayerAnimationController::ObserverType observer_type =
-      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
-                 : LayerAnimationController::ObserverType::PENDING;
-  return layer_animation_controller_->HasOnlyTranslationTransforms(
-      observer_type);
+  return layer_tree_impl_->HasOnlyTranslationTransforms(this);
 }
 
 bool LayerImpl::AnimationsPreserveAxisAlignment() const {
-  return layer_animation_controller_
-             ? layer_animation_controller_->AnimationsPreserveAxisAlignment()
-             : layer_tree_impl_->AnimationsPreserveAxisAlignment(this);
+  return layer_tree_impl_->AnimationsPreserveAxisAlignment(this);
 }
 
 bool LayerImpl::MaximumTargetScale(float* max_scale) const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->MaximumTargetScale(this, max_scale);
-
-  LayerAnimationController::ObserverType observer_type =
-      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
-                 : LayerAnimationController::ObserverType::PENDING;
-  return layer_animation_controller_->MaximumTargetScale(observer_type,
-                                                         max_scale);
+  return layer_tree_impl_->MaximumTargetScale(this, max_scale);
 }
 
 bool LayerImpl::AnimationStartScale(float* start_scale) const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->AnimationStartScale(this, start_scale);
-
-  LayerAnimationController::ObserverType observer_type =
-      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
-                 : LayerAnimationController::ObserverType::PENDING;
-  return layer_animation_controller_->AnimationStartScale(observer_type,
-                                                          start_scale);
+  return layer_tree_impl_->AnimationStartScale(this, start_scale);
 }
 
 bool LayerImpl::HasAnyAnimationTargetingProperty(
     TargetProperty::Type property) const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->HasAnyAnimationTargetingProperty(this, property);
-
-  return !!layer_animation_controller_->GetAnimation(property);
+  return layer_tree_impl_->HasAnyAnimationTargetingProperty(this, property);
 }
 
 bool LayerImpl::HasFilterAnimationThatInflatesBounds() const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->HasFilterAnimationThatInflatesBounds(this);
-
-  return layer_animation_controller_->HasFilterAnimationThatInflatesBounds();
+  return layer_tree_impl_->HasFilterAnimationThatInflatesBounds(this);
 }
 
 bool LayerImpl::HasTransformAnimationThatInflatesBounds() const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->HasTransformAnimationThatInflatesBounds(this);
-
-  return layer_animation_controller_->HasTransformAnimationThatInflatesBounds();
+  return layer_tree_impl_->HasTransformAnimationThatInflatesBounds(this);
 }
 
 bool LayerImpl::HasAnimationThatInflatesBounds() const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->HasAnimationThatInflatesBounds(this);
-
-  return layer_animation_controller_->HasAnimationThatInflatesBounds();
+  return layer_tree_impl_->HasAnimationThatInflatesBounds(this);
 }
 
 bool LayerImpl::FilterAnimationBoundsForBox(const gfx::BoxF& box,
                                             gfx::BoxF* bounds) const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->FilterAnimationBoundsForBox(this, box, bounds);
-
-  return layer_animation_controller_->FilterAnimationBoundsForBox(box, bounds);
+  return layer_tree_impl_->FilterAnimationBoundsForBox(this, box, bounds);
 }
 
 bool LayerImpl::TransformAnimationBoundsForBox(const gfx::BoxF& box,
                                                gfx::BoxF* bounds) const {
-  if (!layer_animation_controller_)
-    return layer_tree_impl_->TransformAnimationBoundsForBox(this, box, bounds);
-
-  return layer_animation_controller_->TransformAnimationBoundsForBox(box,
-                                                                     bounds);
+  return layer_tree_impl_->TransformAnimationBoundsForBox(this, box, bounds);
 }
 
 void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
@@ -1614,11 +1498,8 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetBoolean("can_use_lcd_text", can_use_lcd_text());
   state->SetBoolean("contents_opaque", contents_opaque());
 
-  state->SetBoolean(
-      "has_animation_bounds",
-      layer_animation_controller_
-          ? layer_animation_controller_->HasAnimationThatInflatesBounds()
-          : layer_tree_impl_->HasAnimationThatInflatesBounds(this));
+  state->SetBoolean("has_animation_bounds",
+                    layer_tree_impl_->HasAnimationThatInflatesBounds(this));
 
   gfx::BoxF box;
   if (LayerUtils::GetAnimationBounds(*this, &box))
@@ -1669,13 +1550,6 @@ void LayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
 
 int LayerImpl::NumDescendantsThatDrawContent() const {
   return num_descendants_that_draw_content_;
-}
-
-void LayerImpl::NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                                        TargetProperty::Type target_property,
-                                        int group) {
-  if (target_property == TargetProperty::SCROLL_OFFSET)
-    layer_tree_impl_->InputScrollAnimationFinished();
 }
 
 void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {

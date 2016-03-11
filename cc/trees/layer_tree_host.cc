@@ -26,8 +26,6 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/animation_registrar.h"
-#include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
@@ -201,12 +199,8 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
   DCHECK(task_graph_runner_);
 
   if (settings_.accelerated_animation_enabled) {
-    if (settings_.use_compositor_animation_timelines) {
-      animation_host_ = AnimationHost::Create(ThreadInstance::MAIN);
-      animation_host_->SetMutatorHostClient(this);
-    } else {
-      animation_registrar_ = AnimationRegistrar::Create();
-    }
+    animation_host_ = AnimationHost::Create(ThreadInstance::MAIN);
+    animation_host_->SetMutatorHostClient(this);
   }
 
   rendering_stats_instrumentation_->set_record_rendering_stats(
@@ -293,12 +287,8 @@ void LayerTreeHost::InitializeProxy(
   proxy_ = std::move(proxy);
   proxy_->Start(std::move(external_begin_frame_source));
   if (settings_.accelerated_animation_enabled) {
-    if (animation_host_)
-      animation_host_->SetSupportsScrollAnimations(
-          proxy_->SupportsImplScrolling());
-    else
-      animation_registrar_->set_supports_scroll_animations(
-          proxy_->SupportsImplScrolling());
+    animation_host_->SetSupportsScrollAnimations(
+        proxy_->SupportsImplScrolling());
   }
 }
 
@@ -698,10 +688,7 @@ void LayerTreeHost::SetNextCommitForcesRedraw() {
 
 void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEvents> events) {
   DCHECK(task_runner_provider_->IsMainThread());
-  if (animation_host_)
-    animation_host_->SetAnimationEvents(std::move(events));
-  else
-    animation_registrar_->SetAnimationEvents(std::move(events));
+  animation_host_->SetAnimationEvents(std::move(events));
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
@@ -1069,15 +1056,9 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
     return;
 
   scoped_ptr<AnimationEvents> events;
-  if (animation_host_) {
-    events = animation_host_->CreateEvents();
-    if (animation_host_->AnimateLayers(monotonic_time))
-      animation_host_->UpdateAnimationState(true, events.get());
-  } else {
-    events = animation_registrar_->CreateEvents();
-    if (animation_registrar_->AnimateLayers(monotonic_time))
-      animation_registrar_->UpdateAnimationState(true, events.get());
-  }
+  events = animation_host_->CreateEvents();
+  if (animation_host_->AnimateLayers(monotonic_time))
+    animation_host_->UpdateAnimationState(true, events.get());
 
   if (!events->events_.empty())
     property_trees_.needs_rebuild = true;
@@ -1286,7 +1267,7 @@ void LayerTreeHost::SetMutatorsNeedRebuildPropertyTrees() {
 void LayerTreeHost::SetLayerFilterMutated(int layer_id,
                                           LayerTreeType tree_type,
                                           const FilterOperations& filters) {
-  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  Layer* layer = LayerById(layer_id);
   DCHECK(layer);
   layer->OnFilterAnimated(filters);
 }
@@ -1294,7 +1275,7 @@ void LayerTreeHost::SetLayerFilterMutated(int layer_id,
 void LayerTreeHost::SetLayerOpacityMutated(int layer_id,
                                            LayerTreeType tree_type,
                                            float opacity) {
-  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  Layer* layer = LayerById(layer_id);
   DCHECK(layer);
   layer->OnOpacityAnimated(opacity);
 }
@@ -1302,7 +1283,7 @@ void LayerTreeHost::SetLayerOpacityMutated(int layer_id,
 void LayerTreeHost::SetLayerTransformMutated(int layer_id,
                                              LayerTreeType tree_type,
                                              const gfx::Transform& transform) {
-  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  Layer* layer = LayerById(layer_id);
   DCHECK(layer);
   layer->OnTransformAnimated(transform);
 }
@@ -1311,7 +1292,7 @@ void LayerTreeHost::SetLayerScrollOffsetMutated(
     int layer_id,
     LayerTreeType tree_type,
     const gfx::ScrollOffset& scroll_offset) {
-  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  Layer* layer = LayerById(layer_id);
   DCHECK(layer);
   layer->OnScrollOffsetAnimated(scroll_offset);
 }
@@ -1320,14 +1301,14 @@ void LayerTreeHost::LayerTransformIsPotentiallyAnimatingChanged(
     int layer_id,
     LayerTreeType tree_type,
     bool is_animating) {
-  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  Layer* layer = LayerById(layer_id);
   DCHECK(layer);
   layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
 }
 
 gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
     int layer_id) const {
-  LayerAnimationValueProvider* layer = LayerById(layer_id);
+  Layer* layer = LayerById(layer_id);
   DCHECK(layer);
   return layer->ScrollOffsetForAnimation();
 }

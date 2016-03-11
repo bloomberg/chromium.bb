@@ -52,9 +52,8 @@ class CC_EXPORT LayerAnimationController
 
   // Ensures that the list of active animations on the main thread and the impl
   // thread are kept in sync. This function does not take ownership of the impl
-  // thread controller. This method is virtual for testing.
-  virtual void PushAnimationUpdatesTo(
-      LayerAnimationController* controller_impl);
+  // thread controller.
+  void PushAnimationUpdatesTo(LayerAnimationController* controller_impl);
 
   void Animate(base::TimeTicks monotonic_time);
   void AccumulatePropertyUpdates(base::TimeTicks monotonic_time,
@@ -170,13 +169,12 @@ class CC_EXPORT LayerAnimationController
     return needs_to_start_animations_;
   }
 
- protected:
+ private:
   friend class base::RefCounted<LayerAnimationController>;
 
   explicit LayerAnimationController(int id);
-  virtual ~LayerAnimationController();
+  ~LayerAnimationController();
 
- private:
   using TargetProperties = std::unordered_set<int>;
 
   void PushNewAnimationsToImplThread(

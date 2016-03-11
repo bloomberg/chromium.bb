@@ -82,31 +82,6 @@ class MockLayer : public Layer {
   std::vector<int>* layer_impl_destruction_list_;
 };
 
-class FakeLayerAnimationController : public LayerAnimationController {
- public:
-  static scoped_refptr<LayerAnimationController> Create() {
-    return static_cast<LayerAnimationController*>(
-        new FakeLayerAnimationController);
-  }
-
-  bool SynchronizedAnimations() const { return synchronized_animations_; }
-
- private:
-  FakeLayerAnimationController()
-      : LayerAnimationController(1),
-        synchronized_animations_(false) {}
-
-  ~FakeLayerAnimationController() override {}
-
-  void PushAnimationUpdatesTo(
-      LayerAnimationController* controller_impl) override {
-    LayerAnimationController::PushAnimationUpdatesTo(controller_impl);
-    synchronized_animations_ = true;
-  }
-
-  bool synchronized_animations_;
-};
-
 void ExpectTreesAreIdentical(Layer* layer,
                              LayerImpl* layer_impl,
                              LayerTreeImpl* tree_impl) {
@@ -588,43 +563,6 @@ TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
   ExpectTreesAreIdentical(layer_tree_root.get(),
                           layer_impl_tree_root.get(),
                           host_->active_tree());
-}
-
-TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
-  LayerTreeSettingsForTreeSynchronizerTest settings;
-  // This test is meaningless in new use_compositor_animation_timelines mode.
-  // TODO(loyso): Delete FakeLayerAnimationController and related stuff.
-  if (settings.use_compositor_animation_timelines)
-    return;
-
-  FakeImplTaskRunnerProvider task_runner_provider;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
-  TestSharedBitmapManager shared_bitmap_manager;
-  TestTaskGraphRunner task_graph_runner;
-  scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, nullptr, &task_runner_provider, &stats_instrumentation,
-      &shared_bitmap_manager, nullptr, &task_graph_runner, 0);
-
-  scoped_refptr<Layer> layer_tree_root = Layer::Create(layer_settings_);
-  host_->SetRootLayer(layer_tree_root);
-
-  layer_tree_root->SetLayerAnimationControllerForTest(
-      FakeLayerAnimationController::Create());
-
-  EXPECT_FALSE(static_cast<FakeLayerAnimationController*>(
-      layer_tree_root->layer_animation_controller())->SynchronizedAnimations());
-
-  scoped_ptr<LayerImpl> layer_impl_tree_root =
-      TreeSynchronizer::SynchronizeTrees(
-          layer_tree_root.get(), nullptr, host_->active_tree());
-  TreeSynchronizer::PushProperties(layer_tree_root.get(),
-                                   layer_impl_tree_root.get());
-  layer_impl_tree_root = TreeSynchronizer::SynchronizeTrees(
-      layer_tree_root.get(), std::move(layer_impl_tree_root),
-      host_->active_tree());
-
-  EXPECT_TRUE(static_cast<FakeLayerAnimationController*>(
-      layer_tree_root->layer_animation_controller())->SynchronizedAnimations());
 }
 
 TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {

@@ -20,7 +20,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/animation/animation.h"
+#include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/frame_timing_tracker.h"
 #include "cc/debug/micro_benchmark.h"
@@ -295,9 +295,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   TaskRunnerProvider* task_runner_provider() const {
     return task_runner_provider_.get();
   }
-  AnimationRegistrar* animation_registrar() const {
-    return animation_registrar_.get();
-  }
   AnimationHost* animation_host() const { return animation_host_.get(); }
 
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
@@ -550,7 +547,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   EventListenerProperties event_listener_properties_[static_cast<size_t>(
       EventListenerClass::kNumClasses)];
 
-  scoped_ptr<AnimationRegistrar> animation_registrar_;
   scoped_ptr<AnimationHost> animation_host_;
 
   scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;

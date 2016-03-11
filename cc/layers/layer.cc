@@ -15,10 +15,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/animation/animation.h"
-#include "cc/animation/animation_registrar.h"
-#include "cc/animation/keyframed_animation_curve.h"
-#include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
@@ -102,11 +98,6 @@ Layer::Layer(const LayerSettings& settings)
       client_(nullptr),
       num_unclipped_descendants_(0),
       frame_timing_requests_dirty_(false) {
-  if (!settings.use_compositor_animation_timelines) {
-    layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
-    layer_animation_controller_->AddValueObserver(this);
-    layer_animation_controller_->set_value_provider(this);
-  }
 }
 
 Layer::~Layer() {
@@ -116,11 +107,6 @@ Layer::~Layer() {
   // Similarly we shouldn't have a layer tree host since it also keeps a
   // reference to us.
   DCHECK(!layer_tree_host());
-
-  if (layer_animation_controller_) {
-    layer_animation_controller_->RemoveValueObserver(this);
-    layer_animation_controller_->remove_value_provider(this);
-  }
 
   RemoveFromScrollTree();
   RemoveFromClipTree();
@@ -166,14 +152,8 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (replica_layer_.get())
     replica_layer_->SetLayerTreeHost(host);
 
-  if (host)
-    RegisterForAnimations(host->animation_registrar());
-
-  bool has_any_animation = false;
-  if (layer_animation_controller_)
-    has_any_animation = layer_animation_controller_->has_any_animation();
-  else if (layer_tree_host_)
-    has_any_animation = layer_tree_host_->HasAnyAnimation(this);
+  const bool has_any_animation =
+      layer_tree_host_ ? layer_tree_host_->HasAnyAnimation(this) : false;
 
   if (host && has_any_animation)
     host->SetNeedsCommit();
@@ -505,18 +485,10 @@ void Layer::SetFilters(const FilterOperations& filters) {
 
 bool Layer::FilterIsAnimating() const {
   DCHECK(layer_tree_host_);
-  return layer_animation_controller_
-             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   TargetProperty::FILTER,
-                   LayerAnimationController::ObserverType::ACTIVE)
-             : layer_tree_host_->IsAnimatingFilterProperty(this);
+  return layer_tree_host_->IsAnimatingFilterProperty(this);
 }
 
 bool Layer::HasPotentiallyRunningFilterAnimation() const {
-  if (layer_animation_controller_) {
-    return layer_animation_controller_->IsPotentiallyAnimatingProperty(
-        TargetProperty::FILTER, LayerAnimationController::ObserverType::ACTIVE);
-  }
   return layer_tree_host_->HasPotentiallyRunningFilterAnimation(this);
 }
 
@@ -543,19 +515,10 @@ float Layer::EffectiveOpacity() const {
 
 bool Layer::OpacityIsAnimating() const {
   DCHECK(layer_tree_host_);
-  return layer_animation_controller_
-             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   TargetProperty::OPACITY,
-                   LayerAnimationController::ObserverType::ACTIVE)
-             : layer_tree_host_->IsAnimatingOpacityProperty(this);
+  return layer_tree_host_->IsAnimatingOpacityProperty(this);
 }
 
 bool Layer::HasPotentiallyRunningOpacityAnimation() const {
-  if (layer_animation_controller_) {
-    return layer_animation_controller_->IsPotentiallyAnimatingProperty(
-        TargetProperty::OPACITY,
-        LayerAnimationController::ObserverType::ACTIVE);
-  }
   return layer_tree_host_->HasPotentiallyRunningOpacityAnimation(this);
 }
 
@@ -749,67 +712,38 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
 
 bool Layer::AnimationsPreserveAxisAlignment() const {
   DCHECK(layer_tree_host_);
-  return layer_animation_controller_
-             ? layer_animation_controller_->AnimationsPreserveAxisAlignment()
-             : layer_tree_host_->AnimationsPreserveAxisAlignment(this);
+  return layer_tree_host_->AnimationsPreserveAxisAlignment(this);
 }
 
 bool Layer::TransformIsAnimating() const {
   DCHECK(layer_tree_host_);
-  return layer_animation_controller_
-             ? layer_animation_controller_->IsCurrentlyAnimatingProperty(
-                   TargetProperty::TRANSFORM,
-                   LayerAnimationController::ObserverType::ACTIVE)
-             : layer_tree_host_->IsAnimatingTransformProperty(this);
+  return layer_tree_host_->IsAnimatingTransformProperty(this);
 }
 
 bool Layer::HasPotentiallyRunningTransformAnimation() const {
-  if (layer_animation_controller_) {
-    return layer_animation_controller_->IsPotentiallyAnimatingProperty(
-        TargetProperty::TRANSFORM,
-        LayerAnimationController::ObserverType::ACTIVE);
-  }
   return layer_tree_host_->HasPotentiallyRunningTransformAnimation(this);
 }
 
 bool Layer::HasOnlyTranslationTransforms() const {
-  if (layer_animation_controller_) {
-    return layer_animation_controller_->HasOnlyTranslationTransforms(
-        LayerAnimationController::ObserverType::ACTIVE);
-  }
   return layer_tree_host_->HasOnlyTranslationTransforms(this);
 }
 
 bool Layer::MaximumTargetScale(float* max_scale) const {
-  if (layer_animation_controller_) {
-    return layer_animation_controller_->MaximumTargetScale(
-        LayerAnimationController::ObserverType::ACTIVE, max_scale);
-  }
   return layer_tree_host_->MaximumTargetScale(this, max_scale);
 }
 
 bool Layer::AnimationStartScale(float* start_scale) const {
-  if (layer_animation_controller_) {
-    return layer_animation_controller_->AnimationStartScale(
-        LayerAnimationController::ObserverType::ACTIVE, start_scale);
-  }
   return layer_tree_host_->AnimationStartScale(this, start_scale);
 }
 
 bool Layer::HasAnyAnimationTargetingProperty(
     TargetProperty::Type property) const {
-  if (layer_animation_controller_)
-    return !!layer_animation_controller_->GetAnimation(property);
-
   return layer_tree_host_->HasAnyAnimationTargetingProperty(this, property);
 }
 
 bool Layer::ScrollOffsetAnimationWasInterrupted() const {
   DCHECK(layer_tree_host_);
-  return layer_animation_controller_
-             ? layer_animation_controller_
-                   ->scroll_offset_animation_was_interrupted()
-             : layer_tree_host_->ScrollOffsetAnimationWasInterrupted(this);
+  return layer_tree_host_->ScrollOffsetAnimationWasInterrupted(this);
 }
 
 void Layer::SetScrollParent(Layer* parent) {
@@ -1383,10 +1317,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   update_rect_.Union(layer->update_rect());
   layer->SetUpdateRect(update_rect_);
 
-  if (layer->layer_animation_controller() && layer_animation_controller_)
-    layer_animation_controller_->PushAnimationUpdatesTo(
-        layer->layer_animation_controller());
-
   if (frame_timing_requests_dirty_) {
     layer->SetFrameTimingRequests(frame_timing_requests_);
     frame_timing_requests_dirty_ = false;
@@ -1845,11 +1775,6 @@ void Layer::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
   // compositor-driven scrolling.
 }
 
-void Layer::OnAnimationWaitingForDeletion() {
-  // Animations are only deleted during PushProperties.
-  SetNeedsPushProperties();
-}
-
 void Layer::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
   if (!layer_tree_host_)
     return;
@@ -1888,73 +1813,9 @@ bool Layer::IsActive() const {
   return true;
 }
 
-bool Layer::AddAnimation(scoped_ptr <Animation> animation) {
-  DCHECK(layer_animation_controller_);
-  if (!layer_animation_controller_->animation_registrar())
-    return false;
-
-  if (animation->target_property() == TargetProperty::SCROLL_OFFSET &&
-      !layer_animation_controller_->animation_registrar()
-           ->supports_scroll_animations())
-    return false;
-
-  UMA_HISTOGRAM_BOOLEAN("Renderer.AnimationAddedToOrphanLayer",
-                        !layer_tree_host_);
-  layer_animation_controller_->AddAnimation(std::move(animation));
-  SetNeedsCommit();
-  return true;
-}
-
-void Layer::PauseAnimation(int animation_id, double time_offset) {
-  DCHECK(layer_animation_controller_);
-  layer_animation_controller_->PauseAnimation(
-      animation_id, base::TimeDelta::FromSecondsD(time_offset));
-  SetNeedsCommit();
-}
-
-void Layer::RemoveAnimation(int animation_id) {
-  DCHECK(layer_animation_controller_);
-  layer_animation_controller_->RemoveAnimation(animation_id);
-  SetNeedsCommit();
-}
-
-void Layer::AbortAnimation(int animation_id) {
-  DCHECK(layer_animation_controller_);
-  layer_animation_controller_->AbortAnimation(animation_id);
-  SetNeedsCommit();
-}
-
-void Layer::SetLayerAnimationControllerForTest(
-    scoped_refptr<LayerAnimationController> controller) {
-  DCHECK(layer_animation_controller_);
-  layer_animation_controller_->RemoveValueObserver(this);
-  layer_animation_controller_ = controller;
-  layer_animation_controller_->AddValueObserver(this);
-  SetNeedsCommit();
-}
-
 bool Layer::HasActiveAnimation() const {
   DCHECK(layer_tree_host_);
-  return layer_animation_controller_
-             ? layer_animation_controller_->HasActiveAnimation()
-             : layer_tree_host_->HasActiveAnimation(this);
-}
-
-void Layer::RegisterForAnimations(AnimationRegistrar* registrar) {
-  if (layer_animation_controller_)
-    layer_animation_controller_->SetAnimationRegistrar(registrar);
-}
-
-void Layer::AddLayerAnimationEventObserver(
-    LayerAnimationEventObserver* animation_observer) {
-  DCHECK(layer_animation_controller_);
-  layer_animation_controller_->AddEventObserver(animation_observer);
-}
-
-void Layer::RemoveLayerAnimationEventObserver(
-    LayerAnimationEventObserver* animation_observer) {
-  DCHECK(layer_animation_controller_);
-  layer_animation_controller_->RemoveEventObserver(animation_observer);
+  return layer_tree_host_->HasActiveAnimation(this);
 }
 
 ScrollbarLayerInterface* Layer::ToScrollbarLayer() {

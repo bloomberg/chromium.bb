@@ -30,7 +30,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
-using cc::Animation;
 using cc::Layer;
 using blink::WebLayer;
 using blink::WebFloatPoint;
