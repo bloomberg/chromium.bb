@@ -158,7 +158,7 @@ bool OwnsWindowOrIsRoot(Window* window) {
   return OwnsWindow(window->connection(), window) || IsConnectionRoot(window);
 }
 
-void EmptyEmbedCallback(bool result, ConnectionSpecificId connection_id) {}
+void EmptyEmbedCallback(bool result) {}
 
 }  // namespace
 
@@ -410,17 +410,15 @@ void Window::SetCanFocus(bool can_focus) {
 }
 
 void Window::Embed(mus::mojom::WindowTreeClientPtr client) {
-  Embed(std::move(client), mus::mojom::WindowTree::kAccessPolicyDefault,
-        base::Bind(&EmptyEmbedCallback));
+  Embed(std::move(client), base::Bind(&EmptyEmbedCallback));
 }
 
 void Window::Embed(mus::mojom::WindowTreeClientPtr client,
-                   uint32_t policy_bitmask,
                    const EmbedCallback& callback) {
   if (PrepareForEmbed())
-    tree_client()->Embed(id_, std::move(client), policy_bitmask, callback);
+    tree_client()->Embed(id_, std::move(client), callback);
   else
-    callback.Run(false, 0);
+    callback.Run(false);
 }
 
 void Window::RequestClose() {
@@ -764,7 +762,7 @@ void Window::NotifyWindowVisibilityChangedUp(Window* target) {
 }
 
 bool Window::PrepareForEmbed() {
-  if (!OwnsWindow(connection_, this) && !tree_client()->is_embed_root())
+  if (!OwnsWindow(connection_, this))
     return false;
 
   while (!children_.empty())

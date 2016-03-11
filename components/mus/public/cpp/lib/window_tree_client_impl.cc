@@ -123,7 +123,6 @@ WindowTreeClientImpl::WindowTreeClientImpl(
       focused_window_(nullptr),
       binding_(this),
       tree_(nullptr),
-      is_embed_root_(false),
       delete_on_no_roots_(true),
       in_destructor_(false) {
   // Allow for a null request in tests.
@@ -350,10 +349,9 @@ void WindowTreeClientImpl::SetImeVisibility(Id window_id,
 void WindowTreeClientImpl::Embed(
     Id window_id,
     mojom::WindowTreeClientPtr client,
-    uint32_t policy_bitmask,
     const mojom::WindowTree::EmbedCallback& callback) {
   DCHECK(tree_);
-  tree_->Embed(window_id, std::move(client), policy_bitmask, callback);
+  tree_->Embed(window_id, std::move(client), callback);
 }
 
 void WindowTreeClientImpl::RequestClose(Window* window) {
@@ -484,14 +482,11 @@ Window* WindowTreeClientImpl::NewWindowImpl(
 void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
                                        ConnectionSpecificId connection_id,
                                        mojom::WindowDataPtr root_data,
-                                       Id focused_window_id,
-                                       uint32_t access_policy) {
+                                       Id focused_window_id) {
   // WARNING: this is only called if WindowTreeClientImpl was created as the
   // result of an embedding.
   tree_ = window_tree;
   connection_id_ = connection_id;
-  is_embed_root_ =
-      (access_policy & mojom::WindowTree::kAccessPolicyEmbedRoot) != 0;
 
   DCHECK(roots_.empty());
   Window* root = AddWindowToConnection(this, nullptr, root_data);
@@ -537,10 +532,6 @@ Window* WindowTreeClientImpl::NewTopLevelWindow(
   return NewWindowImpl(NewWindowType::TOP_LEVEL, properties);
 }
 
-bool WindowTreeClientImpl::IsEmbedRoot() {
-  return is_embed_root_;
-}
-
 ConnectionSpecificId WindowTreeClientImpl::GetConnectionId() {
   return connection_id_;
 }
@@ -560,8 +551,7 @@ void WindowTreeClientImpl::RemoveObserver(
 void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
                                    mojom::WindowDataPtr root_data,
                                    mojom::WindowTreePtr tree,
-                                   Id focused_window_id,
-                                   uint32_t access_policy) {
+                                   Id focused_window_id) {
   DCHECK(!tree_ptr_);
   tree_ptr_ = std::move(tree);
   tree_ptr_.set_connection_error_handler([this]() { delete this; });
@@ -572,7 +562,7 @@ void WindowTreeClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   }
 
   OnEmbedImpl(tree_ptr_.get(), connection_id, std::move(root_data),
-              focused_window_id, access_policy);
+              focused_window_id);
 }
 
 void WindowTreeClientImpl::OnEmbeddedAppDisconnected(Id window_id) {

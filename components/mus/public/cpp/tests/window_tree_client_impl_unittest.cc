@@ -57,7 +57,7 @@ class WindowTreeClientImplPrivate {
       : tree_client_impl_(tree_client_impl) {}
   ~WindowTreeClientImplPrivate() {}
 
-  void Init(mojom::WindowTree* window_tree, uint32_t access_policy) {
+  void Init(mojom::WindowTree* window_tree) {
     mojom::WindowDataPtr root_data(mojom::WindowData::New());
     root_data->parent_id = 0;
     root_data->window_id = 1;
@@ -69,8 +69,7 @@ class WindowTreeClientImplPrivate {
     root_data->viewport_metrics->size_in_pixels =
         mojo::Size::From(gfx::Size(1000, 1000));
     root_data->viewport_metrics->device_pixel_ratio = 1;
-    tree_client_impl_->OnEmbedImpl(window_tree, 1, std::move(root_data), 0,
-                                   access_policy);
+    tree_client_impl_->OnEmbedImpl(window_tree, 1, std::move(root_data), 0);
   }
 
  private:
@@ -82,8 +81,7 @@ class WindowTreeClientImplPrivate {
 class WindowTreeSetup {
  public:
   WindowTreeSetup() : tree_client_(&window_tree_delegate_, nullptr, nullptr) {
-    WindowTreeClientImplPrivate(&tree_client_)
-        .Init(&window_tree_, mojom::WindowTree::kAccessPolicyDefault);
+    WindowTreeClientImplPrivate(&tree_client_).Init(&window_tree_);
     window_tree_.GetAndClearChangeId(nullptr);
   }
 

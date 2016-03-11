@@ -30,10 +30,6 @@ class AccessPolicyDelegate {
   virtual bool IsWindowRootOfAnotherTreeForAccessPolicy(
       const ServerWindow* window) const = 0;
 
-  // Returns true if SetEmbedRoot() was invoked and |window| is a descendant of
-  // the root of the connection.
-  virtual bool IsDescendantOfEmbedRoot(const ServerWindow* window) = 0;
-
  protected:
   virtual ~AccessPolicyDelegate() {}
 };

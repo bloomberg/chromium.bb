@@ -67,25 +67,20 @@ class TargetedEvent : public ServerWindowObserver {
 
 WindowTree::WindowTree(ConnectionManager* connection_manager,
                        const UserId& user_id,
-                       ServerWindow* root,
-                       uint32_t policy_bitmask)
+                       ServerWindow* root)
     : connection_manager_(connection_manager),
       user_id_(user_id),
       id_(connection_manager_->GetAndAdvanceNextConnectionId()),
       next_window_id_(1),
       event_ack_id_(0),
-      is_embed_root_(false),
       window_manager_internal_(nullptr) {
   if (root)
     roots_.insert(root);
   // TODO(sky): pass in type rather than inferring it.
-  if (root && root->id().connection_id == kInvalidConnectionId) {
+  if (root && root->id().connection_id == kInvalidConnectionId)
     access_policy_.reset(new WindowManagerAccessPolicy(id_, this));
-    is_embed_root_ = true;
-  } else {
+  else
     access_policy_.reset(new DefaultAccessPolicy(id_, this));
-    is_embed_root_ = (policy_bitmask & WindowTree::kAccessPolicyEmbedRoot) != 0;
-  }
 }
 
 WindowTree::~WindowTree() {
@@ -114,9 +109,7 @@ void WindowTree::Init(scoped_ptr<WindowTreeBinding> binding,
     IsWindowKnown(focused_window, &focused_window_id);
 
   client()->OnEmbed(id_, WindowToWindowData(to_send.front()), std::move(tree),
-                    focused_window_id.id,
-                    is_embed_root_ ? WindowTree::kAccessPolicyEmbedRoot
-                                   : WindowTree::kAccessPolicyDefault);
+                    focused_window_id.id);
 }
 
 void WindowTree::ConfigureWindowManager() {
@@ -175,7 +168,7 @@ void WindowTree::OnWindowDestroyingTreeImpl(WindowTree* tree) {
   // Notify our client if |tree| was embedded in any of our views.
   for (const auto* tree_root : tree->roots_) {
     const bool owns_tree_root = tree_root->id().connection_id == id_;
-    if (owns_tree_root || (is_embed_root_ && IsWindowKnown(tree_root))) {
+    if (owns_tree_root) {
       client()->OnEmbeddedAppDisconnected(
           ClientWindowIdForWindow(tree_root).id);
     }
@@ -279,20 +272,15 @@ bool WindowTree::SetWindowVisibility(const ClientWindowId& window_id,
 }
 
 bool WindowTree::Embed(const ClientWindowId& window_id,
-                       mojom::WindowTreeClientPtr client,
-                       uint32_t policy_bitmask,
-                       ConnectionSpecificId* connection_id) {
-  *connection_id = kInvalidConnectionId;
-  if (!client || !CanEmbed(window_id, policy_bitmask))
+                       mojom::WindowTreeClientPtr client) {
+  if (!client || !CanEmbed(window_id))
     return false;
   ServerWindow* window = GetWindowByClientId(window_id);
   PrepareForEmbed(window);
   // When embedding we don't know the user id of where the TreeClient came
   // from. Use an invalid id, which limits what the client is able to do.
-  WindowTree* new_tree = connection_manager_->EmbedAtWindow(
-      window, policy_bitmask, InvalidUserId(), std::move(client));
-  if (is_embed_root_)
-    *connection_id = new_tree->id();
+  connection_manager_->EmbedAtWindow(window, InvalidUserId(),
+                                     std::move(client));
   return true;
 }
 
@@ -670,14 +658,8 @@ ClientWindowId WindowTree::ClientWindowIdForWindow(
 }
 
 bool WindowTree::IsValidIdForNewWindow(const ClientWindowId& id) const {
-  if (is_embed_root_ && WindowIdFromTransportId(id.id).connection_id != id_) {
-    // Embed roots see windows created from other connections. If they don't
-    // use the connection id when creating windows the client could end up with
-    // two windows with the same id. Because of this we restrict the ids such
-    // connections can create.
-    return false;
-  }
-  return client_id_to_window_id_map_.count(id) == 0u;
+  return client_id_to_window_id_map_.count(id) == 0u &&
+         access_policy_->IsValidIdForNewWindow(id);
 }
 
 WindowId WindowTree::GenerateNewWindowId() {
@@ -877,10 +859,9 @@ void WindowTree::DestroyWindows() {
   STLDeleteValues(&created_window_map_copy);
 }
 
-bool WindowTree::CanEmbed(const ClientWindowId& window_id,
-                          uint32_t policy_bitmask) const {
+bool WindowTree::CanEmbed(const ClientWindowId& window_id) const {
   const ServerWindow* window = GetWindowByClientId(window_id);
-  return window && access_policy_->CanEmbed(window, policy_bitmask);
+  return window && access_policy_->CanEmbed(window);
 }
 
 void WindowTree::PrepareForEmbed(ServerWindow* window) {
@@ -1221,12 +1202,8 @@ void WindowTree::SetClientArea(
 
 void WindowTree::Embed(Id transport_window_id,
                        mojom::WindowTreeClientPtr client,
-                       uint32_t policy_bitmask,
                        const EmbedCallback& callback) {
-  ConnectionSpecificId connection_id = kInvalidConnectionId;
-  const bool result = Embed(ClientWindowId(transport_window_id),
-                            std::move(client), policy_bitmask, &connection_id);
-  callback.Run(result, connection_id);
+  callback.Run(Embed(ClientWindowId(transport_window_id), std::move(client)));
 }
 
 void WindowTree::SetFocus(uint32_t change_id, Id transport_window_id) {
@@ -1392,17 +1369,6 @@ bool WindowTree::IsWindowRootOfAnotherTreeForAccessPolicy(
     const ServerWindow* window) const {
   WindowTree* tree = connection_manager_->GetTreeWithRoot(window);
   return tree && tree != this;
-}
-
-bool WindowTree::IsDescendantOfEmbedRoot(const ServerWindow* window) {
-  if (!is_embed_root_)
-    return false;
-
-  for (const auto* root : roots_) {
-    if (root->Contains(window))
-      return true;
-  }
-  return false;
 }
 
 }  // namespace ws

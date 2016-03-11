@@ -26,8 +26,7 @@ void WindowTreeFactory::CreateWindowTree(
     mojo::InterfaceRequest<mojom::WindowTree> tree_request,
     mojom::WindowTreeClientPtr client) {
   scoped_ptr<ws::WindowTree> service(
-      new ws::WindowTree(connection_manager_, user_id_, nullptr,
-                         mojom::WindowTree::kAccessPolicyDefault));
+      new ws::WindowTree(connection_manager_, user_id_, nullptr));
   scoped_ptr<ws::DefaultWindowTreeBinding> binding(
       new ws::DefaultWindowTreeBinding(service.get(), connection_manager_,
                                        std::move(tree_request),

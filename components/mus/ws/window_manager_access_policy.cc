@@ -8,7 +8,6 @@
 #include "components/mus/ws/server_window.h"
 
 namespace mus {
-
 namespace ws {
 
 // TODO(sky): document why this differs from default for each case. Maybe want
@@ -69,8 +68,7 @@ bool WindowManagerAccessPolicy::CanDescendIntoWindowForWindowTree(
   return true;
 }
 
-bool WindowManagerAccessPolicy::CanEmbed(const ServerWindow* window,
-                                         uint32_t policy_bitmask) const {
+bool WindowManagerAccessPolicy::CanEmbed(const ServerWindow* window) const {
   return !delegate_->HasRootForAccessPolicy(window);
 }
 
@@ -157,6 +155,14 @@ bool WindowManagerAccessPolicy::IsWindowKnown(
   return delegate_->IsWindowKnownForAccessPolicy(window);
 }
 
-}  // namespace ws
+bool WindowManagerAccessPolicy::IsValidIdForNewWindow(
+    const ClientWindowId& id) const {
+  // The WindowManager see windows created from other clients. If the WM doesn't
+  // use the connection id when creating windows the WM could end up with two
+  // windows with the same id. Because of this the wm must use the same
+  // connection id for all windows it creates.
+  return WindowIdFromTransportId(id.id).connection_id == connection_id_;
+}
 
+}  // namespace ws
 }  // namespace mus

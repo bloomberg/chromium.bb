@@ -68,11 +68,9 @@ ConnectionSpecificId ConnectionManager::GetAndAdvanceNextConnectionId() {
 
 WindowTree* ConnectionManager::EmbedAtWindow(
     ServerWindow* root,
-    uint32_t policy_bitmask,
     const UserId& user_id,
     mojom::WindowTreeClientPtr client) {
-  scoped_ptr<WindowTree> tree_ptr(
-      new WindowTree(this, user_id, root, policy_bitmask));
+  scoped_ptr<WindowTree> tree_ptr(new WindowTree(this, user_id, root));
   WindowTree* tree = tree_ptr.get();
 
   mojom::WindowTreePtr window_tree_ptr;
@@ -103,8 +101,7 @@ WindowTree* ConnectionManager::CreateTreeForWindowManager(
   mojom::DisplayPtr display_ptr = display->ToMojomDisplay();
   mojom::WindowTreeClientPtr tree_client;
   factory->CreateWindowManager(std::move(display_ptr), GetProxy(&tree_client));
-  scoped_ptr<WindowTree> tree_ptr(new WindowTree(
-      this, user_id, root, mojom::WindowTree::kAccessPolicyEmbedRoot));
+  scoped_ptr<WindowTree> tree_ptr(new WindowTree(this, user_id, root));
   WindowTree* tree = tree_ptr.get();
   scoped_ptr<DefaultWindowTreeBinding> binding(new DefaultWindowTreeBinding(
       tree_ptr.get(), this, std::move(tree_client)));

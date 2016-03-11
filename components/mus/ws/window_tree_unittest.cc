@@ -106,8 +106,8 @@ class TestDisplayBinding : public DisplayBinding {
   // DisplayBinding:
   WindowTree* CreateWindowTree(ServerWindow* root) override {
     return connection_manager_->EmbedAtWindow(
-        root, mus::mojom::WindowTree::kAccessPolicyEmbedRoot,
-        mojo::shell::mojom::kRootUserID, mus::mojom::WindowTreeClientPtr());
+        root, mojo::shell::mojom::kRootUserID,
+        mus::mojom::WindowTreeClientPtr());
   }
 
   Display* display_;
@@ -224,8 +224,7 @@ class WindowTreeTest : public testing::Test {
   WindowTree* CreateNewTree(const UserId& user_id,
                             TestWindowTreeBinding** binding) {
     WindowTree* tree =
-        new WindowTree(connection_manager_.get(), user_id, nullptr,
-                       mojom::WindowTree::kAccessPolicyDefault);
+        new WindowTree(connection_manager_.get(), user_id, nullptr);
     *binding = new TestWindowTreeBinding;
     connection_manager_->AddTree(make_scoped_ptr(tree),
                                  make_scoped_ptr(*binding), nullptr);
@@ -278,9 +277,7 @@ void WindowTreeTest::SetupEventTargeting(TestWindowTreeClient** out_client,
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request = GetProxy(&client);
   wm_client()->Bind(std::move(client_request));
-  ConnectionSpecificId connection_id = 0;
-  wm_tree()->Embed(embed_window_id, std::move(client),
-                   mojom::WindowTree::kAccessPolicyDefault, &connection_id);
+  wm_tree()->Embed(embed_window_id, std::move(client));
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
   WindowTree* tree1 = connection_manager()->GetTreeWithRoot(embed_window);
   ASSERT_TRUE(tree1 != nullptr);
@@ -324,9 +321,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   mojom::WindowTreeClientPtr client;
   mojom::WindowTreeClientRequest client_request = GetProxy(&client);
   wm_client()->Bind(std::move(client_request));
-  ConnectionSpecificId connection_id = 0;
-  wm_tree()->Embed(embed_window_id, std::move(client),
-                   mojom::WindowTree::kAccessPolicyDefault, &connection_id);
+  wm_tree()->Embed(embed_window_id, std::move(client));
   WindowTree* tree1 = connection_manager()->GetTreeWithRoot(embed_window);
   ASSERT_TRUE(tree1 != nullptr);
   ASSERT_NE(tree1, wm_tree());

@@ -97,7 +97,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   void Embed(Id window_id,
              mojom::WindowTreeClientPtr client,
-             uint32_t policy_bitmask,
              const mojom::WindowTree::EmbedCallback& callback);
 
   void RequestClose(Window* window);
@@ -117,8 +116,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void AddWindow(Window* window);
 
   bool IsRoot(Window* window) const { return roots_.count(window) > 0; }
-
-  bool is_embed_root() const { return is_embed_root_; }
 
   // Called after the window's observers have been notified of destruction (as
   // the last step of ~Window).
@@ -159,8 +156,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnEmbedImpl(mojom::WindowTree* window_tree,
                    ConnectionSpecificId connection_id,
                    mojom::WindowDataPtr root_data,
-                   Id focused_window_id,
-                   uint32_t access_policy);
+                   Id focused_window_id);
 
   // Overridden from WindowTreeConnection:
   void SetDeleteOnNoRoots(bool value) override;
@@ -170,7 +166,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   Window* NewWindow(const Window::SharedProperties* properties) override;
   Window* NewTopLevelWindow(
       const Window::SharedProperties* properties) override;
-  bool IsEmbedRoot() override;
   ConnectionSpecificId GetConnectionId() override;
   void AddObserver(WindowTreeConnectionObserver* observer) override;
   void RemoveObserver(WindowTreeConnectionObserver* observer) override;
@@ -179,8 +174,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnEmbed(ConnectionSpecificId connection_id,
                mojom::WindowDataPtr root,
                mojom::WindowTreePtr tree,
-               Id focused_window_id,
-               uint32_t access_policy) override;
+               Id focused_window_id) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
   void OnUnembed(Id window_id) override;
   void OnLostCapture(Id window_id) override;
@@ -282,8 +276,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Typically this is the value contained in |tree_ptr_|, but tests may
   // directly set this.
   mojom::WindowTree* tree_;
-
-  bool is_embed_root_;
 
   bool delete_on_no_roots_;
 

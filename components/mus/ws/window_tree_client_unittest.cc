@@ -75,7 +75,6 @@ bool EmbedUrl(mojo::Connector* connector,
     mojom::WindowTreeClientPtr client;
     connector->ConnectToInterface(url.get(), &client);
     tree->Embed(root_id, std::move(client),
-                mojom::WindowTree::kAccessPolicyDefault,
                 base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
@@ -87,7 +86,6 @@ bool Embed(WindowTree* tree, Id root_id, mojom::WindowTreeClientPtr client) {
   base::RunLoop run_loop;
   {
     tree->Embed(root_id, std::move(client),
-                mojom::WindowTree::kAccessPolicyDefault,
                 base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
@@ -540,8 +538,8 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
       WindowTree* owner,
       Id root_id,
       int* connection_id) {
-    return EstablishConnectionViaEmbedWithPolicyBitmask(
-        owner, root_id, mojom::WindowTree::kAccessPolicyDefault, connection_id);
+    return EstablishConnectionViaEmbedWithPolicyBitmask(owner, root_id,
+                                                        connection_id);
   }
 
   scoped_ptr<TestWindowTreeClientImpl>
@@ -1768,8 +1766,8 @@ TEST_F(WindowTreeClientTest, CantEmbedFromConnectionRoot) {
   ASSERT_TRUE(
       wt_client1()->AddWindow(BuildWindowId(connection_id_1(), 1), window_1_2));
   ASSERT_TRUE(wt_client3_.get() == nullptr);
-  wt_client3_ = EstablishConnectionViaEmbedWithPolicyBitmask(
-      wt1(), window_1_2, mojom::WindowTree::kAccessPolicyEmbedRoot, nullptr);
+  wt_client3_ =
+      EstablishConnectionViaEmbedWithPolicyBitmask(wt1(), window_1_2, nullptr);
   ASSERT_TRUE(wt_client3_.get() != nullptr);
 
   // window_1_2 is ws3's root, so even though v3 is an embed root it should not

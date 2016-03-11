@@ -85,9 +85,6 @@ class WindowTreeConnection {
   virtual Window* NewTopLevelWindow(
       const std::map<std::string, std::vector<uint8_t>>* properties) = 0;
 
-  // Returns true if ACCESS_POLICY_EMBED_ROOT was specified.
-  virtual bool IsEmbedRoot() = 0;
-
   // Returns the id for this connection.
   // TODO(sky): remove this. It is not necessarily correct anymore.
   virtual ConnectionSpecificId GetConnectionId() = 0;

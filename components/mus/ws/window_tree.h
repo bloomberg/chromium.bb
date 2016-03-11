@@ -60,8 +60,7 @@ class WindowTree : public mojom::WindowTree,
  public:
   WindowTree(ConnectionManager* connection_manager,
              const UserId& user_id,
-             ServerWindow* root,
-             uint32_t policy_bitmask);
+             ServerWindow* root);
   ~WindowTree() override;
 
   void Init(scoped_ptr<WindowTreeBinding> binding, mojom::WindowTreePtr tree);
@@ -105,8 +104,6 @@ class WindowTree : public mojom::WindowTree,
 
   std::set<const ServerWindow*> roots() { return roots_; }
 
-  bool is_embed_root() const { return is_embed_root_; }
-
   const Display* GetDisplay(const ServerWindow* window) const;
   Display* GetDisplay(const ServerWindow* window) {
     return const_cast<Display*>(
@@ -137,9 +134,7 @@ class WindowTree : public mojom::WindowTree,
       const ClientWindowId& window_id) const;
   bool SetWindowVisibility(const ClientWindowId& window_id, bool visible);
   bool Embed(const ClientWindowId& window_id,
-             mojom::WindowTreeClientPtr client,
-             uint32_t policy_bitmask,
-             ConnectionSpecificId* connection_id);
+             mojom::WindowTreeClientPtr client);
   void DispatchInputEvent(ServerWindow* target, mojom::EventPtr event);
 
   bool IsWaitingForNewTopLevelWindow(uint32_t wm_change_id);
@@ -290,7 +285,7 @@ class WindowTree : public mojom::WindowTree,
   // Deletes all Windows we own.
   void DestroyWindows();
 
-  bool CanEmbed(const ClientWindowId& window_id, uint32_t policy_bitmask) const;
+  bool CanEmbed(const ClientWindowId& window_id) const;
   void PrepareForEmbed(ServerWindow* window);
   void RemoveChildrenAsPartOfEmbed(ServerWindow* window);
 
@@ -344,7 +339,6 @@ class WindowTree : public mojom::WindowTree,
                      mojom::SurfaceClientPtr client) override;
   void Embed(Id transport_window_id,
              mojom::WindowTreeClientPtr client,
-             uint32_t policy_bitmask,
              const EmbedCallback& callback) override;
   void SetFocus(uint32_t change_id, Id transport_window_id) override;
   void SetCanFocus(Id transport_window_id, bool can_focus) override;
@@ -390,7 +384,6 @@ class WindowTree : public mojom::WindowTree,
   bool IsWindowKnownForAccessPolicy(const ServerWindow* window) const override;
   bool IsWindowRootOfAnotherTreeForAccessPolicy(
       const ServerWindow* window) const override;
-  bool IsDescendantOfEmbedRoot(const ServerWindow* window) override;
 
   ConnectionManager* connection_manager_;
 
@@ -422,8 +415,6 @@ class WindowTree : public mojom::WindowTree,
 
   // WindowManager the current event came from.
   WindowManagerState* event_source_wms_ = nullptr;
-
-  bool is_embed_root_;
 
   std::queue<scoped_ptr<TargetedEvent>> event_queue_;
 

@@ -126,8 +126,7 @@ void TestWindowTreeClient::Bind(
 void TestWindowTreeClient::OnEmbed(uint16_t connection_id,
                                    mojom::WindowDataPtr root,
                                    mus::mojom::WindowTreePtr tree,
-                                   Id focused_window_id,
-                                   uint32_t access_policy) {
+                                   Id focused_window_id) {
   // TODO(sky): add test coverage of |focused_window_id|.
   tracker_.OnEmbed(connection_id, std::move(root));
 }

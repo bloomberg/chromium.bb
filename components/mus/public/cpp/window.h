@@ -52,7 +52,7 @@ struct WindowProperty;
 class Window {
  public:
   using Children = std::vector<Window*>;
-  using EmbedCallback = base::Callback<void(bool, ConnectionSpecificId)>;
+  using EmbedCallback = base::Callback<void(bool)>;
   using PropertyDeallocator = void (*)(int64_t value);
   using SharedProperties = std::map<std::string, std::vector<uint8_t>>;
 
@@ -208,7 +208,6 @@ class Window {
   // NOTE: callback is run synchronously if Embed() is not allowed on this
   // Window.
   void Embed(mus::mojom::WindowTreeClientPtr client,
-             uint32_t policy_bitmask,
              const EmbedCallback& callback);
 
   // TODO(sky): this API is only applicable to the WindowManager. Move it

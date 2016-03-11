@@ -11,7 +11,6 @@
 #include "components/mus/ws/access_policy.h"
 
 namespace mus {
-
 namespace ws {
 
 class AccessPolicyDelegate;
@@ -38,8 +37,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanGetWindowTree(const ServerWindow* window) const override;
   bool CanDescendIntoWindowForWindowTree(
       const ServerWindow* window) const override;
-  bool CanEmbed(const ServerWindow* window,
-                uint32_t policy_bitmask) const override;
+  bool CanEmbed(const ServerWindow* window) const override;
   bool CanChangeWindowVisibility(const ServerWindow* window) const override;
   bool CanSetWindowSurface(const ServerWindow* window,
                            mus::mojom::SurfaceType surface_type) const override;
@@ -57,6 +55,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   const ServerWindow* GetWindowForFocusChange(
       const ServerWindow* focused) override;
   bool CanSetWindowManager() const override;
+  bool IsValidIdForNewWindow(const ClientWindowId& id) const override;
 
  private:
   bool IsWindowKnown(const ServerWindow* window) const;
@@ -68,7 +67,6 @@ class WindowManagerAccessPolicy : public AccessPolicy {
 };
 
 }  // namespace ws
-
 }  // namespace mus
 
 #endif  // COMPONENTS_MUS_WS_WINDOW_MANAGER_ACCESS_POLICY_H_

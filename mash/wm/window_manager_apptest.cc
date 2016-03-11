@@ -31,7 +31,7 @@ class WindowTreeDelegateImpl : public mus::WindowTreeDelegate {
 
 using WindowManagerAppTest = mojo::test::ApplicationTestBase;
 
-void OnEmbed(bool success, uint16_t id) {
+void OnEmbed(bool success) {
   ASSERT_TRUE(success);
 }
 
@@ -55,9 +55,7 @@ TEST_F(WindowManagerAppTest, OpenWindow) {
   // |child_window|. This blocks until it succeeds.
   mus::mojom::WindowTreeClientPtr tree_client;
   auto tree_client_request = GetProxy(&tree_client);
-  child_window->Embed(std::move(tree_client),
-                      mus::mojom::WindowTree::kAccessPolicyDefault,
-                      base::Bind(&OnEmbed));
+  child_window->Embed(std::move(tree_client), base::Bind(&OnEmbed));
   scoped_ptr<mus::WindowTreeConnection> child_connection(
       mus::WindowTreeConnection::Create(
           &window_tree_delegate, std::move(tree_client_request),

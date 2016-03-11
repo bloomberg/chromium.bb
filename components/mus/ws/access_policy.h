@@ -42,8 +42,7 @@ class AccessPolicy {
   // descend into |window|.
   virtual bool CanDescendIntoWindowForWindowTree(
       const ServerWindow* window) const = 0;
-  virtual bool CanEmbed(const ServerWindow* window,
-                        uint32_t policy_bitmask) const = 0;
+  virtual bool CanEmbed(const ServerWindow* window) const = 0;
   virtual bool CanChangeWindowVisibility(const ServerWindow* window) const = 0;
   virtual bool CanSetWindowSurface(const ServerWindow* window,
                                    mojom::SurfaceType surface_type) const = 0;
@@ -69,6 +68,8 @@ class AccessPolicy {
   // Returns the window to supply to the client when focus changes to |focused|.
   virtual const ServerWindow* GetWindowForFocusChange(
       const ServerWindow* focused) = 0;
+
+  virtual bool IsValidIdForNewWindow(const ClientWindowId& id) const = 0;
 };
 
 }  // namespace ws

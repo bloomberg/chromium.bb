@@ -69,17 +69,6 @@ enum SurfaceType {
 // change id in anyway, it is up to the client to assign a value and use it.
 // Generally the change id is an ever increasing integer.
 interface WindowTree {
-  const int32 kAccessPolicyDefault = 0;
-
-  // An embed root has the following abilities:
-  // . The app sees all the descendants of the window the app is ebmedded at,
-  //   even those from separate connections.
-  // . The app is able to Embed() in all the descendants of the window the app
-  //   is embedded at, even those from separate connections.
-  // Only connections originating from the WindowTreeHostFactory can grant
-  // this policy.
-  const int32 kAccessPolicyEmbedRoot = 1;
-
   // Creates a new window with the specified id. It is up to the client to
   // ensure the id is unique to the connection (the id need not be globally
   // unique). Additionally the connection id (embedded in |window_id|) must
@@ -211,9 +200,8 @@ interface WindowTree {
   //
   // When a connection embeds a WindowTreeClient the originating connection no
   // longer has privileges to access or see any of the children of the window.
-  // If the window had existing children the children are removed. The one
-  // exception is the root connection and any connections with the policy
-  // kAccessPolicyEmbedRoot.
+  // If the window had existing children the children are removed. The
+  // WindowManager gets to see the whole tree.
   //
   // A window may only have one embedding in it at a time. Subsequent calls to
   // Embed() for the same window result in the currently embedded
@@ -224,15 +212,8 @@ interface WindowTree {
   // The embedder can detect when the embedded app disconnects by way of
   // OnEmbeddedAppDisconnected().
   //
-  // The callback returns whether the embedding was successful, and if the
-  // embedding was successful and the originating connection is an embed root
-  // the resulting id of the new connection.
-  //
-  // policy_bitmask is a bitmask of the kAccessPolicy constants. See them for
-  // details.
-  Embed(uint32 window_id,
-        WindowTreeClient client,
-        uint32 policy_bitmask) => (bool success, uint16 connection_id);
+  // The callback returns whether the embedding was successful.
+  Embed(uint32 window_id, WindowTreeClient client) => (bool success);
 
   SetFocus(uint32 change_id, uint32 window_id);
   SetCanFocus(uint32 window_id, bool can_focus);
@@ -271,8 +252,7 @@ interface WindowTreeClient {
   OnEmbed(uint16 connection_id,
           WindowData root,
           WindowTree? tree,
-          uint32 focused_window,
-          uint32 access_policy);
+          uint32 focused_window);
 
   // Invoked when the application embedded at |window| is disconnected. In other
   // words the embedded app closes the connection to the server. This is called

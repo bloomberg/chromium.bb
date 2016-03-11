@@ -251,14 +251,9 @@ class WindowServerTest : public WindowServerTestBase {
   // a response is received, or a timeout. On success the new WindowServer is
   // returned.
   EmbedResult Embed(Window* window) {
-    return Embed(window, mus::mojom::WindowTree::kAccessPolicyDefault);
-  }
-
-  EmbedResult Embed(Window* window, uint32_t access_policy_bitmask) {
     DCHECK(!embed_details_);
     embed_details_.reset(new EmbedDetails);
     window->Embed(ConnectAndGetWindowServerClient(),
-                  access_policy_bitmask,
                   base::Bind(&WindowServerTest::EmbedCallbackImpl,
                              base::Unretained(this)));
     embed_details_->waiting = true;
@@ -297,7 +292,6 @@ class WindowServerTest : public WindowServerTestBase {
         : callback_run(false),
           result(false),
           waiting(false),
-          connection_id(0),
           connection(nullptr) {}
 
     // The callback supplied to Embed() was received.
@@ -317,10 +311,9 @@ class WindowServerTest : public WindowServerTestBase {
     WindowTreeConnection* connection;
   };
 
-  void EmbedCallbackImpl(bool result, ConnectionSpecificId connection_id) {
+  void EmbedCallbackImpl(bool result) {
     embed_details_->callback_run = true;
     embed_details_->result = result;
-    embed_details_->connection_id = connection_id;
     if (embed_details_->waiting && (!result || embed_details_->connection))
       EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }
@@ -1032,68 +1025,6 @@ TEST_F(WindowServerTest, WindowServerDestroyedAfterRootObserver) {
   embed_window->Destroy();
   EXPECT_TRUE(DoRunLoopWithTimeout());
   EXPECT_TRUE(got_destroy);
-}
-
-// Verifies an embed root sees windows created beneath it from another
-// connection.
-TEST_F(WindowServerTest, EmbedRootSeesHierarchyChanged) {
-  Window* embed_window = window_manager()->NewWindow();
-  GetFirstWMRoot()->AddChild(embed_window);
-
-  WindowTreeConnection* vm2 =
-      Embed(embed_window, mus::mojom::WindowTree::kAccessPolicyEmbedRoot)
-          .connection;
-  Window* vm2_v1 = vm2->NewWindow();
-  GetFirstRoot(vm2)->AddChild(vm2_v1);
-
-  WindowTreeConnection* vm3 = Embed(vm2_v1).connection;
-  Window* vm3_v1 = vm3->NewWindow();
-  GetFirstRoot(vm3)->AddChild(vm3_v1);
-
-  // As |vm2| is an embed root it should get notified about |vm3_v1|.
-  ASSERT_TRUE(WaitForTreeSizeToMatch(vm2_v1, 2));
-}
-
-// Flaky failure: http://crbug.com/587868
-#if defined(OS_LINUX)
-#define MAYBE_EmbedFromEmbedRoot DISABLED_EmbedFromEmbedRoot
-#else
-#define MAYBE_EmbedFromEmbedRoot EmbedFromEmbedRoot
-#endif
-TEST_F(WindowServerTest, MAYBE_EmbedFromEmbedRoot) {
-  Window* embed_window = window_manager()->NewWindow();
-  GetFirstWMRoot()->AddChild(embed_window);
-
-  // Give the connection embedded at |embed_window| embed root powers.
-  const EmbedResult result1 =
-      Embed(embed_window, mus::mojom::WindowTree::kAccessPolicyEmbedRoot);
-  WindowTreeConnection* vm2 = result1.connection;
-  EXPECT_EQ(result1.connection_id, vm2->GetConnectionId());
-  Window* vm2_v1 = vm2->NewWindow();
-  GetFirstRoot(vm2)->AddChild(vm2_v1);
-
-  const EmbedResult result2 = Embed(vm2_v1);
-  WindowTreeConnection* vm3 = result2.connection;
-  EXPECT_EQ(result2.connection_id, vm3->GetConnectionId());
-  Window* vm3_v1 = vm3->NewWindow();
-  GetFirstRoot(vm3)->AddChild(vm3_v1);
-
-  // Embed from v3, the callback should not get the connection id as vm3 is not
-  // an embed root.
-  const EmbedResult result3 = Embed(vm3_v1);
-  ASSERT_TRUE(result3.connection);
-  EXPECT_EQ(0, result3.connection_id);
-
-  // As |vm2| is an embed root it should get notified about |vm3_v1|.
-  ASSERT_TRUE(WaitForTreeSizeToMatch(vm2_v1, 2));
-
-  // Embed() from vm2 in vm3_v1. This is allowed as vm2 is an embed root, and
-  // further the callback should see the connection id.
-  ASSERT_EQ(1u, vm2_v1->children().size());
-  Window* vm3_v1_in_vm2 = vm2_v1->children()[0];
-  const EmbedResult result4 = Embed(vm3_v1_in_vm2);
-  ASSERT_TRUE(result4.connection);
-  EXPECT_EQ(result4.connection_id, result4.connection->GetConnectionId());
 }
 
 TEST_F(WindowServerTest, ClientAreaChanged) {
