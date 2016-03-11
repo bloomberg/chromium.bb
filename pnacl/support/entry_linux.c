@@ -5,6 +5,7 @@
  */
 
 #include <alloca.h>
+#include <stddef.h>
 #include <stdint.h>
 
 void __pnacl_start(uint32_t *info);
