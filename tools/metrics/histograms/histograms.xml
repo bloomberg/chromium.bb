@@ -6972,6 +6972,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.RequestCompletionErrorCodes"
     enum="NetErrorCodes">
+  <obsolete>
+    Deprecated in 2/2016, since it didn't get recorded for many kinds of error
+    codes when it should have been recorded, and
+    Net.HttpRequestCompletionErrorCodes is a good enough replacement when
+    filtering for clients with the Data Reduction Proxy enabled.
+  </obsolete>
   <owner>sclittle@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
@@ -6982,6 +6988,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.RequestCompletionErrorCodes.MainFrame"
     enum="NetErrorCodes">
+  <obsolete>
+    Deprecated in 2/2016, since it didn't get recorded for many kinds of error
+    codes when it should have been recorded, and
+    Net.HttpRequestCompletionErrorCodes is a good enough replacement when
+    filtering for clients with the Data Reduction Proxy enabled.
+  </obsolete>
   <owner>sclittle@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
