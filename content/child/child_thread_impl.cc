@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -27,6 +28,7 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_local.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "components/tracing/child_trace_message_filter.h"
@@ -418,7 +420,10 @@ void ChildThreadImpl::Init(const Options& options) {
   if (!pipe_token.empty() && MojoShellConnectionImpl::Get()) {
     mojo::ScopedMessagePipeHandle pipe =
         mojo::edk::CreateChildMessagePipe(pipe_token);
+
+    base::ElapsedTimer timer;
     MojoShellConnectionImpl::Get()->BindToMessagePipe(std::move(pipe));
+    UMA_HISTOGRAM_TIMES("Mojo.Shell.ChildConnectionTime", timer.Elapsed());
   }
 
   mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));

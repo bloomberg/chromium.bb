@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -94,12 +93,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   const base::CommandLine& parsed_command_line = parameters.command_line;
 
-  {
-    base::ElapsedTimer timer;
-    MojoShellConnectionImpl::Create();
-    UMA_HISTOGRAM_TIMES("Mojo.Shell.RenderProcessInitializationTime",
-                        timer.Elapsed());
-  }
+  MojoShellConnectionImpl::Create();
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;
