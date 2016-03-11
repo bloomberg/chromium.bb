@@ -9,7 +9,6 @@ source_set("system") {
     "data_pipe.h",
     "functions.h",
     "handle.h",
-    "macros.h",
     "message_pipe.h",
     "watcher.cc",
     "watcher.h",

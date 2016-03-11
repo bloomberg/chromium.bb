@@ -70,6 +70,7 @@
         'public/cpp/bindings/tests/equals_unittest.cc',
         'public/cpp/bindings/tests/handle_passing_unittest.cc',
         'public/cpp/bindings/tests/interface_ptr_unittest.cc',
+        'public/cpp/bindings/tests/macros_unittest.cc',
         'public/cpp/bindings/tests/map_unittest.cc',
         'public/cpp/bindings/tests/message_queue.cc',
         'public/cpp/bindings/tests/message_queue.h',

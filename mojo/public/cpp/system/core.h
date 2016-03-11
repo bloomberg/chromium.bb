@@ -9,7 +9,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/functions.h"
 #include "mojo/public/cpp/system/handle.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 #endif  // MOJO_PUBLIC_CPP_SYSTEM_CORE_H_

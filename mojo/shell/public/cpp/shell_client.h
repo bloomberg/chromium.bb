@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "mojo/public/cpp/system/macros.h"
+#include "base/macros.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/identity.h"
 

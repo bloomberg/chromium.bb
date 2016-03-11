@@ -5,10 +5,10 @@
 #ifndef MOJO_SHELL_PUBLIC_CPP_APPLICATION_TEST_BASE_H_
 #define MOJO_SHELL_PUBLIC_CPP_APPLICATION_TEST_BASE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"

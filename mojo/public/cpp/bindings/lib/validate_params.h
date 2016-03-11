@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "mojo/public/cpp/system/macros.h"
+#include "base/macros.h"
 
 namespace mojo {
 namespace internal {

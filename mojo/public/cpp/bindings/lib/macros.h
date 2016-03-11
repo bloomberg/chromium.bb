@@ -2,16 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Define a set of C++ specific macros.
-// Mojo C++ API users can assume that mojo/public/cpp/system/macros.h
-// includes mojo/public/c/system/macros.h.
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MACROS_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_LIB_MACROS_H_
 
-#ifndef MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
-#define MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
-
-#include <stddef.h>
-
-#include "mojo/public/c/system/macros.h"  // Symbols exposed.
+// This file defines macros that are only used by generated bindings.
 
 // The C++ standard requires that static const members have an out-of-class
 // definition (in a single compilation unit), but MSVC chokes on this (when
@@ -36,4 +30,4 @@
 #define MOJO_STATIC_CONST_MEMBER_DEFINITION
 #endif
 
-#endif  // MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_MACROS_H_

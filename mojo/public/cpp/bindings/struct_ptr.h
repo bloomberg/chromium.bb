@@ -8,8 +8,8 @@
 #include <new>
 
 #include "base/logging.h"
+#include "base/move.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace internal {

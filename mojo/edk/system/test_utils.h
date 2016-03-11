@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

@@ -13,7 +13,6 @@
 #include "mojo/edk/system/awakable.h"
 #include "mojo/edk/system/core_test_base.h"
 #include "mojo/edk/system/test_utils.h"
-#include "mojo/public/cpp/system/macros.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

@@ -11,10 +11,10 @@
 
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/edk/system/test_utils.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

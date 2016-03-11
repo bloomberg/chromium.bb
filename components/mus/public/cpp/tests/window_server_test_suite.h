@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/test/test_suite.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mus {
 

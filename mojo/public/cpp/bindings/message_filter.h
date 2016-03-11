@@ -6,7 +6,6 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_FILTER_H_
 
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

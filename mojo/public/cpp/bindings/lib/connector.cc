@@ -108,7 +108,7 @@ bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
     HandleError(rv != MOJO_RESULT_FAILED_PRECONDITION, false);
     return false;
   }
-  mojo_ignore_result(ReadSingleMessage(&rv));
+  ignore_result(ReadSingleMessage(&rv));
   return (rv == MOJO_RESULT_OK);
 }
 

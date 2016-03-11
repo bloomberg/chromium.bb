@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

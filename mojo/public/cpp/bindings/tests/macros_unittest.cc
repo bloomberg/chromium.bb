@@ -10,7 +10,7 @@
 // TODO(vtl): Fix no-compile tests (which are all disabled; crbug.com/105388)
 // and write some "negative" tests.
 
-#include "mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/bindings/lib/macros.h"
 
 #include <assert.h>
 #include <stdint.h>

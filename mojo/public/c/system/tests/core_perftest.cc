@@ -10,8 +10,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "base/macros.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

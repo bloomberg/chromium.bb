@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/stl_util.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mus {
 

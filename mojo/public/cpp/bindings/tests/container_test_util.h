@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/move.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

@@ -44,7 +44,6 @@
       '<(DEPTH)/mojo/public/c/system/tests/core_unittest_pure_c.c',
       '<(DEPTH)/mojo/public/c/system/tests/macros_unittest.cc',
       '<(DEPTH)/mojo/public/cpp/system/tests/core_unittest.cc',
-      '<(DEPTH)/mojo/public/cpp/system/tests/macros_unittest.cc',
       '<(DEPTH)/mojo/public/cpp/system/tests/watcher_unittest.cc',
     ],
   },

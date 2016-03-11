@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "mojo/public/cpp/system/macros.h"
+#include "base/move.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
