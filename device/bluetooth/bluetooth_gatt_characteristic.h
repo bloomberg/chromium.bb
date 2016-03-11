@@ -181,6 +181,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
   // notifications/indications. On success, the characteristic starts sending
   // value notifications and |callback| is called with a session object whose
   // ownership belongs to the caller. |error_callback| is called on errors.
+  //
+  // Writes to the Client Characteristic Configuration descriptor to enable
+  // notifications/indications. Core Bluetooth Specification [V4.2 Vol 3 Part G
+  // Section 3.3.1.1. Characteristic Properties] requires this descriptor to be
+  // present when notifications/indications are supported. If the descriptor is
+  // not present |error_callback| will be run.
   virtual void StartNotifySession(const NotifySessionCallback& callback,
                                   const ErrorCallback& error_callback) = 0;
 
