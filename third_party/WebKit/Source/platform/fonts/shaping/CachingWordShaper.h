@@ -61,6 +61,8 @@ public:
         unsigned from, unsigned to);
     CharacterRange getCharacterRange(const Font*, const TextRun&,
         unsigned from, unsigned to);
+    Vector<CharacterRange> individualCharacterRanges(const Font*,
+        const TextRun&, unsigned from, unsigned to);
 
 private:
     ShapeCache* m_shapeCache;

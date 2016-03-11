@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<meta charset="utf8">
+<style>
+    .commonLigatures {
+        font-variant-ligatures: common-ligatures;
+    }
+    .noselect {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+</style>
+<svg width="600px" height="500px" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <path id="path" d="M 25 400 C 300 400 200 200 500 450" />
+    </defs>
+    <g id="container"/>
+    <g font-family="Arial" font-size="50px">
+        <text x="25" y="50" class="commonLigatures" font-family="cursive">öh &#x443;&#x030c;eah! fi ffi abcffidef</text>
+        <text x="25" y="150" class="commonLigatures" font-family="serif">öh &#x443;&#x030c;eah! fi ffi abcffidef</text>
+        <text x="25" y="250" class="commonLigatures" font-family="sans-serif">öh &#x443;&#x030c;eah! fi ffi abcffidef</text>
+        <use xlink:href="#path" stroke-width="2" stroke="black" fill="transparent"/>
+        <text x="25" y="350" class="commonLigatures" font-family="cursive">
+            <textPath xlink:href="#path">ffiffiffiffiffiffiffiffiffiffiffi</textPath>
+        </text>
+      </text>
+    </g>
+</svg>
+<script>
+    function highlightGlyph(text, index, color) {
+        var extent = text.getExtentOfChar(index);
+
+        // Highlight rect that we've selected using the extent information
+        var rectElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rectElement.setAttribute("x", extent.x);
+        rectElement.setAttribute("y", extent.y);
+        rectElement.setAttribute("width", extent.width);
+        rectElement.setAttribute("height", extent.height);
+        rectElement.setAttribute("fill-opacity", "0.5");
+        rectElement.setAttribute("fill", color);
+        document.getElementById("container").appendChild(rectElement);
+        // Output the start offset
+        var textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        textElement.setAttribute("x", extent.x + extent.width / 2);
+        textElement.setAttribute("y", extent.y + extent.height + 5);
+        textElement.setAttribute("text-anchor", "middle");
+        textElement.setAttribute("font-size", 10);
+        textElement.setAttribute("class", "noselect");
+        textElement.appendChild(document.createTextNode(index));
+        document.getElementById("container").appendChild(textElement);
+    }
+
+    var colors = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"];
+    // Highlight each glyph with a semi-transparent rectangle and
+    // a number corresponding to the queried character index.
+    var textElements = document.querySelectorAll("text");
+    for (var elemNum = 0; elemNum < textElements.length; ++elemNum) {
+        var text = textElements[elemNum];
+        var charCount = text.getNumberOfChars();
+        for (var index = 0; index < charCount; ++index)
+            highlightGlyph(text, index, colors[index % colors.length]);
+    }
+</script>

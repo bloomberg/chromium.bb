@@ -24,8 +24,7 @@
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGTextMetrics.h"
-#include "platform/fonts/GlyphBuffer.h"
-#include "platform/fonts/shaping/SimpleShaper.h"
+#include "platform/fonts/CharacterRange.h"
 #include "platform/text/BidiCharacterRun.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextDirection.h"
@@ -41,34 +40,52 @@ public:
     SVGTextMetricsCalculator(LayoutSVGInlineText*);
     ~SVGTextMetricsCalculator();
 
-    SVGTextMetrics computeMetricsForCharacter(unsigned textPosition);
-    unsigned textLength() const { return static_cast<unsigned>(m_run.charactersLength()); }
+    bool advancePosition();
+    unsigned currentPosition() const { return m_currentPosition; }
 
-    bool characterStartsSurrogatePair(unsigned textPosition) const
+    SVGTextMetrics currentCharacterMetrics();
+
+    // TODO(pdr): Character-based iteration is ambiguous and error-prone. It
+    // should be unified under a single concept. See: https://crbug.com/593570
+    bool currentCharacterStartsSurrogatePair() const
     {
-        return U16_IS_LEAD(m_run[textPosition]) && textPosition + 1 < textLength() && U16_IS_TRAIL(m_run[textPosition + 1]);
+        return U16_IS_LEAD(m_run[m_currentPosition]) && m_currentPosition + 1 < characterCount() && U16_IS_TRAIL(m_run[m_currentPosition + 1]);
     }
-    bool characterIsWhiteSpace(unsigned textPosition) const
+    bool currentCharacterIsWhiteSpace() const
     {
-        return m_run[textPosition] == ' ';
+        return m_run[m_currentPosition] == ' ';
+    }
+    unsigned characterCount() const
+    {
+        return static_cast<unsigned>(m_run.charactersLength());
     }
 
 private:
     void setupBidiRuns();
 
+    // Ensure |m_subrunRanges| is updated for the current bidi run, or the
+    // complete m_run if no bidi runs are present. Returns the current position
+    // in the subrun which can be used to index into |m_subrunRanges|.
+    unsigned updateSubrunRangesForCurrentPosition();
+
+    // Current character position in m_text.
+    unsigned m_currentPosition;
+
     LineLayoutSVGInlineText m_text;
-    BidiCharacterRun* m_bidiRun;
     TextRun m_run;
+
+    BidiCharacterRun* m_bidiRun;
     BidiResolver<TextRunIterator, BidiCharacterRun> m_bidiResolver;
-    float m_totalWidth;
-    TextDirection m_textDirection;
+
+    // Ranges for the current bidi run if present, or the entire run otherwise.
+    Vector<CharacterRange> m_subrunRanges;
 };
 
 SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText* text)
-    : m_text(LineLayoutSVGInlineText(text))
-    , m_bidiRun(nullptr)
+    : m_currentPosition(0)
+    , m_text(LineLayoutSVGInlineText(text))
     , m_run(SVGTextMetrics::constructTextRun(m_text, 0, m_text.textLength(), m_text.styleRef().direction()))
-    , m_totalWidth(0)
+    , m_bidiRun(nullptr)
 {
     setupBidiRuns();
 }
@@ -81,11 +98,8 @@ SVGTextMetricsCalculator::~SVGTextMetricsCalculator()
 
 void SVGTextMetricsCalculator::setupBidiRuns()
 {
-    const ComputedStyle& style = m_text.styleRef();
-    m_textDirection = style.direction();
-    if (isOverride(style.unicodeBidi()))
+    if (isOverride(m_text.styleRef().unicodeBidi()))
         return;
-
     BidiStatus status(LTR, false);
     status.last = status.lastStrong = WTF::Unicode::OtherNeutral;
     m_bidiResolver.setStatus(status);
@@ -97,36 +111,66 @@ void SVGTextMetricsCalculator::setupBidiRuns()
     m_bidiRun = bidiRuns.firstRun();
 }
 
-SVGTextMetrics SVGTextMetricsCalculator::computeMetricsForCharacter(unsigned textPosition)
+bool SVGTextMetricsCalculator::advancePosition()
+{
+    m_currentPosition += currentCharacterStartsSurrogatePair() ? 2 : 1;
+    return m_currentPosition < characterCount();
+}
+
+unsigned SVGTextMetricsCalculator::updateSubrunRangesForCurrentPosition()
 {
     if (m_bidiRun) {
-        if (textPosition >= static_cast<unsigned>(m_bidiRun->stop())) {
+        if (m_currentPosition >= static_cast<unsigned>(m_bidiRun->stop())) {
             m_bidiRun = m_bidiRun->next();
-            // New BiDi run means new reference position for measurements, so reset |m_totalWidth|.
-            m_totalWidth = 0;
+            // Ensure new subrange ranges are computed below.
+            m_subrunRanges.clear();
         }
         ASSERT(m_bidiRun);
-        ASSERT(static_cast<int>(textPosition) < m_bidiRun->stop());
-        m_textDirection = m_bidiRun->direction();
+        ASSERT(static_cast<int>(m_currentPosition) < m_bidiRun->stop());
     }
 
-    unsigned metricsLength = characterStartsSurrogatePair(textPosition) ? 2 : 1;
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(m_text, textPosition, metricsLength, m_textDirection);
-    ASSERT(metrics.length() == metricsLength);
+    unsigned positionInRun = m_bidiRun ? m_currentPosition - m_bidiRun->start() : m_currentPosition;
+    if (positionInRun >= m_subrunRanges.size()) {
+        unsigned subrunStart = m_bidiRun ? m_bidiRun->start() : 0;
+        unsigned subrunEnd = m_bidiRun ? m_bidiRun->stop() : m_run.charactersLength();
+        TextDirection subrunDirection = m_bidiRun ? m_bidiRun->direction() : m_text.styleRef().direction();
+        TextRun subRun = SVGTextMetrics::constructTextRun(m_text, subrunStart, subrunEnd - subrunStart, subrunDirection);
+        m_subrunRanges = m_text.scaledFont().individualCharacterRanges(subRun, 0, subRun.length() - 1);
 
-    unsigned startPosition = m_bidiRun ? m_bidiRun->start() : 0;
-    ASSERT(startPosition <= textPosition);
-    SVGTextMetrics complexStartToCurrentMetrics = SVGTextMetrics::measureCharacterRange(m_text, startPosition, textPosition - startPosition + metricsLength, m_textDirection);
-    // Frequent case for Arabic text: when measuring a single character the arabic isolated form is taken
-    // when laying out the glyph "in context" (with it's surrounding characters) it changes due to shaping.
-    // So whenever currentWidth != currentMetrics.width(), we are processing a text run whose length is
-    // not equal to the sum of the individual lengths of the glyphs, when measuring them isolated.
-    float currentWidth = complexStartToCurrentMetrics.width() - m_totalWidth;
-    if (currentWidth != metrics.width())
-        metrics.setWidth(currentWidth);
+        // TODO(pdr): We only have per-glyph data so we need to synthesize per-
+        // grapheme data. E.g., if 'fi' is shaped into a single glyph, we do not
+        // know the 'i' position. The code below synthesizes an average glyph
+        // width when characters share a position. This will incorrectly split
+        // combining diacritics. See: https://crbug.com/473476.
+        unsigned distributeCount = 0;
+        for (int rangeIndex = static_cast<int>(m_subrunRanges.size()) - 1; rangeIndex >= 0; --rangeIndex) {
+            CharacterRange& currentRange = m_subrunRanges[rangeIndex];
+            if (currentRange.width() == 0) {
+                distributeCount++;
+            } else if (distributeCount != 0) {
+                distributeCount++;
+                float newWidth = currentRange.width() / distributeCount;
+                currentRange.end = currentRange.start + newWidth;
+                for (unsigned distribute = 1; distribute < distributeCount; distribute++) {
+                    unsigned distributeIndex = rangeIndex + distribute;
+                    float newStartPosition = m_subrunRanges[distributeIndex - 1].end;
+                    m_subrunRanges[distributeIndex].start = newStartPosition;
+                    m_subrunRanges[distributeIndex].end = newStartPosition + newWidth;
+                }
+                distributeCount = 0;
+            }
+        }
+    }
 
-    m_totalWidth = complexStartToCurrentMetrics.width();
-    return metrics;
+    return positionInRun;
+}
+
+SVGTextMetrics SVGTextMetricsCalculator::currentCharacterMetrics()
+{
+    unsigned currentSubrunPosition = updateSubrunRangesForCurrentPosition();
+    unsigned length = currentCharacterStartsSurrogatePair() ? 2 : 1;
+    float width = m_subrunRanges[currentSubrunPosition].width();
+    return SVGTextMetrics(m_text, length, width);
 }
 
 struct MeasureTextData {
@@ -155,47 +199,46 @@ static void measureTextLayoutObject(LayoutSVGInlineText* text, MeasureTextData* 
             textMetricsValues->clear();
     }
 
+    // TODO(pdr): This loop is too tightly coupled to SVGTextMetricsCalculator.
+    // We should refactor SVGTextMetricsCalculator to be a simple bidi run
+    // iterator and move all subrun logic to a single function.
     SVGTextMetricsCalculator calculator(text);
     bool preserveWhiteSpace = text->style()->whiteSpace() == PRE;
     unsigned surrogatePairCharacters = 0;
     unsigned skippedCharacters = 0;
-    unsigned textPosition = 0;
-    unsigned textLength = calculator.textLength();
-
-    SVGTextMetrics currentMetrics;
-    for (; textPosition < textLength; textPosition += currentMetrics.length()) {
-        currentMetrics = calculator.computeMetricsForCharacter(textPosition);
-        if (!currentMetrics.length())
+    do {
+        SVGTextMetrics metrics = calculator.currentCharacterMetrics();
+        if (!metrics.length())
             break;
 
-        bool characterIsWhiteSpace = calculator.characterIsWhiteSpace(textPosition);
+        bool characterIsWhiteSpace = calculator.currentCharacterIsWhiteSpace();
         if (characterIsWhiteSpace && !preserveWhiteSpace && data->lastCharacterWasWhiteSpace) {
             if (processLayoutObject)
                 textMetricsValues->append(SVGTextMetrics(SVGTextMetrics::SkippedSpaceMetrics));
             if (data->allCharactersMap)
-                skippedCharacters += currentMetrics.length();
+                skippedCharacters += metrics.length();
             continue;
         }
 
         if (processLayoutObject) {
             if (data->allCharactersMap) {
-                const SVGCharacterDataMap::const_iterator it = data->allCharactersMap->find(data->valueListPosition + textPosition - skippedCharacters - surrogatePairCharacters + 1);
+                const SVGCharacterDataMap::const_iterator it = data->allCharactersMap->find(data->valueListPosition + calculator.currentPosition() - skippedCharacters - surrogatePairCharacters + 1);
                 if (it != data->allCharactersMap->end())
-                    attributes->characterDataMap().set(textPosition + 1, it->value);
+                    attributes->characterDataMap().set(calculator.currentPosition() + 1, it->value);
             }
-            textMetricsValues->append(currentMetrics);
+            textMetricsValues->append(metrics);
         }
 
-        if (data->allCharactersMap && calculator.characterStartsSurrogatePair(textPosition))
+        if (data->allCharactersMap && calculator.currentCharacterStartsSurrogatePair())
             surrogatePairCharacters++;
 
         data->lastCharacterWasWhiteSpace = characterIsWhiteSpace;
-    }
+    } while (calculator.advancePosition());
 
     if (!data->allCharactersMap)
         return;
 
-    data->valueListPosition += textPosition - skippedCharacters;
+    data->valueListPosition += calculator.currentPosition() - skippedCharacters;
 }
 
 static void walkTree(LayoutSVGText* start, LayoutSVGInlineText* stopAtLeaf, MeasureTextData* data)

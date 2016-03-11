@@ -46,6 +46,7 @@ struct SkPoint;
 
 namespace blink {
 
+struct CharacterRange;
 class FloatPoint;
 class FloatRect;
 class FontFallbackIterator;
@@ -86,6 +87,7 @@ public:
 
     int offsetForPosition(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForText(const TextRun&, const FloatPoint&, int h, int from = 0, int to = -1, bool accountForGlyphBounds = false) const;
+    Vector<CharacterRange> individualCharacterRanges(const TextRun&, int from, int to) const;
 
     // Metrics that we query the FontFallbackList for.
     const FontMetrics& getFontMetrics() const

@@ -84,12 +84,6 @@ TextRun SVGTextMetrics::constructTextRun(LineLayoutSVGInlineText textLayoutItem,
     return run;
 }
 
-SVGTextMetrics SVGTextMetrics::measureCharacterRange(LineLayoutSVGInlineText textLayoutItem, unsigned position, unsigned length, TextDirection textDirection)
-{
-    ASSERT(textLayoutItem);
-    return SVGTextMetrics(textLayoutItem, constructTextRun(textLayoutItem, position, length, textDirection));
-}
-
 SVGTextMetrics::SVGTextMetrics(LineLayoutSVGInlineText textLayoutItem, unsigned length, float width)
 {
     ASSERT(textLayoutItem);

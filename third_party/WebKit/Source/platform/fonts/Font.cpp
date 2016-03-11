@@ -752,6 +752,19 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
     return FloatRect(point.x() + range.start, point.y(), range.width(), height);
 }
 
+Vector<CharacterRange> Font::individualCharacterRanges(const TextRun& run,
+    int from, int to) const
+{
+    // TODO(pdr): Android is temporarily (crbug.com/577306) using the old simple
+    // shaper and using the complex shaper here can show differences between
+    // the two shapers. This function is currently only called through SVG
+    // which now exclusively uses the complex shaper, so the primary difference
+    // will be improved shaping in SVG when compared to HTML.
+    FontCachePurgePreventer purgePreventer;
+    CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
+    return shaper.individualCharacterRanges(this, run, from, to);
+}
+
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const
 {
     SimpleShaper shaper(this, run, nullptr, fallbackFonts, glyphBounds);

@@ -40,7 +40,6 @@ public:
     SVGTextMetrics(MetricsType);
     SVGTextMetrics(LineLayoutSVGInlineText, unsigned length, float width);
 
-    static SVGTextMetrics measureCharacterRange(LineLayoutSVGInlineText, unsigned position, unsigned length, TextDirection);
     static TextRun constructTextRun(LineLayoutSVGInlineText, unsigned position, unsigned length, TextDirection);
 
     bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }

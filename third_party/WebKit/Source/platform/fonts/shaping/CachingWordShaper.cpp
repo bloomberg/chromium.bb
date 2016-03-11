@@ -116,4 +116,20 @@ CharacterRange CachingWordShaper::getCharacterRange(const Font* font,
     return buffer.getCharacterRange(run.direction(), totalWidth, from, to);
 }
 
+Vector<CharacterRange> CachingWordShaper::individualCharacterRanges(
+    const Font* font, const TextRun& run, unsigned from, unsigned to)
+{
+    ShapeResultBuffer buffer;
+    float totalWidth = shapeResultsForRun(m_shapeCache, font, run, nullptr,
+        &buffer);
+
+    Vector<CharacterRange> allExtents;
+    for (unsigned position = from; position <= to; position++) {
+        allExtents.append(buffer.getCharacterRange(run.direction(), totalWidth,
+            position, position + 1));
+    }
+
+    return allExtents;
+}
+
 }; // namespace blink
