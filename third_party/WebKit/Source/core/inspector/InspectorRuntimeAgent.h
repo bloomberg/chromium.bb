@@ -52,8 +52,7 @@ using protocol::Maybe;
 
 class CORE_EXPORT InspectorRuntimeAgent
     : public InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>
-    , public protocol::Dispatcher::RuntimeCommandHandler
-    , public V8RuntimeAgent::Client {
+    , public protocol::Dispatcher::RuntimeCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
     class Client {
@@ -65,14 +64,12 @@ public:
 
     ~InspectorRuntimeAgent() override;
 
-    // V8RuntimeAgent::Client.
-    void reportExecutionContexts() override { }
-
     // InspectorBaseAgent overrides.
     void setState(protocol::DictionaryValue*) override;
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
+    void discardAgent() override;
 
     // Part of the protocol.
     void evaluate(ErrorString*, const String16& expression, const Maybe<String16>& objectGroup, const Maybe<bool>& includeCommandLineAPI, const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole, const Maybe<int>& contextId, const Maybe<bool>& returnByValue, const Maybe<bool>& generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>*) override;
@@ -93,11 +90,8 @@ public:
     V8RuntimeAgent* v8Agent() { return m_v8RuntimeAgent.get(); }
 
 protected:
-    InspectorRuntimeAgent(V8Debugger*, Client*);
+    InspectorRuntimeAgent(V8Debugger*, Client*, int contextGroupId);
     virtual ScriptState* defaultScriptState() = 0;
-
-    void reportExecutionContextCreated(ScriptState*, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId);
-    void reportExecutionContextDestroyed(ScriptState*);
 
     bool m_enabled;
     OwnPtr<V8RuntimeAgent> m_v8RuntimeAgent;

@@ -59,7 +59,8 @@ void WorkerInspectorProxy::workerThreadTerminated()
 
 static void connectToWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
 {
-    workerThread->workerGlobalScope()->workerInspectorController()->connectFrontend();
+    if (WorkerInspectorController* inspector = workerThread->workerGlobalScope()->workerInspectorController())
+        inspector->connectFrontend();
 }
 
 void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspector* pageInspector)
@@ -73,7 +74,8 @@ void WorkerInspectorProxy::connectToInspector(WorkerInspectorProxy::PageInspecto
 
 static void disconnectFromWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
 {
-    workerThread->workerGlobalScope()->workerInspectorController()->disconnectFrontend();
+    if (WorkerInspectorController* inspector = workerThread->workerGlobalScope()->workerInspectorController())
+        inspector->disconnectFrontend();
 }
 
 void WorkerInspectorProxy::disconnectFromInspector()
@@ -85,7 +87,8 @@ void WorkerInspectorProxy::disconnectFromInspector()
 
 static void dispatchOnInspectorBackendTask(const String& message, WorkerThread* workerThread)
 {
-    workerThread->workerGlobalScope()->workerInspectorController()->dispatchMessageFromFrontend(message);
+    if (WorkerInspectorController* inspector = workerThread->workerGlobalScope()->workerInspectorController())
+        inspector->dispatchMessageFromFrontend(message);
 }
 
 void WorkerInspectorProxy::sendMessageToInspector(const String& message)

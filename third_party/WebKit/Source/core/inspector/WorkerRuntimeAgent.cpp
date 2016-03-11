@@ -35,8 +35,8 @@
 
 namespace blink {
 
-WorkerRuntimeAgent::WorkerRuntimeAgent(V8Debugger* debugger, WorkerGlobalScope* workerGlobalScope, InspectorRuntimeAgent::Client* client)
-    : InspectorRuntimeAgent(debugger, client)
+WorkerRuntimeAgent::WorkerRuntimeAgent(V8Debugger* debugger, WorkerGlobalScope* workerGlobalScope, InspectorRuntimeAgent::Client* client, int contextGroupId)
+    : InspectorRuntimeAgent(debugger, client, contextGroupId)
     , m_workerGlobalScope(workerGlobalScope)
 {
 }
@@ -57,8 +57,6 @@ void WorkerRuntimeAgent::enable(ErrorString* errorString)
         return;
 
     InspectorRuntimeAgent::enable(errorString);
-    ScriptState* scriptState = m_workerGlobalScope->scriptController()->getScriptState();
-    reportExecutionContextCreated(scriptState, "", m_workerGlobalScope->url().getString(), "", "");
 }
 
 ScriptState* WorkerRuntimeAgent::defaultScriptState()

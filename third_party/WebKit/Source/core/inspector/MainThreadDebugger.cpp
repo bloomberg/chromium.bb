@@ -32,11 +32,14 @@
 
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
@@ -83,10 +86,22 @@ Mutex& MainThreadDebugger::creationMutex()
     return mutex;
 }
 
-void MainThreadDebugger::initializeContext(v8::Local<v8::Context> context, LocalFrame* frame, int worldId)
+void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* frame, SecurityOrigin* origin)
 {
-    String type = worldId == MainWorldId ? "page" : "injected";
-    V8Debugger::setContextDebugData(context, type, contextGroupId(frame));
+    ASSERT(isMainThread());
+    v8::HandleScope handles(scriptState->isolate());
+    DOMWrapperWorld& world = scriptState->world();
+    V8Debugger::setContextDebugData(scriptState->context(), world.isMainWorld() ? "page" : "injected", contextGroupId(frame));
+    if (s_instance)
+        s_instance->debugger()->contextCreated(V8ContextInfo(scriptState->context(), world.isMainWorld() ? "" : "Extension", origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
+}
+
+void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
+{
+    if (s_instance) {
+        v8::HandleScope handles(scriptState->isolate());
+        s_instance->debugger()->contextDestroyed(scriptState->context());
+    }
 }
 
 int MainThreadDebugger::contextGroupId(LocalFrame* frame)
@@ -145,6 +160,44 @@ bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> c
 {
     DOMWindow* window = toDOMWindow(target);
     return window && BindingSecurity::shouldAllowAccessTo(m_isolate, toLocalDOMWindow(toDOMWindow(calling)), window, DoNotReportSecurityError);
+}
+
+void MainThreadDebugger::contextsToReport(int contextGroupId, V8ContextInfoVector& contexts)
+{
+    LocalFrame* root = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
+    if (!root)
+        return;
+
+    // Only report existing contexts if the page did commit load, otherwise we may
+    // unintentionally initialize contexts in the frames which may trigger some listeners
+    // that are expected to be triggered only after the load is committed, see http://crbug.com/131623
+    if (!root->loader().stateMachine()->committedFirstRealDocumentLoad())
+        return;
+
+    OwnPtrWillBeRawPtr<InspectedFrames> inspectedFrames = InspectedFrames::create(root);
+
+    Vector<std::pair<ScriptState*, SecurityOrigin*>> isolatedContexts;
+    for (LocalFrame* frame : *inspectedFrames) {
+        if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
+            continue;
+        String frameId = IdentifiersFactory::frameId(frame);
+
+        // Ensure execution context is created.
+        // If initializeMainWorld returns true, then is registered by didCreateScriptContext
+        if (!frame->script().initializeMainWorld()) {
+            ScriptState* scriptState = ScriptState::forMainWorld(frame);
+            contexts.append(V8ContextInfo(scriptState->context(), "", "", "", frameId));
+        }
+        frame->script().collectIsolatedContexts(isolatedContexts);
+        if (isolatedContexts.isEmpty())
+            continue;
+        for (const auto& pair : isolatedContexts) {
+            String originString = pair.second ? pair.second->toRawString() : "";
+            ScriptState* scriptState = pair.first;
+            contexts.append(V8ContextInfo(scriptState->context(), "Extension", originString, scriptState->world().isolatedWorldHumanReadableName(), frameId));
+        }
+        isolatedContexts.clear();
+    }
 }
 
 } // namespace blink

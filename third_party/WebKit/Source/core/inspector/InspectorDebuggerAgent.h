@@ -93,22 +93,21 @@ public:
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
+    void discardAgent() override;
 
     V8DebuggerAgent* v8Agent() const { return m_v8DebuggerAgent.get(); }
 
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;
 
-    V8Debugger* debugger() { return m_debugger; }
 protected:
-    InspectorDebuggerAgent(V8RuntimeAgent*, V8Debugger*, int contextGroupId);
+    explicit InspectorDebuggerAgent(V8RuntimeAgent*);
 
     OwnPtr<V8DebuggerAgent> m_v8DebuggerAgent;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
 
 private:
     void setTrackingAsyncCalls(bool);
-    V8Debugger* m_debugger;
 };
 
 } // namespace blink

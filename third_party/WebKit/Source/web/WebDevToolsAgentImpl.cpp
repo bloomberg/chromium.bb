@@ -338,7 +338,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_inspectorAgent = inspectorAgentPtr.get();
     m_agents.append(inspectorAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get()));
+    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root())));
     m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
     m_agents.append(pageRuntimeAgentPtr.release());
 
@@ -443,7 +443,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_agents.append(InspectorApplicationCacheAgent::create(m_inspectedFrames.get()));
     m_agents.append(InspectorIndexedDBAgent::create(m_inspectedFrames.get()));
 
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_inspectedFrames.get(), m_pageRuntimeAgent->v8Agent()));
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(m_inspectedFrames.get(), m_pageRuntimeAgent->v8Agent()));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
 

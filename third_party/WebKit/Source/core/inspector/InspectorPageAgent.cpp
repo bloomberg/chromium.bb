@@ -550,7 +550,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
     }
 
     OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> results;
-    results = V8ContentSearchUtil::searchInTextByLines(m_debuggerAgent->debugger(), content, query, caseSensitive, isRegex);
+    results = V8ContentSearchUtil::searchInTextByLines(&m_debuggerAgent->v8Agent()->debugger(), content, query, caseSensitive, isRegex);
     callback->sendSuccess(results.release());
 }
 

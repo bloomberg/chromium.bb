@@ -43,10 +43,9 @@ namespace DebuggerAgentState {
 static const char debuggerEnabled[] = "debuggerEnabled";
 }
 
-InspectorDebuggerAgent::InspectorDebuggerAgent(V8RuntimeAgent* runtimeAgent, V8Debugger* debugger, int contextGroupId)
+InspectorDebuggerAgent::InspectorDebuggerAgent(V8RuntimeAgent* runtimeAgent)
     : InspectorBaseAgent<InspectorDebuggerAgent, protocol::Frontend::Debugger>("Debugger")
-    , m_v8DebuggerAgent(V8DebuggerAgent::create(runtimeAgent, contextGroupId))
-    , m_debugger(debugger)
+    , m_v8DebuggerAgent(V8DebuggerAgent::create(runtimeAgent))
 {
 }
 
@@ -358,6 +357,11 @@ void InspectorDebuggerAgent::restore()
     ErrorString errorString;
     enable(&errorString);
     setTrackingAsyncCalls(m_v8DebuggerAgent->trackingAsyncCalls());
+}
+
+void InspectorDebuggerAgent::discardAgent()
+{
+    m_v8DebuggerAgent.clear();
 }
 
 void InspectorDebuggerAgent::setTrackingAsyncCalls(bool tracking)

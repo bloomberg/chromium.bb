@@ -30,19 +30,17 @@
 
 #include "core/inspector/WorkerDebuggerAgent.h"
 
-#include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "platform/v8_inspector/public/V8Debugger.h"
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(V8Debugger* debugger, WorkerGlobalScope* inspectedWorkerGlobalScope, V8RuntimeAgent* runtimeAgent)
+PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerGlobalScope* inspectedWorkerGlobalScope, V8RuntimeAgent* runtimeAgent)
 {
-    return adoptPtrWillBeNoop(new WorkerDebuggerAgent(debugger, inspectedWorkerGlobalScope, runtimeAgent));
+    return adoptPtrWillBeNoop(new WorkerDebuggerAgent(inspectedWorkerGlobalScope, runtimeAgent));
 }
 
-WorkerDebuggerAgent::WorkerDebuggerAgent(V8Debugger* debugger, WorkerGlobalScope* inspectedWorkerGlobalScope, V8RuntimeAgent* runtimeAgent)
-    : InspectorDebuggerAgent(runtimeAgent, debugger, WorkerThreadDebugger::contextGroupId())
+WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerGlobalScope* inspectedWorkerGlobalScope, V8RuntimeAgent* runtimeAgent)
+    : InspectorDebuggerAgent(runtimeAgent)
     , m_inspectedWorkerGlobalScope(inspectedWorkerGlobalScope)
 {
 }

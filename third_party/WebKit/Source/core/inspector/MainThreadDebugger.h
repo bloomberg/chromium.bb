@@ -31,6 +31,7 @@
 #ifndef MainThreadDebugger_h
 #define MainThreadDebugger_h
 
+#include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/ThreadDebugger.h"
@@ -45,6 +46,7 @@ namespace blink {
 
 class LocalFrame;
 class V8Debugger;
+class SecurityOrigin;
 
 class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
     WTF_MAKE_NONCOPYABLE(MainThreadDebugger);
@@ -64,7 +66,8 @@ public:
 
     ~MainThreadDebugger() override;
 
-    static void initializeContext(v8::Local<v8::Context>, LocalFrame*, int worldId);
+    static void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
+    static void contextWillBeDestroyed(ScriptState*);
     static int contextGroupId(LocalFrame*);
 
     static MainThreadDebugger* instance();
@@ -82,6 +85,7 @@ private:
     void muteWarningsAndDeprecations() override;
     void unmuteWarningsAndDeprecations() override;
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
+    void contextsToReport(int contextGroupId, V8ContextInfoVector&) override;
 
     static WTF::Mutex& creationMutex();
 

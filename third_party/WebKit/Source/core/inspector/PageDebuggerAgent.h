@@ -42,14 +42,13 @@ namespace blink {
 
 class DocumentLoader;
 class InspectedFrames;
-class MainThreadDebugger;
 
 class CORE_EXPORT PageDebuggerAgent final
     : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
     USING_FAST_MALLOC_WILL_BE_REMOVED(PageDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(MainThreadDebugger*, InspectedFrames*, V8RuntimeAgent*);
+    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(InspectedFrames*, V8RuntimeAgent*);
     ~PageDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -61,7 +60,7 @@ public:
     void didClearDocumentOfWindowObject(LocalFrame*);
 
 private:
-    PageDebuggerAgent(MainThreadDebugger*, InspectedFrames*, V8RuntimeAgent*);
+    PageDebuggerAgent(InspectedFrames*, V8RuntimeAgent*);
     void muteConsole() override;
     void unmuteConsole() override;
 

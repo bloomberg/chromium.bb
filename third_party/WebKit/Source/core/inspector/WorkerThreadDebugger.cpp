@@ -75,4 +75,11 @@ bool WorkerThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context>
     return true;
 }
 
+void WorkerThreadDebugger::contextsToReport(int contextGroupId, V8ContextInfoVector& contexts)
+{
+    ASSERT(contextGroupId == workerContextGroupId);
+    ScriptState* scriptState = m_workerThread->workerGlobalScope()->scriptController()->getScriptState();
+    contexts.append(V8ContextInfo(scriptState->context(), "", m_workerThread->workerGlobalScope()->url().getString(), "", ""));
+}
+
 } // namespace blink

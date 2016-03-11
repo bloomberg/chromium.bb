@@ -145,10 +145,10 @@ static String16 calculateHash(const String16& str)
     return hash.toString();
 }
 
-PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(V8RuntimeAgent* runtimeAgent, int contextGroupId)
+PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(V8RuntimeAgent* runtimeAgent)
 {
     V8RuntimeAgentImpl* runtimeAgentImpl = static_cast<V8RuntimeAgentImpl*>(runtimeAgent);
-    return adoptPtr(new V8DebuggerAgentImpl(runtimeAgentImpl->getInjectedScriptManager(), runtimeAgentImpl->debugger(), contextGroupId));
+    return adoptPtr(new V8DebuggerAgentImpl(runtimeAgentImpl->getInjectedScriptManager(), runtimeAgentImpl->debugger(), runtimeAgentImpl->contextGroupId()));
 }
 
 V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptManager, V8DebuggerImpl* debugger, int contextGroupId)
@@ -204,7 +204,7 @@ void V8DebuggerAgentImpl::enable()
     // debugger().addListener may result in reporting all parsed scripts to
     // the agent so it should already be in enabled state by then.
     m_enabled = true;
-    debugger().addAgent(m_contextGroupId, this);
+    debugger().addDebuggerAgent(m_contextGroupId, this);
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     debugger().setBreakpointsActivated(true);
 }
@@ -235,7 +235,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
     m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, false);
 
-    debugger().removeAgent(m_contextGroupId);
+    debugger().removeDebuggerAgent(m_contextGroupId);
     m_pausedContext.Reset();
     m_currentCallStack.Reset();
     m_scripts.clear();

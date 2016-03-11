@@ -6,6 +6,7 @@
 #define V8DebuggerClient_h
 
 #include "platform/PlatformExport.h"
+#include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"
 
 #include <v8.h>
@@ -20,6 +21,7 @@ public:
     virtual void muteWarningsAndDeprecations() = 0;
     virtual void unmuteWarningsAndDeprecations() = 0;
     virtual void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoMap&) = 0;
+    virtual void contextsToReport(int contextGroupId, V8ContextInfoVector&) = 0;
     virtual bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) = 0;
 
     virtual v8::MaybeLocal<v8::Object> instantiateObject(v8::Local<v8::Function>) = 0;

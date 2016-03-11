@@ -64,6 +64,7 @@ public:
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
+    void discardAgent() override;
 
     void consoleProfile(ExecutionContext*, const String16& title);
     void consoleProfileEnd(const String16& title);

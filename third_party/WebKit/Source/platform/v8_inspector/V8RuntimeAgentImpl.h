@@ -49,7 +49,7 @@ using protocol::Maybe;
 class V8RuntimeAgentImpl : public V8RuntimeAgent {
     PROTOCOL_DISALLOW_COPY(V8RuntimeAgentImpl);
 public:
-    V8RuntimeAgentImpl(V8DebuggerImpl*, Client*);
+    V8RuntimeAgentImpl(V8DebuggerImpl*, int contextGroupId);
     ~V8RuntimeAgentImpl() override;
 
     // State management methods.
@@ -111,6 +111,10 @@ public:
 
     V8DebuggerImpl* debugger() { return m_debugger; }
     InjectedScriptManager* getInjectedScriptManager() { return m_injectedScriptManager.get(); }
+    int contextGroupId() { return m_contextGroupId; }
+
+    void reportExecutionContextCreated(const V8ContextInfo&);
+    void reportExecutionContextDestroyed(v8::Local<v8::Context>);
 
     void setClearConsoleCallback(PassOwnPtr<ClearConsoleCallback>) override;
     void setInspectObjectCallback(PassOwnPtr<InspectCallback>) override;
@@ -123,11 +127,9 @@ public:
     void clearInspectedObjects() override;
 
 private:
-    void reportExecutionContextCreated(v8::Local<v8::Context>, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId) override;
-    void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
     PassOwnPtr<protocol::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
-    Client* m_client;
+    int m_contextGroupId;
     protocol::DictionaryValue* m_state;
     protocol::Frontend::Runtime* m_frontend;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;

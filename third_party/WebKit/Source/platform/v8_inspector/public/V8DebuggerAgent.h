@@ -17,7 +17,7 @@ class PLATFORM_EXPORT V8DebuggerAgent : public protocol::Dispatcher::DebuggerCom
 public:
     static const char backtraceObjectGroup[];
 
-    static PassOwnPtr<V8DebuggerAgent> create(V8RuntimeAgent*, int contextGroupId);
+    static PassOwnPtr<V8DebuggerAgent> create(V8RuntimeAgent*);
     virtual ~V8DebuggerAgent() { }
 
     // API for the embedder to report native activities.

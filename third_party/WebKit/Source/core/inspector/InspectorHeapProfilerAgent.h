@@ -59,6 +59,7 @@ public:
     void setFrontend(protocol::Frontend*) override;
     void clearFrontend() override;
     void restore() override;
+    void discardAgent() override;
 
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;

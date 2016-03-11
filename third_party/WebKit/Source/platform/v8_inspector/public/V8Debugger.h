@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class V8ContextInfo;
 class V8DebuggerClient;
 class V8StackTrace;
 
@@ -39,6 +40,10 @@ public:
     // |contextGroupId| must be non-0.
     static void setContextDebugData(v8::Local<v8::Context>, const String16& type, int contextGroupId);
     static int contextId(v8::Local<v8::Context>);
+
+    // Context should have been already marked with |setContextDebugData| call.
+    virtual void contextCreated(const V8ContextInfo&) = 0;
+    virtual void contextDestroyed(v8::Local<v8::Context>) = 0;
 
     static v8::Local<v8::Symbol> commandLineAPISymbol(v8::Isolate*);
     static bool isCommandLineAPIMethod(const String16& name);

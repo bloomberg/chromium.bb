@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/Dispatcher.h"
+#include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "wtf/Functional.h"
 
@@ -25,17 +26,8 @@ public:
         virtual ~Inspectable() { }
     };
 
-    class Client {
-    public:
-        virtual void reportExecutionContexts() = 0;
-    };
-
-    static PassOwnPtr<V8RuntimeAgent> create(V8Debugger*, Client*);
+    static PassOwnPtr<V8RuntimeAgent> create(V8Debugger*, int contextGroupId);
     virtual ~V8RuntimeAgent() { }
-
-    // Embedder notification API.
-    virtual void reportExecutionContextCreated(v8::Local<v8::Context>, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId) = 0;
-    virtual void reportExecutionContextDestroyed(v8::Local<v8::Context>) = 0;
 
     // Embedder API.
     using ClearConsoleCallback = Function<void()>;

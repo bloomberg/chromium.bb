@@ -85,6 +85,11 @@ void InspectorProfilerAgent::restore()
     enable(&errorString);
 }
 
+void InspectorProfilerAgent::discardAgent()
+{
+    m_v8ProfilerAgent.clear();
+}
+
 // Protocol implementation.
 void InspectorProfilerAgent::consoleProfile(ExecutionContext* context, const String16& title)
 {

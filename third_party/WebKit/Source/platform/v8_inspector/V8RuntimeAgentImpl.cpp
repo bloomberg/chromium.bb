@@ -50,23 +50,25 @@ static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled
 using protocol::Runtime::ExceptionDetails;
 using protocol::Runtime::RemoteObject;
 
-PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(V8Debugger* debugger, Client* client)
+PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(V8Debugger* debugger, int contextGroupId)
 {
-    return adoptPtr(new V8RuntimeAgentImpl(static_cast<V8DebuggerImpl*>(debugger), client));
+    return adoptPtr(new V8RuntimeAgentImpl(static_cast<V8DebuggerImpl*>(debugger), contextGroupId));
 }
 
-V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8DebuggerImpl* debugger, Client* client)
-    : m_client(client)
+V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8DebuggerImpl* debugger, int contextGroupId)
+    : m_contextGroupId(contextGroupId)
     , m_state(nullptr)
     , m_frontend(nullptr)
     , m_injectedScriptManager(InjectedScriptManager::create(debugger))
     , m_debugger(debugger)
     , m_enabled(false)
 {
+    m_debugger->addRuntimeAgent(m_contextGroupId, this);
 }
 
 V8RuntimeAgentImpl::~V8RuntimeAgentImpl()
 {
+    m_debugger->removeRuntimeAgent(m_contextGroupId);
 }
 
 void V8RuntimeAgentImpl::evaluate(
@@ -320,11 +322,17 @@ void V8RuntimeAgentImpl::restore()
 void V8RuntimeAgentImpl::enable(ErrorString* errorString)
 {
     m_enabled = true;
-    m_client->reportExecutionContexts();
+    v8::HandleScope handles(m_debugger->isolate());
+    V8ContextInfoVector contexts;
+    m_debugger->client()->contextsToReport(m_contextGroupId, contexts);
+    for (const V8ContextInfo& info : contexts)
+        reportExecutionContextCreated(info);
 }
 
 void V8RuntimeAgentImpl::disable(ErrorString* errorString)
 {
+    if (!m_enabled)
+        return;
     m_enabled = false;
     m_compiledScripts.clear();
     clearInspectedObjects();
@@ -393,22 +401,22 @@ void V8RuntimeAgentImpl::clearInspectedObjects()
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 }
 
-void V8RuntimeAgentImpl::reportExecutionContextCreated(v8::Local<v8::Context> context, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId)
+void V8RuntimeAgentImpl::reportExecutionContextCreated(const V8ContextInfo& info)
 {
     if (!m_enabled)
         return;
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(context);
+    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(info.context);
     if (!injectedScript)
         return;
     int contextId = injectedScript->contextId();
-    injectedScript->setOrigin(origin);
+    injectedScript->setOrigin(info.origin);
     OwnPtr<protocol::Runtime::ExecutionContextDescription> description = protocol::Runtime::ExecutionContextDescription::create()
         .setId(contextId)
-        .setName(humanReadableName)
-        .setOrigin(origin)
-        .setFrameId(frameId).build();
-    if (!type.isEmpty())
-        description->setType(type);
+        .setName(info.humanReadableName)
+        .setOrigin(info.origin)
+        .setFrameId(info.frameId).build();
+    if (!info.type.isEmpty())
+        description->setType(info.type);
     m_frontend->executionContextCreated(description.release());
 }
 

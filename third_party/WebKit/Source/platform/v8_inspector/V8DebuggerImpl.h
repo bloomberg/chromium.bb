@@ -46,6 +46,7 @@ using protocol::Maybe;
 class JavaScriptCallFrame;
 struct ScriptBreakpoint;
 class V8DebuggerAgentImpl;
+class V8RuntimeAgentImpl;
 
 class V8DebuggerImpl : public V8Debugger {
     PROTOCOL_DISALLOW_COPY(V8DebuggerImpl);
@@ -55,8 +56,10 @@ public:
 
     bool enabled() const;
 
-    void addAgent(int contextGroupId, V8DebuggerAgentImpl*);
-    void removeAgent(int contextGroupId);
+    void addDebuggerAgent(int contextGroupId, V8DebuggerAgentImpl*);
+    void removeDebuggerAgent(int contextGroupId);
+    void addRuntimeAgent(int contextGroupId, V8RuntimeAgentImpl*);
+    void removeRuntimeAgent(int contextGroupId);
 
     String16 setBreakpoint(const String16& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String16& breakpointId);
@@ -99,6 +102,8 @@ public:
     v8::Local<v8::Context> regexContext();
 
     // V8Debugger implementation
+    void contextCreated(const V8ContextInfo&) override;
+    void contextDestroyed(v8::Local<v8::Context>) override;
     PassOwnPtr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) override;
     PassOwnPtr<V8StackTrace> captureStackTrace(size_t maxStackSize) override;
 
@@ -109,7 +114,8 @@ private:
     // Only scripts whose debug data matches |contextGroupId| will be reported.
     // Passing 0 will result in reporting all scripts.
     void getCompiledScripts(int contextGroupId, protocol::Vector<V8DebuggerParsedScript>&);
-    V8DebuggerAgentImpl* getAgentForContext(v8::Local<v8::Context>);
+    V8DebuggerAgentImpl* getDebuggerAgentForContext(v8::Local<v8::Context>);
+    V8RuntimeAgentImpl* getRuntimeAgentForContext(v8::Local<v8::Context>);
 
     void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
@@ -132,8 +138,10 @@ private:
 
     v8::Isolate* m_isolate;
     V8DebuggerClient* m_client;
-    using AgentsMap = protocol::HashMap<int, V8DebuggerAgentImpl*>;
-    AgentsMap m_agentsMap;
+    using DebuggerAgentsMap = protocol::HashMap<int, V8DebuggerAgentImpl*>;
+    DebuggerAgentsMap m_debuggerAgentsMap;
+    using RuntimeAgentsMap = protocol::HashMap<int, V8RuntimeAgentImpl*>;
+    RuntimeAgentsMap m_runtimeAgentsMap;
     bool m_breakpointsActivated;
     v8::Global<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::Global<v8::Object> m_debuggerScript;

@@ -182,12 +182,6 @@ interface InspectorInstrumentation {
     [DOMDebugger, Inline=FastReturn]
     void willEvaluateScript(ExecutionContext*);
 
-    [PageRuntime]
-    void didCreateScriptContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);
-
-    [PageRuntime, Inline=FastReturn]
-    void willReleaseScriptContext([Keep] LocalFrame*, ScriptState*);
-
     [AsyncCallTracker, DOMDebugger, Inline=FastReturn]
     InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
 

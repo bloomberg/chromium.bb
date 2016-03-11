@@ -114,6 +114,11 @@ void InspectorHeapProfilerAgent::restore()
         startUpdateStatsTimer();
 }
 
+void InspectorHeapProfilerAgent::discardAgent()
+{
+    m_v8HeapProfilerAgent.clear();
+}
+
 // Protocol implementation.
 void InspectorHeapProfilerAgent::collectGarbage(ErrorString* error)
 {

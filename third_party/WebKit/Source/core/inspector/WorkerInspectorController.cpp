@@ -66,11 +66,11 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 
     V8Debugger* debugger = data->threadDebugger()->debugger();
 
-    OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(debugger, workerGlobalScope, this);
+    OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(debugger, workerGlobalScope, this, WorkerThreadDebugger::contextGroupId());
     m_workerRuntimeAgent = workerRuntimeAgent.get();
     m_agents.append(workerRuntimeAgent.release());
 
-    OwnPtrWillBeRawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(debugger, workerGlobalScope, m_workerRuntimeAgent->v8Agent());
+    OwnPtrWillBeRawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(workerGlobalScope, m_workerRuntimeAgent->v8Agent());
     m_workerDebuggerAgent = workerDebuggerAgent.get();
     m_agents.append(workerDebuggerAgent.release());
 
@@ -120,8 +120,9 @@ void WorkerInspectorController::dispatchMessageFromFrontend(const String& messag
 
 void WorkerInspectorController::dispose()
 {
-    m_instrumentingAgents->reset();
     disconnectFrontend();
+    m_instrumentingAgents->reset();
+    m_agents.discardAgents();
 }
 
 void WorkerInspectorController::resumeStartup()

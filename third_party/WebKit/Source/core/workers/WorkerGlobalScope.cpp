@@ -71,13 +71,13 @@
 
 namespace blink {
 
-WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, bool withInspector)
     : m_url(url)
     , m_userAgent(userAgent)
     , m_v8CacheOptions(V8CacheOptionsDefault)
     , m_scriptController(WorkerOrWorkletScriptController::create(this, thread->isolate()))
     , m_thread(thread)
-    , m_workerInspectorController(adoptRefWillBeNoop(new WorkerInspectorController(this)))
+    , m_workerInspectorController(withInspector ? adoptRefWillBeNoop(new WorkerInspectorController(this)) : nullptr)
     , m_closing(false)
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_workerClients(workerClients)
@@ -192,9 +192,10 @@ void WorkerGlobalScope::clearScript()
 
 void WorkerGlobalScope::clearInspector()
 {
-    ASSERT(m_workerInspectorController);
-    m_workerInspectorController->dispose();
-    m_workerInspectorController.clear();
+    if (m_workerInspectorController) {
+        m_workerInspectorController->dispose();
+        m_workerInspectorController.clear();
+    }
 }
 
 void WorkerGlobalScope::dispose()

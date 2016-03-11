@@ -40,7 +40,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 
@@ -48,13 +47,13 @@ using blink::protocol::Runtime::RemoteObject;
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* mainThreadDebugger, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
+PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
 {
-    return adoptPtrWillBeNoop(new PageDebuggerAgent(mainThreadDebugger, inspectedFrames, runtimeAgent));
+    return adoptPtrWillBeNoop(new PageDebuggerAgent(inspectedFrames, runtimeAgent));
 }
 
-PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
-    : InspectorDebuggerAgent(runtimeAgent, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(inspectedFrames->root()))
+PageDebuggerAgent::PageDebuggerAgent(InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
+    : InspectorDebuggerAgent(runtimeAgent)
     , m_inspectedFrames(inspectedFrames)
 {
 }

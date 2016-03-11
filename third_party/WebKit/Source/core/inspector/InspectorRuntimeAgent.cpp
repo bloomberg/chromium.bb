@@ -43,10 +43,10 @@ namespace InspectorRuntimeAgentState {
 static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
-InspectorRuntimeAgent::InspectorRuntimeAgent(V8Debugger* debugger, Client* client)
+InspectorRuntimeAgent::InspectorRuntimeAgent(V8Debugger* debugger, Client* client, int contextGroupId)
     : InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>("Runtime")
     , m_enabled(false)
-    , m_v8RuntimeAgent(V8RuntimeAgent::create(debugger, this))
+    , m_v8RuntimeAgent(V8RuntimeAgent::create(debugger, contextGroupId))
     , m_client(client)
 {
 }
@@ -81,6 +81,11 @@ void InspectorRuntimeAgent::restore()
     m_v8RuntimeAgent->restore();
     ErrorString errorString;
     enable(&errorString);
+}
+
+void InspectorRuntimeAgent::discardAgent()
+{
+    m_v8RuntimeAgent.clear();
 }
 
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
@@ -203,18 +208,6 @@ void InspectorRuntimeAgent::disable(ErrorString* errorString)
     m_enabled = false;
     m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, false);
     m_v8RuntimeAgent->disable(errorString);
-}
-
-void InspectorRuntimeAgent::reportExecutionContextCreated(ScriptState* scriptState, const String16& type, const String16& origin, const String16& humanReadableName, const String16& frameId)
-{
-    v8::HandleScope handles(scriptState->isolate());
-    m_v8RuntimeAgent->reportExecutionContextCreated(scriptState->context(), type, origin, humanReadableName, frameId);
-}
-
-void InspectorRuntimeAgent::reportExecutionContextDestroyed(ScriptState* scriptState)
-{
-    v8::HandleScope handles(scriptState->isolate());
-    m_v8RuntimeAgent->reportExecutionContextDestroyed(scriptState->context());
 }
 
 } // namespace blink

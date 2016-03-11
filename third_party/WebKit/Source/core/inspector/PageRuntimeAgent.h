@@ -39,13 +39,12 @@
 namespace blink {
 
 class InspectedFrames;
-class SecurityOrigin;
 
 class CORE_EXPORT PageRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InspectorRuntimeAgent::Client* client, V8Debugger* debugger, InspectedFrames* inspectedFrames)
+    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InspectorRuntimeAgent::Client* client, V8Debugger* debugger, InspectedFrames* inspectedFrames, int contextGroupId)
     {
-        return adoptPtrWillBeNoop(new PageRuntimeAgent(client, debugger, inspectedFrames));
+        return adoptPtrWillBeNoop(new PageRuntimeAgent(client, debugger, inspectedFrames, contextGroupId));
     }
     ~PageRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -53,22 +52,15 @@ public:
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
     void didClearDocumentOfWindowObject(LocalFrame*);
-    void didCreateScriptContext(LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);
-    void willReleaseScriptContext(LocalFrame*, ScriptState*);
 
 private:
-    PageRuntimeAgent(Client*, V8Debugger*, InspectedFrames*);
-
-    // V8RuntimeAgent::Client.
-    void reportExecutionContexts() override;
+    PageRuntimeAgent(Client*, V8Debugger*, InspectedFrames*, int contextGroupId);
 
     ScriptState* defaultScriptState() override;
     void muteConsole() override;
     void unmuteConsole() override;
-    void reportExecutionContext(ScriptState*, bool isPageContext, const String& origin, const String& frameId);
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    bool m_mainWorldContextCreated;
 };
 
 } // namespace blink
