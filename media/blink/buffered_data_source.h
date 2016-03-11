@@ -122,6 +122,9 @@ class BufferedDataSourceInterface : public DataSource {
 class MEDIA_BLINK_EXPORT BufferedDataSource
     : NON_EXPORTED_BASE(public BufferedDataSourceInterface) {
  public:
+  // Number of cache misses or read failures we allow for a single Read() before
+  // signaling an error.
+  enum { kLoaderRetries = 30 };
   typedef base::Callback<void(bool)> DownloadingCB;
 
   // |url| and |cors_mode| are passed to the object. Buffered byte range changes

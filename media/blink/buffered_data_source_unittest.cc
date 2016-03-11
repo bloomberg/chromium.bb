@@ -633,18 +633,11 @@ TEST_F(BufferedDataSourceTest, Http_TooManyRetries) {
   // Make sure there's a pending read -- we'll expect it to error.
   ReadAt(0);
 
-  // It'll try three times.
-  ExpectCreateResourceLoader();
-  FinishLoading();
-  Respond(response_generator_->Generate206(0));
-
-  ExpectCreateResourceLoader();
-  FinishLoading();
-  Respond(response_generator_->Generate206(0));
-
-  ExpectCreateResourceLoader();
-  FinishLoading();
-  Respond(response_generator_->Generate206(0));
+  for (int i = 0; i < BufferedDataSource::kLoaderRetries; i++) {
+    ExpectCreateResourceLoader();
+    FinishLoading();
+    Respond(response_generator_->Generate206(0));
+  }
 
   // It'll error after this.
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
@@ -660,18 +653,11 @@ TEST_F(BufferedDataSourceTest, File_TooManyRetries) {
   // Make sure there's a pending read -- we'll expect it to error.
   ReadAt(0);
 
-  // It'll try three times.
-  ExpectCreateResourceLoader();
-  FinishLoading();
-  Respond(response_generator_->GenerateFileResponse(0));
-
-  ExpectCreateResourceLoader();
-  FinishLoading();
-  Respond(response_generator_->GenerateFileResponse(0));
-
-  ExpectCreateResourceLoader();
-  FinishLoading();
-  Respond(response_generator_->GenerateFileResponse(0));
+  for (int i = 0; i < BufferedDataSource::kLoaderRetries; i++) {
+    ExpectCreateResourceLoader();
+    FinishLoading();
+    Respond(response_generator_->GenerateFileResponse(0));
+  }
 
   // It'll error after this.
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));

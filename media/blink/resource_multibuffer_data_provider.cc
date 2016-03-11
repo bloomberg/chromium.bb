@@ -35,6 +35,12 @@ namespace media {
 // The number of milliseconds to wait before retrying a failed load.
 const int kLoaderFailedRetryDelayMs = 250;
 
+// Each retry, add this many MS to the delay.
+// total delay is:
+// (kLoaderPartialRetryDelayMs +
+//  kAdditionalDelayPerRetryMs * (kMaxRetries - 1) / 2) * kMaxretries = 29250 ms
+const int kAdditionalDelayPerRetryMs = 50;
+
 // The number of milliseconds to wait before retrying when the server
 // decides to not give us all the data at once.
 const int kLoaderPartialRetryDelayMs = 25;
@@ -42,7 +48,6 @@ const int kLoaderPartialRetryDelayMs = 25;
 const int kHttpOK = 200;
 const int kHttpPartialContent = 206;
 const int kHttpRangeNotSatisfiable = 416;
-const int kMaxRetries = 3;
 
 ResourceMultiBufferDataProvider::ResourceMultiBufferDataProvider(
     UrlData* url_data,
@@ -411,12 +416,11 @@ void ResourceMultiBufferDataProvider::didFail(WebURLLoader* loader,
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&ResourceMultiBufferDataProvider::Start,
                               weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kLoaderFailedRetryDelayMs));
+        base::TimeDelta::FromMilliseconds(
+            kLoaderFailedRetryDelayMs + kAdditionalDelayPerRetryMs * retries_));
   } else {
     // We don't need to continue loading after failure.
-    //
-    // Keep it alive until we exit this method so that |error| remains valid.
-    scoped_ptr<ActiveLoader> active_loader = std::move(active_loader_);
+    // Note that calling Fail() will most likely delete this object.
     url_data_->Fail();
   }
 }

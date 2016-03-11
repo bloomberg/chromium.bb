@@ -28,6 +28,9 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
     : NON_EXPORTED_BASE(public MultiBuffer::DataProvider),
       NON_EXPORTED_BASE(public blink::WebURLLoaderClient) {
  public:
+  // NUmber of times we'll retry if the connection fails.
+  enum { kMaxRetries = 30 };
+
   ResourceMultiBufferDataProvider(UrlData* url_data, MultiBufferBlockId pos);
   ~ResourceMultiBufferDataProvider() override;
 

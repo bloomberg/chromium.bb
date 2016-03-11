@@ -23,12 +23,15 @@ namespace {
 // of FFmpeg.
 const int kInitialReadBufferSize = 32768;
 
-// Number of cache misses or read failures we allow for a single Read() before
-// signaling an error.
-const int kLoaderRetries = 3;
-
 // The number of milliseconds to wait before retrying a failed load.
 const int kLoaderFailedRetryDelayMs = 250;
+
+// Each retry, add this many MS to the delay.
+// total delay is:
+// (kLoaderPartialRetryDelayMs +
+//  kAdditionalDelayPerRetryMs * (kMaxRetries - 1) / 2) * kLoaderRetries
+//  = 29250 ms
+const int kAdditionalDelayPerRetryMs = 50;
 
 }  // namespace
 
@@ -491,7 +494,9 @@ void BufferedDataSource::ReadCallback(
             FROM_HERE, base::Bind(&BufferedDataSource::ReadCallback,
                                   weak_factory_.GetWeakPtr(),
                                   BufferedResourceLoader::kCacheMiss, 0),
-            base::TimeDelta::FromMilliseconds(kLoaderFailedRetryDelayMs));
+            base::TimeDelta::FromMilliseconds(kLoaderFailedRetryDelayMs +
+                                              read_op_->retries() *
+                                                  kAdditionalDelayPerRetryMs));
         return;
       }
 

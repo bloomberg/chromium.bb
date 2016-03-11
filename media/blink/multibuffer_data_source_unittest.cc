@@ -322,6 +322,12 @@ class MultibufferDataSourceTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
+  void FailLoading() {
+    data_provider()->didFail(url_loader(),
+                             response_generator_->GenerateError());
+    message_loop_.RunUntilIdle();
+  }
+
   void Restart() {
     EXPECT_TRUE(data_provider());
     EXPECT_FALSE(active_loader_allownull());
@@ -793,23 +799,19 @@ TEST_F(MultibufferDataSourceTest, Http_TooManyRetries) {
   // Make sure there's a pending read -- we'll expect it to error.
   ReadAt(kDataSize);
 
-  // It'll try three times.
-  FinishLoading();
-  Restart();
-  Respond(response_generator_->Generate206(kDataSize));
+  for (int i = 0; i < ResourceMultiBufferDataProvider::kMaxRetries; i++) {
+    FailLoading();
+    data_provider()->Start();
+    Respond(response_generator_->Generate206(kDataSize));
+  }
 
-  FinishLoading();
-  Restart();
-  Respond(response_generator_->Generate206(kDataSize));
-
-  FinishLoading();
-  Restart();
-  Respond(response_generator_->Generate206(kDataSize));
-
-  // It'll error after this.
-  EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
-  FinishLoading();
-
+  // Stop() will also cause the readback to be called with kReadError, but
+  // we want to make sure it was called during FailLoading().
+  bool failed_ = false;
+  EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError))
+      .WillOnce(Assign(&failed_, true));
+  FailLoading();
+  EXPECT_TRUE(failed_);
   EXPECT_FALSE(loading());
   Stop();
 }
@@ -820,23 +822,19 @@ TEST_F(MultibufferDataSourceTest, File_TooManyRetries) {
   // Make sure there's a pending read -- we'll expect it to error.
   ReadAt(kDataSize);
 
-  // It'll try three times.
-  FinishLoading();
-  Restart();
-  Respond(response_generator_->GenerateFileResponse(0));
+  for (int i = 0; i < ResourceMultiBufferDataProvider::kMaxRetries; i++) {
+    FailLoading();
+    data_provider()->Start();
+    Respond(response_generator_->Generate206(kDataSize));
+  }
 
-  FinishLoading();
-  Restart();
-  Respond(response_generator_->GenerateFileResponse(0));
-
-  FinishLoading();
-  Restart();
-  Respond(response_generator_->GenerateFileResponse(0));
-
-  // It'll error after this.
-  EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
-  FinishLoading();
-
+  // Stop() will also cause the readback to be called with kReadError, but
+  // we want to make sure it was called during FailLoading().
+  bool failed_ = false;
+  EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError))
+      .WillOnce(Assign(&failed_, true));
+  FailLoading();
+  EXPECT_TRUE(failed_);
   EXPECT_FALSE(loading());
   Stop();
 }
