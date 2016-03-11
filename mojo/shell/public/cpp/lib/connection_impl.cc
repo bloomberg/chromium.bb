@@ -25,7 +25,7 @@ ConnectionImpl::ConnectionImpl(
     uint32_t remote_id,
     shell::mojom::InterfaceProviderPtr remote_interfaces,
     shell::mojom::InterfaceProviderRequest local_interfaces,
-    const std::set<std::string>& allowed_interfaces,
+    const CapabilityRequest& capability_request,
     State initial_state)
     : connection_name_(connection_name),
       remote_(remote),
@@ -33,9 +33,9 @@ ConnectionImpl::ConnectionImpl(
       state_(initial_state),
       local_registry_(std::move(local_interfaces), this),
       remote_interfaces_(std::move(remote_interfaces)),
-      allowed_interfaces_(allowed_interfaces),
-      allow_all_interfaces_(allowed_interfaces_.size() == 1 &&
-                            allowed_interfaces_.count("*") == 1),
+      capability_request_(capability_request),
+      allow_all_interfaces_(capability_request.interfaces.size() == 1 &&
+                            capability_request.interfaces.count("*") == 1),
       weak_factory_(this) {}
 
 ConnectionImpl::ConnectionImpl()
@@ -52,6 +52,10 @@ shell::mojom::Connector::ConnectCallback ConnectionImpl::GetConnectCallback() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ConnectionImpl, Connection implementation:
+
+bool ConnectionImpl::HasCapabilityClass(const std::string& class_name) const {
+  return capability_request_.classes.count(class_name) > 0;
+}
 
 const std::string& ConnectionImpl::GetConnectionName() {
   return connection_name_;
@@ -85,7 +89,8 @@ void ConnectionImpl::AddConnectionCompletedClosure(const Closure& callback) {
 }
 
 bool ConnectionImpl::AllowsInterface(const std::string& interface_name) const {
-  return allow_all_interfaces_ || allowed_interfaces_.count(interface_name);
+  return allow_all_interfaces_ ||
+         capability_request_.interfaces.count(interface_name);
 }
 
 shell::mojom::InterfaceProvider* ConnectionImpl::GetRemoteInterfaces() {

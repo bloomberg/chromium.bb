@@ -55,7 +55,7 @@ void ShellConnection::AcceptConnection(
   scoped_ptr<Connection> registry(new internal::ConnectionImpl(
       name, source.To<Identity>(), source_id, std::move(remote_interfaces),
       std::move(local_interfaces),
-      allowed_capabilities->interfaces.To<std::set<std::string>>(),
+      allowed_capabilities.To<CapabilityRequest>(),
       Connection::State::CONNECTED));
   if (!client_->AcceptConnection(registry.get()))
     return;
