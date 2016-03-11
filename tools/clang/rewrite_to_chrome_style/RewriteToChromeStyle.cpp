@@ -144,6 +144,18 @@ AST_MATCHER_P(clang::CXXMethodDecl,
   return MatchAllOverriddenMethods(Node, InnerMatcher, Finder, Builder);
 }
 
+bool IsMethodOverrideOf(const clang::CXXMethodDecl& decl,
+                        const char* class_name) {
+  if (decl.getParent()->getQualifiedNameAsString() == class_name)
+    return true;
+  for (auto it = decl.begin_overridden_methods();
+       it != decl.end_overridden_methods(); ++it) {
+    if (IsMethodOverrideOf(**it, class_name))
+      return true;
+  }
+  return false;
+}
+
 bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
   if (decl.isStatic())
     return false;
@@ -161,14 +173,22 @@ bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
   // Iterator methods shouldn't be renamed to work with stl and range-for
   // loops.
   std::string ret_type = decl.getReturnType().getAsString();
-  if (ret_type.find("iterator") == std::string::npos &&
-      ret_type.find("Iterator") == std::string::npos)
-    return false;
-  static const char* kIteratorBlacklist[] = {"begin", "end", "rbegin", "rend"};
-  for (const auto& b : kIteratorBlacklist) {
-    if (name == b)
-      return true;
+  if (ret_type.find("iterator") != std::string::npos ||
+      ret_type.find("Iterator") != std::string::npos) {
+    static const char* kIteratorBlacklist[] = {"begin", "end", "rbegin",
+                                               "rend"};
+    for (const auto& b : kIteratorBlacklist) {
+      if (name == b)
+        return true;
+    }
   }
+
+  // Subclasses of InspectorAgent will subclass "disable()" from both blink and
+  // from gen/, which is problematic, but DevTools folks don't want to rename
+  // it or split this up. So don't rename it at all.
+  if (name.equals("disable") &&
+      IsMethodOverrideOf(decl, "blink::InspectorAgent"))
+    return true;
 
   return false;
 }
