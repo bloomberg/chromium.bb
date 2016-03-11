@@ -4,12 +4,11 @@
 <head>
 <script src="../resources/js-test.js"></script>
 <script src="resources/compatibility.js"></script>
-<script type="text/javascript" src="resources/audio-testing.js"></script>
+<script src="resources/audio-testing.js"></script>
+<script src="resources/mixing-rules.js"></script>
 </head>
 
 <body>
-<div id="description"></div>
-<div id="console"></div>
 
 <script>
 description("Channel mixing rules for AudioNodes.");
@@ -45,96 +44,13 @@ var mixingRulesList = [
 
 var numberOfTests = mixingRulesList.length * connectionsList.length;
 
-// Create an n-channel buffer, with all sample data zero except for a shifted impulse.
-// The impulse position depends on the channel index.
-// For example, for a 4-channel buffer:
-// channel0: 1 0 0 0 0 0 0 0
-// channel1: 0 1 0 0 0 0 0 0
-// channel2: 0 0 1 0 0 0 0 0
-// channel3: 0 0 0 1 0 0 0 0
-function createTestBuffer(numberOfChannels) {
-    var buffer = context.createBuffer(numberOfChannels, singleTestFrameLength, context.sampleRate);
-    for (var i = 0; i < numberOfChannels; ++i) {
-        var data = buffer.getChannelData(i);
-        data[i] = 1;
-    }
-    return buffer;
-}
-
-// Discrete channel interpretation mixing:
-// https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#UpMix
-// up-mix by filling channels until they run out then ignore remaining dest channels.
-// down-mix by filling as many channels as possible, then dropping remaining source channels.
-function discreteSum(sourceBuffer, destBuffer) {
-    if (sourceBuffer.length != destBuffer.length) {
-        alert("discreteSum(): invalid AudioBuffer!");
-        return;
-    }
-
-    var numberOfChannels = sourceBuffer.numberOfChannels < destBuffer.numberOfChannels ? sourceBuffer.numberOfChannels : destBuffer.numberOfChannels;
-    var length = numberOfChannels;
-
-    for (var c = 0; c < numberOfChannels; ++c) {
-        var source = sourceBuffer.getChannelData(c);
-        var dest = destBuffer.getChannelData(c);
-        for (var i = 0; i < length; ++i) {
-            dest[i] += source[i];
-        }
-    }
-}
-
-// Speaker channel interpretation mixing:
-// https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html#UpMix
-function speakersSum(sourceBuffer, destBuffer)
-{
-    var numberOfSourceChannels = sourceBuffer.numberOfChannels;
-    var numberOfDestinationChannels = destBuffer.numberOfChannels;
-    var length = destBuffer.length;
-
-    if (numberOfDestinationChannels == 2 && numberOfSourceChannels == 1) {
-        // Handle mono -> stereo case (summing mono channel into both left and right).
-        var source = sourceBuffer.getChannelData(0);
-        var destL = destBuffer.getChannelData(0);
-        var destR = destBuffer.getChannelData(1);
-
-        for (var i = 0; i < length; ++i) {
-            destL[i] += source[i];
-            destR[i] += source[i];
-        }
-    } else if (numberOfDestinationChannels == 1 && numberOfSourceChannels == 2) {
-        // Handle stereo -> mono case. output += 0.5 * (input.L + input.R).
-        var sourceL = sourceBuffer.getChannelData(0);
-        var sourceR = sourceBuffer.getChannelData(1);
-        var dest = destBuffer.getChannelData(0);
-
-        for (var i = 0; i < length; ++i) {
-            dest[i] += 0.5 * (sourceL[i] + sourceR[i]);
-        }
-    } else if (numberOfDestinationChannels == 6 && numberOfSourceChannels == 1) {
-        // Handle mono -> 5.1 case, sum mono channel into center.
-        var source = sourceBuffer.getChannelData(0);
-        var dest = destBuffer.getChannelData(2);
-
-        for (var i = 0; i < length; ++i) {
-            dest[i] += source[i];
-        }
-    } else if (numberOfDestinationChannels == 1 && numberOfSourceChannels == 6) {
-        // Handle 5.1 -> mono.
-        var sourceL = sourceBuffer.getChannelData(0);
-        var sourceR = sourceBuffer.getChannelData(1);
-        var sourceC = sourceBuffer.getChannelData(2);
-        // skip LFE for now, according to current spec.
-        var sourceSL = sourceBuffer.getChannelData(4);
-        var sourceSR = sourceBuffer.getChannelData(5);
-        var dest = destBuffer.getChannelData(0);
-
-        for (var i = 0; i < length; ++i) {
-            dest[i] += 0.7071 * (sourceL[i] + sourceR[i]) + sourceC[i] + 0.5 * (sourceSL[i] + sourceSR[i]);
-        }
-    } else {
-        // Fallback for unknown combinations.
-        discreteSum(sourceBuffer, destBuffer);
-    }
+// Print out the information for an individual test case.
+function printTestInformation(testNumber, actualBuffer, expectedBuffer, frameLength, frameOffset) {
+  var actual = stringifyBuffer(actualBuffer, frameLength);
+  var expected = stringifyBuffer(expectedBuffer, frameLength, frameOffset);
+  debug('TEST CASE #' + testNumber + '\n');
+  debug('actual channels:\n' + actual);
+  debug('expected channels:\n' + expected);
 }
 
 function scheduleTest(testNumber, connections, channelCount, channelCountMode, channelInterpretation) {
@@ -160,24 +76,6 @@ function scheduleTest(testNumber, connections, channelCount, channelCountMode, c
     }
 }
 
-function computeNumberOfChannels(connections, channelCount, channelCountMode) {
-    if (channelCountMode == "explicit")
-        return channelCount;
-
-    var computedNumberOfChannels = 1; // Must have at least one channel.
-
-    // Compute "computedNumberOfChannels" based on all the connections.
-    for (var i = 0; i < connections.length; ++i) {
-        var connectionNumberOfChannels = connections.charCodeAt(i) - "0".charCodeAt(0);
-        computedNumberOfChannels = Math.max(computedNumberOfChannels, connectionNumberOfChannels);
-    }
-
-    if (channelCountMode == "clamped-max")
-        computedNumberOfChannels = Math.min(computedNumberOfChannels, channelCount);
-
-    return computedNumberOfChannels;
-}
-
 function checkTestResult(renderedBuffer, testNumber, connections, channelCount, channelCountMode, channelInterpretation) {
     var s = "connections: " + connections + ", " + channelCountMode;
 
@@ -189,21 +87,6 @@ function checkTestResult(renderedBuffer, testNumber, connections, channelCount, 
     s += ", " + channelInterpretation;
 
     var computedNumberOfChannels = computeNumberOfChannels(connections, channelCount, channelCountMode);
-
-    // Show rendered output for this test:
-    //
-    // console.log(s);
-    // var sampleFrameOffset = testNumber * singleTestFrameLength;
-    // for (var c = 0; c < renderNumberOfChannels; ++c) {
-    //     var data = renderedBuffer.getChannelData(c);
-    //     var s = "";
-    //     for (var sampleFrame = 0; sampleFrame < singleTestFrameLength; ++sampleFrame) {
-    //         s += data[sampleFrame + sampleFrameOffset] + " ";
-    //     }
-    //     s += "\n";
-    //     console.log(s);
-    // }
-    // return;
 
     // Create a zero-initialized silent AudioBuffer with computedNumberOfChannels.
     var destBuffer = context.createBuffer(computedNumberOfChannels, singleTestFrameLength, context.sampleRate);
@@ -221,6 +104,9 @@ function checkTestResult(renderedBuffer, testNumber, connections, channelCount, 
             alert("Invalid channel interpretation!");
         }
     }
+
+    // Use this when debugging mixing rules.
+    // printTestInformation(testNumber, renderedBuffer, destBuffer, singleTestFrameLength, sampleFrameOffset);
 
     // Validate that destBuffer matches the rendered output.
     // We need to check the rendered output at a specific sample-frame-offset corresponding
@@ -293,7 +179,7 @@ function runTest() {
     // Create test buffers from 1 to 8 channels.
     testBuffers = new Array();
     for (var i = 0; i < renderNumberOfChannels; ++i) {
-        testBuffers[i] = createTestBuffer(i + 1);
+        testBuffers[i] = createShiftedImpulseBuffer(context, i + 1, singleTestFrameLength);
     }
 
     // Schedule all the tests.

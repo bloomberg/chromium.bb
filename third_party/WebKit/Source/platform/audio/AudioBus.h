@@ -151,11 +151,12 @@ protected:
 
     AudioBus(unsigned numberOfChannels, size_t length, bool allocate);
 
-    void speakersCopyFrom(const AudioBus&);
-    void discreteCopyFrom(const AudioBus&);
-    void speakersSumFrom(const AudioBus&);
     void discreteSumFrom(const AudioBus&);
-    void speakersSumFrom5_1_ToMono(const AudioBus&);
+
+    // Up/down-mix by in-place summing upon the existing channel content.
+    // http://webaudio.github.io/web-audio-api/#channel-up-mixing-and-down-mixing
+    void sumFromByUpMixing(const AudioBus&);
+    void sumFromByDownMixing(const AudioBus&);
 
     size_t m_length;
     Vector<OwnPtr<AudioChannel>> m_channels;
