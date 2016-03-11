@@ -3,399 +3,231 @@ caitkp@chromium.org
 jochen@chromium.org
 sdefresne@chromium.org
 
-per-file app_modal*=avi@chromium.org
+# Note: Best not to use globs (like autofill*) due to crbug.com/397984
 
-per-file arc.gypi=elijahtaylor@chromium.org
-per-file arc.gypi=hidehiko@chromium.org
-per-file arc.gypi=lhchavez@chromium.org
+per-file app_modal.gypi=file://components/app_modal/OWNERS
+per-file app_modal_strings.grdp=file://components/app_modal/OWNERS
 
-per-file audio_modem.gypi=ckehoe@chromium.org
-per-file audio_modem.gypi=rkc@chromium.org
-per-file audio_modem.gypi=xiyuan@chromium.org
+per-file arc.gypi=file://components/arc/OWNERS
 
-# Can not match autofill* due to crbug.com/397984
-per-file autofill.gypi=estade@chromium.org
-per-file autofill.gypi=isherman@chromium.org
-per-file autofill.gypi=mathp@chromium.org
-per-file autofill.gypi=vabr@chromium.org
-per-file autofill_strings.grdp=estade@chromium.org
-per-file autofill_strings.grdp=isherman@chromium.org
-per-file autofill_strings.grdp=mathp@chromium.org
-per-file autofill_strings.grdp=vabr@chromium.org
+per-file audio_modem.gypi=file://components/audio_modem/OWNERS
 
-per-file bookmark_bar_strings.grdp=sky@chromium.org
-per-file bookmarks.gypi=sky@chromium.org
+per-file autofill.gypi=file://components/autofill/OWNERS
+per-file autofill_strings.grdp=file://components/autofill/OWNERS
 
-per-file browser_sync.gypi=pavely@chromium.org
-per-file browser_sync.gypi=stanisc@chromium.org
-per-file browser_sync.gypi=zea@chromium.org
+per-file bookmark_bar_strings.grdp=file://components/bookmarks/OWNERS
+per-file bookmarks.gypi=file://components/bookmarks/OWNERS
 
-per-file browsing_data.gypi=markusheintz@chromium.org
-per-file browsing_data.gypi=mkwst@chromium.org
-per-file browsing_data.gypi=bauerb@chromium.org
-per-file browsing_data.gypi=michaeln@chromium.org
+per-file browser_sync.gypi=file://components/browser_sync/OWNERS
 
-per-file bubble.gypi=groby@chromium.org
-per-file bubble.gypi=hcarmona@chromium.org
-per-file bubble.gypi=msw@chromium.org
-per-file bubble.gypi=rouslan@chromium.org
+per-file browsing_data.gypi=file://components/browsing_data/OWNERS
 
-per-file cdm.gypi=ddorwin@chromium.org
-per-file cdm.gypi=xhwang@chromium.org
+per-file bubble.gypi=file://components/bubble/OWNERS
 
-per-file cloud_devices*=gene@chromium.org
-per-file cloud_devices*=vitalybuka@chromium.org
+per-file cdm.gypi=file://components/cdm/OWNERS
 
-per-file chrome_apps.gypi=tbarzic@chromium.org
+per-file chrome_apps.gypi=file://components/chrome_apps/OWNERS
 
-per-file component_updater.gypi=sorin@chromium.org
-per-file component_updater.gypi=waffles@chromium.org
+per-file cloud_devices.gypi=file://components/cloud_devices/OWNERS
 
-per-file constrained_window*=gbillock@chromium.org
-per-file constrained_window*=msw@chromium.org
+per-file component_updater.gypi=file://components/component_updater/OWNERS
 
-per-file content_settings*=markusheintz@chromium.org
-per-file content_settings*=bauerb@chromium.org
-per-file content_settings*=jochen@chromium.org
+per-file constrained_window.gypi=file://components/constrained_window/OWNERS
 
-per-file copresence.gypi=rkc@chromium.org
-per-file copresence.gypi=ckehoe@chromium.org
-per-file copresence.gypi=xiyuan@chromium.org
-per-file copresence.gypi=derat@chromium.org
+per-file content_settings.gypi=file://components/content_settings/OWNERS
 
-per-file copresence_sockets.gypi=rkc@chromium.org
+per-file copresence.gypi=file://components/copresence/OWNERS
 
-per-file crash.gypi=jochen@chromium.org
-per-file crash.gypi=mark@chromium.org
-per-file crash.gypi=rsesek@chromium.org
-per-file crash.gypi=scottmg@chromium.org
-per-file crash.gypi=thestig@chromium.org
+per-file crash.gypi=file://components/crash/OWNERS
 
-per-file crash_keys.gypi=rsesek@chromium.org
+per-file cronet.gypi=file://components/cronet/OWNERS
 
-per-file cronet*=mef@chromium.org
-per-file cronet*=mmenke@chromium.org
-per-file cronet*=pauljensen@chromium.org
-per-file cronet*=xunjieli@chromium.org
+per-file data_reduction_proxy.gypi=file://components/data_reduction_proxy/OWNERS
 
-per-file data_reduction_proxy*=bengr@chromium.org
-per-file data_reduction_proxy*=bolian@chromium.org
-per-file data_reduction_proxy*=kundaji@chromium.org
-per-file data_reduction_proxy*=marq@chromium.org
-per-file data_reduction_proxy*=megjablon@chromium.org
-per-file data_reduction_proxy*=sclittle@chromium.org
-per-file data_reduction_proxy*=tbansal@chromium.org
+per-file data_usage.gypi=file://components/data_usage/OWNERS
 
-per-file data_usage*=bengr@chromium.org
-per-file data_usage*=sclittle@chromium.org
-per-file data_usage*=tbansal@chromium.org
+per-file data_use_measurement.gypi=file://components/data_use_measurement/OWNERS
 
-per-file data_use_measurement*=sclittle@chromium.org
-per-file data_use_measurement*=bengr@chromium.org
+per-file device_event_log.gypi=file://components/device_event_log/OWNERS
 
-per-file device_event_log*=stevenjb@chromium.org
-per-file device_event_log*=reillyg@chromium.org
+per-file devtools_discovery.gypi=file://components/devtools_discovery/OWNERS
 
-per-file devtools_discovery.gyp*=dgozman@chromium.org
-per-file devtools_discovery.gyp*=pfeldman@chromium.org
+per-file devtools_http_handler.gypi=file://components/devtools_http_handler/OWNERS
 
-per-file devtools_http_handler.gyp*=dgozman@chromium.org
-per-file devtools_http_handler.gyp*=pfeldman@chromium.org
+per-file dom_distiller.gypi=file://components/dom_distiller/OWNERS
+per-file dom_distiller_strings.grdp=file://components/dom_distiller/OWNERS
 
-per-file network_hints*=jar@chromium.org
-per-file network_hints*=ttuttle@chromium.org
+per-file domain_reliability.gypi=file://components/domain_reliability/OWNERS
 
-per-file dom_distiller*=bengr@chromium.org
-per-file dom_distiller*=mdjones@chromium.org
-per-file dom_distiller*=nyquist@chromium.org
-per-file dom_distiller*=wychen@chromium.org
+per-file drive.gypi=file://components/drive/OWNERS
 
-per-file domain_reliability.gypi=davidben@chromium.org
-per-file domain_reliability.gypi=rdsmith@chromium.org
-per-file domain_reliability.gypi=ttuttle@chromium.org
+per-file error_page.gypi=file://components/error_page/OWNERS
+per-file error_page_strings.grdp=file://components/error_page/OWNERS
 
-per-file drive.gypi=fukino@chromium.org
-per-file drive.gypi=hashimoto@chromium.org
-per-file drive.gypi=hidehiko@chromium.org
-per-file drive.gypi=hirono@chromium.org
-per-file drive.gypi=kinaba@chromium.org
-per-file drive.gypi=mtomasz@chromium.org
-per-file drive.gypi=yoshiki@chromium.org
+per-file exo.gypi=file://components/exo/OWNERS
 
-per-file error_page*=mmenke@chromium.org
-per-file error_page*=ttuttle@chromium.org
+per-file external_video_surface.gypi=file://components/external_video_surface/OWNERS
 
-per-file exo.gypi=reveman@chromium.org
+per-file favicon.gypi=file://components/favicon/OWNERS
+per-file favicon_base.gypi=file://components/favicon_base/OWNERS
 
-per-file external_video_surface.gypi=boliu@chromium.org
-per-file external_video_surface.gypi=qinmin@chromium.org
+per-file feedback.gypi=file://components/feedback/OWNERS
 
-per-file favicon*=pkotwicz@chromium.org
-per-file favicon*=sky@chromium.org
-per-file favicon*=stevenjb@chromium.org
+per-file gcm_driver.gypi=file://components/gcm_driver/OWNERS
 
-per-file feedback.gypi=bsimonnet@chromium.org
-per-file feedback.gypi=zork@chromium.org
+per-file google.gypi=file://components/google/OWNERS
 
-per-file gcm_driver.gypi=dimich@chromium.org
-per-file gcm_driver.gypi=fgorski@chromium.org
-per-file gcm_driver.gypi=jianli@chromium.org
-per-file gcm_driver.gypi=peter@chromium.org
-per-file gcm_driver.gypi=zea@chromium.org
+per-file guest_view.gypi=file://components/guest_view/OWNERS
 
-per-file google*=isherman@chromium.org
-per-file google*=pkasting@chromium.org
+per-file handoff.gypi=file://components/handoff/OWNERS
 
-per-file guest_view.gypi=fsamuel@chromium.org
-per-file guest_view.gypi=lazyboy@chromium.org
-per-file guest_view.gypi=hanxi@chromium.org
+per-file history.gypi=file://components/history/OWNERS
 
-per-file handoff.gypi=erikchen@chromium.org
+per-file infobars.gypi=file://components/infobars/OWNERS
 
-per-file history.gypi=sdefresne@chromium.org
-per-file history.gypi=sky@chromium.org
+per-file invalidation.gypi=file://components/invalidation/OWNERS
 
-per-file infobars.gypi=pkasting@chromium.org
+per-file json_schema.gypi=file://components/json_schema/OWNERS
 
-per-file invalidation.gypi=dcheng@chromium.org
-per-file invalidation.gypi=nyquist@chromium.org
-per-file invalidation.gypi=pavely@chromium.org
+per-file keyed_service.gypi=file://components/keyed_service/OWNERS
 
-per-file json_schema.gypi=asargent@chromium.org
-per-file json_schema.gypi=calamity@chromium.org
-per-file json_schema.gypi=mpcomplete@chromium.org
+per-file leveldb_proto.gypi=file://components/leveldb_proto/OWNERS
 
-per-file keyed_service.gypi=erg@chromium.org
-per-file keyed_service.gypi=phajdan.jr@chromium.org
+per-file login.gypi=file://components/login/OWNERS
 
-per-file leveldb_proto*=mathp@chromium.org
-per-file leveldb_proto*=nyquist@chromium.org
+per-file memory_pressure.gypi=file://components/memory_pressure/OWNERS
 
-per-file login*=alemate@chromium.org
-per-file login*=antrim@chromium.org
-per-file login*=dzhioev@chromium.org
-per-file login*=nkostylev@chromium.org
-per-file login*=achuith@chromium.org
+per-file metrics.gypi=file://components/metrics/OWNERS
+per-file metrics_services_manager.gypi=file://components/metrics_services_manager/OWNERS
 
-per-file memory_pressure*=chrisha@chromium.org
-per-file memory_pressure*=shrike@chromium.org
-per-file memory_pressure*=skuhne@chromium.org
+per-file nacl.gyp=file://components/nacl/OWNERS
+per-file nacl_helper_nonsfi_unittests.isolate=file://components/nacl/OWNERS
+per-file nacl_loader_unittests.isolate=file://components/nacl/OWNERS
+per-file nacl_nonsfi.gyp=file://components/nacl/OWNERS
 
-per-file metrics*=asvitkine@chromium.org
-per-file metrics*=mpearson@chromium.org
-per-file metrics*=jar@chromium.org
-per-file metrics*=isherman@chromium.org
-# OWNER-to-be: per-file metrics*=holte@chromium.org
+per-file navigation_interception.gypi=file://components/navigation_interception/OWNERS
 
-per-file nacl*=bradnelson@chromium.org
-per-file nacl*=dschuff@chromium.org
-per-file nacl*=mseaborn@chromium.org
-per-file nacl*=noelallen@chromium.org
+per-file network_hints.gypi=file://components/network_hints/OWNERS
 
-per-file navigation_interception.gypi=mnaganov@chromium.org
+per-file network_time.gypi=file://components/network_time/OWNERS
 
-per-file network_time.gypi=zea@chromium.org
+per-file ntp_snippets.gypi=file://components/ntp_snippets/OWNERS
 
-per-file ntp_snippets.gypi=noyau@chromium.org
-per-file ntp_snippets.gypi=bauerb@chromium.org
+per-file offline_pages.gypi=file://components/offline_pages/OWNERS
 
-per-file offline_pages*=dimich@chromium.org
-per-file offline_pages*=fgorski@chromium.org
+per-file omnibox.gypi=file://components/omnibox/OWNERS
 
-per-file omnibox.gypi=pkasting@chromium.org
-per-file omnibox.gypi=mpearson@chromium.org
+per-file onc.gypi=file://components/onc/OWNERS
 
-per-file onc.gypi=armansito@chromium.org
-per-file onc.gypi=cschuet@chromium.org
-per-file onc.gypi=gauravsh@chromium.org
-per-file onc.gypi=gspencer@chromium.org
-per-file onc.gypi=stevenjb@chromium.org
+per-file open_from_clipboard.gypi=file://components/open_from_clipboard/OWNERS
 
-per-file open_from_clipboard.gypi=jif@chromium.org
+per-file ownership.gypi=file://components/ownership/OWNERS
 
-per-file ownership.gypi=alemate@chromium.org
+per-file packed_ct_ev_whitelist.gypi=file://components/packed_ct_ev_whitelist/OWNERS
 
-per-file packed_ct_ev_whitelist.gypi=eranm@chromium.org
-per-file packed_ct_ev_whitelist.gypi=rsleevi@chromium.org
+per-file page_load_metrics.gypi=file://components/page_load_metrics/OWNERS
 
-per-file page_load_metrics.gypi=rdsmith@chromium.org
-per-file page_load_metrics.gypi=ttuttle@chromium.org
+per-file pairing.gypi=file://components/pairing/OWNERS
 
-per-file pairing.gypi=achuith@chromium.org
-per-file pairing.gypi=dzhioev@chromium.org
-per-file pairing.gypi=zork@chromium.org
+per-file password_manager.gypi=file://components/password_manager/OWNERS
+per-file password_manager_strings.grdp=file://components/password_manager/OWNERS
 
-per-file password_manager*=dvadym@chromium.org
-per-file password_manager*=engedy@chromium.org
-per-file password_manager*=gcasto@chromium.org
-per-file password_manager*=isherman@chromium.org
-per-file password_manager*=mkwst@chromium.org
-per-file password_manager*=vabr@chromium.org
-per-file password_manager*=vasilii@chromium.org
-
-per-file pdf.gypi=gene@chromium.org
-per-file pdf.gypi=jam@chromium.org
-per-file pdf.gypi=raymes@chromium.org
-per-file pdf.gypi=thestig@chromium.org
+per-file pdf.gypi=file://components/pdf/OWNERS
 per-file pdf_strings.grdp=raymes@chromium.org
 per-file pdf_strings.grdp=tsergeant@chromium.org
 
-per-file plugins.gypi=bauerb@chromium.org
-per-file plugins.gypi=tommycli@chromium.org
+per-file plugins.gypi=file://components/plugins/OWNERS
 
-per-file precache*=bengr@chromium.org
-per-file precache*=sclittle@chromium.org
+per-file policy.gypi=file://components/policy/OWNERS
+per-file policy_strings.grdp=file://components/policy/OWNERS
 
-per-file printing*=alekseys@chromium.org
-per-file printing*=gene@chromium.org
-per-file printing*=thestig@chromium.org
-per-file printing*=vitalybuka@chromium.org
+per-file precache.gypi=file://components/precache/OWNERS
 
-per-file policy*=bartfab@chromium.org
-per-file policy*=atwilson@chromium.org
-per-file policy*=cschuet@chromium.org
+per-file printing.gypi=file://components/printing/OWNERS
 
-per-file profile_metrics*=anthonyvd@chromium.org
-per-file profile_metrics*=erg@chromium.org
-per-file profile_metrics*=mlerman@chromium.org
+per-file profile_metrics.gypi=file://components/profile_metrics/OWNERS
 
-per-file proximity_auth*=isherman@chromium.org
-per-file proximity_auth*=tbarzic@chromium.org
-per-file proximity_auth*=tengs@chromium.org
-per-file proximity_auth*=xiyuan@chromium.org
+per-file proximity_auth.gypi=file://components/proximity_auth/OWNERS
 
-per-file proxy_config*=stevenjb@chromium.org
+per-file proxy_config.gypi=file://components/proxy_config/OWNERS
 
-per-file query_parser.gypi=sky@chromium.org
+per-file query_parser.gypi=file://components/query_parser/OWNERS
 
-per-file rappor*=asvitkine@chromium.org
-# OWNER-to-be: per-file rappor*=holte@chromium.org
+per-file rappor.gypi=file://components/rappor/OWNERS
 
-per-file renderer_context_menu*=avi@chromium.org
-per-file renderer_context_menu*=lazyboy@chromium.org
+per-file renderer_context_menu.gypi=file://components/renderer_context_menu/OWNERS
 
-per-file safe_browsing_db.gypi=nparker@chromium.org
+per-file safe_browsing_db.gypi=file://components/safe_browsing_db/OWNERS
 
-per-file safe_json.gypi=bauerb@chromium.org
-per-file safe_json.gypi=rsesek@chromium.org
+per-file safe_json.gypi=file://components/safe_json/OWNERS
 
 per-file search.gypi=file://components/search/OWNERS
 
-per-file search_engines.gypi=pkasting@chromium.org
-per-file search_engines.gypi=stevet@chromium.org
+per-file search_engines.gypi=file://components/search_engines/OWNERS
 
-per-file search_provider_logos*=newt@chromium.org
-per-file search_provider_logos*=justincohen@chromium.org
+per-file search_provider_logos.gypi=file://components/search_provider_logos/OWNERS
 
-per-file security_interstitials*=estark@chromium.org
-per-file security_interstitials*=felt@chromium.org
-per-file security_interstitials*=meacer@chromium.org
-per-file security_interstitials*=palmer@chromium.org
+per-file security_interstitials.gypi=file://components/security_interstitials/OWNERS
+per-file security_interstitials_strings.grdp=file://components/security_interstitials/OWNERS
 
-per-file session_manager.gypi=antrim@chromium.org
-per-file session_manager.gypi=dzhioev@chromium.org
-per-file session_manager.gypi=nkostylev@chromium.org
+per-file session_manager.gypi=file://components/session_manager/OWNERS
 
-per-file sessions.gypi=marja@chromium.org
-per-file sessions.gypi=sky@chromium.org
+per-file sessions.gypi=file://components/sessions/OWNERS
 
-per-file signin*=atwilson@chromium.org
-per-file signin*=rogerta@chromium.org
+per-file signin.gypi=file://components/signin/OWNERS
 
-per-file ssl_errors*=estark@chromium.org
-per-file ssl_errors*=felt@chromium.org
+per-file ssl_errors.gypi=file://components/ssl_errors/OWNERS
+per-file ssl_errors_strings.grdp=file://components/ssl_errors/OWNERS
 
-per-file startup_metric_utils.gypi=gab@chromium.org
-per-file startup_metric_utils.gypi=erikchen@chromium.org
+per-file startup_metric_utils.gypi=file://components/startup_metric_utils/OWNERS
 
-per-file storage_monitor.gypi=gbillock@chromium.org
-per-file storage_monitor.gypi=thestig@chromium.org
-per-file storage_monitor.gypi=vandebo@chromium.org
+per-file storage_monitor.gypi=file://components/storage_monitor/OWNERS
 
 per-file suggestions.gypi=file://components/suggestions/OWNERS
 
-per-file sync_driver*=pavely@chromium.org
-per-file sync_driver*=stanisc@chromium.org
-per-file sync_driver*=zea@chromium.org
+per-file sync_driver.gypi=file://components/sync_driver/OWNERS
 
-per-file sync_sessions.gypi=pavely@chromium.org
-per-file sync_sessions.gypi=stanisc@chromium.org
-per-file sync_sessions.gypi=zea@chromium.org
+per-file sync_sessions.gypi=file://components/sync_sessions/OWNERS
 
-per-file timers*=chirantan@chromium.org
-per-file timers*=derat@chromium.org
+per-file timers.gypi=file://components/timers/OWNERS
 
-per-file tracing*=jbauman@chromium.org
-per-file tracing*=nduca@chromium.org
-per-file tracing*=dsinclair@chromium.org
-per-file tracing*=simonhatch@chromium.org
+per-file tracing.gypi=file://components/tracing/OWNERS
+per-file tracing_nacl.gypi=file://components/tracing/OWNERS
 
-per-file translate.gypi=andrewhayden@chromium.org
-per-file translate.gypi=droger@chromium.org
-per-file translate.gypi=hajimehoshi@chromium.org
-per-file translate.gypi=toyoshim@chromium.org
-per-file translate_strings.grdp=andrewhayden@chromium.org
-per-file translate_strings.grdp=droger@chromium.org
-per-file translate_strings.grdp=hajimehoshi@chromium.org
-per-file translate_strings.grdp=toyoshim@chromium.org
+per-file translate.gypi=file://components/translate/OWNERS
+per-file translate_strings.grdp=file://components/translate/OWNERS
 
-per-file startup_metric_utils.gypi=jeremy@chromium.org
+per-file undo.gypi=file://components/undo/OWNERS
+per-file undo_strings.grdp=file://components/undo/OWNERS
 
-per-file undo.gypi=sky@chromium.org
-per-file undo.gypi=tom.cassiotis@gmail.com
-per-file undo_strings.grdp=sky@chromium.org
-per-file undo_strings.grdp=tom.cassiotis@gmail.com
+per-file update_client.gypi=file://components/update_client/OWNERS
 
-per-file update_client.gypi=sorin@chromium.org
-per-file update_client.gypi=waffles@chromium.org
+per-file url_formatter.gypi=file://components/url_formatter/OWNERS
 
-per-file user_manager.gypi=antrim@chromium.org
-per-file user_manager.gypi=dzhioev@chromium.org
-per-file user_manager.gypi=nkostylev@chromium.org
+per-file user_manager.gypi=file://components/user_manager/OWNERS
 
-per-file url_formatter.gypi=pkasting@chromium.org
+per-file user_prefs.gypi=file://components/user_prefs/OWNERS
 
-per-file user_prefs.gypi=battre@chromium.org
-per-file user_prefs.gypi=bauerb@chromium.org
-per-file user_prefs.gypi=gab@chromium.org
-per-file user_prefs.gypi=pam@chromium.org
+per-file variations.gypi=file://components/variations/OWNERS
 
-per-file variations.gypi=asvitkine@chromium.org
-per-file variations.gypi=jwd@chromium.org
-per-file variations.gypi=stevet@chromium.org
+per-file version_ui.gypi=file://components/version_ui/OWNERS
 
-per-file version_ui.gypi=bauerb@chromium.org
-per-file version_ui.gypi=dbeam@chromium.org
-per-file version_ui.gypi=estade@chromium.org
-per-file version_ui.gypi=nkostylev@chromium.org
-per-file version_ui.gypi=pam@chromium.org
-per-file version_ui.gypi=xiyuan@chromium.org
+per-file web_contents_delegate_android.gypi=file://components/web_contents_delegate_android/OWNERS
 
-per-file webdata.gypi=pkasting@chromium.org
-per-file webdata_services.gypi=pkasting@chromium.org
+per-file web_modal.gypi=file://components/web_modal/OWNERS
 
-per-file webp_transcode.gypi=droger@chromium.org
-per-file webp_transcode.gypi=sdefresne@chromium.org
+per-file web_resource.gypi=file://components/web_resource/OWNERS
 
-per-file web_contents_delegate_android.gypi=mnaganov@chromium.org
-per-file web_contents_delegate_android.gypi=tedchoc@chromium.org
+per-file web_restrictions.gypi=file://components/web_restrictions/OWNERS
 
-per-file web_modal.gypi=wittman@chromium.org
+per-file webdata.gypi=file://components/webdata/OWNERS
+per-file webdata_services.gypi=file://components/webdata_services/OWNERS
 
-per-file web_resource.gypi=achuith@chromium.org
-per-file web_resource.gypi=asvitkine@chromium.org
-per-file web_resource.gypi=dbeam@chromium.org
-per-file web_resource.gypi=rsesek@chromium.org
-per-file web_resource.gypi=stevet@chromium.org
+per-file webp_transcode.gypi=file://components/webp_transcode/OWNERS
 
-per-file web_restrictions.gypi=aberent@chromium.org
-per-file web_restrictions.gypi=bauerb@chromium.org
+per-file webusb.gypi=file://components/webusb/OWNERS
 
-per-file webusb.gypi=juncai@chromium.org
-per-file webusb.gypi=reillyg@chromium.org
-per-file webusb.gypi=rockot@chromium.org
-
-per-file wifi.gypi=mef@chromium.org
+per-file wifi.gypi=file://components/wifi/OWNERS
 
 per-file *.isolate=maruel@chromium.org
 per-file *.isolate=tandrii@chromium.org
