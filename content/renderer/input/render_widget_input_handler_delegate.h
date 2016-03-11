@@ -49,6 +49,13 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
       const gfx::Vector2dF& wheel_unused_delta,
       bool event_processed) = 0;
 
+  // Called to forward a gesture event to the compositor thread, to effect
+  // the elastic overscroll effect.
+  virtual void ObserveGestureEventAndResult(
+      const blink::WebGestureEvent& gesture_event,
+      const gfx::Vector2dF& unused_delta,
+      bool event_processed) = 0;
+
   // Notifies that a key event was just handled.
   virtual void OnDidHandleKeyEvent() = 0;
 

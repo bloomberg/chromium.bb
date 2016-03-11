@@ -167,6 +167,71 @@ void InputScrollElasticityController::ObserveWheelEventAndResult(
   }
 }
 
+void InputScrollElasticityController::ObserveGestureEventAndResult(
+    const blink::WebGestureEvent& gesture_event,
+    const cc::InputHandlerScrollResult& scroll_result) {
+  base::TimeTicks event_timestamp =
+      base::TimeTicks() +
+      base::TimeDelta::FromSecondsD(gesture_event.timeStampSeconds);
+
+  switch (gesture_event.type) {
+    case blink::WebInputEvent::GestureScrollBegin: {
+      if (gesture_event.data.scrollBegin.synthetic)
+        return;
+      if (gesture_event.data.scrollBegin.inertial) {
+        if (state_ == kStateInactive)
+          state_ = kStateMomentumScroll;
+      } else if (gesture_event.data.scrollBegin.deltaHintUnits ==
+                 blink::WebGestureEvent::PrecisePixels) {
+        scroll_velocity = gfx::Vector2dF();
+        last_scroll_event_timestamp_ = base::TimeTicks();
+        state_ = kStateActiveScroll;
+        pending_overscroll_delta_ = gfx::Vector2dF();
+      }
+      break;
+    }
+    case blink::WebInputEvent::GestureScrollUpdate: {
+      gfx::Vector2dF event_delta(-gesture_event.data.scrollUpdate.deltaX,
+                                 -gesture_event.data.scrollUpdate.deltaY);
+      switch (state_) {
+        case kStateMomentumAnimated:
+        case kStateInactive:
+          break;
+        case kStateActiveScroll:
+        case kStateMomentumScroll:
+          UpdateVelocity(event_delta, event_timestamp);
+          Overscroll(event_delta, scroll_result.unused_scroll_delta);
+          if (gesture_event.data.scrollUpdate.inertial &&
+              !helper_->StretchAmount().IsZero()) {
+            EnterStateMomentumAnimated(event_timestamp);
+          }
+          break;
+      }
+      break;
+    }
+    case blink::WebInputEvent::GestureScrollEnd: {
+      if (gesture_event.data.scrollEnd.synthetic)
+        return;
+      switch (state_) {
+        case kStateMomentumAnimated:
+        case kStateInactive:
+          break;
+        case kStateActiveScroll:
+        case kStateMomentumScroll:
+          if (helper_->StretchAmount().IsZero()) {
+            EnterStateInactive();
+          } else {
+            EnterStateMomentumAnimated(event_timestamp);
+          }
+          break;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+}
+
 void InputScrollElasticityController::UpdateVelocity(
     const gfx::Vector2dF& event_delta,
     const base::TimeTicks& event_timestamp) {

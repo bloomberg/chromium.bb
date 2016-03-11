@@ -959,6 +959,27 @@ void RenderWidget::ObserveWheelEventAndResult(
   }
 }
 
+void RenderWidget::ObserveGestureEventAndResult(
+    const blink::WebGestureEvent& gesture_event,
+    const gfx::Vector2dF& unused_delta,
+    bool event_processed) {
+  if (!compositor_deps_->IsElasticOverscrollEnabled())
+    return;
+
+  cc::InputHandlerScrollResult scroll_result;
+  scroll_result.did_scroll = event_processed;
+  scroll_result.did_overscroll_root = !unused_delta.IsZero();
+  scroll_result.unused_scroll_delta = unused_delta;
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  InputHandlerManager* input_handler_manager =
+      render_thread ? render_thread->input_handler_manager() : NULL;
+  if (input_handler_manager) {
+    input_handler_manager->ObserveGestureEventAndResultOnMainThread(
+        routing_id_, gesture_event, scroll_result);
+  }
+}
+
 void RenderWidget::OnDidHandleKeyEvent() {
   if (owner_delegate_)
     owner_delegate_->RenderWidgetDidHandleKeyEvent();

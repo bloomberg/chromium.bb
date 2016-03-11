@@ -272,7 +272,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     controller->SetScreenshotManager(make_scoped_ptr(screenshot_manager_));
 
     frame_watcher_ = new FrameWatcher();
-    GetRenderWidgetHost()->GetProcess()->AddFilter(frame_watcher_.get());
+    frame_watcher_->AttachTo(shell()->web_contents());
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {

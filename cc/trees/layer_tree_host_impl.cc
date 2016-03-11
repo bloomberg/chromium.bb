@@ -139,12 +139,16 @@ void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
   TRACE_EVENT_ASYNC_END0("cc", "LayerTreeHostImpl::SetVisible", id);
 }
 
+bool IsWheelBasedScroll(InputHandler::ScrollInputType type) {
+  return type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL;
+}
+
 enum ScrollThread { MAIN_THREAD, CC_THREAD };
 
 void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
                                       ScrollThread scroll_thread) {
   bool scroll_on_main_thread = (scroll_thread == MAIN_THREAD);
-  if (type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) {
+  if (IsWheelBasedScroll(type)) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorWheelScrollUpdateThread",
                           scroll_on_main_thread);
   } else {
@@ -2475,14 +2479,12 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     }
   }
 
-  if (type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) {
+  if (IsWheelBasedScroll(type) &&
+      !active_tree()->settings().use_mouse_wheel_gestures) {
     EventListenerProperties event_properties =
         active_tree()->event_listener_properties(
             EventListenerClass::kMouseWheel);
-    if (event_properties == EventListenerProperties::kBlocking ||
-        event_properties == EventListenerProperties::kBlockingAndPassive ||
-        (!active_tree()->settings().use_mouse_wheel_gestures &&
-         event_properties == EventListenerProperties::kPassive)) {
+    if (event_properties != EventListenerProperties::kNone) {
       TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
       scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
       scroll_status.main_thread_scrolling_reasons =
@@ -2620,7 +2622,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   active_tree_->SetCurrentlyScrollingLayer(scrolling_layer_impl);
   // TODO(majidvp): get rid of wheel_scrolling_ and set is_direct_manipulation
   // in input_handler_proxy instead.
-  wheel_scrolling_ = (type == WHEEL || type == ANIMATED_WHEEL);
+  wheel_scrolling_ = IsWheelBasedScroll(type);
   scroll_state->set_is_direct_manipulation(!wheel_scrolling_);
   // Invoke |DistributeScrollDelta| even with zero delta and velocity to ensure
   // scroll customization callbacks are invoked.
@@ -2690,6 +2692,46 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   }
 
   return ScrollBeginImpl(scroll_state, scrolling_layer_impl, type);
+}
+
+InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
+    const gfx::Point& viewport_point) {
+  InputHandler::ScrollStatus scroll_status;
+  scroll_status.main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kNotScrollingOnMain;
+  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
+  if (scroll_node) {
+    gfx::Vector2dF delta;
+
+    if (ScrollAnimationUpdateTarget(scroll_node, delta)) {
+      scroll_status.thread = SCROLL_ON_IMPL_THREAD;
+    } else {
+      scroll_status.thread = SCROLL_IGNORED;
+      scroll_status.main_thread_scrolling_reasons =
+          MainThreadScrollingReason::kNotScrollable;
+    }
+    return scroll_status;
+  }
+  ScrollStateData scroll_state_data;
+  scroll_state_data.start_position_x = viewport_point.x();
+  scroll_state_data.start_position_y = viewport_point.y();
+  scroll_state_data.is_in_inertial_phase = true;
+  ScrollState scroll_state(scroll_state_data);
+
+  // ScrollAnimated is used for animated wheel scrolls. We find the first layer
+  // that can scroll and set up an animation of its scroll offset. Note that
+  // this does not currently go through the scroll customization and viewport
+  // machinery that ScrollBy uses for non-animated wheel scrolls.
+  scroll_status = ScrollBegin(&scroll_state, ANIMATED_WHEEL);
+  scroll_node = scroll_tree.CurrentlyScrollingNode();
+  if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
+    ScrollStateData scroll_state_end_data;
+    scroll_state_end_data.is_ending = true;
+    ScrollState scroll_state_end(scroll_state_end_data);
+    ScrollEnd(&scroll_state_end);
+  }
+  return scroll_status;
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(

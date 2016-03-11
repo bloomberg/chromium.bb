@@ -364,6 +364,18 @@ void RenderWidgetInputHandler::HandleInputEvent(
                            : gfx::Vector2dF(),
           processed != WebInputEventResult::NotHandled);
     }
+  } else if (input_event.type == WebInputEvent::GestureScrollBegin ||
+             input_event.type == WebInputEvent::GestureScrollEnd ||
+             input_event.type == WebInputEvent::GestureScrollUpdate) {
+    const WebGestureEvent& gesture_event =
+        static_cast<const WebGestureEvent&>(input_event);
+    if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad) {
+      delegate_->ObserveGestureEventAndResult(
+          gesture_event,
+          event_overscroll ? event_overscroll->latest_overscroll_delta
+                           : gfx::Vector2dF(),
+          processed != WebInputEventResult::NotHandled);
+    }
   }
 
   bool frame_pending =

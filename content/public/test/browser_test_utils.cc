@@ -1067,9 +1067,7 @@ bool RequestFrame(WebContents* web_contents) {
       ->ScheduleComposite();
 }
 
-FrameWatcher::FrameWatcher()
-    : BrowserMessageFilter(ViewMsgStart), frames_to_wait_(0) {
-}
+FrameWatcher::FrameWatcher() : MessageFilter(), frames_to_wait_(0) {}
 
 FrameWatcher::~FrameWatcher() {
 }
@@ -1100,7 +1098,7 @@ void FrameWatcher::AttachTo(WebContents* web_contents) {
   DCHECK(web_contents);
   RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
       web_contents->GetRenderViewHost()->GetWidget());
-  widget_host->GetProcess()->AddFilter(this);
+  widget_host->GetProcess()->GetChannel()->AddFilter(this);
 }
 
 void FrameWatcher::WaitFrames(int frames_to_wait) {

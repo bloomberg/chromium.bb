@@ -64,6 +64,11 @@ class CONTENT_EXPORT InputHandlerManager {
       const blink::WebMouseWheelEvent& wheel_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
+  void ObserveGestureEventAndResultOnMainThread(
+      int routing_id,
+      const blink::WebGestureEvent& gesture_event,
+      const cc::InputHandlerScrollResult& scroll_result);
+
   void NonBlockingInputEventHandledOnMainThread(int routing_id,
                                                 blink::WebInputEvent::Type);
 
@@ -97,6 +102,11 @@ class CONTENT_EXPORT InputHandlerManager {
   void ObserveWheelEventAndResultOnCompositorThread(
       int routing_id,
       const blink::WebMouseWheelEvent& wheel_event,
+      const cc::InputHandlerScrollResult& scroll_result);
+
+  void ObserveGestureEventAndResultOnCompositorThread(
+      int routing_id,
+      const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
   void NonBlockingInputEventHandledOnCompositorThread(

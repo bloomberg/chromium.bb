@@ -513,6 +513,14 @@ public:
             // If true, this event will skip hit testing to find a scroll
             // target and instead just scroll the viewport.
             bool targetViewport;
+            // If true, this event comes after a non-inertial gesture
+            // scroll sequence; OSX has unique phases for normal and
+            // momentum scroll events. Should always be false for touch based
+            // input as it generates GestureFlingStart instead.
+            bool inertial;
+            // True if this event was synthesized in order to force a hit test; avoiding scroll
+            // latching behavior until crbug.com/526463 is fully implemented.
+            bool synthetic;
         } scrollBegin;
 
         struct {
@@ -536,6 +544,16 @@ public:
             // The original delta units the scrollBegin and scrollUpdates
             // were sent as.
             ScrollUnits deltaUnits;
+            // If true, this event comes after an inertial gesture
+            // scroll sequence; OSX has unique phases for normal and
+            // momentum scroll events. Should always be false for touch based
+            // input as it generates GestureFlingStart instead.
+            bool inertial;
+            // True if this event was synthesized in order to generate the proper
+            // GSB/GSU/GSE matching sequences. This is a temporary so that a future
+            // GSB will generate a hit test so latching behavior is avoided
+            // until crbug.com/526463 is fully implemented.
+            bool synthetic;
         } scrollEnd;
 
         struct {

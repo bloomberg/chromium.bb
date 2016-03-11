@@ -24,6 +24,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_type.h"
+#include "ipc/message_filter.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
@@ -416,7 +417,7 @@ bool RequestFrame(WebContents* web_contents);
 // Watches compositor frame changes, blocking until a frame has been
 // composited. This class is intended to be run on the main thread; to
 // synchronize the main thread against the impl thread.
-class FrameWatcher : public BrowserMessageFilter {
+class FrameWatcher : public IPC::MessageFilter {
  public:
   FrameWatcher();
 

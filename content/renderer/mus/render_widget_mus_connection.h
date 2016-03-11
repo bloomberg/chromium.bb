@@ -45,6 +45,9 @@ class CONTENT_EXPORT RenderWidgetMusConnection
   void ObserveWheelEventAndResult(const blink::WebMouseWheelEvent& wheel_event,
                                   const gfx::Vector2dF& wheel_unused_delta,
                                   bool event_processed) override;
+  void ObserveGestureEventAndResult(const blink::WebGestureEvent& gesture_event,
+                                    const gfx::Vector2dF& gesture_unused_delta,
+                                    bool event_processed) override;
   void OnDidHandleKeyEvent() override;
   void OnDidOverscroll(const DidOverscrollParams& params) override;
   void OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) override;

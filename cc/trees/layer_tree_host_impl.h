@@ -166,6 +166,7 @@ class CC_EXPORT LayerTreeHostImpl
   InputHandler::ScrollStatus RootScrollBegin(
       ScrollState* scroll_state,
       InputHandler::ScrollInputType type) override;
+  ScrollStatus ScrollAnimatedBegin(const gfx::Point& viewport_point) override;
   InputHandler::ScrollStatus ScrollAnimated(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta) override;

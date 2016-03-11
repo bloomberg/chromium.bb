@@ -113,7 +113,7 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
     EXPECT_EQ(1000, scrollHeight);
 
     scoped_refptr<FrameWatcher> frame_watcher(new FrameWatcher());
-    GetWidgetHost()->GetProcess()->AddFilter(frame_watcher.get());
+    frame_watcher->AttachTo(shell()->web_contents());
     scoped_refptr<InputMsgWatcher> input_msg_watcher(
         new InputMsgWatcher(GetWidgetHost(), blink::WebInputEvent::MouseWheel));
 
@@ -138,7 +138,7 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
     EXPECT_EQ(1000, scrollHeight);
 
     scoped_refptr<FrameWatcher> frame_watcher(new FrameWatcher());
-    GetWidgetHost()->GetProcess()->AddFilter(frame_watcher.get());
+    frame_watcher->AttachTo(shell()->web_contents());
 
     SyntheticSmoothScrollGestureParams params;
     params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
@@ -162,17 +162,11 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(NonBlockingEventBrowserTest);
 };
 
-// Disabled on MacOS because it doesn't support wheel gestures
-// just yet.
-#if defined(OS_MACOSX)
-#define MAYBE_MouseWheel DISABLED_MouseWheel
-#else
 // Also appears to be flaky under TSan. crbug.com/588199
 #if defined(THREAD_SANITIZER)
 #define MAYBE_MouseWheel DISABLED_MouseWheel
 #else
 #define MAYBE_MouseWheel MouseWheel
-#endif
 #endif
 IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MAYBE_MouseWheel) {
   LoadURL();
