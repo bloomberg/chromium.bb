@@ -56,7 +56,9 @@ ContentSettingImageView::ContentSettingImageView(
     SetBackgroundImageGrid(kBackgroundImages);
   }
 
-  image()->SetHorizontalAlignment(views::ImageView::LEADING);
+  image()->SetHorizontalAlignment(base::i18n::IsRTL()
+                                      ? views::ImageView::TRAILING
+                                      : views::ImageView::LEADING);
   image()->set_interactive(true);
   image()->EnableCanvasFlippingForRTLUI(true);
   image()->SetAccessibilityFocusable(true);
@@ -94,7 +96,8 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
   // the user.  If this becomes a problem, we could design some sort of queueing
   // mechanism to show one after the other, but it doesn't seem important now.
   int string_id = content_setting_image_model_->explanatory_string_id();
-  if (string_id && !ShouldShowBackground()) {
+  if (string_id && !label()->visible()) {
+    ink_drop_delegate_->OnAction(views::InkDropState::HIDDEN);
     SetLabel(l10n_util::GetStringUTF16(string_id));
     label()->SetVisible(true);
     slide_animator_.Show();
@@ -113,7 +116,8 @@ SkColor ContentSettingImageView::GetBorderColor() const {
 }
 
 bool ContentSettingImageView::ShouldShowBackground() const {
-  return slide_animator_.is_animating() || pause_animation_;
+  return (!IsShrinking() || label()->width() > 0) &&
+         (slide_animator_.is_animating() || pause_animation_);
 }
 
 double ContentSettingImageView::WidthMultiplier() const {
@@ -130,6 +134,13 @@ double ContentSettingImageView::WidthMultiplier() const {
   if (state > (1.0 - kOpenFraction))
     size_fraction = (1.0 - state) / kOpenFraction;
   return size_fraction;
+}
+
+bool ContentSettingImageView::IsShrinking() const {
+  const double kOpenFraction =
+      static_cast<double>(kOpenTimeMS) / kAnimationDurationMS;
+  return (!pause_animation_ && slide_animator_.is_animating() &&
+          slide_animator_.GetCurrentValue() > (1.0 - kOpenFraction));
 }
 
 void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
@@ -184,10 +195,8 @@ void ContentSettingImageView::OnMouseReleased(const ui::MouseEvent& event) {
     return;
   }
   const bool activated = HitTestPoint(event.location());
-  if (!label()->visible()) {
-    ink_drop_delegate_->OnAction(activated ? views::InkDropState::ACTIVATED
-                                           : views::InkDropState::HIDDEN);
-  }
+  if (!label()->visible() && !activated)
+    ink_drop_delegate_->OnAction(views::InkDropState::HIDDEN);
   if (activated)
     OnClick();
 }
@@ -196,17 +205,13 @@ bool ContentSettingImageView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() != ui::VKEY_SPACE && event.key_code() != ui::VKEY_RETURN)
     return false;
 
-  ink_drop_delegate_->OnAction(views::InkDropState::ACTIVATED);
   OnClick();
   return true;
 }
 
 void ContentSettingImageView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
-    if (!label()->visible())
-      ink_drop_delegate_->OnAction(views::InkDropState::ACTIVATED);
+  if (event->type() == ui::ET_GESTURE_TAP)
     OnClick();
-  }
   if ((event->type() == ui::ET_GESTURE_TAP) ||
       (event->type() == ui::ET_GESTURE_TAP_DOWN))
     event->SetHandled();
@@ -242,7 +247,19 @@ void ContentSettingImageView::OnWidgetVisibilityChanged(views::Widget* widget,
 
 void ContentSettingImageView::OnClick() {
   if (slide_animator_.is_animating()) {
-    if (!pause_animation_) {
+    // If the user clicks while we're animating, the bubble arrow will be
+    // pointing to the image, and if we allow the animation to keep running, the
+    // image will move away from the arrow (or we'll have to move the bubble,
+    // which is even worse). So we want to stop the animation.  We have two
+    // choices: jump to the final post-animation state (no label visible), or
+    // pause the animation where we are and continue running after the bubble
+    // closes. The former looks more jerky, so we avoid it unless the animation
+    // hasn't even fully exposed the image yet, in which case pausing with half
+    // an image visible will look broken.
+    const int final_width = image()->GetPreferredSize().width() +
+                            GetBubbleOuterPadding(true) +
+                            GetBubbleOuterPadding(false);
+    if (!pause_animation_ && ShouldShowBackground() && width() > final_width) {
       pause_animation_ = true;
       pause_animation_state_ = slide_animator_.GetCurrentValue();
     }
@@ -264,8 +281,10 @@ void ContentSettingImageView::OnClick() {
     // bubble doesn't need an arrow. If the user clicks during an animation,
     // the animation simply pauses and no other visible state change occurs, so
     // show the arrow in this case.
-    if (ui::MaterialDesignController::IsModeMaterial() && !pause_animation_)
+    if (ui::MaterialDesignController::IsModeMaterial() && !pause_animation_) {
+      ink_drop_delegate_->OnAction(views::InkDropState::ACTIVATED);
       bubble_view_->SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
+    }
     bubble_widget->Show();
   }
 }

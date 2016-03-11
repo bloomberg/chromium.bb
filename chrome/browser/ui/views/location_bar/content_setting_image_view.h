@@ -65,6 +65,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
   SkColor GetBorderColor() const override;
   bool ShouldShowBackground() const override;
   double WidthMultiplier() const override;
+  bool IsShrinking() const override;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

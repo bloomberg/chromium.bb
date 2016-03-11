@@ -105,6 +105,10 @@ double IconLabelBubbleView::WidthMultiplier() const {
   return 1.0;
 }
 
+bool IconLabelBubbleView::IsShrinking() const {
+  return false;
+}
+
 int IconLabelBubbleView::GetImageAndPaddingWidth() const {
   const int image_width = image_->GetPreferredSize().width();
   return image_width
@@ -118,20 +122,53 @@ gfx::Size IconLabelBubbleView::GetPreferredSize() const {
 }
 
 void IconLabelBubbleView::Layout() {
-  // In MD mode, both extension icons and Chrome-provided icons are 16px,
-  // so it's not necessary to handle them differently. TODO(estade): clean
-  // this up when MD is on by default.
-  bool icon_has_enough_padding =
-      !is_extension_icon_ || ui::MaterialDesignController::IsModeMaterial();
-  const int image_width = image_->GetPreferredSize().width();
-  image_->SetBounds(std::min((width() - image_width) / 2,
-                             GetBubbleOuterPadding(icon_has_enough_padding)),
-                    0, image_->GetPreferredSize().width(), height());
+  // Compute the label bounds.  The label gets whatever size is left over after
+  // accounting for the preferred image width and padding amounts.  Note that if
+  // the label has zero size it doesn't actually matter what we compute its X
+  // value to be, since it won't be visible, so the X value can be "wrong"
+  // compared to where the right edge of the image is computed to be below.
+  // This means doing this layout doesn't doesn't depend on any of the layout
+  // below.  That layout, however, may need for this layout to have already
+  // happened, since the value of ShouldShowBackground() we read below may
+  // depend on whether the label has nonzero size.  Therefore, we do this first.
+  const int label_x = GetBubbleOuterPadding(true) + GetImageAndPaddingWidth();
+  const int label_width =
+      std::max(0, width() - label_x - GetBubbleOuterPadding(false));
+  label_->SetBounds(label_x, 0, label_width, height());
 
-  int pre_label_width = GetBubbleOuterPadding(true) + GetImageAndPaddingWidth();
-  label_->SetBounds(pre_label_width, 0,
-                    width() - pre_label_width - GetBubbleOuterPadding(false),
-                    height());
+  // Now compute the image bounds.  In non-MD, the leading padding depends on
+  // whether this is an extension icon, since extension icons and
+  // Chrome-provided icons are different sizes.  In MD, these sizes are the
+  // same, so it's not necessary to handle the two types differently.
+  const bool icon_has_enough_padding =
+      !is_extension_icon_ || ui::MaterialDesignController::IsModeMaterial();
+  int image_x = GetBubbleOuterPadding(icon_has_enough_padding);
+  const int image_preferred_width = image_->GetPreferredSize().width();
+  int bubble_trailing_padding = GetBubbleOuterPadding(false);
+
+  // If ShouldShowBackground() is true, then either we show a background in the
+  // steady state, or we're not yet in the last portion of the animation.  In
+  // these cases, we leave the leading and trailing padding alone; we don't want
+  // to let the image overlap the edge of the background, as this looks glitchy.
+  // If this is false, however, then we're only showing the image, and either
+  // the view width is the image width, or it's animating downwards and getting
+  // close to it.  In these cases, we want to shrink the trailing padding first,
+  // so the image slides all the way to the trailing edge before slowing or
+  // stopping; then we want to shrink the leading padding down to zero.
+  if (!ShouldShowBackground()) {
+    image_x = std::min(image_x, width() - image_preferred_width);
+    bubble_trailing_padding = std::min(
+        bubble_trailing_padding, width() - image_preferred_width - image_x);
+  }
+
+  // Now that we've computed the padding values, give the image all the
+  // remaining width.  This will be less than the image's preferred width during
+  // the first portion of the animation; during the very beginning there may not
+  // be enough room to show the image at all.
+  const int image_width =
+      std::min(image_preferred_width,
+               std::max(0, width() - image_x - bubble_trailing_padding));
+  image_->SetBounds(image_x, 0, image_width, height());
 }
 
 void IconLabelBubbleView::OnNativeThemeChanged(
@@ -177,18 +214,39 @@ SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
              : parent_background_color_;
 }
 
-gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
+gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
   gfx::Size size(image_->GetPreferredSize());
-  if (ShouldShowBackground()) {
-    const int non_label_width = GetBubbleOuterPadding(true) +
-                                GetImageAndPaddingWidth() +
-                                GetBubbleOuterPadding(false);
-    size = gfx::Size(WidthMultiplier() * (width + non_label_width), 0);
-    if (!ui::MaterialDesignController::IsModeMaterial())
-      size.SetToMax(background_painter_->GetMinimumSize());
+  bool shrinking = IsShrinking();
+  // Animation continues for the last few pixels even after the label is not
+  // visible in order to slide the icon into its final position. Therefore it
+  // is necessary to animate |total_width| even when the background is hidden
+  // as long as the animation is still shrinking.
+  if (ShouldShowBackground() || shrinking) {
+    const int image_width = size.width();
+    const int padding = GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_PADDING) +
+                        GetBubbleOuterPadding(true) +
+                        GetBubbleOuterPadding(false);
+    // |multiplier| grows from zero to one, stays equal to one and then shrinks
+    // to zero again. The view width should correspondingly grow from zero to
+    // fully showing both label and icon, stay there, then shrink to just large
+    // enough to show the icon. We don't want to shrink all the way back to
+    // zero, since this would mean the view would completely disappear and then
+    // pop back to an icon after the animation finishes.
+    int total_width = WidthMultiplier() * (label_width + image_width + padding);
+    if (shrinking)
+      total_width = std::max(total_width, image_width);
+    size.set_width(total_width);
   }
-
   return size;
+}
+
+int IconLabelBubbleView::GetBubbleOuterPadding(bool leading) const {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return GetBubbleOuterPaddingMd(leading);
+
+  return GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) -
+         GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING) +
+         (leading ? 0 : GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING));
 }
 
 void IconLabelBubbleView::SetLabelBackgroundColor(
@@ -203,15 +261,6 @@ void IconLabelBubbleView::SetLabelBackgroundColor(
   label_->SetBackgroundColor(color_utils::AlphaBlend(
       SkColorSetA(chip_background_color, 255), GetParentBackgroundColor(),
       SkColorGetA(chip_background_color)));
-}
-
-int IconLabelBubbleView::GetBubbleOuterPadding(bool leading) const {
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return GetBubbleOuterPaddingMd(leading);
-
-  return GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) -
-         GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING) +
-         (leading ? 0 : GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING));
 }
 
 int IconLabelBubbleView::GetBubbleOuterPaddingMd(bool leading) const {

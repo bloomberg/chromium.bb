@@ -54,6 +54,7 @@ class IconLabelBubbleView : public views::InkDropHostView {
  protected:
   views::ImageView* image() { return image_; }
   views::Label* label() { return label_; }
+  const views::Label* label() const { return label_; }
 
   // Gets the color for displaying text.
   virtual SkColor GetTextColor() const = 0;
@@ -69,6 +70,9 @@ class IconLabelBubbleView : public views::InkDropHostView {
   // on its desired width.  This ranges from 0 for a zero-width view to 1 for a
   // full-width view and can be used to animate the width of the view.
   virtual double WidthMultiplier() const;
+
+  // Returns true when animation is in progress and is shrinking.
+  virtual bool IsShrinking() const;
 
   // Returns the amount of horizontal space needed to draw the image and its
   // padding before the label.
@@ -87,17 +91,17 @@ class IconLabelBubbleView : public views::InkDropHostView {
 
   SkColor GetParentBackgroundColor() const;
 
-  gfx::Size GetSizeForLabelWidth(int width) const;
+  gfx::Size GetSizeForLabelWidth(int label_width) const;
+
+  // Amount of padding from the edge of the icon / label to the outer edge of
+  // the bubble view.  If |leading| is true, this is the padding at the
+  // beginning of the bubble (left in LTR), otherwise it's the trailing padding.
+  int GetBubbleOuterPadding(bool leading) const;
 
  private:
   // Sets a background color on |label_| based on |chip_background_color| and
   // the parent's bg color.
   void SetLabelBackgroundColor(SkColor chip_background_color);
-
-  // Amount of padding at the edges of the bubble.  If |leading| is true, this
-  // is the padding at the beginning of the bubble (left in LTR), otherwise it's
-  // the end padding.
-  int GetBubbleOuterPadding(bool leading) const;
 
   // As above, but for Material Design. TODO(estade): remove/replace the above.
   int GetBubbleOuterPaddingMd(bool leading) const;

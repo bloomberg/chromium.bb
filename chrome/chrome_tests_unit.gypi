@@ -1371,6 +1371,7 @@
       'browser/ui/views/frame/test_with_browser_view.cc',
       'browser/ui/views/frame/test_with_browser_view.h',
       'browser/ui/views/frame/web_contents_close_handler_unittest.cc',
+      'browser/ui/views/location_bar/icon_label_bubble_view_unittest.cc',
       'browser/ui/views/omnibox/omnibox_view_views_unittest.cc',
       'browser/ui/views/status_icons/status_tray_win_unittest.cc',
       'browser/ui/views/sync/bubble_sync_promo_view_unittest.cc',
