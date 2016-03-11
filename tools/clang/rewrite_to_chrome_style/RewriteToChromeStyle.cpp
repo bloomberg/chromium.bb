@@ -144,6 +144,39 @@ AST_MATCHER_P(clang::CXXMethodDecl,
   return MatchAllOverriddenMethods(Node, InnerMatcher, Finder, Builder);
 }
 
+bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
+  if (decl.isStatic())
+    return false;
+
+  clang::StringRef name = decl.getName();
+
+  // These methods should never be renamed.
+  static const char* kBlacklistMethods[] = {"trace", "lock", "unlock",
+                                            "try_lock"};
+  for (const auto& b : kBlacklistMethods) {
+    if (name == b)
+      return true;
+  }
+
+  // Iterator methods shouldn't be renamed to work with stl and range-for
+  // loops.
+  std::string ret_type = decl.getReturnType().getAsString();
+  if (ret_type.find("iterator") == std::string::npos &&
+      ret_type.find("Iterator") == std::string::npos)
+    return false;
+  static const char* kIteratorBlacklist[] = {"begin", "end", "rbegin", "rend"};
+  for (const auto& b : kIteratorBlacklist) {
+    if (name == b)
+      return true;
+  }
+
+  return false;
+}
+
+AST_MATCHER(clang::CXXMethodDecl, isBlacklistedMethod) {
+  return IsBlacklistedMethod(Node);
+}
+
 // Helper to convert from a camelCaseName to camel_case_name. It uses some
 // heuristics to try to handle acronyms in camel case names correctly.
 std::string CamelCaseToUnderscoreCase(StringRef input) {
@@ -265,30 +298,6 @@ bool GetNameForDecl(const clang::EnumConstantDecl& decl,
 bool GetNameForDecl(const clang::CXXMethodDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
-  StringRef original_name = decl.getName();
-
-  if (!decl.isStatic()) {
-    std::string ret_type = decl.getReturnType().getAsString();
-    if (ret_type.find("iterator") != std::string::npos ||
-        ret_type.find("Iterator") != std::string::npos) {
-      // Iterator methods shouldn't be renamed to work with stl and range-for
-      // loops.
-      static const char* kIteratorBlacklist[] = {"begin", "end", "rbegin",
-                                                 "rend"};
-      for (const auto& b : kIteratorBlacklist) {
-        if (original_name == b)
-          return false;
-      }
-    }
-
-    // Some methods shouldn't be renamed because reasons.
-    static const char* kBlacklist[] = {"trace", "lock", "unlock", "try_lock"};
-    for (const auto& b : kBlacklist) {
-      if (original_name == b)
-        return false;
-    }
-  }
-
   name = decl.getName().str();
   name[0] = clang::toUppercase(name[0]);
   return true;
@@ -642,20 +651,27 @@ int main(int argc, const char* argv[]) {
   //     void g();
   //   };
   // matches |g|.
+  // For a method to be considered for rewrite, it must not override something
+  // that we're not rewriting. Any methods that we would not normally consider
+  // but that override something we are rewriting should also be rewritten. So
+  // we use includeAllOverriddenMethods() to check these rules not just for the
+  // method being matched but for the methods it overrides also.
+  auto is_blink_method = includeAllOverriddenMethods(
+      allOf(in_blink_namespace, unless(isBlacklistedMethod())));
   auto method_decl_matcher = id(
       "decl",
       cxxMethodDecl(
-          unless(anyOf(  // Overloaded operators have special names
-              // and should never be renamed.
+          unless(anyOf(
+              // Overloaded operators have special names and should never be
+              // renamed.
               isOverloadedOperator(),
-              // Similarly, constructors, destructors, and
-              // conversion functions should not be
-              // considered for renaming.
+              // Similarly, constructors, destructors, and conversion functions
+              // should not be considered for renaming.
               cxxConstructorDecl(), cxxDestructorDecl(), cxxConversionDecl())),
           // Check this last after excluding things, to avoid
           // asserts about overriding non-blink and blink for the
           // same method.
-          includeAllOverriddenMethods(in_blink_namespace)));
+          is_blink_method));
   MethodDeclRewriter method_decl_rewriter(&replacements);
   match_finder.addMatcher(method_decl_matcher, &method_decl_rewriter);
 
