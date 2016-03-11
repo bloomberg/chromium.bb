@@ -71,6 +71,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
 #include "ui/base/cocoa/animation_utils.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 #include "ui/base/layout.h"
@@ -1001,7 +1002,7 @@ gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
     return gfx::Rect(gfx::Size(NSWidth(bounds), NSHeight(bounds)));
 
   bounds = [cocoa_view_ convertRect:bounds toView:nil];
-  bounds.origin = [enclosing_window convertBaseToScreen:bounds.origin];
+  bounds = [enclosing_window convertRectToScreen:bounds];
   return FlipNSRectToRectScreen(bounds);
 }
 
@@ -1716,7 +1717,7 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
   origin.y = NSHeight([cocoa_view_ bounds]) - origin.y;
   NSPoint originInWindow = [cocoa_view_ convertPoint:origin toView:nil];
   NSPoint originInScreen =
-      [[cocoa_view_ window] convertBaseToScreen:originInWindow];
+      ui::ConvertPointFromWindowToScreen([cocoa_view_ window], originInWindow);
   originInScreen.y = originInScreen.y - size.height;
   return gfx::Point(originInScreen.x, originInScreen.y);
 }
@@ -2846,7 +2847,8 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
           ->GetRootBrowserAccessibilityManager();
   if (!manager)
     return self;
-  NSPoint pointInWindow = [[self window] convertScreenToBase:point];
+  NSPoint pointInWindow =
+      ui::ConvertPointFromScreenToWindow([self window], point);
   NSPoint localPoint = [self convertPoint:pointInWindow fromView:nil];
   localPoint.y = NSHeight([self bounds]) - localPoint.y;
   BrowserAccessibilityCocoa* root =
@@ -2970,7 +2972,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // |thePoint| is in screen coordinates, but needs to be converted to WebKit
   // coordinates (upper left origin). Scroll offsets will be taken care of in
   // the renderer.
-  thePoint = [[self window] convertScreenToBase:thePoint];
+  thePoint = ui::ConvertPointFromScreenToWindow([self window], thePoint);
   thePoint = [self convertPoint:thePoint fromView:nil];
   thePoint.y = NSHeight([self frame]) - thePoint.y;
 
@@ -3017,7 +3019,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   // Convert into screen coordinates for return.
   rect = [self convertRect:rect toView:nil];
-  rect.origin = [[self window] convertBaseToScreen:rect.origin];
+  rect = [[self window] convertRectToScreen:rect];
   return rect;
 }
 

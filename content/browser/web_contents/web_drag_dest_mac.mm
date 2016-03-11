@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -98,7 +99,8 @@ int GetModifierFlags() {
 - (NSPoint)flipWindowPointToScreen:(const NSPoint&)windowPoint
                               view:(NSView*)view {
   DCHECK(view);
-  NSPoint screenPoint = [[view window] convertBaseToScreen:windowPoint];
+  NSPoint screenPoint =
+      ui::ConvertPointFromWindowToScreen([view window], windowPoint);
   NSScreen* screen = [[view window] screen];
   NSRect screenFrame = [screen frame];
   screenPoint.y = screenFrame.size.height - screenPoint.y;

@@ -39,6 +39,7 @@
 #include "base/strings/string_util.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
@@ -516,9 +517,8 @@ int ModifiersFromEvent(NSEvent* event) {
 void SetWebEventLocationFromEventInView(blink::WebMouseEvent* result,
                                         NSEvent* event,
                                         NSView* view) {
-  NSPoint window_local = [event locationInWindow];
-
-  NSPoint screen_local = [[view window] convertBaseToScreen:window_local];
+  NSPoint screen_local = ui::ConvertPointFromWindowToScreen(
+      [view window], [event locationInWindow]);
   result->globalX = screen_local.x;
   // Flip y.
   NSScreen* primary_screen = ([[NSScreen screens] count] > 0)
@@ -529,7 +529,8 @@ void SetWebEventLocationFromEventInView(blink::WebMouseEvent* result,
   else
     result->globalY = screen_local.y;
 
-  NSPoint content_local = [view convertPoint:window_local fromView:nil];
+  NSPoint content_local =
+      [view convertPoint:[event locationInWindow] fromView:nil];
   result->x = content_local.x;
   result->y = [view frame].size.height - content_local.y;  // Flip y.
 

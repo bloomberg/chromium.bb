@@ -728,17 +728,22 @@ TEST_F(RenderWidgetHostViewMacTest, UpdateCompositionMultilineCase) {
 // firstRectForCharacterRange:actualRange] are handled in a sane manner if they
 // arrive after the C++ RenderWidgetHostView is destroyed.
 TEST_F(RenderWidgetHostViewMacTest, CompositionEventAfterDestroy) {
-  // The test view isn't in an NSWindow to perform the final coordinate
-  // conversion, so use an origin of 0,0, but verify the size.
   const gfx::Rect composition_bounds(0, 0, 30, 40);
   const gfx::Range range(0, 1);
   rwhv_mac_->ImeCompositionRangeChanged(
       range, std::vector<gfx::Rect>(1, composition_bounds));
 
   NSRange actual_range = NSMakeRange(0, 0);
+
+  base::scoped_nsobject<CocoaTestHelperWindow> window(
+      [[CocoaTestHelperWindow alloc] init]);
+  [[window contentView] addSubview:rwhv_cocoa_];
+  [rwhv_cocoa_ setFrame:NSMakeRect(0, 0, 400, 400)];
+
   NSRect rect = [rwhv_cocoa_ firstRectForCharacterRange:range.ToNSRange()
                                             actualRange:&actual_range];
-  EXPECT_NSEQ(NSMakeRect(0, 0, 30, 40), rect);
+  EXPECT_EQ(30, rect.size.width);
+  EXPECT_EQ(40, rect.size.height);
   EXPECT_EQ(range, gfx::Range(actual_range));
 
   DestroyHostViewRetainCocoaView();

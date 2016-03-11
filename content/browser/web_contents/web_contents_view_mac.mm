@@ -118,13 +118,15 @@ gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
-  // Convert bounds to window coordinate space.
-  NSRect bounds =
-      [cocoa_view_.get() convertRect:[cocoa_view_.get() bounds] toView:nil];
-
-  // Convert bounds to screen coordinate space.
   NSWindow* window = [cocoa_view_.get() window];
-  bounds.origin = [window convertBaseToScreen:bounds.origin];
+  NSRect bounds = [cocoa_view_.get() bounds];
+  if (window)  {
+    // Convert bounds to window coordinate space.
+    bounds = [cocoa_view_.get() convertRect:bounds toView:nil];
+
+    // Convert bounds to screen coordinate space.
+    bounds = [window convertRectToScreen:bounds];
+  }
 
   // Flip y to account for screen flip.
   NSScreen* screen = [[NSScreen screens] firstObject];
