@@ -367,7 +367,7 @@ int main(int argc, char* argv[])
         }
     };
 
-    blink::initializeWithoutV8(new WebPlatform());
+    Platform::initialize(new WebPlatform());
 
     // Set image decoding Platform options.
 

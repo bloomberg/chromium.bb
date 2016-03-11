@@ -48,7 +48,7 @@ public:
     }
 
     // SerializedScriptValueFactory::initialize() should be invoked when Blink is initialized,
-    // i.e. initializeWithoutV8() in WebKit.cpp.
+    // i.e. initialize() in WebKit.cpp.
     static void initialize(SerializedScriptValueFactory* newFactory)
     {
         ASSERT(!m_instance);

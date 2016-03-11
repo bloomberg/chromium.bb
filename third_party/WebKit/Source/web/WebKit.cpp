@@ -103,12 +103,6 @@ v8::Isolate* mainThreadIsolate()
     return V8PerIsolateData::mainThreadIsolate();
 }
 
-// TODO(haraken): Remove this function.
-void initializeWithoutV8(Platform* platform)
-{
-    Platform::initialize(platform);
-}
-
 void shutdown()
 {
     ThreadState::current()->cleanupMainThread();
@@ -126,12 +120,6 @@ void shutdown()
 
     modulesInitializer().shutdown();
 
-    Platform::shutdown();
-}
-
-// TODO(haraken): Remove this function.
-void shutdownWithoutV8()
-{
     Platform::shutdown();
 }
 

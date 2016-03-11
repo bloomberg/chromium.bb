@@ -135,6 +135,8 @@ public:
     typedef int FileHandle;
 #endif
 
+    // Initialize platform and wtf. If you need to initialize the entire Blink,
+    // you should use blink::initialize.
     static void initialize(Platform*);
     static void shutdown();
     static Platform* current();

@@ -121,7 +121,7 @@ void SandboxIPCHandler::Run() {
   }
 
   if (blink_platform_impl_)
-    blink::shutdownWithoutV8();
+    blink::Platform::shutdown();
 
   VLOG(1) << "SandboxIPCHandler stopping.";
 }
@@ -447,7 +447,7 @@ void SandboxIPCHandler::EnsureWebKitInitialized() {
   if (blink_platform_impl_)
     return;
   blink_platform_impl_.reset(new BlinkPlatformImpl);
-  blink::initializeWithoutV8(blink_platform_impl_.get());
+  blink::Platform::initialize(blink_platform_impl_.get());
 }
 
 }  // namespace content

@@ -39,17 +39,13 @@ class Isolate;
 
 namespace blink {
 
-// Must be called on the thread that will be the main WebKit thread before
-// using any other WebKit APIs. The provided Platform; must be
+// Initialize the entire Blink (wtf, platform, core, modules and web).
+// If you just need wtf and platform, use Platform::initialize instead.
+//
+// Must be called on the thread that will be the main thread before
+// using any other public APIs. The provided Platform; must be
 // non-null and must remain valid until the current thread calls shutdown.
 BLINK_EXPORT void initialize(Platform*);
-
-// Must be called on the thread that will be the main WebKit thread before
-// using any other WebKit APIs. The provided Platform must be
-// non-null and must remain valid until the current thread calls shutdown.
-//
-// This is a special variant of initialize that does not intitialize V8.
-BLINK_EXPORT void initializeWithoutV8(Platform*);
 
 // Get the V8 Isolate for the main thread.
 // initialize must have been called first.
@@ -60,15 +56,6 @@ BLINK_EXPORT v8::Isolate* mainThreadIsolate();
 // called. Any background threads created by WebKit are promised to be
 // terminated by the time this function returns.
 BLINK_EXPORT void shutdown();
-
-// Once shutdown, the Platform passed to initializeWithoutV8 will no longer
-// be accessed. No other WebKit objects should be in use when this function is
-// called. Any background threads created by WebKit are promised to be
-// terminated by the time this function returns.
-//
-// If initializeWithoutV8() was used to initialize WebKit, shutdownWithoutV8
-// must be called to shut it down again.
-BLINK_EXPORT void shutdownWithoutV8();
 
 // Alters the rendering of content to conform to a fixed set of rules.
 BLINK_EXPORT void setLayoutTestMode(bool);

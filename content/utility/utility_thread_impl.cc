@@ -57,7 +57,7 @@ void UtilityThreadImpl::Shutdown() {
   ChildThreadImpl::Shutdown();
 
   if (blink_platform_impl_)
-    blink::shutdownWithoutV8();
+    blink::Platform::shutdown();
 }
 
 void UtilityThreadImpl::ReleaseProcessIfNeeded() {
@@ -85,7 +85,7 @@ void UtilityThreadImpl::EnsureBlinkInitialized() {
   }
 
   blink_platform_impl_.reset(new UtilityBlinkPlatformImpl);
-  blink::initializeWithoutV8(blink_platform_impl_.get());
+  blink::Platform::initialize(blink_platform_impl_.get());
 }
 
 void UtilityThreadImpl::Init() {

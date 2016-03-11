@@ -29,7 +29,7 @@ const std::string::size_type data_url_pattern_size =
 class MockBlinkPlatform : NON_EXPORTED_BASE(public blink::Platform) {
  public:
   MockBlinkPlatform() {
-    blink::initializeWithoutV8(this);
+    blink::Platform::initialize(this);
   }
   ~MockBlinkPlatform() override {}
 
