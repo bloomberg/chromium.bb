@@ -49,8 +49,8 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   // TODO(beng): We should filter outgoing interfaces also. The shell must pass
   //             the manifest CapabilityFilter to the ShellConnection via
   //             Initialize(), it can be used here.
-  std::set<std::string> allowed;
-  allowed.insert("*");
+  CapabilityRequest request;
+  request.interfaces.insert("*");
   shell::mojom::InterfaceProviderPtr local_interfaces;
   shell::mojom::InterfaceProviderRequest local_request =
       GetProxy(&local_interfaces);
@@ -60,7 +60,7 @@ scoped_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   scoped_ptr<internal::ConnectionImpl> registry(new internal::ConnectionImpl(
       params->target().name(), params->target(),
       shell::mojom::kInvalidInstanceID, std::move(remote_interfaces),
-      std::move(local_request), allowed, Connection::State::PENDING));
+      std::move(local_request), request, Connection::State::PENDING));
 
   shell::mojom::ShellClientFactoryPtr shell_client_factory;
   shell::mojom::PIDReceiverRequest pid_receiver_request;

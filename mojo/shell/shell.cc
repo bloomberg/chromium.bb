@@ -55,20 +55,37 @@ CapabilitySpec GetPermissiveCapabilities() {
   return capabilities;
 }
 
-CapabilityRequest GetCapabilityRequest(const CapabilitySpec& spec,
-                                             const Identity& identity) {
+CapabilityRequest GetCapabilityRequest(const CapabilitySpec& source_spec,
+                                       const Identity& target) {
   // Start by looking for specs specific to the supplied identity.
-  auto it = spec.required.find(identity.name());
-  if (it != spec.required.end())
+  auto it = source_spec.required.find(target.name());
+  if (it != source_spec.required.end())
     return it->second;
 
   // Fall back to looking for a wildcard rule.
-  it = spec.required.find("*");
-  if (spec.required.size() == 1 && it != spec.required.end())
+  it = source_spec.required.find("*");
+  if (source_spec.required.size() == 1 && it != source_spec.required.end())
     return it->second;
 
   // Finally, nothing is allowed.
   return CapabilityRequest();
+}
+
+CapabilityRequest GenerateCapabilityRequestForConnection(
+    const CapabilitySpec& source_spec,
+    const Identity& target,
+    const CapabilitySpec& target_spec) {
+  CapabilityRequest request = GetCapabilityRequest(source_spec, target);
+  // Flatten all interfaces from classes requested by the source into the
+  // allowed interface set in the request.
+  for (const auto& class_name : request.classes) {
+    auto it = target_spec.provided.find(class_name);
+    if (it != target_spec.provided.end()) {
+      for (const auto& interface_name : it->second)
+        request.interfaces.insert(interface_name);
+    }
+  }
+  return request;
 }
 
 // Encapsulates a connection to an instance of an application, tracked by the
@@ -82,13 +99,13 @@ class Shell::Instance : public mojom::Connector,
   Instance(mojom::ShellClientPtr shell_client,
            mojo::shell::Shell* shell,
            const Identity& identity,
-           const CapabilitySpec& capabilities)
+           const CapabilitySpec& capability_spec)
     : shell_(shell),
       id_(GenerateUniqueID()),
       identity_(identity),
-      capabilities_(capabilities),
-      allow_any_application_(capabilities.required.size() == 1 &&
-                             capabilities.required.count("*") == 1),
+      capability_spec_(capability_spec),
+      allow_any_application_(capability_spec.required.size() == 1 &&
+                             capability_spec.required.count("*") == 1),
       shell_client_(std::move(shell_client)),
       pid_receiver_binding_(this),
       weak_factory_(this) {
@@ -117,7 +134,8 @@ class Shell::Instance : public mojom::Connector,
     spec.interfaces.insert("*");
     Instance* source = shell_->GetExistingInstance(params->source());
     if (source) {
-      spec = GetCapabilityRequest(source->capabilities_, identity_);
+      spec = GenerateCapabilityRequestForConnection(
+          source->capability_spec_, identity_, capability_spec_);
       source_id = source->id();
     }
     shell_client_->AcceptConnection(
@@ -267,8 +285,8 @@ class Shell::Instance : public mojom::Connector,
   bool ValidateCapabilities(const Identity& target,
                             const ConnectCallback& callback) {
     if (allow_any_application_ ||
-        capabilities_.required.find(target.name()) !=
-            capabilities_.required.end()) {
+        capability_spec_.required.find(target.name()) !=
+            capability_spec_.required.end()) {
       return true;
     }
     LOG(ERROR) << "Capabilities prevented connection from: " <<
@@ -296,7 +314,7 @@ class Shell::Instance : public mojom::Connector,
   // process is launched.
   const uint32_t id_;
   const Identity identity_;
-  const CapabilitySpec capabilities_;
+  const CapabilitySpec capability_spec_;
   const bool allow_any_application_;
   mojom::ShellClientPtr shell_client_;
   Binding<mojom::PIDReceiver> pid_receiver_binding_;

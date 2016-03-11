@@ -9,12 +9,25 @@ interface ConnectTestService {
   GetInstance() => (string instance);
 };
 
-// Interface implemented by a standalone (non-package) app.
+interface ClassInterface {
+  Ping() => (string response);
+};
+
+// Interface implemented by a standalone (non-package) app,
+// mojo:connect_test_app.
 interface StandaloneApp {
   // Attempts to connect to an application whose name is explicitly allowed by
-  // the standalone app's CapabilityFilter, but whose enclosing package is not.
+  // the standalone app's CapabilitySpec, but whose enclosing package is not.
   // The connection should be blocked and title should be "uninitialized".
   ConnectToAllowedAppInBlockedPackage() => (string title);
+
+  // Connects to mojo:connect_test_class_app & requests ClassInterface from it.
+  // This should be permitted because mojo:connect_test_app requests class
+  // "class" from mojo:connect_test_class_app, which mojo:connect_test_class_app
+  // defines as including ClassInterface.
+  // The response contains the response from ClassInterface::Ping() and
+  // ConnectTestService::GetTitle().
+  ConnectToClassInterface() => (string class_interface_response, string title);
 };
 
 struct ConnectionState {

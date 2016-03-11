@@ -17,6 +17,13 @@
 
 namespace mojo {
 namespace shell {
+namespace {
+void ReceiveString(std::string* string, base::RunLoop* loop,
+                   const std::string& response) {
+  *string = response;
+  loop->Quit();
+}
+}
 
 using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
 
@@ -118,6 +125,32 @@ class ConnectTestApp : public ShellClient,
           base::MessageLoop::current());
       run_loop.Run();
     }
+  }
+  void ConnectToClassInterface(
+      const ConnectToClassInterfaceCallback& callback) override {
+    scoped_ptr<Connection> connection =
+        connector_->Connect("mojo:connect_test_class_app");
+    test::mojom::ClassInterfacePtr class_interface;
+    connection->GetInterface(&class_interface);
+    std::string ping_response;
+    {
+      base::RunLoop loop;
+      class_interface->Ping(base::Bind(&ReceiveString, &ping_response, &loop));
+      base::MessageLoop::ScopedNestableTaskAllower allow(
+          base::MessageLoop::current());
+      loop.Run();
+    }
+    test::mojom::ConnectTestServicePtr service;
+    connection->GetInterface(&service);
+    std::string title_response;
+    {
+      base::RunLoop loop;
+      service->GetTitle(base::Bind(&ReceiveString, &title_response, &loop));
+      base::MessageLoop::ScopedNestableTaskAllower allow(
+          base::MessageLoop::current());
+      loop.Run();
+    }
+    callback.Run(ping_response, title_response);
   }
 
   // test::mojom::BlockedInterface:
