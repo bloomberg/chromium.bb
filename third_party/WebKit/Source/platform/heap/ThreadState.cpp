@@ -622,7 +622,7 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gcType)
         schedulePreciseGC();
         return;
     }
-    if (gcType == BlinkGC::V8MajorGC) {
+    if (gcType == BlinkGC::V8MajorGC && shouldScheduleIdleGC()) {
 #if PRINT_HEAP_STATS
         dataLogF("Scheduled IdleGC\n");
 #endif
