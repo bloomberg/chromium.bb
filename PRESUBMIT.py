@@ -139,9 +139,8 @@ def CheckChangeOnCommit(input_api, output_api):
   return report
 
 
-# Note that this list is duplicated in the Commit Queue.  If you
-# change this list, you should also update the CQ's list here:
-# https://chrome-internal.googlesource.com/infra/infra_internal/+/master/commit_queue/projects.py
+# Note that this list is duplicated in the Commit Queue.  If you change
+# this list, you should also update the CQ's list in infra/config/cq.cfg
 # (see https://crbug.com/399059).
 DEFAULT_TRYBOTS = [
     'nacl-precise32_newlib_dbg',
@@ -166,6 +165,7 @@ DEFAULT_TRYBOTS = [
     'nacl-win7_64_arm_newlib_opt',
     'nacl-mac_arm_newlib_opt',
     'nacl-precise64_arm_newlib_opt',
+    'nacl-precise64_arm_glibc_opt',
     # pnacl scons bots
     'nacl-precise_64-newlib-arm_qemu-pnacl',
     'nacl-precise_64-newlib-x86_32-pnacl',
