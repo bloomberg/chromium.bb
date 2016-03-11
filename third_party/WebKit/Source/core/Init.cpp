@@ -49,6 +49,7 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/events/EventFactory.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/fetch/WebCacheMemoryDumpProvider.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/html/parser/HTMLParserThread.h"
 #include "core/workers/WorkerThread.h"
@@ -137,6 +138,8 @@ void CoreInitializer::init()
 
     StringImpl::freezeStaticStrings();
 
+    Platform::current()->registerMemoryDumpProvider(WebCacheMemoryDumpProvider::instance(), "MemoryCache");
+
     // Creates HTMLParserThread::shared and ScriptStreamerThread::shared, but
     // does not start the threads.
     HTMLParserThread::init();
@@ -153,6 +156,8 @@ void CoreInitializer::shutdown()
     // cleared.
     ASSERT(Platform::current());
     HTMLParserThread::shutdown();
+
+    Platform::current()->unregisterMemoryDumpProvider(WebCacheMemoryDumpProvider::instance());
 
     WorkerThread::terminateAndWaitForAllWorkers();
 }

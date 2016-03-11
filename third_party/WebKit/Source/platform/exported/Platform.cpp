@@ -31,6 +31,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "platform/PartitionAllocMemoryDumpProvider.h"
+#include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/graphics/CompositorFactory.h"
 #include "platform/web_memory_dump_provider_adapter.h"
 #include "public/platform/Platform.h"
@@ -64,8 +65,10 @@ void Platform::initialize(Platform* platform)
     s_platform->m_mainThread = platform->currentThread();
 
     // TODO(ssid): remove this check after fixing crbug.com/486782.
-    if (s_platform->m_mainThread)
+    if (s_platform->m_mainThread) {
         s_platform->registerMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance(), "PartitionAlloc");
+        s_platform->registerMemoryDumpProvider(FontCacheMemoryDumpProvider::instance(), "FontCaches");
+    }
 
     CompositorFactory::initializeDefault();
 }
@@ -74,8 +77,10 @@ void Platform::shutdown()
 {
     CompositorFactory::shutdown();
 
-    if (s_platform->m_mainThread)
+    if (s_platform->m_mainThread) {
+        s_platform->unregisterMemoryDumpProvider(FontCacheMemoryDumpProvider::instance());
         s_platform->unregisterMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance());
+    }
 
     s_platform->m_mainThread = nullptr;
     s_platform = nullptr;
@@ -100,6 +105,10 @@ WebThread* Platform::mainThread() const
 
 void Platform::registerMemoryDumpProvider(WebMemoryDumpProvider* provider, const char* name)
 {
+    // MemoryDumpProvider needs a message loop.
+    if (!Platform::current()->currentThread())
+        return;
+
     WebMemoryDumpProviderAdapter* adapter = new WebMemoryDumpProviderAdapter(provider);
     ProviderToAdapterMap::AddResult result = memoryDumpProviders().add(provider, adoptPtr(adapter));
     if (!result.isNewEntry)
@@ -110,6 +119,10 @@ void Platform::registerMemoryDumpProvider(WebMemoryDumpProvider* provider, const
 
 void Platform::unregisterMemoryDumpProvider(WebMemoryDumpProvider* provider)
 {
+    // MemoryDumpProvider needs a message loop.
+    if (!Platform::current()->currentThread())
+        return;
+
     ProviderToAdapterMap::iterator it = memoryDumpProviders().find(provider);
     if (it == memoryDumpProviders().end())
         return;
