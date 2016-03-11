@@ -75,6 +75,7 @@ class Host(cr.Plugin, cr.Plugin.Type):
     """
     with cr.context.Trace():
       command = [cr.context.Substitute(arg) for arg in command if arg]
+      command = filter(bool, command)
     trail = cr.context.trail
     if not command:
       print 'Empty command passed to execute'
