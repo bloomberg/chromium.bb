@@ -7237,7 +7237,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Auto Sign-in
       </message>
       <message name="IDS_PASSWORDS_AUTO_SIGNIN_DESCRIPTION" desc="Text under 'Auto sign-in' checkbox">
-        Automatically sign in to websites using stored credential. When the feature is off, you'll be asked for verification every time before signing in to a website.
+        Automatically sign in to websites using stored credentials. When the feature is disabled, you will be asked for confirmation every time before signing to a website.
       </message>
       <message name="IDS_PASSWORDS_VIA_FEDERATION" desc="Text for federated credential's value.">
         with <ph name="PROVIDER">$1<ex>facebook.com</ex></ph>
