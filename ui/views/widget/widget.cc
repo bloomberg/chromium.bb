@@ -1307,7 +1307,7 @@ bool Widget::SetInitialFocus(ui::WindowShowState show_state) {
       show_state == ui::SHOW_STATE_MINIMIZED) {
     // If not focusing the window now, tell the focus manager which view to
     // focus when the window is restored.
-    if (v)
+    if (v && focus_manager_.get())
       focus_manager_->SetStoredFocusView(v);
     return true;
   }

@@ -1172,31 +1172,6 @@ TEST_F(WidgetTestInteractive, MAYBE_ExitFullscreenRestoreState) {
   RunPendingMessages();
 }
 
-// Testing widget delegate that creates a widget with a single view, which
-// should be initially focused.
-class TestInitialFocusWidgetDelegate : public TestDesktopWidgetDelegate {
- public:
-  explicit TestInitialFocusWidgetDelegate(gfx::NativeWindow context)
-      : view_(new View) {
-    view_->SetFocusable(true);
-
-    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-    params.context = context;
-    InitWidget(params);
-    GetWidget()->GetContentsView()->AddChildView(view_);
-  }
-
-  View* view() { return view_; }
-
-  // DialogDelegateView:
-  View* GetInitiallyFocusedView() override { return view_; }
-
- private:
-  View* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestInitialFocusWidgetDelegate);
-};
-
 // Testing initial focus is assigned properly for normal top-level widgets,
 // and subclasses that specify a initially focused child view.
 TEST_F(WidgetTestInteractive, InitialFocus) {

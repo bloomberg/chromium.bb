@@ -19,9 +19,12 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/default_activation_client.h"
+#include "ui/wm/core/focus_controller.h"
 
 namespace views {
 namespace {
@@ -34,19 +37,50 @@ NativeWidgetAura* Init(aura::Window* parent, Widget* widget) {
   return static_cast<NativeWidgetAura*>(widget->native_widget());
 }
 
+// TestFocusRules is intended to provide a way to manually set a window's
+// activatability so that the focus rules can be tested.
+class TestFocusRules : public wm::BaseFocusRules {
+ public:
+  TestFocusRules() {}
+  ~TestFocusRules() override {}
+
+  void set_can_activate(bool can_activate) { can_activate_ = can_activate; }
+
+  // wm::BaseFocusRules overrides:
+  bool SupportsChildActivation(aura::Window* window) const override {
+    return true;
+  }
+
+  bool CanActivateWindow(aura::Window* window) const override {
+    return can_activate_;
+  }
+
+ private:
+  bool can_activate_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFocusRules);
+};
+
 class NativeWidgetAuraTest : public aura::test::AuraTestBase {
  public:
   NativeWidgetAuraTest() {}
   ~NativeWidgetAuraTest() override {}
 
+  TestFocusRules* test_focus_rules() { return test_focus_rules_; }
+
   // testing::Test overrides:
   void SetUp() override {
     AuraTestBase::SetUp();
-    new wm::DefaultActivationClient(root_window());
+    test_focus_rules_ = new TestFocusRules;
+    focus_controller_.reset(new wm::FocusController(test_focus_rules_));
+    aura::client::SetActivationClient(root_window(), focus_controller_.get());
     host()->SetBounds(gfx::Rect(640, 480));
   }
 
  private:
+  scoped_ptr<wm::FocusController> focus_controller_;
+  TestFocusRules* test_focus_rules_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
 };
 
@@ -483,6 +517,37 @@ TEST_F(NativeWidgetAuraTest, OnWidgetMovedInvokedAfterAcquireLayer) {
   widget->SetBounds(gfx::Rect(0, 0, 500, 500));
   EXPECT_TRUE(delegate->got_move());
   widget->CloseNow();
+}
+
+// Tests that if a widget has a view which should be initially focused when the
+// widget is shown, this view should not get focused if the associated window
+// can not be activated.
+TEST_F(NativeWidgetAuraTest, PreventFocusOnNonActivableWindow) {
+  test_focus_rules()->set_can_activate(false);
+  Widget* w1 = new Widget;
+  views::test::TestInitialFocusWidgetDelegate* delegate =
+      new views::test::TestInitialFocusWidgetDelegate(root_window());
+  views::Widget::InitParams params1;
+  params1.delegate = delegate;
+  params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params1.context = root_window();
+  w1->Init(params1);
+  w1->Show();
+  EXPECT_FALSE(delegate->view()->HasFocus());
+  w1->CloseNow();
+
+  test_focus_rules()->set_can_activate(true);
+  Widget* w2 = new Widget;
+  views::test::TestInitialFocusWidgetDelegate* delegate2 =
+      new views::test::TestInitialFocusWidgetDelegate(root_window());
+  views::Widget::InitParams params2;
+  params2.delegate = delegate2;
+  params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params2.context = root_window();
+  w2->Init(params2);
+  w2->Show();
+  EXPECT_TRUE(delegate2->view()->HasFocus());
+  w2->CloseNow();
 }
 
 }  // namespace

@@ -14,6 +14,7 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -184,6 +185,24 @@ TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
   EXPECT_TRUE(always_on_top_window_state->CanActivate());
   EXPECT_FALSE(always_on_top_window->HasFocus());
   EXPECT_TRUE(normal_window->HasFocus());
+}
+
+// Tests that if a widget has a view which should be initially focused, this
+// view doesn't get focused if the widget shows behind the lock screen.
+TEST_F(LockScreenAshFocusRulesTest, PreventFocusChangeWithLockScreenPresent) {
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  EXPECT_TRUE(shell()->session_state_delegate()->IsScreenLocked());
+
+  views::test::TestInitialFocusWidgetDelegate delegate(CurrentContext());
+  EXPECT_FALSE(delegate.view()->HasFocus());
+  delegate.GetWidget()->Show();
+  EXPECT_FALSE(delegate.GetWidget()->IsActive());
+  EXPECT_FALSE(delegate.view()->HasFocus());
+
+  UnblockUserSession();
+  EXPECT_FALSE(shell()->session_state_delegate()->IsScreenLocked());
+  EXPECT_TRUE(delegate.GetWidget()->IsActive());
+  EXPECT_TRUE(delegate.view()->HasFocus());
 }
 
 }  // namespace test

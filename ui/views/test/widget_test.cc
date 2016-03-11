@@ -132,5 +132,23 @@ bool TestDesktopWidgetDelegate::ShouldAdvanceFocusToTopLevelWidget() const {
   return true;  // Same default as DefaultWidgetDelegate in widget.cc.
 }
 
+TestInitialFocusWidgetDelegate::TestInitialFocusWidgetDelegate(
+    gfx::NativeWindow context)
+    : view_(new View) {
+  view_->SetFocusable(true);
+
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.context = context;
+  params.delegate = this;
+  GetWidget()->Init(params);
+  GetWidget()->GetContentsView()->AddChildView(view_);
+}
+
+TestInitialFocusWidgetDelegate::~TestInitialFocusWidgetDelegate() {}
+
+View* TestInitialFocusWidgetDelegate::GetInitiallyFocusedView() {
+  return view_;
+}
+
 }  // namespace test
 }  // namespace views

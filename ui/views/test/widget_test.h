@@ -151,6 +151,24 @@ class TestDesktopWidgetDelegate : public WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestDesktopWidgetDelegate);
 };
 
+// Testing widget delegate that creates a widget with a single view, which is
+// the initially focused view.
+class TestInitialFocusWidgetDelegate : public TestDesktopWidgetDelegate {
+ public:
+  explicit TestInitialFocusWidgetDelegate(gfx::NativeWindow context);
+  ~TestInitialFocusWidgetDelegate() override;
+
+  View* view() { return view_; }
+
+  // WidgetDelegate override:
+  View* GetInitiallyFocusedView() override;
+
+ private:
+  View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestInitialFocusWidgetDelegate);
+};
+
 }  // namespace test
 }  // namespace views
 
