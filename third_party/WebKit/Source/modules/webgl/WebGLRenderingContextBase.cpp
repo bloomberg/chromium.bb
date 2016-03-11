@@ -2109,7 +2109,7 @@ bool WebGLRenderingContextBase::validateWebGLObject(const char* functionName, We
 
 void WebGLRenderingContextBase::drawArrays(GLenum mode, GLint first, GLsizei count)
 {
-    if (!validateDrawArrays("drawArrays", mode, first, count))
+    if (!validateDrawArrays("drawArrays"))
         return;
 
     clearIfComposited();
@@ -2119,7 +2119,7 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode, GLint first, GLsizei cou
 
 void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum type, long long offset)
 {
-    if (!validateDrawElements("drawElements", mode, count, type, offset))
+    if (!validateDrawElements("drawElements", type, offset))
         return;
 
     if (transformFeedbackActive() && !transformFeedbackPaused()) {
@@ -2134,7 +2134,7 @@ void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum 
 
 void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount)
 {
-    if (!validateDrawArrays("drawArraysInstancedANGLE", mode, first, count))
+    if (!validateDrawArrays("drawArraysInstancedANGLE"))
         return;
 
     clearIfComposited();
@@ -2144,7 +2144,7 @@ void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint firs
 
 void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei primcount)
 {
-    if (!validateDrawElements("drawElementsInstancedANGLE", mode, count, type, offset))
+    if (!validateDrawElements("drawElementsInstancedANGLE", type, offset))
         return;
 
     clearIfComposited();
@@ -5853,7 +5853,7 @@ bool WebGLRenderingContextBase::validateImageBitmap(const char* functionName, Im
     return true;
 }
 
-bool WebGLRenderingContextBase::validateDrawArrays(const char* functionName, GLenum mode, GLint first, GLsizei count)
+bool WebGLRenderingContextBase::validateDrawArrays(const char* functionName)
 {
     if (isContextLost())
         return false;
@@ -5874,7 +5874,7 @@ bool WebGLRenderingContextBase::validateDrawArrays(const char* functionName, GLe
     return true;
 }
 
-bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, GLenum mode, GLsizei count, GLenum type, long long offset)
+bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, GLenum type, long long offset)
 {
     if (isContextLost())
         return false;

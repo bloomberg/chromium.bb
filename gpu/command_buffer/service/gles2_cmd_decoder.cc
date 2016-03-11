@@ -7878,7 +7878,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   }
 
   LOCAL_PERFORMANCE_WARNING(
-      "Attribute 0 is disabled. This has signficant performance penalty");
+      "Attribute 0 is disabled. This has significant performance penalty");
 
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name);
   glBindBuffer(GL_ARRAY_BUFFER, attrib_0_buffer_id_);
@@ -7967,7 +7967,7 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
   }
 
   LOCAL_PERFORMANCE_WARNING(
-      "GL_FIXED attributes have a signficant performance penalty");
+      "GL_FIXED attributes have a significant performance penalty");
 
   // NOTE: we could be smart and try to check if a buffer is used
   // twice in 2 different attribs, find the overlapping parts and therefore

@@ -1524,7 +1524,7 @@ void WebGL2RenderingContextBase::vertexAttribDivisor(GLuint index, GLuint diviso
 
 void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instanceCount)
 {
-    if (!validateDrawArrays("drawArraysInstanced", mode, first, count))
+    if (!validateDrawArrays("drawArraysInstanced"))
         return;
 
     clearIfComposited();
@@ -1534,7 +1534,7 @@ void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode, GLint first, G
 
 void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei instanceCount)
 {
-    if (!validateDrawElements("drawElementsInstanced", mode, count, type, offset))
+    if (!validateDrawElements("drawElementsInstanced", type, offset))
         return;
 
     if (transformFeedbackActive() && !transformFeedbackPaused()) {
@@ -1549,7 +1549,7 @@ void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei coun
 
 void WebGL2RenderingContextBase::drawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, long long offset)
 {
-    if (!validateDrawElements("drawRangeElements", mode, count, type, offset))
+    if (!validateDrawElements("drawRangeElements", type, offset))
         return;
 
     if (transformFeedbackActive() && !transformFeedbackPaused()) {

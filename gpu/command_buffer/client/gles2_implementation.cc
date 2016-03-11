@@ -1279,7 +1279,7 @@ void GLES2Implementation::DrawElements(
       << count << ", "
       << GLES2Util::GetStringIndexType(type) << ", "
       << static_cast<const void*>(indices) << ")");
-  DrawElementsImpl(mode, count, type, indices, "glDrawRangeElements");
+  DrawElementsImpl(mode, count, type, indices, "glDrawElements");
 }
 
 void GLES2Implementation::DrawRangeElements(

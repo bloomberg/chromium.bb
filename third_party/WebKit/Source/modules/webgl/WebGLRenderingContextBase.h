@@ -998,10 +998,10 @@ protected:
     bool validateImageBitmap(const char* functionName, ImageBitmap*, ExceptionState&);
 
     // Helper function to validate drawArrays(Instanced) calls
-    bool validateDrawArrays(const char* functionName, GLenum mode, GLint first, GLsizei count);
+    bool validateDrawArrays(const char* functionName);
 
     // Helper function to validate drawElements(Instanced) calls
-    bool validateDrawElements(const char* functionName, GLenum mode, GLsizei count, GLenum type, long long offset);
+    bool validateDrawElements(const char* functionName, GLenum type, long long offset);
 
     // Helper functions to bufferData() and bufferSubData().
     void bufferDataImpl(GLenum target, long long size, const void* data, GLenum usage);
