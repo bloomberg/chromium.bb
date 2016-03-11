@@ -10,6 +10,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/screen.h"
 
 namespace views {
 
@@ -28,11 +29,7 @@ scoped_ptr<EventMonitor> EventMonitor::CreateWindowMonitor(
 
 // static
 gfx::Point EventMonitor::GetLastMouseLocation() {
-  NSPoint mouseLocation = [NSEvent mouseLocation];
-  // Flip coordinates to gfx (0,0 in top-left corner) using primary screen.
-  NSScreen* screen = [[NSScreen screens] firstObject];
-  mouseLocation.y = NSMaxY([screen frame]) - mouseLocation.y;
-  return gfx::Point(mouseLocation.x, mouseLocation.y);
+  return gfx::Screen::GetScreen()->GetCursorScreenPoint();
 }
 
 EventMonitorMac::EventMonitorMac(ui::EventHandler* event_handler,

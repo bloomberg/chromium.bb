@@ -16,22 +16,13 @@
 #include "base/timer/timer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_change_notifier.h"
+#include "ui/gfx/mac/coordinate_conversion.h"
 
 namespace {
 
 // The delay to handle the display configuration changes.
 // See comments in ScreenMac::HandleDisplayReconfiguration.
 const int64_t kConfigureDelayMs = 500;
-
-gfx::Rect ConvertCoordinateSystem(NSRect ns_rect) {
-  // Primary monitor is defined as the monitor with the menubar,
-  // which is always at index 0.
-  NSScreen* primary_screen = [[NSScreen screens] firstObject];
-  float primary_screen_height = [primary_screen frame].size.height;
-  gfx::Rect rect(NSRectToCGRect(ns_rect));
-  rect.set_y(primary_screen_height - rect.y() - rect.height());
-  return rect;
-}
 
 NSScreen* GetMatchingScreen(const gfx::Rect& match_rect) {
   // Default to the monitor with the current keyboard focus, in case
@@ -40,7 +31,7 @@ NSScreen* GetMatchingScreen(const gfx::Rect& match_rect) {
   int max_area = 0;
 
   for (NSScreen* screen in [NSScreen screens]) {
-    gfx::Rect monitor_area = ConvertCoordinateSystem([screen frame]);
+    gfx::Rect monitor_area = gfx::ScreenRectFromNSRect([screen frame]);
     gfx::Rect intersection = gfx::IntersectRects(monitor_area, match_rect);
     int area = intersection.width() * intersection.height();
     if (area > max_area) {
@@ -69,8 +60,8 @@ gfx::Display GetDisplayForScreen(NSScreen* screen) {
                     visible_frame.size.height);
     display.set_work_area(work_area);
   } else {
-    display.set_bounds(ConvertCoordinateSystem(frame));
-    display.set_work_area(ConvertCoordinateSystem(visible_frame));
+    display.set_bounds(gfx::ScreenRectFromNSRect(frame));
+    display.set_work_area(gfx::ScreenRectFromNSRect(visible_frame));
   }
   CGFloat scale = [screen backingScaleFactor];
 
@@ -99,11 +90,8 @@ class ScreenMac : public gfx::Screen {
   }
 
   gfx::Point GetCursorScreenPoint() override {
-    NSPoint mouseLocation  = [NSEvent mouseLocation];
     // Flip coordinates to gfx (0,0 in top-left corner) using primary screen.
-    NSScreen* screen = [[NSScreen screens] firstObject];
-    mouseLocation.y = NSMaxY([screen frame]) - mouseLocation.y;
-    return gfx::Point(mouseLocation.x, mouseLocation.y);
+    return gfx::ScreenPointFromNSPoint([NSEvent mouseLocation]);
   }
 
   gfx::NativeWindow GetWindowUnderCursor() override {
