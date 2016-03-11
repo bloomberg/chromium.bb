@@ -191,7 +191,8 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
       base::WeakPtr<MediaPlayerManager> manager,
       const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
       scoped_ptr<DemuxerAndroid> demuxer,
-      const GURL& frame_url);
+      const GURL& frame_url,
+      int media_session_id);
   ~MediaCodecPlayer() override;
 
   // A helper method that performs the media thread part of initialization.

@@ -18,6 +18,8 @@ struct WebMediaMetadata;
 class WebMediaSession {
 public:
     enum {
+        // The media session for media elements that don't have an
+        // explicit user created media session set.
         DefaultID = 0
     };
 

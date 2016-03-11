@@ -32,11 +32,13 @@ MediaSourcePlayer::MediaSourcePlayer(
     MediaPlayerManager* manager,
     const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
     scoped_ptr<DemuxerAndroid> demuxer,
-    const GURL& frame_url)
+    const GURL& frame_url,
+    int media_session_id)
     : MediaPlayerAndroid(player_id,
                          manager,
                          on_decoder_resources_released_cb,
-                         frame_url),
+                         frame_url,
+                         media_session_id),
       demuxer_(std::move(demuxer)),
       pending_event_(NO_EVENT_PENDING),
       playing_(false),

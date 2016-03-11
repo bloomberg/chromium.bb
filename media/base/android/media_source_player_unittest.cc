@@ -162,11 +162,13 @@ class MediaSourcePlayerTest : public testing::Test {
   MediaSourcePlayerTest()
       : manager_(&message_loop_),
         demuxer_(new MockDemuxerAndroid(&message_loop_)),
-        player_(0, &manager_,
+        player_(0,
+                &manager_,
                 base::Bind(&MockMediaPlayerManager::OnDecorderResourcesReleased,
                            base::Unretained(&manager_)),
                 scoped_ptr<DemuxerAndroid>(demuxer_),
-                GURL()),
+                GURL(),
+                kDefaultMediaSessionId),
         decoder_callback_hook_executed_(false),
         surface_texture_a_is_next_(true) {}
 

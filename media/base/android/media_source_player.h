@@ -45,7 +45,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
       MediaPlayerManager* manager,
       const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
       scoped_ptr<DemuxerAndroid> demuxer,
-      const GURL& frame_url);
+      const GURL& frame_url,
+      int media_session_id);
   ~MediaSourcePlayer() override;
 
   // MediaPlayerAndroid implementation.

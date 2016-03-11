@@ -144,16 +144,13 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     case MEDIA_PLAYER_TYPE_URL: {
       const std::string user_agent = GetContentClient()->GetUserAgent();
       MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
-          media_player_params.player_id,
-          media_player_params.url,
-          media_player_params.first_party_for_cookies,
-          user_agent,
-          hide_url_log,
+          media_player_params.player_id, media_player_params.url,
+          media_player_params.first_party_for_cookies, user_agent, hide_url_log,
           this,
           base::Bind(&BrowserMediaPlayerManager::OnDecoderResourcesReleased,
                      weak_ptr_factory_.GetWeakPtr()),
-          media_player_params.frame_url,
-          media_player_params.allow_credentials);
+          media_player_params.frame_url, media_player_params.allow_credentials,
+          media_player_params.media_session_id);
 
       if (media_player_params.type == MEDIA_PLAYER_TYPE_REMOTE_ONLY)
         return media_player_bridge;
@@ -190,20 +187,20 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
       if (media::UseMediaThreadForMediaPlayback()) {
         return new MediaCodecPlayer(
-            media_player_params.player_id,
-            weak_ptr_factory_.GetWeakPtr(),
+            media_player_params.player_id, weak_ptr_factory_.GetWeakPtr(),
             base::Bind(&BrowserMediaPlayerManager::OnDecoderResourcesReleased,
                        weak_ptr_factory_.GetWeakPtr()),
             demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
-            media_player_params.frame_url);
+            media_player_params.frame_url,
+            media_player_params.media_session_id);
       } else {
         return new MediaSourcePlayer(
-            media_player_params.player_id,
-            this,
+            media_player_params.player_id, this,
             base::Bind(&BrowserMediaPlayerManager::OnDecoderResourcesReleased,
                        weak_ptr_factory_.GetWeakPtr()),
             demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
-            media_player_params.frame_url);
+            media_player_params.frame_url,
+            media_player_params.media_session_id);
       }
     }
   }

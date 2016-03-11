@@ -644,7 +644,7 @@ void MediaCodecPlayerTest::CreatePlayer() {
       manager_.GetWeakPtr(),
       base::Bind(&MockMediaPlayerManager::OnMediaResourcesRequested,
                  base::Unretained(&manager_)),
-      scoped_ptr<MockDemuxerAndroid>(demuxer_), GURL());
+      scoped_ptr<MockDemuxerAndroid>(demuxer_), GURL(), kDefaultMediaSessionId);
 
   DCHECK(player_);
 }

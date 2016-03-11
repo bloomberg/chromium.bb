@@ -41,11 +41,13 @@ MediaCodecPlayer::MediaCodecPlayer(
     base::WeakPtr<MediaPlayerManager> manager,
     const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
     scoped_ptr<DemuxerAndroid> demuxer,
-    const GURL& frame_url)
+    const GURL& frame_url,
+    int media_session_id)
     : MediaPlayerAndroid(player_id,
                          manager.get(),
                          on_decoder_resources_released_cb,
-                         frame_url),
+                         frame_url,
+                         media_session_id),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       demuxer_(std::move(demuxer)),
       state_(kStatePaused),

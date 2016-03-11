@@ -27,13 +27,15 @@ MediaPlayerAndroid::MediaPlayerAndroid(
     int player_id,
     MediaPlayerManager* manager,
     const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
-    const GURL& frame_url)
+    const GURL& frame_url,
+    int media_session_id)
     : on_decoder_resources_released_cb_(on_decoder_resources_released_cb),
       player_id_(player_id),
       volume_(kDefaultVolume),
       volume_multiplier_(kDefaultVolumeMultiplier),
       manager_(manager),
       frame_url_(frame_url),
+      media_session_id_(media_session_id),
       weak_factory_(this) {
   listener_.reset(new MediaPlayerListener(base::ThreadTaskRunnerHandle::Get(),
                                           weak_factory_.GetWeakPtr()));

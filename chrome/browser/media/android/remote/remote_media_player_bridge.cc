@@ -43,10 +43,15 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
     const std::string& user_agent,
     bool hide_url_log,
     RemoteMediaPlayerManager* manager)
-    : MediaPlayerAndroid(player_id,
-                         manager,
-                         base::Bind(&DoNothing),
-                         manager->GetLocalPlayer(player_id)->frame_url()),
+    : MediaPlayerAndroid(
+          player_id,
+          manager,
+          base::Bind(&DoNothing),
+          manager->GetLocalPlayer(player_id)->frame_url(),
+          // TODO(davve): Media session interaction with remote
+          // playback not defined. Use invalid session id for now.
+          // https://github.com/whatwg/mediasession/issues/123
+          media::kInvalidMediaSessionId),
       width_(0),
       height_(0),
       hide_url_log_(hide_url_log),

@@ -52,7 +52,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
       MediaPlayerManager* manager,
       const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
       const GURL& frame_url,
-      bool allow_credentials);
+      bool allow_credentials,
+      int media_session_id);
   ~MediaPlayerBridge() override;
 
   // Initialize this object and extract the metadata from the media.
