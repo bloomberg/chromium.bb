@@ -104,14 +104,18 @@ class TestHelper {
       ::gfx::MockGLInterface* gl,
       const char* extensions,
       const char* gl_renderer,
-      const char* gl_version);
-  static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl,
-                                                  bool is_es3_enabled,
-                                                  const char* extensions,
-                                                  bool use_default_textures);
+      const char* gl_version,
+      bool enable_es3 = false);
+  static void SetupTextureManagerInitExpectations(
+      ::gfx::MockGLInterface* gl,
+      bool is_es3_enabled,
+      bool is_desktop_core_profile,
+      const char* extensions,
+      bool use_default_textures);
   static void SetupTextureManagerDestructionExpectations(
       ::gfx::MockGLInterface* gl,
       bool is_es3_enabled,
+      bool is_desktop_core_profile,
       const char* extensions,
       bool use_default_textures);
 

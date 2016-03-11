@@ -196,6 +196,7 @@ void TestHelper::SetupTextureInitializationExpectations(
 void TestHelper::SetupTextureManagerInitExpectations(
     ::gfx::MockGLInterface* gl,
     bool is_es3_enabled,
+    bool is_desktop_core_profile,
     const char* extensions,
     bool use_default_textures) {
   InSequence sequence;
@@ -213,7 +214,7 @@ void TestHelper::SetupTextureManagerInitExpectations(
   }
 
   bool ext_image_external = false;
-  bool arb_texture_rectangle = false;
+  bool arb_texture_rectangle = is_desktop_core_profile;
   base::CStringTokenizer t(extensions, extensions + strlen(extensions), " ");
   while (t.GetNext()) {
     if (t.token() == "GL_OES_EGL_image_external") {
@@ -275,6 +276,7 @@ void TestHelper::SetupTextureDestructionExpectations(
 void TestHelper::SetupTextureManagerDestructionExpectations(
     ::gfx::MockGLInterface* gl,
     bool is_es3_enabled,
+    bool is_desktop_core_profile,
     const char* extensions,
     bool use_default_textures) {
   SetupTextureDestructionExpectations(gl, GL_TEXTURE_2D, use_default_textures);
@@ -306,7 +308,7 @@ void TestHelper::SetupTextureManagerDestructionExpectations(
     SetupTextureDestructionExpectations(
         gl, GL_TEXTURE_EXTERNAL_OES, use_default_textures);
   }
-  if (arb_texture_rectangle) {
+  if (arb_texture_rectangle || is_desktop_core_profile) {
     SetupTextureDestructionExpectations(
         gl, GL_TEXTURE_RECTANGLE_ARB, use_default_textures);
   }
@@ -405,7 +407,8 @@ void TestHelper::SetupContextGroupInitExpectations(
 
   bool use_default_textures = bind_generates_resource;
   SetupTextureManagerInitExpectations(
-      gl, false, extensions, use_default_textures);
+      gl, false, gl_info.is_desktop_core_profile, extensions,
+      use_default_textures);
 }
 
 void TestHelper::SetupFeatureInfoInitExpectations(
@@ -417,7 +420,8 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
      ::gfx::MockGLInterface* gl,
      const char* extensions,
      const char* gl_renderer,
-     const char* gl_version) {
+     const char* gl_version,
+     bool enable_es3) {
   InSequence sequence;
 
   EXPECT_CALL(*gl, GetString(GL_VERSION))
@@ -506,7 +510,54 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
       EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
           .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
           .RetiresOnSaturation();
+
+      if (enable_es3 && gl_info.IsES3Capable()) {
+        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, width,
+            0, GL_RED, GL_FLOAT, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, width,
+            0, GL_RG, GL_FLOAT, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, width,
+            0, GL_RGBA, GL_FLOAT, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, width,
+            0, GL_RED, GL_FLOAT, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, width, width,
+            0, GL_RG, GL_FLOAT, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_R11F_G11F_B10F,
+            width, width, 0, GL_RGB, GL_FLOAT, _))
+            .Times(1)
+            .RetiresOnSaturation();
+        EXPECT_CALL(*gl, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+            .Times(1)
+            .RetiresOnSaturation();
+      }
     }
+
+
     EXPECT_CALL(*gl, DeleteFramebuffersEXT(1, _))
         .Times(1)
         .RetiresOnSaturation();

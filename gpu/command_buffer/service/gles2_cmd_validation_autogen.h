@@ -350,6 +350,12 @@ ValueValidator<GLenum> texture_parameter;
 ValueValidator<GLenum> texture_sized_color_renderable_internal_format;
 ValueValidator<GLenum> texture_sized_texture_filterable_internal_format;
 ValueValidator<GLenum> texture_stencil_renderable_internal_format;
+class TextureSwizzleValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+TextureSwizzleValidator texture_swizzle;
+
 ValueValidator<GLenum> texture_target;
 ValueValidator<GLenum> texture_unsized_internal_format;
 class TextureUsageValidator {

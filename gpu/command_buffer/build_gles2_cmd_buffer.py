@@ -1533,6 +1533,18 @@ _NAMED_TYPE_INFO = {
       'GL_COMPARE_REF_TO_TEXTURE',
     ],
   },
+  'TextureSwizzle': {
+    'type': 'GLenum',
+    'is_complete': True,
+    'valid': [
+      'GL_RED',
+      'GL_GREEN',
+      'GL_BLUE',
+      'GL_ALPHA',
+      'GL_ZERO',
+      'GL_ONE',
+    ],
+  },
   'TextureUsage': {
     'type': 'GLenum',
     'is_complete': True,

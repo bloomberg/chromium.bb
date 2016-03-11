@@ -60,6 +60,15 @@ class GPU_EXPORT Texture {
     COPIED
   };
 
+  struct CompatibilitySwizzle {
+    GLenum format;
+    GLenum dest_format;
+    GLenum red;
+    GLenum green;
+    GLenum blue;
+    GLenum alpha;
+  };
+
   explicit Texture(GLuint service_id);
 
   const SamplerState& sampler_state() const {
@@ -113,6 +122,14 @@ class GPU_EXPORT Texture {
   GLint max_level() const {
     return max_level_;
   }
+
+  GLenum swizzle_r() const { return swizzle_r_; }
+
+  GLenum swizzle_g() const { return swizzle_g_; }
+
+  GLenum swizzle_b() const { return swizzle_b_; }
+
+  GLenum swizzle_a() const { return swizzle_a_; }
 
   int num_uncleared_mips() const {
     return num_uncleared_mips_;
@@ -249,6 +266,8 @@ class GPU_EXPORT Texture {
   void DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
                        uint64_t client_tracing_id,
                        const std::string& dump_name) const;
+
+  void ApplyFormatWorkarounds(FeatureInfo* feature_info);
 
  private:
   friend class MailboxManagerImpl;
@@ -486,6 +505,9 @@ class GPU_EXPORT Texture {
   // overridden by SetUnownedServiceId.
   GLuint owned_service_id() const { return owned_service_id_; }
 
+  GLenum GetCompatibilitySwizzleForChannel(GLenum channel);
+  void SetCompatibilitySwizzle(const CompatibilitySwizzle* swizzle);
+
   MailboxManager* mailbox_manager_;
 
   // Info about each face and level of texture.
@@ -526,6 +548,10 @@ class GPU_EXPORT Texture {
   GLenum usage_;
   GLint base_level_;
   GLint max_level_;
+  GLenum swizzle_r_;
+  GLenum swizzle_g_;
+  GLenum swizzle_b_;
+  GLenum swizzle_a_;
 
   // The maximum level that has been set.
   GLint max_level_set_;
@@ -563,6 +589,8 @@ class GPU_EXPORT Texture {
 
   // Whether we have initialized TEXTURE_MAX_ANISOTROPY to 1.
   bool texture_max_anisotropy_initialized_;
+
+  const CompatibilitySwizzle* compatibility_swizzle_;
 
   DISALLOW_COPY_AND_ASSIGN(Texture);
 };
@@ -1010,6 +1038,9 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   uint32_t GetServiceIdGeneration() const;
   void IncrementServiceIdGeneration();
 
+  GLenum AdjustTexInternalFormat(GLenum format) const;
+  GLenum AdjustTexFormat(GLenum format) const;
+
  private:
   friend class Texture;
   friend class TextureRef;
@@ -1036,8 +1067,6 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                                 Texture::CanRenderCondition new_condition);
   void UpdateNumImages(int delta);
   void IncFramebufferStateChangeCount();
-
-  GLenum AdjustTexFormat(GLenum format) const;
 
   // Helper function called by OnMemoryDump.
   void DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,

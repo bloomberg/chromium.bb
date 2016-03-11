@@ -263,6 +263,45 @@ class FormatTypeValidator {
   std::set<FormatType, FormatTypeCompare> supported_combinations_;
 };
 
+static const Texture::CompatibilitySwizzle kSwizzledFormats[] = {
+    {GL_ALPHA, GL_RED, GL_ZERO, GL_ZERO, GL_ZERO, GL_RED},
+    {GL_LUMINANCE, GL_RED, GL_RED, GL_RED, GL_RED, GL_ONE},
+    {GL_LUMINANCE_ALPHA, GL_RG, GL_RED, GL_RED, GL_RED, GL_GREEN},
+};
+
+const Texture::CompatibilitySwizzle* GetCompatibilitySwizzle(GLenum format) {
+  size_t count = arraysize(kSwizzledFormats);
+  for (size_t i = 0; i < count; ++i) {
+    if (kSwizzledFormats[i].format == format)
+      return &kSwizzledFormats[i];
+  }
+  return nullptr;
+}
+
+GLenum GetSwizzleForChannel(GLenum channel,
+                            const Texture::CompatibilitySwizzle* swizzle) {
+  if (!swizzle)
+    return channel;
+
+  switch (channel) {
+    case GL_ZERO:
+      return GL_ZERO;
+    case GL_ONE:
+      return GL_ONE;
+    case GL_RED:
+      return swizzle->red;
+    case GL_GREEN:
+      return swizzle->green;
+    case GL_BLUE:
+      return swizzle->blue;
+    case GL_ALPHA:
+      return swizzle->alpha;
+    default:
+      NOTREACHED();
+      return GL_NONE;
+  }
+}
+
 base::LazyInstance<const FormatTypeValidator>::Leaky g_format_type_validator =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -316,6 +355,10 @@ Texture::Texture(GLuint service_id)
       usage_(GL_NONE),
       base_level_(0),
       max_level_(1000),
+      swizzle_r_(GL_RED),
+      swizzle_g_(GL_GREEN),
+      swizzle_b_(GL_BLUE),
+      swizzle_a_(GL_ALPHA),
       max_level_set_(-1),
       texture_complete_(false),
       texture_mips_dirty_(false),
@@ -327,7 +370,8 @@ Texture::Texture(GLuint service_id)
       has_images_(false),
       estimated_size_(0),
       can_render_condition_(CAN_RENDER_ALWAYS),
-      texture_max_anisotropy_initialized_(false) {}
+      texture_max_anisotropy_initialized_(false),
+      compatibility_swizzle_(nullptr) {}
 
 Texture::~Texture() {
   if (mailbox_manager_)
@@ -1101,6 +1145,30 @@ GLenum Texture::SetParameteri(
       }
       usage_ = param;
       break;
+    case GL_TEXTURE_SWIZZLE_R:
+      if (!feature_info->validators()->texture_swizzle.IsValid(param)) {
+        return GL_INVALID_ENUM;
+      }
+      swizzle_r_ = param;
+      break;
+    case GL_TEXTURE_SWIZZLE_G:
+      if (!feature_info->validators()->texture_swizzle.IsValid(param)) {
+        return GL_INVALID_ENUM;
+      }
+      swizzle_g_ = param;
+      break;
+    case GL_TEXTURE_SWIZZLE_B:
+      if (!feature_info->validators()->texture_swizzle.IsValid(param)) {
+        return GL_INVALID_ENUM;
+      }
+      swizzle_b_ = param;
+      break;
+    case GL_TEXTURE_SWIZZLE_A:
+      if (!feature_info->validators()->texture_swizzle.IsValid(param)) {
+        return GL_INVALID_ENUM;
+      }
+      swizzle_a_ = param;
+      break;
     default:
       NOTREACHED();
       return GL_INVALID_ENUM;
@@ -1520,6 +1588,34 @@ void Texture::SetUnownedServiceId(GLuint service_id) {
   }
 }
 
+GLenum Texture::GetCompatibilitySwizzleForChannel(GLenum channel) {
+  return GetSwizzleForChannel(channel, compatibility_swizzle_);
+}
+
+void Texture::SetCompatibilitySwizzle(const CompatibilitySwizzle* swizzle) {
+  if (compatibility_swizzle_ == swizzle)
+    return;
+
+  compatibility_swizzle_ = swizzle;
+  glTexParameteri(target_, GL_TEXTURE_SWIZZLE_R,
+                  GetSwizzleForChannel(swizzle_r_, swizzle));
+  glTexParameteri(target_, GL_TEXTURE_SWIZZLE_G,
+                  GetSwizzleForChannel(swizzle_g_, swizzle));
+  glTexParameteri(target_, GL_TEXTURE_SWIZZLE_B,
+                  GetSwizzleForChannel(swizzle_b_, swizzle));
+  glTexParameteri(target_, GL_TEXTURE_SWIZZLE_A,
+                  GetSwizzleForChannel(swizzle_a_, swizzle));
+}
+
+void Texture::ApplyFormatWorkarounds(FeatureInfo* feature_info) {
+  if (feature_info->gl_version_info().is_desktop_core_profile) {
+    if (static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size())
+      return;
+    const Texture::LevelInfo& info = face_infos_[0].level_infos[base_level_];
+    SetCompatibilitySwizzle(GetCompatibilitySwizzle(info.format));
+  }
+}
+
 TextureRef::TextureRef(TextureManager* manager,
                        GLuint client_id,
                        Texture* texture)
@@ -1795,7 +1891,18 @@ void TextureManager::SetParameteri(
           error_state, result, function_name, pname, param);
     }
   } else {
-    glTexParameteri(texture->target(), pname, param);
+    switch (pname) {
+      case GL_TEXTURE_SWIZZLE_R:
+      case GL_TEXTURE_SWIZZLE_G:
+      case GL_TEXTURE_SWIZZLE_B:
+      case GL_TEXTURE_SWIZZLE_A:
+        glTexParameteri(texture->target(), pname,
+                        texture->GetCompatibilitySwizzleForChannel(param));
+        break;
+      default:
+        glTexParameteri(texture->target(), pname, param);
+        break;
+    }
   }
 }
 
@@ -2332,7 +2439,8 @@ void TextureManager::ValidateAndDoTexSubImage(
                    args.height, args.depth, 0, AdjustTexFormat(args.format),
                    args.type, args.pixels);
     } else {
-      glTexImage2D(args.target, args.level, internal_format, args.width,
+      glTexImage2D(args.target, args.level,
+                   AdjustTexInternalFormat(internal_format), args.width,
                    args.height, 0, AdjustTexFormat(args.format), args.type,
                    args.pixels);
     }
@@ -2351,6 +2459,16 @@ void TextureManager::ValidateAndDoTexSubImage(
   SetLevelCleared(texture_ref, args.target, args.level, true);
 }
 
+GLenum TextureManager::AdjustTexInternalFormat(GLenum format) const {
+  if (feature_info_->gl_version_info().is_desktop_core_profile) {
+    const Texture::CompatibilitySwizzle* swizzle =
+        GetCompatibilitySwizzle(format);
+    if (swizzle)
+      return swizzle->dest_format;
+  }
+  return format;
+}
+
 GLenum TextureManager::AdjustTexFormat(GLenum format) const {
   // TODO(bajones): GLES 3 allows for internal format and format to differ.
   // This logic may need to change as a result.
@@ -2359,6 +2477,12 @@ GLenum TextureManager::AdjustTexFormat(GLenum format) const {
       return GL_RGB;
     if (format == GL_SRGB_ALPHA_EXT)
       return GL_RGBA;
+  }
+  if (feature_info_->gl_version_info().is_desktop_core_profile) {
+    const Texture::CompatibilitySwizzle* swizzle =
+        GetCompatibilitySwizzle(format);
+    if (swizzle)
+      return swizzle->dest_format;
   }
   return format;
 }
@@ -2427,7 +2551,8 @@ void TextureManager::DoTexImage(
                    args.height, args.depth, args.border, args.format,
                    args.type, args.pixels);
     } else {
-      glTexImage2D(args.target, args.level, args.internal_format, args.width,
+      glTexImage2D(args.target, args.level,
+                   AdjustTexInternalFormat(args.internal_format), args.width,
                    args.height, args.border, AdjustTexFormat(args.format),
                    args.type, args.pixels);
     }
@@ -2446,6 +2571,7 @@ void TextureManager::DoTexImage(
         texture_ref, args.target, args.level, args.internal_format, args.width,
         args.height, args.depth, args.border, args.format, args.type,
         set_as_cleared ? gfx::Rect(args.width, args.height) : gfx::Rect());
+    texture->ApplyFormatWorkarounds(feature_info_.get());
     texture_state->tex_image_failed = false;
   }
 }

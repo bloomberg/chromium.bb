@@ -1240,6 +1240,19 @@ static const GLenum
         GL_STENCIL_INDEX8, GL_DEPTH24_STENCIL8, GL_DEPTH32F_STENCIL8,
 };
 
+bool Validators::TextureSwizzleValidator::IsValid(const GLenum value) const {
+  switch (value) {
+    case GL_RED:
+    case GL_GREEN:
+    case GL_BLUE:
+    case GL_ALPHA:
+    case GL_ZERO:
+    case GL_ONE:
+      return true;
+  }
+  return false;
+};
+
 static const GLenum valid_texture_target_table[] = {
     GL_TEXTURE_2D,
     GL_TEXTURE_CUBE_MAP_POSITIVE_X,

@@ -4870,6 +4870,15 @@ std::string GLES2Util::GetStringTextureStencilRenderableInternalFormat(
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringTextureSwizzle(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_RED, "GL_RED"},     {GL_GREEN, "GL_GREEN"}, {GL_BLUE, "GL_BLUE"},
+      {GL_ALPHA, "GL_ALPHA"}, {GL_ZERO, "GL_ZERO"},   {GL_ONE, "GL_ONE"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringTextureTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_TEXTURE_2D, "GL_TEXTURE_2D"},

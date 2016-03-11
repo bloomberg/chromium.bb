@@ -11567,8 +11567,9 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     // some part was clipped so clear the rect.
     scoped_ptr<char[]> zero(new char[pixels_size]);
     memset(zero.get(), 0, pixels_size);
-    glTexImage2D(target, level, internal_format, width, height, border,
-                 format, type, zero.get());
+    glTexImage2D(target, level,
+                 texture_manager()->AdjustTexInternalFormat(internal_format),
+                 width, height, border, format, type, zero.get());
     if (copyHeight > 0 && copyWidth > 0) {
       GLint dx = copyX - x;
       GLint dy = copyY - y;
@@ -11579,7 +11580,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
                           copyWidth, copyHeight);
     }
   } else {
-    glCopyTexImage2D(target, level, internal_format,
+    glCopyTexImage2D(target, level, texture_manager()->AdjustTexInternalFormat(
+                                        internal_format),
                      copyX, copyY, copyWidth, copyHeight, border);
   }
   GLenum error = LOCAL_PEEK_GL_ERROR("glCopyTexImage2D");
@@ -11587,6 +11589,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     texture_manager()->SetLevelInfo(texture_ref, target, level, internal_format,
                                     width, height, 1, border, format,
                                     type, gfx::Rect(width, height));
+    texture->ApplyFormatWorkarounds(feature_info_.get());
   }
 
   // This may be a slow command.  Exit command processing to allow for
@@ -13572,8 +13575,11 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     // Ensure that the glTexImage2D succeeds.
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopyTextureCHROMIUM");
     glBindTexture(dest_target, dest_texture->service_id());
-    glTexImage2D(dest_target, 0, internal_format, source_width, source_height,
-                 0, internal_format, dest_type, NULL);
+    glTexImage2D(dest_target, 0,
+                 texture_manager()->AdjustTexInternalFormat(internal_format),
+                 source_width, source_height, 0,
+                 texture_manager()->AdjustTexFormat(internal_format), dest_type,
+                 NULL);
     GLenum error = LOCAL_PEEK_GL_ERROR("glCopyTextureCHROMIUM");
     if (error != GL_NO_ERROR) {
       RestoreCurrentTextureBindings(&state_, dest_target);
@@ -13584,6 +13590,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
         dest_texture_ref, dest_target, 0, internal_format, source_width,
         source_height, 1, 0, internal_format, dest_type,
         gfx::Rect(source_width, source_height));
+    dest_texture->ApplyFormatWorkarounds(feature_info_.get());
   } else {
     texture_manager()->SetLevelCleared(dest_texture_ref, dest_target, 0,
                                        true);
