@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/advanced_options_utils.h"
+#include "chrome/browser/ui/webui/settings_utils.h"
 
 #include <windows.h>
 #include <cryptuiapi.h>
@@ -23,9 +23,8 @@
 #include "ui/views/win/hwnd_util.h"
 
 using content::BrowserThread;
-using content::WebContents;
 
-namespace options {
+namespace settings_utils {
 
 namespace {
 
@@ -96,16 +95,14 @@ void OpenConnectionDialogCallback() {
                SW_SHOWNORMAL);
 }
 
-void AdvancedOptionsUtilities::ShowNetworkProxySettings(
-      WebContents* web_contents) {
+void ShowNetworkProxySettings(content::WebContents* web_contents) {
   DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::FILE));
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
                           base::Bind(&OpenConnectionDialogCallback));
 }
 
-void AdvancedOptionsUtilities::ShowManageSSLCertificates(
-      WebContents* web_contents) {
+void ShowManageSSLCertificates(content::WebContents* web_contents) {
   HWND parent =
       views::HWNDForNativeWindow(web_contents->GetTopLevelNativeWindow());
 
@@ -115,4 +112,4 @@ void AdvancedOptionsUtilities::ShowManageSSLCertificates(
       base::Bind(&base::DeletePointer<ManageCertificatesDialog>, dialog));
 }
 
-}  // namespace options
+}  // namespace settings_utils

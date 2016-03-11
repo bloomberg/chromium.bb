@@ -105,7 +105,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/options/advanced_options_utils.h"
+#include "chrome/browser/ui/webui/settings_utils.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1628,8 +1628,7 @@ void BrowserOptionsHandler::HandleRequestProfilesInfo(
 void BrowserOptionsHandler::ShowNetworkProxySettings(
     const base::ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ShowProxySettings"));
-  AdvancedOptionsUtilities::ShowNetworkProxySettings(
-      web_ui()->GetWebContents());
+  settings_utils::ShowNetworkProxySettings(web_ui()->GetWebContents());
 }
 #endif
 
@@ -1637,8 +1636,7 @@ void BrowserOptionsHandler::ShowNetworkProxySettings(
 void BrowserOptionsHandler::ShowManageSSLCertificates(
     const base::ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
-  AdvancedOptionsUtilities::ShowManageSSLCertificates(
-      web_ui()->GetWebContents());
+  settings_utils::ShowManageSSLCertificates(web_ui()->GetWebContents());
 }
 #endif
 

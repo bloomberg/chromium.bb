@@ -10,6 +10,10 @@
 #include "base/metrics/user_metrics_action.h"
 #include "content/public/browser/web_ui.h"
 
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/settings_utils.h"
+#endif
+
 namespace settings {
 
 SystemHandler::SystemHandler() {}
@@ -24,8 +28,11 @@ void SystemHandler::RegisterMessages() {
 
 void SystemHandler::HandleChangeProxySettings(const base::ListValue* /*args*/) {
   base::RecordAction(base::UserMetricsAction("Options_ShowProxySettings"));
-  // TODO(dbeam): port AdvancedOptionsUtilities::ShowNetworkProxySettings from
-  // advanced_options_utils.h to new, settings accessible place.
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#else
+  settings_utils::ShowNetworkProxySettings(web_ui()->GetWebContents());
+#endif
 }
 
 }  // namespace settings

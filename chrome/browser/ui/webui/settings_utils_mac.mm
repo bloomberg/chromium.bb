@@ -1,21 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/ui/webui/options/advanced_options_utils.h"
+#include "chrome/browser/ui/webui/settings_utils.h"
 
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_aedesc.h"
 
-using content::WebContents;
+namespace settings_utils {
 
-namespace options {
-
-void AdvancedOptionsUtilities::ShowNetworkProxySettings(
-      WebContents* web_contents) {
+void ShowNetworkProxySettings(content::WebContents* web_contents) {
   NSArray* itemsToOpen = [NSArray arrayWithObject:[NSURL fileURLWithPath:
       @"/System/Library/PreferencePanes/Network.prefPane"]];
 
@@ -35,8 +32,7 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
   LSOpenFromURLSpec(&launchSpec, NULL);
 }
 
-void AdvancedOptionsUtilities::ShowManageSSLCertificates(
-      WebContents* web_contents) {
+void ShowManageSSLCertificates(content::WebContents* web_contents) {
   NSString* const kKeychainBundleId = @"com.apple.keychainaccess";
   [[NSWorkspace sharedWorkspace]
    launchAppWithBundleIdentifier:kKeychainBundleId
@@ -45,4 +41,4 @@ void AdvancedOptionsUtilities::ShowManageSSLCertificates(
    launchIdentifier:nil];
 }
 
-}  // namespace options
+}  // namespace settings_utils

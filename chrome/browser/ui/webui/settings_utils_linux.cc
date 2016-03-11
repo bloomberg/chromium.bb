@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #if !defined(OS_CHROMEOS)
 
-#include "chrome/browser/ui/webui/options/advanced_options_utils.h"
+#include "chrome/browser/ui/webui/settings_utils.h"
 
 #include <stddef.h>
 
@@ -26,9 +26,8 @@
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
-using content::WebContents;
 
-namespace options {
+namespace settings_utils {
 
 // Command used to configure GNOME 2 proxy settings.
 const char* kGNOME2ProxyConfigCommand[] = {"gnome-network-properties", NULL};
@@ -59,7 +58,7 @@ void ShowLinuxProxyConfigUrl(int render_process_id, int render_view_id) {
       GURL(kLinuxProxyConfigUrl), Referrer(), NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, false);
 
-  WebContents* web_contents =
+  content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
   if (web_contents)
     web_contents->OpenURL(params);
@@ -157,14 +156,13 @@ void DetectAndStartProxyConfigUtil(int render_process_id,
 
 }  // anonymous namespace
 
-void AdvancedOptionsUtilities::ShowNetworkProxySettings(
-    WebContents* web_contents) {
+void ShowNetworkProxySettings(content::WebContents* web_contents) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&DetectAndStartProxyConfigUtil,
                  web_contents->GetRenderProcessHost()->GetID(),
                  web_contents->GetRenderViewHost()->GetRoutingID()));
 }
 
-}  // namespace options
+}  // namespace settings_utils
 
 #endif  // !defined(OS_CHROMEOS)
