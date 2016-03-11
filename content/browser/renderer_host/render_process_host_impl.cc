@@ -170,8 +170,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
-#include "third_party/icu/source/common/unicode/unistr.h"
-#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_switches.h"
