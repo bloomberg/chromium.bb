@@ -311,7 +311,6 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     if (syncEnabled) {
       // If sync theme is enabled, use values from chrome.storage.sync to sync
       // wallpaper changes.
-      WallpaperUtil.requestSyncFS(function() {});
       if (changes[Constants.AccessSyncSurpriseMeEnabledKey]) {
         if (changes[Constants.AccessSyncSurpriseMeEnabledKey].newValue) {
           SurpriseWallpaper.getInstance().next();
