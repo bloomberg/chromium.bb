@@ -332,7 +332,7 @@ RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& config
     return rtcConfiguration;
 }
 
-RTCOfferOptions* RTCPeerConnection::parseOfferOptions(const Dictionary& options, ExceptionState& exceptionState)
+RTCOfferOptions* RTCPeerConnection::parseOfferOptions(const Dictionary& options)
 {
     if (options.isUndefinedOrNull())
         return 0;
@@ -350,16 +350,10 @@ RTCOfferOptions* RTCPeerConnection::parseOfferOptions(const Dictionary& options,
     bool voiceActivityDetection = true;
     bool iceRestart = false;
 
-    if (DictionaryHelper::get(options, "offerToReceiveVideo", offerToReceiveVideo) && offerToReceiveVideo < 0) {
-        exceptionState.throwTypeError("Invalid offerToReceiveVideo");
-        return 0;
-    }
-
-    if (DictionaryHelper::get(options, "offerToReceiveAudio", offerToReceiveAudio) && offerToReceiveAudio < 0) {
-        exceptionState.throwTypeError("Invalid offerToReceiveAudio");
-        return 0;
-    }
-
+    if (DictionaryHelper::get(options, "offerToReceiveVideo", offerToReceiveVideo) && offerToReceiveVideo < 0)
+        offerToReceiveVideo = 0;
+    if (DictionaryHelper::get(options, "offerToReceiveAudio", offerToReceiveAudio) && offerToReceiveAudio < 0)
+        offerToReceiveAudio = 0;
     DictionaryHelper::get(options, "voiceActivityDetection", voiceActivityDetection);
     DictionaryHelper::get(options, "iceRestart", iceRestart);
 
@@ -438,69 +432,64 @@ RTCPeerConnection::~RTCPeerConnection()
     ASSERT(m_closed || m_stopped);
 }
 
-void RTCPeerConnection::createOffer(ExecutionContext* context, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback, const Dictionary& rtcOfferOptions, ExceptionState& exceptionState)
+void RTCPeerConnection::createOffer(ExecutionContext* context, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback, const Dictionary& rtcOfferOptions)
 {
-    if (errorCallback)
-        UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyFailureCallback);
-    else
-        Deprecation::countDeprecation(context, UseCounter::RTCPeerConnectionCreateOfferLegacyNoFailureCallback);
-
-    if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
-        return;
-
     ASSERT(successCallback);
-
-    RTCOfferOptions* offerOptions = parseOfferOptions(rtcOfferOptions, exceptionState);
-    if (exceptionState.hadException())
+    ASSERT(errorCallback);
+    UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyFailureCallback);
+    if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
         return;
 
+    RTCOfferOptions* offerOptions = parseOfferOptions(rtcOfferOptions);
     RTCSessionDescriptionRequest* request = RTCSessionDescriptionRequestImpl::create(getExecutionContext(), this, successCallback, errorCallback);
 
     if (offerOptions) {
         if (offerOptions->offerToReceiveAudio() != -1 || offerOptions->offerToReceiveVideo() != -1)
             UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyOfferOptions);
-        else if (errorCallback)
+        else
             UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyCompliant);
 
         m_peerHandler->createOffer(request, offerOptions);
     } else {
         MediaErrorState mediaErrorState;
         WebMediaConstraints constraints = MediaConstraintsImpl::create(context, rtcOfferOptions, mediaErrorState);
-        if (mediaErrorState.hadException()) {
-            mediaErrorState.raiseException(exceptionState);
+        // Report constraints parsing errors via the callback, but ignore unknown/unsupported constraints as they
+        // would be silently discarded by WebIDL.
+        if (mediaErrorState.canGenerateException()) {
+            String errorMsg = mediaErrorState.getErrorMessage();
+            asyncCallErrorCallback(errorCallback, DOMException::create(OperationError, errorMsg));
             return;
         }
 
         if (!constraints.isEmpty())
             UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyConstraints);
-        else if (errorCallback)
+        else
             UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyCompliant);
 
         m_peerHandler->createOffer(request, constraints);
     }
 }
 
-void RTCPeerConnection::createAnswer(ExecutionContext* context, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback, const Dictionary& mediaConstraints, ExceptionState& exceptionState)
+void RTCPeerConnection::createAnswer(ExecutionContext* context, RTCSessionDescriptionCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback, const Dictionary& mediaConstraints)
 {
-    if (errorCallback)
-        UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyFailureCallback);
-    else
-        Deprecation::countDeprecation(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyNoFailureCallback);
-
+    ASSERT(successCallback);
+    ASSERT(errorCallback);
+    UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyFailureCallback);
     if (mediaConstraints.isObject())
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyConstraints);
-    else if (errorCallback)
+    else
         UseCounter::count(context, UseCounter::RTCPeerConnectionCreateAnswerLegacyCompliant);
 
-    if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
+    if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
         return;
-
-    ASSERT(successCallback);
 
     MediaErrorState mediaErrorState;
     WebMediaConstraints constraints = MediaConstraintsImpl::create(context, mediaConstraints, mediaErrorState);
-    if (mediaErrorState.hadException()) {
-        mediaErrorState.raiseException(exceptionState);
+    // Report constraints parsing errors via the callback, but ignore unknown/unsupported constraints as they
+    // would be silently discarded by WebIDL.
+    if (mediaErrorState.canGenerateException()) {
+        String errorMsg = mediaErrorState.getErrorMessage();
+        asyncCallErrorCallback(errorCallback, DOMException::create(OperationError, errorMsg));
         return;
     }
 

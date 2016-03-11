@@ -9,50 +9,53 @@ description("Tests RTCPeerConnection createAnswer.");
 
 var pc = null;
 
-function requestFailed3(error)
+function unexpectedCallback()
 {
-    testFailed('createAnswer request failed.');
-
+    testFailed('unexpectedCallback was called')
     finishJSTest();
 }
 
-function requestSucceeded3()
+function answerCreated()
 {
     testPassed('createAnswer request succeeded.');
-
     finishJSTest();
 }
 
-function requestFailed2(error)
-{
-    testFailed('setRemoteDescription request failed.');
-
-    finishJSTest();
-}
-
-function requestSucceeded2()
+function descriptionSet()
 {
     testPassed('setRemoteDescription request succeeded.');
-
-    shouldNotThrow('pc.createAnswer(requestSucceeded3, requestFailed3);');
+    shouldNotThrow('pc.createAnswer(answerCreated, unexpectedCallback);');
 }
 
-function requestFailed1()
+function createOfferWithoutDescriptionFailed()
 {
-    testPassed('createOffer request failed.');
-
+    testPassed('createOffer request without remote description failed.');
     sessionDescription = new RTCSessionDescription({type:"answer", sdp:"remote"});
-    shouldNotThrow('pc.setRemoteDescription(sessionDescription, requestSucceeded2, requestFailed2);');
+    shouldNotThrow('pc.setRemoteDescription(sessionDescription, descriptionSet, unexpectedCallback);');
 }
 
-function requestSucceeded1(sd)
+function testExecutionOrderClosedConnection()
 {
-    testFailed('createOffer request succeeded.');
-    finishJSTest();
+    var localPeerConnection = new webkitRTCPeerConnection(null, null);
+    localPeerConnection.close();
+    var counter = 0;
+    window.events = [];
+    Promise.resolve().then(_ => window.events[counter++] = 1);
+    localPeerConnection.createAnswer(unexpectedCallback, error => {
+        window.error = error;
+        shouldBe('error.name', '"InvalidStateError"');
+        shouldBe('error.toString()', '"InvalidStateError: The RTCPeerConnection\'s signalingState is \'closed\'."');
+        window.events[counter++] = 2;
+    });
+    Promise.resolve().then(_ => {
+        window.events[counter++] = 3;
+        shouldBe('events', '[1,2,3]');
+    });
 }
 
+shouldNotThrow('testExecutionOrderClosedConnection()');
 pc = new webkitRTCPeerConnection(null, null);
-pc.createOffer(requestSucceeded1, requestFailed1);
+pc.createOffer(unexpectedCallback, createOfferWithoutDescriptionFailed);
 
 window.jsTestIsAsync = true;
 window.successfullyParsed = true;

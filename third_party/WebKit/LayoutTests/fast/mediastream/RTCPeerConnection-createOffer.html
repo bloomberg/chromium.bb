@@ -13,54 +13,106 @@ description("Tests RTCPeerConnection createOffer.");
 
 var pc = null;
 
-function dummy() {}
-
-function requestFailed2(error)
+function unexpectedCallback()
 {
-    testPassed('requestFailed was called.');
+    testFailed('unexpectedCallback was called')
+    finishJSTest();
+}
 
+function expectedCreateOfferFailed7(error)
+{
+    testPassed('expectedCreateOfferFailed7 called.');
     window.error = error;
     shouldBe('error.name', '"OperationError"');
     shouldBe('error.toString()', '"OperationError: TEST_ERROR"');
-
-    shouldNotThrow("pc.createOffer(dummy, dummy);");
-    shouldNotThrow("pc.createOffer(dummy, dummy, {});");
-    shouldNotThrow("pc.createOffer(dummy, dummy, {voiceActivityDetection:false});");
-    shouldNotThrow("pc.createOffer(dummy, dummy, {iceRestart:true});");
-    shouldNotThrow("pc.createOffer(dummy, dummy, {voiceActivityDetection:false, iceRestart:true});");
-
-    // Deprecated.
-    shouldThrow("pc.createOffer(dummy, dummy, {offerToReceiveVideo:-1, offerToReceiveAudio:0});");
-    shouldThrow("pc.createOffer(dummy, dummy, {offerToReceiveVideo:0, offerToReceiveAudio:-1});");
-    shouldNotThrow("pc.createOffer(dummy, dummy, {offerToReceiveVideo:1, offerToReceiveAudio:0, voiceActivityDetection:false, iceRestart:true});");
-
     finishJSTest();
 }
 
-function requestSucceeded2(sd)
+function expectedCreateOfferFailed6(error)
 {
-    testFailed('requestSucceeded was called.');
-    finishJSTest();
+    testPassed('expectedCreateOfferFailed6 called.');
+    window.error = error;
+    shouldBe('error.name', '"OperationError"');
+    shouldBe('error.toString()', '"OperationError: TEST_ERROR"');
+    shouldNotThrow("pc.createOffer(unexpectedCallback, expectedCreateOfferFailed7, {offerToReceiveVideo:0, offerToReceiveAudio:-1});");
 }
 
-function requestFailed1()
-{
-    testFailed('requestFailed was called.');
-    finishJSTest();
+function expectedCreateOfferFailed5(error) {
+    testPassed('expectedCreateOfferFailed5 was called.');
+    window.error = error;
+    shouldBe('error.name', '"OperationError"');
+    shouldBe('error.toString()', '"OperationError: TEST_ERROR"');
+    shouldNotThrow("pc.createOffer(unexpectedCallback, expectedCreateOfferFailed6, {offerToReceiveVideo:-1, offerToReceiveAudio:0});");
 }
 
-function requestSucceeded1(sd)
-{
-    testPassed('requestSucceeded was called.');
+function createOfferSucceeded2() {
+    testPassed('createOfferSucceeded2 was called.');
+    shouldNotThrow("pc.createOffer(unexpectedCallback, expectedCreateOfferFailed5, {offerToReceiveVideo:1, offerToReceiveAudio:0, voiceActivityDetection:false, iceRestart:true});");
+}
 
-    sessionDescription = sd;
+function expectedCreateOfferFailed4(error) {
+    testPassed('expectedCreateOfferFailed4 was called.');
+    window.error = error;
+    shouldBe('error.name', '"OperationError"');
+    shouldBe('error.toString()', '"OperationError: TEST_ERROR"');
+    shouldNotThrow("pc.createOffer(createOfferSucceeded2, unexpectedCallback, {iceRestart:true});");
+}
+
+function expectedCreateOfferFailed3(error) {
+    testPassed('expectedCreateOfferFailed3 was called.');
+    window.error = error;
+    shouldBe('error.name', '"OperationError"');
+    shouldBe('error.toString()', '"OperationError: TEST_ERROR"');
+    shouldNotThrow("pc.createOffer(unexpectedCallback, expectedCreateOfferFailed4, {voiceActivityDetection:false});");
+}
+
+function expectedCreateOfferFailed2(error) {
+    testPassed('expectedCreateOfferFailed2 was called.');
+    window.error = error;
+    shouldBe('error.name', '"OperationError"');
+    shouldBe('error.toString()', '"OperationError: TEST_ERROR"');
+    shouldNotThrow("pc.createOffer(unexpectedCallback, expectedCreateOfferFailed3, {});");
+}
+
+function expectedCreateOfferFailed1(error)
+{
+    testPassed('expectedCreateOfferFailed1 was called.');
+    window.error = error;
+    shouldBe('error.name', '"OperationError"');
+    shouldBe('error.toString()', '"OperationError: TEST_ERROR"');
+    shouldNotThrow("pc.createOffer(unexpectedCallback, expectedCreateOfferFailed2);");
+}
+
+function createOfferSucceeded1(sessionDescription)
+{
+    testPassed('createOfferSucceeded1 was called.');
+    window.sessionDescription = sessionDescription;
     shouldBe('sessionDescription.type', '"offer"');
-
-    pc.createOffer(requestSucceeded2, requestFailed2);
+    shouldNotThrow('pc.createOffer(unexpectedCallback, expectedCreateOfferFailed1);');
 }
 
+function testExecutionOrderClosedConnection()
+{
+    var localPeerConnection = new webkitRTCPeerConnection(null, null);
+    localPeerConnection.close();
+    var counter = 0;
+    window.events = [];
+    Promise.resolve().then(_ => window.events[counter++] = 1);
+    localPeerConnection.createOffer(unexpectedCallback, error => {
+        window.error = error;
+        shouldBe('error.name', '"InvalidStateError"');
+        shouldBe('error.toString()', '"InvalidStateError: The RTCPeerConnection\'s signalingState is \'closed\'."');
+        window.events[counter++] = 2;
+    });
+    Promise.resolve().then(_ => {
+        window.events[counter++] = 3;
+        shouldBe('events', '[1,2,3]');
+    });
+}
+
+shouldNotThrow('testExecutionOrderClosedConnection()');
 pc = new webkitRTCPeerConnection(null);
-pc.createOffer(requestSucceeded1, requestFailed1, {voiceActivityDetection:true, iceRestart:true});
+shouldNotThrow('pc.createOffer(createOfferSucceeded1, unexpectedCallback, {voiceActivityDetection:true, iceRestart:true});');
 
 window.jsTestIsAsync = true;
 window.successfullyParsed = true;

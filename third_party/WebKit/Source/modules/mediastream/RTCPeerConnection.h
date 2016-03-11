@@ -71,8 +71,8 @@ public:
     static RTCPeerConnection* create(ExecutionContext*, const Dictionary&, const Dictionary&, ExceptionState&);
     ~RTCPeerConnection() override;
 
-    void createOffer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*, const Dictionary&, ExceptionState&);
-    void createAnswer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*, const Dictionary&, ExceptionState&);
+    void createOffer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*, const Dictionary&);
+    void createAnswer(ExecutionContext*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*, const Dictionary&);
 
     ScriptPromise setLocalDescription(ScriptState*, const RTCSessionDescriptionInit&);
     ScriptPromise setLocalDescription(ScriptState*, RTCSessionDescription*, VoidCallback*, RTCPeerConnectionErrorCallback*);
@@ -177,7 +177,7 @@ private:
     RTCPeerConnection(ExecutionContext*, RTCConfiguration*, WebMediaConstraints, ExceptionState&);
 
     static RTCConfiguration* parseConfiguration(const Dictionary&, ExceptionState&);
-    static RTCOfferOptions* parseOfferOptions(const Dictionary&, ExceptionState&);
+    static RTCOfferOptions* parseOfferOptions(const Dictionary&);
 
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>, PassOwnPtr<BoolFunction>);
