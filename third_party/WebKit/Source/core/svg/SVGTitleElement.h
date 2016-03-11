@@ -30,6 +30,8 @@ class SVGTitleElement final : public SVGElement {
 public:
     DECLARE_NODE_FACTORY(SVGTitleElement);
 
+    void setText(const String&);
+
 private:
     explicit SVGTitleElement(Document&);
 
@@ -38,6 +40,8 @@ private:
     void childrenChanged(const ChildrenChange&) override;
 
     bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+
+    bool m_ignoreTitleUpdatesWhenChildrenChange;
 };
 
 } // namespace blink

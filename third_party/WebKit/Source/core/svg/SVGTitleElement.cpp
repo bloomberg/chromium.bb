@@ -21,12 +21,15 @@
 #include "core/svg/SVGTitleElement.h"
 
 #include "core/SVGNames.h"
+#include "core/dom/ChildListMutationScope.h"
 #include "core/dom/Document.h"
+#include "core/dom/Text.h"
 
 namespace blink {
 
 inline SVGTitleElement::SVGTitleElement(Document& document)
     : SVGElement(SVGNames::titleTag, document)
+    , m_ignoreTitleUpdatesWhenChildrenChange(false)
 {
 }
 
@@ -52,8 +55,23 @@ void SVGTitleElement::removedFrom(ContainerNode* rootParent)
 void SVGTitleElement::childrenChanged(const ChildrenChange& change)
 {
     SVGElement::childrenChanged(change);
-    if (inDocument() && document().isSVGDocument())
+    if (inDocument() && document().isSVGDocument() && !m_ignoreTitleUpdatesWhenChildrenChange)
         document().setTitleElement(this);
+}
+
+void SVGTitleElement::setText(const String& value)
+{
+    RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
+    ChildListMutationScope mutation(*this);
+
+    {
+        // Avoid calling Document::setTitleElement() during intermediate steps.
+        TemporaryChange<bool> inhibitTitleUpdateScope(m_ignoreTitleUpdatesWhenChildrenChange, !value.isEmpty());
+        removeChildren(OmitSubtreeModifiedEvent);
+    }
+
+    if (!value.isEmpty())
+        appendChild(document().createTextNode(value.impl()), IGNORE_EXCEPTION);
 }
 
 } // namespace blink

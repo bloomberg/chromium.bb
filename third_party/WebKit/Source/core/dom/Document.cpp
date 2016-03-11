@@ -1289,33 +1289,51 @@ void Document::updateTitle(const String& title)
 void Document::setTitle(const String& title)
 {
     // Title set by JavaScript -- overrides any title elements.
-    if (!isHTMLDocument() && !isXHTMLDocument()) {
-        m_titleElement = nullptr;
-    } else if (!m_titleElement) {
-        HTMLElement* headElement = head();
-        if (!headElement)
-            return;
-        m_titleElement = HTMLTitleElement::create(*this);
-        headElement->appendChild(m_titleElement.get());
+    if (!m_titleElement) {
+        if (isHTMLDocument() || isXHTMLDocument()) {
+            HTMLElement* headElement = head();
+            if (!headElement)
+                return;
+            m_titleElement = HTMLTitleElement::create(*this);
+            headElement->appendChild(m_titleElement.get());
+        } else if (isSVGDocument()) {
+            Element* element = documentElement();
+            if (!isSVGSVGElement(element))
+                return;
+            m_titleElement = SVGTitleElement::create(*this);
+            element->insertBefore(m_titleElement.get(), element->firstChild());
+        }
+    } else {
+        if (!isHTMLDocument() && !isXHTMLDocument() && !isSVGDocument())
+            m_titleElement = nullptr;
     }
 
     if (isHTMLTitleElement(m_titleElement))
         toHTMLTitleElement(m_titleElement)->setText(title);
+    else if (isSVGTitleElement(m_titleElement))
+        toSVGTitleElement(m_titleElement)->setText(title);
     else
         updateTitle(title);
 }
 
 void Document::setTitleElement(Element* titleElement)
 {
-    // Only allow the first title element to change the title -- others have no effect.
-    if (m_titleElement && m_titleElement != titleElement) {
-        if (isHTMLDocument() || isXHTMLDocument()) {
-            m_titleElement = Traversal<HTMLTitleElement>::firstWithin(*this);
-        } else if (isSVGDocument()) {
-            m_titleElement = Traversal<SVGTitleElement>::firstWithin(*this);
-        }
+    // If the root element is an svg element in the SVG namespace, then let value be the child text content
+    // of the first title element in the SVG namespace that is a child of the root element.
+    if (isSVGSVGElement(documentElement())) {
+        m_titleElement = Traversal<SVGTitleElement>::firstChild(*documentElement());
     } else {
-        m_titleElement = titleElement;
+        if (m_titleElement && m_titleElement != titleElement)
+            m_titleElement = Traversal<HTMLTitleElement>::firstWithin(*this);
+        else
+            m_titleElement = titleElement;
+
+        // If the root element isn't an svg element in the SVG namespace and the title element is
+        // in the SVG namespace, it is ignored.
+        if (isSVGTitleElement(m_titleElement)) {
+            m_titleElement = nullptr;
+            return;
+        }
     }
 
     if (isHTMLTitleElement(m_titleElement))
