@@ -259,19 +259,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     switch (propId) {
-    case CSSPropertyJustifySelf:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        parsedValue = parseItemPositionOverflowPosition();
-        break;
-    case CSSPropertyJustifyItems:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-
-        if ((parsedValue = parseLegacyPosition()))
-            break;
-
-        m_valueList->setCurrentIndex(0);
-        parsedValue = parseItemPositionOverflowPosition();
-        break;
     case CSSPropertyGridAutoFlow:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridAutoFlow(*m_valueList);
@@ -299,18 +286,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
     case CSSPropertyGridTemplateAreas:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridTemplateAreas();
-        break;
-
-        break;
-
-    case CSSPropertyAlignSelf:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        parsedValue = parseItemPositionOverflowPosition();
-        break;
-
-    case CSSPropertyAlignItems:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        parsedValue = parseItemPositionOverflowPosition();
         break;
 
     // Everything else is handled in CSSPropertyParser.cpp
@@ -1139,92 +1114,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserV
     }
 
     return parsedValues;
-}
-
-static bool isBaselinePositionKeyword(CSSValueID id)
-{
-    return id == CSSValueBaseline || id == CSSValueLastBaseline;
-}
-
-static bool isAlignmentOverflowKeyword(CSSValueID id)
-{
-    return id == CSSValueUnsafe || id == CSSValueSafe;
-}
-
-static bool isItemPositionKeyword(CSSValueID id)
-{
-    return id == CSSValueStart || id == CSSValueEnd || id == CSSValueCenter
-        || id == CSSValueSelfStart || id == CSSValueSelfEnd || id == CSSValueFlexStart
-        || id == CSSValueFlexEnd || id == CSSValueLeft || id == CSSValueRight;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseLegacyPosition()
-{
-    // [ legacy && [ left | right | center ]
-
-    CSSParserValue* value = m_valueList->current();
-    ASSERT(value);
-
-    if (value->id == CSSValueLegacy) {
-        value = m_valueList->next();
-        if (!value)
-            return nullptr;
-        if (value->id != CSSValueCenter && value->id != CSSValueLeft && value->id != CSSValueRight)
-            return nullptr;
-    } else if (value->id == CSSValueCenter || value->id == CSSValueLeft || value->id == CSSValueRight) {
-        if (!m_valueList->next() || m_valueList->current()->id != CSSValueLegacy)
-            return nullptr;
-    } else {
-        return nullptr;
-    }
-
-    m_valueList->next();
-    return CSSValuePair::create(cssValuePool().createIdentifierValue(CSSValueLegacy), cssValuePool().createIdentifierValue(value->id), CSSValuePair::DropIdenticalValues);
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseItemPositionOverflowPosition()
-{
-    // auto | stretch | <baseline-position> | [<item-position> && <overflow-position>? ]
-    // <baseline-position> = baseline | last-baseline;
-    // <item-position> = center | start | end | self-start | self-end | flex-start | flex-end | left | right;
-    // <overflow-position> = unsafe | safe
-
-    CSSParserValue* value = m_valueList->current();
-    ASSERT(value);
-
-    if (value->id == CSSValueAuto || value->id == CSSValueStretch || isBaselinePositionKeyword(value->id)) {
-        m_valueList->next();
-        return cssValuePool().createIdentifierValue(value->id);
-    }
-
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> position = nullptr;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> overflowAlignmentKeyword = nullptr;
-    if (isItemPositionKeyword(value->id)) {
-        position = cssValuePool().createIdentifierValue(value->id);
-        value = m_valueList->next();
-        if (value) {
-            if (isAlignmentOverflowKeyword(value->id))
-                overflowAlignmentKeyword = cssValuePool().createIdentifierValue(value->id);
-            else
-                return nullptr;
-        }
-    } else if (isAlignmentOverflowKeyword(value->id)) {
-        overflowAlignmentKeyword = cssValuePool().createIdentifierValue(value->id);
-        value = m_valueList->next();
-        if (value && isItemPositionKeyword(value->id))
-            position = cssValuePool().createIdentifierValue(value->id);
-        else
-            return nullptr;
-    } else {
-        return nullptr;
-    }
-
-    m_valueList->next();
-
-    ASSERT(position);
-    if (overflowAlignmentKeyword)
-        return CSSValuePair::create(position, overflowAlignmentKeyword, CSSValuePair::DropIdenticalValues);
-    return position.release();
 }
 
 bool CSSPropertyParser::parseCalculation(CSSParserValue* value, ValueRange range)

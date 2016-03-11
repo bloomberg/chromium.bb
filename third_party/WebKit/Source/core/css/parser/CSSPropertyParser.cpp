@@ -3553,6 +3553,46 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCommaSeparatedBackgroundComponent
     return result.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeSelfPositionKeyword(CSSParserTokenRange& range)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueStart || id == CSSValueEnd || id == CSSValueCenter
+        || id == CSSValueSelfStart || id == CSSValueSelfEnd || id == CSSValueFlexStart
+        || id == CSSValueFlexEnd || id == CSSValueLeft || id == CSSValueRight)
+        return consumeIdent(range);
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeSelfPositionOverflowPosition(CSSParserTokenRange& range)
+{
+    if (identMatches<CSSValueAuto, CSSValueStretch, CSSValueBaseline, CSSValueLastBaseline>(range.peek().id()))
+        return consumeIdent(range);
+
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> overflowPosition = consumeIdent<CSSValueUnsafe, CSSValueSafe>(range);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> selfPosition = consumeSelfPositionKeyword(range);
+    if (!selfPosition)
+        return nullptr;
+    if (!overflowPosition)
+        overflowPosition = consumeIdent<CSSValueUnsafe, CSSValueSafe>(range);
+    if (overflowPosition)
+        return CSSValuePair::create(selfPosition.release(), overflowPosition, CSSValuePair::DropIdenticalValues);
+    return selfPosition.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeJustifyItems(CSSParserTokenRange& range)
+{
+    CSSParserTokenRange rangeCopy = range;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> legacy = consumeIdent<CSSValueLegacy>(rangeCopy);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> positionKeyword = consumeIdent<CSSValueCenter, CSSValueLeft, CSSValueRight>(rangeCopy);
+    if (!legacy)
+        legacy = consumeIdent<CSSValueLegacy>(rangeCopy);
+    if (legacy && positionKeyword) {
+        range = rangeCopy;
+        return CSSValuePair::create(legacy.release(), positionKeyword.release(), CSSValuePair::DropIdenticalValues);
+    }
+    return consumeSelfPositionOverflowPosition(range);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3907,6 +3947,14 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitMaskRepeatX:
     case CSSPropertyWebkitMaskRepeatY:
         return nullptr;
+    case CSSPropertyJustifySelf:
+    case CSSPropertyAlignSelf:
+    case CSSPropertyAlignItems:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return consumeSelfPositionOverflowPosition(m_range);
+    case CSSPropertyJustifyItems:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return consumeJustifyItems(m_range);
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {
