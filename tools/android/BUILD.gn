@@ -79,3 +79,11 @@ group("audio_focus_grabber") {
     "//tools/android/audio_focus_grabber:audio_focus_grabber_apk",
   ]
 }
+
+# GYP: //tools/android/android_tools.gyp:push_apps_to_background
+group("push_apps_to_background") {
+  testonly = true
+  deps = [
+    "//tools/android/push_apps_to_background:push_apps_to_background_apk",
+  ]
+}

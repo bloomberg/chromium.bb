@@ -233,6 +233,7 @@
             '../third_party/WebKit/Source/wtf/wtf_tests.gyp:wtf_unittests_apk',
             '../tools/android/heap_profiler/heap_profiler.gyp:heap_profiler_unittests_apk',
             '../tools/android/android_tools.gyp:memconsumer',
+            '../tools/android/android_tools.gyp:push_apps_to_background',
             '../tools/imagediff/image_diff.gyp:image_diff#host',
             '../third_party/catapult/telemetry/telemetry.gyp:bitmaptools#host',
             '../ui/android/ui_android.gyp:ui_android_unittests_apk',

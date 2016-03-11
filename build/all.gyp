@@ -834,6 +834,7 @@
             '../third_party/WebKit/public/all.gyp:*',
             '../tools/android/android_tools.gyp:android_tools',
             '../tools/android/android_tools.gyp:memconsumer',
+            '../tools/android/android_tools.gyp:push_apps_to_background',
             '../tools/android/findbugs_plugin/findbugs_plugin.gyp:findbugs_plugin_test',
             '../tools/cygprofile/cygprofile.gyp:cygprofile_unittests',
             '../ui/android/ui_android.gyp:ui_android_unittests',

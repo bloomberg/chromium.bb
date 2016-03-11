@@ -85,5 +85,13 @@
         'audio_focus_grabber/audio_focus_grabber.gyp:audio_focus_grabber_apk',
       ],
     },
+    {
+      # GN: //tools/android:push_apps_to_background
+      'target_name': 'push_apps_to_background',
+      'type': 'none',
+      'dependencies': [
+        'push_apps_to_background/push_apps_to_background.gyp:push_apps_to_background_apk',
+      ],
+    },
   ],
 }
