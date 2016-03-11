@@ -285,6 +285,10 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Returns true if there is at least one display on.
   bool IsDisplayOn() const;
 
+  void set_configure_display(bool configure_display) {
+    configure_display_ = configure_display;
+  }
+
  private:
   class DisplayLayoutManagerImpl;
 

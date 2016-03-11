@@ -866,6 +866,12 @@ void Shell::Init(const ShellInitParams& init_params) {
       display_manager_.get(), window_tree_host_manager_.get()));
 
 #if defined(OS_CHROMEOS)
+  // When running as part of mash, OzonePlatform is not initialized in the
+  // ash_sysui process. DisplayConfigurator will try to use OzonePlatform and
+  // crash. Instead, mash can manually set default display size using
+  // --ash-host-window-bounds flag.
+  if (in_mus_)
+    display_configurator_->set_configure_display(false);
   display_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
 
   // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
