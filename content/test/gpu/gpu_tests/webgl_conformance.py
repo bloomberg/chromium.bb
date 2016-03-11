@@ -140,7 +140,7 @@ class WebglConformancePage(gpu_test_base.PageBase):
   def RunNavigateSteps(self, action_runner):
     super(WebglConformancePage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
-        'webglTestHarness._finished', timeout_in_seconds=180)
+        'webglTestHarness._finished', timeout_in_seconds=300)
 
 class WebglConformance(gpu_test_base.TestBase):
   """Conformance with Khronos WebGL Conformance Tests"""
