@@ -16,6 +16,9 @@ function PasswordManager() {}
 /** @typedef {chrome.passwordsPrivate.PasswordUiEntry} */
 PasswordManager.PasswordUiEntry;
 
+/** @typedef {chrome.passwordsPrivate.LoginPair} */
+PasswordManager.LoginPair;
+
 PasswordManager.prototype = {
   /**
    * Register a callback for when the list of passwords is updated.
@@ -23,6 +26,13 @@ PasswordManager.prototype = {
    * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} callback
    */
   onSavedPasswordListChangedCallback: assertNotReached,
+
+  /**
+   * Should remove the saved password and notify that the list has changed.
+   * @param {!PasswordManager.LoginPair} loginPair The saved password that
+   *     should be removed from the list. No-op if |loginPair| is not found.
+   */
+  removeSavedPassword: assertNotReached,
 
   /**
    * Register a callback for when the list of exceptions is updated.
@@ -53,6 +63,11 @@ PasswordManagerImpl.prototype = {
   /** @override */
   onSavedPasswordListChangedCallback: function(callback) {
     chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(callback);
+  },
+
+  /** @override */
+  removeSavedPassword: function(loginPair) {
+    chrome.passwordsPrivate.removeSavedPassword(loginPair);
   },
 
   /** @override */
@@ -109,7 +124,8 @@ Polymer({
   },
 
   listeners: {
-    'remove-password-exception': 'removePasswordException_'
+    'remove-password-exception': 'removePasswordException_',
+    'remove-saved-password': 'removeSavedPassword_',
   },
 
   /** @override */
@@ -131,6 +147,15 @@ Polymer({
    */
   removePasswordException_: function(event) {
     this.passwordManager_.removePasswordException(event.detail);
+  },
+
+  /**
+   * Listens for the remove-saved-password event, and calls the private API.
+   * @param {!Event} event
+   * @private
+   */
+  removeSavedPassword_: function(event) {
+    this.passwordManager_.removeSavedPassword(event.detail);
   },
 });
 })();

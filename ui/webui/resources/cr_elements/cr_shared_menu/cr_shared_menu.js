@@ -11,6 +11,16 @@ Polymer({
       value: false,
       reflectToAttribute: true
     },
+
+    /**
+     * The contextual item that this menu was clicked for.
+     *  e.g. the data used to render an item in an <iron-list> or <dom-repeat>
+     * @type {?Object}
+     */
+    itemData: {
+      type: Object,
+      value: null,
+    },
   },
 
   /**
@@ -35,14 +45,17 @@ Polymer({
   /** Closes the menu. */
   closeMenu: function() {
     this.menuOpen = false;
+    this.itemData = null;
   },
 
   /**
    * Opens the menu at the anchor location.
    * @param {!Element} anchor The location to display the menu.
+   * @param {!Object} itemData The contextual item's data.
    */
-  openMenu: function(anchor) {
+  openMenu: function(anchor, itemData) {
     this.menuOpen = true;
+    this.itemData = itemData;
     this.lastAnchor_ = anchor;
 
     // Move the menu to the anchor.
@@ -66,11 +79,12 @@ Polymer({
   /**
    * Toggles the menu for the anchor that is passed in.
    * @param {!Element} anchor The location to display the menu.
+   * @param {!Object} itemData The contextual item's data.
    */
-  toggleMenu: function(anchor) {
+  toggleMenu: function(anchor, itemData) {
     if (anchor == this.lastAnchor_ && this.menuOpen)
       this.closeMenu();
     else
-      this.openMenu(anchor);
+      this.openMenu(anchor, itemData);
   },
 });

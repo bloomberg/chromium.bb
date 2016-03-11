@@ -7,6 +7,10 @@
  * the list of saved passwords as well as the list of sites that will never
  * save any passwords.
  */
+
+/** @typedef {!{model: !{item: !chrome.passwordsPrivate.PasswordUiEntry}}} */
+var PasswordUiEntryEvent;
+
 (function() {
 'use strict';
 
@@ -39,11 +43,21 @@ Polymer({
   },
 
   /**
-   * Fires an event that should delete the passwordException.
+   * Fires an event that should delete the saved password.
+   * @private
+   */
+  onMenuRemovePasswordTap_: function() {
+    var menu = /** @type {CrSharedMenuElement} */(this.$.menu);
+    this.fire('remove-saved-password', menu.itemData);
+    menu.closeMenu();
+  },
+
+  /**
+   * Fires an event that should delete the password exception.
    * @param {!{model: !{item: !string}}} e The polymer event.
    * @private
    */
-  onRemovePasswordException_: function(e) {
+  onRemoveExceptionButtonTap_: function(e) {
     this.fire('remove-password-exception', e.model.item);
   },
 
@@ -57,13 +71,16 @@ Polymer({
 
   /**
    * Toggles the overflow menu.
-   * @param {Event} e
+   * @param {!Event} e The polymer event.
    * @private
    */
-  toggleMenu_: function(e) {
-    this.$.menu.toggleMenu(Polymer.dom(e).localTarget);
-    // Prevent the tap event from closing the menu.
-    e.stopPropagation();
+  onPasswordMenuTap_: function(e) {
+    var menu = /** @type {CrSharedMenuElement} */(this.$.menu);
+    var target = /** @type {!Element} */(Polymer.dom(e).localTarget);
+    var passwordUiEntryEvent = /** @type {!PasswordUiEntryEvent} */(e);
+
+    menu.toggleMenu(target, passwordUiEntryEvent.model.item.loginPair);
+    e.stopPropagation();  // Prevent the tap event from closing the menu.
   },
 
   /**
@@ -71,7 +88,7 @@ Polymer({
    * @private
    */
   closeMenu_: function() {
-    this.$.menu.closeMenu();
+    /** @type {CrSharedMenuElement} */(this.$.menu).closeMenu();
   },
 });
 })();

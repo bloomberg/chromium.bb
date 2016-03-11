@@ -64,7 +64,8 @@ Polymer({
    */
   toggleMenu_: function(e) {
     var target = e.detail.target;
-    /** @type {CrSharedMenuElement} */(this.$.sharedMenu).toggleMenu(target);
+    /** @type {CrSharedMenuElement} */(this.$.sharedMenu).toggleMenu(
+        target, e.detail.timestamp);
   },
 
   /**
