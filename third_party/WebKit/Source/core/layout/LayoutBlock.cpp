@@ -743,16 +743,6 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
         // box.  We can go ahead and pull the content right back up into our
         // box.
         collapseAnonymousBlockChild(this, toLayoutBlock(child));
-    } else if (((prev && prev->isAnonymousBlock()) || (next && next->isAnonymousBlock())) && canCollapseAnonymousBlockChild()) {
-        // It's possible that the removal has knocked us down to a single anonymous
-        // block with pseudo-style element siblings (e.g. first-letter). If these
-        // are floating, then we need to pull the content up also.
-        LayoutBlock* anonymousBlock = toLayoutBlock((prev && prev->isAnonymousBlock()) ? prev : next);
-        if ((anonymousBlock->previousSibling() || anonymousBlock->nextSibling())
-            && (!anonymousBlock->previousSibling() || (anonymousBlock->previousSibling()->style()->styleType() != PseudoIdNone && anonymousBlock->previousSibling()->isFloating() && !anonymousBlock->previousSibling()->previousSibling()))
-            && (!anonymousBlock->nextSibling() || (anonymousBlock->nextSibling()->style()->styleType() != PseudoIdNone && anonymousBlock->nextSibling()->isFloating() && !anonymousBlock->nextSibling()->nextSibling()))) {
-            collapseAnonymousBlockChild(this, anonymousBlock);
-        }
     }
 
     if (!firstChild()) {
