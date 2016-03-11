@@ -195,6 +195,8 @@
       'protocol/session_manager.h',
       'protocol/socket_util.cc',
       'protocol/socket_util.h',
+      'protocol/spake2_authenticator.cc',
+      'protocol/spake2_authenticator.h',
       'protocol/ssl_hmac_channel_authenticator.cc',
       'protocol/ssl_hmac_channel_authenticator.h',
       'protocol/stream_channel_factory.h',

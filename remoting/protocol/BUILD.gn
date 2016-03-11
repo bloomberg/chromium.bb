@@ -28,6 +28,7 @@ source_set("protocol") {
     "//remoting/base",
     "//remoting/codec",
     "//remoting/signaling",
+    "//third_party/boringssl",
     "//third_party/libyuv",
   ]
 
@@ -119,6 +120,7 @@ source_set("unit_tests") {
     "ppapi_module_stub.cc",
     "pseudotcp_adapter_unittest.cc",
     "session_config_unittest.cc",
+    "spake2_authenticator_unittest.cc",
     "ssl_hmac_channel_authenticator_unittest.cc",
     "third_party_authenticator_unittest.cc",
     "v2_authenticator_unittest.cc",
