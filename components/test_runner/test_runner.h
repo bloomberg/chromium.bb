@@ -599,6 +599,7 @@ class TestRunner : public WebTestRunner,
                                         const std::string& name,
                                         const std::string& avatar,
                                         const std::string& password);
+  void AddMockCredentialManagerError(const std::string& error);
 
   // WebPageOverlay related functions. Permits the adding and removing of only
   // one opaque overlay.

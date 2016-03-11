@@ -302,6 +302,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                         const std::string& name,
                                         const std::string& avatar,
                                         const std::string& password);
+  void AddMockCredentialManagerError(const std::string& error);
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
   void LayoutAndPaintAsync();
@@ -579,6 +580,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::WasMockSpeechRecognitionAborted)
       .SetMethod("addMockCredentialManagerResponse",
                  &TestRunnerBindings::AddMockCredentialManagerResponse)
+      .SetMethod("addMockCredentialManagerError",
+                 &TestRunnerBindings::AddMockCredentialManagerError)
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
       .SetMethod("removeWebPageOverlay",
                  &TestRunnerBindings::RemoveWebPageOverlay)
@@ -1446,6 +1449,12 @@ void TestRunnerBindings::AddMockCredentialManagerResponse(
     const std::string& password) {
   if (runner_)
     runner_->AddMockCredentialManagerResponse(id, name, avatar, password);
+}
+
+void TestRunnerBindings::AddMockCredentialManagerError(
+    const std::string& error) {
+  if (runner_)
+    runner_->AddMockCredentialManagerError(error);
 }
 
 void TestRunnerBindings::AddWebPageOverlay() {
@@ -2978,6 +2987,10 @@ void TestRunner::AddMockCredentialManagerResponse(const std::string& id,
                                 WebString::fromUTF8(password),
                                 WebString::fromUTF8(name),
                                 WebURL(GURL(avatar))));
+}
+
+void TestRunner::AddMockCredentialManagerError(const std::string& error) {
+  proxy_->GetCredentialManagerClientMock()->SetError(error);
 }
 
 void TestRunner::AddWebPageOverlay() {

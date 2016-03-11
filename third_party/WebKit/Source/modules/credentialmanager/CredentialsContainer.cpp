@@ -33,9 +33,12 @@ static void rejectDueToCredentialManagerError(ScriptPromiseResolver* resolver, W
     case WebCredentialManagerDisabledError:
         resolver->reject(DOMException::create(InvalidStateError, "The credential manager is disabled."));
         break;
+    case WebCredentialManagerPendingRequestError:
+        resolver->reject(DOMException::create(InvalidStateError, "A 'get()' request is pending."));
+        break;
     case WebCredentialManagerUnknownError:
     default:
-        resolver->reject(DOMException::create(NotReadableError, "An unknown error occured while talking to the credential manager."));
+        resolver->reject(DOMException::create(NotReadableError, "An unknown error occurred while talking to the credential manager."));
         break;
     }
 }

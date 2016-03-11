@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
+#include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace blink {
@@ -25,6 +26,7 @@ class MockCredentialManagerClient : public blink::WebCredentialManagerClient {
 
   // We take ownership of the |credential|.
   void SetResponse(blink::WebCredential* credential);
+  void SetError(const std::string& error);
 
   // blink::WebCredentialManager:
   void dispatchStore(const blink::WebCredential& credential,
@@ -37,6 +39,7 @@ class MockCredentialManagerClient : public blink::WebCredentialManagerClient {
 
  private:
   scoped_ptr<blink::WebCredential> credential_;
+  blink::WebCredentialManagerError error_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCredentialManagerClient);
 };
