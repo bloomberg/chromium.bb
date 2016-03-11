@@ -177,20 +177,4 @@ const AtomicString& HTMLTableCellElement::scope() const
     return fastGetAttribute(scopeAttr);
 }
 
-HTMLTableCellElement* HTMLTableCellElement::cellAbove() const
-{
-    LayoutObject* cellLayoutObject = layoutObject();
-    if (!cellLayoutObject)
-        return nullptr;
-    if (!cellLayoutObject->isTableCell())
-        return nullptr;
-
-    LayoutTableCell* tableCellLayoutObject = toLayoutTableCell(cellLayoutObject);
-    LayoutTableCell* cellAboveLayoutObject = tableCellLayoutObject->table()->cellAbove(tableCellLayoutObject);
-    if (!cellAboveLayoutObject)
-        return nullptr;
-
-    return toHTMLTableCellElement(cellAboveLayoutObject->node());
-}
-
 } // namespace blink

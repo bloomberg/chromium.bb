@@ -50,8 +50,6 @@ public:
     void setRowSpan(unsigned);
     const AtomicString& scope() const;
 
-    HTMLTableCellElement* cellAbove() const;
-
 private:
     HTMLTableCellElement(const QualifiedName&, Document&);
 
