@@ -164,6 +164,22 @@ static_assert(IsMoveAssignable<AssignableImplicit>::value, "AssignableImplicit i
 
 #endif // !COMPILER(MSVC) || COMPILER(CLANG)
 
+class DefaultConstructorDeleted final {
+private:
+    DefaultConstructorDeleted() = delete;
+};
+
+class DestructorDeleted final {
+private:
+    ~DestructorDeleted() = delete;
+};
+
+static_assert(!IsTriviallyDefaultConstructible<DefaultConstructorDeleted>::value,
+    "DefaultConstructorDeleted must not be trivially default constructible.");
+
+static_assert(!IsTriviallyDestructible<DestructorDeleted>::value,
+    "DestructorDeleted must not be trivially destructible.");
+
 } // anonymous namespace
 
 } // namespace WTF

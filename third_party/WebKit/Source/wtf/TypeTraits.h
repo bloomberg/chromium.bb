@@ -106,14 +106,41 @@ template <typename T> struct IsTriviallyMoveAssignable {
     static const bool value = IsTriviallyCopyAssignable<T>::value;
 };
 
+// Same as above, but for __has_trivial_constructor and __has_trivial_destructor. For IsTriviallyDefaultConstructible,
+// we don't have to write IsDefaultConstructible ourselves since we can use std::is_constructible<T>. For
+// IsTriviallyDestructible, though, we can't rely on std::is_destructible<T> right now.
+#if !COMPILER(MSVC) || COMPILER(CLANG)
+template <typename T>
+class IsDestructible {
+    typedef char YesType;
+    struct NoType {
+        char padding[8];
+    };
+
+    template <typename T2, typename = decltype(std::declval<T2>().~T2())>
+    static YesType checkDestructibility(int);
+    template <typename T2>
+    static NoType checkDestructibility(...);
+
+public:
+    static const bool value = sizeof(checkDestructibility<T>(0)) == sizeof(YesType);
+};
+#endif
+
 template <typename T> struct IsTriviallyDefaultConstructible {
-    // TODO(yutak): Below has the same issue as crbug.com/592767.
+#if COMPILER(MSVC) && !COMPILER(CLANG)
     static const bool value = __has_trivial_constructor(T);
+#else
+    static const bool value = __has_trivial_constructor(T) && std::is_constructible<T>::value;
+#endif
 };
 
 template <typename T> struct IsTriviallyDestructible {
-    // TODO(yutak): Ditto.
+#if COMPILER(MSVC) && !COMPILER(CLANG)
     static const bool value = __has_trivial_destructor(T);
+#else
+    static const bool value = __has_trivial_destructor(T) && IsDestructible<T>::value;
+#endif
 };
 
 template <typename T, typename U> struct IsSubclass {
