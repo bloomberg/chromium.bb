@@ -62,6 +62,7 @@ extern "C" {
 static void GL_BINDING_CALL Debug_OSMesaColorClamp(GLboolean enable) {
   GL_SERVICE_LOG("OSMesaColorClamp"
                  << "(" << GLEnums::GetStringBool(enable) << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaColorClampFn != nullptr);
   g_driver_osmesa.debug_fn.OSMesaColorClampFn(enable);
 }
 
@@ -70,6 +71,7 @@ Debug_OSMesaCreateContext(GLenum format, OSMesaContext sharelist) {
   GL_SERVICE_LOG("OSMesaCreateContext"
                  << "(" << GLEnums::GetStringEnum(format) << ", " << sharelist
                  << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaCreateContextFn != nullptr);
   OSMesaContext result =
       g_driver_osmesa.debug_fn.OSMesaCreateContextFn(format, sharelist);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -86,6 +88,7 @@ Debug_OSMesaCreateContextExt(GLenum format,
                  << "(" << GLEnums::GetStringEnum(format) << ", " << depthBits
                  << ", " << stencilBits << ", " << accumBits << ", "
                  << sharelist << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaCreateContextExtFn != nullptr);
   OSMesaContext result = g_driver_osmesa.debug_fn.OSMesaCreateContextExtFn(
       format, depthBits, stencilBits, accumBits, sharelist);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -95,6 +98,7 @@ Debug_OSMesaCreateContextExt(GLenum format,
 static void GL_BINDING_CALL Debug_OSMesaDestroyContext(OSMesaContext ctx) {
   GL_SERVICE_LOG("OSMesaDestroyContext"
                  << "(" << ctx << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaDestroyContextFn != nullptr);
   g_driver_osmesa.debug_fn.OSMesaDestroyContextFn(ctx);
 }
 
@@ -107,6 +111,7 @@ static GLboolean GL_BINDING_CALL Debug_OSMesaGetColorBuffer(OSMesaContext c,
                  << "(" << c << ", " << static_cast<const void*>(width) << ", "
                  << static_cast<const void*>(height) << ", "
                  << static_cast<const void*>(format) << ", " << buffer << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaGetColorBufferFn != nullptr);
   GLboolean result = g_driver_osmesa.debug_fn.OSMesaGetColorBufferFn(
       c, width, height, format, buffer);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -117,6 +122,7 @@ static OSMesaContext GL_BINDING_CALL Debug_OSMesaGetCurrentContext(void) {
   GL_SERVICE_LOG("OSMesaGetCurrentContext"
                  << "("
                  << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaGetCurrentContextFn != nullptr);
   OSMesaContext result = g_driver_osmesa.debug_fn.OSMesaGetCurrentContextFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -133,6 +139,7 @@ Debug_OSMesaGetDepthBuffer(OSMesaContext c,
                  << static_cast<const void*>(height) << ", "
                  << static_cast<const void*>(bytesPerValue) << ", " << buffer
                  << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaGetDepthBufferFn != nullptr);
   GLboolean result = g_driver_osmesa.debug_fn.OSMesaGetDepthBufferFn(
       c, width, height, bytesPerValue, buffer);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -143,6 +150,7 @@ static void GL_BINDING_CALL Debug_OSMesaGetIntegerv(GLint pname, GLint* value) {
   GL_SERVICE_LOG("OSMesaGetIntegerv"
                  << "(" << pname << ", " << static_cast<const void*>(value)
                  << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaGetIntegervFn != nullptr);
   g_driver_osmesa.debug_fn.OSMesaGetIntegervFn(pname, value);
 }
 
@@ -150,6 +158,7 @@ static OSMESAproc GL_BINDING_CALL
 Debug_OSMesaGetProcAddress(const char* funcName) {
   GL_SERVICE_LOG("OSMesaGetProcAddress"
                  << "(" << funcName << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaGetProcAddressFn != nullptr);
   OSMESAproc result = g_driver_osmesa.debug_fn.OSMesaGetProcAddressFn(funcName);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -164,6 +173,7 @@ static GLboolean GL_BINDING_CALL Debug_OSMesaMakeCurrent(OSMesaContext ctx,
                  << "(" << ctx << ", " << static_cast<const void*>(buffer)
                  << ", " << GLEnums::GetStringEnum(type) << ", " << width
                  << ", " << height << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaMakeCurrentFn != nullptr);
   GLboolean result = g_driver_osmesa.debug_fn.OSMesaMakeCurrentFn(
       ctx, buffer, type, width, height);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -173,6 +183,7 @@ static GLboolean GL_BINDING_CALL Debug_OSMesaMakeCurrent(OSMesaContext ctx,
 static void GL_BINDING_CALL Debug_OSMesaPixelStore(GLint pname, GLint value) {
   GL_SERVICE_LOG("OSMesaPixelStore"
                  << "(" << pname << ", " << value << ")");
+  DCHECK(g_driver_osmesa.debug_fn.OSMesaPixelStoreFn != nullptr);
   g_driver_osmesa.debug_fn.OSMesaPixelStoreFn(pname, value);
 }
 }  // extern "C"

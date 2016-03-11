@@ -2174,6 +2174,8 @@ void Driver%s::InitializeExtensionBindings() {
     if return_type == 'void':
       file.write('  GL_SERVICE_LOG("%s" << "(" %s << ")");\n' %
           (function_name, log_argument_names))
+      file.write('  DCHECK(g_driver_%s.debug_fn.%sFn != nullptr);\n' %
+          (set_name.lower(), function_name))
       file.write('  g_driver_%s.debug_fn.%sFn(%s);\n' %
           (set_name.lower(), function_name, argument_names))
       if 'logging_code' in func:
@@ -2186,6 +2188,8 @@ void Driver%s::InitializeExtensionBindings() {
     else:
       file.write('  GL_SERVICE_LOG("%s" << "(" %s << ")");\n' %
           (function_name, log_argument_names))
+      file.write('  DCHECK(g_driver_%s.debug_fn.%sFn != nullptr);\n' %
+          (set_name.lower(), function_name))
       file.write('  %s result = g_driver_%s.debug_fn.%sFn(%s);\n' %
           (return_type, set_name.lower(), function_name, argument_names))
       if 'logging_code' in func:

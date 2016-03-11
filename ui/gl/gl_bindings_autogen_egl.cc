@@ -203,6 +203,7 @@ extern "C" {
 static EGLBoolean GL_BINDING_CALL Debug_eglBindAPI(EGLenum api) {
   GL_SERVICE_LOG("eglBindAPI"
                  << "(" << api << ")");
+  DCHECK(g_driver_egl.debug_fn.eglBindAPIFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglBindAPIFn(api);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -213,6 +214,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglBindTexImage(EGLDisplay dpy,
                                                         EGLint buffer) {
   GL_SERVICE_LOG("eglBindTexImage"
                  << "(" << dpy << ", " << surface << ", " << buffer << ")");
+  DCHECK(g_driver_egl.debug_fn.eglBindTexImageFn != nullptr);
   EGLBoolean result =
       g_driver_egl.debug_fn.eglBindTexImageFn(dpy, surface, buffer);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -230,6 +232,7 @@ Debug_eglChooseConfig(EGLDisplay dpy,
                  << ", " << static_cast<const void*>(configs) << ", "
                  << config_size << ", " << static_cast<const void*>(num_config)
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglChooseConfigFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglChooseConfigFn(
       dpy, attrib_list, configs, config_size, num_config);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -243,6 +246,7 @@ static EGLint GL_BINDING_CALL Debug_eglClientWaitSyncKHR(EGLDisplay dpy,
   GL_SERVICE_LOG("eglClientWaitSyncKHR"
                  << "(" << dpy << ", " << sync << ", " << flags << ", "
                  << timeout << ")");
+  DCHECK(g_driver_egl.debug_fn.eglClientWaitSyncKHRFn != nullptr);
   EGLint result =
       g_driver_egl.debug_fn.eglClientWaitSyncKHRFn(dpy, sync, flags, timeout);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -255,6 +259,7 @@ Debug_eglCopyBuffers(EGLDisplay dpy,
                      EGLNativePixmapType target) {
   GL_SERVICE_LOG("eglCopyBuffers"
                  << "(" << dpy << ", " << surface << ", " << target << ")");
+  DCHECK(g_driver_egl.debug_fn.eglCopyBuffersFn != nullptr);
   EGLBoolean result =
       g_driver_egl.debug_fn.eglCopyBuffersFn(dpy, surface, target);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -269,6 +274,7 @@ Debug_eglCreateContext(EGLDisplay dpy,
   GL_SERVICE_LOG("eglCreateContext"
                  << "(" << dpy << ", " << config << ", " << share_context
                  << ", " << static_cast<const void*>(attrib_list) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglCreateContextFn != nullptr);
   EGLContext result = g_driver_egl.debug_fn.eglCreateContextFn(
       dpy, config, share_context, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -285,6 +291,7 @@ Debug_eglCreateImageKHR(EGLDisplay dpy,
                  << "(" << dpy << ", " << ctx << ", " << target << ", "
                  << buffer << ", " << static_cast<const void*>(attrib_list)
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglCreateImageKHRFn != nullptr);
   EGLImageKHR result = g_driver_egl.debug_fn.eglCreateImageKHRFn(
       dpy, ctx, target, buffer, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -301,6 +308,7 @@ Debug_eglCreatePbufferFromClientBuffer(EGLDisplay dpy,
                  << "(" << dpy << ", " << buftype << ", "
                  << static_cast<const void*>(buffer) << ", " << config << ", "
                  << static_cast<const void*>(attrib_list) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglCreatePbufferFromClientBufferFn != nullptr);
   EGLSurface result = g_driver_egl.debug_fn.eglCreatePbufferFromClientBufferFn(
       dpy, buftype, buffer, config, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -314,6 +322,7 @@ Debug_eglCreatePbufferSurface(EGLDisplay dpy,
   GL_SERVICE_LOG("eglCreatePbufferSurface"
                  << "(" << dpy << ", " << config << ", "
                  << static_cast<const void*>(attrib_list) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglCreatePbufferSurfaceFn != nullptr);
   EGLSurface result =
       g_driver_egl.debug_fn.eglCreatePbufferSurfaceFn(dpy, config, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -328,6 +337,7 @@ Debug_eglCreatePixmapSurface(EGLDisplay dpy,
   GL_SERVICE_LOG("eglCreatePixmapSurface"
                  << "(" << dpy << ", " << config << ", " << pixmap << ", "
                  << static_cast<const void*>(attrib_list) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglCreatePixmapSurfaceFn != nullptr);
   EGLSurface result = g_driver_egl.debug_fn.eglCreatePixmapSurfaceFn(
       dpy, config, pixmap, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -341,6 +351,7 @@ Debug_eglCreateSyncKHR(EGLDisplay dpy,
   GL_SERVICE_LOG("eglCreateSyncKHR"
                  << "(" << dpy << ", " << type << ", "
                  << static_cast<const void*>(attrib_list) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglCreateSyncKHRFn != nullptr);
   EGLSyncKHR result =
       g_driver_egl.debug_fn.eglCreateSyncKHRFn(dpy, type, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -355,6 +366,7 @@ Debug_eglCreateWindowSurface(EGLDisplay dpy,
   GL_SERVICE_LOG("eglCreateWindowSurface"
                  << "(" << dpy << ", " << config << ", " << win << ", "
                  << static_cast<const void*>(attrib_list) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglCreateWindowSurfaceFn != nullptr);
   EGLSurface result = g_driver_egl.debug_fn.eglCreateWindowSurfaceFn(
       dpy, config, win, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -365,6 +377,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglDestroyContext(EGLDisplay dpy,
                                                           EGLContext ctx) {
   GL_SERVICE_LOG("eglDestroyContext"
                  << "(" << dpy << ", " << ctx << ")");
+  DCHECK(g_driver_egl.debug_fn.eglDestroyContextFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglDestroyContextFn(dpy, ctx);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -374,6 +387,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglDestroyImageKHR(EGLDisplay dpy,
                                                            EGLImageKHR image) {
   GL_SERVICE_LOG("eglDestroyImageKHR"
                  << "(" << dpy << ", " << image << ")");
+  DCHECK(g_driver_egl.debug_fn.eglDestroyImageKHRFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglDestroyImageKHRFn(dpy, image);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -383,6 +397,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglDestroySurface(EGLDisplay dpy,
                                                           EGLSurface surface) {
   GL_SERVICE_LOG("eglDestroySurface"
                  << "(" << dpy << ", " << surface << ")");
+  DCHECK(g_driver_egl.debug_fn.eglDestroySurfaceFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglDestroySurfaceFn(dpy, surface);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -392,6 +407,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglDestroySyncKHR(EGLDisplay dpy,
                                                           EGLSyncKHR sync) {
   GL_SERVICE_LOG("eglDestroySyncKHR"
                  << "(" << dpy << ", " << sync << ")");
+  DCHECK(g_driver_egl.debug_fn.eglDestroySyncKHRFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglDestroySyncKHRFn(dpy, sync);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -404,6 +420,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglGetConfigAttrib(EGLDisplay dpy,
   GL_SERVICE_LOG("eglGetConfigAttrib"
                  << "(" << dpy << ", " << config << ", " << attribute << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetConfigAttribFn != nullptr);
   EGLBoolean result =
       g_driver_egl.debug_fn.eglGetConfigAttribFn(dpy, config, attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -418,6 +435,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglGetConfigs(EGLDisplay dpy,
                  << "(" << dpy << ", " << static_cast<const void*>(configs)
                  << ", " << config_size << ", "
                  << static_cast<const void*>(num_config) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetConfigsFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglGetConfigsFn(
       dpy, configs, config_size, num_config);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -428,6 +446,7 @@ static EGLContext GL_BINDING_CALL Debug_eglGetCurrentContext(void) {
   GL_SERVICE_LOG("eglGetCurrentContext"
                  << "("
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetCurrentContextFn != nullptr);
   EGLContext result = g_driver_egl.debug_fn.eglGetCurrentContextFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -437,6 +456,7 @@ static EGLDisplay GL_BINDING_CALL Debug_eglGetCurrentDisplay(void) {
   GL_SERVICE_LOG("eglGetCurrentDisplay"
                  << "("
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetCurrentDisplayFn != nullptr);
   EGLDisplay result = g_driver_egl.debug_fn.eglGetCurrentDisplayFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -445,6 +465,7 @@ static EGLDisplay GL_BINDING_CALL Debug_eglGetCurrentDisplay(void) {
 static EGLSurface GL_BINDING_CALL Debug_eglGetCurrentSurface(EGLint readdraw) {
   GL_SERVICE_LOG("eglGetCurrentSurface"
                  << "(" << readdraw << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetCurrentSurfaceFn != nullptr);
   EGLSurface result = g_driver_egl.debug_fn.eglGetCurrentSurfaceFn(readdraw);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -454,6 +475,7 @@ static EGLDisplay GL_BINDING_CALL
 Debug_eglGetDisplay(EGLNativeDisplayType display_id) {
   GL_SERVICE_LOG("eglGetDisplay"
                  << "(" << display_id << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetDisplayFn != nullptr);
   EGLDisplay result = g_driver_egl.debug_fn.eglGetDisplayFn(display_id);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -463,6 +485,7 @@ static EGLint GL_BINDING_CALL Debug_eglGetError(void) {
   GL_SERVICE_LOG("eglGetError"
                  << "("
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetErrorFn != nullptr);
   EGLint result = g_driver_egl.debug_fn.eglGetErrorFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -476,6 +499,7 @@ Debug_eglGetPlatformDisplayEXT(EGLenum platform,
                  << "(" << platform << ", "
                  << static_cast<const void*>(native_display) << ", "
                  << static_cast<const void*>(attrib_list) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetPlatformDisplayEXTFn != nullptr);
   EGLDisplay result = g_driver_egl.debug_fn.eglGetPlatformDisplayEXTFn(
       platform, native_display, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -486,6 +510,7 @@ static __eglMustCastToProperFunctionPointerType GL_BINDING_CALL
 Debug_eglGetProcAddress(const char* procname) {
   GL_SERVICE_LOG("eglGetProcAddress"
                  << "(" << procname << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetProcAddressFn != nullptr);
   __eglMustCastToProperFunctionPointerType result =
       g_driver_egl.debug_fn.eglGetProcAddressFn(procname);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -499,6 +524,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglGetSyncAttribKHR(EGLDisplay dpy,
   GL_SERVICE_LOG("eglGetSyncAttribKHR"
                  << "(" << dpy << ", " << sync << ", " << attribute << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetSyncAttribKHRFn != nullptr);
   EGLBoolean result =
       g_driver_egl.debug_fn.eglGetSyncAttribKHRFn(dpy, sync, attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -516,6 +542,7 @@ Debug_eglGetSyncValuesCHROMIUM(EGLDisplay dpy,
                  << static_cast<const void*>(ust) << ", "
                  << static_cast<const void*>(msc) << ", "
                  << static_cast<const void*>(sbc) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglGetSyncValuesCHROMIUMFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglGetSyncValuesCHROMIUMFn(
       dpy, surface, ust, msc, sbc);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -528,6 +555,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglInitialize(EGLDisplay dpy,
   GL_SERVICE_LOG("eglInitialize"
                  << "(" << dpy << ", " << static_cast<const void*>(major)
                  << ", " << static_cast<const void*>(minor) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglInitializeFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglInitializeFn(dpy, major, minor);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -540,6 +568,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglMakeCurrent(EGLDisplay dpy,
   GL_SERVICE_LOG("eglMakeCurrent"
                  << "(" << dpy << ", " << draw << ", " << read << ", " << ctx
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglMakeCurrentFn != nullptr);
   EGLBoolean result =
       g_driver_egl.debug_fn.eglMakeCurrentFn(dpy, draw, read, ctx);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -555,6 +584,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglPostSubBufferNV(EGLDisplay dpy,
   GL_SERVICE_LOG("eglPostSubBufferNV"
                  << "(" << dpy << ", " << surface << ", " << x << ", " << y
                  << ", " << width << ", " << height << ")");
+  DCHECK(g_driver_egl.debug_fn.eglPostSubBufferNVFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglPostSubBufferNVFn(
       dpy, surface, x, y, width, height);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -565,6 +595,7 @@ static EGLenum GL_BINDING_CALL Debug_eglQueryAPI(void) {
   GL_SERVICE_LOG("eglQueryAPI"
                  << "("
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglQueryAPIFn != nullptr);
   EGLenum result = g_driver_egl.debug_fn.eglQueryAPIFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -577,6 +608,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglQueryContext(EGLDisplay dpy,
   GL_SERVICE_LOG("eglQueryContext"
                  << "(" << dpy << ", " << ctx << ", " << attribute << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglQueryContextFn != nullptr);
   EGLBoolean result =
       g_driver_egl.debug_fn.eglQueryContextFn(dpy, ctx, attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -587,6 +619,7 @@ static const char* GL_BINDING_CALL Debug_eglQueryString(EGLDisplay dpy,
                                                         EGLint name) {
   GL_SERVICE_LOG("eglQueryString"
                  << "(" << dpy << ", " << name << ")");
+  DCHECK(g_driver_egl.debug_fn.eglQueryStringFn != nullptr);
   const char* result = g_driver_egl.debug_fn.eglQueryStringFn(dpy, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -599,6 +632,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglQuerySurface(EGLDisplay dpy,
   GL_SERVICE_LOG("eglQuerySurface"
                  << "(" << dpy << ", " << surface << ", " << attribute << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglQuerySurfaceFn != nullptr);
   EGLBoolean result =
       g_driver_egl.debug_fn.eglQuerySurfaceFn(dpy, surface, attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -613,6 +647,7 @@ Debug_eglQuerySurfacePointerANGLE(EGLDisplay dpy,
   GL_SERVICE_LOG("eglQuerySurfacePointerANGLE"
                  << "(" << dpy << ", " << surface << ", " << attribute << ", "
                  << value << ")");
+  DCHECK(g_driver_egl.debug_fn.eglQuerySurfacePointerANGLEFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglQuerySurfacePointerANGLEFn(
       dpy, surface, attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -624,6 +659,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglReleaseTexImage(EGLDisplay dpy,
                                                            EGLint buffer) {
   GL_SERVICE_LOG("eglReleaseTexImage"
                  << "(" << dpy << ", " << surface << ", " << buffer << ")");
+  DCHECK(g_driver_egl.debug_fn.eglReleaseTexImageFn != nullptr);
   EGLBoolean result =
       g_driver_egl.debug_fn.eglReleaseTexImageFn(dpy, surface, buffer);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -634,6 +670,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglReleaseThread(void) {
   GL_SERVICE_LOG("eglReleaseThread"
                  << "("
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglReleaseThreadFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglReleaseThreadFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -646,6 +683,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglSurfaceAttrib(EGLDisplay dpy,
   GL_SERVICE_LOG("eglSurfaceAttrib"
                  << "(" << dpy << ", " << surface << ", " << attribute << ", "
                  << value << ")");
+  DCHECK(g_driver_egl.debug_fn.eglSurfaceAttribFn != nullptr);
   EGLBoolean result =
       g_driver_egl.debug_fn.eglSurfaceAttribFn(dpy, surface, attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -656,6 +694,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglSwapBuffers(EGLDisplay dpy,
                                                        EGLSurface surface) {
   GL_SERVICE_LOG("eglSwapBuffers"
                  << "(" << dpy << ", " << surface << ")");
+  DCHECK(g_driver_egl.debug_fn.eglSwapBuffersFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglSwapBuffersFn(dpy, surface);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -665,6 +704,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglSwapInterval(EGLDisplay dpy,
                                                         EGLint interval) {
   GL_SERVICE_LOG("eglSwapInterval"
                  << "(" << dpy << ", " << interval << ")");
+  DCHECK(g_driver_egl.debug_fn.eglSwapIntervalFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglSwapIntervalFn(dpy, interval);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -673,6 +713,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglSwapInterval(EGLDisplay dpy,
 static EGLBoolean GL_BINDING_CALL Debug_eglTerminate(EGLDisplay dpy) {
   GL_SERVICE_LOG("eglTerminate"
                  << "(" << dpy << ")");
+  DCHECK(g_driver_egl.debug_fn.eglTerminateFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglTerminateFn(dpy);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -682,6 +723,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglWaitClient(void) {
   GL_SERVICE_LOG("eglWaitClient"
                  << "("
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglWaitClientFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglWaitClientFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -691,6 +733,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglWaitGL(void) {
   GL_SERVICE_LOG("eglWaitGL"
                  << "("
                  << ")");
+  DCHECK(g_driver_egl.debug_fn.eglWaitGLFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglWaitGLFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -699,6 +742,7 @@ static EGLBoolean GL_BINDING_CALL Debug_eglWaitGL(void) {
 static EGLBoolean GL_BINDING_CALL Debug_eglWaitNative(EGLint engine) {
   GL_SERVICE_LOG("eglWaitNative"
                  << "(" << engine << ")");
+  DCHECK(g_driver_egl.debug_fn.eglWaitNativeFn != nullptr);
   EGLBoolean result = g_driver_egl.debug_fn.eglWaitNativeFn(engine);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -709,6 +753,7 @@ static EGLint GL_BINDING_CALL Debug_eglWaitSyncKHR(EGLDisplay dpy,
                                                    EGLint flags) {
   GL_SERVICE_LOG("eglWaitSyncKHR"
                  << "(" << dpy << ", " << sync << ", " << flags << ")");
+  DCHECK(g_driver_egl.debug_fn.eglWaitSyncKHRFn != nullptr);
   EGLint result = g_driver_egl.debug_fn.eglWaitSyncKHRFn(dpy, sync, flags);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;

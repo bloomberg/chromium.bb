@@ -212,6 +212,7 @@ static void GL_BINDING_CALL Debug_glXBindTexImageEXT(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << buffer << ", "
                  << static_cast<const void*>(attribList) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXBindTexImageEXTFn != nullptr);
   g_driver_glx.debug_fn.glXBindTexImageEXTFn(dpy, drawable, buffer, attribList);
 }
 
@@ -224,6 +225,7 @@ Debug_glXChooseFBConfig(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ", " << static_cast<const void*>(attribList) << ", "
                  << static_cast<const void*>(nitems) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXChooseFBConfigFn != nullptr);
   GLXFBConfig* result = g_driver_glx.debug_fn.glXChooseFBConfigFn(
       dpy, screen, attribList, nitems);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -236,6 +238,7 @@ static XVisualInfo* GL_BINDING_CALL Debug_glXChooseVisual(Display* dpy,
   GL_SERVICE_LOG("glXChooseVisual"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ", " << static_cast<const void*>(attribList) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXChooseVisualFn != nullptr);
   XVisualInfo* result =
       g_driver_glx.debug_fn.glXChooseVisualFn(dpy, screen, attribList);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -249,6 +252,7 @@ static void GL_BINDING_CALL Debug_glXCopyContext(Display* dpy,
   GL_SERVICE_LOG("glXCopyContext"
                  << "(" << static_cast<const void*>(dpy) << ", " << src << ", "
                  << dst << ", " << mask << ")");
+  DCHECK(g_driver_glx.debug_fn.glXCopyContextFn != nullptr);
   g_driver_glx.debug_fn.glXCopyContextFn(dpy, src, dst, mask);
 }
 
@@ -262,6 +266,7 @@ static void GL_BINDING_CALL Debug_glXCopySubBufferMESA(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << x << ", " << y << ", " << width << ", " << height
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXCopySubBufferMESAFn != nullptr);
   g_driver_glx.debug_fn.glXCopySubBufferMESAFn(dpy, drawable, x, y, width,
                                                height);
 }
@@ -274,6 +279,7 @@ static GLXContext GL_BINDING_CALL Debug_glXCreateContext(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(vis) << ", " << shareList << ", "
                  << direct << ")");
+  DCHECK(g_driver_glx.debug_fn.glXCreateContextFn != nullptr);
   GLXContext result =
       g_driver_glx.debug_fn.glXCreateContextFn(dpy, vis, shareList, direct);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -290,6 +296,7 @@ Debug_glXCreateContextAttribsARB(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << share_context << ", " << direct << ", "
                  << static_cast<const void*>(attrib_list) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXCreateContextAttribsARBFn != nullptr);
   GLXContext result = g_driver_glx.debug_fn.glXCreateContextAttribsARBFn(
       dpy, config, share_context, direct, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -302,6 +309,7 @@ static GLXPixmap GL_BINDING_CALL Debug_glXCreateGLXPixmap(Display* dpy,
   GL_SERVICE_LOG("glXCreateGLXPixmap"
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(visual) << ", " << pixmap << ")");
+  DCHECK(g_driver_glx.debug_fn.glXCreateGLXPixmapFn != nullptr);
   GLXPixmap result =
       g_driver_glx.debug_fn.glXCreateGLXPixmapFn(dpy, visual, pixmap);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -318,6 +326,7 @@ Debug_glXCreateNewContext(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << renderType << ", " << shareList << ", " << direct
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXCreateNewContextFn != nullptr);
   GLXContext result = g_driver_glx.debug_fn.glXCreateNewContextFn(
       dpy, config, renderType, shareList, direct);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -331,6 +340,7 @@ Debug_glXCreatePbuffer(Display* dpy,
   GL_SERVICE_LOG("glXCreatePbuffer"
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << static_cast<const void*>(attribList) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXCreatePbufferFn != nullptr);
   GLXPbuffer result =
       g_driver_glx.debug_fn.glXCreatePbufferFn(dpy, config, attribList);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -345,6 +355,7 @@ static GLXPixmap GL_BINDING_CALL Debug_glXCreatePixmap(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << pixmap << ", "
                  << static_cast<const void*>(attribList) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXCreatePixmapFn != nullptr);
   GLXPixmap result =
       g_driver_glx.debug_fn.glXCreatePixmapFn(dpy, config, pixmap, attribList);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -359,6 +370,7 @@ static GLXWindow GL_BINDING_CALL Debug_glXCreateWindow(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << win << ", " << static_cast<const void*>(attribList)
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXCreateWindowFn != nullptr);
   GLXWindow result =
       g_driver_glx.debug_fn.glXCreateWindowFn(dpy, config, win, attribList);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -369,6 +381,7 @@ static void GL_BINDING_CALL Debug_glXDestroyContext(Display* dpy,
                                                     GLXContext ctx) {
   GL_SERVICE_LOG("glXDestroyContext"
                  << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
+  DCHECK(g_driver_glx.debug_fn.glXDestroyContextFn != nullptr);
   g_driver_glx.debug_fn.glXDestroyContextFn(dpy, ctx);
 }
 
@@ -377,6 +390,7 @@ static void GL_BINDING_CALL Debug_glXDestroyGLXPixmap(Display* dpy,
   GL_SERVICE_LOG("glXDestroyGLXPixmap"
                  << "(" << static_cast<const void*>(dpy) << ", " << pixmap
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXDestroyGLXPixmapFn != nullptr);
   g_driver_glx.debug_fn.glXDestroyGLXPixmapFn(dpy, pixmap);
 }
 
@@ -385,6 +399,7 @@ static void GL_BINDING_CALL Debug_glXDestroyPbuffer(Display* dpy,
   GL_SERVICE_LOG("glXDestroyPbuffer"
                  << "(" << static_cast<const void*>(dpy) << ", " << pbuf
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXDestroyPbufferFn != nullptr);
   g_driver_glx.debug_fn.glXDestroyPbufferFn(dpy, pbuf);
 }
 
@@ -393,6 +408,7 @@ static void GL_BINDING_CALL Debug_glXDestroyPixmap(Display* dpy,
   GL_SERVICE_LOG("glXDestroyPixmap"
                  << "(" << static_cast<const void*>(dpy) << ", " << pixmap
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXDestroyPixmapFn != nullptr);
   g_driver_glx.debug_fn.glXDestroyPixmapFn(dpy, pixmap);
 }
 
@@ -401,6 +417,7 @@ static void GL_BINDING_CALL Debug_glXDestroyWindow(Display* dpy,
   GL_SERVICE_LOG("glXDestroyWindow"
                  << "(" << static_cast<const void*>(dpy) << ", " << window
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXDestroyWindowFn != nullptr);
   g_driver_glx.debug_fn.glXDestroyWindowFn(dpy, window);
 }
 
@@ -409,6 +426,7 @@ static const char* GL_BINDING_CALL Debug_glXGetClientString(Display* dpy,
   GL_SERVICE_LOG("glXGetClientString"
                  << "(" << static_cast<const void*>(dpy) << ", " << name
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetClientStringFn != nullptr);
   const char* result = g_driver_glx.debug_fn.glXGetClientStringFn(dpy, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -422,6 +440,7 @@ static int GL_BINDING_CALL Debug_glXGetConfig(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(visual) << ", " << attrib << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetConfigFn != nullptr);
   int result = g_driver_glx.debug_fn.glXGetConfigFn(dpy, visual, attrib, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -431,6 +450,7 @@ static GLXContext GL_BINDING_CALL Debug_glXGetCurrentContext(void) {
   GL_SERVICE_LOG("glXGetCurrentContext"
                  << "("
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetCurrentContextFn != nullptr);
   GLXContext result = g_driver_glx.debug_fn.glXGetCurrentContextFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -440,6 +460,7 @@ static Display* GL_BINDING_CALL Debug_glXGetCurrentDisplay(void) {
   GL_SERVICE_LOG("glXGetCurrentDisplay"
                  << "("
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetCurrentDisplayFn != nullptr);
   Display* result = g_driver_glx.debug_fn.glXGetCurrentDisplayFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -449,6 +470,7 @@ static GLXDrawable GL_BINDING_CALL Debug_glXGetCurrentDrawable(void) {
   GL_SERVICE_LOG("glXGetCurrentDrawable"
                  << "("
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetCurrentDrawableFn != nullptr);
   GLXDrawable result = g_driver_glx.debug_fn.glXGetCurrentDrawableFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -458,6 +480,7 @@ static GLXDrawable GL_BINDING_CALL Debug_glXGetCurrentReadDrawable(void) {
   GL_SERVICE_LOG("glXGetCurrentReadDrawable"
                  << "("
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetCurrentReadDrawableFn != nullptr);
   GLXDrawable result = g_driver_glx.debug_fn.glXGetCurrentReadDrawableFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -471,6 +494,7 @@ static int GL_BINDING_CALL Debug_glXGetFBConfigAttrib(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ", " << attribute << ", " << static_cast<const void*>(value)
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetFBConfigAttribFn != nullptr);
   int result = g_driver_glx.debug_fn.glXGetFBConfigAttribFn(dpy, config,
                                                             attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -482,6 +506,7 @@ Debug_glXGetFBConfigFromVisualSGIX(Display* dpy, XVisualInfo* visualInfo) {
   GL_SERVICE_LOG("glXGetFBConfigFromVisualSGIX"
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(visualInfo) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetFBConfigFromVisualSGIXFn != nullptr);
   GLXFBConfig result =
       g_driver_glx.debug_fn.glXGetFBConfigFromVisualSGIXFn(dpy, visualInfo);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -494,6 +519,7 @@ static GLXFBConfig* GL_BINDING_CALL Debug_glXGetFBConfigs(Display* dpy,
   GL_SERVICE_LOG("glXGetFBConfigs"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ", " << static_cast<const void*>(nelements) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetFBConfigsFn != nullptr);
   GLXFBConfig* result =
       g_driver_glx.debug_fn.glXGetFBConfigsFn(dpy, screen, nelements);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -508,6 +534,7 @@ static bool GL_BINDING_CALL Debug_glXGetMscRateOML(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << static_cast<const void*>(numerator) << ", "
                  << static_cast<const void*>(denominator) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetMscRateOMLFn != nullptr);
   bool result = g_driver_glx.debug_fn.glXGetMscRateOMLFn(
       dpy, drawable, numerator, denominator);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -520,6 +547,7 @@ static void GL_BINDING_CALL Debug_glXGetSelectedEvent(Display* dpy,
   GL_SERVICE_LOG("glXGetSelectedEvent"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << static_cast<const void*>(mask) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetSelectedEventFn != nullptr);
   g_driver_glx.debug_fn.glXGetSelectedEventFn(dpy, drawable, mask);
 }
 
@@ -533,6 +561,7 @@ static bool GL_BINDING_CALL Debug_glXGetSyncValuesOML(Display* dpy,
                  << ", " << static_cast<const void*>(ust) << ", "
                  << static_cast<const void*>(msc) << ", "
                  << static_cast<const void*>(sbc) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetSyncValuesOMLFn != nullptr);
   bool result =
       g_driver_glx.debug_fn.glXGetSyncValuesOMLFn(dpy, drawable, ust, msc, sbc);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -544,6 +573,7 @@ Debug_glXGetVisualFromFBConfig(Display* dpy, GLXFBConfig config) {
   GL_SERVICE_LOG("glXGetVisualFromFBConfig"
                  << "(" << static_cast<const void*>(dpy) << ", " << config
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXGetVisualFromFBConfigFn != nullptr);
   XVisualInfo* result =
       g_driver_glx.debug_fn.glXGetVisualFromFBConfigFn(dpy, config);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -553,6 +583,7 @@ Debug_glXGetVisualFromFBConfig(Display* dpy, GLXFBConfig config) {
 static int GL_BINDING_CALL Debug_glXIsDirect(Display* dpy, GLXContext ctx) {
   GL_SERVICE_LOG("glXIsDirect"
                  << "(" << static_cast<const void*>(dpy) << ", " << ctx << ")");
+  DCHECK(g_driver_glx.debug_fn.glXIsDirectFn != nullptr);
   int result = g_driver_glx.debug_fn.glXIsDirectFn(dpy, ctx);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -565,6 +596,7 @@ static int GL_BINDING_CALL Debug_glXMakeContextCurrent(Display* dpy,
   GL_SERVICE_LOG("glXMakeContextCurrent"
                  << "(" << static_cast<const void*>(dpy) << ", " << draw << ", "
                  << read << ", " << ctx << ")");
+  DCHECK(g_driver_glx.debug_fn.glXMakeContextCurrentFn != nullptr);
   int result =
       g_driver_glx.debug_fn.glXMakeContextCurrentFn(dpy, draw, read, ctx);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -577,6 +609,7 @@ static int GL_BINDING_CALL Debug_glXMakeCurrent(Display* dpy,
   GL_SERVICE_LOG("glXMakeCurrent"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << ctx << ")");
+  DCHECK(g_driver_glx.debug_fn.glXMakeCurrentFn != nullptr);
   int result = g_driver_glx.debug_fn.glXMakeCurrentFn(dpy, drawable, ctx);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -590,6 +623,7 @@ static int GL_BINDING_CALL Debug_glXQueryContext(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << ctx << ", "
                  << attribute << ", " << static_cast<const void*>(value)
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXQueryContextFn != nullptr);
   int result =
       g_driver_glx.debug_fn.glXQueryContextFn(dpy, ctx, attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -604,6 +638,7 @@ static void GL_BINDING_CALL Debug_glXQueryDrawable(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", " << draw << ", "
                  << attribute << ", " << static_cast<const void*>(value)
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXQueryDrawableFn != nullptr);
   g_driver_glx.debug_fn.glXQueryDrawableFn(dpy, draw, attribute, value);
 }
 
@@ -614,6 +649,7 @@ static int GL_BINDING_CALL Debug_glXQueryExtension(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(errorb) << ", "
                  << static_cast<const void*>(event) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXQueryExtensionFn != nullptr);
   int result = g_driver_glx.debug_fn.glXQueryExtensionFn(dpy, errorb, event);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -624,6 +660,7 @@ static const char* GL_BINDING_CALL Debug_glXQueryExtensionsString(Display* dpy,
   GL_SERVICE_LOG("glXQueryExtensionsString"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXQueryExtensionsStringFn != nullptr);
   const char* result =
       g_driver_glx.debug_fn.glXQueryExtensionsStringFn(dpy, screen);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -636,6 +673,7 @@ static const char* GL_BINDING_CALL Debug_glXQueryServerString(Display* dpy,
   GL_SERVICE_LOG("glXQueryServerString"
                  << "(" << static_cast<const void*>(dpy) << ", " << screen
                  << ", " << name << ")");
+  DCHECK(g_driver_glx.debug_fn.glXQueryServerStringFn != nullptr);
   const char* result =
       g_driver_glx.debug_fn.glXQueryServerStringFn(dpy, screen, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -649,6 +687,7 @@ static int GL_BINDING_CALL Debug_glXQueryVersion(Display* dpy,
                  << "(" << static_cast<const void*>(dpy) << ", "
                  << static_cast<const void*>(maj) << ", "
                  << static_cast<const void*>(min) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXQueryVersionFn != nullptr);
   int result = g_driver_glx.debug_fn.glXQueryVersionFn(dpy, maj, min);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -660,6 +699,7 @@ static void GL_BINDING_CALL Debug_glXReleaseTexImageEXT(Display* dpy,
   GL_SERVICE_LOG("glXReleaseTexImageEXT"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << buffer << ")");
+  DCHECK(g_driver_glx.debug_fn.glXReleaseTexImageEXTFn != nullptr);
   g_driver_glx.debug_fn.glXReleaseTexImageEXTFn(dpy, drawable, buffer);
 }
 
@@ -669,6 +709,7 @@ static void GL_BINDING_CALL Debug_glXSelectEvent(Display* dpy,
   GL_SERVICE_LOG("glXSelectEvent"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << mask << ")");
+  DCHECK(g_driver_glx.debug_fn.glXSelectEventFn != nullptr);
   g_driver_glx.debug_fn.glXSelectEventFn(dpy, drawable, mask);
 }
 
@@ -677,6 +718,7 @@ static void GL_BINDING_CALL Debug_glXSwapBuffers(Display* dpy,
   GL_SERVICE_LOG("glXSwapBuffers"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXSwapBuffersFn != nullptr);
   g_driver_glx.debug_fn.glXSwapBuffersFn(dpy, drawable);
 }
 
@@ -686,12 +728,14 @@ static void GL_BINDING_CALL Debug_glXSwapIntervalEXT(Display* dpy,
   GL_SERVICE_LOG("glXSwapIntervalEXT"
                  << "(" << static_cast<const void*>(dpy) << ", " << drawable
                  << ", " << interval << ")");
+  DCHECK(g_driver_glx.debug_fn.glXSwapIntervalEXTFn != nullptr);
   g_driver_glx.debug_fn.glXSwapIntervalEXTFn(dpy, drawable, interval);
 }
 
 static void GL_BINDING_CALL Debug_glXSwapIntervalMESA(unsigned int interval) {
   GL_SERVICE_LOG("glXSwapIntervalMESA"
                  << "(" << interval << ")");
+  DCHECK(g_driver_glx.debug_fn.glXSwapIntervalMESAFn != nullptr);
   g_driver_glx.debug_fn.glXSwapIntervalMESAFn(interval);
 }
 
@@ -702,6 +746,7 @@ static void GL_BINDING_CALL Debug_glXUseXFont(Font font,
   GL_SERVICE_LOG("glXUseXFont"
                  << "(" << font << ", " << first << ", " << count << ", "
                  << list << ")");
+  DCHECK(g_driver_glx.debug_fn.glXUseXFontFn != nullptr);
   g_driver_glx.debug_fn.glXUseXFontFn(font, first, count, list);
 }
 
@@ -709,6 +754,7 @@ static void GL_BINDING_CALL Debug_glXWaitGL(void) {
   GL_SERVICE_LOG("glXWaitGL"
                  << "("
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXWaitGLFn != nullptr);
   g_driver_glx.debug_fn.glXWaitGLFn();
 }
 
@@ -718,6 +764,7 @@ static int GL_BINDING_CALL Debug_glXWaitVideoSyncSGI(int divisor,
   GL_SERVICE_LOG("glXWaitVideoSyncSGI"
                  << "(" << divisor << ", " << remainder << ", "
                  << static_cast<const void*>(count) << ")");
+  DCHECK(g_driver_glx.debug_fn.glXWaitVideoSyncSGIFn != nullptr);
   int result =
       g_driver_glx.debug_fn.glXWaitVideoSyncSGIFn(divisor, remainder, count);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -728,6 +775,7 @@ static void GL_BINDING_CALL Debug_glXWaitX(void) {
   GL_SERVICE_LOG("glXWaitX"
                  << "("
                  << ")");
+  DCHECK(g_driver_glx.debug_fn.glXWaitXFn != nullptr);
   g_driver_glx.debug_fn.glXWaitXFn();
 }
 }  // extern "C"

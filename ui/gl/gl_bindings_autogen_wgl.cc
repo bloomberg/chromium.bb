@@ -135,6 +135,7 @@ Debug_wglChoosePixelFormatARB(HDC dc,
                  << static_cast<const void*>(float_attrib_list) << ", "
                  << max_formats << ", " << static_cast<const void*>(formats)
                  << ", " << static_cast<const void*>(num_formats) << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglChoosePixelFormatARBFn != nullptr);
   BOOL result = g_driver_wgl.debug_fn.wglChoosePixelFormatARBFn(
       dc, int_attrib_list, float_attrib_list, max_formats, formats,
       num_formats);
@@ -147,6 +148,7 @@ static BOOL GL_BINDING_CALL Debug_wglCopyContext(HGLRC hglrcSrc,
                                                  UINT mask) {
   GL_SERVICE_LOG("wglCopyContext"
                  << "(" << hglrcSrc << ", " << hglrcDst << ", " << mask << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglCopyContextFn != nullptr);
   BOOL result =
       g_driver_wgl.debug_fn.wglCopyContextFn(hglrcSrc, hglrcDst, mask);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -156,6 +158,7 @@ static BOOL GL_BINDING_CALL Debug_wglCopyContext(HGLRC hglrcSrc,
 static HGLRC GL_BINDING_CALL Debug_wglCreateContext(HDC hdc) {
   GL_SERVICE_LOG("wglCreateContext"
                  << "(" << hdc << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglCreateContextFn != nullptr);
   HGLRC result = g_driver_wgl.debug_fn.wglCreateContextFn(hdc);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -165,6 +168,7 @@ static HGLRC GL_BINDING_CALL Debug_wglCreateLayerContext(HDC hdc,
                                                          int iLayerPlane) {
   GL_SERVICE_LOG("wglCreateLayerContext"
                  << "(" << hdc << ", " << iLayerPlane << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglCreateLayerContextFn != nullptr);
   HGLRC result =
       g_driver_wgl.debug_fn.wglCreateLayerContextFn(hdc, iLayerPlane);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -181,6 +185,7 @@ Debug_wglCreatePbufferARB(HDC hDC,
                  << "(" << hDC << ", " << iPixelFormat << ", " << iWidth << ", "
                  << iHeight << ", " << static_cast<const void*>(piAttribList)
                  << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglCreatePbufferARBFn != nullptr);
   HPBUFFERARB result = g_driver_wgl.debug_fn.wglCreatePbufferARBFn(
       hDC, iPixelFormat, iWidth, iHeight, piAttribList);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -190,6 +195,7 @@ Debug_wglCreatePbufferARB(HDC hDC,
 static BOOL GL_BINDING_CALL Debug_wglDeleteContext(HGLRC hglrc) {
   GL_SERVICE_LOG("wglDeleteContext"
                  << "(" << hglrc << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglDeleteContextFn != nullptr);
   BOOL result = g_driver_wgl.debug_fn.wglDeleteContextFn(hglrc);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -198,6 +204,7 @@ static BOOL GL_BINDING_CALL Debug_wglDeleteContext(HGLRC hglrc) {
 static BOOL GL_BINDING_CALL Debug_wglDestroyPbufferARB(HPBUFFERARB hPbuffer) {
   GL_SERVICE_LOG("wglDestroyPbufferARB"
                  << "(" << hPbuffer << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglDestroyPbufferARBFn != nullptr);
   BOOL result = g_driver_wgl.debug_fn.wglDestroyPbufferARBFn(hPbuffer);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -207,6 +214,7 @@ static HGLRC GL_BINDING_CALL Debug_wglGetCurrentContext() {
   GL_SERVICE_LOG("wglGetCurrentContext"
                  << "("
                  << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglGetCurrentContextFn != nullptr);
   HGLRC result = g_driver_wgl.debug_fn.wglGetCurrentContextFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -216,6 +224,7 @@ static HDC GL_BINDING_CALL Debug_wglGetCurrentDC() {
   GL_SERVICE_LOG("wglGetCurrentDC"
                  << "("
                  << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglGetCurrentDCFn != nullptr);
   HDC result = g_driver_wgl.debug_fn.wglGetCurrentDCFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -224,6 +233,7 @@ static HDC GL_BINDING_CALL Debug_wglGetCurrentDC() {
 static const char* GL_BINDING_CALL Debug_wglGetExtensionsStringARB(HDC hDC) {
   GL_SERVICE_LOG("wglGetExtensionsStringARB"
                  << "(" << hDC << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglGetExtensionsStringARBFn != nullptr);
   const char* result = g_driver_wgl.debug_fn.wglGetExtensionsStringARBFn(hDC);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -233,6 +243,7 @@ static const char* GL_BINDING_CALL Debug_wglGetExtensionsStringEXT() {
   GL_SERVICE_LOG("wglGetExtensionsStringEXT"
                  << "("
                  << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglGetExtensionsStringEXTFn != nullptr);
   const char* result = g_driver_wgl.debug_fn.wglGetExtensionsStringEXTFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -241,6 +252,7 @@ static const char* GL_BINDING_CALL Debug_wglGetExtensionsStringEXT() {
 static HDC GL_BINDING_CALL Debug_wglGetPbufferDCARB(HPBUFFERARB hPbuffer) {
   GL_SERVICE_LOG("wglGetPbufferDCARB"
                  << "(" << hPbuffer << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglGetPbufferDCARBFn != nullptr);
   HDC result = g_driver_wgl.debug_fn.wglGetPbufferDCARBFn(hPbuffer);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -249,6 +261,7 @@ static HDC GL_BINDING_CALL Debug_wglGetPbufferDCARB(HPBUFFERARB hPbuffer) {
 static BOOL GL_BINDING_CALL Debug_wglMakeCurrent(HDC hdc, HGLRC hglrc) {
   GL_SERVICE_LOG("wglMakeCurrent"
                  << "(" << hdc << ", " << hglrc << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglMakeCurrentFn != nullptr);
   BOOL result = g_driver_wgl.debug_fn.wglMakeCurrentFn(hdc, hglrc);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -260,6 +273,7 @@ static BOOL GL_BINDING_CALL Debug_wglQueryPbufferARB(HPBUFFERARB hPbuffer,
   GL_SERVICE_LOG("wglQueryPbufferARB"
                  << "(" << hPbuffer << ", " << iAttribute << ", "
                  << static_cast<const void*>(piValue) << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglQueryPbufferARBFn != nullptr);
   BOOL result =
       g_driver_wgl.debug_fn.wglQueryPbufferARBFn(hPbuffer, iAttribute, piValue);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -270,6 +284,7 @@ static int GL_BINDING_CALL Debug_wglReleasePbufferDCARB(HPBUFFERARB hPbuffer,
                                                         HDC hDC) {
   GL_SERVICE_LOG("wglReleasePbufferDCARB"
                  << "(" << hPbuffer << ", " << hDC << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglReleasePbufferDCARBFn != nullptr);
   int result = g_driver_wgl.debug_fn.wglReleasePbufferDCARBFn(hPbuffer, hDC);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -278,6 +293,7 @@ static int GL_BINDING_CALL Debug_wglReleasePbufferDCARB(HPBUFFERARB hPbuffer,
 static BOOL GL_BINDING_CALL Debug_wglShareLists(HGLRC hglrc1, HGLRC hglrc2) {
   GL_SERVICE_LOG("wglShareLists"
                  << "(" << hglrc1 << ", " << hglrc2 << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglShareListsFn != nullptr);
   BOOL result = g_driver_wgl.debug_fn.wglShareListsFn(hglrc1, hglrc2);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -286,6 +302,7 @@ static BOOL GL_BINDING_CALL Debug_wglShareLists(HGLRC hglrc1, HGLRC hglrc2) {
 static BOOL GL_BINDING_CALL Debug_wglSwapIntervalEXT(int interval) {
   GL_SERVICE_LOG("wglSwapIntervalEXT"
                  << "(" << interval << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglSwapIntervalEXTFn != nullptr);
   BOOL result = g_driver_wgl.debug_fn.wglSwapIntervalEXTFn(interval);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -294,6 +311,7 @@ static BOOL GL_BINDING_CALL Debug_wglSwapIntervalEXT(int interval) {
 static BOOL GL_BINDING_CALL Debug_wglSwapLayerBuffers(HDC hdc, UINT fuPlanes) {
   GL_SERVICE_LOG("wglSwapLayerBuffers"
                  << "(" << hdc << ", " << fuPlanes << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglSwapLayerBuffersFn != nullptr);
   BOOL result = g_driver_wgl.debug_fn.wglSwapLayerBuffersFn(hdc, fuPlanes);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;

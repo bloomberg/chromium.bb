@@ -2036,6 +2036,7 @@ extern "C" {
 static void GL_BINDING_CALL Debug_glActiveTexture(GLenum texture) {
   GL_SERVICE_LOG("glActiveTexture"
                  << "(" << GLEnums::GetStringEnum(texture) << ")");
+  DCHECK(g_driver_gl.debug_fn.glActiveTextureFn != nullptr);
   g_driver_gl.debug_fn.glActiveTextureFn(texture);
 }
 
@@ -2043,6 +2044,8 @@ static void GL_BINDING_CALL Debug_glApplyFramebufferAttachmentCMAAINTEL(void) {
   GL_SERVICE_LOG("glApplyFramebufferAttachmentCMAAINTEL"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glApplyFramebufferAttachmentCMAAINTELFn !=
+         nullptr);
   g_driver_gl.debug_fn.glApplyFramebufferAttachmentCMAAINTELFn();
 }
 
@@ -2050,12 +2053,14 @@ static void GL_BINDING_CALL Debug_glAttachShader(GLuint program,
                                                  GLuint shader) {
   GL_SERVICE_LOG("glAttachShader"
                  << "(" << program << ", " << shader << ")");
+  DCHECK(g_driver_gl.debug_fn.glAttachShaderFn != nullptr);
   g_driver_gl.debug_fn.glAttachShaderFn(program, shader);
 }
 
 static void GL_BINDING_CALL Debug_glBeginQuery(GLenum target, GLuint id) {
   GL_SERVICE_LOG("glBeginQuery"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << id << ")");
+  DCHECK(g_driver_gl.debug_fn.glBeginQueryFn != nullptr);
   g_driver_gl.debug_fn.glBeginQueryFn(target, id);
 }
 
@@ -2063,6 +2068,7 @@ static void GL_BINDING_CALL
 Debug_glBeginTransformFeedback(GLenum primitiveMode) {
   GL_SERVICE_LOG("glBeginTransformFeedback"
                  << "(" << GLEnums::GetStringEnum(primitiveMode) << ")");
+  DCHECK(g_driver_gl.debug_fn.glBeginTransformFeedbackFn != nullptr);
   g_driver_gl.debug_fn.glBeginTransformFeedbackFn(primitiveMode);
 }
 
@@ -2071,6 +2077,7 @@ static void GL_BINDING_CALL Debug_glBindAttribLocation(GLuint program,
                                                        const char* name) {
   GL_SERVICE_LOG("glBindAttribLocation"
                  << "(" << program << ", " << index << ", " << name << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindAttribLocationFn != nullptr);
   g_driver_gl.debug_fn.glBindAttribLocationFn(program, index, name);
 }
 
@@ -2078,6 +2085,7 @@ static void GL_BINDING_CALL Debug_glBindBuffer(GLenum target, GLuint buffer) {
   GL_SERVICE_LOG("glBindBuffer"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << buffer
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindBufferFn != nullptr);
   g_driver_gl.debug_fn.glBindBufferFn(target, buffer);
 }
 
@@ -2087,6 +2095,7 @@ static void GL_BINDING_CALL Debug_glBindBufferBase(GLenum target,
   GL_SERVICE_LOG("glBindBufferBase"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << index
                  << ", " << buffer << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindBufferBaseFn != nullptr);
   g_driver_gl.debug_fn.glBindBufferBaseFn(target, index, buffer);
 }
 
@@ -2098,6 +2107,7 @@ static void GL_BINDING_CALL Debug_glBindBufferRange(GLenum target,
   GL_SERVICE_LOG("glBindBufferRange"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << index
                  << ", " << buffer << ", " << offset << ", " << size << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindBufferRangeFn != nullptr);
   g_driver_gl.debug_fn.glBindBufferRangeFn(target, index, buffer, offset, size);
 }
 
@@ -2107,6 +2117,7 @@ static void GL_BINDING_CALL Debug_glBindFragDataLocation(GLuint program,
   GL_SERVICE_LOG("glBindFragDataLocation"
                  << "(" << program << ", " << colorNumber << ", " << name
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindFragDataLocationFn != nullptr);
   g_driver_gl.debug_fn.glBindFragDataLocationFn(program, colorNumber, name);
 }
 
@@ -2118,6 +2129,7 @@ Debug_glBindFragDataLocationIndexed(GLuint program,
   GL_SERVICE_LOG("glBindFragDataLocationIndexed"
                  << "(" << program << ", " << colorNumber << ", " << index
                  << ", " << name << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindFragDataLocationIndexedFn != nullptr);
   g_driver_gl.debug_fn.glBindFragDataLocationIndexedFn(program, colorNumber,
                                                        index, name);
 }
@@ -2127,6 +2139,7 @@ static void GL_BINDING_CALL Debug_glBindFramebufferEXT(GLenum target,
   GL_SERVICE_LOG("glBindFramebufferEXT"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << framebuffer
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindFramebufferEXTFn != nullptr);
   g_driver_gl.debug_fn.glBindFramebufferEXTFn(target, framebuffer);
 }
 
@@ -2141,6 +2154,7 @@ static void GL_BINDING_CALL Debug_glBindImageTextureEXT(GLuint index,
                  << "(" << index << ", " << texture << ", " << level << ", "
                  << GLEnums::GetStringBool(layered) << ", " << layer << ", "
                  << GLEnums::GetStringEnum(access) << ", " << format << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindImageTextureEXTFn != nullptr);
   g_driver_gl.debug_fn.glBindImageTextureEXTFn(index, texture, level, layered,
                                                layer, access, format);
 }
@@ -2150,12 +2164,14 @@ static void GL_BINDING_CALL Debug_glBindRenderbufferEXT(GLenum target,
   GL_SERVICE_LOG("glBindRenderbufferEXT"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << renderbuffer << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindRenderbufferEXTFn != nullptr);
   g_driver_gl.debug_fn.glBindRenderbufferEXTFn(target, renderbuffer);
 }
 
 static void GL_BINDING_CALL Debug_glBindSampler(GLuint unit, GLuint sampler) {
   GL_SERVICE_LOG("glBindSampler"
                  << "(" << unit << ", " << sampler << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindSamplerFn != nullptr);
   g_driver_gl.debug_fn.glBindSamplerFn(unit, sampler);
 }
 
@@ -2163,6 +2179,7 @@ static void GL_BINDING_CALL Debug_glBindTexture(GLenum target, GLuint texture) {
   GL_SERVICE_LOG("glBindTexture"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << texture
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindTextureFn != nullptr);
   g_driver_gl.debug_fn.glBindTextureFn(target, texture);
 }
 
@@ -2170,12 +2187,14 @@ static void GL_BINDING_CALL Debug_glBindTransformFeedback(GLenum target,
                                                           GLuint id) {
   GL_SERVICE_LOG("glBindTransformFeedback"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << id << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindTransformFeedbackFn != nullptr);
   g_driver_gl.debug_fn.glBindTransformFeedbackFn(target, id);
 }
 
 static void GL_BINDING_CALL Debug_glBindVertexArrayOES(GLuint array) {
   GL_SERVICE_LOG("glBindVertexArrayOES"
                  << "(" << array << ")");
+  DCHECK(g_driver_gl.debug_fn.glBindVertexArrayOESFn != nullptr);
   g_driver_gl.debug_fn.glBindVertexArrayOESFn(array);
 }
 
@@ -2183,6 +2202,7 @@ static void GL_BINDING_CALL Debug_glBlendBarrierKHR(void) {
   GL_SERVICE_LOG("glBlendBarrierKHR"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glBlendBarrierKHRFn != nullptr);
   g_driver_gl.debug_fn.glBlendBarrierKHRFn();
 }
 
@@ -2193,12 +2213,14 @@ static void GL_BINDING_CALL Debug_glBlendColor(GLclampf red,
   GL_SERVICE_LOG("glBlendColor"
                  << "(" << red << ", " << green << ", " << blue << ", " << alpha
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glBlendColorFn != nullptr);
   g_driver_gl.debug_fn.glBlendColorFn(red, green, blue, alpha);
 }
 
 static void GL_BINDING_CALL Debug_glBlendEquation(GLenum mode) {
   GL_SERVICE_LOG("glBlendEquation"
                  << "(" << GLEnums::GetStringEnum(mode) << ")");
+  DCHECK(g_driver_gl.debug_fn.glBlendEquationFn != nullptr);
   g_driver_gl.debug_fn.glBlendEquationFn(mode);
 }
 
@@ -2207,6 +2229,7 @@ static void GL_BINDING_CALL Debug_glBlendEquationSeparate(GLenum modeRGB,
   GL_SERVICE_LOG("glBlendEquationSeparate"
                  << "(" << GLEnums::GetStringEnum(modeRGB) << ", "
                  << GLEnums::GetStringEnum(modeAlpha) << ")");
+  DCHECK(g_driver_gl.debug_fn.glBlendEquationSeparateFn != nullptr);
   g_driver_gl.debug_fn.glBlendEquationSeparateFn(modeRGB, modeAlpha);
 }
 
@@ -2214,6 +2237,7 @@ static void GL_BINDING_CALL Debug_glBlendFunc(GLenum sfactor, GLenum dfactor) {
   GL_SERVICE_LOG("glBlendFunc"
                  << "(" << GLEnums::GetStringEnum(sfactor) << ", "
                  << GLEnums::GetStringEnum(dfactor) << ")");
+  DCHECK(g_driver_gl.debug_fn.glBlendFuncFn != nullptr);
   g_driver_gl.debug_fn.glBlendFuncFn(sfactor, dfactor);
 }
 
@@ -2226,6 +2250,7 @@ static void GL_BINDING_CALL Debug_glBlendFuncSeparate(GLenum srcRGB,
                  << GLEnums::GetStringEnum(dstRGB) << ", "
                  << GLEnums::GetStringEnum(srcAlpha) << ", "
                  << GLEnums::GetStringEnum(dstAlpha) << ")");
+  DCHECK(g_driver_gl.debug_fn.glBlendFuncSeparateFn != nullptr);
   g_driver_gl.debug_fn.glBlendFuncSeparateFn(srcRGB, dstRGB, srcAlpha,
                                              dstAlpha);
 }
@@ -2245,6 +2270,7 @@ static void GL_BINDING_CALL Debug_glBlitFramebuffer(GLint srcX0,
                  << srcY1 << ", " << dstX0 << ", " << dstY0 << ", " << dstX1
                  << ", " << dstY1 << ", " << mask << ", "
                  << GLEnums::GetStringEnum(filter) << ")");
+  DCHECK(g_driver_gl.debug_fn.glBlitFramebufferFn != nullptr);
   g_driver_gl.debug_fn.glBlitFramebufferFn(srcX0, srcY0, srcX1, srcY1, dstX0,
                                            dstY0, dstX1, dstY1, mask, filter);
 }
@@ -2264,6 +2290,7 @@ static void GL_BINDING_CALL Debug_glBlitFramebufferANGLE(GLint srcX0,
                  << srcY1 << ", " << dstX0 << ", " << dstY0 << ", " << dstX1
                  << ", " << dstY1 << ", " << mask << ", "
                  << GLEnums::GetStringEnum(filter) << ")");
+  DCHECK(g_driver_gl.debug_fn.glBlitFramebufferANGLEFn != nullptr);
   g_driver_gl.debug_fn.glBlitFramebufferANGLEFn(
       srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 }
@@ -2283,6 +2310,7 @@ static void GL_BINDING_CALL Debug_glBlitFramebufferEXT(GLint srcX0,
                  << srcY1 << ", " << dstX0 << ", " << dstY0 << ", " << dstX1
                  << ", " << dstY1 << ", " << mask << ", "
                  << GLEnums::GetStringEnum(filter) << ")");
+  DCHECK(g_driver_gl.debug_fn.glBlitFramebufferEXTFn != nullptr);
   g_driver_gl.debug_fn.glBlitFramebufferEXTFn(
       srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 }
@@ -2295,6 +2323,7 @@ static void GL_BINDING_CALL Debug_glBufferData(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << size
                  << ", " << static_cast<const void*>(data) << ", "
                  << GLEnums::GetStringEnum(usage) << ")");
+  DCHECK(g_driver_gl.debug_fn.glBufferDataFn != nullptr);
   g_driver_gl.debug_fn.glBufferDataFn(target, size, data, usage);
 }
 
@@ -2306,12 +2335,14 @@ static void GL_BINDING_CALL Debug_glBufferSubData(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << offset
                  << ", " << size << ", " << static_cast<const void*>(data)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glBufferSubDataFn != nullptr);
   g_driver_gl.debug_fn.glBufferSubDataFn(target, offset, size, data);
 }
 
 static GLenum GL_BINDING_CALL Debug_glCheckFramebufferStatusEXT(GLenum target) {
   GL_SERVICE_LOG("glCheckFramebufferStatusEXT"
                  << "(" << GLEnums::GetStringEnum(target) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCheckFramebufferStatusEXTFn != nullptr);
   GLenum result = g_driver_gl.debug_fn.glCheckFramebufferStatusEXTFn(target);
 
   GL_SERVICE_LOG("GL_RESULT: " << GLEnums::GetStringEnum(result));
@@ -2322,6 +2353,7 @@ static GLenum GL_BINDING_CALL Debug_glCheckFramebufferStatusEXT(GLenum target) {
 static void GL_BINDING_CALL Debug_glClear(GLbitfield mask) {
   GL_SERVICE_LOG("glClear"
                  << "(" << mask << ")");
+  DCHECK(g_driver_gl.debug_fn.glClearFn != nullptr);
   g_driver_gl.debug_fn.glClearFn(mask);
 }
 
@@ -2332,6 +2364,7 @@ static void GL_BINDING_CALL Debug_glClearBufferfi(GLenum buffer,
   GL_SERVICE_LOG("glClearBufferfi"
                  << "(" << GLEnums::GetStringEnum(buffer) << ", " << drawbuffer
                  << ", " << depth << ", " << stencil << ")");
+  DCHECK(g_driver_gl.debug_fn.glClearBufferfiFn != nullptr);
   g_driver_gl.debug_fn.glClearBufferfiFn(buffer, drawbuffer, depth, stencil);
 }
 
@@ -2341,6 +2374,7 @@ static void GL_BINDING_CALL Debug_glClearBufferfv(GLenum buffer,
   GL_SERVICE_LOG("glClearBufferfv"
                  << "(" << GLEnums::GetStringEnum(buffer) << ", " << drawbuffer
                  << ", " << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glClearBufferfvFn != nullptr);
   g_driver_gl.debug_fn.glClearBufferfvFn(buffer, drawbuffer, value);
 }
 
@@ -2350,6 +2384,7 @@ static void GL_BINDING_CALL Debug_glClearBufferiv(GLenum buffer,
   GL_SERVICE_LOG("glClearBufferiv"
                  << "(" << GLEnums::GetStringEnum(buffer) << ", " << drawbuffer
                  << ", " << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glClearBufferivFn != nullptr);
   g_driver_gl.debug_fn.glClearBufferivFn(buffer, drawbuffer, value);
 }
 
@@ -2359,6 +2394,7 @@ static void GL_BINDING_CALL Debug_glClearBufferuiv(GLenum buffer,
   GL_SERVICE_LOG("glClearBufferuiv"
                  << "(" << GLEnums::GetStringEnum(buffer) << ", " << drawbuffer
                  << ", " << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glClearBufferuivFn != nullptr);
   g_driver_gl.debug_fn.glClearBufferuivFn(buffer, drawbuffer, value);
 }
 
@@ -2369,24 +2405,28 @@ static void GL_BINDING_CALL Debug_glClearColor(GLclampf red,
   GL_SERVICE_LOG("glClearColor"
                  << "(" << red << ", " << green << ", " << blue << ", " << alpha
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glClearColorFn != nullptr);
   g_driver_gl.debug_fn.glClearColorFn(red, green, blue, alpha);
 }
 
 static void GL_BINDING_CALL Debug_glClearDepth(GLclampd depth) {
   GL_SERVICE_LOG("glClearDepth"
                  << "(" << depth << ")");
+  DCHECK(g_driver_gl.debug_fn.glClearDepthFn != nullptr);
   g_driver_gl.debug_fn.glClearDepthFn(depth);
 }
 
 static void GL_BINDING_CALL Debug_glClearDepthf(GLclampf depth) {
   GL_SERVICE_LOG("glClearDepthf"
                  << "(" << depth << ")");
+  DCHECK(g_driver_gl.debug_fn.glClearDepthfFn != nullptr);
   g_driver_gl.debug_fn.glClearDepthfFn(depth);
 }
 
 static void GL_BINDING_CALL Debug_glClearStencil(GLint s) {
   GL_SERVICE_LOG("glClearStencil"
                  << "(" << s << ")");
+  DCHECK(g_driver_gl.debug_fn.glClearStencilFn != nullptr);
   g_driver_gl.debug_fn.glClearStencilFn(s);
 }
 
@@ -2395,6 +2435,7 @@ static GLenum GL_BINDING_CALL Debug_glClientWaitSync(GLsync sync,
                                                      GLuint64 timeout) {
   GL_SERVICE_LOG("glClientWaitSync"
                  << "(" << sync << ", " << flags << ", " << timeout << ")");
+  DCHECK(g_driver_gl.debug_fn.glClientWaitSyncFn != nullptr);
   GLenum result = g_driver_gl.debug_fn.glClientWaitSyncFn(sync, flags, timeout);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -2409,12 +2450,14 @@ static void GL_BINDING_CALL Debug_glColorMask(GLboolean red,
                  << GLEnums::GetStringBool(green) << ", "
                  << GLEnums::GetStringBool(blue) << ", "
                  << GLEnums::GetStringBool(alpha) << ")");
+  DCHECK(g_driver_gl.debug_fn.glColorMaskFn != nullptr);
   g_driver_gl.debug_fn.glColorMaskFn(red, green, blue, alpha);
 }
 
 static void GL_BINDING_CALL Debug_glCompileShader(GLuint shader) {
   GL_SERVICE_LOG("glCompileShader"
                  << "(" << shader << ")");
+  DCHECK(g_driver_gl.debug_fn.glCompileShaderFn != nullptr);
   g_driver_gl.debug_fn.glCompileShaderFn(shader);
 }
 
@@ -2431,6 +2474,7 @@ static void GL_BINDING_CALL Debug_glCompressedTexImage2D(GLenum target,
                  << ", " << GLEnums::GetStringEnum(internalformat) << ", "
                  << width << ", " << height << ", " << border << ", "
                  << imageSize << ", " << static_cast<const void*>(data) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCompressedTexImage2DFn != nullptr);
   g_driver_gl.debug_fn.glCompressedTexImage2DFn(
       target, level, internalformat, width, height, border, imageSize, data);
 }
@@ -2450,6 +2494,7 @@ static void GL_BINDING_CALL Debug_glCompressedTexImage3D(GLenum target,
                  << width << ", " << height << ", " << depth << ", " << border
                  << ", " << imageSize << ", " << static_cast<const void*>(data)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glCompressedTexImage3DFn != nullptr);
   g_driver_gl.debug_fn.glCompressedTexImage3DFn(target, level, internalformat,
                                                 width, height, depth, border,
                                                 imageSize, data);
@@ -2469,6 +2514,7 @@ static void GL_BINDING_CALL Debug_glCompressedTexSubImage2D(GLenum target,
                  << ", " << xoffset << ", " << yoffset << ", " << width << ", "
                  << height << ", " << GLEnums::GetStringEnum(format) << ", "
                  << imageSize << ", " << static_cast<const void*>(data) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCompressedTexSubImage2DFn != nullptr);
   g_driver_gl.debug_fn.glCompressedTexSubImage2DFn(
       target, level, xoffset, yoffset, width, height, format, imageSize, data);
 }
@@ -2490,6 +2536,7 @@ static void GL_BINDING_CALL Debug_glCompressedTexSubImage3D(GLenum target,
                  << ", " << width << ", " << height << ", " << depth << ", "
                  << GLEnums::GetStringEnum(format) << ", " << imageSize << ", "
                  << static_cast<const void*>(data) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCompressedTexSubImage3DFn != nullptr);
   g_driver_gl.debug_fn.glCompressedTexSubImage3DFn(
       target, level, xoffset, yoffset, zoffset, width, height, depth, format,
       imageSize, data);
@@ -2504,6 +2551,7 @@ static void GL_BINDING_CALL Debug_glCopyBufferSubData(GLenum readTarget,
                  << "(" << GLEnums::GetStringEnum(readTarget) << ", "
                  << GLEnums::GetStringEnum(writeTarget) << ", " << readOffset
                  << ", " << writeOffset << ", " << size << ")");
+  DCHECK(g_driver_gl.debug_fn.glCopyBufferSubDataFn != nullptr);
   g_driver_gl.debug_fn.glCopyBufferSubDataFn(readTarget, writeTarget,
                                              readOffset, writeOffset, size);
 }
@@ -2521,6 +2569,7 @@ static void GL_BINDING_CALL Debug_glCopyTexImage2D(GLenum target,
                  << ", " << GLEnums::GetStringEnum(internalformat) << ", " << x
                  << ", " << y << ", " << width << ", " << height << ", "
                  << border << ")");
+  DCHECK(g_driver_gl.debug_fn.glCopyTexImage2DFn != nullptr);
   g_driver_gl.debug_fn.glCopyTexImage2DFn(target, level, internalformat, x, y,
                                           width, height, border);
 }
@@ -2537,6 +2586,7 @@ static void GL_BINDING_CALL Debug_glCopyTexSubImage2D(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << level
                  << ", " << xoffset << ", " << yoffset << ", " << x << ", " << y
                  << ", " << width << ", " << height << ")");
+  DCHECK(g_driver_gl.debug_fn.glCopyTexSubImage2DFn != nullptr);
   g_driver_gl.debug_fn.glCopyTexSubImage2DFn(target, level, xoffset, yoffset, x,
                                              y, width, height);
 }
@@ -2555,6 +2605,7 @@ static void GL_BINDING_CALL Debug_glCopyTexSubImage3D(GLenum target,
                  << ", " << xoffset << ", " << yoffset << ", " << zoffset
                  << ", " << x << ", " << y << ", " << width << ", " << height
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glCopyTexSubImage3DFn != nullptr);
   g_driver_gl.debug_fn.glCopyTexSubImage3DFn(target, level, xoffset, yoffset,
                                              zoffset, x, y, width, height);
 }
@@ -2562,6 +2613,7 @@ static void GL_BINDING_CALL Debug_glCopyTexSubImage3D(GLenum target,
 static void GL_BINDING_CALL Debug_glCoverageModulationNV(GLenum components) {
   GL_SERVICE_LOG("glCoverageModulationNV"
                  << "(" << GLEnums::GetStringEnum(components) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCoverageModulationNVFn != nullptr);
   g_driver_gl.debug_fn.glCoverageModulationNVFn(components);
 }
 
@@ -2580,6 +2632,7 @@ Debug_glCoverFillPathInstancedNV(GLsizei numPaths,
                  << GLEnums::GetStringEnum(coverMode) << ", "
                  << GLEnums::GetStringEnum(transformType) << ", "
                  << static_cast<const void*>(transformValues) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCoverFillPathInstancedNVFn != nullptr);
   g_driver_gl.debug_fn.glCoverFillPathInstancedNVFn(
       numPaths, pathNameType, paths, pathBase, coverMode, transformType,
       transformValues);
@@ -2590,6 +2643,7 @@ static void GL_BINDING_CALL Debug_glCoverFillPathNV(GLuint path,
   GL_SERVICE_LOG("glCoverFillPathNV"
                  << "(" << path << ", " << GLEnums::GetStringEnum(coverMode)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glCoverFillPathNVFn != nullptr);
   g_driver_gl.debug_fn.glCoverFillPathNVFn(path, coverMode);
 }
 
@@ -2608,6 +2662,7 @@ Debug_glCoverStrokePathInstancedNV(GLsizei numPaths,
                  << GLEnums::GetStringEnum(coverMode) << ", "
                  << GLEnums::GetStringEnum(transformType) << ", "
                  << static_cast<const void*>(transformValues) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCoverStrokePathInstancedNVFn != nullptr);
   g_driver_gl.debug_fn.glCoverStrokePathInstancedNVFn(
       numPaths, pathNameType, paths, pathBase, coverMode, transformType,
       transformValues);
@@ -2618,6 +2673,7 @@ static void GL_BINDING_CALL Debug_glCoverStrokePathNV(GLuint name,
   GL_SERVICE_LOG("glCoverStrokePathNV"
                  << "(" << name << ", " << GLEnums::GetStringEnum(coverMode)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glCoverStrokePathNVFn != nullptr);
   g_driver_gl.debug_fn.glCoverStrokePathNVFn(name, coverMode);
 }
 
@@ -2625,6 +2681,7 @@ static GLuint GL_BINDING_CALL Debug_glCreateProgram(void) {
   GL_SERVICE_LOG("glCreateProgram"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glCreateProgramFn != nullptr);
   GLuint result = g_driver_gl.debug_fn.glCreateProgramFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -2633,6 +2690,7 @@ static GLuint GL_BINDING_CALL Debug_glCreateProgram(void) {
 static GLuint GL_BINDING_CALL Debug_glCreateShader(GLenum type) {
   GL_SERVICE_LOG("glCreateShader"
                  << "(" << GLEnums::GetStringEnum(type) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCreateShaderFn != nullptr);
   GLuint result = g_driver_gl.debug_fn.glCreateShaderFn(type);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -2641,6 +2699,7 @@ static GLuint GL_BINDING_CALL Debug_glCreateShader(GLenum type) {
 static void GL_BINDING_CALL Debug_glCullFace(GLenum mode) {
   GL_SERVICE_LOG("glCullFace"
                  << "(" << GLEnums::GetStringEnum(mode) << ")");
+  DCHECK(g_driver_gl.debug_fn.glCullFaceFn != nullptr);
   g_driver_gl.debug_fn.glCullFaceFn(mode);
 }
 
@@ -2649,6 +2708,7 @@ static void GL_BINDING_CALL Debug_glDeleteBuffersARB(GLsizei n,
   GL_SERVICE_LOG("glDeleteBuffersARB"
                  << "(" << n << ", " << static_cast<const void*>(buffers)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteBuffersARBFn != nullptr);
   g_driver_gl.debug_fn.glDeleteBuffersARBFn(n, buffers);
 }
 
@@ -2657,6 +2717,7 @@ static void GL_BINDING_CALL Debug_glDeleteFencesAPPLE(GLsizei n,
   GL_SERVICE_LOG("glDeleteFencesAPPLE"
                  << "(" << n << ", " << static_cast<const void*>(fences)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteFencesAPPLEFn != nullptr);
   g_driver_gl.debug_fn.glDeleteFencesAPPLEFn(n, fences);
 }
 
@@ -2665,6 +2726,7 @@ static void GL_BINDING_CALL Debug_glDeleteFencesNV(GLsizei n,
   GL_SERVICE_LOG("glDeleteFencesNV"
                  << "(" << n << ", " << static_cast<const void*>(fences)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteFencesNVFn != nullptr);
   g_driver_gl.debug_fn.glDeleteFencesNVFn(n, fences);
 }
 
@@ -2673,18 +2735,21 @@ Debug_glDeleteFramebuffersEXT(GLsizei n, const GLuint* framebuffers) {
   GL_SERVICE_LOG("glDeleteFramebuffersEXT"
                  << "(" << n << ", " << static_cast<const void*>(framebuffers)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteFramebuffersEXTFn != nullptr);
   g_driver_gl.debug_fn.glDeleteFramebuffersEXTFn(n, framebuffers);
 }
 
 static void GL_BINDING_CALL Debug_glDeletePathsNV(GLuint path, GLsizei range) {
   GL_SERVICE_LOG("glDeletePathsNV"
                  << "(" << path << ", " << range << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeletePathsNVFn != nullptr);
   g_driver_gl.debug_fn.glDeletePathsNVFn(path, range);
 }
 
 static void GL_BINDING_CALL Debug_glDeleteProgram(GLuint program) {
   GL_SERVICE_LOG("glDeleteProgram"
                  << "(" << program << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteProgramFn != nullptr);
   g_driver_gl.debug_fn.glDeleteProgramFn(program);
 }
 
@@ -2692,6 +2757,7 @@ static void GL_BINDING_CALL Debug_glDeleteQueries(GLsizei n,
                                                   const GLuint* ids) {
   GL_SERVICE_LOG("glDeleteQueries"
                  << "(" << n << ", " << static_cast<const void*>(ids) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteQueriesFn != nullptr);
   g_driver_gl.debug_fn.glDeleteQueriesFn(n, ids);
 }
 
@@ -2700,6 +2766,7 @@ Debug_glDeleteRenderbuffersEXT(GLsizei n, const GLuint* renderbuffers) {
   GL_SERVICE_LOG("glDeleteRenderbuffersEXT"
                  << "(" << n << ", " << static_cast<const void*>(renderbuffers)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteRenderbuffersEXTFn != nullptr);
   g_driver_gl.debug_fn.glDeleteRenderbuffersEXTFn(n, renderbuffers);
 }
 
@@ -2708,18 +2775,21 @@ static void GL_BINDING_CALL Debug_glDeleteSamplers(GLsizei n,
   GL_SERVICE_LOG("glDeleteSamplers"
                  << "(" << n << ", " << static_cast<const void*>(samplers)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteSamplersFn != nullptr);
   g_driver_gl.debug_fn.glDeleteSamplersFn(n, samplers);
 }
 
 static void GL_BINDING_CALL Debug_glDeleteShader(GLuint shader) {
   GL_SERVICE_LOG("glDeleteShader"
                  << "(" << shader << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteShaderFn != nullptr);
   g_driver_gl.debug_fn.glDeleteShaderFn(shader);
 }
 
 static void GL_BINDING_CALL Debug_glDeleteSync(GLsync sync) {
   GL_SERVICE_LOG("glDeleteSync"
                  << "(" << sync << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteSyncFn != nullptr);
   g_driver_gl.debug_fn.glDeleteSyncFn(sync);
 }
 
@@ -2728,6 +2798,7 @@ static void GL_BINDING_CALL Debug_glDeleteTextures(GLsizei n,
   GL_SERVICE_LOG("glDeleteTextures"
                  << "(" << n << ", " << static_cast<const void*>(textures)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteTexturesFn != nullptr);
   g_driver_gl.debug_fn.glDeleteTexturesFn(n, textures);
 }
 
@@ -2735,6 +2806,7 @@ static void GL_BINDING_CALL
 Debug_glDeleteTransformFeedbacks(GLsizei n, const GLuint* ids) {
   GL_SERVICE_LOG("glDeleteTransformFeedbacks"
                  << "(" << n << ", " << static_cast<const void*>(ids) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteTransformFeedbacksFn != nullptr);
   g_driver_gl.debug_fn.glDeleteTransformFeedbacksFn(n, ids);
 }
 
@@ -2743,30 +2815,35 @@ Debug_glDeleteVertexArraysOES(GLsizei n, const GLuint* arrays) {
   GL_SERVICE_LOG("glDeleteVertexArraysOES"
                  << "(" << n << ", " << static_cast<const void*>(arrays)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glDeleteVertexArraysOESFn != nullptr);
   g_driver_gl.debug_fn.glDeleteVertexArraysOESFn(n, arrays);
 }
 
 static void GL_BINDING_CALL Debug_glDepthFunc(GLenum func) {
   GL_SERVICE_LOG("glDepthFunc"
                  << "(" << GLEnums::GetStringEnum(func) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDepthFuncFn != nullptr);
   g_driver_gl.debug_fn.glDepthFuncFn(func);
 }
 
 static void GL_BINDING_CALL Debug_glDepthMask(GLboolean flag) {
   GL_SERVICE_LOG("glDepthMask"
                  << "(" << GLEnums::GetStringBool(flag) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDepthMaskFn != nullptr);
   g_driver_gl.debug_fn.glDepthMaskFn(flag);
 }
 
 static void GL_BINDING_CALL Debug_glDepthRange(GLclampd zNear, GLclampd zFar) {
   GL_SERVICE_LOG("glDepthRange"
                  << "(" << zNear << ", " << zFar << ")");
+  DCHECK(g_driver_gl.debug_fn.glDepthRangeFn != nullptr);
   g_driver_gl.debug_fn.glDepthRangeFn(zNear, zFar);
 }
 
 static void GL_BINDING_CALL Debug_glDepthRangef(GLclampf zNear, GLclampf zFar) {
   GL_SERVICE_LOG("glDepthRangef"
                  << "(" << zNear << ", " << zFar << ")");
+  DCHECK(g_driver_gl.debug_fn.glDepthRangefFn != nullptr);
   g_driver_gl.debug_fn.glDepthRangefFn(zNear, zFar);
 }
 
@@ -2774,18 +2851,21 @@ static void GL_BINDING_CALL Debug_glDetachShader(GLuint program,
                                                  GLuint shader) {
   GL_SERVICE_LOG("glDetachShader"
                  << "(" << program << ", " << shader << ")");
+  DCHECK(g_driver_gl.debug_fn.glDetachShaderFn != nullptr);
   g_driver_gl.debug_fn.glDetachShaderFn(program, shader);
 }
 
 static void GL_BINDING_CALL Debug_glDisable(GLenum cap) {
   GL_SERVICE_LOG("glDisable"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDisableFn != nullptr);
   g_driver_gl.debug_fn.glDisableFn(cap);
 }
 
 static void GL_BINDING_CALL Debug_glDisableVertexAttribArray(GLuint index) {
   GL_SERVICE_LOG("glDisableVertexAttribArray"
                  << "(" << index << ")");
+  DCHECK(g_driver_gl.debug_fn.glDisableVertexAttribArrayFn != nullptr);
   g_driver_gl.debug_fn.glDisableVertexAttribArrayFn(index);
 }
 
@@ -2797,6 +2877,7 @@ Debug_glDiscardFramebufferEXT(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << numAttachments << ", "
                  << static_cast<const void*>(attachments) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDiscardFramebufferEXTFn != nullptr);
   g_driver_gl.debug_fn.glDiscardFramebufferEXTFn(target, numAttachments,
                                                  attachments);
 }
@@ -2807,6 +2888,7 @@ static void GL_BINDING_CALL Debug_glDrawArrays(GLenum mode,
   GL_SERVICE_LOG("glDrawArrays"
                  << "(" << GLEnums::GetStringEnum(mode) << ", " << first << ", "
                  << count << ")");
+  DCHECK(g_driver_gl.debug_fn.glDrawArraysFn != nullptr);
   g_driver_gl.debug_fn.glDrawArraysFn(mode, first, count);
 }
 
@@ -2818,6 +2900,7 @@ Debug_glDrawArraysInstancedANGLE(GLenum mode,
   GL_SERVICE_LOG("glDrawArraysInstancedANGLE"
                  << "(" << GLEnums::GetStringEnum(mode) << ", " << first << ", "
                  << count << ", " << primcount << ")");
+  DCHECK(g_driver_gl.debug_fn.glDrawArraysInstancedANGLEFn != nullptr);
   g_driver_gl.debug_fn.glDrawArraysInstancedANGLEFn(mode, first, count,
                                                     primcount);
 }
@@ -2825,6 +2908,7 @@ Debug_glDrawArraysInstancedANGLE(GLenum mode,
 static void GL_BINDING_CALL Debug_glDrawBuffer(GLenum mode) {
   GL_SERVICE_LOG("glDrawBuffer"
                  << "(" << GLEnums::GetStringEnum(mode) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDrawBufferFn != nullptr);
   g_driver_gl.debug_fn.glDrawBufferFn(mode);
 }
 
@@ -2832,6 +2916,7 @@ static void GL_BINDING_CALL Debug_glDrawBuffersARB(GLsizei n,
                                                    const GLenum* bufs) {
   GL_SERVICE_LOG("glDrawBuffersARB"
                  << "(" << n << ", " << static_cast<const void*>(bufs) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDrawBuffersARBFn != nullptr);
   g_driver_gl.debug_fn.glDrawBuffersARBFn(n, bufs);
 }
 
@@ -2843,6 +2928,7 @@ static void GL_BINDING_CALL Debug_glDrawElements(GLenum mode,
                  << "(" << GLEnums::GetStringEnum(mode) << ", " << count << ", "
                  << GLEnums::GetStringEnum(type) << ", "
                  << static_cast<const void*>(indices) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDrawElementsFn != nullptr);
   g_driver_gl.debug_fn.glDrawElementsFn(mode, count, type, indices);
 }
 
@@ -2857,6 +2943,7 @@ Debug_glDrawElementsInstancedANGLE(GLenum mode,
                  << GLEnums::GetStringEnum(type) << ", "
                  << static_cast<const void*>(indices) << ", " << primcount
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glDrawElementsInstancedANGLEFn != nullptr);
   g_driver_gl.debug_fn.glDrawElementsInstancedANGLEFn(mode, count, type,
                                                       indices, primcount);
 }
@@ -2871,6 +2958,7 @@ static void GL_BINDING_CALL Debug_glDrawRangeElements(GLenum mode,
                  << "(" << GLEnums::GetStringEnum(mode) << ", " << start << ", "
                  << end << ", " << count << ", " << GLEnums::GetStringEnum(type)
                  << ", " << static_cast<const void*>(indices) << ")");
+  DCHECK(g_driver_gl.debug_fn.glDrawRangeElementsFn != nullptr);
   g_driver_gl.debug_fn.glDrawRangeElementsFn(mode, start, end, count, type,
                                              indices);
 }
@@ -2881,6 +2969,8 @@ Debug_glEGLImageTargetRenderbufferStorageOES(GLenum target,
   GL_SERVICE_LOG("glEGLImageTargetRenderbufferStorageOES"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << image
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glEGLImageTargetRenderbufferStorageOESFn !=
+         nullptr);
   g_driver_gl.debug_fn.glEGLImageTargetRenderbufferStorageOESFn(target, image);
 }
 
@@ -2889,24 +2979,28 @@ Debug_glEGLImageTargetTexture2DOES(GLenum target, GLeglImageOES image) {
   GL_SERVICE_LOG("glEGLImageTargetTexture2DOES"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << image
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glEGLImageTargetTexture2DOESFn != nullptr);
   g_driver_gl.debug_fn.glEGLImageTargetTexture2DOESFn(target, image);
 }
 
 static void GL_BINDING_CALL Debug_glEnable(GLenum cap) {
   GL_SERVICE_LOG("glEnable"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
+  DCHECK(g_driver_gl.debug_fn.glEnableFn != nullptr);
   g_driver_gl.debug_fn.glEnableFn(cap);
 }
 
 static void GL_BINDING_CALL Debug_glEnableVertexAttribArray(GLuint index) {
   GL_SERVICE_LOG("glEnableVertexAttribArray"
                  << "(" << index << ")");
+  DCHECK(g_driver_gl.debug_fn.glEnableVertexAttribArrayFn != nullptr);
   g_driver_gl.debug_fn.glEnableVertexAttribArrayFn(index);
 }
 
 static void GL_BINDING_CALL Debug_glEndQuery(GLenum target) {
   GL_SERVICE_LOG("glEndQuery"
                  << "(" << GLEnums::GetStringEnum(target) << ")");
+  DCHECK(g_driver_gl.debug_fn.glEndQueryFn != nullptr);
   g_driver_gl.debug_fn.glEndQueryFn(target);
 }
 
@@ -2914,6 +3008,7 @@ static void GL_BINDING_CALL Debug_glEndTransformFeedback(void) {
   GL_SERVICE_LOG("glEndTransformFeedback"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glEndTransformFeedbackFn != nullptr);
   g_driver_gl.debug_fn.glEndTransformFeedbackFn();
 }
 
@@ -2922,6 +3017,7 @@ static GLsync GL_BINDING_CALL Debug_glFenceSync(GLenum condition,
   GL_SERVICE_LOG("glFenceSync"
                  << "(" << GLEnums::GetStringEnum(condition) << ", " << flags
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glFenceSyncFn != nullptr);
   GLsync result = g_driver_gl.debug_fn.glFenceSyncFn(condition, flags);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -2931,18 +3027,21 @@ static void GL_BINDING_CALL Debug_glFinish(void) {
   GL_SERVICE_LOG("glFinish"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glFinishFn != nullptr);
   g_driver_gl.debug_fn.glFinishFn();
 }
 
 static void GL_BINDING_CALL Debug_glFinishFenceAPPLE(GLuint fence) {
   GL_SERVICE_LOG("glFinishFenceAPPLE"
                  << "(" << fence << ")");
+  DCHECK(g_driver_gl.debug_fn.glFinishFenceAPPLEFn != nullptr);
   g_driver_gl.debug_fn.glFinishFenceAPPLEFn(fence);
 }
 
 static void GL_BINDING_CALL Debug_glFinishFenceNV(GLuint fence) {
   GL_SERVICE_LOG("glFinishFenceNV"
                  << "(" << fence << ")");
+  DCHECK(g_driver_gl.debug_fn.glFinishFenceNVFn != nullptr);
   g_driver_gl.debug_fn.glFinishFenceNVFn(fence);
 }
 
@@ -2950,6 +3049,7 @@ static void GL_BINDING_CALL Debug_glFlush(void) {
   GL_SERVICE_LOG("glFlush"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glFlushFn != nullptr);
   g_driver_gl.debug_fn.glFlushFn();
 }
 
@@ -2959,6 +3059,7 @@ static void GL_BINDING_CALL Debug_glFlushMappedBufferRange(GLenum target,
   GL_SERVICE_LOG("glFlushMappedBufferRange"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << offset
                  << ", " << length << ")");
+  DCHECK(g_driver_gl.debug_fn.glFlushMappedBufferRangeFn != nullptr);
   g_driver_gl.debug_fn.glFlushMappedBufferRangeFn(target, offset, length);
 }
 
@@ -2972,6 +3073,7 @@ Debug_glFramebufferRenderbufferEXT(GLenum target,
                  << GLEnums::GetStringEnum(attachment) << ", "
                  << GLEnums::GetStringEnum(renderbuffertarget) << ", "
                  << renderbuffer << ")");
+  DCHECK(g_driver_gl.debug_fn.glFramebufferRenderbufferEXTFn != nullptr);
   g_driver_gl.debug_fn.glFramebufferRenderbufferEXTFn(
       target, attachment, renderbuffertarget, renderbuffer);
 }
@@ -2986,6 +3088,7 @@ static void GL_BINDING_CALL Debug_glFramebufferTexture2DEXT(GLenum target,
                  << GLEnums::GetStringEnum(attachment) << ", "
                  << GLEnums::GetStringEnum(textarget) << ", " << texture << ", "
                  << level << ")");
+  DCHECK(g_driver_gl.debug_fn.glFramebufferTexture2DEXTFn != nullptr);
   g_driver_gl.debug_fn.glFramebufferTexture2DEXTFn(target, attachment,
                                                    textarget, texture, level);
 }
@@ -3002,6 +3105,8 @@ Debug_glFramebufferTexture2DMultisampleEXT(GLenum target,
                  << GLEnums::GetStringEnum(attachment) << ", "
                  << GLEnums::GetStringEnum(textarget) << ", " << texture << ", "
                  << level << ", " << samples << ")");
+  DCHECK(g_driver_gl.debug_fn.glFramebufferTexture2DMultisampleEXTFn !=
+         nullptr);
   g_driver_gl.debug_fn.glFramebufferTexture2DMultisampleEXTFn(
       target, attachment, textarget, texture, level, samples);
 }
@@ -3018,6 +3123,8 @@ Debug_glFramebufferTexture2DMultisampleIMG(GLenum target,
                  << GLEnums::GetStringEnum(attachment) << ", "
                  << GLEnums::GetStringEnum(textarget) << ", " << texture << ", "
                  << level << ", " << samples << ")");
+  DCHECK(g_driver_gl.debug_fn.glFramebufferTexture2DMultisampleIMGFn !=
+         nullptr);
   g_driver_gl.debug_fn.glFramebufferTexture2DMultisampleIMGFn(
       target, attachment, textarget, texture, level, samples);
 }
@@ -3031,6 +3138,7 @@ static void GL_BINDING_CALL Debug_glFramebufferTextureLayer(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(attachment) << ", " << texture
                  << ", " << level << ", " << layer << ")");
+  DCHECK(g_driver_gl.debug_fn.glFramebufferTextureLayerFn != nullptr);
   g_driver_gl.debug_fn.glFramebufferTextureLayerFn(target, attachment, texture,
                                                    level, layer);
 }
@@ -3038,6 +3146,7 @@ static void GL_BINDING_CALL Debug_glFramebufferTextureLayer(GLenum target,
 static void GL_BINDING_CALL Debug_glFrontFace(GLenum mode) {
   GL_SERVICE_LOG("glFrontFace"
                  << "(" << GLEnums::GetStringEnum(mode) << ")");
+  DCHECK(g_driver_gl.debug_fn.glFrontFaceFn != nullptr);
   g_driver_gl.debug_fn.glFrontFaceFn(mode);
 }
 
@@ -3045,12 +3154,14 @@ static void GL_BINDING_CALL Debug_glGenBuffersARB(GLsizei n, GLuint* buffers) {
   GL_SERVICE_LOG("glGenBuffersARB"
                  << "(" << n << ", " << static_cast<const void*>(buffers)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenBuffersARBFn != nullptr);
   g_driver_gl.debug_fn.glGenBuffersARBFn(n, buffers);
 }
 
 static void GL_BINDING_CALL Debug_glGenerateMipmapEXT(GLenum target) {
   GL_SERVICE_LOG("glGenerateMipmapEXT"
                  << "(" << GLEnums::GetStringEnum(target) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenerateMipmapEXTFn != nullptr);
   g_driver_gl.debug_fn.glGenerateMipmapEXTFn(target);
 }
 
@@ -3058,6 +3169,7 @@ static void GL_BINDING_CALL Debug_glGenFencesAPPLE(GLsizei n, GLuint* fences) {
   GL_SERVICE_LOG("glGenFencesAPPLE"
                  << "(" << n << ", " << static_cast<const void*>(fences)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenFencesAPPLEFn != nullptr);
   g_driver_gl.debug_fn.glGenFencesAPPLEFn(n, fences);
 }
 
@@ -3065,6 +3177,7 @@ static void GL_BINDING_CALL Debug_glGenFencesNV(GLsizei n, GLuint* fences) {
   GL_SERVICE_LOG("glGenFencesNV"
                  << "(" << n << ", " << static_cast<const void*>(fences)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenFencesNVFn != nullptr);
   g_driver_gl.debug_fn.glGenFencesNVFn(n, fences);
 }
 
@@ -3073,12 +3186,14 @@ static void GL_BINDING_CALL Debug_glGenFramebuffersEXT(GLsizei n,
   GL_SERVICE_LOG("glGenFramebuffersEXT"
                  << "(" << n << ", " << static_cast<const void*>(framebuffers)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenFramebuffersEXTFn != nullptr);
   g_driver_gl.debug_fn.glGenFramebuffersEXTFn(n, framebuffers);
 }
 
 static GLuint GL_BINDING_CALL Debug_glGenPathsNV(GLsizei range) {
   GL_SERVICE_LOG("glGenPathsNV"
                  << "(" << range << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenPathsNVFn != nullptr);
   GLuint result = g_driver_gl.debug_fn.glGenPathsNVFn(range);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3087,6 +3202,7 @@ static GLuint GL_BINDING_CALL Debug_glGenPathsNV(GLsizei range) {
 static void GL_BINDING_CALL Debug_glGenQueries(GLsizei n, GLuint* ids) {
   GL_SERVICE_LOG("glGenQueries"
                  << "(" << n << ", " << static_cast<const void*>(ids) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenQueriesFn != nullptr);
   g_driver_gl.debug_fn.glGenQueriesFn(n, ids);
 }
 
@@ -3095,6 +3211,7 @@ static void GL_BINDING_CALL Debug_glGenRenderbuffersEXT(GLsizei n,
   GL_SERVICE_LOG("glGenRenderbuffersEXT"
                  << "(" << n << ", " << static_cast<const void*>(renderbuffers)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenRenderbuffersEXTFn != nullptr);
   g_driver_gl.debug_fn.glGenRenderbuffersEXTFn(n, renderbuffers);
 }
 
@@ -3102,6 +3219,7 @@ static void GL_BINDING_CALL Debug_glGenSamplers(GLsizei n, GLuint* samplers) {
   GL_SERVICE_LOG("glGenSamplers"
                  << "(" << n << ", " << static_cast<const void*>(samplers)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenSamplersFn != nullptr);
   g_driver_gl.debug_fn.glGenSamplersFn(n, samplers);
 }
 
@@ -3109,6 +3227,7 @@ static void GL_BINDING_CALL Debug_glGenTextures(GLsizei n, GLuint* textures) {
   GL_SERVICE_LOG("glGenTextures"
                  << "(" << n << ", " << static_cast<const void*>(textures)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenTexturesFn != nullptr);
   g_driver_gl.debug_fn.glGenTexturesFn(n, textures);
 }
 
@@ -3116,6 +3235,7 @@ static void GL_BINDING_CALL Debug_glGenTransformFeedbacks(GLsizei n,
                                                           GLuint* ids) {
   GL_SERVICE_LOG("glGenTransformFeedbacks"
                  << "(" << n << ", " << static_cast<const void*>(ids) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenTransformFeedbacksFn != nullptr);
   g_driver_gl.debug_fn.glGenTransformFeedbacksFn(n, ids);
 }
 
@@ -3124,6 +3244,7 @@ static void GL_BINDING_CALL Debug_glGenVertexArraysOES(GLsizei n,
   GL_SERVICE_LOG("glGenVertexArraysOES"
                  << "(" << n << ", " << static_cast<const void*>(arrays)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGenVertexArraysOESFn != nullptr);
   g_driver_gl.debug_fn.glGenVertexArraysOESFn(n, arrays);
 }
 
@@ -3140,6 +3261,7 @@ static void GL_BINDING_CALL Debug_glGetActiveAttrib(GLuint program,
                  << static_cast<const void*>(size) << ", "
                  << static_cast<const void*>(type) << ", "
                  << static_cast<const void*>(name) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetActiveAttribFn != nullptr);
   g_driver_gl.debug_fn.glGetActiveAttribFn(program, index, bufsize, length,
                                            size, type, name);
 }
@@ -3157,6 +3279,7 @@ static void GL_BINDING_CALL Debug_glGetActiveUniform(GLuint program,
                  << static_cast<const void*>(size) << ", "
                  << static_cast<const void*>(type) << ", "
                  << static_cast<const void*>(name) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetActiveUniformFn != nullptr);
   g_driver_gl.debug_fn.glGetActiveUniformFn(program, index, bufsize, length,
                                             size, type, name);
 }
@@ -3170,6 +3293,7 @@ Debug_glGetActiveUniformBlockiv(GLuint program,
                  << "(" << program << ", " << uniformBlockIndex << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetActiveUniformBlockivFn != nullptr);
   g_driver_gl.debug_fn.glGetActiveUniformBlockivFn(program, uniformBlockIndex,
                                                    pname, params);
 }
@@ -3184,6 +3308,7 @@ Debug_glGetActiveUniformBlockName(GLuint program,
                  << "(" << program << ", " << uniformBlockIndex << ", "
                  << bufSize << ", " << static_cast<const void*>(length) << ", "
                  << static_cast<const void*>(uniformBlockName) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetActiveUniformBlockNameFn != nullptr);
   g_driver_gl.debug_fn.glGetActiveUniformBlockNameFn(
       program, uniformBlockIndex, bufSize, length, uniformBlockName);
 }
@@ -3199,6 +3324,7 @@ Debug_glGetActiveUniformsiv(GLuint program,
                  << static_cast<const void*>(uniformIndices) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetActiveUniformsivFn != nullptr);
   g_driver_gl.debug_fn.glGetActiveUniformsivFn(program, uniformCount,
                                                uniformIndices, pname, params);
 }
@@ -3211,6 +3337,7 @@ static void GL_BINDING_CALL Debug_glGetAttachedShaders(GLuint program,
                  << "(" << program << ", " << maxcount << ", "
                  << static_cast<const void*>(count) << ", "
                  << static_cast<const void*>(shaders) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetAttachedShadersFn != nullptr);
   g_driver_gl.debug_fn.glGetAttachedShadersFn(program, maxcount, count,
                                               shaders);
 }
@@ -3219,6 +3346,7 @@ static GLint GL_BINDING_CALL Debug_glGetAttribLocation(GLuint program,
                                                        const char* name) {
   GL_SERVICE_LOG("glGetAttribLocation"
                  << "(" << program << ", " << name << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetAttribLocationFn != nullptr);
   GLint result = g_driver_gl.debug_fn.glGetAttribLocationFn(program, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3229,6 +3357,7 @@ static void GL_BINDING_CALL Debug_glGetBooleanv(GLenum pname,
   GL_SERVICE_LOG("glGetBooleanv"
                  << "(" << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetBooleanvFn != nullptr);
   g_driver_gl.debug_fn.glGetBooleanvFn(pname, params);
 }
 
@@ -3239,6 +3368,7 @@ static void GL_BINDING_CALL Debug_glGetBufferParameteriv(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetBufferParameterivFn != nullptr);
   g_driver_gl.debug_fn.glGetBufferParameterivFn(target, pname, params);
 }
 
@@ -3246,6 +3376,7 @@ static GLenum GL_BINDING_CALL Debug_glGetError(void) {
   GL_SERVICE_LOG("glGetError"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetErrorFn != nullptr);
   GLenum result = g_driver_gl.debug_fn.glGetErrorFn();
 
   GL_SERVICE_LOG("GL_RESULT: " << GLEnums::GetStringError(result));
@@ -3259,6 +3390,7 @@ static void GL_BINDING_CALL Debug_glGetFenceivNV(GLuint fence,
   GL_SERVICE_LOG("glGetFenceivNV"
                  << "(" << fence << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetFenceivNVFn != nullptr);
   g_driver_gl.debug_fn.glGetFenceivNVFn(fence, pname, params);
 }
 
@@ -3266,6 +3398,7 @@ static void GL_BINDING_CALL Debug_glGetFloatv(GLenum pname, GLfloat* params) {
   GL_SERVICE_LOG("glGetFloatv"
                  << "(" << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetFloatvFn != nullptr);
   g_driver_gl.debug_fn.glGetFloatvFn(pname, params);
 }
 
@@ -3273,6 +3406,7 @@ static GLint GL_BINDING_CALL Debug_glGetFragDataIndex(GLuint program,
                                                       const char* name) {
   GL_SERVICE_LOG("glGetFragDataIndex"
                  << "(" << program << ", " << name << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetFragDataIndexFn != nullptr);
   GLint result = g_driver_gl.debug_fn.glGetFragDataIndexFn(program, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3282,6 +3416,7 @@ static GLint GL_BINDING_CALL Debug_glGetFragDataLocation(GLuint program,
                                                          const char* name) {
   GL_SERVICE_LOG("glGetFragDataLocation"
                  << "(" << program << ", " << name << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetFragDataLocationFn != nullptr);
   GLint result = g_driver_gl.debug_fn.glGetFragDataLocationFn(program, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3297,6 +3432,8 @@ Debug_glGetFramebufferAttachmentParameterivEXT(GLenum target,
                  << GLEnums::GetStringEnum(attachment) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetFramebufferAttachmentParameterivEXTFn !=
+         nullptr);
   g_driver_gl.debug_fn.glGetFramebufferAttachmentParameterivEXTFn(
       target, attachment, pname, params);
 }
@@ -3305,6 +3442,7 @@ static GLenum GL_BINDING_CALL Debug_glGetGraphicsResetStatusARB(void) {
   GL_SERVICE_LOG("glGetGraphicsResetStatusARB"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetGraphicsResetStatusARBFn != nullptr);
   GLenum result = g_driver_gl.debug_fn.glGetGraphicsResetStatusARBFn();
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3316,6 +3454,7 @@ static void GL_BINDING_CALL Debug_glGetInteger64i_v(GLenum target,
   GL_SERVICE_LOG("glGetInteger64i_v"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << index
                  << ", " << static_cast<const void*>(data) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetInteger64i_vFn != nullptr);
   g_driver_gl.debug_fn.glGetInteger64i_vFn(target, index, data);
 }
 
@@ -3324,6 +3463,7 @@ static void GL_BINDING_CALL Debug_glGetInteger64v(GLenum pname,
   GL_SERVICE_LOG("glGetInteger64v"
                  << "(" << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetInteger64vFn != nullptr);
   g_driver_gl.debug_fn.glGetInteger64vFn(pname, params);
 }
 
@@ -3333,6 +3473,7 @@ static void GL_BINDING_CALL Debug_glGetIntegeri_v(GLenum target,
   GL_SERVICE_LOG("glGetIntegeri_v"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << index
                  << ", " << static_cast<const void*>(data) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetIntegeri_vFn != nullptr);
   g_driver_gl.debug_fn.glGetIntegeri_vFn(target, index, data);
 }
 
@@ -3340,6 +3481,7 @@ static void GL_BINDING_CALL Debug_glGetIntegerv(GLenum pname, GLint* params) {
   GL_SERVICE_LOG("glGetIntegerv"
                  << "(" << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetIntegervFn != nullptr);
   g_driver_gl.debug_fn.glGetIntegervFn(pname, params);
 }
 
@@ -3353,6 +3495,7 @@ static void GL_BINDING_CALL Debug_glGetInternalformativ(GLenum target,
                  << GLEnums::GetStringEnum(internalformat) << ", "
                  << GLEnums::GetStringEnum(pname) << ", " << bufSize << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetInternalformativFn != nullptr);
   g_driver_gl.debug_fn.glGetInternalformativFn(target, internalformat, pname,
                                                bufSize, params);
 }
@@ -3367,6 +3510,7 @@ static void GL_BINDING_CALL Debug_glGetProgramBinary(GLuint program,
                  << static_cast<const void*>(length) << ", "
                  << static_cast<const void*>(binaryFormat) << ", "
                  << static_cast<const void*>(binary) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetProgramBinaryFn != nullptr);
   g_driver_gl.debug_fn.glGetProgramBinaryFn(program, bufSize, length,
                                             binaryFormat, binary);
 }
@@ -3379,6 +3523,7 @@ static void GL_BINDING_CALL Debug_glGetProgramInfoLog(GLuint program,
                  << "(" << program << ", " << bufsize << ", "
                  << static_cast<const void*>(length) << ", "
                  << static_cast<const void*>(infolog) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetProgramInfoLogFn != nullptr);
   g_driver_gl.debug_fn.glGetProgramInfoLogFn(program, bufsize, length, infolog);
 }
 
@@ -3392,6 +3537,7 @@ Debug_glGetProgramInterfaceiv(GLuint program,
                  << GLEnums::GetStringEnum(programInterface) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetProgramInterfaceivFn != nullptr);
   g_driver_gl.debug_fn.glGetProgramInterfaceivFn(program, programInterface,
                                                  pname, params);
 }
@@ -3402,6 +3548,7 @@ static void GL_BINDING_CALL Debug_glGetProgramiv(GLuint program,
   GL_SERVICE_LOG("glGetProgramiv"
                  << "(" << program << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetProgramivFn != nullptr);
   g_driver_gl.debug_fn.glGetProgramivFn(program, pname, params);
 }
 
@@ -3420,6 +3567,7 @@ Debug_glGetProgramResourceiv(GLuint program,
                  << ", " << propCount << ", " << static_cast<const void*>(props)
                  << ", " << bufSize << ", " << static_cast<const void*>(length)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetProgramResourceivFn != nullptr);
   g_driver_gl.debug_fn.glGetProgramResourceivFn(program, programInterface,
                                                 index, propCount, props,
                                                 bufSize, length, params);
@@ -3433,6 +3581,7 @@ Debug_glGetProgramResourceLocation(GLuint program,
                  << "(" << program << ", "
                  << GLEnums::GetStringEnum(programInterface) << ", " << name
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetProgramResourceLocationFn != nullptr);
   GLint result = g_driver_gl.debug_fn.glGetProgramResourceLocationFn(
       program, programInterface, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -3451,6 +3600,7 @@ Debug_glGetProgramResourceName(GLuint program,
                  << GLEnums::GetStringEnum(programInterface) << ", " << index
                  << ", " << bufSize << ", " << static_cast<const void*>(length)
                  << ", " << static_cast<const void*>(name) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetProgramResourceNameFn != nullptr);
   g_driver_gl.debug_fn.glGetProgramResourceNameFn(program, programInterface,
                                                   index, bufSize, length, name);
 }
@@ -3462,6 +3612,7 @@ static void GL_BINDING_CALL Debug_glGetQueryiv(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetQueryivFn != nullptr);
   g_driver_gl.debug_fn.glGetQueryivFn(target, pname, params);
 }
 
@@ -3471,6 +3622,7 @@ static void GL_BINDING_CALL Debug_glGetQueryObjecti64v(GLuint id,
   GL_SERVICE_LOG("glGetQueryObjecti64v"
                  << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetQueryObjecti64vFn != nullptr);
   g_driver_gl.debug_fn.glGetQueryObjecti64vFn(id, pname, params);
 }
 
@@ -3480,6 +3632,7 @@ static void GL_BINDING_CALL Debug_glGetQueryObjectiv(GLuint id,
   GL_SERVICE_LOG("glGetQueryObjectiv"
                  << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetQueryObjectivFn != nullptr);
   g_driver_gl.debug_fn.glGetQueryObjectivFn(id, pname, params);
 }
 
@@ -3489,6 +3642,7 @@ static void GL_BINDING_CALL Debug_glGetQueryObjectui64v(GLuint id,
   GL_SERVICE_LOG("glGetQueryObjectui64v"
                  << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetQueryObjectui64vFn != nullptr);
   g_driver_gl.debug_fn.glGetQueryObjectui64vFn(id, pname, params);
 }
 
@@ -3498,6 +3652,7 @@ static void GL_BINDING_CALL Debug_glGetQueryObjectuiv(GLuint id,
   GL_SERVICE_LOG("glGetQueryObjectuiv"
                  << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetQueryObjectuivFn != nullptr);
   g_driver_gl.debug_fn.glGetQueryObjectuivFn(id, pname, params);
 }
 
@@ -3509,6 +3664,7 @@ Debug_glGetRenderbufferParameterivEXT(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetRenderbufferParameterivEXTFn != nullptr);
   g_driver_gl.debug_fn.glGetRenderbufferParameterivEXTFn(target, pname, params);
 }
 
@@ -3518,6 +3674,7 @@ static void GL_BINDING_CALL Debug_glGetSamplerParameterfv(GLuint sampler,
   GL_SERVICE_LOG("glGetSamplerParameterfv"
                  << "(" << sampler << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetSamplerParameterfvFn != nullptr);
   g_driver_gl.debug_fn.glGetSamplerParameterfvFn(sampler, pname, params);
 }
 
@@ -3527,6 +3684,7 @@ static void GL_BINDING_CALL Debug_glGetSamplerParameteriv(GLuint sampler,
   GL_SERVICE_LOG("glGetSamplerParameteriv"
                  << "(" << sampler << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetSamplerParameterivFn != nullptr);
   g_driver_gl.debug_fn.glGetSamplerParameterivFn(sampler, pname, params);
 }
 
@@ -3538,6 +3696,7 @@ static void GL_BINDING_CALL Debug_glGetShaderInfoLog(GLuint shader,
                  << "(" << shader << ", " << bufsize << ", "
                  << static_cast<const void*>(length) << ", "
                  << static_cast<const void*>(infolog) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetShaderInfoLogFn != nullptr);
   g_driver_gl.debug_fn.glGetShaderInfoLogFn(shader, bufsize, length, infolog);
 }
 
@@ -3547,6 +3706,7 @@ static void GL_BINDING_CALL Debug_glGetShaderiv(GLuint shader,
   GL_SERVICE_LOG("glGetShaderiv"
                  << "(" << shader << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetShaderivFn != nullptr);
   g_driver_gl.debug_fn.glGetShaderivFn(shader, pname, params);
 }
 
@@ -3560,6 +3720,7 @@ Debug_glGetShaderPrecisionFormat(GLenum shadertype,
                  << GLEnums::GetStringEnum(precisiontype) << ", "
                  << static_cast<const void*>(range) << ", "
                  << static_cast<const void*>(precision) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetShaderPrecisionFormatFn != nullptr);
   g_driver_gl.debug_fn.glGetShaderPrecisionFormatFn(shadertype, precisiontype,
                                                     range, precision);
 }
@@ -3572,12 +3733,14 @@ static void GL_BINDING_CALL Debug_glGetShaderSource(GLuint shader,
                  << "(" << shader << ", " << bufsize << ", "
                  << static_cast<const void*>(length) << ", "
                  << static_cast<const void*>(source) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetShaderSourceFn != nullptr);
   g_driver_gl.debug_fn.glGetShaderSourceFn(shader, bufsize, length, source);
 }
 
 static const GLubyte* GL_BINDING_CALL Debug_glGetString(GLenum name) {
   GL_SERVICE_LOG("glGetString"
                  << "(" << GLEnums::GetStringEnum(name) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetStringFn != nullptr);
   const GLubyte* result = g_driver_gl.debug_fn.glGetStringFn(name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3588,6 +3751,7 @@ static const GLubyte* GL_BINDING_CALL Debug_glGetStringi(GLenum name,
   GL_SERVICE_LOG("glGetStringi"
                  << "(" << GLEnums::GetStringEnum(name) << ", " << index
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetStringiFn != nullptr);
   const GLubyte* result = g_driver_gl.debug_fn.glGetStringiFn(name, index);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3602,6 +3766,7 @@ static void GL_BINDING_CALL Debug_glGetSynciv(GLsync sync,
                  << "(" << sync << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << bufSize << ", " << static_cast<const void*>(length) << ", "
                  << static_cast<const void*>(values) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetSyncivFn != nullptr);
   g_driver_gl.debug_fn.glGetSyncivFn(sync, pname, bufSize, length, values);
 }
 
@@ -3613,6 +3778,7 @@ static void GL_BINDING_CALL Debug_glGetTexLevelParameterfv(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << level
                  << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetTexLevelParameterfvFn != nullptr);
   g_driver_gl.debug_fn.glGetTexLevelParameterfvFn(target, level, pname, params);
 }
 
@@ -3624,6 +3790,7 @@ static void GL_BINDING_CALL Debug_glGetTexLevelParameteriv(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << level
                  << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetTexLevelParameterivFn != nullptr);
   g_driver_gl.debug_fn.glGetTexLevelParameterivFn(target, level, pname, params);
 }
 
@@ -3634,6 +3801,7 @@ static void GL_BINDING_CALL Debug_glGetTexParameterfv(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetTexParameterfvFn != nullptr);
   g_driver_gl.debug_fn.glGetTexParameterfvFn(target, pname, params);
 }
 
@@ -3644,6 +3812,7 @@ static void GL_BINDING_CALL Debug_glGetTexParameteriv(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetTexParameterivFn != nullptr);
   g_driver_gl.debug_fn.glGetTexParameterivFn(target, pname, params);
 }
 
@@ -3660,6 +3829,7 @@ static void GL_BINDING_CALL Debug_glGetTransformFeedbackVarying(GLuint program,
                  << static_cast<const void*>(size) << ", "
                  << static_cast<const void*>(type) << ", "
                  << static_cast<const void*>(name) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetTransformFeedbackVaryingFn != nullptr);
   g_driver_gl.debug_fn.glGetTransformFeedbackVaryingFn(
       program, index, bufSize, length, size, type, name);
 }
@@ -3673,6 +3843,7 @@ Debug_glGetTranslatedShaderSourceANGLE(GLuint shader,
                  << "(" << shader << ", " << bufsize << ", "
                  << static_cast<const void*>(length) << ", "
                  << static_cast<const void*>(source) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetTranslatedShaderSourceANGLEFn != nullptr);
   g_driver_gl.debug_fn.glGetTranslatedShaderSourceANGLEFn(shader, bufsize,
                                                           length, source);
 }
@@ -3681,6 +3852,7 @@ static GLuint GL_BINDING_CALL
 Debug_glGetUniformBlockIndex(GLuint program, const char* uniformBlockName) {
   GL_SERVICE_LOG("glGetUniformBlockIndex"
                  << "(" << program << ", " << uniformBlockName << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetUniformBlockIndexFn != nullptr);
   GLuint result =
       g_driver_gl.debug_fn.glGetUniformBlockIndexFn(program, uniformBlockName);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -3693,6 +3865,7 @@ static void GL_BINDING_CALL Debug_glGetUniformfv(GLuint program,
   GL_SERVICE_LOG("glGetUniformfv"
                  << "(" << program << ", " << location << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetUniformfvFn != nullptr);
   g_driver_gl.debug_fn.glGetUniformfvFn(program, location, params);
 }
 
@@ -3705,6 +3878,7 @@ Debug_glGetUniformIndices(GLuint program,
                  << "(" << program << ", " << uniformCount << ", "
                  << static_cast<const void*>(uniformNames) << ", "
                  << static_cast<const void*>(uniformIndices) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetUniformIndicesFn != nullptr);
   g_driver_gl.debug_fn.glGetUniformIndicesFn(program, uniformCount,
                                              uniformNames, uniformIndices);
 }
@@ -3715,6 +3889,7 @@ static void GL_BINDING_CALL Debug_glGetUniformiv(GLuint program,
   GL_SERVICE_LOG("glGetUniformiv"
                  << "(" << program << ", " << location << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetUniformivFn != nullptr);
   g_driver_gl.debug_fn.glGetUniformivFn(program, location, params);
 }
 
@@ -3722,6 +3897,7 @@ static GLint GL_BINDING_CALL Debug_glGetUniformLocation(GLuint program,
                                                         const char* name) {
   GL_SERVICE_LOG("glGetUniformLocation"
                  << "(" << program << ", " << name << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetUniformLocationFn != nullptr);
   GLint result = g_driver_gl.debug_fn.glGetUniformLocationFn(program, name);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3733,6 +3909,7 @@ static void GL_BINDING_CALL Debug_glGetUniformuiv(GLuint program,
   GL_SERVICE_LOG("glGetUniformuiv"
                  << "(" << program << ", " << location << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetUniformuivFn != nullptr);
   g_driver_gl.debug_fn.glGetUniformuivFn(program, location, params);
 }
 
@@ -3742,6 +3919,7 @@ static void GL_BINDING_CALL Debug_glGetVertexAttribfv(GLuint index,
   GL_SERVICE_LOG("glGetVertexAttribfv"
                  << "(" << index << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetVertexAttribfvFn != nullptr);
   g_driver_gl.debug_fn.glGetVertexAttribfvFn(index, pname, params);
 }
 
@@ -3751,6 +3929,7 @@ static void GL_BINDING_CALL Debug_glGetVertexAttribiv(GLuint index,
   GL_SERVICE_LOG("glGetVertexAttribiv"
                  << "(" << index << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetVertexAttribivFn != nullptr);
   g_driver_gl.debug_fn.glGetVertexAttribivFn(index, pname, params);
 }
 
@@ -3760,6 +3939,7 @@ static void GL_BINDING_CALL Debug_glGetVertexAttribPointerv(GLuint index,
   GL_SERVICE_LOG("glGetVertexAttribPointerv"
                  << "(" << index << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << pointer << ")");
+  DCHECK(g_driver_gl.debug_fn.glGetVertexAttribPointervFn != nullptr);
   g_driver_gl.debug_fn.glGetVertexAttribPointervFn(index, pname, pointer);
 }
 
@@ -3767,6 +3947,7 @@ static void GL_BINDING_CALL Debug_glHint(GLenum target, GLenum mode) {
   GL_SERVICE_LOG("glHint"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(mode) << ")");
+  DCHECK(g_driver_gl.debug_fn.glHintFn != nullptr);
   g_driver_gl.debug_fn.glHintFn(target, mode);
 }
 
@@ -3774,6 +3955,7 @@ static void GL_BINDING_CALL Debug_glInsertEventMarkerEXT(GLsizei length,
                                                          const char* marker) {
   GL_SERVICE_LOG("glInsertEventMarkerEXT"
                  << "(" << length << ", " << marker << ")");
+  DCHECK(g_driver_gl.debug_fn.glInsertEventMarkerEXTFn != nullptr);
   g_driver_gl.debug_fn.glInsertEventMarkerEXTFn(length, marker);
 }
 
@@ -3785,6 +3967,7 @@ Debug_glInvalidateFramebuffer(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << numAttachments << ", "
                  << static_cast<const void*>(attachments) << ")");
+  DCHECK(g_driver_gl.debug_fn.glInvalidateFramebufferFn != nullptr);
   g_driver_gl.debug_fn.glInvalidateFramebufferFn(target, numAttachments,
                                                  attachments);
 }
@@ -3802,6 +3985,7 @@ Debug_glInvalidateSubFramebuffer(GLenum target,
                  << numAttachments << ", "
                  << static_cast<const void*>(attachments) << ", " << x << ", "
                  << y << ", " << width << ", " << height << ")");
+  DCHECK(g_driver_gl.debug_fn.glInvalidateSubFramebufferFn != nullptr);
   g_driver_gl.debug_fn.glInvalidateSubFramebufferFn(
       target, numAttachments, attachments, x, y, width, height);
 }
@@ -3809,6 +3993,7 @@ Debug_glInvalidateSubFramebuffer(GLenum target,
 static GLboolean GL_BINDING_CALL Debug_glIsBuffer(GLuint buffer) {
   GL_SERVICE_LOG("glIsBuffer"
                  << "(" << buffer << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsBufferFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsBufferFn(buffer);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3817,6 +4002,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsBuffer(GLuint buffer) {
 static GLboolean GL_BINDING_CALL Debug_glIsEnabled(GLenum cap) {
   GL_SERVICE_LOG("glIsEnabled"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsEnabledFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsEnabledFn(cap);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3825,6 +4011,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsEnabled(GLenum cap) {
 static GLboolean GL_BINDING_CALL Debug_glIsFenceAPPLE(GLuint fence) {
   GL_SERVICE_LOG("glIsFenceAPPLE"
                  << "(" << fence << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsFenceAPPLEFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsFenceAPPLEFn(fence);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3833,6 +4020,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsFenceAPPLE(GLuint fence) {
 static GLboolean GL_BINDING_CALL Debug_glIsFenceNV(GLuint fence) {
   GL_SERVICE_LOG("glIsFenceNV"
                  << "(" << fence << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsFenceNVFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsFenceNVFn(fence);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3841,6 +4029,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsFenceNV(GLuint fence) {
 static GLboolean GL_BINDING_CALL Debug_glIsFramebufferEXT(GLuint framebuffer) {
   GL_SERVICE_LOG("glIsFramebufferEXT"
                  << "(" << framebuffer << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsFramebufferEXTFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsFramebufferEXTFn(framebuffer);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3849,6 +4038,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsFramebufferEXT(GLuint framebuffer) {
 static GLboolean GL_BINDING_CALL Debug_glIsPathNV(GLuint path) {
   GL_SERVICE_LOG("glIsPathNV"
                  << "(" << path << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsPathNVFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsPathNVFn(path);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3857,6 +4047,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsPathNV(GLuint path) {
 static GLboolean GL_BINDING_CALL Debug_glIsProgram(GLuint program) {
   GL_SERVICE_LOG("glIsProgram"
                  << "(" << program << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsProgramFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsProgramFn(program);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3865,6 +4056,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsProgram(GLuint program) {
 static GLboolean GL_BINDING_CALL Debug_glIsQuery(GLuint query) {
   GL_SERVICE_LOG("glIsQuery"
                  << "(" << query << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsQueryFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsQueryFn(query);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3874,6 +4066,7 @@ static GLboolean GL_BINDING_CALL
 Debug_glIsRenderbufferEXT(GLuint renderbuffer) {
   GL_SERVICE_LOG("glIsRenderbufferEXT"
                  << "(" << renderbuffer << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsRenderbufferEXTFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsRenderbufferEXTFn(renderbuffer);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3882,6 +4075,7 @@ Debug_glIsRenderbufferEXT(GLuint renderbuffer) {
 static GLboolean GL_BINDING_CALL Debug_glIsSampler(GLuint sampler) {
   GL_SERVICE_LOG("glIsSampler"
                  << "(" << sampler << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsSamplerFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsSamplerFn(sampler);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3890,6 +4084,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsSampler(GLuint sampler) {
 static GLboolean GL_BINDING_CALL Debug_glIsShader(GLuint shader) {
   GL_SERVICE_LOG("glIsShader"
                  << "(" << shader << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsShaderFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsShaderFn(shader);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3898,6 +4093,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsShader(GLuint shader) {
 static GLboolean GL_BINDING_CALL Debug_glIsSync(GLsync sync) {
   GL_SERVICE_LOG("glIsSync"
                  << "(" << sync << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsSyncFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsSyncFn(sync);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3906,6 +4102,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsSync(GLsync sync) {
 static GLboolean GL_BINDING_CALL Debug_glIsTexture(GLuint texture) {
   GL_SERVICE_LOG("glIsTexture"
                  << "(" << texture << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsTextureFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsTextureFn(texture);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3914,6 +4111,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsTexture(GLuint texture) {
 static GLboolean GL_BINDING_CALL Debug_glIsTransformFeedback(GLuint id) {
   GL_SERVICE_LOG("glIsTransformFeedback"
                  << "(" << id << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsTransformFeedbackFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsTransformFeedbackFn(id);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3922,6 +4120,7 @@ static GLboolean GL_BINDING_CALL Debug_glIsTransformFeedback(GLuint id) {
 static GLboolean GL_BINDING_CALL Debug_glIsVertexArrayOES(GLuint array) {
   GL_SERVICE_LOG("glIsVertexArrayOES"
                  << "(" << array << ")");
+  DCHECK(g_driver_gl.debug_fn.glIsVertexArrayOESFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glIsVertexArrayOESFn(array);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3930,12 +4129,14 @@ static GLboolean GL_BINDING_CALL Debug_glIsVertexArrayOES(GLuint array) {
 static void GL_BINDING_CALL Debug_glLineWidth(GLfloat width) {
   GL_SERVICE_LOG("glLineWidth"
                  << "(" << width << ")");
+  DCHECK(g_driver_gl.debug_fn.glLineWidthFn != nullptr);
   g_driver_gl.debug_fn.glLineWidthFn(width);
 }
 
 static void GL_BINDING_CALL Debug_glLinkProgram(GLuint program) {
   GL_SERVICE_LOG("glLinkProgram"
                  << "(" << program << ")");
+  DCHECK(g_driver_gl.debug_fn.glLinkProgramFn != nullptr);
   g_driver_gl.debug_fn.glLinkProgramFn(program);
 }
 
@@ -3943,6 +4144,7 @@ static void* GL_BINDING_CALL Debug_glMapBuffer(GLenum target, GLenum access) {
   GL_SERVICE_LOG("glMapBuffer"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(access) << ")");
+  DCHECK(g_driver_gl.debug_fn.glMapBufferFn != nullptr);
   void* result = g_driver_gl.debug_fn.glMapBufferFn(target, access);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -3955,6 +4157,7 @@ static void* GL_BINDING_CALL Debug_glMapBufferRange(GLenum target,
   GL_SERVICE_LOG("glMapBufferRange"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << offset
                  << ", " << length << ", " << access << ")");
+  DCHECK(g_driver_gl.debug_fn.glMapBufferRangeFn != nullptr);
   void* result =
       g_driver_gl.debug_fn.glMapBufferRangeFn(target, offset, length, access);
   GL_SERVICE_LOG("GL_RESULT: " << result);
@@ -3966,18 +4169,21 @@ static void GL_BINDING_CALL Debug_glMatrixLoadfEXT(GLenum matrixMode,
   GL_SERVICE_LOG("glMatrixLoadfEXT"
                  << "(" << GLEnums::GetStringEnum(matrixMode) << ", "
                  << static_cast<const void*>(m) << ")");
+  DCHECK(g_driver_gl.debug_fn.glMatrixLoadfEXTFn != nullptr);
   g_driver_gl.debug_fn.glMatrixLoadfEXTFn(matrixMode, m);
 }
 
 static void GL_BINDING_CALL Debug_glMatrixLoadIdentityEXT(GLenum matrixMode) {
   GL_SERVICE_LOG("glMatrixLoadIdentityEXT"
                  << "(" << GLEnums::GetStringEnum(matrixMode) << ")");
+  DCHECK(g_driver_gl.debug_fn.glMatrixLoadIdentityEXTFn != nullptr);
   g_driver_gl.debug_fn.glMatrixLoadIdentityEXTFn(matrixMode);
 }
 
 static void GL_BINDING_CALL Debug_glMemoryBarrierEXT(GLbitfield barriers) {
   GL_SERVICE_LOG("glMemoryBarrierEXT"
                  << "(" << barriers << ")");
+  DCHECK(g_driver_gl.debug_fn.glMemoryBarrierEXTFn != nullptr);
   g_driver_gl.debug_fn.glMemoryBarrierEXTFn(barriers);
 }
 
@@ -3992,6 +4198,7 @@ static void GL_BINDING_CALL Debug_glPathCommandsNV(GLuint path,
                  << static_cast<const void*>(commands) << ", " << numCoords
                  << ", " << GLEnums::GetStringEnum(coordType) << ", "
                  << static_cast<const void*>(coords) << ")");
+  DCHECK(g_driver_gl.debug_fn.glPathCommandsNVFn != nullptr);
   g_driver_gl.debug_fn.glPathCommandsNVFn(path, numCommands, commands,
                                           numCoords, coordType, coords);
 }
@@ -4002,6 +4209,7 @@ static void GL_BINDING_CALL Debug_glPathParameterfNV(GLuint path,
   GL_SERVICE_LOG("glPathParameterfNV"
                  << "(" << path << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << value << ")");
+  DCHECK(g_driver_gl.debug_fn.glPathParameterfNVFn != nullptr);
   g_driver_gl.debug_fn.glPathParameterfNVFn(path, pname, value);
 }
 
@@ -4011,6 +4219,7 @@ static void GL_BINDING_CALL Debug_glPathParameteriNV(GLuint path,
   GL_SERVICE_LOG("glPathParameteriNV"
                  << "(" << path << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << value << ")");
+  DCHECK(g_driver_gl.debug_fn.glPathParameteriNVFn != nullptr);
   g_driver_gl.debug_fn.glPathParameteriNVFn(path, pname, value);
 }
 
@@ -4020,6 +4229,7 @@ static void GL_BINDING_CALL Debug_glPathStencilFuncNV(GLenum func,
   GL_SERVICE_LOG("glPathStencilFuncNV"
                  << "(" << GLEnums::GetStringEnum(func) << ", " << ref << ", "
                  << mask << ")");
+  DCHECK(g_driver_gl.debug_fn.glPathStencilFuncNVFn != nullptr);
   g_driver_gl.debug_fn.glPathStencilFuncNVFn(func, ref, mask);
 }
 
@@ -4027,6 +4237,7 @@ static void GL_BINDING_CALL Debug_glPauseTransformFeedback(void) {
   GL_SERVICE_LOG("glPauseTransformFeedback"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glPauseTransformFeedbackFn != nullptr);
   g_driver_gl.debug_fn.glPauseTransformFeedbackFn();
 }
 
@@ -4034,6 +4245,7 @@ static void GL_BINDING_CALL Debug_glPixelStorei(GLenum pname, GLint param) {
   GL_SERVICE_LOG("glPixelStorei"
                  << "(" << GLEnums::GetStringEnum(pname) << ", " << param
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glPixelStoreiFn != nullptr);
   g_driver_gl.debug_fn.glPixelStoreiFn(pname, param);
 }
 
@@ -4041,6 +4253,7 @@ static void GL_BINDING_CALL Debug_glPointParameteri(GLenum pname, GLint param) {
   GL_SERVICE_LOG("glPointParameteri"
                  << "(" << GLEnums::GetStringEnum(pname) << ", " << param
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glPointParameteriFn != nullptr);
   g_driver_gl.debug_fn.glPointParameteriFn(pname, param);
 }
 
@@ -4048,6 +4261,7 @@ static void GL_BINDING_CALL Debug_glPolygonOffset(GLfloat factor,
                                                   GLfloat units) {
   GL_SERVICE_LOG("glPolygonOffset"
                  << "(" << factor << ", " << units << ")");
+  DCHECK(g_driver_gl.debug_fn.glPolygonOffsetFn != nullptr);
   g_driver_gl.debug_fn.glPolygonOffsetFn(factor, units);
 }
 
@@ -4055,6 +4269,7 @@ static void GL_BINDING_CALL Debug_glPopGroupMarkerEXT(void) {
   GL_SERVICE_LOG("glPopGroupMarkerEXT"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glPopGroupMarkerEXTFn != nullptr);
   g_driver_gl.debug_fn.glPopGroupMarkerEXTFn();
 }
 
@@ -4066,6 +4281,7 @@ static void GL_BINDING_CALL Debug_glProgramBinary(GLuint program,
                  << "(" << program << ", "
                  << GLEnums::GetStringEnum(binaryFormat) << ", "
                  << static_cast<const void*>(binary) << ", " << length << ")");
+  DCHECK(g_driver_gl.debug_fn.glProgramBinaryFn != nullptr);
   g_driver_gl.debug_fn.glProgramBinaryFn(program, binaryFormat, binary, length);
 }
 
@@ -4075,6 +4291,7 @@ static void GL_BINDING_CALL Debug_glProgramParameteri(GLuint program,
   GL_SERVICE_LOG("glProgramParameteri"
                  << "(" << program << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << value << ")");
+  DCHECK(g_driver_gl.debug_fn.glProgramParameteriFn != nullptr);
   g_driver_gl.debug_fn.glProgramParameteriFn(program, pname, value);
 }
 
@@ -4088,6 +4305,7 @@ Debug_glProgramPathFragmentInputGenNV(GLuint program,
                  << "(" << program << ", " << location << ", "
                  << GLEnums::GetStringEnum(genMode) << ", " << components
                  << ", " << static_cast<const void*>(coeffs) << ")");
+  DCHECK(g_driver_gl.debug_fn.glProgramPathFragmentInputGenNVFn != nullptr);
   g_driver_gl.debug_fn.glProgramPathFragmentInputGenNVFn(
       program, location, genMode, components, coeffs);
 }
@@ -4096,18 +4314,21 @@ static void GL_BINDING_CALL Debug_glPushGroupMarkerEXT(GLsizei length,
                                                        const char* marker) {
   GL_SERVICE_LOG("glPushGroupMarkerEXT"
                  << "(" << length << ", " << marker << ")");
+  DCHECK(g_driver_gl.debug_fn.glPushGroupMarkerEXTFn != nullptr);
   g_driver_gl.debug_fn.glPushGroupMarkerEXTFn(length, marker);
 }
 
 static void GL_BINDING_CALL Debug_glQueryCounter(GLuint id, GLenum target) {
   GL_SERVICE_LOG("glQueryCounter"
                  << "(" << id << ", " << GLEnums::GetStringEnum(target) << ")");
+  DCHECK(g_driver_gl.debug_fn.glQueryCounterFn != nullptr);
   g_driver_gl.debug_fn.glQueryCounterFn(id, target);
 }
 
 static void GL_BINDING_CALL Debug_glReadBuffer(GLenum src) {
   GL_SERVICE_LOG("glReadBuffer"
                  << "(" << GLEnums::GetStringEnum(src) << ")");
+  DCHECK(g_driver_gl.debug_fn.glReadBufferFn != nullptr);
   g_driver_gl.debug_fn.glReadBufferFn(src);
 }
 
@@ -4123,6 +4344,7 @@ static void GL_BINDING_CALL Debug_glReadPixels(GLint x,
                  << ", " << GLEnums::GetStringEnum(format) << ", "
                  << GLEnums::GetStringEnum(type) << ", "
                  << static_cast<const void*>(pixels) << ")");
+  DCHECK(g_driver_gl.debug_fn.glReadPixelsFn != nullptr);
   g_driver_gl.debug_fn.glReadPixelsFn(x, y, width, height, format, type,
                                       pixels);
 }
@@ -4131,6 +4353,7 @@ static void GL_BINDING_CALL Debug_glReleaseShaderCompiler(void) {
   GL_SERVICE_LOG("glReleaseShaderCompiler"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glReleaseShaderCompilerFn != nullptr);
   g_driver_gl.debug_fn.glReleaseShaderCompilerFn();
 }
 
@@ -4143,6 +4366,7 @@ Debug_glRenderbufferStorageEXT(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(internalformat) << ", " << width
                  << ", " << height << ")");
+  DCHECK(g_driver_gl.debug_fn.glRenderbufferStorageEXTFn != nullptr);
   g_driver_gl.debug_fn.glRenderbufferStorageEXTFn(target, internalformat, width,
                                                   height);
 }
@@ -4157,6 +4381,7 @@ Debug_glRenderbufferStorageMultisample(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << samples
                  << ", " << GLEnums::GetStringEnum(internalformat) << ", "
                  << width << ", " << height << ")");
+  DCHECK(g_driver_gl.debug_fn.glRenderbufferStorageMultisampleFn != nullptr);
   g_driver_gl.debug_fn.glRenderbufferStorageMultisampleFn(
       target, samples, internalformat, width, height);
 }
@@ -4171,6 +4396,8 @@ Debug_glRenderbufferStorageMultisampleANGLE(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << samples
                  << ", " << GLEnums::GetStringEnum(internalformat) << ", "
                  << width << ", " << height << ")");
+  DCHECK(g_driver_gl.debug_fn.glRenderbufferStorageMultisampleANGLEFn !=
+         nullptr);
   g_driver_gl.debug_fn.glRenderbufferStorageMultisampleANGLEFn(
       target, samples, internalformat, width, height);
 }
@@ -4185,6 +4412,7 @@ Debug_glRenderbufferStorageMultisampleEXT(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << samples
                  << ", " << GLEnums::GetStringEnum(internalformat) << ", "
                  << width << ", " << height << ")");
+  DCHECK(g_driver_gl.debug_fn.glRenderbufferStorageMultisampleEXTFn != nullptr);
   g_driver_gl.debug_fn.glRenderbufferStorageMultisampleEXTFn(
       target, samples, internalformat, width, height);
 }
@@ -4199,6 +4427,7 @@ Debug_glRenderbufferStorageMultisampleIMG(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << samples
                  << ", " << GLEnums::GetStringEnum(internalformat) << ", "
                  << width << ", " << height << ")");
+  DCHECK(g_driver_gl.debug_fn.glRenderbufferStorageMultisampleIMGFn != nullptr);
   g_driver_gl.debug_fn.glRenderbufferStorageMultisampleIMGFn(
       target, samples, internalformat, width, height);
 }
@@ -4207,6 +4436,7 @@ static void GL_BINDING_CALL Debug_glResumeTransformFeedback(void) {
   GL_SERVICE_LOG("glResumeTransformFeedback"
                  << "("
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glResumeTransformFeedbackFn != nullptr);
   g_driver_gl.debug_fn.glResumeTransformFeedbackFn();
 }
 
@@ -4215,6 +4445,7 @@ static void GL_BINDING_CALL Debug_glSampleCoverage(GLclampf value,
   GL_SERVICE_LOG("glSampleCoverage"
                  << "(" << value << ", " << GLEnums::GetStringBool(invert)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glSampleCoverageFn != nullptr);
   g_driver_gl.debug_fn.glSampleCoverageFn(value, invert);
 }
 
@@ -4224,6 +4455,7 @@ static void GL_BINDING_CALL Debug_glSamplerParameterf(GLuint sampler,
   GL_SERVICE_LOG("glSamplerParameterf"
                  << "(" << sampler << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << param << ")");
+  DCHECK(g_driver_gl.debug_fn.glSamplerParameterfFn != nullptr);
   g_driver_gl.debug_fn.glSamplerParameterfFn(sampler, pname, param);
 }
 
@@ -4233,6 +4465,7 @@ static void GL_BINDING_CALL Debug_glSamplerParameterfv(GLuint sampler,
   GL_SERVICE_LOG("glSamplerParameterfv"
                  << "(" << sampler << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glSamplerParameterfvFn != nullptr);
   g_driver_gl.debug_fn.glSamplerParameterfvFn(sampler, pname, params);
 }
 
@@ -4242,6 +4475,7 @@ static void GL_BINDING_CALL Debug_glSamplerParameteri(GLuint sampler,
   GL_SERVICE_LOG("glSamplerParameteri"
                  << "(" << sampler << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << param << ")");
+  DCHECK(g_driver_gl.debug_fn.glSamplerParameteriFn != nullptr);
   g_driver_gl.debug_fn.glSamplerParameteriFn(sampler, pname, param);
 }
 
@@ -4251,6 +4485,7 @@ static void GL_BINDING_CALL Debug_glSamplerParameteriv(GLuint sampler,
   GL_SERVICE_LOG("glSamplerParameteriv"
                  << "(" << sampler << ", " << GLEnums::GetStringEnum(pname)
                  << ", " << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glSamplerParameterivFn != nullptr);
   g_driver_gl.debug_fn.glSamplerParameterivFn(sampler, pname, params);
 }
 
@@ -4261,12 +4496,14 @@ static void GL_BINDING_CALL Debug_glScissor(GLint x,
   GL_SERVICE_LOG("glScissor"
                  << "(" << x << ", " << y << ", " << width << ", " << height
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glScissorFn != nullptr);
   g_driver_gl.debug_fn.glScissorFn(x, y, width, height);
 }
 
 static void GL_BINDING_CALL Debug_glSetFenceAPPLE(GLuint fence) {
   GL_SERVICE_LOG("glSetFenceAPPLE"
                  << "(" << fence << ")");
+  DCHECK(g_driver_gl.debug_fn.glSetFenceAPPLEFn != nullptr);
   g_driver_gl.debug_fn.glSetFenceAPPLEFn(fence);
 }
 
@@ -4274,6 +4511,7 @@ static void GL_BINDING_CALL Debug_glSetFenceNV(GLuint fence, GLenum condition) {
   GL_SERVICE_LOG("glSetFenceNV"
                  << "(" << fence << ", " << GLEnums::GetStringEnum(condition)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glSetFenceNVFn != nullptr);
   g_driver_gl.debug_fn.glSetFenceNVFn(fence, condition);
 }
 
@@ -4286,6 +4524,7 @@ static void GL_BINDING_CALL Debug_glShaderBinary(GLsizei n,
                  << "(" << n << ", " << static_cast<const void*>(shaders)
                  << ", " << GLEnums::GetStringEnum(binaryformat) << ", "
                  << static_cast<const void*>(binary) << ", " << length << ")");
+  DCHECK(g_driver_gl.debug_fn.glShaderBinaryFn != nullptr);
   g_driver_gl.debug_fn.glShaderBinaryFn(n, shaders, binaryformat, binary,
                                         length);
 }
@@ -4298,6 +4537,7 @@ static void GL_BINDING_CALL Debug_glShaderSource(GLuint shader,
                  << "(" << shader << ", " << count << ", "
                  << static_cast<const void*>(str) << ", "
                  << static_cast<const void*>(length) << ")");
+  DCHECK(g_driver_gl.debug_fn.glShaderSourceFn != nullptr);
   g_driver_gl.debug_fn.glShaderSourceFn(shader, count, str, length);
 
   GL_SERVICE_LOG_CODE_BLOCK({
@@ -4332,6 +4572,7 @@ Debug_glStencilFillPathInstancedNV(GLsizei numPaths,
                  << GLEnums::GetStringEnum(fillMode) << ", " << mask << ", "
                  << GLEnums::GetStringEnum(transformType) << ", "
                  << static_cast<const void*>(transformValues) << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilFillPathInstancedNVFn != nullptr);
   g_driver_gl.debug_fn.glStencilFillPathInstancedNVFn(
       numPaths, pathNameType, paths, pathBase, fillMode, mask, transformType,
       transformValues);
@@ -4343,6 +4584,7 @@ static void GL_BINDING_CALL Debug_glStencilFillPathNV(GLuint path,
   GL_SERVICE_LOG("glStencilFillPathNV"
                  << "(" << path << ", " << GLEnums::GetStringEnum(fillMode)
                  << ", " << mask << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilFillPathNVFn != nullptr);
   g_driver_gl.debug_fn.glStencilFillPathNVFn(path, fillMode, mask);
 }
 
@@ -4352,6 +4594,7 @@ static void GL_BINDING_CALL Debug_glStencilFunc(GLenum func,
   GL_SERVICE_LOG("glStencilFunc"
                  << "(" << GLEnums::GetStringEnum(func) << ", " << ref << ", "
                  << mask << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilFuncFn != nullptr);
   g_driver_gl.debug_fn.glStencilFuncFn(func, ref, mask);
 }
 
@@ -4363,12 +4606,14 @@ static void GL_BINDING_CALL Debug_glStencilFuncSeparate(GLenum face,
                  << "(" << GLEnums::GetStringEnum(face) << ", "
                  << GLEnums::GetStringEnum(func) << ", " << ref << ", " << mask
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilFuncSeparateFn != nullptr);
   g_driver_gl.debug_fn.glStencilFuncSeparateFn(face, func, ref, mask);
 }
 
 static void GL_BINDING_CALL Debug_glStencilMask(GLuint mask) {
   GL_SERVICE_LOG("glStencilMask"
                  << "(" << mask << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilMaskFn != nullptr);
   g_driver_gl.debug_fn.glStencilMaskFn(mask);
 }
 
@@ -4376,6 +4621,7 @@ static void GL_BINDING_CALL Debug_glStencilMaskSeparate(GLenum face,
                                                         GLuint mask) {
   GL_SERVICE_LOG("glStencilMaskSeparate"
                  << "(" << GLEnums::GetStringEnum(face) << ", " << mask << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilMaskSeparateFn != nullptr);
   g_driver_gl.debug_fn.glStencilMaskSeparateFn(face, mask);
 }
 
@@ -4386,6 +4632,7 @@ static void GL_BINDING_CALL Debug_glStencilOp(GLenum fail,
                  << "(" << GLEnums::GetStringEnum(fail) << ", "
                  << GLEnums::GetStringEnum(zfail) << ", "
                  << GLEnums::GetStringEnum(zpass) << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilOpFn != nullptr);
   g_driver_gl.debug_fn.glStencilOpFn(fail, zfail, zpass);
 }
 
@@ -4398,6 +4645,7 @@ static void GL_BINDING_CALL Debug_glStencilOpSeparate(GLenum face,
                  << GLEnums::GetStringEnum(fail) << ", "
                  << GLEnums::GetStringEnum(zfail) << ", "
                  << GLEnums::GetStringEnum(zpass) << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilOpSeparateFn != nullptr);
   g_driver_gl.debug_fn.glStencilOpSeparateFn(face, fail, zfail, zpass);
 }
 
@@ -4416,6 +4664,7 @@ Debug_glStencilStrokePathInstancedNV(GLsizei numPaths,
       << static_cast<const void*>(paths) << ", " << pathBase << ", " << ref
       << ", " << mask << ", " << GLEnums::GetStringEnum(transformType) << ", "
       << static_cast<const void*>(transformValues) << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilStrokePathInstancedNVFn != nullptr);
   g_driver_gl.debug_fn.glStencilStrokePathInstancedNVFn(
       numPaths, pathNameType, paths, pathBase, ref, mask, transformType,
       transformValues);
@@ -4426,6 +4675,7 @@ static void GL_BINDING_CALL Debug_glStencilStrokePathNV(GLuint path,
                                                         GLuint mask) {
   GL_SERVICE_LOG("glStencilStrokePathNV"
                  << "(" << path << ", " << reference << ", " << mask << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilStrokePathNVFn != nullptr);
   g_driver_gl.debug_fn.glStencilStrokePathNVFn(path, reference, mask);
 }
 
@@ -4447,6 +4697,8 @@ Debug_glStencilThenCoverFillPathInstancedNV(GLsizei numPaths,
                  << GLEnums::GetStringEnum(coverMode) << ", "
                  << GLEnums::GetStringEnum(transformType) << ", "
                  << static_cast<const void*>(transformValues) << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilThenCoverFillPathInstancedNVFn !=
+         nullptr);
   g_driver_gl.debug_fn.glStencilThenCoverFillPathInstancedNVFn(
       numPaths, pathNameType, paths, pathBase, fillMode, mask, coverMode,
       transformType, transformValues);
@@ -4461,6 +4713,7 @@ Debug_glStencilThenCoverFillPathNV(GLuint path,
                  << "(" << path << ", " << GLEnums::GetStringEnum(fillMode)
                  << ", " << mask << ", " << GLEnums::GetStringEnum(coverMode)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilThenCoverFillPathNVFn != nullptr);
   g_driver_gl.debug_fn.glStencilThenCoverFillPathNVFn(path, fillMode, mask,
                                                       coverMode);
 }
@@ -4482,6 +4735,8 @@ Debug_glStencilThenCoverStrokePathInstancedNV(GLsizei numPaths,
       << ", " << mask << ", " << GLEnums::GetStringEnum(coverMode) << ", "
       << GLEnums::GetStringEnum(transformType) << ", "
       << static_cast<const void*>(transformValues) << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilThenCoverStrokePathInstancedNVFn !=
+         nullptr);
   g_driver_gl.debug_fn.glStencilThenCoverStrokePathInstancedNVFn(
       numPaths, pathNameType, paths, pathBase, ref, mask, coverMode,
       transformType, transformValues);
@@ -4495,6 +4750,7 @@ Debug_glStencilThenCoverStrokePathNV(GLuint path,
   GL_SERVICE_LOG("glStencilThenCoverStrokePathNV"
                  << "(" << path << ", " << reference << ", " << mask << ", "
                  << GLEnums::GetStringEnum(coverMode) << ")");
+  DCHECK(g_driver_gl.debug_fn.glStencilThenCoverStrokePathNVFn != nullptr);
   g_driver_gl.debug_fn.glStencilThenCoverStrokePathNVFn(path, reference, mask,
                                                         coverMode);
 }
@@ -4502,6 +4758,7 @@ Debug_glStencilThenCoverStrokePathNV(GLuint path,
 static GLboolean GL_BINDING_CALL Debug_glTestFenceAPPLE(GLuint fence) {
   GL_SERVICE_LOG("glTestFenceAPPLE"
                  << "(" << fence << ")");
+  DCHECK(g_driver_gl.debug_fn.glTestFenceAPPLEFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glTestFenceAPPLEFn(fence);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -4510,6 +4767,7 @@ static GLboolean GL_BINDING_CALL Debug_glTestFenceAPPLE(GLuint fence) {
 static GLboolean GL_BINDING_CALL Debug_glTestFenceNV(GLuint fence) {
   GL_SERVICE_LOG("glTestFenceNV"
                  << "(" << fence << ")");
+  DCHECK(g_driver_gl.debug_fn.glTestFenceNVFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glTestFenceNVFn(fence);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -4530,6 +4788,7 @@ static void GL_BINDING_CALL Debug_glTexImage2D(GLenum target,
                  << ", " << border << ", " << GLEnums::GetStringEnum(format)
                  << ", " << GLEnums::GetStringEnum(type) << ", "
                  << static_cast<const void*>(pixels) << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexImage2DFn != nullptr);
   g_driver_gl.debug_fn.glTexImage2DFn(target, level, internalformat, width,
                                       height, border, format, type, pixels);
 }
@@ -4551,6 +4810,7 @@ static void GL_BINDING_CALL Debug_glTexImage3D(GLenum target,
                  << GLEnums::GetStringEnum(format) << ", "
                  << GLEnums::GetStringEnum(type) << ", "
                  << static_cast<const void*>(pixels) << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexImage3DFn != nullptr);
   g_driver_gl.debug_fn.glTexImage3DFn(target, level, internalformat, width,
                                       height, depth, border, format, type,
                                       pixels);
@@ -4562,6 +4822,7 @@ static void GL_BINDING_CALL Debug_glTexParameterf(GLenum target,
   GL_SERVICE_LOG("glTexParameterf"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(pname) << ", " << param << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexParameterfFn != nullptr);
   g_driver_gl.debug_fn.glTexParameterfFn(target, pname, param);
 }
 
@@ -4572,6 +4833,7 @@ static void GL_BINDING_CALL Debug_glTexParameterfv(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexParameterfvFn != nullptr);
   g_driver_gl.debug_fn.glTexParameterfvFn(target, pname, params);
 }
 
@@ -4581,6 +4843,7 @@ static void GL_BINDING_CALL Debug_glTexParameteri(GLenum target,
   GL_SERVICE_LOG("glTexParameteri"
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(pname) << ", " << param << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexParameteriFn != nullptr);
   g_driver_gl.debug_fn.glTexParameteriFn(target, pname, param);
 }
 
@@ -4591,6 +4854,7 @@ static void GL_BINDING_CALL Debug_glTexParameteriv(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", "
                  << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexParameterivFn != nullptr);
   g_driver_gl.debug_fn.glTexParameterivFn(target, pname, params);
 }
 
@@ -4603,6 +4867,7 @@ static void GL_BINDING_CALL Debug_glTexStorage2DEXT(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << levels
                  << ", " << GLEnums::GetStringEnum(internalformat) << ", "
                  << width << ", " << height << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexStorage2DEXTFn != nullptr);
   g_driver_gl.debug_fn.glTexStorage2DEXTFn(target, levels, internalformat,
                                            width, height);
 }
@@ -4617,6 +4882,7 @@ static void GL_BINDING_CALL Debug_glTexStorage3D(GLenum target,
                  << "(" << GLEnums::GetStringEnum(target) << ", " << levels
                  << ", " << GLEnums::GetStringEnum(internalformat) << ", "
                  << width << ", " << height << ", " << depth << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexStorage3DFn != nullptr);
   g_driver_gl.debug_fn.glTexStorage3DFn(target, levels, internalformat, width,
                                         height, depth);
 }
@@ -4636,6 +4902,7 @@ static void GL_BINDING_CALL Debug_glTexSubImage2D(GLenum target,
                  << height << ", " << GLEnums::GetStringEnum(format) << ", "
                  << GLEnums::GetStringEnum(type) << ", "
                  << static_cast<const void*>(pixels) << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexSubImage2DFn != nullptr);
   g_driver_gl.debug_fn.glTexSubImage2DFn(target, level, xoffset, yoffset, width,
                                          height, format, type, pixels);
 }
@@ -4658,6 +4925,7 @@ static void GL_BINDING_CALL Debug_glTexSubImage3D(GLenum target,
                  << GLEnums::GetStringEnum(format) << ", "
                  << GLEnums::GetStringEnum(type) << ", "
                  << static_cast<const void*>(pixels) << ")");
+  DCHECK(g_driver_gl.debug_fn.glTexSubImage3DFn != nullptr);
   g_driver_gl.debug_fn.glTexSubImage3DFn(target, level, xoffset, yoffset,
                                          zoffset, width, height, depth, format,
                                          type, pixels);
@@ -4672,6 +4940,7 @@ Debug_glTransformFeedbackVaryings(GLuint program,
                  << "(" << program << ", " << count << ", "
                  << static_cast<const void*>(varyings) << ", "
                  << GLEnums::GetStringEnum(bufferMode) << ")");
+  DCHECK(g_driver_gl.debug_fn.glTransformFeedbackVaryingsFn != nullptr);
   g_driver_gl.debug_fn.glTransformFeedbackVaryingsFn(program, count, varyings,
                                                      bufferMode);
 }
@@ -4679,6 +4948,7 @@ Debug_glTransformFeedbackVaryings(GLuint program,
 static void GL_BINDING_CALL Debug_glUniform1f(GLint location, GLfloat x) {
   GL_SERVICE_LOG("glUniform1f"
                  << "(" << location << ", " << x << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform1fFn != nullptr);
   g_driver_gl.debug_fn.glUniform1fFn(location, x);
 }
 
@@ -4688,12 +4958,14 @@ static void GL_BINDING_CALL Debug_glUniform1fv(GLint location,
   GL_SERVICE_LOG("glUniform1fv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform1fvFn != nullptr);
   g_driver_gl.debug_fn.glUniform1fvFn(location, count, v);
 }
 
 static void GL_BINDING_CALL Debug_glUniform1i(GLint location, GLint x) {
   GL_SERVICE_LOG("glUniform1i"
                  << "(" << location << ", " << x << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform1iFn != nullptr);
   g_driver_gl.debug_fn.glUniform1iFn(location, x);
 }
 
@@ -4703,12 +4975,14 @@ static void GL_BINDING_CALL Debug_glUniform1iv(GLint location,
   GL_SERVICE_LOG("glUniform1iv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform1ivFn != nullptr);
   g_driver_gl.debug_fn.glUniform1ivFn(location, count, v);
 }
 
 static void GL_BINDING_CALL Debug_glUniform1ui(GLint location, GLuint v0) {
   GL_SERVICE_LOG("glUniform1ui"
                  << "(" << location << ", " << v0 << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform1uiFn != nullptr);
   g_driver_gl.debug_fn.glUniform1uiFn(location, v0);
 }
 
@@ -4718,6 +4992,7 @@ static void GL_BINDING_CALL Debug_glUniform1uiv(GLint location,
   GL_SERVICE_LOG("glUniform1uiv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform1uivFn != nullptr);
   g_driver_gl.debug_fn.glUniform1uivFn(location, count, v);
 }
 
@@ -4726,6 +5001,7 @@ static void GL_BINDING_CALL Debug_glUniform2f(GLint location,
                                               GLfloat y) {
   GL_SERVICE_LOG("glUniform2f"
                  << "(" << location << ", " << x << ", " << y << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform2fFn != nullptr);
   g_driver_gl.debug_fn.glUniform2fFn(location, x, y);
 }
 
@@ -4735,6 +5011,7 @@ static void GL_BINDING_CALL Debug_glUniform2fv(GLint location,
   GL_SERVICE_LOG("glUniform2fv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform2fvFn != nullptr);
   g_driver_gl.debug_fn.glUniform2fvFn(location, count, v);
 }
 
@@ -4743,6 +5020,7 @@ static void GL_BINDING_CALL Debug_glUniform2i(GLint location,
                                               GLint y) {
   GL_SERVICE_LOG("glUniform2i"
                  << "(" << location << ", " << x << ", " << y << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform2iFn != nullptr);
   g_driver_gl.debug_fn.glUniform2iFn(location, x, y);
 }
 
@@ -4752,6 +5030,7 @@ static void GL_BINDING_CALL Debug_glUniform2iv(GLint location,
   GL_SERVICE_LOG("glUniform2iv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform2ivFn != nullptr);
   g_driver_gl.debug_fn.glUniform2ivFn(location, count, v);
 }
 
@@ -4760,6 +5039,7 @@ static void GL_BINDING_CALL Debug_glUniform2ui(GLint location,
                                                GLuint v1) {
   GL_SERVICE_LOG("glUniform2ui"
                  << "(" << location << ", " << v0 << ", " << v1 << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform2uiFn != nullptr);
   g_driver_gl.debug_fn.glUniform2uiFn(location, v0, v1);
 }
 
@@ -4769,6 +5049,7 @@ static void GL_BINDING_CALL Debug_glUniform2uiv(GLint location,
   GL_SERVICE_LOG("glUniform2uiv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform2uivFn != nullptr);
   g_driver_gl.debug_fn.glUniform2uivFn(location, count, v);
 }
 
@@ -4779,6 +5060,7 @@ static void GL_BINDING_CALL Debug_glUniform3f(GLint location,
   GL_SERVICE_LOG("glUniform3f"
                  << "(" << location << ", " << x << ", " << y << ", " << z
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform3fFn != nullptr);
   g_driver_gl.debug_fn.glUniform3fFn(location, x, y, z);
 }
 
@@ -4788,6 +5070,7 @@ static void GL_BINDING_CALL Debug_glUniform3fv(GLint location,
   GL_SERVICE_LOG("glUniform3fv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform3fvFn != nullptr);
   g_driver_gl.debug_fn.glUniform3fvFn(location, count, v);
 }
 
@@ -4798,6 +5081,7 @@ static void GL_BINDING_CALL Debug_glUniform3i(GLint location,
   GL_SERVICE_LOG("glUniform3i"
                  << "(" << location << ", " << x << ", " << y << ", " << z
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform3iFn != nullptr);
   g_driver_gl.debug_fn.glUniform3iFn(location, x, y, z);
 }
 
@@ -4807,6 +5091,7 @@ static void GL_BINDING_CALL Debug_glUniform3iv(GLint location,
   GL_SERVICE_LOG("glUniform3iv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform3ivFn != nullptr);
   g_driver_gl.debug_fn.glUniform3ivFn(location, count, v);
 }
 
@@ -4817,6 +5102,7 @@ static void GL_BINDING_CALL Debug_glUniform3ui(GLint location,
   GL_SERVICE_LOG("glUniform3ui"
                  << "(" << location << ", " << v0 << ", " << v1 << ", " << v2
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform3uiFn != nullptr);
   g_driver_gl.debug_fn.glUniform3uiFn(location, v0, v1, v2);
 }
 
@@ -4826,6 +5112,7 @@ static void GL_BINDING_CALL Debug_glUniform3uiv(GLint location,
   GL_SERVICE_LOG("glUniform3uiv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform3uivFn != nullptr);
   g_driver_gl.debug_fn.glUniform3uivFn(location, count, v);
 }
 
@@ -4834,6 +5121,7 @@ Debug_glUniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
   GL_SERVICE_LOG("glUniform4f"
                  << "(" << location << ", " << x << ", " << y << ", " << z
                  << ", " << w << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform4fFn != nullptr);
   g_driver_gl.debug_fn.glUniform4fFn(location, x, y, z, w);
 }
 
@@ -4843,6 +5131,7 @@ static void GL_BINDING_CALL Debug_glUniform4fv(GLint location,
   GL_SERVICE_LOG("glUniform4fv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform4fvFn != nullptr);
   g_driver_gl.debug_fn.glUniform4fvFn(location, count, v);
 }
 
@@ -4851,6 +5140,7 @@ Debug_glUniform4i(GLint location, GLint x, GLint y, GLint z, GLint w) {
   GL_SERVICE_LOG("glUniform4i"
                  << "(" << location << ", " << x << ", " << y << ", " << z
                  << ", " << w << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform4iFn != nullptr);
   g_driver_gl.debug_fn.glUniform4iFn(location, x, y, z, w);
 }
 
@@ -4860,6 +5150,7 @@ static void GL_BINDING_CALL Debug_glUniform4iv(GLint location,
   GL_SERVICE_LOG("glUniform4iv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform4ivFn != nullptr);
   g_driver_gl.debug_fn.glUniform4ivFn(location, count, v);
 }
 
@@ -4868,6 +5159,7 @@ Debug_glUniform4ui(GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3) {
   GL_SERVICE_LOG("glUniform4ui"
                  << "(" << location << ", " << v0 << ", " << v1 << ", " << v2
                  << ", " << v3 << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform4uiFn != nullptr);
   g_driver_gl.debug_fn.glUniform4uiFn(location, v0, v1, v2, v3);
 }
 
@@ -4877,6 +5169,7 @@ static void GL_BINDING_CALL Debug_glUniform4uiv(GLint location,
   GL_SERVICE_LOG("glUniform4uiv"
                  << "(" << location << ", " << count << ", "
                  << static_cast<const void*>(v) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniform4uivFn != nullptr);
   g_driver_gl.debug_fn.glUniform4uivFn(location, count, v);
 }
 
@@ -4887,6 +5180,7 @@ Debug_glUniformBlockBinding(GLuint program,
   GL_SERVICE_LOG("glUniformBlockBinding"
                  << "(" << program << ", " << uniformBlockIndex << ", "
                  << uniformBlockBinding << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformBlockBindingFn != nullptr);
   g_driver_gl.debug_fn.glUniformBlockBindingFn(program, uniformBlockIndex,
                                                uniformBlockBinding);
 }
@@ -4899,6 +5193,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix2fv(GLint location,
                  << "(" << location << ", " << count << ", "
                  << GLEnums::GetStringBool(transpose) << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformMatrix2fvFn != nullptr);
   g_driver_gl.debug_fn.glUniformMatrix2fvFn(location, count, transpose, value);
 }
 
@@ -4910,6 +5205,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix2x3fv(GLint location,
                  << "(" << location << ", " << count << ", "
                  << GLEnums::GetStringBool(transpose) << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformMatrix2x3fvFn != nullptr);
   g_driver_gl.debug_fn.glUniformMatrix2x3fvFn(location, count, transpose,
                                               value);
 }
@@ -4922,6 +5218,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix2x4fv(GLint location,
                  << "(" << location << ", " << count << ", "
                  << GLEnums::GetStringBool(transpose) << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformMatrix2x4fvFn != nullptr);
   g_driver_gl.debug_fn.glUniformMatrix2x4fvFn(location, count, transpose,
                                               value);
 }
@@ -4934,6 +5231,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix3fv(GLint location,
                  << "(" << location << ", " << count << ", "
                  << GLEnums::GetStringBool(transpose) << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformMatrix3fvFn != nullptr);
   g_driver_gl.debug_fn.glUniformMatrix3fvFn(location, count, transpose, value);
 }
 
@@ -4945,6 +5243,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix3x2fv(GLint location,
                  << "(" << location << ", " << count << ", "
                  << GLEnums::GetStringBool(transpose) << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformMatrix3x2fvFn != nullptr);
   g_driver_gl.debug_fn.glUniformMatrix3x2fvFn(location, count, transpose,
                                               value);
 }
@@ -4957,6 +5256,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix3x4fv(GLint location,
                  << "(" << location << ", " << count << ", "
                  << GLEnums::GetStringBool(transpose) << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformMatrix3x4fvFn != nullptr);
   g_driver_gl.debug_fn.glUniformMatrix3x4fvFn(location, count, transpose,
                                               value);
 }
@@ -4969,6 +5269,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix4fv(GLint location,
                  << "(" << location << ", " << count << ", "
                  << GLEnums::GetStringBool(transpose) << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformMatrix4fvFn != nullptr);
   g_driver_gl.debug_fn.glUniformMatrix4fvFn(location, count, transpose, value);
 }
 
@@ -4980,6 +5281,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix4x2fv(GLint location,
                  << "(" << location << ", " << count << ", "
                  << GLEnums::GetStringBool(transpose) << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformMatrix4x2fvFn != nullptr);
   g_driver_gl.debug_fn.glUniformMatrix4x2fvFn(location, count, transpose,
                                               value);
 }
@@ -4992,6 +5294,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix4x3fv(GLint location,
                  << "(" << location << ", " << count << ", "
                  << GLEnums::GetStringBool(transpose) << ", "
                  << static_cast<const void*>(value) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUniformMatrix4x3fvFn != nullptr);
   g_driver_gl.debug_fn.glUniformMatrix4x3fvFn(location, count, transpose,
                                               value);
 }
@@ -4999,6 +5302,7 @@ static void GL_BINDING_CALL Debug_glUniformMatrix4x3fv(GLint location,
 static GLboolean GL_BINDING_CALL Debug_glUnmapBuffer(GLenum target) {
   GL_SERVICE_LOG("glUnmapBuffer"
                  << "(" << GLEnums::GetStringEnum(target) << ")");
+  DCHECK(g_driver_gl.debug_fn.glUnmapBufferFn != nullptr);
   GLboolean result = g_driver_gl.debug_fn.glUnmapBufferFn(target);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -5007,18 +5311,21 @@ static GLboolean GL_BINDING_CALL Debug_glUnmapBuffer(GLenum target) {
 static void GL_BINDING_CALL Debug_glUseProgram(GLuint program) {
   GL_SERVICE_LOG("glUseProgram"
                  << "(" << program << ")");
+  DCHECK(g_driver_gl.debug_fn.glUseProgramFn != nullptr);
   g_driver_gl.debug_fn.glUseProgramFn(program);
 }
 
 static void GL_BINDING_CALL Debug_glValidateProgram(GLuint program) {
   GL_SERVICE_LOG("glValidateProgram"
                  << "(" << program << ")");
+  DCHECK(g_driver_gl.debug_fn.glValidateProgramFn != nullptr);
   g_driver_gl.debug_fn.glValidateProgramFn(program);
 }
 
 static void GL_BINDING_CALL Debug_glVertexAttrib1f(GLuint indx, GLfloat x) {
   GL_SERVICE_LOG("glVertexAttrib1f"
                  << "(" << indx << ", " << x << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttrib1fFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttrib1fFn(indx, x);
 }
 
@@ -5027,6 +5334,7 @@ static void GL_BINDING_CALL Debug_glVertexAttrib1fv(GLuint indx,
   GL_SERVICE_LOG("glVertexAttrib1fv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttrib1fvFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttrib1fvFn(indx, values);
 }
 
@@ -5035,6 +5343,7 @@ static void GL_BINDING_CALL Debug_glVertexAttrib2f(GLuint indx,
                                                    GLfloat y) {
   GL_SERVICE_LOG("glVertexAttrib2f"
                  << "(" << indx << ", " << x << ", " << y << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttrib2fFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttrib2fFn(indx, x, y);
 }
 
@@ -5043,6 +5352,7 @@ static void GL_BINDING_CALL Debug_glVertexAttrib2fv(GLuint indx,
   GL_SERVICE_LOG("glVertexAttrib2fv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttrib2fvFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttrib2fvFn(indx, values);
 }
 
@@ -5052,6 +5362,7 @@ static void GL_BINDING_CALL Debug_glVertexAttrib3f(GLuint indx,
                                                    GLfloat z) {
   GL_SERVICE_LOG("glVertexAttrib3f"
                  << "(" << indx << ", " << x << ", " << y << ", " << z << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttrib3fFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttrib3fFn(indx, x, y, z);
 }
 
@@ -5060,6 +5371,7 @@ static void GL_BINDING_CALL Debug_glVertexAttrib3fv(GLuint indx,
   GL_SERVICE_LOG("glVertexAttrib3fv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttrib3fvFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttrib3fvFn(indx, values);
 }
 
@@ -5071,6 +5383,7 @@ static void GL_BINDING_CALL Debug_glVertexAttrib4f(GLuint indx,
   GL_SERVICE_LOG("glVertexAttrib4f"
                  << "(" << indx << ", " << x << ", " << y << ", " << z << ", "
                  << w << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttrib4fFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttrib4fFn(indx, x, y, z, w);
 }
 
@@ -5079,6 +5392,7 @@ static void GL_BINDING_CALL Debug_glVertexAttrib4fv(GLuint indx,
   GL_SERVICE_LOG("glVertexAttrib4fv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttrib4fvFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttrib4fvFn(indx, values);
 }
 
@@ -5086,6 +5400,7 @@ static void GL_BINDING_CALL Debug_glVertexAttribDivisorANGLE(GLuint index,
                                                              GLuint divisor) {
   GL_SERVICE_LOG("glVertexAttribDivisorANGLE"
                  << "(" << index << ", " << divisor << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttribDivisorANGLEFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttribDivisorANGLEFn(index, divisor);
 }
 
@@ -5094,6 +5409,7 @@ Debug_glVertexAttribI4i(GLuint indx, GLint x, GLint y, GLint z, GLint w) {
   GL_SERVICE_LOG("glVertexAttribI4i"
                  << "(" << indx << ", " << x << ", " << y << ", " << z << ", "
                  << w << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttribI4iFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttribI4iFn(indx, x, y, z, w);
 }
 
@@ -5102,6 +5418,7 @@ static void GL_BINDING_CALL Debug_glVertexAttribI4iv(GLuint indx,
   GL_SERVICE_LOG("glVertexAttribI4iv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttribI4ivFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttribI4ivFn(indx, values);
 }
 
@@ -5110,6 +5427,7 @@ Debug_glVertexAttribI4ui(GLuint indx, GLuint x, GLuint y, GLuint z, GLuint w) {
   GL_SERVICE_LOG("glVertexAttribI4ui"
                  << "(" << indx << ", " << x << ", " << y << ", " << z << ", "
                  << w << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttribI4uiFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttribI4uiFn(indx, x, y, z, w);
 }
 
@@ -5118,6 +5436,7 @@ static void GL_BINDING_CALL Debug_glVertexAttribI4uiv(GLuint indx,
   GL_SERVICE_LOG("glVertexAttribI4uiv"
                  << "(" << indx << ", " << static_cast<const void*>(values)
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttribI4uivFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttribI4uivFn(indx, values);
 }
 
@@ -5130,6 +5449,7 @@ static void GL_BINDING_CALL Debug_glVertexAttribIPointer(GLuint indx,
                  << "(" << indx << ", " << size << ", "
                  << GLEnums::GetStringEnum(type) << ", " << stride << ", "
                  << static_cast<const void*>(ptr) << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttribIPointerFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttribIPointerFn(indx, size, type, stride, ptr);
 }
 
@@ -5144,6 +5464,7 @@ static void GL_BINDING_CALL Debug_glVertexAttribPointer(GLuint indx,
                  << GLEnums::GetStringEnum(type) << ", "
                  << GLEnums::GetStringBool(normalized) << ", " << stride << ", "
                  << static_cast<const void*>(ptr) << ")");
+  DCHECK(g_driver_gl.debug_fn.glVertexAttribPointerFn != nullptr);
   g_driver_gl.debug_fn.glVertexAttribPointerFn(indx, size, type, normalized,
                                                stride, ptr);
 }
@@ -5155,6 +5476,7 @@ static void GL_BINDING_CALL Debug_glViewport(GLint x,
   GL_SERVICE_LOG("glViewport"
                  << "(" << x << ", " << y << ", " << width << ", " << height
                  << ")");
+  DCHECK(g_driver_gl.debug_fn.glViewportFn != nullptr);
   g_driver_gl.debug_fn.glViewportFn(x, y, width, height);
 }
 
@@ -5163,6 +5485,7 @@ static GLenum GL_BINDING_CALL Debug_glWaitSync(GLsync sync,
                                                GLuint64 timeout) {
   GL_SERVICE_LOG("glWaitSync"
                  << "(" << sync << ", " << flags << ", " << timeout << ")");
+  DCHECK(g_driver_gl.debug_fn.glWaitSyncFn != nullptr);
   GLenum result = g_driver_gl.debug_fn.glWaitSyncFn(sync, flags, timeout);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
