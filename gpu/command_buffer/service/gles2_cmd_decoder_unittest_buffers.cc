@@ -21,6 +21,41 @@ namespace {
 
 }  // namespace anonymous
 
+TEST_P(GLES2DecoderTest, BindBufferBaseValidArgs) {
+  EXPECT_CALL(
+      *gl_, BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kServiceBufferId));
+  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, _))
+      .WillOnce(SetArgPointee<1>(4))
+      .RetiresOnSaturation();
+  SpecializedSetup<cmds::BindBufferBase, 0>(true);
+  cmds::BindBufferBase cmd;
+  cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, client_buffer_id_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES2DecoderTest, BindBufferBaseValidArgsNewId) {
+  EXPECT_CALL(*gl_,
+              BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewServiceId));
+  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS, _))
+      .WillOnce(SetArgPointee<1>(4))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GenBuffersARB(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId));
+  SpecializedSetup<cmds::BindBufferBase, 0>(true);
+  cmds::BindBufferBase cmd;
+  cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewClientId);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetBuffer(kNewClientId) != NULL);
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderTest, MapBufferRangeUnmapBufferReadSucceeds) {
   const GLenum kTarget = GL_ARRAY_BUFFER;
   const GLintptr kOffset = 10;

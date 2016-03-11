@@ -4558,6 +4558,36 @@ void GLES2DecoderImpl::DoBindBufferBase(GLenum target, GLuint index,
     // TODO(kbr): track indexed bound buffers.
     service_id = buffer->service_id();
   }
+  switch (target) {
+    case GL_TRANSFORM_FEEDBACK_BUFFER: {
+      GLint max_transform_feedback_separate_attribs = 0;
+      DoGetIntegerv(GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS,
+                    &max_transform_feedback_separate_attribs);
+      if (index >=
+          static_cast<GLuint>(max_transform_feedback_separate_attribs)) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                           "glBindBufferBase", "index out of range");
+        return;
+      }
+      break;
+    }
+    case GL_UNIFORM_BUFFER: {
+      GLint max_uniform_buffer_bindings = 0;
+      DoGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS,
+                    &max_uniform_buffer_bindings);
+      if (index >= static_cast<GLuint>(max_uniform_buffer_bindings)) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                           "glBindBufferBase", "index out of range");
+        return;
+      }
+      break;
+    }
+    default:
+      LOCAL_SET_GL_ERROR_INVALID_ENUM(
+          "glBindBufferBase", target, "invalid target");
+      return;
+  }
+  state_.SetBoundBuffer(target, buffer);
   glBindBufferBase(target, index, service_id);
 }
 

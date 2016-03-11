@@ -2406,6 +2406,7 @@ _FUNCTION_INFO = {
     'type': 'Bind',
     'decoder_func': 'DoBindBufferBase',
     'gen_func': 'GenBuffersARB',
+    'unit_test': False,
     'unsafe': True,
   },
   'BindBufferRange': {

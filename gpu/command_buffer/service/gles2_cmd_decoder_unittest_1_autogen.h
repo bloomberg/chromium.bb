@@ -51,35 +51,6 @@ TEST_P(GLES2DecoderTest1, BindBufferInvalidArgs0_0) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest1, BindBufferBaseValidArgs) {
-  EXPECT_CALL(
-      *gl_, BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kServiceBufferId));
-  SpecializedSetup<cmds::BindBufferBase, 0>(true);
-  cmds::BindBufferBase cmd;
-  cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, client_buffer_id_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
-TEST_P(GLES2DecoderTest1, BindBufferBaseValidArgsNewId) {
-  EXPECT_CALL(*gl_,
-              BindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewServiceId));
-  EXPECT_CALL(*gl_, GenBuffersARB(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  SpecializedSetup<cmds::BindBufferBase, 0>(true);
-  cmds::BindBufferBase cmd;
-  cmd.Init(GL_TRANSFORM_FEEDBACK_BUFFER, 2, kNewClientId);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetBuffer(kNewClientId) != NULL);
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
 TEST_P(GLES2DecoderTest1, BindBufferRangeValidArgs) {
   EXPECT_CALL(*gl_, BindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, 2,
                                     kServiceBufferId, 4, 4));

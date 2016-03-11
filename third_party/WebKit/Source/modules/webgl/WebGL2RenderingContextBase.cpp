@@ -2144,6 +2144,10 @@ WebGLTransformFeedback* WebGL2RenderingContextBase::createTransformFeedback()
 
 void WebGL2RenderingContextBase::deleteTransformFeedback(WebGLTransformFeedback* feedback)
 {
+    if (transformFeedbackActive()) {
+        synthesizeGLError(GL_INVALID_OPERATION, "deleteTransformFeedback", "transform feedback is active");
+        return;
+    }
     if (feedback == m_transformFeedbackBinding)
         m_transformFeedbackBinding = nullptr;
 
