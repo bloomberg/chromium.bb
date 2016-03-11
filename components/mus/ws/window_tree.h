@@ -29,6 +29,10 @@ class Insets;
 class Rect;
 }
 
+namespace ui {
+class Event;
+}
+
 namespace mus {
 namespace ws {
 
@@ -135,7 +139,7 @@ class WindowTree : public mojom::WindowTree,
   bool SetWindowVisibility(const ClientWindowId& window_id, bool visible);
   bool Embed(const ClientWindowId& window_id,
              mojom::WindowTreeClientPtr client);
-  void DispatchInputEvent(ServerWindow* target, mojom::EventPtr event);
+  void DispatchInputEvent(ServerWindow* target, const ui::Event& event);
 
   bool IsWaitingForNewTopLevelWindow(uint32_t wm_change_id);
   void OnWindowManagerCreatedTopLevelWindow(uint32_t wm_change_id,
@@ -144,7 +148,7 @@ class WindowTree : public mojom::WindowTree,
 
   // Calls through to the client.
   void OnChangeCompleted(uint32_t change_id, bool success);
-  void OnAccelerator(uint32_t accelerator_id, mojom::EventPtr event);
+  void OnAccelerator(uint32_t accelerator_id, const ui::Event& event);
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
@@ -289,7 +293,7 @@ class WindowTree : public mojom::WindowTree,
   void PrepareForEmbed(ServerWindow* window);
   void RemoveChildrenAsPartOfEmbed(ServerWindow* window);
 
-  void DispatchInputEventImpl(ServerWindow* target, mojom::EventPtr event);
+  void DispatchInputEventImpl(ServerWindow* target, const ui::Event& event);
 
   // Calls OnChangeCompleted() on the client.
   void NotifyChangeCompleted(uint32_t change_id,

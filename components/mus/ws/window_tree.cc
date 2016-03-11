@@ -39,8 +39,8 @@ namespace ws {
 
 class TargetedEvent : public ServerWindowObserver {
  public:
-  TargetedEvent(ServerWindow* target, mojom::EventPtr event)
-      : target_(target), event_(std::move(event)) {
+  TargetedEvent(ServerWindow* target, const ui::Event& event)
+      : target_(target), event_(ui::Event::Clone(event)) {
     target_->AddObserver(this);
   }
   ~TargetedEvent() override {
@@ -49,7 +49,7 @@ class TargetedEvent : public ServerWindowObserver {
   }
 
   ServerWindow* target() { return target_; }
-  mojom::EventPtr event() { return std::move(event_); }
+  ui::Event* event() { return event_.get(); }
 
  private:
   // ServerWindowObserver:
@@ -60,7 +60,7 @@ class TargetedEvent : public ServerWindowObserver {
   }
 
   ServerWindow* target_;
-  mojom::EventPtr event_;
+  scoped_ptr<ui::Event> event_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetedEvent);
 };
@@ -285,11 +285,10 @@ bool WindowTree::Embed(const ClientWindowId& window_id,
 }
 
 void WindowTree::DispatchInputEvent(ServerWindow* target,
-                                    mojom::EventPtr event) {
+                                    const ui::Event& event) {
   if (event_ack_id_) {
     // This is currently waiting for an event ack. Add it to the queue.
-    event_queue_.push(
-        make_scoped_ptr(new TargetedEvent(target, std::move(event))));
+    event_queue_.push(make_scoped_ptr(new TargetedEvent(target, event)));
     // TODO(sad): If the |event_queue_| grows too large, then this should notify
     // Display, so that it can stop sending events.
     return;
@@ -299,12 +298,11 @@ void WindowTree::DispatchInputEvent(ServerWindow* target,
   // and dispatch the latest event from the queue instead that still has a live
   // target.
   if (!event_queue_.empty()) {
-    event_queue_.push(
-        make_scoped_ptr(new TargetedEvent(target, std::move(event))));
+    event_queue_.push(make_scoped_ptr(new TargetedEvent(target, event)));
     return;
   }
 
-  DispatchInputEventImpl(target, std::move(event));
+  DispatchInputEventImpl(target, event);
 }
 
 bool WindowTree::IsWaitingForNewTopLevelWindow(uint32_t wm_change_id) {
@@ -335,9 +333,11 @@ void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
   client()->OnChangeCompleted(change_id, success);
 }
 
-void WindowTree::OnAccelerator(uint32_t accelerator_id, mojom::EventPtr event) {
+void WindowTree::OnAccelerator(uint32_t accelerator_id,
+                               const ui::Event& event) {
   DCHECK(window_manager_internal_);
-  window_manager_internal_->OnAccelerator(accelerator_id, std::move(event));
+  window_manager_internal_->OnAccelerator(accelerator_id,
+                                          mojom::Event::From(event));
 }
 
 void WindowTree::ProcessWindowBoundsChanged(const ServerWindow* window,
@@ -887,18 +887,19 @@ void WindowTree::RemoveChildrenAsPartOfEmbed(ServerWindow* window) {
 }
 
 void WindowTree::DispatchInputEventImpl(ServerWindow* target,
-                                        mojom::EventPtr event) {
+                                        const ui::Event& event) {
   DCHECK(!event_ack_id_);
   // We do not want to create a sequential id for each event, because that can
-  // leak some information to the client. So instead, manufacture the id from
-  // the event pointer.
-  event_ack_id_ =
-      0x1000000 | (reinterpret_cast<uintptr_t>(event.get()) & 0xffffff);
+  // leak some information to the client. So instead, manufacture the id
+  // randomly.
+  // TODO(moshayedi): Find a faster way to generate ids.
+  event_ack_id_ = 0x1000000 | (rand() & 0xffffff);
   event_source_wms_ = GetWindowManagerState(target);
   // Should only get events from windows attached to a host.
   DCHECK(event_source_wms_);
-  client()->OnWindowInputEvent(
-      event_ack_id_, ClientWindowIdForWindow(target).id, std::move(event));
+  client()->OnWindowInputEvent(event_ack_id_,
+                               ClientWindowIdForWindow(target).id,
+                               mojom::Event::From(event));
 }
 
 void WindowTree::NewWindow(
@@ -1173,7 +1174,7 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id) {
   if (!event_queue_.empty()) {
     DCHECK(!event_ack_id_);
     ServerWindow* target = nullptr;
-    mojom::EventPtr event;
+    ui::Event* event = nullptr;
     do {
       scoped_ptr<TargetedEvent> targeted_event =
           std::move(event_queue_.front());
@@ -1182,7 +1183,7 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id) {
       event = targeted_event->event();
     } while (!event_queue_.empty() && !GetDisplay(target));
     if (target)
-      DispatchInputEventImpl(target, std::move(event));
+      DispatchInputEventImpl(target, *event);
   }
 }
 

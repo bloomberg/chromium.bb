@@ -11,7 +11,6 @@
 #include "components/mus/ws/user_display_manager.h"
 #include "components/mus/ws/user_id_tracker.h"
 #include "components/mus/ws/window_tree.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "ui/events/event.h"
 
@@ -188,7 +187,6 @@ bool WindowManagerState::IsActive() const {
 }
 
 void WindowManagerState::ProcessEvent(const ui::Event& event) {
-  mojom::EventPtr mojo_event(mojom::Event::From(event));
   // If this is still waiting for an ack from a previously sent event, then
   // queue up the event to be dispatched once the ack is received.
   if (event_ack_timer_.IsRunning()) {
@@ -294,13 +292,13 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
                          &WindowManagerState::OnEventAckTimeout);
 
   tree_awaiting_input_ack_ = tree;
-  tree->DispatchInputEvent(target, mojom::Event::From(event));
+  tree->DispatchInputEvent(target, event);
 }
 
 void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
                                        const ui::Event& event) {
   DCHECK(IsActive());
-  tree_->OnAccelerator(accelerator_id, mojom::Event::From(event));
+  tree_->OnAccelerator(accelerator_id, event);
 }
 
 void WindowManagerState::SetFocusedWindowFromEventDispatcher(
