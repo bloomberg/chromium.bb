@@ -680,7 +680,7 @@ static int pcache1Init(void *NotUsed){
   **   *  Otherwise use separate caches (mode-1)
   */
 #ifdef SQLITE_SEPARATE_CACHE_POOLS
-  const int separateCache = 1;
+  pcache1.separateCache = 1;
 #elif defined(SQLITE_ENABLE_MEMORY_MANAGEMENT)
   pcache1.separateCache = 0;
 #elif SQLITE_THREADSAFE
