@@ -97,8 +97,6 @@ class Display : public PlatformDisplayDelegate,
   ServerWindow* GetRootWithId(const WindowId& id);
 
   WindowManagerState* GetWindowManagerStateWithRoot(const ServerWindow* window);
-  // TODO(sky): this is wrong, plumb through user_id.
-  WindowManagerState* GetFirstWindowManagerState();
   WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id) {
     return const_cast<WindowManagerState*>(
         const_cast<const Display*>(this)->GetWindowManagerStateForUser(

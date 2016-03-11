@@ -138,12 +138,6 @@ WindowManagerState* Display::GetWindowManagerStateWithRoot(
   return nullptr;
 }
 
-WindowManagerState* Display::GetFirstWindowManagerState() {
-  return window_manager_state_map_.empty()
-             ? nullptr
-             : window_manager_state_map_.begin()->second.get();
-}
-
 const WindowManagerState* Display::GetWindowManagerStateForUser(
     const UserId& user_id) const {
   auto iter = window_manager_state_map_.find(user_id);
