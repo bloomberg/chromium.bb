@@ -5,48 +5,16 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_MD_SETTINGS_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_MD_SETTINGS_UI_H_
 
-#include <string>
 #include <unordered_set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "content/public/browser/web_ui_message_handler.h"
 
 namespace settings {
 
-// The base class handler of Javascript messages of settings pages.
-class SettingsPageUIHandler : public content::WebUIMessageHandler {
- public:
-  SettingsPageUIHandler();
-  ~SettingsPageUIHandler() override;
-
-  // WebUIMessageHandler:
-  void RegisterMessages() override {}
-
-  // Called when a navigation re-uses a renderer process (i.e. reload).
-  // TODO(dbeam): move to WebUIMessageHandler?
-  virtual void RenderViewReused() {}
-
- protected:
-  // Helper method for responding to JS requests initiated with
-  // cr.sendWithPromise(), for the case where the returned promise should be
-  // resolved (request succeeded).
-  void ResolveJavascriptCallback(const base::Value& callback_id,
-                                 const base::Value& response);
-
-  // Helper method for responding to JS requests initiated with
-  // cr.sendWithPromise(), for the case where the returned promise should be
-  // rejected (request failed).
-  void RejectJavascriptCallback(const base::Value& callback_id,
-                                const base::Value& response);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SettingsPageUIHandler);
-};
+class SettingsPageUIHandler;
 
 // The WebUI handler for chrome://md-settings.
 class MdSettingsUI : public content::WebUIController,

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
+#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/system_handler.h"
@@ -43,30 +44,6 @@
 #endif  // defined(USE_NSS_CERTS)
 
 namespace settings {
-
-SettingsPageUIHandler::SettingsPageUIHandler() {
-}
-
-SettingsPageUIHandler::~SettingsPageUIHandler() {
-}
-
-void SettingsPageUIHandler::ResolveJavascriptCallback(
-    const base::Value& callback_id,
-    const base::Value& response) {
-  // cr.webUIResponse is a global JS function exposed from cr.js.
-  web_ui()->CallJavascriptFunction(
-      "cr.webUIResponse", callback_id,
-      base::FundamentalValue(true), response);
-}
-
-void SettingsPageUIHandler::RejectJavascriptCallback(
-    const base::Value& callback_id,
-    const base::Value& response) {
-  // cr.webUIResponse is a global JS function exposed from cr.js.
-  web_ui()->CallJavascriptFunction(
-      "cr.webUIResponse", callback_id,
-      base::FundamentalValue(false), response);
-}
 
 MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui),

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
-#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/models/table_model_observer.h"
 

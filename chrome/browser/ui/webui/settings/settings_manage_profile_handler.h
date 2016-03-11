@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 namespace base {
 class StringValue;

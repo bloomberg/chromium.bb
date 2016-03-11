@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/storage/storage_info_fetcher.h"
-#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 class Profile;
 

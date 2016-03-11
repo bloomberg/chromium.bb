@@ -2031,6 +2031,8 @@
       'browser/ui/webui/settings/settings_clear_browsing_data_handler.h',
       'browser/ui/webui/settings/settings_manage_profile_handler.cc',
       'browser/ui/webui/settings/settings_manage_profile_handler.h',
+      'browser/ui/webui/settings/settings_page_ui_handler.cc',
+      'browser/ui/webui/settings/settings_page_ui_handler.h',
       'browser/ui/webui/settings/settings_startup_pages_handler.cc',
       'browser/ui/webui/settings/settings_startup_pages_handler.h',
       'browser/ui/webui/settings/site_settings_handler.cc',

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
-#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 namespace content {
 class WebUIDataSource;

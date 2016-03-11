@@ -9,7 +9,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/image/image_skia.h"
