@@ -37,7 +37,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
       const QuicVersionNegotiationPacket& packet) override {
     version_negotiation_packet_.reset(new QuicVersionNegotiationPacket(packet));
   }
-  void OnRevivedPacket() override {}
 
   bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header) override {
@@ -52,8 +51,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     header_ = header;
     return true;
   }
-
-  void OnFecProtectedPayload(StringPiece payload) override {}
 
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     // Save a copy of the data so it is valid after the packet is processed.
@@ -80,10 +77,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   bool OnPingFrame(const QuicPingFrame& frame) override {
     ping_frames_.push_back(frame);
     return true;
-  }
-
-  void OnFecData(StringPiece redundancy) override {
-    fec_redundancy_ = redundancy.as_string();
   }
 
   bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override {
@@ -136,7 +129,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return stop_waiting_frames_;
   }
   const vector<QuicPingFrame>& ping_frames() const { return ping_frames_; }
-  StringPiece fec_data() const { return fec_redundancy_; }
   const QuicVersionNegotiationPacket* version_negotiation_packet() const {
     return version_negotiation_packet_.get();
   }
@@ -147,7 +139,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   QuicPacketHeader header_;
   scoped_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
   scoped_ptr<QuicPublicResetPacket> public_reset_packet_;
-  string fec_redundancy_;
   vector<QuicAckFrame> ack_frames_;
   vector<QuicStopWaitingFrame> stop_waiting_frames_;
   vector<QuicPingFrame> ping_frames_;
@@ -185,10 +176,6 @@ void SimpleQuicFramer::Reset() {
 
 const QuicPacketHeader& SimpleQuicFramer::header() const {
   return visitor_->header();
-}
-
-StringPiece SimpleQuicFramer::fec_data() const {
-  return visitor_->fec_data();
 }
 
 const QuicVersionNegotiationPacket*

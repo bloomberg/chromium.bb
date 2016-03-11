@@ -140,6 +140,9 @@ NET_EXPORT_PRIVATE extern const char* const kFinalOffsetHeaderKey;
 // Maximum delayed ack time, in ms.
 const int64_t kMaxDelayedAckTimeMs = 25;
 
+// Minimum tail loss probe time in ms.
+static const int64_t kMinTailLossProbeTimeoutMs = 10;
+
 // The timeout before the handshake succeeds.
 const int64_t kInitialIdleTimeoutSecs = 5;
 // The default idle timeout.
@@ -233,26 +236,6 @@ enum class ConnectionCloseSource { FROM_PEER, FROM_SELF };
 
 NET_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                             const Perspective& s);
-
-// Indicates FEC protection level for data being written.
-enum FecProtection {
-  MUST_FEC_PROTECT,  // Callee must FEC protect this data.
-  MAY_FEC_PROTECT    // Callee does not have to but may FEC protect this data.
-};
-
-// Indicates FEC policy.
-enum FecPolicy {
-  FEC_PROTECT_ALWAYS,   // All data in the stream should be FEC protected.
-  FEC_PROTECT_OPTIONAL  // Data in the stream does not need FEC protection.
-};
-
-// Indicates FEC policy about when to send FEC packet.
-enum FecSendPolicy {
-  // Send FEC packet when FEC group is full or when FEC alarm goes off.
-  FEC_ANY_TRIGGER,
-  // Send FEC packet only when FEC alarm goes off.
-  FEC_ALARM_TRIGGER
-};
 
 enum QuicFrameType {
   // Regular frame types. The values set here cannot change without the
@@ -426,24 +409,19 @@ NET_EXPORT_PRIVATE QuicTag MakeQuicTag(char a, char b, char c, char d);
 NET_EXPORT_PRIVATE bool ContainsQuicTag(const QuicTagVector& tag_vector,
                                         QuicTag tag);
 
-// Size in bytes of the data or fec packet header.
+// Size in bytes of the data packet header.
 NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(const QuicPacketHeader& header);
 
 NET_EXPORT_PRIVATE size_t
 GetPacketHeaderSize(QuicConnectionIdLength connection_id_length,
                     bool include_version,
                     bool include_path_id,
-                    QuicPacketNumberLength packet_number_length,
-                    InFecGroup is_in_fec_group);
-
-// Index of the first byte in a QUIC packet of FEC protected data.
-NET_EXPORT_PRIVATE size_t
-GetStartOfFecProtectedData(QuicConnectionIdLength connection_id_length,
-                           bool include_version,
-                           bool include_path_id,
-                           QuicPacketNumberLength packet_number_length);
+                    QuicPacketNumberLength packet_number_length);
 
 // Index of the first byte in a QUIC packet of encrypted data.
+NET_EXPORT_PRIVATE size_t
+GetStartOfEncryptedData(const QuicPacketHeader& header);
+
 NET_EXPORT_PRIVATE size_t
 GetStartOfEncryptedData(QuicConnectionIdLength connection_id_length,
                         bool include_version,
@@ -709,7 +687,7 @@ struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
 // An integer which cannot be a packet number.
 const QuicPacketNumber kInvalidPacketNumber = 0;
 
-// Header for Data or FEC packets.
+// Header for Data packets.
 struct NET_EXPORT_PRIVATE QuicPacketHeader {
   QuicPacketHeader();
   explicit QuicPacketHeader(const QuicPacketPublicHeader& header);
@@ -998,10 +976,6 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
 
   // The set of packets which we're expecting and have not received.
   PacketNumberQueue missing_packets;
-
-  // Packet most recently revived via FEC, 0 if no packet was revived by FEC.
-  // If non-zero, must be present in missing_packets.
-  QuicPacketNumber latest_revived_packet;
 };
 
 // True if the packet number is greater than largest_observed or is listed
@@ -1235,7 +1209,6 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
              bool includes_path_id,
              QuicPacketNumberLength packet_number_length);
 
-  base::StringPiece FecProtectedData() const;
   base::StringPiece AssociatedData() const;
   base::StringPiece Plaintext() const;
 
@@ -1326,7 +1299,6 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   QuicPacketNumberLength packet_number_length;
   EncryptionLevel encryption_level;
   QuicPacketEntropyHash entropy_hash;
-  bool is_fec_packet;
   bool has_ack;
   bool has_stop_waiting;
   QuicPacketNumber original_packet_number;
@@ -1347,7 +1319,6 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
                    TransmissionType transmission_type,
                    QuicTime sent_time,
                    QuicPacketLength bytes_sent,
-                   bool is_fec_packet,
                    bool has_crypto_handshake,
                    bool needs_padding);
 
@@ -1367,8 +1338,6 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   bool in_flight;
   // True if the packet can never be acked, so it can be removed.
   bool is_unackable;
-  // True if the packet is an FEC packet.
-  bool is_fec_packet;
   // True if the packet contains stream data from the crypto stream.
   bool has_crypto_handshake;
   // True if the packet needs padding if it's retransmitted.

@@ -57,18 +57,6 @@ void QuicMultipathReceivedPacketManager::RecordPacketReceived(
   manager->RecordPacketReceived(bytes, header, receipt_time);
 }
 
-void QuicMultipathReceivedPacketManager::RecordPacketRevived(
-    QuicPathId path_id,
-    QuicPacketNumber packet_number) {
-  QuicReceivedPacketManager* manager = path_managers_[path_id];
-  if (manager == nullptr) {
-    QUIC_BUG << "Revived a packet on a non-existent path.";
-    return;
-  }
-
-  manager->RecordPacketRevived(packet_number);
-}
-
 bool QuicMultipathReceivedPacketManager::IsMissing(
     QuicPathId path_id,
     QuicPacketNumber packet_number) {

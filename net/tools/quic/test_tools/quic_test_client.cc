@@ -201,7 +201,6 @@ void QuicTestClient::Initialize() {
   connect_attempted_ = false;
   auto_reconnect_ = false;
   buffer_body_ = true;
-  fec_policy_ = FEC_PROTECT_OPTIONAL;
   ClearPerRequestState();
   // As chrome will generally do this, we want it to be the default when it's
   // not overridden.
@@ -394,8 +393,6 @@ QuicSpdyClientStream* QuicTestClient::GetOrCreateStream() {
     QuicSpdyClientStream* cs = reinterpret_cast<QuicSpdyClientStream*>(stream_);
     cs->SetPriority(priority_);
     cs->set_allow_bidirectional_data(allow_bidirectional_data_);
-    // Set FEC policy on stream.
-    ReliableQuicStreamPeer::SetFecPolicy(stream_, fec_policy_);
   }
 
   return stream_;
@@ -649,15 +646,6 @@ void QuicTestClient::WaitForWriteToFlush() {
   while (connected() && client()->session()->HasDataToWrite()) {
     client_->WaitForEvents();
   }
-}
-
-void QuicTestClient::SetFecPolicy(FecPolicy fec_policy) {
-  fec_policy_ = fec_policy;
-  // Set policy for headers and crypto streams.
-  ReliableQuicStreamPeer::SetFecPolicy(
-      QuicSpdySessionPeer::GetHeadersStream(client()->session()), fec_policy);
-  ReliableQuicStreamPeer::SetFecPolicy(client()->session()->GetCryptoStream(),
-                                       fec_policy);
 }
 
 void QuicTestClient::TestClientDataToResend::Resend() {

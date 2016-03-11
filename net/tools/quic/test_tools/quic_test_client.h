@@ -185,10 +185,6 @@ class QuicTestClient : public test::SimpleClient,
 
   void set_priority(SpdyPriority priority) { priority_ = priority; }
 
-  // Sets client's FEC policy. This policy applies to the data stream(s), and
-  // also to the headers and crypto streams.
-  void SetFecPolicy(FecPolicy fec_policy);
-
   void WaitForWriteToFlush();
 
   EpollServer* epoll_server() { return &epoll_server_; }
@@ -265,8 +261,6 @@ class QuicTestClient : public test::SimpleClient,
   bool auto_reconnect_;
   // Should we buffer the response body? Defaults to true.
   bool buffer_body_;
-  // FEC policy for data sent by this client.
-  FecPolicy fec_policy_;
   // When true allows the sending of a request to continue while the response is
   // arriving.
   bool allow_bidirectional_data_;

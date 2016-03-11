@@ -63,6 +63,9 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   // for the next delayed packet to be written.
   QuicTime ReleaseOldPackets();
 
+  // Sets |delay_alarm_| to fire at |new_deadline|.
+  void SetDelayAlarm(QuicTime new_deadline);
+
   void OnCanWrite();
 
   // The percent of time a packet is simulated as being lost.

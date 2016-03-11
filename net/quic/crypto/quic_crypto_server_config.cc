@@ -997,23 +997,21 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 
   HandshakeFailureReason source_address_token_error = MAX_FAILURE_REASON;
   StringPiece srct;
-  if (FLAGS_quic_validate_stk_without_scid) {
-    if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
-      Config& config =
-          requested_config != nullptr ? *requested_config : *primary_config;
-      source_address_token_error =
-          ParseSourceAddressToken(config, srct, &info->source_address_tokens);
+  if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
+    Config& config =
+        requested_config != nullptr ? *requested_config : *primary_config;
+    source_address_token_error =
+        ParseSourceAddressToken(config, srct, &info->source_address_tokens);
 
-      if (source_address_token_error == HANDSHAKE_OK) {
-        source_address_token_error = ValidateSourceAddressTokens(
-            info->source_address_tokens, info->client_ip, info->now,
-            &client_hello_state->cached_network_params);
-      }
-      info->valid_source_address_token =
-          (source_address_token_error == HANDSHAKE_OK);
-    } else {
-      source_address_token_error = SOURCE_ADDRESS_TOKEN_INVALID_FAILURE;
+    if (source_address_token_error == HANDSHAKE_OK) {
+      source_address_token_error = ValidateSourceAddressTokens(
+          info->source_address_tokens, info->client_ip, info->now,
+          &client_hello_state->cached_network_params);
     }
+    info->valid_source_address_token =
+        (source_address_token_error == HANDSHAKE_OK);
+  } else {
+    source_address_token_error = SOURCE_ADDRESS_TOKEN_INVALID_FAILURE;
   }
 
   if (!requested_config.get()) {
@@ -1026,23 +1024,6 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     // No server config with the requested ID.
     helper.ValidationComplete(QUIC_NO_ERROR, "");
     return;
-  }
-
-  if (!FLAGS_quic_validate_stk_without_scid) {
-    if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
-      source_address_token_error = ParseSourceAddressToken(
-          *requested_config, srct, &info->source_address_tokens);
-
-      if (source_address_token_error == HANDSHAKE_OK) {
-        source_address_token_error = ValidateSourceAddressTokens(
-            info->source_address_tokens, info->client_ip, info->now,
-            &client_hello_state->cached_network_params);
-      }
-      info->valid_source_address_token =
-          (source_address_token_error == HANDSHAKE_OK);
-    } else {
-      source_address_token_error = SOURCE_ADDRESS_TOKEN_INVALID_FAILURE;
-    }
   }
 
   bool found_error = false;
@@ -1140,18 +1121,6 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   StrikeRegisterClient* strike_register_client;
   {
     base::AutoLock locked(strike_register_client_lock_);
-
-    if (strike_register_client_.get() == nullptr) {
-      if (!FLAGS_require_strike_register_or_server_nonce) {
-        strike_register_client_.reset(new LocalStrikeRegisterClient(
-            strike_register_max_entries_,
-            static_cast<uint32_t>(info->now.ToUNIXSeconds()),
-            strike_register_window_secs_, primary_orbit,
-            strike_register_no_startup_period_
-                ? StrikeRegister::NO_STARTUP_PERIOD_NEEDED
-                : StrikeRegister::DENY_REQUESTS_AT_STARTUP));
-      }
-    }
     strike_register_client = strike_register_client_.get();
   }
 

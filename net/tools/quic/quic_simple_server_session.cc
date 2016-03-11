@@ -20,16 +20,24 @@ QuicSimpleServerSession::QuicSimpleServerSession(
     const QuicConfig& config,
     QuicConnection* connection,
     QuicServerSessionVisitor* visitor,
-    const QuicCryptoServerConfig* crypto_config)
-    : QuicServerSessionBase(config, connection, visitor, crypto_config),
+    const QuicCryptoServerConfig* crypto_config,
+    QuicCompressedCertsCache* compressed_certs_cache)
+    : QuicServerSessionBase(config,
+                            connection,
+                            visitor,
+                            crypto_config,
+                            compressed_certs_cache),
       highest_promised_stream_id_(0) {}
 
 QuicSimpleServerSession::~QuicSimpleServerSession() {}
 
 QuicCryptoServerStreamBase*
 QuicSimpleServerSession::CreateQuicCryptoServerStream(
-    const QuicCryptoServerConfig* crypto_config) {
-  return new QuicCryptoServerStream(crypto_config, this);
+    const QuicCryptoServerConfig* crypto_config,
+    QuicCompressedCertsCache* compressed_certs_cache) {
+  return new QuicCryptoServerStream(crypto_config, compressed_certs_cache,
+                                    FLAGS_enable_quic_stateless_reject_support,
+                                    this);
 }
 
 void QuicSimpleServerSession::StreamDraining(QuicStreamId id) {

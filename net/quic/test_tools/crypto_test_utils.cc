@@ -136,11 +136,14 @@ int CryptoTestUtils::HandshakeWithFakeServer(
   QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING,
                                        QuicRandom::GetInstance(),
                                        ProofSourceForTesting());
+  QuicCompressedCertsCache compressed_certs_cache(
+      QuicCompressedCertsCache::kQuicCompressedCertsCacheSize);
   SetupCryptoServerConfigForTest(server_conn->clock(),
                                  server_conn->random_generator(), &config,
                                  &crypto_config, options);
 
-  TestQuicSpdyServerSession server_session(server_conn, config, &crypto_config);
+  TestQuicSpdyServerSession server_session(server_conn, config, &crypto_config,
+                                           &compressed_certs_cache);
 
   // The client's handshake must have been started already.
   CHECK_NE(0u, client_conn->encrypted_packets_.size());

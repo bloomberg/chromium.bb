@@ -77,7 +77,6 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   client_config.SetSocketReceiveBufferToSend(kDefaultSocketReceiveBuffer);
   QuicTagVector copt;
   copt.push_back(kTBBR);
-  copt.push_back(kFHDR);
   client_config.SetConnectionOptionsToSend(copt);
   CryptoHandshakeMessage msg;
   client_config.ToHandshakeMessage(&msg);
@@ -102,10 +101,9 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_EQ(kDefaultMaxStreamsPerConnection, config_.MaxStreamsPerConnection());
   EXPECT_EQ(10 * kNumMicrosPerMilli, config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_TRUE(config_.HasReceivedConnectionOptions());
-  EXPECT_EQ(3u, config_.ReceivedConnectionOptions().size());
+  EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
   EXPECT_EQ(config_.ReceivedConnectionOptions()[0], kIW50);
   EXPECT_EQ(config_.ReceivedConnectionOptions()[1], kTBBR);
-  EXPECT_EQ(config_.ReceivedConnectionOptions()[2], kFHDR);
   EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),
             2 * kInitialStreamFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialSessionFlowControlWindowBytes(),
@@ -228,12 +226,9 @@ TEST_F(QuicConfigTest, HasClientSentConnectionOption) {
   QuicConfig client_config;
   QuicTagVector copt;
   copt.push_back(kTBBR);
-  copt.push_back(kFHDR);
   client_config.SetConnectionOptionsToSend(copt);
   EXPECT_TRUE(client_config.HasClientSentConnectionOption(
       kTBBR, Perspective::IS_CLIENT));
-  EXPECT_TRUE(client_config.HasClientSentConnectionOption(
-      kFHDR, Perspective::IS_CLIENT));
 
   CryptoHandshakeMessage msg;
   client_config.ToHandshakeMessage(&msg);
@@ -245,11 +240,9 @@ TEST_F(QuicConfigTest, HasClientSentConnectionOption) {
   EXPECT_TRUE(config_.negotiated());
 
   EXPECT_TRUE(config_.HasReceivedConnectionOptions());
-  EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
+  EXPECT_EQ(1u, config_.ReceivedConnectionOptions().size());
   EXPECT_TRUE(
       config_.HasClientSentConnectionOption(kTBBR, Perspective::IS_SERVER));
-  EXPECT_TRUE(
-      config_.HasClientSentConnectionOption(kFHDR, Perspective::IS_SERVER));
 }
 
 }  // namespace

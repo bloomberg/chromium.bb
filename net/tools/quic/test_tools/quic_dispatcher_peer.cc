@@ -30,6 +30,12 @@ QuicPacketWriter* QuicDispatcherPeer::GetWriter(QuicDispatcher* dispatcher) {
 }
 
 // static
+QuicCompressedCertsCache* QuicDispatcherPeer::GetCache(
+    QuicDispatcher* dispatcher) {
+  return dispatcher->compressed_certs_cache();
+}
+
+// static
 QuicConnectionHelperInterface* QuicDispatcherPeer::GetHelper(
     QuicDispatcher* dispatcher) {
   return dispatcher->helper_.get();

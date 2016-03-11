@@ -36,8 +36,6 @@ class QuicPacketCreatorPeer {
       QuicPacketCreator* creator);
   static void SetPacketNumber(QuicPacketCreator* creator, QuicPacketNumber s);
   static void FillPacketHeader(QuicPacketCreator* creator,
-                               QuicFecGroupNumber fec_group,
-                               bool fec_flag,
                                QuicPacketHeader* header);
   static size_t CreateStreamFrame(QuicPacketCreator* creator,
                                   QuicStreamId id,
@@ -46,21 +44,10 @@ class QuicPacketCreatorPeer {
                                   QuicStreamOffset offset,
                                   bool fin,
                                   QuicFrame* frame);
-  static bool IsFecProtected(QuicPacketCreator* creator);
-  static bool IsFecEnabled(QuicPacketCreator* creator);
-  static void StartFecProtectingPackets(QuicPacketCreator* creator);
-  static void StopFecProtectingPackets(QuicPacketCreator* creator);
-  static void SerializeFec(QuicPacketCreator* creator,
-                           char* buffer,
-                           size_t buffer_len);
   static SerializedPacket SerializeAllFrames(QuicPacketCreator* creator,
                                              const QuicFrames& frames,
                                              char* buffer,
                                              size_t buffer_len);
-  static void ResetFecGroup(QuicPacketCreator* creator);
-  static QuicTime::Delta GetFecTimeout(QuicPacketCreator* creator);
-  // TODO(rtenneti): Delete this code after the 0.25 RTT FEC experiment.
-  static float GetRttMultiplierForFecTimeout(QuicPacketCreator* creator);
   static EncryptionLevel GetEncryptionLevel(QuicPacketCreator* creator);
   static QuicPathId GetCurrentPath(QuicPacketCreator* creator);
 

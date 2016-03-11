@@ -28,6 +28,8 @@ class QuicDispatcherPeer {
 
   static QuicPacketWriter* GetWriter(QuicDispatcher* dispatcher);
 
+  static QuicCompressedCertsCache* GetCache(QuicDispatcher* dispatcher);
+
   static QuicConnectionHelperInterface* GetHelper(QuicDispatcher* dispatcher);
 
   static QuicDispatcher::WriteBlockedList* GetWriteBlockedList(

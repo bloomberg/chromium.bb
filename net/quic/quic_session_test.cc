@@ -155,12 +155,11 @@ class TestSession : public QuicSpdySession {
       QuicIOVector data,
       QuicStreamOffset offset,
       bool fin,
-      FecProtection fec_protection,
       QuicAckListenerInterface* ack_notifier_delegate) override {
     QuicConsumedData consumed(data.total_length, fin);
     if (!writev_consumes_all_data_) {
-      consumed = QuicSession::WritevData(id, data, offset, fin, fec_protection,
-                                         ack_notifier_delegate);
+      consumed =
+          QuicSession::WritevData(id, data, offset, fin, ack_notifier_delegate);
     }
     QuicSessionPeer::GetWriteBlockedStreams(this)->UpdateBytesForStream(
         id, consumed.bytes_consumed);
@@ -173,8 +172,7 @@ class TestSession : public QuicSpdySession {
 
   QuicConsumedData SendStreamData(QuicStreamId id) {
     struct iovec iov;
-    return WritevData(id, MakeIOVector("not empty", &iov), 0, true,
-                      MAY_FEC_PROTECT, nullptr);
+    return WritevData(id, MakeIOVector("not empty", &iov), 0, true, nullptr);
   }
 
   QuicConsumedData SendLargeFakeData(QuicStreamId id, int bytes) {
@@ -182,8 +180,7 @@ class TestSession : public QuicSpdySession {
     struct iovec iov;
     iov.iov_base = nullptr;  // should not be read.
     iov.iov_len = static_cast<size_t>(bytes);
-    return WritevData(id, QuicIOVector(&iov, 1, bytes), 0, true,
-                      MAY_FEC_PROTECT, nullptr);
+    return WritevData(id, QuicIOVector(&iov, 1, bytes), 0, true, nullptr);
   }
 
   using QuicSession::PostProcessAfterData;
@@ -388,29 +385,19 @@ TEST_P(QuicSessionTestServer, OnCanWrite) {
   InSequence s;
   StreamBlocker stream2_blocker(&session_, stream2->id());
 
-  if (FLAGS_quic_batch_writes) {
-    // Reregister, to test the loop limit.
-    EXPECT_CALL(*stream2, OnCanWrite())
-        .WillOnce(Invoke(&stream2_blocker,
-                         &StreamBlocker::MarkConnectionLevelWriteBlocked));
-    // 2 will get called a second time as it didn't finish its block
-    EXPECT_CALL(*stream2, OnCanWrite());
-    EXPECT_CALL(*stream6, OnCanWrite());
-    // 4 will not get called, as we exceeded the loop limit.
-  } else {
-    // Reregister, to test the loop limit.
-    EXPECT_CALL(*stream2, OnCanWrite())
-        .WillOnce(Invoke(&stream2_blocker,
-                         &StreamBlocker::MarkConnectionLevelWriteBlocked));
-    EXPECT_CALL(*stream6, OnCanWrite());
-    EXPECT_CALL(*stream4, OnCanWrite());
-  }
+  // Reregister, to test the loop limit.
+  EXPECT_CALL(*stream2, OnCanWrite())
+      .WillOnce(Invoke(&stream2_blocker,
+                       &StreamBlocker::MarkConnectionLevelWriteBlocked));
+  // 2 will get called a second time as it didn't finish its block
+  EXPECT_CALL(*stream2, OnCanWrite());
+  EXPECT_CALL(*stream6, OnCanWrite());
+  // 4 will not get called, as we exceeded the loop limit.
   session_.OnCanWrite();
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
 }
 
 TEST_P(QuicSessionTestServer, TestBatchedWrites) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_batch_writes, true);
   TestStream* stream2 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream4 = session_.CreateOutgoingDynamicStream(kDefaultPriority);
   TestStream* stream6 = session_.CreateOutgoingDynamicStream(kDefaultPriority);

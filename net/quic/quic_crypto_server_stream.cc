@@ -48,15 +48,18 @@ void ServerHelloNotifier::OnPacketRetransmitted(int /*retransmitted_bytes*/) {}
 
 QuicCryptoServerStream::QuicCryptoServerStream(
     const QuicCryptoServerConfig* crypto_config,
+    QuicCompressedCertsCache* compressed_certs_cache,
+    bool use_stateless_rejects_if_peer_supported,
     QuicSession* session)
     : QuicCryptoServerStreamBase(session),
       crypto_config_(crypto_config),
+      compressed_certs_cache_(compressed_certs_cache),
       validate_client_hello_cb_(nullptr),
       num_handshake_messages_(0),
       num_handshake_messages_with_server_nonces_(0),
       num_server_config_update_messages_sent_(0),
       use_stateless_rejects_if_peer_supported_(
-          FLAGS_enable_quic_stateless_reject_support),
+          use_stateless_rejects_if_peer_supported),
       peer_supports_stateless_rejects_(false) {
   DCHECK_EQ(Perspective::IS_SERVER, session->connection()->perspective());
 }

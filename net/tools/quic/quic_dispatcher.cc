@@ -30,11 +30,7 @@ class DeleteSessionsAlarm : public QuicAlarm::Delegate {
   explicit DeleteSessionsAlarm(QuicDispatcher* dispatcher)
       : dispatcher_(dispatcher) {}
 
-  QuicTime OnAlarm() override {
-    dispatcher_->DeleteSessions();
-    // Let the dispatcher register the alarm at appropriate time.
-    return QuicTime::Zero();
-  }
+  void OnAlarm() override { dispatcher_->DeleteSessions(); }
 
  private:
   // Not owned.
@@ -51,6 +47,8 @@ QuicDispatcher::QuicDispatcher(const QuicConfig& config,
                                QuicConnectionHelperInterface* helper)
     : config_(config),
       crypto_config_(crypto_config),
+      compressed_certs_cache_(
+          QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
       helper_(helper),
       delete_sessions_alarm_(
           helper_->CreateAlarm(new DeleteSessionsAlarm(this))),
@@ -387,14 +385,6 @@ bool QuicDispatcher::OnPacketHeader(const QuicPacketHeader& /*header*/) {
   return false;
 }
 
-void QuicDispatcher::OnRevivedPacket() {
-  DCHECK(false);
-}
-
-void QuicDispatcher::OnFecProtectedPayload(StringPiece /*payload*/) {
-  DCHECK(false);
-}
-
 bool QuicDispatcher::OnStreamFrame(const QuicStreamFrame& /*frame*/) {
   DCHECK(false);
   return false;
@@ -447,10 +437,6 @@ bool QuicDispatcher::OnPathCloseFrame(const QuicPathCloseFrame& frame) {
   return false;
 }
 
-void QuicDispatcher::OnFecData(StringPiece /*redundancy*/) {
-  DCHECK(false);
-}
-
 void QuicDispatcher::OnPacketComplete() {
   DCHECK(false);
 }
@@ -463,8 +449,8 @@ QuicServerSessionBase* QuicDispatcher::CreateQuicSession(
       connection_id, client_address, helper_.get(), CreatePerConnectionWriter(),
       /* owns_writer= */ true, Perspective::IS_SERVER, supported_versions_);
 
-  QuicServerSessionBase* session =
-      new QuicSimpleServerSession(config_, connection, this, crypto_config_);
+  QuicServerSessionBase* session = new QuicSimpleServerSession(
+      config_, connection, this, crypto_config_, &compressed_certs_cache_);
   session->Initialize();
   return session;
 }

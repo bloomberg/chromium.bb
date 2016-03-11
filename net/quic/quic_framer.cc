@@ -159,13 +159,10 @@ QuicFramer::~QuicFramer() {}
 // static
 size_t QuicFramer::GetMinStreamFrameSize(QuicStreamId stream_id,
                                          QuicStreamOffset offset,
-                                         bool last_frame_in_packet,
-                                         InFecGroup is_in_fec_group) {
-  bool no_stream_frame_length =
-      last_frame_in_packet && is_in_fec_group == NOT_IN_FEC_GROUP;
+                                         bool last_frame_in_packet) {
   return kQuicFrameTypeSize + GetStreamIdSize(stream_id) +
          GetStreamOffsetSize(offset) +
-         (no_stream_frame_length ? 0 : kQuicStreamPayloadLengthSize);
+         (last_frame_in_packet ? 0 : kQuicStreamPayloadLengthSize);
 }
 
 // static
@@ -270,7 +267,6 @@ size_t QuicFramer::GetSerializedFrameLength(
     size_t free_bytes,
     bool first_frame,
     bool last_frame,
-    InFecGroup is_in_fec_group,
     QuicPacketNumberLength packet_number_length) {
   // Prevent a rare crash reported in b/19458523.
   if ((frame.type == STREAM_FRAME || frame.type == ACK_FRAME) &&
@@ -278,7 +274,6 @@ size_t QuicFramer::GetSerializedFrameLength(
     QUIC_BUG << "Cannot compute the length of a null frame. "
              << "type:" << frame.type << "free_bytes:" << free_bytes
              << " first_frame:" << first_frame << " last_frame:" << last_frame
-             << " is_in_fec:" << is_in_fec_group
              << " seq num length:" << packet_number_length;
     set_error(QUIC_INTERNAL_ERROR);
     visitor_->OnError(this);
@@ -288,8 +283,8 @@ size_t QuicFramer::GetSerializedFrameLength(
     // PADDING implies end of packet.
     return free_bytes;
   }
-  size_t frame_len = ComputeFrameLength(frame, last_frame, is_in_fec_group,
-                                        packet_number_length);
+  size_t frame_len =
+      ComputeFrameLength(frame, last_frame, packet_number_length);
   if (frame_len <= free_bytes) {
     // Frame fits within packet. Note that acks may be truncated.
     return frame_len;
@@ -336,9 +331,7 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
   size_t i = 0;
   for (const QuicFrame& frame : frames) {
     // Determine if we should write stream frame length in header.
-    const bool no_stream_frame_length =
-        (header.is_in_fec_group == NOT_IN_FEC_GROUP) &&
-        (i == frames.size() - 1);
+    const bool no_stream_frame_length = i == frames.size() - 1;
     if (!AppendTypeByte(frame, no_stream_frame_length, &writer)) {
       QUIC_BUG << "AppendTypeByte failed";
       return 0;
@@ -419,31 +412,6 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
   }
 
   return writer.length();
-}
-
-QuicPacket* QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
-                                       StringPiece redundancy) {
-  DCHECK_EQ(IN_FEC_GROUP, header.is_in_fec_group);
-  DCHECK_NE(0u, header.fec_group);
-  size_t len = GetPacketHeaderSize(header);
-  len += redundancy.length();
-
-  scoped_ptr<char[]> buffer(new char[len]);
-  QuicDataWriter writer(len, buffer.get());
-  if (!AppendPacketHeader(header, &writer)) {
-    QUIC_BUG << "AppendPacketHeader failed";
-    return nullptr;
-  }
-
-  if (!writer.WriteBytes(redundancy.data(), redundancy.length())) {
-    QUIC_BUG << "Failed to add FEC";
-    return nullptr;
-  }
-
-  return new QuicPacket(
-      buffer.release(), len, true, header.public_header.connection_id_length,
-      header.public_header.version_flag, header.public_header.multipath_flag,
-      header.public_header.packet_number_length);
 }
 
 // static
@@ -619,19 +587,12 @@ bool QuicFramer::ProcessDataPacket(QuicDataReader* encrypted_reader,
     return RaiseError(QUIC_PACKET_TOO_LARGE);
   }
 
+  DCHECK(!header.fec_flag);
   // Handle the payload.
-  if (!header.fec_flag) {
-    if (header.is_in_fec_group == IN_FEC_GROUP) {
-      StringPiece payload = reader.PeekRemainingPayload();
-      visitor_->OnFecProtectedPayload(payload);
-    }
-    if (!ProcessFrameData(&reader, header)) {
-      DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessFrameData sets the error.
-      DLOG(WARNING) << "Unable to process frame data.";
-      return false;
-    }
-  } else {
-    visitor_->OnFecData(reader.ReadRemainingPayload());
+  if (!ProcessFrameData(&reader, header)) {
+    DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessFrameData sets the error.
+    DLOG(WARNING) << "Unable to process frame data.";
+    return false;
   }
 
   visitor_->OnPacketComplete();
@@ -679,36 +640,9 @@ bool QuicFramer::ProcessPublicResetPacket(
   return true;
 }
 
-bool QuicFramer::ProcessRevivedPacket(QuicPacketHeader* header,
-                                      StringPiece payload) {
-  visitor_->OnRevivedPacket();
-
-  header->entropy_hash = GetPacketEntropyHash(*header);
-
-  if (!visitor_->OnPacketHeader(*header)) {
-    return true;
-  }
-
-  if (payload.length() > kMaxPacketSize) {
-    set_detailed_error("Revived packet too large.");
-    return RaiseError(QUIC_PACKET_TOO_LARGE);
-  }
-
-  QuicDataReader reader(payload.data(), payload.length());
-  if (!ProcessFrameData(&reader, *header)) {
-    DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessFrameData sets the error.
-    DLOG(WARNING) << "Unable to process frame data.";
-    return false;
-  }
-
-  visitor_->OnPacketComplete();
-  return true;
-}
-
 bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
                                     QuicDataWriter* writer) {
   DVLOG(1) << "Appending header: " << header;
-  DCHECK(header.fec_group > 0 || header.is_in_fec_group == NOT_IN_FEC_GROUP);
   uint8_t public_flags = 0;
   if (header.public_header.reset_flag) {
     public_flags |= PACKET_PUBLIC_FLAGS_RST;
@@ -785,28 +719,8 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
   if (header.entropy_flag) {
     private_flags |= PACKET_PRIVATE_FLAGS_ENTROPY;
   }
-  if (header.is_in_fec_group == IN_FEC_GROUP) {
-    private_flags |= PACKET_PRIVATE_FLAGS_FEC_GROUP;
-  }
-  if (header.fec_flag) {
-    private_flags |= PACKET_PRIVATE_FLAGS_FEC;
-  }
   if (!writer->WriteUInt8(private_flags)) {
     return false;
-  }
-
-  // The FEC group number is the packet number of the first fec
-  // protected packet, or 0 if this packet is not protected.
-  if (header.is_in_fec_group == IN_FEC_GROUP) {
-    DCHECK_LE(header.fec_group, header.packet_number);
-    DCHECK_LT(header.packet_number - header.fec_group, 255u);
-    // Offset from the current packet number to the first fec
-    // protected packet.
-    uint8_t first_fec_protected_packet_offset =
-        static_cast<uint8_t>(header.packet_number - header.fec_group);
-    if (!writer->WriteBytes(&first_fec_protected_packet_offset, 1)) {
-      return false;
-    }
   }
 
   return true;
@@ -1470,7 +1384,6 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
       set_detailed_error("Unable to read revived packet.");
       return false;
     }
-    ack_frame->latest_revived_packet = revived_packet;
   }
 
   return true;
@@ -1718,6 +1631,27 @@ void QuicFramer::SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter) {
   encrypter_[level].reset(encrypter);
 }
 
+size_t QuicFramer::EncryptInPlace(EncryptionLevel level,
+                                  QuicPathId path_id,
+                                  QuicPacketNumber packet_number,
+                                  size_t ad_len,
+                                  size_t total_len,
+                                  size_t buffer_len,
+                                  char* buffer) {
+  size_t output_length = 0;
+  if (!encrypter_[level]->EncryptPacket(
+          path_id, packet_number,
+          StringPiece(buffer, ad_len),                       // Associated data
+          StringPiece(buffer + ad_len, total_len - ad_len),  // Plaintext
+          buffer + ad_len,  // Destination buffer
+          &output_length, buffer_len - ad_len)) {
+    RaiseError(QUIC_ENCRYPTION_FAILURE);
+    return 0;
+  }
+
+  return ad_len + output_length;
+}
+
 size_t QuicFramer::EncryptPayload(EncryptionLevel level,
                                   QuicPathId path_id,
                                   QuicPacketNumber packet_number,
@@ -1768,7 +1702,7 @@ bool QuicFramer::DecryptPayload(QuicDataReader* encrypted_reader,
                                 size_t* decrypted_length) {
   StringPiece encrypted = encrypted_reader->ReadRemainingPayload();
   DCHECK(decrypter_.get() != nullptr);
-  const StringPiece& associated_data = GetAssociatedDataFromEncryptedPacket(
+  StringPiece associated_data = GetAssociatedDataFromEncryptedPacket(
       packet, header.public_header.connection_id_length,
       header.public_header.version_flag, header.public_header.multipath_flag,
       header.public_header.packet_number_length);
@@ -1822,9 +1756,6 @@ size_t QuicFramer::GetAckFrameSize(
     ack_size += kNumberOfNackRangesSize + kNumberOfRevivedPacketsSize;
     ack_size += min(ack_info.nack_ranges.size(), kMaxNackRanges) *
                 (missing_packet_number_length + PACKET_1BYTE_PACKET_NUMBER);
-    if (ack.latest_revived_packet != 0) {
-      ack_size += largest_observed_length;
-    }
   }
 
   // In version 23, if the ack will be truncated due to too many nack ranges,
@@ -1849,13 +1780,12 @@ size_t QuicFramer::GetAckFrameSize(
 size_t QuicFramer::ComputeFrameLength(
     const QuicFrame& frame,
     bool last_frame_in_packet,
-    InFecGroup is_in_fec_group,
     QuicPacketNumberLength packet_number_length) {
   switch (frame.type) {
     case STREAM_FRAME:
       return GetMinStreamFrameSize(frame.stream_frame->stream_id,
                                    frame.stream_frame->offset,
-                                   last_frame_in_packet, is_in_fec_group) +
+                                   last_frame_in_packet) +
              frame.stream_frame->frame_length;
     case ACK_FRAME: {
       return GetAckFrameSize(*frame.ack_frame, packet_number_length);
@@ -2114,22 +2044,10 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicPacketHeader& header,
   DCHECK_EQ(num_missing_ranges, num_ranges_written);
 
   // Append revived packets.
-  // If not all the revived packets fit, only mention the ones that do.
-  uint8_t num_revived_packets = frame.latest_revived_packet == 0 ? 0 : 1;
-  if (((writer->capacity() - writer->length()) / largest_observed_length) ==
-      0) {
-    num_revived_packets = 0;
-  }
+  // FEC is not supported.
+  uint8_t num_revived_packets = 0;
   if (!writer->WriteBytes(&num_revived_packets, 1)) {
     return false;
-  }
-
-  if (num_revived_packets > 0) {
-    QUIC_BUG_IF(!frame.missing_packets.Contains(frame.latest_revived_packet));
-    if (!AppendPacketSequenceNumber(largest_observed_length,
-                                    frame.latest_revived_packet, writer)) {
-      return false;
-    }
   }
 
   return true;

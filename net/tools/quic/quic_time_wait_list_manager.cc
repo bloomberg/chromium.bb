@@ -34,10 +34,8 @@ class ConnectionIdCleanUpAlarm : public QuicAlarm::Delegate {
       QuicTimeWaitListManager* time_wait_list_manager)
       : time_wait_list_manager_(time_wait_list_manager) {}
 
-  QuicTime OnAlarm() override {
+  void OnAlarm() override {
     time_wait_list_manager_->CleanUpOldConnectionIds();
-    // Let the time wait manager register the alarm at appropriate time.
-    return QuicTime::Zero();
   }
 
  private:

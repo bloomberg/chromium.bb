@@ -145,7 +145,8 @@ class QuicCryptoServerConfigPeer {
       }
 
       ASSERT_TRUE(found) << "Failed to find match for " << i.first
-                         << " in configs:\n" << ConfigsDebug();
+                         << " in configs:\n"
+                         << ConfigsDebug();
     }
   }
 

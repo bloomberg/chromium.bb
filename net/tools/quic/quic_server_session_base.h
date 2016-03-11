@@ -16,6 +16,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/quic/crypto/quic_compressed_certs_cache.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_spdy_session.h"
@@ -58,7 +59,8 @@ class QuicServerSessionBase : public QuicSpdySession {
   QuicServerSessionBase(const QuicConfig& config,
                         QuicConnection* connection,
                         QuicServerSessionVisitor* visitor,
-                        const QuicCryptoServerConfig* crypto_config);
+                        const QuicCryptoServerConfig* crypto_config,
+                        QuicCompressedCertsCache* compressed_certs_cache);
 
   // Override the base class to notify the owner of the connection close.
   void OnConnectionClosed(QuicErrorCode error,
@@ -77,7 +79,8 @@ class QuicServerSessionBase : public QuicSpdySession {
     return crypto_stream_.get();
   }
 
-  // Override base class to process FEC config received from client.
+  // Override base class to process bandwidth related config received from
+  // client.
   void OnConfigNegotiated() override;
 
   void set_serving_region(const std::string& serving_region) {
@@ -92,7 +95,7 @@ class QuicServerSessionBase : public QuicSpdySession {
   // Return false when connection is closed or forward secure encryption hasn't
   // established yet or number of server initiated streams already reaches the
   // upper limit.
-  bool ShouldCreateOutgoingDynamicStream();
+  virtual bool ShouldCreateOutgoingDynamicStream();
 
   // If we should create an incoming stream, returns true. Otherwise
   // does error handling, including communicating the error to the client and
@@ -100,7 +103,8 @@ class QuicServerSessionBase : public QuicSpdySession {
   virtual bool ShouldCreateIncomingDynamicStream(QuicStreamId id);
 
   virtual QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
-      const QuicCryptoServerConfig* crypto_config) = 0;
+      const QuicCryptoServerConfig* crypto_config,
+      QuicCompressedCertsCache* compressed_certs_cache) = 0;
 
   const QuicCryptoServerConfig* crypto_config() { return crypto_config_; }
 
@@ -109,6 +113,11 @@ class QuicServerSessionBase : public QuicSpdySession {
   friend class test::QuicSimpleServerSessionPeer;
 
   const QuicCryptoServerConfig* crypto_config_;
+
+  // The cache which contains most recently compressed certs.
+  // Owned by QuicDispatcher.
+  QuicCompressedCertsCache* compressed_certs_cache_;
+
   scoped_ptr<QuicCryptoServerStreamBase> crypto_stream_;
   QuicServerSessionVisitor* visitor_;
 

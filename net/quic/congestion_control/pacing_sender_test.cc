@@ -91,8 +91,9 @@ class PacingSenderTest : public ::testing::Test {
           .WillOnce(Return(zero_time_));
       // Verify that the packet is delayed.
       EXPECT_EQ(delay.ToMicroseconds(),
-                pacing_sender_->TimeUntilSend(clock_.Now(), kBytesInFlight,
-                                              HAS_RETRANSMITTABLE_DATA)
+                pacing_sender_
+                    ->TimeUntilSend(clock_.Now(), kBytesInFlight,
+                                    HAS_RETRANSMITTABLE_DATA)
                     .ToMicroseconds());
     }
   }

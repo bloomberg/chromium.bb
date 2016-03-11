@@ -17,10 +17,7 @@ class TestDelegate : public QuicAlarm::Delegate {
  public:
   TestDelegate() : fired_(false) {}
 
-  QuicTime OnAlarm() override {
-    fired_ = true;
-    return QuicTime::Zero();
-  }
+  void OnAlarm() override { fired_ = true; }
 
   bool fired() const { return fired_; }
   void Clear() { fired_ = false; }

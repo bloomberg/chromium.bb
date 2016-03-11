@@ -141,8 +141,8 @@ class TaggingDecrypter : public QuicDecrypter {
 
   bool DecryptPacket(QuicPathId path_id,
                      QuicPacketNumber packet_number,
-                     const StringPiece& associated_data,
-                     const StringPiece& ciphertext,
+                     StringPiece associated_data,
+                     StringPiece ciphertext,
                      char* output,
                      size_t* output_length,
                      size_t max_output_length) override {
@@ -482,31 +482,9 @@ class TestConnection : public QuicConnection {
       QuicStreamOffset offset,
       bool fin,
       QuicAckListenerInterface* listener) {
-    return SendStreamDataWithStringHelper(id, data, offset, fin,
-                                          MAY_FEC_PROTECT, listener);
-  }
-
-  QuicConsumedData SendStreamDataWithStringWithFec(
-      QuicStreamId id,
-      StringPiece data,
-      QuicStreamOffset offset,
-      bool fin,
-      QuicAckListenerInterface* listener) {
-    return SendStreamDataWithStringHelper(id, data, offset, fin,
-                                          MUST_FEC_PROTECT, listener);
-  }
-
-  QuicConsumedData SendStreamDataWithStringHelper(
-      QuicStreamId id,
-      StringPiece data,
-      QuicStreamOffset offset,
-      bool fin,
-      FecProtection fec_protection,
-      QuicAckListenerInterface* listener) {
     struct iovec iov;
     QuicIOVector data_iov(MakeIOVector(data, &iov));
-    return QuicConnection::SendStreamData(id, data_iov, offset, fin,
-                                          fec_protection, listener);
+    return QuicConnection::SendStreamData(id, data_iov, offset, fin, listener);
   }
 
   QuicConsumedData SendStreamData3() {
@@ -514,20 +492,11 @@ class TestConnection : public QuicConnection {
                                     nullptr);
   }
 
-  QuicConsumedData SendStreamData3WithFec() {
-    return SendStreamDataWithStringWithFec(kClientDataStreamId1, "food", 0,
-                                           !kFin, nullptr);
-  }
-
   QuicConsumedData SendStreamData5() {
     return SendStreamDataWithString(kClientDataStreamId2, "food2", 0, !kFin,
                                     nullptr);
   }
 
-  QuicConsumedData SendStreamData5WithFec() {
-    return SendStreamDataWithStringWithFec(kClientDataStreamId2, "food2", 0,
-                                           !kFin, nullptr);
-  }
   // Ensures the connection can write stream data before writing.
   QuicConsumedData EnsureWritableAndSendStreamData5() {
     EXPECT_TRUE(CanWriteStreamData());
@@ -586,11 +555,6 @@ class TestConnection : public QuicConnection {
         QuicConnectionPeer::GetPingAlarm(this));
   }
 
-  TestConnectionHelper::TestAlarm* GetFecAlarm() {
-    return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
-        QuicConnectionPeer::GetFecAlarm(this));
-  }
-
   TestConnectionHelper::TestAlarm* GetResumeWritesAlarm() {
     return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
         QuicConnectionPeer::GetResumeWritesAlarm(this));
@@ -617,6 +581,7 @@ class TestConnection : public QuicConnection {
   }
 
   using QuicConnection::SelectMutualVersion;
+  using QuicConnection::set_defer_send_in_response_to_packets;
 
  private:
   TestPacketWriter* writer() {
@@ -626,34 +591,23 @@ class TestConnection : public QuicConnection {
   DISALLOW_COPY_AND_ASSIGN(TestConnection);
 };
 
-// Used for testing packets revived from FEC packets.
-class FecQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
- public:
-  void OnRevivedPacket(const QuicPacketHeader& header,
-                       StringPiece data) override {
-    revived_header_ = header;
-  }
+enum class AckResponse { kDefer, kImmediate };
 
-  // Public accessor method.
-  QuicPacketHeader revived_header() const { return revived_header_; }
-
- private:
-  QuicPacketHeader revived_header_;
-};
-
-// Run tests with combinations of {QuicVersion, fec_send_policy}.
+// Run tests with combinations of {QuicVersion, AckResponse}.
 struct TestParams {
-  TestParams(QuicVersion version, FecSendPolicy fec_send_policy)
-      : version(version), fec_send_policy(fec_send_policy) {}
+  TestParams(QuicVersion version, AckResponse ack_response)
+      : version(version), ack_response(ack_response) {}
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
     os << "{ client_version: " << QuicVersionToString(p.version)
-       << " fec_send_policy: " << p.fec_send_policy << " }";
+       << " ack_response: "
+       << (p.ack_response == AckResponse::kDefer ? "defer" : "immediate")
+       << " }";
     return os;
   }
 
   QuicVersion version;
-  FecSendPolicy fec_send_policy;
+  AckResponse ack_response;
 };
 
 // Constructs various test permutations.
@@ -661,8 +615,10 @@ vector<TestParams> GetTestParams() {
   vector<TestParams> params;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
   for (size_t i = 0; i < all_supported_versions.size(); ++i) {
-    params.push_back(TestParams(all_supported_versions[i], FEC_ANY_TRIGGER));
-    params.push_back(TestParams(all_supported_versions[i], FEC_ALARM_TRIGGER));
+    for (AckResponse ack_response :
+         {AckResponse::kDefer, AckResponse::kImmediate}) {
+      params.push_back(TestParams(all_supported_versions[i], ack_response));
+    }
   }
   return params;
 }
@@ -696,12 +652,13 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         frame2_(1, false, 3, StringPiece(data2)),
         packet_number_length_(PACKET_6BYTE_PACKET_NUMBER),
         connection_id_length_(PACKET_8BYTE_CONNECTION_ID) {
+    connection_.set_defer_send_in_response_to_packets(GetParam().ack_response ==
+                                                      AckResponse::kDefer);
     FLAGS_quic_always_log_bugs_for_tests = true;
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(send_algorithm_);
     connection_.SetLossAlgorithm(loss_algorithm_);
     framer_.set_received_entropy_calculator(&entropy_calculator_);
-    generator_->set_fec_send_policy(GetParam().fec_send_policy);
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _))
         .WillRepeatedly(Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
@@ -735,7 +692,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     // TODO(ianswett): Fix QuicConnectionTests so they don't attempt to write
     // non-crypto stream data at ENCRYPTION_NONE.
     FLAGS_quic_never_write_unencrypted_data = false;
-    FLAGS_quic_no_unencrypted_fec = false;
   }
 
   QuicVersion version() { return GetParam().version; }
@@ -761,7 +717,10 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
 
   void ProcessPacket(QuicPathId path_id, QuicPacketNumber number) {
     EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-    ProcessDataPacket(path_id, number, 0, !kEntropyFlag);
+    ProcessDataPacket(path_id, number, !kEntropyFlag);
+    if (connection_.GetSendAlarm()->IsSet()) {
+      connection_.GetSendAlarm()->Fire();
+    }
   }
 
   QuicPacketEntropyHash ProcessFramePacket(QuicFrame frame) {
@@ -785,6 +744,9 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         self_address, peer_address,
         QuicEncryptedPacket(serialized_packet.encrypted_buffer,
                             serialized_packet.encrypted_length));
+    if (connection_.GetSendAlarm()->IsSet()) {
+      connection_.GetSendAlarm()->Fire();
+    }
     return serialized_packet.entropy_hash;
   }
 
@@ -814,139 +776,38 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
 
   size_t ProcessDataPacket(QuicPathId path_id,
                            QuicPacketNumber number,
-                           QuicFecGroupNumber fec_group,
                            bool entropy_flag) {
-    return ProcessDataPacketAtLevel(path_id, number, fec_group, entropy_flag,
-                                    false, ENCRYPTION_NONE);
+    return ProcessDataPacketAtLevel(path_id, number, entropy_flag, false,
+                                    ENCRYPTION_NONE);
   }
 
   size_t ProcessDataPacketAtLevel(QuicPathId path_id,
                                   QuicPacketNumber number,
-                                  QuicFecGroupNumber fec_group,
                                   bool entropy_flag,
                                   bool has_stop_waiting,
                                   EncryptionLevel level) {
-    scoped_ptr<QuicPacket> packet(ConstructDataPacket(
-        path_id, number, fec_group, entropy_flag, has_stop_waiting));
+    scoped_ptr<QuicPacket> packet(
+        ConstructDataPacket(path_id, number, entropy_flag, has_stop_waiting));
     char buffer[kMaxPacketSize];
     size_t encrypted_length = framer_.EncryptPayload(
         level, path_id, number, *packet, buffer, kMaxPacketSize);
     connection_.ProcessUdpPacket(
         kSelfAddress, kPeerAddress,
         QuicEncryptedPacket(buffer, encrypted_length, false));
+    if (connection_.GetSendAlarm()->IsSet()) {
+      connection_.GetSendAlarm()->Fire();
+    }
     return encrypted_length;
   }
 
-  void ProcessClosePacket(QuicPathId path_id,
-                          QuicPacketNumber number,
-                          QuicFecGroupNumber fec_group) {
-    scoped_ptr<QuicPacket> packet(ConstructClosePacket(number, fec_group));
+  void ProcessClosePacket(QuicPathId path_id, QuicPacketNumber number) {
+    scoped_ptr<QuicPacket> packet(ConstructClosePacket(number));
     char buffer[kMaxPacketSize];
     size_t encrypted_length = framer_.EncryptPayload(
         ENCRYPTION_NONE, path_id, number, *packet, buffer, kMaxPacketSize);
     connection_.ProcessUdpPacket(
         kSelfAddress, kPeerAddress,
         QuicEncryptedPacket(buffer, encrypted_length, false));
-  }
-
-  size_t ProcessFecProtectedPacket(QuicPathId path_id,
-                                   QuicPacketNumber number,
-                                   bool expect_revival,
-                                   bool entropy_flag,
-                                   bool has_stop_waiting) {
-    return ProcessFecProtectedPacketAtLevel(path_id, number, 1, expect_revival,
-                                            entropy_flag, has_stop_waiting,
-                                            ENCRYPTION_NONE);
-  }
-
-  size_t ProcessFecProtectedPacketAtLevel(QuicPathId path_id,
-                                          QuicPacketNumber number,
-                                          QuicFecGroupNumber fec_group,
-                                          bool expect_revival,
-                                          bool entropy_flag,
-                                          bool has_stop_waiting,
-                                          EncryptionLevel level) {
-    if (expect_revival) {
-      EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-    }
-    EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1).RetiresOnSaturation();
-    return ProcessDataPacketAtLevel(path_id, number, fec_group, entropy_flag,
-                                    has_stop_waiting, level);
-  }
-
-  // Processes an FEC packet that covers the packets that would have been
-  // received.
-  size_t ProcessFecPacket(QuicPathId path_id,
-                          QuicPacketNumber number,
-                          QuicPacketNumber min_protected_packet,
-                          bool expect_revival,
-                          bool entropy_flag,
-                          QuicPacket* packet) {
-    return ProcessFecPacketAtLevel(path_id, number, min_protected_packet,
-                                   expect_revival, entropy_flag, packet,
-                                   ENCRYPTION_NONE);
-  }
-
-  // Processes an FEC packet that covers the packets that would have been
-  // received.
-  size_t ProcessFecPacketAtLevel(QuicPathId path_id,
-                                 QuicPacketNumber number,
-                                 QuicPacketNumber min_protected_packet,
-                                 bool expect_revival,
-                                 bool entropy_flag,
-                                 QuicPacket* packet,
-                                 EncryptionLevel level) {
-    if (expect_revival) {
-      EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-    }
-
-    // Construct the decrypted data packet so we can compute the correct
-    // redundancy. If |packet| has been provided then use that, otherwise
-    // construct a default data packet.
-    scoped_ptr<QuicPacket> data_packet;
-    if (packet) {
-      data_packet.reset(packet);
-    } else {
-      data_packet.reset(ConstructDataPacket(path_id, number, 1, !kEntropyFlag,
-                                            !kHasStopWaiting));
-    }
-
-    QuicPacketHeader header;
-    header.public_header.connection_id = connection_id_;
-    header.public_header.packet_number_length = packet_number_length_;
-    header.public_header.connection_id_length = connection_id_length_;
-    header.public_header.multipath_flag = path_id != kDefaultPathId;
-    header.path_id = path_id;
-    header.packet_number = number;
-    header.entropy_flag = entropy_flag;
-    header.fec_flag = true;
-    header.is_in_fec_group = IN_FEC_GROUP;
-    header.fec_group = min_protected_packet;
-
-    // Since all data packets in this test have the same payload, the
-    // redundancy is either equal to that payload or the xor of that payload
-    // with itself, depending on the number of packets.
-    if (((number - min_protected_packet) % 2) == 0) {
-      for (size_t i = GetStartOfFecProtectedData(
-               header.public_header.connection_id_length,
-               header.public_header.version_flag,
-               header.public_header.multipath_flag,
-               header.public_header.packet_number_length);
-           i < data_packet->length(); ++i) {
-        data_packet->mutable_data()[i] ^= data_packet->data()[i];
-      }
-    }
-
-    scoped_ptr<QuicPacket> fec_packet(
-        framer_.BuildFecPacket(header, data_packet->FecProtectedData()));
-    char buffer[kMaxPacketSize];
-    size_t encrypted_length = framer_.EncryptPayload(
-        level, path_id, number, *fec_packet, buffer, kMaxPacketSize);
-
-    connection_.ProcessUdpPacket(
-        kSelfAddress, kPeerAddress,
-        QuicEncryptedPacket(buffer, encrypted_length, false));
-    return encrypted_length;
   }
 
   QuicByteCount SendStreamDataToPeer(QuicStreamId id,
@@ -1015,7 +876,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
 
   QuicPacket* ConstructDataPacket(QuicPathId path_id,
                                   QuicPacketNumber number,
-                                  QuicFecGroupNumber fec_group,
                                   bool entropy_flag,
                                   bool has_stop_waiting) {
     QuicPacketHeader header;
@@ -1026,8 +886,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     header.entropy_flag = entropy_flag;
     header.path_id = path_id;
     header.packet_number = number;
-    header.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
-    header.fec_group = fec_group;
+    header.is_in_fec_group = NOT_IN_FEC_GROUP;
+    header.fec_group = 0;
 
     QuicFrames frames;
     frames.push_back(QuicFrame(&frame1_));
@@ -1037,13 +897,12 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     return ConstructPacket(header, frames);
   }
 
-  QuicPacket* ConstructClosePacket(QuicPacketNumber number,
-                                   QuicFecGroupNumber fec_group) {
+  QuicPacket* ConstructClosePacket(QuicPacketNumber number) {
     QuicPacketHeader header;
     header.public_header.connection_id = connection_id_;
     header.packet_number = number;
-    header.is_in_fec_group = fec_group == 0u ? NOT_IN_FEC_GROUP : IN_FEC_GROUP;
-    header.fec_group = fec_group;
+    header.is_in_fec_group = NOT_IN_FEC_GROUP;
+    header.fec_group = 0;
 
     QuicConnectionCloseFrame qccf;
     qccf.error_code = QUIC_PEER_GOING_AWAY;
@@ -1099,7 +958,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
                                              ConnectionCloseSource::FROM_SELF));
     // Call ProcessDataPacket rather than ProcessPacket, as we should not get a
     // packet call to the visitor.
-    ProcessDataPacket(kDefaultPathId, 6000, 0, !kEntropyFlag);
+    ProcessDataPacket(kDefaultPathId, 6000, !kEntropyFlag);
     EXPECT_FALSE(QuicConnectionPeer::GetConnectionClosePacket(&connection_) ==
                  nullptr);
   }
@@ -1346,7 +1205,7 @@ TEST_P(QuicConnectionTest, DuplicatePacket) {
 
   // Send packet 3 again, but do not set the expectation that
   // the visitor OnStreamFrame() will be called.
-  ProcessDataPacket(kDefaultPathId, 3, 0, !kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 3, !kEntropyFlag);
   EXPECT_EQ(3u, outgoing_ack()->largest_observed);
   EXPECT_TRUE(IsMissing(2));
   EXPECT_TRUE(IsMissing(1));
@@ -1387,7 +1246,7 @@ TEST_P(QuicConnectionTest, RejectPacketTooFarOut) {
                                            ConnectionCloseSource::FROM_SELF));
   // Call ProcessDataPacket rather than ProcessPacket, as we should not get a
   // packet call to the visitor.
-  ProcessDataPacket(kDefaultPathId, 6000, 0, !kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 6000, !kEntropyFlag);
   EXPECT_FALSE(QuicConnectionPeer::GetConnectionClosePacket(&connection_) ==
                nullptr);
 }
@@ -1398,7 +1257,7 @@ TEST_P(QuicConnectionTest, RejectUnencryptedStreamData) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_UNENCRYPTED_STREAM_DATA,
                                            ConnectionCloseSource::FROM_SELF));
-  EXPECT_DFATAL(ProcessDataPacket(kDefaultPathId, 1, 0, !kEntropyFlag), "");
+  EXPECT_DFATAL(ProcessDataPacket(kDefaultPathId, 1, !kEntropyFlag), "");
   EXPECT_FALSE(QuicConnectionPeer::GetConnectionClosePacket(&connection_) ==
                nullptr);
   const vector<QuicConnectionCloseFrame>& connection_close_frames =
@@ -1867,412 +1726,6 @@ TEST_P(QuicConnectionTest, RecordSentTimeBeforePacketSent) {
       << ".  Actual time = " << actual_recorded_send_time.ToDebuggingValue();
 }
 
-TEST_P(QuicConnectionTest, FECSending) {
-  // All packets carry version info till version is negotiated.
-  size_t payload_length;
-  // GetPacketLengthForOneStream() assumes a stream offset of 0 in determining
-  // packet length. The size of the offset field in a stream frame is 0 for
-  // offset 0, and 2 for non-zero offsets up through 64K. Increase
-  // max_packet_length by 2 so that subsequent packets containing subsequent
-  // stream frames with non-zero offets will fit within the packet length.
-  size_t length =
-      2 + GetPacketLengthForOneStream(
-              connection_.version(), kIncludeVersion, !kIncludePathId,
-              PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER,
-              IN_FEC_GROUP, &payload_length);
-  connection_.SetMaxPacketLength(length);
-
-  if (generator_->fec_send_policy() == FEC_ALARM_TRIGGER) {
-    // Send 4 protected data packets. FEC packet is not sent.
-    EXPECT_CALL(*send_algorithm_,
-                OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-        .Times(4);
-  } else {
-    // Send 4 protected data packets, which should also trigger 1 FEC packet.
-    EXPECT_CALL(*send_algorithm_,
-                OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-        .Times(5);
-  }
-  // The first stream frame will have 2 fewer overhead bytes than the other 3.
-  const string payload(payload_length * 4 + 2, 'a');
-  connection_.SendStreamDataWithStringWithFec(1, payload, 0, !kFin, nullptr);
-  // Expect the FEC group to be closed after SendStreamDataWithString.
-  EXPECT_FALSE(creator_->IsFecGroupOpen());
-  EXPECT_FALSE(QuicPacketCreatorPeer::IsFecProtected(creator_));
-}
-
-TEST_P(QuicConnectionTest, FECQueueing) {
-  // All packets carry version info till version is negotiated.
-  size_t payload_length;
-  size_t length = GetPacketLengthForOneStream(
-      connection_.version(), kIncludeVersion, !kIncludePathId,
-      PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER, IN_FEC_GROUP,
-      &payload_length);
-  connection_.SetMaxPacketLength(length);
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
-
-  EXPECT_EQ(0u, connection_.NumQueuedPackets());
-  BlockOnNextWrite();
-  const string payload(payload_length, 'a');
-  connection_.SendStreamDataWithStringWithFec(1, payload, 0, !kFin, nullptr);
-  EXPECT_FALSE(creator_->IsFecGroupOpen());
-  EXPECT_FALSE(QuicPacketCreatorPeer::IsFecProtected(creator_));
-  if (generator_->fec_send_policy() == FEC_ALARM_TRIGGER) {
-    // Expect the first data packet to be queued and not the FEC packet.
-    EXPECT_EQ(1u, connection_.NumQueuedPackets());
-  } else {
-    // Expect the first data packet and the fec packet to be queued.
-    EXPECT_EQ(2u, connection_.NumQueuedPackets());
-  }
-}
-
-TEST_P(QuicConnectionTest, FECAlarmStoppedWhenFECPacketSent) {
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
-  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-
-  creator_->set_max_packets_per_fec_group(2);
-
-  // 1 Data packet. FEC alarm should be set.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 1u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, true, nullptr);
-  EXPECT_TRUE(connection_.GetFecAlarm()->IsSet());
-
-  if (generator_->fec_send_policy() == FEC_ALARM_TRIGGER) {
-    // If FEC send policy is FEC_ALARM_TRIGGER, FEC packet is not sent.
-    // FEC alarm should not be set.
-    EXPECT_CALL(*send_algorithm_,
-                OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-        .Times(1);
-  } else {
-    // Second data packet triggers FEC packet out. FEC alarm should not be set.
-    EXPECT_CALL(*send_algorithm_,
-                OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-        .Times(2);
-  }
-  connection_.SendStreamDataWithStringWithFec(5, "foo", 0, true, nullptr);
-  if (generator_->fec_send_policy() == FEC_ANY_TRIGGER) {
-    EXPECT_TRUE(writer_->header().fec_flag);
-  }
-  EXPECT_FALSE(creator_->IsFecGroupOpen());
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-}
-
-TEST_P(QuicConnectionTest, FECAlarmStoppedOnConnectionClose) {
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-  creator_->set_max_packets_per_fec_group(100);
-
-  // 1 Data packet. FEC alarm should be set.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 1u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, kFin, nullptr);
-  EXPECT_TRUE(connection_.GetFecAlarm()->IsSet());
-
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NO_ERROR,
-                                           ConnectionCloseSource::FROM_SELF));
-  // Closing connection should stop the FEC alarm.
-  connection_.CloseConnection(QUIC_NO_ERROR, ConnectionCloseSource::FROM_SELF);
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-}
-
-TEST_P(QuicConnectionTest, RemoveFECFromInflightOnRetransmissionTimeout) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
-  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-
-  // 1 Data packet. FEC alarm should be set.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 1u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
-  EXPECT_TRUE(connection_.GetFecAlarm()->IsSet());
-  size_t protected_packet =
-      QuicSentPacketManagerPeer::GetBytesInFlight(manager_);
-
-  // Force FEC timeout to send FEC packet out.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 2u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.GetFecAlarm()->Fire();
-  EXPECT_TRUE(writer_->header().fec_flag);
-
-  size_t fec_packet = protected_packet;
-  EXPECT_EQ(protected_packet + fec_packet,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-  clock_.AdvanceTime(DefaultRetransmissionTime());
-
-  // On RTO, both data and FEC packets are removed from inflight, only the data
-  // packet is retransmitted, and this retransmission (but not FEC) gets added
-  // back into the inflight.
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  connection_.GetRetransmissionAlarm()->Fire();
-
-  // The retransmission of packet 1 will be 3 bytes smaller than packet 1, since
-  // the first transmission will have 1 byte for FEC group number and 2 bytes of
-  // stream frame size, which are absent in the retransmission.
-  size_t retransmitted_packet = protected_packet - 3;
-  EXPECT_EQ(protected_packet + retransmitted_packet,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-
-  // Receive ack for the retransmission. No data should be outstanding.
-  QuicAckFrame ack = InitAckFrame(3);
-  NackPacket(1, &ack);
-  NackPacket(2, &ack);
-  SendAlgorithmInterface::CongestionVector lost_packets;
-  lost_packets.push_back(std::make_pair(1, kMaxPacketSize));
-  EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _))
-      .WillOnce(SetArgPointee<3>(lost_packets));
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  ProcessAckPacket(&ack);
-
-  // Ensure the alarm is not set since all packets have been acked or abandoned.
-  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
-  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-}
-
-TEST_P(QuicConnectionTest, RemoveFECFromInflightOnLossRetransmission) {
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-
-  // 1 FEC-protected data packet. FEC alarm should be set.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, kFin, nullptr);
-  EXPECT_TRUE(connection_.GetFecAlarm()->IsSet());
-  size_t protected_packet =
-      QuicSentPacketManagerPeer::GetBytesInFlight(manager_);
-
-  // Force FEC timeout to send FEC packet out.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.GetFecAlarm()->Fire();
-  EXPECT_TRUE(writer_->header().fec_flag);
-  size_t fec_packet = protected_packet;
-  EXPECT_EQ(protected_packet + fec_packet,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-
-  // Send more data to trigger NACKs. Note that all data starts at stream offset
-  // 0 to ensure the same packet size, for ease of testing.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(4);
-  connection_.SendStreamDataWithString(5, "foo", 0, kFin, nullptr);
-  connection_.SendStreamDataWithString(7, "foo", 0, kFin, nullptr);
-  connection_.SendStreamDataWithString(9, "foo", 0, kFin, nullptr);
-  connection_.SendStreamDataWithString(11, "foo", 0, kFin, nullptr);
-
-  // An unprotected packet will be 3 bytes smaller than an FEC-protected packet,
-  // since the protected packet will have 1 byte for FEC group number and
-  // 2 bytes of stream frame size, which are absent in the unprotected packet.
-  size_t unprotected_packet = protected_packet - 3;
-  EXPECT_EQ(protected_packet + fec_packet + 4 * unprotected_packet,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-
-  // Ack data packets, and NACK FEC packet and one data packet. Triggers
-  // NACK-based loss detection of both packets, but only data packet is
-  // retransmitted and considered outstanding.
-  QuicAckFrame ack = InitAckFrame(6);
-  NackPacket(2, &ack);
-  NackPacket(3, &ack);
-  SendAlgorithmInterface::CongestionVector lost_packets;
-  lost_packets.push_back(std::make_pair(2, kMaxPacketSize));
-  lost_packets.push_back(std::make_pair(3, kMaxPacketSize));
-  EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _))
-      .WillOnce(SetArgPointee<3>(lost_packets));
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ProcessAckPacket(&ack);
-  // On receiving this ack from the server, the client will no longer send
-  // version number in subsequent packets, including in this retransmission.
-  size_t unprotected_packet_no_version = unprotected_packet - 4;
-  EXPECT_EQ(unprotected_packet_no_version,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-
-  // Receive ack for the retransmission. No data should be outstanding.
-  QuicAckFrame ack2 = InitAckFrame(7);
-  NackPacket(2, &ack2);
-  NackPacket(3, &ack2);
-  EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _));
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  ProcessAckPacket(&ack2);
-  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-}
-
-TEST_P(QuicConnectionTest, FECRemainsInflightOnTLPOfEarlierData) {
-  // This test checks if TLP is sent correctly when a data and an FEC packet
-  // are outstanding. TLP should be sent for the data packet when the
-  // retransmission alarm fires.
-  // Turn on TLP for this test.
-  QuicSentPacketManagerPeer::SetMaxTailLossProbes(manager_, 1);
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
-  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-
-  // 1 Data packet. FEC alarm should be set.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 1u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, kFin, nullptr);
-  EXPECT_TRUE(connection_.GetFecAlarm()->IsSet());
-  size_t protected_packet =
-      QuicSentPacketManagerPeer::GetBytesInFlight(manager_);
-  EXPECT_LT(0u, protected_packet);
-
-  // Force FEC timeout to send FEC packet out.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 2u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.GetFecAlarm()->Fire();
-  EXPECT_TRUE(writer_->header().fec_flag);
-  size_t fec_packet = protected_packet;
-  EXPECT_EQ(protected_packet + fec_packet,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-
-  // TLP alarm should be set.
-  QuicTime retransmission_time =
-      connection_.GetRetransmissionAlarm()->deadline();
-  EXPECT_NE(QuicTime::Zero(), retransmission_time);
-  // Simulate the retransmission alarm firing and sending a TLP, so send
-  // algorithm's OnRetransmissionTimeout is not called.
-  clock_.AdvanceTime(retransmission_time.Subtract(clock_.Now()));
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 3u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.GetRetransmissionAlarm()->Fire();
-  // The TLP retransmission of packet 1 will be 3 bytes smaller than packet 1,
-  // since packet 1 will have 1 byte for FEC group number and 2 bytes of stream
-  // frame size, which are absent in the the TLP retransmission.
-  size_t tlp_packet = protected_packet - 3;
-  EXPECT_EQ(protected_packet + fec_packet + tlp_packet,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-}
-
-TEST_P(QuicConnectionTest, FECRemainsInflightOnTLPOfLaterData) {
-  // Tests if TLP is sent correctly when data packet 1 and an FEC packet are
-  // sent followed by data packet 2, and data packet 1 is acked. TLP should be
-  // sent for data packet 2 when the retransmission alarm fires. Turn on TLP for
-  // this test.
-  QuicSentPacketManagerPeer::SetMaxTailLossProbes(manager_, 1);
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
-  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-
-  // 1 Data packet. FEC alarm should be set.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 1u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, kFin, nullptr);
-  EXPECT_TRUE(connection_.GetFecAlarm()->IsSet());
-  size_t protected_packet =
-      QuicSentPacketManagerPeer::GetBytesInFlight(manager_);
-  EXPECT_LT(0u, protected_packet);
-
-  // Force FEC timeout to send FEC packet out.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 2u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.GetFecAlarm()->Fire();
-  EXPECT_TRUE(writer_->header().fec_flag);
-  // Protected data packet and FEC packet oustanding.
-  size_t fec_packet = protected_packet;
-  EXPECT_EQ(protected_packet + fec_packet,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-
-  // Send 1 unprotected data packet. No FEC alarm should be set.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 3u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.SendStreamDataWithString(5, "foo", 0, kFin, nullptr);
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
-  // Protected data packet, FEC packet, and unprotected data packet oustanding.
-  // An unprotected packet will be 3 bytes smaller than an FEC-protected packet,
-  // since the protected packet will have 1 byte for FEC group number and
-  // 2 bytes of stream frame size, which are absent in the unprotected packet.
-  size_t unprotected_packet = protected_packet - 3;
-  EXPECT_EQ(protected_packet + fec_packet + unprotected_packet,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-
-  // Receive ack for first data packet. FEC and second data packet are still
-  // outstanding.
-  QuicAckFrame ack = InitAckFrame(1);
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ProcessAckPacket(&ack);
-  // FEC packet and unprotected data packet oustanding.
-  EXPECT_EQ(fec_packet + unprotected_packet,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-
-  // TLP alarm should be set.
-  QuicTime retransmission_time =
-      connection_.GetRetransmissionAlarm()->deadline();
-  EXPECT_NE(QuicTime::Zero(), retransmission_time);
-  // Simulate the retransmission alarm firing and sending a TLP, so send
-  // algorithm's OnRetransmissionTimeout is not called.
-  clock_.AdvanceTime(retransmission_time.Subtract(clock_.Now()));
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, 4u, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.GetRetransmissionAlarm()->Fire();
-
-  // Having received an ack from the server, the client will no longer send
-  // version number in subsequent packets, including in this retransmission.
-  size_t tlp_packet_no_version = unprotected_packet - 4;
-  EXPECT_EQ(fec_packet + unprotected_packet + tlp_packet_no_version,
-            QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-}
-
-TEST_P(QuicConnectionTest, NoTLPForFECPacket) {
-  // Turn on TLP for this test.
-  QuicSentPacketManagerPeer::SetMaxTailLossProbes(manager_, 1);
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  // Send 1 FEC-protected data packet. FEC alarm should be set.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.SendStreamDataWithStringWithFec(3, "foo", 0, !kFin, nullptr);
-  EXPECT_TRUE(connection_.GetFecAlarm()->IsSet());
-  // Force FEC timeout to send FEC packet out.
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketSent(_, _, _, _, HAS_RETRANSMITTABLE_DATA))
-      .Times(1);
-  connection_.GetFecAlarm()->Fire();
-  EXPECT_TRUE(writer_->header().fec_flag);
-
-  // Ack data packet, but not FEC packet.
-  QuicAckFrame ack = InitAckFrame(1);
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  ProcessAckPacket(&ack);
-
-  // No TLP alarm for FEC, but retransmission alarm should be set for an RTO.
-  EXPECT_LT(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
-  QuicTime rto_time = connection_.GetRetransmissionAlarm()->deadline();
-  EXPECT_NE(QuicTime::Zero(), rto_time);
-
-  // Simulate the retransmission alarm firing. FEC packet is no longer
-  // outstanding.
-  clock_.AdvanceTime(rto_time.Subtract(clock_.Now()));
-  connection_.GetRetransmissionAlarm()->Fire();
-
-  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
-  EXPECT_EQ(0u, QuicSentPacketManagerPeer::GetBytesInFlight(manager_));
-}
-
 TEST_P(QuicConnectionTest, FramePacking) {
   // Send an ack and two stream frames in 1 packet by queueing them.
   {
@@ -2333,34 +1786,11 @@ TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
   EXPECT_EQ(kClientDataStreamId1, writer_->stream_frames()[0]->stream_id);
 }
 
-TEST_P(QuicConnectionTest, FramePackingFEC) {
-  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecEnabled(creator_));
-
-  // Queue an ack and two stream frames. Ack gets flushed when FEC is turned on
-  // for sending protected data; two stream frames are packed in 1 packet.
-  {
-    QuicConnection::ScopedPacketBundler bundler(&connection_,
-                                                QuicConnection::SEND_ACK);
-    connection_.SendStreamData3WithFec();
-    connection_.SendStreamData5WithFec();
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  }
-  EXPECT_EQ(0u, connection_.NumQueuedPackets());
-  EXPECT_FALSE(connection_.HasQueuedData());
-
-  // Parse the last packet and ensure it's in an fec group.
-  EXPECT_EQ(2u, writer_->header().fec_group);
-  EXPECT_EQ(2u, writer_->frame_count());
-
-  // FEC alarm should be set.
-  EXPECT_TRUE(connection_.GetFecAlarm()->IsSet());
-}
-
 TEST_P(QuicConnectionTest, FramePackingAckResponse) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   // Process a data packet to queue up a pending ack.
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-  ProcessDataPacket(kDefaultPathId, 1, 1, kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 1, kEntropyFlag);
 
   EXPECT_CALL(visitor_, OnCanWrite())
       .WillOnce(DoAll(IgnoreResult(InvokeWithoutArgs(
@@ -2398,8 +1828,7 @@ TEST_P(QuicConnectionTest, FramePackingSendv) {
   iov[0].iov_len = 2;
   iov[1].iov_base = data + 2;
   iov[1].iov_len = 2;
-  connection_.SendStreamData(1, QuicIOVector(iov, 2, 4), 0, !kFin,
-                             MAY_FEC_PROTECT, nullptr);
+  connection_.SendStreamData(1, QuicIOVector(iov, 2, 4), 0, !kFin, nullptr);
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
@@ -2424,8 +1853,7 @@ TEST_P(QuicConnectionTest, FramePackingSendvQueued) {
   iov[0].iov_len = 2;
   iov[1].iov_base = data + 2;
   iov[1].iov_len = 2;
-  connection_.SendStreamData(1, QuicIOVector(iov, 2, 4), 0, !kFin,
-                             MAY_FEC_PROTECT, nullptr);
+  connection_.SendStreamData(1, QuicIOVector(iov, 2, 4), 0, !kFin, nullptr);
 
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
   EXPECT_TRUE(connection_.HasQueuedData());
@@ -2445,7 +1873,7 @@ TEST_P(QuicConnectionTest, SendingZeroBytes) {
   // Send a zero byte write with a fin using writev.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   QuicIOVector empty_iov(nullptr, 0, 0);
-  connection_.SendStreamData(1, empty_iov, 0, kFin, MAY_FEC_PROTECT, nullptr);
+  connection_.SendStreamData(1, empty_iov, 0, kFin, nullptr);
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
@@ -2985,128 +2413,6 @@ TEST_P(QuicConnectionTest, DontLatchUnackedPacket) {
   EXPECT_EQ(6u, stop_waiting()->least_unacked);
 }
 
-TEST_P(QuicConnectionTest, ReviveMissingPacketAfterFecPacket) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  // Don't send missing packet 1.
-  ProcessFecPacket(kDefaultPathId, 2, 1, true, !kEntropyFlag, nullptr);
-  // Entropy flag should be false, so entropy should be 0.
-  EXPECT_EQ(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
-}
-
-TEST_P(QuicConnectionTest, ReviveMissingPacketWithVaryingSeqNumLengths) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  // Set up a debug visitor to the connection.
-  scoped_ptr<FecQuicConnectionDebugVisitor> fec_visitor(
-      new FecQuicConnectionDebugVisitor());
-  connection_.set_debug_visitor(fec_visitor.get());
-
-  QuicPacketNumber fec_packet = 0;
-  // clang-format off
-  QuicPacketNumberLength lengths[] = {
-    PACKET_6BYTE_PACKET_NUMBER, PACKET_4BYTE_PACKET_NUMBER,
-    PACKET_2BYTE_PACKET_NUMBER, PACKET_1BYTE_PACKET_NUMBER};
-  // clang-format on
-  // For each packet number length size, revive a packet and check sequence
-  // number length in the revived packet.
-  for (size_t i = 0; i < arraysize(lengths); ++i) {
-    // Set packet_number_length_ (for data and FEC packets).
-    packet_number_length_ = lengths[i];
-    fec_packet += 2;
-    // Don't send missing packet, but send fec packet right after it.
-    ProcessFecPacket(kDefaultPathId, fec_packet, fec_packet - 1, true,
-                     !kEntropyFlag, nullptr);
-    // packet number length in the revived header should be the same as
-    // in the original data/fec packet headers.
-    EXPECT_EQ(packet_number_length_,
-              fec_visitor->revived_header().public_header.packet_number_length);
-  }
-}
-
-TEST_P(QuicConnectionTest, ReviveMissingPacketWithVaryingConnectionIdLengths) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  // Set up a debug visitor to the connection.
-  scoped_ptr<FecQuicConnectionDebugVisitor> fec_visitor(
-      new FecQuicConnectionDebugVisitor());
-  connection_.set_debug_visitor(fec_visitor.get());
-
-  QuicPacketNumber fec_packet = 0;
-  QuicConnectionIdLength lengths[] = {
-      PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_CONNECTION_ID,
-      PACKET_1BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID};
-  // For each connection id length size, revive a packet and check connection
-  // id length in the revived packet.
-  for (size_t i = 0; i < arraysize(lengths); ++i) {
-    // Set connection id length (for data and FEC packets).
-    connection_id_length_ = lengths[i];
-    fec_packet += 2;
-    // Don't send missing packet, but send fec packet right after it.
-    ProcessFecPacket(kDefaultPathId, fec_packet, fec_packet - 1, true,
-                     !kEntropyFlag, nullptr);
-    // Connection id length in the revived header should be the same as
-    // in the original data/fec packet headers.
-    EXPECT_EQ(connection_id_length_,
-              fec_visitor->revived_header().public_header.connection_id_length);
-  }
-}
-
-TEST_P(QuicConnectionTest, ReviveMissingPacketAfterDataPacketThenFecPacket) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  ProcessFecProtectedPacket(kDefaultPathId, 1, false, kEntropyFlag,
-                            !kHasStopWaiting);
-  // Don't send missing packet 2.
-  ProcessFecPacket(kDefaultPathId, 3, 1, true, !kEntropyFlag, nullptr);
-  // Entropy flag should be true, so entropy should not be 0.
-  EXPECT_NE(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
-}
-
-TEST_P(QuicConnectionTest, ReviveMissingPacketAfterDataPacketsThenFecPacket) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  ProcessFecProtectedPacket(kDefaultPathId, 1, false, !kEntropyFlag,
-                            !kHasStopWaiting);
-  // Don't send missing packet 2.
-  ProcessFecProtectedPacket(kDefaultPathId, 3, false, !kEntropyFlag,
-                            !kHasStopWaiting);
-  ProcessFecPacket(kDefaultPathId, 4, 1, true, kEntropyFlag, nullptr);
-  // Ensure QUIC no longer revives entropy for lost packets.
-  EXPECT_EQ(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
-  EXPECT_NE(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 4));
-}
-
-TEST_P(QuicConnectionTest, ReviveMissingPacketAfterDataPacket) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  // Don't send missing packet 1.
-  ProcessFecPacket(kDefaultPathId, 3, 1, false, !kEntropyFlag, nullptr);
-  // Out of order.
-  ProcessFecProtectedPacket(kDefaultPathId, 2, true, !kEntropyFlag,
-                            !kHasStopWaiting);
-  // Entropy flag should be false, so entropy should be 0.
-  EXPECT_EQ(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
-}
-
-TEST_P(QuicConnectionTest, ReviveMissingPacketAfterDataPackets) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  ProcessFecProtectedPacket(kDefaultPathId, 1, false, !kEntropyFlag,
-                            !kHasStopWaiting);
-  // Don't send missing packet 2.
-  ProcessFecPacket(kDefaultPathId, 6, 1, false, kEntropyFlag, nullptr);
-  ProcessFecProtectedPacket(kDefaultPathId, 3, false, kEntropyFlag,
-                            !kHasStopWaiting);
-  ProcessFecProtectedPacket(kDefaultPathId, 4, false, kEntropyFlag,
-                            !kHasStopWaiting);
-  ProcessFecProtectedPacket(kDefaultPathId, 5, true, !kEntropyFlag,
-                            !kHasStopWaiting);
-  // Ensure entropy is not revived for the missing packet.
-  EXPECT_EQ(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 2));
-  EXPECT_NE(0u, QuicConnectionPeer::ReceivedEntropyHash(&connection_, 3));
-}
-
 TEST_P(QuicConnectionTest, TLP) {
   QuicSentPacketManagerPeer::SetMaxTailLossProbes(manager_, 1);
 
@@ -3315,7 +2621,7 @@ TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
 
   // Process an encrypted packet which can not yet be decrypted which should
   // result in the packet being buffered.
-  ProcessDataPacketAtLevel(kDefaultPathId, 1, 0, kEntropyFlag, !kHasStopWaiting,
+  ProcessDataPacketAtLevel(kDefaultPathId, 1, kEntropyFlag, !kHasStopWaiting,
                            ENCRYPTION_INITIAL);
 
   // Transition to the new encryption state and process another encrypted packet
@@ -3324,53 +2630,14 @@ TEST_P(QuicConnectionTest, BufferNonDecryptablePackets) {
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
   connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(2);
-  ProcessDataPacketAtLevel(kDefaultPathId, 2, 0, kEntropyFlag, !kHasStopWaiting,
+  ProcessDataPacketAtLevel(kDefaultPathId, 2, kEntropyFlag, !kHasStopWaiting,
                            ENCRYPTION_INITIAL);
 
   // Finally, process a third packet and note that we do not reprocess the
   // buffered packet.
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-  ProcessDataPacketAtLevel(kDefaultPathId, 3, 0, kEntropyFlag, !kHasStopWaiting,
+  ProcessDataPacketAtLevel(kDefaultPathId, 3, kEntropyFlag, !kHasStopWaiting,
                            ENCRYPTION_INITIAL);
-}
-
-TEST_P(QuicConnectionTest, ProcessBufferedFECGroup) {
-  // SetFromConfig is always called after construction from InitializeSession.
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  QuicConfig config;
-  config.set_max_undecryptable_packets(100);
-  connection_.SetFromConfig(config);
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  use_tagging_decrypter();
-
-  const uint8_t tag = 0x07;
-  framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
-
-  // Don't send packet 1 and buffer initially encrypted packets.
-  ProcessFecProtectedPacketAtLevel(kDefaultPathId, 2, 1, false, !kEntropyFlag,
-                                   !kHasStopWaiting, ENCRYPTION_INITIAL);
-  ProcessFecPacketAtLevel(kDefaultPathId, 3, 1, false, kEntropyFlag, nullptr,
-                          ENCRYPTION_INITIAL);
-  // Since the packets were buffered, no FEC group should be open.
-  ASSERT_EQ(0u, connection_.NumFecGroups());
-
-  // Now send non-fec protected ack packet and close the group.
-  QuicStopWaitingFrame frame = InitStopWaitingFrame(4);
-  ProcessStopWaitingPacketAtLevel(kDefaultPathId, 4, &frame,
-                                  ENCRYPTION_INITIAL);
-
-  // Transition to the new encryption state and process another encrypted packet
-  // which should result in the original packets being processed. The missing
-  // packet should be revived before the STOP_WAITING packet is processed.
-  connection_.SetDecrypter(ENCRYPTION_INITIAL, new StrictTaggingDecrypter(tag));
-  connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
-  connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
-
-  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(2).RetiresOnSaturation();
-  ProcessDataPacketAtLevel(kDefaultPathId, 5, 0, kEntropyFlag, !kHasStopWaiting,
-                           ENCRYPTION_INITIAL);
-  const QuicConnectionStats& stats = connection_.GetStats();
-  EXPECT_EQ(1u, stats.packets_revived);
 }
 
 TEST_P(QuicConnectionTest, Buffer100NonDecryptablePackets) {
@@ -3388,8 +2655,8 @@ TEST_P(QuicConnectionTest, Buffer100NonDecryptablePackets) {
   // Process an encrypted packet which can not yet be decrypted which should
   // result in the packet being buffered.
   for (QuicPacketNumber i = 1; i <= 100; ++i) {
-    ProcessDataPacketAtLevel(kDefaultPathId, i, 0, kEntropyFlag,
-                             !kHasStopWaiting, ENCRYPTION_INITIAL);
+    ProcessDataPacketAtLevel(kDefaultPathId, i, kEntropyFlag, !kHasStopWaiting,
+                             ENCRYPTION_INITIAL);
   }
 
   // Transition to the new encryption state and process another encrypted packet
@@ -3398,14 +2665,14 @@ TEST_P(QuicConnectionTest, Buffer100NonDecryptablePackets) {
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
   connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(101);
-  ProcessDataPacketAtLevel(kDefaultPathId, 101, 0, kEntropyFlag,
-                           !kHasStopWaiting, ENCRYPTION_INITIAL);
+  ProcessDataPacketAtLevel(kDefaultPathId, 101, kEntropyFlag, !kHasStopWaiting,
+                           ENCRYPTION_INITIAL);
 
   // Finally, process a third packet and note that we do not reprocess the
   // buffered packet.
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-  ProcessDataPacketAtLevel(kDefaultPathId, 102, 0, kEntropyFlag,
-                           !kHasStopWaiting, ENCRYPTION_INITIAL);
+  ProcessDataPacketAtLevel(kDefaultPathId, 102, kEntropyFlag, !kHasStopWaiting,
+                           ENCRYPTION_INITIAL);
 }
 
 TEST_P(QuicConnectionTest, TestRetransmitOrder) {
@@ -3501,53 +2768,6 @@ TEST_P(QuicConnectionTest, TestQueued) {
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
 }
 
-TEST_P(QuicConnectionTest, CloseFecGroup) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  // Don't send missing packet 1.
-  // Don't send missing packet 2.
-  ProcessFecProtectedPacket(kDefaultPathId, 3, false, !kEntropyFlag,
-                            !kHasStopWaiting);
-  // Don't send missing FEC packet 3.
-  ASSERT_EQ(1u, connection_.NumFecGroups());
-
-  // Now send non-fec protected ack packet and close the group.
-  QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 4);
-  QuicStopWaitingFrame frame = InitStopWaitingFrame(5);
-  ProcessStopWaitingPacket(&frame);
-  ASSERT_EQ(0u, connection_.NumFecGroups());
-}
-
-TEST_P(QuicConnectionTest,
-       CloseFecGroupUnderStopWaitingAndWaitingForPacketsBelowStopWaiting) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  // Don't send missing packet 1.
-  ProcessFecProtectedPacket(kDefaultPathId, 2, false, !kEntropyFlag,
-                            !kHasStopWaiting);
-  EXPECT_EQ(1u, connection_.NumFecGroups());
-  stop_waiting_ = InitStopWaitingFrame(2);
-  ProcessFecProtectedPacket(kDefaultPathId, 3, false, !kEntropyFlag,
-                            kHasStopWaiting);
-  // This Fec group would be closed.
-  EXPECT_EQ(0u, connection_.NumFecGroups());
-}
-
-TEST_P(QuicConnectionTest,
-       DoNotCloseFecGroupUnderStopWaitingButNotWaitingForPacketsBelow) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ProcessFecProtectedPacket(kDefaultPathId, 1, false, !kEntropyFlag,
-                            !kHasStopWaiting);
-  ProcessFecProtectedPacket(kDefaultPathId, 2, false, !kEntropyFlag,
-                            !kHasStopWaiting);
-  // Don't send missing packet 3.
-  EXPECT_EQ(1u, connection_.NumFecGroups());
-  stop_waiting_ = InitStopWaitingFrame(2);
-  ProcessFecProtectedPacket(kDefaultPathId, 3, false, !kEntropyFlag,
-                            kHasStopWaiting);
-  // This group will not be closed because this group is not waiting for packets
-  // below stop waiting.
-  EXPECT_EQ(1u, connection_.NumFecGroups());
-}
-
 TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
@@ -3573,7 +2793,6 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
 
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetResumeWritesAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
@@ -3617,7 +2836,6 @@ TEST_P(QuicConnectionTest, HandshakeTimeout) {
 
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
-  EXPECT_FALSE(connection_.GetFecAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetResumeWritesAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
@@ -3898,110 +3116,7 @@ TEST_P(QuicConnectionTest, NoMtuDiscoveryAfterConnectionClosed) {
   EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
 }
 
-TEST_P(QuicConnectionTest, OldTimeoutAfterSend) {
-  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, false);
-  EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  QuicConfig config;
-  connection_.SetFromConfig(config);
-  EXPECT_FALSE(QuicConnectionPeer::IsSilentCloseEnabled(&connection_));
-
-  const QuicTime::Delta initial_idle_timeout =
-      QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1);
-  const QuicTime::Delta five_ms = QuicTime::Delta::FromMilliseconds(5);
-  QuicTime default_timeout = clock_.ApproximateNow().Add(initial_idle_timeout);
-
-  // When we send a packet, the timeout will change to 5ms +
-  // kInitialIdleTimeoutSecs.
-  clock_.AdvanceTime(five_ms);
-
-  // Send an ack so we don't set the retransmission alarm.
-  SendAckPacketToPeer();
-  EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
-
-  // The original alarm will fire.  We should not time out because we had a
-  // network event at t=5ms.  The alarm will reregister.
-  clock_.AdvanceTime(initial_idle_timeout.Subtract(five_ms));
-  EXPECT_EQ(default_timeout, clock_.ApproximateNow());
-  connection_.GetTimeoutAlarm()->Fire();
-  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
-  EXPECT_TRUE(connection_.connected());
-  EXPECT_EQ(default_timeout.Add(five_ms),
-            connection_.GetTimeoutAlarm()->deadline());
-
-  // This time, we should time out.
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT,
-                                           ConnectionCloseSource::FROM_SELF));
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
-  clock_.AdvanceTime(five_ms);
-  EXPECT_EQ(default_timeout.Add(five_ms), clock_.ApproximateNow());
-  connection_.GetTimeoutAlarm()->Fire();
-  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
-  EXPECT_FALSE(connection_.connected());
-}
-
-TEST_P(QuicConnectionTest, OldTimeoutAfterSendSilentClose) {
-  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, false);
-  // Same test as above, but complete a handshake which enables silent close,
-  // causing no connection close packet to be sent.
-  EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  QuicConfig config;
-
-  // Create a handshake message that also enables silent close.
-  CryptoHandshakeMessage msg;
-  string error_details;
-  QuicConfig client_config;
-  client_config.SetInitialStreamFlowControlWindowToSend(
-      kInitialStreamFlowControlWindowForTest);
-  client_config.SetInitialSessionFlowControlWindowToSend(
-      kInitialSessionFlowControlWindowForTest);
-  client_config.SetIdleConnectionStateLifetime(
-      QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs),
-      QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs));
-  client_config.ToHandshakeMessage(&msg);
-  const QuicErrorCode error =
-      config.ProcessPeerHello(msg, CLIENT, &error_details);
-  EXPECT_EQ(QUIC_NO_ERROR, error);
-
-  connection_.SetFromConfig(config);
-  EXPECT_TRUE(QuicConnectionPeer::IsSilentCloseEnabled(&connection_));
-
-  const QuicTime::Delta default_idle_timeout =
-      QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs - 1);
-  const QuicTime::Delta five_ms = QuicTime::Delta::FromMilliseconds(5);
-  QuicTime default_timeout = clock_.ApproximateNow().Add(default_idle_timeout);
-
-  // When we send a packet, the timeout will change to 5ms +
-  // kInitialIdleTimeoutSecs.
-  clock_.AdvanceTime(five_ms);
-
-  // Send an ack so we don't set the retransmission alarm.
-  SendAckPacketToPeer();
-  EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
-
-  // The original alarm will fire.  We should not time out because we had a
-  // network event at t=5ms.  The alarm will reregister.
-  clock_.AdvanceTime(default_idle_timeout.Subtract(five_ms));
-  EXPECT_EQ(default_timeout, clock_.ApproximateNow());
-  connection_.GetTimeoutAlarm()->Fire();
-  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
-  EXPECT_TRUE(connection_.connected());
-  EXPECT_EQ(default_timeout.Add(five_ms),
-            connection_.GetTimeoutAlarm()->deadline());
-
-  // This time, we should time out.
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT,
-                                           ConnectionCloseSource::FROM_SELF));
-  clock_.AdvanceTime(five_ms);
-  EXPECT_EQ(default_timeout.Add(five_ms), clock_.ApproximateNow());
-  connection_.GetTimeoutAlarm()->Fire();
-  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
-  EXPECT_FALSE(connection_.connected());
-}
-
 TEST_P(QuicConnectionTest, TimeoutAfterSend) {
-  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, true);
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
@@ -4047,7 +3162,6 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
 }
 
 TEST_P(QuicConnectionTest, NewTimeoutAfterSendSilentClose) {
-  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, true);
   // Same test as above, but complete a handshake which enables silent close,
   // causing no connection close packet to be sent.
   EXPECT_TRUE(connection_.connected());
@@ -4159,7 +3273,6 @@ TEST_P(QuicConnectionTest, TimeoutAfterReceive) {
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfterReceiveNotSendWhenUnacked) {
-  ValueRestore<bool> old_flags(&FLAGS_quic_use_new_idle_timeout, true);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
@@ -4220,8 +3333,8 @@ TEST_P(QuicConnectionTest, TimeoutAfterReceiveNotSendWhenUnacked) {
 
 TEST_P(QuicConnectionTest, SendScheduler) {
   // Test that if we send a packet without delay, it is not queued.
-  QuicPacket* packet = ConstructDataPacket(kDefaultPathId, 1, 0, !kEntropyFlag,
-                                           !kHasStopWaiting);
+  QuicPacket* packet =
+      ConstructDataPacket(kDefaultPathId, 1, !kEntropyFlag, !kHasStopWaiting);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   connection_.SendPacket(ENCRYPTION_NONE, kDefaultPathId, 1, packet,
                          kTestEntropyHash, HAS_RETRANSMITTABLE_DATA, false,
@@ -4233,8 +3346,8 @@ TEST_P(QuicConnectionTest, FailToSendFirstPacket) {
   // Test that the connection does not crash when it fails to send the first
   // packet at which point self_address_ might be uninitialized.
   EXPECT_CALL(visitor_, OnConnectionClosed(_, _)).Times(1);
-  QuicPacket* packet = ConstructDataPacket(kDefaultPathId, 1, 0, !kEntropyFlag,
-                                           !kHasStopWaiting);
+  QuicPacket* packet =
+      ConstructDataPacket(kDefaultPathId, 1, !kEntropyFlag, !kHasStopWaiting);
   writer_->SetShouldWriteFail();
   connection_.SendPacket(ENCRYPTION_NONE, kDefaultPathId, 1, packet,
                          kTestEntropyHash, HAS_RETRANSMITTABLE_DATA, false,
@@ -4242,8 +3355,8 @@ TEST_P(QuicConnectionTest, FailToSendFirstPacket) {
 }
 
 TEST_P(QuicConnectionTest, SendSchedulerEAGAIN) {
-  QuicPacket* packet = ConstructDataPacket(kDefaultPathId, 1, 0, !kEntropyFlag,
-                                           !kHasStopWaiting);
+  QuicPacket* packet =
+      ConstructDataPacket(kDefaultPathId, 1, !kEntropyFlag, !kHasStopWaiting);
   BlockOnNextWrite();
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
   connection_.SendPacket(ENCRYPTION_NONE, kDefaultPathId, 1, packet,
@@ -4257,8 +3370,7 @@ TEST_P(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   size_t payload_length;
   size_t length = GetPacketLengthForOneStream(
       connection_.version(), kIncludeVersion, !kIncludePathId,
-      PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER, NOT_IN_FEC_GROUP,
-      &payload_length);
+      PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER, &payload_length);
   connection_.SetMaxPacketLength(length);
 
   // Queue the first packet.
@@ -4279,11 +3391,10 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPackets) {
   // offset 0, and 2 for non-zero offsets up through 16K. Increase
   // max_packet_length by 2 so that subsequent packets containing subsequent
   // stream frames with non-zero offets will fit within the packet length.
-  size_t length =
-      2 + GetPacketLengthForOneStream(
-              connection_.version(), kIncludeVersion, !kIncludePathId,
-              PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER,
-              NOT_IN_FEC_GROUP, &payload_length);
+  size_t length = 2 + GetPacketLengthForOneStream(
+                          connection_.version(), kIncludeVersion,
+                          !kIncludePathId, PACKET_8BYTE_CONNECTION_ID,
+                          PACKET_1BYTE_PACKET_NUMBER, &payload_length);
   connection_.SetMaxPacketLength(length);
 
   // Queue the first packet.
@@ -4356,8 +3467,8 @@ TEST_P(QuicConnectionTest, SendDelayedAck) {
   // The same as ProcessPacket(1) except that ENCRYPTION_INITIAL is used
   // instead of ENCRYPTION_NONE.
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-  ProcessDataPacketAtLevel(kDefaultPathId, 1, 0, !kEntropyFlag,
-                           !kHasStopWaiting, ENCRYPTION_INITIAL);
+  ProcessDataPacketAtLevel(kDefaultPathId, 1, !kEntropyFlag, !kHasStopWaiting,
+                           ENCRYPTION_INITIAL);
 
   // Check if delayed ack timer is running for the expected interval.
   EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
@@ -4372,7 +3483,7 @@ TEST_P(QuicConnectionTest, SendDelayedAck) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
-  QuicConnectionPeer::EnableAckDecimation(&connection_);
+  QuicConnectionPeer::SetAckMode(&connection_, QuicConnection::ACK_DECIMATION);
 
   const size_t kMinRttMs = 40;
   RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager_);
@@ -4394,15 +3505,15 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
   QuicPacketNumber kFirstDecimatedPacket = 101;
   for (unsigned int i = 0; i < kFirstDecimatedPacket - 1; ++i) {
     EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-    ProcessDataPacketAtLevel(kDefaultPathId, 1 + i, 0, !kEntropyFlag,
+    ProcessDataPacketAtLevel(kDefaultPathId, 1 + i, !kEntropyFlag,
                              !kHasStopWaiting, ENCRYPTION_INITIAL);
   }
   EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
   // The same as ProcessPacket(1) except that ENCRYPTION_INITIAL is used
   // instead of ENCRYPTION_NONE.
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-  ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket, 0,
-                           !kEntropyFlag, !kHasStopWaiting, ENCRYPTION_INITIAL);
+  ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket, !kEntropyFlag,
+                           !kHasStopWaiting, ENCRYPTION_INITIAL);
 
   // Check if delayed ack timer is running for the expected interval.
   EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
@@ -4412,10 +3523,146 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
   for (int i = 0; i < 9; ++i) {
     EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
     EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
-    ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket + 1 + i, 0,
+    ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket + 1 + i,
                              !kEntropyFlag, !kHasStopWaiting,
                              ENCRYPTION_INITIAL);
   }
+  // Check that ack is sent and that delayed ack alarm is reset.
+  EXPECT_EQ(2u, writer_->frame_count());
+  EXPECT_FALSE(writer_->stop_waiting_frames().empty());
+  EXPECT_FALSE(writer_->ack_frames().empty());
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
+  FLAGS_quic_ack_decimation2 = true;
+  QuicConnectionPeer::SetAckMode(
+      &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
+
+  const size_t kMinRttMs = 40;
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager_);
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kMinRttMs),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+  // The ack time should be based on min_rtt/4, since it's less than the
+  // default delayed ack time.
+  QuicTime ack_time = clock_.ApproximateNow().Add(
+      QuicTime::Delta::FromMilliseconds(kMinRttMs / 4));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  const uint8_t tag = 0x07;
+  connection_.SetDecrypter(ENCRYPTION_INITIAL, new StrictTaggingDecrypter(tag));
+  framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
+  // Process a packet from the non-crypto stream.
+  frame1_.stream_id = 3;
+
+  // Process all the initial packets in order so there aren't missing packets.
+  QuicPacketNumber kFirstDecimatedPacket = 101;
+  for (unsigned int i = 0; i < kFirstDecimatedPacket - 1; ++i) {
+    EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+    ProcessDataPacketAtLevel(kDefaultPathId, 1 + i, !kEntropyFlag,
+                             !kHasStopWaiting, ENCRYPTION_INITIAL);
+  }
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  // The same as ProcessPacket(1) except that ENCRYPTION_INITIAL is used
+  // instead of ENCRYPTION_NONE.
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket, !kEntropyFlag,
+                           !kHasStopWaiting, ENCRYPTION_INITIAL);
+
+  // Check if delayed ack timer is running for the expected interval.
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
+
+  // Process packet 10 first and ensure the alarm is one eighth min_rtt.
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket + 9,
+                           !kEntropyFlag, !kHasStopWaiting, ENCRYPTION_INITIAL);
+  ack_time = clock_.ApproximateNow().Add(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
+
+  // The 10th received packet causes an ack to be sent.
+  for (int i = 0; i < 8; ++i) {
+    EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+    EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+    ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket + 1 + i,
+                             !kEntropyFlag, !kHasStopWaiting,
+                             ENCRYPTION_INITIAL);
+  }
+  // Check that ack is sent and that delayed ack alarm is reset.
+  EXPECT_EQ(2u, writer_->frame_count());
+  EXPECT_FALSE(writer_->stop_waiting_frames().empty());
+  EXPECT_FALSE(writer_->ack_frames().empty());
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
+  FLAGS_quic_ack_decimation2 = true;
+  QuicConnectionPeer::SetAckMode(
+      &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
+
+  const size_t kMinRttMs = 40;
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager_);
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kMinRttMs),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
+  // The ack time should be based on min_rtt/4, since it's less than the
+  // default delayed ack time.
+  QuicTime ack_time = clock_.ApproximateNow().Add(
+      QuicTime::Delta::FromMilliseconds(kMinRttMs / 4));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  const uint8_t tag = 0x07;
+  connection_.SetDecrypter(ENCRYPTION_INITIAL, new StrictTaggingDecrypter(tag));
+  framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
+  // Process a packet from the non-crypto stream.
+  frame1_.stream_id = 3;
+
+  // Process all the initial packets in order so there aren't missing packets.
+  QuicPacketNumber kFirstDecimatedPacket = 101;
+  for (unsigned int i = 0; i < kFirstDecimatedPacket - 1; ++i) {
+    EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+    ProcessDataPacketAtLevel(kDefaultPathId, 1 + i, !kEntropyFlag,
+                             !kHasStopWaiting, ENCRYPTION_INITIAL);
+  }
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  // The same as ProcessPacket(1) except that ENCRYPTION_INITIAL is used
+  // instead of ENCRYPTION_NONE.
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket, !kEntropyFlag,
+                           !kHasStopWaiting, ENCRYPTION_INITIAL);
+
+  // Check if delayed ack timer is running for the expected interval.
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
+
+  // Process packet 10 first and ensure the alarm is one eighth min_rtt.
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket + 19,
+                           !kEntropyFlag, !kHasStopWaiting, ENCRYPTION_INITIAL);
+  ack_time = clock_.ApproximateNow().Add(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
+
+  // The 10th received packet causes an ack to be sent.
+  for (int i = 0; i < 8; ++i) {
+    EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
+    EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+    ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket + 1 + i,
+                             !kEntropyFlag, !kHasStopWaiting,
+                             ENCRYPTION_INITIAL);
+  }
+  // Check that ack is sent and that delayed ack alarm is reset.
+  EXPECT_EQ(2u, writer_->frame_count());
+  EXPECT_FALSE(writer_->stop_waiting_frames().empty());
+  EXPECT_FALSE(writer_->ack_frames().empty());
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+
+  // The next packet received in order will cause an immediate ack,
+  // because it fills a hole.
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
+  ProcessDataPacketAtLevel(kDefaultPathId, kFirstDecimatedPacket + 10,
+                           !kEntropyFlag, !kHasStopWaiting, ENCRYPTION_INITIAL);
   // Check that ack is sent and that delayed ack alarm is reset.
   EXPECT_EQ(2u, writer_->frame_count());
   EXPECT_FALSE(writer_->stop_waiting_frames().empty());
@@ -4594,7 +3841,7 @@ TEST_P(QuicConnectionTest, NoAckSentForClose) {
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY,
                                            ConnectionCloseSource::FROM_PEER));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
-  ProcessClosePacket(kDefaultPathId, 2, 0);
+  ProcessClosePacket(kDefaultPathId, 2);
 }
 
 TEST_P(QuicConnectionTest, SendWhenDisconnected) {
@@ -4605,8 +3852,8 @@ TEST_P(QuicConnectionTest, SendWhenDisconnected) {
                               ConnectionCloseSource::FROM_SELF);
   EXPECT_FALSE(connection_.connected());
   EXPECT_FALSE(connection_.CanWriteStreamData());
-  QuicPacket* packet = ConstructDataPacket(kDefaultPathId, 1, 0, !kEntropyFlag,
-                                           !kHasStopWaiting);
+  QuicPacket* packet =
+      ConstructDataPacket(kDefaultPathId, 1, !kEntropyFlag, !kHasStopWaiting);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
   connection_.SendPacket(ENCRYPTION_NONE, kDefaultPathId, 1, packet,
                          kTestEntropyHash, HAS_RETRANSMITTABLE_DATA, false,
@@ -4684,30 +3931,19 @@ TEST_P(QuicConnectionTest, MissingPacketsBeforeLeastUnacked) {
 TEST_P(QuicConnectionTest, ReceivedEntropyHashCalculation) {
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AtLeast(1));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ProcessDataPacket(kDefaultPathId, 1, 1, kEntropyFlag);
-  ProcessDataPacket(kDefaultPathId, 4, 1, kEntropyFlag);
-  ProcessDataPacket(kDefaultPathId, 3, 1, !kEntropyFlag);
-  ProcessDataPacket(kDefaultPathId, 7, 1, kEntropyFlag);
-  EXPECT_EQ(146u, outgoing_ack()->entropy_hash);
-}
-
-TEST_P(QuicConnectionTest, ReceivedEntropyHashCalculationHalfFEC) {
-  // FEC packets should not change the entropy hash calculation.
-  EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AtLeast(1));
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ProcessDataPacket(kDefaultPathId, 1, 1, kEntropyFlag);
-  ProcessFecPacket(kDefaultPathId, 4, 1, false, kEntropyFlag, nullptr);
-  ProcessDataPacket(kDefaultPathId, 3, 3, !kEntropyFlag);
-  ProcessFecPacket(kDefaultPathId, 7, 3, false, kEntropyFlag, nullptr);
+  ProcessDataPacket(kDefaultPathId, 1, kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 4, kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 3, !kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 7, kEntropyFlag);
   EXPECT_EQ(146u, outgoing_ack()->entropy_hash);
 }
 
 TEST_P(QuicConnectionTest, UpdateEntropyForReceivedPackets) {
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AtLeast(1));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ProcessDataPacket(kDefaultPathId, 1, 1, kEntropyFlag);
-  ProcessDataPacket(kDefaultPathId, 5, 1, kEntropyFlag);
-  ProcessDataPacket(kDefaultPathId, 4, 1, !kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 1, kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 5, kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 4, !kEntropyFlag);
   EXPECT_EQ(34u, outgoing_ack()->entropy_hash);
   // Make 4th packet my least unacked, and update entropy for 2, 3 packets.
   QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 5);
@@ -4726,9 +3962,9 @@ TEST_P(QuicConnectionTest, UpdateEntropyForReceivedPackets) {
 TEST_P(QuicConnectionTest, UpdateEntropyHashUptoCurrentPacket) {
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(AtLeast(1));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  ProcessDataPacket(kDefaultPathId, 1, 1, kEntropyFlag);
-  ProcessDataPacket(kDefaultPathId, 5, 1, !kEntropyFlag);
-  ProcessDataPacket(kDefaultPathId, 22, 1, kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 1, kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 5, !kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 22, kEntropyFlag);
   EXPECT_EQ(66u, outgoing_ack()->entropy_hash);
   QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 22);
   QuicPacketEntropyHash random_entropy_hash = 85u;
@@ -4739,7 +3975,7 @@ TEST_P(QuicConnectionTest, UpdateEntropyHashUptoCurrentPacket) {
   ack_entropy_hash = ProcessStopWaitingPacket(&frame);
   EXPECT_EQ((random_entropy_hash + ack_entropy_hash),
             outgoing_ack()->entropy_hash);
-  ProcessDataPacket(kDefaultPathId, 25, 1, kEntropyFlag);
+  ProcessDataPacket(kDefaultPathId, 25, kEntropyFlag);
   EXPECT_EQ((random_entropy_hash + ack_entropy_hash + (1 << (25 % 8))),
             outgoing_ack()->entropy_hash);
 }
@@ -4761,7 +3997,7 @@ TEST_P(QuicConnectionTest, EntropyCalculationForTruncatedAck) {
     } else {
       entropy[i] = entropy[i - 1];
     }
-    ProcessDataPacket(kDefaultPathId, i, 1, entropy_flag);
+    ProcessDataPacket(kDefaultPathId, i, entropy_flag);
   }
   for (int i = 1; i < 50; ++i) {
     EXPECT_EQ(entropy[i],
@@ -4963,52 +4199,6 @@ TEST_P(QuicConnectionTest, CheckSendStats) {
   EXPECT_EQ(3u, stats.packets_retransmitted);
   EXPECT_EQ(1u, stats.rto_count);
   EXPECT_EQ(kDefaultMaxPacketSize, stats.max_packet_size);
-}
-
-TEST_P(QuicConnectionTest, CheckReceiveStats) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  size_t received_bytes = 0;
-  received_bytes += ProcessFecProtectedPacket(kDefaultPathId, 1, false,
-                                              !kEntropyFlag, !kHasStopWaiting);
-  received_bytes += ProcessFecProtectedPacket(kDefaultPathId, 3, false,
-                                              !kEntropyFlag, !kHasStopWaiting);
-  // Should be counted against dropped packets.
-  received_bytes += ProcessDataPacket(kDefaultPathId, 3, 1, !kEntropyFlag);
-  received_bytes +=
-      ProcessFecPacket(kDefaultPathId, 4, 1, true, !kEntropyFlag, nullptr);
-
-  EXPECT_CALL(*send_algorithm_, BandwidthEstimate())
-      .WillOnce(Return(QuicBandwidth::Zero()));
-
-  const QuicConnectionStats& stats = connection_.GetStats();
-  EXPECT_EQ(received_bytes, stats.bytes_received);
-  EXPECT_EQ(4u, stats.packets_received);
-
-  EXPECT_EQ(1u, stats.packets_revived);
-  EXPECT_EQ(1u, stats.packets_dropped);
-}
-
-TEST_P(QuicConnectionTest, TestFecGroupLimits) {
-  // Create and return a group for 1.
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 1) != nullptr);
-
-  // Create and return a group for 2.
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 2) != nullptr);
-
-  // Create and return a group for 4.  This should remove 1 but not 2.
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 4) != nullptr);
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 1) == nullptr);
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 2) != nullptr);
-
-  // Create and return a group for 3.  This will kill off 2.
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 3) != nullptr);
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 2) == nullptr);
-
-  // Verify that adding 5 kills off 3, despite 4 being created before 3.
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 5) != nullptr);
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 4) != nullptr);
-  ASSERT_TRUE(QuicConnectionPeer::GetFecGroup(&connection_, 3) == nullptr);
 }
 
 TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
@@ -5252,116 +4442,6 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
   ProcessAckPacket(&third_ack_frame);
 }
 
-TEST_P(QuicConnectionTest, AckNotifierFECTriggerCallback) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-
-  // Create a listener which we expect to be called.
-  scoped_refptr<MockAckListener> listener(new MockAckListener);
-  EXPECT_CALL(*listener, OnPacketAcked(_, _)).Times(1);
-  // Send some data, which will register the listener to be notified.
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, listener.get());
-  connection_.SendStreamDataWithString(2, "bar", 0, !kFin, nullptr);
-
-  // Process an ACK from the server with a revived packet, which should trigger
-  // the callback.
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  QuicAckFrame frame = InitAckFrame(2);
-  NackPacket(1, &frame);
-  frame.latest_revived_packet = 1;
-  ProcessAckPacket(&frame);
-  // If the ack is processed again, the notifier should not be called again.
-  ProcessAckPacket(&frame);
-}
-
-TEST_P(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(visitor_, OnCanWrite());
-
-  // Create a listener which we expect to be called.
-  scoped_refptr<MockAckListener> listener(new MockAckListener);
-  EXPECT_CALL(*listener, OnPacketAcked(_, _)).Times(1);
-
-  // Expect ACKs for 1 packet.
-  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-
-  // Send one packet, and register to be notified on ACK.
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, listener.get());
-
-  // Ack packet gets dropped, but we receive an FEC packet that covers it.
-  // Should recover the Ack packet and trigger the notification callback.
-  QuicFrames frames;
-
-  QuicAckFrame ack_frame = InitAckFrame(1);
-  frames.push_back(QuicFrame(&ack_frame));
-
-  // Dummy stream frame to satisfy expectations set elsewhere.
-  frames.push_back(QuicFrame(&frame1_));
-
-  QuicPacketHeader ack_header;
-  ack_header.public_header.connection_id = connection_id_;
-  ack_header.public_header.reset_flag = false;
-  ack_header.public_header.version_flag = false;
-  ack_header.entropy_flag = !kEntropyFlag;
-  ack_header.fec_flag = true;
-  ack_header.packet_number = 1;
-  ack_header.is_in_fec_group = IN_FEC_GROUP;
-  ack_header.fec_group = 1;
-
-  QuicPacket* packet = BuildUnsizedDataPacket(&framer_, ack_header, frames);
-
-  // Take the packet which contains the ACK frame, and construct and deliver an
-  // FEC packet which allows the ACK packet to be recovered.
-  ProcessFecPacket(kDefaultPathId, 2, 1, true, !kEntropyFlag, packet);
-}
-
-TEST_P(QuicConnectionTest, NetworkChangeVisitorCwndCallbackChangesFecState) {
-  size_t max_packets_per_fec_group = creator_->max_packets_per_fec_group();
-
-  QuicSentPacketManager::NetworkChangeVisitor* visitor =
-      QuicSentPacketManagerPeer::GetNetworkChangeVisitor(manager_);
-  EXPECT_TRUE(visitor);
-
-  // Increase FEC group size by increasing congestion window to a large number.
-  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
-      .WillRepeatedly(Return(1000 * kDefaultTCPMSS));
-  visitor->OnCongestionWindowChange();
-  EXPECT_LT(max_packets_per_fec_group, creator_->max_packets_per_fec_group());
-}
-
-TEST_P(QuicConnectionTest, NetworkChangeVisitorConfigCallbackChangesFecState) {
-  QuicSentPacketManager::NetworkChangeVisitor* visitor =
-      QuicSentPacketManagerPeer::GetNetworkChangeVisitor(manager_);
-  EXPECT_TRUE(visitor);
-  EXPECT_EQ(QuicTime::Delta::Zero(),
-            QuicPacketCreatorPeer::GetFecTimeout(creator_));
-
-  // Verify that sending a config with a new initial rtt changes fec timeout.
-  // Create and process a config with a non-zero initial RTT.
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  QuicConfig config;
-  config.SetInitialRoundTripTimeUsToSend(300000);
-  connection_.SetFromConfig(config);
-  EXPECT_LT(QuicTime::Delta::Zero(),
-            QuicPacketCreatorPeer::GetFecTimeout(creator_));
-}
-
-TEST_P(QuicConnectionTest, NetworkChangeVisitorRttCallbackChangesFecState) {
-  // Verify that sending a config with a new initial rtt changes fec timeout.
-  QuicSentPacketManager::NetworkChangeVisitor* visitor =
-      QuicSentPacketManagerPeer::GetNetworkChangeVisitor(manager_);
-  EXPECT_TRUE(visitor);
-  EXPECT_EQ(QuicTime::Delta::Zero(),
-            QuicPacketCreatorPeer::GetFecTimeout(creator_));
-
-  // Increase FEC timeout by increasing RTT.
-  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(manager_);
-  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(300),
-                       QuicTime::Delta::Zero(), QuicTime::Zero());
-  visitor->OnRttChange();
-  EXPECT_LT(QuicTime::Delta::Zero(),
-            QuicPacketCreatorPeer::GetFecTimeout(creator_));
-}
-
 TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
   QuicPacketHeader header;
 
@@ -5420,43 +4500,6 @@ TEST_P(QuicConnectionTest, NoDataNoFin) {
   EXPECT_DFATAL(
       connection_.SendStreamDataWithString(3, "", 0, !kFin, listener.get()),
       "Attempt to send empty stream frame");
-}
-
-TEST_P(QuicConnectionTest, FecSendPolicyReceivedConnectionOption) {
-  // Test sending SetReceivedConnectionOptions when FEC send policy is
-  // FEC_ANY_TRIGGER.
-  if (GetParam().fec_send_policy == FEC_ALARM_TRIGGER) {
-    return;
-  }
-  connection_.set_perspective(Perspective::IS_SERVER);
-
-  // Test ReceivedConnectionOptions.
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  QuicConfig config;
-  QuicTagVector copt;
-  copt.push_back(kFSPA);
-  QuicConfigPeer::SetReceivedConnectionOptions(&config, copt);
-  EXPECT_EQ(FEC_ANY_TRIGGER, generator_->fec_send_policy());
-  connection_.SetFromConfig(config);
-  EXPECT_EQ(FEC_ALARM_TRIGGER, generator_->fec_send_policy());
-}
-
-// TODO(rtenneti): Delete this code after the 0.25 RTT FEC experiment.
-TEST_P(QuicConnectionTest, FecRTTMultiplierReceivedConnectionOption) {
-  connection_.set_perspective(Perspective::IS_SERVER);
-
-  // Test ReceivedConnectionOptions.
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  QuicConfig config;
-  QuicTagVector copt;
-  copt.push_back(kFRTT);
-  QuicConfigPeer::SetReceivedConnectionOptions(&config, copt);
-  float rtt_multiplier_for_fec_timeout =
-      QuicPacketCreatorPeer::GetRttMultiplierForFecTimeout(creator_);
-  connection_.SetFromConfig(config);
-  // New RTT multiplier is half of the old RTT multiplier.
-  EXPECT_EQ(rtt_multiplier_for_fec_timeout,
-            QuicPacketCreatorPeer::GetRttMultiplierForFecTimeout(creator_) * 2);
 }
 
 TEST_P(QuicConnectionTest, DoNotSendGoAwayTwice) {

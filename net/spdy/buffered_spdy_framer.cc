@@ -202,7 +202,7 @@ void BufferedSpdyFramer::OnStreamFrameData(SpdyStreamId stream_id,
 }
 
 void BufferedSpdyFramer::OnStreamEnd(SpdyStreamId stream_id) {
-  LOG(DFATAL) << "Unimplemented";
+  visitor_->OnStreamFrameData(stream_id, nullptr, 0, true);
 }
 
 void BufferedSpdyFramer::OnStreamPadding(SpdyStreamId stream_id, size_t len) {

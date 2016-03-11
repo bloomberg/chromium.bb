@@ -124,9 +124,6 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
   for (QuicPacketNumber packet : frame->missing_packets)
     missing->AppendString(base::Uint64ToString(packet));
 
-  dict->SetString("latest_revived_packet",
-                  base::Int64ToString(frame->latest_revived_packet));
-
   base::ListValue* received = new base::ListValue();
   dict->Set("received_packet_times", received);
   const PacketTimeVector& received_times = frame->received_packet_times;
@@ -638,14 +635,6 @@ void QuicConnectionLogger::OnVersionNegotiationPacket(
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_VERSION_NEGOTIATION_PACKET_RECEIVED,
       base::Bind(&NetLogQuicVersionNegotiationPacketCallback, &packet));
-}
-
-void QuicConnectionLogger::OnRevivedPacket(
-    const QuicPacketHeader& revived_header,
-    base::StringPiece payload) {
-  net_log_.AddEvent(
-      NetLog::TYPE_QUIC_SESSION_PACKET_HEADER_REVIVED,
-      base::Bind(&NetLogQuicPacketHeaderCallback, &revived_header));
 }
 
 void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(

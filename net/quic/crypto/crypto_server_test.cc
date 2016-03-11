@@ -507,7 +507,6 @@ TEST_P(CryptoServerTest, RejectTooLarge) {
 }
 
 TEST_P(CryptoServerTest, RejectTooLargeButValidSTK) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_validate_stk_without_scid, true);
   // Check that the server replies with no certificate when a CHLO is
   // constructed with a PDMD but no SKT when the REJ would be too large.
   // clang-format off
@@ -535,37 +534,6 @@ TEST_P(CryptoServerTest, RejectTooLargeButValidSTK) {
             out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
   EXPECT_NE(0u, cert.size());
   EXPECT_NE(0u, proof.size());
-  const HandshakeFailureReason kRejectReasons[] = {
-      SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
-}
-
-TEST_P(CryptoServerTest, RejectTooLargeButValidSTKWithoutFlag) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_validate_stk_without_scid, false);
-  // Check that the server replies with no certificate when a CHLO is
-  // constructed with a PDMD but no SKT when the REJ would be too large.
-  // clang-format off
-  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
-      "CHLO",
-      "AEAD", "AESG",
-      "KEXS", "C255",
-      "PUBS", pub_hex_.c_str(),
-      "NONC", nonce_hex_.c_str(),
-      "#004b5453", srct_hex_.c_str(),
-      "PDMD", "X509",
-      "VER\0", client_version_string_.c_str(),
-      "$padding", static_cast<int>(kClientHelloMinimumSize),
-      nullptr);
-  // clang-format on
-
-  // The REJ will be larger than the CHLO so no PROF or CRT will be sent.
-  config_.set_chlo_multiplier(1);
-
-  ShouldSucceed(msg);
-  StringPiece cert, proof, cert_sct;
-  EXPECT_FALSE(out_.GetStringPiece(kCertificateTag, &cert));
-  EXPECT_FALSE(out_.GetStringPiece(kPROF, &proof));
-  EXPECT_FALSE(out_.GetStringPiece(kCertificateSCTTag, &cert_sct));
   const HandshakeFailureReason kRejectReasons[] = {
       SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
   CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
@@ -758,50 +726,7 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
   };
 }
 
-TEST_P(CryptoServerTest, ReplayProtection) {
-  if (client_version_ > QUIC_VERSION_30) {
-    return;
-  }
-  FLAGS_require_strike_register_or_server_nonce = false;
-  // This tests that disabling replay protection works.
-  // clang-format off
-  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
-      "CHLO",
-      "AEAD", "AESG",
-      "KEXS", "C255",
-      "SCID", scid_hex_.c_str(),
-      "#004b5453", srct_hex_.c_str(),
-      "PUBS", pub_hex_.c_str(),
-      "NONC", nonce_hex_.c_str(),
-      "XLCT", XlctHexString().c_str(),
-      "VER\0", client_version_string_.c_str(),
-      "$padding", static_cast<int>(kClientHelloMinimumSize),
-      nullptr);
-  // clang-format on
-  ShouldSucceed(msg);
-  // The message should be rejected because the strike-register is still
-  // quiescent.
-  CheckRejectTag();
-
-  const HandshakeFailureReason kRejectReasons[] = {
-      CLIENT_NONCE_INVALID_TIME_FAILURE};
-  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
-
-  config_.set_replay_protection(false);
-
-  ShouldSucceed(msg);
-  // The message should be accepted now.
-  ASSERT_EQ(kSHLO, out_.tag());
-  CheckServerHello(out_);
-
-  ShouldSucceed(msg);
-  // The message should accepted twice when replay protection is off.
-  ASSERT_EQ(kSHLO, out_.tag());
-  CheckServerHello(out_);
-}
-
 TEST_P(CryptoServerTest, NoServerNonce) {
-  FLAGS_require_strike_register_or_server_nonce = true;
   // When no server nonce is present and no strike register is configured,
   // the CHLO should be rejected.
   // clang-format off

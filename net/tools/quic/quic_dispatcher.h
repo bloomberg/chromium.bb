@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/linked_hash_map.h"
+#include "net/quic/crypto/quic_compressed_certs_cache.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
@@ -131,8 +132,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
       const QuicVersionNegotiationPacket& packet) override;
   void OnDecryptedPacket(EncryptionLevel level) override;
   bool OnPacketHeader(const QuicPacketHeader& header) override;
-  void OnRevivedPacket() override;
-  void OnFecProtectedPayload(base::StringPiece payload) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
   bool OnAckFrame(const QuicAckFrame& frame) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
@@ -143,7 +142,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnPathCloseFrame(const QuicPathCloseFrame& frame) override;
-  void OnFecData(base::StringPiece redundancy) override;
   void OnPacketComplete() override;
 
  protected:
@@ -190,6 +188,10 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   const QuicCryptoServerConfig* crypto_config() const { return crypto_config_; }
 
+  QuicCompressedCertsCache* compressed_certs_cache() {
+    return &compressed_certs_cache_;
+  }
+
   QuicFramer* framer() { return &framer_; }
 
   QuicConnectionHelperInterface* helper() { return helper_.get(); }
@@ -222,6 +224,9 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   const QuicConfig& config_;
 
   const QuicCryptoServerConfig* crypto_config_;
+
+  // The cache for most recently compressed certs.
+  QuicCompressedCertsCache compressed_certs_cache_;
 
   // The list of connections waiting to write.
   WriteBlockedList write_blocked_list_;

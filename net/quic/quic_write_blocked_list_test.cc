@@ -115,7 +115,6 @@ TEST(QuicWriteBlockedListTest, NoDuplicateEntries) {
 }
 
 TEST(QuicWriteBlockedListTest, BatchingWrites) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_batch_writes, true);
   QuicWriteBlockedList write_blocked_list;
 
   const QuicStreamId id1 = kClientDataStreamId1;

@@ -213,7 +213,10 @@ WriteResult QuicSocketUtils::WritePacket(int fd,
     hdr.msg_controllen = cmsg->cmsg_len;
   }
 
-  int rc = sendmsg(fd, &hdr, 0);
+  int rc;
+  do {
+    rc = sendmsg(fd, &hdr, 0);
+  } while (rc < 0 && errno == EINTR);
   if (rc >= 0) {
     return WriteResult(WRITE_STATUS_OK, rc);
   }

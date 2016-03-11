@@ -239,16 +239,14 @@ QuicConsumedData QuicSession::WritevData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    FecProtection fec_protection,
     QuicAckListenerInterface* ack_notifier_delegate) {
-  if (FLAGS_quic_block_unencrypted_writes && !IsEncryptionEstablished() &&
-      id != kCryptoStreamId) {
+  if (!IsEncryptionEstablished() && id != kCryptoStreamId) {
     // Do not let streams write without encryption. The calling stream will end
     // up write blocked until OnCanWrite is next called.
     return QuicConsumedData(0, false);
   }
-  QuicConsumedData data = connection_->SendStreamData(
-      id, iov, offset, fin, fec_protection, ack_notifier_delegate);
+  QuicConsumedData data =
+      connection_->SendStreamData(id, iov, offset, fin, ack_notifier_delegate);
   write_blocked_streams_.UpdateBytesForStream(id, data.bytes_consumed);
   return data;
 }
@@ -530,9 +528,7 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     // to QuicSession since it is the glue.
     case ENCRYPTION_FIRST_ESTABLISHED:
       // Given any streams blocked by encryption a chance to write.
-      if (FLAGS_quic_block_unencrypted_writes) {
-        OnCanWrite();
-      }
+      OnCanWrite();
       break;
 
     case ENCRYPTION_REESTABLISHED:
@@ -540,9 +536,7 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
       // decrypted by the peer.
       connection_->RetransmitUnackedPackets(ALL_INITIAL_RETRANSMISSION);
       // Given any streams blocked by encryption a chance to write.
-      if (FLAGS_quic_block_unencrypted_writes) {
-        OnCanWrite();
-      }
+      OnCanWrite();
       break;
 
     case HANDSHAKE_CONFIRMED:

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_protocol.h"
 
@@ -15,11 +16,9 @@ namespace net {
 struct QuicAckFrame;
 struct QuicPacketHeader;
 class QuicAlarm;
-class QuicConnection;
 class QuicConnectionHelperInterface;
 class QuicConnectionVisitorInterface;
 class QuicEncryptedPacket;
-class QuicFecGroup;
 class QuicFramer;
 class QuicPacketCreator;
 class QuicPacketGenerator;
@@ -88,12 +87,8 @@ class QuicConnectionPeer {
 
   static QuicFramer* GetFramer(QuicConnection* connection);
 
-  // Set last_header_->fec_group = fec_group and return connection->GetFecGroup
-  static QuicFecGroup* GetFecGroup(QuicConnection* connection, int fec_group);
-
   static QuicAlarm* GetAckAlarm(QuicConnection* connection);
   static QuicAlarm* GetPingAlarm(QuicConnection* connection);
-  static QuicAlarm* GetFecAlarm(QuicConnection* connection);
   static QuicAlarm* GetResumeWritesAlarm(QuicConnection* connection);
   static QuicAlarm* GetRetransmissionAlarm(QuicConnection* connection);
   static QuicAlarm* GetSendAlarm(QuicConnection* connection);
@@ -122,7 +117,8 @@ class QuicConnectionPeer {
                                          QuicPacketCount packets);
   static void SetNextMtuProbeAt(QuicConnection* connection,
                                 QuicPacketNumber number);
-  static void EnableAckDecimation(QuicConnection* connection);
+  static void SetAckMode(QuicConnection* connection,
+                         QuicConnection::AckMode ack_mode);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);

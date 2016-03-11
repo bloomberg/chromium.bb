@@ -59,7 +59,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   QuicSimpleServerSession(const QuicConfig& config,
                           QuicConnection* connection,
                           QuicServerSessionVisitor* visitor,
-                          const QuicCryptoServerConfig* crypto_config);
+                          const QuicCryptoServerConfig* crypto_config,
+                          QuicCompressedCertsCache* compressed_certs_cache);
 
   ~QuicSimpleServerSession() override;
 
@@ -97,7 +98,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
 
   // QuicServerSessionBaseMethod:
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
-      const QuicCryptoServerConfig* crypto_config) override;
+      const QuicCryptoServerConfig* crypto_config,
+      QuicCompressedCertsCache* compressed_certs_cache) override;
 
  private:
   friend class test::QuicSimpleServerSessionPeer;

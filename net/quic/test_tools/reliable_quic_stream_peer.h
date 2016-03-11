@@ -35,8 +35,6 @@ class ReliableQuicStreamPeer {
 
   static uint32_t SizeOfQueuedData(ReliableQuicStream* stream);
 
-  static void SetFecPolicy(ReliableQuicStream* stream, FecPolicy fec_policy);
-
   static bool StreamContributesToConnectionFlowControl(
       ReliableQuicStream* stream);
 

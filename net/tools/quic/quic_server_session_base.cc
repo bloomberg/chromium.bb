@@ -18,9 +18,11 @@ QuicServerSessionBase::QuicServerSessionBase(
     const QuicConfig& config,
     QuicConnection* connection,
     QuicServerSessionVisitor* visitor,
-    const QuicCryptoServerConfig* crypto_config)
+    const QuicCryptoServerConfig* crypto_config,
+    QuicCompressedCertsCache* compressed_certs_cache)
     : QuicSpdySession(connection, config),
       crypto_config_(crypto_config),
+      compressed_certs_cache_(compressed_certs_cache),
       visitor_(visitor),
       bandwidth_resumption_enabled_(false),
       bandwidth_estimate_sent_to_client_(QuicBandwidth::Zero()),
@@ -30,7 +32,8 @@ QuicServerSessionBase::QuicServerSessionBase(
 QuicServerSessionBase::~QuicServerSessionBase() {}
 
 void QuicServerSessionBase::Initialize() {
-  crypto_stream_.reset(CreateQuicCryptoServerStream(crypto_config_));
+  crypto_stream_.reset(
+      CreateQuicCryptoServerStream(crypto_config_, compressed_certs_cache_));
   QuicSpdySession::Initialize();
 }
 

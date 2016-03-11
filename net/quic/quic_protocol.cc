@@ -19,41 +19,33 @@ namespace net {
 const char* const kFinalOffsetHeaderKey = ":final-offset";
 
 size_t GetPacketHeaderSize(const QuicPacketHeader& header) {
-  return GetPacketHeaderSize(
-      header.public_header.connection_id_length,
-      header.public_header.version_flag, header.public_header.multipath_flag,
-      header.public_header.packet_number_length, header.is_in_fec_group);
+  return GetPacketHeaderSize(header.public_header.connection_id_length,
+                             header.public_header.version_flag,
+                             header.public_header.multipath_flag,
+                             header.public_header.packet_number_length);
 }
 
 size_t GetPacketHeaderSize(QuicConnectionIdLength connection_id_length,
                            bool include_version,
                            bool include_path_id,
-                           QuicPacketNumberLength packet_number_length,
-                           InFecGroup is_in_fec_group) {
+                           QuicPacketNumberLength packet_number_length) {
   return kPublicFlagsSize + connection_id_length +
          (include_version ? kQuicVersionSize : 0) +
          (include_path_id ? kQuicPathIdSize : 0) + packet_number_length +
-         kPrivateFlagsSize +
-         (is_in_fec_group == IN_FEC_GROUP ? kFecGroupSize : 0);
+         kPrivateFlagsSize;
 }
 
-size_t GetStartOfFecProtectedData(QuicConnectionIdLength connection_id_length,
-                                  bool include_version,
-                                  bool include_path_id,
-                                  QuicPacketNumberLength packet_number_length) {
-  return GetPacketHeaderSize(connection_id_length, include_version,
-                             include_path_id, packet_number_length,
-                             IN_FEC_GROUP);
+size_t GetStartOfEncryptedData(const QuicPacketHeader& header) {
+  return GetPacketHeaderSize(header) - kPrivateFlagsSize;
 }
 
 size_t GetStartOfEncryptedData(QuicConnectionIdLength connection_id_length,
                                bool include_version,
                                bool include_path_id,
                                QuicPacketNumberLength packet_number_length) {
-  // Don't include the fec size, since encryption starts before private flags.
+  // Encryption starts before private flags.
   return GetPacketHeaderSize(connection_id_length, include_version,
-                             include_path_id, packet_number_length,
-                             NOT_IN_FEC_GROUP) -
+                             include_path_id, packet_number_length) -
          kPrivateFlagsSize;
 }
 
@@ -296,8 +288,7 @@ QuicAckFrame::QuicAckFrame()
       entropy_hash(0),
       is_truncated(false),
       largest_observed(0),
-      ack_delay_time(QuicTime::Delta::Infinite()),
-      latest_revived_packet(0) {}
+      ack_delay_time(QuicTime::Delta::Infinite()) {}
 
 QuicAckFrame::QuicAckFrame(const QuicAckFrame& other) = default;
 
@@ -533,7 +524,6 @@ ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
      << " ack_delay_time: " << ack_frame.ack_delay_time.ToMicroseconds()
      << " missing_packets: [ " << ack_frame.missing_packets
      << " ] is_truncated: " << ack_frame.is_truncated
-     << " revived_packet: " << ack_frame.latest_revived_packet
      << " received_packets: [ ";
   for (const std::pair<QuicPacketNumber, QuicTime>& p :
        ack_frame.received_packet_times) {
@@ -702,13 +692,6 @@ QuicEncryptedPacket::QuicEncryptedPacket(char* buffer,
                                          bool owns_buffer)
     : QuicData(buffer, length, owns_buffer) {}
 
-StringPiece QuicPacket::FecProtectedData() const {
-  const size_t start_of_fec =
-      GetStartOfFecProtectedData(connection_id_length_, includes_version_,
-                                 includes_path_id_, packet_number_length_);
-  return StringPiece(data() + start_of_fec, length() - start_of_fec);
-}
-
 StringPiece QuicPacket::AssociatedData() const {
   return StringPiece(data(), GetStartOfEncryptedData(
                                  connection_id_length_, includes_version_,
@@ -751,7 +734,6 @@ SerializedPacket::SerializedPacket(QuicPathId path_id,
       packet_number_length(packet_number_length),
       encryption_level(ENCRYPTION_NONE),
       entropy_hash(entropy_hash),
-      is_fec_packet(false),
       has_ack(has_ack),
       has_stop_waiting(has_stop_waiting),
       original_packet_number(0),
@@ -781,7 +763,6 @@ TransmissionInfo::TransmissionInfo()
       transmission_type(NOT_RETRANSMISSION),
       in_flight(false),
       is_unackable(false),
-      is_fec_packet(false),
       has_crypto_handshake(false),
       needs_padding(false),
       retransmission(0) {}
@@ -791,7 +772,6 @@ TransmissionInfo::TransmissionInfo(EncryptionLevel level,
                                    TransmissionType transmission_type,
                                    QuicTime sent_time,
                                    QuicPacketLength bytes_sent,
-                                   bool is_fec_packet,
                                    bool has_crypto_handshake,
                                    bool needs_padding)
     : encryption_level(level),
@@ -802,7 +782,6 @@ TransmissionInfo::TransmissionInfo(EncryptionLevel level,
       transmission_type(transmission_type),
       in_flight(false),
       is_unackable(false),
-      is_fec_packet(is_fec_packet),
       has_crypto_handshake(has_crypto_handshake),
       needs_padding(needs_padding),
       retransmission(0) {}

@@ -263,6 +263,8 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
         server_crypto_config_(QuicCryptoServerConfig::TESTING,
                               QuicRandom::GetInstance(),
                               CryptoTestUtils::ProofSourceForTesting()),
+        server_compressed_certs_cache_(
+            QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
         server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED) {
     TestQuicSpdyClientSession* client_session = nullptr;
     CreateClientSessionForTest(
@@ -288,10 +290,10 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
   // Initializes the server_stream_ for stateless rejects.
   void InitializeFakeStatelessRejectServer() {
     TestQuicSpdyServerSession* server_session = nullptr;
-    CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
-                               QuicSupportedVersions(), &helper_,
-                               &server_crypto_config_, &server_connection_,
-                               &server_session);
+    CreateServerSessionForTest(
+        server_id_, QuicTime::Delta::FromSeconds(100000),
+        QuicSupportedVersions(), &helper_, &server_crypto_config_,
+        &server_compressed_certs_cache_, &server_connection_, &server_session);
     CHECK(server_session);
     server_session_.reset(server_session);
     CryptoTestUtils::FakeServerOptions options;
@@ -312,6 +314,7 @@ class QuicCryptoClientStreamStatelessTest : public ::testing::Test {
   PacketSavingConnection* server_connection_;
   scoped_ptr<TestQuicSpdyServerSession> server_session_;
   QuicCryptoServerConfig server_crypto_config_;
+  QuicCompressedCertsCache server_compressed_certs_cache_;
   QuicServerId server_id_;
 };
 

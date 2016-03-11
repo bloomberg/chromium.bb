@@ -70,6 +70,8 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
       : server_crypto_config_(QuicCryptoServerConfig::TESTING,
                               QuicRandom::GetInstance(),
                               CryptoTestUtils::ProofSourceForTesting()),
+        server_compressed_certs_cache_(
+            QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
         server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
         client_crypto_config_(CryptoTestUtils::ProofVerifierForTesting()) {
     FLAGS_enable_quic_stateless_reject_support = false;
@@ -107,11 +109,10 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   void InitializeServer() {
     TestQuicSpdyServerSession* server_session = nullptr;
     helpers_.push_back(new MockConnectionHelper);
-
-    CreateServerSessionForTest(server_id_, QuicTime::Delta::FromSeconds(100000),
-                               supported_versions_, helpers_.back(),
-                               &server_crypto_config_, &server_connection_,
-                               &server_session);
+    CreateServerSessionForTest(
+        server_id_, QuicTime::Delta::FromSeconds(100000), supported_versions_,
+        helpers_.back(), &server_crypto_config_,
+        &server_compressed_certs_cache_, &server_connection_, &server_session);
     CHECK(server_session);
     server_session_.reset(server_session);
     CryptoTestUtils::FakeServerOptions options;
@@ -186,6 +187,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   PacketSavingConnection* server_connection_;
   scoped_ptr<TestQuicSpdyServerSession> server_session_;
   QuicCryptoServerConfig server_crypto_config_;
+  QuicCompressedCertsCache server_compressed_certs_cache_;
   QuicServerId server_id_;
 
   // Client state
@@ -375,11 +377,10 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
         server_stream());
   }
 
-  if (FLAGS_require_strike_register_or_server_nonce &&
-      !AsyncStrikeRegisterVerification()) {
-    EXPECT_EQ(2, client_stream()->num_sent_client_hellos());
-  } else {
+  if (AsyncStrikeRegisterVerification()) {
     EXPECT_EQ(1, client_stream()->num_sent_client_hellos());
+  } else {
+    EXPECT_EQ(2, client_stream()->num_sent_client_hellos());
   }
 }
 

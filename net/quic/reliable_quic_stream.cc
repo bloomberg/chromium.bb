@@ -66,7 +66,6 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
       fin_received_(false),
       rst_sent_(false),
       rst_received_(false),
-      fec_policy_(FEC_PROTECT_OPTIONAL),
       perspective_(session_->perspective()),
       flow_controller_(session_->connection(),
                        id_,
@@ -81,11 +80,7 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
 
 ReliableQuicStream::~ReliableQuicStream() {}
 
-void ReliableQuicStream::SetFromConfig() {
-  if (session_->config()->HasClientSentConnectionOption(kFSTR, perspective_)) {
-    fec_policy_ = FEC_PROTECT_ALWAYS;
-  }
-}
+void ReliableQuicStream::SetFromConfig() {}
 
 void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_EQ(frame.stream_id, id_);
@@ -311,9 +306,9 @@ QuicConsumedData ReliableQuicStream::WritevData(
     write_length = static_cast<size_t>(send_window);
   }
 
-  QuicConsumedData consumed_data = session()->WritevData(
-      id(), QuicIOVector(iov, iov_count, write_length), stream_bytes_written_,
-      fin, GetFecProtection(), ack_listener);
+  QuicConsumedData consumed_data =
+      session()->WritevData(id(), QuicIOVector(iov, iov_count, write_length),
+                            stream_bytes_written_, fin, ack_listener);
   stream_bytes_written_ += consumed_data.bytes_consumed;
 
   AddBytesSent(consumed_data.bytes_consumed);
@@ -341,10 +336,6 @@ QuicConsumedData ReliableQuicStream::WritevData(
     session_->MarkConnectionLevelWriteBlocked(id());
   }
   return consumed_data;
-}
-
-FecProtection ReliableQuicStream::GetFecProtection() {
-  return fec_policy_ == FEC_PROTECT_ALWAYS ? MUST_FEC_PROTECT : MAY_FEC_PROTECT;
 }
 
 void ReliableQuicStream::CloseReadSide() {

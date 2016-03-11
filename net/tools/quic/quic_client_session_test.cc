@@ -137,7 +137,6 @@ TEST_P(QuicClientSessionTest, CryptoConnect) {
 }
 
 TEST_P(QuicClientSessionTest, NoEncryptionAfterInitialEncryption) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_block_unencrypted_writes, true);
   // Complete a handshake in order to prime the crypto config for 0-RTT.
   CompleteCryptoHandshake();
 
@@ -171,8 +170,8 @@ TEST_P(QuicClientSessionTest, NoEncryptionAfterInitialEncryption) {
   char data[] = "hello world";
   struct iovec iov = {data, arraysize(data)};
   QuicIOVector iovector(&iov, 1, iov.iov_len);
-  QuicConsumedData consumed = session_->WritevData(
-      stream->id(), iovector, 0, false, MAY_FEC_PROTECT, nullptr);
+  QuicConsumedData consumed =
+      session_->WritevData(stream->id(), iovector, 0, false, nullptr);
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_EQ(0u, consumed.bytes_consumed);
 }

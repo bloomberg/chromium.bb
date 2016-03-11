@@ -100,14 +100,6 @@ TEST_F(QuicMultipathReceivedPacketManagerTest, RecordPacketReceived) {
                 "Received a packet on a non-existent path");
 }
 
-TEST_F(QuicMultipathReceivedPacketManagerTest, RecordPacketRevived) {
-  EXPECT_CALL(*manager_0_, RecordPacketRevived(_)).Times(1);
-  multipath_manager_.RecordPacketRevived(kDefaultPathId, header_.packet_number);
-  EXPECT_DFATAL(
-      multipath_manager_.RecordPacketRevived(kPathId2, header_.packet_number),
-      "Revived a packet on a non-existent path");
-}
-
 TEST_F(QuicMultipathReceivedPacketManagerTest, IsMissing) {
   EXPECT_CALL(*manager_0_, IsMissing(header_.packet_number))
       .WillOnce(Return(true));

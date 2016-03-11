@@ -92,7 +92,6 @@ struct TestParams {
   TestParams(const QuicVersionVector& client_supported_versions,
              const QuicVersionVector& server_supported_versions,
              QuicVersion negotiated_version,
-             bool use_fec,
              bool client_supports_stateless_rejects,
              bool server_uses_stateless_rejects_if_peer_supported,
              QuicTag congestion_control_tag,
@@ -100,7 +99,6 @@ struct TestParams {
       : client_supported_versions(client_supported_versions),
         server_supported_versions(server_supported_versions),
         negotiated_version(negotiated_version),
-        use_fec(use_fec),
         client_supports_stateless_rejects(client_supports_stateless_rejects),
         server_uses_stateless_rejects_if_peer_supported(
             server_uses_stateless_rejects_if_peer_supported),
@@ -117,7 +115,6 @@ struct TestParams {
        << p.client_supports_stateless_rejects;
     os << " server_uses_stateless_rejects_if_peer_supported: "
        << p.server_uses_stateless_rejects_if_peer_supported;
-    os << " use_fec: " << p.use_fec;
     os << " congestion_control_tag: "
        << QuicUtils::TagToString(p.congestion_control_tag);
     os << " auto_tune_flow_control_window: " << p.auto_tune_flow_control_window
@@ -128,7 +125,6 @@ struct TestParams {
   QuicVersionVector client_supported_versions;
   QuicVersionVector server_supported_versions;
   QuicVersion negotiated_version;
-  bool use_fec;
   bool client_supports_stateless_rejects;
   bool server_uses_stateless_rejects_if_peer_supported;
   QuicTag congestion_control_tag;
@@ -164,62 +160,56 @@ vector<TestParams> GetTestParams() {
       // TODO(rtenneti): Add kTBBR after BBR code is checked in.
       for (const QuicTag congestion_control_tag : {kRENO, kQBIC}) {
         for (bool auto_tune_flow_control_window : {true, false}) {
-          for (const bool use_fec : {false, true}) {
-            const int kMaxEnabledOptions = 5;
-            int enabled_options = 0;
-            if (congestion_control_tag != kQBIC) {
-              ++enabled_options;
-            }
-            if (use_fec) {
-              ++enabled_options;
-            }
-            if (auto_tune_flow_control_window) {
-              ++enabled_options;
-            }
-            if (client_supports_stateless_rejects) {
-              ++enabled_options;
-            }
-            if (server_uses_stateless_rejects_if_peer_supported) {
-              ++enabled_options;
-            }
-            CHECK_GE(kMaxEnabledOptions, enabled_options);
+          const int kMaxEnabledOptions = 5;
+          int enabled_options = 0;
+          if (congestion_control_tag != kQBIC) {
+            ++enabled_options;
+          }
+          if (auto_tune_flow_control_window) {
+            ++enabled_options;
+          }
+          if (client_supports_stateless_rejects) {
+            ++enabled_options;
+          }
+          if (server_uses_stateless_rejects_if_peer_supported) {
+            ++enabled_options;
+          }
+          CHECK_GE(kMaxEnabledOptions, enabled_options);
 
-            // Run tests with no options, a single option, or all the options
-            // enabled to avoid a combinatorial explosion.
-            if (enabled_options > 1 && enabled_options < kMaxEnabledOptions) {
+          // Run tests with no options, a single option, or all the options
+          // enabled to avoid a combinatorial explosion.
+          if (enabled_options > 1 && enabled_options < kMaxEnabledOptions) {
+            continue;
+          }
+
+          for (const QuicVersionVector& client_versions : version_buckets) {
+            CHECK(!client_versions.empty());
+            // Add an entry for server and client supporting all versions.
+            params.push_back(TestParams(
+                client_versions, all_supported_versions,
+                client_versions.front(), client_supports_stateless_rejects,
+                server_uses_stateless_rejects_if_peer_supported,
+                congestion_control_tag, auto_tune_flow_control_window));
+
+            // Run version negotiation tests tests with no options, or all
+            // the options enabled to avoid a combinatorial explosion.
+            if (enabled_options > 0 && enabled_options < kMaxEnabledOptions) {
               continue;
             }
 
-            for (const QuicVersionVector& client_versions : version_buckets) {
-              CHECK(!client_versions.empty());
-              // Add an entry for server and client supporting all versions.
+            // Test client supporting all versions and server supporting 1
+            // version. Simulate an old server and exercise version downgrade
+            // in the client. Protocol negotiation should occur. Skip the i =
+            // 0 case because it is essentially the same as the default case.
+            for (size_t i = 1; i < client_versions.size(); ++i) {
+              QuicVersionVector server_supported_versions;
+              server_supported_versions.push_back(client_versions[i]);
               params.push_back(TestParams(
-                  client_versions, all_supported_versions,
-                  client_versions.front(), use_fec,
+                  client_versions, server_supported_versions,
+                  server_supported_versions.front(),
                   client_supports_stateless_rejects,
                   server_uses_stateless_rejects_if_peer_supported,
                   congestion_control_tag, auto_tune_flow_control_window));
-
-              // Run version negotiation tests tests with no options, or all
-              // the options enabled to avoid a combinatorial explosion.
-              if (enabled_options > 0 && enabled_options < kMaxEnabledOptions) {
-                continue;
-              }
-
-              // Test client supporting all versions and server supporting 1
-              // version. Simulate an old server and exercise version downgrade
-              // in the client. Protocol negotiation should occur. Skip the i =
-              // 0 case because it is essentially the same as the default case.
-              for (size_t i = 1; i < client_versions.size(); ++i) {
-                QuicVersionVector server_supported_versions;
-                server_supported_versions.push_back(client_versions[i]);
-                params.push_back(TestParams(
-                    client_versions, server_supported_versions,
-                    server_supported_versions.front(), use_fec,
-                    client_supports_stateless_rejects,
-                    server_uses_stateless_rejects_if_peer_supported,
-                    congestion_control_tag, auto_tune_flow_control_window));
-              }
             }
           }
         }
@@ -352,10 +342,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     // client as well according to the test parameter.
     copt.push_back(GetParam().congestion_control_tag);
 
-    if (GetParam().use_fec) {
-      // Set FEC config in client's connection options and in client session.
-      copt.push_back(kFHDR);
-    }
     if (GetParam().client_supports_stateless_rejects) {
       copt.push_back(kSREJ);
     }
@@ -801,14 +787,9 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   client_->WaitForResponseForMs(-1);
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
-  if (FLAGS_require_strike_register_or_server_nonce) {
-    EXPECT_EQ(expected_num_hellos_latest_session,
-              client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
-  } else {
-    EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
-  }
+  EXPECT_EQ(expected_num_hellos_latest_session,
+            client_->client()->session()->GetNumSentClientHellos());
+  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
 
   client_->Disconnect();
 
@@ -859,14 +840,9 @@ TEST_P(EndToEndTest, SynchronousRequestZeroRTTFailure) {
   client_->WaitForInitialResponse();
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
-  if (FLAGS_require_strike_register_or_server_nonce) {
-    EXPECT_EQ(expected_num_hellos_latest_session,
-              client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
-  } else {
-    EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
-  }
+  EXPECT_EQ(expected_num_hellos_latest_session,
+            client_->client()->session()->GetNumSentClientHellos());
+  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
 
   client_->Disconnect();
 
@@ -923,14 +899,9 @@ TEST_P(EndToEndTest, LargePostSynchronousRequest) {
   client_->WaitForInitialResponse();
   ASSERT_TRUE(client_->client()->connected());
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
-  if (FLAGS_require_strike_register_or_server_nonce) {
-    EXPECT_EQ(expected_num_hellos_latest_session,
-              client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
-  } else {
-    EXPECT_EQ(1, client_->client()->session()->GetNumSentClientHellos());
-    EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
-  }
+  EXPECT_EQ(expected_num_hellos_latest_session,
+            client_->client()->session()->GetNumSentClientHellos());
+  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
 
   client_->Disconnect();
 
@@ -986,30 +957,6 @@ TEST_P(EndToEndTest, SetInitialReceivedConnectionOptions) {
       ContainsQuicTag(server_config_.ReceivedConnectionOptions(), kIW10));
   EXPECT_TRUE(
       ContainsQuicTag(server_config_.ReceivedConnectionOptions(), kPRST));
-}
-
-TEST_P(EndToEndTest, CorrectlyConfiguredFec) {
-  ASSERT_TRUE(Initialize());
-  client_->client()->WaitForCryptoHandshakeConfirmed();
-  server_thread_->WaitForCryptoHandshakeConfirmed();
-
-  FecPolicy expected_policy = FEC_PROTECT_OPTIONAL;
-
-  // Verify that server's FEC configuration is correct.
-  server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  ASSERT_EQ(1u, dispatcher->session_map().size());
-  QuicSpdySession* session = dispatcher->session_map().begin()->second;
-  EXPECT_EQ(expected_policy,
-            QuicSpdySessionPeer::GetHeadersStream(session)->fec_policy());
-  server_thread_->Resume();
-
-  // Verify that client's FEC configuration is correct.
-  EXPECT_EQ(expected_policy,
-            QuicSpdySessionPeer::GetHeadersStream(client_->client()->session())
-                ->fec_policy());
-  EXPECT_EQ(expected_policy, client_->GetOrCreateStream()->fec_policy());
 }
 
 TEST_P(EndToEndTest, LargePostSmallBandwidthLargeBuffer) {

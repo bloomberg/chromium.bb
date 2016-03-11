@@ -178,18 +178,6 @@ void QuicReceivedPacketManager::RecordPacketReceived(
 
   ack_frame_.received_packet_times.push_back(
       std::make_pair(packet_number, receipt_time));
-
-  if (ack_frame_.latest_revived_packet == packet_number) {
-    ack_frame_.latest_revived_packet = 0;
-  }
-}
-
-void QuicReceivedPacketManager::RecordPacketRevived(
-    QuicPacketNumber packet_number) {
-  QUIC_BUG_IF(!IsAwaitingPacket(packet_number)) << base::StringPrintf(
-      "Not waiting for %llu", static_cast<unsigned long long>(packet_number));
-  ack_frame_updated_ = true;
-  ack_frame_.latest_revived_packet = packet_number;
 }
 
 bool QuicReceivedPacketManager::IsMissing(QuicPacketNumber packet_number) {
@@ -259,9 +247,6 @@ QuicPacketEntropyHash QuicReceivedPacketManager::EntropyHash(
 
 bool QuicReceivedPacketManager::DontWaitForPacketsBefore(
     QuicPacketNumber least_unacked) {
-  if (ack_frame_.latest_revived_packet < least_unacked) {
-    ack_frame_.latest_revived_packet = 0;
-  }
   return ack_frame_.missing_packets.RemoveUpTo(least_unacked);
 }
 
@@ -285,6 +270,10 @@ void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
   }
   DCHECK(ack_frame_.missing_packets.Empty() ||
          ack_frame_.missing_packets.Min() >= peer_least_packet_awaiting_ack_);
+}
+
+bool QuicReceivedPacketManager::HasMissingPackets() const {
+  return !ack_frame_.missing_packets.Empty();
 }
 
 bool QuicReceivedPacketManager::HasNewMissingPackets() const {

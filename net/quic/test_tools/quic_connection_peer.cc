@@ -6,7 +6,6 @@
 
 #include "base/stl_util.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
-#include "net/quic/quic_connection.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_received_packet_manager.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
@@ -151,13 +150,6 @@ QuicFramer* QuicConnectionPeer::GetFramer(QuicConnection* connection) {
 }
 
 // static
-QuicFecGroup* QuicConnectionPeer::GetFecGroup(QuicConnection* connection,
-                                              int fec_group) {
-  connection->last_header_.fec_group = fec_group;
-  return connection->GetFecGroup();
-}
-
-// static
 QuicAlarm* QuicConnectionPeer::GetAckAlarm(QuicConnection* connection) {
   return connection->ack_alarm_.get();
 }
@@ -165,11 +157,6 @@ QuicAlarm* QuicConnectionPeer::GetAckAlarm(QuicConnection* connection) {
 // static
 QuicAlarm* QuicConnectionPeer::GetPingAlarm(QuicConnection* connection) {
   return connection->ping_alarm_.get();
-}
-
-// static
-QuicAlarm* QuicConnectionPeer::GetFecAlarm(QuicConnection* connection) {
-  return connection->fec_alarm_.get();
 }
 
 // static
@@ -268,8 +255,9 @@ void QuicConnectionPeer::SetNextMtuProbeAt(QuicConnection* connection,
 }
 
 // static
-void QuicConnectionPeer::EnableAckDecimation(QuicConnection* connection) {
-  connection->ack_decimation_enabled_ = true;
+void QuicConnectionPeer::SetAckMode(QuicConnection* connection,
+                                    QuicConnection::AckMode ack_mode) {
+  connection->ack_mode_ = ack_mode;
 }
 
 }  // namespace test

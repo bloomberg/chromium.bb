@@ -79,12 +79,6 @@ uint32_t ReliableQuicStreamPeer::SizeOfQueuedData(ReliableQuicStream* stream) {
 }
 
 // static
-void ReliableQuicStreamPeer::SetFecPolicy(ReliableQuicStream* stream,
-                                          FecPolicy fec_policy) {
-  stream->set_fec_policy(fec_policy);
-}
-
-// static
 bool ReliableQuicStreamPeer::StreamContributesToConnectionFlowControl(
     ReliableQuicStream* stream) {
   return stream->stream_contributes_to_connection_flow_control_;

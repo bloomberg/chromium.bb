@@ -66,7 +66,8 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
   void OnStreamEnd(SpdyStreamId stream_id) override {
-    LOG(DFATAL) << "Unimplemented.";
+    // The framer invokes OnStreamEnd after processing a SYN_STREAM
+    // or SYN_REPLY frame that had the fin bit set.
   }
 
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {

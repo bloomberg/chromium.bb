@@ -61,7 +61,7 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
     bool last_frame = i == frames.size() - 1;
     const size_t frame_size = framer->GetSerializedFrameLength(
         frames[i], max_plaintext_size - packet_size, first_frame, last_frame,
-        header.is_in_fec_group, header.public_header.packet_number_length);
+        header.public_header.packet_number_length);
     DCHECK(frame_size);
     packet_size += frame_size;
   }
@@ -309,7 +309,7 @@ MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
     : QuicSpdySession(connection, DefaultQuicConfig()) {
   crypto_stream_.reset(new QuicCryptoStream(this));
   Initialize();
-  ON_CALL(*this, WritevData(_, _, _, _, _, _))
+  ON_CALL(*this, WritevData(_, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 
@@ -321,7 +321,6 @@ QuicConsumedData MockQuicSpdySession::ConsumeAllData(
     const QuicIOVector& data,
     QuicStreamOffset /*offset*/,
     bool fin,
-    FecProtection /*fec_protection*/,
     QuicAckListenerInterface* /*ack_notifier_delegate*/) {
   return QuicConsumedData(data.total_length, fin);
 }
@@ -329,8 +328,13 @@ QuicConsumedData MockQuicSpdySession::ConsumeAllData(
 TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     QuicConnection* connection,
     const QuicConfig& config,
-    const QuicCryptoServerConfig* crypto_config)
-    : QuicServerSessionBase(config, connection, &visitor_, crypto_config) {
+    const QuicCryptoServerConfig* crypto_config,
+    QuicCompressedCertsCache* compressed_certs_cache)
+    : QuicServerSessionBase(config,
+                            connection,
+                            &visitor_,
+                            crypto_config,
+                            compressed_certs_cache) {
   Initialize();
 }
 
@@ -338,8 +342,11 @@ TestQuicSpdyServerSession::~TestQuicSpdyServerSession() {}
 
 QuicCryptoServerStreamBase*
 TestQuicSpdyServerSession::CreateQuicCryptoServerStream(
-    const QuicCryptoServerConfig* crypto_config) {
-  return new QuicCryptoServerStream(crypto_config, this);
+    const QuicCryptoServerConfig* crypto_config,
+    QuicCompressedCertsCache* compressed_certs_cache) {
+  return new QuicCryptoServerStream(crypto_config, compressed_certs_cache,
+                                    FLAGS_enable_quic_stateless_reject_support,
+                                    this);
 }
 
 QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream() {
@@ -672,20 +679,18 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
                                    bool include_path_id,
                                    QuicConnectionIdLength connection_id_length,
                                    QuicPacketNumberLength packet_number_length,
-                                   InFecGroup is_in_fec_group,
                                    size_t* payload_length) {
   *payload_length = 1;
   const size_t stream_length =
       NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
           PACKET_8BYTE_CONNECTION_ID, include_version, include_path_id,
-          packet_number_length, 0u, is_in_fec_group);
+          packet_number_length, 0u);
   const size_t ack_length =
       NullEncrypter().GetCiphertextSize(
           QuicFramer::GetMinAckFrameSize(PACKET_1BYTE_PACKET_NUMBER)) +
       GetPacketHeaderSize(connection_id_length, include_version,
-                          include_path_id, packet_number_length,
-                          is_in_fec_group);
+                          include_path_id, packet_number_length);
   if (stream_length < ack_length) {
     *payload_length = 1 + ack_length - stream_length;
   }
@@ -693,7 +698,7 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
   return NullEncrypter().GetCiphertextSize(*payload_length) +
          QuicPacketCreator::StreamFramePacketOverhead(
              connection_id_length, include_version, include_path_id,
-             packet_number_length, 0u, is_in_fec_group);
+             packet_number_length, 0u);
 }
 
 TestEntropyCalculator::TestEntropyCalculator() {}
@@ -766,13 +771,15 @@ void CreateClientSessionForTest(QuicServerId server_id,
   (*client_connection)->AdvanceTime(connection_start_time);
 }
 
-void CreateServerSessionForTest(QuicServerId server_id,
-                                QuicTime::Delta connection_start_time,
-                                QuicVersionVector supported_versions,
-                                MockConnectionHelper* helper,
-                                QuicCryptoServerConfig* server_crypto_config,
-                                PacketSavingConnection** server_connection,
-                                TestQuicSpdyServerSession** server_session) {
+void CreateServerSessionForTest(
+    QuicServerId server_id,
+    QuicTime::Delta connection_start_time,
+    QuicVersionVector supported_versions,
+    MockConnectionHelper* helper,
+    QuicCryptoServerConfig* server_crypto_config,
+    QuicCompressedCertsCache* compressed_certs_cache,
+    PacketSavingConnection** server_connection,
+    TestQuicSpdyServerSession** server_session) {
   CHECK(server_crypto_config);
   CHECK(server_connection);
   CHECK(server_session);
@@ -783,7 +790,8 @@ void CreateServerSessionForTest(QuicServerId server_id,
   *server_connection = new PacketSavingConnection(
       helper, Perspective::IS_SERVER, supported_versions);
   *server_session = new TestQuicSpdyServerSession(
-      *server_connection, DefaultQuicConfig(), server_crypto_config);
+      *server_connection, DefaultQuicConfig(), server_crypto_config,
+      compressed_certs_cache);
 
   // We advance the clock initially because the default time is zero and the
   // strike register worries that we've just overflowed a uint32_t time.

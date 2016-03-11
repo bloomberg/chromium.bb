@@ -47,7 +47,6 @@ static const int64_t kMinHandshakeTimeoutMs = 10;
 // Sends up to two tail loss probes before firing an RTO,
 // per draft RFC draft-dukkipati-tcpm-tcp-loss-probe.
 static const size_t kDefaultMaxTailLossProbes = 2;
-static const int64_t kMinTailLossProbeTimeoutMs = 10;
 
 // Number of unpaced packets to send after quiescence.
 static const size_t kInitialUnpacedBurst = 10;
@@ -322,12 +321,6 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     }
     MarkPacketHandled(packet_number, &(*it), ack_delay_time);
   }
-
-  // Discard any retransmittable frames associated with revived packets.
-  if (ack_frame.latest_revived_packet != 0) {
-    MarkPacketNotRetransmittable(ack_frame.latest_revived_packet,
-                                 ack_delay_time);
-  }
 }
 
 bool QuicSentPacketManager::HasRetransmittableFrames(
@@ -346,9 +339,6 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
         (retransmission_type == ALL_UNACKED_RETRANSMISSION ||
          it->encryption_level == ENCRYPTION_INITIAL)) {
       MarkForRetransmission(packet_number, retransmission_type);
-    } else if (it->is_fec_packet) {
-      // Remove FEC packets from the packet map, since we can't retransmit them.
-      unacked_packets_.RemoveFromInFlight(packet_number);
     }
   }
 }
@@ -487,8 +477,6 @@ void QuicSentPacketManager::MarkPacketNotRetransmittable(
     pending_retransmissions_.erase(newest_transmission);
   }
 
-  // The AckListener needs to be notified for revived packets,
-  // since it indicates the packet arrived from the appliction's perspective.
   unacked_packets_.NotifyAndClearListeners(newest_transmission, ack_delay_time);
   unacked_packets_.RemoveRetransmittability(packet_number);
 }
@@ -568,16 +556,10 @@ bool QuicSentPacketManager::OnPacketSent(
     --pending_timer_transmission_count_;
   }
 
-  // Only track packets as in flight that the send algorithm wants us to track.
-  // Since FEC packets should also be counted towards the congestion window,
-  // consider them as retransmittable for the purposes of congestion control.
-  HasRetransmittableData has_congestion_controlled_data =
-      serialized_packet->is_fec_packet ? HAS_RETRANSMITTABLE_DATA
-                                       : has_retransmittable_data;
   // TODO(ianswett): Remove sent_time, because it's unused.
   const bool in_flight = send_algorithm_->OnPacketSent(
       sent_time, unacked_packets_.bytes_in_flight(), packet_number,
-      serialized_packet->encrypted_length, has_congestion_controlled_data);
+      serialized_packet->encrypted_length, has_retransmittable_data);
 
   unacked_packets_.AddSentPacket(serialized_packet, original_packet_number,
                                  transmission_type, sent_time, in_flight);
@@ -733,8 +715,8 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
     } else {
       // Since we will not retransmit this, we need to remove it from
       // unacked_packets_.   This is either the current transmission of
-      // a packet whose previous transmission has been acked, a packet that
-      // has been TLP retransmitted, or an FEC packet.
+      // a packet whose previous transmission has been acked or a packet that
+      // has been TLP retransmitted.
       unacked_packets_.RemoveFromInFlight(pair.first);
     }
   }

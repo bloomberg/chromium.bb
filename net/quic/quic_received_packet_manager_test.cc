@@ -203,10 +203,6 @@ class QuicReceivedPacketManagerTest : public ::testing::Test {
     received_manager_.RecordPacketReceived(0u, header, receipt_time);
   }
 
-  void RecordPacketRevived(QuicPacketNumber packet_number) {
-    received_manager_.RecordPacketRevived(packet_number);
-  }
-
   QuicConnectionStats stats_;
   QuicReceivedPacketManager received_manager_;
 };
@@ -352,57 +348,6 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedConnectionStats) {
   EXPECT_EQ(4u, stats_.max_sequence_reordering);
   EXPECT_EQ(1000, stats_.max_time_reordering_us);
   EXPECT_EQ(1u, stats_.packets_reordered);
-}
-
-TEST_F(QuicReceivedPacketManagerTest, RevivedPacket) {
-  EXPECT_FALSE(received_manager_.ack_frame_updated());
-  RecordPacketReceipt(1, 0);
-  EXPECT_TRUE(received_manager_.ack_frame_updated());
-  RecordPacketReceipt(3, 0);
-  RecordPacketRevived(2);
-
-  QuicAckFrame ack;
-  received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
-  EXPECT_FALSE(received_manager_.ack_frame_updated());
-  EXPECT_EQ(1u, ack.missing_packets.NumPacketsSlow());
-  EXPECT_EQ(2u, ack.missing_packets.Min());
-  EXPECT_EQ(2u, ack.latest_revived_packet);
-}
-
-TEST_F(QuicReceivedPacketManagerTest, PacketRevivedThenReceived) {
-  EXPECT_FALSE(received_manager_.ack_frame_updated());
-  RecordPacketReceipt(1, 0);
-  EXPECT_TRUE(received_manager_.ack_frame_updated());
-  RecordPacketReceipt(3, 0);
-  RecordPacketRevived(2);
-  RecordPacketReceipt(2, 0);
-
-  QuicAckFrame ack;
-  received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
-  EXPECT_TRUE(ack.missing_packets.Empty());
-  EXPECT_EQ(0u, ack.latest_revived_packet);
-}
-
-TEST_F(QuicReceivedPacketManagerTest, RevivedPacketAckFrameUpdated) {
-  EXPECT_FALSE(received_manager_.ack_frame_updated());
-  RecordPacketReceipt(1, 0);
-  RecordPacketReceipt(3, 0);
-  EXPECT_TRUE(received_manager_.ack_frame_updated());
-
-  QuicAckFrame ack;
-  received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
-  EXPECT_FALSE(received_manager_.ack_frame_updated());
-  EXPECT_EQ(1u, ack.missing_packets.NumPacketsSlow());
-  EXPECT_EQ(2u, ack.missing_packets.Min());
-  EXPECT_EQ(0u, ack.latest_revived_packet);
-
-  RecordPacketRevived(2);
-  EXPECT_TRUE(received_manager_.ack_frame_updated());
-  received_manager_.UpdateReceivedPacketInfo(&ack, QuicTime::Zero());
-  EXPECT_FALSE(received_manager_.ack_frame_updated());
-  EXPECT_EQ(1u, ack.missing_packets.NumPacketsSlow());
-  EXPECT_EQ(2u, ack.missing_packets.Min());
-  EXPECT_EQ(2u, ack.latest_revived_packet);
 }
 
 }  // namespace

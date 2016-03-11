@@ -17,7 +17,7 @@ namespace {
 
 class MockDelegate : public QuicAlarm::Delegate {
  public:
-  MOCK_METHOD0(OnAlarm, QuicTime());
+  MOCK_METHOD0(OnAlarm, void());
 };
 
 class DestructiveDelegate : public QuicAlarm::Delegate {
@@ -26,10 +26,9 @@ class DestructiveDelegate : public QuicAlarm::Delegate {
 
   void set_alarm(QuicAlarm* alarm) { alarm_ = alarm; }
 
-  QuicTime OnAlarm() override {
+  void OnAlarm() override {
     DCHECK(alarm_);
     delete alarm_;
-    return QuicTime::Zero();
   }
 
  private:
@@ -137,28 +136,17 @@ TEST_F(QuicAlarmTest, UpdateWithZero) {
 TEST_F(QuicAlarmTest, Fire) {
   QuicTime deadline = QuicTime::Zero().Add(QuicTime::Delta::FromSeconds(7));
   alarm_.Set(deadline);
-  EXPECT_CALL(*delegate_, OnAlarm()).WillOnce(Return(QuicTime::Zero()));
   alarm_.FireAlarm();
   EXPECT_FALSE(alarm_.IsSet());
   EXPECT_FALSE(alarm_.scheduled());
   EXPECT_EQ(QuicTime::Zero(), alarm_.deadline());
 }
 
-TEST_F(QuicAlarmTest, FireAndResetViaReturn) {
-  alarm_.Set(deadline_);
-  EXPECT_CALL(*delegate_, OnAlarm()).WillOnce(Return(deadline2_));
-  alarm_.FireAlarm();
-  EXPECT_TRUE(alarm_.IsSet());
-  EXPECT_TRUE(alarm_.scheduled());
-  EXPECT_EQ(deadline2_, alarm_.deadline());
-}
-
 TEST_F(QuicAlarmTest, FireAndResetViaSet) {
   alarm_.Set(deadline_);
   new_deadline_ = deadline2_;
   EXPECT_CALL(*delegate_, OnAlarm())
-      .WillOnce(DoAll(Invoke(this, &QuicAlarmTest::ResetAlarm),
-                      Return(QuicTime::Zero())));
+      .WillOnce(Invoke(this, &QuicAlarmTest::ResetAlarm));
   alarm_.FireAlarm();
   EXPECT_TRUE(alarm_.IsSet());
   EXPECT_TRUE(alarm_.scheduled());
