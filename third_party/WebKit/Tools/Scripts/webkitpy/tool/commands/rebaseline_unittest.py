@@ -375,9 +375,7 @@ class TestRebaselineJson(_BaseTestCase):
 
         self.command._rebaseline(options,  {"userscripts/first-test.html": {"MOCK builder": ["txt", "png"]}})
 
-        # Note that we have one run_in_parallel() call followed by a run_command()
-        self.assertEqual(self.tool.executive.calls,
-            [[['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'userscripts/first-test.html', '--verbose']]])
+        self.assertEqual(self.tool.executive.calls, [])
 
     def test_rebaseline_all(self):
         self._setup_mock_builder_data()
@@ -903,9 +901,10 @@ class TestAutoRebaseline(_BaseTestCase):
 
         return test_port
 
-    def _execute_command_with_mock_options(self, auth_refresh_token_json=None, commit_author=None):
+    def _execute_command_with_mock_options(self, auth_refresh_token_json=None, commit_author=None, dry_run=False):
         self.command.execute(MockOptions(
-            optimize=True, verbose=False, results_directory=False, auth_refresh_token_json=auth_refresh_token_json, commit_author=commit_author),
+            optimize=True, verbose=False, results_directory=False, auth_refresh_token_json=auth_refresh_token_json,
+            commit_author=commit_author, dry_run=dry_run),
             [], self.tool)
 
     def setUp(self):
@@ -1222,7 +1221,6 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             self.command.tree_status = lambda: 'open'
             self._execute_command_with_mock_options()
             self.assertEqual(self.tool.executive.calls, [
-                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'land', '-f', '-v'],
@@ -1284,7 +1282,6 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-temporary-branch'
             self._execute_command_with_mock_options()
             self.assertEqual(self.tool.executive.calls, [
-                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'land', '-f', '-v'],
@@ -1346,7 +1343,6 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-alt-temporary-branch'
             self._execute_command_with_mock_options()
             self.assertEqual(self.tool.executive.calls, [
-                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'land', '-f', '-v'],
@@ -1360,7 +1356,7 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
             builders._exact_matches = old_exact_matches
             webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = old_branch_name
 
-    def _basic_execute_test(self, expected_executive_calls, auth_refresh_token_json=None, commit_author=None):
+    def _basic_execute_test(self, expected_executive_calls, auth_refresh_token_json=None, commit_author=None, dry_run=False):
         def blame(path):
             return """
 6469e754a1 path/to/TestExpectations                   (<foobarbaz1@chromium.org> 2013-04-28 04:52:41 +0000   13) Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -1405,7 +1401,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             }
 
             self.command.tree_status = lambda: 'open'
-            self._execute_command_with_mock_options(auth_refresh_token_json=auth_refresh_token_json, commit_author=commit_author)
+            self._execute_command_with_mock_options(auth_refresh_token_json=auth_refresh_token_json, commit_author=commit_author, dry_run=dry_run)
             self.assertEqual(self.tool.executive.calls, expected_executive_calls)
 
             # The mac ports should both be removed since they're the only ones in builders._exact_matches.
@@ -1419,7 +1415,6 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         RIETVELD_REFRESH_TOKEN = '/creds/refresh_tokens/test_rietveld_token'
         self._basic_execute_test(
             [
-                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f', '--auth-refresh-token-json', RIETVELD_REFRESH_TOKEN],
                 ['git', 'pull'],
                 ['git', 'cl', 'land', '-f', '-v', '--auth-refresh-token-json', RIETVELD_REFRESH_TOKEN],
@@ -1431,7 +1426,6 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         COMMIT_AUTHOR = "JRR Tolkien <tolkien@greyhavens.org>"
         self._basic_execute_test(
             [
-                [['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', '', 'fast/dom/prototype-taco.html']],
                 ['git', 'cl', 'upload', '-f'],
                 ['git', 'pull'],
                 ['git', 'cl', 'land', '-f', '-v'],
@@ -1441,6 +1435,10 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
             [['Auto-rebaseline for r1234\n\nhttps://chromium.googlesource.com/chromium/src/+/6469e754a1\n\nTBR=foobarbaz1@chromium.org\n',
             True,
             COMMIT_AUTHOR]])
+
+    def test_execute_with_dry_run(self):
+        self._basic_execute_test([], dry_run=True)
+        self.assertEqual(self.tool.scm().local_commits(), [])
 
 
 class TestRebaselineOMatic(_BaseTestCase):

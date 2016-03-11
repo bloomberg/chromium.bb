@@ -446,6 +446,10 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             for builder in self._builders_to_fetch_from(test_prefix_list[test]):
                 all_suffixes.update(self._suffixes_for_actual_failures(test, builder, test_prefix_list[test][builder]))
 
+            # No need to optimize baselines for a test with no failures.
+            if not all_suffixes:
+                continue
+
             # FIXME: We should propagate the platform options as well.
             cmd_line = ['--no-modify-scm', '--suffixes', ','.join(all_suffixes), test]
             if verbose:
@@ -501,6 +505,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 SKIP not in generic_expectations.get_expectations(test))
 
     def _run_in_parallel_and_update_scm(self, commands):
+        if not commands:
+            return {}
+
         command_results = self._tool.executive.run_in_parallel(commands)
         log_output = '\n'.join(result[2] for result in command_results).replace('\n\n', '\n')
         for line in log_output.split('\n'):
@@ -523,10 +530,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(test_prefix_list, options)
         lines_to_remove = {}
 
-        if copy_baseline_commands:
-            self._run_in_parallel_and_update_scm(copy_baseline_commands)
-        if rebaseline_commands:
-            lines_to_remove = self._run_in_parallel_and_update_scm(rebaseline_commands)
+        self._run_in_parallel_and_update_scm(copy_baseline_commands)
+        lines_to_remove = self._run_in_parallel_and_update_scm(rebaseline_commands)
 
         for test in extra_lines_to_remove:
             if test in lines_to_remove:
@@ -538,6 +543,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             self._update_expectations_files(lines_to_remove)
 
         if options.optimize:
+            # TODO(wkorman): Consider changing temporary branch to base off of HEAD rather than
+            # origin/master to ensure we run baseline optimization processes with the same code as
+            # auto-rebaseline itself.
             self._run_in_parallel_and_update_scm(self._optimize_baselines(test_prefix_list, options.verbose))
 
     def _suffixes_for_actual_failures(self, test, builder_name, existing_suffixes):
@@ -680,8 +688,24 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             self.results_directory_option,
             optparse.make_option("--auth-refresh-token-json", help="Rietveld auth refresh JSON token."),
             optparse.make_option("--commit-author",
-                help='Optionally specify an explicit author for local commit. Format as "Name <email>".')
+                help='Optionally specify an explicit author for local commit. Format as "Name <email>".'),
+            optparse.make_option("--dry-run", action='store_true', default=False,
+                help='Run without creating a temporary branch, committing locally, or uploading/landing '
+                'changes to the remote repository.')
             ])
+        self._blame_regex = re.compile(r"""
+                ^(\S*)      # Commit hash
+                [^(]* \(    # Whitespace and open parenthesis
+                <           # Email address is surrounded by <>
+                (
+                    [^@]+   # Username preceding @
+                    @
+                    [^@>]+  # Domain terminated by @ or >, some lines have an additional @ fragment after the email.
+                )
+                .*?([^ ]*)  # Test file name
+                \ \[        # Single space followed by opening [ for expectation specifier
+                [^[]*$      # Prevents matching previous [ for version specifiers instead of expectation specifiers
+            """, re.VERBOSE)
 
     def bot_revision_data(self):
         revisions = []
@@ -695,6 +719,12 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             })
         return revisions
 
+    def _strip_comments(self, line):
+        comment_index = line.find("#")
+        if comment_index == -1:
+            comment_index = len(line)
+        return re.sub(r"\s+", " ", line[:comment_index].strip())
+
     def tests_to_rebaseline(self, tool, min_revision, print_revisions):
         port = tool.port_factory.get()
         expectations_file_path = port.path_to_generic_test_expectations_file()
@@ -707,30 +737,19 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         has_any_needs_rebaseline_lines = False
 
         for line in tool.scm().blame(expectations_file_path).split("\n"):
-            comment_index = line.find("#")
-            if comment_index == -1:
-                comment_index = len(line)
-            line_without_comments = re.sub(r"\s+", " ", line[:comment_index].strip())
-
-            if "NeedsRebaseline" not in line_without_comments:
+            line = self._strip_comments(line)
+            if "NeedsRebaseline" not in line:
                 continue
 
             has_any_needs_rebaseline_lines = True
 
-            pattern = re.compile(r"""
-                ^(\S*)      # Commit hash
-                [^(]* \(    # Whitespace and open paranthesis
-                <           # Email address is surrounded by <>
-                (
-                    [^@]+   # Username preceding @
-                    @
-                    [^@>]+  # Domain terminated by @ or >, some lines have an additional @ fragment after the email.
-                )
-                .*?([^ ]*)  # Test file name
-                \ \[        # Single space followed by opening [ for expectation specifier
-                [^[]*$      # Prevents matching previous [ for version specifiers instead of expectation specifiers
-            """, re.VERBOSE)
-            parsed_line = pattern.match(line_without_comments)
+            parsed_line = self._blame_regex.match(line)
+            if not parsed_line:
+                # Deal gracefully with inability to parse blame info for a line in TestExpectations.
+                # Parsing could fail if for example during local debugging the developer modifies
+                # TestExpectations and does not commit.
+                _log.info("Couldn't find blame info for expectations line, skipping [line=%s]." % line)
+                continue
 
             commit_hash = parsed_line.group(1)
             commit_position = tool.scm().commit_position_from_git_commit(commit_hash)
@@ -750,7 +769,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 commit = commit_hash
                 author = parsed_line.group(2)
 
-            bugs.update(re.findall("crbug\.com\/(\d+)", line_without_comments))
+            bugs.update(re.findall("crbug\.com\/(\d+)", line))
             tests.add(test)
 
             if len(tests) >= self.MAX_LINES_TO_REBASELINE:
@@ -835,7 +854,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             _log.error("Auto rebaseline only works with a git checkout.")
             return
 
-        if tool.scm().has_working_directory_changes():
+        if not options.dry_run and tool.scm().has_working_directory_changes():
             _log.error("Cannot proceed with working directory changes. Clean working directory first.")
             return
 
@@ -863,21 +882,25 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
         test_prefix_list, lines_to_remove = self.get_test_prefix_list(tests)
 
+        did_switch_branches = False
         did_finish = False
         old_branch_name_or_ref = ''
         rebaseline_branch_name = self.AUTO_REBASELINE_BRANCH_NAME
         try:
-            # Save the current branch name and checkout a clean branch for the patch.
+            # Save the current branch name and check out a clean branch for the patch.
             old_branch_name_or_ref = _get_branch_name_or_ref(tool)
             if old_branch_name_or_ref == self.AUTO_REBASELINE_BRANCH_NAME:
                 rebaseline_branch_name = self.AUTO_REBASELINE_ALT_BRANCH_NAME
-            tool.scm().delete_branch(rebaseline_branch_name)
-            tool.scm().create_clean_branch(rebaseline_branch_name)
+            if not options.dry_run:
+                tool.scm().delete_branch(rebaseline_branch_name)
+                tool.scm().create_clean_branch(rebaseline_branch_name)
+                did_switch_branches = True
 
-            # If the tests are passing everywhere, then this list will be empty. We don't need
-            # to rebaseline, but we'll still need to update TestExpectations.
             if test_prefix_list:
                 self._rebaseline(options, test_prefix_list)
+
+            if options.dry_run:
+                return
 
             tool.scm().commit_locally_with_message(
                 self.commit_message(author, revision, commit, bugs),
@@ -899,18 +922,19 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         except:
             traceback.print_exc(file=sys.stderr)
         finally:
-            if did_finish:
-                # Close the issue if dcommit failed.
-                issue_already_closed = tool.executive.run_command(
-                    ['git', 'config', 'branch.%s.rietveldissue' % rebaseline_branch_name],
-                    return_exit_code=True)
-                if not issue_already_closed:
-                    self._run_git_cl_command(options, ['set_close'])
+            if did_switch_branches:
+                if did_finish:
+                    # Close the issue if dcommit failed.
+                    issue_already_closed = tool.executive.run_command(
+                        ['git', 'config', 'branch.%s.rietveldissue' % rebaseline_branch_name],
+                        return_exit_code=True)
+                    if not issue_already_closed:
+                        self._run_git_cl_command(options, ['set_close'])
 
-            tool.scm().ensure_cleanly_tracking_remote_master()
-            if old_branch_name_or_ref:
-                tool.scm().checkout_branch(old_branch_name_or_ref)
-            tool.scm().delete_branch(rebaseline_branch_name)
+                tool.scm().ensure_cleanly_tracking_remote_master()
+                if old_branch_name_or_ref:
+                    tool.scm().checkout_branch(old_branch_name_or_ref)
+                tool.scm().delete_branch(rebaseline_branch_name)
 
 
 class RebaselineOMatic(AbstractDeclarativeCommand):
