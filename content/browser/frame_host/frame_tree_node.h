@@ -272,6 +272,8 @@ class CONTENT_EXPORT FrameTreeNode {
 
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }
 
+  void TraceSnapshot() const;
+
   // The next available browser-global FrameTreeNode ID.
   static int next_frame_tree_node_id_;
 
