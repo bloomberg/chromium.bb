@@ -69,7 +69,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
   PasswordTittleType type =
       form_to_save_->pending_credentials().federation_origin.unique()
           ? PasswordTittleType::SAVE_PASSWORD
-          : PasswordTittleType::UPDATE_PASSWORD;
+          : PasswordTittleType::SAVE_ACCOUNT;
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents->GetVisibleURL(), form_to_save_->observed_form().origin,
       is_smartlock_branding_enabled, type,
