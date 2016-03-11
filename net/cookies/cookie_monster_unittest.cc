@@ -361,6 +361,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                               size_t expected_low_count,
                               size_t expected_medium_count,
                               size_t expected_high_count) {
+    SCOPED_TRACE(coded_priority_str);
     this->DeleteAll(cm);
     int next_cookie_id = 0;
     std::vector<CookiePriority> priority_list;

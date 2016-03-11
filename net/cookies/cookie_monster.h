@@ -541,6 +541,21 @@ class NET_EXPORT CookieMonster : public CookieStore {
                         const std::string& key,
                         bool enforce_strict_secure);
 
+  // Helper for GarbageCollect(). Deletes up to |purge_goal| cookies with a
+  // priority less than or equal to |priority| from |cookies|, while ensuring
+  // that at least the |to_protect| most-recent cookies are retained.
+  //
+  // |cookies| must be sorted from least-recent to most-recent.
+  //
+  // |safe_date| is only used to determine the deletion cause for histograms.
+  //
+  // Returns the number of cookies deleted.
+  size_t PurgeLeastRecentMatches(CookieItVector* cookies,
+                                 CookiePriority priority,
+                                 size_t to_protect,
+                                 size_t purge_goal,
+                                 const base::Time& safe_date);
+
   // Helper for GarbageCollect(); can be called directly as well.  Deletes all
   // expired cookies in |itpair|.  If |cookie_its| is non-NULL, all the
   // non-expired cookies from |itpair| are appended to |cookie_its|.
