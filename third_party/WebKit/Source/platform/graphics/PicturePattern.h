@@ -16,12 +16,12 @@ public:
     ~PicturePattern() override;
 
 protected:
-    sk_sp<SkShader> createShader() override;
+    PassRefPtr<SkShader> createShader() override;
 
 private:
     PicturePattern(PassRefPtr<const SkPicture>, RepeatMode);
 
-    sk_sp<SkPicture> m_tilePicture;
+    RefPtr<const SkPicture> m_tilePicture;
 };
 
 } // namespace blink

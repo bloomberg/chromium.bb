@@ -20,7 +20,7 @@ public:
     bool isTextureBacked() const override;
 
 protected:
-    sk_sp<SkShader> createShader() override;
+    PassRefPtr<SkShader> createShader() override;
 
 private:
     ImagePattern(PassRefPtr<Image>, RepeatMode);

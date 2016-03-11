@@ -34,10 +34,10 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/transforms/AffineTransform.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 class SkPaint;
@@ -126,7 +126,7 @@ private:
     Gradient(const FloatPoint& p0, const FloatPoint& p1);
     Gradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1, float aspectRatio);
 
-    sk_sp<SkShader> shader();
+    SkShader* shader();
     void destroyShader();
 
     void sortStopsIfNecessary();
@@ -143,7 +143,7 @@ private:
     GradientSpreadMethod m_spreadMethod;
     AffineTransform m_gradientSpaceTransformation;
 
-    sk_sp<SkShader> m_gradient;
+    RefPtr<SkShader> m_gradient;
 };
 
 } // namespace blink
