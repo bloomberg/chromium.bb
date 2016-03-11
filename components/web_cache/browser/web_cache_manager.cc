@@ -19,10 +19,10 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/web_cache/common/web_cache_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/service_registry.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -90,6 +90,15 @@ void WebCacheManager::Add(int renderer_id) {
   memset(stats, 0, sizeof(*stats));
   stats->access = Time::Now();
 
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(renderer_id);
+  if (host) {
+    mojom::WebCachePtr service;
+    host->GetServiceRegistry()->ConnectToRemoteService(
+        mojo::GetProxy(&service));
+    web_cache_services_[renderer_id] = std::move(service);
+  }
+
   // Revise our allocation strategy to account for this new renderer.
   ReviseAllocationStrategyLater();
 }
@@ -99,6 +108,8 @@ void WebCacheManager::Remove(int renderer_id) {
   active_renderers_.erase(renderer_id);
   inactive_renderers_.erase(renderer_id);
   stats_.erase(renderer_id);
+
+  web_cache_services_.erase(renderer_id);
 
   // Reallocate the resources used by this renderer
   ReviseAllocationStrategyLater();
@@ -329,9 +340,13 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
                                      max_dead_capacity);
       }
 
-      host->Send(new WebCacheMsg_SetCacheCapacities(min_dead_capacity,
-                                                    max_dead_capacity,
-                                                    capacity));
+      // Find the WebCachePtr by renderer process id.
+      auto it = web_cache_services_.find(allocation->first);
+      DCHECK(it != web_cache_services_.end());
+      const mojom::WebCachePtr& service = it->second;
+      DCHECK(service);
+      service->SetCacheCapacities(min_dead_capacity, max_dead_capacity,
+                                  capacity);
     }
     ++allocation;
   }
@@ -350,8 +365,14 @@ void WebCacheManager::ClearRendererCache(
   for (; iter != renderers.end(); ++iter) {
     content::RenderProcessHost* host =
         content::RenderProcessHost::FromID(*iter);
-    if (host)
-      host->Send(new WebCacheMsg_ClearCache(occasion == ON_NAVIGATION));
+    if (host) {
+      // Find the WebCachePtr by renderer process id.
+      auto it = web_cache_services_.find(*iter);
+      DCHECK(it != web_cache_services_.end());
+      const mojom::WebCachePtr& service = it->second;
+      DCHECK(service);
+      service->ClearCache(occasion == ON_NAVIGATION);
+    }
   }
 }
 

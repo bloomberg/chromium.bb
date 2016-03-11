@@ -5,16 +5,14 @@
 {
   'targets': [
     {
-      'target_name': 'web_cache_common',
+      # GN version: //components/web_cache/public/interfaces
+      'target_name': 'web_cache_mojo_bindings',
       'type': 'static_library',
-      'dependencies': [
-        '<(DEPTH)/ipc/ipc.gyp:ipc',
-      ],
       'sources': [
-        'web_cache/common/web_cache_message_generator.cc',
-        'web_cache/common/web_cache_message_generator.h',
-        'web_cache/common/web_cache_messages.h',
+        # NOTE: Sources duplicated in //components/web_cache/public/interfaces/BUILD.gn
+        'web_cache/public/interfaces/web_cache.mojom',
       ],
+      'includes': [ '../mojo/mojom_bindings_generator.gypi'],
     },
     {
       'target_name': 'web_cache_browser',
@@ -23,7 +21,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/content/content.gyp:content_browser',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
-        'web_cache_common',
+        'web_cache_mojo_bindings',
       ],
       'sources': [
         'web_cache/browser/web_cache_manager.cc',
@@ -39,7 +37,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/content/content.gyp:content_renderer',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
-        'web_cache_common',
+        'web_cache_mojo_bindings',
       ],
       'sources': [
         'web_cache/renderer/web_cache_render_process_observer.cc',

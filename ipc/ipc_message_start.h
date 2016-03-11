@@ -105,7 +105,6 @@ enum IPCMessageStart {
   PlatformNotificationMsgStart,
   CredentialManagerMsgStart,
   PDFMsgStart,
-  WebCacheMsgStart,
   ManifestManagerMsgStart,
   ExtensionUtilityMsgStart,
   GeofencingMsgStart,

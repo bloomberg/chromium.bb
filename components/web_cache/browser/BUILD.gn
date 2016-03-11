@@ -13,8 +13,9 @@ source_set("browser") {
   deps = [
     "//base",
     "//components/prefs",
-    "//components/web_cache/common",
+    "//components/web_cache/public/interfaces",
     "//content/public/browser",
+    "//content/public/common",
     "//third_party/WebKit/public:blink_headers",
   ]
 }

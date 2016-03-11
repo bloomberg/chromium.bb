@@ -53,9 +53,6 @@ static bool check_msgtable() {
   exemptions.push_back(CCMsgStart);  // Nothing but param traits.
   exemptions.push_back(CldDataProviderMsgStart); // Conditional build.
 
-  // Sent from browser to renderer.
-  exemptions.push_back(WebCacheMsgStart);
-
 #if defined(DISABLE_NACL)
   exemptions.push_back(NaClMsgStart);
 #endif  // defined(DISABLE_NACL)

@@ -2,14 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("common") {
-  sources = [
-    "web_cache_message_generator.cc",
-    "web_cache_message_generator.h",
-    "web_cache_messages.h",
-  ]
+import("//mojo/public/tools/bindings/mojom.gni")
 
-  deps = [
-    "//ipc",
+mojom("interfaces") {
+  sources = [
+    "web_cache.mojom",
   ]
 }

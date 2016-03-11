@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/web_cache/public/interfaces/web_cache.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -100,6 +101,7 @@ class WebCacheManager : public content::NotificationObserver {
   void ClearCache();
 
   // Instantly clears renderer cache for a process.
+  // Must be called between Add(process_id) and Remove(process_id).
   void ClearCacheForProcess(int process_id);
 
   // Clears all in-memory caches when a tab is reloaded or the user navigates
@@ -139,6 +141,9 @@ class WebCacheManager : public content::NotificationObserver {
   // An allocation strategy is a list of allocations specifying the resources
   // each renderer is permitted to consume for its cache.
   typedef std::list<Allocation> AllocationStrategy;
+
+  // The key is the unique id of every render process host.
+  typedef std::map<int, mojom::WebCachePtr> WebCacheServicesMap;
 
   // This class is a singleton.  Do not instantiate directly.
   WebCacheManager();
@@ -256,6 +261,9 @@ class WebCacheManager : public content::NotificationObserver {
   std::set<int> inactive_renderers_;
 
   content::NotificationRegistrar registrar_;
+
+  // Maps every renderer_id with its corresponding mojom::WebCachePtr.
+  WebCacheServicesMap web_cache_services_;
 
   base::WeakPtrFactory<WebCacheManager> weak_factory_;
 
