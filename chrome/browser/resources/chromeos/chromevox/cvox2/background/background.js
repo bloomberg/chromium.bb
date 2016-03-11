@@ -302,6 +302,13 @@ Background.prototype = {
    * @return {boolean} True if the command should propagate.
    */
   onGotCommand: function(command, opt_bypassModeCheck) {
+    // Check for loss of focus which results in us invalidating our current
+    // range. Note this call is synchronis.
+    chrome.automation.getFocus(function(focusedNode) {
+      if (!focusedNode)
+        this.currentRange_ = null;
+    }.bind(this));
+
     if (!this.currentRange_)
       return true;
 
