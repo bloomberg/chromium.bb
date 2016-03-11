@@ -69,36 +69,46 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 }
 
-#if defined(OS_CHROMEOS)
 void AddA11yStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY},
-      {"moreFeaturesLink", IDS_SETTINGS_MORE_FEATURES_LINK},
-      {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
-      {"largeMouseCursorLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL},
-      {"highContrastLabel", IDS_SETTINGS_HIGH_CONTRAST_LABEL},
-      {"stickyKeysLabel", IDS_SETTINGS_STICKY_KEYS_LABEL},
-      {"chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL},
-      {"screenMagnifierLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL},
-      {"tapDraggingLabel", IDS_SETTINGS_TAP_DRAGGING_LABEL},
-      {"clickOnStopLabel", IDS_SETTINGS_CLICK_ON_STOP_LABEL},
-      {"delayBeforeClickLabel", IDS_SETTINGS_DELAY_BEFORE_CLICK_LABEL},
-      {"delayBeforeClickExtremelyShort",
-       IDS_SETTINGS_DELAY_BEFORE_CLICK_EXTREMELY_SHORT},
-      {"delayBeforeClickVeryShort", IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_SHORT},
-      {"delayBeforeClickShort", IDS_SETTINGS_DELAY_BEFORE_CLICK_SHORT},
-      {"delayBeforeClickLong", IDS_SETTINGS_DELAY_BEFORE_CLICK_LONG},
-      {"delayBeforeClickVeryLong", IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_LONG},
-      {"onScreenKeyboardLabel", IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL},
-      {"a11yExplanation", IDS_SETTINGS_ACCESSIBILITY_EXPLANATION},
+    {"a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY},
+#if defined(OS_CHROMEOS)
+    {"moreFeaturesLink", IDS_SETTINGS_MORE_FEATURES_LINK},
+    {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
+    {"largeMouseCursorLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL},
+    {"highContrastLabel", IDS_SETTINGS_HIGH_CONTRAST_LABEL},
+    {"stickyKeysLabel", IDS_SETTINGS_STICKY_KEYS_LABEL},
+    {"chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL},
+    {"screenMagnifierLabel", IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL},
+    {"tapDraggingLabel", IDS_SETTINGS_TAP_DRAGGING_LABEL},
+    {"clickOnStopLabel", IDS_SETTINGS_CLICK_ON_STOP_LABEL},
+    {"delayBeforeClickLabel", IDS_SETTINGS_DELAY_BEFORE_CLICK_LABEL},
+    {"delayBeforeClickExtremelyShort",
+     IDS_SETTINGS_DELAY_BEFORE_CLICK_EXTREMELY_SHORT},
+    {"delayBeforeClickVeryShort", IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_SHORT},
+    {"delayBeforeClickShort", IDS_SETTINGS_DELAY_BEFORE_CLICK_SHORT},
+    {"delayBeforeClickLong", IDS_SETTINGS_DELAY_BEFORE_CLICK_LONG},
+    {"delayBeforeClickVeryLong", IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_LONG},
+    {"onScreenKeyboardLabel", IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL},
+    {"a11yExplanation", IDS_SETTINGS_ACCESSIBILITY_EXPLANATION},
+#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
+#if defined(OS_CHROMEOS)
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
-}
 #endif
+}
+
+void AddAboutStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"aboutProgram", IDS_SETTINGS_ABOUT_PROGRAM},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+}
 
 #if defined(OS_CHROMEOS)
 void AddAccountUITweaksStrings(content::WebUIDataSource* html_source,
@@ -242,6 +252,14 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
       {"clearDataEverything", IDS_SETTINGS_CLEAR_DATA_EVERYTHING},
       {"warnAboutNonClearedData", IDS_SETTINGS_CLEAR_DATA_SOME_STUFF_REMAINS},
       {"clearsSyncedData", IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+}
+
+void AddCloudPrintStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"googleCloudPrint", IDS_SETTINGS_GOOGLE_CLOUD_PRINT},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -784,8 +802,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
                          Profile* profile) {
   AddCommonStrings(html_source);
 
-#if defined(OS_CHROMEOS)
   AddA11yStrings(html_source);
+  AddAboutStrings(html_source);
+#if defined(OS_CHROMEOS)
   AddAccountUITweaksStrings(html_source, profile);
 #endif
   AddAppearanceStrings(html_source);
@@ -794,6 +813,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #endif
   AddCertificateManagerStrings(html_source);
   AddClearBrowsingDataStrings(html_source);
+  AddCloudPrintStrings(html_source);
 #if !defined(OS_CHROMEOS)
   AddDefaultBrowserStrings(html_source);
 #endif

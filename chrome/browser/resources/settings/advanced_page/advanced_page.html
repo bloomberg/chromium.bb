@@ -50,7 +50,6 @@
       </settings-section>
     </template>
 </if>
-
     <template is="dom-if" if="[[showPage(pageVisibility.passwordsAndForms)]]"
         restamp>
       <settings-section
@@ -76,12 +75,9 @@
         </settings-downloads-page>
       </settings-section>
     </template>
-    <template is="dom-if" if="[[showPage(pageVisibility.reset)]]" restamp>
-      <settings-section page-title="[[i18n('resetPageTitle')]]"
-          current-route="[[currentRoute]]" section="reset">
-        <settings-reset-page></settings-reset-page>
-      </settings-section>
-    </template>
+
+    <!-- TODO(dschuyler): Add Google Cloud Print section here. -->
+
 <if expr="chromeos">
     <!-- TODO(dbeam): find somewhere to stuff "Add more accessibility features"
          on desktop. -->
@@ -100,6 +96,12 @@
       </settings-section>
     </template>
 </if>
+    <template is="dom-if" if="[[showPage(pageVisibility.reset)]]" restamp>
+      <settings-section page-title="[[i18n('resetPageTitle')]]"
+          current-route="[[currentRoute]]" section="reset">
+        <settings-reset-page></settings-reset-page>
+      </settings-section>
+    </template>
   </template>
   <script src="chrome://md-settings/advanced_page/advanced_page.js"></script>
 </dom-module>

@@ -6,11 +6,11 @@
     This setting is controlled by extension <ph name="NAME">$1<ex>Settings Extension</ex></ph>
   </message>
 
+  <!-- Accessibility Page -->
+  <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
+    Accessibility
+  </message>
   <if expr="chromeos">
-    <!-- Accessibility Page -->
-    <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
-      Accessibility
-    </message>
     <message name="IDS_SETTINGS_MORE_FEATURES_LINK" desc="Link which opens page where users can install extensions which provide additional accessibility features.">
       Add additional accessibility features
     </message>
@@ -333,6 +333,11 @@
   </message>
   <message name="IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA" desc="Information that data which is synced across user's devices will be deleted from all those devices.">
     This clears synced data from all devices.
+  </message>
+
+  <!-- Cloud Print -->
+  <message name="IDS_SETTINGS_GOOGLE_CLOUD_PRINT" desc="Label for the Google cloud print page and menu option.">
+    Google cloud print
   </message>
 
   <!-- Downloads Page -->

@@ -79,13 +79,20 @@
             <span i18n-content="peoplePageTitle"></span>
           </div>
           <div>
-            <iron-icon icon="home" item-icon></iron-icon>
-            <span i18n-content="appearancePageTitle"></span>
-          </div>
-          <div>
             <iron-icon icon="image:brightness-1" item-icon></iron-icon>
             <span i18n-content="onStartup"></span>
           </div>
+          <div>
+            <iron-icon icon="home" item-icon></iron-icon>
+            <span i18n-content="appearancePageTitle"></span>
+          </div>
+<if expr="chromeos">
+          <div>
+            <!-- TODO(dschuyler): replace brightness-1 placeholder icon -->
+            <iron-icon icon="image:brightness-1" item-icon></iron-icon>
+            <span i18n-content="devicePageTitle"></span>
+          </div>
+</if>
           <div>
             <iron-icon icon="search" item-icon></iron-icon>
             <span i18n-content="searchPageTitle"></span>
@@ -106,10 +113,6 @@
           </iron-icon>
         </div>
         <paper-menu class="menu-content">
-          <div>
-            <iron-icon icon="communication:location-on" item-icon></iron-icon>
-            <span i18n-content="siteSettingsLocation"></span>
-          </div>
 <if expr="chromeos">
           <div>
             <iron-icon icon="device:access-time" item-icon></iron-icon>
@@ -139,16 +142,31 @@
             <span i18n-content="downloadsPageTitle"></span>
           </div>
           <div>
-            <iron-icon icon="settings-backup-restore" item-icon></iron-icon>
-            <span i18n-content="resetPageTitle"></span>
+            <!-- TODO(dschuyler): replace brightness-1 placeholder icon -->
+            <iron-icon icon="image:brightness-1" item-icon></iron-icon>
+            <span i18n-content="googleCloudPrint"></span>
           </div>
-<if expr="chromeos">
           <div>
             <iron-icon icon="accessibility" item-icon></iron-icon>
             <span i18n-content="a11yPageTitle"></span>
           </div>
+<if expr="not chromeos">
+          <div>
+            <!-- TODO(dschuyler): replace brightness-1 placeholder icon -->
+            <iron-icon icon="image:brightness-1" item-icon></iron-icon>
+            <span i18n-content="systemPageTitle"></span>
+          </div>
 </if>
+          <div>
+            <iron-icon icon="settings-backup-restore" item-icon></iron-icon>
+            <span i18n-content="resetPageTitle"></span>
+          </div>
         </paper-menu>
+      </paper-submenu>
+      <paper-submenu on-tap="openPage_">
+        <div class="menu-trigger">
+          <span i18n-content="aboutProgram"></span>
+        </div>
       </paper-submenu>
     </paper-menu>
   </template>

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Settings-specific Chromium strings (included from chromium_strings.grd). -->
 <grit-part>
+  <!-- About Page -->
+  <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Chromium page.">
+    About Chromium
+  </message>
+
   <!-- Default Browser Page -->
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT" desc="The text displayed when Chrome is not the default browser">
