@@ -84,7 +84,7 @@ void Gradient::addColorStop(const Gradient::ColorStop& stop)
     }
 
     m_stops.append(stop);
-    m_gradient.clear();
+    m_gradient.reset();
 }
 
 void Gradient::sortStopsIfNecessary()
@@ -117,7 +117,7 @@ void Gradient::setDrawsInPMColorSpace(bool drawInPMColorSpace)
         return;
 
     m_drawInPMColorSpace = drawInPMColorSpace;
-    m_gradient.clear();
+    m_gradient.reset();
 }
 
 void Gradient::setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation)
@@ -126,7 +126,7 @@ void Gradient::setGradientSpaceTransform(const AffineTransform& gradientSpaceTra
         return;
 
     m_gradientSpaceTransformation = gradientSpaceTransformation;
-    m_gradient.clear();
+    m_gradient.reset();
 }
 
 // Determine the total number of stops needed, including pseudo-stops at the
@@ -189,10 +189,10 @@ static void fillStops(const Gradient::ColorStop* stopData,
     }
 }
 
-SkShader* Gradient::shader()
+sk_sp<SkShader> Gradient::shader()
 {
     if (m_gradient)
-        return m_gradient.get();
+        return m_gradient;
 
     sortStopsIfNecessary();
     ASSERT(m_stopsSorted);
@@ -233,25 +233,25 @@ SkShader* Gradient::shader()
         // Since the two-point radial gradient is slower than the plain radial,
         // only use it if we have to.
         if (m_p0 == m_p1 && m_r0 <= 0.0f) {
-            m_gradient = adoptRef(SkGradientShader::CreateRadial(m_p1.data(), m_r1, colors.data(), pos.data(), static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix));
+            m_gradient = SkGradientShader::MakeRadial(m_p1.data(), m_r1, colors.data(), pos.data(), static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix);
         } else {
             // The radii we give to Skia must be positive. If we're given a
             // negative radius, ask for zero instead.
             SkScalar radius0 = m_r0 >= 0.0f ? WebCoreFloatToSkScalar(m_r0) : 0;
             SkScalar radius1 = m_r1 >= 0.0f ? WebCoreFloatToSkScalar(m_r1) : 0;
-            m_gradient = adoptRef(SkGradientShader::CreateTwoPointConical(m_p0.data(), radius0, m_p1.data(), radius1, colors.data(), pos.data(), static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix));
+            m_gradient = SkGradientShader::MakeTwoPointConical(m_p0.data(), radius0, m_p1.data(), radius1, colors.data(), pos.data(), static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix);
         }
     } else {
         SkPoint pts[2] = { m_p0.data(), m_p1.data() };
         SkMatrix localMatrix = affineTransformToSkMatrix(m_gradientSpaceTransformation);
-        m_gradient = adoptRef(SkGradientShader::CreateLinear(pts, colors.data(), pos.data(), static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix));
+        m_gradient = SkGradientShader::MakeLinear(pts, colors.data(), pos.data(), static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix);
     }
 
     if (!m_gradient) {
         // use last color, since our "geometry" was degenerate (e.g. radius==0)
-        m_gradient = adoptRef(SkShader::CreateColorShader(colors[countUsed - 1]));
+        m_gradient = SkShader::MakeColorShader(colors[countUsed - 1]);
     }
-    return m_gradient.get();
+    return m_gradient;
 }
 
 void Gradient::applyToPaint(SkPaint& paint)

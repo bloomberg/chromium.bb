@@ -635,11 +635,10 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
 
     SkMatrix localMatrix;
     localMatrix.setTranslate(originX, originY);
-    RefPtr<SkShader> shader = adoptRef(SkShader::CreateBitmapShader(
-        *misspellBitmap[index], SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
 
     SkPaint paint;
-    paint.setShader(shader.get());
+    paint.setShader(SkShader::MakeBitmapShader(*misspellBitmap[index],
+        SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
 
     SkRect rect;
     rect.set(originX, originY, originX + WebCoreFloatToSkScalar(width) * deviceScaleFactor, originY + SkIntToScalar(misspellBitmap[index]->height()));

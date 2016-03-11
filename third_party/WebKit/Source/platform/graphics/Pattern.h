@@ -32,11 +32,11 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Image.h"
 #include "platform/transforms/AffineTransform.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 class SkPaint;
 class SkPicture;
@@ -71,7 +71,7 @@ public:
     virtual bool isTextureBacked() const { return false; }
 
 protected:
-    virtual PassRefPtr<SkShader> createShader() = 0;
+    virtual sk_sp<SkShader> createShader() = 0;
 
     void adjustExternalMemoryAllocated(int64_t delta);
 
@@ -81,7 +81,7 @@ protected:
     Pattern(RepeatMode, int64_t externalMemoryAllocated = 0);
 
 private:
-    RefPtr<SkShader> m_pattern;
+    sk_sp<SkShader> m_pattern;
     int64_t m_externalMemoryAllocated;
 };
 
