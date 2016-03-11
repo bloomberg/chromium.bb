@@ -652,7 +652,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   bool GetBoundPixelTransferBuffer(
       GLenum target, const char* function_name, GLuint* buffer_id);
-  BufferTracker::Buffer* GetBoundPixelUnpackTransferBufferIfValid(
+  BufferTracker::Buffer* GetBoundPixelTransferBufferIfValid(
       GLuint buffer_id,
       const char* function_name, GLuint offset, GLsizei size);
 

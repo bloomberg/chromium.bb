@@ -47,10 +47,36 @@
 namespace gpu {
 namespace gles2 {
 
+namespace {
+
+void CopyRectToBuffer(const void* pixels,
+                      uint32_t height,
+                      uint32_t unpadded_row_size,
+                      uint32_t pixels_padded_row_size,
+                      void* buffer,
+                      uint32_t buffer_padded_row_size) {
+  if (height == 0)
+    return;
+  const int8_t* source = static_cast<const int8_t*>(pixels);
+  int8_t* dest = static_cast<int8_t*>(buffer);
+  if (pixels_padded_row_size != buffer_padded_row_size) {
+    for (uint32_t ii = 0; ii < height; ++ii) {
+      memcpy(dest, source, unpadded_row_size);
+      dest += buffer_padded_row_size;
+      source += pixels_padded_row_size;
+    }
+  } else {
+    uint32_t size = (height - 1) * pixels_padded_row_size + unpadded_row_size;
+    memcpy(dest, source, size);
+  }
+}
+
 // A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
-static GLuint ToGLuint(const void* ptr) {
+GLuint ToGLuint(const void* ptr) {
   return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
 }
+
+}  // anonymous namespace
 
 #if !defined(_MSC_VER)
 const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
@@ -2123,24 +2149,30 @@ bool GLES2Implementation::GetBoundPixelTransferBuffer(
   return true;
 }
 
-BufferTracker::Buffer*
-GLES2Implementation::GetBoundPixelUnpackTransferBufferIfValid(
-    GLuint buffer_id,
-    const char* function_name,
-    GLuint offset, GLsizei size) {
+BufferTracker::Buffer* GLES2Implementation::GetBoundPixelTransferBufferIfValid(
+    GLuint buffer_id, const char* function_name, GLuint offset, GLsizei size) {
   DCHECK(buffer_id);
   BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(buffer_id);
   if (!buffer) {
     SetGLError(GL_INVALID_OPERATION, function_name, "invalid buffer");
-    return NULL;
+    return nullptr;
   }
   if (buffer->mapped()) {
     SetGLError(GL_INVALID_OPERATION, function_name, "buffer mapped");
-    return NULL;
+    return nullptr;
   }
-  if ((buffer->size() - offset) < static_cast<GLuint>(size)) {
+  base::CheckedNumeric<uint32_t> buffer_offset = buffer->shm_offset();
+  buffer_offset += offset;
+  if (!buffer_offset.IsValid()) {
+    SetGLError(GL_INVALID_VALUE, function_name, "offset to large");
+    return nullptr;
+  }
+  base::CheckedNumeric<uint32_t> required_size = offset;
+  required_size += size;
+  if (!required_size.IsValid() ||
+      buffer->size() < required_size.ValueOrDefault(0)) {
     SetGLError(GL_INVALID_VALUE, function_name, "unpack size to large");
-    return NULL;
+    return nullptr;
   }
   return buffer;
 }
@@ -2168,7 +2200,7 @@ void GLES2Implementation::CompressedTexImage2D(
   // CompressedTexImage2D.
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(data);
-    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+    BufferTracker::Buffer* buffer = GetBoundPixelTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glCompressedTexImage2D", offset, image_size);
     if (buffer && buffer->shm_id() != -1) {
@@ -2209,7 +2241,7 @@ void GLES2Implementation::CompressedTexSubImage2D(
   // CompressedTexSubImage2D.
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(data);
-    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+    BufferTracker::Buffer* buffer = GetBoundPixelTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glCompressedTexSubImage2D", offset, image_size);
     if (buffer && buffer->shm_id() != -1) {
@@ -2253,7 +2285,7 @@ void GLES2Implementation::CompressedTexImage3D(
   // CompressedTexImage3D.
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(data);
-    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+    BufferTracker::Buffer* buffer = GetBoundPixelTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glCompressedTexImage3D", offset, image_size);
     if (buffer && buffer->shm_id() != -1) {
@@ -2295,7 +2327,7 @@ void GLES2Implementation::CompressedTexSubImage3D(
   // CompressedTexSubImage3D.
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(data);
-    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+    BufferTracker::Buffer* buffer = GetBoundPixelTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glCompressedTexSubImage3D", offset, image_size);
     if (buffer && buffer->shm_id() != -1) {
@@ -2318,34 +2350,6 @@ void GLES2Implementation::CompressedTexSubImage3D(
   helper_->SetBucketSize(kResultBucketId, 0);
   CheckGLError();
 }
-
-namespace {
-
-void CopyRectToBuffer(const void* pixels,
-                      uint32_t height,
-                      uint32_t unpadded_row_size,
-                      uint32_t pixels_padded_row_size,
-                      void* buffer,
-                      uint32_t buffer_padded_row_size) {
-  if (height == 0)
-    return;
-  const int8_t* source = static_cast<const int8_t*>(pixels);
-  int8_t* dest = static_cast<int8_t*>(buffer);
-  if (pixels_padded_row_size != buffer_padded_row_size) {
-    // the last row is copied unpadded at the end
-    for (; height > 1; --height) {
-      memcpy(dest, source, buffer_padded_row_size);
-      dest += buffer_padded_row_size;
-      source += pixels_padded_row_size;
-    }
-    memcpy(dest, source, unpadded_row_size);
-  } else {
-    uint32_t size = (height - 1) * pixels_padded_row_size + unpadded_row_size;
-    memcpy(dest, source, size);
-  }
-}
-
-}  // anonymous namespace
 
 void GLES2Implementation::TexImage2D(
     GLenum target, GLint level, GLint internalformat, GLsizei width,
@@ -2381,9 +2385,8 @@ void GLES2Implementation::TexImage2D(
   // If there's a pixel unpack buffer bound use it when issuing TexImage2D.
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(pixels);
-    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
-        bound_pixel_unpack_transfer_buffer_id_,
-        "glTexImage2D", offset, size);
+    BufferTracker::Buffer* buffer = GetBoundPixelTransferBufferIfValid(
+        bound_pixel_unpack_transfer_buffer_id_, "glTexImage2D", offset, size);
     if (buffer && buffer->shm_id() != -1) {
       helper_->TexImage2D(
           target, level, internalformat, width, height, format, type,
@@ -2505,9 +2508,8 @@ void GLES2Implementation::TexImage3D(
   // If there's a pixel unpack buffer bound use it when issuing TexImage3D.
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(pixels);
-    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
-        bound_pixel_unpack_transfer_buffer_id_,
-        "glTexImage3D", offset, size);
+    BufferTracker::Buffer* buffer = GetBoundPixelTransferBufferIfValid(
+        bound_pixel_unpack_transfer_buffer_id_, "glTexImage3D", offset, size);
     if (buffer && buffer->shm_id() != -1) {
       helper_->TexImage3D(
           target, level, internalformat, width, height, depth, format, type,
@@ -2642,7 +2644,7 @@ void GLES2Implementation::TexSubImage2D(
   // If there's a pixel unpack buffer bound use it when issuing TexSubImage2D.
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(pixels);
-    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+    BufferTracker::Buffer* buffer = GetBoundPixelTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glTexSubImage2D", offset, temp_size);
     if (buffer && buffer->shm_id() != -1) {
@@ -2721,7 +2723,7 @@ void GLES2Implementation::TexSubImage3D(
   // If there's a pixel unpack buffer bound use it when issuing TexSubImage2D.
   if (bound_pixel_unpack_transfer_buffer_id_) {
     GLuint offset = ToGLuint(pixels);
-    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+    BufferTracker::Buffer* buffer = GetBoundPixelTransferBufferIfValid(
         bound_pixel_unpack_transfer_buffer_id_,
         "glTexSubImage3D", offset, temp_size);
     if (buffer && buffer->shm_id() != -1) {
@@ -3657,7 +3659,7 @@ void GLES2Implementation::ReadPixels(
     }
     DCHECK_EQ(0u, skip_size);
     GLuint offset = ToGLuint(pixels);
-    BufferTracker::Buffer* buffer = GetBoundPixelUnpackTransferBufferIfValid(
+    BufferTracker::Buffer* buffer = GetBoundPixelTransferBufferIfValid(
         bound_pixel_pack_transfer_buffer_id_, "glReadPixels", offset, size);
     if (buffer && buffer->shm_id() != -1) {
       helper_->ReadPixels(xoffset, yoffset, width, height, format, type,

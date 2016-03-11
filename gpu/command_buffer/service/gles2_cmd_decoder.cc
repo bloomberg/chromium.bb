@@ -10249,11 +10249,21 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
 
   uint32_t size;
   uint32_t padded_row_size;
+  uint32_t padding;
   // Here we use unpack buffer to upload zeros into the texture, one layer
-  // at a time. We haven't applied unpack parameters to GL except alignment.
-  if (!GLES2Util::ComputeImageDataSizes(
-          width, height, depth, format, type, state_.unpack_alignment, &size,
-          nullptr, &padded_row_size)) {
+  // at a time.
+  // We only take into consideration UNPACK_ALIGNMENT, and clear other unpack
+  // parameters if necessary before TexSubImage3D calls.
+  PixelStoreParams params;
+  params.alignment = state_.unpack_alignment;
+  if (!GLES2Util::ComputeImageDataSizesES3(width, height, depth,
+                                           format, type,
+                                           params,
+                                           &size,
+                                           nullptr,
+                                           &padded_row_size,
+                                           nullptr,
+                                           &padding)) {
     return false;
   }
   const uint32_t kMaxZeroSize = 1024 * 1024 * 2;
@@ -10315,11 +10325,28 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
   glGenBuffersARB(1, &buffer_id);
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer_id);
   {
+    // Include padding as some drivers incorrectly requires padding for the
+    // last row.
+    buffer_size += padding;
     scoped_ptr<char[]> zero(new char[buffer_size]);
     memset(zero.get(), 0, buffer_size);
     // TODO(zmo): Consider glMapBufferRange instead.
     glBufferData(
         GL_PIXEL_UNPACK_BUFFER, buffer_size, zero.get(), GL_STATIC_DRAW);
+  }
+
+  Buffer* bound_buffer = buffer_manager()->GetBufferInfoForTarget(
+      &state_, GL_PIXEL_UNPACK_BUFFER);
+  if (bound_buffer) {
+    // If an unpack buffer is bound, we need to clear unpack parameters
+    // because they have been applied to the driver.
+    if (state_.unpack_row_length > 0)
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    if (state_.unpack_image_height > 0)
+      glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
+    DCHECK_EQ(0, state_.unpack_skip_pixels);
+    DCHECK_EQ(0, state_.unpack_skip_rows);
+    DCHECK_EQ(0, state_.unpack_skip_images);
   }
 
   glBindTexture(texture->target(), texture->service_id());
@@ -10330,8 +10357,13 @@ bool GLES2DecoderImpl::ClearLevel3D(Texture* texture,
                     subs[ii].depth, format, type, nullptr);
   }
 
-  Buffer* bound_buffer = buffer_manager()->GetBufferInfoForTarget(
-      &state_, GL_PIXEL_UNPACK_BUFFER);
+  if (bound_buffer) {
+    if (state_.unpack_row_length > 0)
+      glPixelStorei(GL_UNPACK_ROW_LENGTH, state_.unpack_row_length);
+    if (state_.unpack_image_height > 0)
+      glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, state_.unpack_image_height);
+  }
+
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER,
                bound_buffer ? bound_buffer->service_id() : 0);
   glDeleteBuffersARB(1, &buffer_id);
@@ -11308,15 +11340,8 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
 }
 
 void GLES2DecoderImpl::DoCompressedTexSubImage2D(
-  GLenum target,
-  GLint level,
-  GLint xoffset,
-  GLint yoffset,
-  GLsizei width,
-  GLsizei height,
-  GLenum format,
-  GLsizei image_size,
-  const void * data) {
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLsizei image_size, const void * data) {
   TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
       &state_, target);
   if (!texture_ref) {
