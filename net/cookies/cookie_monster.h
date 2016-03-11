@@ -280,37 +280,37 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // at the end of the list, just before DELETE_COOKIE_LAST_ENTRY.
   enum DeletionCause {
     DELETE_COOKIE_EXPLICIT = 0,
-    DELETE_COOKIE_OVERWRITE,
-    DELETE_COOKIE_EXPIRED,
-    DELETE_COOKIE_EVICTED,
-    DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE,
-    DELETE_COOKIE_DONT_RECORD,  // e.g. For final cleanup after flush to store.
-    DELETE_COOKIE_EVICTED_DOMAIN,
-    DELETE_COOKIE_EVICTED_GLOBAL,
+    DELETE_COOKIE_OVERWRITE = 1,
+    DELETE_COOKIE_EXPIRED = 2,
+    DELETE_COOKIE_EVICTED = 3,
+    DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE = 4,
+    DELETE_COOKIE_DONT_RECORD = 5,  // For final cleanup after flush to store.
 
-    // Cookies evicted during domain level garbage collection that
-    // were accessed longer ago than kSafeFromGlobalPurgeDays
-    DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE,
+    // Cookies evicted during domain-level garbage collection.
+    DELETE_COOKIE_EVICTED_DOMAIN = 6,
 
-    // Cookies evicted during domain level garbage collection that
-    // were accessed more recently than kSafeFromGlobalPurgeDays
-    // (and thus would have been preserved by global garbage collection).
-    DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE,
+    // Cookies evicted during global garbage collection (which takes place after
+    // domain-level garbage collection fails to bring the cookie store under
+    // the overall quota.
+    DELETE_COOKIE_EVICTED_GLOBAL = 7,
+
+    // #8 was DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE
+    // #9 was DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE
 
     // A common idiom is to remove a cookie by overwriting it with an
     // already-expired expiration date. This captures that case.
-    DELETE_COOKIE_EXPIRED_OVERWRITE,
+    DELETE_COOKIE_EXPIRED_OVERWRITE = 10,
 
     // Cookies are not allowed to contain control characters in the name or
     // value. However, we used to allow them, so we are now evicting any such
     // cookies as we load them. See http://crbug.com/238041.
-    DELETE_COOKIE_CONTROL_CHAR,
+    DELETE_COOKIE_CONTROL_CHAR = 11,
 
     // When strict secure cookies is enabled, non-secure cookies are evicted
     // right after expired cookies.
-    DELETE_COOKIE_NON_SECURE,
+    DELETE_COOKIE_NON_SECURE = 12,
 
-    DELETE_COOKIE_LAST_ENTRY
+    DELETE_COOKIE_LAST_ENTRY = 13
   };
 
   // This enum is used to generate a histogramed bitmask measureing the types
@@ -547,14 +547,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
   //
   // |cookies| must be sorted from least-recent to most-recent.
   //
-  // |safe_date| is only used to determine the deletion cause for histograms.
-  //
   // Returns the number of cookies deleted.
   size_t PurgeLeastRecentMatches(CookieItVector* cookies,
                                  CookiePriority priority,
                                  size_t to_protect,
-                                 size_t purge_goal,
-                                 const base::Time& safe_date);
+                                 size_t purge_goal);
 
   // Helper for GarbageCollect(); can be called directly as well.  Deletes all
   // expired cookies in |itpair|.  If |cookie_its| is non-NULL, all the

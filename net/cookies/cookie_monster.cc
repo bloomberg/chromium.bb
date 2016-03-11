@@ -1901,9 +1901,8 @@ size_t CookieMonster::GarbageCollect(const Time& current,
       size_t quota = 0;
       for (size_t i = 0; i < arraysize(kQuotas) && purge_goal > 0; i++) {
         quota += kQuotas[i];
-        size_t just_deleted =
-            PurgeLeastRecentMatches(cookie_its, static_cast<CookiePriority>(i),
-                                    quota, purge_goal, safe_date);
+        size_t just_deleted = PurgeLeastRecentMatches(
+            cookie_its, static_cast<CookiePriority>(i), quota, purge_goal);
         DCHECK_LE(just_deleted, purge_goal);
         purge_goal -= just_deleted;
         num_deleted += just_deleted;
@@ -1959,8 +1958,7 @@ size_t CookieMonster::GarbageCollect(const Time& current,
 size_t CookieMonster::PurgeLeastRecentMatches(CookieItVector* cookies,
                                               CookiePriority priority,
                                               size_t to_protect,
-                                              size_t purge_goal,
-                                              const base::Time& safe_date) {
+                                              size_t purge_goal) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Find the first protected cookie by walking down from the end of the list
@@ -1980,11 +1978,8 @@ size_t CookieMonster::PurgeLeastRecentMatches(CookieItVector* cookies,
   size_t current = 0;
   while (removed < purge_goal && current < protection_boundary) {
     if (cookies->at(current)->second->Priority() <= priority) {
-      InternalDeleteCookie(
-          cookies->at(current), true,
-          cookies->at(current)->second->LastAccessDate() > safe_date
-              ? DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE
-              : DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE);
+      InternalDeleteCookie(cookies->at(current), true,
+                           DELETE_COOKIE_EVICTED_DOMAIN);
       cookies->erase(cookies->begin() + current);
       removed++;
 
