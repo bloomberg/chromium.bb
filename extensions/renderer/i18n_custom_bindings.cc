@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
@@ -36,7 +37,7 @@ struct DetectedLanguage {
 
   // Returns a new v8::Local<v8::Value> representing the serialized form of
   // this DetectedLanguage object.
-  v8::Local<v8::Value> ToValue(ScriptContext* context);
+  scoped_ptr<base::DictionaryValue> ToDictionary() const;
 
   std::string language;
   int percentage;
@@ -67,40 +68,28 @@ struct LanguageDetectionResult {
   DISALLOW_COPY_AND_ASSIGN(LanguageDetectionResult);
 };
 
-v8::Local<v8::Value> DetectedLanguage::ToValue(ScriptContext* context) {
-  v8::Local<v8::Context> v8_context = context->v8_context();
-  v8::Isolate* isolate = v8_context->GetIsolate();
-  v8::EscapableHandleScope handle_scope(isolate);
-
-  v8::Local<v8::Object> value(v8::Object::New(isolate));
-  SetProperty(v8_context, value, ToV8StringUnsafe(isolate, "language"),
-              ToV8StringUnsafe(isolate, language.c_str()));
-
-  SetProperty(v8_context, value, ToV8StringUnsafe(isolate, "percentage"),
-              v8::Number::New(isolate, percentage));
-
-  v8::Local<v8::Value> result = v8::Local<v8::Value>::Cast(value);
-  return handle_scope.Escape(result);
+scoped_ptr<base::DictionaryValue> DetectedLanguage::ToDictionary() const {
+  scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue());
+  dict_value->SetString("language", language.c_str());
+  dict_value->SetInteger("percentage", percentage);
+  return dict_value;
 }
 
 v8::Local<v8::Value> LanguageDetectionResult::ToValue(ScriptContext* context) {
+  base::DictionaryValue dict_value;
+  dict_value.SetBoolean("isReliable", is_reliable);
+  scoped_ptr<base::ListValue> languages_list(new base::ListValue());
+  for (const auto& language : languages)
+    languages_list->Append(language->ToDictionary());
+  dict_value.Set("languages", std::move(languages_list));
+
   v8::Local<v8::Context> v8_context = context->v8_context();
   v8::Isolate* isolate = v8_context->GetIsolate();
   v8::EscapableHandleScope handle_scope(isolate);
 
-  v8::Local<v8::Object> value(v8::Object::New(isolate));
-  SetProperty(v8_context, value, ToV8StringUnsafe(isolate, "isReliable"),
-              v8::Boolean::New(isolate, is_reliable));
-
-  v8::Local<v8::Array> langs(v8::Array::New(isolate, languages.size()));
-  for (size_t i = 0; i < languages.size(); ++i) {
-    SetProperty(v8_context, langs, i, languages[i]->ToValue(context));
-  }
-
-  SetProperty(isolate->GetCurrentContext(), value,
-              ToV8StringUnsafe(isolate, "languages"), langs);
-
-  v8::Local<v8::Value> result = v8::Local<v8::Value>::Cast(value);
+  scoped_ptr<content::V8ValueConverter> converter(
+      content::V8ValueConverter::create());
+  v8::Local<v8::Value> result = converter->ToV8Value(&dict_value, v8_context);
   return handle_scope.Escape(result);
 }
 

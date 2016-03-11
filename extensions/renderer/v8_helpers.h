@@ -71,23 +71,6 @@ inline bool SetProperty(v8::Local<v8::Context> context,
   return IsTrue(object->DefineOwnProperty(context, key, value));
 }
 
-inline bool SetProperty(v8::Local<v8::Context> context,
-                        v8::Local<v8::Object> object,
-                        const char* key,
-                        v8::Local<v8::Value> value) {
-  v8::Local<v8::String> v8_key;
-  if (!ToV8String(context->GetIsolate(), key, &v8_key))
-    return false;
-  return SetProperty(context, object, v8_key, value);
-}
-
-inline bool SetProperty(v8::Local<v8::Context> context,
-                        v8::Local<v8::Object> object,
-                        uint32_t index,
-                        v8::Local<v8::Value> value) {
-  return SetProperty(context, object, base::UintToString(index).c_str(), value);
-}
-
 // Wraps v8::Object::SetPrivate(). When possible, prefer this to SetProperty().
 inline bool SetPrivateProperty(v8::Local<v8::Context> context,
                                v8::Local<v8::Object> object,
