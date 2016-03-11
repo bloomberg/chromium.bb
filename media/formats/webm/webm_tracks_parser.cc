@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "media/base/media_util.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/webm/webm_constants.h"
 #include "media/formats/webm/webm_content_encodings.h"
@@ -193,6 +194,9 @@ bool WebMTracksParser::OnListEnd(int id) {
           content_encodings()[0]->encryption_key_id();
     }
 
+    EncryptionScheme encryption_scheme =
+        encryption_key_id.empty() ? Unencrypted() : AesCtrEncryptionScheme();
+
     if (track_type_ == kWebMTrackTypeAudio) {
       if (audio_track_num_ == -1) {
         audio_track_num_ = track_num_;
@@ -208,7 +212,7 @@ bool WebMTracksParser::OnListEnd(int id) {
         DCHECK(!audio_decoder_config_.IsValidConfig());
         if (!audio_client_.InitializeConfig(
                 codec_id_, codec_private_, seek_preroll_, codec_delay_,
-                !audio_encryption_key_id_.empty(), &audio_decoder_config_)) {
+                encryption_scheme, &audio_decoder_config_)) {
           return false;
         }
         media_tracks_->AddAudioTrack(audio_decoder_config_,
@@ -231,9 +235,9 @@ bool WebMTracksParser::OnListEnd(int id) {
         video_default_duration_ = default_duration_;
 
         DCHECK(!video_decoder_config_.IsValidConfig());
-        if (!video_client_.InitializeConfig(
-                codec_id_, codec_private_, !video_encryption_key_id_.empty(),
-                &video_decoder_config_)) {
+        if (!video_client_.InitializeConfig(codec_id_, codec_private_,
+                                            encryption_scheme,
+                                            &video_decoder_config_)) {
           return false;
         }
         media_tracks_->AddVideoTrack(video_decoder_config_,

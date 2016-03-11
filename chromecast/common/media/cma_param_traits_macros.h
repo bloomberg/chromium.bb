@@ -44,6 +44,8 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodec,
                               media::VideoCodec::kUnknownVideoCodec,
                               media::VideoCodec::kVideoCodecMax)
 IPC_ENUM_TRAITS_MAX_VALUE(media::ColorSpace, media::COLOR_SPACE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme::CipherMode,
+                          media::EncryptionScheme::CIPHER_MODE_MAX);
 
 IPC_STRUCT_TRAITS_BEGIN(media::PipelineStatistics)
   IPC_STRUCT_TRAITS_MEMBER(audio_bytes_decoded)

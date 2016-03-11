@@ -10,4 +10,13 @@ std::vector<uint8_t> EmptyExtraData() {
   return std::vector<uint8_t>();
 }
 
+EncryptionScheme Unencrypted() {
+  return EncryptionScheme();
+}
+
+EncryptionScheme AesCtrEncryptionScheme() {
+  return EncryptionScheme(EncryptionScheme::CIPHER_MODE_AES_CTR,
+                          EncryptionScheme::Pattern());
+}
+
 }  // namespace media

@@ -129,10 +129,11 @@ static VideoDecoderConfig GetTestConfig(VideoCodec codec,
   gfx::Rect visible_rect(coded_size.width(), coded_size.height());
   gfx::Size natural_size = coded_size;
 
-  return VideoDecoderConfig(codec, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            PIXEL_FORMAT_YV12, COLOR_SPACE_UNSPECIFIED,
-                            coded_size, visible_rect, natural_size,
-                            EmptyExtraData(), is_encrypted);
+  return VideoDecoderConfig(
+      codec, VIDEO_CODEC_PROFILE_UNKNOWN, PIXEL_FORMAT_YV12,
+      COLOR_SPACE_UNSPECIFIED, coded_size, visible_rect, natural_size,
+      EmptyExtraData(),
+      is_encrypted ? AesCtrEncryptionScheme() : Unencrypted());
 }
 
 static const gfx::Size kNormalSize(320, 240);

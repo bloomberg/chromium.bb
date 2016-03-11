@@ -120,7 +120,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
     config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                        CHANNEL_LAYOUT_STEREO, kSampleRate, EmptyExtraData(),
-                       true, base::TimeDelta(), 0);
+                       AesCtrEncryptionScheme(), base::TimeDelta(), 0);
     InitializeAndExpectResult(config_, true);
   }
 
@@ -286,7 +286,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_Normal) {
 TEST_F(DecryptingAudioDecoderTest, Initialize_UnencryptedAudioConfig) {
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, kSampleRate,
-                            EmptyExtraData(), false);
+                            EmptyExtraData(), Unencrypted());
 
   InitializeAndExpectResult(config, false);
 }
@@ -294,7 +294,8 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_UnencryptedAudioConfig) {
 // Ensure decoder handles invalid audio configs without crashing.
 TEST_F(DecryptingAudioDecoderTest, Initialize_InvalidAudioConfig) {
   AudioDecoderConfig config(kUnknownAudioCodec, kUnknownSampleFormat,
-                            CHANNEL_LAYOUT_STEREO, 0, EmptyExtraData(), true);
+                            CHANNEL_LAYOUT_STEREO, 0, EmptyExtraData(),
+                            AesCtrEncryptionScheme());
 
   InitializeAndExpectResult(config, false);
 }
@@ -307,7 +308,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_UnsupportedAudioConfig) {
 
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, kSampleRate,
-                            EmptyExtraData(), true);
+                            EmptyExtraData(), AesCtrEncryptionScheme());
   InitializeAndExpectResult(config, false);
 }
 
@@ -315,7 +316,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_CdmWithoutDecryptor) {
   SetCdmType(CDM_WITHOUT_DECRYPTOR);
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, kSampleRate,
-                            EmptyExtraData(), true);
+                            EmptyExtraData(), AesCtrEncryptionScheme());
   InitializeAndExpectResult(config, false);
 }
 
@@ -384,7 +385,7 @@ TEST_F(DecryptingAudioDecoderTest, Reinitialize_ConfigChange) {
   // channel layout and samples_per_second.
   AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarS16,
                                 CHANNEL_LAYOUT_5_1, 88200, EmptyExtraData(),
-                                true);
+                                AesCtrEncryptionScheme());
   EXPECT_NE(new_config.bits_per_channel(), config_.bits_per_channel());
   EXPECT_NE(new_config.channel_layout(), config_.channel_layout());
   EXPECT_NE(new_config.samples_per_second(), config_.samples_per_second());

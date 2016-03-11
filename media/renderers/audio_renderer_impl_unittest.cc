@@ -73,12 +73,9 @@ class AudioRendererImplTest : public ::testing::Test {
         demuxer_stream_(DemuxerStream::AUDIO),
         decoder_(new MockAudioDecoder()),
         ended_(false) {
-    AudioDecoderConfig audio_config(kCodec,
-                                    kSampleFormat,
-                                    kChannelLayout,
-                                    kInputSamplesPerSecond,
-                                    EmptyExtraData(),
-                                    false);
+    AudioDecoderConfig audio_config(kCodec, kSampleFormat, kChannelLayout,
+                                    kInputSamplesPerSecond, EmptyExtraData(),
+                                    Unencrypted());
     demuxer_stream_.set_audio_decoder_config(audio_config);
 
     // Used to save callbacks and run them at a later time.

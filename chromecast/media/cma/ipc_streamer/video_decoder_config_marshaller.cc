@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "chromecast/media/cma/ipc/media_message.h"
+#include "chromecast/media/cma/ipc_streamer/encryption_scheme_marshaller.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -67,7 +68,7 @@ void VideoDecoderConfigMarshaller::Write(
   SizeMarshaller::Write(config.coded_size(), msg);
   RectMarshaller::Write(config.visible_rect(), msg);
   SizeMarshaller::Write(config.natural_size(), msg);
-  CHECK(msg->WritePod(config.is_encrypted()));
+  EncryptionSchemeMarshaller::Write(config.encryption_scheme(), msg);
   CHECK(msg->WritePod(config.extra_data().size()));
   if (!config.extra_data().empty())
     CHECK(msg->WriteBuffer(&config.extra_data()[0],
@@ -84,8 +85,8 @@ void VideoDecoderConfigMarshaller::Write(
   gfx::Size coded_size;
   gfx::Rect visible_rect;
   gfx::Size natural_size;
-  bool is_encrypted;
   size_t extra_data_size;
+  ::media::EncryptionScheme encryption_scheme;
   std::vector<uint8_t> extra_data;
 
   CHECK(msg->ReadPod(&codec));
@@ -95,7 +96,7 @@ void VideoDecoderConfigMarshaller::Write(
   coded_size = SizeMarshaller::Read(msg);
   visible_rect = RectMarshaller::Read(msg);
   natural_size = SizeMarshaller::Read(msg);
-  CHECK(msg->ReadPod(&is_encrypted));
+  encryption_scheme = EncryptionSchemeMarshaller::Read(msg);
   CHECK(msg->ReadPod(&extra_data_size));
 
   CHECK_GE(codec, ::media::kUnknownVideoCodec);
@@ -115,7 +116,7 @@ void VideoDecoderConfigMarshaller::Write(
   return ::media::VideoDecoderConfig(
       codec, profile, format, color_space,
       coded_size, visible_rect, natural_size,
-      extra_data, is_encrypted);
+      extra_data, encryption_scheme);
 }
 
 }  // namespace media

@@ -47,7 +47,6 @@ MediaPipelineBackend::AudioDecoder* InitializeBackend(
   audio_config.bytes_per_channel = audio_params.bits_per_sample() / 8;
   audio_config.channel_number = audio_params.channels();
   audio_config.samples_per_second = audio_params.sample_rate();
-  audio_config.is_encrypted = false;
 
   if (!decoder->SetConfig(audio_config))
     return nullptr;

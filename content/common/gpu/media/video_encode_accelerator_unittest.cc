@@ -670,11 +670,13 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   if (IsVP8(profile_))
     config.Initialize(media::kCodecVP8, media::VP8PROFILE_ANY, kInputFormat,
                       media::COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
-                      natural_size, media::EmptyExtraData(), false);
+                      natural_size, media::EmptyExtraData(),
+                      media::Unencrypted());
   else if (IsH264(profile_))
     config.Initialize(media::kCodecH264, media::H264PROFILE_MAIN, kInputFormat,
                       media::COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
-                      natural_size, media::EmptyExtraData(), false);
+                      natural_size, media::EmptyExtraData(),
+                      media::Unencrypted());
   else
     LOG_ASSERT(0) << "Invalid profile " << profile_;
 

@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media.h"
+#include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_common.h"
@@ -134,7 +135,7 @@ TEST_F(FFmpegCommonTest, OpusAudioDecoderConfig) {
   context.sample_rate = 44100;
 
   AudioDecoderConfig decoder_config;
-  ASSERT_TRUE(AVCodecContextToAudioDecoderConfig(&context, false,
+  ASSERT_TRUE(AVCodecContextToAudioDecoderConfig(&context, Unencrypted(),
                                                  &decoder_config));
   EXPECT_EQ(48000, decoder_config.samples_per_second());
 }

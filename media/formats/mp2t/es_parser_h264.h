@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <list>
 #include <utility>
 
 #include "base/callback.h"
@@ -21,6 +20,7 @@
 #include "media/formats/mp2t/es_parser.h"
 
 namespace media {
+class EncryptionScheme;
 class H264Parser;
 struct H264SPS;
 class OffsetByteQueue;
@@ -70,7 +70,8 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
 
   // Update the video decoder config based on an H264 SPS.
   // Return true if successful.
-  bool UpdateVideoDecoderConfig(const H264SPS* sps);
+  bool UpdateVideoDecoderConfig(const H264SPS* sps,
+                                const EncryptionScheme& scheme);
 
   EsAdapterVideo es_adapter_;
 

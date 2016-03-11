@@ -194,7 +194,7 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
 
     AudioDecoderConfig config;
     ASSERT_TRUE(AVCodecContextToAudioDecoderConfig(
-        reader_->codec_context_for_testing(), false, &config));
+        reader_->codec_context_for_testing(), Unencrypted(), &config));
 
     EXPECT_EQ(GetParam().codec, config.codec());
     EXPECT_EQ(GetParam().samples_per_second, config.samples_per_second());
@@ -433,14 +433,9 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithNoCodecDelay) {
       kOpusExtraData,
       kOpusExtraData + arraysize(kOpusExtraData));
   AudioDecoderConfig decoder_config;
-  decoder_config.Initialize(kCodecOpus,
-                            kSampleFormatF32,
-                            CHANNEL_LAYOUT_STEREO,
-                            48000,
-                            extra_data,
-                            false,
-                            base::TimeDelta::FromMilliseconds(80),
-                            0);
+  decoder_config.Initialize(kCodecOpus, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
+                            48000, extra_data, Unencrypted(),
+                            base::TimeDelta::FromMilliseconds(80), 0);
   InitializeDecoder(decoder_config);
 }
 
@@ -451,13 +446,8 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithBadCodecDelay) {
       kOpusExtraData + arraysize(kOpusExtraData));
   AudioDecoderConfig decoder_config;
   decoder_config.Initialize(
-      kCodecOpus,
-      kSampleFormatF32,
-      CHANNEL_LAYOUT_STEREO,
-      48000,
-      extra_data,
-      false,
-      base::TimeDelta::FromMilliseconds(80),
+      kCodecOpus, kSampleFormatF32, CHANNEL_LAYOUT_STEREO, 48000, extra_data,
+      Unencrypted(), base::TimeDelta::FromMilliseconds(80),
       // Use a different codec delay than in the extradata.
       100);
   InitializeDecoderWithResult(decoder_config, true);

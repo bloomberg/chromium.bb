@@ -95,14 +95,9 @@ class SourceBufferStreamTest : public testing::Test {
 
   void SetAudioStream() {
     video_config_ = TestVideoConfig::Invalid();
-    audio_config_.Initialize(kCodecVorbis,
-                             kSampleFormatPlanarF32,
-                             CHANNEL_LAYOUT_STEREO,
-                             1000,
-                             EmptyExtraData(),
-                             false,
-                             base::TimeDelta(),
-                             0);
+    audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
+                             CHANNEL_LAYOUT_STEREO, 1000, EmptyExtraData(),
+                             Unencrypted(), base::TimeDelta(), 0);
     stream_.reset(new SourceBufferStream(audio_config_, media_log_, true));
 
     // Equivalent to 2ms per frame.
@@ -3653,7 +3648,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 // Test all the valid same timestamp cases for audio.
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
-                            44100, EmptyExtraData(), false);
+                            44100, EmptyExtraData(), Unencrypted());
   stream_.reset(new SourceBufferStream(config, media_log_, true));
   Seek(0);
   NewCodedFrameGroupAppend("0K 0K 30K 30 60 60");
@@ -3664,7 +3659,7 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Audio_SingleAppend_Warning) {
   EXPECT_MEDIA_LOG(ContainsSameTimestampAt30MillisecondsLog());
 
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
-                            44100, EmptyExtraData(), false);
+                            44100, EmptyExtraData(), Unencrypted());
   stream_.reset(new SourceBufferStream(config, media_log_, true));
   Seek(0);
 
@@ -4229,7 +4224,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_ConfigChange) {
 
   AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarF32,
                                 CHANNEL_LAYOUT_MONO, 1000, EmptyExtraData(),
-                                false);
+                                Unencrypted());
   ASSERT_NE(new_config.channel_layout(), audio_config_.channel_layout());
 
   Seek(0);
@@ -4270,8 +4265,8 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
 
   video_config_ = TestVideoConfig::Invalid();
   audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
-                           CHANNEL_LAYOUT_STEREO, 4000, EmptyExtraData(), false,
-                           base::TimeDelta(), 0);
+                           CHANNEL_LAYOUT_STEREO, 4000, EmptyExtraData(),
+                           Unencrypted(), base::TimeDelta(), 0);
   stream_.reset(new SourceBufferStream(audio_config_, media_log_, true));
   // Equivalent to 0.5ms per frame.
   SetStreamInfo(2000, 2000);

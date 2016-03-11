@@ -35,6 +35,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/video_decoder_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,7 +69,7 @@ VideoConfig DefaultVideoConfig() {
   default_config.codec = kCodecH264;
   default_config.profile = kH264Main;
   default_config.additional_config = nullptr;
-  default_config.is_encrypted = false;
+  default_config.encryption_scheme = Unencrypted();
   return default_config;
 }
 
@@ -564,7 +565,7 @@ scoped_ptr<BufferFeeder> BufferFeeder::LoadVideo(MediaPipelineBackend* backend,
     video_config.codec = kCodecH264;
     video_config.profile = kH264Main;
     video_config.additional_config = nullptr;
-    video_config.is_encrypted = false;
+    video_config.encryption_scheme = Unencrypted();
   } else {
     base::FilePath file_path = GetTestDataFilePath(filename);
     DemuxResult demux_result = FFmpegDemuxForTest(file_path, false /* audio */);

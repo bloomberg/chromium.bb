@@ -82,7 +82,7 @@ void MockFrameProvider::DoRead(const ReadCB& read_cb) {
         ::media::kCodecH264, ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
         ::media::PIXEL_FORMAT_YV12, ::media::COLOR_SPACE_UNSPECIFIED,
         coded_size, visible_rect, natural_size, ::media::EmptyExtraData(),
-        false);
+        ::media::Unencrypted());
 
     audio_config = ::media::AudioDecoderConfig(
       ::media::kCodecAAC,
@@ -90,7 +90,7 @@ void MockFrameProvider::DoRead(const ReadCB& read_cb) {
       ::media::CHANNEL_LAYOUT_STEREO,
       44100,
       ::media::EmptyExtraData(),
-      false);
+      ::media::Unencrypted());
   }
 
   read_cb.Run(buffer, audio_config, video_config);
