@@ -56,6 +56,10 @@ class PowerToughAdCases(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'power.tough_ad_cases'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser) # http://crbug.com/593973
+
 
 @benchmark.Enabled('android')
 @benchmark.Disabled('all')
