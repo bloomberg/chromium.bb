@@ -625,7 +625,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     return VideoFrameExternalResources();
 
   VideoFrameExternalResources external_resources;
-  external_resources.read_lock_fences_enabled = true;
+  if (video_frame->metadata()->IsTrue(
+          media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED)) {
+    external_resources.read_lock_fences_enabled = true;
+  }
 
   external_resources.type = ResourceTypeForVideoFrame(video_frame.get());
   if (external_resources.type == VideoFrameExternalResources::NONE) {

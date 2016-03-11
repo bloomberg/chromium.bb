@@ -94,6 +94,11 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // measurements would be used as feedback.
     RESOURCE_UTILIZATION,
 
+    // Sources of VideoFrames use this marker to indicate that an instance of
+    // VideoFrameExternalResources produced from the associated video frame
+    // should use read lock fences.
+    READ_LOCK_FENCES_ENABLED,
+
     NUM_KEYS
   };
 

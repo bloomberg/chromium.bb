@@ -637,6 +637,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
                                     render_time);
   }
 
+  frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
+                                true);
+
   frame_ready_cb.Run(frame);
 }
 
