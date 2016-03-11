@@ -181,19 +181,10 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   attribs_for_gles2.Serialize(&attribs);
 
   // Create a proxy to a command buffer in the GPU process.
-  if (surface_handle_ != gpu::kNullSurfaceHandle) {
-    command_buffer_ = host_->CreateViewCommandBuffer(
-        surface_handle_, share_group_command_buffer,
-        GpuChannelHost::kDefaultStreamId,
-        GpuChannelHost::kDefaultStreamPriority, attribs, active_url_,
-        gpu_preference_);
-  } else {
-    command_buffer_ = host_->CreateOffscreenCommandBuffer(
-        gfx::Size(1, 1), share_group_command_buffer,
-        GpuChannelHost::kDefaultStreamId,
-        GpuChannelHost::kDefaultStreamPriority, attribs, active_url_,
-        gpu_preference_);
-  }
+  command_buffer_ = host_->CreateCommandBuffer(
+      surface_handle_, gfx::Size(), share_group_command_buffer,
+      GpuChannelHost::kDefaultStreamId, GpuChannelHost::kDefaultStreamPriority,
+      attribs, active_url_, gpu_preference_);
 
   if (!command_buffer_) {
     DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";

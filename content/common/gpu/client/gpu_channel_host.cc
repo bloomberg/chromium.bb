@@ -189,15 +189,15 @@ void GpuChannelHost::InternalFlush(StreamFlushInfo* flush_info) {
   flush_info->flushed_stream_flush_id = flush_info->flush_id;
 }
 
-scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
+scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
     gpu::SurfaceHandle surface_handle,
+    const gfx::Size& size,
     CommandBufferProxyImpl* share_group,
     int32_t stream_id,
     GpuStreamPriority stream_priority,
     const std::vector<int32_t>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
-  DCHECK_NE(gpu::kNullSurfaceHandle, surface_handle);
   DCHECK(!share_group || (stream_id == share_group->stream_id()));
   TRACE_EVENT1("gpu", "GpuChannelHost::CreateViewCommandBuffer",
                "surface_handle", surface_handle);
@@ -216,7 +216,7 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "125248 BrowserGpuChannelHostFactory::CreateViewCommandBuffer"));
+          "125248 GpuChannelHost::CreateCommandBuffer"));
 
   // We're blocking the UI thread, which is generally undesirable.
   // In this case we need to wait for this before we can show any UI /anyway/,
@@ -224,57 +224,14 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateViewCommandBuffer(
   // TODO(piman): Make this asynchronous (http://crbug.com/125248).
 
   bool succeeded = false;
-  if (!Send(new GpuChannelMsg_CreateViewCommandBuffer(
-          surface_handle, init_params, route_id, &succeeded))) {
-    LOG(ERROR) << "Failed to send GpuChannelMsg_CreateViewCommandBuffer.";
+  if (!Send(new GpuChannelMsg_CreateCommandBuffer(
+          surface_handle, size, init_params, route_id, &succeeded))) {
+    LOG(ERROR) << "Failed to send GpuChannelMsg_CreateCommandBuffer.";
     return nullptr;
   }
 
   if (!succeeded) {
-    LOG(ERROR)
-        << "GpuChannelMsg_CreateOffscreenCommandBuffer returned failure.";
-    return nullptr;
-  }
-
-  scoped_ptr<CommandBufferProxyImpl> command_buffer =
-      make_scoped_ptr(new CommandBufferProxyImpl(this, route_id, stream_id));
-  AddRoute(route_id, command_buffer->AsWeakPtr());
-
-  return command_buffer;
-}
-
-scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateOffscreenCommandBuffer(
-    const gfx::Size& size,
-    CommandBufferProxyImpl* share_group,
-    int32_t stream_id,
-    GpuStreamPriority stream_priority,
-    const std::vector<int32_t>& attribs,
-    const GURL& active_url,
-    gfx::GpuPreference gpu_preference) {
-  DCHECK(!share_group || (stream_id == share_group->stream_id()));
-  TRACE_EVENT0("gpu", "GpuChannelHost::CreateOffscreenCommandBuffer");
-
-  GPUCreateCommandBufferConfig init_params;
-  init_params.share_group_id =
-      share_group ? share_group->route_id() : MSG_ROUTING_NONE;
-  init_params.stream_id = stream_id;
-  init_params.stream_priority = stream_priority;
-  init_params.attribs = attribs;
-  init_params.active_url = active_url;
-  init_params.gpu_preference = gpu_preference;
-
-  int32_t route_id = GenerateRouteID();
-
-  bool succeeded = false;
-  if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(
-          size, init_params, route_id, &succeeded))) {
-    LOG(ERROR) << "Failed to send GpuChannelMsg_CreateOffscreenCommandBuffer.";
-    return nullptr;
-  }
-
-  if (!succeeded) {
-    LOG(ERROR)
-        << "GpuChannelMsg_CreateOffscreenCommandBuffer returned failure.";
+    LOG(ERROR) << "GpuChannelMsg_CreateCommandBuffer returned failure.";
     return nullptr;
   }
 

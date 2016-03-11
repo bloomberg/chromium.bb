@@ -91,7 +91,6 @@ class GpuCommandBufferStub
       gfx::GpuPreference gpu_preference,
       int32_t stream_id,
       int32_t route_id,
-      bool offscreen,
       GpuWatchdog* watchdog,
       const GURL& active_url);
 
@@ -253,7 +252,6 @@ class GpuCommandBufferStub
   const gpu::CommandBufferId command_buffer_id_;
   const int32_t stream_id_;
   const int32_t route_id_;
-  const bool offscreen_;
   uint32_t last_flush_count_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;

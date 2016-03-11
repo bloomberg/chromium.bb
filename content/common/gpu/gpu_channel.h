@@ -209,22 +209,13 @@ class CONTENT_EXPORT GpuChannel
   void RemoveRouteFromStream(int32_t route_id);
 
   // Message handlers for control messages.
-  void OnCreateViewCommandBuffer(
-      gpu::SurfaceHandle surface_handle,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32_t route_id,
-      bool* succeeded);
-  void OnCreateOffscreenCommandBuffer(
-      const gfx::Size& size,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32_t route_id,
-      bool* succeeded);
+  void OnCreateCommandBuffer(gpu::SurfaceHandle surface_handle,
+                             const gfx::Size& size,
+                             const GPUCreateCommandBufferConfig& init_params,
+                             int32_t route_id,
+                             bool* succeeded);
   void OnDestroyCommandBuffer(int32_t route_id);
 
-  bool CreateCommandBuffer(gpu::SurfaceHandle surface_handle,
-                           const gfx::Size& size,
-                           const GPUCreateCommandBufferConfig& init_params,
-                           int32_t route_id);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they

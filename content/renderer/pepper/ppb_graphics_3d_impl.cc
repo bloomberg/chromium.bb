@@ -252,7 +252,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   gfx::Size surface_size;
   std::vector<int32_t> attribs;
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-  // TODO(alokp): Change GpuChannelHost::CreateOffscreenCommandBuffer()
+  // TODO(alokp): Change GpuChannelHost::CreateCommandBuffer()
   // interface to accept width and height in the attrib_list so that
   // we do not need to filter for width and height here.
   if (attrib_list) {
@@ -290,10 +290,10 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
     share_buffer = share_graphics->GetCommandBufferProxy();
   }
 
-  command_buffer_ = channel_->CreateOffscreenCommandBuffer(
-      surface_size, share_buffer, GpuChannelHost::kDefaultStreamId,
-      GpuChannelHost::kDefaultStreamPriority, attribs, GURL::EmptyGURL(),
-      gpu_preference);
+  command_buffer_ = channel_->CreateCommandBuffer(
+      gpu::kNullSurfaceHandle, surface_size, share_buffer,
+      GpuChannelHost::kDefaultStreamId, GpuChannelHost::kDefaultStreamPriority,
+      attribs, GURL::EmptyGURL(), gpu_preference);
   if (!command_buffer_)
     return false;
   if (!command_buffer_->Initialize())

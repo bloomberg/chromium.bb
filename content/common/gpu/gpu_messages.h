@@ -173,20 +173,16 @@ IPC_STRUCT_TRAITS_END()
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.
 
-// Tells the GPU process to create a new command buffer that renders directly
-// to a native view. A corresponding GpuCommandBufferStub is created.
-IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateViewCommandBuffer,
-                            gpu::SurfaceHandle, /* surface_handle */
-                            GPUCreateCommandBufferConfig, /* init_params */
+// Tells the GPU process to create a new command buffer. A corresponding
+// GpuCommandBufferStub is created.  if |surface_handle| is non-null, |size| is
+// ignored, and it will render directly to the native surface (only the browser
+// process is allowed to create those). Otherwise it will create an offscreen
+// backbuffer of dimensions |size|.
+IPC_SYNC_MESSAGE_CONTROL4_1(GpuChannelMsg_CreateCommandBuffer,
+                            gpu::SurfaceHandle /* surface_handle */,
+                            gfx::Size /* size */,
+                            GPUCreateCommandBufferConfig /* init_params */,
                             int32_t /* route_id */,
-                            bool /* succeeded */)
-
-// Tells the GPU process to create a new command buffer that renders to an
-// offscreen frame buffer.
-IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
-                            gfx::Size,                    /* size */
-                            GPUCreateCommandBufferConfig, /* init_params */
-                            int32_t,                      /* route_id */
                             bool /* succeeded */)
 
 // The CommandBufferProxy sends this to the GpuCommandBufferStub in its

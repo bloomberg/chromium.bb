@@ -113,17 +113,8 @@ class GpuChannelHost : public IPC::Sender,
   void FlushPendingStream(int32_t stream_id);
 
   // Create and connect to a command buffer in the GPU process.
-  scoped_ptr<CommandBufferProxyImpl> CreateViewCommandBuffer(
+  scoped_ptr<CommandBufferProxyImpl> CreateCommandBuffer(
       gpu::SurfaceHandle surface_handle,
-      CommandBufferProxyImpl* share_group,
-      int32_t stream_id,
-      GpuStreamPriority stream_priority,
-      const std::vector<int32_t>& attribs,
-      const GURL& active_url,
-      gfx::GpuPreference gpu_preference);
-
-  // Create and connect to a command buffer in the GPU process.
-  scoped_ptr<CommandBufferProxyImpl> CreateOffscreenCommandBuffer(
       const gfx::Size& size,
       CommandBufferProxyImpl* share_group,
       int32_t stream_id,

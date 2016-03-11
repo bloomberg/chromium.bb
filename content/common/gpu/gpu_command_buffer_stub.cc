@@ -177,7 +177,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     gfx::GpuPreference gpu_preference,
     int32_t stream_id,
     int32_t route_id,
-    bool offscreen,
     GpuWatchdog* watchdog,
     const GURL& active_url)
     : channel_(channel),
@@ -193,7 +192,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       command_buffer_id_(GetCommandBufferID(channel->client_id(), route_id)),
       stream_id_(stream_id),
       route_id_(route_id),
-      offscreen_(offscreen),
       last_flush_count_(0),
       surface_format_(gfx::GLSurface::SURFACE_DEFAULT),
       watchdog_(watchdog),
@@ -249,7 +247,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     use_virtualized_gl_context_ = false;
 #endif
 
-  if (offscreen && initial_size_.IsEmpty()) {
+  if ((surface_handle_ == gpu::kNullSurfaceHandle) && initial_size_.IsEmpty()) {
     // If we're an offscreen surface with zero width and/or height, set to a
     // non-zero size so that we have a complete framebuffer for operations like
     // glClear.
@@ -612,7 +610,8 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   // Initialize the decoder with either the view or pbuffer GLContext.
-  if (!decoder_->Initialize(surface_, context, offscreen_, initial_size_,
+  bool offscreen = (surface_handle_ == gpu::kNullSurfaceHandle);
+  if (!decoder_->Initialize(surface_, context, offscreen, initial_size_,
                             disallowed_features_, requested_attribs_)) {
     DLOG(ERROR) << "Failed to initialize decoder.";
     OnInitializeFailed(reply_message);

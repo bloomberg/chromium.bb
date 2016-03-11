@@ -756,10 +756,8 @@ void GpuChannel::RemoveRoute(int32_t route_id) {
 bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateViewCommandBuffer,
-                        OnCreateViewCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateOffscreenCommandBuffer,
-                        OnCreateOffscreenCommandBuffer)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateCommandBuffer,
+                        OnCreateCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -904,68 +902,52 @@ const GpuCommandBufferStub* GpuChannel::GetOneStub() const {
 }
 #endif
 
-void GpuChannel::OnCreateViewCommandBuffer(
+void GpuChannel::OnCreateCommandBuffer(
     gpu::SurfaceHandle surface_handle,
+    const gfx::Size& size,
     const GPUCreateCommandBufferConfig& init_params,
     int32_t route_id,
     bool* succeeded) {
-  TRACE_EVENT1("gpu", "GpuChannel::CreateViewCommandBuffer", "route_id",
-               route_id);
+  TRACE_EVENT2("gpu", "GpuChannel::OnCreateCommandBuffer", "route_id", route_id,
+               "offscreen", (surface_handle == gpu::kNullSurfaceHandle));
   *succeeded = false;
-  if (allow_view_command_buffers_ &&
-      surface_handle != gpu::kNullSurfaceHandle) {
-    *succeeded =
-        CreateCommandBuffer(surface_handle, gfx::Size(), init_params, route_id);
+  if (surface_handle != gpu::kNullSurfaceHandle &&
+      !allow_view_command_buffers_) {
+    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): attempt to create a "
+                   "view context on a non-priviledged channel";
+    return;
   }
-}
 
-void GpuChannel::OnCreateOffscreenCommandBuffer(
-    const gfx::Size& size,
-    const GPUCreateCommandBufferConfig& init_params,
-    int32_t route_id,
-    bool* succeeded) {
-  TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer", "route_id",
-               route_id);
-  *succeeded =
-      CreateCommandBuffer(gpu::kNullSurfaceHandle, size, init_params, route_id);
-}
-
-bool GpuChannel::CreateCommandBuffer(
-    gpu::SurfaceHandle surface_handle,
-    const gfx::Size& size,
-    const GPUCreateCommandBufferConfig& init_params,
-    int32_t route_id) {
   int32_t share_group_id = init_params.share_group_id;
   GpuCommandBufferStub* share_group = stubs_.get(share_group_id);
 
   if (!share_group && share_group_id != MSG_ROUTING_NONE) {
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): invalid share group id";
-    return false;
+    DLOG(ERROR)
+        << "GpuChannel::OnCreateCommandBuffer(): invalid share group id";
+    return;
   }
 
   int32_t stream_id = init_params.stream_id;
   if (share_group && stream_id != share_group->stream_id()) {
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): stream id does not "
+    DLOG(ERROR) << "GpuChannel::OnCreateCommandBuffer(): stream id does not "
                    "match share group stream id";
-    return false;
+    return;
   }
 
   GpuStreamPriority stream_priority = init_params.stream_priority;
   if (!allow_real_time_streams_ &&
       stream_priority == GpuStreamPriority::REAL_TIME) {
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): real time stream "
+    DLOG(ERROR) << "GpuChannel::OnCreateCommandBuffer(): real time stream "
                    "priority not allowed";
-    return false;
+    return;
   }
 
-  bool offscreen = (surface_handle == gpu::kNullSurfaceHandle);
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this, sync_point_manager_, task_runner_.get(), share_group,
       surface_handle, mailbox_manager_.get(), preempted_flag_.get(),
       subscription_ref_set_.get(), pending_valuebuffer_state_.get(), size,
       disallowed_features_, init_params.attribs, init_params.gpu_preference,
-      init_params.stream_id, route_id, offscreen, watchdog_,
-      init_params.active_url));
+      init_params.stream_id, route_id, watchdog_, init_params.active_url));
 
   scoped_refptr<GpuChannelMessageQueue> queue = LookupStream(stream_id);
   if (!queue)
@@ -973,12 +955,12 @@ bool GpuChannel::CreateCommandBuffer(
 
   if (!AddRoute(route_id, stream_id, stub.get())) {
     DestroyStreamIfNecessary(queue);
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): failed to add route";
-    return false;
+    DLOG(ERROR) << "GpuChannel::OnCreateCommandBuffer(): failed to add route";
+    return;
   }
 
   stubs_.set(route_id, std::move(stub));
-  return true;
+  *succeeded = true;
 }
 
 void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {

@@ -85,9 +85,9 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateViewCommandBuffer(
-                    surface_handle, init_params, kRouteId, &succeeded));
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             surface_handle, gfx::Size(), init_params, kRouteId,
+                             &succeeded));
   EXPECT_TRUE(succeeded);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
@@ -113,9 +113,9 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateViewCommandBuffer(
-                    surface_handle, init_params, kRouteId, &succeeded));
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             surface_handle, gfx::Size(), init_params, kRouteId,
+                             &succeeded));
   EXPECT_FALSE(succeeded);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
@@ -136,9 +136,9 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateOffscreenCommandBuffer(
-                    gfx::Size(1, 1), init_params, kRouteId, &succeeded));
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             gpu::kNullSurfaceHandle, gfx::Size(1, 1),
+                             init_params, kRouteId, &succeeded));
   EXPECT_TRUE(succeeded);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
@@ -161,9 +161,9 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateOffscreenCommandBuffer(
-                    gfx::Size(1, 1), init_params, kRouteId1, &succeeded));
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             gpu::kNullSurfaceHandle, gfx::Size(1, 1),
+                             init_params, kRouteId1, &succeeded));
   EXPECT_TRUE(succeeded);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId1);
@@ -180,9 +180,9 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateOffscreenCommandBuffer(
-                    gfx::Size(1, 1), init_params, kRouteId2, &succeeded));
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             gpu::kNullSurfaceHandle, gfx::Size(1, 1),
+                             init_params, kRouteId2, &succeeded));
   EXPECT_FALSE(succeeded);
 
   stub = channel->LookupCommandBuffer(kRouteId2);
@@ -206,9 +206,9 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateOffscreenCommandBuffer(
-                    gfx::Size(1, 1), init_params, kRouteId1, &succeeded));
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             gpu::kNullSurfaceHandle, gfx::Size(1, 1),
+                             init_params, kRouteId1, &succeeded));
   EXPECT_TRUE(succeeded);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId1);
@@ -230,9 +230,9 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateOffscreenCommandBuffer(
-                    gfx::Size(1, 1), init_params, kRouteId2, &succeeded));
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             gpu::kNullSurfaceHandle, gfx::Size(1, 1),
+                             init_params, kRouteId2, &succeeded));
   EXPECT_TRUE(succeeded);
 
   stub = channel->LookupCommandBuffer(kRouteId2);
@@ -257,9 +257,9 @@ TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateOffscreenCommandBuffer(
-                    gfx::Size(1, 1), init_params, kRouteId, &succeeded));
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             gpu::kNullSurfaceHandle, gfx::Size(1, 1),
+                             init_params, kRouteId, &succeeded));
   EXPECT_FALSE(succeeded);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
@@ -284,9 +284,9 @@ TEST_F(GpuChannelTest, RealTimeStreamsAllowed) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool succeeded = false;
-  HandleMessage(channel,
-                new GpuChannelMsg_CreateOffscreenCommandBuffer(
-                    gfx::Size(1, 1), init_params, kRouteId, &succeeded));
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             gpu::kNullSurfaceHandle, gfx::Size(1, 1),
+                             init_params, kRouteId, &succeeded));
   EXPECT_TRUE(succeeded);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
