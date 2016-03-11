@@ -18,11 +18,7 @@ namespace blink {
 
 static const char* s_avoidOptimization = nullptr;
 
-uintptr_t StackFrameDepth::s_stackFrameLimit = 0;
-#if ENABLE(ASSERT)
-bool StackFrameDepth::s_isEnabled = false;
-bool StackFrameDepth::s_isUsingFallbackStackSize = false;
-#endif
+uintptr_t StackFrameDepth::s_stackFrameLimit = kMinimumStackLimit;
 
 // NEVER_INLINE ensures that |dummy| array on configureLimit() is not optimized away,
 // and the stack frame base register is adjusted |kSafeStackFrameSize|.
@@ -40,22 +36,11 @@ uintptr_t StackFrameDepth::getFallbackStackLimit()
 
     // Check that the stack frame can be used.
     dummy[sizeof(dummy) - 1] = 0;
-#if ENABLE(ASSERT)
-    // Use a larger stack limit for what's acceptable if the platform
-    // thread ends up using the fallback size to decide if switching to
-    // lazy marking is in order.
-    s_isUsingFallbackStackSize = true;
-#endif
     return currentStackFrameBaseOnCallee(dummy);
 }
 
 void StackFrameDepth::enableStackLimit()
 {
-#if ENABLE(ASSERT)
-    s_isEnabled = true;
-    s_isUsingFallbackStackSize = false;
-#endif
-
     // All supported platforms will currently return a non-zero estimate,
     // except if ASan is enabled.
     size_t stackSize = getUnderestimatedStackSize();
@@ -72,11 +57,9 @@ void StackFrameDepth::enableStackLimit()
     RELEASE_ASSERT(stackBase > reinterpret_cast<Address>(stackRoom));
     s_stackFrameLimit = reinterpret_cast<uintptr_t>(stackBase - stackRoom);
 
-#if ENABLE(ASSERT)
     // If current stack use is already exceeding estimated limit, mark as disabled.
     if (!isSafeToRecurse())
-        s_isEnabled = false;
-#endif
+        disableStackLimit();
 }
 
 size_t StackFrameDepth::getUnderestimatedStackSize()
