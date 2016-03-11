@@ -21,6 +21,9 @@ struct GPUMemoryUmaStats;
 
 class GpuChannelManagerDelegate {
  public:
+  // Sets the currently active URL.  Use GURL() to clear the URL.
+  virtual void SetActiveURL(const GURL& url) = 0;
+
   // Tells the delegate that a context has subscribed to a new target and
   // the browser should start sending the corresponding information
   virtual void AddSubscription(int32_t client_id, unsigned int target) = 0;

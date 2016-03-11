@@ -9,12 +9,15 @@
 #include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ipc/ipc_test_sink.h"
+#include "url/gurl.h"
 
 namespace content {
 
 TestGpuChannelManagerDelegate::TestGpuChannelManagerDelegate() {}
 
 TestGpuChannelManagerDelegate::~TestGpuChannelManagerDelegate() {}
+
+void TestGpuChannelManagerDelegate::SetActiveURL(const GURL& url) {}
 
 void TestGpuChannelManagerDelegate::AddSubscription(int32_t client_id,
                                                     unsigned int target) {}

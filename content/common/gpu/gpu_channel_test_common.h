@@ -12,6 +12,8 @@
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class GURL;
+
 namespace base {
 class TestSimpleTaskRunner;
 }  // namespace base
@@ -31,6 +33,7 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
 
  private:
   // GpuChannelManagerDelegate implementation:
+  void SetActiveURL(const GURL& url) override;
   void AddSubscription(int32_t client_id, unsigned int target) override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
   void DidDestroyChannel(int client_id) override;

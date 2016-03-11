@@ -34,6 +34,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
+#include "url/gurl.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/gpu_platform_support.h"
@@ -291,6 +292,10 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
     return true;
 
   return false;
+}
+
+void GpuChildThread::SetActiveURL(const GURL& url) {
+  GetContentClient()->SetActiveURL(url);
 }
 
 void GpuChildThread::AddSubscription(int32_t client_id, unsigned int target) {

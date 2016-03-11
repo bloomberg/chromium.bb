@@ -78,6 +78,7 @@ class GpuChildThread : public ChildThreadImpl,
   bool OnMessageReceived(const IPC::Message& msg) override;
 
   // GpuChannelManagerDelegate implementation.
+  void SetActiveURL(const GURL& url) override;
   void AddSubscription(int32_t client_id, unsigned int target) override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
   void DidDestroyChannel(int client_id) override;

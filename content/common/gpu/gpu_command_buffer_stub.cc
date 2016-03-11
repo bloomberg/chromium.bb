@@ -23,7 +23,6 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_watchdog.h"
 #include "content/common/gpu/image_transport_surface.h"
-#include "content/public/common/content_client.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -104,7 +103,7 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
 
 // FastSetActiveURL will shortcut the expensive call to SetActiveURL when the
 // url_hash matches.
-void FastSetActiveURL(const GURL& url, size_t url_hash) {
+void FastSetActiveURL(const GURL& url, size_t url_hash, GpuChannel* channel) {
   // Leave the previously set URL in the empty case -- empty URLs are given by
   // BlinkPlatformImpl::createOffscreenGraphicsContext3D. Hopefully the
   // onscreen context URL was set previously and will show up even when a crash
@@ -114,7 +113,9 @@ void FastSetActiveURL(const GURL& url, size_t url_hash) {
   static size_t g_last_url_hash = 0;
   if (url_hash != g_last_url_hash) {
     g_last_url_hash = url_hash;
-    GetContentClient()->SetActiveURL(url);
+    DCHECK(channel && channel->gpu_channel_manager() &&
+           channel->gpu_channel_manager()->delegate());
+    channel->gpu_channel_manager()->delegate()->SetActiveURL(url);
   }
 }
 
@@ -201,7 +202,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       preemption_flag_(preempt_by_flag),
       active_url_(active_url) {
   active_url_hash_ = base::Hash(active_url.possibly_invalid_spec());
-  FastSetActiveURL(active_url_, active_url_hash_);
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
 
   gpu::gles2::ContextCreationAttribHelper attrib_parser;
   attrib_parser.Parse(requested_attribs_);
@@ -269,7 +270,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                "GPUTask",
                "data",
                DevToolsChannelData::CreateForChannel(channel()));
-  FastSetActiveURL(active_url_, active_url_hash_);
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
 
   bool have_context = false;
   // Ensure the appropriate GL context is current before handling any IPC
@@ -357,7 +358,7 @@ void GpuCommandBufferStub::PollWork() {
 void GpuCommandBufferStub::PerformWork() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::PerformWork");
 
-  FastSetActiveURL(active_url_, active_url_hash_);
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
   if (decoder_.get() && !MakeCurrent())
     return;
 
@@ -862,7 +863,7 @@ void GpuCommandBufferStub::OnCommandProcessed() {
 void GpuCommandBufferStub::ReportState() { command_buffer_->UpdateState(); }
 
 void GpuCommandBufferStub::PutChanged() {
-  FastSetActiveURL(active_url_, active_url_hash_);
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
   scheduler_->PutChanged();
 }
 
