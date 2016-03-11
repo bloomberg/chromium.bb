@@ -48,6 +48,11 @@ FileType.types = [
     pattern: /\.tiff?$/i,
     mimePattern: /image\/tiff/i
   },
+  {
+    type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'SVG',
+    pattern: /\.svg$/i,
+    mimePattern: /image\/svg\+xml/i
+  },
 
   // Raw
   {
