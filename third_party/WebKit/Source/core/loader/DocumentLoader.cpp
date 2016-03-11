@@ -128,7 +128,7 @@ ResourceLoader* DocumentLoader::mainResourceLoader() const
 
 DocumentLoader::~DocumentLoader()
 {
-    ASSERT(!m_frame || !isLoading());
+    ASSERT(!m_frame);
     ASSERT(!m_mainResource);
     ASSERT(!m_applicationCacheHost);
 }
@@ -147,13 +147,6 @@ DEFINE_TRACE(DocumentLoader)
 unsigned long DocumentLoader::mainResourceIdentifier() const
 {
     return m_mainResource ? m_mainResource->identifier() : 0;
-}
-
-Document* DocumentLoader::document() const
-{
-    if (m_frame && m_frame->loader().documentLoader() == this)
-        return m_frame->document();
-    return nullptr;
 }
 
 const ResourceRequest& DocumentLoader::originalRequest() const
@@ -237,47 +230,12 @@ const KURL& DocumentLoader::urlForHistory() const
     return unreachableURL().isEmpty() ? url() : unreachableURL();
 }
 
-void DocumentLoader::mainReceivedError(const ResourceError& error)
-{
-    ASSERT(!error.isNull());
-    ASSERT(!m_frame || !m_frame->page()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
-    if (m_applicationCacheHost)
-        m_applicationCacheHost->failedLoadingMainResource();
-    if (!frameLoader())
-        return;
-    m_state = MainResourceDone;
-    frameLoader()->receivedMainResourceError(this, error);
-    clearMainResourceHandle();
-}
-
-// Cancels the data source's pending loads.  Conceptually, a data source only loads
-// one document at a time, but one document may have many related resources.
-// stopLoading will stop all loads initiated by the data source,
-// but not loads initiated by child frames' data sources -- that's the WebFrame's job.
-void DocumentLoader::stopLoading()
-{
-    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame.get());
-    RefPtrWillBeRawPtr<DocumentLoader> protectLoader(this);
-
-    if (isLoading())
-        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
-    m_fetcher->stopFetching();
-}
-
 void DocumentLoader::commitIfReady()
 {
     if (m_state < Committed) {
         m_state = Committed;
         frameLoader()->commitProvisionalLoad();
     }
-}
-
-bool DocumentLoader::isLoading() const
-{
-    if (document() && document()->hasActiveParser())
-        return true;
-
-    return (m_state > NotStarted && m_state < MainResourceDone) || m_fetcher->isFetching();
 }
 
 void DocumentLoader::notifyFinished(Resource* resource)
@@ -292,7 +250,11 @@ void DocumentLoader::notifyFinished(Resource* resource)
         return;
     }
 
-    mainReceivedError(m_mainResource->resourceError());
+    if (m_applicationCacheHost)
+        m_applicationCacheHost->failedLoadingMainResource();
+    m_state = MainResourceDone;
+    frameLoader()->loadFailed(this, m_mainResource->resourceError());
+    clearMainResourceHandle();
 }
 
 void DocumentLoader::finishedLoading(double finishTime)
@@ -338,11 +300,11 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
     RefPtr<SecurityOrigin> redirectingOrigin = SecurityOrigin::create(redirectResponse.url());
     if (!redirectingOrigin->canDisplay(requestURL)) {
         FrameLoader::reportLocalLoadFailed(m_frame, requestURL.getString());
-        cancelMainResourceLoad(ResourceError::cancelledError(requestURL));
+        m_fetcher->stopFetching();
         return;
     }
     if (!frameLoader()->shouldContinueForNavigationPolicy(m_request, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem(), isClientRedirect())) {
-        cancelMainResourceLoad(ResourceError::cancelledError(requestURL));
+        m_fetcher->stopFetching();
         return;
     }
 
@@ -449,7 +411,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
 
     if (!shouldContinueForResponse()) {
         InspectorInstrumentation::continueWithPolicyIgnore(m_frame, this, m_mainResource->identifier(), m_response);
-        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+        m_fetcher->stopFetching();
         return;
     }
 
@@ -507,10 +469,8 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
 
     // This can happen if document.close() is called by an event handler while
     // there's still pending incoming data.
-    if (m_frame && !m_frame->document()->parsing()) {
-        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+    if (m_frame && !m_frame->document()->parsing())
         return;
-    }
 
     if (length)
         m_state = DataReceived;
@@ -574,7 +534,7 @@ void DocumentLoader::processData(const char* data, size_t length)
     // If we are sending data to MediaDocument, we should stop here
     // and cancel the request.
     if (m_frame && m_frame->document()->isMediaDocument())
-        cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
+        m_fetcher->stopFetching();
 }
 
 void DocumentLoader::clearRedirectChain()
@@ -595,7 +555,7 @@ void DocumentLoader::detachFromFrame()
 
     // It never makes sense to have a document loader that is detached from its
     // frame have any loads active, so go ahead and kill all the loads.
-    stopLoading();
+    m_fetcher->stopFetching();
 
     // If that load cancellation triggered another detach, leave.
     // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)
@@ -603,7 +563,6 @@ void DocumentLoader::detachFromFrame()
         return;
 
     m_fetcher->clearContext();
-
     m_applicationCacheHost->detachFromDocumentLoader();
     m_applicationCacheHost.clear();
     WeakIdentifierMap<DocumentLoader>::notifyObjectDestroyed(this);
@@ -634,7 +593,7 @@ bool DocumentLoader::maybeCreateArchive()
     ensureWriter(mainResource->mimeType(), mainResource->url());
 
     // The Document has now been created.
-    document()->enforceSandboxFlags(SandboxAll);
+    m_frame->document()->enforceSandboxFlags(SandboxAll);
 
     commitData(mainResource->data()->data(), mainResource->data()->size());
     return true;
@@ -703,17 +662,6 @@ void DocumentLoader::startLoadingMainResource()
     if (equalIgnoringFragmentIdentifier(m_request.url(), fetchRequest.url()))
         m_request.setURL(fetchRequest.url());
     m_mainResource->addClient(this);
-}
-
-void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
-{
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
-    ResourceError error = resourceError.isNull() ? ResourceError::cancelledError(m_request.url()) : resourceError;
-
-    if (mainResourceLoader())
-        mainResourceLoader()->cancel(error);
-
-    mainReceivedError(error);
 }
 
 void DocumentLoader::endWriting(DocumentWriter* writer)

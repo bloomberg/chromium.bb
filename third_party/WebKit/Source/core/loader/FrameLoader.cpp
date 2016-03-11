@@ -701,12 +701,9 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     ASSERT(!stateObject || frameLoadType == FrameLoadTypeBackForward);
 
     // If we have a provisional request for a different document, a fragment scroll should cancel it.
-    if (m_provisionalDocumentLoader) {
-        m_provisionalDocumentLoader->stopLoading();
-        detachDocumentLoader(m_provisionalDocumentLoader);
-        if (!m_frame->host())
-            return;
-    }
+    detachDocumentLoader(m_provisionalDocumentLoader);
+    if (!m_frame->host())
+        return;
     TemporaryChange<FrameLoadType> loadTypeChange(m_loadType, frameLoadType);
     saveScrollState();
 
@@ -986,8 +983,7 @@ void FrameLoader::stopAllLoaders()
     if (m_inStopAllLoaders)
         return;
 
-    // Calling stopLoading() on the provisional document loader can blow away
-    // the frame from underneath.
+    // Stopping a document loader can blow away the frame from underneath.
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     m_inStopAllLoaders = true;
@@ -998,19 +994,20 @@ void FrameLoader::stopAllLoaders()
     }
 
     m_frame->document()->suppressLoadEvent();
-    // Don't stop loading the provisional loader if it is being protected (i.e.
-    // it is about to be committed) See prepareForCommit() for more details.
-    if (m_provisionalDocumentLoader && !m_protectProvisionalLoader)
-        m_provisionalDocumentLoader->stopLoading();
     if (m_documentLoader)
-        m_documentLoader->stopLoading();
+        m_documentLoader->fetcher()->stopFetching();
     m_frame->document()->cancelParsing();
-
     if (!m_protectProvisionalLoader)
         detachDocumentLoader(m_provisionalDocumentLoader);
 
     m_checkTimer.stop();
     m_frame->navigationScheduler().cancel();
+
+    // It's possible that the above actions won't have stopped loading if load
+    // completion had been blocked on parsing or if we were in the middle of
+    // committing an empty document. In that case, emulate a failed navigation.
+    if (!m_provisionalDocumentLoader && m_documentLoader && m_frame->isLoading())
+        loadFailed(!m_documentLoader->sentDidFinishLoad() ? m_documentLoader.get() : nullptr, ResourceError::cancelledError(m_documentLoader->url()));
 
     m_inStopAllLoaders = false;
 }
@@ -1223,16 +1220,13 @@ void FrameLoader::detach()
     }
 }
 
-void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const ResourceError& error)
+void FrameLoader::loadFailed(DocumentLoader* loader, const ResourceError& error)
 {
     // Retain because the stop may release the last reference to it.
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
     RefPtrWillBeRawPtr<DocumentLoader> protectDocumentLoader(loader);
 
-    // FIXME: We really ought to be able to just check for isCancellation() here, but there are some
-    // ResourceErrors that setIsCancellation() but aren't created by ResourceError::cancelledError().
-    ResourceError c(ResourceError::cancelledError(KURL()));
-    if ((error.errorCode() != c.errorCode() || error.domain() != c.domain()) && m_frame->owner()) {
+    if (!error.isCancellation() && m_frame->owner()) {
         // FIXME: For now, fallback content doesn't work cross process.
         if (m_frame->owner()->isLocal())
             m_frame->deprecatedLocalOwner()->renderFallbackContent();
@@ -1391,11 +1385,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
         return;
 
     m_frame->document()->cancelParsing();
-
-    if (m_provisionalDocumentLoader) {
-        m_provisionalDocumentLoader->stopLoading();
-        detachDocumentLoader(m_provisionalDocumentLoader);
-    }
+    detachDocumentLoader(m_provisionalDocumentLoader);
 
     // beforeunload fired above, and detaching a DocumentLoader can fire
     // events, which can detach this frame.

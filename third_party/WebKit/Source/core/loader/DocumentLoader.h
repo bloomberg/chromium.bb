@@ -93,8 +93,6 @@ public:
 
     void didChangePerformanceTiming();
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource);
-    void stopLoading();
-    bool isLoading() const;
     const ResourceResponse& response() const { return m_response; }
     bool isClientRedirect() const { return m_isClientRedirect; }
     void setIsClientRedirect(bool isClientRedirect) { m_isClientRedirect = isClientRedirect; }
@@ -110,7 +108,6 @@ public:
     void setNavigationType(NavigationType navigationType) { m_navigationType = navigationType; }
 
     void startLoadingMainResource();
-    void cancelMainResourceLoad(const ResourceError&);
 
     void attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver>);
     void acceptDataFromThreadedReceiver(const char* data, int dataLength, int encodedDataLength);
@@ -159,7 +156,6 @@ private:
     void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
     void endWriting(DocumentWriter*);
 
-    Document* document() const;
     FrameLoader* frameLoader() const;
 
     void commitIfReady();
@@ -170,7 +166,6 @@ private:
     bool maybeCreateArchive();
 
     void finishedLoading(double finishTime);
-    void mainReceivedError(const ResourceError&);
     void cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse&);
     void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) final;
     void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) final;
