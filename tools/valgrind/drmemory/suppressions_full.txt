@@ -2128,3 +2128,10 @@ webcore_shared.dll!blink::dataEquivalent<>
 ...
 webcore_shared.dll!blink::Document::updateStyle
 webcore_shared.dll!blink::Document::updateLayoutTree
+
+UNINITIALIZED READ
+name=bug_593594
+blink_platform.dll!qcms_transform_data_rgba_out_lut_sse2
+blink_platform.dll!qcms_transform_data_type
+blink_platform.dll!blink::JPEGImageDecoder::outputScanlines
+blink_platform.dll!blink::JPEGImageReader::decode
