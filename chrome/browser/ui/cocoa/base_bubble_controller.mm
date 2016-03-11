@@ -16,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #include "components/bubble/bubble_controller.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 @interface BaseBubbleController (Private)
 - (void)registerForNotifications;
@@ -68,7 +69,7 @@
   NSRect bounds = [view convertRect:[view bounds] toView:nil];
   NSPoint anchor = NSMakePoint(NSMinX(bounds) + offset.x,
                                NSMinY(bounds) + offset.y);
-  anchor = [window convertBaseToScreen:anchor];
+  anchor = ui::ConvertPointFromWindowToScreen(window, anchor);
   return [self initWithWindowNibPath:nibPath
                         parentWindow:window
                           anchoredAt:anchor];

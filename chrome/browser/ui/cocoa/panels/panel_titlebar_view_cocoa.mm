@@ -14,6 +14,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -418,8 +419,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)dragStarted:(NSPoint)initialMouseLocation {
-  NSPoint initialMouseLocationScreen =
-      [[self window] convertBaseToScreen:initialMouseLocation];
+  NSPoint initialMouseLocationScreen = ui::ConvertPointFromWindowToScreen(
+      [self window], initialMouseLocation);
   [controller_ startDrag:initialMouseLocationScreen];
 }
 
@@ -428,8 +429,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)dragProgress:(NSPoint)mouseLocation {
-  NSPoint mouseLocationScreen =
-      [[self window] convertBaseToScreen:mouseLocation];
+  NSPoint mouseLocationScreen = ui::ConvertPointFromWindowToScreen(
+      [self window], mouseLocation);
   [controller_ drag:mouseLocationScreen];
 }
 
@@ -530,8 +531,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   dragController_.reset([[TestDragController alloc] initWithClient:self]);
   // Convert from Cocoa's screen coordinates to base coordinates since the mouse
   // event takes base (NSWindow) coordinates.
-  NSPoint mouseLocationWindow =
-      [[self window] convertScreenToBase:mouseLocation];
+  NSPoint mouseLocationWindow = ui::ConvertPointFromScreenToWindow(
+      [self window], mouseLocation);
   NSEvent* event = MakeMouseEvent(NSLeftMouseDown, mouseLocationWindow,
       modifierFlags, 0);
   [self mouseDown:event];
@@ -545,8 +546,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 - (void)dragTitlebar:(NSPoint)mouseLocation {
   // Convert from Cocoa's screen coordinates to base coordinates since the mouse
   // event takes base (NSWindow) coordinates.
-  NSPoint mouseLocationWindow =
-      [[self window] convertScreenToBase:mouseLocation];
+  NSPoint mouseLocationWindow = ui::ConvertPointFromScreenToWindow(
+      [self window], mouseLocation);
   NSEvent* event =
       MakeMouseEvent(NSLeftMouseDragged, mouseLocationWindow, 0, 0);
   [self mouseDragged:event];

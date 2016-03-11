@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/notification_types.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 using content::BrowserContext;
@@ -176,7 +177,7 @@ class ExtensionPopupNotificationBridge : public content::NotificationObserver {
   if (!window.get())
     return nil;
 
-  anchoredAt = [parentWindow convertBaseToScreen:anchoredAt];
+  anchoredAt = ui::ConvertPointFromWindowToScreen(parentWindow, anchoredAt);
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
                          anchoredAt:anchoredAt])) {

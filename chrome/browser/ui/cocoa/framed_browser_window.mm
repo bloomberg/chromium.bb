@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -167,7 +168,7 @@ const CGFloat kWindowGradientHeight = 24.0;
 // The tab strip view covers our window buttons. So we add hit testing here
 // to find them properly and return them to the accessibility system.
 - (id)accessibilityHitTest:(NSPoint)point {
-  NSPoint windowPoint = [self convertScreenToBase:point];
+  NSPoint windowPoint = ui::ConvertPointFromScreenToWindow(self, point);
   NSControl* controls[] = { closeButton_, zoomButton_, miniaturizeButton_ };
   id value = nil;
   for (size_t i = 0; i < sizeof(controls) / sizeof(controls[0]); ++i) {

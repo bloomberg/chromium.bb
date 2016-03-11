@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/common/feature_switch.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
@@ -75,7 +76,7 @@ NSPoint GetCenterPoint(NSView* view) {
   NSRect bounds = [view bounds];
   NSPoint center = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
   center = [view convertPoint:center toView:nil];
-  center = [window convertBaseToScreen:center];
+  center = ui::ConvertPointFromWindowToScreen(window, center);
   return NSMakePoint(center.x, [screen frame].size.height - center.y);
 }
 

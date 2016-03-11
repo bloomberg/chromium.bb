@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/one_click_signin_view_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 namespace {
 
@@ -41,7 +42,7 @@ void PerformClose(OneClickSigninBubbleController* controller) {
   const NSRect bounds = [appMenuButton bounds];
   NSPoint anchorPoint = NSMakePoint(NSMidX(bounds), NSMaxY(bounds));
   anchorPoint = [appMenuButton convertPoint:anchorPoint toView:nil];
-  anchorPoint = [parentWindow convertBaseToScreen:anchorPoint];
+  anchorPoint = ui::ConvertPointFromWindowToScreen(parentWindow, anchorPoint);
 
   // Create an empty window into which content is placed.
   NSRect viewBounds = [[viewController_ view] bounds];

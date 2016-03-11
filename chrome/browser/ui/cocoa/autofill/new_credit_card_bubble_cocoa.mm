@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/native_theme/native_theme.h"
@@ -235,9 +236,8 @@ void NewCreditCardBubbleCocoa::Show() {
     anchor_point.y = NSMaxY([anchor_view bounds]) - anchor_point.y;
   anchor_point = [anchor_view convertPoint:anchor_point toView:nil];
 
-  NSRect frame = NSZeroRect;
-  frame.origin = anchor_point;
-  anchor_point = [parent_window convertBaseToScreen:anchor_point];
+  anchor_point =
+      ui::ConvertPointFromWindowToScreen(parent_window, anchor_point);
   [bubbleController_ showAtAnchor:anchor_point];
 }
 

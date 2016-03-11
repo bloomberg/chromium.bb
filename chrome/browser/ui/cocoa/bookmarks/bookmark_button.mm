@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -109,7 +110,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
     NSRect bounds = [self bounds];
     point = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
     point = [self convertPoint:point toView:nil];
-    point = [[self window] convertBaseToScreen:point];
+    point = ui::ConvertPointFromWindowToScreen([self window], point);
   }
 
   return point;

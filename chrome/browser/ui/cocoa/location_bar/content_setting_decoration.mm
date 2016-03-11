@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/cocoa/appkit_utils.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -268,7 +269,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   AutocompleteTextField* field = owner_->GetAutocompleteTextField();
   NSPoint anchor = GetBubblePointInFrame(frame);
   anchor = [field convertPoint:anchor toView:nil];
-  anchor = [[field window] convertBaseToScreen:anchor];
+  anchor = ui::ConvertPointFromWindowToScreen([field window], anchor);
 
   // Open bubble.
   ContentSettingBubbleModel* model =

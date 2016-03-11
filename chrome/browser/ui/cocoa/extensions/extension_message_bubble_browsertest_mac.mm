@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 namespace {
 
@@ -39,9 +40,11 @@ void CheckBubbleAndReferenceView(ToolbarActionsBarBubbleMac* bubble,
   CGFloat refLowY = [expectedReferenceView isFlipped] ?
       NSMaxY(referenceFrame) : NSMinY(referenceFrame);
   NSPoint refLowerLeft = NSMakePoint(NSMinX(referenceFrame), refLowY);
-  NSPoint refLowerLeftInScreen = [window convertBaseToScreen:refLowerLeft];
+  NSPoint refLowerLeftInScreen =
+      ui::ConvertPointFromWindowToScreen(window, refLowerLeft);
   NSPoint refLowerRight = NSMakePoint(NSMaxX(referenceFrame), refLowY);
-  NSPoint refLowerRightInScreen = [window convertBaseToScreen:refLowerRight];
+  NSPoint refLowerRightInScreen =
+      ui::ConvertPointFromWindowToScreen(window, refLowerRight);
 
   // The bubble should be below the reference view, but not too far below.
   EXPECT_LE(NSMaxY(bubbleFrame), refLowerLeftInScreen.y);

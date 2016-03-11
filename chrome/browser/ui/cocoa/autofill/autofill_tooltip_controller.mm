@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_bubble_controller.h"
 #import "ui/base/cocoa/base_view.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/hover_image_button.h"
 
 // Delay time before tooltip shows/hides.
@@ -164,8 +165,8 @@ CGFloat kTooltipInset = 10;
   // Compute anchor point (in window coords - views might be flipped).
   NSRect viewRect = [view_ convertRect:[view_ bounds] toView:nil];
   NSPoint anchorPoint = NSMakePoint(NSMidX(viewRect), NSMinY(viewRect));
-  [bubbleController_ setAnchorPoint:
-      [[[self view] window] convertBaseToScreen:anchorPoint]];
+  [bubbleController_ setAnchorPoint:ui::ConvertPointFromWindowToScreen(
+      [[self view] window], anchorPoint)];
   [bubbleController_ showWindow:self];
 }
 

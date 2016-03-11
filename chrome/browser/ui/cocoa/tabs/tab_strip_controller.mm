@@ -62,6 +62,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/cocoa/animation_utils.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -270,7 +271,8 @@ private:
 - (void)trackClickForWindowMove:(NSEvent*)event {
   NSWindow* window = [self window];
   NSPoint frameOrigin = [window frame].origin;
-  NSPoint lastEventLoc = [window convertBaseToScreen:[event locationInWindow]];
+  NSPoint lastEventLoc =
+      ui::ConvertPointFromWindowToScreen(window, [event locationInWindow]);
   while ((event = [NSApp nextEventMatchingMask:
       NSLeftMouseDownMask|NSLeftMouseDraggedMask|NSLeftMouseUpMask
                                     untilDate:[NSDate distantFuture]
@@ -279,7 +281,8 @@ private:
       [event type] != NSLeftMouseUp) {
     base::mac::ScopedNSAutoreleasePool pool;
 
-    NSPoint now = [window convertBaseToScreen:[event locationInWindow]];
+    NSPoint now =
+        ui::ConvertPointFromWindowToScreen(window, [event locationInWindow]);
     frameOrigin.x += now.x - lastEventLoc.x;
     frameOrigin.y += now.y - lastEventLoc.y;
     [window setFrameOrigin:frameOrigin];

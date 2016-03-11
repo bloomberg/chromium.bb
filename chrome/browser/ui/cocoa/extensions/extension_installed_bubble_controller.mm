@@ -48,6 +48,7 @@
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -588,8 +589,8 @@ scoped_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 }
 
 - (void)updateAnchorPosition {
-  self.anchorPoint =
-      [self.parentWindow convertBaseToScreen:[self calculateArrowPoint]];
+  self.anchorPoint = ui::ConvertPointFromWindowToScreen(
+      self.parentWindow, [self calculateArrowPoint]);
 }
 
 - (IBAction)onManageShortcutClicked:(id)sender {

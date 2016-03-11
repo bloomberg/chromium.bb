@@ -27,6 +27,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -407,7 +408,8 @@ scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
     anchor = NSMakePoint(NSMidX(contentFrame), NSMaxY(contentFrame));
   }
 
-  return [[self getExpectedParentWindow] convertBaseToScreen:anchor];
+  return ui::ConvertPointFromWindowToScreen([self getExpectedParentWindow],
+                                            anchor);
 }
 
 - (bool)hasLocationBar {

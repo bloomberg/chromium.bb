@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/logging.h"
+#include "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_info.h"
 #import "chrome/browser/ui/cocoa/web_contents_modal_dialog_host_cocoa.h"
@@ -317,7 +318,7 @@ NSRect GetSheetParentBoundsForParentView(NSView* view) {
     viewFrame.size.height += NSMinY(customSheetFrame) - NSMinY(sheetFrame);
   }
 
-  viewFrame.origin = [[parentView window] convertBaseToScreen:viewFrame.origin];
+  viewFrame = [[parentView window] convertRectToScreen:viewFrame];
   return viewFrame;
 }
 

@@ -1171,8 +1171,9 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
       NSPoint tabOrigin = destinationFrame.origin;
       tabOrigin = [[dragController tabStripView] convertPoint:tabOrigin
                                                        toView:nil];
-      tabOrigin = [[dragController window] convertBaseToScreen:tabOrigin];
-      tabOrigin = [[self window] convertScreenToBase:tabOrigin];
+      tabOrigin = ui::ConvertPointFromWindowToScreen([dragController window],
+                                                     tabOrigin);
+      tabOrigin = ui::ConvertPointFromScreenToWindow([self window], tabOrigin);
       tabOrigin = [[self tabStripView] convertPoint:tabOrigin fromView:nil];
       destinationFrame.origin = tabOrigin;
 
@@ -1559,8 +1560,8 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
 
   if (chrome::ToolkitViewsDialogsEnabled()) {
     chrome::ShowBookmarkBubbleViewsAtPoint(
-        gfx::ScreenPointFromNSPoint(
-            [[self window] convertBaseToScreen:[self bookmarkBubblePoint]]),
+        gfx::ScreenPointFromNSPoint(ui::ConvertPointFromWindowToScreen(
+            [self window], [self bookmarkBubblePoint])),
         [[self window] contentView], bookmarkBubbleObserver_.get(),
         browser_.get(), url, alreadyMarked);
   } else {

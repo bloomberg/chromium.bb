@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 using ::testing::A;
 using ::testing::InSequence;
@@ -50,7 +51,8 @@ NSEvent* Event(NSView* view, const NSPoint point, const NSEventType type,
                const NSUInteger clickCount) {
   NSWindow* window([view window]);
   const NSPoint locationInWindow([view convertPoint:point toView:nil]);
-  const NSPoint location([window convertBaseToScreen:locationInWindow]);
+  const NSPoint location =
+      ui::ConvertPointFromWindowToScreen(window, locationInWindow);
   return [NSEvent mouseEventWithType:type
                             location:location
                        modifierFlags:0

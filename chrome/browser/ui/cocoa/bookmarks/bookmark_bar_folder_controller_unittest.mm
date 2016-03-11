@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -20,8 +22,7 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/cocoa/animation_utils.h"
-
-#include <cmath>
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkModel;
@@ -269,8 +270,8 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   NSPoint buttonOriginInWindow =
       [parentButton convertRect:[parentButton bounds]
                          toView:nil].origin;
-  NSPoint buttonOriginInScreen =
-      [[parentButton window] convertBaseToScreen:buttonOriginInWindow];
+  NSPoint buttonOriginInScreen = ui::ConvertPointFromWindowToScreen(
+      [parentButton window], buttonOriginInWindow);
   // Within margin
   EXPECT_LE(std::abs(pt.x - buttonOriginInScreen.x),
             bookmarks::kBookmarkMenuOverlap + 1);

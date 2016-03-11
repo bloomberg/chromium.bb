@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/app_menu/menu_tracked_button.h"
 
+#include "ui/base/cocoa/cocoa_base_utils.h"
+
 @interface MenuTrackedButton (Private)
 - (void)doHighlight:(BOOL)highlight;
 - (void)checkMouseInRect;
@@ -84,7 +86,7 @@
 // exit mouse events and thus polling is necessary.
 - (void)checkMouseInRect {
   NSPoint point = [NSEvent mouseLocation];
-  point = [[self window] convertScreenToBase:point];
+  point = ui::ConvertPointFromScreenToWindow([self window], point);
   point = [self convertPoint:point fromView:nil];
   if (!NSPointInRect(point, [self insetBounds])) {
     [self doHighlight:NO];

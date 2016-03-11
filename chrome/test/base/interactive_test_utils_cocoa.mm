@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 namespace ui_test_utils {
 
@@ -32,7 +33,7 @@ void MoveMouseToNSViewCenterAndPress(
   NSRect bounds = [view bounds];
   NSPoint center = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
   center = [view convertPoint:center toView:nil];
-  center = [window convertBaseToScreen:center];
+  center = ui::ConvertPointFromWindowToScreen(window, center);
   center = NSMakePoint(center.x, [screen frame].size.height - center.y);
 
   ui_controls::SendMouseMoveNotifyWhenDone(

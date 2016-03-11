@@ -41,6 +41,7 @@
 #include "grit/components_google_chrome_strings.h"
 #include "grit/components_strings.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/flipped_view.h"
 #import "ui/base/cocoa/hover_image_button.h"
@@ -117,7 +118,7 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
     LocationBarViewMac* location_bar = [controller locationBarBridge];
     if (location_bar) {
       NSPoint bubble_point = location_bar->GetPageInfoBubblePoint();
-      origin = [parent convertBaseToScreen:bubble_point];
+      origin = ui::ConvertPointFromWindowToScreen(parent, bubble_point);
     }
   }
   return origin;

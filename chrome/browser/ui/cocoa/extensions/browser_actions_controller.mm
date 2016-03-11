@@ -31,6 +31,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/cocoa/appkit_utils.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 NSString* const kBrowserActionVisibilityChangedNotification =
@@ -1048,7 +1049,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   NSPoint anchor = [self popupPointForView:anchorView
                                 withBounds:[anchorView bounds]];
 
-  anchor = [[containerView_ window] convertBaseToScreen:anchor];
+  anchor = ui::ConvertPointFromWindowToScreen([containerView_ window], anchor);
   activeBubble_ = [[ToolbarActionsBarBubbleMac alloc]
       initWithParentWindow:[containerView_ window]
                anchorPoint:anchor

@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "grit/components_strings.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -198,8 +199,8 @@ void SaveCardBubbleViewBridge::Hide() {
 
   NSPoint anchorPoint =
       [[browserWindowController toolbarController] saveCreditCardBubblePoint];
-  anchorPoint =
-      [[browserWindowController window] convertBaseToScreen:anchorPoint];
+  anchorPoint = ui::ConvertPointFromWindowToScreen(
+      [browserWindowController window], anchorPoint);
 
   if ((self = [super initWithWindow:window
                        parentWindow:[browserWindowController window]

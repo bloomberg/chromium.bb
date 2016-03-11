@@ -14,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "grit/theme_resources.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 ZoomDecoration::ZoomDecoration(LocationBarViewMac* owner)
@@ -70,7 +71,7 @@ void ZoomDecoration::ShowBubble(BOOL auto_close) {
   // Find point for bubble's arrow in screen coordinates.
   NSPoint anchor = GetBubblePointInFrame(frame);
   anchor = [field convertPoint:anchor toView:nil];
-  anchor = [[field window] convertBaseToScreen:anchor];
+  anchor = ui::ConvertPointFromWindowToScreen([field window], anchor);
 
   bubble_ = [[ZoomBubbleController alloc] initWithParentWindow:[field window]
                                                       delegate:this];

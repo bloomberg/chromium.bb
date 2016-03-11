@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 
 const CGFloat kTearDistance = 36.0;
@@ -23,7 +24,8 @@ const NSTimeInterval kTearDuration = 0.333;
 static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
   if ([view window] == nil)
     return NO;
-  NSPoint windowPoint = [[view window] convertScreenToBase:screenPoint];
+  NSPoint windowPoint =
+      ui::ConvertPointFromScreenToWindow([view window], screenPoint);
   NSPoint viewPoint = [view convertPoint:windowPoint fromView:nil];
   return [view mouse:viewPoint inRect:[view bounds]];
 }
@@ -383,9 +385,8 @@ static BOOL PointIsInsideView(NSPoint screenPoint, NSView* view) {
     for (NSView* tabView in [draggedController_ tabViews]) {
       tabFrame = NSUnionRect(tabFrame, [tabView frame]);
     }
-    tabFrame.origin = [dragWindow_ convertBaseToScreen:tabFrame.origin];
-    tabFrame.origin = [[targetController_ window]
-                        convertScreenToBase:tabFrame.origin];
+    tabFrame = [dragWindow_ convertRectToScreen:tabFrame];
+    tabFrame = [[targetController_ window] convertRectFromScreen:tabFrame];
     tabFrame = [[targetController_ tabStripView]
                 convertRect:tabFrame fromView:nil];
     [targetController_ insertPlaceholderForTab:[draggedTab_ tabView]

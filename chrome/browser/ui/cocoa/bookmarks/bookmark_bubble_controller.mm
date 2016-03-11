@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using base::UserMetricsAction;
@@ -144,7 +145,7 @@ using bookmarks::BookmarkNode;
   // which will occur for some unit tests.
   NSPoint arrowTip = bwc ? [bwc bookmarkBubblePoint] :
       NSMakePoint([window frame].size.width, [window frame].size.height);
-  arrowTip = [parentWindow convertBaseToScreen:arrowTip];
+  arrowTip = ui::ConvertPointFromWindowToScreen(parentWindow, arrowTip);
   NSPoint bubbleArrowTip = [bubble arrowTip];
   bubbleArrowTip = [bubble convertPoint:bubbleArrowTip toView:nil];
   arrowTip.y -= bubbleArrowTip.y;

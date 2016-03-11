@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 typedef BOOL (^FieldFilterBlock)(NSView<AutofillInputField>*);
 
@@ -215,8 +216,8 @@ typedef BOOL (^FieldFilterBlock)(NSView<AutofillInputField>*);
     [[errorBubbleController_ bubble] setAlignment:
         info_bubble::kAlignLeftEdgeToAnchorEdge];
   }
-  [errorBubbleController_ setAnchorPoint:
-      [parentWindow convertBaseToScreen:anchorPoint]];
+  [errorBubbleController_ setAnchorPoint:ui::ConvertPointFromWindowToScreen(
+                                             parentWindow, anchorPoint)];
 
   errorBubbleAnchorView_ = field;
   [errorBubbleController_ showWindow:self];

@@ -24,6 +24,7 @@
 #import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 
 // Space between the avatar icon and the avatar menu bubble.
 const CGFloat kMenuYOffsetAdjust = 1.0;
@@ -179,7 +180,7 @@ class ProfileAttributesUpdateObserver
   NSPoint point = NSMakePoint(anchorX,
                               NSMaxY([anchor bounds]) + kMenuYOffsetAdjust);
   point = [anchor convertPoint:point toView:nil];
-  point = [[anchor window] convertBaseToScreen:point];
+  point = ui::ConvertPointFromWindowToScreen([anchor window], point);
 
   // |menuController_| will automatically release itself on close.
   profiles::BubbleViewMode viewMode;

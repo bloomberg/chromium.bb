@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
 ExclusiveAccessController::ExclusiveAccessController(
@@ -167,7 +168,8 @@ gfx::NativeView ExclusiveAccessController::GetBubbleParentView() const {
 
 gfx::Point ExclusiveAccessController::GetCursorPointInParent() const {
   NSWindow* window = [controller_ window];
-  NSPoint location = [window convertScreenToBase:[NSEvent mouseLocation]];
+  NSPoint location =
+      ui::ConvertPointFromScreenToWindow(window, [NSEvent mouseLocation]);
   return gfx::Point(location.x,
                     NSHeight([[window contentView] frame]) - location.y);
 }

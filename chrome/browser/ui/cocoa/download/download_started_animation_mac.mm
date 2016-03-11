@@ -17,6 +17,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
@@ -68,7 +69,7 @@ class DownloadAnimationWebObserver;
 
     NSPoint origin = [tabContentsView frame].origin;
     origin = [tabContentsView convertPoint:origin toView:nil];
-    origin = [parentWindow convertBaseToScreen:origin];
+    origin = ui::ConvertPointFromWindowToScreen(parentWindow, origin);
 
     // Create the animation object to assist in animating and fading.
     CGFloat animationHeight = MIN(bounds.height(), 4 * imageHeight);

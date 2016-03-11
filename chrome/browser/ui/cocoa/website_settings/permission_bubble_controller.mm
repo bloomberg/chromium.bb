@@ -33,6 +33,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/components_strings.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/cocoa/window_size_constants.h"
@@ -454,7 +455,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     anchor = NSMakePoint(NSMidX(contentFrame), NSMaxY(contentFrame));
   }
 
-  return [[self getExpectedParentWindow] convertBaseToScreen:anchor];
+  return ui::ConvertPointFromWindowToScreen([self getExpectedParentWindow],
+                                            anchor);
 }
 
 - (bool)hasLocationBar {

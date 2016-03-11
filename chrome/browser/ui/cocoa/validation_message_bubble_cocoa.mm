@@ -18,6 +18,7 @@
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/base_view.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -148,7 +149,7 @@ NSPoint GetAnchorPoint(content::RenderWidgetHost* widget_host,
   NSRect cocoaRect = [view flipRectToNSRect:anchor_in_root_view];
   NSRect windowRect = [view convertRect:cocoaRect toView:nil];
   NSPoint point = NSMakePoint(NSMidX(windowRect), NSMinY(windowRect));
-  return [[view window] convertBaseToScreen:point];
+  return ui::ConvertPointFromWindowToScreen([view window], point);
 }
 
 ValidationMessageBubbleCocoa::ValidationMessageBubbleCocoa(

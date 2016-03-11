@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
@@ -159,7 +160,7 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
 
   NSRect GetViewFrameInScreenCoordinates(NSView* view) {
     NSRect rect = [view convertRect:[view bounds] toView:nil];
-    rect.origin = [[view window] convertBaseToScreen:rect.origin];
+    rect = [[view window] convertRectToScreen:rect];
     return rect;
   }
 

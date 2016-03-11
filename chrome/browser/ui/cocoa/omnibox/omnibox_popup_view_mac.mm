@@ -202,9 +202,11 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   popup_frame.size.height += [OmniboxPopupTopSeparatorView preferredHeight];
   popup_frame.size.height += [OmniboxPopupBottomSeparatorView preferredHeight];
   popup_frame.origin.y -= NSHeight(popup_frame);
+
   // Shift to screen coordinates.
-  popup_frame.origin =
-      [[controller window] convertBaseToScreen:popup_frame.origin];
+  if ([controller window]) {
+    popup_frame = [[controller window] convertRectToScreen:popup_frame];
+  }
 
   // Top separator.
   NSRect top_separator_frame = NSZeroRect;

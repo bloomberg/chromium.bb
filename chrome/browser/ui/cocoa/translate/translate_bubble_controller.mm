@@ -21,6 +21,7 @@
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "grit/components_strings.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -166,7 +167,8 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 - (void)showWindow:(id)sender {
   BrowserWindowController* controller = [[self parentWindow] windowController];
   NSPoint anchorPoint = [[controller toolbarController] translateBubblePoint];
-  anchorPoint = [[self parentWindow] convertBaseToScreen:anchorPoint];
+  anchorPoint =
+      ui::ConvertPointFromWindowToScreen([self parentWindow], anchorPoint);
   [self setAnchorPoint:anchorPoint];
   [super showWindow:sender];
 }

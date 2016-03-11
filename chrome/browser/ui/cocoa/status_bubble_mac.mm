@@ -22,6 +22,7 @@
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
@@ -363,7 +364,8 @@ void StatusBubbleMac::SetFrameAvoidingMouse(
 
   // To start, assume default positioning in the lower left corner.
   // The window_frame position is in global (screen) coordinates.
-  window_frame.origin = [parent_ convertBaseToScreen:base_rect.origin];
+  window_frame.origin =
+      ui::ConvertPointFromWindowToScreen(parent_, base_rect.origin);
 
   // Get the cursor position relative to the top right corner of the bubble.
   gfx::Point relative_pos(mouse_pos.x() - NSMaxX(window_frame),
@@ -811,7 +813,7 @@ NSRect StatusBubbleMac::CalculateWindowFrame(bool expanded_width) {
   NSRect screenRect;
   if ([delegate_ respondsToSelector:@selector(statusBubbleBaseFrame)]) {
     screenRect = [delegate_ statusBubbleBaseFrame];
-    screenRect.origin = [parent_ convertBaseToScreen:screenRect.origin];
+    screenRect = [parent_ convertRectToScreen:screenRect];
   } else {
     screenRect = [parent_ frame];
   }

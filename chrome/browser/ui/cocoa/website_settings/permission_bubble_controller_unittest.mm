@@ -25,6 +25,7 @@
 #include "grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
@@ -363,7 +364,7 @@ TEST_F(PermissionBubbleControllerTest, AnchorPositionWithLocationBar) {
       [BrowserWindowController browserWindowControllerForWindow:window];
   LocationBarViewMac* location_bar_bridge = [controller locationBarBridge];
   NSPoint expected = location_bar_bridge->GetPageInfoBubblePoint();
-  expected = [window convertBaseToScreen:expected];
+  expected = ui::ConvertPointFromWindowToScreen(window, expected);
   EXPECT_NSEQ(expected, anchor);
 }
 
@@ -379,7 +380,7 @@ TEST_F(PermissionBubbleControllerTest, AnchorPositionWithoutLocationBar) {
   NSWindow* window = browser()->window()->GetNativeWindow();
   NSRect frame = [window frame];
   NSPoint expected = NSMakePoint(frame.size.width / 2, frame.size.height);
-  expected = [window convertBaseToScreen:expected];
+  expected = ui::ConvertPointFromWindowToScreen(window, expected);
   EXPECT_NSEQ(expected, anchor);
 }
 

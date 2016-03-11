@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/update_pending_password_view_controller.h"
+#include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 @interface ManagePasswordsBubbleController ()
@@ -115,7 +116,8 @@
   [[self bubble] setArrowLocation:arrow];
 
   // Update the anchor point.
-  anchorPoint = [[self parentWindow] convertBaseToScreen:anchorPoint];
+  anchorPoint =
+      ui::ConvertPointFromWindowToScreen([self parentWindow], anchorPoint);
   [self setAnchorPoint:anchorPoint];
 
   // Update the frame.

@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/mac/foundation_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
@@ -405,8 +406,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
   // Get the frame rectangle for the designated field, in screen coordinates.
   NSRect textFrameInScreen = [field convertRect:[field bounds] toView:nil];
-  textFrameInScreen.origin =
-      [[field window] convertBaseToScreen:textFrameInScreen.origin];
+  textFrameInScreen = [[field window] convertRectToScreen:textFrameInScreen];
 
   // And adjust for gfx::Rect being flipped compared to OSX coordinates.
   NSScreen* screen = [[NSScreen screens] firstObject];
