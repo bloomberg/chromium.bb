@@ -971,11 +971,13 @@ int SSLClientSocketOpenSSL::Init() {
   SSL_set_mode(ssl_, mode.set_mask);
   SSL_clear_mode(ssl_, mode.clear_mask);
 
-  // See SSLConfig::disabled_cipher_suites for description of the suites
-  // disabled by default. Note that SHA256 and SHA384 only select HMAC-SHA256
-  // and HMAC-SHA384 cipher suites, not GCM cipher suites with SHA256 or SHA384
-  // as the handshake hash.
-  std::string command("DEFAULT:!SHA256:-SHA384:!AESGCM+AES256:!aPSK");
+  // Use BoringSSL defaults, but disable HMAC-SHA256 and HMAC-SHA384 ciphers
+  // (note that SHA256 and SHA384 only select legacy CBC ciphers). Also disable
+  // DHE_RSA_WITH_AES_256_GCM_SHA384. Historically, AES_256_GCM was not
+  // supported. As DHE is being deprecated, don't add a cipher only to remove it
+  // immediately.
+  std::string command(
+      "DEFAULT:!SHA256:!SHA384:!DHE-RSA-AES256-GCM-SHA384:!aPSK");
 
   if (ssl_config_.require_ecdhe)
     command.append(":!kRSA:!kDHE");
