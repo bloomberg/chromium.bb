@@ -11,14 +11,12 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
-#include "chrome/browser/search/suggestions/suggestions_utils.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/search/suggestions/url_suggestion_result.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
-#include "components/suggestions/suggestions_utils.h"
 
 namespace app_list {
 
@@ -41,26 +39,13 @@ SuggestionsSearchProvider::~SuggestionsSearchProvider() {
 void SuggestionsSearchProvider::Start(bool /*is_voice_query*/,
                                       const base::string16& query) {
   ClearResults();
-  // If the service is not enabled, do not return any results.
-  if (!suggestions_service_)
-    return;
 
   // Only return suggestions on an empty query.
   if (!query.empty())
     return;
 
-  // Suggestions service is enabled; initiate a query.
-  suggestions_service_->FetchSuggestionsData(
-      suggestions::GetSyncState(profile_),
-      base::Bind(&SuggestionsSearchProvider::OnSuggestionsProfileAvailable,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void SuggestionsSearchProvider::Stop() {
-}
-
-void SuggestionsSearchProvider::OnSuggestionsProfileAvailable(
-    const suggestions::SuggestionsProfile& suggestions_profile) {
+  const suggestions::SuggestionsProfile& suggestions_profile =
+      suggestions_service_->GetSuggestionsDataFromCache();
   for (int i = 0; i < suggestions_profile.suggestions_size(); ++i) {
     const suggestions::ChromeSuggestion& suggestion =
         suggestions_profile.suggestions(i);
@@ -72,6 +57,9 @@ void SuggestionsSearchProvider::OnSuggestionsProfileAvailable(
     result->set_relevance(1.0 / (i + 1));
     Add(std::move(result));
   }
+}
+
+void SuggestionsSearchProvider::Stop() {
 }
 
 }  // namespace app_list

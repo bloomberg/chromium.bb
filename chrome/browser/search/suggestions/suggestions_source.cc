@@ -24,7 +24,6 @@
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/suggestions/suggestions_service.h"
-#include "components/suggestions/suggestions_utils.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -121,18 +120,9 @@ void SuggestionsSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile_);
-
-  if (!suggestions_service) {
-    callback.Run(NULL);
-    return;
-  }
-
-  // Since it's a debugging page, it's fine to specify that sync state is
-  // initialized.
-  suggestions_service->FetchSuggestionsData(
-      INITIALIZED_ENABLED_HISTORY,
-      base::Bind(&SuggestionsSource::OnSuggestionsAvailable,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+  OnSuggestionsAvailable(callback,
+                         suggestions_service->GetSuggestionsDataFromCache());
+  suggestions_service->FetchSuggestionsData();
 }
 
 std::string SuggestionsSource::GetMimeType(const std::string& path) const {

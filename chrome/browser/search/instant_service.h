@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/history/core/browser/history_types.h"
@@ -183,6 +184,11 @@ class InstantService : public KeyedService,
 
   // Suggestions Service to fetch server suggestions.
   suggestions::SuggestionsService* suggestions_service_;
+
+  // Subscription to the SuggestionsService.
+  scoped_ptr<
+      suggestions::SuggestionsService::ResponseCallbackList::Subscription>
+      suggestions_subscription_;
 
   // Used for Top Sites async retrieval.
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;

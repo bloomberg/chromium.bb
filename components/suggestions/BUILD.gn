@@ -17,8 +17,6 @@ source_set("suggestions") {
     "suggestions_service.h",
     "suggestions_store.cc",
     "suggestions_store.h",
-    "suggestions_utils.cc",
-    "suggestions_utils.h",
   ]
 
   public_deps = [
@@ -36,6 +34,7 @@ source_set("suggestions") {
     "//components/leveldb_proto",
     "//components/pref_registry",
     "//components/signin/core/browser",
+    "//components/sync_driver:sync_driver",
     "//components/variations",
     "//components/variations/net",
     "//google_apis",
@@ -62,6 +61,7 @@ source_set("unit_tests") {
     "//components/leveldb_proto:test_support",
     "//components/pref_registry:test_support",
     "//components/signin/core/browser:test_support",
+    "//components/sync_driver:test_support",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

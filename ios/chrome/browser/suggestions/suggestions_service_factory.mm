@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -23,6 +24,7 @@
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/suggestions/image_fetcher_impl.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 
@@ -50,6 +52,7 @@ SuggestionsServiceFactory::SuggestionsServiceFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::SigninManagerFactory::GetInstance());
   DependsOn(OAuth2TokenServiceFactory::GetInstance());
+  DependsOn(IOSChromeProfileSyncServiceFactory::GetInstance());
 }
 
 SuggestionsServiceFactory::~SuggestionsServiceFactory() {
@@ -69,6 +72,8 @@ scoped_ptr<KeyedService> SuggestionsServiceFactory::BuildServiceInstanceFor(
       ios::SigninManagerFactory::GetForBrowserState(browser_state);
   ProfileOAuth2TokenService* token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
+  ProfileSyncService* sync_service =
+      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
   base::FilePath database_dir(
       browser_state->GetStatePath().Append(kThumbnailDirectory));
   scoped_ptr<SuggestionsStore> suggestions_store(
@@ -83,9 +88,9 @@ scoped_ptr<KeyedService> SuggestionsServiceFactory::BuildServiceInstanceFor(
       std::move(image_fetcher), std::move(db), database_dir,
       web::WebThread::GetTaskRunnerForThread(web::WebThread::DB)));
   return make_scoped_ptr(new SuggestionsService(
-      signin_manager, token_service, browser_state->GetRequestContext(),
-      std::move(suggestions_store), std::move(thumbnail_manager),
-      std::move(blacklist_store)));
+      signin_manager, token_service, sync_service,
+      browser_state->GetRequestContext(), std::move(suggestions_store),
+      std::move(thumbnail_manager), std::move(blacklist_store)));
 }
 
 void SuggestionsServiceFactory::RegisterBrowserStatePrefs(

@@ -10,21 +10,27 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
-#include "components/suggestions/suggestions_utils.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
+
+namespace sync_driver {
+class SyncService;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -41,32 +47,36 @@ class ImageManager;
 class SuggestionsStore;
 
 // An interface to fetch server suggestions asynchronously.
-class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
+class SuggestionsService : public KeyedService,
+                           public net::URLFetcherDelegate,
+                           public sync_driver::SyncServiceObserver {
  public:
   using ResponseCallback = base::Callback<void(const SuggestionsProfile&)>;
   using BitmapCallback = base::Callback<void(const GURL&, const SkBitmap*)>;
 
-  SuggestionsService(
-      const SigninManagerBase* signin_manager,
-      OAuth2TokenService* token_service,
-      net::URLRequestContextGetter* url_request_context,
-      scoped_ptr<SuggestionsStore> suggestions_store,
-      scoped_ptr<ImageManager> thumbnail_manager,
-      scoped_ptr<BlacklistStore> blacklist_store);
+  using ResponseCallbackList =
+      base::CallbackList<void(const SuggestionsProfile&)>;
+
+  SuggestionsService(const SigninManagerBase* signin_manager,
+                     OAuth2TokenService* token_service,
+                     sync_driver::SyncService* sync_service,
+                     net::URLRequestContextGetter* url_request_context,
+                     scoped_ptr<SuggestionsStore> suggestions_store,
+                     scoped_ptr<ImageManager> thumbnail_manager,
+                     scoped_ptr<BlacklistStore> blacklist_store);
   ~SuggestionsService() override;
 
-  // Requests suggestions data. Passes the currently cached data to |callback|.
-  // |sync_state| influences the behavior of this function (see SyncState
-  // definition).
-  //
-  // |sync_state| must be specified based on the current state of the system
-  // (see suggestions::GetSyncState). Callers should call this function again if
-  // sync state changes.
-  //
-  // If state allows for a network request, it is initiated unless a pending one
-  // exists, to fill the cache for next time.
-  void FetchSuggestionsData(SyncState sync_state,
-                            const ResponseCallback& callback);
+  // Initiates a network request for suggestions if sync state allows and there
+  // is no pending request. Returns true iff sync state allowed for a request,
+  // whether a new request was actually sent or not.
+  bool FetchSuggestionsData();
+
+  // Returns the current set of suggestions from the cache.
+  SuggestionsProfile GetSuggestionsDataFromCache() const;
+
+  // Adds a callback that is called when the suggestions are updated.
+  scoped_ptr<ResponseCallbackList::Subscription> AddCallback(
+      const ResponseCallback& callback) WARN_UNUSED_RESULT;
 
   // Retrieves stored thumbnail for website |url| asynchronously. Calls
   // |callback| with Bitmap pointer if found, and NULL otherwise.
@@ -79,21 +89,16 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
                                const GURL& thumbnail_url,
                                const BitmapCallback& callback);
 
-  // Adds a URL to the blacklist cache, invoking |callback| on success or
-  // |fail_callback| otherwise. The URL will eventually be uploaded to the
-  // server.
-  void BlacklistURL(const GURL& candidate_url,
-                    const ResponseCallback& callback,
-                    const base::Closure& fail_callback);
+  // Adds a URL to the blacklist cache, returning true on success or false on
+  // failure. The URL will eventually be uploaded to the server.
+  bool BlacklistURL(const GURL& candidate_url);
 
-  // Removes a URL from the local blacklist, then invokes |callback|. If the URL
-  // cannot be removed, the |fail_callback| is called.
-  void UndoBlacklistURL(const GURL& url,
-                        const ResponseCallback& callback,
-                        const base::Closure& fail_callback);
+  // Removes a URL from the local blacklist, returning true on success or false
+  // on failure.
+  bool UndoBlacklistURL(const GURL& url);
 
-  // Removes all URLs from the blacklist then invokes |callback|.
-  void ClearBlacklist(const ResponseCallback& callback);
+  // Removes all URLs from the blacklist.
+  void ClearBlacklist();
 
   // Determines which URL a blacklist request was for, irrespective of the
   // request's status. Returns false if |request| is not a blacklist request.
@@ -104,6 +109,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
  private:
   friend class SuggestionsServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
+                           FetchSuggestionsDataSyncDisabled);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
                            FetchSuggestionsDataNoAccessToken);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest,
@@ -130,6 +138,9 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   static std::string BuildSuggestionsBlacklistURLPrefix();
   static GURL BuildSuggestionsBlacklistURL(const GURL& candidate_url);
   static GURL BuildSuggestionsBlacklistClearURL();
+
+  // sync_driver::SyncServiceObserver implementation.
+  void OnStateChanged() override;
 
   // Sets default timestamp for suggestions which do not have expiry timestamp.
   void SetDefaultExpiryTimestamp(SuggestionsProfile* suggestions,
@@ -159,10 +170,6 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // KeyedService implementation.
   void Shutdown() override;
 
-  // Loads the cached suggestions (or empty suggestions if no cache), applies
-  // the local blacklist, then calls the |callback|.
-  void ServeFromCache(const ResponseCallback& callback);
-
   // Schedules a blacklisting request if the local blacklist isn't empty.
   void ScheduleBlacklistUpload();
 
@@ -182,6 +189,10 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
     scheduling_delay_ = delay; }
 
   base::ThreadChecker thread_checker_;
+
+  sync_driver::SyncService* sync_service_;
+  ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>
+      sync_service_observer_;
 
   net::URLRequestContextGetter* url_request_context_;
 
@@ -209,6 +220,8 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // The start time of the previous suggestions request. This is used to measure
   // the latency of requests. Initially zero.
   base::TimeTicks last_request_started_time_;
+
+  ResponseCallbackList callback_list_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<SuggestionsService> weak_ptr_factory_;

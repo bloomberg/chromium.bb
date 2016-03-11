@@ -26,19 +26,15 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
-#include "chrome/browser/search/suggestions/suggestions_utils.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/suggestions/suggestions_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
@@ -211,12 +207,11 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
                               new suggestions::SuggestionsSource(profile_));
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
 
-  // Register this class as an observer to the sync service. It is important to
-  // be notified of changes in the sync state such as initialization, sync
-  // being enabled or disabled, etc.
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  profile_sync_service->AddObserver(this);
+  SuggestionsService* suggestions_service =
+      SuggestionsServiceFactory::GetForProfile(profile_);
+  suggestions_subscription_ = suggestions_service->AddCallback(
+      base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
+                 base::Unretained(this)));
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
@@ -224,10 +219,6 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
 }
 
 MostVisitedSites::~MostVisitedSites() {
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  profile_sync_service->RemoveObserver(this);
-
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
   supervised_user_service->RemoveObserver(this);
@@ -258,10 +249,13 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
     received_popular_sites_ = true;
   }
 
+  OnSuggestionsProfileAvailable(
+      SuggestionsServiceFactory::GetForProfile(profile_)
+          ->GetSuggestionsDataFromCache());
+
   QueryMostVisitedURLs();
 
-  scoped_refptr<history::TopSites> top_sites =
-      TopSitesFactory::GetForProfile(profile_);
+  scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
     // TopSites updates itself after a delay. To ensure up-to-date results,
     // force an update now.
@@ -309,27 +303,24 @@ void MostVisitedSites::OnLocalThumbnailFetched(
     // SuggestionsService can supply a thumbnail download URL.
     SuggestionsService* suggestions_service =
         SuggestionsServiceFactory::GetForProfile(profile_);
-    if (suggestions_service) {
-      if (popular_sites_) {
-        const std::vector<PopularSites::Site>& sites = popular_sites_->sites();
-        auto it = std::find_if(sites.begin(), sites.end(),
-                               [&url](const PopularSites::Site& site) {
-                                 return site.url == url;
-                               });
-        if (it != sites.end() && it->thumbnail_url.is_valid()) {
-          return suggestions_service->GetPageThumbnailWithURL(
-              url, it->thumbnail_url,
-              base::Bind(&MostVisitedSites::OnObtainedThumbnail,
-                         weak_ptr_factory_.GetWeakPtr(), false,
-                         base::Passed(&j_callback)));
-        }
+    if (popular_sites_) {
+      const std::vector<PopularSites::Site>& sites = popular_sites_->sites();
+      auto it = std::find_if(
+          sites.begin(), sites.end(),
+          [&url](const PopularSites::Site& site) { return site.url == url; });
+      if (it != sites.end() && it->thumbnail_url.is_valid()) {
+        return suggestions_service->GetPageThumbnailWithURL(
+            url, it->thumbnail_url,
+            base::Bind(&MostVisitedSites::OnObtainedThumbnail,
+                       weak_ptr_factory_.GetWeakPtr(), false,
+                       base::Passed(&j_callback)));
       }
-      if (mv_source_ == SUGGESTIONS_SERVICE) {
-        return suggestions_service->GetPageThumbnail(
-            url, base::Bind(&MostVisitedSites::OnObtainedThumbnail,
-                            weak_ptr_factory_.GetWeakPtr(), false,
-                            base::Passed(&j_callback)));
-      }
+    }
+    if (mv_source_ == SUGGESTIONS_SERVICE) {
+      return suggestions_service->GetPageThumbnail(
+          url, base::Bind(&MostVisitedSites::OnObtainedThumbnail,
+                          weak_ptr_factory_.GetWeakPtr(), false,
+                          base::Passed(&j_callback)));
     }
   }
   OnObtainedThumbnail(true, std::move(j_callback), url, bitmap.get());
@@ -359,26 +350,20 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(
   // Always blacklist in the local TopSites.
   scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
-    if (add_url) {
+    if (add_url)
       top_sites->AddBlacklistedURL(url);
-    } else {
+    else
       top_sites->RemoveBlacklistedURL(url);
-    }
   }
 
   // Only blacklist in the server-side suggestions service if it's active.
   if (mv_source_ == SUGGESTIONS_SERVICE) {
     SuggestionsService* suggestions_service =
         SuggestionsServiceFactory::GetForProfile(profile_);
-    DCHECK(suggestions_service);
-    suggestions::SuggestionsService::ResponseCallback callback(
-        base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
-    if (add_url) {
-      suggestions_service->BlacklistURL(url, callback, base::Closure());
-    } else {
-      suggestions_service->UndoBlacklistURL(url, callback, base::Closure());
-    }
+    if (add_url)
+      suggestions_service->BlacklistURL(url);
+    else
+      suggestions_service->UndoBlacklistURL(url);
   }
 }
 
@@ -426,13 +411,6 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(
   LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
 }
 
-void MostVisitedSites::OnStateChanged() {
-  // There have been changes to the sync state. This class cares about a few
-  // (just initialized, enabled/disabled or history sync state changed). Re-run
-  // the query code which will use the proper state.
-  QueryMostVisitedURLs();
-}
-
 void MostVisitedSites::OnURLFilterChanged() {
   QueryMostVisitedURLs();
 }
@@ -452,15 +430,8 @@ void MostVisitedSites::RegisterProfilePrefs(
 void MostVisitedSites::QueryMostVisitedURLs() {
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile_);
-  if (suggestions_service) {
-    // Suggestions service is enabled, initiate a query.
-    suggestions_service->FetchSuggestionsData(
-        suggestions::GetSyncState(profile_),
-        base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
-  } else {
+  if (!suggestions_service->FetchSuggestionsData())
     InitiateTopSitesQuery();
-  }
 }
 
 void MostVisitedSites::InitiateTopSitesQuery() {
@@ -800,6 +771,10 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
     UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", num_suggestions);
     recorded_uma_ = true;
   }
+
+  if (observer_.is_null())
+    return;
+
   std::vector<base::string16> titles;
   std::vector<std::string> urls;
   titles.reserve(num_suggestions);
@@ -851,10 +826,9 @@ void MostVisitedSites::RecordImpressionUMAMetrics() {
   }
 }
 
-void MostVisitedSites::TopSitesLoaded(history::TopSites* top_sites) {
-}
+void MostVisitedSites::TopSitesLoaded(TopSites* top_sites) {}
 
-void MostVisitedSites::TopSitesChanged(history::TopSites* top_sites,
+void MostVisitedSites::TopSitesChanged(TopSites* top_sites,
                                        ChangeReason change_reason) {
   if (mv_source_ == TOP_SITES) {
     // The displayed suggestions are invalidated.

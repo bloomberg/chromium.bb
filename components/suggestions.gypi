@@ -19,6 +19,7 @@
         'components.gyp:data_use_measurement_core',
         'components.gyp:keyed_service_core',
         'components.gyp:pref_registry',
+        'components.gyp:sync_driver',
         'components.gyp:variations',
         'components.gyp:variations_net',
       ],
@@ -37,8 +38,6 @@
         'suggestions/suggestions_service.h',
         'suggestions/suggestions_store.cc',
         'suggestions/suggestions_store.h',
-        'suggestions/suggestions_utils.cc',
-        'suggestions/suggestions_utils.h',
       ],
       'variables': {
         'proto_in_dir': 'suggestions/proto',

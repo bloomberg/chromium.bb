@@ -22,7 +22,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
-#include "chrome/browser/search/suggestions/suggestions_utils.h"
 #include "chrome/browser/search/thumbnail_source.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -184,10 +183,11 @@ InstantService::InstantService(Profile* profile)
   }
 
   if (suggestions_service_) {
-    suggestions_service_->FetchSuggestionsData(
-        suggestions::GetSyncState(profile_),
+    suggestions_subscription_ = suggestions_service_->AddCallback(
         base::Bind(&InstantService::OnSuggestionsAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
+                   base::Unretained(this)));
+    suggestions_service_->FetchSuggestionsData();
+    // TODO(treib): Also re-fetch suggestions on local NTP loads.
   }
 }
 
@@ -225,12 +225,8 @@ void InstantService::DeleteMostVisitedItem(const GURL& url) {
   if (top_sites)
     top_sites->AddBlacklistedURL(url);
 
-  if (suggestions_service_) {
-    suggestions_service_->BlacklistURL(
-        url, base::Bind(&InstantService::OnSuggestionsAvailable,
-                        weak_ptr_factory_.GetWeakPtr()),
-        base::Closure());
-  }
+  if (suggestions_service_)
+    suggestions_service_->BlacklistURL(url);
 }
 
 void InstantService::UndoMostVisitedDeletion(const GURL& url) {
@@ -239,12 +235,8 @@ void InstantService::UndoMostVisitedDeletion(const GURL& url) {
   if (top_sites)
     top_sites->RemoveBlacklistedURL(url);
 
-  if (suggestions_service_) {
-    suggestions_service_->UndoBlacklistURL(
-        url, base::Bind(&InstantService::OnSuggestionsAvailable,
-                        weak_ptr_factory_.GetWeakPtr()),
-        base::Closure());
-  }
+  if (suggestions_service_)
+    suggestions_service_->UndoBlacklistURL(url);
 }
 
 void InstantService::UndoAllMostVisitedDeletions() {
@@ -253,11 +245,8 @@ void InstantService::UndoAllMostVisitedDeletions() {
   if (top_sites)
     top_sites->ClearBlacklistedURLs();
 
-  if (suggestions_service_) {
-    suggestions_service_->ClearBlacklist(
-        base::Bind(&InstantService::OnSuggestionsAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
+  if (suggestions_service_)
+    suggestions_service_->ClearBlacklist();
 }
 
 void InstantService::UpdateThemeInfo() {

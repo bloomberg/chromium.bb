@@ -50,6 +50,7 @@ class FakeProfileSyncService : public ProfileSyncService {
  public:
   explicit FakeProfileSyncService(Profile* profile)
       : ProfileSyncService(CreateProfileSyncServiceParamsForTest(profile)),
+        test_started_(false),
         sync_initialized_(true),
         initialized_state_violation_(false) {}
 
@@ -59,6 +60,10 @@ class FakeProfileSyncService : public ProfileSyncService {
       content::BrowserContext* context) {
     return make_scoped_ptr(
         new FakeProfileSyncService(static_cast<Profile*>(context)));
+  }
+
+  void set_test_started(bool test_started) {
+    test_started_ = test_started;
   }
 
   void set_sync_initialized(bool sync_initialized) {
@@ -71,6 +76,10 @@ class FakeProfileSyncService : public ProfileSyncService {
   bool IsSyncActive() const override { return sync_initialized_; }
 
   void AddObserver(sync_driver::SyncServiceObserver* observer) override {
+    // Ignore other SyncServiceObsevers which we don't care about.
+    if (!test_started_)
+      return;
+
     if (sync_initialized_)
       initialized_state_violation_ = true;
     // Set sync initialized state to true so the function will run after
@@ -99,6 +108,7 @@ class FakeProfileSyncService : public ProfileSyncService {
   }
 
  private:
+  bool test_started_;
   bool sync_initialized_;
   // Set to true if a function is called when sync_initialized is in an
   // unexpected state.
@@ -141,6 +151,8 @@ class PreferencesPrivateApiTest : public ExtensionApiTest {
         profile, &FakeProfileSyncService::BuildFakeProfileSyncService));
 
     browser_ = new Browser(Browser::CreateParams(profile));
+
+    service_->set_test_started(true);
   }
 
   // Calls GetSyncCategoriesWithoutPassphraseFunction and verifies that the

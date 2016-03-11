@@ -22,7 +22,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/suggestions/proto/suggestions.pb.h"
-#include "components/sync_driver/sync_service_observer.h"
+#include "components/suggestions/suggestions_service.h"
 #include "url/gurl.h"
 
 namespace suggestions {
@@ -37,8 +37,7 @@ class PopularSites;
 class Profile;
 
 // Provides the list of most visited sites and their thumbnails to Java.
-class MostVisitedSites : public sync_driver::SyncServiceObserver,
-                         public history::TopSitesObserver,
+class MostVisitedSites : public history::TopSitesObserver,
                          public SupervisedUserServiceObserver {
  public:
   explicit MostVisitedSites(Profile* profile);
@@ -67,9 +66,6 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
       const base::android::JavaParamRef<jobject>& obj,
       jint index,
       jint tile_type);
-
-  // sync_driver::SyncServiceObserver implementation.
-  void OnStateChanged() override;
 
   // SupervisedUserServiceObserver implementation.
   void OnURLFilterChanged() override;
@@ -178,7 +174,8 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
       SuggestionsVector* src_suggestions,
       SuggestionsVector* dst_suggestions);
 
-  // Notify the Java side observer about the availability of Most Visited Urls.
+  // Notifies the Java side observer about the availability of suggestions.
+  // Also records impressions UMA if not done already.
   void NotifyMostVisitedURLsObserver();
 
   void OnPopularSitesAvailable(bool success);
@@ -228,6 +225,10 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   // Whether we have recorded one-shot UMA metrics such as impressions. They are
   // recorded once both the previous flags are true.
   bool recorded_uma_;
+
+  scoped_ptr<
+      suggestions::SuggestionsService::ResponseCallbackList::Subscription>
+      suggestions_subscription_;
 
   ScopedObserver<history::TopSites, history::TopSitesObserver> scoped_observer_;
 
