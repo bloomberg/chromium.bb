@@ -74,6 +74,7 @@
 #define IDC_RATE_THIS_APP                              40948
 #define IDC_ADD_READING_LIST                           40949
 #define IDC_SHOW_READING_LIST                          40950
+#define IDC_SHOW_CLEAR_BROWSING_DATA_SETTINGS          40951
 // clang-format on
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_IOS_COMMAND_IDS_H_

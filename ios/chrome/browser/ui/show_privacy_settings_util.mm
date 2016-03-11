@@ -11,7 +11,8 @@
 
 void ShowClearBrowsingData() {
   base::scoped_nsobject<GenericChromeCommand> command(
-      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_PRIVACY_SETTINGS]);
+      [[GenericChromeCommand alloc]
+          initWithTag:IDC_SHOW_CLEAR_BROWSING_DATA_SETTINGS]);
   UIWindow* main_window = [[UIApplication sharedApplication] keyWindow];
   [main_window chromeExecuteCommand:command];
 }
