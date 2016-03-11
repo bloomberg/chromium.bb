@@ -69,6 +69,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
       skipped_frames_(false),
+      background_color_(SK_ColorRED),
       current_scale_factor_(1.f),
       can_lock_compositor_(YES_CAN_LOCK),
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)),
@@ -256,6 +257,45 @@ void DelegatedFrameHost::WasResized() {
       !client_->DelegatedFrameHostIsVisible())
     EvictDelegatedFrame();
   MaybeCreateResizeLock();
+  UpdateGutters();
+}
+
+void DelegatedFrameHost::UpdateGutters() {
+  if (surface_id_.is_null()) {
+    right_gutter_.reset();
+    bottom_gutter_.reset();
+    return;
+  }
+  if (current_frame_size_in_dip_.width() <
+      client_->DelegatedFrameHostDesiredSizeInDIP().width()) {
+    right_gutter_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
+    right_gutter_->SetColor(background_color_);
+    int width = client_->DelegatedFrameHostDesiredSizeInDIP().width() -
+                current_frame_size_in_dip_.width();
+    // The right gutter also includes the bottom-right corner, if necessary.
+    int height = client_->DelegatedFrameHostDesiredSizeInDIP().height();
+    right_gutter_->SetBounds(
+        gfx::Rect(current_frame_size_in_dip_.width(), 0, width, height));
+
+    client_->DelegatedFrameHostGetLayer()->Add(right_gutter_.get());
+  } else {
+    right_gutter_.reset();
+  }
+
+  if (current_frame_size_in_dip_.height() <
+      client_->DelegatedFrameHostDesiredSizeInDIP().height()) {
+    bottom_gutter_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
+    bottom_gutter_->SetColor(background_color_);
+    int width = current_frame_size_in_dip_.width();
+    int height = client_->DelegatedFrameHostDesiredSizeInDIP().height() -
+                 current_frame_size_in_dip_.height();
+    bottom_gutter_->SetBounds(
+        gfx::Rect(0, current_frame_size_in_dip_.height(), width, height));
+    client_->DelegatedFrameHostGetLayer()->Add(bottom_gutter_.get());
+
+  } else {
+    bottom_gutter_.reset();
+  }
 }
 
 gfx::Size DelegatedFrameHost::GetRequestedRendererSize() const {
@@ -403,6 +443,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   bool skip_frame = false;
   pending_delegated_ack_count_++;
 
+  background_color_ = frame->metadata.root_background_color;
+
   if (frame_size.IsEmpty()) {
     DCHECK(frame_data->resource_list.empty());
     EvictDelegatedFrame();
@@ -449,6 +491,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   released_front_lock_ = NULL;
   current_frame_size_in_dip_ = frame_size_in_dip;
   CheckResizeLock();
+
+  UpdateGutters();
 
   if (!damage_rect_in_dip.IsEmpty())
     client_->DelegatedFrameHostGetLayer()->OnDelegatedFrameDamage(
@@ -527,6 +571,7 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
     surface_id_ = cc::SurfaceId();
   }
   delegated_frame_evictor_->DiscardedFrame();
+  UpdateGutters();
 }
 
 // static

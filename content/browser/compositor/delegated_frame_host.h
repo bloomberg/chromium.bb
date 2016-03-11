@@ -202,6 +202,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Checks if the resize lock can be released because we received an new frame.
   void CheckResizeLock();
 
+  // Update the layers for the resize gutters to the right and bottom of the
+  // surface layer.
+  void UpdateGutters();
+
   // Called after async thumbnailer task completes.  Scales and crops the result
   // of the copy.
   static void CopyFromCompositingSurfaceHasResultForVideo(
@@ -256,6 +260,12 @@ class CONTENT_EXPORT DelegatedFrameHost
   // skipped.
   bool skipped_frames_;
   std::vector<ui::LatencyInfo> skipped_latency_info_list_;
+
+  scoped_ptr<ui::Layer> right_gutter_;
+  scoped_ptr<ui::Layer> bottom_gutter_;
+
+  // This is the last root background color from a swapped frame.
+  SkColor background_color_;
 
   // State for rendering into a Surface.
   scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;

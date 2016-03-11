@@ -277,7 +277,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   FakeRenderWidgetHostViewAura(RenderWidgetHost* widget,
                                bool is_guest_view_hack)
       : RenderWidgetHostViewAura(widget, is_guest_view_hack),
-        has_resize_lock_(false) {}
+        can_create_resize_lock_(true) {}
 
   void UseFakeDispatcher() {
     dispatcher_ = new FakeWindowEventDispatcher(window()->GetHost());
@@ -294,7 +294,9 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
         new FakeResizeLock(desired_size, defer_compositor_lock));
   }
 
-  bool DelegatedFrameCanCreateResizeLock() const override { return true; }
+  bool DelegatedFrameCanCreateResizeLock() const override {
+    return can_create_resize_lock_;
+  }
 
   void RunOnCompositingDidCommit() {
     GetDelegatedFrameHost()->OnCompositingDidCommitForTesting(
@@ -338,7 +340,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return pointer_state();
   }
 
-  bool has_resize_lock_;
+  bool can_create_resize_lock_;
   gfx::Size last_frame_size_;
   scoped_ptr<cc::CopyOutputRequest> last_copy_request_;
   FakeWindowEventDispatcher* dispatcher_;
@@ -1684,6 +1686,54 @@ TEST_F(RenderWidgetHostViewAuraTest, RecreateLayers) {
     // Should be a SurfaceSequence for both the original and new layers.
     EXPECT_EQ(2u, surface->GetDestructionDependencyCount());
   }
+}
+
+// If the view size is larger than the compositor frame then extra layers
+// should be created to fill the gap.
+TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
+  gfx::Size large_size(100, 100);
+  gfx::Size small_size(40, 45);
+  gfx::Size medium_size(40, 95);
+
+  // Prevent the DelegatedFrameHost from skipping frames.
+  view_->can_create_resize_lock_ = false;
+
+  view_->InitAsChild(NULL);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(large_size);
+  view_->Show();
+  scoped_ptr<cc::CompositorFrame> frame =
+      MakeDelegatedFrame(1.f, small_size, gfx::Rect(small_size));
+  frame->metadata.root_background_color = SK_ColorRED;
+  view_->OnSwapCompositorFrame(0, std::move(frame));
+
+  ui::Layer* parent_layer = view_->GetNativeView()->layer();
+
+  ASSERT_EQ(2u, parent_layer->children().size());
+  EXPECT_EQ(gfx::Rect(40, 0, 60, 100), parent_layer->children()[0]->bounds());
+  EXPECT_EQ(SK_ColorRED, parent_layer->children()[0]->background_color());
+  EXPECT_EQ(gfx::Rect(0, 45, 40, 55), parent_layer->children()[1]->bounds());
+  EXPECT_EQ(SK_ColorRED, parent_layer->children()[1]->background_color());
+
+  view_->SetSize(medium_size);
+
+  // Right gutter is unnecessary.
+  ASSERT_EQ(1u, parent_layer->children().size());
+  EXPECT_EQ(gfx::Rect(0, 45, 40, 50), parent_layer->children()[0]->bounds());
+
+  frame = MakeDelegatedFrame(1.f, medium_size, gfx::Rect(medium_size));
+  view_->OnSwapCompositorFrame(0, std::move(frame));
+  EXPECT_EQ(0u, parent_layer->children().size());
+
+  view_->SetSize(large_size);
+  ASSERT_EQ(2u, parent_layer->children().size());
+
+  // This should evict the frame and remove the gutter layers.
+  view_->Hide();
+  view_->SetSize(small_size);
+  ASSERT_EQ(0u, parent_layer->children().size());
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, Resize) {
