@@ -19,6 +19,8 @@ URL_LIST = [
     ('Vanilla JS', 'http://todomvc.com/examples/vanillajs'),
 ]
 
+INTERACTION_NAME = 'Interaction.AppLoad'
+
 
 class TodoMVCPage(page_module.Page):
 
@@ -26,9 +28,27 @@ class TodoMVCPage(page_module.Page):
     super(TodoMVCPage, self).__init__(
         url=url, page_set=page_set, name=name,
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
+    # TODO(jochen): This interaction does not include the
+    # WindowProxy::initialize portion before the commit. To fix this, we'll
+    # have to migrate to TBMv2.
+    self.script_to_evaluate_on_commit = (
+        'console.time("%s");' % INTERACTION_NAME)
 
   def RunPageInteractions(self, action_runner):
-    pass
+    action_runner.ExecuteJavaScript(
+        """
+        this.becameIdle = false;
+        this.idleCallback = function(deadline) {
+            if (deadline.timeRemaining() > 20)
+                this.becameIdle = true;
+            else
+                requestIdleCallback(this.idleCallback);
+        };
+        requestIdleCallback(this.idleCallback);
+        """
+    )
+    action_runner.WaitForJavaScriptCondition('this.becameIdle === true')
+    action_runner.ExecuteJavaScript('console.timeEnd("%s");' % INTERACTION_NAME)
 
 
 class TodoMVCPageSet(story.StorySet):

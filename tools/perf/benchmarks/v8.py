@@ -122,7 +122,9 @@ class V8TodoMVC(perf_benchmark.PerfBenchmark):
   page_set = page_sets.TodoMVCPageSet
 
   def CreateTimelineBasedMeasurementOptions(self):
-    category_filter = tracing_category_filter.TracingCategoryFilter('v8')
+    category_filter = tracing_category_filter.CreateMinimalOverheadFilter()
+    category_filter.AddIncludedCategory('v8')
+    category_filter.AddIncludedCategory('blink.console')
     options = timeline_based_measurement.Options(category_filter)
     options.SetLegacyTimelineBasedMetrics([v8_execution.V8ExecutionMetric()])
     return options
