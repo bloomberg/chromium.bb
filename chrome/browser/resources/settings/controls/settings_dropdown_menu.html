@@ -9,7 +9,28 @@
 
 <dom-module id="settings-dropdown-menu">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      paper-item {
+        color: var(--paper-grey-800);
+        font-size: inherit;
+      }
+
+      paper-dropdown-menu {
+        --iron-icon-fill-color: {
+          var(--paper-grey-800);
+        };
+        --iron-icon-stroke-color: {
+          var(--paper-grey-800);
+        };
+        --paper-font-subhead: {
+          font-size: inherit;
+        };
+        --paper-input-container-underline: {
+          background: var(--paper-grey-300);
+        };
+        width: 160px;
+      }
+     </style>
     <paper-dropdown-menu id="dropdownMenu" label="[[menuLabel_]]"
         on-iron-select="onSelect_" no-label-float$="[[noLabelFloat]]"
         disabled="[[shouldDisableMenu_(disabled, menuOptions.*)]]">
