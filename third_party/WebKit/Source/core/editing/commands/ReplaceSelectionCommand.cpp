@@ -1219,7 +1219,8 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         node = next;
     }
 
-    removeUnrenderedTextNodesAtEnds(insertedNodes);
+    if (isRichlyEditablePosition(insertionPos))
+        removeUnrenderedTextNodesAtEnds(insertedNodes);
 
     if (!handledStyleSpans) {
         handleStyleSpans(insertedNodes, editingState);
